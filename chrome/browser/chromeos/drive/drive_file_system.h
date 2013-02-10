@@ -82,34 +82,34 @@ class DriveFileSystem : public DriveFileSystemInterface,
                       const GURL& next_feed,
                       const SearchCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
-      const FilePath& remote_src_file_path,
-      const FilePath& local_dest_file_path,
+      const base::FilePath& remote_src_file_path,
+      const base::FilePath& local_dest_file_path,
       const FileOperationCallback& callback) OVERRIDE;
   virtual void TransferFileFromLocalToRemote(
-      const FilePath& local_src_file_path,
-      const FilePath& remote_dest_file_path,
+      const base::FilePath& local_src_file_path,
+      const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback) OVERRIDE;
-  virtual void OpenFile(const FilePath& file_path,
+  virtual void OpenFile(const base::FilePath& file_path,
                         const OpenFileCallback& callback) OVERRIDE;
-  virtual void CloseFile(const FilePath& file_path,
+  virtual void CloseFile(const base::FilePath& file_path,
                          const FileOperationCallback& callback) OVERRIDE;
-  virtual void Copy(const FilePath& src_file_path,
-                    const FilePath& dest_file_path,
+  virtual void Copy(const base::FilePath& src_file_path,
+                    const base::FilePath& dest_file_path,
                     const FileOperationCallback& callback) OVERRIDE;
-  virtual void Move(const FilePath& src_file_path,
-                    const FilePath& dest_file_path,
+  virtual void Move(const base::FilePath& src_file_path,
+                    const base::FilePath& dest_file_path,
                     const FileOperationCallback& callback) OVERRIDE;
-  virtual void Remove(const FilePath& file_path,
+  virtual void Remove(const base::FilePath& file_path,
                       bool is_recursive,
                       const FileOperationCallback& callback) OVERRIDE;
-  virtual void CreateDirectory(const FilePath& directory_path,
+  virtual void CreateDirectory(const base::FilePath& directory_path,
                                bool is_exclusive,
                                bool is_recursive,
                                const FileOperationCallback& callback) OVERRIDE;
-  virtual void CreateFile(const FilePath& file_path,
+  virtual void CreateFile(const base::FilePath& file_path,
                           bool is_exclusive,
                           const FileOperationCallback& callback) OVERRIDE;
-  virtual void GetFileByPath(const FilePath& file_path,
+  virtual void GetFileByPath(const base::FilePath& file_path,
                              const GetFileCallback& callback) OVERRIDE;
   virtual void GetFileByResourceId(
       const std::string& resource_id,
@@ -119,18 +119,18 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const std::string& resource_id,
       const FileOperationCallback& callback) OVERRIDE;
   virtual void GetEntryInfoByPath(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const GetEntryInfoCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
-      const FilePath& directory_path,
+      const base::FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback) OVERRIDE;
   virtual void RequestDirectoryRefresh(
-      const FilePath& directory_path) OVERRIDE;
+      const base::FilePath& directory_path) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
-  virtual void AddUploadedFile(const FilePath& directory_path,
+  virtual void AddUploadedFile(const base::FilePath& directory_path,
                                scoped_ptr<google_apis::ResourceEntry> doc_entry,
-                               const FilePath& file_content_path,
+                               const base::FilePath& file_content_path,
                                const FileOperationCallback& callback) OVERRIDE;
   virtual void GetMetadata(
       const GetFilesystemMetadataCallback& callback) OVERRIDE;
@@ -138,11 +138,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // file_system::OperationObserver overrides.
   virtual void OnDirectoryChangedByOperation(
-      const FilePath& directory_path) OVERRIDE;
+      const base::FilePath& directory_path) OVERRIDE;
 
   // DriveFeedLoader::Observer overrides.
   // Used to propagate events from DriveFeedLoader.
-  virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
+  virtual void OnDirectoryChanged(const base::FilePath& directory_path) OVERRIDE;
   virtual void OnResourceListFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
@@ -192,7 +192,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                           bool should_run_callback,
                           const base::Closure& callback,
                           DriveFileError error,
-                          const FilePath& drive_file_path,
+                          const base::FilePath& drive_file_path,
                           scoped_ptr<DriveEntryProto> entry_proto);
 
   // Invoked during the process of CreateFile.
@@ -202,15 +202,15 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // entry, a new empty file is uploaded, and when it finishes
   // DidUploadForCreateBrandNewFile does the final clean up.
   // |callback| must not be null.
-  void OnGetEntryInfoForCreateFile(const FilePath& file_path,
+  void OnGetEntryInfoForCreateFile(const base::FilePath& file_path,
                                    bool is_exclusive,
                                    const FileOperationCallback& callback,
                                    DriveFileError result,
                                    scoped_ptr<DriveEntryProto> entry_proto);
-  void DoUploadForCreateBrandNewFile(const FilePath& remote_path,
-                                     FilePath* local_path,
+  void DoUploadForCreateBrandNewFile(const base::FilePath& remote_path,
+                                     base::FilePath* local_path,
                                      const FileOperationCallback& callback);
-  void DidUploadForCreateBrandNewFile(const FilePath& local_path,
+  void DidUploadForCreateBrandNewFile(const base::FilePath& local_path,
                                       const FileOperationCallback& callback,
                                       DriveFileError result);
 
@@ -218,7 +218,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
   // |callback| must not be null.
   void OnGetEntryInfoCompleteForGetFileByPath(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const GetFileCallback& callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> file_info);
@@ -227,7 +227,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // It then continues to invoke GetResolvedFileByPath and proceeds to
   // OnGetFileCompleteForOpenFile.
   void OnGetEntryInfoCompleteForOpenFile(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const OpenFileCallback& callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> file_info);
@@ -235,10 +235,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Invoked at the last step of OpenFile. It removes |file_path| from the
   // current set of opened files if |result| is an error, and then invokes the
   // |callback| function.
-  void OnOpenFileFinished(const FilePath& file_path,
+  void OnOpenFileFinished(const base::FilePath& file_path,
                           const OpenFileCallback& callback,
                           DriveFileError result,
-                          const FilePath& cache_file_path);
+                          const base::FilePath& cache_file_path);
 
   // Invoked during the process of CloseFile. What is done here is as follows:
   // 1) Gets resource_id and md5 of the entry at |file_path|.
@@ -246,11 +246,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // 3) Removes the |file_path| from the remembered set of opened files.
   // 4) Invokes the user-supplied |callback|.
   // |callback| must not be null.
-  void CloseFileAfterGetEntryInfo(const FilePath& file_path,
+  void CloseFileAfterGetEntryInfo(const base::FilePath& file_path,
                                   const FileOperationCallback& callback,
                                   DriveFileError error,
                                   scoped_ptr<DriveEntryProto> entry_proto);
-  void CloseFileFinalize(const FilePath& file_path,
+  void CloseFileFinalize(const base::FilePath& file_path,
                          const FileOperationCallback& callback,
                          DriveFileError result);
 
@@ -260,7 +260,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |file_info.md5|.
   void OnGetFileCompleteForOpenFile(const GetFileCompleteForOpenParams& params,
                                     DriveFileError error,
-                                    const FilePath& file_path,
+                                    const base::FilePath& file_path,
                                     const std::string& mime_type,
                                     DriveFileType file_type);
 
@@ -278,7 +278,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Callback for handling file downloading requests.
   void OnFileDownloaded(const GetFileFromCacheParams& params,
                         google_apis::GDataErrorCode status,
-                        const FilePath& downloaded_file_path);
+                        const base::FilePath& downloaded_file_path);
 
   // Unpins file if cache entry is pinned.
   void UnpinIfPinned(const std::string& resource_id,
@@ -290,17 +290,17 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // an error in case we don't have enough disk space.
   void OnFileDownloadedAndSpaceChecked(const GetFileFromCacheParams& params,
                                        google_apis::GDataErrorCode status,
-                                       const FilePath& downloaded_file_path,
+                                       const base::FilePath& downloaded_file_path,
                                        bool has_enough_space);
 
   // FileMoveCallback for directory changes. Notifies of directory changes.
   void OnDirectoryChangeFileMoveCallback(DriveFileError error,
-                                         const FilePath& directory_path);
+                                         const base::FilePath& directory_path);
 
   // Adds the uploaded file to the cache.
   void AddUploadedFileToCache(const AddUploadedFileParams& params,
                               DriveFileError error,
-                              const FilePath& file_path);
+                              const base::FilePath& file_path);
 
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
   // from CheckForUpdates().
@@ -323,7 +323,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // GetFileByPath() request.
   void OnGetFileFromCache(const GetFileFromCacheParams& params,
                           DriveFileError error,
-                          const FilePath& cache_file_path);
+                          const base::FilePath& cache_file_path);
 
   // Callback for |drive_service_->GetResourceEntry|.
   // It is called before file download. If GetResourceEntry was successful,
@@ -340,14 +340,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
       int64 file_size,
       const GURL& download_url,
       DriveFileError error,
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Starts downloading a file if we have enough disk space indicated by
   // |has_enough_space|.
   void StartDownloadFileIfEnoughSpace(const GetFileFromCacheParams& params,
                                       const GURL& download_url,
-                                      const FilePath& cache_file_path,
+                                      const base::FilePath& cache_file_path,
                                       bool has_enough_space);
 
   // Changes state of hosted documents visibility, triggers directory refresh.
@@ -360,7 +360,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // 1) Called when the feed is loaded.
   // 2) Called when an entry is found.
   // |callback| must not be null.
-  void GetEntryInfoByPathAfterLoad(const FilePath& file_path,
+  void GetEntryInfoByPathAfterLoad(const base::FilePath& file_path,
                                    const GetEntryInfoCallback& callback,
                                    DriveFileError error);
   void GetEntryInfoByPathAfterGetEntry(const GetEntryInfoCallback& callback,
@@ -372,7 +372,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // 2) Called when an entry is found.
   // |callback| must not be null.
   void ReadDirectoryByPathAfterLoad(
-      const FilePath& directory_path,
+      const base::FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback,
       DriveFileError error);
   void ReadDirectoryByPathAfterRead(
@@ -391,14 +391,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |get_file_callback| must not be null.
   // |get_content_callback| may be null.
   void GetResolvedFileByPath(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   void OnRequestDirectoryRefresh(
       const std::string& directory_resource_id,
-      const FilePath& directory_path,
+      const base::FilePath& directory_path,
       const ScopedVector<google_apis::ResourceList>& feed_list,
       DriveFileError error);
 
@@ -408,7 +408,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void GetEntryInfoByResourceIdAfterGetEntry(
       const GetEntryInfoWithFilePathCallback& callback,
       DriveFileError error,
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of GetFileByResourceId(). Called after
@@ -419,13 +419,13 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback,
       DriveFileError error,
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of RequestDirectoryRefresh(). Called after
   // GetEntryInfoByPath() is complete.
   void RequestDirectoryRefreshAfterGetEntryInfo(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
@@ -444,7 +444,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
       DriveFileError error,
-      const FilePath& local_cache_path);
+      const base::FilePath& local_cache_path);
   void CheckLocalModificationAndRunAfterGetFileInfo(
       scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
@@ -481,7 +481,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   bool hide_hosted_docs_;
 
   // The set of paths opened by OpenFile but not yet closed by CloseFile.
-  std::set<FilePath> open_files_;
+  std::set<base::FilePath> open_files_;
 
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 

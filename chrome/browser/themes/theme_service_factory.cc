@@ -63,7 +63,7 @@ void ThemeServiceFactory::RegisterUserPrefs(PrefServiceSyncable* prefs) {
                              PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
   prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename,
-                              FilePath(),
+                              base::FilePath(),
                               PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(prefs::kCurrentThemeID,
                             ThemeService::kDefaultThemeID,

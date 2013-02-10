@@ -41,7 +41,7 @@ bool CanImportSafariURL(const GURL& url) {
 
 }  // namespace
 
-SafariImporter::SafariImporter(const FilePath& library_dir)
+SafariImporter::SafariImporter(const base::FilePath& library_dir)
     : library_dir_(library_dir) {
 }
 
@@ -49,7 +49,7 @@ SafariImporter::~SafariImporter() {
 }
 
 // static
-bool SafariImporter::CanImport(const FilePath& library_dir,
+bool SafariImporter::CanImport(const base::FilePath& library_dir,
                                uint16* services_supported) {
   DCHECK(services_supported);
   *services_supported = importer::NONE;
@@ -57,9 +57,9 @@ bool SafariImporter::CanImport(const FilePath& library_dir,
   // Import features are toggled by the following:
   // bookmarks import: existence of ~/Library/Safari/Bookmarks.plist file.
   // history import: existence of ~/Library/Safari/History.plist file.
-  FilePath safari_dir = library_dir.Append("Safari");
-  FilePath bookmarks_path = safari_dir.Append("Bookmarks.plist");
-  FilePath history_path = safari_dir.Append("History.plist");
+  base::FilePath safari_dir = library_dir.Append("Safari");
+  base::FilePath bookmarks_path = safari_dir.Append("Bookmarks.plist");
+  base::FilePath history_path = safari_dir.Append("History.plist");
 
   if (file_util::PathExists(bookmarks_path))
     *services_supported |= importer::FAVORITES;
@@ -135,7 +135,7 @@ bool SafariImporter::OpenDatabase(sql::Connection* db) {
       stringByAppendingPathComponent:@"WebpageIcons.db"];
 
   const char* db_path = [favicons_db_path fileSystemRepresentation];
-  return db->Open(FilePath(db_path));
+  return db->Open(base::FilePath(db_path));
 }
 
 void SafariImporter::ImportFaviconURLs(sql::Connection* db,

@@ -48,7 +48,7 @@ const char kDetachTestOk[] = "detach_test_ok";
 // Dummy device properties.
 const char kDeviceId[] = "testDeviceId";
 const char kDeviceName[] = "foobar";
-FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
+base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
 
 }  // namespace
 

@@ -13,7 +13,7 @@ class FtpBrowserTest : public InProcessBrowserTest {
   FtpBrowserTest()
       : ftp_server_(net::TestServer::TYPE_FTP,
                     net::TestServer::kLocalhost,
-                    FilePath()) {
+                    base::FilePath()) {
   }
 
  protected:

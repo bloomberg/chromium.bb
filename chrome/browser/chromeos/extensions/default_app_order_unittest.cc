@@ -20,7 +20,7 @@ namespace chromeos {
 
 namespace {
 
-const FilePath::CharType kTestFile[] =
+const base::FilePath::CharType kTestFile[] =
     FILE_PATH_LITERAL("test_default_app_order.json");
 }
 
@@ -48,14 +48,14 @@ class DefaultAppOrderTest : public testing::Test {
     return true;
   }
 
-  void SetExternalFile(const FilePath& path) {
+  void SetExternalFile(const base::FilePath& path) {
     path_override_.reset(new base::ScopedPathOverride(
         chrome::FILE_DEFAULT_APP_ORDER, path));
   }
 
   void CreateExternalOrderFile(const std::string& content) {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath external_file = temp_dir_.path().Append(kTestFile);
+    base::FilePath external_file = temp_dir_.path().Append(kTestFile);
     file_util::WriteFile(external_file, content.c_str(), content.size());
     SetExternalFile(external_file);
   }
@@ -95,7 +95,7 @@ TEST_F(DefaultAppOrderTest, ExternalOrder) {
 
 // Tests none-existent order file gives built-in default.
 TEST_F(DefaultAppOrderTest, NoExternalFile) {
-  SetExternalFile(FilePath(FILE_PATH_LITERAL("none_existent_file")));
+  SetExternalFile(base::FilePath(FILE_PATH_LITERAL("none_existent_file")));
 
   scoped_ptr<default_app_order::ExternalLoader> loader(
       new default_app_order::ExternalLoader(false));

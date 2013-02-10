@@ -51,7 +51,7 @@ class NetLogTempFile {
   // Returns true and the path to the temporary file. If there is no file to
   // send, then it returns false. It also returns false when actively logging to
   // the file.
-  bool GetFilePath(FilePath* path);
+  bool GetFilePath(base::FilePath* path);
 
   // Creates a Value summary of the state of the NetLogTempFile. The caller is
   // responsible for deleting the returned value.
@@ -64,7 +64,7 @@ class NetLogTempFile {
 
   // Returns path name to file_util::GetTempDir() directory. Returns false if
   // file_util::GetTempDir() fails.
-  virtual bool GetNetExportLogDirectory(FilePath* path);
+  virtual bool GetNetExportLogDirectory(base::FilePath* path);
 
   // Returns true if |log_path_| exists.
   virtual bool NetExportLogExists();
@@ -105,7 +105,7 @@ class NetLogTempFile {
   // are not collecting data into a file.
   void StopNetLog();
 
-  // Updates |log_path_| with FilePath to |log_filename_| in the
+  // Updates |log_path_| with base::FilePath to |log_filename_| in the
   // file_util::GetTempDir() directory. Returns false if file_util::GetTempDir()
   // fails.
   bool GetNetExportLog();
@@ -117,9 +117,9 @@ class NetLogTempFile {
 
   // Name of the file. It defaults to chrome-net-export-log.json, but can be
   // overwritten by unit tests.
-  FilePath::StringType log_filename_;
+  base::FilePath::StringType log_filename_;
 
-  FilePath log_path_;  // FilePath to the temporary file.
+  base::FilePath log_path_;  // base::FilePath to the temporary file.
 
   // |net_log_logger_| watches the NetLog event stream, and sends all entries to
   // the file created in StartNetLog().

@@ -29,10 +29,10 @@ void ShowAppList(Profile* profile);
 void RegisterAppListPrefs(PrefRegistrySimple* registry);
 
 // Change the profile that the app list is showing.
-void SetAppListProfile(const FilePath& profile_file_path);
+void SetAppListProfile(const base::FilePath& profile_file_path);
 
 // Get the path of the profile to be used with the app list.
-FilePath GetAppListProfilePath(const FilePath& user_data_dir);
+base::FilePath GetAppListProfilePath(const base::FilePath& user_data_dir);
 
 // Dismiss the app list.
 void DismissAppList();

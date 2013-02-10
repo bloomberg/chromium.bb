@@ -29,11 +29,11 @@ class FileChange {
 
   // Created an object representing a change of file or directory pointed by
   // |change_path|. The change is of |change_type| type.
-  FileChange(const FilePath& path, Type type);
+  FileChange(const base::FilePath& path, Type type);
   ~FileChange();
 
   // Factory method to create a FileChangeSet object with only one element.
-  static FileChangeSet CreateSingleSet(const FilePath& path, Type type);
+  static FileChangeSet CreateSingleSet(const base::FilePath& path, Type type);
 
   bool operator==(const FileChange &file_change) const {
     return path_ == file_change.path() && type_ == file_change.type();
@@ -44,12 +44,12 @@ class FileChange {
            (path_ == file_change.path() && type_ < file_change.type());
   }
 
-  const FilePath& path() const { return path_; }
+  const base::FilePath& path() const { return path_; }
 
   Type type() const { return type_; }
 
  private:
-  const FilePath path_;
+  const base::FilePath path_;
   const Type type_;
 };
 

@@ -35,8 +35,8 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   UserCloudPolicyStoreChromeOS(
       chromeos::SessionManagerClient* session_manager_client,
       const std::string& username,
-      const FilePath& legacy_token_cache_file,
-      const FilePath& legacy_policy_cache_file);
+      const base::FilePath& legacy_token_cache_file,
+      const base::FilePath& legacy_policy_cache_file);
   virtual ~UserCloudPolicyStoreChromeOS();
 
   // CloudPolicyStore:
@@ -81,7 +81,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
                            const std::string& device_id);
 
   // Removes the passed-in legacy cache directory.
-  static void RemoveLegacyCacheDir(const FilePath& dir);
+  static void RemoveLegacyCacheDir(const base::FilePath& dir);
 
   chromeos::SessionManagerClient* session_manager_client_;
   const std::string username_;
@@ -90,7 +90,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
 
   // TODO(mnissler): Remove all the legacy policy support members below after
   // the number of pre-M20 clients drops back to zero.
-  FilePath legacy_cache_dir_;
+  base::FilePath legacy_cache_dir_;
   scoped_ptr<LegacyPolicyCacheLoader> legacy_loader_;
   bool legacy_caches_loaded_;
 

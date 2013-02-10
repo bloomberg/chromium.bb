@@ -2040,7 +2040,7 @@ void ExecuteCodeInTabFunction::DidLoadFile(bool success,
 void ExecuteCodeInTabFunction::LocalizeCSS(
     const std::string& data,
     const std::string& extension_id,
-    const FilePath& extension_path,
+    const base::FilePath& extension_path,
     const std::string& extension_default_locale) {
   scoped_ptr<SubstitutionMap> localization_messages(
       extension_file_util::LoadMessageBundleSubstitutionMap(

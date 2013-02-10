@@ -106,9 +106,9 @@ void MediaGalleriesHandler::HandleAddNewGallery(const base::ListValue* args) {
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_FOLDER,
       string16(),  // TODO(estade): a name for the dialog?
-      FilePath(),
+      base::FilePath(),
       NULL, 0,
-      FilePath::StringType(),
+      base::FilePath::StringType(),
       web_ui()->GetWebContents()->GetView()->
           GetTopLevelNativeWindow(),
       NULL);
@@ -129,7 +129,7 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
   prefs->ForgetGalleryById(id);
 }
 
-void MediaGalleriesHandler::FileSelected(const FilePath& path,
+void MediaGalleriesHandler::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* params) {
   chrome::MediaGalleriesPreferences* prefs =

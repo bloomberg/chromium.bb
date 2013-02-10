@@ -23,7 +23,7 @@ namespace drag_util {
 namespace {
 
 BOOL IsSupportedFileURL(Profile* profile, const GURL& url) {
-  FilePath full_path;
+  base::FilePath full_path;
   net::FileURLToFilePath(url, &full_path);
 
   std::string mime_type;

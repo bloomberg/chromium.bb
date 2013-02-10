@@ -115,7 +115,7 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
     case ALWAYS_OPEN_TYPE: {
       DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(
           download_item_->GetBrowserContext());
-      FilePath path = download_item_->GetUserVerifiedFilePath();
+      base::FilePath path = download_item_->GetUserVerifiedFilePath();
       if (!IsCommandIdChecked(ALWAYS_OPEN_TYPE))
         prefs->EnableAutoOpenBasedOnExtension(path);
       else

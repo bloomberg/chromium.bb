@@ -77,8 +77,8 @@ class ImageLoader : public ProfileKeyedService {
   // resources. Otherwise fills |resource_id|. This doesn't check if the
   // extension the resource is in is actually a component extension.
   static bool IsComponentExtensionResource(
-      const FilePath& extension_path,
-      const FilePath& resource_path,
+      const base::FilePath& extension_path,
+      const base::FilePath& resource_path,
       int* resource_id);
 
   // Specify image resource to load. If the loaded image is larger than

@@ -40,9 +40,9 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
 
   // Creates a zip file from the specified list of files and directories.
   ZipFileCreator(Observer* observer,
-                 const FilePath& src_dir,
-                 const std::vector<FilePath>& src_relative_paths,
-                 const FilePath& dest_file);
+                 const base::FilePath& src_dir,
+                 const std::vector<base::FilePath>& src_relative_paths,
+                 const base::FilePath& dest_file);
 
   // Start creating the zip file. The client is called with the results.
   void Start();
@@ -76,14 +76,14 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
   Observer* observer_;
 
   // The source directory for input files.
-  FilePath src_dir_;
+  base::FilePath src_dir_;
 
   // The list of source files paths to be included in the zip file.
   // Entries are relative paths under directory |src_dir_|.
-  std::vector<FilePath> src_relative_paths_;
+  std::vector<base::FilePath> src_relative_paths_;
 
   // The output zip file.
-  FilePath dest_file_;
+  base::FilePath dest_file_;
 
   // Whether we've received a response from the utility process yet.
   bool got_response_;

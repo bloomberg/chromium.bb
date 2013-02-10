@@ -72,11 +72,12 @@ namespace policy {
 namespace {
 
 // Subdirectory in the user's profile for storing user policies.
-const FilePath::CharType kPolicyDir[] = FILE_PATH_LITERAL("Device Management");
+const base::FilePath::CharType kPolicyDir[] =
+    FILE_PATH_LITERAL("Device Management");
 // File in the above directory for stroing user policy dmtokens.
-const FilePath::CharType kTokenCacheFile[] = FILE_PATH_LITERAL("Token");
+const base::FilePath::CharType kTokenCacheFile[] = FILE_PATH_LITERAL("Token");
 // File in the above directory for storing user policy data.
-const FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
+const base::FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
 
 // The following constants define delays applied before the initial policy fetch
 // on startup. (So that displaying Chrome's GUI does not get delayed.)
@@ -125,7 +126,7 @@ void BrowserPolicyConnector::Init() {
       chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
   install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
   install_attributes_->ReadCacheFile(
-      FilePath(policy::EnterpriseInstallAttributes::kCacheFilePath));
+      base::FilePath(policy::EnterpriseInstallAttributes::kCacheFilePath));
 
   scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store(
       new DeviceCloudPolicyStoreChromeOS(
@@ -248,13 +249,13 @@ void BrowserPolicyConnector::InitializeUserPolicy(
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  FilePath profile_dir;
+  base::FilePath profile_dir;
   PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
   profile_dir = profile_dir.Append(
       command_line->GetSwitchValuePath(switches::kLoginProfile));
-  const FilePath policy_dir = profile_dir.Append(kPolicyDir);
-  const FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
-  const FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
+  const base::FilePath policy_dir = profile_dir.Append(kPolicyDir);
+  const base::FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
+  const base::FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
 
   if (wait_for_policy_fetch)
     device_management_service_->ScheduleInitialization(0);
@@ -521,7 +522,7 @@ ConfigurationPolicyProvider* BrowserPolicyConnector::CreatePlatformProvider() {
       new PolicyLoaderMac(policy_list, new MacPreferences()));
   return new AsyncPolicyProvider(loader.Pass());
 #elif defined(OS_POSIX)
-  FilePath config_dir_path;
+  base::FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     scoped_ptr<AsyncPolicyLoader> loader(
         new ConfigDirPolicyLoader(config_dir_path, POLICY_SCOPE_MACHINE));

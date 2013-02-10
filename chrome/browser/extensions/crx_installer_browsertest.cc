@@ -86,7 +86,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
       MockInstallPrompt* mock_install_prompt) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
-    FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
+    base::FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
 
     std::string error;
     base::DictionaryValue* parsed_manifest =
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   CommandLine old_command_line = *command_line;
   command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  FilePath crx_path = PackExtension(
+  base::FilePath crx_path = PackExtension(
       test_data_dir_.AppendASCII("experimental"));
   ASSERT_FALSE(crx_path.empty());
 
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(
   const int kNumDownloadsExpected = 1;
 
   LOG(ERROR) << "PackAndInstallExtension: Packing extension";
-  FilePath crx_path = PackExtension(
+  base::FilePath crx_path = PackExtension(
       test_data_dir_.AppendASCII("common/background_page"));
   ASSERT_FALSE(crx_path.empty());
   std::string crx_path_string(crx_path.value().begin(), crx_path.value().end());

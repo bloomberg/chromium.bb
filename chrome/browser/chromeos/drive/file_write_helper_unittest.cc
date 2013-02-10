@@ -37,9 +37,9 @@ ACTION_P(MockCloseFile, error) {
 }
 
 void RecordOpenFileCallbackArguments(DriveFileError* error,
-                                     FilePath* path,
+                                     base::FilePath* path,
                                      DriveFileError error_arg,
-                                     const FilePath& path_arg) {
+                                     const base::FilePath& path_arg) {
   base::ThreadRestrictions::AssertIOAllowed();
   *error = error_arg;
   *path = path_arg;
@@ -61,8 +61,8 @@ class FileWriteHelperTest : public testing::Test {
 };
 
 TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {
-  const FilePath kDrivePath("/drive/file.txt");
-  const FilePath kLocalPath("/tmp/dummy.txt");
+  const base::FilePath kDrivePath("/drive/file.txt");
+  const base::FilePath kLocalPath("/tmp/dummy.txt");
 
   EXPECT_CALL(*mock_file_system_, CreateFile(kDrivePath, false, _))
       .WillOnce(MockCreateFile(DRIVE_FILE_OK));
@@ -73,7 +73,7 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {
 
   FileWriteHelper file_write_helper(mock_file_system_.get());
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath path;
+  base::FilePath path;
   file_write_helper.PrepareWritableFileAndRun(
       kDrivePath, base::Bind(&RecordOpenFileCallbackArguments, &error, &path));
   google_apis::test_util::RunBlockingPoolTask();
@@ -83,7 +83,7 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {
 }
 
 TEST_F(FileWriteHelperTest, PrepareFileForWritingCreateFail) {
-  const FilePath kDrivePath("/drive/file.txt");
+  const base::FilePath kDrivePath("/drive/file.txt");
 
   EXPECT_CALL(*mock_file_system_, CreateFile(kDrivePath, false, _))
       .WillOnce(MockCreateFile(DRIVE_FILE_ERROR_ACCESS_DENIED));
@@ -92,33 +92,33 @@ TEST_F(FileWriteHelperTest, PrepareFileForWritingCreateFail) {
 
   FileWriteHelper file_write_helper(mock_file_system_.get());
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath path;
+  base::FilePath path;
   file_write_helper.PrepareWritableFileAndRun(
       kDrivePath, base::Bind(&RecordOpenFileCallbackArguments, &error, &path));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_ERROR_ACCESS_DENIED, error);
-  EXPECT_EQ(FilePath(), path);
+  EXPECT_EQ(base::FilePath(), path);
 }
 
 TEST_F(FileWriteHelperTest, PrepareFileForWritingOpenFail) {
-  const FilePath kDrivePath("/drive/file.txt");
+  const base::FilePath kDrivePath("/drive/file.txt");
 
   EXPECT_CALL(*mock_file_system_, CreateFile(kDrivePath, false, _))
       .WillOnce(MockCreateFile(DRIVE_FILE_OK));
   EXPECT_CALL(*mock_file_system_, OpenFile(kDrivePath, _))
-      .WillOnce(MockOpenFile(DRIVE_FILE_ERROR_IN_USE, FilePath()));
+      .WillOnce(MockOpenFile(DRIVE_FILE_ERROR_IN_USE, base::FilePath()));
   EXPECT_CALL(*mock_file_system_, CloseFile(_, _)).Times(0);
 
   FileWriteHelper file_write_helper(mock_file_system_.get());
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath path;
+  base::FilePath path;
   file_write_helper.PrepareWritableFileAndRun(
       kDrivePath, base::Bind(&RecordOpenFileCallbackArguments, &error, &path));
   google_apis::test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(DRIVE_FILE_ERROR_IN_USE, error);
-  EXPECT_EQ(FilePath(), path);
+  EXPECT_EQ(base::FilePath(), path);
 }
 
 }   // namespace drive

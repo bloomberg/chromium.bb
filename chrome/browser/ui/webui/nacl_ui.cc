@@ -231,7 +231,7 @@ void NaClDOMHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
   AddLineBreak(list.get());
 
   // Obtain the version of the PNaCl translator.
-  FilePath pnacl_path;
+  base::FilePath pnacl_path;
   bool got_path = PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
   // The PathService may return an empty string if PNaCl is not yet installed.
   // However, do not trust that the path returned by the PathService exists.

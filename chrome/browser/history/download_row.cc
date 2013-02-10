@@ -17,8 +17,8 @@ DownloadRow::DownloadRow()
 }
 
 DownloadRow::DownloadRow(
-    const FilePath& current_path,
-    const FilePath& target_path,
+    const base::FilePath& current_path,
+    const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
     const GURL& referrer,
     const base::Time& start,

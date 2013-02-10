@@ -360,7 +360,7 @@ class InitiateUploadNewFileOperation : public InitiateUploadOperationBase {
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const InitiateUploadCallback& callback,
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& parent_upload_url,
@@ -398,7 +398,7 @@ class InitiateUploadExistingFileOperation
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const InitiateUploadCallback& callback,
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& upload_url,
@@ -463,7 +463,7 @@ class UploadRangeOperationBase : public UrlFetchOperationBase {
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
       const UploadMode upload_mode,
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const GURL& upload_url);
   virtual ~UploadRangeOperationBase();
 
@@ -481,7 +481,7 @@ class UploadRangeOperationBase : public UrlFetchOperationBase {
 
   const UploadRangeCallback callback_;
   const UploadMode upload_mode_;
-  const FilePath drive_file_path_;
+  const base::FilePath drive_file_path_;
   const GURL upload_url_;
 
   bool last_chunk_completed_;
@@ -504,7 +504,7 @@ struct ResumeUploadParams {
                      const std::string& content_type,
                      scoped_refptr<net::IOBuffer> buf,
                      const GURL& upload_location,
-                     const FilePath& drive_file_path);
+                     const base::FilePath& drive_file_path);
   ~ResumeUploadParams();
 
   const UploadMode upload_mode;  // Mode of the upload.
@@ -522,7 +522,7 @@ struct ResumeUploadParams {
   // Drive file path of the file seen in the UI. Not necessary for
   // resuming an upload, but used for adding an entry to OperationRegistry.
   // TODO(satorux): Remove the drive file path hack. crbug.com/163296
-  const FilePath drive_file_path;
+  const base::FilePath drive_file_path;
 };
 
 // This class performs the operation for resuming the upload of a file.

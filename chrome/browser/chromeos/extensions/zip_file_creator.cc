@@ -28,9 +28,9 @@ namespace extensions {
 
 ZipFileCreator::ZipFileCreator(
     Observer* observer,
-    const FilePath& src_dir,
-    const std::vector<FilePath>& src_relative_paths,
-    const FilePath& dest_file)
+    const base::FilePath& src_dir,
+    const std::vector<base::FilePath>& src_relative_paths,
+    const base::FilePath& dest_file)
     : thread_identifier_(BrowserThread::ID_COUNT),
       observer_(observer),
       src_dir_(src_dir),

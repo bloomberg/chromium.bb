@@ -35,7 +35,7 @@ class ExternalPrefLoader : public ExternalLoader {
   // extension files are resolved relative to this path.
   ExternalPrefLoader(int base_path_id, Options options);
 
-  virtual const FilePath GetBaseCrxFilePath() OVERRIDE;
+  virtual const base::FilePath GetBaseCrxFilePath() OVERRIDE;
 
  protected:
   virtual void StartLoading() OVERRIDE;
@@ -74,7 +74,7 @@ class ExternalPrefLoader : public ExternalLoader {
 
   // The path (coresponding to |base_path_id_| containing the json files
   // describing which extensions to load.
-  FilePath base_path_;
+  base::FilePath base_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoader);
 };
@@ -84,9 +84,9 @@ class ExternalPrefLoader : public ExternalLoader {
 class ExternalTestingLoader : public ExternalLoader {
  public:
   ExternalTestingLoader(const std::string& json_data,
-                        const FilePath& fake_base_path);
+                        const base::FilePath& fake_base_path);
 
-  virtual const FilePath GetBaseCrxFilePath() OVERRIDE;
+  virtual const base::FilePath GetBaseCrxFilePath() OVERRIDE;
 
  protected:
   virtual void StartLoading() OVERRIDE;
@@ -96,7 +96,7 @@ class ExternalTestingLoader : public ExternalLoader {
 
   virtual ~ExternalTestingLoader();
 
-  FilePath fake_base_path_;
+  base::FilePath fake_base_path_;
   scoped_ptr<DictionaryValue> testing_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTestingLoader);

@@ -55,13 +55,13 @@ class UserStyleSheetLoader
 
   // Load the user style sheet on the file thread and convert it to a
   // base64 URL.  Posts the base64 URL back to the UI thread.
-  void LoadStyleSheet(const FilePath& style_sheet_file);
+  void LoadStyleSheet(const base::FilePath& style_sheet_file);
 
   // Send out a notification if the stylesheet has already been loaded.
   void NotifyLoaded();
 
   // FilePathWatcher::Callback method:
-  void NotifyPathChanged(const FilePath& path, bool error);
+  void NotifyPathChanged(const base::FilePath& path, bool error);
 
  private:
   friend class base::RefCountedThreadSafe<UserStyleSheetLoader>;
@@ -92,16 +92,18 @@ void UserStyleSheetLoader::NotifyLoaded() {
   }
 }
 
-void UserStyleSheetLoader::NotifyPathChanged(const FilePath& path, bool error) {
+void UserStyleSheetLoader::NotifyPathChanged(const base::FilePath& path,
+                                             bool error) {
   if (!error)
     LoadStyleSheet(path);
 }
 
-void UserStyleSheetLoader::LoadStyleSheet(const FilePath& style_sheet_file) {
+void UserStyleSheetLoader::LoadStyleSheet(
+    const base::FilePath& style_sheet_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // We keep the user style sheet in a subdir so we can watch for changes
   // to the file.
-  FilePath style_sheet_dir = style_sheet_file.DirName();
+  base::FilePath style_sheet_dir = style_sheet_file.DirName();
   if (!file_util::DirectoryExists(style_sheet_dir)) {
     if (!file_util::CreateDirectory(style_sheet_dir))
       return;
@@ -136,7 +138,7 @@ void UserStyleSheetLoader::SetStyleSheet(const GURL& url) {
 }
 
 UserStyleSheetWatcher::UserStyleSheetWatcher(Profile* profile,
-                                             const FilePath& profile_path)
+                                             const base::FilePath& profile_path)
     : RefcountedProfileKeyedService(content::BrowserThread::UI),
       profile_(profile),
       profile_path_(profile_path),
@@ -162,7 +164,7 @@ void UserStyleSheetWatcher::Init() {
 
   if (!file_watcher_.get()) {
     file_watcher_.reset(new FilePathWatcher);
-    FilePath style_sheet_file = profile_path_.AppendASCII(kStyleSheetDir)
+    base::FilePath style_sheet_file = profile_path_.AppendASCII(kStyleSheetDir)
                                              .AppendASCII(kUserStyleSheetFile);
     if (!file_watcher_->Watch(
             style_sheet_file,

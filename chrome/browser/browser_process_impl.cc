@@ -788,7 +788,7 @@ void BrowserProcessImpl::CreateProfileManager() {
   DCHECK(!created_profile_manager_ && profile_manager_.get() == NULL);
   created_profile_manager_ = true;
 
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   profile_manager_.reset(new ProfileManager(user_data_dir));
 }
@@ -797,7 +797,7 @@ void BrowserProcessImpl::CreateLocalState() {
   DCHECK(!created_local_state_ && local_state_.get() == NULL);
   created_local_state_ = true;
 
-  FilePath local_state_path;
+  base::FilePath local_state_path;
   CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
   scoped_refptr<PrefRegistrySimple> pref_registry = new PrefRegistrySimple;
   local_state_.reset(
@@ -854,7 +854,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #if defined(OS_POSIX)
   // Also find plugins in a user-specific plugins dir,
   // e.g. ~/.config/chromium/Plugins.
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     plugin_service->AddExtraPluginDir(user_data_dir.Append("Plugins"));
 #endif

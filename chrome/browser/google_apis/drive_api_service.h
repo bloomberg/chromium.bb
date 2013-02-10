@@ -113,7 +113,7 @@ class DriveAPIService : public DriveServiceInterface,
       const UploadRangeCallback& callback) OVERRIDE;
   virtual void GetUploadStatus(
       UploadMode upload_mode,
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,
       const UploadRangeCallback& callback) OVERRIDE;

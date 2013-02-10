@@ -113,7 +113,7 @@ DriveFileSystemInterface* GetFileSystemOnUIThread(void* profile_id) {
 
 // Helper function to cancel Drive download operation on UI thread.
 void CancelDriveDownloadOnUIThread(
-    void* profile_id, const FilePath& drive_file_path) {
+    void* profile_id, const base::FilePath& drive_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DriveSystemService* system_service = GetSystemService(profile_id);
@@ -131,7 +131,7 @@ void GetEntryInfoByResourceIdOnUIThread(
   DriveFileSystemInterface* file_system = GetFileSystemOnUIThread(profile_id);
   if (!file_system) {
     callback.Run(DRIVE_FILE_ERROR_FAILED,
-                 FilePath(),
+                 base::FilePath(),
                  scoped_ptr<DriveEntryProto>());
     return;
   }
@@ -149,7 +149,7 @@ void GetFileByResourceIdOnUIThread(
   DriveFileSystemInterface* file_system = GetFileSystemOnUIThread(profile_id);
   if (!file_system) {
     get_file_callback.Run(DRIVE_FILE_ERROR_FAILED,
-                          FilePath(),
+                          base::FilePath(),
                           std::string(),
                           REGULAR_FILE);
     return;
@@ -197,7 +197,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // Helper callback for handling async responses from
   // DriveFileSystem::GetFileByResourceId().
   void OnGetFileByResourceId(DriveFileError error,
-                             const FilePath& local_file_path,
+                             const base::FilePath& local_file_path,
                              const std::string& mime_type,
                              DriveFileType file_type);
 
@@ -207,7 +207,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // Helper callback for GetEntryInfoByResourceId invoked by Start().
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
                                   DriveFileError error,
-                                  const FilePath& drive_file_path,
+                                  const base::FilePath& drive_file_path,
                                   scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper methods for ReadRawData to open file and read from its corresponding
@@ -242,8 +242,8 @@ class DriveURLRequestJob : public net::URLRequestJob {
   bool error_;  // True if we've encountered an error.
   bool headers_set_;  // True if headers have been set.
 
-  FilePath local_file_path_;
-  FilePath drive_file_path_;
+  base::FilePath local_file_path_;
+  base::FilePath drive_file_path_;
   std::string mime_type_;
   int64 initial_file_size_;
   int64 remaining_bytes_;
@@ -519,7 +519,7 @@ DriveURLRequestJob::~DriveURLRequestJob() {
 void DriveURLRequestJob::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     DriveFileError error,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = DRIVE_FILE_ERROR_NOT_FOUND;
@@ -671,7 +671,7 @@ bool DriveURLRequestJob::ReadFromDownloadData() {
 
 void DriveURLRequestJob::OnGetFileByResourceId(
     DriveFileError error,
-    const FilePath& local_file_path,
+    const base::FilePath& local_file_path,
     const std::string& mime_type,
     DriveFileType file_type) {
   DVLOG(1) << "Got OnGetFileByResourceId";

@@ -118,10 +118,10 @@ std::string ReadValue(std::string* data) {
 //                values are "sysinfo" or "feedback"; in case of an invalid
 //                value, the script will currently default to "sysinfo"
 
-LogDictionaryType* GetSystemLogs(FilePath* zip_file_name,
+LogDictionaryType* GetSystemLogs(base::FilePath* zip_file_name,
                                  const std::string& context) {
   // Create the temp file, logs will go here
-  FilePath temp_filename;
+  base::FilePath temp_filename;
 
   if (!file_util::CreateTemporaryFile(&temp_filename))
     return NULL;
@@ -203,7 +203,7 @@ class SyslogsProviderImpl : public SyslogsProvider {
       const ReadCompleteCallback& callback);
 
   // Loads compressed logs and writes into |zip_content|.
-  void LoadCompressedLogs(const FilePath& zip_file,
+  void LoadCompressedLogs(const base::FilePath& zip_file,
                           std::string* zip_content);
 
   SyslogsProviderImpl();
@@ -306,7 +306,7 @@ void SyslogsProviderImpl::ReadSyslogs(
     return;
 
   // Create temp file.
-  FilePath zip_file;
+  base::FilePath zip_file;
   if (compress_logs && !file_util::CreateTemporaryFile(&zip_file)) {
     LOG(ERROR) << "Cannot create temp file";
     compress_logs = false;
@@ -349,7 +349,7 @@ void SyslogsProviderImpl::ReadSyslogs(
   handler->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
 }
 
-void SyslogsProviderImpl::LoadCompressedLogs(const FilePath& zip_file,
+void SyslogsProviderImpl::LoadCompressedLogs(const base::FilePath& zip_file,
                                             std::string* zip_content) {
   DCHECK(zip_content);
   if (!file_util::ReadFileToString(zip_file, zip_content)) {

@@ -30,7 +30,7 @@ TestExtensionService::pending_extension_manager() {
 
 bool TestExtensionService::UpdateExtension(
     const std::string& id,
-    const FilePath& path,
+    const base::FilePath& path,
     const GURL& download_url,
     extensions::CrxInstaller** out_crx_installer) {
   ADD_FAILURE();

@@ -49,7 +49,7 @@ class URLDatabaseTest : public testing::Test,
   // Test setup.
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath db_file = temp_dir_.path().AppendASCII("URLTest.db");
+    base::FilePath db_file = temp_dir_.path().AppendASCII("URLTest.db");
 
     EXPECT_TRUE(db_.Open(db_file));
 

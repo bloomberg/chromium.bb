@@ -84,7 +84,7 @@ class PrintDialogGtk
   GtkPageSetup* page_setup_;
   GtkPrinter* printer_;
 
-  FilePath path_to_pdf_;
+  base::FilePath path_to_pdf_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintDialogGtk);
 };

@@ -19,7 +19,7 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
   ThemeServiceTest() {}
   virtual ~ThemeServiceTest() {}
 
-  scoped_refptr<extensions::Extension> MakeThemeExtension(FilePath path) {
+  scoped_refptr<extensions::Extension> MakeThemeExtension(base::FilePath path) {
     DictionaryValue source;
     source.SetString(extension_manifest_keys::kName, "theme");
     source.Set(extension_manifest_keys::kTheme, new DictionaryValue());

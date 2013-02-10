@@ -29,8 +29,8 @@ class CloudPrintPolicyTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
-  FilePath test_file_path = ui_test_utils::GetTestFilePath(
-      FilePath(), FilePath().AppendASCII("empty.html"));
+  base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
+      base::FilePath(), base::FilePath().AppendASCII("empty.html"));
   CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
 

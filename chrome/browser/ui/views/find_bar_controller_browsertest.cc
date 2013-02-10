@@ -21,8 +21,8 @@ namespace {
 const char kSimple[] = "simple.html";
 
 GURL GetURL(const std::string& filename) {
-  return ui_test_utils::GetTestUrl(FilePath().AppendASCII("find_in_page"),
-                                   FilePath().AppendASCII(filename));
+  return ui_test_utils::GetTestUrl(base::FilePath().AppendASCII("find_in_page"),
+                                   base::FilePath().AppendASCII(filename));
 }
 
 class FindBarControllerTest : public InProcessBrowserTest {

@@ -46,7 +46,7 @@ class FileMetaDataParserTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  FilePath test_file_;
+  base::FilePath test_file_;
 };
 
 TEST_F(FileMetaDataParserTest, Parse) {

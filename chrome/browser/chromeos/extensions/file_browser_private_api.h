@@ -95,7 +95,7 @@ class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
 
   virtual bool PerformFileWatchOperation(
       scoped_refptr<FileBrowserEventRouter> event_router,
-      const FilePath& local_path, const FilePath& virtual_path,
+      const base::FilePath& local_path, const base::FilePath& virtual_path,
       const std::string& extension_id) = 0;
 
   // AsyncExtensionFunction overrides.
@@ -120,7 +120,7 @@ class AddFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
 
   virtual bool PerformFileWatchOperation(
       scoped_refptr<FileBrowserEventRouter> event_router,
-      const FilePath& local_path, const FilePath& virtual_path,
+      const base::FilePath& local_path, const base::FilePath& virtual_path,
       const std::string& extension_id) OVERRIDE;
 };
 
@@ -136,7 +136,7 @@ class RemoveFileWatchBrowserFunction : public FileWatchBrowserFunctionBase {
 
   virtual bool PerformFileWatchOperation(
       scoped_refptr<FileBrowserEventRouter> event_router,
-      const FilePath& local_path, const FilePath& virtual_path,
+      const base::FilePath& local_path, const base::FilePath& virtual_path,
       const std::string& extension_id) OVERRIDE;
 };
 
@@ -155,7 +155,7 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
  private:
   struct FileInfo {
     GURL file_url;
-    FilePath file_path;
+    base::FilePath file_path;
     std::string mime_type;
   };
   typedef std::vector<FileInfo> FileInfoList;
@@ -202,13 +202,13 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
 #if defined(ENABLE_WEB_INTENTS)
   // Find the list of Web Intent tasks that can be used with the given file
   // types, appending them to the |result_list|.
-  bool FindWebIntentTasks(const std::vector<FilePath>& file_paths,
+  bool FindWebIntentTasks(const std::vector<base::FilePath>& file_paths,
                           ListValue* result_list);
 #endif
 
   // Find the list of app file handlers that can be used with the given file
   // types, appending them to the |result_list|.
-  bool FindAppTasks(const std::vector<FilePath>& file_paths,
+  bool FindAppTasks(const std::vector<base::FilePath>& file_paths,
                     ListValue* result_list);
 };
 
@@ -369,15 +369,15 @@ class AddMountFunction : public FileBrowserFunction {
 
   // Calls DriveCache::MarkCacheAsMounted.
   void MarkCacheAsMounted(const std::string& mount_type,
-                          const FilePath::StringType& display_name,
+                          const base::FilePath::StringType& display_name,
                           drive::DriveFileError error,
                           scoped_ptr<drive::DriveEntryProto> entry_proto);
 
   // A callback method to handle the result of MarkCacheAsMounted.
   void OnMountedStateSet(const std::string& mount_type,
-                         const FilePath::StringType& file_name,
+                         const base::FilePath::StringType& file_name,
                          drive::DriveFileError error,
-                         const FilePath& file_path);
+                         const base::FilePath& file_path);
 };
 
 // Unmounts selected device. Expects mount point path as an argument.
@@ -440,7 +440,7 @@ class SetLastModifiedFunction : public FileBrowserFunction {
  protected:
   virtual ~SetLastModifiedFunction();
 
-  void RunOperationOnFileThread(const FilePath& local_path,
+  void RunOperationOnFileThread(const base::FilePath& local_path,
                                 time_t timestamp);
 
   // AsyncExtensionFunction overrides.
@@ -545,11 +545,11 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
 
   // Virtual function that can be overridden to do operations on each virtual
   // file path and update its the properties.
-  virtual void DoOperation(const FilePath& file_path,
+  virtual void DoOperation(const base::FilePath& file_path,
                            base::DictionaryValue* properties,
                            scoped_ptr<drive::DriveEntryProto> entry_proto);
 
-  void OnOperationComplete(const FilePath& file_path,
+  void OnOperationComplete(const base::FilePath& file_path,
                            base::DictionaryValue* properties,
                            drive::DriveFileError error,
                            scoped_ptr<drive::DriveEntryProto> entry_proto);
@@ -561,7 +561,7 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
   void PrepareResults();
 
  private:
-  void OnGetFileInfo(const FilePath& file_path,
+  void OnGetFileInfo(const base::FilePath& file_path,
                      base::DictionaryValue* property_dict,
                      drive::DriveFileError error,
                      scoped_ptr<drive::DriveEntryProto> entry_proto);
@@ -597,12 +597,12 @@ class PinDriveFileFunction : public GetDriveFilePropertiesFunction {
  private:
   // Actually do the pinning/unpinning of each file.
   virtual void DoOperation(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       base::DictionaryValue* properties,
       scoped_ptr<drive::DriveEntryProto> entry_proto) OVERRIDE;
 
   // Callback for SetPinState. Updates properties with error.
-  void OnPinStateSet(const FilePath& path,
+  void OnPinStateSet(const base::FilePath& path,
                      base::DictionaryValue* properties,
                      scoped_ptr<drive::DriveEntryProto> entry_proto,
                      drive::DriveFileError error);
@@ -661,11 +661,11 @@ class GetDriveFilesFunction : public FileBrowserFunction {
   // Called by DriveFileSystem::GetFile(). Pops the file from
   // |remaining_drive_paths_|, and calls GetFileOrSendResponse().
   void OnFileReady(drive::DriveFileError error,
-                   const FilePath& local_path,
+                   const base::FilePath& local_path,
                    const std::string& unused_mime_type,
                    drive::DriveFileType file_type);
 
-  std::queue<FilePath> remaining_drive_paths_;
+  std::queue<base::FilePath> remaining_drive_paths_;
   ListValue* local_paths_;
 };
 

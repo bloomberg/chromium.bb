@@ -293,7 +293,7 @@ GURL GetWelcomePageURL() {
 }  // namespace internals
 
 StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
-    const FilePath& cur_dir,
+    const base::FilePath& cur_dir,
     const CommandLine& command_line,
     chrome::startup::IsFirstRun is_first_run)
     : cur_dir_(cur_dir),
@@ -304,7 +304,7 @@ StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
 }
 
 StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
-    const FilePath& cur_dir,
+    const base::FilePath& cur_dir,
     const CommandLine& command_line,
     StartupBrowserCreator* browser_creator,
     chrome::startup::IsFirstRun is_first_run)

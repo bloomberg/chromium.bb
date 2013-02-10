@@ -183,7 +183,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // PreMainMessageLoopRunThreadsCreated.
   bool do_first_run_tasks_;
   PrefService* local_state_;
-  FilePath user_data_dir_;
+  base::FilePath user_data_dir_;
 
   // Members needed across shutdown methods.
   bool restart_last_session_;

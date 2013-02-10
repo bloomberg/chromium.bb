@@ -17,7 +17,7 @@ namespace chromeos {
 // OwnerKeyUtil
 
 OwnerKeyUtil* OwnerKeyUtil::Create() {
-  return new OwnerKeyUtilImpl(FilePath(OwnerKeyUtilImpl::kOwnerKeyFile));
+  return new OwnerKeyUtilImpl(base::FilePath(OwnerKeyUtilImpl::kOwnerKeyFile));
 }
 
 OwnerKeyUtil::OwnerKeyUtil() {}
@@ -30,7 +30,7 @@ OwnerKeyUtil::~OwnerKeyUtil() {}
 // static
 const char OwnerKeyUtilImpl::kOwnerKeyFile[] = "/var/lib/whitelist/owner.key";
 
-OwnerKeyUtilImpl::OwnerKeyUtilImpl(const FilePath& key_file)
+OwnerKeyUtilImpl::OwnerKeyUtilImpl(const base::FilePath& key_file)
     : key_file_(key_file) {}
 
 OwnerKeyUtilImpl::~OwnerKeyUtilImpl() {}

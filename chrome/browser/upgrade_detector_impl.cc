@@ -83,7 +83,7 @@ void DetectUpgradeTask(const base::Closure& upgrade_detected_task,
   // Get the version of the currently *installed* instance of Chrome,
   // which might be newer than the *running* instance if we have been
   // upgraded in the background.
-  FilePath exe_path;
+  base::FilePath exe_path;
   if (!PathService::Get(base::DIR_EXE, &exe_path)) {
     NOTREACHED() << "Failed to find executable path";
     return;

@@ -118,7 +118,7 @@ const FaviconGroup kIEFaviconGroup[2] = {
     L"http://chinese-title-favorite/"}},
 };
 
-bool CreateOrderBlob(const FilePath& favorites_folder,
+bool CreateOrderBlob(const base::FilePath& favorites_folder,
                      const string16& path,
                      const std::vector<string16>& entries) {
   if (entries.size() > 255)
@@ -163,7 +163,7 @@ bool CreateOrderBlob(const FilePath& favorites_folder,
   return true;
 }
 
-bool CreateUrlFileWithFavicon(const FilePath& file,
+bool CreateUrlFileWithFavicon(const base::FilePath& file,
                               const std::wstring& url,
                               const std::wstring& favicon_url) {
   base::win::ScopedComPtr<IUniformResourceLocator> locator;
@@ -212,7 +212,7 @@ bool CreateUrlFileWithFavicon(const FilePath& file,
       sizeof kDummyFaviconImageData) != -1);
 }
 
-bool CreateUrlFile(const FilePath& file, const std::wstring& url) {
+bool CreateUrlFile(const base::FilePath& file, const std::wstring& url) {
   return CreateUrlFileWithFavicon(file, url, std::wstring());
 }
 
@@ -443,10 +443,10 @@ class IEImporterTest : public ImporterTest {
 TEST_F(IEImporterTest, IEImporter) {
   // Sets up a favorites folder.
   base::win::ScopedCOMInitializer com_init;
-  FilePath path = temp_dir_.path().AppendASCII("Favorites");
+  base::FilePath path = temp_dir_.path().AppendASCII("Favorites");
   CreateDirectory(path.value().c_str(), NULL);
   CreateDirectory(path.AppendASCII("SubFolder").value().c_str(), NULL);
-  FilePath links_path = path.AppendASCII("Links");
+  base::FilePath links_path = path.AppendASCII("Links");
   CreateDirectory(links_path.value().c_str(), NULL);
   CreateDirectory(links_path.AppendASCII("SubFolderOfLinks").value().c_str(),
                   NULL);
@@ -488,7 +488,7 @@ TEST_F(IEImporterTest, IEImporter) {
     L"SubFolder.url",
   };
   ASSERT_TRUE(CreateOrderBlob(
-      FilePath(path), L"",
+      base::FilePath(path), L"",
       std::vector<string16>(root_links, root_links + arraysize(root_links))));
 
   HRESULT res;
@@ -532,7 +532,7 @@ TEST_F(IEImporterTest, IEImporter) {
 TEST_F(IEImporterTest, IEImporterMalformedFavoritesRegistry) {
   // Sets up a favorites folder.
   base::win::ScopedCOMInitializer com_init;
-  FilePath path = temp_dir_.path().AppendASCII("Favorites");
+  base::FilePath path = temp_dir_.path().AppendASCII("Favorites");
   CreateDirectory(path.value().c_str(), NULL);
   CreateDirectory(path.AppendASCII("b").value().c_str(), NULL);
   ASSERT_TRUE(CreateUrlFile(path.AppendASCII("a.url"),

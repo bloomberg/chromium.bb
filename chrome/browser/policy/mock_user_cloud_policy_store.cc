@@ -7,7 +7,7 @@
 namespace policy {
 
 MockUserCloudPolicyStore::MockUserCloudPolicyStore()
-    : UserCloudPolicyStore(NULL, FilePath()) {}
+    : UserCloudPolicyStore(NULL, base::FilePath()) {}
 
 MockUserCloudPolicyStore::~MockUserCloudPolicyStore() {}
 

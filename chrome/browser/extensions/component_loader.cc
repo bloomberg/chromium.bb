@@ -45,7 +45,8 @@ namespace {
 
 static bool enable_background_extensions_during_testing = false;
 
-std::string GenerateId(const DictionaryValue* manifest, const FilePath& path) {
+std::string GenerateId(const DictionaryValue* manifest,
+                       const base::FilePath& path) {
   std::string raw_key;
   std::string id_input;
   std::string id;
@@ -58,7 +59,7 @@ std::string GenerateId(const DictionaryValue* manifest, const FilePath& path) {
 }  // namespace
 
 ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
-    const DictionaryValue* manifest, const FilePath& directory)
+    const DictionaryValue* manifest, const base::FilePath& directory)
     : manifest(manifest),
       root_directory(directory) {
   if (!root_directory.IsAbsolute()) {
@@ -120,7 +121,7 @@ void ComponentLoader::ClearAllRegistered() {
 }
 
 std::string ComponentLoader::Add(int manifest_resource_id,
-                                 const FilePath& root_directory) {
+                                 const base::FilePath& root_directory) {
   std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           manifest_resource_id).as_string();
@@ -128,7 +129,7 @@ std::string ComponentLoader::Add(int manifest_resource_id,
 }
 
 std::string ComponentLoader::Add(const std::string& manifest_contents,
-                                 const FilePath& root_directory) {
+                                 const base::FilePath& root_directory) {
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.
   DictionaryValue* manifest = ParseManifest(manifest_contents);
@@ -138,7 +139,7 @@ std::string ComponentLoader::Add(const std::string& manifest_contents,
 }
 
 std::string ComponentLoader::Add(const DictionaryValue* parsed_manifest,
-                                 const FilePath& root_directory) {
+                                 const base::FilePath& root_directory) {
   ComponentExtensionInfo info(parsed_manifest, root_directory);
   component_extensions_.push_back(info);
   if (extension_service_->is_ready())
@@ -146,8 +147,8 @@ std::string ComponentLoader::Add(const DictionaryValue* parsed_manifest,
   return info.extension_id;
 }
 
-std::string ComponentLoader::AddOrReplace(const FilePath& path) {
-  FilePath absolute_path = path;
+std::string ComponentLoader::AddOrReplace(const base::FilePath& path) {
+  base::FilePath absolute_path = path;
   file_util::AbsolutePath(&absolute_path);
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
@@ -203,7 +204,7 @@ void ComponentLoader::RemoveAll() {
   component_extensions_.clear();
 }
 
-void ComponentLoader::Remove(const FilePath& root_directory) {
+void ComponentLoader::Remove(const base::FilePath& root_directory) {
   // Find the ComponentExtensionInfo for the extension.
   RegisteredComponentExtensions::iterator it = component_extensions_.begin();
   for (; it != component_extensions_.end(); ++it) {
@@ -242,13 +243,13 @@ void ComponentLoader::AddFileManagerExtension() {
       IDR_FILEMANAGER_MANIFEST_V1;
 #ifndef NDEBUG
   if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
-    FilePath filemgr_extension_path(
+    base::FilePath filemgr_extension_path(
         command_line->GetSwitchValuePath(switches::kFileManagerExtensionPath));
     Add(manifest_id, filemgr_extension_path);
     return;
   }
 #endif  // NDEBUG
-  Add(manifest_id, FilePath(FILE_PATH_LITERAL("file_manager")));
+  Add(manifest_id, base::FilePath(FILE_PATH_LITERAL("file_manager")));
 #endif  // defined(FILE_MANAGER_EXTENSION)
 }
 
@@ -256,17 +257,17 @@ void ComponentLoader::AddFileManagerExtension() {
 void ComponentLoader::AddGaiaAuthExtension() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
-    FilePath auth_extension_path =
+    base::FilePath auth_extension_path =
         command_line->GetSwitchValuePath(switches::kAuthExtensionPath);
     Add(IDR_GAIA_TEST_AUTH_MANIFEST, auth_extension_path);
     return;
   }
-  Add(IDR_GAIA_AUTH_MANIFEST, FilePath(FILE_PATH_LITERAL("gaia_auth")));
+  Add(IDR_GAIA_AUTH_MANIFEST, base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
 }
 #endif  // NDEBUG
 
 void ComponentLoader::AddOrReloadEnterpriseWebStore() {
-  FilePath path(FILE_PATH_LITERAL("enterprise_web_store"));
+  base::FilePath path(FILE_PATH_LITERAL("enterprise_web_store"));
 
   // Remove the extension if it was already loaded.
   Remove(path);
@@ -307,7 +308,7 @@ void ComponentLoader::AddChromeApp() {
                       l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
 
   if (manifest)
-    Add(manifest, FilePath(FILE_PATH_LITERAL("chrome_app")));
+    Add(manifest, base::FilePath(FILE_PATH_LITERAL("chrome_app")));
 #endif
 }
 
@@ -322,15 +323,15 @@ void ComponentLoader::AddDefaultComponentExtensions(
   // to AddDefaultComponentExtensionsWithBackgroundPages.
 #if defined(OS_CHROMEOS)
   Add(IDR_MOBILE_MANIFEST,
-      FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
+      base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
 
   if (skip_session_components)
     AddGaiaAuthExtension();
 
 #if defined(OFFICIAL_BUILD)
   if (browser_defaults::enable_help_app) {
-    Add(IDR_HELP_MANIFEST,
-        FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/helpapp")));
+    Add(IDR_HELP_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
+                               "/usr/share/chromeos-assets/helpapp")));
   }
 #endif
 
@@ -339,20 +340,22 @@ void ComponentLoader::AddDefaultComponentExtensions(
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(switches::kGuestSession))
       Add(IDR_BOOKMARKS_MANIFEST,
-          FilePath(FILE_PATH_LITERAL("bookmark_manager")));
+          base::FilePath(FILE_PATH_LITERAL("bookmark_manager")));
 
-    Add(IDR_CROSH_BUILTIN_MANIFEST, FilePath(FILE_PATH_LITERAL(
+    Add(IDR_CROSH_BUILTIN_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/crosh_builtin")));
   }
 #else  // !defined(OS_CHROMEOS)
   DCHECK(!skip_session_components);
-  Add(IDR_BOOKMARKS_MANIFEST, FilePath(FILE_PATH_LITERAL("bookmark_manager")));
+  Add(IDR_BOOKMARKS_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("bookmark_manager")));
   // Cloud Print component app. Not required on Chrome OS.
-  Add(IDR_CLOUDPRINT_MANIFEST, FilePath(FILE_PATH_LITERAL("cloud_print")));
+  Add(IDR_CLOUDPRINT_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("cloud_print")));
 #endif
 
   if (!skip_session_components) {
-    Add(IDR_WEBSTORE_MANIFEST, FilePath(FILE_PATH_LITERAL("web_store")));
+    Add(IDR_WEBSTORE_MANIFEST, base::FilePath(FILE_PATH_LITERAL("web_store")));
 
     // If a URL for the enterprise webstore has been specified, load the
     // component extension. This extension might also be loaded later, because
@@ -382,22 +385,23 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kAppsDebugger)) {
       Add(IDR_APPS_DEBUGGER_MANIFEST,
-          FilePath(FILE_PATH_LITERAL("apps_debugger")));
+          base::FilePath(FILE_PATH_LITERAL("apps_debugger")));
     }
 
     AddFileManagerExtension();
 
 #if defined(ENABLE_SETTINGS_APP)
-    Add(IDR_SETTINGS_APP_MANIFEST, FilePath(FILE_PATH_LITERAL("settings_app")));
+    Add(IDR_SETTINGS_APP_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("settings_app")));
 #endif
   }
 
 #if defined(OS_CHROMEOS)
   if (!skip_session_components) {
     Add(IDR_WALLPAPERMANAGER_MANIFEST,
-        FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
+        base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
 
-    FilePath echo_extension_path(FILE_PATH_LITERAL(
+    base::FilePath echo_extension_path(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/echo"));
     if (command_line->HasSwitch(switches::kEchoExtensionPath)) {
       echo_extension_path =
@@ -408,7 +412,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
   // Load ChromeVox extension now if spoken feedback is enabled.
   if (local_state_->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
-    FilePath path = FilePath(extension_misc::kChromeVoxExtensionPath);
+    base::FilePath path =
+        base::FilePath(extension_misc::kChromeVoxExtensionPath);
     Add(IDR_CHROMEVOX_MANIFEST, path);
   }
 #endif
@@ -416,7 +421,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #if defined(ENABLE_GOOGLE_NOW)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGoogleNowIntegration)) {
-    Add(IDR_GOOGLE_NOW_MANIFEST, FilePath(FILE_PATH_LITERAL("google_now")));
+    Add(IDR_GOOGLE_NOW_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("google_now")));
   }
 #endif
 }

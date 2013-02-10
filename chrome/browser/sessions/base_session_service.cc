@@ -69,7 +69,7 @@ const int BaseSessionService::max_persist_navigation_count = 6;
 
 BaseSessionService::BaseSessionService(SessionType type,
                                        Profile* profile,
-                                       const FilePath& path)
+                                       const base::FilePath& path)
     : profile_(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       pending_reset_(false),

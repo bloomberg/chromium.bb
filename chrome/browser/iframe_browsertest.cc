@@ -15,7 +15,7 @@ class IFrameTest : public InProcessBrowserTest {
  protected:
   void NavigateAndVerifyTitle(const char* file, const char* page_title) {
     GURL url = ui_test_utils::GetTestUrl(
-        FilePath(), FilePath().AppendASCII(file));
+        base::FilePath(), base::FilePath().AppendASCII(file));
 
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ(ASCIIToUTF16(page_title),

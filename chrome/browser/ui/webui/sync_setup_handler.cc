@@ -524,7 +524,7 @@ void SyncSetupHandler::ConfigureSyncDone() {
   DCHECK(service);
   if (!service->HasSyncSetupCompleted()) {
     // This is the first time configuring sync, so log it.
-    FilePath profile_file_path = GetProfile()->GetPath();
+    base::FilePath profile_file_path = GetProfile()->GetPath();
     ProfileMetrics::LogProfileSyncSignIn(profile_file_path);
 
     // We're done configuring, so notify ProfileSyncService that it is OK to

@@ -31,7 +31,7 @@ const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 // This path is not actually used but is required by DriveUploaderInterface.
-const FilePath::CharType kDummyDrivePath[] =
+const base::FilePath::CharType kDummyDrivePath[] =
     FILE_PATH_LITERAL("/dummy/drive/path");
 
 bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
@@ -100,8 +100,8 @@ void EntryAdapter(scoped_ptr<google_apis::ResourceEntry> entry,
 void UploadResultAdapter(
     const DriveFileSyncClient::ResourceEntryCallback& callback,
     google_apis::DriveUploadError error,
-    const FilePath& drive_path,
-    const FilePath& file_path,
+    const base::FilePath& drive_path,
+    const base::FilePath& file_path,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   callback.Run(DriveUploadErrorToGDataErrorCode(error), entry.Pass());
 }
@@ -379,7 +379,7 @@ void DriveFileSyncClient::ContinueListing(
 void DriveFileSyncClient::DownloadFile(
     const std::string& resource_id,
     const std::string& local_file_md5,
-    const FilePath& local_file_path,
+    const base::FilePath& local_file_path,
     const DownloadFileCallback& callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Downloading file [" << resource_id << "]";
@@ -395,7 +395,7 @@ void DriveFileSyncClient::DownloadFile(
 
 void DriveFileSyncClient::UploadNewFile(
     const std::string& directory_resource_id,
-    const FilePath& local_file_path,
+    const base::FilePath& local_file_path,
     const std::string& title,
     const UploadFileCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -414,7 +414,7 @@ void DriveFileSyncClient::UploadNewFile(
 void DriveFileSyncClient::UploadExistingFile(
     const std::string& resource_id,
     const std::string& remote_file_md5,
-    const FilePath& local_file_path,
+    const base::FilePath& local_file_path,
     const UploadFileCallback& callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Uploading existing file [" << resource_id << "]";
@@ -534,7 +534,7 @@ std::string DriveFileSyncClient::FormatTitleQuery(const std::string& title) {
 
 void DriveFileSyncClient::DownloadFileInternal(
     const std::string& local_file_md5,
-    const FilePath& local_file_path,
+    const base::FilePath& local_file_path,
     const DownloadFileCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
@@ -556,7 +556,7 @@ void DriveFileSyncClient::DownloadFileInternal(
 
   DVLOG(2) << "Downloading file: " << entry->resource_id();
   drive_service_->DownloadFile(
-      FilePath(kDummyDrivePath),
+      base::FilePath(kDummyDrivePath),
       local_file_path,
       entry->download_url(),
       base::Bind(&DriveFileSyncClient::DidDownloadFile,
@@ -568,7 +568,7 @@ void DriveFileSyncClient::DidDownloadFile(
     const std::string& downloaded_file_md5,
     const DownloadFileCallback& callback,
     google_apis::GDataErrorCode error,
-    const FilePath& downloaded_file_path) {
+    const base::FilePath& downloaded_file_path) {
   DCHECK(CalledOnValidThread());
   if (error == google_apis::HTTP_SUCCESS)
     DVLOG(2) << "Download completed";
@@ -579,7 +579,7 @@ void DriveFileSyncClient::DidDownloadFile(
 }
 
 void DriveFileSyncClient::UploadNewFileInternal(
-    const FilePath& local_file_path,
+    const base::FilePath& local_file_path,
     const std::string& title,
     const UploadFileCallback& callback,
     google_apis::GDataErrorCode error,
@@ -605,7 +605,7 @@ void DriveFileSyncClient::UploadNewFileInternal(
   drive_uploader_->UploadNewFile(
       parent_directory_entry->GetLinkByType(
           google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA)->href(),
-      FilePath(kDummyDrivePath),
+      base::FilePath(kDummyDrivePath),
       local_file_path,
       title,
       mime_type,
@@ -669,7 +669,7 @@ void DriveFileSyncClient::DidEnsureUniquenessForCreateFile(
 
 void DriveFileSyncClient::UploadExistingFileInternal(
     const std::string& remote_file_md5,
-    const FilePath& local_file_path,
+    const base::FilePath& local_file_path,
     const UploadFileCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
@@ -701,7 +701,7 @@ void DriveFileSyncClient::UploadExistingFileInternal(
   drive_uploader_->UploadExistingFile(
       entry->GetLinkByType(
           google_apis::Link::LINK_RESUMABLE_EDIT_MEDIA)->href(),
-      FilePath(kDummyDrivePath),
+      base::FilePath(kDummyDrivePath),
       local_file_path,
       mime_type,
       entry->etag(),

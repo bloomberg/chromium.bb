@@ -117,7 +117,7 @@ class FirstRunMasterPrefsBrowserTest : public FirstRunIntegrationBrowserTest {
   }
 
  private:
-  FilePath prefs_file_;
+  base::FilePath prefs_file_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunMasterPrefsBrowserTest);
 };

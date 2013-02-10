@@ -346,7 +346,7 @@ class TopSitesMigrationTest : public TopSitesTest {
   virtual void SetUp() {
     TopSitesTest::SetUp();
 
-    FilePath data_path;
+    base::FilePath data_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("top_sites");
 
@@ -1237,7 +1237,7 @@ TEST_F(TopSitesUnloadTest, UnloadHistoryTest) {
 // loaded we don't hit any assertions.
 TEST_F(TopSitesUnloadTest, UnloadWithMigration) {
   // Set up history and thumbnails as they would be before migration.
-  FilePath data_path;
+  base::FilePath data_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
   data_path = data_path.AppendASCII("top_sites");
   ASSERT_NO_FATAL_FAILURE(ExecuteSQLScript(

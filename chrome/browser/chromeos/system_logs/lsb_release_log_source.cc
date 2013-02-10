@@ -42,7 +42,7 @@ void LsbReleaseLogSource::Fetch(const SysLogsSourceCallback& callback) {
 void LsbReleaseLogSource::ReadLSBRelease(SystemLogsResponse* response) {
   DCHECK(response);
 
-  const FilePath lsb_release_file("/etc/lsb-release");
+  const base::FilePath lsb_release_file("/etc/lsb-release");
   std::string lsb_data;
   bool read_success = file_util::ReadFileToString(lsb_release_file, &lsb_data);
   // if we were using an internal temp file, the user does not need the

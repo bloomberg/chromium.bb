@@ -231,8 +231,8 @@ void SetupSocket(const std::string& path, int* sock, struct sockaddr_un* addr) {
 }
 
 // Read a symbolic link, return empty string if given path is not a symbol link.
-FilePath ReadLink(const FilePath& path) {
-  FilePath target;
+base::FilePath ReadLink(const base::FilePath& path) {
+  base::FilePath target;
   if (!file_util::ReadSymbolicLink(path, &target)) {
     // The only errno that should occur is ENOENT.
     if (errno != 0 && errno != ENOENT)
@@ -242,7 +242,7 @@ FilePath ReadLink(const FilePath& path) {
 }
 
 // Unlink a path. Return true on success.
-bool UnlinkPath(const FilePath& path) {
+bool UnlinkPath(const base::FilePath& path) {
   int rv = unlink(path.value().c_str());
   if (rv < 0 && errno != ENOENT)
     PLOG(ERROR) << "Failed to unlink " << path.value();
@@ -251,7 +251,7 @@ bool UnlinkPath(const FilePath& path) {
 }
 
 // Create a symlink. Returns true on success.
-bool SymlinkPath(const FilePath& target, const FilePath& path) {
+bool SymlinkPath(const base::FilePath& target, const base::FilePath& path) {
   if (!file_util::CreateSymbolicLink(target, path)) {
     // Double check the value in case symlink suceeded but we got an incorrect
     // failure due to NFS packet loss & retry.
@@ -269,7 +269,7 @@ bool SymlinkPath(const FilePath& target, const FilePath& path) {
 
 // Extract the hostname and pid from the lock symlink.
 // Returns true if the lock existed.
-bool ParseLockPath(const FilePath& path,
+bool ParseLockPath(const base::FilePath& path,
                    std::string* hostname,
                    int* pid) {
   std::string real_path = ReadLink(path).value();
@@ -315,10 +315,10 @@ void DisplayProfileInUseError(const std::string& lock_path,
 }
 
 bool IsChromeProcess(pid_t pid) {
-  FilePath other_chrome_path(base::GetProcessExecutablePath(pid));
+  base::FilePath other_chrome_path(base::GetProcessExecutablePath(pid));
   return (!other_chrome_path.empty() &&
           other_chrome_path.BaseName() ==
-          FilePath(chrome::kBrowserProcessExecutableName));
+          base::FilePath(chrome::kBrowserProcessExecutableName));
 }
 
 // A helper class to hold onto a socket.
@@ -345,20 +345,20 @@ std::string GenerateCookie() {
   return base::Uint64ToString(base::RandUint64());
 }
 
-bool CheckCookie(const FilePath& path, const FilePath& cookie) {
+bool CheckCookie(const base::FilePath& path, const base::FilePath& cookie) {
   return (cookie == ReadLink(path));
 }
 
 bool ConnectSocket(ScopedSocket* socket,
-                   const FilePath& socket_path,
-                   const FilePath& cookie_path) {
-  FilePath socket_target;
+                   const base::FilePath& socket_path,
+                   const base::FilePath& cookie_path) {
+  base::FilePath socket_target;
   if (file_util::ReadSymbolicLink(socket_path, &socket_target)) {
     // It's a symlink. Read the cookie.
-    FilePath cookie = ReadLink(cookie_path);
+    base::FilePath cookie = ReadLink(cookie_path);
     if (cookie.empty())
       return false;
-    FilePath remote_cookie = socket_target.DirName().
+    base::FilePath remote_cookie = socket_target.DirName().
                              Append(chrome::kSingletonCookieFilename);
     // Verify the cookie before connecting.
     if (!CheckCookie(remote_cookie, cookie))
@@ -572,14 +572,14 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
   if (parent_->locked()) {
     DLOG(WARNING) << "Browser is locked";
     parent_->saved_startup_messages_.push_back(
-        std::make_pair(argv, FilePath(current_dir)));
+        std::make_pair(argv, base::FilePath(current_dir)));
     // Send back "ACK" message to prevent the client process from starting up.
     reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
     return;
   }
 
   if (parent_->notification_callback_.Run(CommandLine(argv),
-                                          FilePath(current_dir))) {
+                                          base::FilePath(current_dir))) {
     // Send back "ACK" message to prevent the client process from starting up.
     reader->FinishWithACK(kACKToken, arraysize(kACKToken) - 1);
   } else {
@@ -692,7 +692,7 @@ void ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK(
 ///////////////////////////////////////////////////////////////////////////////
 // ProcessSingleton
 //
-ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
+ProcessSingleton::ProcessSingleton(const base::FilePath& user_data_dir)
     : locked_(false),
       foreground_window_(NULL),
       current_pid_(base::GetCurrentProcId()),
@@ -781,7 +781,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   std::string to_send(kStartToken);
   to_send.push_back(kTokenDelimiter);
 
-  FilePath current_dir;
+  base::FilePath current_dir;
   if (!PathService::Get(base::DIR_CURRENT, &current_dir))
     return PROCESS_NONE;
   to_send.append(current_dir.value());
@@ -886,7 +886,7 @@ bool ProcessSingleton::Create(
 
   // The symlink lock is pointed to the hostname and process id, so other
   // processes can find it out.
-  FilePath symlink_content(base::StringPrintf(
+  base::FilePath symlink_content(base::StringPrintf(
       "%s%c%u",
       net::GetHostName().c_str(),
       kLockDelimiter,
@@ -908,10 +908,10 @@ bool ProcessSingleton::Create(
     return false;
   }
   // Setup the socket symlink and the two cookies.
-  FilePath socket_target_path =
+  base::FilePath socket_target_path =
       socket_dir_.path().Append(chrome::kSingletonSocketFilename);
-  FilePath cookie(GenerateCookie());
-  FilePath remote_cookie_path =
+  base::FilePath cookie(GenerateCookie());
+  base::FilePath remote_cookie_path =
       socket_dir_.path().Append(chrome::kSingletonCookieFilename);
   UnlinkPath(socket_path_);
   UnlinkPath(cookie_path_);

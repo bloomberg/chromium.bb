@@ -19,7 +19,7 @@ FakeContactDatabase::FakeContactDatabase()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeContactDatabase::Init(const FilePath& database_dir,
+void FakeContactDatabase::Init(const base::FilePath& database_dir,
                                InitCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   callback.Run(init_success_);

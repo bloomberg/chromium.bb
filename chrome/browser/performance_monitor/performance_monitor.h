@@ -65,7 +65,7 @@ class PerformanceMonitor : public content::NotificationObserver {
   // PerformanceMonitor. Returns true on success, false on failure (failure
   // likely indicates that PerformanceMonitor has already been started at the
   // time of the call).
-  bool SetDatabasePath(const FilePath& path);
+  bool SetDatabasePath(const base::FilePath& path);
 
   // Returns the current PerformanceMonitor instance if one exists; otherwise
   // constructs a new PerformanceMonitor.
@@ -88,7 +88,7 @@ class PerformanceMonitor : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE;
 
   Database* database() { return database_.get(); }
-  FilePath database_path() { return database_path_; }
+  base::FilePath database_path() { return database_path_; }
   static bool initialized() { return initialized_; }
 
  private:
@@ -185,7 +185,7 @@ class PerformanceMonitor : public content::NotificationObserver {
 
   // The location at which the database files are stored; if empty, the database
   // will default to '<user_data_dir>/performance_monitor_dbs'.
-  FilePath database_path_;
+  base::FilePath database_path_;
 
   scoped_ptr<Database> database_;
 

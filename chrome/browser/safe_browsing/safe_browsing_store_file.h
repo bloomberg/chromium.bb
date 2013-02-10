@@ -108,7 +108,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   SafeBrowsingStoreFile();
   virtual ~SafeBrowsingStoreFile();
 
-  virtual void Init(const FilePath& filename,
+  virtual void Init(const base::FilePath& filename,
                     const base::Closure& corruption_callback) OVERRIDE;
 
   // Delete any on-disk files, including the permanent storage.
@@ -158,8 +158,9 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
 
   // Returns the name of the temporary file used to buffer data for
   // |filename|.  Exported for unit tests.
-  static const FilePath TemporaryFileForFilename(const FilePath& filename) {
-    return FilePath(filename.value() + FILE_PATH_LITERAL("_new"));
+  static const base::FilePath TemporaryFileForFilename(
+      const base::FilePath& filename) {
+    return base::FilePath(filename.value() + FILE_PATH_LITERAL("_new"));
   }
 
  private:
@@ -213,7 +214,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // result (no histogram for not-found).  Logically this
   // would make more sense at the SafeBrowsingDatabase level, but
   // practically speaking that code doesn't touch files directly.
-  static void CheckForOriginalAndDelete(const FilePath& filename);
+  static void CheckForOriginalAndDelete(const base::FilePath& filename);
 
   // Close all files and clear all buffers.
   bool Close();
@@ -260,7 +261,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   int chunks_written_;
 
   // Name of the main database file.
-  FilePath filename_;
+  base::FilePath filename_;
 
   // Handles to the main and scratch files.  |empty_| is true if the
   // main file didn't exist when the update was started.

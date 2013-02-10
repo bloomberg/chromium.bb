@@ -33,11 +33,11 @@ bool NaClBrokerHost::Init() {
     return false;
 
   // Create the path to the nacl broker/loader executable.
-  FilePath module_path;
+  base::FilePath module_path;
   if (!PathService::Get(base::FILE_MODULE, &module_path))
     return false;
 
-  FilePath nacl_path = module_path.DirName().Append(chrome::kNaClAppName);
+  base::FilePath nacl_path = module_path.DirName().Append(chrome::kNaClAppName);
   CommandLine* cmd_line = new CommandLine(nacl_path);
   nacl::CopyNaClCommandLineArguments(cmd_line);
 
@@ -47,7 +47,7 @@ bool NaClBrokerHost::Init() {
   if (logging::DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
-  process_->Launch(FilePath(), cmd_line);
+  process_->Launch(base::FilePath(), cmd_line);
   return true;
 }
 

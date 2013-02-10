@@ -192,7 +192,7 @@ std::string OffTheRecordProfileImpl::GetProfileName() {
   return std::string();
 }
 
-FilePath OffTheRecordProfileImpl::GetPath() {
+base::FilePath OffTheRecordProfileImpl::GetPath() {
   return profile_->GetPath();
 }
 
@@ -296,7 +296,7 @@ net::URLRequestContextGetter*
 
 net::URLRequestContextGetter*
 OffTheRecordProfileImpl::GetMediaRequestContextForStoragePartition(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory) {
   return io_data_.GetIsolatedAppRequestContextGetter(partition_path, in_memory);
 }
@@ -308,7 +308,7 @@ net::URLRequestContextGetter*
 
 net::URLRequestContextGetter*
     OffTheRecordProfileImpl::CreateRequestContextForStoragePartition(
-        const FilePath& partition_path,
+        const base::FilePath& partition_path,
         bool in_memory,
         scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
             blob_protocol_handler,
@@ -387,8 +387,8 @@ history::TopSites* OffTheRecordProfileImpl::GetTopSites() {
 void OffTheRecordProfileImpl::SetExitType(ExitType exit_type) {
 }
 
-FilePath OffTheRecordProfileImpl::last_selected_directory() {
-  const FilePath& directory = last_selected_directory_;
+base::FilePath OffTheRecordProfileImpl::last_selected_directory() {
+  const base::FilePath& directory = last_selected_directory_;
   if (directory.empty()) {
     return profile_->last_selected_directory();
   }
@@ -396,7 +396,7 @@ FilePath OffTheRecordProfileImpl::last_selected_directory() {
 }
 
 void OffTheRecordProfileImpl::set_last_selected_directory(
-    const FilePath& path) {
+    const base::FilePath& path) {
   last_selected_directory_ = path;
 }
 

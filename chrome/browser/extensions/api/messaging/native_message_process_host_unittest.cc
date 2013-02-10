@@ -35,8 +35,8 @@ namespace {
 
 const char kTestMessage[] = "{\"text\": \"Hello.\"}";
 
-FilePath GetTestDir() {
-  FilePath test_dir;
+base::FilePath GetTestDir() {
+  base::FilePath test_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
   test_dir = test_dir.AppendASCII("native_messaging");
   return test_dir;
@@ -48,7 +48,7 @@ namespace extensions {
 
 class FakeLauncher : public NativeProcessLauncher {
  public:
-  FakeLauncher(FilePath read_file, FilePath write_file) {
+  FakeLauncher(base::FilePath read_file, base::FilePath write_file) {
     read_file_ = base::CreatePlatformFile(
         read_file,
         base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
@@ -122,8 +122,8 @@ class NativeMessagingTest : public ::testing::Test,
                        pickle.payload_size());
   }
 
-  FilePath CreateTempFileWithMessage(const std::string& message) {
-    FilePath filename = temp_dir_.path().AppendASCII("input");
+  base::FilePath CreateTempFileWithMessage(const std::string& message) {
+    base::FilePath filename = temp_dir_.path().AppendASCII("input");
     file_util::CreateTemporaryFile(&filename);
     std::string message_with_header = FormatMessage(message);
     EXPECT_TRUE(file_util::WriteFile(
@@ -135,7 +135,7 @@ class NativeMessagingTest : public ::testing::Test,
   base::ScopedTempDir temp_dir_;
   Feature::ScopedCurrentChannel current_channel_;
   scoped_ptr<NativeMessageProcessHost> native_message_process_host_;
-  FilePath user_data_dir_;
+  base::FilePath user_data_dir_;
   MessageLoopForIO message_loop_;
   base::RunLoop read_message_run_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
@@ -145,8 +145,8 @@ class NativeMessagingTest : public ::testing::Test,
 
 // Read a single message from a local file.
 TEST_F(NativeMessagingTest, SingleSendMessageRead) {
-  FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
-  FilePath temp_input_file = CreateTempFileWithMessage(kTestMessage);
+  base::FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
+  base::FilePath temp_input_file = CreateTempFileWithMessage(kTestMessage);
 
   scoped_ptr<NativeProcessLauncher> launcher(
       new FakeLauncher(temp_input_file, temp_output_file));
@@ -163,8 +163,8 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
 // Tests sending a single message. The message should get written to
 // |temp_file| and should match the contents of single_message_request.msg.
 TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
-  FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
-  FilePath temp_input_file = CreateTempFileWithMessage(std::string());
+  base::FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
+  base::FilePath temp_input_file = CreateTempFileWithMessage(std::string());
 
   scoped_ptr<NativeProcessLauncher> launcher(
       new FakeLauncher(temp_input_file, temp_output_file));

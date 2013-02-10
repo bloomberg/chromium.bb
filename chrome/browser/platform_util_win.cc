@@ -29,9 +29,9 @@ using content::BrowserThread;
 
 namespace {
 
-void ShowItemInFolderOnFileThread(const FilePath& full_path) {
+void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath dir = full_path.DirName();
+  base::FilePath dir = full_path.DirName();
   // ParseDisplayName will fail if the directory is "C:", it must be "C:\\".
   if (dir.value() == L"" || !file_util::EnsureEndsWithSeparator(&dir))
     return;
@@ -134,13 +134,13 @@ bool ValidateShellCommandForScheme(const std::string& scheme) {
 
 namespace platform_util {
 
-void ShowItemInFolder(const FilePath& full_path) {
+void ShowItemInFolder(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ShowItemInFolderOnFileThread, full_path));
 }
 
-void OpenItem(const FilePath& full_path) {
+void OpenItem(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

@@ -116,7 +116,7 @@ class ImageLoadingTracker::ImageLoader
 
     // Read the file from disk.
     std::string file_contents;
-    FilePath path = image_info.resource.GetFilePath();
+    base::FilePath path = image_info.resource.GetFilePath();
     if (path.empty() || !file_util::ReadFileToString(path, &file_contents)) {
       ReportBack(NULL, image_info, gfx::Size(), id);
       return;

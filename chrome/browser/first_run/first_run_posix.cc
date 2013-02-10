@@ -77,8 +77,8 @@ void DoPostImportPlatformSpecificTasks() {
 #endif
 }
 
-bool GetFirstRunSentinelFilePath(FilePath* path) {
-  FilePath first_run_sentinel;
+bool GetFirstRunSentinelFilePath(base::FilePath* path) {
+  base::FilePath first_run_sentinel;
 
   if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
     return false;
@@ -126,7 +126,7 @@ void SetImportPreferencesAndLaunchImport(
       &import_bookmarks_path);
   if (!import_bookmarks_path.empty()) {
     // There are bookmarks to import from a file.
-    FilePath path = FilePath::FromWStringHack(UTF8ToWide(
+    base::FilePath path = base::FilePath::FromWStringHack(UTF8ToWide(
         import_bookmarks_path));
     if (!ImportBookmarks(path)) {
       LOG(WARNING) << "silent bookmark import failed";

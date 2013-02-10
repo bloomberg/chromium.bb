@@ -69,7 +69,7 @@ class SessionService : public BaseSessionService,
   // Creates a SessionService for the specified profile.
   explicit SessionService(Profile* profile);
   // For testing.
-  explicit SessionService(const FilePath& save_path);
+  explicit SessionService(const base::FilePath& save_path);
 
   virtual ~SessionService();
 

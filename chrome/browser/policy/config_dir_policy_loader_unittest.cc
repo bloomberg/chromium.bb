@@ -20,7 +20,7 @@ namespace policy {
 namespace {
 
 // Subdirectory of the config dir that contains mandatory policies.
-const FilePath::CharType kMandatoryPath[] = FILE_PATH_LITERAL("managed");
+const base::FilePath::CharType kMandatoryPath[] = FILE_PATH_LITERAL("managed");
 
 class TestHarness : public PolicyProviderTestHarness {
  public:
@@ -48,7 +48,7 @@ class TestHarness : public PolicyProviderTestHarness {
   virtual void Install3rdPartyPolicy(
       const base::DictionaryValue* policies) OVERRIDE;
 
-  const FilePath& test_dir() { return test_dir_.path(); }
+  const base::FilePath& test_dir() { return test_dir_.path(); }
 
   // JSON-encode a dictionary and write it to a file.
   void WriteConfigFile(const base::DictionaryValue& dict,
@@ -136,9 +136,9 @@ void TestHarness::WriteConfigFile(const base::DictionaryValue& dict,
   std::string data;
   JSONStringValueSerializer serializer(&data);
   serializer.Serialize(dict);
-  const FilePath mandatory_dir(test_dir().Append(kMandatoryPath));
+  const base::FilePath mandatory_dir(test_dir().Append(kMandatoryPath));
   ASSERT_TRUE(file_util::CreateDirectory(mandatory_dir));
-  const FilePath file_path(mandatory_dir.AppendASCII(file_name));
+  const base::FilePath file_path(mandatory_dir.AppendASCII(file_name));
   ASSERT_EQ((int) data.size(),
             file_util::WriteFile(file_path, data.c_str(), data.size()));
 }
@@ -191,7 +191,7 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
 // Reading from a non-existent directory should result in an empty preferences
 // dictionary.
 TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsNonExistentDirectory) {
-  FilePath non_existent_dir(
+  base::FilePath non_existent_dir(
       harness_.test_dir().Append(FILE_PATH_LITERAL("not_there")));
   ConfigDirPolicyLoader loader(non_existent_dir, POLICY_SCOPE_MACHINE);
   scoped_ptr<PolicyBundle> bundle(loader.Load());

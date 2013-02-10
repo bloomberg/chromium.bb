@@ -661,24 +661,24 @@ void WizardController::MarkOobeCompleted() {
 // completed.
 // On chrome device, returns /home/chronos/.oobe_completed.
 // On Linux desktop, returns $HOME/.oobe_completed.
-static FilePath GetOobeCompleteFlagPath() {
+static base::FilePath GetOobeCompleteFlagPath() {
   // The constant is defined here so it won't be referenced directly.
   const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
 
   if (base::chromeos::IsRunningOnChromeOS()) {
-    return FilePath(kOobeCompleteFlagFilePath);
+    return base::FilePath(kOobeCompleteFlagFilePath);
   } else {
     const char* home = getenv("HOME");
     // Unlikely but if HOME is not defined, use the current directory.
     if (!home)
       home = "";
-    return FilePath(home).AppendASCII(".oobe_completed");
+    return base::FilePath(home).AppendASCII(".oobe_completed");
   }
 }
 
 static void CreateOobeCompleteFlagFile() {
   // Create flag file for boot-time init scripts.
-  FilePath oobe_complete_path = GetOobeCompleteFlagPath();
+  base::FilePath oobe_complete_path = GetOobeCompleteFlagPath();
   if (!file_util::PathExists(oobe_complete_path)) {
     FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
     if (oobe_flag_file == NULL)
@@ -704,7 +704,7 @@ bool WizardController::IsDeviceRegistered() {
     // Pref is not set. For compatibility check flag file. It causes blocking
     // IO on UI thread. But it's required for update from old versions.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    FilePath oobe_complete_flag_file_path = GetOobeCompleteFlagPath();
+    base::FilePath oobe_complete_flag_file_path = GetOobeCompleteFlagPath();
     bool file_exists = file_util::PathExists(oobe_complete_flag_file_path);
     SaveIntegerPreferenceForced(kDeviceRegistered, file_exists ? 1 : 0);
     return file_exists;

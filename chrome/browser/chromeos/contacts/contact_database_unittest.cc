@@ -27,7 +27,7 @@ namespace test {
 
 // Name of the directory created within a temporary directory to store the
 // contacts database.
-const FilePath::CharType kDatabaseDirectoryName[] =
+const base::FilePath::CharType kDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("contacts");
 
 class ContactDatabaseTest : public testing::Test {
@@ -52,7 +52,7 @@ class ContactDatabaseTest : public testing::Test {
   }
 
  protected:
-  FilePath database_path() const {
+  base::FilePath database_path() const {
     return temp_dir_.path().Append(kDatabaseDirectoryName);
   }
 
@@ -316,7 +316,7 @@ TEST_F(ContactDatabaseTest, DeleteWhenCorrupt) {
   // Overwrite all of the files in the database with a space character.
   file_util::FileEnumerator enumerator(
       database_path(), false, file_util::FileEnumerator::FILES);
-  for (FilePath path = enumerator.Next(); !path.empty();
+  for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     file_util::WriteFile(path, " ", 1);
   }

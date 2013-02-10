@@ -616,7 +616,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 #if defined(OS_MACOSX)
     // The plugins directory isn't read by default on the Mac, so it needs to be
     // explicitly registered.
-    FilePath app_dir;
+    base::FilePath app_dir;
     PathService::Get(chrome::DIR_APP, &app_dir);
     command_line->AppendSwitchPath(
         switches::kExtraPluginDir,
@@ -1008,9 +1008,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     scoped_ptr<net::TestServer> https_src_server;
     if (use_https_src_server_) {
       https_src_server.reset(
-          new net::TestServer(net::TestServer::TYPE_HTTPS,
-                              net::TestServer::kLocalhost,
-                              FilePath(FILE_PATH_LITERAL("chrome/test/data"))));
+          new net::TestServer(
+                  net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+                  base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))));
       ASSERT_TRUE(https_src_server->Start());
       src_server = https_src_server.get();
     }
@@ -1513,9 +1513,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Checks that a prerender for an https will prevent a prerender from happening.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               net::TestServer::kLocalhost,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(https_url,
@@ -1526,9 +1526,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
 
 // Checks that client-issued redirects to an https page will cancel prerenders.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectToHttps) {
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               net::TestServer::kLocalhost,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(CreateClientRedirect(https_url.spec()),
@@ -1561,9 +1561,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectInIframe) {
 // count as an "alias" for the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderClientRedirectToHttpsInIframe) {
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               net::TestServer::kLocalhost,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   std::string redirect_path = CreateClientRedirect(https_url.spec());
@@ -1619,9 +1619,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // location will cancel prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderServerRedirectToHttps) {
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               net::TestServer::kLocalhost,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(CreateServerRedirect(https_url.spec()),
@@ -1654,9 +1654,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderServerRedirectInIframe) {
 // count as an "alias" for the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderServerRedirectToHttpsInIframe) {
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               net::TestServer::kLocalhost,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   std::string redirect_path = CreateServerRedirect(https_url.spec());
@@ -2133,9 +2133,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
   net::TestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
       net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               ssl_options,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    net::TestServer https_server(
+        net::TestServer::TYPE_HTTPS, ssl_options,
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(https_url,
@@ -2150,9 +2150,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
   net::TestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
       net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               ssl_options,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    net::TestServer https_server(
+        net::TestServer::TYPE_HTTPS, ssl_options,
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/image.jpeg");
   std::vector<net::TestServer::StringPair> replacement_text;
@@ -2174,9 +2174,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorIframe) {
   net::TestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
       net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               ssl_options,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    net::TestServer https_server(
+        net::TestServer::TYPE_HTTPS, ssl_options,
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(
       "files/prerender/prerender_embedded_content.html");
@@ -2224,9 +2224,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
   net::TestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               ssl_options,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    net::TestServer https_server(
+        net::TestServer::TYPE_HTTPS, ssl_options,
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
   PrerenderTestURL(https_url, FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED, 1);
@@ -2238,9 +2238,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSSLClientCertSubresource) {
   net::TestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               ssl_options,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    net::TestServer https_server(
+        net::TestServer::TYPE_HTTPS, ssl_options,
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/image.jpeg");
   std::vector<net::TestServer::StringPair> replacement_text;
@@ -2261,9 +2261,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
   net::TestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               ssl_options,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    net::TestServer https_server(
+        net::TestServer::TYPE_HTTPS, ssl_options,
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(
       "files/prerender/prerender_embedded_content.html");

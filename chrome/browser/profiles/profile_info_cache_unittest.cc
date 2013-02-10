@@ -33,7 +33,7 @@ ProfileNameVerifierObserver::~ProfileNameVerifierObserver() {
 }
 
 void ProfileNameVerifierObserver::OnProfileAdded(
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
   string16 profile_name = GetCache()->GetNameOfProfileAtIndex(
       GetCache()->GetIndexOfProfileWithPath(profile_path));
   EXPECT_TRUE(profile_names_.find(profile_name) == profile_names_.end());
@@ -41,7 +41,7 @@ void ProfileNameVerifierObserver::OnProfileAdded(
 }
 
 void ProfileNameVerifierObserver::OnProfileWillBeRemoved(
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
   string16 profile_name = GetCache()->GetNameOfProfileAtIndex(
       GetCache()->GetIndexOfProfileWithPath(profile_path));
   EXPECT_TRUE(profile_names_.find(profile_name) != profile_names_.end());
@@ -49,13 +49,13 @@ void ProfileNameVerifierObserver::OnProfileWillBeRemoved(
 }
 
 void ProfileNameVerifierObserver::OnProfileWasRemoved(
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     const string16& profile_name) {
   EXPECT_TRUE(profile_names_.find(profile_name) == profile_names_.end());
 }
 
 void ProfileNameVerifierObserver::OnProfileNameChanged(
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     const string16& old_profile_name) {
   string16 new_profile_name = GetCache()->GetNameOfProfileAtIndex(
       GetCache()->GetIndexOfProfileWithPath(profile_path));
@@ -66,7 +66,7 @@ void ProfileNameVerifierObserver::OnProfileNameChanged(
 }
 
 void ProfileNameVerifierObserver::OnProfileAvatarChanged(
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
   string16 profile_name = GetCache()->GetNameOfProfileAtIndex(
       GetCache()->GetIndexOfProfileWithPath(profile_path));
   EXPECT_TRUE(profile_names_.find(profile_name) != profile_names_.end());
@@ -102,7 +102,7 @@ ProfileInfoCache* ProfileInfoCacheTest::GetCache() {
   return testing_profile_manager_.profile_info_cache();
 }
 
-FilePath ProfileInfoCacheTest::GetProfilePath(
+base::FilePath ProfileInfoCacheTest::GetProfilePath(
     const std::string& base_name) {
   return testing_profile_manager_.profile_manager()->user_data_dir().
       AppendASCII(base_name);
@@ -119,7 +119,7 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (uint32 i = 0; i < 4; ++i) {
-    FilePath profile_path = GetProfilePath(StringPrintf("path_%ud", i));
+    base::FilePath profile_path = GetProfilePath(StringPrintf("path_%ud", i));
     string16 profile_name = ASCIIToUTF16(StringPrintf("name_%ud", i));
     const SkBitmap* icon = rb.GetImageNamed(
         ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(
@@ -145,7 +145,7 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
 
   EXPECT_EQ(4u, GetCache()->GetNumberOfProfiles());
   for (uint32 i = 0; i < 4; ++i) {
-    FilePath profile_path = GetProfilePath(StringPrintf("path_%ud", i));
+    base::FilePath profile_path = GetProfilePath(StringPrintf("path_%ud", i));
     EXPECT_EQ(i, GetCache()->GetIndexOfProfileWithPath(profile_path));
     string16 profile_name = ASCIIToUTF16(StringPrintf("name_%ud", i));
     EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(i));
@@ -159,12 +159,12 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
 TEST_F(ProfileInfoCacheTest, DeleteProfile) {
   EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
 
-  FilePath path_1 = GetProfilePath("path_1");
+  base::FilePath path_1 = GetProfilePath("path_1");
   GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"), string16(),
                                 0, false);
   EXPECT_EQ(1u, GetCache()->GetNumberOfProfiles());
 
-  FilePath path_2 = GetProfilePath("path_2");
+  base::FilePath path_2 = GetProfilePath("path_2");
   string16 name_2 = ASCIIToUTF16("name_2");
   GetCache()->AddProfileToCache(path_2, name_2, string16(), 0, false);
   EXPECT_EQ(2u, GetCache()->GetNumberOfProfiles());

@@ -176,7 +176,7 @@ class MetricsService
   bool recording_active() const;
   bool reporting_active() const;
 
-  void LogPluginLoadingError(const FilePath& plugin_path);
+  void LogPluginLoadingError(const base::FilePath& plugin_path);
 
   // Redundant test to ensure that we are notified of a clean exit.
   // This value should be true when process has completed shutdown.

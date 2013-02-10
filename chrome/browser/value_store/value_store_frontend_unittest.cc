@@ -26,9 +26,9 @@ class ValueStoreFrontendTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    FilePath test_data_dir;
+    base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-    FilePath src_db(test_data_dir.AppendASCII("value_store_db"));
+    base::FilePath src_db(test_data_dir.AppendASCII("value_store_db"));
     db_path_ = temp_dir_.path().AppendASCII("temp_db");
     file_util::CopyDirectory(src_db, db_path_, true);
 
@@ -61,7 +61,7 @@ class ValueStoreFrontendTest : public testing::Test {
 
   scoped_ptr<ValueStoreFrontend> storage_;
   base::ScopedTempDir temp_dir_;
-  FilePath db_path_;
+  base::FilePath db_path_;
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;

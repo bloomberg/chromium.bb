@@ -371,7 +371,7 @@ base::Time ExtensionPrefs::TimeProvider::GetCurrentTime() const {
 // static
 scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
     PrefServiceSyncable* prefs,
-    const FilePath& root_dir,
+    const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
     bool extensions_disabled) {
   return ExtensionPrefs::Create(prefs,
@@ -384,7 +384,7 @@ scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
 // static
 scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
     PrefServiceSyncable* pref_service,
-    const FilePath& root_dir,
+    const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
     bool extensions_disabled,
     scoped_ptr<TimeProvider> time_provider) {
@@ -403,14 +403,14 @@ ExtensionPrefs::~ExtensionPrefs() {
 // static
 const char ExtensionPrefs::kExtensionsPref[] = "extensions.settings";
 
-static FilePath::StringType MakePathRelative(const FilePath& parent,
-                                             const FilePath& child) {
+static base::FilePath::StringType MakePathRelative(const base::FilePath& parent,
+                                             const base::FilePath& child) {
   if (!parent.IsParent(child))
     return child.value();
 
-  FilePath::StringType retval = child.value().substr(
+  base::FilePath::StringType retval = child.value().substr(
       parent.value().length());
-  if (FilePath::IsSeparator(retval[0]))
+  if (base::FilePath::IsSeparator(retval[0]))
     return retval.substr(1);
   else
     return retval;
@@ -434,10 +434,10 @@ void ExtensionPrefs::MakePathsRelative() {
       // Unpacked extensions can have absolute paths.
       continue;
     }
-    FilePath::StringType path_string;
+    base::FilePath::StringType path_string;
     if (!extension_dict->GetString(kPrefPath, &path_string))
       continue;
-    FilePath path(path_string);
+    base::FilePath path(path_string);
     if (path.IsAbsolute())
       absolute_keys.insert(*i);
   }
@@ -454,9 +454,9 @@ void ExtensionPrefs::MakePathsRelative() {
       NOTREACHED() << "Control should never reach here for extension " << *i;
       continue;
     }
-    FilePath::StringType path_string;
+    base::FilePath::StringType path_string;
     extension_dict->GetString(kPrefPath, &path_string);
-    FilePath path(path_string);
+    base::FilePath path(path_string);
     extension_dict->SetString(kPrefPath,
         MakePathRelative(install_directory_, path));
   }
@@ -1539,16 +1539,18 @@ void ExtensionPrefs::UpdateManifest(const Extension* extension) {
   }
 }
 
-FilePath ExtensionPrefs::GetExtensionPath(const std::string& extension_id) {
+base::FilePath ExtensionPrefs::GetExtensionPath(
+    const std::string& extension_id) {
   const DictionaryValue* dict = GetExtensionPref(extension_id);
   if (!dict)
-    return FilePath();
+    return base::FilePath();
 
   std::string path;
   if (!dict->GetString(kPrefPath, &path))
-    return FilePath();
+    return base::FilePath();
 
-  return install_directory_.Append(FilePath::FromWStringHack(UTF8ToWide(path)));
+  return install_directory_.Append(
+      base::FilePath::FromWStringHack(UTF8ToWide(path)));
 }
 
 void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
@@ -1602,7 +1604,7 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
                  << " has been uninstalled by the user";
     return scoped_ptr<ExtensionInfo>();
   }
-  FilePath::StringType path;
+  base::FilePath::StringType path;
   int location_value;
   if (!ext->GetInteger(kPrefLocation, &location_value))
     return scoped_ptr<ExtensionInfo>();
@@ -1614,7 +1616,7 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
   // otherwise make it so.
   if (location_value != Manifest::LOAD) {
     DCHECK(location_value == Manifest::COMPONENT ||
-           !FilePath(path).IsAbsolute());
+           !base::FilePath(path).IsAbsolute());
     path = install_directory_.Append(path).value();
   }
 
@@ -1637,7 +1639,8 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
   }
 
   return scoped_ptr<ExtensionInfo>(
-      new ExtensionInfo(manifest, extension_id, FilePath(path), location));
+      new ExtensionInfo(manifest, extension_id, base::FilePath(path),
+                        location));
 }
 
 scoped_ptr<ExtensionPrefs::ExtensionsInfo>
@@ -1734,7 +1737,7 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetDelayedInstallInfo(
     return scoped_ptr<ExtensionInfo>();
 
   // TODO(mek): share code with GetInstalledExtensionInfo
-  FilePath::StringType path;
+  base::FilePath::StringType path;
   int location_value;
   if (!ext->GetInteger(kPrefLocation, &location_value))
     return scoped_ptr<ExtensionInfo>();
@@ -1746,7 +1749,7 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetDelayedInstallInfo(
   // otherwise make it so.
   if (location_value != Manifest::LOAD) {
     DCHECK(location_value == Manifest::COMPONENT ||
-           !FilePath(path).IsAbsolute());
+           !base::FilePath(path).IsAbsolute());
     path = install_directory_.Append(path).value();
   }
 
@@ -1769,7 +1772,8 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetDelayedInstallInfo(
   }
 
   return scoped_ptr<ExtensionInfo>(
-      new ExtensionInfo(manifest, extension_id, FilePath(path), location));
+      new ExtensionInfo(manifest, extension_id, base::FilePath(path),
+                        location));
 }
 
 scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
@@ -2185,7 +2189,7 @@ void ExtensionPrefs::SetGeometryCache(
 
 ExtensionPrefs::ExtensionPrefs(
     PrefServiceSyncable* prefs,
-    const FilePath& root_dir,
+    const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
     scoped_ptr<TimeProvider> time_provider)
     : prefs_(prefs),
@@ -2312,7 +2316,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
                       Value::CreateStringValue(
                           base::Int64ToString(install_time.ToInternalValue())));
 
-  FilePath::StringType path = MakePathRelative(install_directory_,
+  base::FilePath::StringType path = MakePathRelative(install_directory_,
       extension->path());
   extension_dict->Set(kPrefPath, Value::CreateStringValue(path));
   // We store prefs about LOAD extensions, but don't cache their manifest

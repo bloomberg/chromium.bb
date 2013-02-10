@@ -72,7 +72,7 @@ class CloudPrintDataSender
   // information to the dialog renderer (on the IO thread).  We know
   // that the WebUI pointer lifetime will outlast us, so we should be
   // good.
-  void ReadPrintDataFile(const FilePath& path_to_file);
+  void ReadPrintDataFile(const base::FilePath& path_to_file);
   void SendPrintDataFile();
 
   // Cancels any ramining part of the task by clearing out the WebUI
@@ -105,7 +105,7 @@ class CloudPrintWebDialogDelegate;
 class CloudPrintFlowHandler : public content::WebUIMessageHandler,
                               public content::NotificationObserver {
  public:
-  CloudPrintFlowHandler(const FilePath& path_to_file,
+  CloudPrintFlowHandler(const base::FilePath& path_to_file,
                         const string16& print_job_title,
                         const string16& print_ticket,
                         const std::string& file_type,
@@ -143,7 +143,7 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
 
   CloudPrintWebDialogDelegate* dialog_delegate_;
   content::NotificationRegistrar registrar_;
-  FilePath path_to_file_;
+  base::FilePath path_to_file_;
   string16 print_job_title_;
   string16 print_ticket_;
   std::string file_type_;
@@ -162,7 +162,7 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
  public:
   CloudPrintWebDialogDelegate(content::BrowserContext* browser_context,
                               gfx::NativeWindow modal_parent,
-                              const FilePath& path_to_file,
+                              const base::FilePath& path_to_file,
                               const std::string& json_arguments,
                               const string16& print_job_title,
                               const string16& print_ticket,
@@ -195,7 +195,7 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
   friend class ::CloudPrintWebDialogDelegateTest;
 
   // For unit testing.
-  CloudPrintWebDialogDelegate(const FilePath& path_to_file,
+  CloudPrintWebDialogDelegate(const base::FilePath& path_to_file,
                               CloudPrintFlowHandler* flow_handler,
                               const std::string& json_arguments,
                               bool delete_on_close);
@@ -206,7 +206,7 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
   CloudPrintFlowHandler* flow_handler_;
   gfx::NativeWindow modal_parent_;
   mutable bool owns_flow_handler_;
-  FilePath path_to_file_;
+  base::FilePath path_to_file_;
   bool keep_alive_when_non_modal_;
 
   // The parameters needed to display a modal web dialog.
@@ -217,7 +217,7 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
 
 void CreateDialogFullImpl(content::BrowserContext* browser_context,
                           gfx::NativeWindow modal_parent,
-                          const FilePath& path_to_file,
+                          const base::FilePath& path_to_file,
                           const string16& print_job_title,
                           const string16& print_ticket,
                           const std::string& file_type,
@@ -226,7 +226,7 @@ void CreateDialogSigninImpl(content::BrowserContext* browser_context,
                             gfx::NativeWindow modal_parent,
                             const base::Closure& callback);
 
-void Delete(const FilePath& path_to_file);
+void Delete(const base::FilePath& path_to_file);
 
 }  // namespace internal_cloud_print_helpers
 

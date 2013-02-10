@@ -1274,7 +1274,7 @@ class PageSnapshotTaker : public TabEventObserver,
   PageSnapshotTaker(AutomationProvider* automation,
                     IPC::Message* reply_message,
                     content::WebContents* web_contents,
-                    const FilePath& path);
+                    const base::FilePath& path);
   virtual ~PageSnapshotTaker();
 
   // Start the process of taking a snapshot of the entire page.
@@ -1298,7 +1298,7 @@ class PageSnapshotTaker : public TabEventObserver,
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
   content::WebContents* web_contents_;
-  FilePath image_path_;
+  base::FilePath image_path_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSnapshotTaker);

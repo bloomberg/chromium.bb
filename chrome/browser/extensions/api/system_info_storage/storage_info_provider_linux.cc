@@ -27,9 +27,10 @@ StorageInfoProviderLinux::StorageInfoProviderLinux()
 
 StorageInfoProviderLinux::~StorageInfoProviderLinux() {}
 
-StorageInfoProviderLinux::StorageInfoProviderLinux(const FilePath& mtab_path)
-  : udev_context_(udev_new()),
-    mtab_file_path_(mtab_path) {
+StorageInfoProviderLinux::StorageInfoProviderLinux(
+    const base::FilePath& mtab_path)
+    : udev_context_(udev_new()),
+      mtab_file_path_(mtab_path) {
 }
 
 bool StorageInfoProviderLinux::QueryInfo(StorageInfo* info) {

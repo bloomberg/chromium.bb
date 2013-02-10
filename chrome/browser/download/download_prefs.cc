@@ -52,9 +52,9 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
 
   for (size_t i = 0; i < extensions.size(); ++i) {
 #if defined(OS_POSIX)
-    FilePath path(extensions[i]);
+    base::FilePath path(extensions[i]);
 #elif defined(OS_WIN)
-    FilePath path(UTF8ToWide(extensions[i]));
+    base::FilePath path(UTF8ToWide(extensions[i]));
 #endif
     if (!extensions[i].empty() &&
         download_util::GetFileDangerLevel(path) == download_util::NotDangerous)
@@ -82,7 +82,7 @@ void DownloadPrefs::RegisterUserPrefs(PrefServiceSyncable* prefs) {
                              PrefServiceSyncable::UNSYNCABLE_PREF);
 
   // The default download path is userprofile\download.
-  const FilePath& default_download_path =
+  const base::FilePath& default_download_path =
       download_util::GetDefaultDownloadDirectory();
   prefs->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
                               default_download_path,
@@ -100,7 +100,7 @@ void DownloadPrefs::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   // so we set a flag to make sure we only do it once, to avoid fighting
   // the user if he really wants it on an unsafe place such as the desktop.
   if (!prefs->GetBoolean(prefs::kDownloadDirUpgraded)) {
-    FilePath current_download_dir = prefs->GetFilePath(
+    base::FilePath current_download_dir = prefs->GetFilePath(
         prefs::kDownloadDefaultDirectory);
     if (download_util::DownloadPathIsDangerous(current_download_dir)) {
       prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
@@ -125,7 +125,7 @@ DownloadPrefs* DownloadPrefs::FromBrowserContext(
   return FromDownloadManager(BrowserContext::GetDownloadManager(context));
 }
 
-FilePath DownloadPrefs::DownloadPath() const {
+base::FilePath DownloadPrefs::DownloadPath() const {
 #if defined(OS_CHROMEOS)
   // If the download path is under /drive, and DriveSystemService isn't
   // available (which it isn't for incognito mode, for instance), use the
@@ -153,15 +153,16 @@ bool DownloadPrefs::IsAutoOpenUsed() const {
 }
 
 bool DownloadPrefs::IsAutoOpenEnabledForExtension(
-    const FilePath::StringType& extension) const {
+    const base::FilePath::StringType& extension) const {
   return auto_open_.find(extension) != auto_open_.end();
 }
 
-bool DownloadPrefs::EnableAutoOpenBasedOnExtension(const FilePath& file_name) {
-  FilePath::StringType extension = file_name.Extension();
+bool DownloadPrefs::EnableAutoOpenBasedOnExtension(
+    const base::FilePath& file_name) {
+  base::FilePath::StringType extension = file_name.Extension();
   if (extension.empty())
     return false;
-  DCHECK(extension[0] == FilePath::kExtensionSeparator);
+  DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);
 
   auto_open_.insert(extension);
@@ -169,11 +170,12 @@ bool DownloadPrefs::EnableAutoOpenBasedOnExtension(const FilePath& file_name) {
   return true;
 }
 
-void DownloadPrefs::DisableAutoOpenBasedOnExtension(const FilePath& file_name) {
-  FilePath::StringType extension = file_name.Extension();
+void DownloadPrefs::DisableAutoOpenBasedOnExtension(
+    const base::FilePath& file_name) {
+  base::FilePath::StringType extension = file_name.Extension();
   if (extension.empty())
     return;
-  DCHECK(extension[0] == FilePath::kExtensionSeparator);
+  DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);
   auto_open_.erase(extension);
   SaveAutoOpenState();
@@ -203,7 +205,7 @@ void DownloadPrefs::SaveAutoOpenState() {
 }
 
 bool DownloadPrefs::AutoOpenCompareFunctor::operator()(
-    const FilePath::StringType& a,
-    const FilePath::StringType& b) const {
-  return FilePath::CompareLessIgnoreCase(a, b);
+    const base::FilePath::StringType& a,
+    const base::FilePath::StringType& b) const {
+  return base::FilePath::CompareLessIgnoreCase(a, b);
 }

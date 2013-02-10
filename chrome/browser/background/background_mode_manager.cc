@@ -398,7 +398,7 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager, ProfileInfoCacheObserver overrides
-void BackgroundModeManager::OnProfileAdded(const FilePath& profile_path) {
+void BackgroundModeManager::OnProfileAdded(const base::FilePath& profile_path) {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   string16 profile_name = cache.GetNameOfProfileAtIndex(
@@ -419,7 +419,7 @@ void BackgroundModeManager::OnProfileAdded(const FilePath& profile_path) {
 }
 
 void BackgroundModeManager::OnProfileWillBeRemoved(
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   string16 profile_name = cache.GetNameOfProfileAtIndex(
@@ -435,12 +435,12 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
 }
 
 void BackgroundModeManager::OnProfileWasRemoved(
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     const string16& profile_name) {
 }
 
 void BackgroundModeManager::OnProfileNameChanged(
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     const string16& old_profile_name) {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -458,7 +458,7 @@ void BackgroundModeManager::OnProfileNameChanged(
 }
 
 void BackgroundModeManager::OnProfileAvatarChanged(
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
 
 }
 ///////////////////////////////////////////////////////////////////////////////

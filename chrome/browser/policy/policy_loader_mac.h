@@ -42,7 +42,7 @@ class PolicyLoaderMac : public AsyncPolicyLoader {
 
  private:
   // Callback for the FilePathWatcher.
-  void OnFileUpdated(const FilePath& path, bool error);
+  void OnFileUpdated(const base::FilePath& path, bool error);
 
   // List of recognized policies.
   const PolicyDefinitionList* policy_list_;
@@ -51,7 +51,7 @@ class PolicyLoaderMac : public AsyncPolicyLoader {
 
   // Path to the managed preferences file for the current user, if it could
   // be found. Updates of this file trigger a policy reload.
-  FilePath managed_policy_path_;
+  base::FilePath managed_policy_path_;
 
   // Watches for events on the |managed_policy_path_|.
   base::FilePathWatcher watcher_;

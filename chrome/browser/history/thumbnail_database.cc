@@ -126,7 +126,7 @@ ThumbnailDatabase::~ThumbnailDatabase() {
 }
 
 sql::InitStatus ThumbnailDatabase::Init(
-    const FilePath& db_name,
+    const base::FilePath& db_name,
     const HistoryPublisher* history_publisher,
     URLDatabase* url_db) {
   history_publisher_ = history_publisher;
@@ -217,7 +217,7 @@ sql::InitStatus ThumbnailDatabase::Init(
 }
 
 sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
-                                                const FilePath& db_name) {
+                                                const base::FilePath& db_name) {
   db->set_error_histogram_name("Sqlite.Thumbnail.Error");
 
   // Thumbnails db now only stores favicons, so we don't need that big a page
@@ -948,8 +948,9 @@ bool ThumbnailDatabase::NeedsMigrationToTopSites() {
   return !use_top_sites_;
 }
 
-bool ThumbnailDatabase::RenameAndDropThumbnails(const FilePath& old_db_file,
-                                                const FilePath& new_db_file) {
+bool ThumbnailDatabase::RenameAndDropThumbnails(
+    const base::FilePath& old_db_file,
+    const base::FilePath& new_db_file) {
   // Init favicons tables - same schema as the thumbnails.
   sql::Connection favicons;
   if (OpenDatabase(&favicons, new_db_file) != sql::INIT_OK)

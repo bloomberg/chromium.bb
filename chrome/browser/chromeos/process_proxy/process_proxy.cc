@@ -217,7 +217,8 @@ bool ProcessProxy::LaunchProcess(const std::string& command, int slave_fd,
   options.ctrl_terminal_fd = slave_fd;
 
   // Launch the process.
-  return base::LaunchProcess(CommandLine(FilePath(command)), options, pid);
+  return base::LaunchProcess(CommandLine(base::FilePath(command)), options,
+                             pid);
 }
 
 void ProcessProxy::CloseAllFdPairs() {

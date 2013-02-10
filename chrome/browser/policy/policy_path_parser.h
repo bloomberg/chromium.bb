@@ -46,8 +46,8 @@ namespace path_parser {
 // Any non recognized variable is not being translated at all. Variables are
 // translated only once in every string because for most of these there is no
 // sense in concatenating them more than once in a single path.
-FilePath::StringType ExpandPathVariables(
-    const FilePath::StringType& untranslated_string);
+base::FilePath::StringType ExpandPathVariables(
+    const base::FilePath::StringType& untranslated_string);
 
 }  // namespace path_parser
 

@@ -29,19 +29,19 @@ typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 // This is data needed to create a file system entry that will be used by file
 // browser.
 struct SearchResultInfo {
-  SearchResultInfo(const FilePath& path,
+  SearchResultInfo(const base::FilePath& path,
                    const DriveEntryProto& entry_proto)
       : path(path),
         entry_proto(entry_proto) {
   }
 
-  FilePath path;
+  base::FilePath path;
   DriveEntryProto entry_proto;
 };
 
 // Used to get files from the file system.
 typedef base::Callback<void(DriveFileError error,
-                            const FilePath& file_path,
+                            const base::FilePath& file_path,
                             const std::string& mime_type,
                             DriveFileType file_type)> GetFileCallback;
 
@@ -65,7 +65,7 @@ typedef base::Callback<void(
 // Used to open files from the file system. |file_path| is the path on the local
 // file system for the opened file.
 typedef base::Callback<void(DriveFileError error,
-                            const FilePath& file_path)> OpenFileCallback;
+                            const base::FilePath& file_path)> OpenFileCallback;
 
 // Used to get available space for the account from Drive.
 typedef base::Callback<void(DriveFileError error,
@@ -123,8 +123,8 @@ class DriveFileSystemInterface {
   //
   // |callback| must not be null.
   virtual void TransferFileFromRemoteToLocal(
-      const FilePath& remote_src_file_path,
-      const FilePath& local_dest_file_path,
+      const base::FilePath& remote_src_file_path,
+      const base::FilePath& local_dest_file_path,
       const FileOperationCallback& callback) = 0;
 
   // Initiates transfer of |local_src_file_path| to |remote_dest_file_path|.
@@ -134,8 +134,8 @@ class DriveFileSystemInterface {
   //
   // |callback| must not be null.
   virtual void TransferFileFromLocalToRemote(
-      const FilePath& local_src_file_path,
-      const FilePath& remote_dest_file_path,
+      const base::FilePath& local_src_file_path,
+      const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback) = 0;
 
   // Retrieves a file at the virtual path |file_path| on the Drive file system
@@ -147,14 +147,14 @@ class DriveFileSystemInterface {
   // Otherwise, Drive file system does not pick up the file for uploading.
   //
   // |callback| must not be null.
-  virtual void OpenFile(const FilePath& file_path,
+  virtual void OpenFile(const base::FilePath& file_path,
                         const OpenFileCallback& callback) = 0;
 
   // Closes a file at the virtual path |file_path| on the Drive file system,
   // which is opened via OpenFile(). It commits the dirty flag on the cache.
   //
   // |callback| must not be null.
-  virtual void CloseFile(const FilePath& file_path,
+  virtual void CloseFile(const base::FilePath& file_path,
                          const FileOperationCallback& callback) = 0;
 
   // Copies |src_file_path| to |dest_file_path| on the file system.
@@ -175,8 +175,8 @@ class DriveFileSystemInterface {
   // of the file system.
   //
   // |callback| must not be null.
-  virtual void Copy(const FilePath& src_file_path,
-                    const FilePath& dest_file_path,
+  virtual void Copy(const base::FilePath& src_file_path,
+                    const base::FilePath& dest_file_path,
                     const FileOperationCallback& callback) = 0;
 
   // Moves |src_file_path| to |dest_file_path| on the file system.
@@ -195,8 +195,8 @@ class DriveFileSystemInterface {
   // of the file system.
   //
   // |callback| must not be null.
-  virtual void Move(const FilePath& src_file_path,
-                    const FilePath& dest_file_path,
+  virtual void Move(const base::FilePath& src_file_path,
+                    const base::FilePath& dest_file_path,
                     const FileOperationCallback& callback) = 0;
 
   // Removes |file_path| from the file system.  If |is_recursive| is set and
@@ -208,7 +208,7 @@ class DriveFileSystemInterface {
   // TODO(satorux): is_recursive is not supported yet. crbug.com/138282
   //
   // |callback| must not be null.
-  virtual void Remove(const FilePath& file_path,
+  virtual void Remove(const base::FilePath& file_path,
                       bool is_recursive,
                       const FileOperationCallback& callback) = 0;
 
@@ -218,7 +218,7 @@ class DriveFileSystemInterface {
   // directories as needed just like mkdir -p does.
   //
   // |callback| must not be null.
-  virtual void CreateDirectory(const FilePath& directory_path,
+  virtual void CreateDirectory(const base::FilePath& directory_path,
                                bool is_exclusive,
                                bool is_recursive,
                                const FileOperationCallback& callback) = 0;
@@ -229,7 +229,7 @@ class DriveFileSystemInterface {
   // path, or the parent directory of the path is not present yet.
   //
   // |callback| must not be null.
-  virtual void CreateFile(const FilePath& file_path,
+  virtual void CreateFile(const base::FilePath& file_path,
                           bool is_exclusive,
                           const FileOperationCallback& callback) = 0;
 
@@ -239,7 +239,7 @@ class DriveFileSystemInterface {
   // will be downloaded through GData API or Drive V2 API.
   //
   // |callback| must not be null.
-  virtual void GetFileByPath(const FilePath& file_path,
+  virtual void GetFileByPath(const base::FilePath& file_path,
                              const GetFileCallback& callback) = 0;
 
   // Gets a file by the given |resource_id| from the Drive server. Used for
@@ -268,7 +268,7 @@ class DriveFileSystemInterface {
   // retrieve and refresh file system content from server and disk cache.
   //
   // |callback| must not be null.
-  virtual void GetEntryInfoByPath(const FilePath& file_path,
+  virtual void GetEntryInfoByPath(const base::FilePath& file_path,
                                   const GetEntryInfoCallback& callback) = 0;
 
   // Finds and reads a directory by |file_path|. This call will also retrieve
@@ -276,7 +276,7 @@ class DriveFileSystemInterface {
   //
   // |callback| must not be null.
   virtual void ReadDirectoryByPath(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const ReadDirectoryWithSettingCallback& callback) = 0;
 
   // Requests a refresh of the directory pointed by |file_path| (i.e. fetches
@@ -291,7 +291,7 @@ class DriveFileSystemInterface {
   // and the change is notified via Observer::OnDirectoryChanged(). Note that
   // this function ignores changes in directories in the target
   // directory. Changes in directories are handled via the delta feeds.
-  virtual void RequestDirectoryRefresh(const FilePath& file_path) = 0;
+  virtual void RequestDirectoryRefresh(const base::FilePath& file_path) = 0;
 
   // Does server side content search for |search_query|.
   // If |shared_with_me| is true, it searches for the files shared to the user,
@@ -315,9 +315,9 @@ class DriveFileSystemInterface {
   // |file_content_path| into the cache.
   //
   // |callback| must not be null.
-  virtual void AddUploadedFile(const FilePath& directory_path,
+  virtual void AddUploadedFile(const base::FilePath& directory_path,
                                scoped_ptr<google_apis::ResourceEntry> doc_entry,
-                               const FilePath& file_content_path,
+                               const base::FilePath& file_content_path,
                                const FileOperationCallback& callback) = 0;
 
   // Returns miscellaneous metadata of the file system like the largest

@@ -70,7 +70,7 @@ static const int EXPIRED_VISIT = -1;
 
 class HistoryBackendMock : public HistoryBackend {
  public:
-  HistoryBackendMock() : HistoryBackend(FilePath(), 0, NULL, NULL) {}
+  HistoryBackendMock() : HistoryBackend(base::FilePath(), 0, NULL, NULL) {}
   virtual bool IsExpiredVisitTime(const base::Time& time) OVERRIDE {
     return time.ToInternalValue() == EXPIRED_VISIT;
   }

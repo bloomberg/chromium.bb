@@ -238,7 +238,7 @@ class PersistentTabRestoreService::Delegate
 
 PersistentTabRestoreService::Delegate::Delegate(Profile* profile)
     : BaseSessionService(BaseSessionService::TAB_RESTORE, profile,
-                         FilePath()),
+                         base::FilePath()),
       tab_restore_service_helper_(NULL),
       entries_to_write_(0),
       entries_written_(0),

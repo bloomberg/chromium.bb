@@ -48,7 +48,7 @@ typedef std::map<std::string, struct TestMountEntry> TestMountEntryMap;
 
 class StorageInfoProviderLinuxWrapper : public StorageInfoProviderLinux {
  public:
-  explicit StorageInfoProviderLinuxWrapper(const FilePath& mtab_path)
+  explicit StorageInfoProviderLinuxWrapper(const base::FilePath& mtab_path)
     : StorageInfoProviderLinux(mtab_path) {
     for (size_t i = 0; i < arraysize(mount_entries); i++) {
       std::string mnt_path = mount_entries[i].mnt_path;
@@ -110,7 +110,7 @@ class StorageInfoProviderLinuxTest : public testing::Test {
   }
 
   scoped_refptr<StorageInfoProviderLinuxWrapper> storage_info_provider_;
-  FilePath mtab_file_;
+  base::FilePath mtab_file_;
 };
 
 TEST_F(StorageInfoProviderLinuxTest, QueryInfo) {
@@ -132,7 +132,7 @@ TEST_F(StorageInfoProviderLinuxTest, QueryInfo) {
 
 TEST_F(StorageInfoProviderLinuxTest, QueryInfoFailed) {
   storage_info_provider_ =
-      new StorageInfoProviderLinuxWrapper(FilePath("/invalid/file/path"));
+      new StorageInfoProviderLinuxWrapper(base::FilePath("/invalid/file/path"));
   StorageInfo info;
   ASSERT_FALSE(QueryInfo(&info));
   EXPECT_EQ(0u, info.size());

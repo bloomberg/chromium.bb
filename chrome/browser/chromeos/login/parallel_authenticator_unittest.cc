@@ -109,8 +109,8 @@ class ParallelAuthenticatorTest : public testing::Test {
     mock_caller_ = NULL;
   }
 
-  FilePath PopulateTempFile(const char* data, int data_len) {
-    FilePath out;
+  base::FilePath PopulateTempFile(const char* data, int data_len) {
+    base::FilePath out;
     FILE* tmp_file = file_util::CreateAndOpenTemporaryFile(&out);
     EXPECT_NE(tmp_file, static_cast<FILE*>(NULL));
     EXPECT_EQ(file_util::WriteFile(out, data, data_len), data_len);

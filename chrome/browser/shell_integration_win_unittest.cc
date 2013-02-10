@@ -28,7 +28,7 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // A path to a random target.
-    FilePath other_target;
+    base::FilePath other_target;
     file_util::CreateTemporaryFileInDir(temp_dir_.path(), &other_target);
 
     // This doesn't need to actually have a base name of "chrome.exe".
@@ -94,7 +94,7 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
   void AddTestShortcut(
       const base::win::ShortcutProperties& shortcut_properties) {
     shortcuts_properties_.push_back(shortcut_properties);
-    FilePath shortcut_path =
+    base::FilePath shortcut_path =
         temp_dir_.path().Append(L"Shortcut " +
                                 base::IntToString16(shortcuts_.size()) +
                                 installer::kLnkExt);
@@ -108,10 +108,10 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 
   // The path to a fake chrome.exe.
-  FilePath chrome_exe_;
+  base::FilePath chrome_exe_;
 
   // Test shortcuts.
-  std::vector<FilePath> shortcuts_;
+  std::vector<base::FilePath> shortcuts_;
 
   // Initial properties for the test shortcuts.
   std::vector<base::win::ShortcutProperties> shortcuts_properties_;
@@ -173,14 +173,14 @@ TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
       BrowserDistribution::GetDistribution()->GetBaseAppId());
 
   // Empty profile path should get chrome::kBrowserAppID
-  FilePath empty_path;
+  base::FilePath empty_path;
   EXPECT_EQ(base_app_id,
             ShellIntegration::GetAppModelIdForProfile(base_app_id, empty_path));
 
   // Default profile path should get chrome::kBrowserAppID
-  FilePath default_user_data_dir;
+  base::FilePath default_user_data_dir;
   chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
-  FilePath default_profile_path =
+  base::FilePath default_profile_path =
       default_user_data_dir.AppendASCII(chrome::kInitialProfile);
   EXPECT_EQ(base_app_id,
             ShellIntegration::GetAppModelIdForProfile(base_app_id,
@@ -188,7 +188,7 @@ TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
 
   // Non-default profile path should get chrome::kBrowserAppID joined with
   // profile info.
-  FilePath profile_path(FILE_PATH_LITERAL("root"));
+  base::FilePath profile_path(FILE_PATH_LITERAL("root"));
   profile_path = profile_path.Append(FILE_PATH_LITERAL("udd"));
   profile_path = profile_path.Append(FILE_PATH_LITERAL("User Data - Test"));
   EXPECT_EQ(base_app_id + L".udd.UserDataTest",

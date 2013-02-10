@@ -243,7 +243,8 @@ class DebugLogFileHelper {
   typedef base::Callback<void(PassPlatformFile pass_platform_file,
                               bool created,
                               PlatformFileError error,
-                              const FilePath& file_path)> DebugLogFileCallback;
+                              const base::FilePath& file_path)>
+      DebugLogFileCallback;
 
   DebugLogFileHelper()
       : file_handle_(base::kInvalidPlatformFileValue),
@@ -254,8 +255,8 @@ class DebugLogFileHelper {
   ~DebugLogFileHelper() {
   }
 
-  void DoWork(const FilePath& fileshelf) {
-    const FilePath::CharType kLogFileName[] =
+  void DoWork(const base::FilePath& fileshelf) {
+    const base::FilePath::CharType kLogFileName[] =
         FILE_PATH_LITERAL("debug-log.tgz");
 
     file_path_ = fileshelf.Append(kLogFileName);
@@ -278,7 +279,7 @@ class DebugLogFileHelper {
   PlatformFile file_handle_;
   bool created_;
   PlatformFileError error_;
-  FilePath file_path_;
+  base::FilePath file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugLogFileHelper);
 };
@@ -289,7 +290,7 @@ class DebugLogFileHelper {
 // Called once StoreDebugLogs is complete. Takes two parameters:
 // - log_path: where the log file was saved in the case of success;
 // - succeeded: was the log file saved successfully.
-typedef base::Callback<void(const FilePath& log_path,
+typedef base::Callback<void(const base::FilePath& log_path,
                             bool succeded)> StoreDebugLogsCallback;
 
 // Closes file handle, so, should be called on the WorkerPool thread.
@@ -300,7 +301,7 @@ void CloseDebugLogFile(PassPlatformFile pass_platform_file) {
 // Closes file handle and deletes debug log file, so, should be called
 // on the WorkerPool thread.
 void CloseAndDeleteDebugLogFile(PassPlatformFile pass_platform_file,
-                                const FilePath& file_path) {
+                                const base::FilePath& file_path) {
   CloseDebugLogFile(pass_platform_file);
   file_util::Delete(file_path, false);
 }
@@ -310,7 +311,7 @@ void CloseAndDeleteDebugLogFile(PassPlatformFile pass_platform_file,
 // |callback|.
 void WriteDebugLogToFileCompleted(const StoreDebugLogsCallback& callback,
                                   PassPlatformFile pass_platform_file,
-                                  const FilePath& file_path,
+                                  const base::FilePath& file_path,
                                   bool succeeded) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!succeeded) {
@@ -332,7 +333,7 @@ void WriteDebugLogToFile(const StoreDebugLogsCallback& callback,
                          PassPlatformFile pass_platform_file,
                          bool created,
                          PlatformFileError error,
-                         const FilePath& file_path) {
+                         const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!created) {
     LOG(ERROR) <<
@@ -358,7 +359,7 @@ void WriteDebugLogToFile(const StoreDebugLogsCallback& callback,
 void StoreDebugLogs(const StoreDebugLogsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  const FilePath fileshelf = download_util::GetDefaultDownloadDirectory();
+  const base::FilePath fileshelf = download_util::GetDefaultDownloadDirectory();
   DebugLogFileHelper* helper = new DebugLogFileHelper();
   bool posted = base::WorkerPool::PostTaskAndReply(FROM_HERE,
       base::Bind(&DebugLogFileHelper::DoWork,
@@ -403,7 +404,8 @@ class NetInternalsMessageHandler
   void OnGetSystemLog(const ListValue* list);
   void OnImportONCFile(const ListValue* list);
   void OnStoreDebugLogs(const ListValue* list);
-  void OnStoreDebugLogsCompleted(const FilePath& log_path, bool succeeded);
+  void OnStoreDebugLogsCompleted(const base::FilePath& log_path,
+                                 bool succeeded);
   void OnSetNetworkDebugMode(const ListValue* list);
   void OnSetNetworkDebugModeCompleted(const std::string& subsystem,
                                       bool succeeded);
@@ -1536,7 +1538,7 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(const ListValue* list) {
 }
 
 void NetInternalsMessageHandler::OnStoreDebugLogsCompleted(
-    const FilePath& log_path, bool succeeded) {
+    const base::FilePath& log_path, bool succeeded) {
   std::string status;
   if (succeeded)
     status = "Created log file: " + log_path.BaseName().AsUTF8Unsafe();

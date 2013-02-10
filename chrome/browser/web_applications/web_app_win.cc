@@ -23,7 +23,8 @@
 
 namespace {
 
-const FilePath::CharType kIconChecksumFileExt[] = FILE_PATH_LITERAL(".ico.md5");
+const base::FilePath::CharType kIconChecksumFileExt[] =
+    FILE_PATH_LITERAL(".ico.md5");
 
 // Calculates image checksum using MD5.
 void GetImageCheckSum(const SkBitmap& image, base::MD5Digest* digest) {
@@ -34,22 +35,24 @@ void GetImageCheckSum(const SkBitmap& image, base::MD5Digest* digest) {
 }
 
 // Saves |image| as an |icon_file| with the checksum.
-bool SaveIconWithCheckSum(const FilePath& icon_file, const SkBitmap& image) {
+bool SaveIconWithCheckSum(const base::FilePath& icon_file,
+                          const SkBitmap& image) {
   if (!IconUtil::CreateIconFileFromSkBitmap(image, SkBitmap(), icon_file))
     return false;
 
   base::MD5Digest digest;
   GetImageCheckSum(image, &digest);
 
-  FilePath cheksum_file(icon_file.ReplaceExtension(kIconChecksumFileExt));
+  base::FilePath cheksum_file(icon_file.ReplaceExtension(kIconChecksumFileExt));
   return file_util::WriteFile(cheksum_file,
                               reinterpret_cast<const char*>(&digest),
                               sizeof(digest)) == sizeof(digest);
 }
 
 // Returns true if |icon_file| is missing or different from |image|.
-bool ShouldUpdateIcon(const FilePath& icon_file, const SkBitmap& image) {
-  FilePath checksum_file(icon_file.ReplaceExtension(kIconChecksumFileExt));
+bool ShouldUpdateIcon(const base::FilePath& icon_file, const SkBitmap& image) {
+  base::FilePath checksum_file(
+      icon_file.ReplaceExtension(kIconChecksumFileExt));
 
   // Returns true if icon_file or checksum file is missing.
   if (!file_util::PathExists(icon_file) ||
@@ -70,10 +73,10 @@ bool ShouldUpdateIcon(const FilePath& icon_file, const SkBitmap& image) {
                 sizeof(base::MD5Digest)) != 0;
 }
 
-std::vector<FilePath> GetShortcutPaths(
+std::vector<base::FilePath> GetShortcutPaths(
     ShellIntegration::ShortcutInfo shortcut_info) {
   // Shortcut paths under which to create shortcuts.
-  std::vector<FilePath> shortcut_paths;
+  std::vector<base::FilePath> shortcut_paths;
 
   // Locations to add to shortcut_paths.
   struct {
@@ -103,7 +106,7 @@ std::vector<FilePath> GetShortcutPaths(
   // Populate shortcut_paths.
   for (int i = 0; i < arraysize(locations); ++i) {
     if (locations[i].use_this_location) {
-      FilePath path;
+      base::FilePath path;
 
       // Skip the Win7 case.
       if (locations[i].location_id == base::PATH_START)
@@ -123,8 +126,8 @@ std::vector<FilePath> GetShortcutPaths(
   return shortcut_paths;
 }
 
-bool ShortcutIsForProfile(const FilePath& shortcut_file_name,
-                          const FilePath& profile_path) {
+bool ShortcutIsForProfile(const base::FilePath& shortcut_file_name,
+                          const base::FilePath& profile_path) {
   string16 cmd_line_string;
   if (base::win::ResolveShortcut(shortcut_file_name, NULL, &cmd_line_string)) {
     cmd_line_string = L"program " + cmd_line_string;
@@ -137,18 +140,18 @@ bool ShortcutIsForProfile(const FilePath& shortcut_file_name,
   return false;
 }
 
-std::vector<FilePath> MatchingShortcutsForProfileAndExtension(
-    const FilePath& shortcut_path,
-    const FilePath& profile_path,
+std::vector<base::FilePath> MatchingShortcutsForProfileAndExtension(
+    const base::FilePath& shortcut_path,
+    const base::FilePath& profile_path,
     const string16& shortcut_name) {
-  std::vector<FilePath> shortcut_paths;
-  FilePath base_path = shortcut_path.
+  std::vector<base::FilePath> shortcut_paths;
+  base::FilePath base_path = shortcut_path.
       Append(web_app::internals::GetSanitizedFileName(shortcut_name)).
       ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
 
   const int fileNamesToCheck = 10;
   for (int i = 0; i < fileNamesToCheck; ++i) {
-    FilePath shortcut_file = base_path;
+    base::FilePath shortcut_file = base_path;
     if (i) {
       shortcut_file = shortcut_file.InsertBeforeExtensionASCII(
           StringPrintf(" (%d)", i));
@@ -170,7 +173,7 @@ namespace internals {
 // Saves |image| to |icon_file| if the file is outdated and refresh shell's
 // icon cache to ensure correct icon is displayed. Returns true if icon_file
 // is up to date or successfully updated.
-bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image) {
+bool CheckAndSaveIcon(const base::FilePath& icon_file, const SkBitmap& image) {
   if (ShouldUpdateIcon(icon_file, image)) {
     if (SaveIconWithCheckSum(icon_file, image)) {
       // Refresh shell's icon cache. This call is quite disruptive as user would
@@ -186,7 +189,7 @@ bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image) {
   return true;
 }
 
-FilePath GetShortcutExecutablePath(
+base::FilePath GetShortcutExecutablePath(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   if (shortcut_info.is_platform_app &&
       BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
@@ -198,12 +201,12 @@ FilePath GetShortcutExecutablePath(
 }
 
 bool CreatePlatformShortcuts(
-    const FilePath& web_app_path,
+    const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   // Shortcut paths under which to create shortcuts.
-  std::vector<FilePath> shortcut_paths = GetShortcutPaths(shortcut_info);
+  std::vector<base::FilePath> shortcut_paths = GetShortcutPaths(shortcut_info);
 
   bool pin_to_taskbar = shortcut_info.create_in_quick_launch_bar &&
                         (base::win::GetVersion() >= base::win::VERSION_WIN7);
@@ -226,22 +229,22 @@ bool CreatePlatformShortcuts(
   }
 
   // Generates file name to use with persisted ico and shortcut file.
-  FilePath file_name =
+  base::FilePath file_name =
       web_app::internals::GetSanitizedFileName(shortcut_info.title);
 
   // Creates an ico file to use with shortcut.
-  FilePath icon_file = web_app_path.Append(file_name).ReplaceExtension(
+  base::FilePath icon_file = web_app_path.Append(file_name).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
   if (!web_app::internals::CheckAndSaveIcon(icon_file,
         *shortcut_info.favicon.ToSkBitmap())) {
     return false;
   }
 
-  FilePath target_exe = GetShortcutExecutablePath(shortcut_info);
+  base::FilePath target_exe = GetShortcutExecutablePath(shortcut_info);
   DCHECK(!target_exe.empty());
 
   // Working directory.
-  FilePath working_dir(target_exe.DirName());
+  base::FilePath working_dir(target_exe.DirName());
 
   CommandLine cmd_line(CommandLine::NO_PROGRAM);
   cmd_line = ShellIntegration::CommandLineArgsForLauncher(shortcut_info.url,
@@ -263,10 +266,10 @@ bool CreatePlatformShortcuts(
   string16 app_id(ShellIntegration::GetAppModelIdForProfile(
       UTF8ToUTF16(app_name), shortcut_info.profile_path));
 
-  FilePath shortcut_to_pin;
+  base::FilePath shortcut_to_pin;
   bool success = true;
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {
-    FilePath shortcut_file = shortcut_paths[i].Append(file_name).
+    base::FilePath shortcut_file = shortcut_paths[i].Append(file_name).
         ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
 
     int unique_number =
@@ -309,15 +312,15 @@ bool CreatePlatformShortcuts(
 }
 
 void UpdatePlatformShortcuts(
-    const FilePath& web_app_path,
+    const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   // Generates file name to use with persisted ico and shortcut file.
-  FilePath file_name =
+  base::FilePath file_name =
       web_app::internals::GetSanitizedFileName(shortcut_info.title);
 
   // If an icon file exists, and is out of date, replace it with the new icon
   // and let the shell know the icon has been modified.
-  FilePath icon_file = web_app_path.Append(file_name).ReplaceExtension(
+  base::FilePath icon_file = web_app_path.Append(file_name).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
   if (file_util::PathExists(icon_file)) {
     web_app::internals::CheckAndSaveIcon(icon_file,
@@ -326,7 +329,7 @@ void UpdatePlatformShortcuts(
 }
 
 void DeletePlatformShortcuts(
-    const FilePath& web_app_path,
+    const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -335,17 +338,18 @@ void DeletePlatformShortcuts(
   all_shortcuts_info.create_in_applications_menu = true;
   all_shortcuts_info.create_in_quick_launch_bar = true;
   all_shortcuts_info.create_on_desktop = true;
-  std::vector<FilePath> shortcut_locations = GetShortcutPaths(
+  std::vector<base::FilePath> shortcut_locations = GetShortcutPaths(
       all_shortcuts_info);
   if (base::win::GetVersion() >= base::win::VERSION_WIN7)
     shortcut_locations.push_back(web_app_path);
 
-  for (std::vector<FilePath>::const_iterator i = shortcut_locations.begin();
+  for (std::vector<base::FilePath>::const_iterator i =
+           shortcut_locations.begin();
        i != shortcut_locations.end(); ++i) {
-    std::vector<FilePath> shortcut_files =
+    std::vector<base::FilePath> shortcut_files =
         MatchingShortcutsForProfileAndExtension(*i, shortcut_info.profile_path,
             shortcut_info.title);
-    for (std::vector<FilePath>::const_iterator j = shortcut_files.begin();
+    for (std::vector<base::FilePath>::const_iterator j = shortcut_files.begin();
          j != shortcut_files.end(); ++j) {
       // Any shortcut could have been pinned, either by chrome or the user, so
       // they are all unpinned.

@@ -38,7 +38,7 @@ const int kMaxErrno = 102;
 // ourselves.  An exclusive lock is used to flush out anyone making incorrect
 // assumptions.
 
-ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
+ProcessSingleton::ProcessSingleton(const base::FilePath& user_data_dir)
     : locked_(false),
       foreground_window_(NULL),
       lock_path_(user_data_dir.Append(chrome::kSingletonLockFilename)),

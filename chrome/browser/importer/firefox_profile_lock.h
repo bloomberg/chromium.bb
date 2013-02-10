@@ -67,7 +67,7 @@
 
 class FirefoxProfileLock {
  public:
-  explicit FirefoxProfileLock(const FilePath& path);
+  explicit FirefoxProfileLock(const base::FilePath& path);
   ~FirefoxProfileLock();
 
   // Locks and releases the profile.
@@ -81,13 +81,13 @@ class FirefoxProfileLock {
   FRIEND_TEST_ALL_PREFIXES(FirefoxProfileLockTest, ProfileLock);
   FRIEND_TEST_ALL_PREFIXES(FirefoxProfileLockTest, ProfileLockOrphaned);
 
-  static const FilePath::CharType* kLockFileName;
-  static const FilePath::CharType* kOldLockFileName;
+  static const base::FilePath::CharType* kLockFileName;
+  static const base::FilePath::CharType* kOldLockFileName;
 
   void Init();
 
   // Full path of the lock file in the profile folder.
-  FilePath lock_file_;
+  base::FilePath lock_file_;
 
   // The handle of the lock file.
 #if defined(OS_WIN)
@@ -98,7 +98,7 @@ class FirefoxProfileLock {
   // On Posix systems Firefox apparently first tries to put a fcntl lock
   // on a file and if that fails, it does a regular exculsive open on another
   // file. This variable contains the location of this other file.
-  FilePath old_lock_file_;
+  base::FilePath old_lock_file_;
 
   // Method that tries to put a fcntl lock on file specified by |lock_file_|.
   // Returns false if lock is already held by another process. true in all

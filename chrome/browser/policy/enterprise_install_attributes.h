@@ -32,14 +32,14 @@ class EnterpriseInstallAttributes {
   };
 
   // Standard cache file name.
-  static const FilePath::CharType kCacheFilePath[];
+  static const base::FilePath::CharType kCacheFilePath[];
 
   explicit EnterpriseInstallAttributes(chromeos::CryptohomeLibrary* cryptohome);
 
   // Reads data from the cache file. The cache file is used to work around slow
   // cryptohome startup, which takes a while to register its DBus interface.
   // See http://crosbug.com/37367 for background on this.
-  void ReadCacheFile(const FilePath& cache_file);
+  void ReadCacheFile(const base::FilePath& cache_file);
 
   // Makes sure the local caches for enterprise-related install attributes are
   // up-to-date with what cryptohome has.

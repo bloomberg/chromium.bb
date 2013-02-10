@@ -14,7 +14,7 @@ namespace web_app {
 namespace internals {
 
 bool CreatePlatformShortcuts(
-    const FilePath& web_app_path,
+    const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -30,14 +30,14 @@ bool CreatePlatformShortcuts(
 }
 
 void DeletePlatformShortcuts(
-    const FilePath& web_app_path,
+    const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   ShellIntegrationLinux::DeleteDesktopShortcuts(shortcut_info.profile_path,
       shortcut_info.extension_id);
 }
 
 void UpdatePlatformShortcuts(
-    const FilePath& web_app_path,
+    const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   // TODO(benwells): Implement this.
 }

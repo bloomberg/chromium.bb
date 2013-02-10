@@ -177,7 +177,7 @@ class PepperFlashSettingsManager::Core
   base::WeakPtr<PepperFlashSettingsManager> manager_;
 
   // Used only on the I/O thread.
-  FilePath plugin_data_path_;
+  base::FilePath plugin_data_path_;
 
   // The channel is NULL until we have opened a connection to the broker
   // process. Used only on the I/O thread.
@@ -198,7 +198,7 @@ class PepperFlashSettingsManager::Core
 
   // Path for the current profile. Must be retrieved on the UI thread from the
   // browser context when we start so we can use it later on the I/O thread.
-  FilePath browser_context_path_;
+  base::FilePath browser_context_path_;
 
   scoped_refptr<PluginPrefs> plugin_prefs_;
 };
@@ -401,7 +401,7 @@ void PepperFlashSettingsManager::Core::InitializeOnIOThread() {
     return;
   }
 
-  FilePath profile_path =
+  base::FilePath profile_path =
       browser_context_path_.Append(content::kPepperDataDirname);
 #if defined(OS_WIN)
   plugin_data_path_ = profile_path.Append(plugin_info.name);

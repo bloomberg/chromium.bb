@@ -24,7 +24,7 @@ class LoginDatabaseTest : public testing::Test {
     file_ = temp_dir_.path().AppendASCII("TestMetadataStoreMacDatabase");
   }
 
-  FilePath file_;
+  base::FilePath file_;
   base::ScopedTempDir temp_dir_;
 };
 

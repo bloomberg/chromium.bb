@@ -50,7 +50,7 @@ class ManagedValueStoreCache : public ValueStoreCache,
                          EventRouter* event_router,
                          const scoped_refptr<SettingsStorageFactory>& factory,
                          const scoped_refptr<SettingsObserverList>& observers,
-                         const FilePath& profile_path);
+                         const base::FilePath& profile_path);
   virtual ~ManagedValueStoreCache();
 
  private:
@@ -139,7 +139,7 @@ class ManagedValueStoreCache : public ValueStoreCache,
   // These live on the FILE thread.
   scoped_refptr<SettingsStorageFactory> storage_factory_;
   scoped_refptr<SettingsObserverList> observers_;
-  FilePath base_path_;
+  base::FilePath base_path_;
 
   // All the PolicyValueStores live on the FILE thread, and |store_map_| can be
   // accessed only on the FILE thread as well.

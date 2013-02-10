@@ -62,7 +62,7 @@ using content::BrowserThread;
 class SQLitePersistentCookieStore::Backend
     : public base::RefCountedThreadSafe<SQLitePersistentCookieStore::Backend> {
  public:
-  Backend(const FilePath& path,
+  Backend(const base::FilePath& path,
           bool restore_old_session_cookies,
           ClearOnExitPolicy* clear_on_exit_policy)
       : path_(path),
@@ -216,7 +216,7 @@ class SQLitePersistentCookieStore::Backend
   void KillDatabase();
   void ScheduleKillDatabase();
 
-  FilePath path_;
+  base::FilePath path_;
   scoped_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
 
@@ -531,7 +531,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
 
   base::Time start = base::Time::Now();
 
-  const FilePath dir = path_.DirName();
+  const base::FilePath dir = path_.DirName();
   if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir)) {
     return false;
   }
@@ -1063,7 +1063,7 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup() {
 }
 
 SQLitePersistentCookieStore::SQLitePersistentCookieStore(
-    const FilePath& path,
+    const base::FilePath& path,
     bool restore_old_session_cookies,
     ClearOnExitPolicy* clear_on_exit_policy)
     : backend_(

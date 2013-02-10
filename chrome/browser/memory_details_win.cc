@@ -136,7 +136,7 @@ void MemoryDetails::CollectProcessData(
                                      MAX_PATH - 1)) {
         std::wstring str_name(name);
         scoped_ptr<FileVersionInfo> version_info(
-            FileVersionInfo::CreateFileVersionInfo(FilePath(str_name)));
+            FileVersionInfo::CreateFileVersionInfo(base::FilePath(str_name)));
         if (version_info != NULL) {
           info.version = version_info->product_version();
           info.product_name = version_info->product_name();

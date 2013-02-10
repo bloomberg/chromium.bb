@@ -68,7 +68,7 @@ class PluginPrefs : public RefcountedProfileKeyedService {
   // then enabling/disabling the plug-in is ignored and |callback| is run
   // with 'false' passed to it. Otherwise the plug-in state is changed
   // and |callback| is run with 'true' passed to it.
-  void EnablePlugin(bool enable, const FilePath& file_path,
+  void EnablePlugin(bool enable, const base::FilePath& file_path,
                     const base::Callback<void(bool)>& callback);
 
   // Returns whether there is a policy enabling or disabling plug-ins of the
@@ -97,13 +97,13 @@ class PluginPrefs : public RefcountedProfileKeyedService {
 
     // Returns whether |plugin| is found. If |plugin| cannot be found,
     // |*enabled| won't be touched.
-    bool Get(const FilePath& plugin, bool* enabled) const;
-    void Set(const FilePath& plugin, bool enabled);
+    bool Get(const base::FilePath& plugin, bool* enabled) const;
+    void Set(const base::FilePath& plugin, bool enabled);
 
    private:
-    FilePath ConvertMapKey(const FilePath& plugin) const;
+    base::FilePath ConvertMapKey(const base::FilePath& plugin) const;
 
-    std::map<FilePath, bool> state_;
+    std::map<base::FilePath, bool> state_;
   };
 
   virtual ~PluginPrefs();
@@ -129,7 +129,7 @@ class PluginPrefs : public RefcountedProfileKeyedService {
       const std::vector<webkit::WebPluginInfo>& plugins);
   void EnablePluginInternal(
       bool enabled,
-      const FilePath& path,
+      const base::FilePath& path,
       PluginFinder* plugin_finder,
       const base::Callback<void(bool)>& callback,
       const std::vector<webkit::WebPluginInfo>& plugins);

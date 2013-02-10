@@ -28,7 +28,8 @@ class AndroidCacheDatabaseTest : public testing::Test {
   virtual void SetUp() {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath history_db_name_ = temp_dir_.path().AppendASCII("history.db");
+    base::FilePath history_db_name_ =
+        temp_dir_.path().AppendASCII("history.db");
     android_cache_db_name_ = temp_dir_.path().AppendASCII(
         "TestAndroidCache.db");
     ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, NULL));
@@ -37,16 +38,16 @@ class AndroidCacheDatabaseTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  FilePath android_cache_db_name_;
+  base::FilePath android_cache_db_name_;
   HistoryDatabase history_db_;
 };
 
 TEST(AndroidCacheDatabaseAttachTest, AttachDatabaseInTransactionNesting) {
   base::ScopedTempDir temp_dir;
-  FilePath android_cache_db_name;
+  base::FilePath android_cache_db_name;
   HistoryDatabase history_db;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath history_db_name = temp_dir.path().AppendASCII("history.db");
+  base::FilePath history_db_name = temp_dir.path().AppendASCII("history.db");
   android_cache_db_name = temp_dir.path().AppendASCII(
         "TestAndroidCache.db");
   ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name, NULL));

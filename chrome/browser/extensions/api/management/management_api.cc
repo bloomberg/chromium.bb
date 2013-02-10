@@ -382,7 +382,7 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
   CHECK(parsed_manifest);
 
   scoped_refptr<Extension> extension = Extension::Create(
-      FilePath(), Manifest::INVALID_LOCATION, *parsed_manifest,
+      base::FilePath(), Manifest::INVALID_LOCATION, *parsed_manifest,
       Extension::NO_FLAGS, &error_);
   if (!extension.get()) {
     OnParseFailure(keys::kExtensionCreateError);

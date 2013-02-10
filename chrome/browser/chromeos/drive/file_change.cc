@@ -6,14 +6,15 @@
 
 namespace drive {
 
-FileChange::FileChange(const FilePath& path, Type type)
+FileChange::FileChange(const base::FilePath& path, Type type)
     : path_(path), type_(type) {
 }
 
 FileChange::~FileChange() {}
 
 // static
-FileChangeSet FileChange::CreateSingleSet(const FilePath& path, Type type) {
+FileChangeSet FileChange::CreateSingleSet(const base::FilePath& path,
+                                          Type type) {
   FileChangeSet result;
   result.insert(FileChange(path, type));
   return result;

@@ -156,7 +156,7 @@ StatisticsProviderImpl::StatisticsProviderImpl()
 
 void StatisticsProviderImpl::LoadMachineOSInfoFile() {
   NameValuePairsParser parser(&machine_info_);
-  if (parser.GetNameValuePairsFromFile(FilePath(kMachineOSInfoFile),
+  if (parser.GetNameValuePairsFromFile(base::FilePath(kMachineOSInfoFile),
                                        kMachineOSInfoEq,
                                        kMachineOSInfoDelim)) {
 #if defined(GOOGLE_CHROME_BUILD)
@@ -200,13 +200,13 @@ void StatisticsProviderImpl::LoadMachineStatistics() {
   else
     machine_info_[kHardwareClassKey] = hardware_class;
 
-  parser.GetNameValuePairsFromFile(FilePath(kMachineHardwareInfoFile),
+  parser.GetNameValuePairsFromFile(base::FilePath(kMachineHardwareInfoFile),
                                    kMachineHardwareInfoEq,
                                    kMachineHardwareInfoDelim);
-  parser.GetNameValuePairsFromFile(FilePath(kEchoCouponFile),
+  parser.GetNameValuePairsFromFile(base::FilePath(kEchoCouponFile),
                                    kEchoCouponEq,
                                    kEchoCouponDelim);
-  parser.GetNameValuePairsFromFile(FilePath(kVpdFile), kVpdEq, kVpdDelim);
+  parser.GetNameValuePairsFromFile(base::FilePath(kVpdFile), kVpdEq, kVpdDelim);
 
   // Finished loading the statistics.
   on_statistics_loaded_.Signal();

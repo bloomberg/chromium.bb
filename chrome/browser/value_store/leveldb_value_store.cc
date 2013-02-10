@@ -76,7 +76,7 @@ class ScopedSnapshot {
 
 }  // namespace
 
-LeveldbValueStore::LeveldbValueStore(const FilePath& db_path)
+LeveldbValueStore::LeveldbValueStore(const base::FilePath& db_path)
     : db_path_(db_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

@@ -17,7 +17,7 @@ class CalculatorBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CalculatorBrowserTest, Model) {
-  FilePath test_file;
+  base::FilePath test_file;
   PathService::Get(chrome::DIR_TEST_DATA, &test_file);
   test_file = test_file.DirName().DirName()
       .AppendASCII("common").AppendASCII("extensions").AppendASCII("docs")

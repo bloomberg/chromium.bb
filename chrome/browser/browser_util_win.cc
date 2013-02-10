@@ -17,7 +17,7 @@ namespace browser_util {
 
 bool IsBrowserAlreadyRunning() {
   static HANDLE handle = NULL;
-  FilePath exe_path;
+  base::FilePath exe_path;
   PathService::Get(base::FILE_EXE, &exe_path);
   std::wstring exe = exe_path.value();
   std::replace(exe.begin(), exe.end(), '\\', '!');

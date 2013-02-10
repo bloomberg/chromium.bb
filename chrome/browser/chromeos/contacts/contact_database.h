@@ -48,7 +48,8 @@ class ContactDatabaseInterface {
 
   // Asynchronously initializes the object.  |callback| will be invoked on the
   // UI thread when complete.
-  virtual void Init(const FilePath& database_dir, InitCallback callback) = 0;
+  virtual void Init(const base::FilePath& database_dir,
+                    InitCallback callback) = 0;
 
   // Asynchronously saves |contacts_to_save| and |metadata| to the database and
   // removes contacts with IDs contained in |contact_ids_to_delete|.  If
@@ -76,7 +77,7 @@ class ContactDatabase : public ContactDatabaseInterface {
 
   // ContactDatabaseInterface implementation.
   virtual void DestroyOnUIThread() OVERRIDE;
-  virtual void Init(const FilePath& database_dir,
+  virtual void Init(const base::FilePath& database_dir,
                     InitCallback callback) OVERRIDE;
   virtual void SaveContacts(scoped_ptr<ContactPointers> contacts_to_save,
                             scoped_ptr<ContactIds> contact_ids_to_delete,
@@ -107,7 +108,7 @@ class ContactDatabase : public ContactDatabaseInterface {
                        scoped_ptr<UpdateMetadata> metadata);
 
   // Initializes the database in |database_dir| and updates |success|.
-  void InitFromTaskRunner(const FilePath& database_dir, bool* success);
+  void InitFromTaskRunner(const base::FilePath& database_dir, bool* success);
 
   // Saves data to disk and updates |success|.
   void SaveContactsFromTaskRunner(scoped_ptr<ContactPointers> contacts_to_save,

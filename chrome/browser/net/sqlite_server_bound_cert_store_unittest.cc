@@ -50,9 +50,9 @@ class SQLiteServerBoundCertStoreTest : public testing::Test {
 
  protected:
   static void ReadTestKeyAndCert(std::string* key, std::string* cert) {
-    FilePath key_path = net::GetTestCertsDirectory().AppendASCII(
+    base::FilePath key_path = net::GetTestCertsDirectory().AppendASCII(
         "unittest.originbound.key.der");
-    FilePath cert_path = net::GetTestCertsDirectory().AppendASCII(
+    base::FilePath cert_path = net::GetTestCertsDirectory().AppendASCII(
         "unittest.originbound.der");
     ASSERT_TRUE(file_util::ReadFileToString(key_path, key));
     ASSERT_TRUE(file_util::ReadFileToString(cert_path, cert));
@@ -173,7 +173,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV1) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
-  FilePath v1_db_path(temp_dir_.path().AppendASCII("v1db"));
+  base::FilePath v1_db_path(temp_dir_.path().AppendASCII("v1db"));
 
   std::string key_data;
   std::string cert_data;
@@ -257,7 +257,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV2) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
-  FilePath v2_db_path(temp_dir_.path().AppendASCII("v2db"));
+  base::FilePath v2_db_path(temp_dir_.path().AppendASCII("v2db"));
 
   std::string key_data;
   std::string cert_data;
@@ -345,7 +345,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
-  FilePath v3_db_path(temp_dir_.path().AppendASCII("v3db"));
+  base::FilePath v3_db_path(temp_dir_.path().AppendASCII("v3db"));
 
   std::string key_data;
   std::string cert_data;
@@ -437,7 +437,7 @@ TEST_F(SQLiteServerBoundCertStoreTest, TestUpgradeV3) {
 TEST_F(SQLiteServerBoundCertStoreTest, TestFlush) {
   // File timestamps don't work well on all platforms, so we'll determine
   // whether the DB file has been modified by checking its size.
-  FilePath path = temp_dir_.path().Append(chrome::kOBCertFilename);
+  base::FilePath path = temp_dir_.path().Append(chrome::kOBCertFilename);
   base::PlatformFileInfo info;
   ASSERT_TRUE(file_util::GetFileInfo(path, &info));
   int64 base_size = info.size;

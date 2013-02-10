@@ -22,12 +22,13 @@
 namespace {
 
 // Retrieves the executable and profile paths on the FILE thread.
-void GetFilePaths(const FilePath& profile_path,
+void GetFilePaths(const base::FilePath& profile_path,
                   string16* exec_path_out,
                   string16* profile_path_out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  FilePath executable_path = CommandLine::ForCurrentProcess()->GetProgram();
+  base::FilePath executable_path =
+      CommandLine::ForCurrentProcess()->GetProgram();
   if (file_util::AbsolutePath(&executable_path)) {
     *exec_path_out = executable_path.LossyDisplayName();
   } else {
@@ -35,7 +36,7 @@ void GetFilePaths(const FilePath& profile_path,
         l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_PATH_NOTFOUND);
   }
 
-  FilePath profile_path_copy(profile_path);
+  base::FilePath profile_path_copy(profile_path);
   if (!profile_path.empty() && file_util::AbsolutePath(&profile_path_copy)) {
     *profile_path_out = profile_path.LossyDisplayName();
   } else {

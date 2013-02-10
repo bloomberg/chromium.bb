@@ -20,8 +20,8 @@
 
 namespace {
 
-const FilePath::CharType kTestName[] = FILE_PATH_LITERAL("merge");
-const FilePath::CharType kFileNamePattern[] = FILE_PATH_LITERAL("*.in");
+const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("merge");
+const base::FilePath::CharType kFileNamePattern[] = FILE_PATH_LITERAL("*.in");
 
 const char kFieldSeparator[] = ": ";
 const char kProfileSeparator[] = "---";

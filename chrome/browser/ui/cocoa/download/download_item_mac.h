@@ -57,7 +57,7 @@ class DownloadItemMac : content::DownloadItem::Observer {
   CancelableTaskTracker cancelable_task_tracker_;
 
   // Stores the last known path where the file will be saved.
-  FilePath lastFilePath_;
+  base::FilePath lastFilePath_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemMac);
 };

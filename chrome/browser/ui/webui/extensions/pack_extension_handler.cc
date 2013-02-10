@@ -64,8 +64,8 @@ void PackExtensionHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void PackExtensionHandler::OnPackSuccess(const FilePath& crx_file,
-                                         const FilePath& pem_file) {
+void PackExtensionHandler::OnPackSuccess(const base::FilePath& crx_file,
+                                         const base::FilePath& pem_file) {
   ListValue arguments;
   arguments.Append(Value::CreateStringValue(
       UTF16ToUTF8(extensions::PackExtensionJob::StandardSuccessMessage(
@@ -92,7 +92,7 @@ void PackExtensionHandler::OnPackFailure(
   }
 }
 
-void PackExtensionHandler::FileSelected(const FilePath& path, int index,
+void PackExtensionHandler::FileSelected(const base::FilePath& path, int index,
                                         void* params) {
   ListValue results;
   results.Append(Value::CreateStringValue(path.value()));
@@ -100,7 +100,7 @@ void PackExtensionHandler::FileSelected(const FilePath& path, int index,
 }
 
 void PackExtensionHandler::MultiFilesSelected(
-    const std::vector<FilePath>& files, void* params) {
+    const std::vector<base::FilePath>& files, void* params) {
   NOTREACHED();
 }
 
@@ -118,9 +118,10 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
 
   int run_flags = static_cast<int>(flags_double);
 
-  FilePath root_directory =
-      FilePath::FromWStringHack(UTF8ToWide(extension_path_));
-  FilePath key_file = FilePath::FromWStringHack(UTF8ToWide(private_key_path_));
+  base::FilePath root_directory =
+      base::FilePath::FromWStringHack(UTF8ToWide(extension_path_));
+  base::FilePath key_file =
+      base::FilePath::FromWStringHack(UTF8ToWide(private_key_path_));
 
   if (root_directory.empty()) {
     if (extension_path_.empty()) {
@@ -169,7 +170,7 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
   } else if (operation == "pem") {
     select_title = l10n_util::GetStringUTF16(
         IDS_EXTENSION_PACK_DIALOG_SELECT_KEY);
-    info.extensions.push_back(std::vector<FilePath::StringType>());
+    info.extensions.push_back(std::vector<base::FilePath::StringType>());
         info.extensions.front().push_back(FILE_PATH_LITERAL("pem"));
         info.extension_description_overrides.push_back(
             l10n_util::GetStringUTF16(
@@ -183,7 +184,7 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
   load_extension_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
   load_extension_dialog_->SelectFile(
-      type, select_title, FilePath(), &info, file_type_index,
+      type, select_title, base::FilePath(), &info, file_type_index,
       FILE_PATH_LITERAL(""),
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
       NULL);

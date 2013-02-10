@@ -58,7 +58,7 @@ namespace {
 #if defined(OS_MACOSX)
 // Retrieves the localized display name for the base name of the given path.
 // If the path is not localized, this will just return the base name.
-std::string GetDisplayBaseName(const FilePath& path) {
+std::string GetDisplayBaseName(const base::FilePath& path) {
   base::mac::ScopedCFTypeRef<CFURLRef> url(
       CFURLCreateFromFileSystemRepresentation(
           NULL,
@@ -80,8 +80,8 @@ std::string GetDisplayBaseName(const FilePath& path) {
 // Prettifies |source_path| for OS X, by localizing every component of the
 // path. Additionally, if the path is inside the user's home directory, then
 // replace the home directory component with "~".
-FilePath PrettifyPath(const FilePath& source_path) {
-  FilePath home_path;
+base::FilePath PrettifyPath(const base::FilePath& source_path) {
+  base::FilePath home_path;
   PathService::Get(base::DIR_HOME, &home_path);
   DCHECK(source_path.IsAbsolute());
 
@@ -90,16 +90,16 @@ FilePath PrettifyPath(const FilePath& source_path) {
   // and localized subfolders of the user's home directory.
   // Don't grab the display name of the first component, i.e., "/", as it'll
   // show up as the HDD name.
-  std::vector<FilePath::StringType> components;
+  std::vector<base::FilePath::StringType> components;
   source_path.GetComponents(&components);
-  FilePath display_path = FilePath(components[0]);
-  FilePath actual_path = display_path;
-  for (std::vector<FilePath::StringType>::iterator i = components.begin() + 1;
-       i != components.end(); ++i) {
+  base::FilePath display_path = base::FilePath(components[0]);
+  base::FilePath actual_path = display_path;
+  for (std::vector<base::FilePath::StringType>::iterator i =
+           components.begin() + 1; i != components.end(); ++i) {
     actual_path = actual_path.Append(*i);
     if (actual_path == home_path) {
-      display_path = FilePath("~");
-      home_path = FilePath();
+      display_path = base::FilePath("~");
+      home_path = base::FilePath();
       continue;
     }
     std::string display = GetDisplayBaseName(actual_path);
@@ -111,15 +111,15 @@ FilePath PrettifyPath(const FilePath& source_path) {
 #else  // defined(OS_MACOSX)
 // Prettifies |source_path|, by replacing the user's home directory with "~"
 // (if applicable).
-FilePath PrettifyPath(const FilePath& source_path) {
+base::FilePath PrettifyPath(const base::FilePath& source_path) {
 #if defined(OS_WIN) || defined(OS_POSIX)
 #if defined(OS_WIN)
   int home_key = base::DIR_PROFILE;
 #elif defined(OS_POSIX)
   int home_key = base::DIR_HOME;
 #endif
-  FilePath home_path;
-  FilePath display_path = FilePath::FromUTF8Unsafe("~");
+  base::FilePath home_path;
+  base::FilePath display_path = base::FilePath::FromUTF8Unsafe("~");
   if (PathService::Get(home_key, &home_path)
       && home_path.AppendRelativePath(source_path, &display_path))
     return display_path;
@@ -129,12 +129,12 @@ FilePath PrettifyPath(const FilePath& source_path) {
 #endif  // defined(OS_MACOSX)
 
 bool g_skip_picker_for_test = false;
-FilePath* g_path_to_be_picked_for_test;
+base::FilePath* g_path_to_be_picked_for_test;
 
 bool GetFilePathOfFileEntry(const std::string& filesystem_name,
                             const std::string& filesystem_path,
                             const content::RenderViewHost* render_view_host,
-                            FilePath* file_path,
+                            base::FilePath* file_path,
                             std::string* error) {
   std::string filesystem_id;
   if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
@@ -153,8 +153,9 @@ bool GetFilePathOfFileEntry(const std::string& filesystem_name,
   }
 
   IsolatedContext* context = IsolatedContext::GetInstance();
-  FilePath relative_path = FilePath::FromUTF8Unsafe(filesystem_path);
-  FilePath virtual_path = context->CreateVirtualRootPath(filesystem_id)
+  base::FilePath relative_path =
+      base::FilePath::FromUTF8Unsafe(filesystem_path);
+  base::FilePath virtual_path = context->CreateVirtualRootPath(filesystem_id)
       .Append(relative_path);
   if (!context->CrackVirtualPath(virtual_path,
                                  &filesystem_id,
@@ -167,7 +168,7 @@ bool GetFilePathOfFileEntry(const std::string& filesystem_name,
   return true;
 }
 
-bool DoCheckWritableFile(const FilePath& path) {
+bool DoCheckWritableFile(const base::FilePath& path) {
   // Don't allow links.
   if (file_util::PathExists(path) && file_util::IsLink(path))
     return false;
@@ -191,9 +192,9 @@ bool DoCheckWritableFile(const FilePath& path) {
 // were found.
 bool GetFileTypesFromAcceptOption(
     const file_system::AcceptOption& accept_option,
-    std::vector<FilePath::StringType>* extensions,
+    std::vector<base::FilePath::StringType>* extensions,
     string16* description) {
-  std::set<FilePath::StringType> extension_set;
+  std::set<base::FilePath::StringType> extension_set;
   int description_id = 0;
 
   if (accept_option.mime_types.get()) {
@@ -201,7 +202,7 @@ bool GetFileTypesFromAcceptOption(
     bool valid_type = false;
     for (std::vector<std::string>::const_iterator iter = list->begin();
          iter != list->end(); ++iter) {
-      std::vector<FilePath::StringType> inner;
+      std::vector<base::FilePath::StringType> inner;
       std::string accept_type = *iter;
       StringToLowerASCII(&accept_type);
       net::GetExtensionsForMimeType(accept_type, &inner);
@@ -259,7 +260,7 @@ bool FileSystemGetDisplayPathFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_path));
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!GetFilePathOfFileEntry(filesystem_name, filesystem_path,
                               render_view_host_, &file_path, &error_))
     return false;
@@ -277,7 +278,7 @@ bool FileSystemEntryFunction::HasFileSystemWritePermission() {
   return extension->HasAPIPermission(APIPermission::kFileSystemWrite);
 }
 
-void FileSystemEntryFunction::CheckWritableFile(const FilePath& path) {
+void FileSystemEntryFunction::CheckWritableFile(const base::FilePath& path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   if (DoCheckWritableFile(path)) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
@@ -291,7 +292,7 @@ void FileSystemEntryFunction::CheckWritableFile(const FilePath& path) {
 }
 
 void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
-    const FilePath& path, EntryType entry_type) {
+    const base::FilePath& path, EntryType entry_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   fileapi::IsolatedContext* isolated_context =
@@ -339,7 +340,7 @@ bool FileSystemGetWritableEntryFunction::RunImpl() {
     return false;
   }
 
-  FilePath path;
+  base::FilePath path;
   if (!GetFilePathOfFileEntry(filesystem_name, filesystem_path,
                               render_view_host_, &path, &error_))
     return false;
@@ -379,7 +380,7 @@ class FileSystemChooseEntryFunction::FilePicker
  public:
   FilePicker(FileSystemChooseEntryFunction* function,
              content::WebContents* web_contents,
-             const FilePath& suggested_name,
+             const base::FilePath& suggested_name,
              const ui::SelectFileDialog::FileTypeInfo& file_type_info,
              ui::SelectFileDialog::Type picker_type,
              EntryType entry_type)
@@ -419,7 +420,7 @@ class FileSystemChooseEntryFunction::FilePicker
 
  private:
   // ui::SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE {
     function_->FileSelected(path, entry_type_);
@@ -431,7 +432,7 @@ class FileSystemChooseEntryFunction::FilePicker
     delete this;
   }
 
-  FilePath suggested_name_;
+  base::FilePath suggested_name_;
 
   EntryType entry_type_;
 
@@ -442,7 +443,7 @@ class FileSystemChooseEntryFunction::FilePicker
 };
 
 bool FileSystemChooseEntryFunction::ShowPicker(
-    const FilePath& suggested_name,
+    const base::FilePath& suggested_name,
     const ui::SelectFileDialog::FileTypeInfo& file_type_info,
     ui::SelectFileDialog::Type picker_type,
     EntryType entry_type) {
@@ -466,7 +467,7 @@ bool FileSystemChooseEntryFunction::ShowPicker(
 
 // static
 void FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
-    FilePath* path) {
+    base::FilePath* path) {
   g_skip_picker_for_test = true;
   g_path_to_be_picked_for_test = path;
 }
@@ -482,7 +483,7 @@ void FileSystemChooseEntryFunction::StopSkippingPickerForTest() {
   g_skip_picker_for_test = false;
 }
 
-void FileSystemChooseEntryFunction::FileSelected(const FilePath& path,
+void FileSystemChooseEntryFunction::FileSelected(const base::FilePath& path,
                                                 EntryType entry_type) {
   if (entry_type == WRITABLE) {
     content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
@@ -502,7 +503,7 @@ void FileSystemChooseEntryFunction::FileSelectionCanceled() {
 
 void FileSystemChooseEntryFunction::BuildFileTypeInfo(
     ui::SelectFileDialog::FileTypeInfo* file_type_info,
-    const FilePath::StringType& suggested_extension,
+    const base::FilePath::StringType& suggested_extension,
     const AcceptOptions* accepts,
     const bool* acceptsAllTypes) {
   file_type_info->include_all_files = true;
@@ -517,7 +518,7 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
     for (std::vector<linked_ptr<AcceptOption> >::const_iterator iter =
             accepts->begin(); iter != accepts->end(); ++iter) {
       string16 description;
-      std::vector<FilePath::StringType> extensions;
+      std::vector<base::FilePath::StringType> extensions;
 
       if (!GetFileTypesFromAcceptOption(**iter, &extensions, &description))
         continue;  // No extensions were found.
@@ -542,17 +543,17 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
 
 void FileSystemChooseEntryFunction::BuildSuggestion(
     const std::string *opt_name,
-    FilePath* suggested_name,
-    FilePath::StringType* suggested_extension) {
+    base::FilePath* suggested_name,
+    base::FilePath::StringType* suggested_extension) {
   if (opt_name) {
-    *suggested_name = FilePath::FromUTF8Unsafe(*opt_name);
+    *suggested_name = base::FilePath::FromUTF8Unsafe(*opt_name);
 
     // Don't allow any path components; shorten to the base name. This should
     // result in a relative path, but in some cases may not. Clear the
     // suggestion for safety if this is the case.
     *suggested_name = suggested_name->BaseName();
     if (suggested_name->IsAbsolute())
-      *suggested_name = FilePath();
+      *suggested_name = base::FilePath();
 
     *suggested_extension = suggested_name->Extension();
     if (!suggested_extension->empty())
@@ -564,7 +565,7 @@ bool FileSystemChooseEntryFunction::RunImpl() {
   scoped_ptr<ChooseEntry::Params> params(ChooseEntry::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  FilePath suggested_name;
+  base::FilePath suggested_name;
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   EntryType entry_type = READ_ONLY;
   ui::SelectFileDialog::Type picker_type =
@@ -584,7 +585,7 @@ bool FileSystemChooseEntryFunction::RunImpl() {
       }
     }
 
-    FilePath::StringType suggested_extension;
+    base::FilePath::StringType suggested_extension;
     BuildSuggestion(options->suggested_name.get(), &suggested_name,
         &suggested_extension);
 

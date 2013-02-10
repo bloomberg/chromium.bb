@@ -183,7 +183,7 @@ void UserScriptMaster::ScriptReloader::NotifyMaster(
 static bool LoadScriptContent(UserScript::File* script_file,
                               const SubstitutionMap* localization_messages) {
   std::string content;
-  const FilePath& path = ExtensionResource::GetFilePath(
+  const base::FilePath& path = ExtensionResource::GetFilePath(
       script_file->extension_root(), script_file->relative_path(),
       ExtensionResource::SYMLINKS_MUST_RESOLVE_WITHIN_ROOT);
   if (path.empty()) {

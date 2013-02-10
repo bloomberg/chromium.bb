@@ -190,7 +190,7 @@ class CloudPrintProxyPolicyTest : public ::testing::Test {
     int return_code = 0;
     StartupBrowserCreator browser_creator;
     return StartupBrowserCreator::ProcessCmdLineImpl(
-        command_line, FilePath(), false, profile,
+        command_line, base::FilePath(), false, profile,
         StartupBrowserCreator::Profiles(), &return_code, &browser_creator);
   }
 

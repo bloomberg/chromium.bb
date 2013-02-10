@@ -159,7 +159,7 @@ const char* const kPrefExitTypeSessionEnded = "SessionEnded";
 
 // Helper method needed because PostTask cannot currently take a Callback
 // function with non-void return type.
-void CreateDirectoryAndSignal(const FilePath& path,
+void CreateDirectoryAndSignal(const base::FilePath& path,
                               base::WaitableEvent* done_creating) {
   DVLOG(1) << "Creating directory " << path.value();
   file_util::CreateDirectory(path);
@@ -175,7 +175,7 @@ void BlockFileThreadOnDirectoryCreate(base::WaitableEvent* done_creating) {
 // Initiates creation of profile directory on |sequenced_task_runner| and
 // ensures that FILE thread is blocked until that operation finishes.
 void CreateProfileDirectory(base::SequencedTaskRunner* sequenced_task_runner,
-                            const FilePath& path) {
+                            const base::FilePath& path) {
   base::WaitableEvent* done_creating = new base::WaitableEvent(false, false);
   sequenced_task_runner->PostTask(FROM_HERE,
                                   base::Bind(&CreateDirectoryAndSignal,
@@ -189,16 +189,16 @@ void CreateProfileDirectory(base::SequencedTaskRunner* sequenced_task_runner,
                  base::Owned(done_creating)));
 }
 
-FilePath GetCachePath(const FilePath& base) {
+base::FilePath GetCachePath(const base::FilePath& base) {
   return base.Append(chrome::kCacheDirname);
 }
 
-FilePath GetMediaCachePath(const FilePath& base) {
+base::FilePath GetMediaCachePath(const base::FilePath& base) {
   return base.Append(chrome::kMediaCacheDirname);
 }
 
-void EnsureReadmeFile(const FilePath& base) {
-  FilePath readme_path = base.Append(chrome::kReadmeFilename);
+void EnsureReadmeFile(const base::FilePath& base) {
+  base::FilePath readme_path = base.Append(chrome::kReadmeFilename);
   if (file_util::PathExists(readme_path))
     return;
   std::string product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
@@ -236,7 +236,7 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
 }  // namespace
 
 // static
-Profile* Profile::CreateProfile(const FilePath& path,
+Profile* Profile::CreateProfile(const base::FilePath& path,
                                 Delegate* delegate,
                                 CreateMode create_mode) {
   // Get sequenced task runner for making sure that file operations of
@@ -304,7 +304,7 @@ void ProfileImpl::RegisterUserPrefs(PrefServiceSyncable* prefs) {
 
   // Initialize the cache prefs.
   prefs->RegisterFilePathPref(prefs::kDiskCacheDir,
-                              FilePath(),
+                              base::FilePath(),
                               PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kDiskCacheSize,
                              0,
@@ -320,7 +320,7 @@ void ProfileImpl::RegisterUserPrefs(PrefServiceSyncable* prefs) {
 }
 
 ProfileImpl::ProfileImpl(
-    const FilePath& path,
+    const base::FilePath& path,
     Delegate* delegate,
     CreateMode create_mode,
     base::SequencedTaskRunner* sequenced_task_runner)
@@ -466,26 +466,26 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
       g_browser_process->background_mode_manager()->RegisterProfile(this);
   }
 
-  FilePath cookie_path = GetPath();
+  base::FilePath cookie_path = GetPath();
   cookie_path = cookie_path.Append(chrome::kCookieFilename);
-  FilePath server_bound_cert_path = GetPath();
+  base::FilePath server_bound_cert_path = GetPath();
   server_bound_cert_path =
       server_bound_cert_path.Append(chrome::kOBCertFilename);
-  FilePath cache_path = base_cache_path_;
+  base::FilePath cache_path = base_cache_path_;
   int cache_max_size;
   GetCacheParameters(false, &cache_path, &cache_max_size);
   cache_path = GetCachePath(cache_path);
 
-  FilePath media_cache_path = base_cache_path_;
+  base::FilePath media_cache_path = base_cache_path_;
   int media_cache_max_size;
   GetCacheParameters(true, &media_cache_path, &media_cache_max_size);
   media_cache_path = GetMediaCachePath(media_cache_path);
 
-  FilePath extensions_cookie_path = GetPath();
+  base::FilePath extensions_cookie_path = GetPath();
   extensions_cookie_path =
       extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
 
-  FilePath infinite_cache_path = GetPath();
+  base::FilePath infinite_cache_path = GetPath();
   infinite_cache_path =
       infinite_cache_path.Append(FILE_PATH_LITERAL("Infinite Cache"));
 
@@ -577,11 +577,11 @@ void ProfileImpl::InitHostZoomMap() {
   host_zoom_map->AddZoomLevelChangedCallback(zoom_callback_);
 }
 
-FilePath ProfileImpl::last_selected_directory() {
+base::FilePath ProfileImpl::last_selected_directory() {
   return GetPrefs()->GetFilePath(prefs::kSelectFileLastDirectory);
 }
 
-void ProfileImpl::set_last_selected_directory(const FilePath& path) {
+void ProfileImpl::set_last_selected_directory(const base::FilePath& path) {
   GetPrefs()->SetFilePath(prefs::kSelectFileLastDirectory, path);
 }
 
@@ -640,7 +640,7 @@ std::string ProfileImpl::GetProfileName() {
   return GetPrefs()->GetString(prefs::kGoogleServicesUsername);
 }
 
-FilePath ProfileImpl::GetPath() {
+base::FilePath ProfileImpl::GetPath() {
   return path_;
 }
 
@@ -802,8 +802,8 @@ PrefServiceSyncable* ProfileImpl::GetOffTheRecordPrefs() {
   return otr_prefs_.get();
 }
 
-FilePath ProfileImpl::GetPrefFilePath() {
-  FilePath pref_file_path = path_;
+base::FilePath ProfileImpl::GetPrefFilePath() {
+  base::FilePath pref_file_path = path_;
   pref_file_path = pref_file_path.Append(chrome::kPreferencesFilename);
   return pref_file_path;
 }
@@ -858,7 +858,7 @@ ProfileImpl::GetMediaRequestContextForRenderProcess(
 
 net::URLRequestContextGetter*
 ProfileImpl::GetMediaRequestContextForStoragePartition(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory) {
   return io_data_.GetIsolatedMediaRequestContextGetter(partition_path,
                                                        in_memory);
@@ -874,7 +874,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
 
 net::URLRequestContextGetter*
 ProfileImpl::CreateRequestContextForStoragePartition(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory,
     scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
         blob_protocol_handler,
@@ -1114,7 +1114,7 @@ GURL ProfileImpl::GetHomePage() {
     // For now, allow this code to call getcwd().
     base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-    FilePath browser_directory;
+    base::FilePath browser_directory;
     PathService::Get(base::DIR_CURRENT, &browser_directory);
     GURL home_page(URLFixerUpper::FixupRelativeFile(browser_directory,
         command_line.GetSwitchValuePath(switches::kHomePage)));
@@ -1171,11 +1171,11 @@ void ProfileImpl::UpdateProfileAvatarCache() {
 // there is not an argument. |max_size| will be the user provided value or zero
 // by default.
 void ProfileImpl::GetCacheParameters(bool is_media_context,
-                                     FilePath* cache_path,
+                                     base::FilePath* cache_path,
                                      int* max_size) {
   DCHECK(cache_path);
   DCHECK(max_size);
-  FilePath path(prefs_->GetFilePath(prefs::kDiskCacheDir));
+  base::FilePath path(prefs_->GetFilePath(prefs::kDiskCacheDir));
   if (!path.empty())
     *cache_path = path;
   *max_size = is_media_context ? prefs_->GetInteger(prefs::kMediaCacheSize) :

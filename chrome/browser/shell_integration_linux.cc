@@ -72,7 +72,7 @@ bool LaunchXdgUtility(const std::vector<std::string>& argv, int* exit_code) {
 
 std::string CreateShortcutIcon(
     const ShellIntegration::ShortcutInfo& shortcut_info,
-    const FilePath& shortcut_filename) {
+    const base::FilePath& shortcut_filename) {
   if (shortcut_info.favicon.IsEmpty())
     return std::string();
 
@@ -81,7 +81,7 @@ std::string CreateShortcutIcon(
   if (!temp_dir.CreateUniqueTempDir())
     return std::string();
 
-  FilePath temp_file_path = temp_dir.path().Append(
+  base::FilePath temp_file_path = temp_dir.path().Append(
       shortcut_filename.ReplaceExtension("png"));
 
   std::vector<unsigned char> png_data;
@@ -113,12 +113,12 @@ std::string CreateShortcutIcon(
   return icon_name;
 }
 
-bool CreateShortcutOnDesktop(const FilePath& shortcut_filename,
+bool CreateShortcutOnDesktop(const base::FilePath& shortcut_filename,
                              const std::string& contents) {
   // Make sure that we will later call openat in a secure way.
   DCHECK_EQ(shortcut_filename.BaseName().value(), shortcut_filename.value());
 
-  FilePath desktop_path;
+  base::FilePath desktop_path;
   if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
     return false;
 
@@ -154,19 +154,19 @@ bool CreateShortcutOnDesktop(const FilePath& shortcut_filename,
   return true;
 }
 
-void DeleteShortcutOnDesktop(const FilePath& shortcut_filename) {
-  FilePath desktop_path;
+void DeleteShortcutOnDesktop(const base::FilePath& shortcut_filename) {
+  base::FilePath desktop_path;
   if (PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
     file_util::Delete(desktop_path.Append(shortcut_filename), false);
 }
 
-bool CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
+bool CreateShortcutInApplicationsMenu(const base::FilePath& shortcut_filename,
                                       const std::string& contents) {
   base::ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDir())
     return false;
 
-  FilePath temp_file_path = temp_dir.path().Append(shortcut_filename);
+  base::FilePath temp_file_path = temp_dir.path().Append(shortcut_filename);
 
   int bytes_written = file_util::WriteFile(temp_file_path, contents.data(),
                                            contents.length());
@@ -189,7 +189,7 @@ bool CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
   return exit_code == 0;
 }
 
-void DeleteShortcutInApplicationsMenu(const FilePath& shortcut_filename) {
+void DeleteShortcutInApplicationsMenu(const base::FilePath& shortcut_filename) {
   std::vector<std::string> argv;
   argv.push_back("xdg-desktop-menu");
   argv.push_back("uninstall");
@@ -267,11 +267,11 @@ namespace {
 bool GetChromeVersionOfScript(const std::string& script,
                                std::string* chrome_version) {
   // Get the path to the Chrome version.
-  FilePath chrome_dir;
+  base::FilePath chrome_dir;
   if (!PathService::Get(base::DIR_EXE, &chrome_dir))
     return false;
 
-  FilePath chrome_version_path = chrome_dir.Append(script);
+  base::FilePath chrome_version_path = chrome_dir.Append(script);
   *chrome_version = chrome_version_path.value();
 
   // Check if this is different to the one on path.
@@ -282,7 +282,7 @@ bool GetChromeVersionOfScript(const std::string& script,
   if (base::GetAppOutput(CommandLine(argv), &path_version)) {
     // Remove trailing newline
     path_version.erase(path_version.length() - 1, 1);
-    FilePath path_version_path(path_version);
+    base::FilePath path_version_path(path_version);
     return (chrome_version_path != path_version_path);
   }
   return false;
@@ -446,12 +446,12 @@ bool GetDesktopShortcutTemplate(base::Environment* env,
                                 std::string* output) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::vector<FilePath> search_paths;
+  std::vector<base::FilePath> search_paths;
 
   std::string xdg_data_home;
   if (env->GetVar("XDG_DATA_HOME", &xdg_data_home) &&
       !xdg_data_home.empty()) {
-    search_paths.push_back(FilePath(xdg_data_home));
+    search_paths.push_back(base::FilePath(xdg_data_home));
   }
 
   std::string xdg_data_dirs;
@@ -459,7 +459,7 @@ bool GetDesktopShortcutTemplate(base::Environment* env,
       !xdg_data_dirs.empty()) {
     base::StringTokenizer tokenizer(xdg_data_dirs, ":");
     while (tokenizer.GetNext()) {
-      FilePath data_dir(tokenizer.token());
+      base::FilePath data_dir(tokenizer.token());
       search_paths.push_back(data_dir);
       search_paths.push_back(data_dir.Append("applications"));
     }
@@ -467,13 +467,13 @@ bool GetDesktopShortcutTemplate(base::Environment* env,
 
   // Add some fallback paths for systems which don't have XDG_DATA_DIRS or have
   // it incomplete.
-  search_paths.push_back(FilePath("/usr/share/applications"));
-  search_paths.push_back(FilePath("/usr/local/share/applications"));
+  search_paths.push_back(base::FilePath("/usr/share/applications"));
+  search_paths.push_back(base::FilePath("/usr/local/share/applications"));
 
   std::string template_filename(GetDesktopName(env));
-  for (std::vector<FilePath>::const_iterator i = search_paths.begin();
+  for (std::vector<base::FilePath>::const_iterator i = search_paths.begin();
        i != search_paths.end(); ++i) {
-    FilePath path = i->Append(template_filename);
+    base::FilePath path = i->Append(template_filename);
     VLOG(1) << "Looking for desktop file template in " << path.value();
     if (file_util::PathExists(path)) {
       VLOG(1) << "Found desktop file template at " << path.value();
@@ -485,32 +485,32 @@ bool GetDesktopShortcutTemplate(base::Environment* env,
   return false;
 }
 
-FilePath GetWebShortcutFilename(const GURL& url) {
+base::FilePath GetWebShortcutFilename(const GURL& url) {
   // Use a prefix, because xdg-desktop-menu requires it.
   std::string filename =
       std::string(chrome::kBrowserProcessExecutableName) + "-" + url.spec();
   file_util::ReplaceIllegalCharactersInPath(&filename, '_');
 
-  FilePath desktop_path;
+  base::FilePath desktop_path;
   if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
-    return FilePath();
+    return base::FilePath();
 
-  FilePath filepath = desktop_path.Append(filename);
-  FilePath alternative_filepath(filepath.value() + ".desktop");
+  base::FilePath filepath = desktop_path.Append(filename);
+  base::FilePath alternative_filepath(filepath.value() + ".desktop");
   for (size_t i = 1; i < 100; ++i) {
-    if (file_util::PathExists(FilePath(alternative_filepath))) {
-      alternative_filepath = FilePath(
+    if (file_util::PathExists(base::FilePath(alternative_filepath))) {
+      alternative_filepath = base::FilePath(
           filepath.value() + "_" + base::IntToString(i) + ".desktop");
     } else {
-      return FilePath(alternative_filepath).BaseName();
+      return base::FilePath(alternative_filepath).BaseName();
     }
   }
 
-  return FilePath();
+  return base::FilePath();
 }
 
-FilePath GetExtensionShortcutFilename(const FilePath& profile_path,
-                                      const std::string& extension_id) {
+base::FilePath GetExtensionShortcutFilename(const base::FilePath& profile_path,
+                                            const std::string& extension_id) {
   DCHECK(!extension_id.empty());
 
   // Use a prefix, because xdg-desktop-menu requires it.
@@ -520,7 +520,7 @@ FilePath GetExtensionShortcutFilename(const FilePath& profile_path,
       .append("-")
       .append(profile_path.BaseName().value());
   file_util::ReplaceIllegalCharactersInPath(&filename, '_');
-  return FilePath(filename.append(".desktop"));
+  return base::FilePath(filename.append(".desktop"));
 }
 
 std::string GetDesktopFileContents(
@@ -528,10 +528,10 @@ std::string GetDesktopFileContents(
     const std::string& app_name,
     const GURL& url,
     const std::string& extension_id,
-    const FilePath& extension_path,
+    const base::FilePath& extension_path,
     const string16& title,
     const std::string& icon_name,
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
   // launchers with an xdg-open shebang. Follow that convention.
   std::string output_buffer = std::string(kXdgOpenShebang) + "\n";
@@ -661,7 +661,7 @@ bool CreateDesktopShortcut(
     const std::string& shortcut_template) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath shortcut_filename;
+  base::FilePath shortcut_filename;
   if (!shortcut_info.extension_id.empty()) {
     shortcut_filename = GetExtensionShortcutFilename(
         shortcut_info.profile_path, shortcut_info.extension_id);
@@ -703,11 +703,11 @@ bool CreateDesktopShortcut(
   return success;
 }
 
-void DeleteDesktopShortcuts(const FilePath& profile_path,
+void DeleteDesktopShortcuts(const base::FilePath& profile_path,
                             const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath shortcut_filename = GetExtensionShortcutFilename(
+  base::FilePath shortcut_filename = GetExtensionShortcutFilename(
       profile_path, extension_id);
   DCHECK(!shortcut_filename.empty());
 

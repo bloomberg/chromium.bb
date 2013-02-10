@@ -19,7 +19,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
   // Initialize the commandline singleton from the environment.
   CommandLine::Init(0, NULL);
 
-  FilePath chrome_exe(chrome_launcher_support::GetAnyChromePath());
+  base::FilePath chrome_exe(chrome_launcher_support::GetAnyChromePath());
   if (chrome_exe.empty()) {
     LOG(INFO) << "No Chrome executable could be found. Let's install it.";
     HRESULT hr = app_host::InstallBinaries();

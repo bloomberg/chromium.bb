@@ -44,15 +44,16 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
 
   // Restricts the given plugin to the given profile and origin of the given
   // URL.
-  void RestrictPluginToProfileAndOrigin(const FilePath& plugin_path,
+  void RestrictPluginToProfileAndOrigin(const base::FilePath& plugin_path,
                                         Profile* profile,
                                         const GURL& url);
 
   // Lifts a restriction on a plug-in.
-  void UnrestrictPlugin(const FilePath& plugin_path);
+  void UnrestrictPlugin(const base::FilePath& plugin_path);
 
   // Authorizes a given plug-in for a given process.
-  void AuthorizePlugin(int render_process_id, const FilePath& plugin_path);
+  void AuthorizePlugin(int render_process_id,
+                       const base::FilePath& plugin_path);
 
   // Authorizes all plug-ins for a given process.
   void AuthorizeAllPlugins(int render_process_id);
@@ -70,7 +71,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   // (render_process_id == 0)
   virtual bool CanLoadPlugin(
       int render_process_id,
-      const FilePath& path) OVERRIDE;
+      const base::FilePath& path) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<ChromePluginServiceFilter>;
@@ -89,7 +90,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
     ~ProcessDetails();
 
     std::vector<OverriddenPlugin> overridden_plugins;
-    std::set<FilePath> authorized_plugins;
+    std::set<base::FilePath> authorized_plugins;
   };
 
   ChromePluginServiceFilter();
@@ -108,7 +109,8 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   base::Lock lock_;  // Guards access to member variables.
   // Map of plugin paths to the origin they are restricted to.
   typedef std::pair<const void*, GURL> RestrictedPluginPair;
-  typedef base::hash_map<FilePath, RestrictedPluginPair> RestrictedPluginMap;
+  typedef base::hash_map<base::FilePath,
+                         RestrictedPluginPair> RestrictedPluginMap;
   RestrictedPluginMap restricted_plugins_;
   typedef std::map<const void*, scoped_refptr<PluginPrefs> > ResourceContextMap;
   ResourceContextMap resource_context_map_;

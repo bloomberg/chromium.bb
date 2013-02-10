@@ -55,15 +55,15 @@ bool RemovePrefix(const std::string& input,
   return true;
 }
 
-FilePath GetTestFilePath(const std::string& relative_path) {
-  FilePath path;
+base::FilePath GetTestFilePath(const std::string& relative_path) {
+  base::FilePath path;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
-    return FilePath();
+    return base::FilePath();
   path = path.AppendASCII("chrome")
              .AppendASCII("test")
              .AppendASCII("data")
              .AppendASCII("chromeos")
-             .Append(FilePath::FromUTF8Unsafe(relative_path));
+             .Append(base::FilePath::FromUTF8Unsafe(relative_path));
   return path;
 }
 
@@ -85,7 +85,7 @@ void RunBlockingPoolTask() {
 }
 
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
-  FilePath path = GetTestFilePath(relative_path);
+  base::FilePath path = GetTestFilePath(relative_path);
 
   std::string error;
   JSONFileValueSerializer serializer(path);
@@ -161,9 +161,9 @@ void CopyResultsFromGetAppListCallback(
 
 void CopyResultsFromDownloadActionCallback(
     GDataErrorCode* error_out,
-    FilePath* temp_file_out,
+    base::FilePath* temp_file_out,
     GDataErrorCode error_in,
-    const FilePath& temp_file_in) {
+    const base::FilePath& temp_file_in) {
   *error_out = error_in;
   *temp_file_out = temp_file_in;
 }
@@ -188,7 +188,7 @@ void CopyResultsFromUploadRangeCallback(
 
 // Returns a HttpResponse created from the given file path.
 scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   std::string content;
   if (!file_util::ReadFileToString(file_path, &content))
     return scoped_ptr<test_server::HttpResponse>();
@@ -226,7 +226,7 @@ scoped_ptr<test_server::HttpResponse> HandleDownloadRequest(
   return CreateHttpResponseFromFile(GetTestFilePath(remaining_path));
 }
 
-bool VerifyJsonData(const FilePath& expected_json_file_path,
+bool VerifyJsonData(const base::FilePath& expected_json_file_path,
                     const base::Value* json_data) {
   if (!json_data) {
     LOG(ERROR) << "json_data is NULL";

@@ -41,7 +41,7 @@ class ComponentUnpacker {
   // Unpacks, verifies and calls the installer. |pk_hash| is the expected
   // public key SHA256 hash. |path| is the current location of the CRX.
   ComponentUnpacker(const std::vector<uint8>& pk_hash,
-                    const FilePath& path,
+                    const base::FilePath& path,
                     ComponentInstaller* installer);
 
   // If something went wrong during unpacking or installer invocation, the
@@ -51,7 +51,7 @@ class ComponentUnpacker {
   Error error() const { return error_; }
 
  private:
-  FilePath unpack_path_;
+  base::FilePath unpack_path_;
   Error error_;
 };
 

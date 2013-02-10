@@ -20,7 +20,7 @@ namespace {
 
 // Unzips |source_zip_file| and sets the filename of the unzipped image to
 // |source_image_file|.
-void UnzipImage(const FilePath& source_zip_file,
+void UnzipImage(const base::FilePath& source_zip_file,
                 const std::string& image_name,
                 scoped_refptr<base::RefCountedString> source_image_file) {
   if (zip::Unzip(source_zip_file, source_zip_file.DirName())) {
@@ -37,10 +37,10 @@ class BurnLibraryImpl : public BurnLibrary {
   // BurnLibrary implementation.
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual void DoBurn(const FilePath& source_path,
+  virtual void DoBurn(const base::FilePath& source_path,
                       const std::string& image_name,
-                      const FilePath& target_file_path,
-                      const FilePath& target_device_path) OVERRIDE;
+                      const base::FilePath& target_file_path,
+                      const base::FilePath& target_device_path) OVERRIDE;
   virtual void CancelBurnImage() OVERRIDE;
 
   void OnImageUnzipped(scoped_refptr<base::RefCountedString> source_image_file);
@@ -112,10 +112,10 @@ void BurnLibraryImpl::CancelBurnImage() {
   cancelled_ = true;
 }
 
-void BurnLibraryImpl::DoBurn(const FilePath& source_path,
+void BurnLibraryImpl::DoBurn(const base::FilePath& source_path,
     const std::string& image_name,
-    const FilePath& target_file_path,
-    const FilePath& target_device_path) {
+    const base::FilePath& target_file_path,
+    const base::FilePath& target_device_path) {
   if (unzipping_) {
     // We have unzip in progress, maybe it was "cancelled" before and did not
     // finish yet. In that case, let's pretend cancel did not happen.
@@ -230,10 +230,10 @@ class BurnLibraryStubImpl : public BurnLibrary {
   virtual void Init() OVERRIDE {}
   virtual void AddObserver(Observer* observer) OVERRIDE {}
   virtual void RemoveObserver(Observer* observer) OVERRIDE {}
-  virtual void DoBurn(const FilePath& source_path,
+  virtual void DoBurn(const base::FilePath& source_path,
                       const std::string& image_name,
-                      const FilePath& target_file_path,
-                      const FilePath& target_device_path) OVERRIDE {
+                      const base::FilePath& target_file_path,
+                      const base::FilePath& target_device_path) OVERRIDE {
   }
   virtual void CancelBurnImage() OVERRIDE {}
 

@@ -29,7 +29,7 @@ class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
                    public chrome::BrowserListObserver,
                    public content::WebContentsObserver {
  public:
-  PageCycler(Browser* browser, const FilePath& urls_file);
+  PageCycler(Browser* browser, const base::FilePath& urls_file);
 
   // Begin running the page cycler.
   void Run();
@@ -52,8 +52,10 @@ class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
   // for testing purposes only.
   const std::vector<GURL>* urls_for_test() { return &urls_; }
 
-  void set_stats_file(const FilePath& stats_file) { stats_file_ = stats_file; }
-  void set_errors_file(const FilePath& errors_file) {
+  void set_stats_file(const base::FilePath& stats_file) {
+    stats_file_ = stats_file;
+  }
+  void set_errors_file(const base::FilePath& errors_file) {
     errors_file_ = errors_file;
   }
 
@@ -112,14 +114,14 @@ class PageCycler : public base::RefCountedThreadSafe<PageCycler>,
   Browser* browser_;
 
   // The path to the file containing the list of urls to visit.
-  FilePath urls_file_;
+  base::FilePath urls_file_;
 
   // The path to the file to which we write any errors encountered.
-  FilePath errors_file_;
+  base::FilePath errors_file_;
 
   // The path to the file to which we write the statistics (optional, may be
   // an empty path).
-  FilePath stats_file_;
+  base::FilePath stats_file_;
 
   // The list of urls to visit.
   std::vector<GURL> urls_;

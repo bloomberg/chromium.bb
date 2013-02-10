@@ -34,7 +34,7 @@ const int64 kBytesImageDownloadProgressReportInterval = 10240;
 BurnManager* g_burn_manager = NULL;
 
 // Cretes a directory and calls |callback| with the result on UI thread.
-void CreateDirectory(const FilePath& path,
+void CreateDirectory(const base::FilePath& path,
                      base::Callback<void(bool success)> callback) {
   const bool success = file_util::CreateDirectory(path);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -267,7 +267,7 @@ void BurnManager::OnImageDirCreated(Delegate* delegate, bool success) {
   delegate->OnImageDirCreated(success);
 }
 
-const FilePath& BurnManager::GetImageDir() {
+const base::FilePath& BurnManager::GetImageDir() {
   return image_dir_;
 }
 
@@ -288,7 +288,8 @@ void BurnManager::FetchConfigFile(Delegate* delegate) {
   config_fetcher_->Start();
 }
 
-void BurnManager::FetchImage(const GURL& image_url, const FilePath& file_path) {
+void BurnManager::FetchImage(const GURL& image_url,
+                             const base::FilePath& file_path) {
   tick_image_download_start_ = base::TimeTicks::Now();
   bytes_image_download_progress_last_reported_ = 0;
   image_fetcher_.reset(net::URLFetcher::Create(image_url,

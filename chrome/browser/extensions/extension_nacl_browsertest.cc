@@ -47,7 +47,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
   };
 
   const Extension* InstallExtension(InstallType install_type) {
-    FilePath file_path = test_data_dir_.AppendASCII("native_client");
+    base::FilePath file_path = test_data_dir_.AppendASCII("native_client");
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
     const Extension* extension = NULL;
@@ -85,7 +85,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
   }
 
   bool IsNaClPluginLoaded() {
-    FilePath path;
+    base::FilePath path;
     if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
       webkit::WebPluginInfo info;
       return PluginService::GetInstance()->GetPluginInfoByPath(path, &info);

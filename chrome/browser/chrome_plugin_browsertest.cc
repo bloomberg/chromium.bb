@@ -74,7 +74,7 @@ class ChromePluginTest : public InProcessBrowserTest {
   ChromePluginTest() {}
 
   static GURL GetURL(const char* filename) {
-    FilePath path;
+    base::FilePath path;
     PathService::Get(content::DIR_TEST_DATA, &path);
     path = path.AppendASCII("plugin").AppendASCII(filename);
     CHECK(file_util::PathExists(path));
@@ -103,7 +103,7 @@ class ChromePluginTest : public InProcessBrowserTest {
     runner->Run();
   }
 
-  static void GetFlashPath(std::vector<FilePath>* paths) {
+  static void GetFlashPath(std::vector<base::FilePath>* paths) {
     paths->clear();
     std::vector<webkit::WebPluginInfo> plugins = GetPlugins();
     for (std::vector<webkit::WebPluginInfo>::const_iterator it =
@@ -124,7 +124,7 @@ class ChromePluginTest : public InProcessBrowserTest {
   }
 
   static void EnableFlash(bool enable, Profile* profile) {
-    std::vector<FilePath> paths;
+    std::vector<base::FilePath> paths;
     GetFlashPath(&paths);
     ASSERT_FALSE(paths.empty());
 
@@ -133,7 +133,7 @@ class ChromePluginTest : public InProcessBrowserTest {
         new content::MessageLoopRunner;
     scoped_refptr<CallbackBarrier> callback_barrier(
         new CallbackBarrier(runner->QuitClosure()));
-    for (std::vector<FilePath>::iterator iter = paths.begin();
+    for (std::vector<base::FilePath>::iterator iter = paths.begin();
          iter != paths.end(); ++iter) {
       plugin_prefs->EnablePlugin(enable, *iter,
                                  callback_barrier->CreateCallback());
@@ -193,7 +193,7 @@ class ChromePluginTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ChromePluginTest, DISABLED_Flash) {
   // Official builds always have bundled Flash.
 #if !defined(OFFICIAL_BUILD)
-  std::vector<FilePath> flash_paths;
+  std::vector<base::FilePath> flash_paths;
   GetFlashPath(&flash_paths);
   if (flash_paths.empty()) {
     LOG(INFO) << "Test not running because couldn't find Flash.";

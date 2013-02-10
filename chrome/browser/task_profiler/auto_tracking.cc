@@ -14,7 +14,7 @@ AutoTracking::~AutoTracking() {
   }
 }
 
-void AutoTracking::set_output_file_path(const FilePath &path) {
+void AutoTracking::set_output_file_path(const base::FilePath &path) {
   output_file_path_ = path;
 }
 

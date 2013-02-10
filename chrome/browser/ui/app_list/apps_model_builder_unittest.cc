@@ -43,10 +43,10 @@ class AppsModelBuilderTest : public ExtensionServiceTestBase {
     // Load "app_list" extensions test profile.
     // The test profile has 4 extensions:
     // 1 dummy extension, 2 packaged extension apps and 1 hosted extension app.
-    FilePath source_install_dir = data_dir_
+    base::FilePath source_install_dir = data_dir_
         .AppendASCII("app_list")
         .AppendASCII("Extensions");
-    FilePath pref_path = source_install_dir
+    base::FilePath pref_path = source_install_dir
         .DirName()
         .AppendASCII("Preferences");
     InitializeInstalledExtensionService(pref_path, source_install_dir);

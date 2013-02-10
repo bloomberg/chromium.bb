@@ -17,7 +17,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
  public:
   Backend() : storage_(NULL) {}
 
-  void Init(const FilePath& db_path) {
+  void Init(const base::FilePath& db_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     DCHECK(!storage_);
     TRACE_EVENT0("ValueStoreFrontend::Backend", "Init");
@@ -85,7 +85,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   // exclusively on the FILE thread.
   ValueStore* storage_;
 
-  FilePath db_path_;
+  base::FilePath db_path_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
@@ -94,7 +94,7 @@ ValueStoreFrontend::ValueStoreFrontend()
     : backend_(new Backend()) {
 }
 
-ValueStoreFrontend::ValueStoreFrontend(const FilePath& db_path)
+ValueStoreFrontend::ValueStoreFrontend(const base::FilePath& db_path)
     : backend_(new Backend()) {
   Init(db_path);
 }
@@ -110,7 +110,7 @@ ValueStoreFrontend::~ValueStoreFrontend() {
   DCHECK(CalledOnValidThread());
 }
 
-void ValueStoreFrontend::Init(const FilePath& db_path) {
+void ValueStoreFrontend::Init(const base::FilePath& db_path) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ValueStoreFrontend::Backend::Init,
                  backend_, db_path));

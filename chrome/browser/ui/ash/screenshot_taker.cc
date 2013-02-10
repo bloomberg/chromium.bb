@@ -45,7 +45,7 @@ const int64 kVisualFeedbackLayerDisplayTimeMs = 100;
 const int kScreenshotMinimumIntervalInMS = 1000;
 
 
-void SaveScreenshotInternal(const FilePath& screenshot_path,
+void SaveScreenshotInternal(const base::FilePath& screenshot_path,
                             scoped_refptr<base::RefCountedBytes> png_data) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!screenshot_path.empty());
@@ -57,7 +57,7 @@ void SaveScreenshotInternal(const FilePath& screenshot_path,
   }
 }
 
-void SaveScreenshot(const FilePath& screenshot_path,
+void SaveScreenshot(const base::FilePath& screenshot_path,
                     scoped_refptr<base::RefCountedBytes> png_data) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!screenshot_path.empty());
@@ -74,7 +74,7 @@ void SaveScreenshot(const FilePath& screenshot_path,
 #ifdef OS_CHROMEOS
 void SaveScreenshotToDrive(scoped_refptr<base::RefCountedBytes> png_data,
                            drive::DriveFileError error,
-                           const FilePath& local_path) {
+                           const base::FilePath& local_path) {
   if (error != drive::DRIVE_FILE_OK) {
     LOG(ERROR) << "Failed to write screenshot image to Google Drive: " << error;
     return;
@@ -84,7 +84,7 @@ void SaveScreenshotToDrive(scoped_refptr<base::RefCountedBytes> png_data,
 
 void EnsureDirectoryExistsCallback(
     Profile* profile,
-    const FilePath& screenshot_path,
+    const base::FilePath& screenshot_path,
     scoped_refptr<base::RefCountedBytes> png_data,
     drive::DriveFileError error) {
   // It is okay to fail with DRIVE_FILE_ERROR_EXISTS since anyway the directory
@@ -101,7 +101,7 @@ void EnsureDirectoryExistsCallback(
   }
 }
 
-void PostSaveScreenshotTask(const FilePath& screenshot_path,
+void PostSaveScreenshotTask(const base::FilePath& screenshot_path,
                             scoped_refptr<base::RefCountedBytes> png_data) {
   if (drive::util::IsUnderDriveMountPoint(screenshot_path)) {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
@@ -120,7 +120,7 @@ void PostSaveScreenshotTask(const FilePath& screenshot_path,
   }
 }
 #else
-void PostSaveScreenshotTask(const FilePath& screenshot_path,
+void PostSaveScreenshotTask(const base::FilePath& screenshot_path,
                             scoped_refptr<base::RefCountedBytes> png_data) {
   content::BrowserThread::GetBlockingPool()->PostTask(
       FROM_HERE, base::Bind(&SaveScreenshot, screenshot_path, png_data));
@@ -155,7 +155,7 @@ ScreenshotTaker::~ScreenshotTaker() {
 }
 
 void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
-  FilePath screenshot_directory;
+  base::FilePath screenshot_directory;
   if (!ScreenshotSource::GetScreenshotDirectory(&screenshot_directory))
     return;
 
@@ -184,7 +184,7 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
     aura::Window* window, const gfx::Rect& rect) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  FilePath screenshot_directory;
+  base::FilePath screenshot_directory;
   if (!ScreenshotSource::GetScreenshotDirectory(&screenshot_directory))
     return;
 

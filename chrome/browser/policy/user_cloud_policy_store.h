@@ -24,7 +24,7 @@ class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
  public:
   // Creates a policy store associated with the user signed in to this
   // |profile|.
-  UserCloudPolicyStore(Profile* profile, const FilePath& policy_file);
+  UserCloudPolicyStore(Profile* profile, const base::FilePath& policy_file);
   virtual ~UserCloudPolicyStore();
 
   // Factory method for creating a UserCloudPolicyStore for |profile|.
@@ -72,7 +72,7 @@ class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   Profile* profile_;
 
   // Path to file where we store persisted policy.
-  FilePath backing_file_path_;
+  base::FilePath backing_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStore);
 };

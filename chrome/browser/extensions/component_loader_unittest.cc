@@ -113,13 +113,13 @@ class ComponentLoaderTest : public testing::Test {
   ComponentLoader component_loader_;
 
   // The root directory of the text extension.
-  FilePath extension_path_;
+  base::FilePath extension_path_;
 
   // The contents of the text extension's manifest file.
   std::string manifest_contents_;
 
-  FilePath GetBasePath() {
-    FilePath test_data_dir;
+  base::FilePath GetBasePath() {
+    base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     return test_data_dir.AppendASCII("extensions");
   }
@@ -286,9 +286,9 @@ TEST_F(ComponentLoaderTest, AddOrReplace) {
   EXPECT_EQ(0u, component_loader_.registered_extensions_count());
   component_loader_.AddDefaultComponentExtensions(false);
   size_t const default_count = component_loader_.registered_extensions_count();
-  FilePath known_extension = GetBasePath()
+  base::FilePath known_extension = GetBasePath()
       .AppendASCII("override_component_extension");
-  FilePath unknow_extension = extension_path_;
+  base::FilePath unknow_extension = extension_path_;
 
   // Replace a default component extension.
   component_loader_.AddOrReplace(known_extension);

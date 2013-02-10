@@ -89,14 +89,14 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
   // extensions test data dir.
   const extensions::Extension* LoadContextMenuExtension(
       std::string subdirectory) {
-    FilePath extension_dir =
+    base::FilePath extension_dir =
         test_data_dir_.AppendASCII("context_menus").AppendASCII(subdirectory);
     return LoadExtension(extension_dir);
   }
 
   const extensions::Extension* LoadContextMenuExtensionIncognito(
       std::string subdirectory) {
-    FilePath extension_dir =
+    base::FilePath extension_dir =
         test_data_dir_.AppendASCII("context_menus").AppendASCII(subdirectory);
     return LoadExtensionIncognito(extension_dir);
   }

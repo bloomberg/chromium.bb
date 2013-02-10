@@ -35,7 +35,7 @@ static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 // of history.
 static const char kNeedsThumbnailMigrationKey[] = "needs_thumbnail_migration";
 
-void ComputeDatabaseMetrics(const FilePath& history_name,
+void ComputeDatabaseMetrics(const base::FilePath& history_name,
                             sql::Connection& db) {
   if (base::RandInt(1, 100) != 50)
     return;  // Only do this computation sometimes since it can be expensive.
@@ -121,7 +121,7 @@ HistoryDatabase::HistoryDatabase()
 HistoryDatabase::~HistoryDatabase() {
 }
 
-sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
+sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name,
                                       sql::ErrorDelegate* error_delegate) {
   db_.set_error_histogram_name("Sqlite.History.Error");
 

@@ -29,8 +29,9 @@ namespace extensions {
 
 StartupHelper::StartupHelper() : pack_job_succeeded_(false) {}
 
-void StartupHelper::OnPackSuccess(const FilePath& crx_path,
-                                  const FilePath& output_private_key_path) {
+void StartupHelper::OnPackSuccess(
+    const base::FilePath& crx_path,
+    const base::FilePath& output_private_key_path) {
   pack_job_succeeded_ = true;
   PrintPackExtensionMessage(
       UTF16ToUTF8(
@@ -48,8 +49,9 @@ bool StartupHelper::PackExtension(const CommandLine& cmd_line) {
     return false;
 
   // Input Paths.
-  FilePath src_dir = cmd_line.GetSwitchValuePath(switches::kPackExtension);
-  FilePath private_key_path;
+  base::FilePath src_dir =
+      cmd_line.GetSwitchValuePath(switches::kPackExtension);
+  base::FilePath private_key_path;
   if (cmd_line.HasSwitch(switches::kPackExtensionKey)) {
     private_key_path = cmd_line.GetSwitchValuePath(switches::kPackExtensionKey);
   }

@@ -55,7 +55,7 @@ class DriveFileSyncService
   // |metadata_store| must be initialized beforehand.
   static scoped_ptr<DriveFileSyncService> CreateForTesting(
       Profile* profile,
-      const FilePath& base_dir,
+      const base::FilePath& base_dir,
       scoped_ptr<DriveFileSyncClient> sync_client,
       scoped_ptr<DriveMetadataStore> metadata_store);
 
@@ -83,7 +83,7 @@ class DriveFileSyncService
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(
       const fileapi::FileChange& change,
-      const FilePath& local_file_path,
+      const base::FilePath& local_file_path,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
 
@@ -150,9 +150,9 @@ class DriveFileSyncService
     bool operator()(const RemoteChange& left, const RemoteChange& right);
   };
 
-  // TODO(tzik): Consider using std::pair<FilePath, FileType> as the key below
-  // to support directories and custom conflict handling.
-  typedef std::map<FilePath, RemoteChange> PathToChangeMap;
+  // TODO(tzik): Consider using std::pair<base::FilePath, FileType> as the key
+  // below to support directories and custom conflict handling.
+  typedef std::map<base::FilePath, RemoteChange> PathToChangeMap;
   typedef std::map<GURL, PathToChangeMap> OriginToChangesMap;
 
   // Task types; used for task token handling.
@@ -178,7 +178,7 @@ class DriveFileSyncService
   };
 
   DriveFileSyncService(Profile* profile,
-                       const FilePath& base_dir,
+                       const base::FilePath& base_dir,
                        scoped_ptr<DriveFileSyncClient> sync_client,
                        scoped_ptr<DriveMetadataStore> metadata_store);
 
@@ -318,10 +318,10 @@ class DriveFileSyncService
                           int64 changestamp,
                           RemoteSyncType sync_type);
   bool AppendFetchChange(const GURL& origin,
-                         const FilePath& path,
+                         const base::FilePath& path,
                          const std::string& resource_id);
   bool AppendRemoteChangeInternal(const GURL& origin,
-                                  const FilePath& path,
+                                  const base::FilePath& path,
                                   bool is_deleted,
                                   const std::string& resource_id,
                                   int64 changestamp,
@@ -339,7 +339,7 @@ class DriveFileSyncService
   fileapi::SyncStatusCode GDataErrorCodeToSyncStatusCodeWrapper(
       google_apis::GDataErrorCode error) const;
 
-  FilePath temporary_file_dir_;
+  base::FilePath temporary_file_dir_;
 
   void FetchChangesForIncrementalSync();
   void DidFetchChangesForIncrementalSync(

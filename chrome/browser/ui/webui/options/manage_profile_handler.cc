@@ -43,7 +43,7 @@ const char kManageProfileIconGridName[] = "manage-profile-icon-grid";
 // Given |args| from the WebUI, parses value 0 as a FilePath |profile_file_path|
 // and returns true on success.
 bool GetProfilePathFromArgs(const ListValue* args,
-                            FilePath* profile_file_path) {
+                            base::FilePath* profile_file_path) {
   const Value* file_path_value;
   if (!args->Get(0, &file_path_value))
     return false;
@@ -210,7 +210,7 @@ void ManageProfileHandler::SendProfileNames() {
 void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
   DCHECK(args);
 
-  FilePath profile_file_path;
+  base::FilePath profile_file_path;
   if (!GetProfilePathFromArgs(args, &profile_file_path))
     return;
 
@@ -293,7 +293,7 @@ void ManageProfileHandler::DeleteProfile(const ListValue* args) {
 
   ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::PROFILE_DELETED);
 
-  FilePath profile_file_path;
+  base::FilePath profile_file_path;
   if (!GetProfilePathFromArgs(args, &profile_file_path))
     return;
 
@@ -313,7 +313,7 @@ void ManageProfileHandler::SwitchAppListProfile(const ListValue* args) {
   DCHECK(ProfileManager::IsMultipleProfilesEnabled());
 
   const Value* file_path_value;
-  FilePath profile_file_path;
+  base::FilePath profile_file_path;
   if (!args->Get(0, &file_path_value) ||
       !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
     return;
@@ -328,7 +328,7 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
     const base::ListValue* args) {
   DCHECK(args);
 
-  FilePath profile_file_path;
+  base::FilePath profile_file_path;
   if (!GetProfilePathFromArgs(args, &profile_file_path))
     return;
 
@@ -363,7 +363,7 @@ void ManageProfileHandler::RequestHasProfileShortcuts(const ListValue* args) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(ProfileShortcutManager::IsFeatureEnabled());
 
-  FilePath profile_file_path;
+  base::FilePath profile_file_path;
   if (!GetProfilePathFromArgs(args, &profile_file_path))
     return;
 
@@ -373,7 +373,8 @@ void ManageProfileHandler::RequestHasProfileShortcuts(const ListValue* args) {
   if (profile_index == std::string::npos)
     return;
 
-  const FilePath profile_path = cache.GetPathOfProfileAtIndex(profile_index);
+  const base::FilePath profile_path =
+      cache.GetPathOfProfileAtIndex(profile_index);
   ProfileShortcutManager* shortcut_manager =
       g_browser_process->profile_manager()->profile_shortcut_manager();
   shortcut_manager->HasProfileShortcuts(
@@ -390,7 +391,7 @@ void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {
 }
 
 void ManageProfileHandler::AddProfileShortcut(const base::ListValue* args) {
-  FilePath profile_file_path;
+  base::FilePath profile_file_path;
   if (!GetProfilePathFromArgs(args, &profile_file_path))
     return;
 
@@ -406,7 +407,7 @@ void ManageProfileHandler::AddProfileShortcut(const base::ListValue* args) {
 }
 
 void ManageProfileHandler::RemoveProfileShortcut(const base::ListValue* args) {
-  FilePath profile_file_path;
+  base::FilePath profile_file_path;
   if (!GetProfilePathFromArgs(args, &profile_file_path))
     return;
 

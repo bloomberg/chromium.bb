@@ -79,7 +79,7 @@ class SafeBrowsingDatabase {
   virtual ~SafeBrowsingDatabase();
 
   // Initializes the database with the given filename.
-  virtual void Init(const FilePath& filename) = 0;
+  virtual void Init(const base::FilePath& filename) = 0;
 
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase() = 0;
@@ -166,28 +166,31 @@ class SafeBrowsingDatabase {
 
   // The name of the bloom-filter file for the given database file.
   // NOTE(shess): OBSOLETE.  Present for deleting stale files.
-  static FilePath BloomFilterForFilename(const FilePath& db_filename);
+  static base::FilePath BloomFilterForFilename(
+      const base::FilePath& db_filename);
 
   // The name of the prefix set file for the given database file.
-  static FilePath PrefixSetForFilename(const FilePath& db_filename);
+  static base::FilePath PrefixSetForFilename(const base::FilePath& db_filename);
 
   // Filename for malware and phishing URL database.
-  static FilePath BrowseDBFilename(const FilePath& db_base_filename);
+  static base::FilePath BrowseDBFilename(
+      const base::FilePath& db_base_filename);
 
   // Filename for download URL and download binary hash database.
-  static FilePath DownloadDBFilename(const FilePath& db_base_filename);
+  static base::FilePath DownloadDBFilename(
+      const base::FilePath& db_base_filename);
 
   // Filename for client-side phishing detection whitelist databsae.
-  static FilePath CsdWhitelistDBFilename(
-      const FilePath& csd_whitelist_base_filename);
+  static base::FilePath CsdWhitelistDBFilename(
+      const base::FilePath& csd_whitelist_base_filename);
 
   // Filename for download whitelist databsae.
-  static FilePath DownloadWhitelistDBFilename(
-      const FilePath& download_whitelist_base_filename);
+  static base::FilePath DownloadWhitelistDBFilename(
+      const base::FilePath& download_whitelist_base_filename);
 
   // Filename for extension blacklist database.
-  static FilePath ExtensionBlacklistDBFilename(
-      const FilePath& extension_blacklist_base_filename);
+  static base::FilePath ExtensionBlacklistDBFilename(
+      const base::FilePath& extension_blacklist_base_filename);
 
   // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
   // ORDERING OF THESE VALUES.
@@ -248,7 +251,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   virtual ~SafeBrowsingDatabaseNew();
 
   // Implement SafeBrowsingDatabase interface.
-  virtual void Init(const FilePath& filename) OVERRIDE;
+  virtual void Init(const base::FilePath& filename) OVERRIDE;
   virtual bool ResetDatabase() OVERRIDE;
   virtual bool ContainsBrowseUrl(const GURL& url,
                                  std::string* matching_list,
@@ -331,11 +334,11 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
                        const SBChunkList& chunks);
 
   // Returns the size in bytes of the store after the update.
-  int64 UpdateHashPrefixStore(const FilePath& store_filename,
+  int64 UpdateHashPrefixStore(const base::FilePath& store_filename,
                                SafeBrowsingStore* store,
                                FailureType failure_type);
   void UpdateBrowseStore();
-  void UpdateWhitelistStore(const FilePath& store_filename,
+  void UpdateWhitelistStore(const base::FilePath& store_filename,
                             SafeBrowsingStore* store,
                             SBWhitelist* whitelist);
 
@@ -351,25 +354,25 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Underlying persistent store for chunk data.
   // For browsing related (phishing and malware URLs) chunks and prefixes.
-  FilePath browse_filename_;
+  base::FilePath browse_filename_;
   scoped_ptr<SafeBrowsingStore> browse_store_;
 
   // For download related (download URL and binary hash) chunks and prefixes.
-  FilePath download_filename_;
+  base::FilePath download_filename_;
   scoped_ptr<SafeBrowsingStore> download_store_;
 
   // For the client-side phishing detection whitelist chunks and full-length
   // hashes.  This list only contains 256 bit hashes.
-  FilePath csd_whitelist_filename_;
+  base::FilePath csd_whitelist_filename_;
   scoped_ptr<SafeBrowsingStore> csd_whitelist_store_;
 
   // For the download whitelist chunks and full-length hashes.  This list only
   // contains 256 bit hashes.
-  FilePath download_whitelist_filename_;
+  base::FilePath download_whitelist_filename_;
   scoped_ptr<SafeBrowsingStore> download_whitelist_store_;
 
   // For extension IDs.
-  FilePath extension_blacklist_filename_;
+  base::FilePath extension_blacklist_filename_;
   scoped_ptr<SafeBrowsingStore> extension_blacklist_store_;
 
   SBWhitelist csd_whitelist_;
@@ -402,7 +405,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool change_detected_;
 
   // Used to check if a prefix was in the database.
-  FilePath prefix_set_filename_;
+  base::FilePath prefix_set_filename_;
   scoped_ptr<safe_browsing::PrefixSet> prefix_set_;
 };
 

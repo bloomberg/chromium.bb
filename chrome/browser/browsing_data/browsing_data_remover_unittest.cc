@@ -66,16 +66,16 @@ const GURL kOrigin3(kTestOrigin3);
 const GURL kOriginExt(kTestOriginExt);
 const GURL kOriginDevTools(kTestOriginDevTools);
 
-const FilePath::CharType kDomStorageOrigin1[] =
+const base::FilePath::CharType kDomStorageOrigin1[] =
     FILE_PATH_LITERAL("http_host1_1.localstorage");
 
-const FilePath::CharType kDomStorageOrigin2[] =
+const base::FilePath::CharType kDomStorageOrigin2[] =
     FILE_PATH_LITERAL("http_host2_1.localstorage");
 
-const FilePath::CharType kDomStorageOrigin3[] =
+const base::FilePath::CharType kDomStorageOrigin3[] =
     FILE_PATH_LITERAL("http_host3_1.localstorage");
 
-const FilePath::CharType kDomStorageExt[] = FILE_PATH_LITERAL(
+const base::FilePath::CharType kDomStorageExt[] = FILE_PATH_LITERAL(
     "chrome-extension_abcdefghijklmnopqrstuvwxyz_0.localstorage");
 
 const quota::StorageType kTemporary = quota::kStorageTypeTemporary;
@@ -451,7 +451,8 @@ class RemoveLocalStorageTester {
   void AddDOMStorageTestData() {
     // Note: This test depends on details of how the dom_storage library
     // stores data in the host file system.
-    FilePath storage_path = profile_->GetPath().AppendASCII("Local Storage");
+    base::FilePath storage_path =
+        profile_->GetPath().AppendASCII("Local Storage");
     file_util::CreateDirectory(storage_path);
 
     // Write some files.

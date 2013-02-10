@@ -34,21 +34,22 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
  public:
   explicit WebAppShortcutCreatorMock(
       const ShellIntegration::ShortcutInfo& shortcut_info)
-      : WebAppShortcutCreator(FilePath("/fake/path"), shortcut_info,
+      : WebAppShortcutCreator(base::FilePath("/fake/path"), shortcut_info,
             UTF8ToUTF16("fake.cfbundleidentifier")) {
   }
 
-  MOCK_CONST_METHOD1(GetDestinationPath, FilePath(const FilePath&));
-  MOCK_CONST_METHOD1(RevealGeneratedBundleInFinder, void(const FilePath&));
+  MOCK_CONST_METHOD1(GetDestinationPath, base::FilePath(const base::FilePath&));
+  MOCK_CONST_METHOD1(RevealGeneratedBundleInFinder,
+                     void (const base::FilePath&));
 };
 
 ShellIntegration::ShortcutInfo GetShortcutInfo() {
   ShellIntegration::ShortcutInfo info;
   info.extension_id = "extension_id";
-  info.extension_path = FilePath("/fake/extension/path");
+  info.extension_path = base::FilePath("/fake/extension/path");
   info.title = ASCIIToUTF16("Shortcut Title");
   info.url = GURL("http://example.com/");
-  info.profile_path = FilePath("Default");
+  info.profile_path = base::FilePath("Default");
   return info;
 }
 
@@ -62,8 +63,8 @@ TEST(WebAppShortcutCreatorTest, CreateShortcut) {
 
   ShellIntegration::ShortcutInfo info = GetShortcutInfo();
 
-  FilePath dst_folder = scoped_temp_dir.path();
-  FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
+  base::FilePath dst_folder = scoped_temp_dir.path();
+  base::FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
   EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
@@ -73,7 +74,7 @@ TEST(WebAppShortcutCreatorTest, CreateShortcut) {
   EXPECT_TRUE(shortcut_creator.CreateShortcut());
   EXPECT_TRUE(file_util::PathExists(dst_path));
 
-  FilePath plist_path = dst_path.Append("Contents").Append("Info.plist");
+  base::FilePath plist_path = dst_path.Append("Contents").Append("Info.plist");
   NSDictionary* plist = [NSDictionary dictionaryWithContentsOfFile:
       base::mac::FilePathToNSString(plist_path)];
   EXPECT_NSEQ(base::SysUTF8ToNSString(info.extension_id),
@@ -100,9 +101,9 @@ TEST(WebAppShortcutCreatorTest, RunShortcut) {
 
   ShellIntegration::ShortcutInfo info = GetShortcutInfo();
 
-  FilePath dst_folder = scoped_temp_dir.path();
-  dst_folder = FilePath("/Applications");
-  FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
+  base::FilePath dst_folder = scoped_temp_dir.path();
+  dst_folder = base::FilePath("/Applications");
+  base::FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
   EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
@@ -121,14 +122,14 @@ TEST(WebAppShortcutCreatorTest, RunShortcut) {
 TEST(WebAppShortcutCreatorTest, CreateFailure) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(GetShortcutInfo());
   EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
-      .WillRepeatedly(Return(FilePath("/non-existant/path/")));
+      .WillRepeatedly(Return(base::FilePath("/non-existant/path/")));
   EXPECT_FALSE(shortcut_creator.CreateShortcut());
 }
 
 TEST(WebAppShortcutCreatorTest, UpdateIcon) {
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
-  FilePath dst_path = scoped_temp_dir.path();
+  base::FilePath dst_path = scoped_temp_dir.path();
 
   ShellIntegration::ShortcutInfo info = GetShortcutInfo();
   info.favicon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -136,7 +137,7 @@ TEST(WebAppShortcutCreatorTest, UpdateIcon) {
   WebAppShortcutCreatorMock shortcut_creator(info);
 
   shortcut_creator.UpdateIcon(dst_path);
-  FilePath icon_path =
+  base::FilePath icon_path =
       dst_path.Append("Contents").Append("Resources").Append("app.icns");
 
   scoped_nsobject<NSImage> image([[NSImage alloc] initWithContentsOfFile:

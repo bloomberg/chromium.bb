@@ -34,7 +34,7 @@ void CopyResultsFromDownloadActionCallbackAndQuit(
     GDataErrorCode* out_result_code,
     std::string* contents,
     GDataErrorCode result_code,
-    const FilePath& cache_file_path) {
+    const base::FilePath& cache_file_path) {
   *out_result_code = result_code;
   file_util::ReadFileToString(cache_file_path, contents);
   file_util::Delete(cache_file_path, false);
@@ -73,7 +73,7 @@ class BaseOperationsServerTest : public testing::Test {
   }
 
   // Returns a temporary file path suitable for storing the cache file.
-  FilePath GetTestCachedFilePath(const FilePath& file_name) {
+  base::FilePath GetTestCachedFilePath(const base::FilePath& file_name) {
     return profile_->GetPath().Append(file_name);
   }
 
@@ -103,8 +103,9 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
                  &contents),
       GetContentCallback(),
       test_server_.GetURL("/files/gdata/testfile.txt"),
-      FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
-      GetTestCachedFilePath(FilePath::FromUTF8Unsafe("cached_testfile.txt")));
+      base::FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
+      GetTestCachedFilePath(
+          base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
   operation->Start(kTestAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();
@@ -113,7 +114,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileOperation_ValidFile) {
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/files/gdata/testfile.txt", http_request_.relative_url);
 
-  const FilePath expected_path =
+  const base::FilePath expected_path =
       test_util::GetTestFilePath("gdata/testfile.txt");
   std::string expected_contents;
   file_util::ReadFileToString(expected_path, &expected_contents);
@@ -133,9 +134,9 @@ TEST_F(BaseOperationsServerTest,
                  &contents),
       GetContentCallback(),
       test_server_.GetURL("/files/gdata/no-such-file.txt"),
-      FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
+      base::FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(
-          FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
+          base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
   operation->Start(kTestAuthToken, kTestUserAgent,
                    base::Bind(&test_util::DoNothingForReAuthenticateCallback));
   MessageLoop::current()->Run();

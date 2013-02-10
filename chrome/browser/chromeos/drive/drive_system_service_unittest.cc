@@ -27,7 +27,7 @@ class DriveSystemServiceTest : public testing::Test {
     file_system_ = new MockDriveFileSystem;
     system_service_ = new DriveSystemService(profile_.get(),
                                              new google_apis::DummyDriveService,
-                                             FilePath(),
+                                             base::FilePath(),
                                              file_system_);
   }
 

@@ -76,8 +76,8 @@ class MediaStorageUtil {
                                     string16* device_name,
                                     base::FilePath* relative_path);
 
-  // Get a FilePath for the given |device_id|.  If the device isn't a mass
-  // storage type, the FilePath will be empty.  This does not check that
+  // Get a base::FilePath for the given |device_id|.  If the device isn't a mass
+  // storage type, the base::FilePath will be empty.  This does not check that
   // the device is connected.
   static base::FilePath FindDevicePathById(const std::string& device_id);
 

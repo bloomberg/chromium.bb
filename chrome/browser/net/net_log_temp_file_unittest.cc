@@ -25,7 +25,7 @@ class TestNetLogTempFile : public NetLogTempFile {
   }
 
   // NetLogTempFile implementation:
-  virtual bool GetNetExportLogDirectory(FilePath* path) OVERRIDE {
+  virtual bool GetNetExportLogDirectory(base::FilePath* path) OVERRIDE {
     if (lie_about_net_export_log_directory_)
       return false;
     return NetLogTempFile::GetNetExportLogDirectory(path);
@@ -63,7 +63,7 @@ class NetLogTempFileTest : public ::testing::Test {
   // ::testing::Test implementation:
   virtual void SetUp() OVERRIDE {
     // Get a temporary file name for unit tests.
-    FilePath net_log_dir;
+    base::FilePath net_log_dir;
     ASSERT_TRUE(net_log_temp_file_->GetNetExportLogDirectory(&net_log_dir));
     ASSERT_TRUE(file_util::CreateTemporaryFileInDir(net_log_dir,
                                                     &net_export_log_));
@@ -107,7 +107,7 @@ class NetLogTempFileTest : public ::testing::Test {
     EXPECT_EQ(NetLogTempFile::STATE_UNINITIALIZED,
               net_log_temp_file_->state());
 
-    FilePath net_export_file_path;
+    base::FilePath net_export_file_path;
     EXPECT_FALSE(net_log_temp_file_->GetFilePath(&net_export_file_path));
   }
 
@@ -117,7 +117,7 @@ class NetLogTempFileTest : public ::testing::Test {
     EXPECT_EQ("ALLOW_START", GetStateString());
     EXPECT_EQ(NetLogTempFile::STATE_ALLOW_START, net_log_temp_file_->state());
 
-    FilePath net_export_file_path;
+    base::FilePath net_export_file_path;
     EXPECT_FALSE(net_log_temp_file_->GetFilePath(&net_export_file_path));
     EXPECT_FALSE(net_log_temp_file_->NetExportLogExists());
   }
@@ -128,7 +128,7 @@ class NetLogTempFileTest : public ::testing::Test {
     EXPECT_EQ(NetLogTempFile::STATE_ALLOW_STOP, net_log_temp_file_->state());
 
     // Check GetFilePath returns false, if we are still writing to file.
-    FilePath net_export_file_path;
+    base::FilePath net_export_file_path;
     EXPECT_FALSE(net_log_temp_file_->GetFilePath(&net_export_file_path));
 
     VerifyNetExportLog();
@@ -140,7 +140,7 @@ class NetLogTempFileTest : public ::testing::Test {
     EXPECT_EQ(NetLogTempFile::STATE_ALLOW_START_SEND,
               net_log_temp_file_->state());
 
-    FilePath net_export_file_path;
+    base::FilePath net_export_file_path;
     EXPECT_TRUE(net_log_temp_file_->GetFilePath(&net_export_file_path));
     EXPECT_TRUE(file_util::PathExists(net_export_file_path));
     EXPECT_EQ(net_export_log_, net_export_file_path);
@@ -152,7 +152,7 @@ class NetLogTempFileTest : public ::testing::Test {
   // |net_log_temp_file_| is initialized after |net_log_| so that it can stop
   // obvserving on destruction.
   scoped_ptr<TestNetLogTempFile> net_log_temp_file_;
-  FilePath net_export_log_;
+  base::FilePath net_export_log_;
 
  private:
   MessageLoop message_loop_;
@@ -189,7 +189,7 @@ TEST_F(NetLogTempFileTest, EnsureInitAllowStartOrSend) {
   EXPECT_EQ(net_export_log_, net_log_temp_file_->log_path_);
   EXPECT_TRUE(file_util::PathExists(net_export_log_));
 
-  FilePath net_export_file_path;
+  base::FilePath net_export_file_path;
   EXPECT_TRUE(net_log_temp_file_->GetFilePath(&net_export_file_path));
   EXPECT_TRUE(file_util::PathExists(net_export_file_path));
   EXPECT_EQ(net_export_log_, net_export_file_path);

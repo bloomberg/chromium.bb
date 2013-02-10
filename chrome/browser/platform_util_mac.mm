@@ -20,7 +20,7 @@
 
 namespace platform_util {
 
-void ShowItemInFolder(const FilePath& full_path) {
+void ShowItemInFolder(const base::FilePath& full_path) {
   DCHECK([NSThread isMainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   if (!path_string || ![[NSWorkspace sharedWorkspace] selectFile:path_string
@@ -35,7 +35,7 @@ void ShowItemInFolder(const FilePath& full_path) {
 //  2. Silent no-op for unassociated file types: http://crbug.com/50263
 // Instead, an AppleEvent is constructed to tell the Finder to open the
 // document.
-void OpenItem(const FilePath& full_path) {
+void OpenItem(const base::FilePath& full_path) {
   DCHECK([NSThread isMainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
   if (!path_string)

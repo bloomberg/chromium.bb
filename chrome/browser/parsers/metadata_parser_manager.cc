@@ -34,8 +34,8 @@ MetadataParserManager::MetadataParserManager() {
 
 MetadataParserManager::~MetadataParserManager() {}
 
-MetadataParser* MetadataParserManager::GetParserForFile(const FilePath& path) {
-
+MetadataParser* MetadataParserManager::GetParserForFile(
+    const base::FilePath& path) {
   char buffer[kAmountToRead];
   int amount_read = 0;
   DLOG(ERROR) << path.value();

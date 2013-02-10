@@ -81,7 +81,7 @@ void DismissAppList() {
     ash::Shell::GetInstance()->ToggleAppList(NULL);
 }
 
-void SetAppListProfile(const FilePath& profile_file_path) {
+void SetAppListProfile(const base::FilePath& profile_file_path) {
 }
 
 void NotifyAppListOfBeginExtensionInstall(

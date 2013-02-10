@@ -24,7 +24,7 @@ class UserStyleSheetWatcher
     : public content::NotificationObserver,
       public RefcountedProfileKeyedService {
  public:
-  UserStyleSheetWatcher(Profile* profile, const FilePath& profile_path);
+  UserStyleSheetWatcher(Profile* profile, const base::FilePath& profile_path);
 
   void Init();
 
@@ -47,7 +47,7 @@ class UserStyleSheetWatcher
   Profile* profile_;
 
   // The directory containing User StyleSheets/Custom.css.
-  FilePath profile_path_;
+  base::FilePath profile_path_;
 
   // The loader object.
   scoped_refptr<UserStyleSheetLoader> loader_;

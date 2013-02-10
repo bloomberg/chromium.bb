@@ -47,7 +47,7 @@ class AppNotificationStorageTest : public testing::Test {
   MessageLoop message_loop_;
   content::TestBrowserThread file_thread_;
   base::ScopedTempDir dir_;
-  FilePath storage_path_;
+  base::FilePath storage_path_;
   scoped_ptr<AppNotificationStorage> storage_;
 };
 

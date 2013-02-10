@@ -258,13 +258,13 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
         plugin_prefs->EnablePluginGroup(false, adobereader);
     }
   } else {
-    FilePath::StringType file_path;
+    base::FilePath::StringType file_path;
     if (!args->GetString(0, &file_path)) {
       NOTREACHED();
       return;
     }
 
-    plugin_prefs->EnablePlugin(enable, FilePath(file_path),
+    plugin_prefs->EnablePlugin(enable, base::FilePath(file_path),
                                base::Bind(&AssertPluginEnabled));
   }
 }

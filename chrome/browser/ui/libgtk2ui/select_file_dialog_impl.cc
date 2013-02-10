@@ -28,8 +28,8 @@ UseKdeFileDialogStatus use_kde_ = UNKNOWN;
 
 namespace libgtk2ui {
 
-FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
-FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
+base::FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
+base::FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
 
 // static
 ui::SelectFileDialog* SelectFileDialogImpl::Create(
@@ -72,8 +72,8 @@ SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
       file_type_index_(0),
       type_(SELECT_NONE) {
   if (!last_saved_path_) {
-    last_saved_path_ = new FilePath();
-    last_opened_path_ = new FilePath();
+    last_saved_path_ = new base::FilePath();
+    last_opened_path_ = new base::FilePath();
   }
 }
 
@@ -87,7 +87,8 @@ bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow parent_window) const {
   return parents_.find(parent_window) != parents_.end();
 }
 
-bool SelectFileDialogImpl::CallDirectoryExistsOnUIThread(const FilePath& path) {
+bool SelectFileDialogImpl::CallDirectoryExistsOnUIThread(
+    const base::FilePath& path) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   return file_util::DirectoryExists(path);
 }

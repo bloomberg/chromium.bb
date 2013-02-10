@@ -93,7 +93,7 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
-    const FilePath& path, int flags) {
+    const base::FilePath& path, int flags) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
   {
@@ -111,7 +111,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
 
   // Find the loaded extension by its path. See crbug.com/59531 for why
   // we cannot just use last_loaded_extension_id_.
-  FilePath extension_path = path;
+  base::FilePath extension_path = path;
   file_util::AbsolutePath(&extension_path);
   const Extension* extension = NULL;
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
@@ -188,18 +188,19 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
   return extension;
 }
 
-const Extension* ExtensionBrowserTest::LoadExtension(const FilePath& path) {
+const Extension* ExtensionBrowserTest::LoadExtension(
+    const base::FilePath& path) {
   return LoadExtensionWithFlags(path, kFlagEnableFileAccess);
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
-    const FilePath& path) {
+    const base::FilePath& path) {
   return LoadExtensionWithFlags(path,
                                 kFlagEnableFileAccess | kFlagEnableIncognito);
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
-    const FilePath& path) {
+    const base::FilePath& path) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
 
@@ -216,42 +217,44 @@ const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
   return extension;
 }
 
-FilePath ExtensionBrowserTest::PackExtension(const FilePath& dir_path) {
-  FilePath crx_path = temp_dir_.path().AppendASCII("temp.crx");
+base::FilePath ExtensionBrowserTest::PackExtension(
+    const base::FilePath& dir_path) {
+  base::FilePath crx_path = temp_dir_.path().AppendASCII("temp.crx");
   if (!file_util::Delete(crx_path, false)) {
     ADD_FAILURE() << "Failed to delete crx: " << crx_path.value();
-    return FilePath();
+    return base::FilePath();
   }
 
   // Look for PEM files with the same name as the directory.
-  FilePath pem_path = dir_path.ReplaceExtension(FILE_PATH_LITERAL(".pem"));
-  FilePath pem_path_out;
+  base::FilePath pem_path =
+      dir_path.ReplaceExtension(FILE_PATH_LITERAL(".pem"));
+  base::FilePath pem_path_out;
 
   if (!file_util::PathExists(pem_path)) {
-    pem_path = FilePath();
+    pem_path = base::FilePath();
     pem_path_out = crx_path.DirName().AppendASCII("temp.pem");
     if (!file_util::Delete(pem_path_out, false)) {
       ADD_FAILURE() << "Failed to delete pem: " << pem_path_out.value();
-      return FilePath();
+      return base::FilePath();
     }
   }
 
   return PackExtensionWithOptions(dir_path, crx_path, pem_path, pem_path_out);
 }
 
-FilePath ExtensionBrowserTest::PackExtensionWithOptions(
-    const FilePath& dir_path,
-    const FilePath& crx_path,
-    const FilePath& pem_path,
-    const FilePath& pem_out_path) {
+base::FilePath ExtensionBrowserTest::PackExtensionWithOptions(
+    const base::FilePath& dir_path,
+    const base::FilePath& crx_path,
+    const base::FilePath& pem_path,
+    const base::FilePath& pem_out_path) {
   if (!file_util::PathExists(dir_path)) {
     ADD_FAILURE() << "Extension dir not found: " << dir_path.value();
-    return FilePath();
+    return base::FilePath();
   }
 
   if (!file_util::PathExists(pem_path) && pem_out_path.empty()) {
     ADD_FAILURE() << "Must specify a PEM file or PEM output path";
-    return FilePath();
+    return base::FilePath();
   }
 
   scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
@@ -262,12 +265,12 @@ FilePath ExtensionBrowserTest::PackExtensionWithOptions(
                     ExtensionCreator::kOverwriteCRX)) {
     ADD_FAILURE() << "ExtensionCreator::Run() failed: "
                   << creator->error_message();
-    return FilePath();
+    return base::FilePath();
   }
 
   if (!file_util::PathExists(crx_path)) {
     ADD_FAILURE() << crx_path.value() << " was not created.";
-    return FilePath();
+    return base::FilePath();
   }
   return crx_path;
 }
@@ -310,7 +313,7 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
 };
 
 const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(
-    const FilePath& path,
+    const base::FilePath& path,
     int expected_change) {
   return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
                                   expected_change, Manifest::INTERNAL,
@@ -319,7 +322,7 @@ const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     const std::string& id,
-    const FilePath& path,
+    const base::FilePath& path,
     InstallUIType ui_type,
     int expected_change) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
@@ -328,7 +331,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     const std::string& id,
-    const FilePath& path,
+    const base::FilePath& path,
     InstallUIType ui_type,
     int expected_change,
     Browser* browser,
@@ -339,7 +342,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     const std::string& id,
-    const FilePath& path,
+    const base::FilePath& path,
     InstallUIType ui_type,
     int expected_change,
     Manifest::Location install_source) {
@@ -349,7 +352,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     const std::string& id,
-    const FilePath& path,
+    const base::FilePath& path,
     InstallUIType ui_type,
     int expected_change,
     Manifest::Location install_source,
@@ -373,7 +376,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 
     // TODO(tessamac): Update callers to always pass an unpacked extension
     //                 and then always pack the extension here.
-    FilePath crx_path = path;
+    base::FilePath crx_path = path;
     if (crx_path.Extension() != FILE_PATH_LITERAL(".crx")) {
       crx_path = PackExtension(path);
     }

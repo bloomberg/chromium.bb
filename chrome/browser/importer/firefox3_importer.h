@@ -49,7 +49,7 @@ class Firefox3Importer : public Importer {
   // Import the user's home page, unless it is set to default home page as
   // defined in browserconfig.properties.
   void ImportHomepage();
-  void GetSearchEnginesXMLFiles(std::vector<FilePath>* files);
+  void GetSearchEnginesXMLFiles(std::vector<base::FilePath>* files);
 
   // The struct stores the information about a bookmark item.
   struct BookmarkItem;
@@ -78,8 +78,8 @@ class Firefox3Importer : public Importer {
                     const FaviconMap& favicon_map,
                     std::vector<history::ImportedFaviconUsage>* favicons);
 
-  FilePath source_path_;
-  FilePath app_path_;
+  base::FilePath source_path_;
+  base::FilePath app_path_;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Stored because we can only access it from the UI thread. Not usable

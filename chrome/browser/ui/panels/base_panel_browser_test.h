@@ -90,7 +90,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   void WaitForBoundsAnimationFinished(Panel* panel);
 
   scoped_refptr<extensions::Extension> CreateExtension(
-      const FilePath::StringType& path,
+      const base::FilePath::StringType& path,
       extensions::Manifest::Location location,
       const DictionaryValue& extra_value);
 
@@ -114,7 +114,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
     mock_display_settings_enabled_ = false;
   }
 
-  static const FilePath::CharType* kTestDir;
+  static const base::FilePath::CharType* kTestDir;
 
  private:
   // Passed to and owned by PanelManager.

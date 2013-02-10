@@ -36,7 +36,7 @@ void SetUrlRequestMocksEnabled(bool enabled) {
     content::URLRequestFailedJob::AddUrlHandler();
     content::URLRequestSlowDownloadJob::AddUrlHandler();
 
-    FilePath root_http;
+    base::FilePath root_http;
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
     content::URLRequestMockHTTPJob::AddUrlHandler(root_http);
     content::URLRequestMockHTTPJob::AddHostnameToFileHandler(

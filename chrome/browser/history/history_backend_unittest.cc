@@ -210,7 +210,7 @@ class HistoryBackendTest : public testing::Test {
     return visits[0].transition;
   }
 
-  FilePath getTestDir() {
+  base::FilePath getTestDir() {
     return test_dir_;
   }
 
@@ -403,7 +403,7 @@ class HistoryBackendTest : public testing::Test {
   int num_broadcasted_notifications_;
 
   MessageLoop message_loop_;
-  FilePath test_dir_;
+  base::FilePath test_dir_;
   history::MostVisitedURLList most_visited_list_;
   history::FilteredURLList filtered_list_;
 };
@@ -1219,17 +1219,18 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   backend_->Closing();
   backend_ = NULL;
 
-  FilePath old_history_path;
+  base::FilePath old_history_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &old_history_path));
   old_history_path = old_history_path.AppendASCII("History");
   old_history_path = old_history_path.AppendASCII("HistoryNoSource");
 
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
-  FilePath new_history_path(getTestDir());
+  base::FilePath new_history_path(getTestDir());
   file_util::Delete(new_history_path, true);
   file_util::CreateDirectory(new_history_path);
-  FilePath new_history_file = new_history_path.Append(chrome::kHistoryFilename);
+  base::FilePath new_history_file =
+      new_history_path.Append(chrome::kHistoryFilename);
   ASSERT_TRUE(file_util::CopyFile(old_history_path, new_history_file));
 
   backend_ = new HistoryBackend(new_history_path,
@@ -2403,7 +2404,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   backend_->Closing();
   backend_ = NULL;
 
-  FilePath old_history_path, old_history, old_archived;
+  base::FilePath old_history_path, old_history, old_archived;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &old_history_path));
   old_history_path = old_history_path.AppendASCII("History");
   old_history = old_history_path.AppendASCII("HistoryNoDuration");
@@ -2411,11 +2412,12 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
 
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
-  FilePath new_history_path(getTestDir());
+  base::FilePath new_history_path(getTestDir());
   file_util::Delete(new_history_path, true);
   file_util::CreateDirectory(new_history_path);
-  FilePath new_history_file = new_history_path.Append(chrome::kHistoryFilename);
-  FilePath new_archived_file =
+  base::FilePath new_history_file =
+      new_history_path.Append(chrome::kHistoryFilename);
+  base::FilePath new_archived_file =
       new_history_path.Append(chrome::kArchivedHistoryFilename);
   ASSERT_TRUE(file_util::CopyFile(old_history, new_history_file));
   ASSERT_TRUE(file_util::CopyFile(old_archived, new_archived_file));

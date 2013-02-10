@@ -43,7 +43,7 @@ class BaseSessionService : public CancelableRequestProvider {
   // ignored and instead the path comes from the profile.
   BaseSessionService(SessionType type,
                      Profile* profile,
-                     const FilePath& path);
+                     const base::FilePath& path);
 
   Profile* profile() const { return profile_; }
 

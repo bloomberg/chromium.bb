@@ -152,7 +152,7 @@ void ChromeToMobileBubbleView::ButtonPressed(views::Button* sender,
   HandleButtonPressed(sender);
 }
 
-void ChromeToMobileBubbleView::SnapshotGenerated(const FilePath& path,
+void ChromeToMobileBubbleView::SnapshotGenerated(const base::FilePath& path,
                                                  int64 bytes) {
   snapshot_path_ = path;
   if (bytes > 0) {
@@ -337,7 +337,8 @@ void ChromeToMobileBubbleView::Send() {
 
   const DictionaryValue* mobile = NULL;
   if (mobiles->GetDictionary(selected_index, &mobile)) {
-    FilePath snapshot = send_copy_->checked() ? snapshot_path_ : FilePath();
+    base::FilePath snapshot =
+        send_copy_->checked() ? snapshot_path_ : base::FilePath();
     service_->SendToMobile(mobile, snapshot, browser_,
                            weak_ptr_factory_.GetWeakPtr());
   } else {

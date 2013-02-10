@@ -781,7 +781,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
-          FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+          base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
           "text/plain",
           kUploadContent.size(),
           test_server_.GetURL(
@@ -823,7 +823,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
       "text/plain",  // content_type
       buffer,
       upload_url,
-      FilePath::FromUTF8Unsafe("drive/newfile.txt"));
+      base::FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
@@ -880,7 +880,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
-          FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+          base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
           "text/plain",
           kUploadContent.size(),
           test_server_.GetURL(
@@ -935,7 +935,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
         "text/plain",  // content_type
         buffer,
         upload_url,
-        FilePath::FromUTF8Unsafe("drive/newfile.txt"));
+        base::FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
     UploadRangeResponse response;
     scoped_ptr<ResourceEntry> new_entry;
@@ -1004,7 +1004,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
-          FilePath::FromUTF8Unsafe("drive/newfile.txt"),
+          base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
           "text/plain",
           kUploadContent.size(),
           test_server_.GetURL(
@@ -1046,7 +1046,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
       "text/plain",  // content_type
       buffer,
       upload_url,
-      FilePath::FromUTF8Unsafe("drive/newfile.txt"));
+      base::FilePath::FromUTF8Unsafe("drive/newfile.txt"));
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
@@ -1097,7 +1097,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
-          FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
+          base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
           "text/plain",
           kUploadContent.size(),
           test_server_.GetURL(
@@ -1139,7 +1139,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
       "text/plain",  // content_type
       buffer,
       upload_url,
-      FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
+      base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
@@ -1192,7 +1192,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
-          FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
+          base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
           "text/plain",
           kUploadContent.size(),
           test_server_.GetURL(
@@ -1234,7 +1234,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
       "text/plain",  // content_type
       buffer,
       upload_url,
-      FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
+      base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"));
 
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
@@ -1287,7 +1287,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETagConflict) {
           base::Bind(&CopyResultFromInitiateUploadCallbackAndQuit,
                      &result_code,
                      &upload_url),
-          FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
+          base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
           "text/plain",
           kUploadContent.size(),
           test_server_.GetURL(

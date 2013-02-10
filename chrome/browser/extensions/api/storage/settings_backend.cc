@@ -18,7 +18,7 @@ namespace extensions {
 
 SettingsBackend::SettingsBackend(
     const scoped_refptr<SettingsStorageFactory>& storage_factory,
-    const FilePath& base_path,
+    const base::FilePath& base_path,
     const SettingsStorageQuotaEnforcer::Limits& quota,
     const scoped_refptr<SettingsObserverList>& observers)
     : storage_factory_(storage_factory),
@@ -110,7 +110,8 @@ std::set<std::string> SettingsBackend::GetKnownExtensionIDs() const {
       base_path_, false, file_util::FileEnumerator::DIRECTORIES);
   while (!extension_dirs.Next().empty()) {
     extension_dirs.GetFindInfo(&find_info);
-    FilePath extension_dir(file_util::FileEnumerator::GetFilename(find_info));
+    base::FilePath extension_dir(
+        file_util::FileEnumerator::GetFilename(find_info));
     DCHECK(!extension_dir.IsAbsolute());
     // Extension IDs are created as std::strings so they *should* be ASCII.
     std::string maybe_as_ascii(extension_dir.MaybeAsASCII());

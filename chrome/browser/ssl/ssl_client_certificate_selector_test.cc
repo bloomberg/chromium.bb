@@ -33,7 +33,7 @@ SSLClientCertificateSelectorTestBase::~SSLClientCertificateSelectorTestBase() {
 }
 
 void SSLClientCertificateSelectorTestBase::SetUpInProcessBrowserTestFixture() {
-  FilePath certs_dir = net::GetTestCertsDirectory();
+  base::FilePath certs_dir = net::GetTestCertsDirectory();
 
   mit_davidben_cert_ = net::ImportCertFromFile(certs_dir, "mit.davidben.der");
   ASSERT_TRUE(mit_davidben_cert_);

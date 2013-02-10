@@ -27,7 +27,7 @@ MockLocalChangeProcessor::~MockLocalChangeProcessor() {
 
 void MockLocalChangeProcessor::ApplyLocalChangeStub(
     const fileapi::FileChange& change,
-    const FilePath& local_file_path,
+    const base::FilePath& local_file_path,
     const fileapi::FileSystemURL& url,
     const fileapi::SyncStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(

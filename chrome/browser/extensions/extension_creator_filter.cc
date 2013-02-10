@@ -12,14 +12,15 @@
 
 namespace extensions {
 
-bool ExtensionCreatorFilter::ShouldPackageFile(const FilePath& file_path) {
-  const FilePath& base_name = file_path.BaseName();
+bool ExtensionCreatorFilter::ShouldPackageFile(
+    const base::FilePath& file_path) {
+  const base::FilePath& base_name = file_path.BaseName();
   if (base_name.empty()) {
     return false;
   }
 
-  FilePath::CharType first_character = base_name.value()[0];
-  FilePath::CharType last_character =
+  base::FilePath::CharType first_character = base_name.value()[0];
+  base::FilePath::CharType last_character =
       base_name.value()[base_name.value().length() - 1];
 
   // dotfile

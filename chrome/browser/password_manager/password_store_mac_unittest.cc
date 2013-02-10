@@ -906,7 +906,7 @@ class PasswordStoreMacTest : public testing::Test {
   virtual void SetUp() {
     login_db_ = new LoginDatabase();
     ASSERT_TRUE(db_dir_.CreateUniqueTempDir());
-    FilePath db_file = db_dir_.path().AppendASCII("login.db");
+    base::FilePath db_file = db_dir_.path().AppendASCII("login.db");
     ASSERT_TRUE(login_db_->Init(db_file));
 
     keychain_ = new MockAppleKeychain();

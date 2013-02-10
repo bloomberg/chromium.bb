@@ -54,7 +54,7 @@ void ChromePluginServiceFilter::OverridePluginForTab(
 }
 
 void ChromePluginServiceFilter::RestrictPluginToProfileAndOrigin(
-    const FilePath& plugin_path,
+    const base::FilePath& plugin_path,
     Profile* profile,
     const GURL& origin) {
   base::AutoLock auto_lock(lock_);
@@ -64,7 +64,7 @@ void ChromePluginServiceFilter::RestrictPluginToProfileAndOrigin(
 }
 
 void ChromePluginServiceFilter::UnrestrictPlugin(
-    const FilePath& plugin_path) {
+    const base::FilePath& plugin_path) {
   base::AutoLock auto_lock(lock_);
   restricted_plugins_.erase(plugin_path);
 }
@@ -123,7 +123,7 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
 }
 
 bool ChromePluginServiceFilter::CanLoadPlugin(int render_process_id,
-                                              const FilePath& path) {
+                                              const base::FilePath& path) {
   // The browser itself sometimes loads plug-ins to e.g. clear plug-in data.
   // We always grant the browser permission.
   if (!render_process_id)
@@ -136,7 +136,7 @@ bool ChromePluginServiceFilter::CanLoadPlugin(int render_process_id,
 
   if (details->authorized_plugins.find(path) ==
           details->authorized_plugins.end() &&
-      details->authorized_plugins.find(FilePath()) ==
+      details->authorized_plugins.find(base::FilePath()) ==
           details->authorized_plugins.end()) {
     return false;
   }
@@ -144,15 +144,16 @@ bool ChromePluginServiceFilter::CanLoadPlugin(int render_process_id,
   return true;
 }
 
-void ChromePluginServiceFilter::AuthorizePlugin(int render_process_id,
-                                                const FilePath& plugin_path) {
+void ChromePluginServiceFilter::AuthorizePlugin(
+    int render_process_id,
+    const base::FilePath& plugin_path) {
   base::AutoLock auto_lock(lock_);
   ProcessDetails* details = GetOrRegisterProcess(render_process_id);
   details->authorized_plugins.insert(plugin_path);
 }
 
 void ChromePluginServiceFilter::AuthorizeAllPlugins(int render_process_id) {
-  AuthorizePlugin(render_process_id, FilePath());
+  AuthorizePlugin(render_process_id, base::FilePath());
 }
 
 ChromePluginServiceFilter::ChromePluginServiceFilter() {

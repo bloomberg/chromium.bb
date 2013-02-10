@@ -94,11 +94,11 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     EXPECT_TRUE(base::FundamentalValue(true).Equals(entry->value));
   }
 
-  FilePath token_file() {
+  base::FilePath token_file() {
     return tmp_dir_.path().AppendASCII("token");
   }
 
-  FilePath policy_file() {
+  base::FilePath policy_file() {
     return tmp_dir_.path().AppendASCII("policy");
   }
 

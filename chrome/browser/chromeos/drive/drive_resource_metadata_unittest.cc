@@ -38,8 +38,8 @@ void CopyResultsFromInitFromDBCallback(DriveFileError* expected_error,
 
 // Copies result from GetChildDirectoriesCallback.
 void CopyResultFromGetChildDirectoriesCallback(
-    std::set<FilePath>* out_child_directories,
-    const std::set<FilePath>& in_child_directories) {
+    std::set<base::FilePath>* out_child_directories,
+    const std::set<base::FilePath>& in_child_directories) {
   *out_child_directories = in_child_directories;
 }
 
@@ -158,7 +158,7 @@ bool DriveResourceMetadataTest::AddDriveEntryProto(
                                                       is_directory,
                                                       parent_resource_id);
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
 
   resource_metadata->AddEntryToParent(
       entry_proto,
@@ -228,7 +228,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
   DriveResourceMetadata resource_metadata(kTestRootResourceId);
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Look up the root directory by its resource ID.
@@ -238,7 +238,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive"), drive_file_path);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("drive", entry_proto->base_name());
 }
@@ -246,7 +246,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
 TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
   // Confirm that an existing file is found.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
   resource_metadata_->GetEntryInfoByResourceId(
       "resource_id:file4",
@@ -254,7 +254,8 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file4"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+            drive_file_path);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file4", entry_proto->base_name());
 
@@ -275,7 +276,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByPath) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry_proto;
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -287,7 +288,7 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoByPath) {
   error = DRIVE_FILE_ERROR_FAILED;
   entry_proto.reset();
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir1/non_existing"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/non_existing"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -300,7 +301,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProtoVector> entries;
   resource_metadata_->ReadDirectoryByPath(
-      FilePath::FromUTF8Unsafe("drive/dir1"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
@@ -322,7 +323,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   error = DRIVE_FILE_ERROR_FAILED;
   entries.reset();
   resource_metadata_->ReadDirectoryByPath(
-      FilePath::FromUTF8Unsafe("drive/non_existing"),
+      base::FilePath::FromUTF8Unsafe("drive/non_existing"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
@@ -333,7 +334,7 @@ TEST_F(DriveResourceMetadataTest, ReadDirectoryByPath) {
   error = DRIVE_FILE_ERROR_FAILED;
   entries.reset();
   resource_metadata_->ReadDirectoryByPath(
-      FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
@@ -345,20 +346,20 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
   // Confirm that existing two files are found.
   scoped_ptr<EntryInfoPairResult> pair_result;
   resource_metadata_->GetEntryInfoPairByPaths(
-      FilePath::FromUTF8Unsafe("drive/dir1/file4"),
-      FilePath::FromUTF8Unsafe("drive/dir1/file5"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file5"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoPairCallback,
                  &pair_result));
   google_apis::test_util::RunBlockingPoolTask();
   // The first entry should be found.
   EXPECT_EQ(DRIVE_FILE_OK, pair_result->first.error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/file4"),
             pair_result->first.path);
   ASSERT_TRUE(pair_result->first.proto.get());
   EXPECT_EQ("file4", pair_result->first.proto->base_name());
   // The second entry should be found.
   EXPECT_EQ(DRIVE_FILE_OK, pair_result->second.error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file5"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/file5"),
             pair_result->second.path);
   ASSERT_TRUE(pair_result->second.proto.get());
   EXPECT_EQ("file5", pair_result->second.proto->base_name());
@@ -366,38 +367,38 @@ TEST_F(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
   // Confirm that the first non existent file is not found.
   pair_result.reset();
   resource_metadata_->GetEntryInfoPairByPaths(
-      FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
-      FilePath::FromUTF8Unsafe("drive/dir1/file5"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file5"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoPairCallback,
                  &pair_result));
   google_apis::test_util::RunBlockingPoolTask();
   // The first entry should not be found.
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, pair_result->first.error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
             pair_result->first.path);
   ASSERT_FALSE(pair_result->first.proto.get());
   // The second entry should not be found, because the first one failed.
   EXPECT_EQ(DRIVE_FILE_ERROR_FAILED, pair_result->second.error);
-  EXPECT_EQ(FilePath(), pair_result->second.path);
+  EXPECT_EQ(base::FilePath(), pair_result->second.path);
   ASSERT_FALSE(pair_result->second.proto.get());
 
   // Confirm that the second non existent file is not found.
   pair_result.reset();
   resource_metadata_->GetEntryInfoPairByPaths(
-      FilePath::FromUTF8Unsafe("drive/dir1/file4"),
-      FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoPairCallback,
                  &pair_result));
   google_apis::test_util::RunBlockingPoolTask();
   // The first entry should be found.
   EXPECT_EQ(DRIVE_FILE_OK, pair_result->first.error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/file4"),
             pair_result->first.path);
   ASSERT_TRUE(pair_result->first.proto.get());
   EXPECT_EQ("file4", pair_result->first.proto->base_name());
   // The second entry should not be found.
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, pair_result->second.error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
             pair_result->second.path);
   ASSERT_FALSE(pair_result->second.proto.get());
 }
@@ -412,7 +413,7 @@ TEST_F(DriveResourceMetadataTest, DBTest) {
   DriveResourceMetadata resource_metadata(kTestRootResourceId);
   Init(&resource_metadata);
 
-  FilePath db_path(DriveCache::GetCacheRootPath(&profile).
+  base::FilePath db_path(DriveCache::GetCacheRootPath(&profile).
       AppendASCII("meta").AppendASCII("resource_metadata.db"));
   // InitFromDB should fail with DRIVE_FILE_ERROR_NOT_FOUND since the db
   // doesn't exist.
@@ -452,7 +453,7 @@ TEST_F(DriveResourceMetadataTest, DBTest) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProtoVector> entries;
   test_resource_metadata.ReadDirectoryByPath(
-      FilePath::FromUTF8Unsafe("drive/dir2"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
@@ -464,7 +465,7 @@ TEST_F(DriveResourceMetadataTest, DBTest) {
 TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
   // Make sure file9 is found.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
   const std::string file9_resource_id = "resource_id:file9";
   scoped_ptr<DriveEntryProto> entry_proto;
   resource_metadata_->GetEntryInfoByResourceId(
@@ -473,7 +474,8 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
+            drive_file_path);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file9", entry_proto->base_name());
 
@@ -484,7 +486,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
           &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir3"), drive_file_path);
 
   // file9 should no longer exist.
   resource_metadata_->GetEntryInfoByResourceId(
@@ -503,7 +505,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir3"), drive_file_path);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("dir3", entry_proto->base_name());
 
@@ -514,7 +516,7 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
           &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1"), drive_file_path);
 
   // dir3 should no longer exist.
   resource_metadata_->GetEntryInfoByResourceId(
@@ -544,18 +546,19 @@ TEST_F(DriveResourceMetadataTest, RemoveEntryFromParent) {
 
 TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Move file8 to drive/dir1.
   resource_metadata_->MoveEntryToDirectory(
-      FilePath::FromUTF8Unsafe("drive/dir2/file8"),
-      FilePath::FromUTF8Unsafe("drive/dir1"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2/file8"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file8"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/file8"),
+            drive_file_path);
 
   // Look up the entry by its resource id and make sure it really moved.
   resource_metadata_->GetEntryInfoByResourceId(
@@ -564,57 +567,59 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file8"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/file8"),
+            drive_file_path);
 
   // Move non-existent file to drive/dir1. This should fail.
   resource_metadata_->MoveEntryToDirectory(
-      FilePath::FromUTF8Unsafe("drive/dir2/file8"),
-      FilePath::FromUTF8Unsafe("drive/dir1"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2/file8"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
-  EXPECT_EQ(FilePath(), drive_file_path);
+  EXPECT_EQ(base::FilePath(), drive_file_path);
 
   // Move existing file to non-existent directory. This should fail.
   resource_metadata_->MoveEntryToDirectory(
-      FilePath::FromUTF8Unsafe("drive/dir1/file8"),
-      FilePath::FromUTF8Unsafe("drive/dir4"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file8"),
+      base::FilePath::FromUTF8Unsafe("drive/dir4"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
-  EXPECT_EQ(FilePath(), drive_file_path);
+  EXPECT_EQ(base::FilePath(), drive_file_path);
 
   // Move existing file to existing file (non-directory). This should fail.
   resource_metadata_->MoveEntryToDirectory(
-      FilePath::FromUTF8Unsafe("drive/dir1/file8"),
-      FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file8"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, error);
-  EXPECT_EQ(FilePath(), drive_file_path);
+  EXPECT_EQ(base::FilePath(), drive_file_path);
 
   // Move the file to root.
   resource_metadata_->MoveEntryToDirectory(
-      FilePath::FromUTF8Unsafe("drive/dir1/file8"),
-      FilePath::FromUTF8Unsafe("drive"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/file8"),
+      base::FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/file8"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/file8"), drive_file_path);
 
   // Move the file from root.
   resource_metadata_->MoveEntryToDirectory(
-      FilePath::FromUTF8Unsafe("drive/file8"),
-      FilePath::FromUTF8Unsafe("drive/dir2"),
+      base::FilePath::FromUTF8Unsafe("drive/file8"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2"),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2/file8"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir2/file8"),
+            drive_file_path);
 
   // Make sure file is still ok.
   resource_metadata_->GetEntryInfoByResourceId(
@@ -623,23 +628,25 @@ TEST_F(DriveResourceMetadataTest, MoveEntryToDirectory) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2/file8"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir2/file8"),
+            drive_file_path);
 }
 
 TEST_F(DriveResourceMetadataTest, RenameEntry) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Rename file8 to file11.
   resource_metadata_->RenameEntry(
-      FilePath::FromUTF8Unsafe("drive/dir2/file8"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2/file8"),
       "file11",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2/file11"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir2/file11"),
+            drive_file_path);
 
   // Lookup the file by resource id to make sure the file actually got renamed.
   resource_metadata_->GetEntryInfoByResourceId(
@@ -648,47 +655,49 @@ TEST_F(DriveResourceMetadataTest, RenameEntry) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2/file11"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir2/file11"),
+            drive_file_path);
 
   // Rename to file7 to force a duplicate name.
   resource_metadata_->RenameEntry(
-      FilePath::FromUTF8Unsafe("drive/dir2/file11"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2/file11"),
       "file7",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir2/file7 (2)"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir2/file7 (2)"),
+            drive_file_path);
 
   // Rename to same name. This should fail.
   resource_metadata_->RenameEntry(
-      FilePath::FromUTF8Unsafe("drive/dir2/file7 (2)"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2/file7 (2)"),
       "file7 (2)",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_EXISTS, error);
-  EXPECT_EQ(FilePath(), drive_file_path);
+  EXPECT_EQ(base::FilePath(), drive_file_path);
 
   // Rename non-existent.
   resource_metadata_->RenameEntry(
-      FilePath::FromUTF8Unsafe("drive/dir2/file11"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2/file11"),
       "file11",
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
-  EXPECT_EQ(FilePath(), drive_file_path);
+  EXPECT_EQ(base::FilePath(), drive_file_path);
 }
 
 TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Get file9.
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -710,7 +719,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"),
             drive_file_path);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file100", entry_proto->base_name());
@@ -720,7 +729,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   // Make sure we get the same thing from GetEntryInfoByPath.
   entry_proto.reset();
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -733,7 +742,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   // Get dir2.
   entry_proto.reset();
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir2"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -753,7 +762,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3/dir100"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/dir100"),
             drive_file_path);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("dir100", entry_proto->base_name());
@@ -763,7 +772,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   // Make sure the children have moved over. Test file6.
   entry_proto.reset();
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir1/dir3/dir100/file6"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/dir100/file6"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -773,7 +782,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
 
   // Make sure dir2 no longer exists.
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir2"),
+      base::FilePath::FromUTF8Unsafe("drive/dir2"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -784,12 +793,12 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
 // Test the special logic for RefreshEntry of root.
 TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // Get root.
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive"),
+      base::FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -810,7 +819,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
                  &error, &drive_file_path, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive"), drive_file_path);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("drive", entry_proto->base_name());
   EXPECT_TRUE(entry_proto->file_info().is_directory());
@@ -820,7 +829,7 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry_Root) {
   // Make sure the children have moved over. Test file9.
   entry_proto.reset();
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -835,7 +844,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
       sequence_id++, false, "resource_id:dir3");
 
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
 
   // Add to dir3.
   resource_metadata_->AddEntryToParent(
@@ -844,7 +853,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir3/file100"),
             drive_file_path);
 
   // Adds to root when parent resource id is not specified.
@@ -857,7 +866,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/file101"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/file101"), drive_file_path);
 
   // Add a directory.
   DriveEntryProto dir_entry_proto = CreateDriveEntryProto(
@@ -869,7 +878,8 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
                  &error, &drive_file_path));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir102"), drive_file_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/dir1/dir102"),
+            drive_file_path);
 
   // Add to an invalid parent.
   DriveEntryProto file_entry_proto3 = CreateDriveEntryProto(
@@ -884,7 +894,7 @@ TEST_F(DriveResourceMetadataTest, AddEntryToParent) {
 }
 
 TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
-  std::set<FilePath> child_directories;
+  std::set<base::FilePath> child_directories;
 
   // file9: not a directory, so no children.
   resource_metadata_->GetChildDirectories("resource_id:file9",
@@ -907,7 +917,7 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(1u, child_directories.size());
   EXPECT_EQ(1u, child_directories.count(
-      FilePath::FromUTF8Unsafe("drive/dir1/dir3")));
+      base::FilePath::FromUTF8Unsafe("drive/dir1/dir3")));
 
   // Add a few more directories to make sure deeper nesting works.
   // dir2/dir100
@@ -941,11 +951,11 @@ TEST_F(DriveResourceMetadataTest, GetChildDirectories) {
                  &child_directories));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(8u, child_directories.size());
-  EXPECT_EQ(1u, child_directories.count(FilePath::FromUTF8Unsafe(
+  EXPECT_EQ(1u, child_directories.count(base::FilePath::FromUTF8Unsafe(
       "drive/dir2/dir101")));
-  EXPECT_EQ(1u, child_directories.count(FilePath::FromUTF8Unsafe(
+  EXPECT_EQ(1u, child_directories.count(base::FilePath::FromUTF8Unsafe(
       "drive/dir2/dir101/dir104")));
-  EXPECT_EQ(1u, child_directories.count(FilePath::FromUTF8Unsafe(
+  EXPECT_EQ(1u, child_directories.count(base::FilePath::FromUTF8Unsafe(
       "drive/dir2/dir101/dir102/dir105/dir106/dir107")));
 }
 
@@ -955,7 +965,7 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
 
   // root has children.
   resource_metadata_->ReadDirectoryByPath(
-      FilePath::FromUTF8Unsafe("drive"),
+      base::FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   google_apis::test_util::RunBlockingPoolTask();
@@ -967,12 +977,12 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
   resource_metadata_->RemoveAll(base::Bind(&base::DoNothing));
   google_apis::test_util::RunBlockingPoolTask();
 
-  FilePath drive_file_path;
+  base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
 
   // root should continue to exist.
   resource_metadata_->GetEntryInfoByPath(
-      FilePath::FromUTF8Unsafe("drive"),
+      base::FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
@@ -984,7 +994,7 @@ TEST_F(DriveResourceMetadataTest, RemoveAll) {
 
   // root should have no children.
   resource_metadata_->ReadDirectoryByPath(
-      FilePath::FromUTF8Unsafe("drive"),
+      base::FilePath::FromUTF8Unsafe("drive"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   google_apis::test_util::RunBlockingPoolTask();

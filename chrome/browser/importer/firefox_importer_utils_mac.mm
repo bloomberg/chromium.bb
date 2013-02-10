@@ -11,26 +11,27 @@
 #include "base/mac/foundation_util.h"
 #include "base/path_service.h"
 
-FilePath GetProfilesINI() {
-  FilePath app_data_path;
+base::FilePath GetProfilesINI() {
+  base::FilePath app_data_path;
   if (!PathService::Get(base::DIR_APP_DATA, &app_data_path)) {
-    return FilePath();
+    return base::FilePath();
   }
-  FilePath ini_file = app_data_path.Append("Firefox").Append("profiles.ini");
+  base::FilePath ini_file =
+      app_data_path.Append("Firefox").Append("profiles.ini");
   if (!file_util::PathExists(ini_file)) {
-    return FilePath();
+    return base::FilePath();
   }
   return ini_file;
 }
 
-FilePath GetFirefoxDylibPath() {
+base::FilePath GetFirefoxDylibPath() {
   CFURLRef appURL = nil;
   if (LSFindApplicationForInfo(kLSUnknownCreator,
                               CFSTR("org.mozilla.firefox"),
                               NULL,
                               NULL,
                               &appURL) != noErr) {
-    return FilePath();
+    return base::FilePath();
   }
   NSBundle *ff_bundle =
       [NSBundle bundleWithPath:[base::mac::CFToNSCast(appURL) path]];
@@ -39,6 +40,6 @@ FilePath GetFirefoxDylibPath() {
       [[ff_bundle executablePath] stringByDeletingLastPathComponent];
   char buf[MAXPATHLEN];
   if (![ff_library_path getFileSystemRepresentation:buf maxLength:sizeof(buf)])
-    return FilePath();
-  return FilePath(buf);
+    return base::FilePath();
+  return base::FilePath(buf);
 }

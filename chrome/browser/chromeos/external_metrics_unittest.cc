@@ -73,7 +73,7 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
   scoped_refptr<chromeos::ExternalMetrics>
       external_metrics(new chromeos::ExternalMetrics());
   external_metrics->test_recorder_ = &ReceiveMessage;
-  external_metrics->test_path_ = FilePath(path);
+  external_metrics->test_path_ = base::FilePath(path);
   EXPECT_TRUE(unlink(path) == 0 || errno == ENOENT);
 
   // Sends a few valid messages.  Once in a while, collects them and checks the

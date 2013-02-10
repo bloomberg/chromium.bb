@@ -63,8 +63,8 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandOpensBookmarksTab) {
 IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandAgainGoesBackToBookmarksTab) {
   ui_test_utils::NavigateToURL(
       browser(),
-      ui_test_utils::GetTestUrl(FilePath(),
-                                FilePath().AppendASCII("simple.html")));
+      ui_test_utils::GetTestUrl(base::FilePath(),
+                                base::FilePath().AppendASCII("simple.html")));
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Bring up the bookmarks manager tab.

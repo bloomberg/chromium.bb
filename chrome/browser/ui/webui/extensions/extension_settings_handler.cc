@@ -411,14 +411,15 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ExtensionSettingsHandler::FileSelected(const FilePath& path, int index,
+void ExtensionSettingsHandler::FileSelected(const base::FilePath& path,
+                                            int index,
                                             void* params) {
-  last_unpacked_directory_ = FilePath(path);
+  last_unpacked_directory_ = base::FilePath(path);
   extensions::UnpackedInstaller::Create(extension_service_)->Load(path);
 }
 
 void ExtensionSettingsHandler::MultiFilesSelected(
-    const std::vector<FilePath>& files, void* params) {
+    const std::vector<base::FilePath>& files, void* params) {
   NOTREACHED();
 }
 

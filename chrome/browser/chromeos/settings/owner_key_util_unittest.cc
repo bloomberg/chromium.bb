@@ -59,7 +59,7 @@ class OwnerKeyUtilTest : public testing::Test {
   }
 
   base::ScopedTempDir tmpdir_;
-  FilePath key_file_;
+  base::FilePath key_file_;
   scoped_refptr<OwnerKeyUtil> util_;
 
  private:

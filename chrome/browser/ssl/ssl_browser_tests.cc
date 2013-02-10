@@ -54,7 +54,8 @@ using content::NavigationEntry;
 using content::SSLStatus;
 using content::WebContents;
 
-const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("chrome/test/data");
 
 namespace {
 
@@ -95,13 +96,13 @@ class SSLUITest : public InProcessBrowserTest {
   SSLUITest()
       : https_server_(net::TestServer::TYPE_HTTPS,
                       SSLOptions(SSLOptions::CERT_OK),
-                      FilePath(kDocRoot)),
+                      base::FilePath(kDocRoot)),
         https_server_expired_(net::TestServer::TYPE_HTTPS,
                               SSLOptions(SSLOptions::CERT_EXPIRED),
-                              FilePath(kDocRoot)),
+                              base::FilePath(kDocRoot)),
         https_server_mismatched_(net::TestServer::TYPE_HTTPS,
                                  SSLOptions(SSLOptions::CERT_MISMATCHED_NAME),
-                                 FilePath(kDocRoot)),
+                                 base::FilePath(kDocRoot)),
         wss_server_expired_(net::TestServer::TYPE_WSS,
                             SSLOptions(SSLOptions::CERT_EXPIRED),
                             net::GetWebSocketTestDataDirectory()) {}
@@ -653,7 +654,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestWSSClientCert) {
   net::NSSCertDatabase* cert_db = net::NSSCertDatabase::GetInstance();
   scoped_refptr<net::CryptoModule> crypt_module = cert_db->GetPublicModule();
   std::string pkcs12_data;
-  FilePath cert_path = net::GetTestCertsDirectory().Append(
+  base::FilePath cert_path = net::GetTestCertsDirectory().Append(
       FILE_PATH_LITERAL("websocket_client_cert.p12"));
   EXPECT_TRUE(file_util::ReadFileToString(cert_path, &pkcs12_data));
   EXPECT_EQ(net::OK, cert_db->ImportFromPKCS12(crypt_module,
@@ -665,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestWSSClientCert) {
   // Start WebSocket test server with TLS and client cert authentication.
   net::TestServer::SSLOptions options(net::TestServer::SSLOptions::CERT_OK);
   options.request_client_certificate = true;
-  FilePath ca_path = net::GetTestCertsDirectory().Append(
+  base::FilePath ca_path = net::GetTestCertsDirectory().Append(
       FILE_PATH_LITERAL("websocket_cacert.pem"));
   options.client_authorities.push_back(ca_path);
   net::TestServer wss_server(net::TestServer::TYPE_WSS,

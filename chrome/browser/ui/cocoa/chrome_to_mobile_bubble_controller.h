@@ -49,7 +49,8 @@ class ChromeToMobileBubbleNotificationBridge
                        const content::NotificationDetails& details) OVERRIDE;
 
   // ChromeToMobileService::Observer overrides:
-  virtual void SnapshotGenerated(const FilePath& path, int64 bytes) OVERRIDE;
+  virtual void SnapshotGenerated(const base::FilePath& path,
+                                 int64 bytes) OVERRIDE;
   virtual void OnSendComplete(bool success) OVERRIDE;
 
  private:
@@ -93,7 +94,7 @@ class ChromeToMobileBubbleNotificationBridge
   ChromeToMobileService* service_;
 
   // The file path for the MHTML page snapshot.
-  FilePath snapshotPath_;
+  base::FilePath snapshotPath_;
 
   // An animation used to cycle through the "Sending..." status messages.
   scoped_nsobject<NSAnimation> progressAnimation_;
@@ -110,7 +111,7 @@ class ChromeToMobileBubbleNotificationBridge
 - (IBAction)cancel:(id)sender;
 
 // Update the bubble to reflect the generated snapshot.
-- (void)snapshotGenerated:(const FilePath&)path
+- (void)snapshotGenerated:(const base::FilePath&)path
                     bytes:(int64)bytes;
 
 // Update the bubble to reflect the completed send.

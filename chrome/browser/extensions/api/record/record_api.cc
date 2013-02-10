@@ -108,7 +108,7 @@ void RunPageCyclerFunction::RunTestBrowser() {
 
   // Create and fill a temp file to communicate the URL list to the test
   // browser.
-  FilePath url_path;
+  base::FilePath url_path;
   file_util::CreateTemporaryFile(&url_path);
   file_util::WriteFile(url_path, url_contents_.c_str(), url_contents_.size());
   line.AppendSwitchPath(switches::kVisitURLs, url_path);
@@ -116,9 +116,9 @@ void RunPageCyclerFunction::RunTestBrowser() {
   // Set up Capture- or Replay-specific commandline switches.
   AddSwitches(&line);
 
-  FilePath error_file_path = url_path.DirName().
+  base::FilePath error_file_path = url_path.DirName().
       Append(url_path.BaseName().value() +
-      FilePath::StringType(kURLErrorsSuffix));
+      base::FilePath::StringType(kURLErrorsSuffix));
 
   LOG(ERROR) << "Test browser commandline: " << line.GetCommandLineString() <<
       " will be repeated " << repeat_count_ << " times....";
@@ -169,7 +169,7 @@ bool RecordCaptureURLsFunction::ParseJSParameters() {
   url_contents_ = JoinString(params->urls, '\n');
   // TODO(cstaley): Can't just use captureName -- gotta stick it in a temp dir.
   // TODO(cstaley): Ensure that capture name is suitable as directory name.
-  user_data_dir_ = FilePath::FromUTF8Unsafe(params->capture_name);
+  user_data_dir_ = base::FilePath::FromUTF8Unsafe(params->capture_name);
 
   return true;
 }
@@ -208,7 +208,7 @@ bool RecordReplayURLsFunction::ParseJSParameters() {
 
 
   // TODO(cstaley): Must build full temp dir from capture_name
-  user_data_dir_ = FilePath::FromUTF8Unsafe(params->capture_name);
+  user_data_dir_ = base::FilePath::FromUTF8Unsafe(params->capture_name);
 
   // TODO(cstaley): Get this from user data dir ultimately
   url_contents_ = "http://www.google.com\nhttp://www.amazon.com";
@@ -218,7 +218,7 @@ bool RecordReplayURLsFunction::ParseJSParameters() {
   if (params->details.get()) {
     if (params->details->extension_path.get())
       extension_path_ =
-          FilePath::FromUTF8Unsafe(*params->details->extension_path);
+          base::FilePath::FromUTF8Unsafe(*params->details->extension_path);
   }
 
   return true;

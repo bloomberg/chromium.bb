@@ -46,7 +46,7 @@ ExtensionService* TestExtensionEnvironment::GetExtensionService() {
     TestExtensionSystem* extension_system =
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()));
     extension_service_ = extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), FilePath(), false);
+        CommandLine::ForCurrentProcess(), base::FilePath(), false);
   }
   return extension_service_;
 }

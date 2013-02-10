@@ -38,7 +38,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
 
-  FilePath extension_dir =
+  base::FilePath extension_dir =
       test_data_dir_.AppendASCII("uitest").AppendASCII("plugins");
 
   ui_test_utils::NavigateToURL(browser(),
@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginPrivate) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
 
-  FilePath extension_dir =
+  base::FilePath extension_dir =
       test_data_dir_.AppendASCII("uitest").AppendASCII("plugins_private");
 
   ExtensionService* service = extensions::ExtensionSystem::Get(

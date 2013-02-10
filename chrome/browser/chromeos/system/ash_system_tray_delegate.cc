@@ -597,7 +597,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         ActivateInputMethodProperty(key);
   }
 
-  virtual void CancelDriveOperation(const FilePath& file_path) OVERRIDE {
+  virtual void CancelDriveOperation(const base::FilePath& file_path) OVERRIDE {
     DriveSystemService* system_service = FindDriveSystemService();
     if (!system_service)
       return;

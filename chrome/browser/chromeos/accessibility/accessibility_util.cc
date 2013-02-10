@@ -168,7 +168,7 @@ void EnableSpokenFeedback(bool enabled,
                          ProfileManager::GetDefaultProfile();
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  FilePath path = FilePath(extension_misc::kChromeVoxExtensionPath);
+  base::FilePath path = base::FilePath(extension_misc::kChromeVoxExtensionPath);
   if (enabled) {  // Load ChromeVox
     std::string extension_id =
         extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,

@@ -35,7 +35,7 @@ GURL GetVideoPlayerUrl();
 // Converts |full_file_path| into external filesystem: url. Returns false
 // if |full_file_path| is not managed by the external filesystem provider.
 bool ConvertFileToFileSystemUrl(Profile* profile,
-                                const FilePath& full_file_path,
+                                const base::FilePath& full_file_path,
                                 const std::string& extension_id,
                                 GURL* url);
 
@@ -44,17 +44,17 @@ bool ConvertFileToFileSystemUrl(Profile* profile,
 // external filesystem provider.
 bool ConvertFileToRelativeFileSystemPath(Profile* profile,
                                          const std::string& extension_id,
-                                         const FilePath& full_file_path,
-                                         FilePath* relative_path);
+                                         const base::FilePath& full_file_path,
+                                         base::FilePath* relative_path);
 
 // Gets base file browser url for.
 GURL GetFileBrowserUrlWithParams(
     ui::SelectFileDialog::Type type,
     const string16& title,
-    const FilePath& default_virtual_path,
+    const base::FilePath& default_virtual_path,
     const ui::SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
-    const FilePath::StringType& default_extension);
+    const base::FilePath::StringType& default_extension);
 
 // Get file dialog title string from its type.
 string16 GetTitleFromType(ui::SelectFileDialog::Type type);
@@ -65,23 +65,23 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type type);
 // the left panel, and that is all we want.
 // If there is no File Browser open, this call opens a new one pointing to
 // |path|. In this case the tab will automatically close on |path| unmount.
-void ViewRemovableDrive(const FilePath& path);
+void ViewRemovableDrive(const base::FilePath& path);
 
 // Opens an action choice dialog for an external drive.
 // One of the actions is opening the File Manager.
-void OpenActionChoiceDialog(const FilePath& path);
+void OpenActionChoiceDialog(const base::FilePath& path);
 
 // Opens item with the default File Browser handler.
-void ViewItem(const FilePath& path);
+void ViewItem(const base::FilePath& path);
 
 // Opens file browser on the folder containing the file, with the file selected.
-void ShowFileInFolder(const FilePath& path);
+void ShowFileInFolder(const base::FilePath& path);
 
 // Executes the built-in File Manager handler or tries to open |file| directly
 // in the browser. Returns false if neither is possible.
 bool ExecuteBuiltinHandler(
     Browser* browser,
-    const FilePath& path,
+    const base::FilePath& path,
     const std::string& internal_task_id);
 
 bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension);

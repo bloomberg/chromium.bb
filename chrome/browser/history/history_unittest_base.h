@@ -18,8 +18,8 @@ class HistoryUnitTestBase : public testing::Test {
   // Executes the sql from the file |sql_path| in the database at |db_path|.
   // |sql_path| is the SQL script file name with full path.
   // |db_path| is the db file name with full path.
-  static void ExecuteSQLScript(const FilePath& sql_path,
-                               const FilePath& db_path);
+  static void ExecuteSQLScript(const base::FilePath& sql_path,
+                               const base::FilePath& db_path);
 
  protected:
   HistoryUnitTestBase();

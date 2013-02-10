@@ -28,8 +28,8 @@ class MockProfileDelegate : public Profile::Delegate {
 };
 
 // Creates a prefs file in the given directory.
-void CreatePrefsFileInDirectory(const FilePath& directory_path) {
-  FilePath pref_path(directory_path.Append(chrome::kPreferencesFilename));
+void CreatePrefsFileInDirectory(const base::FilePath& directory_path) {
+  base::FilePath pref_path(directory_path.Append(chrome::kPreferencesFilename));
   base::PlatformFile file = base::CreatePlatformFile(pref_path,
       base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE, NULL, NULL);
   ASSERT_TRUE(file != base::kInvalidPlatformFileValue);

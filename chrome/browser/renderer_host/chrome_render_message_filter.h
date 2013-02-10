@@ -122,7 +122,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnGetExtensionMessageBundle(const std::string& extension_id,
                                    IPC::Message* reply_msg);
   void OnGetExtensionMessageBundleOnFileThread(
-      const FilePath& extension_path,
+      const base::FilePath& extension_path,
       const std::string& extension_id,
       const std::string& default_locale,
       IPC::Message* reply_msg);

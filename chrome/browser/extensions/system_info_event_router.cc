@@ -167,7 +167,7 @@ void SystemInfoEventRouter::OnStorageFreeSpaceChanged(
 }
 
 void SystemInfoEventRouter::OnRemovableStorageAttached(const std::string& id,
-    const string16& name,  const FilePath::StringType& location) {
+    const string16& name,  const base::FilePath::StringType& location) {
   // TODO(hongbo): Handle storage device arrival/removal event.
 }
 

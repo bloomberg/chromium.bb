@@ -157,8 +157,8 @@ void MemoryDetails::CollectProcessData(
       ProcessInfoSnapshot::ProcInfoEntry proc_info;
       if (process_info.GetProcInfo(info.pid, &proc_info)) {
         if (proc_info.command.length() > 1 && proc_info.command[0] == '/') {
-          FilePath bundle_name =
-              base::mac::GetAppBundlePath(FilePath(proc_info.command));
+          base::FilePath bundle_name =
+              base::mac::GetAppBundlePath(base::FilePath(proc_info.command));
           if (!bundle_name.empty()) {
             version_info.reset(FileVersionInfo::CreateFileVersionInfo(
                 bundle_name));

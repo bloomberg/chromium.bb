@@ -318,7 +318,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store) {
 }
 
 void SafeBrowsingStoreTestDelete(SafeBrowsingStore* store,
-                                 const FilePath& filename) {
+                                 const base::FilePath& filename) {
   // Delete should work if the file wasn't there in the first place.
   EXPECT_FALSE(file_util::PathExists(filename));
   EXPECT_TRUE(store->Delete());

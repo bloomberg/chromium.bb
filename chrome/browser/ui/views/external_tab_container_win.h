@@ -154,7 +154,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
       const content::FileChooserParams& params) OVERRIDE;
   virtual void EnumerateDirectory(content::WebContents* tab,
                                   int request_id,
-                                  const FilePath& path) OVERRIDE;
+                                  const base::FilePath& path) OVERRIDE;
   virtual void JSOutOfMemory(content::WebContents* tab);
   virtual void RegisterProtocolHandler(content::WebContents* tab,
                                        const std::string& protocol,
@@ -183,7 +183,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,
-      const FilePath& plugin_path,
+      const base::FilePath& plugin_path,
       const base::Callback<void(bool)>& callback) OVERRIDE;
 
   void RegisterRenderViewHost(content::RenderViewHost* render_view_host);

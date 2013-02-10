@@ -770,7 +770,7 @@ void ChromeBrowserMainPartsChromeos::SetupLowMemoryHeadroomFieldTrial() {
 void ChromeBrowserMainPartsChromeos::SetupZramFieldTrial() {
   // The dice for this experiment have been thrown at boot.  The selected group
   // number is stored in a file.
-  const FilePath kZramGroupPath("/home/chronos/.swap_exp_enrolled");
+  const base::FilePath kZramGroupPath("/home/chronos/.swap_exp_enrolled");
   std::string zram_file_content;
   // If the file does not exist, the experiment has not started.
   if (!file_util::ReadFileToString(kZramGroupPath, &zram_file_content))

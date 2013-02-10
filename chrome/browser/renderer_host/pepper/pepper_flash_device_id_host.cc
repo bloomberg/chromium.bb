@@ -63,7 +63,7 @@ void PepperFlashDeviceIDHost::Fetcher::GetFilePathOnUIThread(
     int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FilePath path;
+  base::FilePath path;
   content::RenderViewHost* render_view_host =
       content::RenderViewHost::FromID(render_process_id, render_view_id);
   if (render_view_host) {
@@ -83,7 +83,7 @@ void PepperFlashDeviceIDHost::Fetcher::GetFilePathOnUIThread(
 }
 
 void PepperFlashDeviceIDHost::Fetcher::ReadDRMFileOnFileThread(
-    const FilePath& path) {
+    const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string contents;

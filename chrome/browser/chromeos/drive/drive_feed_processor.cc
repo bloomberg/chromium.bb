@@ -93,7 +93,7 @@ void DriveFeedProcessor::ApplyEntryProtoMap(bool is_delta_feed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!is_delta_feed) {  // Full update.
-    changed_dirs_.insert(FilePath(kDriveRootDirectory));
+    changed_dirs_.insert(base::FilePath(kDriveRootDirectory));
     resource_metadata_->RemoveAll(
         base::Bind(&DriveFeedProcessor::ApplyNextEntryProtoAsync,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -162,7 +162,7 @@ void DriveFeedProcessor::ApplyEntryProto(const DriveEntryProto& entry_proto) {
 void DriveFeedProcessor::ContinueApplyEntryProto(
     const DriveEntryProto& entry_proto,
     DriveFileError error,
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     scoped_ptr<DriveEntryProto> old_entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -193,9 +193,10 @@ void DriveFeedProcessor::AddEntryToParent(const DriveEntryProto& entry_proto) {
                  entry_proto.file_info().is_directory()));
 }
 
-void DriveFeedProcessor::NotifyForAddEntryToParent(bool is_directory,
-                                                   DriveFileError error,
-                                                   const FilePath& file_path) {
+void DriveFeedProcessor::NotifyForAddEntryToParent(
+    bool is_directory,
+    DriveFileError error,
+    const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "NotifyForAddEntryToParent " << file_path.value();
@@ -213,13 +214,13 @@ void DriveFeedProcessor::NotifyForAddEntryToParent(bool is_directory,
 
 void DriveFeedProcessor::RemoveEntryFromParent(
     const DriveEntryProto& entry_proto,
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!file_path.empty());
 
   if (!entry_proto.file_info().is_directory()) {
     // No children if entry is a file.
-    OnGetChildrenForRemove(entry_proto, file_path, std::set<FilePath>());
+    OnGetChildrenForRemove(entry_proto, file_path, std::set<base::FilePath>());
   } else {
     // If entry is a directory, notify its children.
     resource_metadata_->GetChildDirectories(
@@ -233,8 +234,8 @@ void DriveFeedProcessor::RemoveEntryFromParent(
 
 void DriveFeedProcessor::OnGetChildrenForRemove(
     const DriveEntryProto& entry_proto,
-    const FilePath& file_path,
-    const std::set<FilePath>& child_directories) {
+    const base::FilePath& file_path,
+    const std::set<base::FilePath>& child_directories) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!file_path.empty());
 
@@ -249,10 +250,10 @@ void DriveFeedProcessor::OnGetChildrenForRemove(
 
 void DriveFeedProcessor::NotifyForRemoveEntryFromParent(
     bool is_directory,
-    const FilePath& file_path,
-    const std::set<FilePath>& child_directories,
+    const base::FilePath& file_path,
+    const std::set<base::FilePath>& child_directories,
     DriveFileError error,
-    const FilePath& parent_path) {
+    const base::FilePath& parent_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "NotifyForRemoveEntryFromParent " << file_path.value();
@@ -274,7 +275,7 @@ void DriveFeedProcessor::NotifyForRemoveEntryFromParent(
 }
 
 void DriveFeedProcessor::RefreshEntry(const DriveEntryProto& entry_proto,
-                                      const FilePath& file_path) {
+                                      const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   resource_metadata_->RefreshEntry(
@@ -285,9 +286,9 @@ void DriveFeedProcessor::RefreshEntry(const DriveEntryProto& entry_proto,
 }
 
 void DriveFeedProcessor::NotifyForRefreshEntry(
-    const FilePath& old_file_path,
+    const base::FilePath& old_file_path,
     DriveFileError error,
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -361,7 +362,7 @@ void DriveFeedProcessor::UpdateRootUploadUrl() {
   DCHECK(root_upload_url_.is_valid());
 
   resource_metadata_->GetEntryInfoByPath(
-      FilePath(kDriveRootDirectory),
+      base::FilePath(kDriveRootDirectory),
       base::Bind(&DriveFeedProcessor::OnGetRootEntryProto,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -387,7 +388,7 @@ void DriveFeedProcessor::OnGetRootEntryProto(
 
 void DriveFeedProcessor::OnUpdateRootUploadUrl(
     DriveFileError error,
-    const FilePath& /* root_path */,
+    const base::FilePath& /* root_path */,
     scoped_ptr<DriveEntryProto> /* root_proto */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LOG_IF(WARNING, error != DRIVE_FILE_OK) << "Failed to refresh root directory";

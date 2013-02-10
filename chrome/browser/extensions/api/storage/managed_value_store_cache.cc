@@ -29,7 +29,7 @@ ManagedValueStoreCache::ManagedValueStoreCache(
     EventRouter* event_router,
     const scoped_refptr<SettingsStorageFactory>& factory,
     const scoped_refptr<SettingsObserverList>& observers,
-    const FilePath& profile_path)
+    const base::FilePath& profile_path)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       weak_this_on_ui_(weak_factory_.GetWeakPtr()),
       policy_service_(policy_service),

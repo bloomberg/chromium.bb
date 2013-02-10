@@ -29,15 +29,15 @@ void OpenConnectionDialogCallback() {
   // Using rundll32 seems better than LaunchConnectionDialog which causes a
   // new dialog to be made for each call.  rundll32 uses the same global
   // dialog and it seems to share with the shortcut in control panel.
-  FilePath rundll32;
+  base::FilePath rundll32;
   PathService::Get(base::DIR_SYSTEM, &rundll32);
   rundll32 = rundll32.AppendASCII("rundll32.exe");
 
-  FilePath shell32dll;
+  base::FilePath shell32dll;
   PathService::Get(base::DIR_SYSTEM, &shell32dll);
   shell32dll = shell32dll.AppendASCII("shell32.dll");
 
-  FilePath inetcpl;
+  base::FilePath inetcpl;
   PathService::Get(base::DIR_SYSTEM, &inetcpl);
   inetcpl = inetcpl.AppendASCII("inetcpl.cpl,,4");
 

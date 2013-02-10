@@ -84,7 +84,7 @@ string16 GetAppModelId() {
   // The AppModelId should be the same for all profiles in a user data directory
   // but different for different user data directories, so base it on the
   // initial profile in the current user data directory.
-  FilePath initial_profile_path;
+  base::FilePath initial_profile_path;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUserDataDir)) {
     initial_profile_path =
@@ -172,7 +172,7 @@ class AppListController : public ProfileInfoCacheObserver {
 
   // Update the profile path stored in local prefs, load it (if not already
   // loaded), and show the app list.
-  void SetProfilePath(const FilePath& profile_file_path);
+  void SetProfilePath(const base::FilePath& profile_file_path);
 
   void DismissAppList();
   void AppListClosing();
@@ -182,14 +182,14 @@ class AppListController : public ProfileInfoCacheObserver {
   // TODO(koz): Split the responsibility for tracking profiles into a
   // platform-independent class.
   // Overidden from ProfileInfoCacheObserver.
-  void OnProfileAdded(const FilePath& profilePath) OVERRIDE {}
+  void OnProfileAdded(const base::FilePath& profilePath) OVERRIDE {}
   // We need to watch for profile removal to keep kAppListProfile updated.
-  void OnProfileWillBeRemoved(const FilePath& profile_path) OVERRIDE;
-  void OnProfileWasRemoved(const FilePath& profile_path,
+  void OnProfileWillBeRemoved(const base::FilePath& profile_path) OVERRIDE;
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const string16& profile_name) OVERRIDE {}
-  void OnProfileNameChanged(const FilePath& profile_path,
+  void OnProfileNameChanged(const base::FilePath& profile_path,
                             const string16& profile_name) OVERRIDE {}
-  void OnProfileAvatarChanged(const FilePath& profile_path) OVERRIDE {}
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) OVERRIDE {}
 
   void OnBeginExtensionInstall(Profile* profile,
                                const std::string& extension_id,
@@ -201,7 +201,7 @@ class AppListController : public ProfileInfoCacheObserver {
 
  private:
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.
-  void LoadProfileAsync(const FilePath& profile_file_path);
+  void LoadProfileAsync(const base::FilePath& profile_file_path);
 
   // Callback for asynchronous profile load.
   void OnProfileLoaded(int profile_load_sequence_id,
@@ -380,7 +380,8 @@ AppListController::AppListController()
   profile_manager->GetProfileInfoCache().AddObserver(this);
 }
 
-void AppListController::OnProfileWillBeRemoved(const FilePath& profile_path) {
+void AppListController::OnProfileWillBeRemoved(
+    const base::FilePath& profile_path) {
   // If the profile the app list uses just got deleted, reset it to the last
   // used profile.
   PrefService* local_state = g_browser_process->local_state();
@@ -392,7 +393,8 @@ void AppListController::OnProfileWillBeRemoved(const FilePath& profile_path) {
   }
 }
 
-void AppListController::SetProfilePath(const FilePath& profile_file_path) {
+void AppListController::SetProfilePath(
+    const base::FilePath& profile_file_path) {
   g_browser_process->local_state()->SetString(
       prefs::kAppListProfile,
       profile_file_path.BaseName().MaybeAsASCII());
@@ -407,7 +409,8 @@ void AppListController::SetProfilePath(const FilePath& profile_file_path) {
   ShowAppList(profile);
 }
 
-void AppListController::LoadProfileAsync(const FilePath& profile_file_path) {
+void AppListController::LoadProfileAsync(
+    const base::FilePath& profile_file_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Invalidate any pending profile path loads.
@@ -720,7 +723,7 @@ void AppListController::UpdateArrowPositionAndAnchorPoint(
 }
 
 string16 AppListController::GetAppListIconPath() {
-  FilePath icon_path;
+  base::FilePath icon_path;
   if (!PathService::Get(base::FILE_EXE, &icon_path)) {
     NOTREACHED();
     return string16();
@@ -774,13 +777,14 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
 // are other tasks running (also on the FILE thread) which fiddle with shortcut
 // icons (ShellIntegration::MigrateWin7ShortcutsOnPath). Having different
 // threads fiddle with the same shortcuts could cause race issues.
-void CheckAppListTaskbarShortcutOnFileThread(const FilePath& user_data_dir,
-                                             const string16& app_model_id) {
+void CheckAppListTaskbarShortcutOnFileThread(
+    const base::FilePath& user_data_dir,
+    const string16& app_model_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   const string16 shortcut_name = l10n_util::GetStringUTF16(
       IDS_APP_LIST_SHORTCUT_NAME);
-  const FilePath shortcut_path(user_data_dir.Append(shortcut_name)
+  const base::FilePath shortcut_path(user_data_dir.Append(shortcut_name)
       .AddExtension(installer::kLnkExt));
   const bool should_show =
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -789,7 +793,7 @@ void CheckAppListTaskbarShortcutOnFileThread(const FilePath& user_data_dir,
   // This will not reshow a shortcut if it has been unpinned manually by the
   // user, as that will not delete the shortcut file.
   if (should_show && !file_util::PathExists(shortcut_path)) {
-    FilePath chrome_exe;
+    base::FilePath chrome_exe;
     if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
       NOTREACHED();
       return;
@@ -835,7 +839,7 @@ void InitAppList(Profile* profile) {
   static bool checked_shortcut = false;
   if (!checked_shortcut) {
     checked_shortcut = true;
-    FilePath user_data_dir(
+    base::FilePath user_data_dir(
         g_browser_process->profile_manager()->user_data_dir());
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
@@ -860,7 +864,7 @@ void ShowAppList(Profile* profile) {
   g_app_list_controller.Get().ShowAppList(profile);
 }
 
-void SetAppListProfile(const FilePath& profile_file_path) {
+void SetAppListProfile(const base::FilePath& profile_file_path) {
   g_app_list_controller.Get().SetProfilePath(profile_file_path);
 }
 

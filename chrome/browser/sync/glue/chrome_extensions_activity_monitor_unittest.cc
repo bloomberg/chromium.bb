@@ -28,7 +28,7 @@ namespace keys = extension_manifest_keys;
 
 // Create and return an extension with the given path.
 scoped_refptr<Extension> MakeExtension(const std::string& name) {
-  FilePath path;
+  base::FilePath path;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII(name);
 

@@ -193,9 +193,9 @@ class PolicyTestCases {
   PolicyTestCases() {
     policy_test_cases_ = new std::map<std::string, PolicyTestCase*>();
 
-    FilePath path = ui_test_utils::GetTestFilePath(
-        FilePath(FILE_PATH_LITERAL("policy")),
-        FilePath(FILE_PATH_LITERAL("policy_test_cases.json")));
+    base::FilePath path = ui_test_utils::GetTestFilePath(
+        base::FilePath(FILE_PATH_LITERAL("policy")),
+        base::FilePath(FILE_PATH_LITERAL("policy_test_cases.json")));
     std::string json;
     if (!file_util::ReadFileToString(path, &json)) {
       ADD_FAILURE();

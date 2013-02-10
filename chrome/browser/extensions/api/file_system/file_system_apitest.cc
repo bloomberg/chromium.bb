@@ -23,25 +23,26 @@ class FileSystemApiTest : public extensions::PlatformAppBrowserTest {
   };
 
  protected:
-  FilePath TempFilePath(const std::string& destination_name, bool copy_gold) {
+  base::FilePath TempFilePath(const std::string& destination_name,
+                              bool copy_gold) {
     if (!temp_dir_.CreateUniqueTempDir()) {
       ADD_FAILURE() << "CreateUniqueTempDir failed";
-      return FilePath();
+      return base::FilePath();
     }
-    FilePath destination = temp_dir_.path().AppendASCII(destination_name);
+    base::FilePath destination = temp_dir_.path().AppendASCII(destination_name);
     if (copy_gold) {
-      FilePath source = test_root_folder_.AppendASCII("gold.txt");
+      base::FilePath source = test_root_folder_.AppendASCII("gold.txt");
       EXPECT_TRUE(file_util::CopyFile(source, destination));
     }
     return destination;
   }
 
-  FilePath test_root_folder_;
+  base::FilePath test_root_folder_;
   base::ScopedTempDir temp_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPath) {
-  FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
+  base::FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/get_display_path"))
@@ -58,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
   ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(override,
       test_root_folder_, false));
 
-  FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
+  base::FilePath test_file = test_root_folder_.AppendASCII("gold.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
   ASSERT_TRUE(RunPlatformAppTest(
@@ -70,11 +71,11 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiGetDisplayPathPrettifyMac) {
   // On Mac, "test.localized" will be localized into just "test".
-  FilePath test_path = TempFilePath("test.localized", false);
+  base::FilePath test_path = TempFilePath("test.localized", false);
   ASSERT_TRUE(file_util::CreateDirectory(test_path));
 
-  FilePath test_file = test_path.AppendASCII("gold.txt");
-  FilePath source = test_root_folder_.AppendASCII("gold.txt");
+  base::FilePath test_file = test_path.AppendASCII("gold.txt");
+  base::FilePath source = test_root_folder_.AppendASCII("gold.txt");
   EXPECT_TRUE(file_util::CopyFile(source, test_file));
 
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
@@ -85,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenExistingFileTest) {
-  FilePath test_file = TempFilePath("open_existing.txt", true);
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -95,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenExistingFileTest) {
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiInvalidChooseEntryTypeTest) {
-  FilePath test_file = TempFilePath("open_existing.txt", true);
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -105,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiOpenExistingFileWithWriteTest) {
-  FilePath test_file = TempFilePath("open_existing.txt", true);
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -115,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiOpenWritableExistingFileTest) {
-  FilePath test_file = TempFilePath("open_existing.txt", true);
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -125,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiOpenWritableExistingFileWithWriteTest) {
-  FilePath test_file = TempFilePath("open_existing.txt", true);
+  base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -145,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenBackgroundTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveNewFileTest) {
-  FilePath test_file = TempFilePath("save_new.txt", false);
+  base::FilePath test_file = TempFilePath("save_new.txt", false);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -154,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveNewFileTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveExistingFileTest) {
-  FilePath test_file = TempFilePath("save_existing.txt", true);
+  base::FilePath test_file = TempFilePath("save_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -164,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveExistingFileTest) {
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiSaveNewFileWithWriteTest) {
-  FilePath test_file = TempFilePath("save_new.txt", false);
+  base::FilePath test_file = TempFilePath("save_new.txt", false);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -174,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiSaveExistingFileWithWriteTest) {
-  FilePath test_file = TempFilePath("save_existing.txt", true);
+  base::FilePath test_file = TempFilePath("save_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -194,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiSaveBackgroundTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetWritableTest) {
-  FilePath test_file = TempFilePath("writable.txt", true);
+  base::FilePath test_file = TempFilePath("writable.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -204,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetWritableTest) {
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiGetWritableWithWriteTest) {
-  FilePath test_file = TempFilePath("writable.txt", true);
+  base::FilePath test_file = TempFilePath("writable.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -213,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiIsWritableTest) {
-  FilePath test_file = TempFilePath("writable.txt", true);
+  base::FilePath test_file = TempFilePath("writable.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
@@ -222,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiIsWritableTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetEntryId) {
-  FilePath test_file = TempFilePath("writable.txt", true);
+  base::FilePath test_file = TempFilePath("writable.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);

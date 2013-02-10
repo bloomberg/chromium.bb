@@ -297,9 +297,9 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
 }
 
 TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
-  FilePath test_data_directory;
+  base::FilePath test_data_directory;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
-  FilePath test_file = test_data_directory.AppendASCII(
+  base::FilePath test_file = test_data_directory.AppendASCII(
       "bookmarks/model_without_sync.json");
   ASSERT_TRUE(file_util::PathExists(test_file));
 

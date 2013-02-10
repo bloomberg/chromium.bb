@@ -852,7 +852,7 @@ void DownloadItemView::LoadIcon() {
 }
 
 void DownloadItemView::LoadIconIfItemPathChanged() {
-  FilePath current_download_path = download()->GetUserVerifiedFilePath();
+  base::FilePath current_download_path = download()->GetUserVerifiedFilePath();
   if (last_download_item_path_ == current_download_path)
     return;
 

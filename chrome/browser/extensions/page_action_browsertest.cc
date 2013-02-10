@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
   ASSERT_TRUE(test_server()->Start());
 
-  FilePath extension_path(test_data_dir_.AppendASCII("api_test")
+  base::FilePath extension_path(test_data_dir_.AppendASCII("api_test")
                                         .AppendASCII("page_action")
                                         .AppendASCII("hash_change"));
   ASSERT_TRUE(LoadExtension(extension_path));
@@ -99,7 +99,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   ASSERT_TRUE(test_server()->Start());
 
-  FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
+  base::FilePath extension_path(
+      test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Navigation prompts the location bar to load page actions.
@@ -122,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
 
   size_t size_before = service->extensions()->size();
 
-  FilePath base_path = test_data_dir_.AppendASCII("browsertest")
+  base::FilePath base_path = test_data_dir_.AppendASCII("browsertest")
                                      .AppendASCII("crash_44415");
   // Load extension A.
   const Extension* extensionA = LoadExtension(base_path.AppendASCII("ExtA"));
@@ -177,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
       browser()->profile())->extension_service();
   const size_t size_before = service->extensions()->size();
 
-  FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
+  base::FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized_pa"));
   const Extension* extension = LoadExtension(extension_path);
   ASSERT_TRUE(extension);

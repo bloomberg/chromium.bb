@@ -86,7 +86,7 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
   fileapi::FileSystemURL mock_url = fileapi::CreateSyncableFileSystemURL(
       *origin,
       "drive",
-      FilePath(FILE_PATH_LITERAL("foo.txt")));
+      base::FilePath(FILE_PATH_LITERAL("foo.txt")));
   mock_remote_service->NotifyRemoteChangeQueueUpdated(0);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(arg1,

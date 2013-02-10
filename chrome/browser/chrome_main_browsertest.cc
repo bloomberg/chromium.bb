@@ -46,8 +46,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunch) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
-  FilePath test_file_path = ui_test_utils::GetTestFilePath(
-      FilePath(), FilePath().AppendASCII("empty.html"));
+  base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
+      base::FilePath(), base::FilePath().AppendASCII("empty.html"));
   CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
   content::WindowedNotificationObserver observer(
@@ -75,8 +75,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, MAYBE_SecondLaunchWithIncognitoUrl) {
   ASSERT_EQ(1u, chrome::GetTabbedBrowserCount(browser()->profile()));
 
   // Run with --incognito switch and an URL specified.
-  FilePath test_file_path = ui_test_utils::GetTestFilePath(
-      FilePath(), FilePath().AppendASCII("empty.html"));
+  base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
+      base::FilePath(), base::FilePath().AppendASCII("empty.html"));
   CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendSwitch(switches::kIncognito);
   new_command_line.AppendArgPath(test_file_path);
@@ -115,8 +115,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   ASSERT_EQ(0u, chrome::GetTabbedBrowserCount(profile));
 
   // Run with just an URL specified, no --incognito switch.
-  FilePath test_file_path = ui_test_utils::GetTestFilePath(
-      FilePath(), FilePath().AppendASCII("empty.html"));
+  base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
+      base::FilePath(), base::FilePath().AppendASCII("empty.html"));
   CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
   content::WindowedNotificationObserver tab_observer(

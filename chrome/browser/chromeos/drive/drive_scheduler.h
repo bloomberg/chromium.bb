@@ -73,7 +73,7 @@ class DriveScheduler
     int total_bytes;
 
     // Drive path of the file that this job acts on.
-    FilePath file_path;
+    base::FilePath file_path;
 
     // Current state of the operation.
     JobState state;
@@ -145,8 +145,8 @@ class DriveScheduler
 
   // Adds a DownloadFile operation to the queue.
   void DownloadFile(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
+      const base::FilePath& virtual_path,
+      const base::FilePath& local_cache_path,
       const GURL& download_url,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback);
@@ -154,8 +154,8 @@ class DriveScheduler
   // Adds an UploadExistingFile operation to the queue.
   void UploadExistingFile(
       const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
+      const base::FilePath& drive_file_path,
+      const base::FilePath& local_file_path,
       const std::string& content_type,
       const std::string& etag,
       const google_apis::UploadCompletionCallback& upload_completion_callback);
@@ -186,8 +186,8 @@ class DriveScheduler
     // Online and cache path of the operation's target.
     // Used by:
     //   TYPE_DOWNLOAD_FILE
-    FilePath virtual_path;
-    FilePath local_cache_path;
+    base::FilePath virtual_path;
+    base::FilePath local_cache_path;
 
     // Parameters for GetResourceList().
     // Used by:
@@ -256,8 +256,8 @@ class DriveScheduler
     // Used by:
     //   TYPE_UPLOAD_EXISTING_FILE
     GURL upload_location;
-    FilePath drive_file_path;
-    FilePath local_file_path;
+    base::FilePath drive_file_path;
+    base::FilePath local_file_path;
     std::string content_type;
     std::string etag;
     google_apis::UploadCompletionCallback upload_completion_callback;
@@ -319,14 +319,14 @@ class DriveScheduler
   // Callback for job finishing with a DownloadActionCallback.
   void OnDownloadActionJobDone(int job_id,
                                google_apis::GDataErrorCode error,
-                               const FilePath& temp_file);
+                               const base::FilePath& temp_file);
 
   // Callback for job finishing with a UploadCompletionCallback.
   void OnUploadCompletionJobDone(
       int job_id,
       google_apis::DriveUploadError error,
-      const FilePath& drive_path,
-      const FilePath& file_path,
+      const base::FilePath& drive_path,
+      const base::FilePath& file_path,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.

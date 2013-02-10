@@ -15,8 +15,8 @@ class DownloadPrefs;
 class SavePackageFilePicker : public ui::SelectFileDialog::Listener {
  public:
   SavePackageFilePicker(content::WebContents* web_contents,
-                        const FilePath& suggested_path,
-                        const FilePath::StringType& default_extension,
+                        const base::FilePath& suggested_path,
+                        const base::FilePath::StringType& default_extension,
                         bool can_save_as_complete,
                         DownloadPrefs* download_prefs,
                         const content::SavePackagePathPickedCallback& callback);
@@ -28,7 +28,7 @@ class SavePackageFilePicker : public ui::SelectFileDialog::Listener {
 
  private:
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* unused_params) OVERRIDE;
   virtual void FileSelectionCanceled(void* unused_params) OVERRIDE;

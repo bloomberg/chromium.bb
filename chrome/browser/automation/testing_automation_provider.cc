@@ -202,7 +202,7 @@ void SendSuccessReply(base::WeakPtr<AutomationProvider> automation,
 // Helper to process the result of CanEnablePlugin.
 void DidEnablePlugin(base::WeakPtr<AutomationProvider> automation,
                      IPC::Message* reply_message,
-                     const FilePath::StringType& path,
+                     const base::FilePath::StringType& path,
                      const std::string& error_msg,
                      bool did_enable) {
   if (did_enable) {
@@ -1155,13 +1155,13 @@ void TestingAutomationProvider::CloseBrowserWindow(
 void TestingAutomationProvider::OpenProfileWindow(
     base::DictionaryValue* args, IPC::Message* reply_message) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  FilePath::StringType path;
+  base::FilePath::StringType path;
   if (!args->GetString("path", &path)) {
     AutomationJSONReply(this, reply_message).SendError(
         "Invalid or missing arg: 'path'");
     return;
   }
-  Profile* profile = profile_manager->GetProfileByPath(FilePath(path));
+  Profile* profile = profile_manager->GetProfileByPath(base::FilePath(path));
   if (!profile) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("Invalid profile path: %s", path.c_str()));
@@ -2241,7 +2241,7 @@ void TestingAutomationProvider::GetBrowserInfo(
                         chrome::kHelperProcessExecutablePath);
   properties->SetString("command_line_string",
       CommandLine::ForCurrentProcess()->GetCommandLineString());
-  FilePath dumps_path;
+  base::FilePath dumps_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
   properties->SetString("DIR_CRASH_DUMPS", dumps_path.value());
 #if defined(USE_AURA)
@@ -2633,7 +2633,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
   } else if (action == "toggle_open_files_like_this") {
     DownloadPrefs* prefs =
         DownloadPrefs::FromBrowserContext(selected_item->GetBrowserContext());
-    FilePath path = selected_item->GetUserVerifiedFilePath();
+    base::FilePath path = selected_item->GetUserVerifiedFilePath();
     if (!selected_item->ShouldOpenFileBasedOnExtension())
       prefs->EnableAutoOpenBasedOnExtension(path);
     else
@@ -3187,13 +3187,13 @@ void TestingAutomationProvider::GetPluginsInfoCallback(
 void TestingAutomationProvider::EnablePlugin(Browser* browser,
                                              DictionaryValue* args,
                                              IPC::Message* reply_message) {
-  FilePath::StringType path;
+  base::FilePath::StringType path;
   if (!args->GetString("path", &path)) {
     AutomationJSONReply(this, reply_message).SendError("path not specified.");
     return;
   }
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
-  plugin_prefs->EnablePlugin(true, FilePath(path),
+  plugin_prefs->EnablePlugin(true, base::FilePath(path),
       base::Bind(&DidEnablePlugin, AsWeakPtr(), reply_message,
                  path, "Could not enable plugin for path %s."));
 }
@@ -3204,13 +3204,13 @@ void TestingAutomationProvider::EnablePlugin(Browser* browser,
 void TestingAutomationProvider::DisablePlugin(Browser* browser,
                                               DictionaryValue* args,
                                               IPC::Message* reply_message) {
-  FilePath::StringType path;
+  base::FilePath::StringType path;
   if (!args->GetString("path", &path)) {
     AutomationJSONReply(this, reply_message).SendError("path not specified.");
     return;
   }
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
-  plugin_prefs->EnablePlugin(false, FilePath(path),
+  plugin_prefs->EnablePlugin(false, base::FilePath(path),
       base::Bind(&DidEnablePlugin, AsWeakPtr(), reply_message,
                  path, "Could not disable plugin for path %s."));
 }
@@ -3226,8 +3226,8 @@ void TestingAutomationProvider::SaveTabContents(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   int tab_index = 0;
-  FilePath::StringType filename;
-  FilePath::StringType parent_directory;
+  base::FilePath::StringType filename;
+  base::FilePath::StringType parent_directory;
   WebContents* web_contents = NULL;
 
   if (!args->GetInteger("tab_index", &tab_index) ||
@@ -3244,10 +3244,10 @@ void TestingAutomationProvider::SaveTabContents(
   }
   // We're doing a SAVE_AS_ONLY_HTML so the the directory path isn't
   // used.  Nevertheless, SavePackage requires it be valid.  Sigh.
-  parent_directory = FilePath(filename).DirName().value();
+  parent_directory = base::FilePath(filename).DirName().value();
   if (!web_contents->SavePage(
-          FilePath(filename),
-          FilePath(parent_directory),
+          base::FilePath(filename),
+          base::FilePath(parent_directory),
           content::SAVE_PAGE_TYPE_AS_ONLY_HTML)) {
     AutomationJSONReply(this, reply_message).SendError(
         "Could not initiate SavePage");
@@ -3578,7 +3578,7 @@ void TestingAutomationProvider::IsFindInPageVisible(
 
 void TestingAutomationProvider::InstallExtension(
     DictionaryValue* args, IPC::Message* reply_message) {
-  FilePath::StringType path_string;
+  base::FilePath::StringType path_string;
   bool with_ui;
   bool from_webstore = false;
   Browser* browser;
@@ -3612,7 +3612,7 @@ void TestingAutomationProvider::InstallExtension(
         this,
         reply_message);
 
-    FilePath extension_path(path_string);
+    base::FilePath extension_path(path_string);
     // If the given path has a 'crx' extension, assume it is a packed extension
     // and install it. Otherwise load it as an unpacked extension.
     if (extension_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
@@ -5482,7 +5482,7 @@ void TestingAutomationProvider::CaptureEntirePageJSON(
     return;
   }
 
-  FilePath::StringType path_str;
+  base::FilePath::StringType path_str;
   if (!args->GetString("path", &path_str)) {
     AutomationJSONReply(this, reply_message)
         .SendError("'path' missing or invalid");
@@ -5491,7 +5491,7 @@ void TestingAutomationProvider::CaptureEntirePageJSON(
 
   RenderViewHost* render_view = web_contents->GetRenderViewHost();
   if (render_view) {
-    FilePath path(path_str);
+    base::FilePath path(path_str);
     // This will delete itself when finished.
     PageSnapshotTaker* snapshot_taker = new PageSnapshotTaker(
         this, reply_message, web_contents, path);

@@ -81,13 +81,13 @@ namespace {
 static bool did_perform_profile_import = false;
 
 // Profiles that should be deleted on shutdown.
-std::vector<FilePath>& ProfilesToDelete() {
-  CR_DEFINE_STATIC_LOCAL(std::vector<FilePath>, profiles_to_delete, ());
+std::vector<base::FilePath>& ProfilesToDelete() {
+  CR_DEFINE_STATIC_LOCAL(std::vector<base::FilePath>, profiles_to_delete, ());
   return profiles_to_delete;
 }
 
 // Simple task to log the size of the current profile.
-void ProfileSizeTask(const FilePath& path, int extension_count) {
+void ProfileSizeTask(const base::FilePath& path, int extension_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   int64 size = file_util::ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
@@ -135,7 +135,7 @@ void ProfileSizeTask(const FilePath& path, int extension_count) {
     UMA_HISTOGRAM_COUNTS_10000("Profile.AppCount", extension_count);
 }
 
-void QueueProfileDirectoryForDeletion(const FilePath& path) {
+void QueueProfileDirectoryForDeletion(const base::FilePath& path) {
   ProfilesToDelete().push_back(path);
 }
 
@@ -188,12 +188,12 @@ void ProfileManager::ShutdownSessionServices() {
 
 // static
 void ProfileManager::NukeDeletedProfilesFromDisk() {
-  for (std::vector<FilePath>::iterator it =
+  for (std::vector<base::FilePath>::iterator it =
           ProfilesToDelete().begin();
        it != ProfilesToDelete().end();
        ++it) {
     // Delete both the profile directory and its corresponding cache.
-    FilePath cache_path;
+    base::FilePath cache_path;
     chrome::GetUserCacheDirectory(*it, &cache_path);
     file_util::Delete(*it, true);
     file_util::Delete(cache_path, true);
@@ -232,7 +232,7 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles() {
       profile_manager->user_data_dir_);
 }
 
-ProfileManager::ProfileManager(const FilePath& user_data_dir)
+ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
     : user_data_dir_(user_data_dir),
       logged_in_(false),
       will_import_(false),
@@ -273,34 +273,34 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
 ProfileManager::~ProfileManager() {
 }
 
-FilePath ProfileManager::GetDefaultProfileDir(
-    const FilePath& user_data_dir) {
-  FilePath default_profile_dir(user_data_dir);
+base::FilePath ProfileManager::GetDefaultProfileDir(
+    const base::FilePath& user_data_dir) {
+  base::FilePath default_profile_dir(user_data_dir);
   default_profile_dir =
       default_profile_dir.AppendASCII(chrome::kInitialProfile);
   return default_profile_dir;
 }
 
-FilePath ProfileManager::GetProfilePrefsPath(
-    const FilePath &profile_dir) {
-  FilePath default_prefs_path(profile_dir);
+base::FilePath ProfileManager::GetProfilePrefsPath(
+    const base::FilePath &profile_dir) {
+  base::FilePath default_prefs_path(profile_dir);
   default_prefs_path = default_prefs_path.Append(chrome::kPreferencesFilename);
   return default_prefs_path;
 }
 
-FilePath ProfileManager::GetInitialProfileDir() {
-  FilePath relative_profile_dir;
+base::FilePath ProfileManager::GetInitialProfileDir() {
+  base::FilePath relative_profile_dir;
 #if defined(OS_CHROMEOS)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (logged_in_) {
-    FilePath profile_dir;
+    base::FilePath profile_dir;
     // If the user has logged in, pick up the new profile.
     if (command_line.HasSwitch(switches::kLoginProfile)) {
       profile_dir = command_line.GetSwitchValuePath(switches::kLoginProfile);
     } else {
       // We should never be logged in with no profile dir.
       NOTREACHED();
-      return FilePath("");
+      return base::FilePath("");
     }
     relative_profile_dir = relative_profile_dir.Append(profile_dir);
     return relative_profile_dir;
@@ -312,7 +312,8 @@ FilePath ProfileManager::GetInitialProfileDir() {
   return relative_profile_dir;
 }
 
-Profile* ProfileManager::GetLastUsedProfile(const FilePath& user_data_dir) {
+Profile* ProfileManager::GetLastUsedProfile(
+    const base::FilePath& user_data_dir) {
 #if defined(OS_CHROMEOS)
   // Use default login profile if user has not logged in yet.
   if (!logged_in_)
@@ -322,8 +323,9 @@ Profile* ProfileManager::GetLastUsedProfile(const FilePath& user_data_dir) {
   return GetProfile(GetLastUsedProfileDir(user_data_dir));
 }
 
-FilePath ProfileManager::GetLastUsedProfileDir(const FilePath& user_data_dir) {
-  FilePath last_used_profile_dir(user_data_dir);
+base::FilePath ProfileManager::GetLastUsedProfileDir(
+    const base::FilePath& user_data_dir) {
+  base::FilePath last_used_profile_dir(user_data_dir);
   std::string last_used_profile;
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
@@ -337,7 +339,7 @@ FilePath ProfileManager::GetLastUsedProfileDir(const FilePath& user_data_dir) {
 }
 
 std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
-    const FilePath& user_data_dir) {
+    const base::FilePath& user_data_dir) {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
@@ -360,8 +362,9 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles(
   return to_return;
 }
 
-Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
-  FilePath default_profile_dir(user_data_dir);
+Profile* ProfileManager::GetDefaultProfile(
+    const base::FilePath& user_data_dir) {
+  base::FilePath default_profile_dir(user_data_dir);
   default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
 #if defined(OS_CHROMEOS)
   if (!logged_in_) {
@@ -410,7 +413,7 @@ std::vector<Profile*> ProfileManager::GetLoadedProfiles() const {
   return profiles;
 }
 
-Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
+Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
   // return it.
   Profile* profile = GetProfileByPath(profile_dir);
@@ -427,7 +430,7 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
 }
 
 void ProfileManager::CreateProfileAsync(
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     const CreateCallback& callback,
     const string16& name,
     const string16& icon_url,
@@ -473,7 +476,7 @@ void ProfileManager::CreateDefaultProfileAsync(const CreateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
-  FilePath default_profile_dir = profile_manager->user_data_dir_;
+  base::FilePath default_profile_dir = profile_manager->user_data_dir_;
   // TODO(mirandac): current directory will not always be default in the future
   default_profile_dir = default_profile_dir.Append(
       profile_manager->GetInitialProfileDir());
@@ -509,12 +512,12 @@ ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
 }
 
 ProfileManager::ProfileInfo* ProfileManager::GetProfileInfoByPath(
-    const FilePath& path) const {
+    const base::FilePath& path) const {
   ProfilesInfoMap::const_iterator iter = profiles_info_.find(path);
   return (iter == profiles_info_.end()) ? NULL : iter->second.get();
 }
 
-Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
+Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
   ProfileInfo* profile_info = GetProfileInfoByPath(path);
   return profile_info ? profile_info->profile.get() : NULL;
 }
@@ -543,7 +546,7 @@ void ProfileManager::FindOrCreateNewWindowForProfile(
   CommandLine command_line(CommandLine::NO_PROGRAM);
   int return_code;
   StartupBrowserCreator browser_creator;
-  browser_creator.LaunchBrowser(command_line, profile, FilePath(),
+  browser_creator.LaunchBrowser(command_line, profile, base::FilePath(),
                                 process_startup, is_first_run, &return_code);
 #endif  // defined(OS_IOS)
 }
@@ -566,7 +569,7 @@ void ProfileManager::Observe(
           base::Bind(&CheckCryptohomeIsMounted));
 
       // Confirm that we hadn't loaded the new profile previously.
-      FilePath default_profile_dir =
+      base::FilePath default_profile_dir =
           user_data_dir_.Append(GetInitialProfileDir());
       CHECK(!GetProfileByPath(default_profile_dir))
           << "The default profile was loaded before we mounted the cryptohome.";
@@ -766,11 +769,11 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
       base::TimeDelta::FromSeconds(112));
 }
 
-Profile* ProfileManager::CreateProfileHelper(const FilePath& path) {
+Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
   return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
 }
 
-Profile* ProfileManager::CreateProfileAsyncHelper(const FilePath& path,
+Profile* ProfileManager::CreateProfileAsyncHelper(const base::FilePath& path,
                                                   Delegate* delegate) {
   return Profile::CreateProfile(path,
                                 delegate,
@@ -815,7 +818,7 @@ void ProfileManager::OnProfileCreated(Profile* profile,
                          Profile::CREATE_STATUS_FAIL);
 }
 
-FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
+base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
@@ -825,7 +828,7 @@ FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   int next_directory = local_state->GetInteger(prefs::kProfilesNumCreated);
   std::string profile_name = chrome::kMultiProfileDirPrefix;
   profile_name.append(base::IntToString(next_directory));
-  FilePath new_path = user_data_dir_;
+  base::FilePath new_path = user_data_dir_;
 #if defined(OS_WIN)
   new_path = new_path.Append(ASCIIToUTF16(profile_name));
 #else
@@ -848,7 +851,7 @@ void ProfileManager::CreateMultiProfileAsync(
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
-  FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
+  base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
 
   profile_manager->CreateProfileAsync(new_path,
                                       base::Bind(&OnOpenWindowForNewProfile,
@@ -982,7 +985,7 @@ bool ProfileManager::ShouldGoOffTheRecord() {
 // TODO(robertshield): ProfileManager should not be opening windows and should
 // not have to care about HostDesktopType. See http://crbug.com/153864
 void ProfileManager::ScheduleProfileForDeletion(
-    const FilePath& profile_dir,
+    const base::FilePath& profile_dir,
     chrome::HostDesktopType desktop_type) {
   DCHECK(IsMultipleProfilesEnabled());
 
@@ -990,7 +993,7 @@ void ProfileManager::ScheduleProfileForDeletion(
   // place.
   ProfileInfoCache& cache = GetProfileInfoCache();
   if (cache.GetNumberOfProfiles() == 1) {
-    FilePath new_path = GenerateNextProfileDirectoryPath();
+    base::FilePath new_path = GenerateNextProfileDirectoryPath();
 
     // TODO(robertshield): This desktop type needs to come from the invoker,
     // currently that involves plumbing this through web UI.
@@ -1010,7 +1013,7 @@ void ProfileManager::ScheduleProfileForDeletion(
   std::string last_profile = local_state->GetString(prefs::kProfileLastUsed);
   if (profile_dir.BaseName().MaybeAsASCII() == last_profile) {
     for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-      FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
+      base::FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
       if (cur_path != profile_dir) {
         local_state->SetString(
             prefs::kProfileLastUsed, cur_path.BaseName().MaybeAsASCII());
@@ -1081,7 +1084,7 @@ void ProfileManager::AutoloadProfiles() {
 }
 
 ProfileManagerWithoutInit::ProfileManagerWithoutInit(
-    const FilePath& user_data_dir) : ProfileManager(user_data_dir) {
+    const base::FilePath& user_data_dir) : ProfileManager(user_data_dir) {
 }
 
 void ProfileManager::RegisterTestingProfile(Profile* profile,

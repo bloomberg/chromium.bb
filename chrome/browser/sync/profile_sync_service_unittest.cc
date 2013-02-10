@@ -400,12 +400,12 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   const char* nonsense1 = "reginald";
   const char* nonsense2 = "beartato";
   const char* nonsense3 = "harrison";
-  FilePath temp_directory =
+  base::FilePath temp_directory =
       harness_.profile->GetPath().AppendASCII("Sync Data");
-  FilePath sync_file1 =
+  base::FilePath sync_file1 =
       temp_directory.AppendASCII("BookmarkSyncSettings.sqlite3");
-  FilePath sync_file2 = temp_directory.AppendASCII("SyncData.sqlite3");
-  FilePath sync_file3 = temp_directory.AppendASCII("nonsense_file");
+  base::FilePath sync_file2 = temp_directory.AppendASCII("SyncData.sqlite3");
+  base::FilePath sync_file3 = temp_directory.AppendASCII("nonsense_file");
   ASSERT_TRUE(file_util::CreateDirectory(temp_directory));
   ASSERT_NE(-1,
             file_util::WriteFile(sync_file1, nonsense1, strlen(nonsense1)));

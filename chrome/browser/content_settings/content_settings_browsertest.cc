@@ -43,7 +43,7 @@ class ContentSettingsTest : public InProcessBrowserTest {
       : https_server_(
             net::TestServer::TYPE_HTTPS,
             net::TestServer::SSLOptions(net::TestServer::SSLOptions::CERT_OK),
-            FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+            base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
   // NOTE: don't use test_server here, since we need the port to be the same
   // across the restart.
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      FilePath(FILE_PATH_LITERAL("setcookie.html")));
+      base::FilePath(FILE_PATH_LITERAL("setcookie.html")));
   CookieSettings* settings =
       CookieSettings::Factory::GetForProfile(browser()->profile());
   settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
                        AllowCookiesForASessionUsingExceptions) {
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      FilePath(FILE_PATH_LITERAL("setcookie.html")));
+      base::FilePath(FILE_PATH_LITERAL("setcookie.html")));
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
 }
 
@@ -292,7 +292,7 @@ class ClickToPlayPluginTest : public ContentSettingsTest {
 
 #if defined(OS_MACOSX)
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    FilePath plugin_dir;
+    base::FilePath plugin_dir;
     PathService::Get(base::DIR_MODULE, &plugin_dir);
     plugin_dir = plugin_dir.AppendASCII("plugins");
     // The plugins directory isn't read by default on the Mac, so it needs to be
@@ -307,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
 
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath().AppendASCII("clicktoplay.html"));
+      base::FilePath(), base::FilePath().AppendASCII("clicktoplay.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   string16 expected_title(ASCIIToUTF16("OK"));
@@ -318,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
   ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
   int process_id = host->GetProcess()->GetID();
-  FilePath path(FILE_PATH_LITERAL("blah"));
+  base::FilePath path(FILE_PATH_LITERAL("blah"));
   EXPECT_FALSE(filter->CanLoadPlugin(process_id, path));
   filter->AuthorizeAllPlugins(process_id);
   EXPECT_TRUE(filter->CanLoadPlugin(process_id, path));
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {
 // Verify that plugins can be allowed on a domain by adding an exception
 IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, AllowException) {
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath().AppendASCII("clicktoplay.html"));
+      base::FilePath(), base::FilePath().AppendASCII("clicktoplay.html"));
 
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, AllowException) {
 // Verify that plugins can be blocked on a domain by adding an exception.
 IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, BlockException) {
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath().AppendASCII("clicktoplay.html"));
+      base::FilePath(), base::FilePath().AppendASCII("clicktoplay.html"));
 
   browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURL(url),
@@ -373,7 +373,8 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, LoadAllBlockedPlugins) {
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
 
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath().AppendASCII("load_all_blocked_plugins.html"));
+      base::FilePath(),
+      base::FilePath().AppendASCII("load_all_blocked_plugins.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   string16 expected_title1(ASCIIToUTF16("1"));
@@ -430,7 +431,8 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, DeleteSelfAtLoad) {
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
 
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath().AppendASCII("plugin_delete_self_at_load.html"));
+      base::FilePath(),
+      base::FilePath().AppendASCII("plugin_delete_self_at_load.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   string16 expected_title(ASCIIToUTF16("OK"));

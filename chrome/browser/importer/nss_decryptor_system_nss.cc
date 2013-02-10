@@ -24,7 +24,8 @@ NSSDecryptor::~NSSDecryptor() {
   }
 }
 
-bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
+bool NSSDecryptor::Init(const base::FilePath& dll_path,
+                        const base::FilePath& db_path) {
   crypto::EnsureNSSInit();
   is_nss_initialized_ = true;
   const std::string modspec =

@@ -32,23 +32,23 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     service_ = browser()->profile()->GetExtensionService();
-    FilePath pem_path = test_data_dir_.
+    base::FilePath pem_path = test_data_dir_.
         AppendASCII("permissions_increase").AppendASCII("permissions.pem");
     path_v1_ = PackExtensionWithOptions(
         test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v1"),
         scoped_temp_dir_.path().AppendASCII("permissions1.crx"),
         pem_path,
-        FilePath());
+        base::FilePath());
     path_v2_ = PackExtensionWithOptions(
         test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v2"),
         scoped_temp_dir_.path().AppendASCII("permissions2.crx"),
         pem_path,
-        FilePath());
+        base::FilePath());
     path_v3_ = PackExtensionWithOptions(
         test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v3"),
         scoped_temp_dir_.path().AppendASCII("permissions3.crx"),
         pem_path,
-        FilePath());
+        base::FilePath());
   }
 
   // Returns the ExtensionDisabledGlobalError, if present.
@@ -73,7 +73,7 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
   // extension and prompt the user to reenable.
   const Extension* UpdateIncreasingPermissionExtension(
       const Extension* extension,
-      const FilePath& crx_path,
+      const base::FilePath& crx_path,
       int expected_change) {
     size_t size_before = service_->extensions()->size();
     if (UpdateExtension(extension->id(), crx_path, expected_change))
@@ -95,9 +95,9 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
 
   ExtensionService* service_;
   base::ScopedTempDir scoped_temp_dir_;
-  FilePath path_v1_;
-  FilePath path_v2_;
-  FilePath path_v3_;
+  base::FilePath path_v1_;
+  base::FilePath path_v2_;
+  base::FilePath path_v3_;
 };
 
 // Tests the process of updating an extension to one that requires higher

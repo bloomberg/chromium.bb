@@ -84,7 +84,7 @@ static const char safe_browsing_id[] = "Safe Browsing ID";
 
 // String pointer used to set the local file extension to be used when a
 // download is going to be dispatched with web intents.
-static const FilePath::CharType kWebIntentsFileExtension[] =
+static const base::FilePath::CharType kWebIntentsFileExtension[] =
     FILE_PATH_LITERAL(".webintents");
 
 // The state of a safebrowsing check.
@@ -119,7 +119,7 @@ SafeBrowsingState::~SafeBrowsingState() {}
 // in operation to net::GenerateFileName(), but uses a localized
 // default name.
 void GenerateFileNameFromRequest(const DownloadItem& download_item,
-                                 FilePath* generated_name,
+                                 base::FilePath* generated_name,
                                  std::string referrer_charset) {
   std::string default_file_name(
       l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
@@ -133,14 +133,14 @@ void GenerateFileNameFromRequest(const DownloadItem& download_item,
 }
 
 // Needed to give PostTask a void closure in OnWebIntentDispatchCompleted.
-void DeleteFile(const FilePath& file_path) {
+void DeleteFile(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   file_util::Delete(file_path, false);
 }
 
 // Called when the web intents dispatch has completed. Deletes the |file_path|.
 void OnWebIntentDispatchCompleted(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     webkit_glue::WebIntentReplyType intent_reply) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&DeleteFile, file_path));
@@ -165,8 +165,8 @@ void VisitCountsToVisitedBefore(
 // platform_util::OpenItem/ShowItemInFolder, including any transformation
 // required for download abstractions layered on top of the core system,
 // e.g. download to Drive.
-FilePath GetPlatformDownloadPath(Profile* profile,
-                                 const DownloadItem* download) {
+base::FilePath GetPlatformDownloadPath(Profile* profile,
+                                       const DownloadItem* download) {
 #if defined(OS_CHROMEOS)
   drive::DriveDownloadHandler* drive_download_handler =
       drive::DriveDownloadHandler::GetForProfile(profile);
@@ -236,7 +236,7 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
 
 void ChromeDownloadManagerDelegate::ChooseDownloadPath(
     DownloadItem* item,
-    const FilePath& suggested_path,
+    const base::FilePath& suggested_path,
     const FileSelectedCallback& file_selected_callback) {
   // Deletes itself.
   DownloadFilePicker* file_picker =
@@ -249,8 +249,8 @@ void ChromeDownloadManagerDelegate::ChooseDownloadPath(
                     file_selected_callback);
 }
 
-FilePath ChromeDownloadManagerDelegate::GetIntermediatePath(
-    const FilePath& target_path,
+base::FilePath ChromeDownloadManagerDelegate::GetIntermediatePath(
+    const base::FilePath& target_path,
     content::DownloadDangerType danger_type) {
   // If the download is not dangerous, just append .crdownload to the target
   // path.
@@ -259,8 +259,8 @@ FilePath ChromeDownloadManagerDelegate::GetIntermediatePath(
 
   // If the download is potentially dangerous we create a filename of the form
   // 'Unconfirmed <random>.crdownload'.
-  FilePath::StringType file_name;
-  FilePath dir = target_path.DirName();
+  base::FilePath::StringType file_name;
+  base::FilePath dir = target_path.DirName();
 #if defined(OS_WIN)
   string16 unconfirmed_prefix =
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_UNCONFIRMED_PREFIX);
@@ -293,14 +293,14 @@ WebContents* ChromeDownloadManagerDelegate::
 }
 
 bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
-    const FilePath& path) {
+    const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FilePath::StringType extension = path.Extension();
+  base::FilePath::StringType extension = path.Extension();
   if (extension.empty())
     return false;
   if (extensions::Extension::IsExtension(path))
     return false;
-  DCHECK(extension[0] == FilePath::kExtensionSeparator);
+  DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);
   return download_prefs_->IsAutoOpenEnabledForExtension(extension);
 }
@@ -501,10 +501,11 @@ bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 #endif
 }
 
-void ChromeDownloadManagerDelegate::GetSaveDir(BrowserContext* browser_context,
-                                               FilePath* website_save_dir,
-                                               FilePath* download_save_dir,
-                                               bool* skip_dir_check) {
+void ChromeDownloadManagerDelegate::GetSaveDir(
+    BrowserContext* browser_context,
+    base::FilePath* website_save_dir,
+    base::FilePath* download_save_dir,
+    bool* skip_dir_check) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   PrefServiceSyncable* prefs = profile->GetPrefs();
 
@@ -512,7 +513,7 @@ void ChromeDownloadManagerDelegate::GetSaveDir(BrowserContext* browser_context,
   // If not, initialize it with default directory.
   if (!prefs->FindPreference(prefs::kSaveFileDefaultDirectory)) {
     DCHECK(prefs->FindPreference(prefs::kDownloadDefaultDirectory));
-    FilePath default_save_path = prefs->GetFilePath(
+    base::FilePath default_save_path = prefs->GetFilePath(
         prefs::kDownloadDefaultDirectory);
     prefs->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
                                 default_save_path,
@@ -533,8 +534,8 @@ void ChromeDownloadManagerDelegate::GetSaveDir(BrowserContext* browser_context,
 
 void ChromeDownloadManagerDelegate::ChooseSavePath(
     WebContents* web_contents,
-    const FilePath& suggested_path,
-    const FilePath::StringType& default_extension,
+    const base::FilePath& suggested_path,
+    const base::FilePath::StringType& default_extension,
     bool can_save_as_complete,
     const content::SavePackagePathPickedCallback& callback) {
   // Deletes itself.
@@ -592,7 +593,7 @@ DownloadProtectionService*
 // TODO(phajdan.jr): This is apparently not being exercised in tests.
 bool ChromeDownloadManagerDelegate::IsDangerousFile(
     const DownloadItem& download,
-    const FilePath& suggested_path,
+    const base::FilePath& suggested_path,
     bool visited_referrer_before) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -627,8 +628,8 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
 
 void ChromeDownloadManagerDelegate::GetReservedPath(
     DownloadItem& download,
-    const FilePath& target_path,
-    const FilePath& default_download_path,
+    const base::FilePath& target_path,
+    const base::FilePath& default_download_path,
     bool should_uniquify_path,
     const DownloadPathReservationTracker::ReservedPathCallback& callback) {
   DownloadPathReservationTracker::GetReservedPath(
@@ -740,12 +741,12 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   bool should_prompt = (download->GetTargetDisposition() ==
                         DownloadItem::TARGET_DISPOSITION_PROMPT);
   bool is_forced_path = !download->GetForcedFilePath().empty();
-  FilePath suggested_path;
+  base::FilePath suggested_path;
 
   // Check whether this download is for an extension install or not.
   // Allow extensions to be explicitly saved.
   if (!is_forced_path) {
-    FilePath generated_name;
+    base::FilePath generated_name;
     GenerateFileNameFromRequest(
         *download,
         &generated_name,
@@ -771,7 +772,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     // Determine the proper path for a download, by either one of the following:
     // 1) using the default download directory.
     // 2) prompting the user.
-    FilePath target_directory;
+    base::FilePath target_directory;
     if (should_prompt && !last_download_path_.empty())
       target_directory = last_download_path_;
     else
@@ -850,7 +851,7 @@ void ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback(
     bool should_prompt,
     bool is_forced_path,
     content::DownloadDangerType danger_type,
-    const FilePath& suggested_path) {
+    const base::FilePath& suggested_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* download =
       download_manager_->GetDownload(download_id);
@@ -859,10 +860,10 @@ void ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback(
 
   if (suggested_path.empty()) {
     // Substitution failed.
-    callback.Run(FilePath(),
+    callback.Run(base::FilePath(),
                  DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                  danger_type,
-                 FilePath());
+                 base::FilePath());
     return;
   }
 
@@ -880,7 +881,7 @@ void ChromeDownloadManagerDelegate::OnPathReservationAvailable(
     const content::DownloadTargetCallback& callback,
     bool should_prompt,
     content::DownloadDangerType danger_type,
-    const FilePath& reserved_path,
+    const base::FilePath& reserved_path,
     bool reserved_path_verified) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* download =
@@ -907,9 +908,9 @@ void ChromeDownloadManagerDelegate::OnTargetPathDetermined(
     const content::DownloadTargetCallback& callback,
     DownloadItem::TargetDisposition disposition,
     content::DownloadDangerType danger_type,
-    const FilePath& target_path) {
+    const base::FilePath& target_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FilePath intermediate_path;
+  base::FilePath intermediate_path;
   DownloadItem* download =
       download_manager_->GetDownload(download_id);
   if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))

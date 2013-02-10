@@ -263,7 +263,8 @@ class FeedbackHandler : public WebUIMessageHandler,
   void RefreshSavedScreenshotsCallback(
       std::vector<std::string>* saved_screenshots);
   void GetMostRecentScreenshotsDrive(
-      const FilePath& filepath, std::vector<std::string>* saved_screenshots,
+      const base::FilePath& filepath,
+      std::vector<std::string>* saved_screenshots,
       size_t max_saved, base::Closure callback);
 #endif
   void HandleSendReport(const ListValue* args);
@@ -556,7 +557,7 @@ void FeedbackHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
 #if defined(OS_CHROMEOS)
 void FeedbackHandler::HandleRefreshSavedScreenshots(const ListValue*) {
   std::vector<std::string>* saved_screenshots = new std::vector<std::string>;
-  FilePath filepath = DownloadPrefs::FromBrowserContext(
+  base::FilePath filepath = DownloadPrefs::FromBrowserContext(
       tab_->GetBrowserContext())->DownloadPath();
   base::Closure refresh_callback = base::Bind(
       &FeedbackHandler::RefreshSavedScreenshotsCallback,
@@ -582,7 +583,7 @@ void FeedbackHandler::RefreshSavedScreenshotsCallback(
 }
 
 void FeedbackHandler::GetMostRecentScreenshotsDrive(
-    const FilePath& filepath, std::vector<std::string>* saved_screenshots,
+    const base::FilePath& filepath, std::vector<std::string>* saved_screenshots,
     size_t max_saved, base::Closure callback) {
   drive::DriveFileSystemInterface* file_system =
       drive::DriveSystemServiceFactory::GetForProfile(
@@ -633,7 +634,7 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   // If we have an attached file, we'll still have more data in the list.
   if (i != list_value->end()) {
     (*i++)->GetAsString(&attached_filename);
-    if (FilePath::IsSeparator(attached_filename[0])) {
+    if (base::FilePath::IsSeparator(attached_filename[0])) {
       // We have an attached filepath, not filename, hence we need read this
       // this file in chrome. We won't have any file data, skip over it.
       i++;
@@ -738,7 +739,7 @@ FeedbackUI::FeedbackUI(content::WebUI* web_ui)
 #if defined(OS_CHROMEOS)
 // static
 void FeedbackUI::GetMostRecentScreenshots(
-    const FilePath& filepath,
+    const base::FilePath& filepath,
     std::vector<std::string>* saved_screenshots,
     size_t max_saved) {
   std::string pattern =
@@ -747,7 +748,7 @@ void FeedbackUI::GetMostRecentScreenshots(
   file_util::FileEnumerator screenshots(filepath, false,
                                         file_util::FileEnumerator::FILES,
                                         pattern);
-  FilePath screenshot = screenshots.Next();
+  base::FilePath screenshot = screenshots.Next();
 
   std::vector<std::string> screenshot_filepaths;
   while (!screenshot.empty()) {

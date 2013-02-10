@@ -245,7 +245,7 @@ TEST_F(DeviceSettingsProviderTest, PolicyLoadNotification) {
 
 TEST_F(DeviceSettingsProviderTest, StatsReportingMigration) {
   // Create the legacy consent file.
-  FilePath consent_file;
+  base::FilePath consent_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &consent_file));
   consent_file = consent_file.AppendASCII("Consent To Send Stats");
   ASSERT_EQ(1, file_util::WriteFile(consent_file, "0", 1));

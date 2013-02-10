@@ -36,12 +36,12 @@ void OpenURL(const std::string& url) {
 
 namespace platform_util {
 
-void ShowItemInFolder(const FilePath& full_path) {
+void ShowItemInFolder(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   file_manager_util::ShowFileInFolder(full_path);
 }
 
-void OpenItem(const FilePath& full_path) {
+void OpenItem(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   file_manager_util::ViewItem(full_path);
 }

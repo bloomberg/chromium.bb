@@ -36,7 +36,7 @@ class ExtensionAdminPolicyTest : public testing::Test {
     values->SetString(extension_manifest_keys::kName, "test");
     values->SetString(extension_manifest_keys::kVersion, "0.1");
     std::string error;
-    extension_ = Extension::Create(FilePath(), location, *values,
+    extension_ = Extension::Create(base::FilePath(), location, *values,
                                    Extension::NO_FLAGS, &error);
     ASSERT_TRUE(extension_.get());
   }

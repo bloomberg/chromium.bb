@@ -31,12 +31,12 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
   }
 
   bool CreateApp(const std::string& app_manifest,
-                 FilePath* app_dir) {
+                 base::FilePath* app_dir) {
     if (!app_dir_.CreateUniqueTempDir()) {
       LOG(ERROR) << "Unable to create a temporary directory.";
       return false;
     }
-    FilePath manifest_path = app_dir_.path().AppendASCII("manifest.json");
+    base::FilePath manifest_path = app_dir_.path().AppendASCII("manifest.json");
     int bytes_written = file_util::WriteFile(manifest_path,
                                              app_manifest.data(),
                                              app_manifest.size());
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, MAYBE_Basic) {
       "}",
       test_server()->host_port_pair().port());
 
-  FilePath app_dir;
+  base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
   // Background mode should not be active until a background page is created.
@@ -140,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_LacksPermission) {
       "}",
       test_server()->host_port_pair().port());
 
-  FilePath app_dir;
+  base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
   ASSERT_TRUE(RunExtensionTest("app_background_page/lacks_permission"))
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
       test_server()->host_port_pair().port(),
       test_server()->host_port_pair().port());
 
-  FilePath app_dir;
+  base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   // Background mode should not be active now because no background app was
   // loaded.
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsBackgroundPage) {
       "}",
       test_server()->host_port_pair().port());
 
-  FilePath app_dir;
+  base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
 
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
       test_server()->host_port_pair().port(),
       test_server()->host_port_pair().port());
 
-  FilePath app_dir;
+  base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
 
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
       "}",
       test_server()->host_port_pair().port());
 
-  FilePath app_dir;
+  base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
   ASSERT_TRUE(RunExtensionTest("app_background_page/two_pages")) << message_;
@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoPagesWithManifest) {
       test_server()->host_port_pair().port(),
       test_server()->host_port_pair().port());
 
-  FilePath app_dir;
+  base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
   ASSERT_TRUE(RunExtensionTest("app_background_page/two_with_manifest")) <<
@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
       test_server()->host_port_pair().port(),
       test_server()->host_port_pair().port());
 
-  FilePath app_dir;
+  base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
   ASSERT_TRUE(RunExtensionTest("app_background_page/bg_open")) << message_;
@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenThenClose) {
       "}",
       test_server()->host_port_pair().port());
 
-  FilePath app_dir;
+  base::FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
   // There isn't a background page loaded initially.

@@ -55,8 +55,8 @@ namespace {
 const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
 const char* kServiceName = DriveFileSyncService::kServiceName;
 
-FilePath::StringType ASCIIToFilePathString(const std::string& path) {
-  return FilePath().AppendASCII(path).value();
+base::FilePath::StringType ASCIIToFilePathString(const std::string& path) {
+  return base::FilePath().AppendASCII(path).value();
 }
 
 void DidInitialize(bool* done, fileapi::SyncStatusCode status, bool created) {
@@ -81,8 +81,8 @@ void ExpectEqStatus(bool* done,
 // Mocks adding an installed extension to ExtensionService.
 scoped_refptr<const extensions::Extension> AddTestExtension(
     ExtensionService* extension_service,
-    const FilePath::StringType& extension_name) {
-  std::string id = Extension::GenerateIdForPath(FilePath(extension_name));
+    const base::FilePath::StringType& extension_name) {
+  std::string id = Extension::GenerateIdForPath(base::FilePath(extension_name));
 
   scoped_refptr<const Extension> extension =
       extensions::ExtensionBuilder().SetManifest(
@@ -96,8 +96,8 @@ scoped_refptr<const extensions::Extension> AddTestExtension(
 }
 
 // Converts extension_name to GURL version.
-GURL ExtensionNameToGURL(const FilePath::StringType& extension_name) {
-  std::string id = Extension::GenerateIdForPath(FilePath(extension_name));
+GURL ExtensionNameToGURL(const base::FilePath::StringType& extension_name) {
+  std::string id = Extension::GenerateIdForPath(base::FilePath(extension_name));
   return extensions::Extension::GetBaseURLFromExtensionId(id);
 }
 
@@ -219,7 +219,7 @@ class DriveFileSyncServiceTest : public testing::Test {
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get())));
     extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), FilePath(), false);
+        CommandLine::ForCurrentProcess(), base::FilePath(), false);
     ExtensionService* extension_service = extension_system->Get(
         profile_.get())->extension_service();
     AddTestExtension(extension_service, FPL("example1"));
@@ -379,9 +379,9 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
   fileapi::FileSystemURL CreateURL(const GURL& origin,
-                                   const FilePath::StringType& path) {
+                                   const base::FilePath::StringType& path) {
     return fileapi::CreateSyncableFileSystemURL(
-        origin, kServiceName, FilePath(path));
+        origin, kServiceName, base::FilePath(path));
   }
 
   void ProcessRemoteChange(fileapi::SyncStatusCode expected_status,
@@ -431,7 +431,7 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   bool AppendIncrementalRemoteChange(
       const GURL& origin,
-      const FilePath& path,
+      const base::FilePath& path,
       bool is_deleted,
       const std::string& resource_id,
       int64 changestamp,
@@ -747,7 +747,7 @@ TEST_F(DriveFileSyncServiceTest, ResolveLocalSyncOperationType) {
   const fileapi::FileSystemURL url = fileapi::CreateSyncableFileSystemURL(
       GURL("chrome-extension://example/"),
       kServiceName,
-      FilePath().AppendASCII("path/to/file"));
+      base::FilePath().AppendASCII("path/to/file"));
   const std::string kResourceId("123456");
   const int64 kChangestamp = 654321;
 
@@ -852,7 +852,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
   const GURL kOrigin("chrome-extension://example");
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
-  const FilePath::StringType kFileName(FPL("File 1.mp3"));
+  const base::FilePath::StringType kFileName(FPL("File 1.mp3"));
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
   metadata_store()->AddBatchSyncOrigin(kOrigin, kDirectoryResourceId);
@@ -889,7 +889,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
   const GURL kOrigin = ExtensionNameToGURL(FPL("example1"));
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
-  const FilePath::StringType kFileName(FPL("File 1.mp3"));
+  const base::FilePath::StringType kFileName(FPL("File 1.mp3"));
   const std::string kFileResourceId("file:2_file_resource_id");
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
@@ -933,7 +933,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
   const GURL kOrigin = ExtensionNameToGURL(FPL("example1"));
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
-  const FilePath::StringType kFileName(FPL("File 1.mp3"));
+  const base::FilePath::StringType kFileName(FPL("File 1.mp3"));
   const std::string kFileResourceId("file:2_file_resource_id");
 
   metadata_store()->SetSyncRootDirectory(kSyncRootResourceId);
@@ -1014,7 +1014,7 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Override) {
   const GURL kOrigin = ExtensionNameToGURL(FPL("example1"));
   const std::string kDirectoryResourceId("folder:origin_directory_resource_id");
   const std::string kSyncRootResourceId("folder:sync_root_resource_id");
-  const FilePath kFilePath(FPL("File 1.mp3"));
+  const base::FilePath kFilePath(FPL("File 1.mp3"));
   const std::string kFileResourceId("file:2_file_resource_id");
   const std::string kFileResourceId2("file:2_file_resource_id_2");
   const fileapi::FileSystemURL kURL(CreateURL(kOrigin, kFilePath.value()));

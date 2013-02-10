@@ -178,7 +178,7 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
   }
 
   // SettingsStorageFactory implementation.
-  virtual ValueStore* Create(const FilePath& base_path,
+  virtual ValueStore* Create(const base::FilePath& base_path,
                              const std::string& extension_id) OVERRIDE {
     TestingValueStore* new_storage = new TestingValueStore();
     DCHECK(!created_.count(extension_id));

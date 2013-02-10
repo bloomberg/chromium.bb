@@ -225,12 +225,12 @@ HRESULT AddShellLink(base::win::ScopedComPtr<IObjectCollection> collection,
 
 // Creates a temporary icon file to be shown in JumpList.
 bool CreateIconFile(const SkBitmap& bitmap,
-                    const FilePath& icon_dir,
-                    FilePath* icon_path) {
+                    const base::FilePath& icon_dir,
+                    base::FilePath* icon_path) {
   // Retrieve the path to a temporary file.
   // We don't have to care about the extension of this temporary file because
   // JumpList does not care about it.
-  FilePath path;
+  base::FilePath path;
   if (!file_util::CreateTemporaryFileInDir(icon_dir, &path))
     return false;
 
@@ -399,13 +399,13 @@ bool UpdateJumpList(const wchar_t* app_id,
     return false;
 
   // Retrieve the absolute path to "chrome.exe".
-  FilePath chrome_path;
+  base::FilePath chrome_path;
   if (!PathService::Get(base::FILE_EXE, &chrome_path))
     return false;
 
   // Retrieve the command-line switches of this process.
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  FilePath user_data_dir = CommandLine::ForCurrentProcess()->
+  base::FilePath user_data_dir = CommandLine::ForCurrentProcess()->
       GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
@@ -730,7 +730,7 @@ void JumpList::RunUpdate() {
   // Delete the directory which contains old icon files, rename the current
   // icon directory, and create a new directory which contains new JumpList
   // icon files.
-  FilePath icon_dir_old(icon_dir_.value() + L"Old");
+  base::FilePath icon_dir_old(icon_dir_.value() + L"Old");
   if (file_util::PathExists(icon_dir_old))
     file_util::Delete(icon_dir_old, true);
   file_util::Move(icon_dir_, icon_dir_old);
@@ -753,7 +753,7 @@ void JumpList::RunUpdate() {
 void JumpList::CreateIconFiles(const ShellLinkItemList& item_list) {
   for (ShellLinkItemList::const_iterator item = item_list.begin();
       item != item_list.end(); ++item) {
-    FilePath icon_path;
+    base::FilePath icon_path;
     if (CreateIconFile((*item)->data(), icon_dir_, &icon_path))
       (*item)->SetIcon(icon_path.value(), 0, true);
   }

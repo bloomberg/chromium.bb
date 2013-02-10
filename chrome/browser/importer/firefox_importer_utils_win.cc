@@ -45,7 +45,7 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
   return highest_version;
 }
 
-FilePath GetFirefoxInstallPathFromRegistry() {
+base::FilePath GetFirefoxInstallPathFromRegistry() {
   // Detects the path that Firefox is installed in.
   string16 registry_path = kFirefoxPath;
   wchar_t buffer[MAX_PATH];
@@ -55,7 +55,7 @@ FilePath GetFirefoxInstallPathFromRegistry() {
   LONG result = reg_key.ReadValue(kCurrentVersion, buffer,
                                   &buffer_length, NULL);
   if (result != ERROR_SUCCESS)
-    return FilePath();
+    return base::FilePath();
 
   registry_path += L"\\" + string16(buffer) + L"\\Main";
   buffer_length = sizeof(buffer);
@@ -64,19 +64,19 @@ FilePath GetFirefoxInstallPathFromRegistry() {
   result = reg_key_directory.ReadValue(L"Install Directory", buffer,
                                        &buffer_length, NULL);
 
-  return (result != ERROR_SUCCESS) ? FilePath() : FilePath(buffer);
+  return (result != ERROR_SUCCESS) ? base::FilePath() : base::FilePath(buffer);
 }
 
-FilePath GetProfilesINI() {
-  FilePath ini_file;
+base::FilePath GetProfilesINI() {
+  base::FilePath ini_file;
   // The default location of the profile folder containing user data is
   // under the "Application Data" folder in Windows XP, Vista, and 7.
   if (!PathService::Get(base::DIR_APP_DATA, &ini_file))
-    return FilePath();
+    return base::FilePath();
 
   ini_file = ini_file.AppendASCII("Mozilla");
   ini_file = ini_file.AppendASCII("Firefox");
   ini_file = ini_file.AppendASCII("profiles.ini");
 
-  return file_util::PathExists(ini_file) ? ini_file : FilePath();
+  return file_util::PathExists(ini_file) ? ini_file : base::FilePath();
 }

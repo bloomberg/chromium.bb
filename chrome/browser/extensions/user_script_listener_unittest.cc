@@ -77,7 +77,8 @@ class SimpleTestJob : public net::URLRequestTestJob {
 };
 
 // Yoinked from extension_manifest_unittest.cc.
-DictionaryValue* LoadManifestFile(const FilePath path, std::string* error) {
+DictionaryValue* LoadManifestFile(const base::FilePath path,
+                                  std::string* error) {
   EXPECT_TRUE(file_util::PathExists(path));
   JSONFileValueSerializer serializer(path);
   return static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
@@ -85,7 +86,7 @@ DictionaryValue* LoadManifestFile(const FilePath path, std::string* error) {
 
 scoped_refptr<Extension> LoadExtension(const std::string& filename,
                                        std::string* error) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.
       AppendASCII("extensions").
@@ -177,9 +178,9 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
   }
 
   void LoadTestExtension() {
-    FilePath test_dir;
+    base::FilePath test_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
-    FilePath extension_path = test_dir
+    base::FilePath extension_path = test_dir
         .AppendASCII("extensions")
         .AppendASCII("good")
         .AppendASCII("Extensions")

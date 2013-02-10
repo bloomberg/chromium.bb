@@ -143,7 +143,7 @@ Profile* GetProfileOnUI(ProfileManager* profile_manager, Profile* profile) {
 }
 
 #if defined(DEBUG_DEVTOOLS)
-bool IsSupportedDevToolsURL(const GURL& url, FilePath* path) {
+bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
   if (!url.SchemeIs(chrome::kChromeDevToolsScheme) ||
       url.host() != chrome::kChromeUIDevToolsHost) {
     return false;
@@ -173,11 +173,12 @@ bool IsSupportedDevToolsURL(const GURL& url, FilePath* path) {
   // Check that |relative_path| is not an absolute path (otherwise
   // AppendASCII() will DCHECK).  The awkward use of StringType is because on
   // some systems FilePath expects a std::string, but on others a std::wstring.
-  FilePath p(FilePath::StringType(relative_path.begin(), relative_path.end()));
+  base::FilePath p(
+      base::FilePath::StringType(relative_path.begin(), relative_path.end()));
   if (p.IsAbsolute())
     return false;
 
-  FilePath inspector_dir;
+  base::FilePath inspector_dir;
   if (!PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir))
     return false;
 
@@ -196,7 +197,7 @@ class DebugDevToolsInterceptor : public net::URLRequestJobFactory::Interceptor {
   virtual net::URLRequestJob* MaybeIntercept(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
-    FilePath path;
+    base::FilePath path;
     if (IsSupportedDevToolsURL(request->url(), &path))
       return new net::URLRequestFileJob(request, network_delegate, path);
 

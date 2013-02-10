@@ -173,7 +173,7 @@ class ChromeOSTermsHandler
       const chromeos::StartupCustomizationDocument* customization =
           chromeos::StartupCustomizationDocument::GetInstance();
       if (customization->IsReady()) {
-        FilePath oem_eula_file_path;
+        base::FilePath oem_eula_file_path;
         if (net::FileURLToFilePath(GURL(customization->GetEULAPage(locale_)),
                                    &oem_eula_file_path)) {
           if (!file_util::ReadFileToString(oem_eula_file_path, &contents_)) {
@@ -184,10 +184,11 @@ class ChromeOSTermsHandler
     } else {
       std::string file_path =
           StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
-      if (!file_util::ReadFileToString(FilePath(file_path), &contents_)) {
+      if (!file_util::ReadFileToString(base::FilePath(file_path), &contents_)) {
         // No EULA for given language - try en-US as default.
         file_path = StringPrintf(chrome::kEULAPathFormat, "en-US");
-        if (!file_util::ReadFileToString(FilePath(file_path), &contents_)) {
+        if (!file_util::ReadFileToString(base::FilePath(file_path),
+                                         &contents_)) {
           // File with EULA not found, ResponseOnUIThread will load EULA from
           // resources if contents_ is empty.
           contents_.clear();
@@ -746,7 +747,7 @@ std::string AboutLinuxProxyConfig() {
                l10n_util::GetStringUTF8(IDS_ABOUT_LINUX_PROXY_CONFIG_TITLE));
   data.append("<style>body { max-width: 70ex; padding: 2ex 5ex; }</style>");
   AppendBody(&data);
-  FilePath binary = CommandLine::ForCurrentProcess()->GetProgram();
+  base::FilePath binary = CommandLine::ForCurrentProcess()->GetProgram();
   data.append(l10n_util::GetStringFUTF8(
       IDS_ABOUT_LINUX_PROXY_CONFIG_BODY,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),

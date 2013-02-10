@@ -76,12 +76,12 @@ ui::SelectFileDialog::FileTypeInfo ConvertExtensionsToFileTypeInfo(
   ui::SelectFileDialog::FileTypeInfo file_type_info;
 
   for (size_t i = 0; i < extensions.size(); ++i) {
-    FilePath::StringType allowed_extension =
-        FilePath::FromUTF8Unsafe(extensions[i]).value();
+    base::FilePath::StringType allowed_extension =
+        base::FilePath::FromUTF8Unsafe(extensions[i]).value();
 
     // FileTypeInfo takes a nested vector like [["htm", "html"], ["txt"]] to
     // group equivalent extensions, but we don't use this feature here.
-    std::vector<FilePath::StringType> inner_vector;
+    std::vector<base::FilePath::StringType> inner_vector;
     inner_vector.push_back(allowed_extension);
     file_type_info.extensions.push_back(inner_vector);
   }
@@ -116,16 +116,16 @@ class FileSelectorImpl : public FileSelector,
   // deleted by the caller. It will delete itself after it receives response
   // from SelectFielDialog.
   virtual void SelectFile(
-      const FilePath& suggested_name,
+      const base::FilePath& suggested_name,
       const std::vector<std::string>& allowed_extensions,
       Browser* browser,
       FileBrowserHandlerInternalSelectFileFunction* function) OVERRIDE;
 
   // ui::SelectFileDialog::Listener overrides.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
-  virtual void MultiFilesSelected(const std::vector<FilePath>& files,
+  virtual void MultiFilesSelected(const std::vector<base::FilePath>& files,
                                   void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
@@ -139,7 +139,7 @@ class FileSelectorImpl : public FileSelector,
   //
   // Returns boolean indicating whether the dialog has been successfully shown
   // to the user.
-  bool StartSelectFile(const FilePath& suggested_name,
+  bool StartSelectFile(const base::FilePath& suggested_name,
                        const std::vector<std::string>& allowed_extensions,
                        Browser* browser);
 
@@ -149,7 +149,7 @@ class FileSelectorImpl : public FileSelector,
   // |success| indicates whether user has selectd the file.
   // |selected_path| is path that was selected. It is empty if the file wasn't
   // selected.
-  void SendResponse(bool success, const FilePath& selected_path);
+  void SendResponse(bool success, const base::FilePath& selected_path);
 
   // Dialog that is shown by selector.
   scoped_refptr<ui::SelectFileDialog> dialog_;
@@ -167,11 +167,11 @@ FileSelectorImpl::~FileSelectorImpl() {
     dialog_->ListenerDestroyed();
   // Send response if needed.
   if (function_)
-    SendResponse(false, FilePath());
+    SendResponse(false, base::FilePath());
 }
 
 void FileSelectorImpl::SelectFile(
-    const FilePath& suggested_name,
+    const base::FilePath& suggested_name,
     const std::vector<std::string>& allowed_extensions,
     Browser* browser,
     FileBrowserHandlerInternalSelectFileFunction* function) {
@@ -189,7 +189,7 @@ void FileSelectorImpl::SelectFile(
 }
 
 bool FileSelectorImpl::StartSelectFile(
-    const FilePath& suggested_name,
+    const base::FilePath& suggested_name,
     const std::vector<std::string>& allowed_extensions,
     Browser* browser) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -224,13 +224,13 @@ bool FileSelectorImpl::StartSelectFile(
 }
 
 void FileSelectorImpl::FileSelected(
-    const FilePath& path, int index, void* params) {
+    const base::FilePath& path, int index, void* params) {
   SendResponse(true, path);
   delete this;
 }
 
 void FileSelectorImpl::MultiFilesSelected(
-    const std::vector<FilePath>& files,
+    const std::vector<base::FilePath>& files,
     void* params) {
   // Only single file should be selected in save-as dialog.
   NOTREACHED();
@@ -238,12 +238,12 @@ void FileSelectorImpl::MultiFilesSelected(
 
 void FileSelectorImpl::FileSelectionCanceled(
     void* params) {
-  SendResponse(false, FilePath());
+  SendResponse(false, base::FilePath());
   delete this;
 }
 
 void FileSelectorImpl::SendResponse(bool success,
-                                    const FilePath& selected_path) {
+                                    const base::FilePath& selected_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We don't want to send multiple responses.
@@ -307,7 +307,7 @@ FileBrowserHandlerInternalSelectFileFunction::
 bool FileBrowserHandlerInternalSelectFileFunction::RunImpl() {
   scoped_ptr<SelectFile::Params> params(SelectFile::Params::Create(*args_));
 
-  FilePath suggested_name(params->selection_params.suggested_name);
+  base::FilePath suggested_name(params->selection_params.suggested_name);
   std::vector<std::string> allowed_extensions;
   if (params->selection_params.allowed_file_extensions.get())
     allowed_extensions = *params->selection_params.allowed_file_extensions;
@@ -327,7 +327,7 @@ bool FileBrowserHandlerInternalSelectFileFunction::RunImpl() {
 
 void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
     bool success,
-    const FilePath& full_path) {
+    const base::FilePath& full_path) {
   if (!success) {
     Respond(false);
     return;

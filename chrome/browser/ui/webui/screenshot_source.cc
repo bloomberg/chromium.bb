@@ -114,7 +114,7 @@ bool ScreenshotSource::AreScreenshotsDisabled() {
 }
 
 // static
-bool ScreenshotSource::GetScreenshotDirectory(FilePath* directory) {
+bool ScreenshotSource::GetScreenshotDirectory(base::FilePath* directory) {
   if (ScreenshotSource::AreScreenshotsDisabled())
     return false;
 
@@ -192,7 +192,7 @@ void ScreenshotSource::SendScreenshot(
     std::string decoded_filename = UTF16ToASCII(string16(
         decoded.data(), decoded.length()));
 
-    FilePath download_path;
+    base::FilePath download_path;
     GetScreenshotDirectory(&download_path);
     if (drive::util::IsUnderDriveMountPoint(download_path)) {
       drive::DriveFileSystemInterface* file_system =
@@ -222,7 +222,7 @@ void ScreenshotSource::SendScreenshot(
 void ScreenshotSource::SendSavedScreenshot(
     const std::string& screenshot_path,
     const content::URLDataSource::GotDataCallback& callback,
-    const FilePath& file) {
+    const base::FilePath& file) {
   ScreenshotDataPtr read_bytes(new ScreenshotData);
   int64 file_size = 0;
 
@@ -243,7 +243,7 @@ void ScreenshotSource::GetSavedScreenshotCallback(
     const std::string& screenshot_path,
     const content::URLDataSource::GotDataCallback& callback,
     drive::DriveFileError error,
-    const FilePath& file,
+    const base::FilePath& file,
     const std::string& unused_mime_type,
     drive::DriveFileType file_type) {
   if (error != drive::DRIVE_FILE_OK || file_type != drive::REGULAR_FILE) {

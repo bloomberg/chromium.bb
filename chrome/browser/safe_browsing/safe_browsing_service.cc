@@ -52,7 +52,7 @@ using content::BrowserThread;
 namespace {
 
 // Filename suffix for the cookie database.
-const FilePath::CharType kCookiesFile[] = FILE_PATH_LITERAL(" Cookies");
+const base::FilePath::CharType kCookiesFile[] = FILE_PATH_LITERAL(" Cookies");
 
 // The default URL prefix where browser fetches chunk updates, hashes,
 // and reports safe browsing hits and malware details.
@@ -73,8 +73,8 @@ const char* const kSbBackupHttpErrorURLPrefix =
 const char* const kSbBackupNetworkErrorURLPrefix =
     "https://alt3-safebrowsing.google.com/safebrowsing";
 
-FilePath CookieFilePath() {
-  return FilePath(
+base::FilePath CookieFilePath() {
+  return base::FilePath(
       SafeBrowsingService::GetBaseFilename().value() + kCookiesFile);
 }
 
@@ -146,13 +146,13 @@ static base::LazyInstance<SafeBrowsingServiceFactoryImpl>
     g_safe_browsing_service_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 // static
-FilePath SafeBrowsingService::GetCookieFilePathForTesting() {
+base::FilePath SafeBrowsingService::GetCookieFilePathForTesting() {
   return CookieFilePath();
 }
 
 // static
-FilePath SafeBrowsingService::GetBaseFilename() {
-  FilePath path;
+base::FilePath SafeBrowsingService::GetBaseFilename() {
+  base::FilePath path;
   bool result = PathService::Get(chrome::DIR_USER_DATA, &path);
   DCHECK(result);
   return path.Append(chrome::kSafeBrowsingBaseFilename);

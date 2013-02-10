@@ -78,14 +78,15 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
 
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
-  virtual void SelectFileImpl(Type type,
-                              const string16& title,
-                              const FilePath& default_path,
-                              const FileTypeInfo* file_types,
-                              int file_type_index,
-                              const FilePath::StringType& default_extension,
-                              gfx::NativeWindow owning_window,
-                              void* params) OVERRIDE;
+  virtual void SelectFileImpl(
+      Type type,
+      const string16& title,
+      const base::FilePath& default_path,
+      const FileTypeInfo* file_types,
+      int file_type_index,
+      const base::FilePath::StringType& default_extension,
+      gfx::NativeWindow owning_window,
+      void* params) OVERRIDE;
 
  private:
   virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
@@ -97,11 +98,11 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
   void AddFilters(GtkFileChooser* chooser);
 
   // Notifies the listener that a single file was chosen.
-  void FileSelected(GtkWidget* dialog, const FilePath& path);
+  void FileSelected(GtkWidget* dialog, const base::FilePath& path);
 
   // Notifies the listener that multiple files were chosen.
   void MultiFilesSelected(GtkWidget* dialog,
-                          const std::vector<FilePath>& files);
+                          const std::vector<base::FilePath>& files);
 
   // Notifies the listener that no file was chosen (the action was canceled).
   // Dialog is passed so we can find that |params| pointer that was passed to
@@ -109,16 +110,16 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
   void FileNotSelected(GtkWidget* dialog);
 
   GtkWidget* CreateSelectFolderDialog(const std::string& title,
-      const FilePath& default_path, gfx::NativeWindow parent);
+      const base::FilePath& default_path, gfx::NativeWindow parent);
 
   GtkWidget* CreateFileOpenDialog(const std::string& title,
-      const FilePath& default_path, gfx::NativeWindow parent);
+      const base::FilePath& default_path, gfx::NativeWindow parent);
 
   GtkWidget* CreateMultiFileOpenDialog(const std::string& title,
-      const FilePath& default_path, gfx::NativeWindow parent);
+      const base::FilePath& default_path, gfx::NativeWindow parent);
 
   GtkWidget* CreateSaveAsDialog(const std::string& title,
-      const FilePath& default_path, gfx::NativeWindow parent);
+      const base::FilePath& default_path, gfx::NativeWindow parent);
 
   // Removes and returns the |params| associated with |dialog| from
   // |params_map_|.
@@ -139,7 +140,7 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
 
   // Common function for CreateFileOpenDialog and CreateMultiFileOpenDialog.
   GtkWidget* CreateFileOpenHelper(const std::string& title,
-                                  const FilePath& default_path,
+                                  const base::FilePath& default_path,
                                   gfx::NativeWindow parent);
 
   // Callback for when the user responds to a Save As or Open File dialog.
@@ -213,10 +214,10 @@ void SelectFileDialogImplGTK::OnWindowDestroying(aura::Window* window) {
 void SelectFileDialogImplGTK::SelectFileImpl(
     Type type,
     const string16& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
-    const FilePath::StringType& default_extension,
+    const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owning_window,
     void* params) {
   type_ = type;
@@ -330,7 +331,7 @@ void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
 }
 
 void SelectFileDialogImplGTK::FileSelected(GtkWidget* dialog,
-                                           const FilePath& path) {
+                                           const base::FilePath& path) {
   if (type_ == SELECT_SAVEAS_FILE)
     *last_saved_path_ = path.DirName();
   else if (type_ == SELECT_OPEN_FILE || type_ == SELECT_FOLDER)
@@ -350,7 +351,7 @@ void SelectFileDialogImplGTK::FileSelected(GtkWidget* dialog,
 }
 
 void SelectFileDialogImplGTK::MultiFilesSelected(GtkWidget* dialog,
-    const std::vector<FilePath>& files) {
+    const std::vector<base::FilePath>& files) {
     *last_opened_path_ = files[0].DirName();
 
   if (listener_)
@@ -367,7 +368,7 @@ void SelectFileDialogImplGTK::FileNotSelected(GtkWidget* dialog) {
 
 GtkWidget* SelectFileDialogImplGTK::CreateFileOpenHelper(
     const std::string& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     gfx::NativeWindow parent) {
   GtkWidget* dialog =
       gtk_file_chooser_dialog_new(title.c_str(), NULL,
@@ -397,7 +398,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateFileOpenHelper(
 
 GtkWidget* SelectFileDialogImplGTK::CreateSelectFolderDialog(
     const std::string& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     gfx::NativeWindow parent) {
   std::string title_string = !title.empty() ? title :
         l10n_util::GetStringUTF8(IDS_SELECT_FOLDER_DIALOG_TITLE);
@@ -425,7 +426,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateSelectFolderDialog(
 
 GtkWidget* SelectFileDialogImplGTK::CreateFileOpenDialog(
     const std::string& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     gfx::NativeWindow parent) {
   std::string title_string = !title.empty() ? title :
         l10n_util::GetStringUTF8(IDS_OPEN_FILE_DIALOG_TITLE);
@@ -439,7 +440,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateFileOpenDialog(
 
 GtkWidget* SelectFileDialogImplGTK::CreateMultiFileOpenDialog(
     const std::string& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     gfx::NativeWindow parent) {
   std::string title_string = !title.empty() ? title :
         l10n_util::GetStringUTF8(IDS_OPEN_FILES_DIALOG_TITLE);
@@ -452,7 +453,7 @@ GtkWidget* SelectFileDialogImplGTK::CreateMultiFileOpenDialog(
 }
 
 GtkWidget* SelectFileDialogImplGTK::CreateSaveAsDialog(const std::string& title,
-    const FilePath& default_path, gfx::NativeWindow parent) {
+    const base::FilePath& default_path, gfx::NativeWindow parent) {
   std::string title_string = !title.empty() ? title :
         l10n_util::GetStringUTF8(IDS_SAVE_AS_DIALOG_TITLE);
 
@@ -538,7 +539,7 @@ void SelectFileDialogImplGTK::SelectSingleFileHelper(GtkWidget* dialog,
     return;
   }
 
-  FilePath path(filename);
+  base::FilePath path(filename);
   g_free(filename);
 
   if (allow_folder) {
@@ -575,9 +576,9 @@ void SelectFileDialogImplGTK::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
     return;
   }
 
-  std::vector<FilePath> filenames_fp;
+  std::vector<base::FilePath> filenames_fp;
   for (GSList* iter = filenames; iter != NULL; iter = g_slist_next(iter)) {
-    FilePath path(static_cast<char*>(iter->data));
+    base::FilePath path(static_cast<char*>(iter->data));
     g_free(iter->data);
     if (CallDirectoryExistsOnUIThread(path))
       continue;

@@ -19,7 +19,7 @@ class TopSitesDatabaseTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  FilePath file_name_;
+  base::FilePath file_name_;
 };
 
 TEST_F(TopSitesDatabaseTest, UpgradeToVersion2) {

@@ -45,7 +45,7 @@ class ScriptBubbleControllerTest : public ChromeRenderViewHostTestHarness {
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile))->CreateExtensionService(
-            &command_line, FilePath(), false);
+            &command_line, base::FilePath(), false);
     extension_service_->Init();
 
     TabHelper::CreateForWebContents(web_contents());
@@ -70,9 +70,9 @@ class ScriptBubbleControllerTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(ScriptBubbleControllerTest, Basics) {
 #if defined(OS_WIN)
-  FilePath root(FILE_PATH_LITERAL("c:\\"));
+  base::FilePath root(FILE_PATH_LITERAL("c:\\"));
 #else
-  FilePath root(FILE_PATH_LITERAL("/root"));
+  base::FilePath root(FILE_PATH_LITERAL("/root"));
 #endif
   scoped_refptr<const Extension> extension1 =
       ExtensionBuilder()

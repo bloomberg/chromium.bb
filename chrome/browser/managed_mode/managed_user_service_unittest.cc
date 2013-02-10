@@ -145,9 +145,9 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   scoped_refptr<extensions::UnpackedInstaller> installer(
       extensions::UnpackedInstaller::Create(service_));
   installer->set_prompt_for_plugins(false);
-  FilePath test_data_dir;
+  base::FilePath test_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  FilePath extension_path =
+  base::FilePath extension_path =
       test_data_dir.AppendASCII("extensions/managed_mode/content_pack");
   content::WindowedNotificationObserver extension_load_observer(
       chrome::NOTIFICATION_EXTENSION_LOADED,

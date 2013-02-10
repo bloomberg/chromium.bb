@@ -24,7 +24,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ManagedModeOnChange) {
 
   // We can't just call RunComponentExtension() like above, because we need to
   // fire the event while the page is waiting.
-  FilePath extension_path =
+  base::FilePath extension_path =
       test_data_dir_.AppendASCII("managed_mode/on_change");
   const extensions::Extension* extension =
       LoadExtensionAsComponent(extension_path);

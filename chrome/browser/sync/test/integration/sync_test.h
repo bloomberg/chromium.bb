@@ -246,11 +246,11 @@ class SyncTest : public InProcessBrowserTest {
   std::string password_;
 
   // Locally available plain text file in which GAIA credentials are stored.
-  FilePath password_file_;
+  base::FilePath password_file_;
 
  private:
   // Helper to ProfileManager::CreateProfile that handles path creation.
-  static Profile* MakeProfile(const FilePath::StringType name);
+  static Profile* MakeProfile(const base::FilePath::StringType name);
 
   // Helper method used to read GAIA credentials from a local password file
   // specified via the "--password-file-for-test" command line switch.

@@ -83,7 +83,7 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
 
   // SelectFileDialog::Delegate implementation.
   virtual void FileSelected(
-      const FilePath& path,
+      const base::FilePath& path,
       int index, void* params) OVERRIDE;
 
   // content::NotificationObserver implementation.

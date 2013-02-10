@@ -323,8 +323,8 @@ void MobileConfig::LoadConfig() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&MobileConfig::ReadConfigInBackground,
                  base::Unretained(this),  // this class is a singleton.
-                 FilePath(kGlobalCarrierConfigPath),
-                 FilePath(kLocalCarrierConfigPath)));
+                 base::FilePath(kGlobalCarrierConfigPath),
+                 base::FilePath(kLocalCarrierConfigPath)));
 }
 
 void MobileConfig::ProcessConfig(const std::string& global_config,
@@ -353,8 +353,9 @@ void MobileConfig::ProcessConfig(const std::string& global_config,
   }
 }
 
-void MobileConfig::ReadConfigInBackground(const FilePath& global_config_file,
-                                          const FilePath& local_config_file) {
+void MobileConfig::ReadConfigInBackground(
+    const base::FilePath& global_config_file,
+    const base::FilePath& local_config_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::string global_config;
   std::string local_config;

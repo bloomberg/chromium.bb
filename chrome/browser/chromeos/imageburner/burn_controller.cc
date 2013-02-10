@@ -161,7 +161,7 @@ class BurnControllerImpl
       ProcessError(IDS_IMAGEBURN_USER_ERROR);
     } else if (state != StateMachine::INITIAL && !working_) {
       // User has started burn process, so let's start observing.
-      StartBurnImage(FilePath(), FilePath());
+      StartBurnImage(base::FilePath(), base::FilePath());
     }
   }
 
@@ -209,7 +209,7 @@ class BurnControllerImpl
       BurnImage();
     } else if (state_machine_->state() != StateMachine::INITIAL) {
       // User has started burn process, so let's start observing.
-      StartBurnImage(FilePath(), FilePath());
+      StartBurnImage(base::FilePath(), base::FilePath());
     }
   }
 
@@ -237,8 +237,8 @@ class BurnControllerImpl
   // BurnController override.
   // May be called with empty values if there is a handler that has started
   // burning, and thus set the target paths.
-  virtual void StartBurnImage(const FilePath& target_device_path,
-                              const FilePath& target_file_path) OVERRIDE {
+  virtual void StartBurnImage(const base::FilePath& target_device_path,
+                              const base::FilePath& target_file_path) OVERRIDE {
     if (!target_device_path.empty() && !target_file_path.empty() &&
         state_machine_->new_burn_posible()) {
       if (!CheckNetwork()) {
@@ -347,7 +347,7 @@ class BurnControllerImpl
     return CrosLibrary::Get()->GetNetworkLibrary()->Connected();
   }
 
-  FilePath zip_image_file_path_;
+  base::FilePath zip_image_file_path_;
   std::string image_file_name_;
   BurnManager* burn_manager_;
   StateMachine* state_machine_;

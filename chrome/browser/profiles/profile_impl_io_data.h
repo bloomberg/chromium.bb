@@ -35,15 +35,15 @@ class ProfileImplIOData : public ProfileIOData {
 
     // Init() must be called before ~Handle(). It records most of the
     // parameters needed to construct a ChromeURLRequestContextGetter.
-    void Init(const FilePath& cookie_path,
-              const FilePath& server_bound_cert_path,
-              const FilePath& cache_path,
+    void Init(const base::FilePath& cookie_path,
+              const base::FilePath& server_bound_cert_path,
+              const base::FilePath& cache_path,
               int cache_max_size,
-              const FilePath& media_cache_path,
+              const base::FilePath& media_cache_path,
               int media_cache_max_size,
-              const FilePath& extensions_cookie_path,
-              const FilePath& profile_path,
-              const FilePath& infinite_cache_path,
+              const base::FilePath& extensions_cookie_path,
+              const base::FilePath& profile_path,
+              const base::FilePath& infinite_cache_path,
               chrome_browser_net::Predictor* predictor,
               bool restore_old_session_cookies,
               quota::SpecialStoragePolicy* special_storage_policy);
@@ -91,7 +91,7 @@ class ProfileImplIOData : public ProfileIOData {
         GetExtensionsRequestContextGetter() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetIsolatedMediaRequestContextGetter(
-            const FilePath& partition_path,
+            const base::FilePath& partition_path,
             bool in_memory) const;
 
     // Deletes all network related data since |time|. It deletes transport
@@ -146,14 +146,14 @@ class ProfileImplIOData : public ProfileIOData {
     ~LazyParams();
 
     // All of these parameters are intended to be read on the IO thread.
-    FilePath cookie_path;
-    FilePath server_bound_cert_path;
-    FilePath cache_path;
+    base::FilePath cookie_path;
+    base::FilePath server_bound_cert_path;
+    base::FilePath cache_path;
     int cache_max_size;
-    FilePath media_cache_path;
+    base::FilePath media_cache_path;
     int media_cache_max_size;
-    FilePath extensions_cookie_path;
-    FilePath infinite_cache_path;
+    base::FilePath extensions_cookie_path;
+    base::FilePath infinite_cache_path;
     bool restore_old_session_cookies;
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
   };
@@ -248,7 +248,7 @@ class ProfileImplIOData : public ProfileIOData {
   mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;
 
   // Parameters needed for isolated apps.
-  FilePath profile_path_;
+  base::FilePath profile_path_;
   int app_cache_max_size_;
   int app_media_cache_max_size_;
 

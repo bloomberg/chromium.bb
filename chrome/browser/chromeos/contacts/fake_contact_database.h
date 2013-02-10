@@ -34,7 +34,7 @@ class FakeContactDatabase : public ContactDatabaseInterface {
 
   // ContactDatabaseInterface implementation.
   virtual void DestroyOnUIThread() OVERRIDE;
-  virtual void Init(const FilePath& database_dir,
+  virtual void Init(const base::FilePath& database_dir,
                     InitCallback callback) OVERRIDE;
   virtual void SaveContacts(scoped_ptr<ContactPointers> contacts_to_save,
                             scoped_ptr<ContactIds> contact_ids_to_delete,

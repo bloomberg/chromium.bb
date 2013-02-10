@@ -17,7 +17,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NativeMessageBasic) {
   // Override the user data dir to point to our native app.
   extensions::Feature::ScopedCurrentChannel
       current_channel(chrome::VersionInfo::CHANNEL_DEV);
-  FilePath test_user_data_dir;
+  base::FilePath test_user_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_user_data_dir));
   test_user_data_dir = test_user_data_dir.AppendASCII("native_messaging");
   ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA, test_user_data_dir));

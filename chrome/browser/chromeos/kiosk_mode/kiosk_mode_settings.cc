@@ -103,7 +103,7 @@ bool KioskModeSettings::is_initialized() const {
 void KioskModeSettings::GetScreensaverPath(
     policy::AppPackUpdater::ScreenSaverUpdateCallback callback) const {
   if (!is_initialized_) {
-    callback.Run(FilePath());
+    callback.Run(base::FilePath());
     return;
   }
 
@@ -111,7 +111,7 @@ void KioskModeSettings::GetScreensaverPath(
   // for testing and dev workflows.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kKioskModeScreensaverPath)) {
-    callback.Run(FilePath(
+    callback.Run(base::FilePath(
         CommandLine::ForCurrentProcess()->
             GetSwitchValueASCII(switches::kKioskModeScreensaverPath)));
     return;

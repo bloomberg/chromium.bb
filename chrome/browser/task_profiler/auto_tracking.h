@@ -25,10 +25,10 @@ class AutoTracking {
 
   ~AutoTracking();
 
-  void set_output_file_path(const FilePath &path);
+  void set_output_file_path(const base::FilePath &path);
 
  private:
-  FilePath output_file_path_;
+  base::FilePath output_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoTracking);
 };

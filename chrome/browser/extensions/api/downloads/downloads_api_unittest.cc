@@ -239,7 +239,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   struct HistoryDownloadInfo {
     // Filename to use. CreateHistoryDownloads will append this filename to the
     // temporary downloads directory specified by downloads_directory().
-    const FilePath::CharType*   filename;
+    const base::FilePath::CharType*   filename;
 
     // State for the download. Note that IN_PROGRESS downloads will be created
     // as CANCELLED.
@@ -502,7 +502,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     return base::StringPrintf("[%d]", download_item->GetId());
   }
 
-  const FilePath& downloads_directory() {
+  const base::FilePath& downloads_directory() {
     return downloads_directory_.path();
   }
 
@@ -539,15 +539,16 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
 class MockIconExtractorImpl : public DownloadFileIconExtractor {
  public:
-  MockIconExtractorImpl(const FilePath& path, IconLoader::IconSize icon_size,
+  MockIconExtractorImpl(const base::FilePath& path,
+                        IconLoader::IconSize icon_size,
                         const std::string& response)
-    : expected_path_(path),
-      expected_icon_size_(icon_size),
-      response_(response) {
+      : expected_path_(path),
+        expected_icon_size_(icon_size),
+        response_(response) {
   }
   virtual ~MockIconExtractorImpl() {}
 
-  virtual bool ExtractIconURLForPath(const FilePath& path,
+  virtual bool ExtractIconURLForPath(const base::FilePath& path,
                                      IconLoader::IconSize icon_size,
                                      IconURLCallback callback) OVERRIDE {
     EXPECT_STREQ(expected_path_.value().c_str(), path.value().c_str());
@@ -570,7 +571,7 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
     callback_.Run(response_);
   }
 
-  FilePath             expected_path_;
+  base::FilePath             expected_path_;
   IconLoader::IconSize expected_icon_size_;
   std::string          response_;
   IconURLCallback      callback_;
@@ -939,7 +940,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 scoped_refptr<UIThreadExtensionFunction> MockedGetFileIconFunction(
-    const FilePath& expected_path,
+    const base::FilePath& expected_path,
     IconLoader::IconSize icon_size,
     const std::string& response) {
   scoped_refptr<DownloadsGetFileIconFunction> function(
@@ -1044,8 +1045,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
                                      &all_downloads));
 
-  FilePath real_path = all_downloads[0]->GetFullPath();
-  FilePath fake_path = all_downloads[1]->GetFullPath();
+  base::FilePath real_path = all_downloads[0]->GetFullPath();
+  base::FilePath fake_path = all_downloads[1]->GetFullPath();
 
   EXPECT_EQ(0, file_util::WriteFile(real_path, "", 0));
   ASSERT_TRUE(file_util::PathExists(real_path));
@@ -1310,7 +1311,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(1UL, result_list->GetSize());
   base::DictionaryValue* item_value = NULL;
   ASSERT_TRUE(result_list->GetDictionary(0, &item_value));
-  FilePath::StringType item_name;
+  base::FilePath::StringType item_name;
   ASSERT_TRUE(item_value->GetString("filename", &item_name));
   ASSERT_EQ(items[2]->GetFullPath().value(), item_name);
 }
@@ -1324,7 +1325,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   scoped_ptr<base::Value> result_value;
   base::ListValue* result_list = NULL;
   base::DictionaryValue* result_dict = NULL;
-  FilePath::StringType filename;
+  base::FilePath::StringType filename;
   bool is_incognito = false;
   std::string error;
   std::string on_item_arg;
@@ -1357,12 +1358,12 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(result_list->GetDictionary(0, &result_dict));
   ASSERT_TRUE(result_dict->GetString("filename", &filename));
   ASSERT_TRUE(result_dict->GetBoolean("incognito", &is_incognito));
-  EXPECT_TRUE(on_item->GetFullPath() == FilePath(filename));
+  EXPECT_TRUE(on_item->GetFullPath() == base::FilePath(filename));
   EXPECT_FALSE(is_incognito);
   ASSERT_TRUE(result_list->GetDictionary(1, &result_dict));
   ASSERT_TRUE(result_dict->GetString("filename", &filename));
   ASSERT_TRUE(result_dict->GetBoolean("incognito", &is_incognito));
-  EXPECT_TRUE(off_item->GetFullPath() == FilePath(filename));
+  EXPECT_TRUE(off_item->GetFullPath() == base::FilePath(filename));
   EXPECT_TRUE(is_incognito);
 
   // Extensions running in the on-record window should have access only to the
@@ -1375,7 +1376,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(1UL, result_list->GetSize());
   ASSERT_TRUE(result_list->GetDictionary(0, &result_dict));
   ASSERT_TRUE(result_dict->GetString("filename", &filename));
-  EXPECT_TRUE(on_item->GetFullPath() == FilePath(filename));
+  EXPECT_TRUE(on_item->GetFullPath() == base::FilePath(filename));
   ASSERT_TRUE(result_dict->GetBoolean("incognito", &is_incognito));
   EXPECT_FALSE(is_incognito);
 

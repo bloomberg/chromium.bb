@@ -54,7 +54,8 @@ const char kTitleColumnIndex[] = "1";
 const char kBodyColumnIndex[] = "2";
 
 // The string prepended to the database identifier to generate the filename.
-const FilePath::CharType kFilePrefix[] = FILE_PATH_LITERAL("History Index ");
+const base::FilePath::CharType kFilePrefix[] =
+    FILE_PATH_LITERAL("History Index ");
 
 }  // namespace
 
@@ -62,7 +63,7 @@ TextDatabase::Match::Match() {}
 
 TextDatabase::Match::~Match() {}
 
-TextDatabase::TextDatabase(const FilePath& path,
+TextDatabase::TextDatabase(const base::FilePath& path,
                            DBIdent id,
                            bool allow_create)
     : path_(path),
@@ -76,26 +77,27 @@ TextDatabase::~TextDatabase() {
 }
 
 // static
-const FilePath::CharType* TextDatabase::file_base() {
+const base::FilePath::CharType* TextDatabase::file_base() {
   return kFilePrefix;
 }
 
 // static
-FilePath TextDatabase::IDToFileName(DBIdent id) {
+base::FilePath TextDatabase::IDToFileName(DBIdent id) {
   // Identifiers are intended to be a combination of the year and month, for
   // example, 200801 for January 2008. We convert this to
   // "History Index 2008-01". However, we don't make assumptions about this
   // scheme: the caller should assign IDs as it feels fit with the knowledge
   // that they will apppear on disk in this form.
-  FilePath::StringType filename(file_base());
+  base::FilePath::StringType filename(file_base());
   base::StringAppendF(&filename, FILE_PATH_LITERAL("%d-%02d"),
                       id / 100, id % 100);
-  return FilePath(filename);
+  return base::FilePath(filename);
 }
 
 // static
-TextDatabase::DBIdent TextDatabase::FileNameToID(const FilePath& file_path) {
-  FilePath::StringType file_name = file_path.BaseName().value();
+TextDatabase::DBIdent TextDatabase::FileNameToID(
+    const base::FilePath& file_path) {
+  base::FilePath::StringType file_name = file_path.BaseName().value();
 
   // We don't actually check the prefix here. Since the file system could
   // be case insensitive in ways we can't predict (NTFS), checking could
@@ -103,7 +105,7 @@ TextDatabase::DBIdent TextDatabase::FileNameToID(const FilePath& file_path) {
   static const size_t kIDStringLength = 7;  // Room for "xxxx-xx".
   if (file_name.length() < kIDStringLength)
     return 0;
-  const FilePath::StringType suffix(
+  const base::FilePath::StringType suffix(
       &file_name[file_name.length() - kIDStringLength]);
 
   if (suffix.length() != kIDStringLength ||
@@ -114,7 +116,7 @@ TextDatabase::DBIdent TextDatabase::FileNameToID(const FilePath& file_path) {
   // TODO: Once StringPiece supports a templated interface over the
   // underlying string type, use it here instead of substr, since that
   // will avoid needless string copies.  StringPiece cannot be used
-  // right now because FilePath::StringType could use either 8 or 16 bit
+  // right now because base::FilePath::StringType could use either 8 or 16 bit
   // characters, depending on the OS.
   int year, month;
   base::StringToInt(suffix.substr(0, 4), &year);

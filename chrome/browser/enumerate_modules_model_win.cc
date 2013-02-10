@@ -540,7 +540,7 @@ void ModuleEnumerator::EnumerateWinsockModules() {
         entry.location.c_str(), expanded, MAX_PATH);
     if (size != 0 && size <= MAX_PATH) {
       entry.digital_signer =
-          GetSubjectNameFromDigitalSignature(FilePath(expanded));
+          GetSubjectNameFromDigitalSignature(base::FilePath(expanded));
     }
     entry.version = base::IntToString16(layered_providers[i].version);
 
@@ -555,10 +555,10 @@ void ModuleEnumerator::PopulateModuleInformation(Module* module) {
   module->duplicate_count = 0;
   module->normalized = false;
   module->digital_signer =
-      GetSubjectNameFromDigitalSignature(FilePath(module->location));
+      GetSubjectNameFromDigitalSignature(base::FilePath(module->location));
   module->recommended_action = NONE;
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfo(FilePath(module->location)));
+      FileVersionInfo::CreateFileVersionInfo(base::FilePath(module->location)));
   if (version_info.get()) {
     FileVersionInfoWin* version_info_win =
         static_cast<FileVersionInfoWin*>(version_info.get());
@@ -683,7 +683,7 @@ void ModuleEnumerator::ReportBack() {
 }
 
 string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
-    const FilePath& filename) {
+    const base::FilePath& filename) {
   HCERTSTORE store = NULL;
   HCRYPTMSG message = NULL;
 

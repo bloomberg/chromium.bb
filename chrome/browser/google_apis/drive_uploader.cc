@@ -28,7 +28,7 @@ const int64 kUploadChunkSize = 512 * 1024;
 // Opens |path| with |file_stream| and returns the file size.
 // If failed, returns an error code in a negative value.
 int64 OpenFileStreamAndGetSizeOnBlockingPool(net::FileStream* file_stream,
-                                             const FilePath& path) {
+                                             const base::FilePath& path) {
   int result = file_stream->OpenSync(
       path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
   if (result != net::OK)
@@ -46,8 +46,8 @@ struct DriveUploader::UploadFileInfo {
   UploadFileInfo(scoped_refptr<base::SequencedTaskRunner> task_runner,
                  UploadMode upload_mode,
                  const GURL& initial_upload_location,
-                 const FilePath& drive_path,
-                 const FilePath& local_path,
+                 const base::FilePath& drive_path,
+                 const base::FilePath& local_path,
                  const std::string& title,
                  const std::string& content_type,
                  const std::string& etag,
@@ -97,10 +97,10 @@ struct DriveUploader::UploadFileInfo {
   const GURL initial_upload_location;
 
   // Final path in gdata. Looks like /special/drive/MyFolder/MyFile.
-  const FilePath drive_path;
+  const base::FilePath drive_path;
 
   // The local file path of the file to be uploaded.
-  const FilePath file_path;
+  const base::FilePath file_path;
 
   // Title to be used for file to be uploaded.
   const std::string title;
@@ -153,8 +153,8 @@ DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
 DriveUploader::~DriveUploader() {}
 
 void DriveUploader::UploadNewFile(const GURL& upload_location,
-                                  const FilePath& drive_file_path,
-                                  const FilePath& local_file_path,
+                                  const base::FilePath& drive_file_path,
+                                  const base::FilePath& local_file_path,
                                   const std::string& title,
                                   const std::string& content_type,
                                   const UploadCompletionCallback& callback) {
@@ -181,8 +181,8 @@ void DriveUploader::UploadNewFile(const GURL& upload_location,
 
 void DriveUploader::UploadExistingFile(
     const GURL& upload_location,
-    const FilePath& drive_file_path,
-    const FilePath& local_file_path,
+    const base::FilePath& drive_file_path,
+    const base::FilePath& local_file_path,
     const std::string& content_type,
     const std::string& etag,
     const UploadCompletionCallback& callback) {

@@ -55,7 +55,7 @@ void UpdateOperation::UpdateFileByResourceId(
 void UpdateOperation::UpdateFileByEntryInfo(
     const FileOperationCallback& callback,
     DriveFileError error,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -84,10 +84,10 @@ void UpdateOperation::UpdateFileByEntryInfo(
 
 void UpdateOperation::OnGetFileCompleteForUpdateFile(
     const FileOperationCallback& callback,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto,
     DriveFileError error,
-    const FilePath& cache_file_path) {
+    const base::FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -110,8 +110,8 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
 void UpdateOperation::OnUpdatedFileUploaded(
     const FileOperationCallback& callback,
     google_apis::DriveUploadError error,
-    const FilePath& drive_path,
-    const FilePath& file_path,
+    const base::FilePath& drive_path,
+    const base::FilePath& file_path,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -131,7 +131,7 @@ void UpdateOperation::OnUpdatedFileUploaded(
 void UpdateOperation::OnUpdatedFileRefreshed(
     const FileOperationCallback& callback,
     DriveFileError error,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

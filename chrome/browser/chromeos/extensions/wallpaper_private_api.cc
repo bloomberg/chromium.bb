@@ -64,13 +64,13 @@ ash::WallpaperLayout GetLayoutEnum(const std::string& layout) {
 // Saves |data| as |file_name| to directory with |key|. Return false if the
 // directory can not be found/created or failed to write file.
 bool SaveData(int key, const std::string& file_name, const std::string& data) {
-  FilePath data_dir;
+  base::FilePath data_dir;
   CHECK(PathService::Get(key, &data_dir));
   if (!file_util::DirectoryExists(data_dir) &&
       !file_util::CreateDirectory(data_dir)) {
     return false;
   }
-  FilePath file_path = data_dir.Append(file_name);
+  base::FilePath file_path = data_dir.Append(file_name);
 
   return file_util::PathExists(file_path) ||
          (file_util::WriteFile(file_path, data.c_str(),
@@ -82,13 +82,13 @@ bool SaveData(int key, const std::string& file_name, const std::string& data) {
 // can not be found in the directory, return true with empty |data|. It is
 // expected that we may try to access file which did not saved yet.
 bool GetData(int key, const std::string& file_name, std::string* data) {
-  FilePath data_dir;
+  base::FilePath data_dir;
   CHECK(PathService::Get(key, &data_dir));
   if (!file_util::DirectoryExists(data_dir) &&
       !file_util::CreateDirectory(data_dir))
     return false;
 
-  FilePath file_path = data_dir.Append(file_name);
+  base::FilePath file_path = data_dir.Append(file_name);
 
   return !file_util::PathExists(file_path) ||
          file_util::ReadFileToString(file_path, data);
@@ -335,10 +335,10 @@ void WallpaperSetWallpaperIfExistFunction::ReadFileAndInitiateStartDecode(
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
   std::string data;
-  FilePath data_dir;
+  base::FilePath data_dir;
 
   CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &data_dir));
-  FilePath file_path = data_dir.Append(file_name);
+  base::FilePath file_path = data_dir.Append(file_name);
 
   if (file_util::PathExists(file_path) &&
       file_util::ReadFileToString(file_path, &data)) {
@@ -435,10 +435,10 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
                    this, base::Passed(&deep_copy)));
     chromeos::UserImage wallpaper(wallpaper_);
 
-    FilePath wallpaper_dir;
+    base::FilePath wallpaper_dir;
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
-    FilePath file_path = wallpaper_dir.Append(file_name).InsertBeforeExtension(
-        chromeos::kSmallWallpaperSuffix);
+    base::FilePath file_path = wallpaper_dir.Append(
+        file_name).InsertBeforeExtension(chromeos::kSmallWallpaperSuffix);
     if (file_util::PathExists(file_path))
       return;
     // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
@@ -680,13 +680,13 @@ bool WallpaperGetOfflineWallpaperListFunction::RunImpl() {
 void WallpaperGetOfflineWallpaperListFunction::GetList() {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
-  FilePath wallpaper_dir;
+  base::FilePath wallpaper_dir;
   std::vector<std::string> file_list;
   CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
   if (file_util::DirectoryExists(wallpaper_dir)) {
     file_util::FileEnumerator files(wallpaper_dir, false,
                                     file_util::FileEnumerator::FILES);
-    for (FilePath current = files.Next(); !current.empty();
+    for (base::FilePath current = files.Next(); !current.empty();
          current = files.Next()) {
       std::string file_name = current.BaseName().RemoveExtension().value();
       // Do not add file name of small resolution wallpaper to the list.

@@ -31,7 +31,7 @@ TEST(ExtensionFromUserScript, Basic) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
-  FilePath test_file;
+  base::FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_basic.user.js");
@@ -81,7 +81,7 @@ TEST(ExtensionFromUserScript, NoMetdata) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
-  FilePath test_file;
+  base::FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_no_metadata.user.js");
@@ -127,7 +127,7 @@ TEST(ExtensionFromUserScript, NotUTF8) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
-  FilePath test_file;
+  base::FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_not_utf8.user.js");
@@ -145,7 +145,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentStart) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
-  FilePath test_file;
+  base::FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_run_at_start.user.js");
@@ -178,7 +178,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
-  FilePath test_file;
+  base::FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_run_at_end.user.js");
@@ -211,7 +211,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentIdle) {
   base::ScopedTempDir extensions_dir;
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
-  FilePath test_file;
+  base::FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_run_at_idle.user.js");

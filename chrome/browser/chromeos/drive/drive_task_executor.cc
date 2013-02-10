@@ -46,7 +46,7 @@ DriveTaskExecutor::~DriveTaskExecutor() {
 bool DriveTaskExecutor::ExecuteAndNotify(
     const std::vector<FileSystemURL>& file_urls,
     const file_handler_util::FileTaskFinishedCallback& done) {
-  std::vector<FilePath> raw_paths;
+  std::vector<base::FilePath> raw_paths;
   for (std::vector<FileSystemURL>::const_iterator url = file_urls.begin();
        url != file_urls.end(); ++url) {
     if (!url->is_valid() || url->type() != fileapi::kFileSystemTypeDrive)
@@ -64,7 +64,7 @@ bool DriveTaskExecutor::ExecuteAndNotify(
   // Reset the index, so we know when we're done.
   current_index_ = raw_paths.size();
 
-  for (std::vector<FilePath>::const_iterator iter = raw_paths.begin();
+  for (std::vector<base::FilePath>::const_iterator iter = raw_paths.begin();
       iter != raw_paths.end(); ++iter) {
     file_system->GetEntryInfoByPath(
         *iter,

@@ -47,7 +47,7 @@ class AppPackUpdater : public content::NotificationObserver,
                        public extensions::ExtensionDownloaderDelegate {
  public:
   // Callback to listen for updates to the screensaver extension's path.
-  typedef base::Callback<void(const FilePath&)> ScreenSaverUpdateCallback;
+  typedef base::Callback<void(const base::FilePath&)> ScreenSaverUpdateCallback;
 
   // Keys for the entries in the AppPack dictionary policy.
   static const char kExtensionId[];
@@ -72,7 +72,7 @@ class AppPackUpdater : public content::NotificationObserver,
   // If a user of one of the AppPack's extensions detects that the extension
   // is damaged then this method can be used to remove it from the cache and
   // retry to download it after a restart.
-  void OnDamagedFileDetected(const FilePath& path);
+  void OnDamagedFileDetected(const base::FilePath& path);
 
  private:
   struct CacheEntry {
@@ -133,7 +133,7 @@ class AppPackUpdater : public content::NotificationObserver,
 
   virtual void OnExtensionDownloadFinished(
       const std::string& id,
-      const FilePath& path,
+      const base::FilePath& path,
       const GURL& download_url,
       const std::string& version,
       const PingResult& ping_result,
@@ -155,7 +155,7 @@ class AppPackUpdater : public content::NotificationObserver,
   static void BlockingInstallCacheEntry(
       base::WeakPtr<AppPackUpdater> app_pack_updater,
       const std::string& id,
-      const FilePath& path,
+      const base::FilePath& path,
       const std::string& version);
 
   // Invoked on the UI thread when a new AppPack entry has been installed in
@@ -174,7 +174,7 @@ class AppPackUpdater : public content::NotificationObserver,
 
   // Sets |screen_saver_path_| and invokes |screen_saver_update_callback_| if
   // appropriate.
-  void SetScreenSaverPath(const FilePath& path);
+  void SetScreenSaverPath(const base::FilePath& path);
 
   base::WeakPtrFactory<AppPackUpdater> weak_ptr_factory_;
 
@@ -199,7 +199,7 @@ class AppPackUpdater : public content::NotificationObserver,
   // The extension ID and path of the CRX file of the screen saver extension,
   // if it is configured by the policy. Otherwise these fields are empty.
   std::string screen_saver_id_;
-  FilePath screen_saver_path_;
+  base::FilePath screen_saver_path_;
 
   // Callback to invoke whenever the screen saver's extension path changes.
   // Can be null.

@@ -37,14 +37,14 @@ class DriveMetadataStore
       public base::SupportsWeakPtr<DriveMetadataStore> {
  public:
   typedef std::map<GURL, std::string> ResourceIDMap;
-  typedef std::map<FilePath, DriveMetadata> PathToMetadata;
+  typedef std::map<base::FilePath, DriveMetadata> PathToMetadata;
   typedef std::map<GURL, PathToMetadata> MetadataMap;
   typedef std::vector<std::pair<fileapi::FileSystemURL, std::string> >
       URLAndResourceIdList;
   typedef base::Callback<void(fileapi::SyncStatusCode status, bool created)>
       InitializationCallback;
 
-  DriveMetadataStore(const FilePath& base_dir,
+  DriveMetadataStore(const base::FilePath& base_dir,
                      base::SequencedTaskRunner* file_task_runner);
   ~DriveMetadataStore();
 

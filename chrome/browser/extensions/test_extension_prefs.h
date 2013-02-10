@@ -36,8 +36,8 @@ class TestExtensionPrefs {
       return *prefs_.get();
   }
   PrefServiceSyncable* pref_service() { return pref_service_.get(); }
-  const FilePath& temp_dir() const { return temp_dir_.path(); }
-  const FilePath& extensions_dir() const { return extensions_dir_; }
+  const base::FilePath& temp_dir() const { return temp_dir_.path(); }
+  const base::FilePath& extensions_dir() const { return extensions_dir_; }
 
   // This will cause the ExtensionPrefs to be deleted and recreated, based on
   // any existing backing file we had previously created.
@@ -75,8 +75,8 @@ class TestExtensionPrefs {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  FilePath preferences_file_;
-  FilePath extensions_dir_;
+  base::FilePath preferences_file_;
+  base::FilePath extensions_dir_;
   scoped_ptr<PrefServiceSyncable> pref_service_;
   scoped_ptr<ExtensionPrefs> prefs_;
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;

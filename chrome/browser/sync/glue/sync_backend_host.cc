@@ -61,7 +61,7 @@
 #include "sync/util/nigori.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
-static const FilePath::CharType kSyncDataFolderName[] =
+static const base::FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
 
 typedef TokenService::TokenAvailableDetails TokenAvailableDetails;
@@ -90,7 +90,7 @@ class SyncBackendHost::Core
       public syncer::InvalidationHandler {
  public:
   Core(const std::string& name,
-       const FilePath& sync_data_folder_path,
+       const base::FilePath& sync_data_folder_path,
        const base::WeakPtr<SyncBackendHost>& backend);
 
   // SyncManager::Observer implementation.  The Core just acts like an air
@@ -257,7 +257,7 @@ class SyncBackendHost::Core
   const std::string name_;
 
   // Path of the folder that stores the sync data files.
-  const FilePath sync_data_folder_path_;
+  const base::FilePath sync_data_folder_path_;
 
   // Our parent SyncBackendHost.
   syncer::WeakHandle<SyncBackendHost> host_;
@@ -923,7 +923,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
 SyncBackendHost::DoInitializeOptions::~DoInitializeOptions() {}
 
 SyncBackendHost::Core::Core(const std::string& name,
-                            const FilePath& sync_data_folder_path,
+                            const base::FilePath& sync_data_folder_path,
                             const base::WeakPtr<SyncBackendHost>& backend)
     : name_(name),
       sync_data_folder_path_(sync_data_folder_path),

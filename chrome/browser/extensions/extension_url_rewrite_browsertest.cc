@@ -50,7 +50,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
     return GetNavigationController()->GetActiveEntry();
   }
 
-  FilePath GetTestExtensionPath(const char* extension_name) const {
+  base::FilePath GetTestExtensionPath(const char* extension_name) const {
     return test_data_dir_.AppendASCII("browsertest/url_rewrite/").
         AppendASCII(extension_name);
   }

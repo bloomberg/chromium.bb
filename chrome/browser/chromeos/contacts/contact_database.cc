@@ -70,7 +70,7 @@ void ContactDatabase::DestroyOnUIThread() {
                  base::Unretained(this)));
 }
 
-void ContactDatabase::Init(const FilePath& database_dir,
+void ContactDatabase::Init(const base::FilePath& database_dir,
                            InitCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   bool* success = new bool(false);
@@ -168,7 +168,7 @@ void ContactDatabase::RunLoadCallback(
   callback.Run(*success, contacts.Pass(), metadata.Pass());
 }
 
-void ContactDatabase::InitFromTaskRunner(const FilePath& database_dir,
+void ContactDatabase::InitFromTaskRunner(const base::FilePath& database_dir,
                                          bool* success) {
   DCHECK(IsRunByTaskRunner());
   DCHECK(success);

@@ -49,7 +49,8 @@ static string16 GetGroupName(const webkit::WebPluginInfo& plugin) {
   if (!plugin.name.empty())
     return plugin.name;
 
-  FilePath::StringType path = plugin.path.BaseName().RemoveExtension().value();
+  base::FilePath::StringType path =
+      plugin.path.BaseName().RemoveExtension().value();
 #if defined(OS_POSIX)
   return UTF8ToUTF16(path);
 #elif defined(OS_WIN)

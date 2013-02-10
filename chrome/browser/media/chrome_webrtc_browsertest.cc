@@ -23,7 +23,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/test_server.h"
 
-static const FilePath::CharType kPeerConnectionServer[] =
+static const base::FilePath::CharType kPeerConnectionServer[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("peerconnection_server.exe");
 #else
@@ -174,7 +174,7 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
 
  private:
   void RunPeerConnectionServer() {
-    FilePath peerconnection_server;
+    base::FilePath peerconnection_server;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &peerconnection_server));
     peerconnection_server = peerconnection_server.Append(kPeerConnectionServer);
 

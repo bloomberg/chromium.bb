@@ -70,7 +70,7 @@ class MockExternalPolicyProviderVisitor
 
   virtual bool OnExternalExtensionFileFound(const std::string& id,
                                             const Version* version,
-                                            const FilePath& path,
+                                            const base::FilePath& path,
                                             Manifest::Location unused,
                                             int unused2,
                                             bool unused3) OVERRIDE {

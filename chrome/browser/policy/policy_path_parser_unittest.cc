@@ -11,60 +11,64 @@ namespace policy {
 
 class PolicyPathParserTests : public testing::Test {
  protected:
-  void CheckForSubstitution(FilePath::StringType test_string,
-                            FilePath::StringType var_name) {
-    FilePath::StringType var(test_string);
-    FilePath::StringType var_result =
+  void CheckForSubstitution(base::FilePath::StringType test_string,
+                            base::FilePath::StringType var_name) {
+    base::FilePath::StringType var(test_string);
+    base::FilePath::StringType var_result =
         path_parser::ExpandPathVariables(var);
-    ASSERT_EQ(var_result.find(var_name), FilePath::StringType::npos);
+    ASSERT_EQ(var_result.find(var_name), base::FilePath::StringType::npos);
   }
 };
 
 TEST_F(PolicyPathParserTests, AllPlatformVariables) {
   // No vars whatsoever no substitution should occur.
-  FilePath::StringType no_vars(FILE_PATH_LITERAL("//$C/shares"));
-  FilePath::StringType no_vars_result =
+  base::FilePath::StringType no_vars(FILE_PATH_LITERAL("//$C/shares"));
+  base::FilePath::StringType no_vars_result =
       path_parser::ExpandPathVariables(no_vars);
   ASSERT_EQ(no_vars_result, no_vars);
 
   // This is unknown variable and shouldn't be substituted.
-  FilePath::StringType unknown_vars(FILE_PATH_LITERAL("//$C/${buggy}"));
-  FilePath::StringType unknown_vars_result =
+  base::FilePath::StringType unknown_vars(FILE_PATH_LITERAL("//$C/${buggy}"));
+  base::FilePath::StringType unknown_vars_result =
       path_parser::ExpandPathVariables(unknown_vars);
   ASSERT_EQ(unknown_vars_result, unknown_vars);
 
   // Trim quotes around, but not inside paths. Test against bug 80211.
-  FilePath::StringType no_quotes(FILE_PATH_LITERAL("//$C/\"a\"/$path"));
-  FilePath::StringType single_quotes(FILE_PATH_LITERAL("'//$C/\"a\"/$path'"));
-  FilePath::StringType double_quotes(FILE_PATH_LITERAL("\"//$C/\"a\"/$path\""));
-  FilePath::StringType quotes_result =
+  base::FilePath::StringType no_quotes(FILE_PATH_LITERAL("//$C/\"a\"/$path"));
+  base::FilePath::StringType single_quotes(
+      FILE_PATH_LITERAL("'//$C/\"a\"/$path'"));
+  base::FilePath::StringType double_quotes(
+      FILE_PATH_LITERAL("\"//$C/\"a\"/$path\""));
+  base::FilePath::StringType quotes_result =
       path_parser::ExpandPathVariables(single_quotes);
   ASSERT_EQ(quotes_result, no_quotes);
   quotes_result = path_parser::ExpandPathVariables(double_quotes);
   ASSERT_EQ(quotes_result, no_quotes);
 
   // Both should have been substituted.
-  FilePath::StringType vars(FILE_PATH_LITERAL("${user_name}${machine_name}"));
-  FilePath::StringType vars_result = path_parser::ExpandPathVariables(vars);
+  base::FilePath::StringType vars(
+      FILE_PATH_LITERAL("${user_name}${machine_name}"));
+  base::FilePath::StringType vars_result =
+      path_parser::ExpandPathVariables(vars);
   ASSERT_EQ(vars_result.find(FILE_PATH_LITERAL("${user_name}")),
-            FilePath::StringType::npos);
+            base::FilePath::StringType::npos);
   ASSERT_EQ(vars_result.find(FILE_PATH_LITERAL("${machine_name}")),
-            FilePath::StringType::npos);
+            base::FilePath::StringType::npos);
 
   // Should substitute only one instance.
   vars = FILE_PATH_LITERAL("${machine_name}${machine_name}");
   vars_result = path_parser::ExpandPathVariables(vars);
   size_t pos = vars_result.find(FILE_PATH_LITERAL("${machine_name}"));
-  ASSERT_NE(pos, FilePath::StringType::npos);
+  ASSERT_NE(pos, base::FilePath::StringType::npos);
   ASSERT_EQ(vars_result.find(FILE_PATH_LITERAL("${machine_name}"), pos+1),
-            FilePath::StringType::npos);
+            base::FilePath::StringType::npos);
 
   vars =FILE_PATH_LITERAL("${user_name}${machine_name}");
   vars_result = path_parser::ExpandPathVariables(vars);
   ASSERT_EQ(vars_result.find(FILE_PATH_LITERAL("${user_name}")),
-            FilePath::StringType::npos);
+            base::FilePath::StringType::npos);
   ASSERT_EQ(vars_result.find(FILE_PATH_LITERAL("${machine_name}")),
-            FilePath::StringType::npos);
+            base::FilePath::StringType::npos);
 
   CheckForSubstitution(FILE_PATH_LITERAL("//$C/${user_name}"),
                        FILE_PATH_LITERAL("${user_name}"));

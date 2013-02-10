@@ -57,12 +57,12 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
     CommandLine command_line(CommandLine::NO_PROGRAM);
     extension_service_ = static_cast<extensions::TestExtensionSystem*>(
         extensions::ExtensionSystem::Get(profile()))->CreateExtensionService(
-            &command_line, FilePath(), false);
+            &command_line, base::FilePath(), false);
   }
 
   // Load test icon from extension test directory.
   SkBitmap LoadTestIcon() {
-    FilePath path;
+    base::FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions").AppendASCII("icon1.png");
 
@@ -83,7 +83,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
   // the ExtensionInstalledBubble for unit testing.
   scoped_refptr<Extension> CreateExtension(
         extension_installed_bubble::ExtensionType type) {
-    FilePath path;
+    base::FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions").AppendASCII("dummy");
 

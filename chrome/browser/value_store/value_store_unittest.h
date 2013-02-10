@@ -16,7 +16,7 @@
 #include "content/public/test/test_browser_thread.h"
 
 // Parameter type for the value-parameterized tests.
-typedef ValueStore* (*ValueStoreTestParam)(const FilePath& file_path);
+typedef ValueStore* (*ValueStoreTestParam)(const base::FilePath& file_path);
 
 // Test fixture for ValueStore tests.  Tests are defined in
 // settings_storage_unittest.cc with configurations for both cached

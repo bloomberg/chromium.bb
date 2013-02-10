@@ -18,7 +18,7 @@ typedef base::hash_map<std::string, std::string> PropertyMap;
 // properties associated with files.
 class FileMetadataParser : public MetadataParser {
  public:
-  explicit FileMetadataParser(const FilePath& path);
+  explicit FileMetadataParser(const base::FilePath& path);
 
   virtual ~FileMetadataParser();
 
@@ -30,7 +30,7 @@ class FileMetadataParser : public MetadataParser {
 
  protected:
   PropertyMap properties_;
-  FilePath path_;
+  base::FilePath path_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileMetadataParser);

@@ -34,8 +34,9 @@ namespace printing_internal {
 // |options| will be updated if the custom settings for |printer_name| are
 // found, otherwise nothing is done.
 // NOTE: This function is declared here so it can be exposed for unit testing.
-void parse_lpoptions(const FilePath& filepath, const std::string& printer_name,
-    int* num_options, cups_option_t** options);
+void parse_lpoptions(const base::FilePath& filepath,
+                     const std::string& printer_name, int* num_options,
+                     cups_option_t** options);
 }  // namespace printing_internal
 
 #endif

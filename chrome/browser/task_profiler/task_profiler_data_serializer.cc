@@ -123,7 +123,7 @@ void TaskProfilerDataSerializer::ToValue(
 }
 
 
-bool TaskProfilerDataSerializer::WriteToFile(const FilePath& path) {
+bool TaskProfilerDataSerializer::WriteToFile(const base::FilePath& path) {
   std::string output;
   JSONStringValueSerializer serializer(&output);
   serializer.set_pretty_print(true);

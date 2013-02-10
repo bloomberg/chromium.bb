@@ -22,9 +22,9 @@ class ExtensionCreatorFilterTest : public PlatformTest {
     filter_ = new extensions::ExtensionCreatorFilter();
   }
 
-  FilePath CreateEmptyTestFile(const FilePath& file_path) {
-    FilePath test_file(test_dir_.Append(file_path));
-    FilePath temp_file;
+  base::FilePath CreateEmptyTestFile(const base::FilePath& file_path) {
+    base::FilePath test_file(test_dir_.Append(file_path));
+    base::FilePath temp_file;
     EXPECT_TRUE(file_util::CreateTemporaryFileInDir(test_dir_, &temp_file));
     EXPECT_TRUE(file_util::Move(temp_file, test_file));
     return test_file;
@@ -34,11 +34,11 @@ class ExtensionCreatorFilterTest : public PlatformTest {
 
   base::ScopedTempDir temp_dir_;
 
-  FilePath test_dir_;
+  base::FilePath test_dir_;
 };
 
 struct UnaryBooleanTestData {
-  const FilePath::CharType* input;
+  const base::FilePath::CharType* input;
   bool expected;
 };
 
@@ -56,8 +56,8 @@ TEST_F(ExtensionCreatorFilterTest, NormalCases) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    FilePath input(cases[i].input);
-    FilePath test_file(CreateEmptyTestFile(input));
+    base::FilePath input(cases[i].input);
+    base::FilePath test_file(CreateEmptyTestFile(input));
     bool observed = filter_->ShouldPackageFile(test_file);
 
     EXPECT_EQ(cases[i].expected, observed) <<
@@ -67,7 +67,7 @@ TEST_F(ExtensionCreatorFilterTest, NormalCases) {
 
 #if defined(OS_WIN)
 struct StringBooleanWithBooleanTestData {
-  const FilePath::CharType* input_char;
+  const base::FilePath::CharType* input_char;
   bool input_bool;
   bool expected;
 };
@@ -84,9 +84,9 @@ TEST_F(ExtensionCreatorFilterTest, WindowsHiddenFiles) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    FilePath input(cases[i].input_char);
+    base::FilePath input(cases[i].input_char);
     bool should_hide = cases[i].input_bool;
-    FilePath test_file(CreateEmptyTestFile(input));
+    base::FilePath test_file(CreateEmptyTestFile(input));
 
     if (should_hide) {
       SetFileAttributes(test_file.value().c_str(), FILE_ATTRIBUTE_HIDDEN);

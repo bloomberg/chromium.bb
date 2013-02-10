@@ -37,8 +37,8 @@ namespace {
 const std::string kPoodlePath = "/home/poodles/skippy.png";
 const int64 kTestFileSize = 193;
 
-FilePath CreateTestFile() {
-  FilePath file;
+base::FilePath CreateTestFile() {
+  base::FilePath file;
   PathService::Get(chrome::DIR_TEST_DATA, &file);
   file = file.AppendASCII("web_intents").AppendASCII("test.png");
   return file;
@@ -89,10 +89,10 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
   virtual void SelectFileImpl(
       Type type,
       const string16& title,
-      const FilePath& default_path,
+      const base::FilePath& default_path,
       const FileTypeInfo* file_types,
       int file_type_index,
-      const FilePath::StringType& default_extension,
+      const base::FilePath::StringType& default_extension,
       gfx::NativeWindow owning_window,
       void* params) OVERRIDE {
     if (should_succeed_)
@@ -103,7 +103,7 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
 
  private:
   bool should_succeed_;
-  FilePath test_file_;
+  base::FilePath test_file_;
   DISALLOW_COPY_AND_ASSIGN(FakeSelectFileDialog);
 };
 
@@ -155,7 +155,7 @@ class NativeServicesBrowserTest : public InProcessBrowserTest {
 
   scoped_ptr<TestIntentsDispatcher> dispatcher_;
   scoped_ptr<TestSelectFileDialogFactory> factory_;
-  FilePath test_file_;
+  base::FilePath test_file_;
 };
 
 IN_PROC_BROWSER_TEST_F(NativeServicesBrowserTest, PickFileSelected) {

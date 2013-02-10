@@ -64,8 +64,8 @@ class TextInputTest : public InProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(TextInputTest, SwitchToPasswordFieldTest) {
   GetInputMethod()->AddObserver(this);
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath("textinput"),
-      FilePath("ime_enable_disable_test.html"));
+      base::FilePath("textinput"),
+      base::FilePath("ime_enable_disable_test.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   content::WebContents* tab =

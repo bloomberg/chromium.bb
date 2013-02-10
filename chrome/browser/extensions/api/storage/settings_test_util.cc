@@ -90,7 +90,7 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
 
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
-      FilePath(),
+      base::FilePath(),
       Manifest::INTERNAL,
       manifest,
       Extension::NO_FLAGS,
@@ -130,7 +130,7 @@ ProfileKeyedService* BuildMockExtensionSystem(Profile* profile) {
 
 // MockProfile
 
-MockProfile::MockProfile(const FilePath& file_path)
+MockProfile::MockProfile(const base::FilePath& file_path)
     : TestingProfile(file_path) {
   ExtensionSystemFactory::GetInstance()->SetTestingFactoryAndUse(this,
       &BuildMockExtensionSystem);
@@ -154,7 +154,7 @@ void ScopedSettingsStorageFactory::Reset(
 }
 
 ValueStore* ScopedSettingsStorageFactory::Create(
-    const FilePath& base_path,
+    const base::FilePath& base_path,
     const std::string& extension_id) {
   DCHECK(delegate_.get());
   return delegate_->Create(base_path, extension_id);

@@ -28,7 +28,7 @@ class WebAppShortcutCreator {
   // The shortcut stores its user data directory in |user_data_dir|.
   // |chrome_bundle_id| is the CFBundleIdentifier of the Chrome browser bundle.
   WebAppShortcutCreator(
-      const FilePath& user_data_dir,
+      const base::FilePath& user_data_dir,
       const ShellIntegration::ShortcutInfo& shortcut_info,
       const string16& chrome_bundle_id);
 
@@ -40,16 +40,17 @@ class WebAppShortcutCreator {
 
  protected:
   // Returns a path to the app loader.
-  FilePath GetAppLoaderPath() const;
+  base::FilePath GetAppLoaderPath() const;
 
   // Returns a path to the destination where the app should be written to.
-  virtual FilePath GetDestinationPath(const FilePath& app_file_name) const;
+  virtual base::FilePath GetDestinationPath(
+      const base::FilePath& app_file_name) const;
 
   // Updates the plist inside |app_path| with information about the app.
-  bool UpdatePlist(const FilePath& app_path) const;
+  bool UpdatePlist(const base::FilePath& app_path) const;
 
   // Updates the icon for the shortcut.
-  bool UpdateIcon(const FilePath& app_path) const;
+  bool UpdateIcon(const base::FilePath& app_path) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateIcon);
@@ -57,7 +58,7 @@ class WebAppShortcutCreator {
   // Path to the app's user data directory. For example:
   // ~/Library/Application Support/Chromium/Default/Web Applications/_crx_abc/
   // Note, the user data directory is the parent of the profile directory.
-  FilePath user_data_dir_;
+  base::FilePath user_data_dir_;
 
   // Returns the bundle identifier to use for this app bundle.
   // |plist| is a dictionary containg a copy of the template plist file to
@@ -66,7 +67,7 @@ class WebAppShortcutCreator {
 
   // Show the bundle we just generated in the Finder.
   virtual void RevealGeneratedBundleInFinder(
-      const FilePath& generated_bundle) const;
+      const base::FilePath& generated_bundle) const;
 
   // Information about the app.
   ShellIntegration::ShortcutInfo info_;

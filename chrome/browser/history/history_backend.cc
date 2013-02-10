@@ -254,7 +254,7 @@ class KillHistoryDatabaseErrorDelegate : public sql::ErrorDelegate {
 
 // HistoryBackend --------------------------------------------------------------
 
-HistoryBackend::HistoryBackend(const FilePath& history_dir,
+HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
                                int id,
                                Delegate* delegate,
                                BookmarkService* bookmark_service)
@@ -319,20 +319,20 @@ void HistoryBackend::NotifyRenderProcessHostDestruction(const void* host) {
   tracker_.NotifyRenderProcessHostDestruction(host);
 }
 
-FilePath HistoryBackend::GetThumbnailFileName() const {
+base::FilePath HistoryBackend::GetThumbnailFileName() const {
   return history_dir_.Append(chrome::kThumbnailsFilename);
 }
 
-FilePath HistoryBackend::GetFaviconsFileName() const {
+base::FilePath HistoryBackend::GetFaviconsFileName() const {
   return history_dir_.Append(chrome::kFaviconsFilename);
 }
 
-FilePath HistoryBackend::GetArchivedFileName() const {
+base::FilePath HistoryBackend::GetArchivedFileName() const {
   return history_dir_.Append(chrome::kArchivedHistoryFilename);
 }
 
 #if defined(OS_ANDROID)
-FilePath HistoryBackend::GetAndroidCacheFileName() const {
+base::FilePath HistoryBackend::GetAndroidCacheFileName() const {
   return history_dir_.Append(chrome::kAndroidCacheFilename);
 }
 #endif
@@ -645,9 +645,9 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   // Compute the file names. Note that the index file can be removed when the
   // text db manager is finished being hooked up.
-  FilePath history_name = history_dir_.Append(chrome::kHistoryFilename);
-  FilePath thumbnail_name = GetThumbnailFileName();
-  FilePath archived_name = GetArchivedFileName();
+  base::FilePath history_name = history_dir_.Append(chrome::kHistoryFilename);
+  base::FilePath thumbnail_name = GetThumbnailFileName();
+  base::FilePath archived_name = GetArchivedFileName();
 
   // History database.
   db_.reset(new HistoryDatabase());
@@ -2846,7 +2846,7 @@ void HistoryBackend::DeleteAllHistory() {
   if (archived_db_.get()) {
     // Close the database and delete the file.
     archived_db_.reset();
-    FilePath archived_file_name = GetArchivedFileName();
+    base::FilePath archived_file_name = GetArchivedFileName();
     file_util::Delete(archived_file_name, false);
 
     // Now re-initialize the database (which may fail).

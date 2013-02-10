@@ -112,7 +112,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
       continue;
     }
 
-    FilePath::StringType external_crx;
+    base::FilePath::StringType external_crx;
     Value* external_version_value;
     std::string external_version;
     std::string external_update_url;
@@ -202,7 +202,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
                      << "extensions from crx files.";
         continue;
       }
-      if (external_crx.find(FilePath::kParentDirectory) !=
+      if (external_crx.find(base::FilePath::kParentDirectory) !=
           base::StringPiece::npos) {
         LOG(WARNING) << "Path traversal not allowed in path: "
                      << external_crx.c_str();
@@ -211,9 +211,9 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
 
       // If the path is relative, and the provider has a base path,
       // build the absolute path to the crx file.
-      FilePath path(external_crx);
+      base::FilePath path(external_crx);
       if (!path.IsAbsolute()) {
-        FilePath base_path = loader_->GetBaseCrxFilePath();
+        base::FilePath base_path = loader_->GetBaseCrxFilePath();
         if (base_path.empty()) {
           LOG(WARNING) << "File path " << external_crx.c_str()
                        << " is relative.  An absolute path is required.";

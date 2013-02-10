@@ -47,7 +47,8 @@ enum DriveFileType {
 
 // The root directory name used for the Google Drive file system tree. The
 // name is used in URLs for the file manager, hence user-visible.
-const FilePath::CharType kDriveRootDirectory[] = FILE_PATH_LITERAL("drive");
+const base::FilePath::CharType kDriveRootDirectory[] =
+    FILE_PATH_LITERAL("drive");
 
 // This should be incremented when incompatibility change is made in
 // drive.proto.
@@ -56,7 +57,7 @@ const int32 kProtoVersion = 2;
 // Callback similar to FileOperationCallback but with a given |file_path|.
 // Used for operations that change a file path like moving files.
 typedef base::Callback<void(DriveFileError error,
-                            const FilePath& file_path)>
+                            const base::FilePath& file_path)>
     FileMoveCallback;
 
 // Used to get entry info from the file system.
@@ -76,12 +77,12 @@ typedef base::Callback<void(DriveFileError error,
 // the Drive file path (i.e. only contains the base name without parent
 // directory names).
 typedef base::Callback<void(DriveFileError error,
-                            const FilePath& drive_file_path,
+                            const base::FilePath& drive_file_path,
                             scoped_ptr<DriveEntryProto> entry_proto)>
     GetEntryInfoWithFilePathCallback;
 
 // Used to get a set of changed directories for feed processing.
-typedef base::Callback<void(const std::set<FilePath>&)>
+typedef base::Callback<void(const std::set<base::FilePath>&)>
     GetChildDirectoriesCallback;
 
 typedef base::Callback<void(int64)> GetChangestampCallback;
@@ -91,7 +92,7 @@ struct EntryInfoResult {
   EntryInfoResult();
   ~EntryInfoResult();
 
-  FilePath path;
+  base::FilePath path;
   DriveFileError error;
   scoped_ptr<DriveEntryProto> proto;
 };
@@ -124,7 +125,7 @@ class DriveResourceMetadataInterface {
 
   // Adds |entry| to directory with path |directory_path| and invoke the
   // callback asynchronously. |callback| must not be null.
-  virtual void AddEntryToDirectory(const FilePath& directory_path,
+  virtual void AddEntryToDirectory(const base::FilePath& directory_path,
                                    scoped_ptr<google_apis::ResourceEntry> entry,
                                    const FileMoveCallback& callback) = 0;
 
@@ -136,14 +137,14 @@ class DriveResourceMetadataInterface {
   // Moves entry specified by |file_path| to the directory specified by
   // |directory_path| and calls the callback asynchronously. Removes the entry
   // from the previous parent. |callback| must not be null.
-  virtual void MoveEntryToDirectory(const FilePath& file_path,
-                                    const FilePath& directory_path,
+  virtual void MoveEntryToDirectory(const base::FilePath& file_path,
+                                    const base::FilePath& directory_path,
                                     const FileMoveCallback& callback) = 0;
 
   // Renames entry specified by |file_path| with the new name |new_name| and
   // calls |callback| asynchronously. |callback| must not be null.
-  virtual void RenameEntry(const FilePath& file_path,
-                           const FilePath::StringType& new_name,
+  virtual void RenameEntry(const base::FilePath& file_path,
+                           const base::FilePath::StringType& new_name,
                            const FileMoveCallback& callback) = 0;
 
   // Removes entry with |resource_id| from its parent. Calls |callback| with the
@@ -159,12 +160,12 @@ class DriveResourceMetadataInterface {
 
   // Finds an entry (a file or a directory) by |file_path|.
   // |callback| must not be null.
-  virtual void GetEntryInfoByPath(const FilePath& file_path,
+  virtual void GetEntryInfoByPath(const base::FilePath& file_path,
                                   const GetEntryInfoCallback& callback) = 0;
 
   // Finds and reads a directory by |file_path|.
   // |callback| must not be null.
-  virtual void ReadDirectoryByPath(const FilePath& file_path,
+  virtual void ReadDirectoryByPath(const base::FilePath& file_path,
                                    const ReadDirectoryCallback& callback) = 0;
 
   // Similar to GetEntryInfoByPath() but this function finds a pair of
@@ -172,8 +173,8 @@ class DriveResourceMetadataInterface {
   // |first_path| is not found, this function does not try to get the
   // entry of |second_path|. |callback| must not be null.
   virtual void GetEntryInfoPairByPaths(
-      const FilePath& first_path,
-      const FilePath& second_path,
+      const base::FilePath& first_path,
+      const base::FilePath& second_path,
       const GetEntryInfoPairCallback& callback) = 0;
 
   // Refreshes a drive entry with the same resource id as |entry_proto|.
@@ -232,16 +233,16 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
       int64 value,
       const FileOperationCallback& callback) OVERRIDE;
   virtual void AddEntryToDirectory(
-      const FilePath& directory_path,
+      const base::FilePath& directory_path,
       scoped_ptr<google_apis::ResourceEntry> entry,
       const FileMoveCallback& callback) OVERRIDE;
   virtual void AddEntryToParent(const DriveEntryProto& entry_proto,
                                 const FileMoveCallback& callback) OVERRIDE;
-  virtual void MoveEntryToDirectory(const FilePath& file_path,
-                                    const FilePath& directory_path,
+  virtual void MoveEntryToDirectory(const base::FilePath& file_path,
+                                    const base::FilePath& directory_path,
                                     const FileMoveCallback& callback) OVERRIDE;
-  virtual void RenameEntry(const FilePath& file_path,
-                           const FilePath::StringType& new_name,
+  virtual void RenameEntry(const base::FilePath& file_path,
+                           const base::FilePath::StringType& new_name,
                            const FileMoveCallback& callback) OVERRIDE;
   virtual void RemoveEntryFromParent(const std::string& resource_id,
                                      const FileMoveCallback& callback) OVERRIDE;
@@ -249,14 +250,14 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback) OVERRIDE;
   virtual void GetEntryInfoByPath(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const GetEntryInfoCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void GetEntryInfoPairByPaths(
-      const FilePath& first_path,
-      const FilePath& second_path,
+      const base::FilePath& first_path,
+      const base::FilePath& second_path,
       const GetEntryInfoPairCallback& callback) OVERRIDE;
   virtual void RefreshEntry(
       const DriveEntryProto& entry_proto,
@@ -275,7 +276,7 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
 
   // Restores from and saves to database, calling |callback| asynchronously.
   // |callback| must not be null.
-  void InitFromDB(const FilePath& db_path,
+  void InitFromDB(const base::FilePath& db_path,
                   base::SequencedTaskRunner* blocking_task_runner,
                   const FileOperationCallback& callback);
   void SaveToDB();
@@ -321,8 +322,8 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   // asynchronously fetched. This fetches the second DriveEntry only if the
   // first was found.
   void GetEntryInfoPairByPathsAfterGetFirst(
-      const FilePath& first_path,
-      const FilePath& second_path,
+      const base::FilePath& first_path,
+      const base::FilePath& second_path,
       const GetEntryInfoPairCallback& callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
@@ -330,14 +331,14 @@ class DriveResourceMetadata : public DriveResourceMetadataInterface {
   // Continues with GetIntroInfoPairByPaths after the second DriveEntry has been
   // asynchronously fetched.
   void GetEntryInfoPairByPathsAfterGetSecond(
-      const FilePath& second_path,
+      const base::FilePath& second_path,
       const GetEntryInfoPairCallback& callback,
       scoped_ptr<EntryInfoPairResult> result,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Searches for |file_path| synchronously.
-  DriveEntry* FindEntryByPathSync(const FilePath& file_path);
+  DriveEntry* FindEntryByPathSync(const base::FilePath& file_path);
 
   // Helper function to add |entry_proto| as a child to |directory|.
   // |callback| must not be null.

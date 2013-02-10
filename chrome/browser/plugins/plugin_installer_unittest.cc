@@ -15,7 +15,7 @@ namespace {
 PluginInstaller::SecurityStatus GetSecurityStatus(PluginInstaller* installer,
                                                   const char* version) {
   WebPluginInfo plugin(ASCIIToUTF16("Foo plug-in"),
-                       FilePath(FILE_PATH_LITERAL("/tmp/plugin.so")),
+                       base::FilePath(FILE_PATH_LITERAL("/tmp/plugin.so")),
                        ASCIIToUTF16(version),
                        ASCIIToUTF16("Foo plug-in."));
   return installer->GetSecurityStatus(plugin);

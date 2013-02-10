@@ -27,8 +27,8 @@ bool g_should_prompt_for_filename = true;
 void ContinueSettingUpDriveDownload(
     const content::SavePackagePathPickedCallback& callback,
     Profile* profile,
-    const FilePath& drive_path,
-    const FilePath& drive_tmp_download_path) {
+    const base::FilePath& drive_path,
+    const base::FilePath& drive_tmp_download_path) {
   if (drive_tmp_download_path.empty())  // Substitution failed.
     return;
 
@@ -44,7 +44,7 @@ void ContinueSettingUpDriveDownload(
 
 SavePackageFilePickerChromeOS::SavePackageFilePickerChromeOS(
     content::WebContents* web_contents,
-    const FilePath& suggested_path,
+    const base::FilePath& suggested_path,
     const content::SavePackagePathPickedCallback& callback)
     : content::WebContentsObserver(web_contents),
       callback_(callback) {
@@ -75,7 +75,7 @@ SavePackageFilePickerChromeOS::~SavePackageFilePickerChromeOS() {
 }
 
 void SavePackageFilePickerChromeOS::FileSelected(
-    const FilePath& selected_path,
+    const base::FilePath& selected_path,
     int unused_index,
     void* unused_params) {
   FileSelectedWithExtraInfo(
@@ -92,7 +92,7 @@ void SavePackageFilePickerChromeOS::FileSelectedWithExtraInfo(
     delete this;
     return;
   }
-  FilePath selected_path = selected_file_info.file_path;
+  base::FilePath selected_path = selected_file_info.file_path;
   file_util::NormalizeFileNameEncoding(&selected_path);
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());

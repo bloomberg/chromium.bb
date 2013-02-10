@@ -89,7 +89,7 @@ const size_t kIndentSize = 4;
 class Writer : public base::RefCountedThreadSafe<Writer> {
  public:
   Writer(base::Value* bookmarks,
-         const FilePath& path,
+         const base::FilePath& path,
          BookmarkFaviconFetcher::URLFaviconMap* favicons_map,
          BookmarksExportObserver* observer)
       : bookmarks_(bookmarks),
@@ -363,7 +363,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   scoped_ptr<Value> bookmarks_;
 
   // Path we're writing to.
-  FilePath path_;
+  base::FilePath path_;
 
   // Map that stores favicon per URL.
   scoped_ptr<BookmarkFaviconFetcher::URLFaviconMap> favicons_map_;
@@ -385,7 +385,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
 
 BookmarkFaviconFetcher::BookmarkFaviconFetcher(
     Profile* profile,
-    const FilePath& path,
+    const base::FilePath& path,
     BookmarksExportObserver* observer)
     : profile_(profile),
       path_(path),
@@ -495,7 +495,7 @@ void BookmarkFaviconFetcher::OnFaviconDataAvailable(
 namespace bookmark_html_writer {
 
 void WriteBookmarks(Profile* profile,
-                    const FilePath& path,
+                    const base::FilePath& path,
                     BookmarksExportObserver* observer) {
   // BookmarkModel isn't thread safe (nor would we want to lock it down
   // for the duration of the write), as such we make a copy of the

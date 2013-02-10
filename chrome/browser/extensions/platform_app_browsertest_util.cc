@@ -133,7 +133,7 @@ void PlatformAppBrowserTest::ClearCommandLineArgs() {
 void PlatformAppBrowserTest::SetCommandLineArg(const std::string& test_file) {
   ClearCommandLineArgs();
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  FilePath test_doc(test_data_dir_.AppendASCII(test_file));
+  base::FilePath test_doc(test_data_dir_.AppendASCII(test_file));
   test_doc = test_doc.NormalizePathSeparators();
   command_line->AppendArgPath(test_doc);
 }

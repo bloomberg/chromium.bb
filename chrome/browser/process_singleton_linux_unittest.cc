@@ -33,7 +33,7 @@ using content::BrowserThread;
 namespace {
 
 bool NotificationCallback(const CommandLine& command_line,
-                          const FilePath& current_directory) {
+                          const base::FilePath& current_directory) {
   return true;
 }
 
@@ -42,7 +42,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
   // A ProcessSingleton exposing some protected methods for testing.
   class TestableProcessSingleton : public ProcessSingleton {
    public:
-    explicit TestableProcessSingleton(const FilePath& user_data_dir)
+    explicit TestableProcessSingleton(const base::FilePath& user_data_dir)
         : ProcessSingleton(user_data_dir) {}
     using ProcessSingleton::NotifyOtherProcessWithTimeout;
     using ProcessSingleton::NotifyOtherProcessWithTimeoutOrCreate;
@@ -174,9 +174,9 @@ class ProcessSingletonLinuxTest : public testing::Test {
     signal_event_.Signal();
   }
 
-  FilePath lock_path_;
-  FilePath socket_path_;
-  FilePath cookie_path_;
+  base::FilePath lock_path_;
+  base::FilePath socket_path_;
+  base::FilePath cookie_path_;
   int kill_callbacks_;
 
  private:
@@ -195,7 +195,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
   }
 
   bool InternalCallback(const CommandLine& command_line,
-                        const FilePath& current_directory) {
+                        const base::FilePath& current_directory) {
     callback_command_lines_.push_back(command_line.argv());
     return true;
   }
@@ -234,7 +234,7 @@ TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
 
   len = readlink(socket_path_.value().c_str(), buf, PATH_MAX);
   ASSERT_GT(len, 0);
-  FilePath socket_target_path = FilePath(std::string(buf, len));
+  base::FilePath socket_target_path = base::FilePath(std::string(buf, len));
 
   ASSERT_EQ(0, lstat(socket_target_path.value().c_str(), &statbuf));
   ASSERT_TRUE(S_ISSOCK(statbuf.st_mode));
@@ -243,7 +243,7 @@ TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
   ASSERT_GT(len, 0);
   std::string cookie(buf, len);
 
-  FilePath remote_cookie_path = socket_target_path.DirName().
+  base::FilePath remote_cookie_path = socket_target_path.DirName().
       Append(chrome::kSingletonCookieFilename);
   len = readlink(remote_cookie_path.value().c_str(), buf, PATH_MAX);
   ASSERT_GT(len, 0);
@@ -364,7 +364,7 @@ TEST_F(ProcessSingletonLinuxTest, CreateChecksCompatibilitySocket) {
   char buf[PATH_MAX];
   ssize_t len = readlink(socket_path_.value().c_str(), buf, sizeof(buf));
   ASSERT_GT(len, 0);
-  FilePath socket_target_path = FilePath(std::string(buf, len));
+  base::FilePath socket_target_path = base::FilePath(std::string(buf, len));
   ASSERT_EQ(0, unlink(socket_path_.value().c_str()));
   ASSERT_EQ(0, rename(socket_target_path.value().c_str(),
                       socket_path_.value().c_str()));

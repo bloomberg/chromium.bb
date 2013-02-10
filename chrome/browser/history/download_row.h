@@ -22,8 +22,8 @@ namespace history {
 struct DownloadRow {
   DownloadRow();
   DownloadRow(
-      const FilePath& current_path,
-      const FilePath& target_path,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer,
       const base::Time& start,
@@ -39,10 +39,10 @@ struct DownloadRow {
 
   // The current path to the download (potentially different from final if
   // download is in progress or interrupted).
-  FilePath current_path;
+  base::FilePath current_path;
 
   // The target path where the download will go when it's complete.
-  FilePath target_path;
+  base::FilePath target_path;
 
   // The URL redirect chain through which we are downloading.  The front
   // is the url that the initial request went to, and the back is the

@@ -1745,7 +1745,7 @@ void SavePackageNotificationObserver::ManagerGoingDown(
 PageSnapshotTaker::PageSnapshotTaker(AutomationProvider* automation,
                                      IPC::Message* reply_message,
                                      WebContents* web_contents,
-                                     const FilePath& path)
+                                     const base::FilePath& path)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       web_contents_(web_contents),

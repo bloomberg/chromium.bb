@@ -25,8 +25,8 @@ class WebCacheManagerBrowserTest : public InProcessBrowserTest {
 // Regression test for http://crbug.com/12362.  If a renderer crashes and the
 // user navigates to another tab and back, the browser doesn't crash.
 IN_PROC_BROWSER_TEST_F(WebCacheManagerBrowserTest, CrashOnceOnly) {
-  const FilePath kTestDir(FILE_PATH_LITERAL("google"));
-  const FilePath kTestFile(FILE_PATH_LITERAL("google.html"));
+  const base::FilePath kTestDir(FILE_PATH_LITERAL("google"));
+  const base::FilePath kTestFile(FILE_PATH_LITERAL("google.html"));
   GURL url(ui_test_utils::GetTestUrl(kTestDir, kTestFile));
 
   ui_test_utils::NavigateToURL(browser(), url);

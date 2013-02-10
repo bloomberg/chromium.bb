@@ -16,16 +16,16 @@ using pnacl_file_host::PnaclCanOpenFile;
 
 // Try to pass a few funny filenames with a dummy pnacl directory set.
 TEST(PnaclFileHostTest, TestFilenamesWithPnaclPath) {
-  FilePath kDummyPnaclPath(FILE_PATH_LITERAL("dummy_pnacl_path"));
+  base::FilePath kDummyPnaclPath(FILE_PATH_LITERAL("dummy_pnacl_path"));
   base::ScopedPathOverride pnach_dir_override(chrome::DIR_PNACL_COMPONENT,
                                               kDummyPnaclPath);
   ASSERT_TRUE(PathService::Get(chrome::DIR_PNACL_COMPONENT,
                                &kDummyPnaclPath));
 
   // Check allowed strings, and check that the expected prefix is added.
-  FilePath out_path;
+  base::FilePath out_path;
   EXPECT_TRUE(PnaclCanOpenFile("pnacl_json", &out_path));
-  FilePath expected_path = kDummyPnaclPath.Append(
+  base::FilePath expected_path = kDummyPnaclPath.Append(
       FILE_PATH_LITERAL("pnacl_public_pnacl_json"));
   EXPECT_EQ(out_path, expected_path);
 

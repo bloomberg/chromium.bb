@@ -22,8 +22,8 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   // Interface for people who want to use PackExtensionJob to implement.
   class Client {
    public:
-    virtual void OnPackSuccess(const FilePath& crx_file,
-                               const FilePath& key_file) = 0;
+    virtual void OnPackSuccess(const base::FilePath& crx_file,
+                               const base::FilePath& key_file) = 0;
     virtual void OnPackFailure(const std::string& message,
                                ExtensionCreator::ErrorType error_type) = 0;
 
@@ -32,8 +32,8 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   };
 
   PackExtensionJob(Client* client,
-                   const FilePath& root_directory,
-                   const FilePath& key_file,
+                   const base::FilePath& root_directory,
+                   const base::FilePath& key_file,
                    int run_flags);
 
   // Starts the packing job.
@@ -44,8 +44,8 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   void ClearClient();
 
   // The standard packing success message.
-  static string16 StandardSuccessMessage(const FilePath& crx_file,
-                                         const FilePath& key_file);
+  static string16 StandardSuccessMessage(const base::FilePath& crx_file,
+                                         const base::FilePath& key_file);
 
   void set_asynchronous(bool async) { asynchronous_ = async; }
 
@@ -62,10 +62,10 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
 
   content::BrowserThread::ID client_thread_id_;
   Client* client_;
-  FilePath root_directory_;
-  FilePath key_file_;
-  FilePath crx_file_out_;
-  FilePath key_file_out_;
+  base::FilePath root_directory_;
+  base::FilePath key_file_;
+  base::FilePath crx_file_out_;
+  base::FilePath key_file_out_;
   bool asynchronous_;
   int run_flags_;  // Bitset of ExtensionCreator::RunFlags values - we always
                    // assume kRequireModernManifestVersion, though.

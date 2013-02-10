@@ -162,7 +162,7 @@ void FakeDriveService::CancelAll() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-bool FakeDriveService::CancelForFilePath(const FilePath& file_path) {
+bool FakeDriveService::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return true;
 }
@@ -428,8 +428,8 @@ void FakeDriveService::DeleteResource(
 }
 
 void FakeDriveService::DownloadFile(
-    const FilePath& virtual_path,
-    const FilePath& local_cache_path,
+    const base::FilePath& virtual_path,
+    const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback) {
@@ -441,7 +441,7 @@ void FakeDriveService::DownloadFile(
         FROM_HERE,
         base::Bind(download_action_callback,
                    GDATA_NO_CONNECTION,
-                   FilePath()));
+                   base::FilePath()));
     return;
   }
 
@@ -450,7 +450,7 @@ void FakeDriveService::DownloadFile(
   if (!entry) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(download_action_callback, HTTP_NOT_FOUND, FilePath()));
+        base::Bind(download_action_callback, HTTP_NOT_FOUND, base::FilePath()));
     return;
   }
 
@@ -478,7 +478,7 @@ void FakeDriveService::DownloadFile(
   // Failed to write the content.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(download_action_callback, GDATA_FILE_ERROR, FilePath()));
+      base::Bind(download_action_callback, GDATA_FILE_ERROR, base::FilePath()));
 }
 
 void FakeDriveService::CopyHostedDocument(
@@ -892,7 +892,7 @@ void FakeDriveService::InitiateUpload(
 
 void FakeDriveService::GetUploadStatus(
     UploadMode upload_mode,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
     const UploadRangeCallback& callback) {

@@ -20,13 +20,13 @@ class ProfileInfoInterface {
   virtual size_t GetNumberOfProfiles() const = 0;
 
   virtual size_t GetIndexOfProfileWithPath(
-      const FilePath& profile_path) const = 0;
+      const base::FilePath& profile_path) const = 0;
 
   virtual string16 GetNameOfProfileAtIndex(size_t index) const = 0;
 
   virtual string16 GetShortcutNameOfProfileAtIndex(size_t index) const = 0;
 
-  virtual FilePath GetPathOfProfileAtIndex(size_t index) const = 0;
+  virtual base::FilePath GetPathOfProfileAtIndex(size_t index) const = 0;
 
   virtual string16 GetUserNameOfProfileAtIndex(size_t index) const = 0;
 

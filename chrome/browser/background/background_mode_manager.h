@@ -167,13 +167,15 @@ class BackgroundModeManager
   virtual void OnApplicationListChanged(Profile* profile) OVERRIDE;
 
   // Overrides from ProfileInfoCacheObserver
-  virtual void OnProfileAdded(const FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileWillBeRemoved(const FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileWasRemoved(const FilePath& profile_path,
+  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWillBeRemoved(
+      const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
                                    const string16& profile_name) OVERRIDE;
-  virtual void OnProfileNameChanged(const FilePath& profile_path,
+  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
                                     const string16& old_profile_name) OVERRIDE;
-  virtual void OnProfileAvatarChanged(const FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileAvatarChanged(
+      const base::FilePath& profile_path) OVERRIDE;
 
   // Overrides from SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

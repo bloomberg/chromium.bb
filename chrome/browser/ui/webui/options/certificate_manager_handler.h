@@ -43,7 +43,7 @@ class CertificateManagerHandler
   virtual void CertificatesRefreshed() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
@@ -79,7 +79,7 @@ class CertificateManagerHandler
   //  5. write finishes (or fails) -> ExportPersonalFileWritten
   void ExportPersonal(const base::ListValue* args);
   void ExportAllPersonal(const base::ListValue* args);
-  void ExportPersonalFileSelected(const FilePath& path);
+  void ExportPersonalFileSelected(const base::FilePath& path);
   void ExportPersonalPasswordSelected(const base::ListValue* args);
   void ExportPersonalSlotsUnlocked();
   void ExportPersonalFileWritten(const int* write_errno,
@@ -99,7 +99,7 @@ class CertificateManagerHandler
   //  6b. if import fails -> show error, ImportExportCleanup
   //  TODO(mattm): allow retrying with different password
   void StartImportPersonal(const base::ListValue* args);
-  void ImportPersonalFileSelected(const FilePath& path);
+  void ImportPersonalFileSelected(const base::FilePath& path);
   void ImportPersonalPasswordSelected(const base::ListValue* args);
   void ImportPersonalFileRead(const int* read_errno, const std::string* data);
   void ImportPersonalSlotUnlocked();
@@ -111,7 +111,7 @@ class CertificateManagerHandler
   //  4a. if import succeeds -> ImportExportCleanup
   //  4b. if import fails -> show error, ImportExportCleanup
   void ImportServer(const base::ListValue* args);
-  void ImportServerFileSelected(const FilePath& path);
+  void ImportServerFileSelected(const base::FilePath& path);
   void ImportServerFileRead(const int* read_errno, const std::string* data);
 
   // Import Certificate Authorities from file.  Sequence goes like:
@@ -123,7 +123,7 @@ class CertificateManagerHandler
   //  5a. if import succeeds -> ImportExportCleanup
   //  5b. if import fails -> show error, ImportExportCleanup
   void ImportCA(const base::ListValue* args);
-  void ImportCAFileSelected(const FilePath& path);
+  void ImportCAFileSelected(const base::FilePath& path);
   void ImportCAFileRead(const int* read_errno, const std::string* data);
   void ImportCATrustSelected(const base::ListValue* args);
 
@@ -165,7 +165,7 @@ class CertificateManagerHandler
   // For multi-step import or export processes, we need to store the path,
   // password, etc the user chose while we wait for them to enter a password,
   // wait for file to be read, etc.
-  FilePath file_path_;
+  base::FilePath file_path_;
   string16 password_;
   bool use_hardware_backed_;
   std::string file_data_;

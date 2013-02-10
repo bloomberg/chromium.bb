@@ -40,7 +40,7 @@ RemoveOperation::~RemoveOperation() {
 }
 
 void RemoveOperation::Remove(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -101,7 +101,7 @@ void RemoveOperation::RemoveResourceLocally(
 void RemoveOperation::NotifyDirectoryChanged(
     const FileOperationCallback& callback,
     DriveFileError error,
-    const FilePath& directory_path) {
+    const base::FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 

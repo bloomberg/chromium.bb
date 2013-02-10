@@ -23,19 +23,19 @@
 // simulated Library directory containing dummy data files in the same
 // structure as ~/Library in the Chrome test data directory.
 // This function returns the path to that directory.
-FilePath GetTestSafariLibraryPath() {
-    FilePath test_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
+base::FilePath GetTestSafariLibraryPath() {
+  base::FilePath test_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
 
-    // Our simulated ~/Library directory
-    test_dir = test_dir.AppendASCII("safari_import");
-    return test_dir;
+  // Our simulated ~/Library directory
+  test_dir = test_dir.AppendASCII("safari_import");
+  return test_dir;
 }
 
 class SafariImporterTest : public PlatformTest {
  public:
   SafariImporter* GetSafariImporter() {
-    FilePath test_library_dir = GetTestSafariLibraryPath();
+    base::FilePath test_library_dir = GetTestSafariLibraryPath();
     CHECK(file_util::PathExists(test_library_dir))  <<
         "Missing test data directory";
 

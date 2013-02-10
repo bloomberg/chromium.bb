@@ -132,7 +132,7 @@ scoped_refptr<Extension> CreateExtension(
     base::DictionaryValue* test_extension_value,
     const std::string& id_input) {
   std::string error;
-  const FilePath test_extension_path;
+  const base::FilePath test_extension_path;
   std::string id;
   if (!id_input.empty())
     CHECK(Extension::GenerateId(id_input, &id));

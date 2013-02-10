@@ -50,8 +50,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
 
   SessionStartupPref pref_urls(SessionStartupPref::URLS);
   pref_urls.urls.push_back(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title1.html"))));
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title1.html"))));
   SessionStartupPref::SetStartupPref(profile_1, pref_urls);
   SessionStartupPref::SetStartupPref(profile_2, pref_urls);
   SessionStartupPref::SetStartupPref(profile_3, pref_urls);

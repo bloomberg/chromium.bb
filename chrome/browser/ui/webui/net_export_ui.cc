@@ -72,7 +72,7 @@ class NetExportMessageHandler
       NetLogTempFile::Command command);
 
   // Returns the path to the file which has NetLog data.
-  static FilePath GetNetLogFileName(NetLogTempFile* net_log_temp_file);
+  static base::FilePath GetNetLogFileName(NetLogTempFile* net_log_temp_file);
 
   // Send state/file information from NetLogTempFile.
   static void SendExportNetLogInfo(
@@ -80,7 +80,7 @@ class NetExportMessageHandler
       NetLogTempFile* net_log_temp_file);
 
   // Send NetLog data via email. This runs on UI thread.
-  static void SendEmail(const FilePath& file_to_send);
+  static void SendEmail(const base::FilePath& file_to_send);
 
   // Call NetExportView.onExportNetLogInfoChanged JavsScript function in the
   // renderer, passing in |arg|. Takes ownership of |arg|.
@@ -182,10 +182,10 @@ void NetExportMessageHandler::ProcessNetLogCommand(
 }
 
 // static
-FilePath NetExportMessageHandler::GetNetLogFileName(
+base::FilePath NetExportMessageHandler::GetNetLogFileName(
     NetLogTempFile* net_log_temp_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
-  FilePath net_export_file_path;
+  base::FilePath net_export_file_path;
   net_log_temp_file->GetFilePath(&net_export_file_path);
   return net_export_file_path;
 }
@@ -207,7 +207,7 @@ void NetExportMessageHandler::SendExportNetLogInfo(
 }
 
 // static
-void NetExportMessageHandler::SendEmail(const FilePath& file_to_send) {
+void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
   if (file_to_send.empty())
     return;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -218,7 +218,7 @@ void NetExportMessageHandler::SendEmail(const FilePath& file_to_send) {
   std::string title = "Issue number: ";
   std::string body =
       "Please add some informative text about the network issues.";
-  FilePath::StringType file_to_attach(file_to_send.value());
+  base::FilePath::StringType file_to_attach(file_to_send.value());
   chrome::android::SendEmail(
       UTF8ToUTF16(email), UTF8ToUTF16(subject),
       UTF8ToUTF16(body), UTF8ToUTF16(title), UTF8ToUTF16(file_to_attach));

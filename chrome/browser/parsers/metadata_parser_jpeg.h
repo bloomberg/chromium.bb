@@ -9,7 +9,7 @@
 
 class JpegMetadataParser : public FileMetadataParser {
  public:
-  explicit JpegMetadataParser(const FilePath& path);
+  explicit JpegMetadataParser(const base::FilePath& path);
   // Implementation of MetadataParser
   virtual bool Parse() OVERRIDE;
 

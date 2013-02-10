@@ -29,8 +29,9 @@ class InfoBarsTest : public InProcessBrowserTest {
   }
 
   void InstallExtension(const char* filename) {
-    FilePath path = ui_test_utils::GetTestFilePath(
-        FilePath().AppendASCII("extensions"), FilePath().AppendASCII(filename));
+    base::FilePath path = ui_test_utils::GetTestFilePath(
+        base::FilePath().AppendASCII("extensions"),
+        base::FilePath().AppendASCII(filename));
     Profile* profile = browser()->profile();
     ExtensionService* service = profile->GetExtensionService();
 

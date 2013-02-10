@@ -37,26 +37,26 @@ class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
 
   // Become an observer of DownloadManager.
   void Initialize(content::DownloadManager* download_manager,
-                  const FilePath& drive_tmp_download_path);
+                  const base::FilePath& drive_tmp_download_path);
 
   // Callback used to return results from SubstituteDriveDownloadPath.
   // TODO(hashimoto): Report error with a DriveFileError. crbug.com/171345
-  typedef base::Callback<void(const FilePath&)>
+  typedef base::Callback<void(const base::FilePath&)>
       SubstituteDriveDownloadPathCallback;
 
   void SubstituteDriveDownloadPath(
-      const FilePath& drive_path,
+      const base::FilePath& drive_path,
       content::DownloadItem* download,
       const SubstituteDriveDownloadPathCallback& callback);
 
   // Sets drive path, for example, '/special/drive/MyFolder/MyFile',
   // to external data in |download|. Also sets display name and
   // makes |download| a temporary.
-  void SetDownloadParams(const FilePath& drive_path,
+  void SetDownloadParams(const base::FilePath& drive_path,
                          content::DownloadItem* download);
 
   // Gets the target drive path from external data in |download|.
-  FilePath GetTargetPath(const content::DownloadItem* download);
+  base::FilePath GetTargetPath(const content::DownloadItem* download);
 
   // Checks if there is a Drive upload associated with |download|
   bool IsDriveDownload(const content::DownloadItem* download);
@@ -78,7 +78,7 @@ class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
 
   // Callback for DriveFileSystem::GetEntryInfoByPath().
   // Used to implement SubstituteDriveDownloadPath().
-  void OnEntryFound(const FilePath& drive_dir_path,
+  void OnEntryFound(const base::FilePath& drive_dir_path,
                     const SubstituteDriveDownloadPathCallback& callback,
                     DriveFileError error,
                     scoped_ptr<DriveEntryProto> entry_proto);
@@ -98,7 +98,7 @@ class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
   scoped_ptr<AllDownloadItemNotifier> notifier_;
 
   // Temporary download location directory.
-  FilePath drive_tmp_download_path_;
+  base::FilePath drive_tmp_download_path_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -92,14 +92,14 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
 
   // Find by extension 'ext_1'.
   ScopedVector<DriveWebAppInfo> ext_1_results;
-  FilePath ext1_file(FILE_PATH_LITERAL("gdata/SampleFile.ext_1"));
+  base::FilePath ext1_file(FILE_PATH_LITERAL("gdata/SampleFile.ext_1"));
   web_apps->GetWebAppsForFile(ext1_file, std::string(), &ext_1_results);
   ASSERT_EQ(1U, ext_1_results.size());
   EXPECT_TRUE(VerifyApp1(ext_1_results, true));
 
   // Find by extension 'ext_3'.
   ScopedVector<DriveWebAppInfo> ext_3_results;
-  FilePath ext3_file(FILE_PATH_LITERAL("gdata/AnotherFile.ext_3"));
+  base::FilePath ext3_file(FILE_PATH_LITERAL("gdata/AnotherFile.ext_3"));
   web_apps->GetWebAppsForFile(ext3_file, std::string(), &ext_3_results);
   ASSERT_EQ(2U, ext_3_results.size());
   EXPECT_TRUE(VerifyApp1(ext_3_results, false));
@@ -107,14 +107,14 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
 
   // Find by mimetype 'ext_3'.
   ScopedVector<DriveWebAppInfo> mime_results;
-  web_apps->GetWebAppsForFile(FilePath(), "application/test_type_2",
+  web_apps->GetWebAppsForFile(base::FilePath(), "application/test_type_2",
                               &mime_results);
   ASSERT_EQ(1U, mime_results.size());
   EXPECT_TRUE(VerifyApp2(mime_results, true));
 
   // Find by extension and mimetype.
   ScopedVector<DriveWebAppInfo> mime_ext_results;
-  FilePath mime_file(FILE_PATH_LITERAL("gdata/MimeFile.ext_2"));
+  base::FilePath mime_file(FILE_PATH_LITERAL("gdata/MimeFile.ext_2"));
   web_apps->GetWebAppsForFile(mime_file, "application/test_type_2",
                               &mime_ext_results);
   ASSERT_EQ(2U, mime_ext_results.size());
@@ -137,7 +137,7 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
 
   // Find by primary extension 'exe'.
   ScopedVector<DriveWebAppInfo> ext_results;
-  FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
+  base::FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
   web_apps->GetWebAppsForFile(ext_file, std::string(), &ext_results);
   ASSERT_EQ(1U, ext_results.size());
   VerifyApp(ext_results, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
@@ -145,7 +145,7 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
 
   // Find by primary MIME type.
   ScopedVector<DriveWebAppInfo> primary_app;
-  web_apps->GetWebAppsForFile(FilePath(),
+  web_apps->GetWebAppsForFile(base::FilePath(),
       "application/vnd.google-apps.drive-sdk.123456788192", &primary_app);
   ASSERT_EQ(1U, primary_app.size());
   VerifyApp(primary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
@@ -153,7 +153,7 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
 
   // Find by secondary MIME type.
   ScopedVector<DriveWebAppInfo> secondary_app;
-  web_apps->GetWebAppsForFile(FilePath(), "text/html", &secondary_app);
+  web_apps->GetWebAppsForFile(base::FilePath(), "text/html", &secondary_app);
   ASSERT_EQ(1U, secondary_app.size());
   VerifyApp(secondary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
             "Drive app 1", "", false);

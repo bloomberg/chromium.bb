@@ -69,7 +69,7 @@ class DriveFeedProcessor {
   const DriveEntryProtoMap& entry_proto_map() const { return entry_proto_map_; }
 
   // The set of changed directories as a result of feed processing.
-  const std::set<FilePath>& changed_dirs() const { return changed_dirs_; }
+  const std::set<base::FilePath>& changed_dirs() const { return changed_dirs_; }
 
  private:
   // Applies the pre-processed feed from entry_proto_map_ onto the filesystem.
@@ -88,7 +88,7 @@ class DriveFeedProcessor {
   void ContinueApplyEntryProto(
       const DriveEntryProto& entry_proto,
       DriveFileError error,
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> old_entry_proto);
 
   // Apply the DriveEntryProto pointed to by |it| to resource_metadata_.
@@ -101,39 +101,39 @@ class DriveFeedProcessor {
   // Callback for DriveResourceMetadata::AddEntryToParent.
   void NotifyForAddEntryToParent(bool is_directory,
                                  DriveFileError error,
-                                 const FilePath& file_path);
+                                 const base::FilePath& file_path);
 
   // Removes entry pointed to by |resource_id| from its parent. Updates
   // changed_dirs_ as a side effect.
   void RemoveEntryFromParent(
       const DriveEntryProto& entry_proto,
-      const FilePath& file_path);
+      const base::FilePath& file_path);
 
   // Continues RemoveEntryFromParent after
   // DriveResourceMetadata::GetChildDirectories.
   void OnGetChildrenForRemove(
       const DriveEntryProto& entry_proto,
-      const FilePath& file_path,
-      const std::set<FilePath>& child_directories);
+      const base::FilePath& file_path,
+      const std::set<base::FilePath>& child_directories);
 
   // Callback for DriveResourceMetadata::RemoveEntryFromParent.
   void NotifyForRemoveEntryFromParent(
       bool is_directory,
-      const FilePath& file_path,
-      const std::set<FilePath>& child_directories,
+      const base::FilePath& file_path,
+      const std::set<base::FilePath>& child_directories,
       DriveFileError error,
-      const FilePath& parent_path);
+      const base::FilePath& parent_path);
 
   // Refreshes DriveResourceMetadata entry that has the same resource_id as
   // |entry_proto| with |entry_proto|. Updates changed_dirs_ as a side effect.
   void RefreshEntry(const DriveEntryProto& entry_proto,
-                    const FilePath& file_path);
+                    const base::FilePath& file_path);
 
   // Callback for DriveResourceMetadata::RefreshEntry.
   void NotifyForRefreshEntry(
-      const FilePath& old_file_path,
+      const base::FilePath& old_file_path,
       DriveFileError error,
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Updates the upload url of the root directory with root_upload_url_.
@@ -147,7 +147,7 @@ class DriveFeedProcessor {
   // Callback for DriveResourceMetadata::RefreshEntry after the root upload
   // url is set.
   void OnUpdateRootUploadUrl(DriveFileError error,
-                             const FilePath& root_path,
+                             const base::FilePath& root_path,
                              scoped_ptr<DriveEntryProto> root_proto);
 
   // Runs after all entries have been processed.
@@ -159,7 +159,7 @@ class DriveFeedProcessor {
   DriveResourceMetadata* resource_metadata_;  // Not owned.
 
   DriveEntryProtoMap entry_proto_map_;
-  std::set<FilePath> changed_dirs_;
+  std::set<base::FilePath> changed_dirs_;
   GURL root_upload_url_;
   int64 largest_changestamp_;
   base::Closure on_complete_callback_;

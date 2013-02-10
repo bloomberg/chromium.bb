@@ -26,7 +26,7 @@ ExternalLoader* loader_instance = NULL;
 // Reads external ordinal json file and returned the parsed value. Returns NULL
 // if the file does not exist or could not be parsed properly. Caller takes
 // ownership of the returned value.
-base::ListValue* ReadExternalOrdinalFile(const FilePath& path) {
+base::ListValue* ReadExternalOrdinalFile(const base::FilePath& path) {
   if (!file_util::PathExists(path))
     return NULL;
 
@@ -108,7 +108,7 @@ const std::vector<std::string>& ExternalLoader::GetAppIds() {
 }
 
 void ExternalLoader::Load() {
-  FilePath ordinals_file;
+  base::FilePath ordinals_file;
   CHECK(PathService::Get(chrome::FILE_DEFAULT_APP_ORDER, &ordinals_file));
 
   scoped_ptr<base::ListValue> ordinals_value(

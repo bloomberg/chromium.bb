@@ -44,9 +44,9 @@ void CopyErrorCodeFromFileOperationCallback(DriveFileError* output,
 
 void CopyResultsFromFileMoveCallback(
     DriveFileError* out_error,
-    FilePath* out_file_path,
+    base::FilePath* out_file_path,
     DriveFileError error,
-    const FilePath& moved_file_path) {
+    const base::FilePath& moved_file_path) {
   DCHECK(out_error);
   DCHECK(out_file_path);
 
@@ -93,10 +93,10 @@ void CopyResultsFromReadDirectoryByPathCallback(
 
 void CopyResultsFromGetEntryInfoWithFilePathCallback(
     DriveFileError* out_error,
-    FilePath* out_drive_file_path,
+    base::FilePath* out_drive_file_path,
     scoped_ptr<DriveEntryProto>* out_entry_proto,
     DriveFileError error,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(out_error);
   DCHECK(out_drive_file_path);
@@ -121,10 +121,11 @@ void CopyResultFromInitializeCacheCallback(bool* out_success,
   *out_success = success;
 }
 
-void CopyResultsFromGetFileFromCacheCallback(DriveFileError* out_error,
-                                             FilePath* out_cache_file_path,
-                                             DriveFileError error,
-                                             const FilePath& cache_file_path) {
+void CopyResultsFromGetFileFromCacheCallback(
+    DriveFileError* out_error,
+    base::FilePath* out_cache_file_path,
+    DriveFileError error,
+    const base::FilePath& cache_file_path) {
   DCHECK(out_error);
   DCHECK(out_cache_file_path);
   *out_error = error;
@@ -142,10 +143,10 @@ void CopyResultsFromGetCacheEntryCallback(bool* out_success,
 }
 
 void CopyResultsFromGetFileCallback(DriveFileError* out_error,
-                                    FilePath* out_file_path,
+                                    base::FilePath* out_file_path,
                                     DriveFileType* out_file_type,
                                     DriveFileError error,
-                                    const FilePath& file_path,
+                                    const base::FilePath& file_path,
                                     const std::string& /*mime_type*/,
                                     DriveFileType file_type) {
   DCHECK(out_error);
@@ -183,9 +184,9 @@ void CopyResultsFromSearchMetadataCallback(
 }
 
 void CopyResultsFromOpenFileCallbackAndQuit(DriveFileError* out_error,
-                                            FilePath* out_file_path,
+                                            base::FilePath* out_file_path,
                                             DriveFileError error,
-                                            const FilePath& file_path) {
+                                            const base::FilePath& file_path) {
   *out_error = error;
   *out_file_path = file_path;
   MessageLoop::current()->Quit();

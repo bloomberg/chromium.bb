@@ -30,7 +30,7 @@ class UserPolicyTokenLoader
   };
 
   UserPolicyTokenLoader(const base::WeakPtr<Delegate>& delegate,
-                        const FilePath& cache_file);
+                        const base::FilePath& cache_file);
 
   // Starts loading the disk cache. After the load is finished, the result is
   // reported through the delegate.
@@ -45,7 +45,7 @@ class UserPolicyTokenLoader
                         const std::string& device_id);
 
   const base::WeakPtr<Delegate> delegate_;
-  const FilePath cache_file_;
+  const base::FilePath cache_file_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyTokenLoader);
 };

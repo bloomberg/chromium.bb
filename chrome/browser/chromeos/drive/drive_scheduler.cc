@@ -242,8 +242,8 @@ void DriveScheduler::AddNewDirectory(
 }
 
 void DriveScheduler::DownloadFile(
-    const FilePath& virtual_path,
-    const FilePath& local_cache_path,
+    const base::FilePath& virtual_path,
+    const base::FilePath& local_cache_path,
     const GURL& download_url,
     const google_apis::DownloadActionCallback& download_action_callback,
     const google_apis::GetContentCallback& get_content_callback) {
@@ -263,8 +263,8 @@ void DriveScheduler::DownloadFile(
 
 void DriveScheduler::UploadExistingFile(
     const GURL& upload_location,
-    const FilePath& drive_file_path,
-    const FilePath& local_file_path,
+    const base::FilePath& drive_file_path,
+    const base::FilePath& local_file_path,
     const std::string& content_type,
     const std::string& etag,
     const google_apis::UploadCompletionCallback& upload_completion_callback) {
@@ -636,7 +636,7 @@ void DriveScheduler::OnEntryActionJobDone(int job_id,
 
 void DriveScheduler::OnDownloadActionJobDone(int job_id,
                                              google_apis::GDataErrorCode error,
-                                             const FilePath& temp_file) {
+                                             const base::FilePath& temp_file) {
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
   scoped_ptr<QueueEntry> job_info = OnJobDone(job_id, drive_error);
@@ -652,8 +652,8 @@ void DriveScheduler::OnDownloadActionJobDone(int job_id,
 void DriveScheduler::OnUploadCompletionJobDone(
     int job_id,
     google_apis::DriveUploadError error,
-    const FilePath& drive_path,
-    const FilePath& file_path,
+    const base::FilePath& drive_path,
+    const base::FilePath& file_path,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DriveFileError drive_error(DriveUploadErrorToDriveFileError(error));
 

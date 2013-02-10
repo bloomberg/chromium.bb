@@ -8,7 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 
-FileMetadataParser::FileMetadataParser(const FilePath& path)
+FileMetadataParser::FileMetadataParser(const base::FilePath& path)
     : MetadataParser(path),
       path_(path) {
 }

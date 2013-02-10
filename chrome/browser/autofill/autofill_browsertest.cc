@@ -255,8 +255,9 @@ class AutofillTest : public InProcessBrowserTest {
     CHECK(test_server()->Start());
 
     std::string data;
-    FilePath data_file = ui_test_utils::GetTestFilePath(
-        FilePath().AppendASCII("autofill"), FilePath().AppendASCII(filename));
+    base::FilePath data_file =
+        ui_test_utils::GetTestFilePath(base::FilePath().AppendASCII("autofill"),
+                                       base::FilePath().AppendASCII(filename));
     CHECK(file_util::ReadFileToString(data_file, &data));
     std::vector<std::string> lines;
     base::SplitString(data, '\n', &lines);

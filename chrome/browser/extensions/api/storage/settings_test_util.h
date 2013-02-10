@@ -84,7 +84,7 @@ class MockExtensionSystem : public TestExtensionSystem {
 // the tests.
 class MockProfile : public TestingProfile {
  public:
-  explicit MockProfile(const FilePath& file_path);
+  explicit MockProfile(const base::FilePath& file_path);
   virtual ~MockProfile();
 };
 
@@ -100,7 +100,7 @@ class ScopedSettingsStorageFactory : public SettingsStorageFactory {
   void Reset(const scoped_refptr<SettingsStorageFactory>& delegate);
 
   // SettingsStorageFactory implementation.
-  virtual ValueStore* Create(const FilePath& base_path,
+  virtual ValueStore* Create(const base::FilePath& base_path,
                              const std::string& extension_id) OVERRIDE;
 
  private:

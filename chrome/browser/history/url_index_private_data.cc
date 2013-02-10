@@ -282,7 +282,7 @@ bool URLIndexPrivateData::DeleteURL(const GURL& url) {
 
 // static
 void URLIndexPrivateData::RestoreFromFileTask(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     scoped_refptr<URLIndexPrivateData> private_data,
     const std::string& languages) {
   private_data = URLIndexPrivateData::RestoreFromFile(file_path, languages);
@@ -320,7 +320,7 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
 // static
 bool URLIndexPrivateData::WritePrivateDataToCacheFileTask(
     scoped_refptr<URLIndexPrivateData> private_data,
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   DCHECK(private_data.get());
   DCHECK(!file_path.empty());
   return private_data->SaveToFile(file_path);
@@ -804,7 +804,7 @@ void URLIndexPrivateData::ResetSearchTermCache() {
 
 // Cache Saving ----------------------------------------------------------------
 
-bool URLIndexPrivateData::SaveToFile(const FilePath& file_path) {
+bool URLIndexPrivateData::SaveToFile(const base::FilePath& file_path) {
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   InMemoryURLIndexCacheItem index_cache;
   SavePrivateData(&index_cache);
@@ -953,7 +953,7 @@ void URLIndexPrivateData::SaveWordStartsMap(
 
 // static
 scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const std::string& languages) {
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   if (!file_util::PathExists(file_path))

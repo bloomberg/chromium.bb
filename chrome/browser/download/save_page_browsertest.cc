@@ -142,7 +142,7 @@ class DownloadRemovedObserver : public DownloadPersistedObserver {
 
 bool DownloadStoredProperly(
     const GURL& expected_url,
-    const FilePath& expected_path,
+    const base::FilePath& expected_path,
     int64 num_files,
     DownloadItem::DownloadState expected_state,
     DownloadItem* item,
@@ -178,7 +178,7 @@ bool DownloadStoredProperly(
   return true;
 }
 
-const FilePath::CharType kTestDir[] = FILE_PATH_LITERAL("save_page");
+const base::FilePath::CharType kTestDir[] = FILE_PATH_LITERAL("save_page");
 
 static const char kAppendedExtension[] =
 #if defined(OS_WIN)
@@ -300,15 +300,15 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
   GURL NavigateToMockURL(const std::string& prefix) {
     GURL url = URLRequestMockHTTPJob::GetMockUrl(
-        FilePath(kTestDir).AppendASCII(prefix + ".htm"));
+        base::FilePath(kTestDir).AppendASCII(prefix + ".htm"));
     ui_test_utils::NavigateToURL(browser(), url);
     return url;
   }
 
   // Returns full paths of destination file and directory.
   void GetDestinationPaths(const std::string& prefix,
-                FilePath* full_file_name,
-                FilePath* dir) {
+                base::FilePath* full_file_name,
+                base::FilePath* dir) {
     *full_file_name = save_dir_.path().AppendASCII(prefix + ".htm");
     *dir = save_dir_.path().AppendASCII(prefix + "_files");
   }
@@ -364,7 +364,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   }
 
   // Path to directory containing test data.
-  FilePath test_dir_;
+  base::FilePath test_dir_;
 
   // Temporary directory we will save pages to.
   base::ScopedTempDir save_dir_;
@@ -385,7 +385,7 @@ SavePageBrowserTest::~SavePageBrowserTest() {
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
   GURL url = NavigateToMockURL("a");
 
-  FilePath full_file_name, dir;
+  base::FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 1,
@@ -403,9 +403,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
-  EXPECT_TRUE(file_util::ContentsEqual(
-      test_dir_.Append(FilePath(kTestDir)).Append(FILE_PATH_LITERAL("a.htm")),
-      full_file_name));
+  EXPECT_TRUE(file_util::ContentsEqual(test_dir_.Append(base::FilePath(
+      kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/162323
@@ -421,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyCancel) {
   manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
 
-  FilePath full_file_name, dir;
+  base::FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   DownloadItemCreatedObserver creation_observer(manager);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
@@ -456,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
   manager->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
 
-  FilePath full_file_name, dir;
+  base::FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   DownloadItemCreatedObserver creation_observer(manager);
   ASSERT_TRUE(GetCurrentTab(browser())->SavePage(full_file_name, dir,
@@ -480,14 +479,14 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
 #define MAYBE_SaveViewSourceHTMLOnly SaveViewSourceHTMLOnly
 #endif
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
-  FilePath file_name(FILE_PATH_LITERAL("a.htm"));
+  base::FilePath file_name(FILE_PATH_LITERAL("a.htm"));
   GURL view_source_url = URLRequestMockHTTPJob::GetMockViewSourceUrl(
-      FilePath(kTestDir).Append(file_name));
+      base::FilePath(kTestDir).Append(file_name));
   GURL actual_page_url = URLRequestMockHTTPJob::GetMockUrl(
-      FilePath(kTestDir).Append(file_name));
+      base::FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), view_source_url);
 
-  FilePath full_file_name, dir;
+  base::FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, actual_page_url, full_file_name, 1,
@@ -508,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
   EXPECT_TRUE(file_util::ContentsEqual(
-      test_dir_.Append(FilePath(kTestDir)).Append(file_name),
+      test_dir_.Append(base::FilePath(kTestDir)).Append(file_name),
       full_file_name));
 }
 
@@ -521,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
   GURL url = NavigateToMockURL("b");
 
-  FilePath full_file_name, dir;
+  base::FilePath full_file_name, dir;
   GetDestinationPaths("b", &full_file_name, &dir);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 3,
@@ -542,13 +541,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
   EXPECT_TRUE(file_util::TextContentsEqual(
-      test_dir_.Append(FilePath(kTestDir)).AppendASCII("b.saved1.htm"),
+      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved1.htm"),
       full_file_name));
   EXPECT_TRUE(file_util::ContentsEqual(
-      test_dir_.Append(FilePath(kTestDir)).AppendASCII("1.png"),
+      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.png"),
       dir.AppendASCII("1.png")));
   EXPECT_TRUE(file_util::ContentsEqual(
-      test_dir_.Append(FilePath(kTestDir)).AppendASCII("1.css"),
+      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.css"),
       dir.AppendASCII("1.css")));
 }
 
@@ -573,12 +572,12 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
 
   // Navigate, unblocking with new tab.
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      FilePath(kTestDir).AppendASCII("b.htm"));
+      base::FilePath(kTestDir).AppendASCII("b.htm"));
   NavigateToURLWithDisposition(incognito, url, NEW_FOREGROUND_TAB,
                                ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   // Save the page before completion.
-  FilePath full_file_name, dir;
+  base::FilePath full_file_name, dir;
   GetDestinationPaths("b", &full_file_name, &dir);
   scoped_refptr<content::MessageLoopRunner> loop_runner(
       new content::MessageLoopRunner);
@@ -615,9 +614,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
   GURL url = NavigateToMockURL("b");
 
-  FilePath full_file_name = save_dir_.path().AppendASCII(
+  base::FilePath full_file_name = save_dir_.path().AppendASCII(
       std::string("Test page for saving page feature") + kAppendedExtension);
-  FilePath dir = save_dir_.path().AppendASCII(
+  base::FilePath dir = save_dir_.path().AppendASCII(
       "Test page for saving page feature_files");
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 3,
@@ -639,13 +638,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
   EXPECT_TRUE(file_util::TextContentsEqual(
-      test_dir_.Append(FilePath(kTestDir)).AppendASCII("b.saved2.htm"),
+      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved2.htm"),
       full_file_name));
   EXPECT_TRUE(file_util::ContentsEqual(
-      test_dir_.Append(FilePath(kTestDir)).AppendASCII("1.png"),
+      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.png"),
       dir.AppendASCII("1.png")));
   EXPECT_TRUE(file_util::ContentsEqual(
-      test_dir_.Append(FilePath(kTestDir)).AppendASCII("1.css"),
+      test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.css"),
       dir.AppendASCII("1.css")));
 }
 
@@ -658,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
   GURL url = NavigateToMockURL("a");
 
-  FilePath full_file_name, dir;
+  base::FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   DownloadPersistedObserver persisted(browser()->profile(), base::Bind(
       &DownloadStoredProperly, url, full_file_name, 1,
@@ -689,9 +688,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
-  EXPECT_TRUE(file_util::ContentsEqual(
-      test_dir_.Append(FilePath(kTestDir)).Append(FILE_PATH_LITERAL("a.htm")),
-      full_file_name));
+  EXPECT_TRUE(file_util::ContentsEqual(test_dir_.Append(base::FilePath(
+      kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
 }
 
 // This tests that a webpage with the title "test.exe" is saved as
@@ -699,17 +697,17 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
 // We probably don't care to handle this on Linux or Mac.
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
-  const FilePath file_name(FILE_PATH_LITERAL("c.htm"));
-  FilePath download_dir =
+  const base::FilePath file_name(FILE_PATH_LITERAL("c.htm"));
+  base::FilePath download_dir =
       DownloadPrefs::FromDownloadManager(GetDownloadManager())->
           DownloadPath();
-  FilePath full_file_name =
+  base::FilePath full_file_name =
       download_dir.AppendASCII(std::string("test.exe") + kAppendedExtension);
-  FilePath dir = download_dir.AppendASCII("test.exe_files");
+  base::FilePath dir = download_dir.AppendASCII("test.exe_files");
 
   EXPECT_FALSE(file_util::PathExists(full_file_name));
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      FilePath(kTestDir).Append(file_name));
+      base::FilePath(kTestDir).Append(file_name));
   ui_test_utils::NavigateToURL(browser(), url);
 
   SavePackageFilePicker::SetShouldPromptUser(false);
@@ -746,9 +744,9 @@ SavePageAsMHTMLBrowserTest::~SavePageAsMHTMLBrowserTest() {
 IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
   static const int64 kFileSizeMin = 2758;
   GURL url = NavigateToMockURL("b");
-  FilePath download_dir = DownloadPrefs::FromDownloadManager(
+  base::FilePath download_dir = DownloadPrefs::FromDownloadManager(
       GetDownloadManager())->DownloadPath();
-  FilePath full_file_name = download_dir.AppendASCII(std::string(
+  base::FilePath full_file_name = download_dir.AppendASCII(std::string(
       "Test page for saving page feature.mhtml"));
 #if defined(OS_CHROMEOS)
   SavePackageFilePickerChromeOS::SetShouldPromptUser(false);

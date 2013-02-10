@@ -54,12 +54,12 @@ namespace {
 //  },...]
 //
 // The list is sorted by the path.
-void GetGCacheContents(const FilePath& root_path,
+void GetGCacheContents(const base::FilePath& root_path,
                        base::ListValue* gcache_contents,
                        base::DictionaryValue* gcache_summary) {
   using file_util::FileEnumerator;
   // Use this map to sort the result list by the path.
-  std::map<FilePath, DictionaryValue*> files;
+  std::map<base::FilePath, DictionaryValue*> files;
 
   const int options = (file_util::FileEnumerator::FILES |
                        file_util::FileEnumerator::DIRECTORIES |
@@ -67,7 +67,7 @@ void GetGCacheContents(const FilePath& root_path,
   FileEnumerator enumerator(root_path, true /* recursive */, options);
 
   int64 total_size = 0;
-  for (FilePath current = enumerator.Next(); !current.empty();
+  for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
     FileEnumerator::FindInfo find_info;
     enumerator.GetFindInfo(&find_info);
@@ -93,7 +93,7 @@ void GetGCacheContents(const FilePath& root_path,
   }
 
   // Convert |files| into |gcache_contents|.
-  for (std::map<FilePath, DictionaryValue*>::const_iterator
+  for (std::map<base::FilePath, DictionaryValue*>::const_iterator
            iter = files.begin(); iter != files.end(); ++iter) {
     gcache_contents->Append(iter->second);
   }
@@ -102,7 +102,7 @@ void GetGCacheContents(const FilePath& root_path,
 }
 
 // Gets the available disk space for the path |home_path|.
-void GetFreeDiskSpace(const FilePath& home_path,
+void GetFreeDiskSpace(const base::FilePath& home_path,
                       base::DictionaryValue* local_storage_summary) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(local_storage_summary);
@@ -112,7 +112,7 @@ void GetFreeDiskSpace(const FilePath& home_path,
 }
 
 // Formats |entry| into text.
-std::string FormatEntry(const FilePath& path,
+std::string FormatEntry(const base::FilePath& path,
                         const drive::DriveEntryProto& entry) {
   using base::StringAppendF;
   using google_apis::util::FormatTimeAsString;
@@ -213,12 +213,12 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                            base::DictionaryValue* cache_summary);
 
   // Called when GetEntryInfoByPath() is complete.
-  void OnGetEntryInfoByPath(const FilePath& path,
+  void OnGetEntryInfoByPath(const base::FilePath& path,
                             drive::DriveFileError error,
                             scoped_ptr<drive::DriveEntryProto> entry);
 
   // Called when ReadDirectoryByPath() is complete.
-  void OnReadDirectoryByPath(const FilePath& parent_path,
+  void OnReadDirectoryByPath(const base::FilePath& parent_path,
                              drive::DriveFileError error,
                              bool hide_hosted_documents,
                              scoped_ptr<drive::DriveEntryProtoVector> entries);
@@ -514,7 +514,7 @@ void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(
 void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
   // Start updating the GCache contents section.
   Profile* profile = Profile::FromWebUI(web_ui());
-  const FilePath root_path =
+  const base::FilePath root_path =
       drive::DriveCache::GetCacheRootPath(profile);
   base::ListValue* gcache_contents = new ListValue;
   base::DictionaryValue* gcache_summary = new DictionaryValue;
@@ -541,7 +541,7 @@ void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection(
     return;
 
   // Start rendering the file system tree as text.
-  const FilePath root_path = FilePath(drive::kDriveRootDirectory);
+  const base::FilePath root_path = base::FilePath(drive::kDriveRootDirectory);
   ++num_pending_reads_;
   system_service->file_system()->GetEntryInfoByPath(
       root_path,
@@ -559,7 +559,7 @@ void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection(
 
 void DriveInternalsWebUIHandler::UpdateLocalStorageUsageSection() {
   // Propagate the amount of local free space in bytes.
-  FilePath home_path;
+  base::FilePath home_path;
   if (PathService::Get(base::DIR_HOME, &home_path)) {
     base::DictionaryValue* local_storage_summary = new DictionaryValue;
     BrowserThread::PostBlockingPoolTaskAndReply(
@@ -613,7 +613,7 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
 }
 
 void DriveInternalsWebUIHandler::OnGetEntryInfoByPath(
-    const FilePath& path,
+    const base::FilePath& path,
     drive::DriveFileError error,
     scoped_ptr<drive::DriveEntryProto> entry) {
   --num_pending_reads_;
@@ -625,7 +625,7 @@ void DriveInternalsWebUIHandler::OnGetEntryInfoByPath(
 }
 
 void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
-    const FilePath& parent_path,
+    const base::FilePath& parent_path,
     drive::DriveFileError error,
     bool hide_hosted_documents,
     scoped_ptr<drive::DriveEntryProtoVector> entries) {
@@ -636,8 +636,8 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     std::string file_system_as_text;
     for (size_t i = 0; i < entries->size(); ++i) {
       const drive::DriveEntryProto& entry = (*entries)[i];
-      const FilePath current_path = parent_path.Append(
-          FilePath::FromUTF8Unsafe(entry.base_name()));
+      const base::FilePath current_path = parent_path.Append(
+          base::FilePath::FromUTF8Unsafe(entry.base_name()));
 
       file_system_as_text.append(FormatEntry(current_path, entry) + "\n");
 

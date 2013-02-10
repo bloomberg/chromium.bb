@@ -69,7 +69,7 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
   const int result = ChromeBrowserMainParts::PreCreateThreads();
 
   // Add devtools_resources.pak which is used in Chromium TestShell.
-  FilePath paks_path;
+  base::FilePath paks_path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &paks_path);
   ResourceBundle::GetSharedInstance().AddOptionalDataPackFromPath(
       paks_path.Append(FILE_PATH_LITERAL("devtools_resources.pak")),

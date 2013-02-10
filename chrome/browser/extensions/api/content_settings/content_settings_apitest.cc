@@ -100,20 +100,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
-  FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
+  base::FilePath::CharType kFooPath[] =
+      FILE_PATH_LITERAL("/plugins/foo.plugin");
+  base::FilePath::CharType kBarPath[] =
+      FILE_PATH_LITERAL("/plugins/bar.plugin");
   const char* kFooName = "Foo Plugin";
   const char* kBarName = "Bar Plugin";
 
   webkit::npapi::MockPluginList plugin_list;
   plugin_list.AddPluginToLoad(
       webkit::WebPluginInfo(ASCIIToUTF16(kFooName),
-                            FilePath(kFooPath),
+                            base::FilePath(kFooPath),
                             ASCIIToUTF16("1.2.3"),
                             ASCIIToUTF16("foo")));
   plugin_list.AddPluginToLoad(
       webkit::WebPluginInfo(ASCIIToUTF16(kBarName),
-                            FilePath(kBarPath),
+                            base::FilePath(kBarPath),
                             ASCIIToUTF16("2.3.4"),
                             ASCIIToUTF16("bar")));
 

@@ -106,7 +106,7 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       OperationType type,
-      const FilePath& drive_file_path);
+      const base::FilePath& drive_file_path);
   virtual ~UrlFetchOperationBase();
 
   // Gets URL for the request.
@@ -157,7 +157,7 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   // By default, no file will be saved. Derived classes can set an output
   // file path in their constructors, if they want to save the downloaded
   // content to a file at a specific path.
-  void set_output_file_path(const FilePath& output_file_path) {
+  void set_output_file_path(const base::FilePath& output_file_path) {
     output_file_path_ = output_file_path;
   }
 
@@ -178,7 +178,7 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   bool started_;
 
   bool save_temp_file_;
-  FilePath output_file_path_;
+  base::FilePath output_file_path_;
 
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
@@ -350,7 +350,8 @@ class InitiateUploadOperationBase : public UrlFetchOperationBase {
 // Callback type for DownloadHostedDocument/DownloadFile
 // DocumentServiceInterface calls.
 typedef base::Callback<void(GDataErrorCode error,
-                            const FilePath& temp_file)> DownloadActionCallback;
+                            const base::FilePath& temp_file)>
+    DownloadActionCallback;
 
 // This class performs the operation for downloading of a given document/file.
 class DownloadFileOperation : public UrlFetchOperationBase {
@@ -378,8 +379,8 @@ class DownloadFileOperation : public UrlFetchOperationBase {
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback,
       const GURL& download_url,
-      const FilePath& drive_file_path,
-      const FilePath& output_file_path);
+      const base::FilePath& drive_file_path,
+      const base::FilePath& output_file_path);
   virtual ~DownloadFileOperation();
 
  protected:

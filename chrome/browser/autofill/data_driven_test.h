@@ -22,9 +22,9 @@ class DataDrivenTest {
   // |GenerateResults()|. If the corresponding output file already exists in
   // the |output_directory|, verifies that the results match the file contents;
   // otherwise, writes a gold result file to the |output_directory|.
-  void RunDataDrivenTest(const FilePath& input_directory,
-                         const FilePath& output_directory,
-                         const FilePath::StringType& file_name_pattern);
+  void RunDataDrivenTest(const base::FilePath& input_directory,
+                         const base::FilePath& output_directory,
+                         const base::FilePath::StringType& file_name_pattern);
 
   // Given the |input| data, generates the |output| results. The output results
   // must be stable across runs.
@@ -33,10 +33,11 @@ class DataDrivenTest {
   virtual void GenerateResults(const std::string& input,
                                std::string* output) = 0;
 
-  // Return |FilePath|s to the test input and output subdirectories
+  // Return |base::FilePath|s to the test input and output subdirectories
   // ../autofill/|test_name|/input and ../autofill/|test_name|/output.
-  FilePath GetInputDirectory(const FilePath::StringType& test_name);
-  FilePath GetOutputDirectory(const FilePath::StringType& test_name);
+  base::FilePath GetInputDirectory(const base::FilePath::StringType& test_name);
+  base::FilePath GetOutputDirectory(
+      const base::FilePath::StringType& test_name);
 
  protected:
   DataDrivenTest();

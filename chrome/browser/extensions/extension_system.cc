@@ -177,7 +177,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       // this flag designated for developers.
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       extension_service_->component_loader()->AddOrReplace(
-          FilePath(t.token()));
+          base::FilePath(t.token()));
     }
   }
   extension_service_->Init();
@@ -194,7 +194,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
                                                      FILE_PATH_LITERAL(","));
       while (t.GetNext()) {
         UnpackedInstaller::Create(extension_service_.get())->
-            LoadFromCommandLine(FilePath(t.token()));
+            LoadFromCommandLine(base::FilePath(t.token()));
       }
     }
   }

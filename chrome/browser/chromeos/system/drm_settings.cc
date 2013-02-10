@@ -40,10 +40,10 @@ void ManageDrmIdentifierOnFileThread(bool enable, const std::string& email) {
 
   // Drop the file under <data>/<profile>/<drm id file>.
   // TODO(wad) get the profile directory in a more succinct fashion.
-  FilePath drm_id_file;
+  base::FilePath drm_id_file;
   PathService::Get(chrome::DIR_USER_DATA, &drm_id_file);
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  FilePath profile = cmd_line.GetSwitchValuePath(switches::kLoginProfile);
+  base::FilePath profile = cmd_line.GetSwitchValuePath(switches::kLoginProfile);
   if (profile.empty()) {
     LOG(ERROR) << "called with no login-profile!";
     return;

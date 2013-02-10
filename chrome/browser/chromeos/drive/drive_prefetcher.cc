@@ -87,7 +87,7 @@ void DrivePrefetcher::OnInitialLoadFinished(DriveFileError error) {
     DoFullScan();
 }
 
-void DrivePrefetcher::OnDirectoryChanged(const FilePath& directory_path) {
+void DrivePrefetcher::OnDirectoryChanged(const base::FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kinaba): crbug.com/156270.
@@ -110,7 +110,7 @@ void DrivePrefetcher::OnSyncClientIdle() {
 void DrivePrefetcher::DoFullScan() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FilePath root(util::ExtractDrivePath(util::GetDriveMountPointPath()));
+  base::FilePath root(util::ExtractDrivePath(util::GetDriveMountPointPath()));
   VisitDirectory(root);
 }
 
@@ -138,7 +138,7 @@ void DrivePrefetcher::DoPrefetch() {
 
 void DrivePrefetcher::OnPrefetchFinished(const std::string& resource_id,
                                          DriveFileError error,
-                                         const FilePath& file_path,
+                                         const base::FilePath& file_path,
                                          const std::string& mime_type,
                                          DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -177,7 +177,7 @@ void DrivePrefetcher::VisitFile(const DriveEntryProto& entry) {
     latest_files_.erase(latest_files_.begin());
 }
 
-void DrivePrefetcher::VisitDirectory(const FilePath& directory_path) {
+void DrivePrefetcher::VisitDirectory(const base::FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ++number_of_inflight_traversals_;
@@ -189,7 +189,7 @@ void DrivePrefetcher::VisitDirectory(const FilePath& directory_path) {
 }
 
 void DrivePrefetcher::OnReadDirectory(
-    const FilePath& directory_path,
+    const base::FilePath& directory_path,
     DriveFileError error,
     bool hide_hosted_documents,
     scoped_ptr<DriveEntryProtoVector> entries) {

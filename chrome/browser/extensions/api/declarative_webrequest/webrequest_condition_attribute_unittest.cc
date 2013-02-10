@@ -110,7 +110,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   net::TestServer test_server(
       net::TestServer::TYPE_HTTP,
       net::TestServer::kLocalhost,
-      FilePath(FILE_PATH_LITERAL(
+      base::FilePath(FILE_PATH_LITERAL(
           "chrome/test/data/extensions/api_test/webrequest/declarative")));
   ASSERT_TRUE(test_server.Start());
 
@@ -480,7 +480,7 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   net::TestServer test_server(
       net::TestServer::TYPE_HTTP,
       net::TestServer::kLocalhost,
-      FilePath(FILE_PATH_LITERAL(
+      base::FilePath(FILE_PATH_LITERAL(
           "chrome/test/data/extensions/api_test/webrequest/declarative")));
   ASSERT_TRUE(test_server.Start());
 

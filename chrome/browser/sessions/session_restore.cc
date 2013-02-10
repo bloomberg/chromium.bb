@@ -1011,9 +1011,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
         base::PLATFORM_FILE_ASYNC;
     const std::string& state =
         tab.navigations.at(selected_index).content_state();
-    const std::vector<FilePath>& file_paths =
+    const std::vector<base::FilePath>& file_paths =
         webkit_glue::FilePathsFromHistoryState(state);
-    for (std::vector<FilePath>::const_iterator file = file_paths.begin();
+    for (std::vector<base::FilePath>::const_iterator file = file_paths.begin();
          file != file_paths.end(); ++file) {
       content::ChildProcessSecurityPolicy::GetInstance()->
           GrantPermissionsForFile(id, *file, read_file_permissions);

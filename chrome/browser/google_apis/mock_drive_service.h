@@ -88,7 +88,7 @@ class MockDriveService : public DriveServiceInterface {
           const UploadRangeCallback& callback));
   MOCK_METHOD5(GetUploadStatus,
       void(UploadMode upload_mode,
-          const FilePath& drive_file_path,
+          const base::FilePath& drive_file_path,
           const GURL& upload_url,
           int64 content_length,
            const UploadRangeCallback& callback));

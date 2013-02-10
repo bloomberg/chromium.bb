@@ -64,23 +64,23 @@ namespace {
 
 // Generates a default path (including a default filename) that will be
 // used for pre-populating the "Export Bookmarks" file chooser dialog box.
-FilePath GetDefaultFilepathForBookmarkExport() {
+base::FilePath GetDefaultFilepathForBookmarkExport() {
   base::Time time = base::Time::Now();
 
   // Concatenate a date stamp to the filename.
 #if defined(OS_POSIX)
-  FilePath::StringType filename =
+  base::FilePath::StringType filename =
       l10n_util::GetStringFUTF8(IDS_EXPORT_BOOKMARKS_DEFAULT_FILENAME,
                                 base::TimeFormatShortDateNumeric(time));
 #elif defined(OS_WIN)
-  FilePath::StringType filename =
+  base::FilePath::StringType filename =
       l10n_util::GetStringFUTF16(IDS_EXPORT_BOOKMARKS_DEFAULT_FILENAME,
                                  base::TimeFormatShortDateNumeric(time));
 #endif
 
   file_util::ReplaceIllegalCharactersInPath(&filename, '_');
 
-  FilePath default_path;
+  base::FilePath default_path;
   PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);
   return default_path.Append(filename);
 }
@@ -900,7 +900,7 @@ void BookmarksIOFunction::SelectFile(ui::SelectFileDialog::Type type) {
 
   // Pre-populating the filename field in case this is a SELECT_SAVEAS_FILE
   // dialog. If not, there is no filename field in the dialog box.
-  FilePath default_path;
+  base::FilePath default_path;
   if (type == ui::SelectFileDialog::SELECT_SAVEAS_FILE)
     default_path = GetDefaultFilepathForBookmarkExport();
   else
@@ -912,8 +912,9 @@ void BookmarksIOFunction::SelectFile(ui::SelectFileDialog::Type type) {
                  type, default_path));
 }
 
-void BookmarksIOFunction::ShowSelectFileDialog(ui::SelectFileDialog::Type type,
-                                               const FilePath& default_path) {
+void BookmarksIOFunction::ShowSelectFileDialog(
+    ui::SelectFileDialog::Type type,
+    const base::FilePath& default_path) {
   // Balanced in one of the three callbacks of SelectFileDialog:
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
   AddRef();
@@ -948,7 +949,7 @@ void BookmarksIOFunction::FileSelectionCanceled(void* params) {
 }
 
 void BookmarksIOFunction::MultiFilesSelected(
-    const std::vector<FilePath>& files, void* params) {
+    const std::vector<base::FilePath>& files, void* params) {
   Release();  // Balanced in BookmarsIOFunction::SelectFile()
   NOTREACHED() << "Should not be able to select multiple files";
 }
@@ -960,7 +961,7 @@ bool BookmarksImportFunction::RunImpl() {
   return true;
 }
 
-void BookmarksImportFunction::FileSelected(const FilePath& path,
+void BookmarksImportFunction::FileSelected(const base::FilePath& path,
                                            int index,
                                            void* params) {
 #if !defined(OS_ANDROID)
@@ -985,7 +986,7 @@ bool BookmarksExportFunction::RunImpl() {
   return true;
 }
 
-void BookmarksExportFunction::FileSelected(const FilePath& path,
+void BookmarksExportFunction::FileSelected(const base::FilePath& path,
                                            int index,
                                            void* params) {
 #if !defined(OS_ANDROID)

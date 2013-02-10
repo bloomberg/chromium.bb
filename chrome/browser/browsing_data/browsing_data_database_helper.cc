@@ -92,7 +92,8 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
       ori->GetAllDatabaseNames(&databases);
       for (std::vector<string16>::const_iterator db = databases.begin();
            db != databases.end(); ++db) {
-        FilePath file_path = tracker_->GetFullDBFilePath(ori->GetOrigin(), *db);
+        base::FilePath file_path =
+            tracker_->GetFullDBFilePath(ori->GetOrigin(), *db);
         base::PlatformFileInfo file_info;
         if (file_util::GetFileInfo(file_path, &file_info)) {
           database_info_.push_back(DatabaseInfo(

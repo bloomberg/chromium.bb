@@ -14,7 +14,7 @@ class WebContents;
 
 void ShowCertSelectFileDialog(ui::SelectFileDialog* select_file_dialog,
                               ui::SelectFileDialog::Type type,
-                              const FilePath& suggested_path,
+                              const base::FilePath& suggested_path,
                               gfx::NativeWindow parent,
                               void* params);
 

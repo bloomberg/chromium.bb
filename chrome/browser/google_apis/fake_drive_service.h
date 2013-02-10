@@ -67,7 +67,7 @@ class FakeDriveService : public DriveServiceInterface {
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanStartOperation() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
-  virtual bool CancelForFilePath(const FilePath& file_path) OVERRIDE;
+  virtual bool CancelForFilePath(const base::FilePath& file_path) OVERRIDE;
   virtual OperationProgressStatusList GetProgressStatusList() const OVERRIDE;
   virtual std::string GetRootResourceId() const OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
@@ -93,8 +93,8 @@ class FakeDriveService : public DriveServiceInterface {
                               const std::string& etag,
                               const EntryActionCallback& callback) OVERRIDE;
   virtual void DownloadFile(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
+      const base::FilePath& virtual_path,
+      const base::FilePath& local_cache_path,
       const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback) OVERRIDE;
@@ -125,7 +125,7 @@ class FakeDriveService : public DriveServiceInterface {
                             const UploadRangeCallback& callback) OVERRIDE;
   virtual void GetUploadStatus(
       UploadMode upload_mode,
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,
       const UploadRangeCallback& callback) OVERRIDE;

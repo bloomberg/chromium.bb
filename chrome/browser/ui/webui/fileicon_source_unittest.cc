@@ -21,7 +21,7 @@ class TestFileIconSource : public FileIconSource {
   explicit TestFileIconSource() {}
 
   MOCK_METHOD4(FetchFileIcon,
-               void(const FilePath& path,
+               void(const base::FilePath& path,
                     ui::ScaleFactor scale_factor,
                     IconLoader::IconSize icon_size,
                     const content::URLDataSource::GotDataCallback& callback));
@@ -48,7 +48,7 @@ class FileIconSourceTest : public testing::Test {
 
 const struct FetchFileIconExpectation {
   const char* request_path;
-  const FilePath::CharType* unescaped_path;
+  const base::FilePath::CharType* unescaped_path;
   ui::ScaleFactor scale_factor;
   IconLoader::IconSize size;
 } kBasicExpectations[] = {
@@ -128,9 +128,10 @@ TEST_F(FileIconSourceTest, FileIconSource_Parse) {
     scoped_ptr<TestFileIconSource> source(CreateFileIconSource());
     content::URLDataSource::GotDataCallback callback;
     EXPECT_CALL(*source.get(),
-                FetchFileIcon(FilePath(kBasicExpectations[i].unescaped_path),
-                              kBasicExpectations[i].scale_factor,
-                              kBasicExpectations[i].size, CallbackIsNull()));
+                FetchFileIcon(
+                    base::FilePath(kBasicExpectations[i].unescaped_path),
+                    kBasicExpectations[i].scale_factor,
+                    kBasicExpectations[i].size, CallbackIsNull()));
     source->StartDataRequest(kBasicExpectations[i].request_path, false,
                              callback);
   }

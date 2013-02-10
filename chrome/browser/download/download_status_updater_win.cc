@@ -78,9 +78,9 @@ void MetroDownloadNotificationClickedHandler(const wchar_t* download_path) {
 
   // Ensure that we invoke the function to display the downloaded item on the
   // UI thread.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(platform_util::ShowItemInFolder, FilePath(download_path)));
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(platform_util::ShowItemInFolder,
+                                              base::FilePath(download_path)));
 }
 
 }  // namespace

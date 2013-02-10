@@ -59,7 +59,7 @@ class ProfileImpl : public Profile {
   static void RegisterUserPrefs(PrefServiceSyncable* prefs);
 
   // content::BrowserContext implementation:
-  virtual FilePath GetPath() OVERRIDE;
+  virtual base::FilePath GetPath() OVERRIDE;
   virtual content::DownloadManagerDelegate*
       GetDownloadManagerDelegate() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
@@ -70,7 +70,7 @@ class ProfileImpl : public Profile {
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const FilePath& partition_path,
+          const base::FilePath& partition_path,
           bool in_memory) OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual content::GeolocationPermissionContext*
@@ -116,7 +116,7 @@ class ProfileImpl : public Profile {
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           chrome_devtools_protocol_handler) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       bool in_memory,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           blob_protocol_handler,
@@ -128,8 +128,8 @@ class ProfileImpl : public Profile {
           chrome_protocol_handler,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           chrome_devtools_protocol_handler) OVERRIDE;
-  virtual FilePath last_selected_directory() OVERRIDE;
-  virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
+  virtual base::FilePath last_selected_directory() OVERRIDE;
+  virtual void set_last_selected_directory(const base::FilePath& path) OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(
       base::Time time,
@@ -162,7 +162,7 @@ class ProfileImpl : public Profile {
   // This is non-const for testing purposes.
   static int create_readme_delay_ms;
 
-  ProfileImpl(const FilePath& path,
+  ProfileImpl(const base::FilePath& path,
               Delegate* delegate,
               CreateMode create_mode,
               base::SequencedTaskRunner* sequenced_task_runner);
@@ -181,7 +181,7 @@ class ProfileImpl : public Profile {
   // Does final prefs initialization and calls Init().
   void OnPrefsLoaded(bool success);
 
-  FilePath GetPrefFilePath();
+  base::FilePath GetPrefFilePath();
 
 #if defined(ENABLE_SESSION_SERVICE)
   void StopCreateSessionServiceTimer();
@@ -201,14 +201,14 @@ class ProfileImpl : public Profile {
   void UpdateProfileAvatarCache();
 
   void GetCacheParameters(bool is_media_context,
-                          FilePath* cache_path,
+                          base::FilePath* cache_path,
                           int* max_size);
 
   content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  FilePath path_;
-  FilePath base_cache_path_;
+  base::FilePath path_;
+  base::FilePath base_cache_path_;
 
   // !!! BIG HONKING WARNING !!!
   //  The order of the members below is important. Do not change it unless

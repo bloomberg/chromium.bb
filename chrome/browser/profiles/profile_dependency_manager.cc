@@ -366,7 +366,7 @@ void ProfileDependencyManager::BuildDestructionOrder(Profile* profile) {
   // dependency graph to "/path/to/profile/profile-dependencies.dot".
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDumpProfileDependencyGraph)) {
-    FilePath dot_file =
+    base::FilePath dot_file =
         profile->GetPath().AppendASCII("profile-dependencies.dot");
     std::string contents = DumpGraphvizDependency();
     file_util::WriteFile(dot_file, contents.c_str(), contents.size());

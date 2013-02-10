@@ -91,10 +91,10 @@ class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
         (gallery_directory_key != chrome::DIR_USER_VIDEOS))
       return false;
 
-    FilePath gallery_dir;
+    base::FilePath gallery_dir;
     if (!PathService::Get(gallery_directory_key, &gallery_dir))
       return false;
-    FilePath gallery_file =
+    base::FilePath gallery_file =
         gallery_dir.Append(FILE_PATH_LITERAL("test1.txt"));
     std::string content("new content");
     int write_size = file_util::WriteFile(gallery_file, content.c_str(),

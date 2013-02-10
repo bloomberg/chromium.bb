@@ -39,7 +39,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
                            public content::NotificationObserver {
  public:
   PrintingLayoutTest() {
-    FilePath browser_directory;
+    base::FilePath browser_directory;
     PathService::Get(chrome::DIR_APP, &browser_directory);
     emf_path_ = browser_directory.AppendASCII("metafile_dumps");
   }
@@ -110,18 +110,19 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
   // data pixels and returns the percentage of different pixels; 0 for success,
   // [0, 100] for failure.
   double CompareWithResult(const std::wstring& verification_name) {
-    FilePath test_result(ScanFiles(verification_name));
+    base::FilePath test_result(ScanFiles(verification_name));
     if (test_result.value().empty()) {
       // 100% different, the print job buffer is not there.
       return 100.;
     }
 
-    FilePath base_path(ui_test_utils::GetTestFilePath(
-        FilePath().AppendASCII("printing"), FilePath()));
-    FilePath emf(base_path.Append(verification_name + L".emf"));
-    FilePath png(base_path.Append(verification_name + L".png"));
+    base::FilePath base_path(ui_test_utils::GetTestFilePath(
+        base::FilePath().AppendASCII("printing"), base::FilePath()));
+    base::FilePath emf(base_path.Append(verification_name + L".emf"));
+    base::FilePath png(base_path.Append(verification_name + L".png"));
 
-    FilePath cleartype(base_path.Append(verification_name + L"_cleartype.png"));
+    base::FilePath cleartype(
+        base_path.Append(verification_name + L"_cleartype.png"));
     // Looks for Cleartype override.
     if (file_util::PathExists(cleartype) && IsClearTypeEnabled())
       png = cleartype;
@@ -145,7 +146,8 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
           " result size:" << test_content.size().ToString();
       if (diff_emf) {
         // Backup the result emf file.
-        FilePath failed(base_path.Append(verification_name + L"_failed.emf"));
+        base::FilePath failed(
+            base_path.Append(verification_name + L"_failed.emf"));
         file_util::CopyFile(test_result, failed);
       }
 
@@ -157,7 +159,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
           " result size:" << test_content.size().ToString();
       if (diff_png) {
         // Backup the rendered emf file to detect the rendering difference.
-        FilePath rendering(
+        base::FilePath rendering(
             base_path.Append(verification_name + L"_rendering.png"));
         emf_content.SaveToPng(rendering);
       }
@@ -199,7 +201,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
       prn_file.clear();
       found_emf = false;
       found_prn = false;
-      FilePath file;
+      base::FilePath file;
       while (!(file = enumerator.Next()).empty()) {
         std::wstring ext = file.Extension();
         if (base::strcasecmp(WideToUTF8(ext).c_str(), ".emf") == 0) {
@@ -234,7 +236,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
     return CommandLine::ForCurrentProcess()->HasSwitch(kGenerateSwitch);
   }
 
-  FilePath emf_path_;
+  base::FilePath emf_path_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingLayoutTest);

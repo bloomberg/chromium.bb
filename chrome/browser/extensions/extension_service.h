@@ -92,7 +92,7 @@ class ExtensionServiceInterface : public syncer::SyncableService {
   // Set out_crx_installer to the installer if one was started.
   virtual bool UpdateExtension(
       const std::string& id,
-      const FilePath& path,
+      const base::FilePath& path,
       const GURL& download_url,
       extensions::CrxInstaller** out_crx_installer) = 0;
   virtual const extensions::Extension* GetExtensionById(
@@ -196,7 +196,7 @@ class ExtensionService
   // ownership remains at caller.
   ExtensionService(Profile* profile,
                    const CommandLine* command_line,
-                   const FilePath& install_directory,
+                   const base::FilePath& install_directory,
                    extensions::ExtensionPrefs* extension_prefs,
                    extensions::Blacklist* blacklist,
                    bool autoupdate_enabled,
@@ -222,7 +222,7 @@ class ExtensionService
   virtual extensions::PendingExtensionManager*
       pending_extension_manager() OVERRIDE;
 
-  const FilePath& install_directory() const { return install_directory_; }
+  const base::FilePath& install_directory() const { return install_directory_; }
 
   extensions::ProcessMap* process_map() { return &process_map_; }
 
@@ -337,7 +337,7 @@ class ExtensionService
   // CrxInstaller directly instead.
   virtual bool UpdateExtension(
       const std::string& id,
-      const FilePath& extension_path,
+      const base::FilePath& extension_path,
       const GURL& download_url,
       extensions::CrxInstaller** out_crx_installer) OVERRIDE;
 
@@ -567,7 +567,7 @@ class ExtensionService
   // can post to here.
   // TODO(aa): Remove this. It doesn't do enough to be worth the dependency
   // of these classes on ExtensionService.
-  void ReportExtensionLoadError(const FilePath& extension_path,
+  void ReportExtensionLoadError(const base::FilePath& extension_path,
                                 const std::string& error,
                                 bool be_noisy);
 
@@ -594,7 +594,7 @@ class ExtensionService
   virtual bool OnExternalExtensionFileFound(
       const std::string& id,
       const Version* version,
-      const FilePath& path,
+      const base::FilePath& path,
       extensions::Manifest::Location location,
       int creation_flags,
       bool mark_acknowledged) OVERRIDE;
@@ -890,7 +890,7 @@ class ExtensionService
   ExtensionRuntimeDataMap extension_runtime_data_;
 
   // The full path to the directory where extensions are installed.
-  FilePath install_directory_;
+  base::FilePath install_directory_;
 
   // Whether or not extensions are enabled.
   bool extensions_enabled_;
@@ -918,13 +918,13 @@ class ExtensionService
   // Map unloaded extensions' ids to their paths. When a temporarily loaded
   // extension is unloaded, we lose the information about it and don't have
   // any in the extension preferences file.
-  typedef std::map<std::string, FilePath> UnloadedExtensionPathMap;
+  typedef std::map<std::string, base::FilePath> UnloadedExtensionPathMap;
   UnloadedExtensionPathMap unloaded_extension_paths_;
 
   // Map disabled extensions' ids to their paths. When a temporarily loaded
   // extension is disabled before it is reloaded, keep track of the path so that
   // it can be re-enabled upon a successful load.
-  typedef std::map<std::string, FilePath> DisabledExtensionPathMap;
+  typedef std::map<std::string, base::FilePath> DisabledExtensionPathMap;
   DisabledExtensionPathMap disabled_extension_paths_;
 
   // Map of inspector cookies that are detached, waiting for an extension to be

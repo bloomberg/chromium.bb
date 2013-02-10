@@ -4,7 +4,7 @@
 
 #include "chrome/browser/parsers/metadata_parser_jpeg.h"
 
-JpegMetadataParser::JpegMetadataParser(const FilePath& path)
+JpegMetadataParser::JpegMetadataParser(const base::FilePath& path)
     : FileMetadataParser(path) {}
 
 bool JpegMetadataParser::Parse() {

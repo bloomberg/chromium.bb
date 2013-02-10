@@ -35,7 +35,7 @@ namespace {
 // base::Bind to run the StartChrome methods in many threads.
 class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
  public:
-  ChromeStarter(base::TimeDelta timeout, const FilePath& user_data_dir)
+  ChromeStarter(base::TimeDelta timeout, const base::FilePath& user_data_dir)
       : ready_event_(false /* manual */, false /* signaled */),
         done_event_(false /* manual */, false /* signaled */),
         process_handle_(base::kNullProcessHandle),
@@ -58,7 +58,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   void StartChrome(base::WaitableEvent* start_event, bool first_run) {
     // TODO(mattm): maybe stuff should be refactored to use
     // UITest::LaunchBrowserHelper somehow?
-    FilePath program;
+    base::FilePath program;
     ASSERT_TRUE(PathService::Get(base::FILE_EXE, &program));
     CommandLine command_line(program);
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
@@ -121,7 +121,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   }
 
   base::TimeDelta timeout_;
-  FilePath user_data_dir_;
+  base::FilePath user_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeStarter);
 };
@@ -188,9 +188,9 @@ class ProcessSingletonTest : public InProcessBrowserTest {
     // But don't try more than kNbTries times...
     static const int kNbTries = 10;
     int num_tries = 0;
-    FilePath program;
+    base::FilePath program;
     ASSERT_TRUE(PathService::Get(base::FILE_EXE, &program));
-    FilePath::StringType exe_name = program.BaseName().value();
+    base::FilePath::StringType exe_name = program.BaseName().value();
     while (base::GetProcessCount(exe_name, &process_tree_filter) > 0 &&
            num_tries++ < kNbTries) {
       base::KillProcesses(exe_name, kExitCode, &process_tree_filter);

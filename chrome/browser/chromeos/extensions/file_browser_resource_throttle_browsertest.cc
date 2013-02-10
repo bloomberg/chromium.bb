@@ -362,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserResourceThrottleExtensionApiTest,
   GURL url = test_server_->GetURL("/text_path.txt");
 
   // The download's target file path.
-  FilePath target_path =
+  base::FilePath target_path =
       downloads_dir_.path().Append(FILE_PATH_LITERAL("download_target.txt"));
 
   // Set the downloads parameters.

@@ -19,7 +19,7 @@ class StorageInfoProviderLinux : public StorageInfoProvider {
   virtual ~StorageInfoProviderLinux();
 
   // For unit test.
-  explicit StorageInfoProviderLinux(const FilePath& mtab_path);
+  explicit StorageInfoProviderLinux(const base::FilePath& mtab_path);
 
   virtual bool QueryInfo(StorageInfo* info) OVERRIDE;
 
@@ -35,7 +35,7 @@ class StorageInfoProviderLinux : public StorageInfoProvider {
   chrome::ScopedUdevObject udev_context_;
 
   // The mtab file path on the system.
-  const FilePath mtab_file_path_;
+  const base::FilePath mtab_file_path_;
 };
 
 }  // namespace extensions

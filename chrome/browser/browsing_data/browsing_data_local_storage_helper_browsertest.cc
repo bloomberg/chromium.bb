@@ -32,19 +32,19 @@ typedef
     BrowsingDataHelperCallback<BrowsingDataLocalStorageHelper::LocalStorageInfo>
         TestCompletionCallback;
 
-const FilePath::CharType kTestFile0[] =
+const base::FilePath::CharType kTestFile0[] =
     FILE_PATH_LITERAL("http_www.chromium.org_0.localstorage");
 
 const char kOriginOfTestFile0[] = "http://www.chromium.org/";
 
-const FilePath::CharType kTestFile1[] =
+const base::FilePath::CharType kTestFile1[] =
     FILE_PATH_LITERAL("http_www.google.com_0.localstorage");
 
-const FilePath::CharType kTestFileInvalid[] =
+const base::FilePath::CharType kTestFileInvalid[] =
     FILE_PATH_LITERAL("http_www.google.com_localstorage_0.foo");
 
 // This is only here to test that extension state is not listed by the helper.
-const FilePath::CharType kTestFileExtension[] = FILE_PATH_LITERAL(
+const base::FilePath::CharType kTestFileExtension[] = FILE_PATH_LITERAL(
     "chrome-extension_behllobkkfkfnphdnhnkndlbkcpglgmj_0.localstorage");
 
 class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
@@ -52,18 +52,18 @@ class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
   void CreateLocalStorageFilesForTest() {
     // Note: This helper depends on details of how the dom_storage library
     // stores data in the host file system.
-    FilePath storage_path = GetLocalStoragePathForTestingProfile();
+    base::FilePath storage_path = GetLocalStoragePathForTestingProfile();
     file_util::CreateDirectory(storage_path);
-    const FilePath::CharType* kFilesToCreate[] = {
+    const base::FilePath::CharType* kFilesToCreate[] = {
         kTestFile0, kTestFile1, kTestFileInvalid, kTestFileExtension
     };
     for (size_t i = 0; i < arraysize(kFilesToCreate); ++i) {
-      FilePath file_path = storage_path.Append(kFilesToCreate[i]);
+      base::FilePath file_path = storage_path.Append(kFilesToCreate[i]);
       file_util::WriteFile(file_path, NULL, 0);
     }
   }
 
-  FilePath GetLocalStoragePathForTestingProfile() {
+  base::FilePath GetLocalStoragePathForTestingProfile() {
     return browser()->profile()->GetPath().AppendASCII("Local Storage");
   }
 };
@@ -134,10 +134,10 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
       false,
       file_util::FileEnumerator::FILES);
   int num_files = 0;
-  for (FilePath file_path = file_enumerator.Next();
+  for (base::FilePath file_path = file_enumerator.Next();
        !file_path.empty();
        file_path = file_enumerator.Next()) {
-    ASSERT_FALSE(FilePath(kTestFile0) == file_path.BaseName());
+    ASSERT_FALSE(base::FilePath(kTestFile0) == file_path.BaseName());
     ++num_files;
   }
   ASSERT_EQ(3, num_files);

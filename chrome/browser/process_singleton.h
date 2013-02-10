@@ -56,11 +56,11 @@ class ProcessSingleton : public base::NonThreadSafe {
   // Chrome process was launched. Return true if the command line will be
   // handled within the current browser instance or false if the remote process
   // should handle it (i.e., because the current process is shutting down).
-  typedef base::Callback<
-      bool(const CommandLine& command_line, const FilePath& current_directory)>
-      NotificationCallback;
+  typedef base::Callback<bool(
+      const CommandLine& command_line,
+      const base::FilePath& current_directory)> NotificationCallback;
 
-  explicit ProcessSingleton(const FilePath& user_data_dir);
+  explicit ProcessSingleton(const base::FilePath& user_data_dir);
   ~ProcessSingleton();
 
   // Notify another process, if available. Otherwise sets ourselves as the
@@ -130,7 +130,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   // this timeout to be short.
   NotifyResult NotifyOtherProcessWithTimeout(const CommandLine& command_line,
                                              int timeout_seconds,
-                                            bool kill_unresponsive);
+                                             bool kill_unresponsive);
   NotifyResult NotifyOtherProcessWithTimeoutOrCreate(
       const CommandLine& command_line,
       const NotificationCallback& notification_callback,
@@ -141,7 +141,8 @@ class ProcessSingleton : public base::NonThreadSafe {
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
  private:
-  typedef std::pair<CommandLine::StringVector, FilePath> DelayedStartupMessage;
+  typedef std::pair<CommandLine::StringVector,
+                    base::FilePath> DelayedStartupMessage;
 
 #if !defined(OS_MACOSX)
   // Timeout for the current browser process to respond. 20 seconds should be
@@ -157,13 +158,13 @@ class ProcessSingleton : public base::NonThreadSafe {
   // This ugly behemoth handles startup commands sent from another process.
   LRESULT OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds);
 
-  bool EscapeVirtualization(const FilePath& user_data_dir);
+  bool EscapeVirtualization(const base::FilePath& user_data_dir);
 
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
   HANDLE lock_file_;
-  FilePath user_data_dir_;
+  base::FilePath user_data_dir_;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   // Return true if the given pid is one of our child processes.
   // Assumes that the current pid is the root of all pids of the current
@@ -188,13 +189,13 @@ class ProcessSingleton : public base::NonThreadSafe {
   base::Callback<void(int)> kill_callback_;
 
   // Path in file system to the socket.
-  FilePath socket_path_;
+  base::FilePath socket_path_;
 
   // Path in file system to the lock.
-  FilePath lock_path_;
+  base::FilePath lock_path_;
 
   // Path in file system to the cookie file.
-  FilePath cookie_path_;
+  base::FilePath cookie_path_;
 
   // Temporary directory to hold the socket.
   base::ScopedTempDir socket_dir_;
@@ -205,7 +206,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   scoped_refptr<LinuxWatcher> watcher_;
 #elif defined(OS_MACOSX)
   // Path in file system to the lock.
-  FilePath lock_path_;
+  base::FilePath lock_path_;
 
   // File descriptor associated with the lockfile, valid between
   // |Create()| and |Cleanup()|.  Two instances cannot have a lock on

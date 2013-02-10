@@ -39,7 +39,7 @@ class SelfDeletingClient : public ui::SelectFileDialog::Listener {
   SelectFileDialogExtension* dialog() const { return dialog_.get(); }
 
   // ui::SelectFileDialog::Listener implementation
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index, void* params) OVERRIDE {
     delete this;
   }

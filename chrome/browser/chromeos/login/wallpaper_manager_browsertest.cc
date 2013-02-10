@@ -111,7 +111,7 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
 
   // Saves bitmap |resource_id| to disk.
   void SaveUserWallpaperData(const std::string& username,
-                             const FilePath& wallpaper_path,
+                             const base::FilePath& wallpaper_path,
                              int resource_id) {
     scoped_refptr<base::RefCountedStaticMemory> image_data(
         ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
@@ -188,12 +188,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // Wait for default wallpaper loaded.
   WaitAsyncWallpaperLoad();
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
-  FilePath small_wallpaper_path = GetCustomWallpaperPath(kSmallWallpaperSubDir,
-                                                         kTestUser1,
-                                                         id);
-  FilePath large_wallpaper_path = GetCustomWallpaperPath(kLargeWallpaperSubDir,
-                                                         kTestUser1,
-                                                         id);
+  base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
+      kSmallWallpaperSubDir,
+      kTestUser1,
+      id);
+  base::FilePath large_wallpaper_path = GetCustomWallpaperPath(
+      kLargeWallpaperSubDir,
+      kTestUser1,
+      id);
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
@@ -276,9 +278,10 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
   // Change wallpaper to a custom wallpaper.
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
-  FilePath small_wallpaper_path = GetCustomWallpaperPath(kSmallWallpaperSubDir,
-                                                         kTestUser1,
-                                                         id);
+  base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
+      kSmallWallpaperSubDir,
+      kTestUser1,
+      id);
   SaveUserWallpaperData(kTestUser1,
                         small_wallpaper_path,
                         ash::kDefaultSmallWallpaper.idr);

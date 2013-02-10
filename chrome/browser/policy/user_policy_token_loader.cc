@@ -39,7 +39,7 @@ UserPolicyTokenLoader::Delegate::~Delegate() {}
 
 UserPolicyTokenLoader::UserPolicyTokenLoader(
     const base::WeakPtr<Delegate>& delegate,
-    const FilePath& cache_file)
+    const base::FilePath& cache_file)
     : delegate_(delegate),
       cache_file_(cache_file) {}
 

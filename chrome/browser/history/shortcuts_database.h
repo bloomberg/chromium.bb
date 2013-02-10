@@ -82,9 +82,9 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
 
   // The sql database. Not valid until Init is called.
   sql::Connection db_;
-  FilePath database_path_;
+  base::FilePath database_path_;
 
-  static const FilePath::CharType kShortcutsDatabaseName[];
+  static const base::FilePath::CharType kShortcutsDatabaseName[];
 
   DISALLOW_COPY_AND_ASSIGN(ShortcutsDatabase);
 };

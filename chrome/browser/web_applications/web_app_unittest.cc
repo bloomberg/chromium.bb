@@ -60,18 +60,19 @@ TEST_F(WebApplicationTest, MAYBE_GetShortcutInfoForTab) {
 }
 
 TEST_F(WebApplicationTest, AppDirWithId) {
-  FilePath profile_path(FILE_PATH_LITERAL("profile"));
-  FilePath result(web_app::GetWebAppDataDirectory(profile_path, "123", GURL()));
-  FilePath expected = profile_path.AppendASCII("Web Applications")
+  base::FilePath profile_path(FILE_PATH_LITERAL("profile"));
+  base::FilePath result(
+      web_app::GetWebAppDataDirectory(profile_path, "123", GURL()));
+  base::FilePath expected = profile_path.AppendASCII("Web Applications")
                                   .AppendASCII("_crx_123");
   EXPECT_EQ(expected, result);
 }
 
 TEST_F(WebApplicationTest, AppDirWithUrl) {
-  FilePath profile_path(FILE_PATH_LITERAL("profile"));
-  FilePath result(web_app::GetWebAppDataDirectory(
+  base::FilePath profile_path(FILE_PATH_LITERAL("profile"));
+  base::FilePath result(web_app::GetWebAppDataDirectory(
       profile_path, "", GURL("http://example.com")));
-  FilePath expected = profile_path.AppendASCII("Web Applications")
+  base::FilePath expected = profile_path.AppendASCII("Web Applications")
                                   .AppendASCII("example.com")
                                   .AppendASCII("http_80");
   EXPECT_EQ(expected, result);

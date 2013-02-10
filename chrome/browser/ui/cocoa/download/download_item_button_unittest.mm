@@ -15,7 +15,7 @@ TEST(DownloadItemButtonTest, Create) {
       initWithFrame:NSMakeRect(0,0,500,500)]);
 
   // Test setter
-  FilePath path("foo");
+  base::FilePath path("foo");
   [button.get() setDownload:path];
   EXPECT_EQ(path.value(), [button.get() download].value());
 }

@@ -49,7 +49,7 @@ class ExternalLoader : public base::RefCountedThreadSafe<ExternalLoader> {
   // return the absolute path from which relative paths should be resolved.
   // By default, return an empty path, which indicates that relative paths
   // are not allowed.
-  virtual const FilePath GetBaseCrxFilePath();
+  virtual const base::FilePath GetBaseCrxFilePath();
 
  protected:
   virtual ~ExternalLoader();

@@ -325,7 +325,7 @@ const int kPreloadIDs[] = {
 };
 
 // Returns a piece of memory with the contents of the file |path|.
-base::RefCountedMemory* ReadFileData(const FilePath& path) {
+base::RefCountedMemory* ReadFileData(const base::FilePath& path) {
   if (!path.empty()) {
     net::FileStream file(NULL);
     int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
@@ -488,7 +488,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromExtension(
 
 // static
 scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
-    const FilePath& path, const std::string& expected_id) {
+    const base::FilePath& path, const std::string& expected_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Allow IO on UI thread due to deep-seated theme design issues.
   // (see http://crbug.com/80206)
@@ -553,7 +553,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   return pack;
 }
 
-bool BrowserThemePack::WriteToDisk(const FilePath& path) const {
+bool BrowserThemePack::WriteToDisk(const base::FilePath& path) const {
   // Add resources for each of the property arrays.
   RawDataForWriting resources;
   resources[kHeaderID] = base::StringPiece(
@@ -950,7 +950,7 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
 
 void BrowserThemePack::ParseImageNamesFromJSON(
     DictionaryValue* images_value,
-    const FilePath& images_path,
+    const base::FilePath& images_path,
     FilePathMap* file_paths) const {
   if (!images_value)
     return;

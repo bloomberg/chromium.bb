@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
   // Write the contents to a temporary file.
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  FilePath temp_file;
+  base::FilePath temp_file;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_directory.path(),
                                                   &temp_file));
   ASSERT_EQ(static_cast<int>(file_redirect_contents.size()),
@@ -155,7 +155,8 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
 // flagged as a redirect.
 IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
   GURL first_url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath().AppendASCII("cancelled_redirect_test.html"));
+      base::FilePath(),
+      base::FilePath().AppendASCII("cancelled_redirect_test.html"));
   ui_test_utils::NavigateToURL(browser(), first_url);
 
   content::WebContents* web_contents =
@@ -228,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ServerReference) {
 IN_PROC_BROWSER_TEST_F(RedirectTest, NoHttpToFile) {
   ASSERT_TRUE(test_server()->Start());
   GURL file_url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath().AppendASCII("http_to_file.html"));
+      base::FilePath(), base::FilePath().AppendASCII("http_to_file.html"));
 
   GURL initial_url = test_server()->GetURL(
       "client-redirect?" + file_url.spec());
@@ -245,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, NoHttpToFile) {
 IN_PROC_BROWSER_TEST_F(RedirectTest, ClientFragments) {
   ASSERT_TRUE(test_server()->Start());
   GURL first_url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath().AppendASCII("ref_redirect.html"));
+      base::FilePath(), base::FilePath().AppendASCII("ref_redirect.html"));
   ui_test_utils::NavigateToURL(browser(), first_url);
   std::vector<GURL> redirects = GetRedirects(first_url);
   EXPECT_EQ(1U, redirects.size());

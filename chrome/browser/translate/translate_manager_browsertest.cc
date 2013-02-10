@@ -1486,7 +1486,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
                                   source);
 
   GURL french_url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath(FILE_PATH_LITERAL("french_page.html")));
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("french_page.html")));
   ui_test_utils::NavigateToURL(browser(), french_url);
   fr_language_detected_signal.Wait();
   std::string lang;

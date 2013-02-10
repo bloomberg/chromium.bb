@@ -25,14 +25,15 @@ void SendMessage(const char* arg) {
   const char* file_end = strchr(arg, ' ');
   CHECK(file_end);
   char buf = '\0';
-  file_util::WriteFile(FilePath(FilePath::StringType(arg, file_end)), &buf, 1);
+  file_util::WriteFile(
+      base::FilePath(base::FilePath::StringType(arg, file_end)), &buf, 1);
 }
 
 int main(int argc, char** argv) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string mock_nacl_gdb_file;
   env->GetVar("MOCK_NACL_GDB", &mock_nacl_gdb_file);
-  file_util::WriteFile(FilePath::FromUTF8Unsafe(mock_nacl_gdb_file),
+  file_util::WriteFile(base::FilePath::FromUTF8Unsafe(mock_nacl_gdb_file),
                        kPass, strlen(kPass));
   CHECK_GE(argc, 3);
   // First argument should be --eval-command.
@@ -70,7 +71,7 @@ int main(int argc, char** argv) {
       i += 2;
       CHECK_LE(i, argc);
       std::string nacl_gdb_script(argv[i - 1]);
-      file_util::WriteFile(FilePath::FromUTF8Unsafe(nacl_gdb_script),
+      file_util::WriteFile(base::FilePath::FromUTF8Unsafe(nacl_gdb_script),
                            kPass, strlen(kPass));
       continue;
     }

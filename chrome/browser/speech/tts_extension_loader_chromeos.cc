@@ -82,7 +82,8 @@ bool TtsExtensionLoaderChromeOs::LoadTtsExtension() {
   tts_state_ = TTS_LOADING;
   ExtensionService* extension_service = profile_->GetExtensionService();
   DCHECK(extension_service);
-  FilePath path = FilePath(extension_misc::kSpeechSynthesisExtensionPath);
+  base::FilePath path =
+      base::FilePath(extension_misc::kSpeechSynthesisExtensionPath);
   extension_service->component_loader()->Add(IDR_SPEECH_SYNTHESIS_MANIFEST,
                                              path);
   return true;

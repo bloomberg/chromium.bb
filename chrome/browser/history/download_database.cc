@@ -164,21 +164,23 @@ content::DownloadDangerType IntToDangerType(int danger_type) {
 #if defined(OS_POSIX)
 
 // Binds/reads the given file path to the given column of the given statement.
-void BindFilePath(sql::Statement& statement, const FilePath& path, int col) {
+void BindFilePath(sql::Statement& statement, const base::FilePath& path,
+                  int col) {
   statement.BindString(col, path.value());
 }
-FilePath ColumnFilePath(sql::Statement& statement, int col) {
-  return FilePath(statement.ColumnString(col));
+base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
+  return base::FilePath(statement.ColumnString(col));
 }
 
 #else
 
 // See above.
-void BindFilePath(sql::Statement& statement, const FilePath& path, int col) {
+void BindFilePath(sql::Statement& statement, const base::FilePath& path,
+                  int col) {
   statement.BindString16(col, path.value());
 }
-FilePath ColumnFilePath(sql::Statement& statement, int col) {
-  return FilePath(statement.ColumnString16(col));
+base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
+  return base::FilePath(statement.ColumnString16(col));
 }
 
 #endif

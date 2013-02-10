@@ -196,7 +196,7 @@ const int kToolbarButtonIDs[] = {
 
 // Writes the theme pack to disk on a separate thread.
 void WritePackToDiskCallback(BrowserThemePack* pack,
-                             const FilePath& path) {
+                             const base::FilePath& path) {
   if (!pack->WriteToDisk(path))
     NOTREACHED() << "Could not write theme pack to disk";
 }
@@ -599,8 +599,8 @@ void ThemeService::LoadThemePrefs() {
     bool loaded_pack = false;
 
     // If we don't have a file pack, we're updating from an old version.
-    FilePath path = prefs->GetFilePath(prefs::kCurrentThemePackFilename);
-    if (path != FilePath()) {
+    base::FilePath path = prefs->GetFilePath(prefs::kCurrentThemePackFilename);
+    if (path != base::FilePath()) {
       theme_pack_ = BrowserThemePack::BuildFromDataPack(path, current_id);
       loaded_pack = theme_pack_.get() != NULL;
     }
@@ -653,7 +653,7 @@ void ThemeService::FreePlatformCaches() {
 }
 #endif
 
-void ThemeService::SavePackName(const FilePath& pack_path) {
+void ThemeService::SavePackName(const base::FilePath& pack_path) {
   profile_->GetPrefs()->SetFilePath(
       prefs::kCurrentThemePackFilename, pack_path);
 }
@@ -678,7 +678,8 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
     return;
 
   // Write the packed file to disk.
-  FilePath pack_path = extension->path().Append(chrome::kThemePackFilename);
+  base::FilePath pack_path =
+      extension->path().Append(chrome::kThemePackFilename);
   service->GetFileTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&WritePackToDiskCallback, pack, pack_path));

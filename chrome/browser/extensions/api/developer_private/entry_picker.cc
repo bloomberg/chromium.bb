@@ -19,7 +19,7 @@
 namespace {
 
 bool g_skip_picker_for_test = false;
-FilePath* g_path_to_be_picked_for_test = NULL;
+base::FilePath* g_path_to_be_picked_for_test = NULL;
 
 }  // namespace
 
@@ -30,7 +30,7 @@ namespace api {
 EntryPicker::EntryPicker(EntryPickerClient* client,
                          content::WebContents* web_contents,
                          ui::SelectFileDialog::Type picker_type,
-                         const FilePath& last_directory,
+                         const base::FilePath& last_directory,
                          const string16& select_title)
     : client_(client) {
   select_file_dialog_ = ui::SelectFileDialog::Create(
@@ -65,7 +65,7 @@ EntryPicker::EntryPicker(EntryPickerClient* client,
 
 EntryPicker::~EntryPicker() {}
 
-void EntryPicker::FileSelected(const FilePath& path,
+void EntryPicker::FileSelected(const base::FilePath& path,
                                int index,
                                void* params) {
   client_->FileSelected(path);
@@ -79,7 +79,7 @@ void EntryPicker::FileSelectionCanceled(void* params) {
 
 // static
 void EntryPicker::SkipPickerAndAlwaysSelectPathForTest(
-    FilePath* path) {
+    base::FilePath* path) {
   g_skip_picker_for_test = true;
   g_path_to_be_picked_for_test = path;
 }

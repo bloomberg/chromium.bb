@@ -121,7 +121,7 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
                                                const PingResult&,
                                                const std::set<int>&));
   MOCK_METHOD6(OnExtensionDownloadFinished, void(const std::string&,
-                                                 const FilePath&,
+                                                 const base::FilePath&,
                                                  const GURL&,
                                                  const std::string&,
                                                  const PingResult&,
@@ -373,7 +373,7 @@ class ServiceForDownloadTests : public MockService {
 
   virtual bool UpdateExtension(
       const std::string& id,
-      const FilePath& extension_path,
+      const base::FilePath& extension_path,
       const GURL& download_url,
       CrxInstaller** out_crx_installer) OVERRIDE {
     extension_id_ = id;
@@ -399,7 +399,7 @@ class ServiceForDownloadTests : public MockService {
   }
 
   const std::string& extension_id() const { return extension_id_; }
-  const FilePath& install_path() const { return install_path_; }
+  const base::FilePath& install_path() const { return install_path_; }
   const GURL& download_url() const { return download_url_; }
 
  private:
@@ -410,7 +410,7 @@ class ServiceForDownloadTests : public MockService {
   std::map<std::string, CrxInstaller*> fake_crx_installers_;
 
   std::string extension_id_;
-  FilePath install_path_;
+  base::FilePath install_path_;
   GURL download_url_;
 
   // The last extension ID that GetExtensionById was called with.
@@ -1009,7 +1009,7 @@ class ExtensionUpdaterTest : public testing::Test {
     }
 
     // Call back the ExtensionUpdater with a 200 response and some test data
-    FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
+    base::FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
     fetcher = factory.GetFetcherByID(ExtensionDownloader::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
@@ -1039,7 +1039,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // Expect that ExtensionUpdater asked the mock extensions service to install
     // a file with the test data for the right id.
     EXPECT_EQ(id, service->extension_id());
-    FilePath tmpfile_path = service->install_path();
+    base::FilePath tmpfile_path = service->install_path();
     EXPECT_FALSE(tmpfile_path.empty());
     EXPECT_EQ(test_url, service->download_url());
     EXPECT_EQ(extension_file_path, tmpfile_path);
@@ -1141,7 +1141,7 @@ class ExtensionUpdaterTest : public testing::Test {
     updater.downloader_->FetchUpdatedExtension(fetch2.Pass());
 
     // Make the first fetch complete.
-    FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
+    base::FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
 
     fetcher = factory.GetFetcherByID(ExtensionDownloader::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
@@ -1157,7 +1157,7 @@ class ExtensionUpdaterTest : public testing::Test {
         ExtensionSystem::Get(&profile))->
         CreateExtensionService(
             CommandLine::ForCurrentProcess(),
-            FilePath(),
+            base::FilePath(),
             false);
     ExtensionService* extension_service =
         ExtensionSystem::Get(&profile)->extension_service();
@@ -1187,7 +1187,7 @@ class ExtensionUpdaterTest : public testing::Test {
     RunUntilIdle();
 
     // Expect that the service was asked to do an install with the right data.
-    FilePath tmpfile_path = service.install_path();
+    base::FilePath tmpfile_path = service.install_path();
     EXPECT_FALSE(tmpfile_path.empty());
     EXPECT_EQ(id1, service.extension_id());
     EXPECT_EQ(url1, service.download_url());
@@ -1195,7 +1195,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Make sure the second fetch finished and asked the service to do an
     // update.
-    FilePath extension_file_path2(FILE_PATH_LITERAL("/whatever2"));
+    base::FilePath extension_file_path2(FILE_PATH_LITERAL("/whatever2"));
     fetcher = factory.GetFetcherByID(ExtensionDownloader::kExtensionFetcherId);
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);

@@ -35,9 +35,9 @@ void SaveLastModifiedTimeOfExe() {
 }
 
 double GetLastModifiedTimeOfExe() {
-  FilePath exe_file_path;
+  base::FilePath exe_file_path;
   if (!PathService::Get(base::FILE_EXE, &exe_file_path)) {
-    LOG(WARNING) << "Failed to get FilePath object for FILE_EXE.";
+    LOG(WARNING) << "Failed to get base::FilePath object for FILE_EXE.";
     return saved_last_modified_time_of_exe;
   }
   base::PlatformFileInfo exe_file_info;

@@ -43,8 +43,8 @@ namespace extensions {
 
 namespace {
 
-bool MakePathAbsolute(const FilePath& current_directory,
-                      FilePath* file_path) {
+bool MakePathAbsolute(const base::FilePath& current_directory,
+                      base::FilePath* file_path) {
   DCHECK(file_path);
   if (file_path->IsAbsolute())
     return true;
@@ -60,13 +60,13 @@ bool MakePathAbsolute(const FilePath& current_directory,
 }
 
 bool GetAbsolutePathFromCommandLine(const CommandLine* command_line,
-                                    const FilePath& current_directory,
-                                    FilePath* path) {
+                                    const base::FilePath& current_directory,
+                                    base::FilePath* path) {
   if (!command_line || !command_line->GetArgs().size())
     return false;
 
-  FilePath relative_path(command_line->GetArgs()[0]);
-  FilePath absolute_path(relative_path);
+  base::FilePath relative_path(command_line->GetArgs()[0]);
+  base::FilePath absolute_path(relative_path);
   if (!MakePathAbsolute(current_directory, &absolute_path)) {
     LOG(WARNING) << "Cannot make absolute path from " << relative_path.value();
     return false;
@@ -93,7 +93,7 @@ class PlatformAppPathLauncher
  public:
   PlatformAppPathLauncher(Profile* profile,
                           const Extension* extension,
-                          const FilePath& file_path)
+                          const base::FilePath& file_path)
       : profile_(profile),
         extension_(extension),
         file_path_(file_path),
@@ -258,7 +258,7 @@ class PlatformAppPathLauncher
   // The extension providing the app.
   const Extension* extension_;
   // The path to be passed through to the app.
-  const FilePath file_path_;
+  const base::FilePath file_path_;
   // The ID of the file handler used to launch the app.
   std::string handler_id_;
 
@@ -340,7 +340,7 @@ class PlatformAppWebIntentLauncher
     } else if (data_.data_type == webkit_glue::WebIntentData::FILESYSTEM) {
       // Grant read filesystem and read directory permission to allow reading
       // any part of the specified filesystem.
-      FilePath path;
+      base::FilePath path;
       const bool valid =
           fileapi::IsolatedContext::GetInstance()->GetRegisteredPath(
               data_.filesystem_id, &path);
@@ -379,8 +379,8 @@ class PlatformAppWebIntentLauncher
 void LaunchPlatformApp(Profile* profile,
                        const Extension* extension,
                        const CommandLine* command_line,
-                       const FilePath& current_directory) {
-  FilePath path;
+                       const base::FilePath& current_directory) {
+  base::FilePath path;
   if (!GetAbsolutePathFromCommandLine(command_line, current_directory, &path)) {
     LaunchPlatformAppWithNoData(profile, extension);
     return;
@@ -392,7 +392,7 @@ void LaunchPlatformApp(Profile* profile,
 
 void LaunchPlatformAppWithPath(Profile* profile,
                                const Extension* extension,
-                               const FilePath& file_path) {
+                               const base::FilePath& file_path) {
   // launcher will be freed when nothing has a reference to it. The message
   // queue will retain a reference for any outstanding task, so when the
   // launcher has finished it will be freed.
@@ -404,7 +404,7 @@ void LaunchPlatformAppWithPath(Profile* profile,
 void LaunchPlatformAppWithFileHandler(Profile* profile,
                                       const Extension* extension,
                                       const std::string& handler_id,
-                                      const FilePath& file_path) {
+                                      const base::FilePath& file_path) {
   scoped_refptr<PlatformAppPathLauncher> launcher =
       new PlatformAppPathLauncher(profile, extension, file_path);
   launcher->LaunchWithHandler(handler_id);

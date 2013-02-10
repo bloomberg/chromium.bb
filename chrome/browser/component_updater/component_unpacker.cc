@@ -83,8 +83,9 @@ class CRXValidator {
 // TODO(cpu): add a specific attribute check to a component json that the
 // extension unpacker will reject, so that a component cannot be installed
 // as an extension.
-base::DictionaryValue* ReadManifest(const FilePath& unpack_path) {
-  FilePath manifest = unpack_path.Append(FILE_PATH_LITERAL("manifest.json"));
+base::DictionaryValue* ReadManifest(const base::FilePath& unpack_path) {
+  base::FilePath manifest =
+      unpack_path.Append(FILE_PATH_LITERAL("manifest.json"));
   if (!file_util::PathExists(manifest))
     return NULL;
   JSONFileValueSerializer serializer(manifest);
@@ -100,7 +101,7 @@ base::DictionaryValue* ReadManifest(const FilePath& unpack_path) {
 }  // namespace.
 
 ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
-                                     const FilePath& path,
+                                     const base::FilePath& path,
                                      ComponentInstaller* installer)
   : error_(kNone) {
   if (pk_hash.empty() || path.empty()) {

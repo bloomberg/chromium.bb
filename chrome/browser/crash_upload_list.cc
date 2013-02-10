@@ -63,9 +63,9 @@ void CrashUploadList::LoadCrashListAndInformDelegateOfCompletion() {
 }
 
 void CrashUploadList::LoadCrashList() {
-  FilePath crash_dir_path;
+  base::FilePath crash_dir_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
-  FilePath upload_log_path = crash_dir_path.AppendASCII("uploads.log");
+  base::FilePath upload_log_path = crash_dir_path.AppendASCII("uploads.log");
   if (file_util::PathExists(upload_log_path)) {
     std::string contents;
     file_util::ReadFileToString(upload_log_path, &contents);

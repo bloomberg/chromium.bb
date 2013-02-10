@@ -237,9 +237,10 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_EQ(1U, CountBalloons());
 
   // Navigate to another page.
-  ui_test_utils::NavigateToURL(browser(),
-      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                FilePath(FILE_PATH_LITERAL("title1.html"))));
+  ui_test_utils::NavigateToURL(
+      browser(), ui_test_utils::GetTestUrl(
+                     base::FilePath(base::FilePath::kCurrentDirectory),
+                     base::FilePath(FILE_PATH_LITERAL("title1.html"))));
   ASSERT_EQ(1U, CountBalloons());
 
   ReloadExtension(first_extension_id_);

@@ -66,7 +66,7 @@ Version GetAppVersionFromRegistry(const wchar_t* app_guid) {
 // Calls setup.exe to update App Host, using the system-level setup.exe.
 bool LaunchAppHostUpdate() {
   // Get the path to the setup.exe.
-  FilePath setup_exe(
+  base::FilePath setup_exe(
       chrome_launcher_support::GetSetupExeForInstallationLevel(
           chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION));
   if (setup_exe.empty()) {

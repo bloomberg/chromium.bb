@@ -18,8 +18,8 @@ using content::BrowserThread;
 namespace extensions {
 
 PackExtensionJob::PackExtensionJob(Client* client,
-                                   const FilePath& root_directory,
-                                   const FilePath& key_file,
+                                   const base::FilePath& root_directory,
+                                   const base::FilePath& key_file,
                                    int run_flags)
     : client_(client), key_file_(key_file), asynchronous_(true),
       run_flags_(run_flags | ExtensionCreator::kRequireModernManifestVersion) {
@@ -44,11 +44,11 @@ void PackExtensionJob::ClearClient() {
 PackExtensionJob::~PackExtensionJob() {}
 
 void PackExtensionJob::Run() {
-  crx_file_out_ = FilePath(root_directory_.value() +
+  crx_file_out_ = base::FilePath(root_directory_.value() +
                            chrome::kExtensionFileExtension);
 
   if (key_file_.empty())
-    key_file_out_ = FilePath(root_directory_.value() +
+    key_file_out_ = base::FilePath(root_directory_.value() +
                              chrome::kExtensionKeyFileExtension);
 
   // TODO(aa): Need to internationalize the errors that ExtensionCreator
@@ -90,8 +90,9 @@ void PackExtensionJob::ReportFailureOnClientThread(
 }
 
 // static
-string16 PackExtensionJob::StandardSuccessMessage(const FilePath& crx_file,
-                                                  const FilePath& key_file) {
+string16 PackExtensionJob::StandardSuccessMessage(
+    const base::FilePath& crx_file,
+    const base::FilePath& key_file) {
   string16 crx_file_string = crx_file.LossyDisplayName();
   string16 key_file_string = key_file.LossyDisplayName();
   if (key_file_string.empty()) {

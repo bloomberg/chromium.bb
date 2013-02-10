@@ -24,7 +24,7 @@ using content::WebContents;
 
 namespace {
 
-void WriterCallback(const FilePath& path, const std::string& data) {
+void WriterCallback(const base::FilePath& path, const std::string& data) {
   int bytes_written = file_util::WriteFile(path, data.data(), data.size());
   if (bytes_written != static_cast<ssize_t>(data.size())) {
     LOG(ERROR) << "Writing " << path.value() << " ("
@@ -32,7 +32,8 @@ void WriterCallback(const FilePath& path, const std::string& data) {
   }
 }
 
-void WriteFileOnFileThread(const FilePath& path, const std::string& data) {
+void WriteFileOnFileThread(const base::FilePath& path,
+                           const std::string& data) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE, base::Bind(&WriterCallback, path, data));
 }
@@ -68,7 +69,7 @@ class Exporter : public ui::SelectFileDialog::Listener {
   virtual ~Exporter();
 
   // SelectFileDialog::Listener implemenation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index, void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
  private:
@@ -87,10 +88,10 @@ Exporter::Exporter(WebContents* web_contents,
 
   // TODO(mattm): should this default to some directory?
   // Maybe SavePackage::GetSaveDirPreference? (Except that it's private.)
-  FilePath suggested_path("certificate");
+  base::FilePath suggested_path("certificate");
   std::string cert_title = x509_certificate_model::GetTitle(cert);
   if (!cert_title.empty())
-    suggested_path = FilePath(cert_title);
+    suggested_path = base::FilePath(cert_title);
 
   ShowCertSelectFileDialog(select_file_dialog_.get(),
                            ui::SelectFileDialog::SELECT_SAVEAS_FILE,
@@ -108,7 +109,8 @@ Exporter::~Exporter() {
   x509_certificate_model::DestroyCertChain(&cert_chain_list_);
 }
 
-void Exporter::FileSelected(const FilePath& path, int index, void* params) {
+void Exporter::FileSelected(const base::FilePath& path, int index,
+                            void* params) {
   std::string data;
   switch (index) {
     case 2:
@@ -145,7 +147,7 @@ void Exporter::FileSelectionCanceled(void* params) {
 
 void ShowCertSelectFileDialog(ui::SelectFileDialog* select_file_dialog,
                               ui::SelectFileDialog::Type type,
-                              const FilePath& suggested_path,
+                              const base::FilePath& suggested_path,
                               gfx::NativeWindow parent,
                               void* params) {
   ui::SelectFileDialog::FileTypeInfo file_type_info;

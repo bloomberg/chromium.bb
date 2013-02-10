@@ -52,7 +52,7 @@ class ChromeToMobileService : public ProfileKeyedService,
     virtual ~Observer();
 
     // Called on generation of the page's MHTML snapshot.
-    virtual void SnapshotGenerated(const FilePath& path, int64 bytes) = 0;
+    virtual void SnapshotGenerated(const base::FilePath& path, int64 bytes) = 0;
 
     // Called after URLFetcher responses from sending the URL (and snapshot).
     virtual void OnSendComplete(bool success) = 0;
@@ -80,7 +80,7 @@ class ChromeToMobileService : public ProfileKeyedService,
     string16 mobile_id;
     GURL url;
     string16 title;
-    FilePath snapshot;
+    base::FilePath snapshot;
     std::string snapshot_id;
     std::string snapshot_content;
     JobType type;
@@ -120,13 +120,13 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Send the browser's selected WebContents to the specified mobile device.
   // Virtual for unit test mocking.
   virtual void SendToMobile(const base::DictionaryValue* mobile,
-                            const FilePath& snapshot,
+                            const base::FilePath& snapshot,
                             Browser* browser,
                             base::WeakPtr<Observer> observer);
 
   // Delete the snapshot file (should be called on observer destruction).
   // Virtual for unit test mocking.
-  virtual void DeleteSnapshot(const FilePath& snapshot);
+  virtual void DeleteSnapshot(const base::FilePath& snapshot);
 
   // Opens the "Learn More" help article link in the supplied |browser|.
   void LearnMore(Browser* browser) const;
@@ -163,11 +163,11 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Handle the attempted creation of a temporary file for snapshot generation.
   void SnapshotFileCreated(base::WeakPtr<Observer> observer,
                            SessionID::id_type browser_id,
-                           const FilePath& path);
+                           const base::FilePath& path);
 
   // Handle the attempted MHTML snapshot generation; alerts the observer.
   void SnapshotGenerated(base::WeakPtr<Observer> observer,
-                         const FilePath& path,
+                         const base::FilePath& path,
                          int64 bytes);
 
   // Handle the attempted reading of the snapshot file for job submission.
@@ -210,7 +210,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   std::string access_token_;
 
   // The set of snapshots currently available.
-  std::set<FilePath> snapshots_;
+  std::set<base::FilePath> snapshots_;
 
   // The list of active URLFetcher requests owned by the service.
   ScopedVector<net::URLFetcher> url_fetchers_;

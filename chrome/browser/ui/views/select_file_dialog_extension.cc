@@ -243,10 +243,10 @@ bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {
 void SelectFileDialogExtension::SelectFileImpl(
     Type type,
     const string16& title,
-    const FilePath& default_path,
+    const base::FilePath& default_path,
     const FileTypeInfo* file_types,
     int file_type_index,
-    const FilePath::StringType& default_extension,
+    const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
     void* params) {
   if (owner_window_) {
@@ -310,7 +310,7 @@ void SelectFileDialogExtension::SelectFileImpl(
     return;
   }
 
-  FilePath default_dialog_path;
+  base::FilePath default_dialog_path;
 
   const PrefService* pref_service = profile_->GetPrefs();
 
@@ -321,10 +321,10 @@ void SelectFileDialogExtension::SelectFileImpl(
     default_dialog_path = default_path;
   }
 
-  FilePath virtual_path;
+  base::FilePath virtual_path;
   if (file_manager_util::ConvertFileToRelativeFileSystemPath(
           profile_, kFileBrowserDomain, default_dialog_path, &virtual_path)) {
-    virtual_path = FilePath("/").Append(virtual_path);
+    virtual_path = base::FilePath("/").Append(virtual_path);
   } else {
     virtual_path = default_dialog_path.BaseName();
   }

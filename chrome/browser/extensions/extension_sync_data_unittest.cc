@@ -15,9 +15,10 @@
 namespace {
 
 #if defined(OS_WIN)
-const FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("c:\\foo");
+const base::FilePath::CharType kExtensionFilePath[] =
+    FILE_PATH_LITERAL("c:\\foo");
 #elif defined(OS_POSIX)
-const FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/foo");
+const base::FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/foo");
 #endif
 
 const char kValidId[] = "abcdefghijklmnopabcdefghijklmnop";

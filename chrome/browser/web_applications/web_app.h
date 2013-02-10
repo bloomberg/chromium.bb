@@ -22,14 +22,14 @@ namespace web_app {
 // Gets the user data directory for given web app. The path for the directory is
 // based on |extension_id|. If |extension_id| is empty then |url| is used
 // to construct a unique ID.
-FilePath GetWebAppDataDirectory(const FilePath& profile_path,
-                                const std::string& extension_id,
-                                const GURL& url);
+base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
+                                      const std::string& extension_id,
+                                      const GURL& url);
 
 // Gets the user data directory to use for |extension| located inside
 // |profile_path|.
-FilePath GetWebAppDataDirectory(const FilePath& profile_path,
-                                const extensions::Extension& extension);
+base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
+                                      const extensions::Extension& extension);
 
 // Compute a deterministic name based on data in the shortcut_info.
 std::string GenerateApplicationNameFromInfo(
@@ -85,7 +85,7 @@ std::string GetWMClassFromAppName(std::string app_name);
 namespace internals {
 
 #if defined(OS_WIN)
-bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image);
+bool CheckAndSaveIcon(const base::FilePath& icon_file, const SkBitmap& image);
 #endif
 
 // Implemented for each platform, does the platform specific parts of creating
@@ -94,26 +94,26 @@ bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image);
 // shortcut, and is also used as the UserDataDir for platform app shortcuts.
 // |shortcut_info| contains info about the shortcut to create.
 bool CreatePlatformShortcuts(
-    const FilePath& shortcut_data_path,
+    const base::FilePath& shortcut_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Delete all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the DeleteAllShortcuts function, and
 // is executed on the FILE thread.
 void DeletePlatformShortcuts(
-    const FilePath& shortcut_data_path,
+    const base::FilePath& shortcut_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Updates all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the UpdateAllShortcuts function, and
 // is executed on the FILE thread.
 void UpdatePlatformShortcuts(
-    const FilePath& shortcut_data_path,
+    const base::FilePath& shortcut_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Sanitizes |name| and returns a version of it that is safe to use as an
 // on-disk file name .
-FilePath GetSanitizedFileName(const string16& name);
+base::FilePath GetSanitizedFileName(const string16& name);
 
 }  // namespace internals
 

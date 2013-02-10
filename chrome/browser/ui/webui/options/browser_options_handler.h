@@ -77,7 +77,7 @@ class BrowserOptionsHandler
   void OnCloudPrintPrefsChanged();
 
   // SelectFileDialog::Listener implementation
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
 
@@ -105,7 +105,7 @@ class BrowserOptionsHandler
   // as a parameter to avoid the need to lock between this function and the
   // destructor. |profile_path| is the full path to the current profile.
   static void CheckAutoLaunch(base::WeakPtr<BrowserOptionsHandler> weak_this,
-                              const FilePath& profile_path);
+                              const base::FilePath& profile_path);
 
   // Sets up (on the UI thread) the necessary bindings for toggling auto-launch
   // (if the user is part of the auto-launch and makes sure the HTML UI knows

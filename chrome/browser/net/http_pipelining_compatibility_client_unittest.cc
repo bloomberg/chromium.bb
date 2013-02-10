@@ -81,10 +81,10 @@ using testing::StrEq;
 class HttpPipeliningCompatibilityClientTest : public testing::Test {
  public:
   HttpPipeliningCompatibilityClientTest()
-      : test_server_(
-          net::TestServer::TYPE_HTTP,
-          net::TestServer::kLocalhost,
-          FilePath(FILE_PATH_LITERAL("chrome/test/data/http_pipelining"))),
+      : test_server_(net::TestServer::TYPE_HTTP,
+                     net::TestServer::kLocalhost,
+                     base::FilePath(FILE_PATH_LITERAL(
+                         "chrome/test/data/http_pipelining"))),
         io_thread_(BrowserThread::IO, &message_loop_) {
   }
 

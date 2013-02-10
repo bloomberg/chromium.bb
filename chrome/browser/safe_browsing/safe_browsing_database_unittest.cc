@@ -266,7 +266,7 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
   void PopulateDatabaseForCacheTest();
 
   scoped_ptr<SafeBrowsingDatabaseNew> database_;
-  FilePath database_filename_;
+  base::FilePath database_filename_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -1551,7 +1551,7 @@ TEST_F(SafeBrowsingDatabaseTest, EmptyUpdate) {
   SBChunkList chunks;
   SBChunk chunk;
 
-  FilePath filename = database_->BrowseDBFilename(database_filename_);
+  base::FilePath filename = database_->BrowseDBFilename(database_filename_);
 
   // Prime the database.
   std::vector<SBListChunkRanges> lists;
@@ -1638,7 +1638,7 @@ TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
       GURL("http://www.good.com/goodware.html"),
       &matching_list, &prefix_hits, &full_hashes, now));
 
-  FilePath filter_file = database_->PrefixSetForFilename(
+  base::FilePath filter_file = database_->PrefixSetForFilename(
       database_->BrowseDBFilename(database_filename_));
 
   // After re-creating the database, it should have a filter read from

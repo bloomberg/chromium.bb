@@ -60,7 +60,7 @@ class ProxyBrowserTest : public InProcessBrowserTest {
   ProxyBrowserTest()
       : proxy_server_(net::TestServer::TYPE_BASIC_AUTH_PROXY,
                       net::TestServer::kLocalhost,
-                      FilePath()) {
+                      base::FilePath()) {
   }
 
   virtual void SetUp() OVERRIDE {

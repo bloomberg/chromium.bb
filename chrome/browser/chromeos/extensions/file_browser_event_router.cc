@@ -93,7 +93,7 @@ const char* MountErrorToString(chromeos::MountError error) {
 
 void RelayFileWatcherCallbackToUIThread(
     const base::FilePathWatcher::Callback& callback,
-    const FilePath& local_path,
+    const base::FilePath& local_path,
     bool got_error) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -264,13 +264,13 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
 
 // File watch setup routines.
 bool FileBrowserEventRouter::AddFileWatch(
-    const FilePath& local_path,
-    const FilePath& virtual_path,
+    const base::FilePath& local_path,
+    const base::FilePath& virtual_path,
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::AutoLock lock(lock_);
-  FilePath watch_path = local_path;
+  base::FilePath watch_path = local_path;
   bool is_remote_watch = false;
   // Tweak watch path for remote sources - we need to drop leading /special
   // directory from there in order to be able to pair these events with
@@ -302,12 +302,12 @@ bool FileBrowserEventRouter::AddFileWatch(
 }
 
 void FileBrowserEventRouter::RemoveFileWatch(
-    const FilePath& local_path,
+    const base::FilePath& local_path,
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::AutoLock lock(lock_);
-  FilePath watch_path = local_path;
+  base::FilePath watch_path = local_path;
   // Tweak watch path for remote sources - we need to drop leading /special
   // directory from there in order to be able to pair these events with
   // their change notifications.
@@ -440,7 +440,7 @@ void FileBrowserEventRouter::OnMountEvent(
     // when mounting failed or unmounting succeeded.
     if ((event == DiskMountManager::MOUNTING) !=
         (error_code == chromeos::MOUNT_ERROR_NONE)) {
-      FilePath source_path(mount_info.source_path);
+      base::FilePath source_path(mount_info.source_path);
       DriveSystemService* system_service =
           DriveSystemServiceFactory::GetForProfile(profile_);
       drive::DriveCache* cache =
@@ -524,7 +524,7 @@ void FileBrowserEventRouter::OnProgressUpdate(
 }
 
 void FileBrowserEventRouter::OnDirectoryChanged(
-    const FilePath& directory_path) {
+    const base::FilePath& directory_path) {
   HandleFileWatchNotification(directory_path, false);
 }
 
@@ -573,7 +573,7 @@ void FileBrowserEventRouter::OnRefreshTokenInvalid() {
 }
 
 void FileBrowserEventRouter::HandleFileWatchNotification(
-    const FilePath& local_path, bool got_error) {
+    const base::FilePath& local_path, bool got_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::AutoLock lock(lock_);
@@ -586,7 +586,7 @@ void FileBrowserEventRouter::HandleFileWatchNotification(
 }
 
 void FileBrowserEventRouter::DispatchDirectoryChangeEvent(
-    const FilePath& virtual_path,
+    const base::FilePath& virtual_path,
     bool got_error,
     const FileBrowserEventRouter::ExtensionUsageRegistry& extensions) {
   if (!profile_) {
@@ -636,7 +636,7 @@ void FileBrowserEventRouter::DispatchMountEvent(
   // Add sourcePath to the event.
   mount_info_value->SetString("sourcePath", mount_info.source_path);
 
-  FilePath relative_mount_path;
+  base::FilePath relative_mount_path;
 
   // If there were no error or some special conditions occurred, add mountPath
   // to the event.
@@ -648,7 +648,7 @@ void FileBrowserEventRouter::DispatchMountEvent(
     if (file_manager_util::ConvertFileToRelativeFileSystemPath(
             profile_,
             kFileBrowserDomain,
-            FilePath(mount_info.mount_path),
+            base::FilePath(mount_info.mount_path),
             &relative_mount_path)) {
       mount_info_value->SetString("mountPath",
                                   "/" + relative_mount_path.value());
@@ -675,7 +675,7 @@ void FileBrowserEventRouter::ShowRemovableDeviceInFileManager(
 
   // To enable Photo Import call file_manager_util::OpenActionChoiceDialog
   // instead.
-  file_manager_util::ViewRemovableDrive(FilePath(mount_path));
+  file_manager_util::ViewRemovableDrive(base::FilePath(mount_path));
 }
 
 void FileBrowserEventRouter::OnDiskAdded(
@@ -803,7 +803,7 @@ void FileBrowserEventRouter::OnFormatCompleted(
 }
 
 FileBrowserEventRouter::FileWatcherExtensions::FileWatcherExtensions(
-    const FilePath& path, const std::string& extension_id,
+    const base::FilePath& path, const std::string& extension_id,
     bool is_remote_file_system)
     : ref_count_(0),
       is_remote_file_system_(is_remote_file_system) {
@@ -859,7 +859,7 @@ FileBrowserEventRouter::FileWatcherExtensions::GetRefCount() const {
   return ref_count_;
 }
 
-const FilePath&
+const base::FilePath&
 FileBrowserEventRouter::FileWatcherExtensions::GetVirtualPath() const {
   return virtual_path_;
 }
@@ -873,7 +873,7 @@ FileBrowserEventRouter::GetRemoteFileSystem() const {
 }
 
 bool FileBrowserEventRouter::FileWatcherExtensions::Watch(
-    const FilePath& path,
+    const base::FilePath& path,
     const base::FilePathWatcher::Callback& callback) {
   if (is_remote_file_system_)
     return true;

@@ -165,7 +165,8 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
 }  // namespace
 
 DiagnosticsModel* MakeDiagnosticsModel(const CommandLine& cmdline) {
-  FilePath user_data_dir = cmdline.GetSwitchValuePath(switches::kUserDataDir);
+  base::FilePath user_data_dir =
+      cmdline.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
     PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 #if defined(OS_WIN)

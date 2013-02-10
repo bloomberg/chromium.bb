@@ -109,7 +109,7 @@ void Firefox3Importer::StartImport(
 }
 
 void Firefox3Importer::ImportHistory() {
-  FilePath file = source_path_.AppendASCII("places.sqlite");
+  base::FilePath file = source_path_.AppendASCII("places.sqlite");
   if (!file_util::PathExists(file))
     return;
 
@@ -153,7 +153,7 @@ void Firefox3Importer::ImportHistory() {
 }
 
 void Firefox3Importer::ImportBookmarks() {
-  FilePath file = source_path_.AppendASCII("places.sqlite");
+  base::FilePath file = source_path_.AppendASCII("places.sqlite");
   if (!file_util::PathExists(file))
     return;
 
@@ -308,8 +308,8 @@ void Firefox3Importer::ImportPasswords() {
   }
 
   std::vector<content::PasswordForm> forms;
-  FilePath source_path = source_path_;
-  FilePath file = source_path.AppendASCII("signons.sqlite");
+  base::FilePath source_path = source_path_;
+  base::FilePath file = source_path.AppendASCII("signons.sqlite");
   if (file_util::PathExists(file)) {
     // Since Firefox 3.1, passwords are in signons.sqlite db.
     decryptor.ReadAndParseSignons(file, &forms);
@@ -332,7 +332,7 @@ void Firefox3Importer::ImportPasswords() {
 }
 
 void Firefox3Importer::ImportSearchEngines() {
-  std::vector<FilePath> files;
+  std::vector<base::FilePath> files;
   GetSearchEnginesXMLFiles(&files);
 
   std::vector<TemplateURL*> search_engines;
@@ -349,8 +349,8 @@ void Firefox3Importer::ImportHomepage() {
 }
 
 void Firefox3Importer::GetSearchEnginesXMLFiles(
-    std::vector<FilePath>* files) {
-  FilePath file = source_path_.AppendASCII("search.sqlite");
+    std::vector<base::FilePath>* files) {
+  base::FilePath file = source_path_.AppendASCII("search.sqlite");
   if (!file_util::PathExists(file))
     return;
 
@@ -368,8 +368,8 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
   if (!s.is_valid())
     return;
 
-  FilePath app_path = app_path_.AppendASCII("searchplugins");
-  FilePath profile_path = source_path_.AppendASCII("searchplugins");
+  base::FilePath app_path = app_path_.AppendASCII("searchplugins");
+  base::FilePath profile_path = source_path_.AppendASCII("searchplugins");
 
   // Firefox doesn't store a search engine in its sqlite database unless the
   // user has added a engine. So we get search engines from sqlite db as well
@@ -378,7 +378,7 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
     const std::string kAppPrefix("[app]/");
     const std::string kProfilePrefix("[profile]/");
     do {
-      FilePath file;
+      base::FilePath file;
       std::string engine(s.ColumnString(0));
 
       // The string contains [app]/<name>.xml or [profile]/<name>.xml where
@@ -395,9 +395,9 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
       } else {
         // Looks like absolute path to the file.
 #if defined(OS_WIN)
-        file = FilePath(UTF8ToWide(engine));
+        file = base::FilePath(UTF8ToWide(engine));
 #else
-        file = FilePath(engine);
+        file = base::FilePath(engine);
 #endif
       }
       files->push_back(file);
@@ -410,8 +410,8 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
   // See http://crbug.com/53899
   // TODO(jshin): we need to make sure our locale code matches that of
   // Firefox.
-  FilePath locale_app_path = app_path.AppendASCII(locale_);
-  FilePath default_locale_app_path = app_path.AppendASCII("en-US");
+  base::FilePath locale_app_path = app_path.AppendASCII(locale_);
+  base::FilePath default_locale_app_path = app_path.AppendASCII("en-US");
   if (file_util::DirectoryExists(locale_app_path))
     app_path = locale_app_path;
   else if (file_util::DirectoryExists(default_locale_app_path))
@@ -421,8 +421,8 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
   // Get search engine definition from file system.
   file_util::FileEnumerator engines(app_path, false,
                                     file_util::FileEnumerator::FILES);
-  for (FilePath engine_path = engines.Next(); !engine_path.value().empty();
-       engine_path = engines.Next()) {
+  for (base::FilePath engine_path = engines.Next();
+       !engine_path.value().empty(); engine_path = engines.Next()) {
     files->push_back(engine_path);
   }
 }

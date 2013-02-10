@@ -724,7 +724,7 @@ gfx::Image Create1xFaviconFromPNGFile(const std::string& path) {
   if (!EndsWith(path, kPNGExtension, false))
     return gfx::Image();
 
-  FilePath full_path;
+  base::FilePath full_path;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &full_path))
     return gfx::Image();
 

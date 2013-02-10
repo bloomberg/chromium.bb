@@ -51,10 +51,10 @@ class BurnLibrary {
   virtual void RemoveObserver(Observer* observer) = 0;
   // Example values:
   // DoBurn(image.bin.zip, image.bin, /dev/sdb, /sys/devices/pci..../block.sdb).
-  virtual void DoBurn(const FilePath& source_path,
+  virtual void DoBurn(const base::FilePath& source_path,
                       const std::string& image_name,
-                      const FilePath& target_file_path,
-                      const FilePath& target_device_path) = 0;
+                      const base::FilePath& target_file_path,
+                      const base::FilePath& target_device_path) = 0;
   virtual void CancelBurnImage() = 0;
 
   // Factory function, creates a new instance and returns ownership.

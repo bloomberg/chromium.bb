@@ -32,7 +32,7 @@ const wchar_t kRegistryExtensionPath[] = L"path";
 // Registry value of that key that defines the current version of the .crx file.
 const wchar_t kRegistryExtensionVersion[] = L"version";
 
-bool CanOpenFileForReading(const FilePath& path) {
+bool CanOpenFileForReading(const base::FilePath& path) {
   ScopedStdioHandle file_handle(file_util::OpenFile(path, "rb"));
   return file_handle.get() != NULL;
 }
@@ -92,7 +92,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       continue;
     }
 
-    FilePath extension_path(extension_path_str);
+    base::FilePath extension_path(extension_path_str);
     if (!extension_path.IsAbsolute()) {
       LOG(ERROR) << "File path " << extension_path_str
                  << " needs to be absolute in key "

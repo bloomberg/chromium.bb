@@ -84,7 +84,7 @@ const char kCreated[] = "created";
 class TransportSecurityPersister::Loader {
  public:
   Loader(const base::WeakPtr<TransportSecurityPersister>& persister,
-         const FilePath& path)
+         const base::FilePath& path)
       : persister_(persister),
         path_(path),
         state_valid_(false) {
@@ -109,7 +109,7 @@ class TransportSecurityPersister::Loader {
  private:
   base::WeakPtr<TransportSecurityPersister> persister_;
 
-  FilePath path_;
+  base::FilePath path_;
 
   std::string state_;
   bool state_valid_;
@@ -119,7 +119,7 @@ class TransportSecurityPersister::Loader {
 
 TransportSecurityPersister::TransportSecurityPersister(
     TransportSecurityState* state,
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     bool readonly)
     : transport_security_state_(state),
       writer_(profile_path.AppendASCII("TransportSecurity"),

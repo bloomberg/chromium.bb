@@ -156,7 +156,7 @@ const char kCrNSProgressUserDataKey[] = "CrNSProgressUserData";
 
 class CrNSProgressUserData : public base::SupportsUserData::Data {
  public:
-  CrNSProgressUserData(NSProgress* progress, const FilePath& target)
+  CrNSProgressUserData(NSProgress* progress, const base::FilePath& target)
       : target_(target) {
     progress_.reset(progress);
   }
@@ -165,12 +165,12 @@ class CrNSProgressUserData : public base::SupportsUserData::Data {
   }
 
   NSProgress* progress() const { return progress_.get(); }
-  FilePath target() const { return target_; }
-  void setTarget(const FilePath& target) { target_ = target; }
+  base::FilePath target() const { return target_; }
+  void setTarget(const base::FilePath& target) { target_ = target; }
 
  private:
   scoped_nsobject<NSProgress> progress_;
-  FilePath target_;
+  base::FilePath target_;
 };
 
 void UpdateAppIcon(int download_count,
@@ -186,7 +186,7 @@ void UpdateAppIcon(int download_count,
 void CreateNSProgress(content::DownloadItem* download) {
   NSURL* source_url = [NSURL URLWithString:
       base::SysUTF8ToNSString(download->GetURL().possibly_invalid_spec())];
-  FilePath destination_path = download->GetFullPath();
+  base::FilePath destination_path = download->GetFullPath();
   NSURL* destination_url = [NSURL fileURLWithPath:
       base::mac::FilePathToNSString(destination_path)];
 
@@ -237,7 +237,7 @@ void UpdateNSProgress(content::DownloadItem* download,
   progress.totalUnitCount = download->GetTotalBytes();
   progress.completedUnitCount = download->GetReceivedBytes();
 
-  FilePath download_path = download->GetFullPath();
+  base::FilePath download_path = download->GetFullPath();
   if (progress_data->target() != download_path) {
     progress_data->setTarget(download_path);
     NSURL* download_url = [NSURL fileURLWithPath:

@@ -89,7 +89,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
   // Stores old (pre-migration) user image info.
   void SetOldUserImageInfo(const std::string& username,
                            int image_index,
-                           const FilePath& image_path) {
+                           const base::FilePath& image_path) {
     AddUser(username);
     DictionaryPrefUpdate images_pref(local_state_, "UserImages");
     base::DictionaryValue* image_properties = new base::DictionaryValue();
@@ -104,7 +104,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
   void ExpectUserImageInfo(const base::DictionaryValue* images_pref,
                            const std::string& username,
                            int image_index,
-                           const FilePath& image_path) {
+                           const base::FilePath& image_path) {
     ASSERT_TRUE(images_pref);
     const base::DictionaryValue* image_properties = NULL;
     images_pref->GetDictionaryWithoutPathExpansion(username, &image_properties);
@@ -131,7 +131,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
   // and that new user image info does not exist.
   void ExpectOldUserImageInfo(const std::string& username,
                               int image_index,
-                              const FilePath& image_path) {
+                              const base::FilePath& image_path) {
     ExpectUserImageInfo(local_state_->GetDictionary("UserImages"),
                         username, image_index, image_path);
     ExpectNoUserImageInfo(local_state_->GetDictionary("user_image_info"),
@@ -142,7 +142,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
   // and that old user image info does not exist.
   void ExpectNewUserImageInfo(const std::string& username,
                               int image_index,
-                              const FilePath& image_path) {
+                              const base::FilePath& image_path) {
     ExpectUserImageInfo(local_state_->GetDictionary("user_image_info"),
                         username, image_index, image_path);
     ExpectNoUserImageInfo(local_state_->GetDictionary("UserImages"),
@@ -152,7 +152,7 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
   // Sets bitmap |resource_id| as image for |username| and saves it to disk.
   void SaveUserImagePNG(const std::string& username,
                         int resource_id) {
-    FilePath image_path = GetUserImagePath(username, "png");
+    base::FilePath image_path = GetUserImagePath(username, "png");
     scoped_refptr<base::RefCountedStaticMemory> image_data(
         ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
             resource_id, ui::SCALE_FACTOR_100P));
@@ -165,9 +165,9 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
   }
 
   // Returns the image path for user |username| with specified |extension|.
-  FilePath GetUserImagePath(const std::string& username,
+  base::FilePath GetUserImagePath(const std::string& username,
                             const std::string& extension) {
-    FilePath user_data_dir;
+    base::FilePath user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
     return user_data_dir.Append(username).AddExtension(extension);
   }
@@ -183,38 +183,41 @@ class UserImageManagerTest : public CrosInProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_DefaultUserImagePreserved) {
   // Setup an old default (stock) user image.
   ScopedMockUserManagerEnabler mock_user_manager;
-  SetOldUserImageInfo(kTestUser1, kFirstDefaultImageIndex, FilePath());
+  SetOldUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, DefaultUserImagePreserved) {
   UserManager::Get()->GetUsers();  // Load users.
   // Old info preserved.
-  ExpectOldUserImageInfo(kTestUser1, kFirstDefaultImageIndex, FilePath());
+  ExpectOldUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
   LogIn(kTestUser1);
   // Wait for migration.
   content::RunMessageLoop();
   // Image info is migrated now.
-  ExpectNewUserImageInfo(kTestUser1, kFirstDefaultImageIndex, FilePath());
+  ExpectNewUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_OtherUsersUnaffected) {
   // Setup two users with stock images.
   ScopedMockUserManagerEnabler mock_user_manager;
-  SetOldUserImageInfo(kTestUser1, kFirstDefaultImageIndex, FilePath());
-  SetOldUserImageInfo(kTestUser2, kFirstDefaultImageIndex + 1, FilePath());
+  SetOldUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
+  SetOldUserImageInfo(kTestUser2, kFirstDefaultImageIndex + 1,
+                      base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, OtherUsersUnaffected) {
   UserManager::Get()->GetUsers();  // Load users.
   // Old info preserved.
-  ExpectOldUserImageInfo(kTestUser1, kFirstDefaultImageIndex, FilePath());
-  ExpectOldUserImageInfo(kTestUser2, kFirstDefaultImageIndex + 1, FilePath());
+  ExpectOldUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
+  ExpectOldUserImageInfo(kTestUser2, kFirstDefaultImageIndex + 1,
+                         base::FilePath());
   LogIn(kTestUser1);
   // Wait for migration.
   content::RunMessageLoop();
   // Image info is migrated for the first user and unaffected for the rest.
-  ExpectNewUserImageInfo(kTestUser1, kFirstDefaultImageIndex, FilePath());
-  ExpectOldUserImageInfo(kTestUser2, kFirstDefaultImageIndex + 1, FilePath());
+  ExpectNewUserImageInfo(kTestUser1, kFirstDefaultImageIndex, base::FilePath());
+  ExpectOldUserImageInfo(kTestUser2, kFirstDefaultImageIndex + 1,
+                         base::FilePath());
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_PRE_NonJPEGImageFromFile) {

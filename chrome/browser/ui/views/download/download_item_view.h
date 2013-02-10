@@ -324,7 +324,7 @@ class DownloadItemView : public views::ButtonListener,
   // The icon loaded in the download shelf is based on the file path of the
   // item.  Store the path used, so that we can detect a change in the path
   // and reload the icon.
-  FilePath last_download_item_path_;
+  base::FilePath last_download_item_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemView);
 };

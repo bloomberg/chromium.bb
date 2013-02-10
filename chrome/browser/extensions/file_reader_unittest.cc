@@ -54,11 +54,11 @@ class Receiver {
 };
 
 void RunBasicTest(const char* filename) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   std::string extension_id = extension_test_util::MakeId("test");
   ExtensionResource resource(extension_id, path,
-                             FilePath().AppendASCII(filename));
+                             base::FilePath().AppendASCII(filename));
   path = path.AppendASCII(filename);
 
   std::string file_contents;
@@ -85,10 +85,10 @@ TEST_F(FileReaderTest, BiggerFile) {
 }
 
 TEST_F(FileReaderTest, NonExistantFile) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   std::string extension_id = extension_test_util::MakeId("test");
-  ExtensionResource resource(extension_id, path, FilePath(
+  ExtensionResource resource(extension_id, path, base::FilePath(
       FILE_PATH_LITERAL("file_that_does_not_exist")));
   path = path.AppendASCII("file_that_does_not_exist");
 

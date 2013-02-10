@@ -39,14 +39,13 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
  protected:
 
   virtual void ChooseDownloadPath(content::DownloadItem* item,
-                                  const FilePath& suggested_path,
+                                  const base::FilePath& suggested_path,
                                   const FileSelectedCallback&
                                       callback) OVERRIDE {
     file_chooser_displayed_ = true;
     MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   (file_chooser_enabled_ ? suggested_path : FilePath())));
+        FROM_HERE, base::Bind(callback, (file_chooser_enabled_ ? suggested_path
+                                         : base::FilePath())));
   }
 
   virtual void OpenDownload(content::DownloadItem* item) OVERRIDE {}

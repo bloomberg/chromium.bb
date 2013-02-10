@@ -21,14 +21,14 @@ using content::BrowserThread;
 
 namespace {
 
-FilePath::CharType kExternalExtensionJson[] =
+base::FilePath::CharType kExternalExtensionJson[] =
     FILE_PATH_LITERAL("external_extensions.json");
 
-std::set<FilePath> GetPrefsCandidateFilesFromFolder(
-      const FilePath& external_extension_search_path) {
+std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
+      const base::FilePath& external_extension_search_path) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::set<FilePath> external_extension_paths;
+  std::set<base::FilePath> external_extension_paths;
 
   if (!file_util::PathExists(external_extension_search_path)) {
     // Does not have to exist.
@@ -40,12 +40,12 @@ std::set<FilePath> GetPrefsCandidateFilesFromFolder(
       false,  // Recursive.
       file_util::FileEnumerator::FILES);
 #if defined(OS_WIN)
-  FilePath::StringType extension = UTF8ToWide(std::string(".json"));
+  base::FilePath::StringType extension = UTF8ToWide(std::string(".json"));
 #elif defined(OS_POSIX)
-  FilePath::StringType extension(".json");
+  base::FilePath::StringType extension(".json");
 #endif
   do {
-    FilePath file = json_files.Next();
+    base::FilePath file = json_files.Next();
     if (file.BaseName().value() == kExternalExtensionJson)
       continue;  // Already taken care of elsewhere.
     if (file.empty())
@@ -67,7 +67,7 @@ std::set<FilePath> GetPrefsCandidateFilesFromFolder(
 // path or json content).
 // Caller takes ownership of the returned dictionary.
 DictionaryValue* ExtractExtensionPrefs(base::ValueSerializer* serializer,
-                                       const FilePath& path) {
+                                       const base::FilePath& path) {
   std::string error_msg;
   Value* extensions = serializer->Deserialize(NULL, &error_msg);
   if (!extensions) {
@@ -94,7 +94,7 @@ ExternalPrefLoader::ExternalPrefLoader(int base_path_id, Options options)
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-const FilePath ExternalPrefLoader::GetBaseCrxFilePath() {
+const base::FilePath ExternalPrefLoader::GetBaseCrxFilePath() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // |base_path_| was set in LoadOnFileThread().
@@ -155,7 +155,7 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(DictionaryValue* prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   CHECK(NULL != prefs);
 
-  FilePath json_file = base_path_.Append(kExternalExtensionJson);
+  base::FilePath json_file = base_path_.Append(kExternalExtensionJson);
 
   if (!file_util::PathExists(json_file)) {
     // This is not an error.  The file does not exist by default.
@@ -194,7 +194,7 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
   CHECK(NULL != prefs);
 
   // First list the potential .json candidates.
-  std::set<FilePath>
+  std::set<base::FilePath>
       candidates = GetPrefsCandidateFilesFromFolder(base_path_);
   if (candidates.empty()) {
     DVLOG(1) << "Extension candidates list empty";
@@ -203,10 +203,10 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
 
   // For each file read the json description & build the proper
   // associated prefs.
-  for (std::set<FilePath>::const_iterator it = candidates.begin();
+  for (std::set<base::FilePath>::const_iterator it = candidates.begin();
        it != candidates.end();
        ++it) {
-    FilePath extension_candidate_path = base_path_.Append(*it);
+    base::FilePath extension_candidate_path = base_path_.Append(*it);
 
     std::string id =
 #if defined(OS_WIN)
@@ -229,12 +229,13 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
   }
 }
 
-ExternalTestingLoader::ExternalTestingLoader(const std::string& json_data,
-                                             const FilePath& fake_base_path)
+ExternalTestingLoader::ExternalTestingLoader(
+    const std::string& json_data,
+    const base::FilePath& fake_base_path)
     : fake_base_path_(fake_base_path) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JSONStringValueSerializer serializer(json_data);
-  FilePath fake_json_path = fake_base_path.AppendASCII("fake.json");
+  base::FilePath fake_json_path = fake_base_path.AppendASCII("fake.json");
   testing_prefs_.reset(ExtractExtensionPrefs(&serializer, fake_json_path));
 }
 
@@ -246,7 +247,7 @@ void ExternalTestingLoader::StartLoading() {
 
 ExternalTestingLoader::~ExternalTestingLoader() {}
 
-const FilePath ExternalTestingLoader::GetBaseCrxFilePath() {
+const base::FilePath ExternalTestingLoader::GetBaseCrxFilePath() {
   return fake_base_path_;
 }
 

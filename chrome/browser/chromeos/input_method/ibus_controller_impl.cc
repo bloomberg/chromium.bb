@@ -190,7 +190,7 @@ base::FilePathWatcher* g_file_path_watcher = NULL;
 
 // Called when the ibus-daemon address file is modified.
 void OnFilePathChanged(const base::Closure& closure,
-                       const FilePath& file_path,
+                       const base::FilePath& file_path,
                        bool failed) {
   if (failed)
     return;  // Can't recover, do nothing.
@@ -213,7 +213,7 @@ void StartWatch(const std::string& address_file_path,
   delete g_file_path_watcher;
   g_file_path_watcher = new base::FilePathWatcher;
   bool result = g_file_path_watcher->Watch(
-      FilePath::FromUTF8Unsafe(address_file_path),
+      base::FilePath::FromUTF8Unsafe(address_file_path),
       false,  // do not watch child directory.
       base::Bind(&OnFilePathChanged, callback));
   DCHECK(result);

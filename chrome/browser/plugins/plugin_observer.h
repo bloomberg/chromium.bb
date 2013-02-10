@@ -34,7 +34,7 @@ class PluginObserver : public content::WebContentsObserver,
   virtual ~PluginObserver();
 
   // content::WebContentsObserver implementation.
-  virtual void PluginCrashed(const FilePath& plugin_path,
+  virtual void PluginCrashed(const base::FilePath& plugin_path,
                              base::ProcessId plugin_pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -60,7 +60,7 @@ class PluginObserver : public content::WebContentsObserver,
   void OnRemovePluginPlaceholderHost(int placeholder_id);
 #endif
   void OnOpenAboutPlugins();
-  void OnCouldNotLoadPlugin(const FilePath& plugin_path);
+  void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
   void OnNPAPINotSupported(const std::string& identifier);
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;

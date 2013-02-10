@@ -206,7 +206,8 @@ CloudPrintDataSender::~CloudPrintDataSender() {}
 // by encoding it and prefixing it with the appropriate mime type.
 // Once that is done, kick off the next part of the task on the IO
 // thread.
-void CloudPrintDataSender::ReadPrintDataFile(const FilePath& path_to_file) {
+void CloudPrintDataSender::ReadPrintDataFile(
+    const base::FilePath& path_to_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 file_size = 0;
   if (file_util::GetFileSize(path_to_file, &file_size) && file_size != 0) {
@@ -258,7 +259,7 @@ void CloudPrintDataSender::SendPrintDataFile() {
 }
 
 
-CloudPrintFlowHandler::CloudPrintFlowHandler(const FilePath& path_to_file,
+CloudPrintFlowHandler::CloudPrintFlowHandler(const base::FilePath& path_to_file,
                                              const string16& print_job_title,
                                              const string16& print_ticket,
                                              const std::string& file_type,
@@ -482,7 +483,7 @@ bool CloudPrintFlowHandler::NavigationToURLDidCloseDialog(const GURL& url) {
 CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
     content::BrowserContext* browser_context,
     gfx::NativeWindow modal_parent,
-    const FilePath& path_to_file,
+    const base::FilePath& path_to_file,
     const std::string& json_arguments,
     const string16& print_job_title,
     const string16& print_ticket,
@@ -506,7 +507,7 @@ CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
 
 // For unit testing.
 CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
-    const FilePath& path_to_file,
+    const base::FilePath& path_to_file,
     CloudPrintFlowHandler* flow_handler,
     const std::string& json_arguments,
     bool delete_on_close)
@@ -656,7 +657,7 @@ void CreatePrintDialogForBytesImpl(content::BrowserContext* browser_context,
   // TODO(abodenha@chromium.org) Writing the PDF to a file before printing
   // is wasteful.  Modify the dialog flow to pull PDF data from memory.
   // See http://code.google.com/p/chromium/issues/detail?id=44093
-  FilePath path;
+  base::FilePath path;
   if (file_util::CreateTemporaryFile(&path)) {
     file_util::WriteFile(path,
                          reinterpret_cast<const char*>(data->front()),
@@ -674,7 +675,7 @@ void CreatePrintDialogForBytesImpl(content::BrowserContext* browser_context,
 // Called from the UI thread, starts up the dialog.
 void CreateDialogImpl(content::BrowserContext* browser_context,
                       gfx::NativeWindow modal_parent,
-                      const FilePath& path_to_file,
+                      const base::FilePath& path_to_file,
                       const string16& print_job_title,
                       const string16& print_ticket,
                       const std::string& file_type,
@@ -718,13 +719,13 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
 void CreateDialogSigninImpl(content::BrowserContext* browser_context,
                             gfx::NativeWindow modal_parent,
                             const base::Closure& callback) {
-  CreateDialogImpl(browser_context, modal_parent, FilePath(), string16(),
+  CreateDialogImpl(browser_context, modal_parent, base::FilePath(), string16(),
                    string16(), std::string(), false, true, callback);
 }
 
 void CreateDialogFullImpl(content::BrowserContext* browser_context,
                           gfx::NativeWindow modal_parent,
-                          const FilePath& path_to_file,
+                          const base::FilePath& path_to_file,
                           const string16& print_job_title,
                           const string16& print_ticket,
                           const std::string& file_type,
@@ -737,7 +738,7 @@ void CreateDialogFullImpl(content::BrowserContext* browser_context,
 
 
 // Provides a runnable function to delete a file.
-void Delete(const FilePath& file_path) {
+void Delete(const base::FilePath& file_path) {
   file_util::Delete(file_path, false);
 }
 
@@ -753,7 +754,7 @@ namespace print_dialog_cloud {
 // changing page setup parameters while the dialog is active.
 void CreatePrintDialogForFile(content::BrowserContext* browser_context,
                               gfx::NativeWindow modal_parent,
-                              const FilePath& path_to_file,
+                              const base::FilePath& path_to_file,
                               const string16& print_job_title,
                               const string16& print_ticket,
                               const std::string& file_type,
@@ -801,7 +802,7 @@ void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
 bool CreatePrintDialogFromCommandLine(const CommandLine& command_line) {
   DCHECK(command_line.HasSwitch(switches::kCloudPrintFile));
   if (!command_line.GetSwitchValuePath(switches::kCloudPrintFile).empty()) {
-    FilePath cloud_print_file;
+    base::FilePath cloud_print_file;
     cloud_print_file =
         command_line.GetSwitchValuePath(switches::kCloudPrintFile);
     if (!cloud_print_file.empty()) {

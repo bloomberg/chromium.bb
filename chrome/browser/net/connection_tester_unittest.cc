@@ -92,7 +92,7 @@ class ConnectionTesterTest : public PlatformTest {
         test_server_(net::TestServer::TYPE_HTTP,
                      net::TestServer::kLocalhost,
                      // Nothing is read in this directory.
-                     FilePath(FILE_PATH_LITERAL("chrome"))),
+                     base::FilePath(FILE_PATH_LITERAL("chrome"))),
         proxy_script_fetcher_context_(new net::URLRequestContext) {
     InitializeRequestContext();
   }

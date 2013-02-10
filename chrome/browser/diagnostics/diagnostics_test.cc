@@ -45,9 +45,9 @@ void DiagnosticTest::RecordOutcome(const string16& additional_info,
 }
 
 // static
-FilePath DiagnosticTest::GetUserDefaultProfileDir() {
-  FilePath path;
+base::FilePath DiagnosticTest::GetUserDefaultProfileDir() {
+  base::FilePath path;
   if (!PathService::Get(chrome::DIR_USER_DATA, &path))
-    return FilePath();
+    return base::FilePath();
   return path.AppendASCII(chrome::kInitialProfile);
 }

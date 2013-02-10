@@ -65,7 +65,7 @@ SerialPortEnumerator::StringSet SerialPortEnumerator::GenerateValidPatterns() {
 SerialPortEnumerator::StringSet
 SerialPortEnumerator::GenerateValidSerialPortNames() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  const FilePath kDevRoot("/dev");
+  const base::FilePath kDevRoot("/dev");
   const int kFilesAndSymLinks =
       file_util::FileEnumerator::FILES |
       file_util::FileEnumerator::SHOW_SYM_LINKS;
@@ -75,7 +75,7 @@ SerialPortEnumerator::GenerateValidSerialPortNames() {
   file_util::FileEnumerator enumerator(
       kDevRoot, false, kFilesAndSymLinks);
   do {
-    const FilePath next_device_path(enumerator.Next());
+    const base::FilePath next_device_path(enumerator.Next());
     const std::string next_device = next_device_path.value();
     if (next_device.empty())
       break;

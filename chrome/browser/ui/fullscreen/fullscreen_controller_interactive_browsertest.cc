@@ -27,7 +27,7 @@ using content::PAGE_TRANSITION_TYPED;
 
 namespace {
 
-const FilePath::CharType* kSimpleFile = FILE_PATH_LITERAL("simple.html");
+const base::FilePath::CharType* kSimpleFile = FILE_PATH_LITERAL("simple.html");
 
 }  // namespace
 
@@ -279,9 +279,10 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 // Test is flaky: http://crbug.com/146006
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        DISABLED_FullscreenFileURL) {
-  ui_test_utils::NavigateToURL(browser(),
-      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                FilePath(kSimpleFile)));
+  ui_test_utils::NavigateToURL(
+      browser(), ui_test_utils::GetTestUrl(
+                     base::FilePath(base::FilePath::kCurrentDirectory),
+                     base::FilePath(kSimpleFile)));
 
   // Validate that going fullscreen for a file does not ask permision.
   ASSERT_FALSE(IsFullscreenPermissionRequested());
@@ -326,8 +327,8 @@ IN_PROC_BROWSER_TEST_F(
     DISABLED_TestTabDoesntExitFullscreenOnSubFrameNavigation) {
   ASSERT_TRUE(test_server()->Start());
 
-  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                     FilePath(kSimpleFile)));
+  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
+      base::FilePath::kCurrentDirectory), base::FilePath(kSimpleFile)));
   GURL url_with_fragment(url.spec() + "#fragment");
 
   ui_test_utils::NavigateToURL(browser(), url);

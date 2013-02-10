@@ -114,8 +114,8 @@ void OnShutdownStarting(ShutdownType type) {
   }
 }
 
-FilePath GetShutdownMsPath() {
-  FilePath shutdown_ms_file;
+base::FilePath GetShutdownMsPath() {
+  base::FilePath shutdown_ms_file;
   PathService::Get(chrome::DIR_USER_DATA, &shutdown_ms_file);
   return shutdown_ms_file.AppendASCII(kShutdownMsFile);
 }
@@ -248,7 +248,7 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
     std::string shutdown_ms =
         base::Int64ToString(shutdown_delta.InMilliseconds());
     int len = static_cast<int>(shutdown_ms.length()) + 1;
-    FilePath shutdown_ms_file = GetShutdownMsPath();
+    base::FilePath shutdown_ms_file = GetShutdownMsPath();
     file_util::WriteFile(shutdown_ms_file, shutdown_ms.c_str(), len);
   }
 
@@ -262,7 +262,7 @@ void ReadLastShutdownFile(ShutdownType type,
                           int num_procs_slow) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath shutdown_ms_file = GetShutdownMsPath();
+  base::FilePath shutdown_ms_file = GetShutdownMsPath();
   std::string shutdown_ms_str;
   int64 shutdown_ms = 0;
   if (file_util::ReadFileToString(shutdown_ms_file, &shutdown_ms_str))

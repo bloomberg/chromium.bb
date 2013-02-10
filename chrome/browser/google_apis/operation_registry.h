@@ -47,7 +47,7 @@ std::string OperationTransferStateToString(OperationTransferState state);
 
 // Structure that packs progress information of each operation.
 struct OperationProgressStatus {
-  OperationProgressStatus(OperationType type, const FilePath& file_path);
+  OperationProgressStatus(OperationType type, const base::FilePath& file_path);
   // For debugging
   std::string DebugString() const;
 
@@ -56,7 +56,7 @@ struct OperationProgressStatus {
   // Type of the operation: upload/download.
   OperationType operation_type;
   // GData path of the file dealt with the current operation.
-  FilePath file_path;
+  base::FilePath file_path;
   // Current state of the transfer;
   OperationTransferState transfer_state;
   // The time when the operation is initiated.
@@ -85,7 +85,7 @@ class OperationRegistry {
     explicit Operation(OperationRegistry* registry);
     Operation(OperationRegistry* registry,
               OperationType type,
-              const FilePath& file_path);
+              const base::FilePath& file_path);
     virtual ~Operation();
 
     // Cancels the ongoing operation. NotifyFinish() is called and the Operation
@@ -125,7 +125,7 @@ class OperationRegistry {
 
   // Cancels ongoing operation for a given virtual |file_path|. Returns true if
   // the operation was found and canceled.
-  bool CancelForFilePath(const FilePath& file_path);
+  bool CancelForFilePath(const base::FilePath& file_path);
 
   // Obtains the list of currently active operations.
   OperationProgressStatusList GetProgressStatusList();

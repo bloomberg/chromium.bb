@@ -106,7 +106,7 @@ void DriveSystemService::DriveCacheDeleter::operator()(
 DriveSystemService::DriveSystemService(
     Profile* profile,
     google_apis::DriveServiceInterface* test_drive_service,
-    const FilePath& test_cache_root,
+    const base::FilePath& test_cache_root,
     DriveFileSystemInterface* test_file_system)
     : profile_(profile),
       drive_disabled_(false),
@@ -259,7 +259,7 @@ void DriveSystemService::AddDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!file_system_proxy_.get());
 
-  const FilePath drive_mount_point = util::GetDriveMountPointPath();
+  const base::FilePath drive_mount_point = util::GetDriveMountPointPath();
   fileapi::ExternalMountPoints* mount_points =
       BrowserContext::GetMountPoints(profile_);
   DCHECK(mount_points);
@@ -414,7 +414,7 @@ ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   DriveSystemService* service = NULL;
   if (factory_for_test_.is_null())
-    service = new DriveSystemService(profile, NULL, FilePath(), NULL);
+    service = new DriveSystemService(profile, NULL, base::FilePath(), NULL);
   else
     service = factory_for_test_.Run(profile);
 

@@ -119,7 +119,7 @@ const char kGuestUserName[] = "";
 // Flag file that disables RLZ tracking, when present.
 const char kRLZDisabledFlagName[] = FILE_PATH_LITERAL(".rlz_disabled");
 
-FilePath GetRlzDisabledFlagPath() {
+base::FilePath GetRlzDisabledFlagPath() {
   return file_util::GetHomeDir().Append(kRLZDisabledFlagName);
 }
 #endif
@@ -355,7 +355,7 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   browser_creator.LaunchBrowser(*CommandLine::ForCurrentProcess(),
                                 profile,
-                                FilePath(),
+                                base::FilePath(),
                                 chrome::startup::IS_PROCESS_STARTUP,
                                 first_run,
                                 &return_code);

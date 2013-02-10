@@ -152,7 +152,7 @@ void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) const {
 }
 
 // static
-PrefixSet* PrefixSet::LoadFile(const FilePath& filter_name) {
+PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   int64 size_64;
   if (!file_util::GetFileSize(filter_name, &size_64))
     return NULL;
@@ -229,7 +229,7 @@ PrefixSet* PrefixSet::LoadFile(const FilePath& filter_name) {
   return new PrefixSet(&index, &deltas);
 }
 
-bool PrefixSet::WriteFile(const FilePath& filter_name) const {
+bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
   FileHeader header;
   header.magic = kMagic;
   header.version = kVersion;

@@ -29,7 +29,7 @@ class IEImporter : public Importer {
 
   // A struct that hosts the information of IE Favorite folder.
   struct FavoritesInfo {
-    FilePath path;
+    base::FilePath path;
     string16 links_folder;
   };
 
@@ -77,7 +77,7 @@ class IEImporter : public Importer {
 
   // IE does not have source path. It's used in unit tests only for providing a
   // fake source.
-  FilePath source_path_;
+  base::FilePath source_path_;
 
   DISALLOW_COPY_AND_ASSIGN(IEImporter);
 };

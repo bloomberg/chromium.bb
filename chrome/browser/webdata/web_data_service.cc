@@ -113,8 +113,8 @@ void WebDataService::ShutdownOnUIThread() {
   UnloadDatabase();
 }
 
-bool WebDataService::Init(const FilePath& profile_path) {
-  FilePath path = profile_path;
+bool WebDataService::Init(const base::FilePath& profile_path) {
+  base::FilePath path = profile_path;
   path = path.Append(chrome::kWebDataFilename);
   return InitWithPath(path);
 }
@@ -414,7 +414,7 @@ WebDataService::~WebDataService() {
   }
 }
 
-bool WebDataService::InitWithPath(const FilePath& path) {
+bool WebDataService::InitWithPath(const base::FilePath& path) {
   path_ = path;
   is_running_ = true;
 

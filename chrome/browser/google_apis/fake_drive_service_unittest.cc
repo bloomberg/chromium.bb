@@ -549,11 +549,12 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   const GURL kContentUrl("https://file_content_url/");
-  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  const base::FilePath kOutputFilePath =
+      temp_dir.path().AppendASCII("whatever.txt");
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  FilePath output_file_path;
+  base::FilePath output_file_path;
   fake_service_.DownloadFile(
-      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       base::Bind(&test_util::CopyResultsFromDownloadActionCallback,
@@ -577,11 +578,12 @@ TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   const GURL kContentUrl("https://non_existing_content_url/");
-  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  const base::FilePath kOutputFilePath =
+      temp_dir.path().AppendASCII("whatever.txt");
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  FilePath output_file_path;
+  base::FilePath output_file_path;
   fake_service_.DownloadFile(
-      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       base::Bind(&test_util::CopyResultsFromDownloadActionCallback,
@@ -601,11 +603,12 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   const GURL kContentUrl("https://file_content_url/");
-  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  const base::FilePath kOutputFilePath =
+      temp_dir.path().AppendASCII("whatever.txt");
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  FilePath output_file_path;
+  base::FilePath output_file_path;
   fake_service_.DownloadFile(
-      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       base::Bind(&test_util::CopyResultsFromDownloadActionCallback,
@@ -1052,7 +1055,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_Offline) {
           "test/foo",
           13,
           GURL("https://1_folder_resumable_create_media_link"),
-          FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
           "etag_ignored"),
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
@@ -1075,7 +1078,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_NotFound) {
           "test/foo",
           13,
           GURL("https://non_existent"),
-          FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
           "etag_ignored"),
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
@@ -1098,7 +1101,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_NewFile) {
           "test/foo",
           13,
           GURL("https://1_folder_resumable_create_media_link"),
-          FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
           "etag_ignored"),
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
@@ -1123,7 +1126,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_WrongETag) {
           "text/plain",
           13,
           GURL("https://2_file_link_resumable_create_media"),
-          FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+          base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
           "invalid_etag"),
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
@@ -1146,7 +1149,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
           "text/plain",
           13,
           GURL("https://2_file_link_resumable_create_media"),
-          FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+          base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
           "\"HhMOFgxXHit7ImBr\""),
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
@@ -1170,7 +1173,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
           "test/foo",
           15,
           GURL("https://1_folder_resumable_create_media_link"),
-          FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
           "etag_ignored"),
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
@@ -1191,7 +1194,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
                          0, 13, 15, "test/foo",
                          scoped_refptr<net::IOBuffer>(),
                          upload_location,
-                         FilePath(FILE_PATH_LITERAL(
+                         base::FilePath(FILE_PATH_LITERAL(
                              "drive/Directory 1/new file.foo"))),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
@@ -1213,7 +1216,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
           "test/foo",
           15,
           GURL("https://1_folder_resumable_create_media_link"),
-          FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
           "etag_ignored"),
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
@@ -1229,7 +1232,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
                          0, 13, 15, "test/foo",
                          scoped_refptr<net::IOBuffer>(),
                          GURL("https://foo.com/"),
-                         FilePath(FILE_PATH_LITERAL(
+                         base::FilePath(FILE_PATH_LITERAL(
                              "drive/Directory 1/new file.foo"))),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
@@ -1251,7 +1254,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
           "text/plain",
           15,
           GURL("https://2_file_link_resumable_create_media"),
-          FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+          base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
           "\"HhMOFgxXHit7ImBr\""),
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
@@ -1267,7 +1270,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
                          0, 13, 15, "text/plain",
                          scoped_refptr<net::IOBuffer>(),
                          upload_location,
-                         FilePath(FILE_PATH_LITERAL(
+                         base::FilePath(FILE_PATH_LITERAL(
                              "drive/File 1.txt"))),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
@@ -1281,7 +1284,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
                          14, 15, 15, "text/plain",
                          scoped_refptr<net::IOBuffer>(),
                          upload_location,
-                         FilePath(FILE_PATH_LITERAL(
+                         base::FilePath(FILE_PATH_LITERAL(
                              "drive/File 1.txt"))),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
@@ -1305,7 +1308,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
           "test/foo",
           15,
           GURL("https://1_folder_resumable_create_media_link"),
-          FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
           "etag_ignored"),
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
@@ -1324,7 +1327,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
                          0, 13, 15, "test/foo",
                          scoped_refptr<net::IOBuffer>(),
                          upload_location,
-                         FilePath(FILE_PATH_LITERAL(
+                         base::FilePath(FILE_PATH_LITERAL(
                              "drive/Directory 1/new file.foo"))),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));
@@ -1338,7 +1341,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
                          14, 15, 15, "test/foo",
                          scoped_refptr<net::IOBuffer>(),
                          upload_location,
-                         FilePath(FILE_PATH_LITERAL(
+                         base::FilePath(FILE_PATH_LITERAL(
                              "drive/Directory 1/new file.foo"))),
       base::Bind(&test_util::CopyResultsFromUploadRangeCallback,
                  &response, &entry));

@@ -164,13 +164,14 @@ GURL GetSubmitURL(const GURL& cloud_print_url) {
 }
 
 // A callback to continue snapshot generation after creating the temp file.
-typedef base::Callback<void(const FilePath& path)> CreateSnapshotFileCallback;
+typedef base::Callback<void(const base::FilePath& path)>
+    CreateSnapshotFileCallback;
 
 // Create a temp file and post the callback on the UI thread with the results.
 // Call this as a BlockingPoolTask to avoid the FILE thread.
 void CreateSnapshotFile(CreateSnapshotFileCallback callback) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  FilePath file;
+  base::FilePath file;
   if (!file_util::CreateTemporaryFile(&file))
     file.clear();
   if (!content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
@@ -200,7 +201,7 @@ void ReadSnapshotFile(scoped_ptr<ChromeToMobileService::JobData> data,
 
 // Delete the snapshot file; DCHECK, but really ignore the result of the delete.
 // Call this as a BlockingPoolSequencedTask [after posting SubmitSnapshotFile].
-void DeleteSnapshotFile(const FilePath& snapshot) {
+void DeleteSnapshotFile(const base::FilePath& snapshot) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   bool success = file_util::Delete(snapshot, false);
   DCHECK(success);
@@ -309,7 +310,7 @@ void ChromeToMobileService::GenerateSnapshot(Browser* browser,
 }
 
 void ChromeToMobileService::SendToMobile(const base::DictionaryValue* mobile,
-                                         const FilePath& snapshot,
+                                         const base::FilePath& snapshot,
                                          Browser* browser,
                                          base::WeakPtr<Observer> observer) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -354,7 +355,7 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue* mobile,
   }
 }
 
-void ChromeToMobileService::DeleteSnapshot(const FilePath& snapshot) {
+void ChromeToMobileService::DeleteSnapshot(const base::FilePath& snapshot) {
   DCHECK(snapshot.empty() || snapshots_.find(snapshot) != snapshots_.end());
   if (snapshots_.find(snapshot) != snapshots_.end()) {
     if (!snapshot.empty()) {
@@ -493,7 +494,7 @@ void ChromeToMobileService::SetAccessTokenForTest(
 void ChromeToMobileService::SnapshotFileCreated(
     base::WeakPtr<Observer> observer,
     SessionID::id_type browser_id,
-    const FilePath& path) {
+    const base::FilePath& path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Track the set of temporary files to be deleted later.
   snapshots_.insert(path);
@@ -506,12 +507,12 @@ void ChromeToMobileService::SnapshotFileCreated(
         base::Bind(&ChromeToMobileService::SnapshotGenerated,
                    weak_ptr_factory_.GetWeakPtr(), observer));
   } else {
-    SnapshotGenerated(observer, FilePath(), 0);
+    SnapshotGenerated(observer, base::FilePath(), 0);
   }
 }
 
 void ChromeToMobileService::SnapshotGenerated(base::WeakPtr<Observer> observer,
-                                              const FilePath& path,
+                                              const base::FilePath& path,
                                               int64 bytes) {
   LogMetric(bytes > 0 ? SNAPSHOT_GENERATED : SNAPSHOT_ERROR);
   if (observer.get())

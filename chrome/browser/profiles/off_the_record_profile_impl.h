@@ -59,7 +59,7 @@ class OffTheRecordProfileImpl : public Profile {
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           chrome_devtools_protocol_handler) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       bool in_memory,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           blob_protocol_handler,
@@ -78,8 +78,8 @@ class OffTheRecordProfileImpl : public Profile {
   virtual Time GetStartTime() const OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
-  virtual FilePath last_selected_directory() OVERRIDE;
-  virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
+  virtual base::FilePath last_selected_directory() OVERRIDE;
+  virtual void set_last_selected_directory(const base::FilePath& path) OVERRIDE;
   virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
   virtual void SetExitType(ExitType exit_type) OVERRIDE;
   virtual ExitType GetLastSessionExitType() OVERRIDE;
@@ -102,7 +102,7 @@ class OffTheRecordProfileImpl : public Profile {
   virtual GURL GetHomePage() OVERRIDE;
 
   // content::BrowserContext implementation:
-  virtual FilePath GetPath() OVERRIDE;
+  virtual base::FilePath GetPath() OVERRIDE;
   virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::DownloadManagerDelegate*
@@ -115,7 +115,7 @@ class OffTheRecordProfileImpl : public Profile {
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const FilePath& partition_path,
+          const base::FilePath& partition_path,
           bool in_memory) OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual content::GeolocationPermissionContext*
@@ -148,7 +148,7 @@ class OffTheRecordProfileImpl : public Profile {
   // Time we were started.
   Time start_time_;
 
-  FilePath last_selected_directory_;
+  base::FilePath last_selected_directory_;
 
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 

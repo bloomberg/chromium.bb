@@ -26,13 +26,13 @@ using content::BrowserThread;
 namespace {
 
 // Extension used for backup files (copy of main file created during startup).
-const FilePath::CharType kBackupExtension[] = FILE_PATH_LITERAL("bak");
+const base::FilePath::CharType kBackupExtension[] = FILE_PATH_LITERAL("bak");
 
 // How often we save.
 const int kSaveDelayMS = 2500;
 
-void BackupCallback(const FilePath& path) {
-  FilePath backup_path = path.ReplaceExtension(kBackupExtension);
+void BackupCallback(const base::FilePath& path) {
+  base::FilePath backup_path = path.ReplaceExtension(kBackupExtension);
   file_util::CopyFile(path, backup_path);
 }
 
@@ -48,7 +48,7 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details,
   }
 }
 
-void LoadCallback(const FilePath& path,
+void LoadCallback(const base::FilePath& path,
                   BookmarkStorage* storage,
                   BookmarkLoadDetails* details) {
   startup_metric_utils::ScopedSlowStartupUMA

@@ -58,9 +58,11 @@ class DeveloperPrivateAPI : public ProfileKeyedService,
   explicit DeveloperPrivateAPI(Profile* profile);
   virtual ~DeveloperPrivateAPI();
 
-  void SetLastUnpackedDirectory(const FilePath& path);
+  void SetLastUnpackedDirectory(const base::FilePath& path);
 
-  FilePath& getLastUnpackedDirectory() { return last_unpacked_directory_; }
+  base::FilePath& getLastUnpackedDirectory() {
+    return last_unpacked_directory_;
+  }
 
   // ProfileKeyedService implementation
   virtual void Shutdown() OVERRIDE;
@@ -75,7 +77,7 @@ class DeveloperPrivateAPI : public ProfileKeyedService,
 
   // Used to start the load |load_extension_dialog_| in the last directory that
   // was loaded.
-  FilePath last_unpacked_directory_;
+  base::FilePath last_unpacked_directory_;
 
   content::NotificationRegistrar registrar_;
 
@@ -201,11 +203,11 @@ class DeveloperPrivateChooseEntryFunction : public SyncExtensionFunction,
   virtual ~DeveloperPrivateChooseEntryFunction();
   virtual bool RunImpl() OVERRIDE;
   bool ShowPicker(ui::SelectFileDialog::Type picker_type,
-                  const FilePath& last_directory,
+                  const base::FilePath& last_directory,
                   const string16& select_title);
 
   // EntryPickerCLient functions.
-  virtual void FileSelected(const FilePath& path) = 0;
+  virtual void FileSelected(const base::FilePath& path) = 0;
   virtual void FileSelectionCanceled() = 0;
 };
 
@@ -221,7 +223,7 @@ class DeveloperPrivateLoadUnpackedFunction
   virtual bool RunImpl() OVERRIDE;
 
   // EntryPickerCLient implementation.
-  virtual void FileSelected(const FilePath& path) OVERRIDE;
+  virtual void FileSelected(const base::FilePath& path) OVERRIDE;
   virtual void FileSelectionCanceled() OVERRIDE;
 
 };

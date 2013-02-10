@@ -605,7 +605,7 @@ class Browser : public TabStripModelObserver,
       const content::FileChooserParams& params) OVERRIDE;
   virtual void EnumerateDirectory(content::WebContents* web_contents,
                                   int request_id,
-                                  const FilePath& path) OVERRIDE;
+                                  const base::FilePath& path) OVERRIDE;
   virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
       bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForTabOrPending(
@@ -646,7 +646,7 @@ class Browser : public TabStripModelObserver,
   virtual bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,
-      const FilePath& plugin_path,
+      const base::FilePath& plugin_path,
       const base::Callback<void(bool)>& callback) OVERRIDE;
 
   // Overridden from CoreTabHelperDelegate:
@@ -680,7 +680,7 @@ class Browser : public TabStripModelObserver,
                              bool can_show_bubble) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
   virtual void FileSelectedWithExtraInfo(

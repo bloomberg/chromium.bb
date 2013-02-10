@@ -5,7 +5,8 @@
 #include "base/logging.h"
 #include "chrome/browser/icon_manager.h"
 
-IconGroupID IconManager::GetGroupIDFromFilepath(const base::FilePath& filepath) {
+IconGroupID IconManager::GetGroupIDFromFilepath(
+    const base::FilePath& filepath) {
   NOTIMPLEMENTED();
   return 0;
 }

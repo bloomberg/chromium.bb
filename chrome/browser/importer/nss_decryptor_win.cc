@@ -37,7 +37,8 @@ const wchar_t NSSDecryptor::kSoftokn3Library[] = L"softokn3.dll";
 const wchar_t NSSDecryptor::kPLDS4Library[] = L"plds4.dll";
 const wchar_t NSSDecryptor::kNSPR4Library[] = L"nspr4.dll";
 
-bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
+bool NSSDecryptor::Init(const base::FilePath& dll_path,
+                        const base::FilePath& db_path) {
   // We call SetDllDirectory to work around a Purify bug (GetModuleHandle
   // fails inside Purify under certain conditions).  SetDllDirectory only
   // exists on Windows XP SP1 or later, so we look up its address at run time.
@@ -59,7 +60,7 @@ bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
     // Fall back on LoadLibraryEx if SetDllDirectory isn't available.  We
     // actually prefer this method because it doesn't change the DLL search
     // path, which is a process-wide property.
-    FilePath path = dll_path.Append(kNSS3Library);
+    base::FilePath path = dll_path.Append(kNSS3Library);
     nss3_dll_ = LoadLibraryEx(path.value().c_str(), NULL,
                               LOAD_WITH_ALTERED_SEARCH_PATH);
     if (nss3_dll_ == NULL)
@@ -75,7 +76,7 @@ bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
     // LOAD_WITH_ALTERED_SEARCH_PATH flag.  This helps because LoadLibrary
     // doesn't load a DLL again if it's already loaded.  This workaround is
     // harmless for NSS 3.11.
-    path = FilePath(dll_path).Append(kSoftokn3Library);
+    path = base::FilePath(dll_path).Append(kSoftokn3Library);
     softokn3_dll_ = LoadLibraryEx(path.value().c_str(), NULL,
                                   LOAD_WITH_ALTERED_SEARCH_PATH);
     if (softokn3_dll_ == NULL) {
@@ -102,7 +103,7 @@ NSSDecryptor::~NSSDecryptor() {
   Free();
 }
 
-bool NSSDecryptor::InitNSS(const FilePath& db_path,
+bool NSSDecryptor::InitNSS(const base::FilePath& db_path,
                            base::NativeLibrary plds4_dll,
                            base::NativeLibrary nspr4_dll) {
   // NSPR DLLs are already loaded now.

@@ -131,7 +131,7 @@ string16 VariationsRegistrySyncer::ExtractNonVariationLabels(
 void VariationsRegistrySyncer::SyncWithRegistry() {
   // Note that all registry operations are done here on the UI thread as there
   // are no threading restrictions on them.
-  FilePath chrome_exe;
+  base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED() << "Failed to get chrome exe path";
     return;

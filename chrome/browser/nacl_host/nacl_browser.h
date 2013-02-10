@@ -41,7 +41,7 @@ class NaClBrowser {
   void EnsureIrtAvailable();
 
   // Path to IRT. Available even before IRT is loaded.
-  const FilePath& GetIrtFilePath();
+  const base::FilePath& GetIrtFilePath();
 
   // IRT file handle, only available when IsReady().
   base::PlatformFile IrtFile() const;
@@ -111,13 +111,13 @@ class NaClBrowser {
   base::WeakPtrFactory<NaClBrowser> weak_factory_;
 
   base::PlatformFile irt_platform_file_;
-  FilePath irt_filepath_;
+  base::FilePath irt_filepath_;
   NaClResourceState irt_state_;
   std::vector<URLPattern> debug_patterns_;
   bool inverse_debug_patterns_;
   NaClValidationCache validation_cache_;
   NaClValidationCache off_the_record_validation_cache_;
-  FilePath validation_cache_file_path_;
+  base::FilePath validation_cache_file_path_;
   bool validation_cache_is_enabled_;
   bool validation_cache_is_modified_;
   NaClResourceState validation_cache_state_;

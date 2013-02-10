@@ -32,7 +32,7 @@ class DriveCacheObserver;
 
 // Callback for GetFileFromCache.
 typedef base::Callback<void(DriveFileError error,
-                            const FilePath& cache_file_path)>
+                            const base::FilePath& cache_file_path)>
     GetFileFromCacheCallback;
 
 // Callback for GetCacheEntry.
@@ -101,7 +101,7 @@ class DriveCache {
   //
   // |free_disk_space_getter| is used to inject a custom free disk space
   // getter for testing. NULL must be passed for production code.
-  DriveCache(const FilePath& cache_root_path,
+  DriveCache(const base::FilePath& cache_root_path,
              base::SequencedTaskRunner* blocking_task_runner,
              FreeDiskSpaceGetterInterface* free_disk_space_getter);
 
@@ -109,12 +109,13 @@ class DriveCache {
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
   //
   // Can be called on any thread.
-  FilePath GetCacheDirectoryPath(CacheSubDirectoryType sub_dir_type) const;
+  base::FilePath GetCacheDirectoryPath(
+      CacheSubDirectoryType sub_dir_type) const;
 
   // Returns absolute path of the file if it were cached or to be cached.
   //
   // Can be called on any thread.
-  FilePath GetCacheFilePath(const std::string& resource_id,
+  base::FilePath GetCacheFilePath(const std::string& resource_id,
                             const std::string& md5,
                             CacheSubDirectoryType sub_dir_type,
                             CachedFileOrigin file_origin) const;
@@ -123,7 +124,7 @@ class DriveCache {
   // <user_profile_dir>/GCache/v1
   //
   // Can be called on any thread.
-  bool IsUnderDriveCacheDirectory(const FilePath& path) const;
+  bool IsUnderDriveCacheDirectory(const base::FilePath& path) const;
 
   // Adds observer.
   void AddObserver(DriveCacheObserver* observer);
@@ -168,7 +169,7 @@ class DriveCache {
   // |callback| must not be null.
   void Store(const std::string& resource_id,
              const std::string& md5,
-             const FilePath& source_path,
+             const base::FilePath& source_path,
              FileOperationType file_operation_type,
              const FileOperationCallback& callback);
 
@@ -199,7 +200,7 @@ class DriveCache {
 
   // Set the state of the cache entry corresponding to file_path as unmounted.
   // |callback| must not be null.
-  void MarkAsUnmounted(const FilePath& file_path,
+  void MarkAsUnmounted(const base::FilePath& file_path,
                        const FileOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
@@ -259,25 +260,26 @@ class DriveCache {
   // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
   // profile.
   // TODO(satorux): Write a unit test for this.
-  static FilePath GetCacheRootPath(Profile* profile);
+  static base::FilePath GetCacheRootPath(Profile* profile);
 
   // Returns file paths for all the cache sub directories under
   // |cache_root_path|.
-  static std::vector<FilePath> GetCachePaths(const FilePath& cache_root_path);
+  static std::vector<base::FilePath> GetCachePaths(
+      const base::FilePath& cache_root_path);
 
   // Creates cache directory and its sub-directories if they don't exist.
   // TODO(glotov): take care of this when the setup and cleanup part is
   // landed, noting that these directories need to be created for development
   // in linux box and unittest. (http://crosbug.com/27577)
   static bool CreateCacheDirectories(
-      const std::vector<FilePath>& paths_to_create);
+      const std::vector<base::FilePath>& paths_to_create);
 
   // Returns the type of the sub directory where the cache file is stored.
   static CacheSubDirectoryType GetSubDirectoryType(
       const DriveCacheEntry& cache_entry);
 
  private:
-  typedef std::pair<DriveFileError, FilePath> GetFileResult;
+  typedef std::pair<DriveFileError, base::FilePath> GetFileResult;
 
   virtual ~DriveCache();
 
@@ -315,7 +317,7 @@ class DriveCache {
   // Used to implement Store.
   DriveFileError StoreOnBlockingPool(const std::string& resource_id,
                                      const std::string& md5,
-                                     const FilePath& source_path,
+                                     const base::FilePath& source_path,
                                      FileOperationType file_operation_type);
 
   // Used to implement Pin.
@@ -332,7 +334,7 @@ class DriveCache {
       const std::string& md5);
 
   // Used to implement MarkAsUnmounted.
-  DriveFileError MarkAsUnmountedOnBlockingPool(const FilePath& file_path);
+  DriveFileError MarkAsUnmountedOnBlockingPool(const base::FilePath& file_path);
 
   // Used to implement MarkDirty.
   DriveFileError MarkDirtyOnBlockingPool(const std::string& resource_id,
@@ -371,13 +373,13 @@ class DriveCache {
 
   // Returns true if we have sufficient space to store the given number of
   // bytes, while keeping kMinFreeSpace bytes on the disk.
-  bool HasEnoughSpaceFor(int64 num_bytes, const FilePath& path);
+  bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
 
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
-  const FilePath cache_root_path_;
+  const base::FilePath cache_root_path_;
   // Paths for all subdirectories of GCache, one for each
   // DriveCache::CacheSubDirectoryType enum.
-  const std::vector<FilePath> cache_paths_;
+  const std::vector<base::FilePath> cache_paths_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // The cache state data. This member must be access only on the blocking pool.

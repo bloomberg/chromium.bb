@@ -33,7 +33,7 @@ using content::BrowserThread;
 class SQLiteServerBoundCertStore::Backend
     : public base::RefCountedThreadSafe<SQLiteServerBoundCertStore::Backend> {
  public:
-  Backend(const FilePath& path, ClearOnExitPolicy* clear_on_exit_policy)
+  Backend(const base::FilePath& path, ClearOnExitPolicy* clear_on_exit_policy)
       : path_(path),
         db_(NULL),
         num_pending_(0),
@@ -111,7 +111,7 @@ class SQLiteServerBoundCertStore::Backend
 
   void DeleteCertificatesOnShutdown();
 
-  FilePath path_;
+  base::FilePath path_;
   scoped_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
 
@@ -193,7 +193,7 @@ void SQLiteServerBoundCertStore::Backend::LoadOnDBThread(
 
   // Ensure the parent directory for storing certs is created before reading
   // from it.
-  const FilePath dir = path_.DirName();
+  const base::FilePath dir = path_.DirName();
   if (!file_util::PathExists(dir) && !file_util::CreateDirectory(dir))
     return;
 
@@ -565,7 +565,7 @@ void SQLiteServerBoundCertStore::Backend::SetForceKeepSessionState() {
 }
 
 SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(
-    const FilePath& path,
+    const base::FilePath& path,
     ClearOnExitPolicy* clear_on_exit_policy)
     : backend_(new Backend(path, clear_on_exit_policy)) {
 }

@@ -44,8 +44,8 @@ void RecordFilePickerResult(DownloadManager* manager,
                             FILE_PICKER_MAX);
 }
 
-FilePickerResult ComparePaths(const FilePath& suggested_path,
-                              const FilePath& actual_path) {
+FilePickerResult ComparePaths(const base::FilePath& suggested_path,
+                              const base::FilePath& actual_path) {
   if (suggested_path == actual_path)
     return FILE_PICKER_SAME;
   if (suggested_path.DirName() != actual_path.DirName())
@@ -61,7 +61,7 @@ DownloadFilePicker::DownloadFilePicker() : download_id_(0) {
 void DownloadFilePicker::Init(
     DownloadManager* download_manager,
     DownloadItem* item,
-    const FilePath& suggested_path,
+    const base::FilePath& suggested_path,
     const ChromeDownloadManagerDelegate::FileSelectedCallback& callback) {
   download_manager_ = download_manager;
   download_id_ = item->GetId();
@@ -73,7 +73,7 @@ void DownloadFilePicker::Init(
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents));
   ui::SelectFileDialog::FileTypeInfo file_type_info;
-  FilePath::StringType extension = suggested_path_.Extension();
+  base::FilePath::StringType extension = suggested_path_.Extension();
   if (!extension.empty()) {
     extension.erase(extension.begin());  // drop the .
     file_type_info.extensions.resize(1);
@@ -98,22 +98,23 @@ void DownloadFilePicker::Init(
 DownloadFilePicker::~DownloadFilePicker() {
 }
 
-void DownloadFilePicker::InitSuggestedPath(DownloadItem* item,
-                                           const FilePath& suggested_path) {
+void DownloadFilePicker::InitSuggestedPath(
+    DownloadItem* item,
+    const base::FilePath& suggested_path) {
   set_suggested_path(suggested_path);
 }
 
-void DownloadFilePicker::OnFileSelected(const FilePath& path) {
+void DownloadFilePicker::OnFileSelected(const base::FilePath& path) {
   file_selected_callback_.Run(path);
   delete this;
 }
 
-void DownloadFilePicker::RecordFileSelected(const FilePath& path) {
+void DownloadFilePicker::RecordFileSelected(const base::FilePath& path) {
   FilePickerResult result = ComparePaths(suggested_path_, path);
   RecordFilePickerResult(download_manager_, result);
 }
 
-void DownloadFilePicker::FileSelected(const FilePath& path,
+void DownloadFilePicker::FileSelected(const base::FilePath& path,
                                       int index,
                                       void* params) {
   RecordFileSelected(path);
@@ -123,6 +124,6 @@ void DownloadFilePicker::FileSelected(const FilePath& path,
 
 void DownloadFilePicker::FileSelectionCanceled(void* params) {
   RecordFilePickerResult(download_manager_, FILE_PICKER_CANCEL);
-  OnFileSelected(FilePath());
+  OnFileSelected(base::FilePath());
   // Deletes |this|
 }

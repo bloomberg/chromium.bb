@@ -414,8 +414,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   // Create a test panel with web contents loaded.
   CreatePanelParams params("PanelTest1", gfx::Rect(), SHOW_AS_ACTIVE);
   GURL url(ui_test_utils::GetTestUrl(
-      FilePath(kTestDir),
-      FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
   params.url = url;
   Panel* panel = CreatePanelWithParams(params);
 
@@ -1505,8 +1505,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
   CreatePanelParams params("PanelTest1", gfx::Rect(0, 0, 300, 300),
                            SHOW_AS_ACTIVE);
   params.url = ui_test_utils::GetTestUrl(
-      FilePath(kTestDir),
-      FilePath(FILE_PATH_LITERAL("onbeforeunload.html")));
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("onbeforeunload.html")));
   Panel* panel = CreatePanelWithParams(params);
   EXPECT_EQ(1, panel_manager->num_panels());
 
@@ -1644,8 +1644,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevTools) {
   // Create a test panel with web contents loaded.
   CreatePanelParams params("1", gfx::Rect(0, 0, 200, 220), SHOW_AS_ACTIVE);
   GURL url(ui_test_utils::GetTestUrl(
-      FilePath(kTestDir),
-      FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
   params.url = url;
   Panel* panel = CreatePanelWithParams(params);
 
@@ -1675,8 +1675,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevToolsConsole) {
   // Create a test panel with web contents loaded.
   CreatePanelParams params("1", gfx::Rect(0, 0, 200, 220), SHOW_AS_ACTIVE);
   GURL url(ui_test_utils::GetTestUrl(
-      FilePath(kTestDir),
-      FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
   params.url = url;
   Panel* panel = CreatePanelWithParams(params);
 
@@ -1713,8 +1713,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_Accelerator) {
   // Create a test panel with web contents loaded.
   CreatePanelParams params("1", gfx::Rect(), SHOW_AS_ACTIVE);
   GURL url(ui_test_utils::GetTestUrl(
-      FilePath(kTestDir),
-      FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
   params.url = url;
   Panel* panel = CreatePanelWithParams(params);
   EXPECT_EQ(1, panel_manager->num_panels());

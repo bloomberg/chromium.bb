@@ -30,7 +30,7 @@ class Firefox2Importer : public Importer {
 
   // Loads the default bookmarks in the Firefox installed at |firefox_app_path|,
   // and stores their locations in |urls|.
-  static void LoadDefaultBookmarks(const FilePath& firefox_app_path,
+  static void LoadDefaultBookmarks(const base::FilePath& firefox_app_path,
                                    std::set<GURL>* urls);
 
   // Creates a TemplateURL with the |keyword| and |url|. |title| may be empty.
@@ -43,7 +43,7 @@ class Firefox2Importer : public Importer {
   // |favicons| may be null, in which case TemplateURLs and favicons are
   // not parsed. Any bookmarks in |default_urls| are ignored.
   static void ImportBookmarksFile(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       const std::set<GURL>& default_urls,
       Importer* importer,
       std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
@@ -67,7 +67,7 @@ class Firefox2Importer : public Importer {
 
   // Fills |files| with the paths to the files containing the search engine
   // descriptions.
-  void GetSearchEnginesXMLFiles(std::vector<FilePath>* files);
+  void GetSearchEnginesXMLFiles(std::vector<base::FilePath>* files);
 
   // Helper methods for parsing bookmark file.
   // Firefox 2 saves its bookmarks in a html file. We are interested in the
@@ -124,8 +124,8 @@ class Firefox2Importer : public Importer {
   static void HTMLUnescape(string16* text);
 
   // Fills |xml_files| with the file with an xml extension found under |dir|.
-  static void FindXMLFilesInDir(const FilePath& dir,
-                                std::vector<FilePath>* xml_files);
+  static void FindXMLFilesInDir(const base::FilePath& dir,
+                                std::vector<base::FilePath>* xml_files);
 
   // Given the URL of a page and a favicon data URL, adds an appropriate record
   // to the given favicon usage vector. Will do nothing if the favicon is not
@@ -135,8 +135,8 @@ class Firefox2Importer : public Importer {
       const GURL& favicon_data,
       std::vector<history::ImportedFaviconUsage>* favicons);
 
-  FilePath source_path_;
-  FilePath app_path_;
+  base::FilePath source_path_;
+  base::FilePath app_path_;
   // If true, we only parse the bookmarks.html file specified as source_path_.
   bool parsing_bookmarks_html_file_;
 

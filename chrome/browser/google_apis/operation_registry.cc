@@ -42,7 +42,7 @@ std::string OperationTransferStateToString(OperationTransferState state) {
 }
 
 OperationProgressStatus::OperationProgressStatus(OperationType type,
-                                                 const FilePath& path)
+                                                 const base::FilePath& path)
     : operation_id(-1),
       operation_type(type),
       file_path(path),
@@ -70,12 +70,12 @@ std::string OperationProgressStatus::DebugString() const {
 
 OperationRegistry::Operation::Operation(OperationRegistry* registry)
     : registry_(registry),
-      progress_status_(OPERATION_OTHER, FilePath()) {
+      progress_status_(OPERATION_OTHER, base::FilePath()) {
 }
 
 OperationRegistry::Operation::Operation(OperationRegistry* registry,
                                         OperationType type,
-                                        const FilePath& path)
+                                        const base::FilePath& path)
     : registry_(registry),
       progress_status_(type, path) {
 }
@@ -170,7 +170,7 @@ void OperationRegistry::CancelAll() {
   }
 }
 
-bool OperationRegistry::CancelForFilePath(const FilePath& file_path) {
+bool OperationRegistry::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (OperationIDMap::iterator iter(&in_flight_operations_);

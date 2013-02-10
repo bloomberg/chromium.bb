@@ -44,8 +44,8 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
   // DriveUploaderInterface overrides.
   virtual void UploadNewFile(
       const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
+      const base::FilePath& drive_file_path,
+      const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
       const google_apis::UploadCompletionCallback& callback) OVERRIDE {
@@ -53,8 +53,8 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
 
   virtual void UploadExistingFile(
       const GURL& upload_location,
-      const FilePath& drive_file_path,
-      const FilePath& local_file_path,
+      const base::FilePath& drive_file_path,
+      const base::FilePath& local_file_path,
       const std::string& content_type,
       const std::string& etag,
       const google_apis::UploadCompletionCallback& callback) OVERRIDE {

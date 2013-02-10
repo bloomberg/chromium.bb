@@ -34,7 +34,7 @@ bool IsOrganicFirstRun() {
 
 // TODO(port): This is just a piece of the silent import functionality from
 // ImportSettings for Windows.  It would be nice to get the rest of it ported.
-bool ImportBookmarks(const FilePath& import_bookmarks_path) {
+bool ImportBookmarks(const base::FilePath& import_bookmarks_path) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
   CommandLine import_cmd(cmdline.GetProgram());
 
@@ -68,11 +68,11 @@ bool ImportBookmarks(const FilePath& import_bookmarks_path) {
 
 namespace first_run {
 
-FilePath MasterPrefsPath() {
+base::FilePath MasterPrefsPath() {
   // The standard location of the master prefs is next to the chrome binary.
-  FilePath master_prefs;
+  base::FilePath master_prefs;
   if (!PathService::Get(base::DIR_EXE, &master_prefs))
-    return FilePath();
+    return base::FilePath();
   return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
 

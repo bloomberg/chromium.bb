@@ -226,7 +226,7 @@ void DriveAPIService::CancelAll() {
   runner_->CancelAll();
 }
 
-bool DriveAPIService::CancelForFilePath(const FilePath& file_path) {
+bool DriveAPIService::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return operation_registry()->CancelForFilePath(file_path);
 }
@@ -333,8 +333,8 @@ void DriveAPIService::GetAppList(const GetAppListCallback& callback) {
 }
 
 void DriveAPIService::DownloadFile(
-    const FilePath& virtual_path,
-    const FilePath& local_cache_path,
+    const base::FilePath& virtual_path,
+    const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback) {
@@ -468,7 +468,7 @@ void DriveAPIService::ResumeUpload(
 
 void DriveAPIService::GetUploadStatus(
     UploadMode upload_mode,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
     const UploadRangeCallback& callback) {

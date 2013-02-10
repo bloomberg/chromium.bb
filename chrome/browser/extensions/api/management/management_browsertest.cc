@@ -81,14 +81,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallSameVersion) {
   const Extension* extension = InstallExtension(
       test_data_dir_.AppendASCII("install/install.crx"), 1);
   ASSERT_TRUE(extension);
-  FilePath old_path = extension->path();
+  base::FilePath old_path = extension->path();
 
   // Install an extension with the same version. The previous install should be
   // overwritten.
   extension = InstallExtension(
       test_data_dir_.AppendASCII("install/install_same_version.crx"), 0);
   ASSERT_TRUE(extension);
-  FilePath new_path = extension->path();
+  base::FilePath new_path = extension->path();
 
   EXPECT_FALSE(IsExtensionAtVersion(extension, "1.0"));
   EXPECT_NE(old_path.value(), new_path.value());
@@ -248,7 +248,7 @@ class NotificationListener : public content::NotificationObserver {
 // Tests extension autoupdate.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   NotificationListener notification_listener;
-  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+  base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
   content::URLRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
                        MAYBE_AutoUpdateDisabledExtensions) {
   NotificationListener notification_listener;
-  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+  base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
   content::URLRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
   extensions::ExtensionUpdater::CheckParams params;
   params.check_blacklist = false;
 
-  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+  base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
   // Note: This interceptor gets requests on the IO thread.
   content::URLRequestPrepackagedInterceptor interceptor;
@@ -495,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   extensions::ExtensionUpdater::CheckParams params;
   params.check_blacklist = false;
 
-  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+  base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
   // Note: This interceptor gets requests on the IO thread.
   content::URLRequestPrepackagedInterceptor interceptor;
@@ -569,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   params.check_blacklist = false;
   service->updater()->set_default_check_params(params);
   const size_t size_before = service->extensions()->size();
-  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+  base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   ASSERT_TRUE(service->disabled_extensions()->is_empty());
 
   // Note: This interceptor gets requests on the IO thread.

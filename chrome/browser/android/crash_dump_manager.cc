@@ -59,7 +59,7 @@ CrashDumpManager::~CrashDumpManager() {
 
 int CrashDumpManager::CreateMinidumpFile(int child_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER));
-  FilePath minidump_path;
+  base::FilePath minidump_path;
   if (!file_util::CreateTemporaryFile(&minidump_path))
     return base::kInvalidPlatformFileValue;
 
@@ -83,7 +83,7 @@ int CrashDumpManager::CreateMinidumpFile(int child_process_id) {
   return minidump_file;
 }
 
-void CrashDumpManager::ProcessMinidump(const FilePath& minidump_path,
+void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
                                        base::ProcessHandle pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 file_size = 0;
@@ -101,7 +101,7 @@ void CrashDumpManager::ProcessMinidump(const FilePath& minidump_path,
 
   // We are dealing with a valid minidump. Copy it to the crash report
   // directory from where Java code will upload it later on.
-  FilePath crash_dump_dir;
+  base::FilePath crash_dump_dir;
   r = PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
   if (!r) {
     NOTREACHED() << "Failed to retrieve the crash dump directory.";
@@ -112,7 +112,7 @@ void CrashDumpManager::ProcessMinidump(const FilePath& minidump_path,
   const std::string filename =
       base::StringPrintf("chromium-renderer-minidump-%016" PRIx64 ".dmp%d",
                          rand, pid);
-  FilePath dest_path = crash_dump_dir.Append(filename);
+  base::FilePath dest_path = crash_dump_dir.Append(filename);
   r = file_util::Move(minidump_path, dest_path);
   if (!r) {
     LOG(ERROR) << "Failed to move crash dump from " << minidump_path.value()
@@ -153,7 +153,7 @@ void CrashDumpManager::Observe(int type,
       NOTREACHED();
       return;
   }
-  FilePath minidump_path;
+  base::FilePath minidump_path;
   {
     base::AutoLock auto_lock(child_process_id_to_minidump_path_lock_);
     ChildProcessIDToMinidumpPath::iterator iter =

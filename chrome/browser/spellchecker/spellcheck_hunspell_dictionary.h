@@ -83,7 +83,7 @@ class SpellcheckHunspellDictionary
   // Verifies the specified BDict file exists and it is sane. This function
   // should be called before opening the file so we can delete it and download a
   // new dictionary if it is corrupted.
-  bool VerifyBDict(const FilePath& path) const;
+  bool VerifyBDict(const base::FilePath& path) const;
 
   // Returns true if the dictionary is ready to use.
   virtual bool IsReady() const;
@@ -119,7 +119,7 @@ class SpellcheckHunspellDictionary
   void InformListenersOfDownloadFailure();
 
   // The desired location of the dictionary file, whether or not it exists yet.
-  FilePath bdict_file_path_;
+  base::FilePath bdict_file_path_;
 
   // State whether a dictionary has been partially, or fully saved. If the
   // former, shortcut Initialize.

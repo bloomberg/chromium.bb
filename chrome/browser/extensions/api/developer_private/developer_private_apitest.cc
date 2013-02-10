@@ -18,19 +18,19 @@ class DeveloperPrivateApiTest : public ExtensionApiTest {
   }
 
   virtual void LoadExtensions() {
-    FilePath base_dir = test_data_dir_.AppendASCII("developer");
+    base::FilePath base_dir = test_data_dir_.AppendASCII("developer");
     LoadNamedExtension(base_dir, "hosted_app");
   }
 
  protected:
-  void LoadNamedExtension(const FilePath& path,
+  void LoadNamedExtension(const base::FilePath& path,
                           const std::string& name) {
     const Extension* extension = LoadExtension(path.AppendASCII(name));
     ASSERT_TRUE(extension);
     extension_name_to_ids_[name] = extension->id();
   }
 
-  void InstallNamedExtension(const FilePath& path,
+  void InstallNamedExtension(const base::FilePath& path,
                              const std::string& name,
                              Manifest::Location install_source) {
     const Extension* extension = InstallExtension(path.AppendASCII(name), 1,
@@ -45,7 +45,7 @@ class DeveloperPrivateApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, Basics) {
   LoadExtensions();
 
-  FilePath basedir = test_data_dir_.AppendASCII("developer");
+  base::FilePath basedir = test_data_dir_.AppendASCII("developer");
   InstallNamedExtension(basedir, "packaged_app", Manifest::INTERNAL);
 
   InstallNamedExtension(basedir, "simple_extension", Manifest::INTERNAL);

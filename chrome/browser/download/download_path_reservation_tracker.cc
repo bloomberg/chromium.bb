@@ -24,7 +24,7 @@ using content::DownloadItem;
 
 namespace {
 
-typedef std::map<content::DownloadId, FilePath> ReservationMap;
+typedef std::map<content::DownloadId, base::FilePath> ReservationMap;
 
 // Map of download path reservations. Each reserved path is associated with a
 // DownloadId. This object is destroyed in |Revoke()| when there are no more
@@ -52,13 +52,13 @@ class DownloadItemObserver : public DownloadItem::Observer {
   DownloadItem& download_item_;
 
   // Last known target path for the download.
-  FilePath last_target_path_;
+  base::FilePath last_target_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemObserver);
 };
 
 // Returns true if the given path is in use by a path reservation.
-bool IsPathReserved(const FilePath& path) {
+bool IsPathReserved(const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // No reservation map => no reservations.
   if (g_reservation_map == NULL)
@@ -77,7 +77,7 @@ bool IsPathReserved(const FilePath& path) {
 
 // Returns true if the given path is in use by any path reservation or the
 // file system. Called on the FILE thread.
-bool IsPathInUse(const FilePath& path) {
+bool IsPathInUse(const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // If there is a reservation, then the path is in use.
   if (IsPathReserved(path))
@@ -99,8 +99,8 @@ bool IsPathInUse(const FilePath& path) {
 //   indicating whether the returned path has been successfully verified.
 void CreateReservation(
     DownloadId download_id,
-    const FilePath& suggested_path,
-    const FilePath& default_download_path,
+    const base::FilePath& suggested_path,
+    const base::FilePath& default_download_path,
     bool should_uniquify,
     const DownloadPathReservationTracker::ReservedPathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -115,7 +115,7 @@ void CreateReservation(
   ReservationMap& reservations = *g_reservation_map;
   DCHECK(!ContainsKey(reservations, download_id));
 
-  FilePath target_path(suggested_path.NormalizePathSeparators());
+  base::FilePath target_path(suggested_path.NormalizePathSeparators());
   bool is_path_writeable = true;
   bool has_conflicts = false;
 
@@ -130,8 +130,8 @@ void CreateReservation(
 
   // Check writability of the suggested path. If we can't write to it, default
   // to the user's "My Documents" directory. We'll prompt them in this case.
-  FilePath dir = target_path.DirName();
-  FilePath filename = target_path.BaseName();
+  base::FilePath dir = target_path.DirName();
+  base::FilePath filename = target_path.BaseName();
   if (!file_util::PathIsWritable(dir)) {
     DVLOG(1) << "Unable to write to directory \"" << dir.value() << "\"";
     is_path_writeable = false;
@@ -144,7 +144,7 @@ void CreateReservation(
     for (int uniquifier = 1;
          uniquifier <= DownloadPathReservationTracker::kMaxUniqueFiles;
          ++uniquifier) {
-      FilePath path_to_check(target_path.InsertBeforeExtensionASCII(
+      base::FilePath path_to_check(target_path.InsertBeforeExtensionASCII(
           StringPrintf(" (%d)", uniquifier)));
       if (!IsPathInUse(path_to_check)) {
         target_path = path_to_check;
@@ -161,7 +161,7 @@ void CreateReservation(
 
 // Called on the FILE thread to update the path of the reservation associated
 // with |download_id| to |new_path|.
-void UpdateReservation(DownloadId download_id, const FilePath& new_path) {
+void UpdateReservation(DownloadId download_id, const base::FilePath& new_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(g_reservation_map != NULL);
   ReservationMap::iterator iter = g_reservation_map->find(download_id);
@@ -204,7 +204,7 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
   switch (download->GetState()) {
     case DownloadItem::IN_PROGRESS: {
       // Update the reservation.
-      FilePath new_target_path = download->GetTargetFilePath();
+      base::FilePath new_target_path = download->GetTargetFilePath();
       if (new_target_path != last_target_path_) {
         BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
@@ -253,8 +253,8 @@ void DownloadItemObserver::OnDownloadDestroyed(DownloadItem* download) {
 // static
 void DownloadPathReservationTracker::GetReservedPath(
     DownloadItem& download_item,
-    const FilePath& target_path,
-    const FilePath& default_path,
+    const base::FilePath& target_path,
+    const base::FilePath& default_path,
     bool uniquify_path,
     const ReservedPathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -271,6 +271,6 @@ void DownloadPathReservationTracker::GetReservedPath(
 
 // static
 bool DownloadPathReservationTracker::IsPathInUseForTesting(
-    const FilePath& path) {
+    const base::FilePath& path) {
   return IsPathInUse(path);
 }

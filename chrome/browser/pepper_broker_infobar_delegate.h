@@ -28,7 +28,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // |web_contents|.
   static void Create(content::WebContents* web_contents,
                      const GURL& url,
-                     const FilePath& plugin_path,
+                     const base::FilePath& plugin_path,
                      const base::Callback<void(bool)>& callback);
 
   // ConfirmInfoBarDelegate:
@@ -45,7 +45,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   PepperBrokerInfoBarDelegate(
       InfoBarService* infobar_service,
       const GURL& url,
-      const FilePath& plugin_path,
+      const base::FilePath& plugin_path,
       const std::string& languages,
       HostContentSettingsMap* content_settings,
       const base::Callback<void(bool)>& callback);
@@ -54,7 +54,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   void DispatchCallback(bool result);
 
   const GURL url_;
-  const FilePath plugin_path_;
+  const base::FilePath plugin_path_;
   const std::string languages_;
   HostContentSettingsMap* content_settings_;
   base::Callback<void(bool)> callback_;

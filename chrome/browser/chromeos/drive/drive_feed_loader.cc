@@ -31,9 +31,9 @@ namespace drive {
 
 namespace {
 
-const FilePath::CharType kFilesystemProtoFile[] =
+const base::FilePath::CharType kFilesystemProtoFile[] =
     FILE_PATH_LITERAL("file_system.pb");
-const FilePath::CharType kResourceMetadataDBFile[] =
+const base::FilePath::CharType kResourceMetadataDBFile[] =
     FILE_PATH_LITERAL("resource_metadata.db");
 
 // Update the fetch progress UI per every this number of feeds.
@@ -61,7 +61,7 @@ SerializationTimetable kSerializeTimetable[] = {
 
 // Loads the file at |path| into the string |serialized_proto| on a blocking
 // thread.
-DriveFileError LoadProtoOnBlockingPool(const FilePath& path,
+DriveFileError LoadProtoOnBlockingPool(const base::FilePath& path,
                                        base::Time* last_modified,
                                        std::string* serialized_proto) {
   base::PlatformFileInfo info;
@@ -93,7 +93,7 @@ bool ShouldSerializeFileSystemNow(size_t serialized_size,
 }
 
 // Saves the string |serialized_proto| to a file at |path| on a blocking thread.
-void SaveProtoOnBlockingPool(const FilePath& path,
+void SaveProtoOnBlockingPool(const base::FilePath& path,
                              scoped_ptr<std::string> serialized_proto) {
   const int file_size = static_cast<int>(serialized_proto->length());
   if (file_util::WriteFile(path, serialized_proto->data(), file_size) !=
@@ -555,7 +555,8 @@ void DriveFeedLoader::LoadFromCache(const FileOperationCallback& callback) {
   refreshing_ = true;
 
   LoadRootFeedParams* params = new LoadRootFeedParams(callback);
-  FilePath path = cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META);
+  base::FilePath path =
+      cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META);
   if (UseLevelDB()) {
     path = path.Append(kResourceMetadataDBFile);
     resource_metadata_->InitFromDB(path, blocking_task_runner_,
@@ -622,7 +623,7 @@ void DriveFeedLoader::SaveFileSystem() {
   if (UseLevelDB()) {
     resource_metadata_->SaveToDB();
   } else {
-    const FilePath path =
+    const base::FilePath path =
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
             kFilesystemProtoFile);
     scoped_ptr<std::string> serialized_proto(new std::string());
@@ -667,7 +668,7 @@ void DriveFeedLoader::NotifyDirectoryChanged(
   DCHECK(!update_finished_callback.is_null());
 
   if (should_notify_changed_directories) {
-    for (std::set<FilePath>::iterator dir_iter =
+    for (std::set<base::FilePath>::iterator dir_iter =
             feed_processor_->changed_dirs().begin();
         dir_iter != feed_processor_->changed_dirs().end();
         ++dir_iter) {

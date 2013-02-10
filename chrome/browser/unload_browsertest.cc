@@ -143,7 +143,7 @@ class UnloadTest : public InProcessBrowserTest {
 
   void NavigateToNolistenersFileTwice() {
     GURL url(content::URLRequestMockHTTPJob::GetMockUrl(
-        FilePath(FILE_PATH_LITERAL("title2.html"))));
+        base::FilePath(FILE_PATH_LITERAL("title2.html"))));
     ui_test_utils::NavigateToURL(browser(), url);
     CheckTitle("Title Of Awesomeness");
     ui_test_utils::NavigateToURL(browser(), url);
@@ -155,7 +155,7 @@ class UnloadTest : public InProcessBrowserTest {
   // page without waiting for the first load to complete.
   void NavigateToNolistenersFileTwiceAsync() {
     GURL url(content::URLRequestMockHTTPJob::GetMockUrl(
-        FilePath(FILE_PATH_LITERAL("title2.html"))));
+        base::FilePath(FILE_PATH_LITERAL("title2.html"))));
     ui_test_utils::NavigateToURLWithDisposition(browser(), url, CURRENT_TAB, 0);
     ui_test_utils::NavigateToURL(browser(), url);
     CheckTitle("Title Of Awesomeness");

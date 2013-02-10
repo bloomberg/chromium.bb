@@ -199,7 +199,7 @@ class BurnManager : net::URLFetcherDelegate {
   void FetchConfigFile(Delegate* delegate);
 
   // Fetch a zipped recovery image.
-  void FetchImage(const GURL& image_url, const FilePath& file_path);
+  void FetchImage(const GURL& image_url, const base::FilePath& file_path);
 
   // Cancel fetching image.
   void CancelImageFetch();
@@ -216,15 +216,15 @@ class BurnManager : net::URLFetcherDelegate {
 
   // Returns directory image should be dopwnloaded to.
   // The directory has to be previously created.
-  const FilePath& GetImageDir();
+  const base::FilePath& GetImageDir();
 
-  const FilePath& target_device_path() { return target_device_path_; }
-  void set_target_device_path(const FilePath& path) {
+  const base::FilePath& target_device_path() { return target_device_path_; }
+  void set_target_device_path(const base::FilePath& path) {
     target_device_path_ = path;
   }
 
-  const FilePath& target_file_path() { return target_file_path_; }
-  void set_target_file_path(const FilePath& path) {
+  const base::FilePath& target_file_path() { return target_file_path_; }
+  void set_target_file_path(const base::FilePath& path) {
     target_file_path_ = path;
   }
 
@@ -244,9 +244,9 @@ class BurnManager : net::URLFetcherDelegate {
 
   base::WeakPtrFactory<BurnManager> weak_ptr_factory_;
 
-  FilePath image_dir_;
-  FilePath target_device_path_;
-  FilePath target_file_path_;
+  base::FilePath image_dir_;
+  base::FilePath target_device_path_;
+  base::FilePath target_file_path_;
 
   GURL config_file_url_;
   bool config_file_fetched_;

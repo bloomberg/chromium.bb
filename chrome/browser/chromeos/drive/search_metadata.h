@@ -14,7 +14,7 @@ namespace drive {
 
 // Struct to represent a search result for SearchMetadata().
 struct MetadataSearchResult {
-  MetadataSearchResult(const FilePath& in_path,
+  MetadataSearchResult(const base::FilePath& in_path,
                        const DriveEntryProto& in_entry_proto,
                        const std::string& in_highlighted_base_name)
       : path(in_path),
@@ -23,7 +23,7 @@ struct MetadataSearchResult {
   }
 
   // The two members are used to create FileEntry object.
-  FilePath path;
+  base::FilePath path;
   DriveEntryProto entry_proto;
 
   // The base name to be displayed in the UI. The parts matched the search

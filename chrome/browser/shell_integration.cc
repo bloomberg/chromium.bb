@@ -55,12 +55,13 @@ bool ShellIntegration::IsRunningInAppMode() {
 CommandLine ShellIntegration::CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id,
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   CommandLine new_cmd_line(CommandLine::NO_PROGRAM);
 
   // Use the same UserDataDir for new launches that we currently have set.
-  FilePath user_data_dir = cmd_line.GetSwitchValuePath(switches::kUserDataDir);
+  base::FilePath user_data_dir =
+      cmd_line.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty()) {
     // Make sure user_data_dir is an absolute path.
     if (file_util::AbsolutePath(&user_data_dir) &&
@@ -70,7 +71,7 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
   }
 
 #if defined(OS_CHROMEOS)
-  FilePath profile = cmd_line.GetSwitchValuePath(switches::kLoginProfile);
+  base::FilePath profile = cmd_line.GetSwitchValuePath(switches::kLoginProfile);
   if (!profile.empty())
     new_cmd_line.AppendSwitchPath(switches::kLoginProfile, profile);
 #else

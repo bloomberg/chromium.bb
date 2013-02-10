@@ -348,14 +348,14 @@ FileBrowserHandlerSet::iterator FindHandler(
 // Given the list of selected files, returns array of file action tasks
 // that are shared between them.
 void FindDefaultTasks(Profile* profile,
-                      const std::vector<FilePath>& files_list,
+                      const std::vector<base::FilePath>& files_list,
                       const FileBrowserHandlerSet& common_tasks,
                       FileBrowserHandlerSet* default_tasks) {
   DCHECK(default_tasks);
   default_tasks->clear();
 
   std::set<std::string> default_ids;
-  for (std::vector<FilePath>::const_iterator it = files_list.begin();
+  for (std::vector<base::FilePath>::const_iterator it = files_list.begin();
        it != files_list.end(); ++it) {
     std::string task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
         profile, "", it->Extension());
@@ -449,7 +449,7 @@ bool FindCommonTasks(Profile* profile,
 
 bool GetTaskForURLAndPath(Profile* profile,
                    const GURL& url,
-                   const FilePath& file_path,
+                   const base::FilePath& file_path,
                    const FileBrowserHandler** handler) {
   std::vector<GURL> file_urls;
   file_urls.push_back(url);
@@ -462,7 +462,7 @@ bool GetTaskForURLAndPath(Profile* profile,
   if (common_tasks.empty())
     return false;
 
-  std::vector<FilePath> file_paths;
+  std::vector<base::FilePath> file_paths;
   file_paths.push_back(file_path);
 
   FindDefaultTasks(profile, file_paths, common_tasks, &default_tasks);
@@ -505,8 +505,8 @@ class ExtensionTaskExecutor : public FileTaskExecutor {
     FileDefinition();
     ~FileDefinition();
 
-    FilePath virtual_path;
-    FilePath absolute_path;
+    base::FilePath virtual_path;
+    base::FilePath absolute_path;
     bool is_directory;
   };
 
@@ -787,8 +787,8 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     // Check if this file system entry exists first.
     base::PlatformFileInfo file_info;
 
-    FilePath local_path = url.path();
-    FilePath virtual_path = url.virtual_path();
+    base::FilePath local_path = url.path();
+    base::FilePath virtual_path = url.virtual_path();
 
     bool is_drive_file = url.type() == fileapi::kFileSystemTypeDrive;
     DCHECK(!is_drive_file || drive::util::IsUnderDriveMountPoint(local_path));
@@ -982,8 +982,8 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
     files_urls->Append(file_def);
     file_def->SetString("fileSystemName", file_system_name);
     file_def->SetString("fileSystemRoot", file_system_root.spec());
-    FilePath root(FILE_PATH_LITERAL("/"));
-    FilePath full_path = root.Append(iter->virtual_path);
+    base::FilePath root(FILE_PATH_LITERAL("/"));
+    base::FilePath full_path = root.Append(iter->virtual_path);
     file_def->SetString("fileFullPath", full_path.value());
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
   }

@@ -33,7 +33,7 @@ const uint8 sha2_hash[] = {0xdf, 0x39, 0x9a, 0x9b, 0x28, 0x3a, 0x9b, 0x0c,
                            0xf6, 0x29, 0x7c, 0x0a, 0x5f, 0xea, 0x67, 0xb7};
 
 // File name of the recovery binary on different platforms.
-const FilePath::CharType kRecoveryFileName[] =
+const base::FilePath::CharType kRecoveryFileName[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("ChromeRecovery.exe");
 #else  // OS_LINUX, OS_MACOSX, etc.
@@ -54,7 +54,7 @@ class RecoveryComponentInstaller : public ComponentInstaller {
   virtual void OnUpdateError(int error) OVERRIDE;
 
   virtual bool Install(base::DictionaryValue* manifest,
-                       const FilePath& unpack_path) OVERRIDE;
+                       const base::FilePath& unpack_path) OVERRIDE;
 
  private:
   Version current_version_;
@@ -102,7 +102,7 @@ void RecoveryComponentInstaller::OnUpdateError(int error) {
 }
 
 bool RecoveryComponentInstaller::Install(base::DictionaryValue* manifest,
-                                         const FilePath& unpack_path) {
+                                         const base::FilePath& unpack_path) {
   std::string name;
   manifest->GetStringASCII("name", &name);
   if (name != kRecoveryManifestName)
@@ -114,7 +114,7 @@ bool RecoveryComponentInstaller::Install(base::DictionaryValue* manifest,
     return false;
   if (current_version_.CompareTo(version) >= 0)
     return false;
-  FilePath main_file = unpack_path.Append(kRecoveryFileName);
+  base::FilePath main_file = unpack_path.Append(kRecoveryFileName);
   if (!file_util::PathExists(main_file))
     return false;
   // Passed the basic tests. The installation continues with the

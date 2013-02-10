@@ -22,10 +22,10 @@ class UserDataDirDialogView : public views::DialogDelegate,
                               public MessageLoopForUI::Dispatcher,
                               public ui::SelectFileDialog::Listener {
  public:
-  explicit UserDataDirDialogView(const FilePath& user_data_dir);
+  explicit UserDataDirDialogView(const base::FilePath& user_data_dir);
   virtual ~UserDataDirDialogView();
 
-  FilePath user_data_dir() const { return user_data_dir_; }
+  base::FilePath user_data_dir() const { return user_data_dir_; }
 
   // Overridden from views::DialogDelegate:
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
@@ -43,14 +43,14 @@ class UserDataDirDialogView : public views::DialogDelegate,
   virtual bool Dispatch(const base::NativeEvent& msg) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
  private:
   // Empty until the user picks a directory.
-  FilePath user_data_dir_;
+  base::FilePath user_data_dir_;
 
   views::MessageBoxView* message_box_view_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;

@@ -53,7 +53,7 @@ ACTION_P(MockUpdateFileByResourceId, error) {
 ACTION_P2(MockUpdateFileByResourceId, error, md5) {
   scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto);
   entry_proto->mutable_file_specific_info()->set_file_md5(md5);
-  arg1.Run(error, FilePath(), entry_proto.Pass());
+  arg1.Run(error, base::FilePath(), entry_proto.Pass());
 }
 
 class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
@@ -140,7 +140,7 @@ class DriveSyncClientTest : public testing::Test {
   // Sets up cache for tests.
   void SetUpCache() {
     // Prepare a temp file.
-    FilePath temp_file;
+    base::FilePath temp_file;
     EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                     &temp_file));
     const std::string content = "hello";
@@ -170,7 +170,7 @@ class DriveSyncClientTest : public testing::Test {
     // Prepare a pinned-and-fetched file.
     const std::string resource_id_fetched = "resource_id_fetched";
     const std::string md5_fetched = "md5";
-    FilePath cache_file_path;
+    base::FilePath cache_file_path;
     cache_->Store(resource_id_fetched, md5_fetched, temp_file,
                   DriveCache::FILE_OPERATION_COPY,
                   base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
@@ -220,7 +220,7 @@ class DriveSyncClientTest : public testing::Test {
                               &DriveSyncClientTest::VerifyStartNotified),
             MockGetFileByResourceId(
                 DRIVE_FILE_OK,
-                FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+                base::FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
                 std::string("mime_type_does_not_matter"),
                 REGULAR_FILE)));
   }

@@ -35,11 +35,11 @@ class TabRestoreTest : public InProcessBrowserTest {
  public:
   TabRestoreTest() : InProcessBrowserTest() {
     url1_ = ui_test_utils::GetTestUrl(
-        FilePath().AppendASCII("session_history"),
-        FilePath().AppendASCII("bot1.html"));
+        base::FilePath().AppendASCII("session_history"),
+        base::FilePath().AppendASCII("bot1.html"));
     url2_ = ui_test_utils::GetTestUrl(
-        FilePath().AppendASCII("session_history"),
-        FilePath().AppendASCII("bot2.html"));
+        base::FilePath().AppendASCII("session_history"),
+        base::FilePath().AppendASCII("bot2.html"));
   }
 
  protected:

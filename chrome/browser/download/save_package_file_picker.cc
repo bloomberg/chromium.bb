@@ -74,16 +74,16 @@ bool SavePackageFilePicker::ShouldSaveAsMHTML() const {
 
 SavePackageFilePicker::SavePackageFilePicker(
     content::WebContents* web_contents,
-    const FilePath& suggested_path_const,
-    const FilePath::StringType& default_extension_const,
+    const base::FilePath& suggested_path_const,
+    const base::FilePath::StringType& default_extension_const,
     bool can_save_as_complete,
     DownloadPrefs* download_prefs,
     const content::SavePackagePathPickedCallback& callback)
     : render_process_id_(web_contents->GetRenderProcessHost()->GetID()),
       can_save_as_complete_(can_save_as_complete),
       callback_(callback) {
-  FilePath suggested_path = suggested_path_const;
-  FilePath::StringType default_extension = default_extension_const;
+  base::FilePath suggested_path = suggested_path_const;
+  base::FilePath::StringType default_extension = default_extension_const;
   int file_type_index = SavePackageTypeToIndex(
       static_cast<SavePageType>(download_prefs->save_file_type()));
   DCHECK_NE(-1, file_type_index);
@@ -98,7 +98,7 @@ SavePackageFilePicker::SavePackageFilePicker(
     suggested_path = suggested_path.ReplaceExtension(default_extension);
   } else if (can_save_as_complete) {
     bool add_extra_extension = false;
-    FilePath::StringType extra_extension;
+    base::FilePath::StringType extra_extension;
     if (!suggested_path.Extension().empty() &&
         suggested_path.Extension().compare(FILE_PATH_LITERAL("htm")) &&
         suggested_path.Extension().compare(FILE_PATH_LITERAL("html"))) {
@@ -182,7 +182,7 @@ void SavePackageFilePicker::SetShouldPromptUser(bool should_prompt) {
   g_should_prompt_for_filename = should_prompt;
 }
 
-void SavePackageFilePicker::FileSelected(const FilePath& path,
+void SavePackageFilePicker::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* unused_params) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);

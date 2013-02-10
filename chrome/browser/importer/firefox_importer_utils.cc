@@ -49,12 +49,12 @@ class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
 };
 }  // namespace
 
-FilePath GetFirefoxProfilePath() {
+base::FilePath GetFirefoxProfilePath() {
   DictionaryValue root;
-  FilePath ini_file = GetProfilesINI();
+  base::FilePath ini_file = GetProfilesINI();
   ParseProfileINI(ini_file, &root);
 
-  FilePath source_path;
+  base::FilePath source_path;
   for (int i = 0; ; ++i) {
     std::string current_profile = StringPrintf("Profile%d", i);
     if (!root.HasKey(current_profile)) {
@@ -70,7 +70,8 @@ FilePath GetFirefoxProfilePath() {
       ReplaceSubstringsAfterOffset(
           &path16, 0, ASCIIToUTF16("/"), ASCIIToUTF16("\\"));
 #endif
-      FilePath path = FilePath::FromWStringHack(UTF16ToWide(path16));
+      base::FilePath path =
+          base::FilePath::FromWStringHack(UTF16ToWide(path16));
 
       // IsRelative=1 means the folder path would be relative to the
       // path of profiles.ini. IsRelative=0 refers to a custom profile
@@ -90,15 +91,16 @@ FilePath GetFirefoxProfilePath() {
       }
     }
   }
-  return FilePath();
+  return base::FilePath();
 }
 
 
-bool GetFirefoxVersionAndPathFromProfile(const FilePath& profile_path,
+bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
                                          int* version,
-                                         FilePath* app_path) {
+                                         base::FilePath* app_path) {
   bool ret = false;
-  FilePath compatibility_file = profile_path.AppendASCII("compatibility.ini");
+  base::FilePath compatibility_file =
+      profile_path.AppendASCII("compatibility.ini");
   std::string content;
   file_util::ReadFileToString(compatibility_file, &content);
   ReplaceSubstringsAfterOffset(&content, 0, "\r\n", "\n");
@@ -120,7 +122,7 @@ bool GetFirefoxVersionAndPathFromProfile(const FilePath& profile_path,
         // UTF-8, what does Firefox do?  If it puts raw bytes in the
         // file, we could go straight from bytes -> filepath;
         // otherwise, we're out of luck here.
-        *app_path = FilePath::FromWStringHack(
+        *app_path = base::FilePath::FromWStringHack(
             UTF8ToWide(line.substr(equal + 1)));
       }
     }
@@ -128,7 +130,7 @@ bool GetFirefoxVersionAndPathFromProfile(const FilePath& profile_path,
   return ret;
 }
 
-void ParseProfileINI(const FilePath& file, DictionaryValue* root) {
+void ParseProfileINI(const base::FilePath& file, DictionaryValue* root) {
   // Reads the whole INI file.
   std::string content;
   file_util::ReadFileToString(file, &content);
@@ -188,8 +190,9 @@ bool CanImportURL(const GURL& url) {
   return true;
 }
 
-void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
-                                    std::vector<TemplateURL*>* search_engines) {
+void ParseSearchEnginesFromXMLFiles(
+    const std::vector<base::FilePath>& xml_files,
+    std::vector<TemplateURL*>* search_engines) {
   DCHECK(search_engines);
 
   typedef std::map<std::string, TemplateURL*> SearchEnginesMap;
@@ -198,8 +201,8 @@ void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
   // The first XML file represents the default search engine in Firefox 3, so we
   // need to keep it on top of the list.
   SearchEnginesMap::const_iterator default_turl = search_engine_for_url.end();
-  for (std::vector<FilePath>::const_iterator file_iter = xml_files.begin();
-       file_iter != xml_files.end(); ++file_iter) {
+  for (std::vector<base::FilePath>::const_iterator file_iter =
+           xml_files.begin(); file_iter != xml_files.end(); ++file_iter) {
     file_util::ReadFileToString(*file_iter, &content);
     FirefoxURLParameterFilter param_filter;
     TemplateURL* template_url = TemplateURLParser::Parse(NULL, true,
@@ -234,7 +237,7 @@ void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
   }
 }
 
-bool ReadPrefFile(const FilePath& path, std::string* content) {
+bool ReadPrefFile(const base::FilePath& path, std::string* content) {
   if (content == NULL)
     return false;
 
@@ -248,7 +251,7 @@ bool ReadPrefFile(const FilePath& path, std::string* content) {
   return true;
 }
 
-std::string ReadBrowserConfigProp(const FilePath& app_path,
+std::string ReadBrowserConfigProp(const base::FilePath& app_path,
                                   const std::string& pref_key) {
   std::string content;
   if (!ReadPrefFile(app_path.AppendASCII("browserconfig.properties"), &content))
@@ -273,7 +276,7 @@ std::string ReadBrowserConfigProp(const FilePath& app_path,
   return content.substr(start + 1, stop - start - 1);
 }
 
-std::string ReadPrefsJsValue(const FilePath& profile_path,
+std::string ReadPrefsJsValue(const base::FilePath& profile_path,
                              const std::string& pref_key) {
   std::string content;
   if (!ReadPrefFile(profile_path.AppendASCII("prefs.js"), &content))
@@ -282,7 +285,7 @@ std::string ReadPrefsJsValue(const FilePath& profile_path,
   return GetPrefsJsValue(content, pref_key);
 }
 
-GURL GetHomepage(const FilePath& profile_path) {
+GURL GetHomepage(const base::FilePath& profile_path) {
   std::string home_page_list =
       ReadPrefsJsValue(profile_path, "browser.startup.homepage");
 
@@ -293,7 +296,7 @@ GURL GetHomepage(const FilePath& profile_path) {
   return GURL(home_page_list.substr(0, seperator));
 }
 
-bool IsDefaultHomepage(const GURL& homepage, const FilePath& app_path) {
+bool IsDefaultHomepage(const GURL& homepage, const base::FilePath& app_path) {
   if (!homepage.is_valid())
     return false;
 
@@ -316,7 +319,7 @@ bool IsDefaultHomepage(const GURL& homepage, const FilePath& app_path) {
   return false;
 }
 
-bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs) {
+bool ParsePrefFile(const base::FilePath& pref_file, DictionaryValue* prefs) {
   // The string that is before a pref key.
   const std::string kUserPrefString = "user_pref(\"";
   std::string contents;
@@ -432,8 +435,8 @@ std::string GetPrefsJsValue(const std::string& content,
 //   ID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}
 //   .........................................
 // In this example the function returns "Iceweasel" (or a localized equivalent).
-string16 GetFirefoxImporterName(const FilePath& app_path) {
-  const FilePath app_ini_file = app_path.AppendASCII("application.ini");
+string16 GetFirefoxImporterName(const base::FilePath& app_path) {
+  const base::FilePath app_ini_file = app_path.AppendASCII("application.ini");
   std::string branding_name;
   if (file_util::PathExists(app_ini_file)) {
     std::string content;

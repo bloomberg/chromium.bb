@@ -25,7 +25,7 @@ TopSitesDatabase::TopSitesDatabase() : may_need_history_migration_(false) {
 TopSitesDatabase::~TopSitesDatabase() {
 }
 
-bool TopSitesDatabase::Init(const FilePath& db_name) {
+bool TopSitesDatabase::Init(const base::FilePath& db_name) {
   bool file_existed = file_util::PathExists(db_name);
 
   if (!file_existed)
@@ -371,7 +371,7 @@ bool TopSitesDatabase::RemoveURL(const MostVisitedURL& url) {
   return transaction.Commit();
 }
 
-sql::Connection* TopSitesDatabase::CreateDB(const FilePath& db_name) {
+sql::Connection* TopSitesDatabase::CreateDB(const base::FilePath& db_name) {
   scoped_ptr<sql::Connection> db(new sql::Connection());
   // Settings copied from ThumbnailDatabase.
   db->set_error_histogram_name("Sqlite.Thumbnail.Error");

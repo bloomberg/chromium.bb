@@ -82,7 +82,7 @@ void DownloadItemMac::LoadIcon() {
   }
 
   // We may already have this particular image cached.
-  FilePath file = download_model_.download()->GetUserVerifiedFilePath();
+  base::FilePath file = download_model_.download()->GetUserVerifiedFilePath();
   gfx::Image* icon = icon_manager->LookupIcon(file, IconLoader::ALL);
   if (icon) {
     [item_controller_ setIcon:icon->ToNSImage()];

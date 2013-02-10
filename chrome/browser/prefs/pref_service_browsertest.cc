@@ -55,25 +55,25 @@ class PreferenceServiceTest : public InProcessBrowserTest {
   }
 
   virtual bool SetUpUserDataDirectory() OVERRIDE {
-    FilePath user_data_directory;
+    base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
 
-    FilePath reference_pref_file;
+    base::FilePath reference_pref_file;
     if (new_profile_) {
       reference_pref_file = ui_test_utils::GetTestFilePath(
-          FilePath().AppendASCII("profiles").
+          base::FilePath().AppendASCII("profiles").
                      AppendASCII("window_placement").
                      AppendASCII("Default"),
-          FilePath().Append(chrome::kPreferencesFilename));
+          base::FilePath().Append(chrome::kPreferencesFilename));
       tmp_pref_file_ =
           user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
       CHECK(file_util::CreateDirectory(tmp_pref_file_));
       tmp_pref_file_ = tmp_pref_file_.Append(chrome::kPreferencesFilename);
     } else {
       reference_pref_file = ui_test_utils::GetTestFilePath(
-          FilePath().AppendASCII("profiles").
+          base::FilePath().AppendASCII("profiles").
                      AppendASCII("window_placement"),
-          FilePath().Append(chrome::kLocalStateFilename));
+          base::FilePath().Append(chrome::kLocalStateFilename));
       tmp_pref_file_ = user_data_directory.Append(chrome::kLocalStateFilename);
     }
 
@@ -92,7 +92,7 @@ class PreferenceServiceTest : public InProcessBrowserTest {
   }
 
  protected:
-  FilePath tmp_pref_file_;
+  base::FilePath tmp_pref_file_;
 
  private:
   bool new_profile_;

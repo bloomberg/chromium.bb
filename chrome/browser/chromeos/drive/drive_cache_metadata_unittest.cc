@@ -55,7 +55,7 @@ class DriveCacheMetadataTest : public testing::Test {
     CreateFile(persistent_directory_.AppendASCII("id_bad.md5bad"));
     // "id_symlink" is invalid, as symlink is not allowed here. This should
     // be removed.
-    CreateSymbolicLink(FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
+    CreateSymbolicLink(base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
                        persistent_directory_.AppendASCII("id_symlink"));
 
     // Create some files in tmp directory.
@@ -65,7 +65,7 @@ class DriveCacheMetadataTest : public testing::Test {
     CreateFile(tmp_directory_.AppendASCII("id_quux.local"));
     // "id_symlink_tmp" is invalid, as symlink is not allowed here. This
     // should be removed.
-    CreateSymbolicLink(FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
+    CreateSymbolicLink(base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
                        tmp_directory_.AppendASCII("id_symlink_tmp"));
 
     // Create symbolic links in pinned directory.
@@ -75,7 +75,7 @@ class DriveCacheMetadataTest : public testing::Test {
                        pinned_directory_.AppendASCII("id_foo"));
     // "id_corge" is pinned, but not present locally. It's properly pointing
     // to /dev/null.
-    CreateSymbolicLink(FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
+    CreateSymbolicLink(base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
                        pinned_directory_.AppendASCII("id_corge"));
     // "id_dangling" is pointing to a non-existent file. The symlink should
     // be removed.
@@ -99,14 +99,15 @@ class DriveCacheMetadataTest : public testing::Test {
   }
 
   // Create a file at |file_path|.
-  void CreateFile(const FilePath& file_path) {
+  void CreateFile(const base::FilePath& file_path) {
     const std::string kFoo = "foo";
     ASSERT_TRUE(file_util::WriteFile(file_path, kFoo.data(), kFoo.size()))
         << ": " << file_path.value();
   }
 
   // Create an symlink to |target| at |symlink|.
-  void CreateSymbolicLink(const FilePath& target, const FilePath& symlink) {
+  void CreateSymbolicLink(const base::FilePath& target,
+                          const base::FilePath& symlink) {
     ASSERT_TRUE(file_util::CreateSymbolicLink(target, symlink))
         << ": " << target.value() << ": " << symlink.value();
   }
@@ -131,11 +132,11 @@ class DriveCacheMetadataTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   scoped_ptr<DriveCacheMetadata> metadata_;
-  std::vector<FilePath> cache_paths_;
-  FilePath persistent_directory_;
-  FilePath tmp_directory_;
-  FilePath pinned_directory_;
-  FilePath outgoing_directory_;
+  std::vector<base::FilePath> cache_paths_;
+  base::FilePath persistent_directory_;
+  base::FilePath tmp_directory_;
+  base::FilePath pinned_directory_;
+  base::FilePath outgoing_directory_;
 };
 
 // Test all the methods of DriveCacheMetadata except for
@@ -392,8 +393,9 @@ TEST_F(DriveCacheMetadataTest, RemoveTemporaryFiles) {
 TEST_F(DriveCacheMetadataTest, CorruptDB) {
   SetUpCacheWithVariousFiles();
 
-  const FilePath db_path = cache_paths_[DriveCache::CACHE_TYPE_META].Append(
-      DriveCacheMetadata::kDriveCacheMetadataDBPath);
+  const base::FilePath db_path =
+      cache_paths_[DriveCache::CACHE_TYPE_META].Append(
+          DriveCacheMetadata::kDriveCacheMetadataDBPath);
 
   // Write a bogus file.
   std::string text("Hello world");
@@ -413,9 +415,9 @@ TEST_F(DriveCacheMetadataTest, CorruptDB) {
 TEST(DriveCacheMetadataExtraTest, CannotOpenDB) {
   // Create nonexistent cache paths, so the initialization fails due to the
   // failure of opening the DB.
-  std::vector<FilePath> cache_paths =
+  std::vector<base::FilePath> cache_paths =
       DriveCache::GetCachePaths(
-          FilePath::FromUTF8Unsafe("/somewhere/nonexistent"));
+          base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent"));
 
   scoped_ptr<DriveCacheMetadata> metadata =
       DriveCacheMetadata::CreateDriveCacheMetadata(NULL);

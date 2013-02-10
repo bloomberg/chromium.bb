@@ -31,8 +31,8 @@ std::string GetWebStoreIdFromUrl(const GURL& url) {
     return std::string();
   }
 
-  FilePath path(url.path());
-  std::vector<FilePath::StringType> components;
+  base::FilePath path(url.path());
+  std::vector<base::FilePath::StringType> components;
   path.GetComponents(&components);
   DCHECK_LE(2U, components.size());  // Coming from kStoreProductUrl
 
@@ -101,14 +101,14 @@ DriveWebAppsRegistry::~DriveWebAppsRegistry() {
 }
 
 void DriveWebAppsRegistry::GetWebAppsForFile(
-    const FilePath& file,
+    const base::FilePath& file,
     const std::string& mime_type,
     ScopedVector<DriveWebAppInfo>* apps) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SelectorWebAppList result_map;
   if (!file.empty()) {
-    FilePath::StringType extension = file.Extension();
+    base::FilePath::StringType extension = file.Extension();
     if (extension.size() < 2)
       return;
 

@@ -101,7 +101,8 @@ class SavePackageFinishedObserver : public content::DownloadManager::Observer {
 
 using content::BrowserThread;
 
-static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("encoding_tests");
+static const base::FilePath::CharType* kTestDir =
+    FILE_PATH_LITERAL("encoding_tests");
 
 class BrowserEncodingTest
     : public InProcessBrowserTest,
@@ -111,10 +112,11 @@ class BrowserEncodingTest
 
   // Saves the current page and verifies that the output matches the expected
   // result.
-  void SaveAndCompare(const char* filename_to_write, const FilePath& expected) {
+  void SaveAndCompare(const char* filename_to_write,
+                      const base::FilePath& expected) {
     // Dump the page, the content of dump page should be identical to the
     // expected result file.
-    FilePath full_file_name = save_dir_.AppendASCII(filename_to_write);
+    base::FilePath full_file_name = save_dir_.AppendASCII(filename_to_write);
     // We save the page as way of complete HTML file, which requires a directory
     // name to save sub resources in it. Although this test file does not have
     // sub resources, but the directory name is still required.
@@ -128,8 +130,8 @@ class BrowserEncodingTest
         content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
     loop_runner->Run();
 
-    FilePath expected_file_name = ui_test_utils::GetTestFilePath(
-        FilePath(kTestDir), expected);
+    base::FilePath expected_file_name = ui_test_utils::GetTestFilePath(
+        base::FilePath(kTestDir), expected);
 
     EXPECT_TRUE(file_util::ContentsEqual(full_file_name, expected_file_name));
   }
@@ -145,8 +147,8 @@ class BrowserEncodingTest
   }
 
   base::ScopedTempDir temp_dir_;
-  FilePath save_dir_;
-  FilePath temp_sub_resource_dir_;
+  base::FilePath save_dir_;
+  base::FilePath temp_sub_resource_dir_;
 };
 
 // TODO(jnd): 1. Some encodings are missing here. It'll be added later. See
@@ -157,8 +159,9 @@ class BrowserEncodingTest
 IN_PROC_BROWSER_TEST_P(BrowserEncodingTest, TestEncodingAliasMapping) {
   const char* const kAliasTestDir = "alias_mapping";
 
-  FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kAliasTestDir);
-  FilePath test_file_path(test_dir_path);
+  base::FilePath test_dir_path = base::FilePath(kTestDir).AppendASCII(
+      kAliasTestDir);
+  base::FilePath test_file_path(test_dir_path);
   test_file_path = test_file_path.AppendASCII(
       GetParam().file_name);
 
@@ -180,7 +183,8 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
       "expected_gb18030_saved_from_iso88591_meta.html";
   const char* const kOverrideTestDir = "user_override";
 
-  FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kOverrideTestDir);
+  base::FilePath test_dir_path =
+      base::FilePath(kTestDir).AppendASCII(kOverrideTestDir);
   test_dir_path = test_dir_path.AppendASCII(kTestFileName);
   GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -198,8 +202,9 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   navigation_observer.Wait();
   EXPECT_EQ("gb18030", web_contents->GetEncoding());
 
-  FilePath expected_filename =
-      FilePath().AppendASCII(kOverrideTestDir).AppendASCII(kExpectedFileName);
+  base::FilePath expected_filename =
+      base::FilePath().AppendASCII(kOverrideTestDir).AppendASCII(
+          kExpectedFileName);
   SaveAndCompare(kTestFileName, expected_filename);
 }
 
@@ -282,7 +287,8 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
   // Directory of the files of expected results.
   const char* const kExpectedResultDir = "expected_results";
 
-  FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kAutoDetectDir);
+  base::FilePath test_dir_path =
+      base::FilePath(kTestDir).AppendASCII(kAutoDetectDir);
 
   // Set the default charset to one of encodings not supported by the current
   // auto-detector (Please refer to the above comments) to make sure we
@@ -297,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
     browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kWebKitUsesUniversalDetector, false);
 
-    FilePath test_file_path(test_dir_path);
+    base::FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(kTestDatas[i].test_file_name);
     GURL url = content::URLRequestMockHTTPJob::GetMockUrl(test_file_path);
     ui_test_utils::NavigateToURL(browser(), url);
@@ -321,8 +327,9 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
 
     // Dump the page, the content of dump page should be equal with our expect
     // result file.
-    FilePath expected_result_file_name =
-        FilePath().AppendASCII(kAutoDetectDir).AppendASCII(kExpectedResultDir).
+    base::FilePath expected_result_file_name =
+        base::FilePath().AppendASCII(kAutoDetectDir).
+        AppendASCII(kExpectedResultDir).
         AppendASCII(kTestDatas[i].expected_result);
     SaveAndCompare(kTestDatas[i].test_file_name, expected_result_file_name);
   }

@@ -70,7 +70,7 @@ class TextDatabase {
   // |allow_create| indicates if we want to allow creation of the file if it
   // doesn't exist. For files associated with older time periods, we don't want
   // to create them if they don't exist, so this flag would be false.
-  TextDatabase(const FilePath& path,
+  TextDatabase(const base::FilePath& path,
                DBIdent id,
                bool allow_create);
   ~TextDatabase();
@@ -89,16 +89,16 @@ class TextDatabase {
 
   // For testing, returns the file name of the database so it can be deleted
   // after the test. This is valid even before Init() is called.
-  const FilePath& file_name() const { return file_name_; }
+  const base::FilePath& file_name() const { return file_name_; }
 
   // Returns a NULL-terminated string that is the base of history index files,
   // which is the part before the database identifier. For example
   // "History Index *". This is for finding existing database files.
-  static const FilePath::CharType* file_base();
+  static const base::FilePath::CharType* file_base();
 
   // Converts a filename on disk (optionally including a path) to a database
   // identifier. If the filename doesn't have the correct format, returns 0.
-  static DBIdent FileNameToID(const FilePath& file_path);
+  static DBIdent FileNameToID(const base::FilePath& file_path);
 
   // Changing operations -------------------------------------------------------
 
@@ -142,7 +142,7 @@ class TextDatabase {
 
   // Converts the given database identifier to a filename. This does not include
   // the path, just the file and extension.
-  static FilePath IDToFileName(DBIdent id);
+  static base::FilePath IDToFileName(DBIdent id);
 
  private:
   // Ensures that the tables and indices are created. Returns true on success.
@@ -151,12 +151,12 @@ class TextDatabase {
   // The sql database. Not valid until Init is called.
   sql::Connection db_;
 
-  const FilePath path_;
+  const base::FilePath path_;
   const DBIdent ident_;
   const bool allow_create_;
 
   // Full file name of the file on disk, computed in Init().
-  FilePath file_name_;
+  base::FilePath file_name_;
 
   sql::MetaTable meta_table_;
 

@@ -53,7 +53,7 @@ void OnGetFileByPathForOpen(
     int file_flags,
     base::ProcessHandle peer_handle,
     DriveFileError file_error,
-    const FilePath& local_path,
+    const base::FilePath& local_path,
     const std::string& unused_mime_type,
     DriveFileType file_type) {
   base::PlatformFileError error =
@@ -85,7 +85,7 @@ void CallSnapshotFileCallback(
     const FileSystemOperation::SnapshotFileCallback& callback,
     const base::PlatformFileInfo& file_info,
     DriveFileError file_error,
-    const FilePath& local_path,
+    const base::FilePath& local_path,
     const std::string& unused_mime_type,
     DriveFileType file_type) {
   scoped_refptr<ShareableFileReference> file_ref;
@@ -114,13 +114,13 @@ void CallSnapshotFileCallback(
 }
 
 // Emits debug log when DriveFileSystem::CloseFile() is complete.
-void EmitDebugLogForCloseFile(const FilePath& local_path,
+void EmitDebugLogForCloseFile(const base::FilePath& local_path,
                               DriveFileError file_error) {
   DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << file_error;
 }
 
 base::PlatformFileError DoTruncateOnBlockingPool(
-    const FilePath& local_cache_path,
+    const base::FilePath& local_cache_path,
     int64 length) {
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
 
@@ -179,13 +179,13 @@ void DriveFileSystemProxy::DetachFromFileSystem() {
 void DriveFileSystemProxy::GetFileInfo(const FileSystemURL& file_url,
     const FileSystemOperation::GetMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback,
                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
                     base::PlatformFileInfo(),
-                    FilePath()));
+                    base::FilePath()));
     return;
   }
 
@@ -205,7 +205,7 @@ void DriveFileSystemProxy::Copy(const FileSystemURL& src_file_url,
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  FilePath src_file_path, dest_file_path;
+  base::FilePath src_file_path, dest_file_path;
   if (!ValidateUrl(src_file_url, &src_file_path) ||
       !ValidateUrl(dest_file_url, &dest_file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -229,7 +229,7 @@ void DriveFileSystemProxy::Move(const FileSystemURL& src_file_url,
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  FilePath src_file_path, dest_file_path;
+  base::FilePath src_file_path, dest_file_path;
   if (!ValidateUrl(src_file_url, &src_file_path) ||
       !ValidateUrl(dest_file_url, &dest_file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -252,7 +252,7 @@ void DriveFileSystemProxy::ReadDirectory(const FileSystemURL& file_url,
     const FileSystemOperation::ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -277,7 +277,7 @@ void DriveFileSystemProxy::Remove(const FileSystemURL& file_url, bool recursive,
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
@@ -302,7 +302,7 @@ void DriveFileSystemProxy::CreateDirectory(
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
@@ -327,7 +327,7 @@ void DriveFileSystemProxy::CreateFile(
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
@@ -356,7 +356,7 @@ void DriveFileSystemProxy::Truncate(
     return;
   }
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
@@ -383,7 +383,7 @@ void DriveFileSystemProxy::OnOpenFileForWriting(
     base::ProcessHandle peer_handle,
     const FileSystemOperation::OpenFileCallback& callback,
     DriveFileError file_error,
-    const FilePath& local_cache_path) {
+    const base::FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   base::PlatformFileError error =
@@ -412,7 +412,7 @@ void DriveFileSystemProxy::OnOpenFileForWriting(
 }
 
 void DriveFileSystemProxy::OnCreateFileForOpen(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     int file_flags,
     base::ProcessHandle peer_handle,
     const FileSystemOperation::OpenFileCallback& callback,
@@ -448,11 +448,11 @@ void DriveFileSystemProxy::OnCreateFileForOpen(
 }
 
 void DriveFileSystemProxy::OnFileOpenedForTruncate(
-    const FilePath& virtual_path,
+    const base::FilePath& virtual_path,
     int64 length,
     const fileapi::FileSystemOperation::StatusCallback& callback,
     DriveFileError open_result,
-    const FilePath& local_cache_path) {
+    const base::FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (open_result != DRIVE_FILE_OK) {
@@ -475,7 +475,7 @@ void DriveFileSystemProxy::OnFileOpenedForTruncate(
 }
 
 void DriveFileSystemProxy::DidTruncate(
-    const FilePath& virtual_path,
+    const base::FilePath& virtual_path,
     const FileSystemOperation::StatusCallback& callback,
     base::PlatformFileError truncate_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -499,7 +499,7 @@ void DriveFileSystemProxy::OpenFile(
     const FileSystemOperation::OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback,
@@ -577,7 +577,7 @@ void DriveFileSystemProxy::OpenFile(
 }
 
 void DriveFileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(url, &file_path))
     return;
 
@@ -608,13 +608,13 @@ void DriveFileSystemProxy::CreateSnapshotFile(
     const FileSystemOperation::SnapshotFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback,
                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
                     base::PlatformFileInfo(),
-                    FilePath(),
+                    base::FilePath(),
                     scoped_refptr<ShareableFileReference>(NULL)));
     return;
   }
@@ -631,7 +631,7 @@ void DriveFileSystemProxy::CreateSnapshotFile(
 }
 
 void DriveFileSystemProxy::OnGetEntryInfoByPath(
-    const FilePath& entry_path,
+    const base::FilePath& entry_path,
     const FileSystemOperation::SnapshotFileCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -640,7 +640,7 @@ void DriveFileSystemProxy::OnGetEntryInfoByPath(
   if (error != DRIVE_FILE_OK || !entry_proto.get()) {
     callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
                  base::PlatformFileInfo(),
-                 FilePath(),
+                 base::FilePath(),
                  scoped_refptr<ShareableFileReference>(NULL));
     return;
   }
@@ -663,12 +663,12 @@ void DriveFileSystemProxy::CreateWritableSnapshotFile(
     const fileapi::WritableSnapshotFile& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback,
                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                    FilePath(),
+                    base::FilePath(),
                     scoped_refptr<ShareableFileReference>(NULL)));
     return;
   }
@@ -692,7 +692,7 @@ DriveFileSystemProxy::~DriveFileSystemProxy() {
 
 // static.
 bool DriveFileSystemProxy::ValidateUrl(
-    const FileSystemURL& url, FilePath* file_path) {
+    const FileSystemURL& url, base::FilePath* file_path) {
   // what platform you're on.
   if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive) {
     return false;
@@ -728,7 +728,7 @@ void DriveFileSystemProxy::OnStatusCallback(
 }
 
 void DriveFileSystemProxy::OnGetMetadata(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const FileSystemOperation::GetMetadataCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -737,7 +737,7 @@ void DriveFileSystemProxy::OnGetMetadata(
   if (error != DRIVE_FILE_OK) {
     callback.Run(DriveFileErrorToPlatformError(error),
                  base::PlatformFileInfo(),
-                 FilePath());
+                 base::FilePath());
     return;
   }
   DCHECK(entry_proto.get());
@@ -780,10 +780,10 @@ void DriveFileSystemProxy::OnReadDirectory(
 }
 
 void DriveFileSystemProxy::OnCreateWritableSnapshotFile(
-    const FilePath& virtual_path,
+    const base::FilePath& virtual_path,
     const fileapi::WritableSnapshotFile& callback,
     DriveFileError result,
-    const FilePath& local_path) {
+    const base::FilePath& local_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   scoped_refptr<ShareableFileReference> file_ref;
@@ -803,8 +803,8 @@ void DriveFileSystemProxy::OnCreateWritableSnapshotFile(
 }
 
 void DriveFileSystemProxy::CloseWritableSnapshotFile(
-    const FilePath& virtual_path,
-    const FilePath& local_path) {
+    const base::FilePath& virtual_path,
+    const base::FilePath& local_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   CallDriveFileSystemMethodOnUIThread(

@@ -62,12 +62,14 @@ class DriveEntry {
   // This is not the full path, use GetFilePath for that.
   // Note that base_name_ gets reset by SetBaseNameFromTitle() in a number of
   // situations due to de-duplication (see AddEntry).
-  const FilePath::StringType& base_name() const { return base_name_; }
+  const base::FilePath::StringType& base_name() const { return base_name_; }
   // TODO(achuith): Make this private when GDataDB no longer uses path as a key.
-  void set_base_name(const FilePath::StringType& name) { base_name_ = name; }
+  void set_base_name(const base::FilePath::StringType& name) {
+    base_name_ = name;
+  }
 
-  const FilePath::StringType& title() const { return title_; }
-  void set_title(const FilePath::StringType& title) { title_ = title; }
+  const base::FilePath::StringType& title() const { return title_; }
+  void set_title(const base::FilePath::StringType& title) { title_ = title; }
 
   // The unique resource ID associated with this file system entry.
   const std::string& resource_id() const { return resource_id_; }
@@ -96,7 +98,7 @@ class DriveEntry {
   // Returns virtual file path representing this file system entry. This path
   // corresponds to file path expected by public methods of DriveFileSystem
   // class.
-  FilePath GetFilePath() const;
+  base::FilePath GetFilePath() const;
 
   // Sets |base_name_| based on the value of |title_| without name
   // de-duplication (see AddEntry() for details on de-duplication).
@@ -118,7 +120,7 @@ class DriveEntry {
   // |base_name_| but may be different from |base_name_|. For example,
   // |base_name_| has an added .g<something> extension for hosted documents or
   // may have an extra suffix for name de-duplication on the drive file system.
-  FilePath::StringType title_;
+  base::FilePath::StringType title_;
   std::string resource_id_;
   std::string parent_resource_id_;
   // Files with the same title will be uniquely identified with this field
@@ -133,7 +135,7 @@ class DriveEntry {
 
   // Name of this file in the drive virtual file system. This can change
   // due to de-duplication (See AddEntry).
-  FilePath::StringType base_name_;
+  base::FilePath::StringType base_name_;
 
   DriveDirectory* parent_;
   // Weak pointer to DriveResourceMetadata.
@@ -231,7 +233,7 @@ class DriveDirectory : public DriveEntry {
 
   // Find a child's resource_id by its name. Returns the empty string if not
   // found. TODO(satorux): Remove this. crbug.com/139649
-  std::string FindChild(const FilePath::StringType& file_name) const;
+  std::string FindChild(const base::FilePath::StringType& file_name) const;
 
   // Removes the entry from its children without destroying the
   // entry instance.
@@ -243,10 +245,10 @@ class DriveDirectory : public DriveEntry {
   void RemoveChildDirectories();
 
   // Recursively extracts the paths set of all sub-directories.
-  void GetChildDirectoryPaths(std::set<FilePath>* child_dirs);
+  void GetChildDirectoryPaths(std::set<base::FilePath>* child_dirs);
 
   // Map between base_name and resource_id of files and directories.
-  typedef std::map<FilePath::StringType, std::string> ChildMap;
+  typedef std::map<base::FilePath::StringType, std::string> ChildMap;
   // Collection of children.
   ChildMap child_files_;
   ChildMap child_directories_;

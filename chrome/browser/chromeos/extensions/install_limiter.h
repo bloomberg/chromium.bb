@@ -35,17 +35,18 @@ class InstallLimiter : public ProfileKeyedService,
 
   void DisableForTest();
 
-  void Add(const scoped_refptr<CrxInstaller>& installer, const FilePath& path);
+  void Add(const scoped_refptr<CrxInstaller>& installer,
+           const base::FilePath& path);
 
  private:
   // DeferredInstall holds info to run a CrxInstaller later.
   struct DeferredInstall {
     DeferredInstall(const scoped_refptr<CrxInstaller>& installer,
-                   const FilePath& path);
+                   const base::FilePath& path);
     ~DeferredInstall();
 
     const scoped_refptr<CrxInstaller> installer;
-    const FilePath path;
+    const base::FilePath path;
   };
 
   typedef std::queue<DeferredInstall> DeferredInstallList;
@@ -55,7 +56,7 @@ class InstallLimiter : public ProfileKeyedService,
   // it stores the install info into |deferred_installs_| to run it later.
   // Otherwise, it just runs the installer.
   void AddWithSize(const scoped_refptr<CrxInstaller>& installer,
-                   const FilePath& path,
+                   const base::FilePath& path,
                    int64* size);
 
   // Checks and runs deferred big app installs when appropriate.
@@ -64,7 +65,7 @@ class InstallLimiter : public ProfileKeyedService,
   // Starts install using passed-in info and observes |installer|'s done
   // notification.
   void RunInstall(const scoped_refptr<CrxInstaller>& installer,
-                  const FilePath& path);
+                  const base::FilePath& path);
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

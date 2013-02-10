@@ -60,7 +60,7 @@ void AppendStringPref(int index,
 // |verifier| if DisableVerifier() hasn't been called.
 void ChangeFilePathPref(int index,
                         const char* pref_name,
-                        const FilePath& new_value);
+                        const base::FilePath& new_value);
 
 // Changes the value of the list preference with name |pref_name| in the
 // profile with index |index| to |new_value|. Also changes its value in

@@ -28,23 +28,23 @@ namespace policy {
 
 namespace {
 
-FilePath GetManagedPolicyPath() {
+base::FilePath GetManagedPolicyPath() {
   // This constructs the path to the plist file in which Mac OS X stores the
   // managed preference for the application. This is undocumented and therefore
   // fragile, but if it doesn't work out, AsyncPolicyLoader has a task that
   // polls periodically in order to reload managed preferences later even if we
   // missed the change.
-  FilePath path;
+  base::FilePath path;
   if (!PathService::Get(chrome::DIR_MANAGED_PREFS, &path))
-    return FilePath();
+    return base::FilePath();
 
   CFBundleRef bundle(CFBundleGetMainBundle());
   if (!bundle)
-    return FilePath();
+    return base::FilePath();
 
   CFStringRef bundle_id = CFBundleGetIdentifier(bundle);
   if (!bundle_id)
-    return FilePath();
+    return base::FilePath();
 
   return path.Append(base::SysCFStringRefToUTF8(bundle_id) + ".plist");
 }
@@ -174,7 +174,7 @@ base::Value* PolicyLoaderMac::CreateValueFromProperty(
   return NULL;
 }
 
-void PolicyLoaderMac::OnFileUpdated(const FilePath& path, bool error) {
+void PolicyLoaderMac::OnFileUpdated(const base::FilePath& path, bool error) {
   if (!error)
     Reload(false);
 }

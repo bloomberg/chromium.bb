@@ -217,7 +217,7 @@ void GDataWapiService::CancelAll() {
   runner_->CancelAll();
 }
 
-bool GDataWapiService::CancelForFilePath(const FilePath& file_path) {
+bool GDataWapiService::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return operation_registry()->CancelForFilePath(file_path);
 }
@@ -291,8 +291,8 @@ void GDataWapiService::GetAppList(const GetAppListCallback& callback) {
 }
 
 void GDataWapiService::DownloadFile(
-    const FilePath& virtual_path,
-    const FilePath& local_cache_path,
+    const base::FilePath& virtual_path,
+    const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback) {
@@ -461,7 +461,7 @@ void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
 
 void GDataWapiService::GetUploadStatus(
     UploadMode upload_mode,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
     const UploadRangeCallback& callback) {

@@ -40,7 +40,7 @@ class SafariImporter : public Importer {
  public:
   // |library_dir| is the full path to the ~/Library directory,
   // We pass it in as a parameter for testing purposes.
-  explicit SafariImporter(const FilePath& library_dir);
+  explicit SafariImporter(const base::FilePath& library_dir);
 
   // Importer:
   virtual void StartImport(const importer::SourceProfile& source_profile,
@@ -52,7 +52,8 @@ class SafariImporter : public Importer {
  // in: library_dir - ~/Library or a standin for testing purposes.
  // out: services_supported - the service supported for import.
  // Returns true if we can import the Safari profile.
- static bool CanImport(const FilePath& library_dir, uint16* services_supported);
+ static bool CanImport(const base::FilePath& library_dir,
+                       uint16* services_supported);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, BookmarkImport);
@@ -104,7 +105,7 @@ class SafariImporter : public Importer {
                        const FaviconMap& favicon_map,
                        std::vector<history::ImportedFaviconUsage>* favicons);
 
-  FilePath library_dir_;
+  base::FilePath library_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(SafariImporter);
 };

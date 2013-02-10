@@ -81,7 +81,7 @@ void DeveloperPrivateAPI::Observe(
   }
 }
 
-void DeveloperPrivateAPI::SetLastUnpackedDirectory(const FilePath& path) {
+void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
   last_unpacked_directory_ = path;
 }
 
@@ -517,7 +517,7 @@ bool DeveloperPrivateLoadUnpackedFunction::RunImpl() {
 
   const ui::SelectFileDialog::Type kSelectType =
       ui::SelectFileDialog::SELECT_FOLDER;
-  const FilePath& last_unpacked_directory =
+  const base::FilePath& last_unpacked_directory =
       DeveloperPrivateAPI::Get(profile())->getLastUnpackedDirectory();
   SetResult(Value::CreateBooleanValue(true));
   // Balanced in FileSelected / FileSelectionCanceled.
@@ -528,7 +528,7 @@ bool DeveloperPrivateLoadUnpackedFunction::RunImpl() {
 
 bool DeveloperPrivateChooseEntryFunction::ShowPicker(
     ui::SelectFileDialog::Type picker_type,
-    const FilePath& last_directory,
+    const base::FilePath& last_directory,
     const string16& select_title) {
   ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
   DCHECK(registry);
@@ -551,8 +551,8 @@ bool DeveloperPrivateChooseEntryFunction::RunImpl() { return false; }
 
 DeveloperPrivateChooseEntryFunction::~DeveloperPrivateChooseEntryFunction() {}
 
-void DeveloperPrivateLoadUnpackedFunction::FileSelected(const FilePath& path) {
-
+void DeveloperPrivateLoadUnpackedFunction::FileSelected(
+    const base::FilePath& path) {
   ExtensionService* service = profile()->GetExtensionService();
   extensions::UnpackedInstaller::Create(service)->Load(path);
   DeveloperPrivateAPI::Get(profile())->SetLastUnpackedDirectory(path);

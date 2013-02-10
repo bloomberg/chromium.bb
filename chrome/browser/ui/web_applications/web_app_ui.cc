@@ -104,13 +104,13 @@ class UpdateShortcutWorker : public content::NotificationObserver {
   ShellIntegration::ShortcutInfo shortcut_info_;
 
   // Our copy of profile path.
-  FilePath profile_path_;
+  base::FilePath profile_path_;
 
   // File name of shortcut/ico file based on app title.
-  FilePath file_name_;
+  base::FilePath file_name_;
 
   // Existing shortcuts.
-  std::vector<FilePath> shortcut_files_;
+  std::vector<base::FilePath> shortcut_files_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateShortcutWorker);
 };
@@ -231,7 +231,7 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
   for (int i = 0; i < arraysize(locations); ++i) {
     locations[i].use_this_location = false;
 
-    FilePath path;
+    base::FilePath path;
     if (!PathService::Get(locations[i].location_id, &path)) {
       NOTREACHED();
       continue;
@@ -240,7 +240,7 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
     if (locations[i].sub_dir != NULL)
       path = path.Append(locations[i].sub_dir);
 
-    FilePath shortcut_file = path.Append(file_name_).
+    base::FilePath shortcut_file = path.Append(file_name_).
         ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
     if (file_util::PathExists(shortcut_file)) {
       locations[i].use_this_location = true;
@@ -258,7 +258,7 @@ void UpdateShortcutWorker::UpdateShortcuts() {
 void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath web_app_path = web_app::GetWebAppDataDirectory(
+  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
       profile_path_, shortcut_info_.extension_id, shortcut_info_.url);
 
   // Ensure web_app_path exists. web_app_path could be missing for a legacy
@@ -269,7 +269,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
     return;
   }
 
-  FilePath icon_file = web_app_path.Append(file_name_).ReplaceExtension(
+  base::FilePath icon_file = web_app_path.Append(file_name_).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
   web_app::internals::CheckAndSaveIcon(icon_file,
                                        *shortcut_info_.favicon.ToSkBitmap());

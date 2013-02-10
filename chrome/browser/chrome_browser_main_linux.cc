@@ -132,7 +132,7 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 #endif
 
 #if !defined(OS_CHROMEOS)
-  const FilePath kDefaultMtabPath("/etc/mtab");
+  const base::FilePath kDefaultMtabPath("/etc/mtab");
   removable_device_notifications_linux_ =
       new chrome::RemovableDeviceNotificationsLinux(kDefaultMtabPath);
   removable_device_notifications_linux_->Init();

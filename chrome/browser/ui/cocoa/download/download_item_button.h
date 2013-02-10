@@ -13,11 +13,11 @@
 // instead of firing an action when clicked in a certain area.
 @interface DownloadItemButton : DraggableButton<NSMenuDelegate> {
  @private
-  FilePath downloadPath_;
+  base::FilePath downloadPath_;
   DownloadItemController* controller_;  // weak
 }
 
-@property(assign, nonatomic) FilePath download;
+@property(assign, nonatomic) base::FilePath download;
 @property(assign, nonatomic) DownloadItemController* controller;
 
 // Overridden from DraggableButton.

@@ -26,7 +26,7 @@ namespace extensions {
 // LevelDb for backing storage.
 class LevelDbAppNotificationStorage : public AppNotificationStorage {
  public:
-  explicit LevelDbAppNotificationStorage(const FilePath& path);
+  explicit LevelDbAppNotificationStorage(const base::FilePath& path);
   virtual ~LevelDbAppNotificationStorage();
 
   // Implementing the AppNotificationStorage interface.
@@ -44,7 +44,7 @@ class LevelDbAppNotificationStorage : public AppNotificationStorage {
   bool OpenDbIfNeeded(bool create_if_missing);
 
   // The path where the database will reside.
-  FilePath path_;
+  base::FilePath path_;
 
   // This should be used for all read operations on the db.
   leveldb::ReadOptions read_options_;
@@ -59,7 +59,7 @@ class LevelDbAppNotificationStorage : public AppNotificationStorage {
 
 // static
 AppNotificationStorage* AppNotificationStorage::Create(
-    const FilePath& path) {
+    const base::FilePath& path) {
   return new LevelDbAppNotificationStorage(path);
 }
 
@@ -112,7 +112,7 @@ void LogLevelDbError(const tracked_objects::Location& location,
 
 
 LevelDbAppNotificationStorage::LevelDbAppNotificationStorage(
-    const FilePath& path) : path_(path) {
+    const base::FilePath& path) : path_(path) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   read_options_.verify_checksums = true;
 }

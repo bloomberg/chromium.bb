@@ -588,7 +588,8 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
     manifest.SetString(extension_manifest_keys::kName, "test");
     manifest.SetString(extension_manifest_keys::kVersion,
                        "1." + base::IntToString(num));
-    FilePath path = prefs_.extensions_dir().AppendASCII(base::IntToString(num));
+    base::FilePath path =
+        prefs_.extensions_dir().AppendASCII(base::IntToString(num));
     std::string errors;
     scoped_refptr<Extension> extension = Extension::Create(
         path, Manifest::INTERNAL, manifest, Extension::NO_FLAGS, id, &errors);
@@ -680,7 +681,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
 
  protected:
   Time now_;
-  FilePath basedir_;
+  base::FilePath basedir_;
   std::string id1_;
   std::string id2_;
   std::string id3_;

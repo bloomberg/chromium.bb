@@ -141,7 +141,7 @@ void AddProfileImageTimeHistogram(ProfileDownloadResult result,
 void DeleteImageFile(const std::string& image_path) {
   if (image_path.empty())
     return;
-  FilePath fp(image_path);
+  base::FilePath fp(image_path);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
@@ -320,7 +320,7 @@ void UserImageManagerImpl::SaveUserImage(const std::string& username,
 }
 
 void UserImageManagerImpl::SaveUserImageFromFile(const std::string& username,
-                                                 const FilePath& path) {
+                                                 const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Always use unsafe image loader because we resize the image when saving
   // anyway.
@@ -373,10 +373,10 @@ const gfx::ImageSkia& UserImageManagerImpl::DownloadedProfileImage() const {
   return downloaded_profile_image_;
 }
 
-FilePath UserImageManagerImpl::GetImagePathForUser(
+base::FilePath UserImageManagerImpl::GetImagePathForUser(
     const std::string& username) {
   std::string filename = username + kSafeImagePathExtension;
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   return user_data_dir.AppendASCII(filename);
 }
@@ -433,7 +433,7 @@ void UserImageManagerImpl::SaveUserImageInternal(const std::string& username,
   if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(username))
     return;
 
-  FilePath image_path = GetImagePathForUser(username);
+  base::FilePath image_path = GetImagePathForUser(username);
   DVLOG(1) << "Saving user image to " << image_path.value();
 
   last_image_set_async_ = true;
@@ -448,7 +448,7 @@ void UserImageManagerImpl::SaveUserImageInternal(const std::string& username,
 
 void UserImageManagerImpl::SaveImageToFile(const std::string& username,
                                            const UserImage& user_image,
-                                           const FilePath& image_path,
+                                           const base::FilePath& image_path,
                                            int image_index,
                                            const GURL& image_url) {
   if (!SaveBitmapToFile(user_image, image_path))
@@ -509,7 +509,7 @@ void UserImageManagerImpl::SaveImageToLocalState(const std::string& username,
 }
 
 bool UserImageManagerImpl::SaveBitmapToFile(const UserImage& user_image,
-                                            const FilePath& image_path) {
+                                            const base::FilePath& image_path) {
   UserImage safe_image;
   const UserImage::RawImage* encoded_image = NULL;
   if (!user_image.is_safe_format()) {

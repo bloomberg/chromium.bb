@@ -36,8 +36,8 @@ using extensions::APIPermission;
 using extensions::Extension;
 
 // For ExtensionService interface when it requires a path that is not used.
-FilePath bogus_file_path() {
-  return FilePath(FILE_PATH_LITERAL("//foobar_nonexistent"));
+base::FilePath bogus_file_path() {
+  return base::FilePath(FILE_PATH_LITERAL("//foobar_nonexistent"));
 }
 
 class BackgroundApplicationListModelTest : public ExtensionServiceTestBase {

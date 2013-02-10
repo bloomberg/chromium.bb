@@ -223,7 +223,7 @@ TEST_F(ProfileMenuControllerTest, DeleteActiveProfile) {
   TestingProfile* profile3 = manager->CreateTestingProfile("Profile 3");
   ASSERT_EQ(3U, manager->profile_manager()->GetNumberOfProfiles());
 
-  const FilePath profile3_path = profile3->GetPath();
+  const base::FilePath profile3_path = profile3->GetPath();
   manager->DeleteTestingProfile("Profile 3");
 
   // Simulate an unloaded profile by setting the "last used" local state pref

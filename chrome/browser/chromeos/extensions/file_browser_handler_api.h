@@ -49,7 +49,7 @@ class FileSelector {
   // The interface implementation should delete itself after the extension
   // function is notified of file selection result.
   virtual void SelectFile(
-      const FilePath& suggested_name,
+      const base::FilePath& suggested_name,
       const std::vector<std::string>& allowed_extensions,
       Browser* browser,
       FileBrowserHandlerInternalSelectFileFunction* function) = 0;
@@ -92,7 +92,7 @@ class FileBrowserHandlerInternalSelectFileFunction
   // |success| Whether the path was selected.
   // |full_path| The selected file path if one was selected. It is ignored if
   // the selection did not succeed.
-  void OnFilePathSelected(bool success, const FilePath& full_path);
+  void OnFilePathSelected(bool success, const base::FilePath& full_path);
 
  protected:
   // The class is ref counted, so destructor should not be public.
@@ -141,9 +141,9 @@ class FileBrowserHandlerInternalSelectFileFunction
   bool user_gesture_check_enabled_;
 
   // Full file system path of the selected file.
-  FilePath full_path_;
+  base::FilePath full_path_;
   // Selected file's virtual path in extension function caller's file system.
-  FilePath virtual_path_;
+  base::FilePath virtual_path_;
   // Extension function caller's file system name.
   std::string file_system_name_;
   // Extension function caller's file system root URL.
@@ -151,7 +151,7 @@ class FileBrowserHandlerInternalSelectFileFunction
 
   // List of permissions and paths that have to be granted for the selected
   // files.
-  std::vector<std::pair<FilePath, int> > permissions_to_grant_;
+  std::vector<std::pair<base::FilePath, int> > permissions_to_grant_;
 
   DECLARE_EXTENSION_FUNCTION("fileBrowserHandlerInternal.selectFile",
                              FILEBROWSERHANDLERINTERNAL_SELECTFILE)

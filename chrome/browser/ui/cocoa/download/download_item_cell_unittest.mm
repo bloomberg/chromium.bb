@@ -62,7 +62,7 @@ TEST_F(DownloadItemCellTest, IndeterminateProgress) {
   ON_CALL(item, GetState())
       .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
   ON_CALL(item, GetFileNameToReportUser())
-      .WillByDefault(Return(FilePath("foo.bar")));
+      .WillByDefault(Return(base::FilePath("foo.bar")));
   DownloadItemModel model(&item);
 
   // Set indeterminate state.

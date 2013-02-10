@@ -41,7 +41,7 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
 
   scoped_refptr<const Extension> LoadExtensionFromDirName(
       const std::string& extension_dir_name) {
-    FilePath extension_path;
+    base::FilePath extension_path;
     std::string load_error;
     PathService::Get(chrome::DIR_TEST_DATA, &extension_path);
     extension_path = extension_path.AppendASCII("requirements_checker")

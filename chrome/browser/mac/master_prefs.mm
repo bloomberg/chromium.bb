@@ -28,12 +28,12 @@ const char kMasterPreferencesFileName[] = "Chromium Master Preferences";
 
 namespace master_prefs {
 
-FilePath MasterPrefsPath() {
+base::FilePath MasterPrefsPath() {
 #if defined(GOOGLE_CHROME_BUILD)
   // Don't load master preferences for the canary.
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY)
-    return FilePath();
+    return base::FilePath();
 #endif  // GOOGLE_CHROME_BUILD
 
   // On official builds, try
@@ -41,7 +41,7 @@ FilePath MasterPrefsPath() {
   // On chromium builds, try
   //~/Library/Application Support/Chromium/Chromium Master Preferences
   // This intentionally doesn't use eventual --user-data-dir overrides.
-  FilePath user_application_support_path;
+  base::FilePath user_application_support_path;
   if (chrome::GetDefaultUserDataDirectory(&user_application_support_path)) {
     user_application_support_path =
         user_application_support_path.Append(kMasterPreferencesFileName);
@@ -52,9 +52,9 @@ FilePath MasterPrefsPath() {
   // On official builds, try /Library/Google/Google Chrome Master Preferences
   // On chromium builds, try
   // /Library/Application Support/Chromium/Chromium Master Preferences
-  FilePath search_path;
+  base::FilePath search_path;
   if (!base::mac::GetLocalDirectory(kSearchPath, &search_path))
-    return FilePath();
+    return base::FilePath();
 
   return search_path.Append(kMasterPreferencesDirectory)
                     .Append(kMasterPreferencesFileName);

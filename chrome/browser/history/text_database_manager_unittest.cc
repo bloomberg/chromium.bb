@@ -167,7 +167,7 @@ class TextDatabaseManagerTest : public testing::Test {
   MessageLoop message_loop_;
 
   // Directory containing the databases.
-  FilePath dir_;
+  base::FilePath dir_;
 };
 
 // Tests basic querying.

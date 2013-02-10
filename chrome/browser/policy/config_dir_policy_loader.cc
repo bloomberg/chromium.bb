@@ -22,13 +22,14 @@ namespace policy {
 namespace {
 
 // Subdirectories that contain the mandatory and recommended policies.
-const FilePath::CharType kMandatoryConfigDir[] = FILE_PATH_LITERAL("managed");
-const FilePath::CharType kRecommendedConfigDir[] =
+const base::FilePath::CharType kMandatoryConfigDir[] =
+    FILE_PATH_LITERAL("managed");
+const base::FilePath::CharType kRecommendedConfigDir[] =
     FILE_PATH_LITERAL("recommended");
 
 }  // namespace
 
-ConfigDirPolicyLoader::ConfigDirPolicyLoader(const FilePath& config_dir,
+ConfigDirPolicyLoader::ConfigDirPolicyLoader(const base::FilePath& config_dir,
                                              PolicyScope scope)
     : config_dir_(config_dir),
       scope_(scope) {}
@@ -56,7 +57,7 @@ scoped_ptr<PolicyBundle> ConfigDirPolicyLoader::Load() {
 }
 
 base::Time ConfigDirPolicyLoader::LastModificationTime() {
-  static const FilePath::CharType* kConfigDirSuffixes[] = {
+  static const base::FilePath::CharType* kConfigDirSuffixes[] = {
     kMandatoryConfigDir,
     kRecommendedConfigDir,
   };
@@ -65,7 +66,7 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
   base::PlatformFileInfo info;
 
   for (size_t i = 0; i < arraysize(kConfigDirSuffixes); ++i) {
-    FilePath path(config_dir_.Append(kConfigDirSuffixes[i]));
+    base::FilePath path(config_dir_.Append(kConfigDirSuffixes[i]));
 
     // Skip if the file doesn't exist, or it isn't a directory.
     if (!file_util::GetFileInfo(path, &info) || !info.is_directory)
@@ -74,7 +75,7 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
     // Enumerate the files and find the most recent modification timestamp.
     file_util::FileEnumerator file_enumerator(path, false,
                                               file_util::FileEnumerator::FILES);
-    for (FilePath config_file = file_enumerator.Next();
+    for (base::FilePath config_file = file_enumerator.Next();
          !config_file.empty();
          config_file = file_enumerator.Next()) {
       if (file_util::GetFileInfo(config_file, &info) && !info.is_directory)
@@ -85,14 +86,14 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
   return last_modification;
 }
 
-void ConfigDirPolicyLoader::LoadFromPath(const FilePath& path,
+void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
                                          PolicyLevel level,
                                          PolicyBundle* bundle) {
   // Enumerate the files and sort them lexicographically.
-  std::set<FilePath> files;
+  std::set<base::FilePath> files;
   file_util::FileEnumerator file_enumerator(path, false,
                                             file_util::FileEnumerator::FILES);
-  for (FilePath config_file_path = file_enumerator.Next();
+  for (base::FilePath config_file_path = file_enumerator.Next();
        !config_file_path.empty(); config_file_path = file_enumerator.Next())
     files.insert(config_file_path);
 
@@ -100,8 +101,9 @@ void ConfigDirPolicyLoader::LoadFromPath(const FilePath& path,
   // The files are processed in reverse order because |MergeFrom| gives priority
   // to existing keys, but the ConfigDirPolicyProvider gives priority to the
   // last file in lexicographic order.
-  for (std::set<FilePath>::reverse_iterator config_file_iter = files.rbegin();
-       config_file_iter != files.rend(); ++config_file_iter) {
+  for (std::set<base::FilePath>::reverse_iterator config_file_iter =
+           files.rbegin(); config_file_iter != files.rend();
+       ++config_file_iter) {
     JSONFileValueSerializer deserializer(*config_file_iter);
     deserializer.set_allow_trailing_comma(true);
     int error_code = 0;
@@ -186,7 +188,8 @@ void ConfigDirPolicyLoader::Merge3rdPartyPolicy(
   }
 }
 
-void ConfigDirPolicyLoader::OnFileUpdated(const FilePath& path, bool error) {
+void ConfigDirPolicyLoader::OnFileUpdated(const base::FilePath& path,
+                                          bool error) {
   if (!error)
     Reload(false);
 }

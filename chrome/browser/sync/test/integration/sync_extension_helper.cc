@@ -266,8 +266,9 @@ std::string NameToPublicKey(const std::string& name) {
 
 // TODO(akalin): Somehow unify this with MakeExtension() in
 // extension_util_unittest.cc.
-scoped_refptr<Extension> CreateExtension(
-    const FilePath& base_dir, const std::string& name, Manifest::Type type) {
+scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
+                                         const std::string& name,
+                                         Manifest::Type type) {
   DictionaryValue source;
   source.SetString(extension_manifest_keys::kName, name);
   const std::string& public_key = NameToPublicKey(name);
@@ -300,8 +301,8 @@ scoped_refptr<Extension> CreateExtension(
       ADD_FAILURE();
       return NULL;
   }
-  const FilePath sub_dir = FilePath().AppendASCII(name);
-  FilePath extension_dir;
+  const base::FilePath sub_dir = base::FilePath().AppendASCII(name);
+  base::FilePath extension_dir;
   if (!file_util::PathExists(base_dir) &&
       !file_util::CreateDirectory(base_dir)) {
     ADD_FAILURE();

@@ -24,7 +24,7 @@ class LoginDatabase {
 
   // Initialize the database with an sqlite file at the given path.
   // If false is returned, no other method should be called.
-  bool Init(const FilePath& db_path);
+  bool Init(const base::FilePath& db_path);
 
   // Reports usage metrics to UMA.
   void ReportMetrics();
@@ -95,7 +95,7 @@ class LoginDatabase {
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted, std::vector<content::PasswordForm*>* forms) const;
 
-  FilePath db_path_;
+  base::FilePath db_path_;
   mutable sql::Connection db_;
   sql::MetaTable meta_table_;
 

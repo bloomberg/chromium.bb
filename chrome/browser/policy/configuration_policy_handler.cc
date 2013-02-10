@@ -692,11 +692,11 @@ DownloadDirPolicyHandler::~DownloadDirPolicyHandler() {
 void DownloadDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                    PrefValueMap* prefs) {
   const Value* value = policies.GetValue(policy_name());
-  FilePath::StringType string_value;
+  base::FilePath::StringType string_value;
   if (!value || !value->GetAsString(&string_value))
     return;
 
-  FilePath::StringType expanded_value =
+  base::FilePath::StringType expanded_value =
       policy::path_parser::ExpandPathVariables(string_value);
   // Make sure the path isn't empty, since that will point to an undefined
   // location; the default location is used instead in that case.
@@ -724,9 +724,9 @@ DiskCacheDirPolicyHandler::~DiskCacheDirPolicyHandler() {
 void DiskCacheDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                     PrefValueMap* prefs) {
   const Value* value = policies.GetValue(policy_name());
-  FilePath::StringType string_value;
+  base::FilePath::StringType string_value;
   if (value && value->GetAsString(&string_value)) {
-    FilePath::StringType expanded_value =
+    base::FilePath::StringType expanded_value =
         policy::path_parser::ExpandPathVariables(string_value);
     prefs->SetValue(prefs::kDiskCacheDir,
                     Value::CreateStringValue(expanded_value));

@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceOnChangeSplit) {
   ExtensionTestMessageListener listener_incognito10(
       "clearDefault incognito ready", true);
 
-  FilePath extension_data_dir =
+  base::FilePath extension_data_dir =
       test_data_dir_.AppendASCII("preference").AppendASCII("onchange_split");
   ASSERT_TRUE(LoadExtensionIncognito(extension_data_dir));
 

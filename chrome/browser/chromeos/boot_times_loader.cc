@@ -89,23 +89,24 @@ namespace chromeos {
 #define FPL(value) FILE_PATH_LITERAL(value)
 
 // Dir uptime & disk logs are located in.
-static const FilePath::CharType kLogPath[] = FPL("/tmp");
+static const base::FilePath::CharType kLogPath[] = FPL("/tmp");
 // Dir log{in,out} logs are located in.
-static const FilePath::CharType kLoginLogPath[] = FPL("/home/chronos/user");
+static const base::FilePath::CharType kLoginLogPath[] =
+    FPL("/home/chronos/user");
 // Prefix for the time measurement files.
-static const FilePath::CharType kUptimePrefix[] = FPL("uptime-");
+static const base::FilePath::CharType kUptimePrefix[] = FPL("uptime-");
 // Prefix for the disk usage files.
-static const FilePath::CharType kDiskPrefix[] = FPL("disk-");
+static const base::FilePath::CharType kDiskPrefix[] = FPL("disk-");
 // Name of the time that Chrome's main() is called.
-static const FilePath::CharType kChromeMain[] = FPL("chrome-main");
+static const base::FilePath::CharType kChromeMain[] = FPL("chrome-main");
 // Delay in milliseconds between file read attempts.
 static const int64 kReadAttemptDelayMs = 250;
 // Delay in milliseconds before writing the login times to disk.
 static const int64 kLoginTimeWriteDelayMs = 3000;
 
 // Names of login stats files.
-static const FilePath::CharType kLoginSuccess[] = FPL("login-success");
-static const FilePath::CharType kChromeFirstRender[] =
+static const base::FilePath::CharType kLoginSuccess[] = FPL("login-success");
+static const base::FilePath::CharType kChromeFirstRender[] =
     FPL("chrome-first-render");
 
 // Names of login UMA values.
@@ -115,7 +116,7 @@ static const char kUmaLogout[] = "ShutdownTime.Logout";
 static const char kUmaLogoutPrefix[] = "ShutdownTime.";
 
 // Name of file collecting login times.
-static const FilePath::CharType kLoginTimes[] = FPL("login-times");
+static const base::FilePath::CharType kLoginTimes[] = FPL("login-times");
 
 // Name of file collecting logout times.
 static const char kLogoutTimes[] = "logout-times";
@@ -169,9 +170,9 @@ CancelableTaskTracker::TaskId BootTimesLoader::GetBootTimes(
 
 // Extracts the uptime value from files located in /tmp, returning the
 // value as a double in value.
-static bool GetTime(const FilePath::StringType& log, double* value) {
-  FilePath log_dir(kLogPath);
-  FilePath log_file = log_dir.Append(log);
+static bool GetTime(const base::FilePath::StringType& log, double* value) {
+  base::FilePath log_dir(kLogPath);
+  base::FilePath log_file = log_dir.Append(log);
   std::string contents;
   *value = 0.0;
   if (file_util::ReadFileToString(log_file, &contents)) {
@@ -196,9 +197,9 @@ static void SendBootTimesToUMA(const BootTimesLoader::BootTimes& boot_times) {
   // Checks if the times for the most recent boot event have been
   // reported already to avoid sending boot time histogram samples
   // every time the user logs out.
-  static const FilePath::CharType kBootTimesSent[] =
+  static const base::FilePath::CharType kBootTimesSent[] =
       FPL("/tmp/boot-times-sent");
-  FilePath sent(kBootTimesSent);
+  base::FilePath sent(kBootTimesSent);
   if (file_util::PathExists(sent))
     return;
 
@@ -238,17 +239,19 @@ void BootTimesLoader::Backend::GetBootTimesAndRunCallback(
   if (is_canceled_cb.Run())
     return;
 
-  const FilePath::CharType kFirmwareBootTime[] = FPL("firmware-boot-time");
-  const FilePath::CharType kPreStartup[] = FPL("pre-startup");
-  const FilePath::CharType kChromeExec[] = FPL("chrome-exec");
-  const FilePath::CharType kChromeMain[] = FPL("chrome-main");
-  const FilePath::CharType kXStarted[] = FPL("x-started");
-  const FilePath::CharType kLoginPromptReady[] = FPL("login-prompt-ready");
-  const FilePath::StringType uptime_prefix = kUptimePrefix;
+  const base::FilePath::CharType kFirmwareBootTime[] =
+      FPL("firmware-boot-time");
+  const base::FilePath::CharType kPreStartup[] = FPL("pre-startup");
+  const base::FilePath::CharType kChromeExec[] = FPL("chrome-exec");
+  const base::FilePath::CharType kChromeMain[] = FPL("chrome-main");
+  const base::FilePath::CharType kXStarted[] = FPL("x-started");
+  const base::FilePath::CharType kLoginPromptReady[] =
+      FPL("login-prompt-ready");
+  const base::FilePath::StringType uptime_prefix = kUptimePrefix;
 
   // Wait until firmware-boot-time file exists by reposting.
-  FilePath log_dir(kLogPath);
-  FilePath log_file = log_dir.Append(kFirmwareBootTime);
+  base::FilePath log_dir(kLogPath);
+  base::FilePath log_file = log_dir.Append(kFirmwareBootTime);
   if (!file_util::PathExists(log_file)) {
     BrowserThread::PostDelayedTask(
         BrowserThread::FILE,
@@ -284,7 +287,7 @@ void BootTimesLoader::Backend::GetBootTimesAndRunCallback(
 // Appends the given buffer into the file. Returns the number of bytes
 // written, or -1 on error.
 // TODO(satorux): Move this to file_util.
-static int AppendFile(const FilePath& file_path,
+static int AppendFile(const base::FilePath& file_path,
                       const char* data,
                       int size) {
   FILE* file = file_util::OpenFile(file_path, "a");
@@ -296,13 +299,14 @@ static int AppendFile(const FilePath& file_path,
   return num_bytes_written;
 }
 
-static void RecordStatsDelayed(const FilePath::StringType& name,
+static void RecordStatsDelayed(const base::FilePath::StringType& name,
                                const std::string& uptime,
                                const std::string& disk) {
-  const FilePath log_path(kLogPath);
-  const FilePath uptime_output =
-      log_path.Append(FilePath(kUptimePrefix + name));
-  const FilePath disk_output = log_path.Append(FilePath(kDiskPrefix + name));
+  const base::FilePath log_path(kLogPath);
+  const base::FilePath uptime_output =
+      log_path.Append(base::FilePath(kUptimePrefix + name));
+  const base::FilePath disk_output =
+      log_path.Append(base::FilePath(kDiskPrefix + name));
 
   // Append numbers to the files.
   AppendFile(uptime_output, uptime.data(), uptime.size());
@@ -318,7 +322,7 @@ void BootTimesLoader::WriteTimes(
   const int kMinTimeMillis = 1;
   const int kMaxTimeMillis = 30000;
   const int kNumBuckets = 100;
-  const FilePath log_path(kLoginLogPath);
+  const base::FilePath log_path(kLoginLogPath);
 
   // Need to sort by time since the entries may have been pushed onto the
   // vector (on the UI thread) in a different order from which they were
@@ -412,8 +416,8 @@ void BootTimesLoader::RecordStats(const std::string& name, const Stats& stats) {
 }
 
 BootTimesLoader::Stats BootTimesLoader::GetCurrentStats() {
-  const FilePath kProcUptime(FPL("/proc/uptime"));
-  const FilePath kDiskStat(FPL("/sys/block/sda/stat"));
+  const base::FilePath kProcUptime(FPL("/proc/uptime"));
+  const base::FilePath kDiskStat(FPL("/sys/block/sda/stat"));
   Stats stats;
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   file_util::ReadFileToString(kProcUptime, &stats.uptime);

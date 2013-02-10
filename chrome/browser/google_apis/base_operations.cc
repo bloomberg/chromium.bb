@@ -100,7 +100,7 @@ UrlFetchOperationBase::UrlFetchOperationBase(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     OperationType type,
-    const FilePath& path)
+    const base::FilePath& path)
     : OperationRegistry::Operation(registry, type, path),
       url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
@@ -461,8 +461,8 @@ DownloadFileOperation::DownloadFileOperation(
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
     const GURL& download_url,
-    const FilePath& drive_file_path,
-    const FilePath& output_file_path)
+    const base::FilePath& drive_file_path,
+    const base::FilePath& output_file_path)
     : UrlFetchOperationBase(registry,
                             url_request_context_getter,
                             OPERATION_DOWNLOAD,
@@ -508,7 +508,7 @@ void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
 
   // Take over the ownership of the the downloaded temp file.
-  FilePath temp_file;
+  base::FilePath temp_file;
   if (code == HTTP_SUCCESS &&
       !source->GetResponseAsFilePath(true,  // take_ownership
                                      &temp_file)) {
@@ -520,7 +520,7 @@ void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
 }
 
 void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
-  download_action_callback_.Run(code, FilePath());
+  download_action_callback_.Run(code, base::FilePath());
 }
 
 }  // namespace google_apis

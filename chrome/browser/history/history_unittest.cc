@@ -125,7 +125,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   }
 
   void CreateDBVersion(int version) {
-    FilePath data_path;
+    base::FilePath data_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("History");
     data_path = data_path.AppendASCII(StringPrintf("history.%d.sql", version));
@@ -162,8 +162,8 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
     url_chain.push_back(GURL("foo-url"));
 
     DownloadRow download(
-        FilePath(FILE_PATH_LITERAL("foo-path")),
-        FilePath(FILE_PATH_LITERAL("foo-path")),
+        base::FilePath(FILE_PATH_LITERAL("foo-path")),
+        base::FilePath(FILE_PATH_LITERAL("foo-path")),
         url_chain,
         GURL(""),
         time,
@@ -183,7 +183,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   MessageLoopForUI message_loop_;
 
   // names of the database files
-  FilePath history_dir_;
+  base::FilePath history_dir_;
 
   // Created via CreateBackendAndDatabase.
   scoped_refptr<HistoryBackend> backend_;
@@ -690,7 +690,7 @@ class HistoryTest : public testing::Test {
   scoped_ptr<HistoryService> history_service_;
 
   // names of the database files
-  FilePath history_dir_;
+  base::FilePath history_dir_;
 
   // Set by the thumbnail callback when we get data, you should be sure to
   // clear this before issuing a thumbnail request.
@@ -1156,7 +1156,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
 // See test/data/profiles/profile_with_default_theme/README.txt for
 // instructions on how to up the version.
 TEST(HistoryProfileTest, TypicalProfileVersion) {
-  FilePath file;
+  base::FilePath file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &file));
   file = file.AppendASCII("profiles");
   file = file.AppendASCII("profile_with_default_theme");

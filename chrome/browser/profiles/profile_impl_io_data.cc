@@ -66,15 +66,15 @@ ProfileImplIOData::Handle::~Handle() {
 }
 
 void ProfileImplIOData::Handle::Init(
-      const FilePath& cookie_path,
-      const FilePath& server_bound_cert_path,
-      const FilePath& cache_path,
+      const base::FilePath& cookie_path,
+      const base::FilePath& server_bound_cert_path,
+      const base::FilePath& cache_path,
       int cache_max_size,
-      const FilePath& media_cache_path,
+      const base::FilePath& media_cache_path,
       int media_cache_max_size,
-      const FilePath& extensions_cookie_path,
-      const FilePath& profile_path,
-      const FilePath& infinite_cache_path,
+      const base::FilePath& extensions_cookie_path,
+      const base::FilePath& profile_path,
+      const base::FilePath& infinite_cache_path,
       chrome_browser_net::Predictor* predictor,
       bool restore_old_session_cookies,
       quota::SpecialStoragePolicy* special_storage_policy) {
@@ -184,7 +184,7 @@ ProfileImplIOData::Handle::GetExtensionsRequestContextGetter() const {
 
 scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::CreateIsolatedAppRequestContextGetter(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory,
     scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
         blob_protocol_handler,
@@ -227,7 +227,7 @@ ProfileImplIOData::Handle::CreateIsolatedAppRequestContextGetter(
 
 scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We must have a non-default path, or this will act like the default media
@@ -545,9 +545,10 @@ ProfileImplIOData::InitializeAppRequestContext(
   AppRequestContext* context = new AppRequestContext(load_time_stats());
   context->CopyFrom(main_context);
 
-  FilePath cookie_path = partition_descriptor.path.Append(
+  base::FilePath cookie_path = partition_descriptor.path.Append(
       chrome::kCookieFilename);
-  FilePath cache_path = partition_descriptor.path.Append(chrome::kCacheDirname);
+  base::FilePath cache_path =
+      partition_descriptor.path.Append(chrome::kCacheDirname);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   // Only allow Record Mode if we are in a Debug build or where we are running
@@ -653,7 +654,7 @@ ProfileImplIOData::InitializeMediaRequestContext(
   context->CopyFrom(original_context);
 
   using content::StoragePartition;
-  FilePath cache_path;
+  base::FilePath cache_path;
   int cache_max_size = app_media_cache_max_size_;
   if (partition_descriptor.path == profile_path_) {
     // lazy_params_ is only valid for the default media context creation.

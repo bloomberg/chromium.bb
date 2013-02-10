@@ -194,7 +194,7 @@ TopSites::TopSites(Profile* profile)
   }
 }
 
-void TopSites::Init(const FilePath& db_name) {
+void TopSites::Init(const base::FilePath& db_name) {
   // Create the backend here, rather than in the constructor, so that
   // unit tests that do not need the backend can run without a problem.
   backend_ = new TopSitesBackend;

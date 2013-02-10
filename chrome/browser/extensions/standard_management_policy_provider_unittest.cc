@@ -36,7 +36,7 @@ class StandardManagementPolicyProviderTest : public testing::Test {
     values.SetString(extension_manifest_keys::kVersion, "0.1");
     std::string error;
     scoped_refptr<const Extension> extension = Extension::Create(
-        FilePath(), location, values, Extension::NO_FLAGS, &error);
+        base::FilePath(), location, values, Extension::NO_FLAGS, &error);
     CHECK(extension.get()) << error;
     return extension;
   }

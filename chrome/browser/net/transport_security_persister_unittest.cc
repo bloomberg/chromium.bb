@@ -138,7 +138,7 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   // just do it directly rather than call persister_->StateIsDirty. (That uses
   // ImportantFileWriter, which has an asynchronous commit interval rather
   // than block.) Use a different basename just for cleanliness.
-  FilePath path =
+  base::FilePath path =
       temp_dir_.path().AppendASCII("TransportSecurityPersisterTest");
   EXPECT_TRUE(file_util::WriteFile(path, serialized.c_str(),
                                    serialized.size()));

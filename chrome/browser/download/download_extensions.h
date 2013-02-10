@@ -18,7 +18,7 @@ enum DownloadDangerLevel {
 };
 
 // Determine the download danger level of a file.
-DownloadDangerLevel GetFileDangerLevel(const FilePath& path);
+DownloadDangerLevel GetFileDangerLevel(const base::FilePath& path);
 
 // Tests if we think the server means for this mime_type to be executable.
 bool IsExecutableMimeType(const std::string& mime_type);

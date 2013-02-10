@@ -171,18 +171,18 @@ class WebDatabaseMigrationTest : public testing::Test {
   // number and a new migration test added below.
   static const int kCurrentTestedVersionNumber;
 
-  FilePath GetDatabasePath() {
-    const FilePath::CharType kWebDatabaseFilename[] =
+  base::FilePath GetDatabasePath() {
+    const base::FilePath::CharType kWebDatabaseFilename[] =
         FILE_PATH_LITERAL("TestWebDatabase.sqlite3");
-    return temp_dir_.path().Append(FilePath(kWebDatabaseFilename));
+    return temp_dir_.path().Append(base::FilePath(kWebDatabaseFilename));
   }
 
   // The textual contents of |file| are read from
   // "chrome/test/data/web_database" and returned in the string |contents|.
   // Returns true if the file exists and is read successfully, false otherwise.
-  bool GetWebDatabaseData(const FilePath& file, std::string* contents) {
-    FilePath path = ui_test_utils::GetTestFilePath(
-        FilePath(FILE_PATH_LITERAL("web_database")), file);
+  bool GetWebDatabaseData(const base::FilePath& file, std::string* contents) {
+    base::FilePath path = ui_test_utils::GetTestFilePath(
+        base::FilePath(FILE_PATH_LITERAL("web_database")), file);
     return file_util::PathExists(path) &&
         file_util::ReadFileToString(path, contents);
   }
@@ -203,7 +203,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   // Like this:
   //   > .output version_nn.sql
   //   > .dump
-  void LoadDatabase(const FilePath::StringType& file);
+  void LoadDatabase(const base::FilePath::StringType& file);
 
  private:
   MessageLoopForUI message_loop_for_ui_;
@@ -215,9 +215,10 @@ class WebDatabaseMigrationTest : public testing::Test {
 
 const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 49;
 
-void WebDatabaseMigrationTest::LoadDatabase(const FilePath::StringType& file) {
+void WebDatabaseMigrationTest::LoadDatabase(
+    const base::FilePath::StringType& file) {
   std::string contents;
-  ASSERT_TRUE(GetWebDatabaseData(FilePath(file), &contents));
+  ASSERT_TRUE(GetWebDatabaseData(base::FilePath(file), &contents));
 
   sql::Connection connection;
   ASSERT_TRUE(connection.Open(GetDatabasePath()));

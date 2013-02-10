@@ -24,7 +24,7 @@ using content::BrowserThread;
 namespace {
 
 // TODO(shishir): This should move to a more generic name.
-const FilePath::CharType kPredictorDatabaseName[] =
+const base::FilePath::CharType kPredictorDatabaseName[] =
     FILE_PATH_LITERAL("Network Action Predictor");
 
 }  // namespace
@@ -52,7 +52,7 @@ class PredictorDatabaseInternal
   void SetCancelled();
 
   bool is_resource_prefetch_predictor_enabled_;
-  FilePath db_path_;
+  base::FilePath db_path_;
   scoped_ptr<sql::Connection> db_;
 
   // TODO(shishir): These tables may not need to be refcounted. Maybe move them

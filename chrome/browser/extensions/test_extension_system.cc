@@ -64,7 +64,7 @@ void TestExtensionSystem::CreateSocketManager() {
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(
     const CommandLine* command_line,
-    const FilePath& install_directory,
+    const base::FilePath& install_directory,
     bool autoupdate_enabled) {
   bool extensions_disabled =
       command_line && command_line->HasSwitch(switches::kDisableExtensions);

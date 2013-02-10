@@ -24,7 +24,7 @@ class MediaDeviceNotificationUtilsTest : public testing::Test {
   virtual ~MediaDeviceNotificationUtilsTest() { }
 
   // Verify mounted device type.
-  void checkDeviceType(const FilePath::StringType& mount_point,
+  void checkDeviceType(const base::FilePath::StringType& mount_point,
                        bool expected_val) {
     if (expected_val)
       EXPECT_TRUE(IsMediaDevice(mount_point));
@@ -34,12 +34,12 @@ class MediaDeviceNotificationUtilsTest : public testing::Test {
 
  protected:
   // Create mount point for the test device.
-  FilePath CreateMountPoint(bool create_dcim_dir) {
-    FilePath path(scoped_temp_dir_.path());
+  base::FilePath CreateMountPoint(bool create_dcim_dir) {
+    base::FilePath path(scoped_temp_dir_.path());
     if (create_dcim_dir)
       path = path.Append(kDCIMDirectoryName);
     if (!file_util::CreateDirectory(path))
-      return FilePath();
+      return base::FilePath();
     return scoped_temp_dir_.path();
   }
 
@@ -77,7 +77,7 @@ class MediaDeviceNotificationUtilsTest : public testing::Test {
 // media device mount point.
 TEST_F(MediaDeviceNotificationUtilsTest, MediaDeviceAttached) {
   // Create a dummy mount point with DCIM Directory.
-  FilePath mount_point(CreateMountPoint(true));
+  base::FilePath mount_point(CreateMountPoint(true));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MediaDeviceNotificationUtilsTest::checkDeviceType,
@@ -89,7 +89,7 @@ TEST_F(MediaDeviceNotificationUtilsTest, MediaDeviceAttached) {
 // non-media device mount point.
 TEST_F(MediaDeviceNotificationUtilsTest, NonMediaDeviceAttached) {
   // Create a dummy mount point without DCIM Directory.
-  FilePath mount_point(CreateMountPoint(false));
+  base::FilePath mount_point(CreateMountPoint(false));
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MediaDeviceNotificationUtilsTest::checkDeviceType,

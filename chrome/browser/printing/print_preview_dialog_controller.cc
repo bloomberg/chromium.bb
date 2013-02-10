@@ -55,7 +55,7 @@ namespace {
 
 void EnableInternalPDFPluginForTab(WebContents* preview_tab) {
   // Always enable the internal PDF plugin for the print preview page.
-  FilePath pdf_plugin_path;
+  base::FilePath pdf_plugin_path;
   if (!PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_plugin_path))
     return;
 

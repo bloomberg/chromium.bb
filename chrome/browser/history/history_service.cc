@@ -944,7 +944,7 @@ void HistoryService::RebuildTable(
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::IterateURLs, enumerator);
 }
 
-bool HistoryService::Init(const FilePath& history_dir,
+bool HistoryService::Init(const base::FilePath& history_dir,
                           BookmarkService* bookmark_service,
                           bool no_db) {
   DCHECK(thread_checker_.CalledOnValidThread());

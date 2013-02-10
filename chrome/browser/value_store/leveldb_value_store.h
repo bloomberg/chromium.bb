@@ -24,7 +24,7 @@ class LeveldbValueStore : public ValueStore {
   // need to be notified of that, but we don't want to permanently give up.
   //
   // Must be created on the FILE thread.
-  explicit LeveldbValueStore(const FilePath& path);
+  explicit LeveldbValueStore(const base::FilePath& path);
 
   // Must be deleted on the FILE thread.
   virtual ~LeveldbValueStore();
@@ -78,7 +78,7 @@ class LeveldbValueStore : public ValueStore {
   bool IsEmpty();
 
   // The location of the leveldb backend.
-  const FilePath db_path_;
+  const base::FilePath db_path_;
 
   // leveldb backend.
   scoped_ptr<leveldb::DB> db_;

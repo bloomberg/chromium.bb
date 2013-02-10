@@ -140,7 +140,7 @@ class DriveFileSyncClient
   // empty.
   void DownloadFile(const std::string& resource_id,
                     const std::string& local_file_md5,
-                    const FilePath& local_file_path,
+                    const base::FilePath& local_file_path,
                     const DownloadFileCallback& callback);
 
   // Uploads the new file |local_file_path| with specified |title| into the
@@ -148,7 +148,7 @@ class DriveFileSyncClient
   // Upon completion, invokes |callback| and returns HTTP_CREATED if the file
   // is created.
   void UploadNewFile(const std::string& directory_resource_id,
-                     const FilePath& local_file_path,
+                     const base::FilePath& local_file_path,
                      const std::string& title,
                      const UploadFileCallback& callback);
 
@@ -160,7 +160,7 @@ class DriveFileSyncClient
   // Returns HTTP_SUCCESS if the file uploaded successfully.
   void UploadExistingFile(const std::string& resource_id,
                           const std::string& remote_file_md5,
-                          const FilePath& local_file_path,
+                          const base::FilePath& local_file_path,
                           const UploadFileCallback& callback);
 
   // Returns true if the user is authenticated.
@@ -236,7 +236,7 @@ class DriveFileSyncClient
                            scoped_ptr<google_apis::ResourceEntry> entry);
 
   void DownloadFileInternal(const std::string& local_file_md5,
-                            const FilePath& local_file_path,
+                            const base::FilePath& local_file_path,
                             const DownloadFileCallback& callback,
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::ResourceEntry> entry);
@@ -244,10 +244,10 @@ class DriveFileSyncClient
   void DidDownloadFile(const std::string& downloaded_file_md5,
                        const DownloadFileCallback& callback,
                        google_apis::GDataErrorCode error,
-                       const FilePath& downloaded_file_path);
+                       const base::FilePath& downloaded_file_path);
 
   void UploadNewFileInternal(
-      const FilePath& local_file_path,
+      const base::FilePath& local_file_path,
       const std::string& title,
       const UploadFileCallback& callback,
       google_apis::GDataErrorCode error,
@@ -265,7 +265,7 @@ class DriveFileSyncClient
 
   void UploadExistingFileInternal(
       const std::string& remote_file_md5,
-      const FilePath& local_file_path,
+      const base::FilePath& local_file_path,
       const UploadFileCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);

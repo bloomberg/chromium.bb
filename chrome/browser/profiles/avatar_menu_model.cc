@@ -90,7 +90,8 @@ void AvatarMenuModel::SwitchToProfile(size_t index, bool always_create) {
   DCHECK(ProfileManager::IsMultipleProfilesEnabled() ||
          index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
-  FilePath path = profile_info_->GetPathOfProfileAtIndex(item.model_index);
+  base::FilePath path =
+      profile_info_->GetPathOfProfileAtIndex(item.model_index);
 
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
   if (browser_)
@@ -202,7 +203,7 @@ void AvatarMenuModel::RebuildMenu() {
           IDS_PROFILES_LOCAL_PROFILE_STATE);
     }
     if (browser_) {
-      FilePath path = profile_info_->GetPathOfProfileAtIndex(i);
+      base::FilePath path = profile_info_->GetPathOfProfileAtIndex(i);
       item->active = browser_->profile()->GetPath() == path;
     }
     items_.push_back(item);

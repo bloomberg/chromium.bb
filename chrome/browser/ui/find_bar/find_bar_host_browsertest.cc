@@ -170,8 +170,8 @@ class FindInPageControllerTest : public InProcessBrowserTest {
 
   GURL GetURL(const std::string filename) {
     return ui_test_utils::GetTestUrl(
-        FilePath().AppendASCII("find_in_page"),
-        FilePath().AppendASCII(filename));
+        base::FilePath().AppendASCII("find_in_page"),
+        base::FilePath().AppendASCII(filename));
   }
 
   void FlushHistoryService() {
@@ -285,7 +285,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SearchWithinSpecialURL) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  FilePath data_dir = ui_test_utils::GetTestFilePath(FilePath(), FilePath());
+  base::FilePath data_dir =
+      ui_test_utils::GetTestFilePath(base::FilePath(), base::FilePath());
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(data_dir));
   EXPECT_EQ(1, FindInPageWchar(web_contents, L"downloads",
                                kFwd, kIgnoreCase, NULL));
@@ -303,8 +304,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SearchWithinSpecialURL) {
                                       kFwd, kIgnoreCase, NULL, NULL));
 
   GURL download_url = ui_test_utils::GetTestUrl(
-      FilePath().AppendASCII("downloads"),
-      FilePath().AppendASCII("a_zip_file.zip"));
+      base::FilePath().AppendASCII("downloads"),
+      base::FilePath().AppendASCII("a_zip_file.zip"));
   ui_test_utils::DownloadURL(browser(), download_url);
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
@@ -390,9 +391,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindLongString) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("largepage.html"));
 
-  FilePath path = ui_test_utils::GetTestFilePath(
-      FilePath().AppendASCII("find_in_page"),
-      FilePath().AppendASCII("LongFind.txt"));
+  base::FilePath path = ui_test_utils::GetTestFilePath(
+      base::FilePath().AppendASCII("find_in_page"),
+      base::FilePath().AppendASCII("LongFind.txt"));
   std::string query;
   file_util::ReadFileToString(path, &query);
   std::wstring search_string = UTF8ToWide(query);
@@ -451,9 +452,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindWholeFileContent) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  FilePath path = ui_test_utils::GetTestFilePath(
-      FilePath().AppendASCII("find_in_page"),
-      FilePath().AppendASCII("find_test.txt"));
+  base::FilePath path = ui_test_utils::GetTestFilePath(
+      base::FilePath().AppendASCII("find_in_page"),
+      base::FilePath().AppendASCII("find_test.txt"));
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(path));
 
   std::string query;

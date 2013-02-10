@@ -79,7 +79,7 @@ bool TextDatabaseManager::PageInfo::Expired(TimeTicks now) const {
 
 // TextDatabaseManager ---------------------------------------------------------
 
-TextDatabaseManager::TextDatabaseManager(const FilePath& dir,
+TextDatabaseManager::TextDatabaseManager(const base::FilePath& dir,
                                          URLDatabase* url_database,
                                          VisitDatabase* visit_database)
     : dir_(dir),
@@ -158,11 +158,11 @@ void TextDatabaseManager::InitDBList() {
   present_databases_loaded_ = true;
 
   // Find files on disk matching our pattern so we can quickly test for them.
-  FilePath::StringType filepattern(TextDatabase::file_base());
+  base::FilePath::StringType filepattern(TextDatabase::file_base());
   filepattern.append(FILE_PATH_LITERAL("*"));
   file_util::FileEnumerator enumerator(
       dir_, false, file_util::FileEnumerator::FILES, filepattern);
-  FilePath cur_file;
+  base::FilePath cur_file;
   while (!(cur_file = enumerator.Next()).empty()) {
     // Convert to the number representing this file.
     TextDatabase::DBIdent id = TextDatabase::FileNameToID(cur_file);
@@ -413,7 +413,7 @@ void TextDatabaseManager::DeleteAll() {
   // Now go through and delete all the files.
   for (DBIdentSet::iterator i = present_databases_.begin();
        i != present_databases_.end(); ++i) {
-    FilePath file_name = dir_.Append(TextDatabase::IDToFileName(*i));
+    base::FilePath file_name = dir_.Append(TextDatabase::IDToFileName(*i));
     file_util::Delete(file_name, false);
   }
 }

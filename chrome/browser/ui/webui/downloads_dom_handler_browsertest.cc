@@ -144,8 +144,8 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest,
   url_chain.push_back(url);
   base::Time current(base::Time::Now());
   download_manager()->CreateDownloadItem(
-      FilePath(FILE_PATH_LITERAL("/path/to/file")),
-      FilePath(FILE_PATH_LITERAL("/path/to/file")),
+      base::FilePath(FILE_PATH_LITERAL("/path/to/file")),
+      base::FilePath(FILE_PATH_LITERAL("/path/to/file")),
       url_chain,
       GURL(""),
       current,

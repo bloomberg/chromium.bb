@@ -25,7 +25,7 @@ class TokenServiceTableTest : public testing::Test {
     file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
   }
 
-  FilePath file_;
+  base::FilePath file_;
   base::ScopedTempDir temp_dir_;
 
  private:

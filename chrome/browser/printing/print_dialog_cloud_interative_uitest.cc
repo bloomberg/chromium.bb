@@ -50,9 +50,9 @@ class TestData {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
 
     if (test_data_.empty()) {
-      FilePath test_data_directory;
+      base::FilePath test_data_directory;
       PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
-      FilePath test_file =
+      base::FilePath test_file =
           test_data_directory.AppendASCII("printing/cloud_print_uitest.html");
       file_util::ReadFileToString(test_file, &test_data_);
     }
@@ -208,7 +208,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
   }
 
   void CreateDialogForTest() {
-    FilePath path_to_pdf =
+    base::FilePath path_to_pdf =
         test_data_directory_.AppendASCII("printing/cloud_print_uitest.pdf");
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -233,7 +233,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
   bool handler_added_;
   std::string scheme_;
   std::string host_name_;
-  FilePath test_data_directory_;
+  base::FilePath test_data_directory_;
   AutoQuitDelegate delegate_;
 };
 

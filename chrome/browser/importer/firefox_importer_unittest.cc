@@ -373,7 +373,7 @@ class FirefoxProfileImporterTest : public ImporterTest {
   virtual void SetUp() OVERRIDE {
     ImporterTest::SetUp();
     // Creates a new profile in a new subdirectory in the temp directory.
-    FilePath test_path = temp_dir_.path().AppendASCII("ImporterTest");
+    base::FilePath test_path = temp_dir_.path().AppendASCII("ImporterTest");
     file_util::Delete(test_path, true);
     file_util::CreateDirectory(test_path);
     profile_path_ = test_path.AppendASCII("profile");
@@ -385,7 +385,7 @@ class FirefoxProfileImporterTest : public ImporterTest {
                              importer::ImporterProgressObserver* observer,
                              ProfileWriter* writer,
                              bool import_search_plugins) {
-    FilePath data_path;
+    base::FilePath data_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII(profile_dir);
     ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, true));
@@ -393,7 +393,7 @@ class FirefoxProfileImporterTest : public ImporterTest {
     data_path = data_path.AppendASCII("firefox3_nss");
     ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, false));
 
-    FilePath search_engine_path = app_path_;
+    base::FilePath search_engine_path = app_path_;
     search_engine_path = search_engine_path.AppendASCII("searchplugins");
     file_util::CreateDirectory(search_engine_path);
     if (import_search_plugins) {
@@ -424,12 +424,12 @@ class FirefoxProfileImporterTest : public ImporterTest {
     loop->Run();
   }
 
-  FilePath profile_path_;
-  FilePath app_path_;
+  base::FilePath profile_path_;
+  base::FilePath app_path_;
 };
 
 TEST_F(FirefoxProfileImporterTest, MAYBE(Firefox2Importer)) {
-  FilePath data_path;
+  base::FilePath data_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
   data_path = data_path.AppendASCII("firefox2_profile");
   ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, true));
@@ -437,7 +437,7 @@ TEST_F(FirefoxProfileImporterTest, MAYBE(Firefox2Importer)) {
   data_path = data_path.AppendASCII("firefox2_nss");
   ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, false));
 
-  FilePath search_engine_path = app_path_;
+  base::FilePath search_engine_path = app_path_;
   search_engine_path = search_engine_path.AppendASCII("searchplugins");
   file_util::CreateDirectory(search_engine_path);
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
@@ -488,14 +488,14 @@ TEST_F(FirefoxProfileImporterTest, MAYBE(Firefox35Importer)) {
 // to run in a separate process, so we use a proxy object so we can share the
 // same test between platforms.
 TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
-  FilePath nss_path;
+  base::FilePath nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
 #ifdef OS_MACOSX
   nss_path = nss_path.AppendASCII("firefox2_nss_mac");
 #else
   nss_path = nss_path.AppendASCII("firefox2_nss");
 #endif  // !OS_MACOSX
-  FilePath db_path;
+  base::FilePath db_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &db_path));
   db_path = db_path.AppendASCII("firefox2_profile");
 
@@ -513,14 +513,14 @@ TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
 }
 
 TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
-  FilePath nss_path;
+  base::FilePath nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
 #ifdef OS_MACOSX
   nss_path = nss_path.AppendASCII("firefox3_nss_mac");
 #else
   nss_path = nss_path.AppendASCII("firefox3_nss");
 #endif  // !OS_MACOSX
-  FilePath db_path;
+  base::FilePath db_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &db_path));
   db_path = db_path.AppendASCII("firefox3_profile");
 
@@ -654,12 +654,12 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
 }
 
 TEST(FirefoxImporterTest, Firefox2BookmarkFileImport) {
-  FilePath path;
+  base::FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("firefox2_importer");
 
   // Import all bookmarks from a file which include an empty folder entry.
-  FilePath empty_folder_path = path.AppendASCII("empty_folder.html");
+  base::FilePath empty_folder_path = path.AppendASCII("empty_folder.html");
   std::set<GURL> default_urls;
   Firefox2Importer* importer = new Firefox2Importer();
   importer->AddRef();
@@ -726,7 +726,7 @@ TEST(FirefoxImporterTest, Firefox2BookmarkFileImport) {
   }
 
   // Import Epiphany bookmarks from a file
-  FilePath epiphany_path = path.AppendASCII("epiphany.html");
+  base::FilePath epiphany_path = path.AppendASCII("epiphany.html");
   bookmarks.clear();
   default_urls.clear();
   importer->ImportBookmarksFile(epiphany_path, default_urls,

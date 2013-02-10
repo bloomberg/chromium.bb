@@ -21,7 +21,7 @@ void InitAppList(Profile* profile) {}
 #endif
 
 #if defined(ENABLE_APP_LIST)
-FilePath GetAppListProfilePath(const FilePath& user_data_dir) {
+base::FilePath GetAppListProfilePath(const base::FilePath& user_data_dir) {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 

@@ -369,7 +369,7 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
                                           int signal_fd) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath dumps_path("/tmp");
+  base::FilePath dumps_path("/tmp");
   PathService::Get(base::DIR_TEMP, &dumps_path);
   if (!info->upload)
     PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);

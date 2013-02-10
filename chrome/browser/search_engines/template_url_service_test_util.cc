@@ -119,7 +119,7 @@ void TemplateURLServiceTestingProfile::SetUp() {
   // Make unique temp directory.
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-  FilePath path = temp_dir_.path().AppendASCII("TestDataService.db");
+  base::FilePath path = temp_dir_.path().AppendASCII("TestDataService.db");
   service_ = new WebDataService;
   ASSERT_TRUE(service_->InitWithPath(path));
 }

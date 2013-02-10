@@ -61,7 +61,7 @@ PrefServiceBuilder& PrefServiceBuilder::WithReadErrorCallback(
 }
 
 PrefServiceBuilder& PrefServiceBuilder::WithUserFilePrefs(
-    const FilePath& prefs_file,
+    const base::FilePath& prefs_file,
     base::SequencedTaskRunner* task_runner) {
   user_prefs_ = new JsonPrefStore(prefs_file, task_runner);
   return *this;

@@ -32,9 +32,10 @@ static const char kCustomThemeName[] = "name";
 static const char kCustomThemeUrl[] = "http://update.url/foo";
 
 #if defined(OS_WIN)
-const FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("c:\\foo");
+const base::FilePath::CharType kExtensionFilePath[] =
+    FILE_PATH_LITERAL("c:\\foo");
 #elif defined(OS_POSIX)
-const FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/oo");
+const base::FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/oo");
 #endif
 
 class FakeSyncChangeProcessor : public syncer::SyncChangeProcessor {
@@ -127,7 +128,7 @@ ProfileKeyedService* BuildMockThemeService(Profile* profile) {
 }
 
 scoped_refptr<extensions::Extension> MakeThemeExtension(
-    const FilePath& extension_path,
+    const base::FilePath& extension_path,
     const string& name,
     const string& update_url) {
   DictionaryValue source;
@@ -176,17 +177,15 @@ class ThemeSyncableServiceTest : public testing::Test {
     extensions::TestExtensionSystem* test_ext_system =
         static_cast<extensions::TestExtensionSystem*>(
                 extensions::ExtensionSystem::Get(profile_.get()));
-    ExtensionService* service =
-        test_ext_system->CreateExtensionService(&command_line,
-                                                FilePath(kExtensionFilePath),
-                                                false);
+    ExtensionService* service = test_ext_system->CreateExtensionService(
+        &command_line, base::FilePath(kExtensionFilePath), false);
     EXPECT_TRUE(service->extensions_enabled());
     service->Init();
     loop_.RunUntilIdle();
 
     // Create and add custom theme extension so the ThemeSyncableService can
     // find it.
-    theme_extension_ = MakeThemeExtension(FilePath(kExtensionFilePath),
+    theme_extension_ = MakeThemeExtension(base::FilePath(kExtensionFilePath),
                                           kCustomThemeName, kCustomThemeUrl);
     service->AddExtension(theme_extension_);
     ASSERT_EQ(1u, service->extensions()->size());

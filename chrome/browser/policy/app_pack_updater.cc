@@ -207,7 +207,7 @@ void AppPackUpdater::LoadPolicy() {
   value = settings->GetPref(chromeos::kScreenSaverExtensionId);
   if (!value || !value->GetAsString(&screen_saver_id_)) {
     screen_saver_id_.clear();
-    SetScreenSaverPath(FilePath());
+    SetScreenSaverPath(base::FilePath());
   }
 
   CheckCacheNow();
@@ -242,7 +242,7 @@ void AppPackUpdater::BlockingCheckCacheInternal(
     const std::set<std::string>* valid_ids,
     CacheEntryMap* entries) {
   // Start by verifying that the cache dir exists.
-  FilePath dir(kAppPackCacheDir);
+  base::FilePath dir(kAppPackCacheDir);
   if (!file_util::DirectoryExists(dir)) {
     // Create it now.
     if (!file_util::CreateDirectory(dir))
@@ -257,7 +257,7 @@ void AppPackUpdater::BlockingCheckCacheInternal(
       FileEnumerator::SHOW_SYM_LINKS;
   FileEnumerator enumerator(dir, false /* recursive */, types);
 
-  for (FilePath path = enumerator.Next();
+  for (base::FilePath path = enumerator.Next();
        !path.empty(); path = enumerator.Next()) {
     FileEnumerator::FindInfo info;
     enumerator.GetFindInfo(&info);
@@ -318,7 +318,7 @@ void AppPackUpdater::BlockingCheckCacheInternal(
       DCHECK(vEntry.IsValid());
       DCHECK(vCurrent.IsValid());
       if (vEntry.CompareTo(vCurrent) < 0) {
-        file_util::Delete(FilePath(entry.path), true /* recursive */);
+        file_util::Delete(base::FilePath(entry.path), true /* recursive */);
         entry.path = path.value();
       } else {
         file_util::Delete(path, true /* recursive */);
@@ -340,9 +340,9 @@ void AppPackUpdater::OnCacheUpdated(CacheEntryMap* cache_entries) {
 
   CacheEntryMap::iterator it = cached_extensions_.find(screen_saver_id_);
   if (it != cached_extensions_.end())
-    SetScreenSaverPath(FilePath(it->second.path));
+    SetScreenSaverPath(base::FilePath(it->second.path));
   else
-    SetScreenSaverPath(FilePath());
+    SetScreenSaverPath(base::FilePath());
 
   VLOG(1) << "Updated AppPack cache, there are " << cached_extensions_.size()
           << " extensions cached and "
@@ -424,7 +424,7 @@ void AppPackUpdater::OnExtensionDownloadFailed(
 
 void AppPackUpdater::OnExtensionDownloadFinished(
     const std::string& id,
-    const FilePath& path,
+    const base::FilePath& path,
     const GURL& download_url,
     const std::string& version,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
@@ -435,7 +435,7 @@ void AppPackUpdater::OnExtensionDownloadFinished(
                    base::Bind(&AppPackUpdater::BlockingInstallCacheEntry,
                               weak_ptr_factory_.GetWeakPtr(),
                               std::string(id),
-                              FilePath(path),
+                              base::FilePath(path),
                               std::string(version)));
 }
 
@@ -469,7 +469,7 @@ bool AppPackUpdater::GetExtensionExistingVersion(const std::string& id,
 void AppPackUpdater::BlockingInstallCacheEntry(
     base::WeakPtr<AppPackUpdater> app_pack_updater,
     const std::string& id,
-    const FilePath& path,
+    const base::FilePath& path,
     const std::string& version) {
   Version version_validator(version);
   if (!version_validator.IsValid()) {
@@ -480,8 +480,8 @@ void AppPackUpdater::BlockingInstallCacheEntry(
   }
 
   std::string basename = id + "-" + version + kCRXFileExtension;
-  FilePath cache_dir(kAppPackCacheDir);
-  FilePath cached_crx_path = cache_dir.Append(basename);
+  base::FilePath cache_dir(kAppPackCacheDir);
+  base::FilePath cached_crx_path = cache_dir.Append(basename);
 
   if (file_util::PathExists(cached_crx_path)) {
     LOG(WARNING) << "AppPack downloaded a crx whose filename will overwrite "
@@ -525,13 +525,13 @@ void AppPackUpdater::OnCacheEntryInstalled(const std::string& id,
 
   if (id == screen_saver_id_) {
     VLOG(1) << "AppPack got the screen saver extension at " << path;
-    SetScreenSaverPath(FilePath(path));
+    SetScreenSaverPath(base::FilePath(path));
   } else {
     UpdateExtensionLoader();
   }
 }
 
-void AppPackUpdater::OnDamagedFileDetected(const FilePath& path) {
+void AppPackUpdater::OnDamagedFileDetected(const base::FilePath& path) {
   // Search for |path| in |cached_extensions_|, and delete it if found.
   for (CacheEntryMap::iterator it = cached_extensions_.begin();
        it != cached_extensions_.end(); ++it) {
@@ -560,7 +560,7 @@ void AppPackUpdater::PostBlockingTask(const tracked_objects::Location& location,
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
-void AppPackUpdater::SetScreenSaverPath(const FilePath& path) {
+void AppPackUpdater::SetScreenSaverPath(const base::FilePath& path) {
   // Don't invoke the callback if the path isn't changing.
   if (path != screen_saver_path_) {
     screen_saver_path_ = path;

@@ -19,17 +19,17 @@ class ProfileShortcutManager {
   // Create a profile shortcut for the profile with path |profile_path|, plus
   // update the original profile shortcut if |profile_path| is the second
   // profile created.
-  virtual void CreateProfileShortcut(const FilePath& profile_path) = 0;
+  virtual void CreateProfileShortcut(const base::FilePath& profile_path) = 0;
 
   // Removes any desktop profile shortcuts for the profile corresponding to
   // |profile_path|.
-  virtual void RemoveProfileShortcuts(const FilePath& profile_path) = 0;
+  virtual void RemoveProfileShortcuts(const base::FilePath& profile_path) = 0;
 
   // Checks if a profile at |profile_path| has any shortcuts and invokes
   // |callback| with the bool result some time later. Does not consider
   // non-profile specific shortcuts.
   virtual void HasProfileShortcuts(
-      const FilePath& profile_path,
+      const base::FilePath& profile_path,
       const base::Callback<void(bool)>& callback) = 0;
 
   static bool IsFeatureEnabled();

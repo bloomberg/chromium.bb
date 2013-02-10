@@ -35,14 +35,14 @@ class FakePluginServiceFilter : public content::PluginServiceFilter {
                                  webkit::WebPluginInfo* plugin) OVERRIDE;
 
   virtual bool CanLoadPlugin(int render_process_id,
-                             const FilePath& path) OVERRIDE;
+                             const base::FilePath& path) OVERRIDE;
 
-  void set_plugin_enabled(const FilePath& plugin_path, bool enabled) {
+  void set_plugin_enabled(const base::FilePath& plugin_path, bool enabled) {
     plugin_state_[plugin_path] = enabled;
   }
 
  private:
-  std::map<FilePath, bool> plugin_state_;
+  std::map<base::FilePath, bool> plugin_state_;
 };
 
 bool FakePluginServiceFilter::IsPluginAvailable(int render_process_id,
@@ -51,7 +51,8 @@ bool FakePluginServiceFilter::IsPluginAvailable(int render_process_id,
                                                 const GURL& url,
                                                 const GURL& policy_url,
                                                 webkit::WebPluginInfo* plugin) {
-  std::map<FilePath, bool>::iterator it = plugin_state_.find(plugin->path);
+  std::map<base::FilePath, bool>::iterator it =
+      plugin_state_.find(plugin->path);
   if (it == plugin_state_.end()) {
     ADD_FAILURE() << "No plug-in state for '" << plugin->path.value() << "'";
     return false;
@@ -60,7 +61,7 @@ bool FakePluginServiceFilter::IsPluginAvailable(int render_process_id,
 }
 
 bool FakePluginServiceFilter::CanLoadPlugin(int render_process_id,
-                                            const FilePath& path) {
+                                            const base::FilePath& path) {
   return true;
 }
 
@@ -103,8 +104,8 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   }
 
  protected:
-  FilePath foo_plugin_path_;
-  FilePath bar_plugin_path_;
+  base::FilePath foo_plugin_path_;
+  base::FilePath bar_plugin_path_;
   FakePluginServiceFilter filter_;
   PluginInfoMessageFilter::Context context_;
 

@@ -20,7 +20,7 @@ bool DummyDriveService::CanStartOperation() const { return true; }
 
 void DummyDriveService::CancelAll() {}
 
-bool DummyDriveService::CancelForFilePath(const FilePath& file_path) {
+bool DummyDriveService::CancelForFilePath(const base::FilePath& file_path) {
   return true;
 }
 
@@ -62,8 +62,8 @@ void DummyDriveService::DeleteResource(const std::string& resource_id,
                                        const EntryActionCallback& callback) {}
 
 void DummyDriveService::DownloadFile(
-    const FilePath& virtual_path,
-    const FilePath& local_cache_path,
+    const base::FilePath& virtual_path,
+    const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback) {}
@@ -101,7 +101,7 @@ void DummyDriveService::ResumeUpload(const ResumeUploadParams& params,
 
 void DummyDriveService::GetUploadStatus(
     UploadMode upload_mode,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
     const UploadRangeCallback& callback) {}

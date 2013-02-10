@@ -88,10 +88,10 @@ bool FirefoxProxySettings::GetSettings(FirefoxProxySettings* settings) {
   DCHECK(settings);
   settings->Reset();
 
-  FilePath profile_path = GetFirefoxProfilePath();
+  base::FilePath profile_path = GetFirefoxProfilePath();
   if (profile_path.empty())
     return false;
-  FilePath pref_file = profile_path.AppendASCII(kPrefFileName);
+  base::FilePath pref_file = profile_path.AppendASCII(kPrefFileName);
   return GetSettingsFromFile(pref_file, settings);
 }
 
@@ -159,7 +159,7 @@ bool FirefoxProxySettings::ToProxyConfig(net::ProxyConfig* config) {
 }
 
 // static
-bool FirefoxProxySettings::GetSettingsFromFile(const FilePath& pref_file,
+bool FirefoxProxySettings::GetSettingsFromFile(const base::FilePath& pref_file,
                                                FirefoxProxySettings* settings) {
   DictionaryValue dictionary;
   if (!ParsePrefFile(pref_file, &dictionary))

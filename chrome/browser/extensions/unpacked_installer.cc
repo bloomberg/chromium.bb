@@ -108,14 +108,14 @@ UnpackedInstaller::~UnpackedInstaller() {
         BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-void UnpackedInstaller::Load(const FilePath& path_in) {
+void UnpackedInstaller::Load(const base::FilePath& path_in) {
   DCHECK(extension_path_.empty());
   extension_path_ = path_in;
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&UnpackedInstaller::GetAbsolutePath, this));
 }
 
-void UnpackedInstaller::LoadFromCommandLine(const FilePath& path_in) {
+void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension_path_.empty());
 

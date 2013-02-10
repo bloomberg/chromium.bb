@@ -223,7 +223,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserURLHandler* handler) OVERRIDE;
   virtual void ClearCache(content::RenderViewHost* rvh) OVERRIDE;
   virtual void ClearCookies(content::RenderViewHost* rvh) OVERRIDE;
-  virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
+  virtual base::FilePath GetDefaultDownloadDirectory() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
   virtual void DidCreatePpapiPlugin(
       content::BrowserPpapiHost* browser_host) OVERRIDE;
@@ -233,7 +233,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const GURL& url,
       const content::SocketPermissionRequest& params) OVERRIDE;
-  virtual FilePath GetHyphenDictionaryDirectory() OVERRIDE;
+  virtual base::FilePath GetHyphenDictionaryDirectory() OVERRIDE;
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
       content::WebContents* web_contents) OVERRIDE;
 

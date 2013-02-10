@@ -22,7 +22,7 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(std::vector<CpuTime>* times) {
   DCHECK(times);
 
   std::string contents;
-  if (!file_util::ReadFileToString(FilePath(kProcStat), &contents))
+  if (!file_util::ReadFileToString(base::FilePath(kProcStat), &contents))
      return false;
 
   std::istringstream iss(contents);

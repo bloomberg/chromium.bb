@@ -259,7 +259,7 @@ PrefService* InitializeLocalState(
     base::SequencedTaskRunner* local_state_task_runner,
     const CommandLine& parsed_command_line,
     bool is_first_run) {
-  FilePath local_state_path;
+  base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = file_util::PathExists(local_state_path);
 
@@ -297,7 +297,7 @@ PrefService* InitializeLocalState(
   // to chrome_prefs::CreateLocalState.
   if (!local_state_file_exists &&
       parsed_command_line.HasSwitch(switches::kParentProfile)) {
-    FilePath parent_profile =
+    base::FilePath parent_profile =
         parsed_command_line.GetSwitchValuePath(switches::kParentProfile);
     scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple();
     scoped_ptr<PrefService> parent_local_state(
@@ -332,8 +332,8 @@ PrefService* InitializeLocalState(
 
 // Returns the path that contains the profile that should be loaded
 // on process startup.
-FilePath GetStartupProfilePath(const FilePath& user_data_dir,
-                               const CommandLine& command_line) {
+base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
+                                     const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kProfileDirectory)) {
     return user_data_dir.Append(
         command_line.GetSwitchValuePath(switches::kProfileDirectory));
@@ -354,7 +354,7 @@ FilePath GetStartupProfilePath(const FilePath& user_data_dir,
 // fallback profile. Returns the newly created profile, or NULL if startup
 // should not continue.
 Profile* CreateProfile(const content::MainFunctionParams& parameters,
-                       const FilePath& user_data_dir,
+                       const base::FilePath& user_data_dir,
                        const CommandLine& parsed_command_line) {
   if (ProfileManager::IsMultipleProfilesEnabled() &&
       parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
@@ -374,7 +374,7 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   profile = g_browser_process->profile_manager()->GetDefaultProfile(
       user_data_dir);
 #else
-  FilePath profile_path =
+  base::FilePath profile_path =
       GetStartupProfilePath(user_data_dir, parsed_command_line);
   profile = g_browser_process->profile_manager()->GetProfile(
       profile_path);
@@ -391,7 +391,8 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   // prompt the user to pick a different user-data-dir and restart chrome
   // with the new dir.
   // http://code.google.com/p/chromium/issues/detail?id=11510
-  FilePath new_user_data_dir = chrome::ShowUserDataDirDialog(user_data_dir);
+  base::FilePath new_user_data_dir =
+      chrome::ShowUserDataDirDialog(user_data_dir);
 
   if (!new_user_data_dir.empty()) {
     // Because of the way CommandLine parses, it's sufficient to append a new
@@ -490,8 +491,9 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   cus->Start();
 }
 
-bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
-                                          const FilePath& current_directory) {
+bool ProcessSingletonNotificationCallback(
+    const CommandLine& command_line,
+    const base::FilePath& current_directory) {
   // Drop the request if the browser process is already in shutdown path.
   if (!g_browser_process || g_browser_process->IsShuttingDown())
     return false;
@@ -519,9 +521,9 @@ bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
     return true;
   }
 
-  FilePath user_data_dir =
+  base::FilePath user_data_dir =
       g_browser_process->profile_manager()->user_data_dir();
-  FilePath startup_profile_dir =
+  base::FilePath startup_profile_dir =
       GetStartupProfilePath(user_data_dir, command_line);
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
@@ -829,7 +831,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       !ProfileManager::IsImportProcess(parsed_command_line());
 #endif
 
-  FilePath local_state_path;
+  base::FilePath local_state_path;
   CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
       JsonPrefStore::GetTaskRunnerForFile(local_state_path,
@@ -910,7 +912,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
     browser_process_->SetApplicationLocale(loaded_locale);
 
-    FilePath resources_pack_path;
+    base::FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
     ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         resources_pack_path, ui::SCALE_FACTOR_NONE);
@@ -1062,7 +1064,7 @@ void ChromeBrowserMainParts::RunPageCycler() {
       profile_, chrome::HOST_DESKTOP_TYPE_NATIVE);
   DCHECK(browser);
   PageCycler* page_cycler = NULL;
-  FilePath input_file =
+  base::FilePath input_file =
       command_line->GetSwitchValuePath(switches::kVisitURLs);
   page_cycler = new PageCycler(browser, input_file);
   page_cycler->set_errors_file(
@@ -1420,7 +1422,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
 #if defined(OS_WIN) && !defined(GOOGLE_CHROME_BUILD)
   if (parsed_command_line().HasSwitch(switches::kDebugPrint)) {
-    FilePath path =
+    base::FilePath path =
         parsed_command_line().GetSwitchValuePath(switches::kDebugPrint);
     printing::PrintedDocument::set_debug_dump_path(path);
   }
@@ -1517,7 +1519,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate))
     RegisterComponentsForUpdate(parsed_command_line());
 
-  if (browser_creator_->Start(parsed_command_line(), FilePath(),
+  if (browser_creator_->Start(parsed_command_line(), base::FilePath(),
                               profile_, last_opened_profiles, &result_code)) {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
     // Initialize autoupdate timer. Timer callback costs basically nothing

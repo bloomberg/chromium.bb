@@ -33,7 +33,7 @@ const char kTestChannelID[] = "T1";
 // |channel| - IPC Channel to use for communication.
 // |handle| - On return, the process handle to use to communicate with the
 // child.
-bool LaunchNSSDecrypterChildProcess(const FilePath& nss_path,
+bool LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
     IPC::Channel* channel, base::ProcessHandle* handle) {
   CommandLine cl(*CommandLine::ForCurrentProcess());
   cl.AppendSwitchASCII(switches::kTestChildProcess, "NSSDecrypterChildProcess");
@@ -130,7 +130,7 @@ FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy()
     : child_process_(0) {
 }
 
-bool FFUnitTestDecryptorProxy::Setup(const FilePath& nss_path) {
+bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   // Create a new message loop and spawn the child process.
   message_loop_.reset(new MessageLoopForIO());
 
@@ -196,8 +196,8 @@ bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
   return ret;
 }
 
-bool FFUnitTestDecryptorProxy::DecryptorInit(const FilePath& dll_path,
-                                             const FilePath& db_path) {
+bool FFUnitTestDecryptorProxy::DecryptorInit(const base::FilePath& dll_path,
+                                             const base::FilePath& db_path) {
   channel_->Send(new Msg_Decryptor_Init(dll_path, db_path));
   bool ok = WaitForClientResponse();
   if (ok && listener_->got_result) {
@@ -230,7 +230,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
     sender_ = sender;
   }
 
-  void OnDecryptor_Init(FilePath dll_path, FilePath db_path) {
+  void OnDecryptor_Init(base::FilePath dll_path, base::FilePath db_path) {
     bool ret = decryptor_.Init(dll_path, db_path);
     sender_->Send(new Msg_Decryptor_InitReturnCode(ret));
   }

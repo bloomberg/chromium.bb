@@ -212,8 +212,8 @@ static const struct Executables {
 #endif
 };
 
-DownloadDangerLevel GetFileDangerLevel(const FilePath& path) {
-  FilePath::StringType extension(path.Extension());
+DownloadDangerLevel GetFileDangerLevel(const base::FilePath& path) {
+  base::FilePath::StringType extension(path.Extension());
   if (extension.empty())
     return NotDangerous;
   if (!IsStringASCII(extension))
@@ -225,7 +225,7 @@ DownloadDangerLevel GetFileDangerLevel(const FilePath& path) {
 #endif
 
   // Strip out leading dot if it's still there
-  if (ascii_extension[0] == FilePath::kExtensionSeparator)
+  if (ascii_extension[0] == base::FilePath::kExtensionSeparator)
     ascii_extension.erase(0, 1);
 
   for (size_t i = 0; i < arraysize(g_executables); ++i) {

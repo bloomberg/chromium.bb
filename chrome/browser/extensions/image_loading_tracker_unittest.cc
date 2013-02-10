@@ -62,7 +62,7 @@ class ImageLoadingTrackerTest : public testing::Test,
   scoped_refptr<Extension> CreateExtension(const char* name,
                                            Manifest::Location location) {
     // Create and load an extension.
-    FilePath test_file;
+    base::FilePath test_file;
     if (!PathService::Get(chrome::DIR_TEST_DATA, &test_file)) {
       EXPECT_FALSE(true);
       return NULL;

@@ -134,8 +134,9 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
       base::Bind(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this));
 }
 
-void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(const FilePath& file_path,
-                                                    int64 mhtml_file_size) {
+void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(
+    const base::FilePath& file_path,
+    int64 mhtml_file_size) {
   DCHECK(mhtml_path_ == file_path);
   if (mhtml_file_size <= 0) {
     ReturnFailure(kMHTMLGenerationFailedError);

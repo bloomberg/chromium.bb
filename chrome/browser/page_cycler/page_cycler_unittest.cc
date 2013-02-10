@@ -40,15 +40,16 @@ const GURL kAboutURL = GURL(chrome::kAboutBlankURL);
 
 class MockPageCycler : public PageCycler {
  public:
-  MockPageCycler(Browser* browser, FilePath urls_file, FilePath errors_file)
+  MockPageCycler(Browser* browser, base::FilePath urls_file,
+                 base::FilePath errors_file)
       : PageCycler(browser, urls_file) {
     set_errors_file(errors_file);
   }
 
   MockPageCycler(Browser* browser,
-                 FilePath urls_file,
-                 FilePath errors_file,
-                 FilePath stats_file)
+                 base::FilePath urls_file,
+                 base::FilePath errors_file,
+                 base::FilePath stats_file)
       : PageCycler(browser, urls_file) {
     set_stats_file(stats_file);
     set_errors_file(errors_file);
@@ -117,7 +118,7 @@ class PageCyclerTest : public BrowserWithTestWindowTest {
     ASSERT_FALSE(browser()->tab_strip_model()->GetActiveWebContents() == NULL);
   }
 
-  void InitFilePaths(const FilePath& temp_path) {
+  void InitFilePaths(const base::FilePath& temp_path) {
     errors_file_ = temp_path.AppendASCII("errors_file");
     stats_file_ = temp_path.AppendASCII("stats_file");
 
@@ -170,33 +171,33 @@ class PageCyclerTest : public BrowserWithTestWindowTest {
     return page_cycler_->urls_for_test();
   }
 
-  FilePath stats_file() {
+  base::FilePath stats_file() {
     return stats_file_;
   }
 
-  FilePath errors_file() {
+  base::FilePath errors_file() {
     return errors_file_;
   }
 
-  FilePath urls_file() {
+  base::FilePath urls_file() {
     return test_data_dir_.AppendASCII("about_url");
   }
 
-  FilePath test_data_dir() {
+  base::FilePath test_data_dir() {
     return test_data_dir_;
   }
 
  private:
   ObserverList<WebContentsObserver> observers_;
   scoped_refptr<MockPageCycler> page_cycler_;
-  FilePath test_data_dir_;
-  FilePath stats_file_;
-  FilePath errors_file_;
-  FilePath urls_file_;
+  base::FilePath test_data_dir_;
+  base::FilePath stats_file_;
+  base::FilePath errors_file_;
+  base::FilePath urls_file_;
 };
 
 TEST_F(PageCyclerTest, FailProvisionalLoads) {
-  const FilePath errors_expected_file =
+  const base::FilePath errors_expected_file =
       test_data_dir().AppendASCII("errors_expected");
 
   base::ScopedTempDir temp;
@@ -290,7 +291,7 @@ TEST_F(PageCyclerTest, StatsFile) {
 }
 
 TEST_F(PageCyclerTest, KillBrowserAndAbort) {
-  const FilePath errors_expected_file =
+  const base::FilePath errors_expected_file =
       test_data_dir().AppendASCII("abort_expected");
 
   base::ScopedTempDir temp;

@@ -180,7 +180,7 @@ class HistoryQueryTest : public testing::Test {
 
   MessageLoop message_loop_;
 
-  FilePath history_dir_;
+  base::FilePath history_dir_;
 
   CancelableRequestConsumer consumer_;
 

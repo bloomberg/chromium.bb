@@ -27,7 +27,7 @@
 using content::BrowserThread;
 
 namespace {
-void SetUrlRequestMock(const FilePath& path) {
+void SetUrlRequestMock(const base::FilePath& path) {
   content::URLRequestMockHTTPJob::AddUrlHandler(path);
 }
 }
@@ -37,7 +37,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   BrowsingDataRemoverBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    FilePath path;
+    base::FilePath path;
     PathService::Get(content::DIR_TEST_DATA, &path);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, base::Bind(&SetUrlRequestMock, path));
@@ -78,8 +78,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
 
   GURL download_url = ui_test_utils::GetTestUrl(
-      FilePath().AppendASCII("downloads"),
-      FilePath().AppendASCII("a_zip_file.zip"));
+      base::FilePath().AppendASCII("downloads"),
+      base::FilePath().AppendASCII("a_zip_file.zip"));
   ui_test_utils::NavigateToURL(browser(), download_url);
   observer->WaitForFinished();
 
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
   GURL url(content::URLRequestMockHTTPJob::GetMockUrl(
-      FilePath().AppendASCII("simple_database.html")));
+      base::FilePath().AppendASCII("simple_database.html")));
   ui_test_utils::NavigateToURL(browser(), url);
 
   RunScriptAndCheckResult("createTable()", "done");

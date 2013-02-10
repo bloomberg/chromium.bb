@@ -49,20 +49,21 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
 
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
-  virtual void SelectFileImpl(Type type,
-                              const string16& title,
-                              const FilePath& default_path,
-                              const FileTypeInfo* file_types,
-                              int file_type_index,
-                              const FilePath::StringType& default_extension,
-                              gfx::NativeWindow owning_window,
-                              void* params) = 0;
+  virtual void SelectFileImpl(
+      Type type,
+      const string16& title,
+      const base::FilePath& default_path,
+      const FileTypeInfo* file_types,
+      int file_type_index,
+      const base::FilePath::StringType& default_extension,
+      gfx::NativeWindow owning_window,
+      void* params) = 0;
 
   // Wrapper for file_util::DirectoryExists() that allow access on the UI
   // thread. Use this only in the file dialog functions, where it's ok
   // because the file dialog has to do many stats anyway. One more won't
   // hurt too badly and it's likely already cached.
-  bool CallDirectoryExistsOnUIThread(const FilePath& path);
+  bool CallDirectoryExistsOnUIThread(const base::FilePath& path);
 
   // The file filters.
   FileTypeInfo file_types_;
@@ -79,8 +80,8 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
 
   // These two variables track where the user last saved a file or opened a
   // file so that we can display future dialogs with the same starting path.
-  static FilePath* last_saved_path_;
-  static FilePath* last_opened_path_;
+  static base::FilePath* last_saved_path_;
+  static base::FilePath* last_opened_path_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };

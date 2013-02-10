@@ -51,15 +51,15 @@ string16 GenerateTileId(const string16& url_str) {
 }
 
 // Get the path of the directory to store the tile logos in.
-FilePath GetTileImagesDir() {
-  FilePath tile_images_dir;
+base::FilePath GetTileImagesDir() {
+  base::FilePath tile_images_dir;
   if (!PathService::Get(chrome::DIR_USER_DATA, &tile_images_dir))
-    return FilePath();
+    return base::FilePath();
 
   tile_images_dir = tile_images_dir.Append(L"TileImages");
   if (!file_util::DirectoryExists(tile_images_dir) &&
       !file_util::CreateDirectory(tile_images_dir))
-    return FilePath();
+    return base::FilePath();
 
   return tile_images_dir;
 }
@@ -69,8 +69,8 @@ FilePath GetTileImagesDir() {
 // value indicates whether a site specific logo was created.
 bool CreateSiteSpecificLogo(const SkBitmap& bitmap,
                             const string16& tile_id,
-                            const FilePath& logo_dir,
-                            FilePath* logo_path) {
+                            const base::FilePath& logo_dir,
+                            base::FilePath* logo_path) {
   const int kLogoWidth = 120;
   const int kLogoHeight = 120;
   const int kBoxWidth = 40;
@@ -120,14 +120,14 @@ bool CreateSiteSpecificLogo(const SkBitmap& bitmap,
 // its tile image cache.)
 // The path to the logo is returned in |logo_path|, with the return value
 // indicating success.
-bool GetPathToBackupLogo(const FilePath& logo_dir,
-                         FilePath* logo_path) {
+bool GetPathToBackupLogo(const base::FilePath& logo_dir,
+                         base::FilePath* logo_path) {
   const wchar_t kDefaultLogoFileName[] = L"SecondaryTile.png";
   *logo_path = logo_dir.Append(kDefaultLogoFileName);
   if (file_util::PathExists(*logo_path))
     return true;
 
-  FilePath default_logo_path;
+  base::FilePath default_logo_path;
   if (!PathService::Get(base::DIR_MODULE, &default_logo_path))
     return false;
 
@@ -191,13 +191,13 @@ void PinPageTaskRunner::RunOnFileThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   string16 tile_id = GenerateTileId(url_);
-  FilePath logo_dir = GetTileImagesDir();
+  base::FilePath logo_dir = GetTileImagesDir();
   if (logo_dir.empty()) {
     LOG(ERROR) << "Could not create directory to store tile image.";
     return;
   }
 
-  FilePath logo_path;
+  base::FilePath logo_path;
   if (!CreateSiteSpecificLogo(favicon_, tile_id, logo_dir, &logo_path) &&
       !GetPathToBackupLogo(logo_dir, &logo_path)) {
     LOG(ERROR) << "Count not get path to logo tile.";

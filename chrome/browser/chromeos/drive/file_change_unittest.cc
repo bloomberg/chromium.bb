@@ -8,7 +8,7 @@
 namespace drive {
 
 TEST(FileChangeTest, Getters) {
-  FilePath change_path(FILE_PATH_LITERAL("test"));
+  base::FilePath change_path(FILE_PATH_LITERAL("test"));
   FileChange::Type change_type = FileChange::ADDED;
 
   FileChange file_change(change_path, change_type);
@@ -18,7 +18,7 @@ TEST(FileChangeTest, Getters) {
 }
 
 TEST(FileChangeTest, FactoryMethod) {
-  FilePath change_path(FILE_PATH_LITERAL("a/b/c/d"));
+  base::FilePath change_path(FILE_PATH_LITERAL("a/b/c/d"));
   FileChange::Type change_type = FileChange::CHANGED;
 
   FileChangeSet changed_files =
@@ -34,38 +34,38 @@ TEST(FileChangeTest, FactoryMethod) {
 TEST(FileChangeTest, Equals) {
   // Change is equal if and only if both path and type are equal.
   // Paths differ, types are equal.
-  FileChange file_change1(FilePath(FILE_PATH_LITERAL("a")),
+  FileChange file_change1(base::FilePath(FILE_PATH_LITERAL("a")),
                           FileChange::ADDED);
-  FileChange file_change2(FilePath(FILE_PATH_LITERAL("b")),
+  FileChange file_change2(base::FilePath(FILE_PATH_LITERAL("b")),
                           FileChange::ADDED);
   EXPECT_EQ(file_change1, file_change1);
   EXPECT_FALSE(file_change1 == file_change2);
 
   // Paths are equal, types differ.
-  FileChange file_change3(FilePath(FILE_PATH_LITERAL("a")),
+  FileChange file_change3(base::FilePath(FILE_PATH_LITERAL("a")),
                           FileChange::DELETED);
-  FileChange file_change4(FilePath(FILE_PATH_LITERAL("a")),
+  FileChange file_change4(base::FilePath(FILE_PATH_LITERAL("a")),
                           FileChange::CHANGED);
   EXPECT_FALSE(file_change3 == file_change4);
 
   // Paths and types are equal.
-  FileChange file_change5(FilePath(FILE_PATH_LITERAL("c")),
+  FileChange file_change5(base::FilePath(FILE_PATH_LITERAL("c")),
                           FileChange::ADDED);
-  FileChange file_change6(FilePath(FILE_PATH_LITERAL("c")),
+  FileChange file_change6(base::FilePath(FILE_PATH_LITERAL("c")),
                           FileChange::ADDED);
   EXPECT_EQ(file_change5, file_change6);
 }
 
 TEST(FileChangeTest, Compare) {
-  FileChange file_change1(FilePath(FILE_PATH_LITERAL("a")),
+  FileChange file_change1(base::FilePath(FILE_PATH_LITERAL("a")),
                           FileChange::DELETED);
-  FileChange file_change2(FilePath(FILE_PATH_LITERAL("a")),
+  FileChange file_change2(base::FilePath(FILE_PATH_LITERAL("a")),
                           FileChange::ADDED);
-  FileChange file_change3(FilePath(FILE_PATH_LITERAL("a")),
+  FileChange file_change3(base::FilePath(FILE_PATH_LITERAL("a")),
                           FileChange::CHANGED);
-  FileChange file_change4(FilePath(FILE_PATH_LITERAL("b")),
+  FileChange file_change4(base::FilePath(FILE_PATH_LITERAL("b")),
                           FileChange::ADDED);
-  FileChange file_change5(FilePath(FILE_PATH_LITERAL("c")),
+  FileChange file_change5(base::FilePath(FILE_PATH_LITERAL("c")),
                           FileChange::DELETED);
 
   // Comparison operator should not return true for equal values.

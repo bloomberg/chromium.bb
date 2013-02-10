@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 
-NetLogLogger::NetLogLogger(const FilePath &log_path) {
+NetLogLogger::NetLogLogger(const base::FilePath &log_path) {
   if (!log_path.empty()) {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     FILE* fp = file_util::OpenFile(log_path, "w");

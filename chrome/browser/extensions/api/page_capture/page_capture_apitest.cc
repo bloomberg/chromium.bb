@@ -46,11 +46,12 @@ class PageCaptureSaveAsMHTMLDelegate
     PageCaptureSaveAsMHTMLFunction::SetTestDelegate(NULL);
   }
 
-  virtual void OnTemporaryFileCreated(const FilePath& temp_file) OVERRIDE {
+  virtual void OnTemporaryFileCreated(
+      const base::FilePath& temp_file) OVERRIDE {
     temp_file_ = temp_file;
   }
 
-  FilePath temp_file_;
+  base::FilePath temp_file_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {

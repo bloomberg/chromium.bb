@@ -418,7 +418,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   // Get the initial size of the login DB file, before we populate it.
   // This will be used later to make sure it gets back to this size.
-  const FilePath login_db_file = temp_dir_.path().Append("login_test");
+  const base::FilePath login_db_file = temp_dir_.path().Append("login_test");
   base::PlatformFileInfo db_file_start_info;
   ASSERT_TRUE(file_util::GetFileInfo(login_db_file, &db_file_start_info));
 

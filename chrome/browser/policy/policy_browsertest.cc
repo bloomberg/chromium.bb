@@ -126,17 +126,19 @@ const char kCookieValue[] = "converted=true";
 // Assigned to Philip J. Fry to fix eventually.
 const char kCookieOptions[] = ";expires=Wed Jan 01 3000 00:00:00 GMT";
 
-const FilePath::CharType kTestExtensionsDir[] = FILE_PATH_LITERAL("extensions");
-const FilePath::CharType kGoodCrxName[] = FILE_PATH_LITERAL("good.crx");
-const FilePath::CharType kAdBlockCrxName[] = FILE_PATH_LITERAL("adblock.crx");
-const FilePath::CharType kHostedAppCrxName[] =
+const base::FilePath::CharType kTestExtensionsDir[] =
+    FILE_PATH_LITERAL("extensions");
+const base::FilePath::CharType kGoodCrxName[] = FILE_PATH_LITERAL("good.crx");
+const base::FilePath::CharType kAdBlockCrxName[] =
+    FILE_PATH_LITERAL("adblock.crx");
+const base::FilePath::CharType kHostedAppCrxName[] =
     FILE_PATH_LITERAL("hosted_app.crx");
 
 const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kAdBlockCrxId[] = "dojnnbeimaimaojcialkkgajdnefpgcn";
 const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 
-const FilePath::CharType kGoodCrxManifestName[] =
+const base::FilePath::CharType kGoodCrxManifestName[] =
     FILE_PATH_LITERAL("good_update_manifest.xml");
 
 // Filters requests to the hosts in |urls| and redirects them to the test data
@@ -144,7 +146,7 @@ const FilePath::CharType kGoodCrxManifestName[] =
 void RedirectHostsToTestData(const char* const urls[], size_t size) {
   // Map the given hosts to the test data dir.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  FilePath base_path;
+  base::FilePath base_path;
   PathService::Get(chrome::DIR_TEST_DATA, &base_path);
   for (size_t i = 0; i < size; ++i) {
     const GURL url(urls[i]);
@@ -249,14 +251,14 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
 // Downloads a file named |file| and expects it to be saved to |dir|, which
 // must be empty.
 void DownloadAndVerifyFile(
-    Browser* browser, const FilePath& dir, const FilePath& file) {
+    Browser* browser, const base::FilePath& dir, const base::FilePath& file) {
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(browser->profile());
   content::DownloadTestObserverTerminal observer(
       download_manager, 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
-  FilePath downloaded = dir.Append(file);
+  base::FilePath downloaded = dir.Append(file);
   EXPECT_FALSE(file_util::PathExists(downloaded));
   ui_test_utils::NavigateToURLWithDisposition(
       browser, url, CURRENT_TAB,
@@ -268,7 +270,7 @@ void DownloadAndVerifyFile(
   file_util::FileEnumerator enumerator(
       dir, false, file_util::FileEnumerator::FILES);
   EXPECT_EQ(file, enumerator.Next().BaseName());
-  EXPECT_EQ(FilePath(), enumerator.Next());
+  EXPECT_EQ(base::FilePath(), enumerator.Next());
 }
 
 #if defined(OS_CHROMEOS)
@@ -421,7 +423,7 @@ class PolicyTest : public InProcessBrowserTest {
   // Makes URLRequestMockHTTPJobs serve data from content::DIR_TEST_DATA
   // instead of chrome::DIR_TEST_DATA.
   void ServeContentTestData() {
-    FilePath root_http;
+    base::FilePath root_http;
     PathService::Get(content::DIR_TEST_DATA, &root_http);
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
@@ -507,9 +509,9 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
   const extensions::Extension* InstallExtension(
-      const FilePath::StringType& name) {
-    FilePath extension_path(ui_test_utils::GetTestFilePath(
-        FilePath(kTestExtensionsDir), FilePath(name)));
+      const base::FilePath::StringType& name) {
+    base::FilePath extension_path(ui_test_utils::GetTestFilePath(
+        base::FilePath(kTestExtensionsDir), base::FilePath(name)));
     scoped_refptr<extensions::CrxInstaller> installer =
         extensions::CrxInstaller::Create(extension_service(), NULL);
     installer->set_allow_silent_install(true);
@@ -1038,8 +1040,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   // Verify that the test page exists. It is only present in checkouts with
   // src-internal.
   if (!file_util::PathExists(ui_test_utils::GetTestFilePath(
-      FilePath(FILE_PATH_LITERAL("plugin")),
-      FilePath(FILE_PATH_LITERAL("quicktime.html"))))) {
+      base::FilePath(FILE_PATH_LITERAL("plugin")),
+      base::FilePath(FILE_PATH_LITERAL("quicktime.html"))))) {
     LOG(INFO) <<
         "Test skipped because plugin/quicktime.html test file wasn't found.";
     return;
@@ -1056,7 +1058,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   ASSERT_TRUE(infobar_service);
   EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
 
-  FilePath path(FILE_PATH_LITERAL("plugin/quicktime.html"));
+  base::FilePath path(FILE_PATH_LITERAL("plugin/quicktime.html"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
   ui_test_utils::NavigateToURL(browser(), url);
   // This should have triggered the dangerous plugin infobar.
@@ -1115,7 +1117,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
       prefs::kPromptForDownload, false);
 
   // Verify that downloads end up on the default directory.
-  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   DownloadAndVerifyFile(browser(), initial_dir.path(), file);
   file_util::DieFileDie(initial_dir.path().Append(file), false);
 
@@ -1207,7 +1209,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   // Extensions that are force-installed come from an update URL, which defaults
   // to the webstore. Use a mock URL for this test with an update manifest
   // that includes "good.crx".
-  FilePath path = FilePath(kTestExtensionsDir).Append(kGoodCrxManifestName);
+  base::FilePath path =
+      base::FilePath(kTestExtensionsDir).Append(kGoodCrxManifestName);
   GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
 
   // Setting the forcelist extension should install "good.crx".
@@ -1355,8 +1358,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
   UpdateProviderPolicy(policies);
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("empty.html")));
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("empty.html")));
   ui_test_utils::NavigateToURL(browser(), url);
   // Verify that the navigation wasn't saved in the history.
   ui_test_utils::HistoryEnumerator enumerator1(browser()->profile());
@@ -1395,7 +1398,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   // shown below, without polling for infobars for some indeterminate amount
   // of time.
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath(FILE_PATH_LITERAL("french_page.html")));
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("french_page.html")));
   content::WindowedNotificationObserver language_observer1(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
       content::NotificationService::AllSources());

@@ -43,9 +43,9 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
 // run this test on Mac because Mac does not use hunspell by default.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
   // Write the corrupted BDICT data to create a corrupted BDICT file.
-  FilePath dict_dir;
+  base::FilePath dict_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir));
-  FilePath bdict_path =
+  base::FilePath bdict_path =
       chrome::spellcheck_common::GetVersionedFileName("en-US", dict_dir);
 
   size_t actual = file_util::WriteFile(bdict_path,

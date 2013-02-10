@@ -80,7 +80,8 @@ class BackgroundObserver {
 };
 
 // Creates a cache representation of the test file with predetermined content.
-void CreateFileWithContent(const FilePath& path, const std::string& content) {
+void CreateFileWithContent(const base::FilePath& path,
+                           const std::string& content) {
   int content_size = static_cast<int>(content.length());
   ASSERT_EQ(content_size,
             file_util::WriteFile(path, content.c_str(), content_size));
@@ -143,7 +144,7 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
   }
 
  protected:
-  FilePath mount_point_dir_;
+  base::FilePath mount_point_dir_;
 
  private:
   base::ScopedTempDir tmp_dir_;
@@ -161,10 +162,10 @@ class RestrictedFileSystemExtensionApiTest : public ExtensionApiTest {
     // Create the mount point.
     file_util::CreateDirectory(mount_point_dir_);
 
-    FilePath test_dir = mount_point_dir_.Append("test_dir");
+    base::FilePath test_dir = mount_point_dir_.Append("test_dir");
     file_util::CreateDirectory(test_dir);
 
-    FilePath test_file = test_dir.AppendASCII("test_file.foo");
+    base::FilePath test_file = test_dir.AppendASCII("test_file.foo");
     CreateFileWithContent(test_file, kTestFileContent);
 
     test_file = test_dir.AppendASCII("mutable_test_file.foo");
@@ -195,7 +196,7 @@ class RestrictedFileSystemExtensionApiTest : public ExtensionApiTest {
 
  protected:
   base::ScopedTempDir tmp_dir_;
-  FilePath mount_point_dir_;
+  base::FilePath mount_point_dir_;
 };
 
 
@@ -210,7 +211,7 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
     // system service. This has to be done early on (before the browser is
     // created) because the system service instance is initialized very early
     // by FileBrowserEventRouter.
-    FilePath tmp_dir_path;
+    base::FilePath tmp_dir_path;
     PathService::Get(base::DIR_TEMP, &tmp_dir_path);
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));
 
@@ -269,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestLazy) {
 #if defined(ENABLE_WEB_INTENTS)
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserWebIntentTest) {
   // Create a test file inside the ScopedTempDir.
-  FilePath test_file = mount_point_dir_.AppendASCII("text_file.xul");
+  base::FilePath test_file = mount_point_dir_.AppendASCII("text_file.xul");
   CreateFileWithContent(test_file, kTestFileContent);
 
   ASSERT_TRUE(RunFileBrowserHandlerTest("intent.html#/tmp/text_file.xul",

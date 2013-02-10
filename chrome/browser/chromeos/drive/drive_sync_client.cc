@@ -264,7 +264,7 @@ void DriveSyncClient::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     const DriveCacheEntry& cache_entry,
     DriveFileError error,
-    const FilePath& /* drive_file_path */,
+    const base::FilePath& /* drive_file_path */,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -321,7 +321,7 @@ void DriveSyncClient::OnPinned(const std::string& resource_id,
 
 void DriveSyncClient::OnFetchFileComplete(const std::string& resource_id,
                                           DriveFileError error,
-                                          const FilePath& local_path,
+                                          const base::FilePath& local_path,
                                           const std::string& ununsed_mime_type,
                                           DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

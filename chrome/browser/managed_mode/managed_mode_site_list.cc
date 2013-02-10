@@ -194,7 +194,7 @@ bool ManagedModeSiteList::LazyLoad() {
   if (sites_.get())
     return true;
 
-  FilePath path = path_.GetFilePath();
+  base::FilePath path = path_.GetFilePath();
   JSONFileValueSerializer serializer(path);
   std::string error;
   scoped_ptr<base::Value> value(serializer.Deserialize(NULL, &error));

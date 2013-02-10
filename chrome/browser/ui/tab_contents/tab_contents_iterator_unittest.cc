@@ -192,7 +192,7 @@ TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
       TestingBrowserProcess::GetGlobal();
   testing_browser_process->SetLocalState(&testing_pref_service);
   ASSERT_TRUE(g_browser_process->local_state());
-  ProfileManager* profile_manager = new ProfileManager(FilePath());
+  ProfileManager* profile_manager = new ProfileManager(base::FilePath());
   testing_browser_process->SetProfileManager(profile_manager);
 
   browser::AttemptRestart();

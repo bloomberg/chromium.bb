@@ -106,7 +106,7 @@ class TestInstaller : public ComponentInstaller {
   }
 
   virtual bool Install(base::DictionaryValue* manifest,
-                       const FilePath& unpack_path) OVERRIDE {
+                       const base::FilePath& unpack_path) OVERRIDE {
     ++install_count_;
     delete manifest;
     return file_util::Delete(unpack_path, true);
@@ -183,7 +183,7 @@ class ComponentUpdaterTest : public testing::Test {
   }
 
   // Makes the full path to a component updater test file.
-  const FilePath test_file(const char* file) {
+  const base::FilePath test_file(const char* file) {
     return test_data_dir_.AppendASCII(file);
   }
 
@@ -214,7 +214,7 @@ class ComponentUpdaterTest : public testing::Test {
 
  private:
   scoped_ptr<ComponentUpdateService> component_updater_;
-  FilePath test_data_dir_;
+  base::FilePath test_data_dir_;
   TestNotificationTracker notification_tracker_;
   TestConfigurator* test_config_;
   // ComponentInstaller objects to delete after each test.

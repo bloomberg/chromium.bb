@@ -36,7 +36,7 @@
 
 namespace {
 
-const FilePath::CharType kDocRoot[] =
+const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data/referrer_policy");
 
 }  // namespace
@@ -49,11 +49,11 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
    virtual void SetUp() OVERRIDE {
      test_server_.reset(new net::TestServer(net::TestServer::TYPE_HTTP,
                                             net::TestServer::kLocalhost,
-                                            FilePath(kDocRoot)));
+                                            base::FilePath(kDocRoot)));
      ASSERT_TRUE(test_server_->Start());
      ssl_test_server_.reset(new net::TestServer(net::TestServer::TYPE_HTTPS,
                                                 net::TestServer::kLocalhost,
-                                                FilePath(kDocRoot)));
+                                                base::FilePath(kDocRoot)));
      ASSERT_TRUE(ssl_test_server_->Start());
 
      InProcessBrowserTest::SetUp();

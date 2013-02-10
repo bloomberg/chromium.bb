@@ -26,7 +26,7 @@ SyncOrLocalValueStoreCache::SyncOrLocalValueStoreCache(
     const scoped_refptr<SettingsStorageFactory>& factory,
     const SettingsStorageQuotaEnforcer::Limits& quota,
     const scoped_refptr<SettingsObserverList>& observers,
-    const FilePath& profile_path)
+    const base::FilePath& profile_path)
     : settings_namespace_(settings_namespace) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(settings_namespace_ == settings_namespace::LOCAL ||
@@ -96,15 +96,15 @@ void SyncOrLocalValueStoreCache::InitOnFileThread(
     const scoped_refptr<SettingsStorageFactory>& factory,
     const SettingsStorageQuotaEnforcer::Limits& quota,
     const scoped_refptr<SettingsObserverList>& observers,
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!app_backend_.get());
   DCHECK(!extension_backend_.get());
   const bool local = settings_namespace_ == settings_namespace::LOCAL;
-  const FilePath app_path = profile_path.AppendASCII(
+  const base::FilePath app_path = profile_path.AppendASCII(
       local ? ExtensionService::kLocalAppSettingsDirectoryName
             : ExtensionService::kSyncAppSettingsDirectoryName);
-  const FilePath extension_path = profile_path.AppendASCII(
+  const base::FilePath extension_path = profile_path.AppendASCII(
       local ? ExtensionService::kLocalExtensionSettingsDirectoryName
             : ExtensionService::kSyncExtensionSettingsDirectoryName);
   app_backend_.reset(new SettingsBackend(factory, app_path, quota, observers));

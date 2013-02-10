@@ -68,7 +68,7 @@ scoped_refptr<RefcountedProfileKeyedService>
 WebDataServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
   DCHECK(profile);
 
-  FilePath path = profile->GetPath();
+  base::FilePath path = profile->GetPath();
   path = path.Append(chrome::kWebDataFilename);
 
   scoped_refptr<WebDataService> wds(new WebDataService());

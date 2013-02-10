@@ -27,16 +27,16 @@ const char kDrivePathKey[] = "DrivePath";
 // User Data stored in DownloadItem for drive path.
 class DriveUserData : public base::SupportsUserData::Data {
  public:
-  explicit DriveUserData(const FilePath& path) : file_path_(path),
+  explicit DriveUserData(const base::FilePath& path) : file_path_(path),
                                                  is_complete_(false) {}
   virtual ~DriveUserData() {}
 
-  const FilePath& file_path() const { return file_path_; }
+  const base::FilePath& file_path() const { return file_path_; }
   bool is_complete() const { return is_complete_; }
   void set_complete() { is_complete_ = true; }
 
  private:
-  const FilePath file_path_;
+  const base::FilePath file_path_;
   bool is_complete_;
 };
 
@@ -53,11 +53,12 @@ DriveUserData* GetDriveUserData(DownloadItem* download) {
 // Creates a temporary file |drive_tmp_download_path| in
 // |drive_tmp_download_dir|. Must be called on a thread that allows file
 // operations.
-FilePath GetDriveTempDownloadPath(const FilePath& drive_tmp_download_dir) {
+base::FilePath GetDriveTempDownloadPath(
+    const base::FilePath& drive_tmp_download_dir) {
   bool created = file_util::CreateDirectory(drive_tmp_download_dir);
   DCHECK(created) << "Can not create temp download directory at "
                   << drive_tmp_download_dir.value();
-  FilePath drive_tmp_download_path;
+  base::FilePath drive_tmp_download_path;
   created = file_util::CreateTemporaryFileInDir(drive_tmp_download_dir,
                                                 &drive_tmp_download_path);
   DCHECK(created) << "Temporary download file creation failed";
@@ -65,9 +66,9 @@ FilePath GetDriveTempDownloadPath(const FilePath& drive_tmp_download_dir) {
 }
 
 // Moves downloaded file to Drive.
-void MoveDownloadedFile(const FilePath& downloaded_file,
+void MoveDownloadedFile(const base::FilePath& downloaded_file,
                         DriveFileError error,
-                        const FilePath& dest_path) {
+                        const base::FilePath& dest_path) {
   if (error != DRIVE_FILE_OK)
     return;
   file_util::Move(downloaded_file, dest_path);
@@ -83,7 +84,7 @@ void ContinueCheckingForFileExistence(
 
 // Returns true if |download| is a Drive download created from data persisted
 // on the download history DB.
-bool IsPersistedDriveDownload(const FilePath& drive_tmp_download_path,
+bool IsPersistedDriveDownload(const base::FilePath& drive_tmp_download_path,
                               DownloadItem* download) {
   // Persisted downloads are not in IN_PROGRESS state when created, while newly
   // created downloads are.
@@ -113,7 +114,7 @@ DriveDownloadHandler* DriveDownloadHandler::GetForProfile(Profile* profile) {
 
 void DriveDownloadHandler::Initialize(
     DownloadManager* download_manager,
-    const FilePath& drive_tmp_download_path) {
+    const base::FilePath& drive_tmp_download_path) {
   DCHECK(!drive_tmp_download_path.empty());
 
   drive_tmp_download_path_ = drive_tmp_download_path;
@@ -131,7 +132,7 @@ void DriveDownloadHandler::Initialize(
 }
 
 void DriveDownloadHandler::SubstituteDriveDownloadPath(
-    const FilePath& drive_path,
+    const base::FilePath& drive_path,
     content::DownloadItem* download,
     const SubstituteDriveDownloadPathCallback& callback) {
   DVLOG(1) << "SubstituteDriveDownloadPath " << drive_path.value();
@@ -144,7 +145,7 @@ void DriveDownloadHandler::SubstituteDriveDownloadPath(
     // DriveFileSystem::GetEntryInfoByPath
     //   OnEntryFound calls DriveFileSystem::CreateDirectory (if necessary)
     //     OnCreateDirectory calls SubstituteDriveDownloadPathInternal
-    const FilePath drive_dir_path =
+    const base::FilePath drive_dir_path =
         util::ExtractDrivePath(drive_path.DirName());
     // Ensure the directory exists. This also forces DriveFileSystem to
     // initialize DriveRootDirectory.
@@ -159,7 +160,7 @@ void DriveDownloadHandler::SubstituteDriveDownloadPath(
   }
 }
 
-void DriveDownloadHandler::SetDownloadParams(const FilePath& drive_path,
+void DriveDownloadHandler::SetDownloadParams(const base::FilePath& drive_path,
                                              DownloadItem* download) {
   if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
@@ -172,16 +173,17 @@ void DriveDownloadHandler::SetDownloadParams(const FilePath& drive_path,
     // /drive, and the user has now changed the download target to a local
     // folder.
     download->SetUserData(&kDrivePathKey, NULL);
-    download->SetDisplayName(FilePath());
+    download->SetDisplayName(base::FilePath());
   }
 }
 
-FilePath DriveDownloadHandler::GetTargetPath(const DownloadItem* download) {
+base::FilePath DriveDownloadHandler::GetTargetPath(
+    const DownloadItem* download) {
   const DriveUserData* data = GetDriveUserData(download);
   // If data is NULL, we've somehow lost the drive path selected by the file
   // picker.
   DCHECK(data);
-  return data ? data->file_path() : FilePath();
+  return data ? data->file_path() : base::FilePath();
 }
 
 bool DriveDownloadHandler::IsDriveDownload(const DownloadItem* download) {
@@ -253,7 +255,7 @@ void DriveDownloadHandler::OnDownloadUpdated(
 }
 
 void DriveDownloadHandler::OnEntryFound(
-    const FilePath& drive_dir_path,
+    const base::FilePath& drive_dir_path,
     const SubstituteDriveDownloadPathCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -271,7 +273,7 @@ void DriveDownloadHandler::OnEntryFound(
   } else {
     LOG(WARNING) << "Failed to get entry info for path: "
                  << drive_dir_path.value() << ", error = " << error;
-    callback.Run(FilePath());
+    callback.Run(base::FilePath());
   }
 }
 
@@ -287,7 +289,7 @@ void DriveDownloadHandler::OnCreateDirectory(
         callback);
   } else {
     LOG(WARNING) << "Failed to create directory, error = " << error;
-    callback.Run(FilePath());
+    callback.Run(base::FilePath());
   }
 }
 

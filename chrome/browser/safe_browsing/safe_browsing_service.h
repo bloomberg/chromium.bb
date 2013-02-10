@@ -62,9 +62,9 @@ class SafeBrowsingService
     factory_ = factory;
   }
 
-  static FilePath GetCookieFilePathForTesting();
+  static base::FilePath GetCookieFilePathForTesting();
 
-  static FilePath GetBaseFilename();
+  static base::FilePath GetBaseFilename();
 
   // Create an instance of the safe browsing service.
   static SafeBrowsingService* CreateSafeBrowsingService();

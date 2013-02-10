@@ -206,7 +206,7 @@ bool HungPluginInfoBarDelegate::Accept() {
 
 // -----------------------------------------------------------------------------
 
-HungPluginTabHelper::PluginState::PluginState(const FilePath& p,
+HungPluginTabHelper::PluginState::PluginState(const base::FilePath& p,
                                               const string16& n)
     : path(p),
       name(n),
@@ -229,7 +229,7 @@ HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)
 HungPluginTabHelper::~HungPluginTabHelper() {
 }
 
-void HungPluginTabHelper::PluginCrashed(const FilePath& plugin_path,
+void HungPluginTabHelper::PluginCrashed(const base::FilePath& plugin_path,
                                         base::ProcessId plugin_pid) {
   // TODO(brettw) ideally this would take the child process ID. When we do this
   // for NaCl plugins, we'll want to know exactly which process it was since
@@ -252,9 +252,10 @@ void HungPluginTabHelper::PluginCrashed(const FilePath& plugin_path,
   }
 }
 
-void HungPluginTabHelper::PluginHungStatusChanged(int plugin_child_id,
-                                                  const FilePath& plugin_path,
-                                                  bool is_hung) {
+void HungPluginTabHelper::PluginHungStatusChanged(
+    int plugin_child_id,
+    const base::FilePath& plugin_path,
+    bool is_hung) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents());
   if (!infobar_service)

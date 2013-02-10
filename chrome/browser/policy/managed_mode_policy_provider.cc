@@ -23,7 +23,8 @@ scoped_ptr<ManagedModePolicyProvider> ManagedModePolicyProvider::Create(
     Profile* profile,
     base::SequencedTaskRunner* sequenced_task_runner,
     bool force_load) {
-  FilePath path = profile->GetPath().Append(chrome::kManagedModePolicyFilename);
+  base::FilePath path =
+      profile->GetPath().Append(chrome::kManagedModePolicyFilename);
   JsonPrefStore* pref_store = new JsonPrefStore(path, sequenced_task_runner);
   // Load the data synchronously if needed (when creating profiles on startup).
   if (force_load)

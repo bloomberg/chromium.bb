@@ -12,7 +12,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   const size_t size_before = service->extensions()->size();
-  FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
+  base::FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized"));
   const Extension* extension = LoadExtension(extension_path);
   ASSERT_TRUE(extension);

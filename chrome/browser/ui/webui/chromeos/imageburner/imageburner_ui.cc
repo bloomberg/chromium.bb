@@ -223,10 +223,10 @@ class WebUIHandler
   // It may be called with NULL if there is a handler that has started burning,
   // and thus set the target paths.
   void HandleBurnImage(const ListValue* args) {
-    FilePath target_device_path;
+    base::FilePath target_device_path;
     ExtractTargetedDevicePath(*args, 0, &target_device_path);
 
-    FilePath target_file_path;
+    base::FilePath target_file_path;
     ExtractTargetedDevicePath(*args, 1, &target_file_path);
 
     burn_controller_->StartBurnImage(target_device_path, target_file_path);
@@ -291,13 +291,13 @@ class WebUIHandler
   // device_path has to be previously created.
   void ExtractTargetedDevicePath(const ListValue& list_value,
                                  int index,
-                                 FilePath* device_path) {
+                                 base::FilePath* device_path) {
     const Value* list_member;
     std::string image_dest;
     if (list_value.Get(index, &list_member) &&
         list_member->GetType() == Value::TYPE_STRING &&
         list_member->GetAsString(&image_dest)) {
-      *device_path = FilePath(image_dest);
+      *device_path = base::FilePath(image_dest);
     } else {
       LOG(ERROR) << "Unable to get path string";
       device_path->clear();

@@ -35,7 +35,7 @@ void NotifyRendererOfError(
   chrome_render_message_filter->Send(reply_msg);
 }
 
-bool PnaclDoOpenFile(const FilePath& file_to_open,
+bool PnaclDoOpenFile(const base::FilePath& file_to_open,
                      base::PlatformFile* out_file) {
   base::PlatformFileError error_code;
   *out_file = base::CreatePlatformFile(file_to_open,
@@ -54,7 +54,7 @@ void DoOpenPnaclFile(
     const std::string& filename,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath full_filepath;
+  base::FilePath full_filepath;
 
   // Do some validation.
   if (!pnacl_file_host::PnaclCanOpenFile(filename, &full_filepath)) {
@@ -88,7 +88,7 @@ void DoCreateTemporaryFile(
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath file_path;
+  base::FilePath file_path;
   if (!file_util::CreateTemporaryFile(&file_path)) {
     NotifyRendererOfError(chrome_render_message_filter, reply_msg);
     return;
@@ -144,7 +144,7 @@ void GetReadonlyPnaclFd(
 // This function is security sensitive.  Be sure to check with a security
 // person before you modify it.
 bool PnaclCanOpenFile(const std::string& filename,
-                      FilePath* file_to_open) {
+                      base::FilePath* file_to_open) {
   if (filename.length() > kMaxFileLength)
     return false;
 
@@ -162,13 +162,13 @@ bool PnaclCanOpenFile(const std::string& filename,
   }
 
   // PNaCl must be installed.
-  FilePath pnacl_dir;
+  base::FilePath pnacl_dir;
   if (!PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_dir) ||
       pnacl_dir.empty())
     return false;
 
   // Prepend the prefix to restrict files to a whitelisted set.
-  FilePath full_path = pnacl_dir.AppendASCII(
+  base::FilePath full_path = pnacl_dir.AppendASCII(
       std::string(kExpectedFilePrefix) + filename);
   *file_to_open = full_path;
   return true;

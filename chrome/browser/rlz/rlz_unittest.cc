@@ -246,7 +246,7 @@ void RlzLibTest::SetUp() {
 
 void RlzLibTest::TearDown() {
 #if defined(OS_POSIX)
-  rlz_lib::testing::SetRlzStoreDirectory(FilePath());
+  rlz_lib::testing::SetRlzStoreDirectory(base::FilePath());
 #endif
   testing::Test::TearDown();
 }

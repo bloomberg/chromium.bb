@@ -68,11 +68,11 @@ class PrefixSetTest : public PlatformTest {
   // Generate a |PrefixSet| file from |shared_prefixes_|, store it in
   // a temporary file, and return the filename in |filenamep|.
   // Returns |true| on success.
-  bool GetPrefixSetFile(FilePath* filenamep) {
+  bool GetPrefixSetFile(base::FilePath* filenamep) {
     if (!temp_dir_.IsValid() && !temp_dir_.CreateUniqueTempDir())
       return false;
 
-    FilePath filename = temp_dir_.path().AppendASCII("PrefixSetTest");
+    base::FilePath filename = temp_dir_.path().AppendASCII("PrefixSetTest");
 
     safe_browsing::PrefixSet prefix_set(shared_prefixes_);
     if (!prefix_set.WriteFile(filename))
@@ -129,7 +129,8 @@ class PrefixSetTest : public PlatformTest {
 
   // Open |filename| and increment the int32 at |offset| by |inc|.
   // Then re-generate the checksum to account for the new contents.
-  void ModifyAndCleanChecksum(const FilePath& filename, long offset, int inc) {
+  void ModifyAndCleanChecksum(const base::FilePath& filename, long offset,
+                              int inc) {
     int64 size_64;
     ASSERT_TRUE(file_util::GetFileSize(filename, &size_64));
 
@@ -308,7 +309,7 @@ TEST_F(PrefixSetTest, EdgeCases) {
 
 // Test writing a prefix set to disk and reading it back in.
 TEST_F(PrefixSetTest, ReadWrite) {
-  FilePath filename;
+  base::FilePath filename;
 
   // Write the sample prefix set out, read it back in, and check all
   // the prefixes.  Leaves the path in |filename|.
@@ -351,7 +352,7 @@ TEST_F(PrefixSetTest, ReadWrite) {
 
 // Check that |CleanChecksum()| makes an acceptable checksum.
 TEST_F(PrefixSetTest, CorruptionHelpers) {
-  FilePath filename;
+  base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   // This will modify data in |index_|, which will fail the digest check.
@@ -373,7 +374,7 @@ TEST_F(PrefixSetTest, CorruptionHelpers) {
 
 // Bad |index_| size is caught by the sanity check.
 TEST_F(PrefixSetTest, CorruptionMagic) {
-  FilePath filename;
+  base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   ASSERT_NO_FATAL_FAILURE(
@@ -385,7 +386,7 @@ TEST_F(PrefixSetTest, CorruptionMagic) {
 
 // Bad |index_| size is caught by the sanity check.
 TEST_F(PrefixSetTest, CorruptionVersion) {
-  FilePath filename;
+  base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   ASSERT_NO_FATAL_FAILURE(
@@ -397,7 +398,7 @@ TEST_F(PrefixSetTest, CorruptionVersion) {
 
 // Bad |index_| size is caught by the sanity check.
 TEST_F(PrefixSetTest, CorruptionIndexSize) {
-  FilePath filename;
+  base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   ASSERT_NO_FATAL_FAILURE(
@@ -409,7 +410,7 @@ TEST_F(PrefixSetTest, CorruptionIndexSize) {
 
 // Bad |deltas_| size is caught by the sanity check.
 TEST_F(PrefixSetTest, CorruptionDeltasSize) {
-  FilePath filename;
+  base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   ASSERT_NO_FATAL_FAILURE(
@@ -422,7 +423,7 @@ TEST_F(PrefixSetTest, CorruptionDeltasSize) {
 // Test that the digest catches corruption in the middle of the file
 // (in the payload between the header and the digest).
 TEST_F(PrefixSetTest, CorruptionPayload) {
-  FilePath filename;
+  base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   file_util::ScopedFILE file(file_util::OpenFile(filename, "r+b"));
@@ -435,7 +436,7 @@ TEST_F(PrefixSetTest, CorruptionPayload) {
 
 // Test corruption in the digest itself.
 TEST_F(PrefixSetTest, CorruptionDigest) {
-  FilePath filename;
+  base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   int64 size_64;
@@ -451,7 +452,7 @@ TEST_F(PrefixSetTest, CorruptionDigest) {
 
 // Test excess data after the digest (fails the size test).
 TEST_F(PrefixSetTest, CorruptionExcess) {
-  FilePath filename;
+  base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   // Add some junk to the trunk.

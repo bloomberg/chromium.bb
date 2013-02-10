@@ -130,7 +130,7 @@ class CreateChromeApplicationShortcutsDialogGtk
 
  private:
   const extensions::Extension* app_;
-  FilePath profile_path_;
+  base::FilePath profile_path_;
   DISALLOW_COPY_AND_ASSIGN(CreateChromeApplicationShortcutsDialogGtk);
 };
 

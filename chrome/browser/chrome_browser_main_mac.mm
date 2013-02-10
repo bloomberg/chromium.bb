@@ -235,7 +235,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
         ResourceBundle::InitSharedInstanceWithLocale(std::string(), NULL);
     CHECK(!loaded_locale.empty()) << "Default locale could not be found";
 
-    FilePath resources_pack_path;
+    base::FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
     ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         resources_pack_path, ui::SCALE_FACTOR_NONE);

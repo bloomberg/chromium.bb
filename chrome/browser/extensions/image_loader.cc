@@ -74,7 +74,7 @@ void LoadImageOnBlockingPool(const ImageLoader::ImageRepresentation& image_info,
 
   // Read the file from disk.
   std::string file_contents;
-  FilePath path = image_info.resource.GetFilePath();
+  base::FilePath path = image_info.resource.GetFilePath();
   if (path.empty() || !file_util::ReadFileToString(path, &file_contents)) {
     return;
   }
@@ -156,8 +156,8 @@ ImageLoader* ImageLoader::Get(Profile* profile) {
 
 // static
 bool ImageLoader::IsComponentExtensionResource(
-    const FilePath& extension_path,
-    const FilePath& resource_path,
+    const base::FilePath& extension_path,
+    const base::FilePath& resource_path,
     int* resource_id) {
   static const GritResourceMap kExtraComponentExtensionResources[] = {
     {"web_store/webstore_icon_128.png", IDR_WEBSTORE_ICON},
@@ -174,9 +174,9 @@ bool ImageLoader::IsComponentExtensionResource(
   static const size_t kExtraComponentExtensionResourcesSize =
       arraysize(kExtraComponentExtensionResources);
 
-  FilePath directory_path = extension_path;
-  FilePath resources_dir;
-  FilePath relative_path;
+  base::FilePath directory_path = extension_path;
+  base::FilePath resources_dir;
+  base::FilePath relative_path;
   if (!PathService::Get(chrome::DIR_RESOURCES, &resources_dir) ||
       !resources_dir.AppendRelativePath(directory_path, &relative_path)) {
     return false;
@@ -184,12 +184,12 @@ bool ImageLoader::IsComponentExtensionResource(
   relative_path = relative_path.Append(resource_path);
   relative_path = relative_path.NormalizePathSeparators();
 
-  // TODO(tc): Make a map of FilePath -> resource ids so we don't have to
+  // TODO(tc): Make a map of base::FilePath -> resource ids so we don't have to
   // covert to FilePaths all the time.  This will be more useful as we add
   // more resources.
   for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
-    FilePath resource_path =
-        FilePath().AppendASCII(kComponentExtensionResources[i].name);
+    base::FilePath resource_path =
+        base::FilePath().AppendASCII(kComponentExtensionResources[i].name);
     resource_path = resource_path.NormalizePathSeparators();
 
     if (relative_path == resource_path) {
@@ -198,8 +198,8 @@ bool ImageLoader::IsComponentExtensionResource(
     }
   }
   for (size_t i = 0; i < kExtraComponentExtensionResourcesSize; ++i) {
-    FilePath resource_path =
-        FilePath().AppendASCII(kExtraComponentExtensionResources[i].name);
+    base::FilePath resource_path =
+        base::FilePath().AppendASCII(kExtraComponentExtensionResources[i].name);
     resource_path = resource_path.NormalizePathSeparators();
 
     if (relative_path == resource_path) {

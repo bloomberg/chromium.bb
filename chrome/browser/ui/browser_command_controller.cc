@@ -719,27 +719,28 @@ void BrowserCommandController::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, ProfileInfoCacheObserver implementation:
 
-void BrowserCommandController::OnProfileAdded(const FilePath& profile_path) {
+void BrowserCommandController::OnProfileAdded(
+    const base::FilePath& profile_path) {
   UpdateCommandsForMultipleProfiles();
 }
 
 void BrowserCommandController::OnProfileWasRemoved(
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     const string16& profile_name) {
   UpdateCommandsForMultipleProfiles();
 }
 
 void BrowserCommandController::OnProfileWillBeRemoved(
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
 }
 
 void BrowserCommandController::OnProfileNameChanged(
-    const FilePath& profile_path,
+    const base::FilePath& profile_path,
     const string16& old_profile_name) {
 }
 
 void BrowserCommandController::OnProfileAvatarChanged(
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

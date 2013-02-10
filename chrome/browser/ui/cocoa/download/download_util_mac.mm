@@ -17,7 +17,7 @@ using content::DownloadItem;
 
 namespace download_util {
 
-void AddFileToPasteboard(NSPasteboard* pasteboard, const FilePath& path) {
+void AddFileToPasteboard(NSPasteboard* pasteboard, const base::FilePath& path) {
   // Write information about the file being dragged to the pasteboard.
   NSString* file = base::SysUTF8ToNSString(path.value());
   NSArray* fileList = [NSArray arrayWithObject:file];

@@ -33,7 +33,7 @@ void IconLoader::ReadIcon() {
       NOTREACHED();
   }
 
-  FilePath filename = base::nix::GetMimeIcon(group_, size_pixels);
+  base::FilePath filename = base::nix::GetMimeIcon(group_, size_pixels);
   // We don't support SVG icons; this just spams the terminal so fail quickly
   // and don't try to read the file from disk first.
   if (filename.Extension() != ".svg") {

@@ -117,7 +117,7 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
 
-  FilePath exe_path = ChildProcessHost::GetChildPath(flags);
+  base::FilePath exe_path = ChildProcessHost::GetChildPath(flags);
   if (exe_path.empty())
     NOTREACHED() << "Unable to get service process binary name.";
 
@@ -126,7 +126,7 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
                               switches::kServiceProcess);
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  FilePath user_data_dir =
+  base::FilePath user_data_dir =
       browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
     cmd_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);

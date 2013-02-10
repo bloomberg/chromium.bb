@@ -127,7 +127,7 @@ class DriveSyncClient
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
                                   const DriveCacheEntry& cache_entry,
                                   DriveFileError error,
-                                  const FilePath& file_path,
+                                  const base::FilePath& file_path,
                                   scoped_ptr<DriveEntryProto> entry_proto);
 
   // Called when a cache entry is obtained.
@@ -146,7 +146,7 @@ class DriveSyncClient
   // Calls DoSyncLoop() to go back to the sync loop.
   void OnFetchFileComplete(const std::string& resource_id,
                            DriveFileError error,
-                           const FilePath& local_path,
+                           const base::FilePath& local_path,
                            const std::string& ununsed_mime_type,
                            DriveFileType file_type);
 

@@ -39,14 +39,15 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
     string16 identifier1(UTF8ToUTF16(kTestIdentifier1));
     db_tracker->DatabaseOpened(identifier1, db_name, description, 1, &size);
     db_tracker->DatabaseClosed(identifier1, db_name);
-    FilePath db_path1 = db_tracker->GetFullDBFilePath(identifier1, db_name);
+    base::FilePath db_path1 =
+        db_tracker->GetFullDBFilePath(identifier1, db_name);
     file_util::CreateDirectory(db_path1.DirName());
     ASSERT_EQ(0, file_util::WriteFile(db_path1, NULL, 0));
     string16 identifierExtension(UTF8ToUTF16(kTestIdentifierExtension));
     db_tracker->DatabaseOpened(identifierExtension, db_name, description, 1,
                                &size);
     db_tracker->DatabaseClosed(identifierExtension, db_name);
-    FilePath db_path2 =
+    base::FilePath db_path2 =
         db_tracker->GetFullDBFilePath(identifierExtension, db_name);
     file_util::CreateDirectory(db_path2.DirName());
     ASSERT_EQ(0, file_util::WriteFile(db_path2, NULL, 0));

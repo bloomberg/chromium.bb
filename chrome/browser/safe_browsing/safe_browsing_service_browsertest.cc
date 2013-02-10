@@ -70,7 +70,7 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
   virtual ~TestSafeBrowsingDatabase() {}
 
   // Initializes the database with the given filename.
-  virtual void Init(const FilePath& filename) OVERRIDE {}
+  virtual void Init(const base::FilePath& filename) OVERRIDE {}
 
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase() OVERRIDE {
@@ -889,10 +889,11 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   }
 
   virtual bool SetUpUserDataDirectory() OVERRIDE {
-    FilePath cookie_path(SafeBrowsingService::GetCookieFilePathForTesting());
+    base::FilePath cookie_path(
+        SafeBrowsingService::GetCookieFilePathForTesting());
     EXPECT_FALSE(file_util::PathExists(cookie_path));
 
-    FilePath test_dir;
+    base::FilePath test_dir;
     if (!PathService::Get(chrome::DIR_TEST_DATA, &test_dir)) {
       EXPECT_TRUE(false);
       return false;
@@ -901,7 +902,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     // Initialize the SafeBrowsing cookies with a pre-created cookie store.  It
     // contains a single cookie, for domain 127.0.0.1, with value a=b, and
     // expires in 2038.
-    FilePath initial_cookies = test_dir.AppendASCII("safe_browsing")
+    base::FilePath initial_cookies = test_dir.AppendASCII("safe_browsing")
         .AppendASCII("Safe Browsing Cookies");
     if (!file_util::CopyFile(initial_cookies, cookie_path)) {
       EXPECT_TRUE(false);
@@ -937,7 +938,8 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
 
     sql::Connection db;
-    FilePath cookie_path(SafeBrowsingService::GetCookieFilePathForTesting());
+    base::FilePath cookie_path(
+        SafeBrowsingService::GetCookieFilePathForTesting());
     ASSERT_TRUE(db.Open(cookie_path));
 
     sql::Statement smt(db.GetUniqueStatement(

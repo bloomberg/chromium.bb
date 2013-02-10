@@ -39,7 +39,7 @@ class SettingsBackend : public syncer::SyncableService {
   // |observers| is the list of observers to settings changes.
   SettingsBackend(
       const scoped_refptr<SettingsStorageFactory>& storage_factory,
-      const FilePath& base_path,
+      const base::FilePath& base_path,
       const SettingsStorageQuotaEnforcer::Limits& quota,
       const scoped_refptr<SettingsObserverList>& observers);
 
@@ -84,7 +84,7 @@ class SettingsBackend : public syncer::SyncableService {
   const scoped_refptr<SettingsStorageFactory> storage_factory_;
 
   // The base file path to create any leveldb databases at.
-  const FilePath base_path_;
+  const base::FilePath base_path_;
 
   // Quota limits (see SettingsStorageQuotaEnforcer).
   const SettingsStorageQuotaEnforcer::Limits quota_;

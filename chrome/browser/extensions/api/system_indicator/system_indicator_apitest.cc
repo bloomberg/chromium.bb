@@ -27,7 +27,7 @@ class SystemIndicatorApiTest : public ExtensionApiTest {
   const extensions::Extension* LoadExtensionAndWait(
       const std::string& test_name) {
     LazyBackgroundObserver page_complete;
-    FilePath extdir = test_data_dir_.AppendASCII(test_name);
+    base::FilePath extdir = test_data_dir_.AppendASCII(test_name);
     const extensions::Extension* extension = LoadExtension(extdir);
     if (extension)
       page_complete.Wait();

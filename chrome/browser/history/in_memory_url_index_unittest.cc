@@ -84,7 +84,7 @@ class InMemoryURLIndexTest : public testing::Test {
 
   // Allows the database containing the test data to be customized by
   // subclasses.
-  virtual FilePath::StringType TestDBName() const;
+  virtual base::FilePath::StringType TestDBName() const;
 
   // Validates that the given |term| is contained in |cache| and that it is
   // marked as in-use.
@@ -97,8 +97,8 @@ class InMemoryURLIndexTest : public testing::Test {
   // Pass-through functions to simplify our friendship with InMemoryURLIndex.
   URLIndexPrivateData* GetPrivateData() const;
   void ClearPrivateData();
-  void set_history_dir(const FilePath& dir_path);
-  bool GetCacheFilePath(FilePath* file_path) const;
+  void set_history_dir(const base::FilePath& dir_path);
+  bool GetCacheFilePath(base::FilePath* file_path) const;
   void PostRestoreFromCacheFileTask();
   void PostSaveToCacheFileTask();
   void Observe(int notification_type,
@@ -144,11 +144,11 @@ void InMemoryURLIndexTest::ClearPrivateData() {
   return url_index_->ClearPrivateData();
 }
 
-void InMemoryURLIndexTest::set_history_dir(const FilePath& dir_path) {
+void InMemoryURLIndexTest::set_history_dir(const base::FilePath& dir_path) {
   return url_index_->set_history_dir(dir_path);
 }
 
-bool InMemoryURLIndexTest::GetCacheFilePath(FilePath* file_path) const {
+bool InMemoryURLIndexTest::GetCacheFilePath(base::FilePath* file_path) const {
   DCHECK(file_path);
   return url_index_->GetCacheFilePath(file_path);
 }
@@ -196,7 +196,7 @@ void InMemoryURLIndexTest::SetUp() {
   history_database_ = backend->db();
 
   // Create and populate a working copy of the URL history database.
-  FilePath history_proto_path;
+  base::FilePath history_proto_path;
   PathService::Get(chrome::DIR_TEST_DATA, &history_proto_path);
   history_proto_path = history_proto_path.Append(
       FILE_PATH_LITERAL("History"));
@@ -251,12 +251,12 @@ void InMemoryURLIndexTest::SetUp() {
   }
 
   url_index_.reset(
-      new InMemoryURLIndex(&profile_, FilePath(), "en,ja,hi,zh"));
+      new InMemoryURLIndex(&profile_, base::FilePath(), "en,ja,hi,zh"));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
 }
 
-FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
+base::FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
     return FILE_PATH_LITERAL("url_history_provider_test.db.txt");
 }
 
@@ -385,10 +385,10 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
 
 class LimitedInMemoryURLIndexTest : public InMemoryURLIndexTest {
  protected:
-  virtual FilePath::StringType TestDBName() const OVERRIDE;
+  virtual base::FilePath::StringType TestDBName() const OVERRIDE;
 };
 
-FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {
+base::FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {
   return FILE_PATH_LITERAL("url_history_provider_test_limited.db.txt");
 }
 
@@ -401,7 +401,7 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   while (statement.Step()) ++row_count;
   EXPECT_EQ(1U, row_count);
   url_index_.reset(
-      new InMemoryURLIndex(&profile_, FilePath(), "en,ja,hi,zh"));
+      new InMemoryURLIndex(&profile_, base::FilePath(), "en,ja,hi,zh"));
   url_index_->Init();
   url_index_->RebuildFromHistory(history_database_);
   URLIndexPrivateData& private_data(*GetPrivateData());
@@ -979,8 +979,8 @@ class InMemoryURLIndexCacheTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
 
   // Pass-through functions to simplify our friendship with InMemoryURLIndex.
-  void set_history_dir(const FilePath& dir_path);
-  bool GetCacheFilePath(FilePath* file_path) const;
+  void set_history_dir(const base::FilePath& dir_path);
+  bool GetCacheFilePath(base::FilePath* file_path) const;
 
   base::ScopedTempDir temp_dir_;
   scoped_ptr<InMemoryURLIndex> url_index_;
@@ -988,35 +988,37 @@ class InMemoryURLIndexCacheTest : public testing::Test {
 
 void InMemoryURLIndexCacheTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath path(temp_dir_.path());
+  base::FilePath path(temp_dir_.path());
   url_index_.reset(
       new InMemoryURLIndex(NULL, path, "en,ja,hi,zh"));
 }
 
-void InMemoryURLIndexCacheTest::set_history_dir(const FilePath& dir_path) {
+void InMemoryURLIndexCacheTest::set_history_dir(
+    const base::FilePath& dir_path) {
   return url_index_->set_history_dir(dir_path);
 }
 
-bool InMemoryURLIndexCacheTest::GetCacheFilePath(FilePath* file_path) const {
+bool InMemoryURLIndexCacheTest::GetCacheFilePath(
+    base::FilePath* file_path) const {
   DCHECK(file_path);
   return url_index_->GetCacheFilePath(file_path);
 }
 
 TEST_F(InMemoryURLIndexCacheTest, CacheFilePath) {
-  FilePath expectedPath =
+  base::FilePath expectedPath =
       temp_dir_.path().Append(FILE_PATH_LITERAL("History Provider Cache"));
-  std::vector<FilePath::StringType> expected_parts;
+  std::vector<base::FilePath::StringType> expected_parts;
   expectedPath.GetComponents(&expected_parts);
-  FilePath full_file_path;
+  base::FilePath full_file_path;
   ASSERT_TRUE(GetCacheFilePath(&full_file_path));
-  std::vector<FilePath::StringType> actual_parts;
+  std::vector<base::FilePath::StringType> actual_parts;
   full_file_path.GetComponents(&actual_parts);
   ASSERT_EQ(expected_parts.size(), actual_parts.size());
   size_t count = expected_parts.size();
   for (size_t i = 0; i < count; ++i)
     EXPECT_EQ(expected_parts[i], actual_parts[i]);
   // Must clear the history_dir_ to satisfy the dtor's DCHECK.
-  set_history_dir(FilePath());
+  set_history_dir(base::FilePath());
 }
 
 }  // namespace history

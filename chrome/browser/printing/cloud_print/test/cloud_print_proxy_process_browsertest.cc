@@ -209,7 +209,7 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (!cl->HasSwitch(kTestExecutablePath))
     return kMissingSwitch;
-  FilePath executable_path = cl->GetSwitchValuePath(kTestExecutablePath);
+  base::FilePath executable_path = cl->GetSwitchValuePath(kTestExecutablePath);
   EXPECT_FALSE(executable_path.empty());
   MockLaunchd mock_launchd(executable_path, &main_message_loop, true, true);
   Launchd::ScopedInstance use_mock(&mock_launchd);
@@ -310,7 +310,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
     int return_code = 0;
     StartupBrowserCreator browser_creator;
     return StartupBrowserCreator::ProcessCmdLineImpl(
-        command_line, FilePath(), false, profile,
+        command_line, base::FilePath(), false, profile,
         StartupBrowserCreator::Profiles(), &return_code, &browser_creator);
   }
 
@@ -324,7 +324,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 
 #if defined(OS_MACOSX)
   base::ScopedTempDir temp_dir_;
-  FilePath executable_path_, bundle_path_;
+  base::FilePath executable_path_, bundle_path_;
   scoped_ptr<MockLaunchd> mock_launchd_;
   scoped_ptr<Launchd::ScopedInstance> scoped_launchd_instance_;
 #endif

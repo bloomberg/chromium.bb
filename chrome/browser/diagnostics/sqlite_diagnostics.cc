@@ -26,7 +26,7 @@ namespace {
 class SqliteIntegrityTest : public DiagnosticTest {
  public:
   SqliteIntegrityTest(bool critical, const string16& title,
-                      const FilePath& profile_relative_db_path)
+                      const base::FilePath& profile_relative_db_path)
       : DiagnosticTest(title),
         critical_(critical),
         db_path_(profile_relative_db_path) {
@@ -35,7 +35,7 @@ class SqliteIntegrityTest : public DiagnosticTest {
   virtual int GetId() OVERRIDE { return 0; }
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) OVERRIDE {
-    FilePath path = GetUserDefaultProfileDir();
+    base::FilePath path = GetUserDefaultProfileDir();
     path = path.Append(db_path_);
     if (!file_util::PathExists(path)) {
       RecordOutcome(ASCIIToUTF16("File not found"),
@@ -83,7 +83,7 @@ class SqliteIntegrityTest : public DiagnosticTest {
 
  private:
   bool critical_;
-  FilePath db_path_;
+  base::FilePath db_path_;
   DISALLOW_COPY_AND_ASSIGN(SqliteIntegrityTest);
 };
 
@@ -91,39 +91,41 @@ class SqliteIntegrityTest : public DiagnosticTest {
 
 DiagnosticTest* MakeSqliteWebDbTest() {
   return new SqliteIntegrityTest(true, ASCIIToUTF16("Web DB"),
-                                 FilePath(chrome::kWebDataFilename));
+                                 base::FilePath(chrome::kWebDataFilename));
 }
 
 DiagnosticTest* MakeSqliteCookiesDbTest() {
   return new SqliteIntegrityTest(true, ASCIIToUTF16("Cookies DB"),
-                                 FilePath(chrome::kCookieFilename));
+                                 base::FilePath(chrome::kCookieFilename));
 }
 
 DiagnosticTest* MakeSqliteHistoryDbTest() {
   return new SqliteIntegrityTest(true, ASCIIToUTF16("History DB"),
-                                 FilePath(chrome::kHistoryFilename));
+                                 base::FilePath(chrome::kHistoryFilename));
 }
 
 DiagnosticTest* MakeSqliteArchivedHistoryDbTest() {
-  return new SqliteIntegrityTest(false, ASCIIToUTF16("Archived History DB"),
-                                 FilePath(chrome::kArchivedHistoryFilename));
+  return new SqliteIntegrityTest(
+      false, ASCIIToUTF16("Archived History DB"),
+      base::FilePath(chrome::kArchivedHistoryFilename));
 }
 
 DiagnosticTest* MakeSqliteThumbnailsDbTest() {
   return new SqliteIntegrityTest(false, ASCIIToUTF16("Thumbnails DB"),
-                                 FilePath(chrome::kThumbnailsFilename));
+                                 base::FilePath(chrome::kThumbnailsFilename));
 }
 
 DiagnosticTest* MakeSqliteAppCacheDbTest() {
-  FilePath appcache_dir(content::kAppCacheDirname);
-  FilePath appcache_db = appcache_dir.Append(appcache::kAppCacheDatabaseName);
+  base::FilePath appcache_dir(content::kAppCacheDirname);
+  base::FilePath appcache_db =
+      appcache_dir.Append(appcache::kAppCacheDatabaseName);
   return new SqliteIntegrityTest(false, ASCIIToUTF16("AppCache DB"),
                                  appcache_db);
 }
 
 DiagnosticTest* MakeSqliteWebDatabaseTrackerDbTest() {
-  FilePath databases_dir(webkit_database::kDatabaseDirectoryName);
-  FilePath tracker_db =
+  base::FilePath databases_dir(webkit_database::kDatabaseDirectoryName);
+  base::FilePath tracker_db =
       databases_dir.Append(webkit_database::kTrackerDatabaseFileName);
   return new SqliteIntegrityTest(false, ASCIIToUTF16("DatabaseTracker DB"),
                                  tracker_db);

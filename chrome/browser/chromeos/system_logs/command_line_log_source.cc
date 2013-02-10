@@ -24,37 +24,38 @@ void ExecuteCommandLines(chromeos::SystemLogsResponse* response) {
   // it more easier to modify and understand.
   std::vector<std::pair<std::string, CommandLine> > commands;
 
-  CommandLine command(FilePath("/usr/bin/amixer"));
+  CommandLine command(base::FilePath("/usr/bin/amixer"));
   command.AppendArg("-c0");
   command.AppendArg("contents");
   commands.push_back(std::make_pair("alsa controls", command));
 
-  command = CommandLine((FilePath("/usr/bin/cras_test_client")));
+  command = CommandLine((base::FilePath("/usr/bin/cras_test_client")));
   command.AppendArg("--dump_server_info");
   commands.push_back(std::make_pair("cras", command));
 
-  command = CommandLine((FilePath("/usr/bin/printenv")));
+  command = CommandLine((base::FilePath("/usr/bin/printenv")));
   commands.push_back(std::make_pair("env", command));
 
-  command = CommandLine(FilePath("/usr/bin/setxkbmap"));
+  command = CommandLine(base::FilePath("/usr/bin/setxkbmap"));
   command.AppendArg("-print");
   command.AppendArg("-query");
   commands.push_back(std::make_pair("setxkbmap", command));
 
-  command = CommandLine(FilePath("/usr/bin/xinput"));
+  command = CommandLine(base::FilePath("/usr/bin/xinput"));
   command.AppendArg("list");
   command.AppendArg("--long");
   commands.push_back(std::make_pair("xinput", command));
 
-  command = CommandLine(FilePath("/usr/bin/xrandr"));
+  command = CommandLine(base::FilePath("/usr/bin/xrandr"));
   command.AppendArg("--verbose");
   commands.push_back(std::make_pair("xrandr", command));
 
-  command = CommandLine(FilePath("/opt/google/touchpad/tpcontrol"));
+  command = CommandLine(base::FilePath("/opt/google/touchpad/tpcontrol"));
   command.AppendArg("status");
   commands.push_back(std::make_pair("hack-33025-touchpad", command));
 
-  command = CommandLine(FilePath("/opt/google/touchpad/generate_userfeedback"));
+  command =
+      CommandLine(base::FilePath("/opt/google/touchpad/generate_userfeedback"));
   commands.push_back(std::make_pair("hack-33025-touchpad_activity", command));
 
   for (size_t i = 0; i < commands.size(); ++i) {

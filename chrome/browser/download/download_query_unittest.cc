@@ -168,10 +168,10 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryFilename) {
       static_cast<content::BrowserContext*>(NULL)));
   EXPECT_CALL(mock(1), GetBrowserContext()).WillRepeatedly(Return(
       static_cast<content::BrowserContext*>(NULL)));
-  FilePath match_filename(FILE_PATH_LITERAL("query"));
+  base::FilePath match_filename(FILE_PATH_LITERAL("query"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       match_filename));
-  FilePath fail_filename(FILE_PATH_LITERAL("fail"));
+  base::FilePath fail_filename(FILE_PATH_LITERAL("fail"));
   EXPECT_CALL(mock(1), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       fail_filename));
   GURL fail_url("http://example.com/fail");
@@ -187,7 +187,7 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryUrl) {
       static_cast<content::BrowserContext*>(NULL)));
   EXPECT_CALL(mock(1), GetBrowserContext()).WillRepeatedly(Return(
       static_cast<content::BrowserContext*>(NULL)));
-  FilePath fail_filename(FILE_PATH_LITERAL("fail"));
+  base::FilePath fail_filename(FILE_PATH_LITERAL("fail"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       fail_filename));
   EXPECT_CALL(mock(1), GetTargetFilePath()).WillRepeatedly(ReturnRef(
@@ -206,17 +206,17 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryFilenameI18N) {
       static_cast<content::BrowserContext*>(NULL)));
   EXPECT_CALL(mock(1), GetBrowserContext()).WillRepeatedly(Return(
       static_cast<content::BrowserContext*>(NULL)));
-  const FilePath::StringType kTestString(
+  const base::FilePath::StringType kTestString(
 #if defined(OS_POSIX)
       "/\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd"
 #elif defined(OS_WIN)
       L"/\x4f60\x597d\x4f60\x597d"
 #endif
       );
-  FilePath match_filename(kTestString);
+  base::FilePath match_filename(kTestString);
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       match_filename));
-  FilePath fail_filename(FILE_PATH_LITERAL("fail"));
+  base::FilePath fail_filename(FILE_PATH_LITERAL("fail"));
   EXPECT_CALL(mock(1), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       fail_filename));
   GURL fail_url("http://example.com/fail");
@@ -228,10 +228,10 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryFilenameI18N) {
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterFilenameRegex) {
   CreateMocks(2);
-  FilePath match_filename(FILE_PATH_LITERAL("query"));
+  base::FilePath match_filename(FILE_PATH_LITERAL("query"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       match_filename));
-  FilePath fail_filename(FILE_PATH_LITERAL("fail"));
+  base::FilePath fail_filename(FILE_PATH_LITERAL("fail"));
   EXPECT_CALL(mock(1), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       fail_filename));
   AddFilter(DownloadQuery::FILTER_FILENAME_REGEX, "y");
@@ -240,10 +240,10 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterFilenameRegex) {
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_SortFilename) {
   CreateMocks(2);
-  FilePath b_filename(FILE_PATH_LITERAL("b"));
+  base::FilePath b_filename(FILE_PATH_LITERAL("b"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       b_filename));
-  FilePath a_filename(FILE_PATH_LITERAL("a"));
+  base::FilePath a_filename(FILE_PATH_LITERAL("a"));
   EXPECT_CALL(mock(1), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       a_filename));
   query()->AddSorter(DownloadQuery::SORT_FILENAME, DownloadQuery::ASCENDING);
@@ -252,10 +252,10 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_SortFilename) {
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterFilename) {
   CreateMocks(2);
-  FilePath match_filename(FILE_PATH_LITERAL("query"));
+  base::FilePath match_filename(FILE_PATH_LITERAL("query"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       match_filename));
-  FilePath fail_filename(FILE_PATH_LITERAL("fail"));
+  base::FilePath fail_filename(FILE_PATH_LITERAL("fail"));
   EXPECT_CALL(mock(1), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       fail_filename));
   AddFilter(DownloadQuery::FILTER_FILENAME, match_filename.value().c_str());

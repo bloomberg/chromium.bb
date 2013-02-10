@@ -22,23 +22,24 @@ DownloadFilePickerChromeOS::~DownloadFilePickerChromeOS() {
 }
 
 void DownloadFilePickerChromeOS::InitSuggestedPath(DownloadItem* item,
-                                                   const FilePath& path) {
+                                                   const base::FilePath& path) {
   // For Drive downloads, we should pass the drive path instead of the temporary
   // file path.
   Profile* profile =
       Profile::FromBrowserContext(download_manager_->GetBrowserContext());
   drive::DriveDownloadHandler* drive_download_handler =
       drive::DriveDownloadHandler::GetForProfile(profile);
-  FilePath suggested_path = path;
+  base::FilePath suggested_path = path;
   if (drive_download_handler && drive_download_handler->IsDriveDownload(item))
     suggested_path = drive_download_handler->GetTargetPath(item);
 
   DownloadFilePicker::InitSuggestedPath(item, suggested_path);
 }
 
-void DownloadFilePickerChromeOS::FileSelected(const FilePath& selected_path,
-                                              int index,
-                                              void* params) {
+void DownloadFilePickerChromeOS::FileSelected(
+    const base::FilePath& selected_path,
+    int index,
+    void* params) {
   FileSelectedWithExtraInfo(
       ui::SelectedFileInfo(selected_path, selected_path),
       index,
@@ -49,7 +50,7 @@ void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
     const ui::SelectedFileInfo& file_info,
     int index,
     void* params) {
-  FilePath path = file_info.file_path;
+  base::FilePath path = file_info.file_path;
   file_util::NormalizeFileNameEncoding(&path);
 
   // Need to do this before we substitute with a temporary path. Otherwise we
@@ -71,7 +72,7 @@ void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
       OnFileSelected(path);
     }
   } else {
-    OnFileSelected(FilePath());
+    OnFileSelected(base::FilePath());
   }
   // The OnFileSelected() call deletes |this|
 }

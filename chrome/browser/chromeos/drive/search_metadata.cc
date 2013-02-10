@@ -53,7 +53,7 @@ class SearchMetadataHelper {
   // Starts searching the local resource metadata by reading the root
   // directory.
   void Start() {
-    const FilePath root(kDriveRootDirectory);
+    const base::FilePath root(kDriveRootDirectory);
     ++num_pending_reads_;
     file_system_->ReadDirectoryByPath(
         root,
@@ -66,7 +66,7 @@ class SearchMetadataHelper {
  private:
   // Called when a directory is read. Continues searching the local resource
   // metadata by recursively reading sub directories.
-  void DidReadDirectoryByPath(const FilePath& parent_path,
+  void DidReadDirectoryByPath(const base::FilePath& parent_path,
                               DriveFileError error,
                               bool hide_hosted_documents,
                               scoped_ptr<DriveEntryProtoVector> entries) {
@@ -82,8 +82,8 @@ class SearchMetadataHelper {
     --num_pending_reads_;
     for (size_t i = 0; i < entries->size(); ++i) {
       const DriveEntryProto& entry = entries->at(i);
-      const FilePath current_path = parent_path.Append(
-          FilePath::FromUTF8Unsafe(entry.base_name()));
+      const base::FilePath current_path = parent_path.Append(
+          base::FilePath::FromUTF8Unsafe(entry.base_name()));
       // Skip the hosted document if "hide hosted documents" setting is
       // enabled.
       if (hide_hosted_documents &&

@@ -27,7 +27,8 @@ class StateStore
 
   // If |deferred_load| is true, we won't load the database until the first
   // page has been loaded.
-  StateStore(Profile* profile, const FilePath& db_path, bool deferred_load);
+  StateStore(Profile* profile, const base::FilePath& db_path,
+             bool deferred_load);
   // This variant is useful for testing (using a mock ValueStore).
   StateStore(Profile* profile, ValueStore* store);
   virtual ~StateStore();
@@ -65,7 +66,7 @@ class StateStore
   void RemoveKeysForExtension(const std::string& extension_id);
 
   // Path to our database, on disk. Empty during testing.
-  FilePath db_path_;
+  base::FilePath db_path_;
 
   // The store that holds our key/values.
   ValueStoreFrontend store_;

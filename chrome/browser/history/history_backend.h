@@ -120,7 +120,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // may be NULL.
   //
   // This constructor is fast and does no I/O, so can be called at any time.
-  HistoryBackend(const FilePath& history_dir,
+  HistoryBackend(const base::FilePath& history_dir,
                  int id,
                  Delegate* delegate,
                  BookmarkService* bookmark_service);
@@ -540,17 +540,17 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class ::TestingProfile;
 
   // Computes the name of the specified database on disk.
-  FilePath GetThumbnailFileName() const;
+  base::FilePath GetThumbnailFileName() const;
 
   // Returns the name of the Favicons database. This is the new name
   // of the Thumbnails database.
   // See ThumbnailDatabase::RenameAndDropThumbnails.
-  FilePath GetFaviconsFileName() const;
-  FilePath GetArchivedFileName() const;
+  base::FilePath GetFaviconsFileName() const;
+  base::FilePath GetArchivedFileName() const;
 
 #if defined(OS_ANDROID)
   // Returns the name of android cache database.
-  FilePath GetAndroidCacheFileName() const;
+  base::FilePath GetAndroidCacheFileName() const;
 #endif
 
   class URLQuerier;
@@ -807,7 +807,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   int id_;
 
   // Directory where database files will be stored.
-  FilePath history_dir_;
+  base::FilePath history_dir_;
 
   // The history/thumbnail databases. Either MAY BE NULL if the database could
   // not be opened, all users must first check for NULL and return immediately

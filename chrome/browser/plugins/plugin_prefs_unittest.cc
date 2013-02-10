@@ -30,9 +30,9 @@ void CanEnablePluginCallback(const base::Closure& quit_closure,
   quit_closure.Run();
 }
 
-FilePath GetComponentUpdatedPepperFlashPath(
-    const FilePath::StringType& version) {
-  FilePath path;
+base::FilePath GetComponentUpdatedPepperFlashPath(
+    const base::FilePath::StringType& version) {
+  base::FilePath path;
   EXPECT_TRUE(PathService::Get(
       chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN, &path));
   path = path.Append(version);
@@ -40,8 +40,8 @@ FilePath GetComponentUpdatedPepperFlashPath(
   return path;
 }
 
-FilePath GetBundledPepperFlashPath() {
-  FilePath path;
+base::FilePath GetBundledPepperFlashPath() {
+  base::FilePath path;
   EXPECT_TRUE(PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &path));
   return path;
 }
@@ -64,7 +64,7 @@ class PluginPrefsTest : public ::testing::Test {
 
  protected:
   void EnablePluginSynchronously(bool enabled,
-                                 const FilePath& path,
+                                 const base::FilePath& path,
                                  bool expected_can_change) {
     base::RunLoop run_loop;
     plugin_prefs_->EnablePlugin(

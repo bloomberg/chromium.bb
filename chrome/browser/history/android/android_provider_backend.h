@@ -45,7 +45,7 @@ class ThumbnailDatabase;
 // The android_cache database is deleted when shutdown.
 class AndroidProviderBackend {
  public:
-  AndroidProviderBackend(const FilePath& cache_db_name,
+  AndroidProviderBackend(const base::FilePath& cache_db_name,
                          HistoryDatabase* history_db,
                          ThumbnailDatabase* thumbnail_db,
                          BookmarkService* bookmark_service,
@@ -328,7 +328,7 @@ class AndroidProviderBackend {
   std::vector<SQLHandler*> sql_handlers_;
 
   // Android cache database filename.
-  const FilePath android_cache_db_filename_;
+  const base::FilePath android_cache_db_filename_;
 
   // The history db's connection.
   sql::Connection* db_;

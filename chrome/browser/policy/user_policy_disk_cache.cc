@@ -40,7 +40,7 @@ UserPolicyDiskCache::Delegate::~Delegate() {}
 
 UserPolicyDiskCache::UserPolicyDiskCache(
     const base::WeakPtr<Delegate>& delegate,
-    const FilePath& backing_file_path)
+    const base::FilePath& backing_file_path)
     : delegate_(delegate),
       backing_file_path_(backing_file_path) {}
 

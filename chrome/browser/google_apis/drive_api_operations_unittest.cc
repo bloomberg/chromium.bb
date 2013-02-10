@@ -85,7 +85,7 @@ class DriveApiOperationsTest : public testing::Test {
 
   // This is a path to the file which contains expected response from
   // the server. See also HandleDataFileRequest below.
-  FilePath expected_data_file_path_;
+  base::FilePath expected_data_file_path_;
 
   // These are content and its type in the expected response from the server.
   // See also HandleContentResponse below.

@@ -308,23 +308,23 @@ TEST(GDataWAPIParserTest, AccountMetadataFeedParser) {
 // Test file extension checking in ResourceEntry::HasDocumentExtension().
 TEST(GDataWAPIParserTest, ResourceEntryHasDocumentExtension) {
   EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      FilePath(FILE_PATH_LITERAL("Test.gdoc"))));
+      base::FilePath(FILE_PATH_LITERAL("Test.gdoc"))));
   EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      FilePath(FILE_PATH_LITERAL("Test.gsheet"))));
+      base::FilePath(FILE_PATH_LITERAL("Test.gsheet"))));
   EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      FilePath(FILE_PATH_LITERAL("Test.gslides"))));
+      base::FilePath(FILE_PATH_LITERAL("Test.gslides"))));
   EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      FilePath(FILE_PATH_LITERAL("Test.gdraw"))));
+      base::FilePath(FILE_PATH_LITERAL("Test.gdraw"))));
   EXPECT_TRUE(ResourceEntry::HasHostedDocumentExtension(
-      FilePath(FILE_PATH_LITERAL("Test.gtable"))));
+      base::FilePath(FILE_PATH_LITERAL("Test.gtable"))));
   EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
-      FilePath(FILE_PATH_LITERAL("Test.tar.gz"))));
+      base::FilePath(FILE_PATH_LITERAL("Test.tar.gz"))));
   EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
-      FilePath(FILE_PATH_LITERAL("Test.txt"))));
+      base::FilePath(FILE_PATH_LITERAL("Test.txt"))));
   EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
-      FilePath(FILE_PATH_LITERAL("Test"))));
+      base::FilePath(FILE_PATH_LITERAL("Test"))));
   EXPECT_FALSE(ResourceEntry::HasHostedDocumentExtension(
-      FilePath(FILE_PATH_LITERAL(""))));
+      base::FilePath(FILE_PATH_LITERAL(""))));
 }
 
 TEST(GDataWAPIParserTest, ResourceEntryClassifyEntryKind) {

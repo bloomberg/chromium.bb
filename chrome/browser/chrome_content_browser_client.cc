@@ -1072,7 +1072,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->GetSwitchValueASCII(switches::kProcessType);
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (process_type == switches::kRendererProcess) {
-    FilePath user_data_dir =
+    base::FilePath user_data_dir =
         browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
     if (!user_data_dir.empty())
       command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
@@ -1893,7 +1893,7 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
   // BrowsingDataRemover takes care of deleting itself when done.
 }
 
-FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
+base::FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
   return download_util::GetDefaultDownloadDirectory();
 }
 
@@ -1978,8 +1978,8 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
   return false;
 }
 
-FilePath ChromeContentBrowserClient::GetHyphenDictionaryDirectory() {
-  FilePath directory;
+base::FilePath ChromeContentBrowserClient::GetHyphenDictionaryDirectory() {
+  base::FilePath directory;
   PathService::Get(chrome::DIR_APP_DICTIONARIES, &directory);
   return directory.Append(FILE_PATH_LITERAL("Hyphen"));
 }
@@ -1995,19 +1995,19 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     int child_process_id,
     std::vector<FileDescriptorInfo>* mappings) {
 #if defined(OS_ANDROID)
-  FilePath data_path;
+  base::FilePath data_path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &data_path);
   DCHECK(!data_path.empty());
 
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  FilePath chrome_pak = data_path.AppendASCII("chrome.pak");
+  base::FilePath chrome_pak = data_path.AppendASCII("chrome.pak");
   base::PlatformFile f =
       base::CreatePlatformFile(chrome_pak, flags, NULL, NULL);
   DCHECK(f != base::kInvalidPlatformFileValue);
   mappings->push_back(FileDescriptorInfo(kAndroidChromePakDescriptor,
                                          FileDescriptor(f, true)));
 
-  FilePath chrome_resources_pak =
+  base::FilePath chrome_resources_pak =
       data_path.AppendASCII("chrome_100_percent.pak");
   f = base::CreatePlatformFile(chrome_resources_pak, flags, NULL, NULL);
   DCHECK(f != base::kInvalidPlatformFileValue);
@@ -2015,14 +2015,14 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                                          FileDescriptor(f, true)));
 
   const std::string locale = GetApplicationLocale();
-  FilePath locale_pak = ResourceBundle::GetSharedInstance().
+  base::FilePath locale_pak = ResourceBundle::GetSharedInstance().
       GetLocaleFilePath(locale, false);
   f = base::CreatePlatformFile(locale_pak, flags, NULL, NULL);
   DCHECK(f != base::kInvalidPlatformFileValue);
   mappings->push_back(FileDescriptorInfo(kAndroidLocalePakDescriptor,
                                          FileDescriptor(f, true)));
 
-  FilePath resources_pack_path;
+  base::FilePath resources_pack_path;
   PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   f = base::CreatePlatformFile(resources_pack_path, flags, NULL, NULL);
   DCHECK(f != base::kInvalidPlatformFileValue);

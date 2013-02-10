@@ -416,7 +416,7 @@ net::URLRequestJob* URLRequestMockCaptivePortalJobFactory::Factory(
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // The PathService is threadsafe.
-  FilePath root_http;
+  base::FilePath root_http;
   PathService::Get(chrome::DIR_TEST_DATA, &root_http);
 
   if (request->url() == GURL(kMockHttpsUrl) ||
@@ -1559,9 +1559,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsNonTimeoutError) {
 // Make sure no captive portal test triggers on HTTPS timeouts of iframes.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsIframeTimeout) {
   // Use an HTTPS server for the top level page.
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               net::TestServer::kLocalhost,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 
   GURL url = https_server.GetURL(kTestServerIframeTimeoutPath);
@@ -1614,9 +1614,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RedirectSSLCertError) {
   net::TestServer::SSLOptions ssl_options;
   ssl_options.server_certificate =
       net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               ssl_options,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 
   GURL ssl_login_url = https_server.GetURL(kTestServerLoginPath);
@@ -1702,9 +1702,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SSLCertErrorLogin) {
   net::TestServer::SSLOptions https_options;
   https_options.server_certificate =
       net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               https_options,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, https_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 
   // The path does not matter.
@@ -1802,7 +1802,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, TwoBrokenTabs) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       URLRequestMockHTTPJob::GetMockUrl(
-          FilePath(FILE_PATH_LITERAL("title2.html"))),
+          base::FilePath(FILE_PATH_LITERAL("title2.html"))),
       NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
@@ -1866,9 +1866,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, NavigateBrokenTab) {
   // Navigate the error tab to a non-error page.
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   tab_strip_model->ActivateTabAt(0, true);
-  ui_test_utils::NavigateToURL(browser(),
-                               URLRequestMockHTTPJob::GetMockUrl(
-                                   FilePath(FILE_PATH_LITERAL("title2.html"))));
+  ui_test_utils::NavigateToURL(
+      browser(), URLRequestMockHTTPJob::GetMockUrl(
+                     base::FilePath(FILE_PATH_LITERAL("title2.html"))));
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
             GetStateOfTabReloaderAt(browser(), 0));
 
@@ -1915,7 +1915,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   RunNavigateLoadingTabToTimeoutTest(
       browser(),
       URLRequestMockHTTPJob::GetMockUrl(
-          FilePath(FILE_PATH_LITERAL("title.html"))),
+          base::FilePath(FILE_PATH_LITERAL("title.html"))),
       GURL(kMockHttpsUrl),
       GURL(kMockHttpsUrl2));
 }
@@ -1926,7 +1926,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBack) {
   ui_test_utils::NavigateToURL(
       browser(),
       URLRequestMockHTTPJob::GetMockUrl(
-          FilePath(FILE_PATH_LITERAL("title2.html"))));
+          base::FilePath(FILE_PATH_LITERAL("title2.html"))));
 
   // Go to the error page.
   SlowLoadBehindCaptivePortal(browser(), true);
@@ -1957,9 +1957,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
   SlowLoadNoCaptivePortal(browser(), RESULT_INTERNET_CONNECTED);
 
   // Navigate to a working page.
-  ui_test_utils::NavigateToURL(browser(),
-                               URLRequestMockHTTPJob::GetMockUrl(
-                                   FilePath(FILE_PATH_LITERAL("title2.html"))));
+  ui_test_utils::NavigateToURL(
+      browser(), URLRequestMockHTTPJob::GetMockUrl(
+                     base::FilePath(FILE_PATH_LITERAL("title2.html"))));
   ASSERT_EQ(CaptivePortalTabReloader::STATE_NONE,
             GetStateOfTabReloaderAt(browser(), 0));
 
@@ -2158,9 +2158,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpToHttpsRedirectLogin) {
 // An HTTPS page redirects to an HTTP page.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsToHttpRedirect) {
   // Use an HTTPS server for the top level page.
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               net::TestServer::kLocalhost,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 
   GURL http_timeout_url =

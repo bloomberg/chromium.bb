@@ -29,10 +29,10 @@ class ErrorPageTest : public InProcessBrowserTest {
   };
 
   // Navigates the active tab to a mock url created for the file at |file_path|.
-  void NavigateToFileURL(const FilePath::StringType& file_path) {
+  void NavigateToFileURL(const base::FilePath::StringType& file_path) {
     ui_test_utils::NavigateToURL(
         browser(),
-        content::URLRequestMockHTTPJob::GetMockUrl(FilePath(file_path)));
+        content::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(file_path)));
   }
 
   // Navigates to the given URL and waits for |num_navigations| to occur, and
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
   NavigateToURLAndWaitForTitle(
       content::URLRequestMockHTTPJob::GetMockUrl(
-          FilePath(FILE_PATH_LITERAL("iframe_dns_error.html"))),
+          base::FilePath(FILE_PATH_LITERAL("iframe_dns_error.html"))),
       "Blah",
       1);
 }
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBackAndForward) {
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
   NavigateToURLAndWaitForTitle(
       content::URLRequestMockHTTPJob::GetMockUrl(
-          FilePath(FILE_PATH_LITERAL("page404.html"))),
+          base::FilePath(FILE_PATH_LITERAL("page404.html"))),
       "SUCCESS",
       1);
 }

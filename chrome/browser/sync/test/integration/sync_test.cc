@@ -215,8 +215,8 @@ void SyncTest::AddTestSwitches(CommandLine* cl) {
 void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {}
 
 // static
-Profile* SyncTest::MakeProfile(const FilePath::StringType name) {
-  FilePath path;
+Profile* SyncTest::MakeProfile(const base::FilePath::StringType name) {
+  base::FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.Append(name);
 

@@ -26,7 +26,7 @@ void MockExtensionInstallPromptDelegate::InstallUIAbort(bool user_initiated) {
 scoped_refptr<Extension> LoadInstallPromptExtension() {
   scoped_refptr<Extension> extension;
 
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
              .AppendASCII("install_prompt")
@@ -51,7 +51,7 @@ scoped_refptr<Extension> LoadInstallPromptExtension() {
 }
 
 gfx::Image LoadInstallPromptIcon() {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
              .AppendASCII("install_prompt")

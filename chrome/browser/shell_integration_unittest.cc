@@ -177,7 +177,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
 
 TEST(ShellIntegrationTest, GetWebShortcutFilename) {
   const struct {
-    const FilePath::CharType* path;
+    const base::FilePath::CharType* path;
     const char* url;
   } test_cases[] = {
     { FPL("http___foo_.desktop"), "http://foo" },
@@ -408,10 +408,10 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             web_app::GenerateApplicationNameFromURL(GURL(test_cases[i].url)),
             GURL(test_cases[i].url),
             "",
-            FilePath(),
+            base::FilePath(),
             ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name,
-            FilePath()));
+            base::FilePath()));
   }
 }
 #endif

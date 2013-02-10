@@ -62,7 +62,7 @@ bool InMemoryDatabase::InitFromScratch() {
   return true;
 }
 
-bool InMemoryDatabase::InitFromDisk(const FilePath& history_name) {
+bool InMemoryDatabase::InitFromDisk(const base::FilePath& history_name) {
   if (!InitDB())
     return false;
 

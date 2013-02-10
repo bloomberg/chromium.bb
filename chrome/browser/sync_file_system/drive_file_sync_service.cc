@@ -40,8 +40,8 @@ namespace sync_file_system {
 
 namespace {
 
-const FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
-const FilePath::CharType kSyncFileSystemDir[] =
+const base::FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
+const base::FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
 
 // The sync invalidation object ID for Google Drive.
@@ -55,12 +55,13 @@ const int64 kMaximumPollingDelaySeconds = 10 * 60;  // 10 min
 const int64 kPollingDelaySecondsWithNotification = 4 * 60 * 60;  // 4 hr
 const double kDelayMultiplier = 1.6;
 
-bool CreateTemporaryFile(const FilePath& dir_path, FilePath* temp_file) {
+bool CreateTemporaryFile(const base::FilePath& dir_path,
+                         base::FilePath* temp_file) {
   return file_util::CreateDirectory(dir_path) &&
       file_util::CreateTemporaryFileInDir(dir_path, temp_file);
 }
 
-void DeleteTemporaryFile(const FilePath& file_path) {
+void DeleteTemporaryFile(const base::FilePath& file_path) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
@@ -197,7 +198,7 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
 
   DriveMetadata drive_metadata;
   bool metadata_updated;
-  FilePath temporary_file_path;
+  base::FilePath temporary_file_path;
   std::string md5_checksum;
   fileapi::SyncAction sync_action;
   bool clear_local_changes;
@@ -336,7 +337,7 @@ DriveFileSyncService::~DriveFileSyncService() {
 // static
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
     Profile* profile,
-    const FilePath& base_dir,
+    const base::FilePath& base_dir,
     scoped_ptr<DriveFileSyncClient> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store) {
   return make_scoped_ptr(new DriveFileSyncService(
@@ -450,7 +451,7 @@ void DriveFileSyncService::ProcessRemoteChange(
 
   const fileapi::FileSystemURL& url = pending_changes_.begin()->url;
   const GURL& origin = url.origin();
-  const FilePath& path = url.path();
+  const base::FilePath& path = url.path();
   DCHECK(ContainsKey(origin_to_changes_map_, origin));
   PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
   DCHECK(ContainsKey(*path_to_change, path));
@@ -532,7 +533,7 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
 
 void DriveFileSyncService::ApplyLocalChange(
     const fileapi::FileChange& local_file_change,
-    const FilePath& local_file_path,
+    const base::FilePath& local_file_path,
     const fileapi::FileSystemURL& url,
     const fileapi::SyncStatusCallback& callback) {
   // TODO(nhiroki): support directory operations (http://crbug.com/161442).
@@ -696,7 +697,7 @@ void DriveFileSyncService::OnNetworkConnected() {
 // Called by CreateForTesting.
 DriveFileSyncService::DriveFileSyncService(
     Profile* profile,
-    const FilePath& base_dir,
+    const base::FilePath& base_dir,
     scoped_ptr<DriveFileSyncClient> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store)
     : profile_(profile),
@@ -1478,7 +1479,7 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
 
     const fileapi::FileChange& file_change = remote_file_change;
     param->processor->ApplyRemoteChange(
-        file_change, FilePath(), url,
+        file_change, base::FilePath(), url,
         base::Bind(&DriveFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
                    base::Passed(&param)));
     return;
@@ -1518,7 +1519,7 @@ void DriveFileSyncService::DownloadForRemoteSync(
     scoped_ptr<ProcessRemoteChangeParam> param) {
   // TODO(tzik): Use ShareableFileReference here after we get thread-safe
   // version of it. crbug.com/162598
-  FilePath* temporary_file_path = &param->temporary_file_path;
+  base::FilePath* temporary_file_path = &param->temporary_file_path;
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&CreateTemporaryFile,
@@ -1535,7 +1536,7 @@ void DriveFileSyncService::DidGetTemporaryFileForDownload(
     return;
   }
 
-  const FilePath& temporary_file_path = param->temporary_file_path;
+  const base::FilePath& temporary_file_path = param->temporary_file_path;
   std::string resource_id = param->remote_change.resource_id;
 
   // We should not use the md5 in metadata for FETCH type to avoid the download
@@ -1569,7 +1570,7 @@ void DriveFileSyncService::DidDownloadFileForRemoteSync(
 
   param->drive_metadata.set_md5_checksum(md5_checksum);
   const fileapi::FileChange& change = param->remote_change.change;
-  const FilePath& temporary_file_path = param->temporary_file_path;
+  const base::FilePath& temporary_file_path = param->temporary_file_path;
   const fileapi::FileSystemURL& url = param->remote_change.url;
   param->processor->ApplyRemoteChange(
       change, temporary_file_path, url,
@@ -1700,7 +1701,7 @@ bool DriveFileSyncService::AppendRemoteChange(
     int64 changestamp,
     RemoteSyncType sync_type) {
   // TODO(tzik): Normalize the path here.
-  FilePath path = FilePath::FromUTF8Unsafe(entry.title());
+  base::FilePath path = base::FilePath::FromUTF8Unsafe(entry.title());
   DCHECK(!entry.is_folder());
   return AppendRemoteChangeInternal(
       origin, path, entry.deleted(),
@@ -1711,7 +1712,7 @@ bool DriveFileSyncService::AppendRemoteChange(
 
 bool DriveFileSyncService::AppendFetchChange(
     const GURL& origin,
-    const FilePath& path,
+    const base::FilePath& path,
     const std::string& resource_id) {
   return AppendRemoteChangeInternal(
       origin, path,
@@ -1724,7 +1725,7 @@ bool DriveFileSyncService::AppendFetchChange(
 
 bool DriveFileSyncService::AppendRemoteChangeInternal(
     const GURL& origin,
-    const FilePath& path,
+    const base::FilePath& path,
     bool is_deleted,
     const std::string& remote_resource_id,
     int64 changestamp,

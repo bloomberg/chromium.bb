@@ -33,16 +33,16 @@ class KioskModeScreensaver : public ash::UserActivityObserver {
 
   // Callback to receive the path to the screensaver extension's crx and call
   // the unpacker to unpack and load the crx.
-  void ScreensaverPathCallback(const FilePath& screensaver_crx);
+  void ScreensaverPathCallback(const base::FilePath& screensaver_crx);
 
   // Called back on the UI thread to Setup the screensaver with the now unpacked
   // and loaded extension.
   void SetupScreensaver(scoped_refptr<extensions::Extension> extension,
-                        const FilePath& extension_base_path);
+                        const base::FilePath& extension_base_path);
 
   base::WeakPtrFactory<KioskModeScreensaver> weak_ptr_factory_;
 
-  FilePath extension_base_path_;
+  base::FilePath extension_base_path_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskModeScreensaver);
 };

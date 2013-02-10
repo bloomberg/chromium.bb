@@ -135,7 +135,7 @@ int DoUninstallTasks(bool chrome_still_running) {
     VLOG(1) << "Executing uninstall actions";
     if (!first_run::RemoveSentinel())
       VLOG(1) << "Failed to delete sentinel file.";
-    FilePath chrome_exe;
+    base::FilePath chrome_exe;
     if (PathService::Get(base::FILE_EXE, &chrome_exe)) {
       ShellUtil::ShortcutLocation user_shortcut_locations[] = {
         ShellUtil::SHORTCUT_LOCATION_DESKTOP,
@@ -268,7 +268,7 @@ void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
 void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
     const CommandLine& parsed_command_line) {
   DCHECK(base::win::GetVersion() >= base::win::VERSION_VISTA);
-  base::ScopedNativeLibrary library(FilePath(L"kernel32.dll"));
+  base::ScopedNativeLibrary library(base::FilePath(L"kernel32.dll"));
   // Get the function pointer for RegisterApplicationRestart.
   RegisterApplicationRestartProc register_application_restart =
       static_cast<RegisterApplicationRestartProc>(
@@ -335,11 +335,11 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
   Version version;
   InstallUtil::GetChromeVersion(dist, true, &version);
   if (version.IsValid()) {
-    FilePath exe_path;
+    base::FilePath exe_path;
     PathService::Get(base::DIR_EXE, &exe_path);
     std::wstring exe = exe_path.value();
-    FilePath user_exe_path(installer::GetChromeInstallPath(false, dist));
-    if (FilePath::CompareEqualIgnoreCase(exe, user_exe_path.value())) {
+    base::FilePath user_exe_path(installer::GetChromeInstallPath(false, dist));
+    if (base::FilePath::CompareEqualIgnoreCase(exe, user_exe_path.value())) {
       bool is_metro = base::win::IsMetroProcess();
       if (!is_metro) {
         // The dialog cannot be shown in Win8 Metro as doing so hangs Chrome on
@@ -360,7 +360,7 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
         uninstall_cmd.AppendSwitch(
             installer::switches::kDoNotRemoveSharedItems);
 
-        const FilePath setup_exe(uninstall_cmd.GetProgram());
+        const base::FilePath setup_exe(uninstall_cmd.GetProgram());
         const string16 params(uninstall_cmd.GetArgumentsString());
 
         SHELLEXECUTEINFO sei = { sizeof(sei) };

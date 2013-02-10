@@ -115,7 +115,7 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
 }  // namespace
 
 AndroidProviderBackend::AndroidProviderBackend(
-    const FilePath& db_name,
+    const base::FilePath& db_name,
     HistoryDatabase* history_db,
     ThumbnailDatabase* thumbnail_db,
     BookmarkService* bookmark_service,

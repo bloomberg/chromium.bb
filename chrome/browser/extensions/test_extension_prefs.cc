@@ -137,7 +137,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
     int extra_flags) {
   std::string name;
   EXPECT_TRUE(manifest.GetString(extension_manifest_keys::kName, &name));
-  FilePath path =  extensions_dir_.AppendASCII(name);
+  base::FilePath path =  extensions_dir_.AppendASCII(name);
   std::string errors;
   scoped_refptr<Extension> extension = Extension::Create(
       path, location, manifest, extra_flags, &errors);

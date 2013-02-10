@@ -30,8 +30,8 @@ namespace values = extension_manifest_values;
 namespace extensions {
 
 scoped_refptr<Extension> ConvertUserScriptToExtension(
-    const FilePath& user_script_path, const GURL& original_url,
-    const FilePath& extensions_dir, string16* error) {
+    const base::FilePath& user_script_path, const GURL& original_url,
+    const base::FilePath& extensions_dir, string16* error) {
   std::string content;
   if (!file_util::ReadFileToString(user_script_path, &content)) {
     *error = ASCIIToUTF16("Could not read source file.");
@@ -50,7 +50,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     return NULL;
   }
 
-  FilePath install_temp_dir =
+  base::FilePath install_temp_dir =
       extension_file_util::GetInstallTempDir(extensions_dir);
   if (install_temp_dir.empty()) {
     *error = ASCIIToUTF16("Could not get path to profile temporary directory.");
@@ -155,7 +155,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
 
   root->Set(keys::kContentScripts, content_scripts);
 
-  FilePath manifest_path = temp_dir.path().Append(
+  base::FilePath manifest_path = temp_dir.path().Append(
       Extension::kManifestFilename);
   JSONFileValueSerializer serializer(manifest_path);
   if (!serializer.Serialize(*root)) {

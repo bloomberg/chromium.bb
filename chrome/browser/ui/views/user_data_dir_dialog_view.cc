@@ -14,10 +14,11 @@
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 
-UserDataDirDialogView::UserDataDirDialogView(const FilePath& user_data_dir)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-        select_file_dialog_(ui::SelectFileDialog::Create(
-            this, new ChromeSelectFilePolicy(NULL)))),
+UserDataDirDialogView::UserDataDirDialogView(
+    const base::FilePath& user_data_dir)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(select_file_dialog_(
+        ui::SelectFileDialog::Create(this,
+                                     new ChromeSelectFilePolicy(NULL)))),
       is_blocking_(true) {
   const int kDialogWidth = 400;
   views::MessageBoxView::InitParams params(
@@ -58,10 +59,12 @@ bool UserDataDirDialogView::Accept() {
   // Directory picker.
   HWND owning_hwnd =
       GetAncestor(message_box_view_->GetWidget()->GetNativeView(), GA_ROOT);
-  select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_FOLDER,
+  select_file_dialog_->SelectFile(
+      ui::SelectFileDialog::SELECT_FOLDER,
       l10n_util::GetStringUTF16(
-          IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON), FilePath(),
-      NULL, 0, FilePath::StringType(), owning_hwnd, NULL);
+          IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON),
+      base::FilePath(), NULL, 0, base::FilePath::StringType(), owning_hwnd,
+      NULL);
   return false;
 }
 
@@ -88,7 +91,7 @@ bool UserDataDirDialogView::Dispatch(const base::NativeEvent& msg) {
   return is_blocking_;
 }
 
-void UserDataDirDialogView::FileSelected(const FilePath& path,
+void UserDataDirDialogView::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* params) {
   user_data_dir_ = path;
@@ -100,7 +103,7 @@ void UserDataDirDialogView::FileSelectionCanceled(void* params) {
 
 namespace chrome {
 
-FilePath ShowUserDataDirDialog(const FilePath& user_data_dir) {
+base::FilePath ShowUserDataDirDialog(const base::FilePath& user_data_dir) {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
   // When the window closes, it will delete itself.
   UserDataDirDialogView* dialog = new UserDataDirDialogView(user_data_dir);

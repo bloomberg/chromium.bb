@@ -32,7 +32,7 @@ using content::Referrer;
 using content::WebContents;
 
 PageCycler::PageCycler(Browser* browser,
-                       const FilePath& urls_file)
+                       const base::FilePath& urls_file)
     : content::WebContentsObserver(
           browser->tab_strip_model()->GetActiveWebContents()),
       browser_(browser),

@@ -82,7 +82,7 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
 
   // Used for testing only.
   RecorderType test_recorder_;
-  FilePath test_path_;
+  base::FilePath test_path_;
   DISALLOW_COPY_AND_ASSIGN(ExternalMetrics);
 };
 

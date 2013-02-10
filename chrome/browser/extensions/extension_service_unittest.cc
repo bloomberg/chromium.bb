@@ -174,8 +174,8 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-FilePath GetTemporaryFile() {
-  FilePath temp_file;
+base::FilePath GetTemporaryFile() {
+  base::FilePath temp_file;
   CHECK(file_util::CreateTemporaryFile(&temp_file));
   return temp_file;
 }
@@ -194,7 +194,7 @@ class MockExtensionProvider : public extensions::ExternalProviderInterface {
 
   void UpdateOrAddExtension(const std::string& id,
                             const std::string& version,
-                            const FilePath& path) {
+                            const base::FilePath& path) {
     extension_map_[id] = std::make_pair(version, path);
   }
 
@@ -250,7 +250,8 @@ class MockExtensionProvider : public extensions::ExternalProviderInterface {
   }
 
  private:
-  typedef std::map< std::string, std::pair<std::string, FilePath> > DataMap;
+  typedef std::map< std::string, std::pair<std::string, base::FilePath> >
+      DataMap;
   DataMap extension_map_;
   Manifest::Location location_;
   VisitorInterface* visitor_;
@@ -270,13 +271,14 @@ class MockProviderVisitor
   // The provider will return |fake_base_path| from
   // GetBaseCrxFilePath().  User can test the behavior with
   // and without an empty path using this parameter.
-  explicit MockProviderVisitor(FilePath fake_base_path)
+  explicit MockProviderVisitor(base::FilePath fake_base_path)
       : ids_found_(0),
         fake_base_path_(fake_base_path),
         expected_creation_flags_(Extension::NO_FLAGS) {
   }
 
-  MockProviderVisitor(FilePath fake_base_path, int expected_creation_flags)
+  MockProviderVisitor(base::FilePath fake_base_path,
+                      int expected_creation_flags)
       : ids_found_(0),
         fake_base_path_(fake_base_path),
         expected_creation_flags_(expected_creation_flags) {
@@ -315,7 +317,7 @@ class MockProviderVisitor
 
   virtual bool OnExternalExtensionFileFound(const std::string& id,
                                             const Version* version,
-                                            const FilePath& path,
+                                            const base::FilePath& path,
                                             Manifest::Location unused,
                                             int creation_flags,
                                             bool mark_acknowledged) OVERRIDE {
@@ -339,7 +341,7 @@ class MockProviderVisitor
       // Ask provider if the extension we got back is registered.
       Manifest::Location location = Manifest::INVALID_LOCATION;
       scoped_ptr<Version> v1;
-      FilePath crx_path;
+      base::FilePath crx_path;
 
       EXPECT_TRUE(provider_->GetExtensionDetails(id, NULL, &v1));
       EXPECT_STREQ(version->GetString().c_str(), v1->GetString().c_str());
@@ -392,7 +394,7 @@ class MockProviderVisitor
 
  private:
   int ids_found_;
-  FilePath fake_base_path_;
+  base::FilePath fake_base_path_;
   int expected_creation_flags_;
   scoped_ptr<extensions::ExternalProviderImpl> provider_;
   scoped_ptr<DictionaryValue> prefs_;
@@ -414,7 +416,7 @@ ExtensionServiceTestBase::ExtensionServiceTestBase()
       io_thread_(BrowserThread::IO, &loop_),
       override_sideload_wipeout_(
           FeatureSwitch::sideload_wipeout(), false) {
-  FilePath test_data_dir;
+  base::FilePath test_data_dir;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
     ADD_FAILURE();
     return;
@@ -433,9 +435,9 @@ ExtensionServiceTestBase::~ExtensionServiceTestBase() {
 }
 
 void ExtensionServiceTestBase::InitializeExtensionService(
-    const FilePath& profile_path,
-    const FilePath& pref_file,
-    const FilePath& extensions_install_dir,
+    const base::FilePath& profile_path,
+    const base::FilePath& pref_file,
+    const base::FilePath& extensions_install_dir,
     bool autoupdate_enabled) {
   TestingProfile::Builder profile_builder;
   // Create a PrefService that only contains user defined preference values.
@@ -477,13 +479,14 @@ void ExtensionServiceTestBase::InitializeExtensionService(
 }
 
 void ExtensionServiceTestBase::InitializeInstalledExtensionService(
-    const FilePath& prefs_file, const FilePath& source_install_dir) {
+    const base::FilePath& prefs_file,
+    const base::FilePath& source_install_dir) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath path = temp_dir_.path();
+  base::FilePath path = temp_dir_.path();
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
   file_util::Delete(path, true);
   file_util::CreateDirectory(path);
-  FilePath temp_prefs = path.Append(FILE_PATH_LITERAL("Preferences"));
+  base::FilePath temp_prefs = path.Append(FILE_PATH_LITERAL("Preferences"));
   file_util::CopyFile(prefs_file, temp_prefs);
 
   extensions_install_dir_ = path.Append(FILE_PATH_LITERAL("Extensions"));
@@ -511,11 +514,12 @@ void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
 void ExtensionServiceTestBase::InitializeExtensionServiceHelper(
     bool autoupdate_enabled) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath path = temp_dir_.path();
+  base::FilePath path = temp_dir_.path();
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
   file_util::Delete(path, true);
   file_util::CreateDirectory(path);
-  FilePath prefs_filename = path.Append(FILE_PATH_LITERAL("TestPreferences"));
+  base::FilePath prefs_filename =
+      path.Append(FILE_PATH_LITERAL("TestPreferences"));
   extensions_install_dir_ = path.Append(FILE_PATH_LITERAL("Extensions"));
   file_util::Delete(extensions_install_dir_, true);
   file_util::CreateDirectory(extensions_install_dir_);
@@ -606,11 +610,11 @@ class ExtensionServiceTest
   void TestExternalProvider(MockExtensionProvider* provider,
                             Manifest::Location location);
 
-  void PackCRX(const FilePath& dir_path,
-               const FilePath& pem_path,
-               const FilePath& crx_path) {
+  void PackCRX(const base::FilePath& dir_path,
+               const base::FilePath& pem_path,
+               const base::FilePath& crx_path) {
     // Use the existing pem key, if provided.
-    FilePath pem_output_path;
+    base::FilePath pem_output_path;
     if (pem_path.value().empty()) {
       pem_output_path = crx_path.DirName().AppendASCII("temp.pem");
     } else {
@@ -633,11 +637,11 @@ class ExtensionServiceTest
   // to happen, use loop_.RunUntilIdle();. Most tests will not use this
   // method directly.  Instead, use InstallCrx(), which waits for
   // the crx to be installed and does extra error checking.
-  void StartCRXInstall(const FilePath& crx_path) {
+  void StartCRXInstall(const base::FilePath& crx_path) {
     StartCRXInstall(crx_path, Extension::NO_FLAGS);
   }
 
-  void StartCRXInstall(const FilePath& crx_path, int creation_flags) {
+  void StartCRXInstall(const base::FilePath& crx_path, int creation_flags) {
     ASSERT_TRUE(file_util::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
     scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
@@ -655,11 +659,11 @@ class ExtensionServiceTest
     INSTALL_WITHOUT_LOAD,
   };
 
-  const Extension* PackAndInstallCRX(const FilePath& dir_path,
-                                     const FilePath& pem_path,
+  const Extension* PackAndInstallCRX(const base::FilePath& dir_path,
+                                     const base::FilePath& pem_path,
                                      InstallState install_state,
                                      int creation_flags) {
-    FilePath crx_path;
+    base::FilePath crx_path;
     base::ScopedTempDir temp_dir;
     EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
     crx_path = temp_dir.path().AppendASCII("temp.crx");
@@ -668,20 +672,20 @@ class ExtensionServiceTest
     return InstallCRX(crx_path, install_state, creation_flags);
   }
 
-  const Extension* PackAndInstallCRX(const FilePath& dir_path,
-                                     const FilePath& pem_path,
+  const Extension* PackAndInstallCRX(const base::FilePath& dir_path,
+                                     const base::FilePath& pem_path,
                                      InstallState install_state) {
     return PackAndInstallCRX(dir_path, pem_path, install_state,
                              Extension::NO_FLAGS);
   }
 
-  const Extension* PackAndInstallCRX(const FilePath& dir_path,
+  const Extension* PackAndInstallCRX(const base::FilePath& dir_path,
                                      InstallState install_state) {
-    return PackAndInstallCRX(dir_path, FilePath(), install_state,
+    return PackAndInstallCRX(dir_path, base::FilePath(), install_state,
                              Extension::NO_FLAGS);
   }
 
-  const Extension* InstallCRX(const FilePath& path,
+  const Extension* InstallCRX(const base::FilePath& path,
                               InstallState install_state,
                               int creation_flags) {
     StartCRXInstall(path, creation_flags);
@@ -690,18 +694,18 @@ class ExtensionServiceTest
 
   // Attempts to install an extension. Use INSTALL_FAILED if the installation
   // is expected to fail.
-  const Extension* InstallCRX(const FilePath& path,
+  const Extension* InstallCRX(const base::FilePath& path,
                               InstallState install_state) {
     return InstallCRX(path, install_state, Extension::NO_FLAGS);
   }
 
-  const Extension* InstallCRXFromWebStore(const FilePath& path,
+  const Extension* InstallCRXFromWebStore(const base::FilePath& path,
                                           InstallState install_state) {
     StartCRXInstall(path, Extension::FROM_WEBSTORE);
     return WaitForCrxInstall(path, install_state);
   }
 
-  const Extension* InstallCRXWithLocation(const FilePath& crx_path,
+  const Extension* InstallCRXWithLocation(const base::FilePath& crx_path,
                                           Manifest::Location install_location,
                                           InstallState install_state) {
     EXPECT_TRUE(file_util::PathExists(crx_path))
@@ -717,7 +721,7 @@ class ExtensionServiceTest
   // Wait for a CrxInstaller to finish. Used by InstallCRX. Set the
   // |install_state| to INSTALL_FAILED if the installation is expected to fail.
   // Returns an Extension pointer if the install succeeded, NULL otherwise.
-  const Extension* WaitForCrxInstall(const FilePath& path,
+  const Extension* WaitForCrxInstall(const base::FilePath& path,
                                      InstallState install_state) {
     loop_.RunUntilIdle();
     std::vector<string16> errors = GetErrors();
@@ -781,13 +785,13 @@ class ExtensionServiceTest
         json_blacklist, gpu_info);
   }
 
-  void UpdateExtension(const std::string& id, const FilePath& in_path,
+  void UpdateExtension(const std::string& id, const base::FilePath& in_path,
                        UpdateState expected_state) {
     ASSERT_TRUE(file_util::PathExists(in_path));
 
     // We need to copy this to a temporary location because Update() will delete
     // it.
-    FilePath path = temp_dir_.path();
+    base::FilePath path = temp_dir_.path();
     path = path.Append(in_path.BaseName());
     ASSERT_TRUE(file_util::CopyFile(in_path, path));
 
@@ -851,7 +855,7 @@ class ExtensionServiceTest
 
   void UninstallExtension(const std::string& id, bool use_helper) {
     // Verify that the extension is installed.
-    FilePath extension_path = extensions_install_dir_.AppendASCII(id);
+    base::FilePath extension_path = extensions_install_dir_.AppendASCII(id);
     EXPECT_TRUE(file_util::PathExists(extension_path));
     size_t pref_key_count = GetPrefKeyCount();
     EXPECT_GT(pref_key_count, 0u);
@@ -1060,29 +1064,30 @@ class ExtensionServiceTest
 // packing succeeded or that there was some error.
 class PackExtensionTestClient : public extensions::PackExtensionJob::Client {
  public:
-  PackExtensionTestClient(const FilePath& expected_crx_path,
-                          const FilePath& expected_private_key_path);
-  virtual void OnPackSuccess(const FilePath& crx_path,
-                             const FilePath& private_key_path) OVERRIDE;
+  PackExtensionTestClient(const base::FilePath& expected_crx_path,
+                          const base::FilePath& expected_private_key_path);
+  virtual void OnPackSuccess(const base::FilePath& crx_path,
+                             const base::FilePath& private_key_path) OVERRIDE;
   virtual void OnPackFailure(const std::string& error_message,
                              ExtensionCreator::ErrorType type) OVERRIDE;
 
  private:
-  const FilePath expected_crx_path_;
-  const FilePath expected_private_key_path_;
+  const base::FilePath expected_crx_path_;
+  const base::FilePath expected_private_key_path_;
   DISALLOW_COPY_AND_ASSIGN(PackExtensionTestClient);
 };
 
 PackExtensionTestClient::PackExtensionTestClient(
-    const FilePath& expected_crx_path,
-    const FilePath& expected_private_key_path)
+    const base::FilePath& expected_crx_path,
+    const base::FilePath& expected_private_key_path)
     : expected_crx_path_(expected_crx_path),
       expected_private_key_path_(expected_private_key_path) {}
 
 // If packing succeeded, we make sure that the package names match our
 // expectations.
-void PackExtensionTestClient::OnPackSuccess(const FilePath& crx_path,
-                                            const FilePath& private_key_path) {
+void PackExtensionTestClient::OnPackSuccess(
+    const base::FilePath& crx_path,
+    const base::FilePath& private_key_path) {
   // We got the notification and processed it; we don't expect any further tasks
   // to be posted to the current thread, so we should stop blocking and continue
   // on with the rest of the test.
@@ -1108,10 +1113,10 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   InitPluginService();
 
   // Initialize the test dir with a good Preferences/extensions.
-  FilePath source_install_dir = data_dir_
+  base::FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
-  FilePath pref_path = source_install_dir
+  base::FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("Preferences");
   InitializeInstalledExtensionService(pref_path, source_install_dir);
@@ -1150,7 +1155,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   ExtensionResource resource00(extension->id(),
                                scripts[0].js_scripts()[0].extension_root(),
                                scripts[0].js_scripts()[0].relative_path());
-  FilePath expected_path(extension->path().AppendASCII("script1.js"));
+  base::FilePath expected_path(extension->path().AppendASCII("script1.js"));
   ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
   EXPECT_TRUE(resource00.ComparePathWithDefault(expected_path));
   ExtensionResource resource01(extension->id(),
@@ -1209,10 +1214,10 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
 // Test loading bad extensions from the profile directory.
 TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
   // Initialize the test dir with a bad Preferences/extensions.
-  FilePath source_install_dir = data_dir_
+  base::FilePath source_install_dir = data_dir_
       .AppendASCII("bad")
       .AppendASCII("Extensions");
-  FilePath pref_path = source_install_dir
+  base::FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("Preferences");
 
@@ -1249,10 +1254,10 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
 TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   InitPluginService();
 
-  FilePath source_install_dir = data_dir_
+  base::FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
-  FilePath pref_path = source_install_dir
+  base::FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("Preferences");
 
@@ -1280,7 +1285,7 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   EXPECT_EQ(2u, count);
 
   // And extension1 dir should now be toast.
-  FilePath extension_dir = extensions_install_dir_
+  base::FilePath extension_dir = extensions_install_dir_
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj");
   ASSERT_FALSE(file_util::PathExists(extension_dir));
 }
@@ -1290,10 +1295,10 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
 TEST_F(ExtensionServiceTest, GarbageCollectWithPendingUpdates) {
   InitPluginService();
 
-  FilePath source_install_dir = data_dir_
+  base::FilePath source_install_dir = data_dir_
       .AppendASCII("pending_updates")
       .AppendASCII("Extensions");
-  FilePath pref_path = source_install_dir
+  base::FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("Preferences");
 
@@ -1324,10 +1329,10 @@ TEST_F(ExtensionServiceTest, GarbageCollectWithPendingUpdates) {
 TEST_F(ExtensionServiceTest, UpdateOnStartup) {
   InitPluginService();
 
-  FilePath source_install_dir = data_dir_
+  base::FilePath source_install_dir = data_dir_
       .AppendASCII("pending_updates")
       .AppendASCII("Extensions");
-  FilePath pref_path = source_install_dir
+  base::FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("Preferences");
 
@@ -1366,7 +1371,7 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
 
   // Extensions not enabled.
   set_extensions_enabled(false);
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_FAILED);
   set_extensions_enabled(true);
 
@@ -1423,7 +1428,7 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
 
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   set_extensions_enabled(true);
 
   // Register and install an external extension.
@@ -1455,7 +1460,7 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
 TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   set_extensions_enabled(true);
 
   Version version("1.0.0.0");
@@ -1505,12 +1510,12 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
 // This extension shown in preferences file requires an experimental permission.
 // It could not be loaded without such permission.
 TEST_F(ExtensionServiceTest, UninstallingNotLoadedExtension) {
-  FilePath source_install_dir = data_dir_
+  base::FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
   // The preference contains an external extension
   // that requires 'experimental' permission.
-  FilePath pref_path = source_install_dir
+  base::FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("PreferencesExperimental");
 
@@ -1531,7 +1536,7 @@ TEST_F(ExtensionServiceTest, UninstallingNotLoadedExtension) {
 // Test that external extensions with incorrect IDs are not installed.
 TEST_F(ExtensionServiceTest, FailOnWrongId) {
   InitializeEmptyExtensionService();
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   set_extensions_enabled(true);
 
   Version version("1.0.0.0");
@@ -1560,7 +1565,7 @@ TEST_F(ExtensionServiceTest, FailOnWrongId) {
 // Test that external extensions with incorrect versions are not installed.
 TEST_F(ExtensionServiceTest, FailOnWrongVersion) {
   InitializeEmptyExtensionService();
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   set_extensions_enabled(true);
 
   // Install an external extension with a version from the external
@@ -1589,7 +1594,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
   // integration with ExtensionService.
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_
+  base::FilePath path = data_dir_
              .AppendASCII("user_script_basic.user.js");
 
   ASSERT_TRUE(file_util::PathExists(path));
@@ -1620,7 +1625,7 @@ TEST_F(ExtensionServiceTest, InstallExtensionDuringShutdown) {
   // Simulate shutdown.
   service_->set_browser_terminating_for_test(true);
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
   installer->set_allow_silent_install(true);
   installer->InstallCrx(path);
@@ -1634,10 +1639,10 @@ TEST_F(ExtensionServiceTest, InstallExtensionDuringShutdown) {
 // installing an extension.
 TEST_F(ExtensionServiceTest, GrantedPermissions) {
   InitializeEmptyExtensionService();
-  FilePath path = data_dir_
+  base::FilePath path = data_dir_
       .AppendASCII("permissions");
 
-  FilePath pem_path = path.AppendASCII("unknown.pem");
+  base::FilePath pem_path = path.AppendASCII("unknown.pem");
   path = path.AppendASCII("unknown");
 
   ASSERT_TRUE(file_util::PathExists(pem_path));
@@ -1683,10 +1688,10 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
 TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
   InitializeEmptyExtensionService();
   InitializeRequestContext();
-  FilePath path = data_dir_
+  base::FilePath path = data_dir_
       .AppendASCII("permissions");
 
-  FilePath pem_path = path.AppendASCII("unknown.pem");
+  base::FilePath pem_path = path.AppendASCII("unknown.pem");
   path = path.AppendASCII("unknown");
 
   ASSERT_TRUE(file_util::PathExists(pem_path));
@@ -1730,7 +1735,7 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
 
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_
+  base::FilePath path = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII(good1)
@@ -1760,7 +1765,7 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
 TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_
+  base::FilePath path = data_dir_
       .AppendASCII("permissions")
       .AppendASCII("unknown");
 
@@ -1859,7 +1864,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
 // Test Packaging and installing an extension.
 TEST_F(ExtensionServiceTest, PackExtension) {
   InitializeEmptyExtensionService();
-  FilePath input_directory = data_dir_
+  base::FilePath input_directory = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
@@ -1867,13 +1872,13 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath output_directory = temp_dir.path();
+  base::FilePath output_directory = temp_dir.path();
 
-  FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
-  FilePath privkey_path(output_directory.AppendASCII("privkey.pem"));
+  base::FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
+  base::FilePath privkey_path(output_directory.AppendASCII("privkey.pem"));
 
   scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
-  ASSERT_TRUE(creator->Run(input_directory, crx_path, FilePath(),
+  ASSERT_TRUE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kNoRunFlags));
   ASSERT_TRUE(file_util::PathExists(crx_path));
   ASSERT_TRUE(file_util::PathExists(privkey_path));
@@ -1881,16 +1886,16 @@ TEST_F(ExtensionServiceTest, PackExtension) {
   // Repeat the run with the pem file gone, and no special flags
   // Should refuse to overwrite the existing crx.
   file_util::Delete(privkey_path, false);
-  ASSERT_FALSE(creator->Run(input_directory, crx_path, FilePath(),
+  ASSERT_FALSE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kNoRunFlags));
 
   // OK, now try it with a flag to overwrite existing crx.  Should work.
-  ASSERT_TRUE(creator->Run(input_directory, crx_path, FilePath(),
+  ASSERT_TRUE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kOverwriteCRX));
 
   // Repeat the run allowing existing crx, but the existing pem is still
   // an error.  Should fail.
-  ASSERT_FALSE(creator->Run(input_directory, crx_path, FilePath(),
+  ASSERT_FALSE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kOverwriteCRX));
 
   ASSERT_TRUE(file_util::PathExists(privkey_path));
@@ -1898,8 +1903,9 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 
   // Try packing with invalid paths.
   creator.reset(new ExtensionCreator());
-  ASSERT_FALSE(creator->Run(FilePath(), FilePath(), FilePath(), FilePath(),
-               ExtensionCreator::kOverwriteCRX));
+  ASSERT_FALSE(
+      creator->Run(base::FilePath(), base::FilePath(), base::FilePath(),
+                   base::FilePath(), ExtensionCreator::kOverwriteCRX));
 
   // Try packing an empty directory. Should fail because an empty directory is
   // not a valid extension.
@@ -1907,7 +1913,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
   ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
   creator.reset(new ExtensionCreator());
   ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
-                            FilePath(), ExtensionCreator::kOverwriteCRX));
+                            base::FilePath(), ExtensionCreator::kOverwriteCRX));
 
   // Try packing with an invalid manifest.
   std::string invalid_manifest_content = "I am not a manifest.";
@@ -1916,13 +1922,13 @@ TEST_F(ExtensionServiceTest, PackExtension) {
       invalid_manifest_content.c_str(), invalid_manifest_content.size()));
   creator.reset(new ExtensionCreator());
   ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
-                            FilePath(), ExtensionCreator::kOverwriteCRX));
+                            base::FilePath(), ExtensionCreator::kOverwriteCRX));
 }
 
 // Test Packaging and installing an extension whose name contains punctuation.
 TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
   InitializeEmptyExtensionService();
-  FilePath input_directory = data_dir_
+  base::FilePath input_directory = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII(good0)
@@ -1933,38 +1939,42 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
 
   // Extension names containing punctuation, and the expected names for the
   // packed extensions.
-  const FilePath punctuated_names[] = {
-    FilePath(FILE_PATH_LITERAL("this.extensions.name.has.periods")),
-    FilePath(FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod")),
-    FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname/")).
+  const base::FilePath punctuated_names[] = {
+    base::FilePath(FILE_PATH_LITERAL("this.extensions.name.has.periods")),
+    base::FilePath(FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod")),
+    base::FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname/")).
         NormalizePathSeparators(),
   };
-  const FilePath expected_crx_names[] = {
-    FilePath(FILE_PATH_LITERAL("this.extensions.name.has.periods.crx")),
-    FilePath(FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.crx")),
-    FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname.crx")),
+  const base::FilePath expected_crx_names[] = {
+    base::FilePath(FILE_PATH_LITERAL("this.extensions.name.has.periods.crx")),
+    base::FilePath(
+        FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.crx")),
+    base::FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname.crx")),
   };
-  const FilePath expected_private_key_names[] = {
-    FilePath(FILE_PATH_LITERAL("this.extensions.name.has.periods.pem")),
-    FilePath(FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.pem")),
-    FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname.pem")),
+  const base::FilePath expected_private_key_names[] = {
+    base::FilePath(FILE_PATH_LITERAL("this.extensions.name.has.periods.pem")),
+    base::FilePath(
+        FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.pem")),
+    base::FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname.pem")),
   };
 
   for (size_t i = 0; i < arraysize(punctuated_names); ++i) {
     SCOPED_TRACE(punctuated_names[i].value().c_str());
-    FilePath output_dir = temp_dir.path().Append(punctuated_names[i]);
+    base::FilePath output_dir = temp_dir.path().Append(punctuated_names[i]);
 
     // Copy the extension into the output directory, as PackExtensionJob doesn't
     // let us choose where to output the packed extension.
     ASSERT_TRUE(file_util::CopyDirectory(input_directory, output_dir, true));
 
-    FilePath expected_crx_path = temp_dir.path().Append(expected_crx_names[i]);
-    FilePath expected_private_key_path =
+    base::FilePath expected_crx_path =
+        temp_dir.path().Append(expected_crx_names[i]);
+    base::FilePath expected_private_key_path =
         temp_dir.path().Append(expected_private_key_names[i]);
     PackExtensionTestClient pack_client(expected_crx_path,
                                         expected_private_key_path);
     scoped_refptr<extensions::PackExtensionJob> packer(
-        new extensions::PackExtensionJob(&pack_client, output_dir, FilePath(),
+        new extensions::PackExtensionJob(&pack_client, output_dir,
+                                         base::FilePath(),
                                          ExtensionCreator::kOverwriteCRX));
     packer->Start();
 
@@ -1987,7 +1997,7 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
 
   base::ScopedTempDir extension_temp_dir;
   ASSERT_TRUE(extension_temp_dir.CreateUniqueTempDir());
-  FilePath input_directory = extension_temp_dir.path().AppendASCII("ext");
+  base::FilePath input_directory = extension_temp_dir.path().AppendASCII("ext");
   ASSERT_TRUE(file_util::CopyDirectory(
       data_dir_
       .AppendASCII("good")
@@ -1999,14 +2009,14 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
 
   base::ScopedTempDir output_temp_dir;
   ASSERT_TRUE(output_temp_dir.CreateUniqueTempDir());
-  FilePath output_directory = output_temp_dir.path();
+  base::FilePath output_directory = output_temp_dir.path();
 
-  FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
-  FilePath privkey_path(output_directory.AppendASCII("privkey.pem"));
+  base::FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
+  base::FilePath privkey_path(output_directory.AppendASCII("privkey.pem"));
 
   // Pack the extension once to get a private key.
   scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
-  ASSERT_TRUE(creator->Run(input_directory, crx_path, FilePath(),
+  ASSERT_TRUE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kNoRunFlags))
       << creator->error_message();
   ASSERT_TRUE(file_util::PathExists(crx_path));
@@ -2018,7 +2028,7 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
                   input_directory.AppendASCII("privkey.pem"));
 
   // This pack should fail because of the contained private key.
-  EXPECT_FALSE(creator->Run(input_directory, crx_path, FilePath(),
+  EXPECT_FALSE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kNoRunFlags));
   EXPECT_THAT(creator->error_message(),
               testing::ContainsRegex(
@@ -2033,24 +2043,24 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
 // PrivateKeyInfo ASN.1 structure, we our RSAPrivateKey expects.
 TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
   InitializeEmptyExtensionService();
-  FilePath input_directory = data_dir_
+  base::FilePath input_directory = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
       .AppendASCII("1.0.0.0");
-  FilePath privkey_path(data_dir_.AppendASCII(
+  base::FilePath privkey_path(data_dir_.AppendASCII(
       "openssl_privkey_asn1.pem"));
   ASSERT_TRUE(file_util::PathExists(privkey_path));
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath output_directory = temp_dir.path();
+  base::FilePath output_directory = temp_dir.path();
 
-  FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
+  base::FilePath crx_path(output_directory.AppendASCII("ex1.crx"));
 
   scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
   ASSERT_TRUE(creator->Run(input_directory, crx_path, privkey_path,
-      FilePath(), ExtensionCreator::kOverwriteCRX));
+      base::FilePath(), ExtensionCreator::kOverwriteCRX));
 
   InstallCRX(crx_path, INSTALL_NEW);
 }
@@ -2059,7 +2069,7 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
   InitializeEmptyExtensionService();
 
   // A theme.
-  FilePath path = data_dir_.AppendASCII("theme.crx");
+  base::FilePath path = data_dir_.AppendASCII("theme.crx");
   InstallCRX(path, INSTALL_NEW);
   int pref_count = 0;
   ValidatePrefKeyCount(++pref_count);
@@ -2096,7 +2106,7 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
 TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   // Load.
   InitializeEmptyExtensionService();
-  FilePath extension_path = data_dir_
+  base::FilePath extension_path = data_dir_
       .AppendASCII("theme_i18n");
 
   extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
@@ -2111,7 +2121,7 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   // Cleanup the "Cached Theme.pak" file. Ideally, this would be installed in a
   // temporary directory, but it automatically installs to the extension's
   // directory, and we don't want to copy the whole extension for a unittest.
-  FilePath theme_file = extension_path.Append(chrome::kThemePackFilename);
+  base::FilePath theme_file = extension_path.Append(chrome::kThemePackFilename);
   ASSERT_TRUE(file_util::PathExists(theme_file));
   ASSERT_TRUE(file_util::Delete(theme_file, false));  // Not recursive.
 }
@@ -2124,13 +2134,14 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
-  FilePath extension_path = temp.path();
-  FilePath manifest_path = extension_path.Append(Extension::kManifestFilename);
-  FilePath manifest_no_key = data_dir_.
+  base::FilePath extension_path = temp.path();
+  base::FilePath manifest_path =
+      extension_path.Append(Extension::kManifestFilename);
+  base::FilePath manifest_no_key = data_dir_.
       AppendASCII("unpacked").
       AppendASCII("manifest_no_key.json");
 
-  FilePath manifest_with_key = data_dir_.
+  base::FilePath manifest_with_key = data_dir_.
       AppendASCII("unpacked").
       AppendASCII("manifest_with_key.json");
 
@@ -2162,22 +2173,22 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
 
 #if defined(OS_POSIX)
 TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
-  FilePath source_data_dir = data_dir_.
+  base::FilePath source_data_dir = data_dir_.
       AppendASCII("unpacked").
       AppendASCII("symlinks_allowed");
 
   // Paths to test data files.
-  FilePath source_manifest = source_data_dir.AppendASCII("manifest.json");
+  base::FilePath source_manifest = source_data_dir.AppendASCII("manifest.json");
   ASSERT_TRUE(file_util::PathExists(source_manifest));
-  FilePath source_icon = source_data_dir.AppendASCII("icon.png");
+  base::FilePath source_icon = source_data_dir.AppendASCII("icon.png");
   ASSERT_TRUE(file_util::PathExists(source_icon));
 
   // Set up the temporary extension directory.
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
-  FilePath extension_path = temp.path();
-  FilePath manifest = extension_path.Append(Extension::kManifestFilename);
-  FilePath icon_symlink = extension_path.AppendASCII("icon.png");
+  base::FilePath extension_path = temp.path();
+  base::FilePath manifest = extension_path.Append(Extension::kManifestFilename);
+  base::FilePath icon_symlink = extension_path.AppendASCII("icon.png");
   file_util::CopyFile(source_manifest, manifest);
   file_util::CreateSymbolicLink(source_icon, icon_symlink);
 
@@ -2194,7 +2205,7 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
 
 TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
   InitializeEmptyExtensionService();
-  FilePath theme_path = data_dir_
+  base::FilePath theme_path = data_dir_
       .AppendASCII("theme_i18n");
 
   const Extension* theme = PackAndInstallCRX(theme_path, INSTALL_NEW);
@@ -2241,7 +2252,7 @@ TEST_F(ExtensionServiceTest, DefaultFileAccess) {
 
 TEST_F(ExtensionServiceTest, UpdateApps) {
   InitializeEmptyExtensionService();
-  FilePath extensions_path = data_dir_.AppendASCII("app_update");
+  base::FilePath extensions_path = data_dir_.AppendASCII("app_update");
 
   // First install v1 of a hosted app.
   const Extension* extension =
@@ -2262,7 +2273,7 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
 TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
   InitializeEmptyExtensionService();
   ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
-  FilePath extensions_path = data_dir_.AppendASCII("app_update");
+  base::FilePath extensions_path = data_dir_.AppendASCII("app_update");
 
   // First install v1 of a hosted app.
   const Extension* extension =
@@ -2293,8 +2304,8 @@ TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
 // Ensures that the CWS has properly initialized ordinals.
 TEST_F(ExtensionServiceTest, EnsureCWSOrdinalsInitialized) {
   InitializeEmptyExtensionService();
-  service_->component_loader()->Add(IDR_WEBSTORE_MANIFEST,
-                                    FilePath(FILE_PATH_LITERAL("web_store")));
+  service_->component_loader()->Add(
+      IDR_WEBSTORE_MANIFEST, base::FilePath(FILE_PATH_LITERAL("web_store")));
   service_->Init();
 
   ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
@@ -2406,7 +2417,7 @@ TEST_F(ExtensionServiceTest, Reinstall) {
   InitializeEmptyExtensionService();
 
   // A simple extension that should install without error.
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
 
   ValidatePrefKeyCount(1);
@@ -2427,7 +2438,7 @@ TEST_F(ExtensionServiceTest, FromWebStore) {
   InitializeEmptyExtensionService();
 
   // A simple extension that should install without error.
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   // Not from web store.
   const Extension* extension = InstallCRX(path, INSTALL_NEW);
   std::string id = extension->id();
@@ -2458,7 +2469,7 @@ TEST_F(ExtensionServiceTest, FromWebStore) {
 TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   const Extension* extension = InstallCRX(path, INSTALL_NEW);
   std::string id = extension->id();
 
@@ -2478,7 +2489,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
 TEST_F(ExtensionServiceTest, UpgradeSignedBad) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
 
   // Try upgrading with a bad signature. This should fail during the unpack,
@@ -2491,7 +2502,7 @@ TEST_F(ExtensionServiceTest, UpgradeSignedBad) {
 TEST_F(ExtensionServiceTest, UpdateExtension) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
 
   const Extension* good = InstallCRX(path, INSTALL_NEW);
   ASSERT_EQ("1.0.0.0", good->VersionString());
@@ -2509,7 +2520,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionDuringShutdown) {
   InitializeEmptyExtensionService();
 
   // Install an extension.
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   const Extension* good = InstallCRX(path, INSTALL_NEW);
   ASSERT_EQ(good_crx, good->id());
 
@@ -2529,7 +2540,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionDuringShutdown) {
 TEST_F(ExtensionServiceTest, UpdateNotInstalledExtension) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   UpdateExtension(good_crx, path, UPDATED);
   loop_.RunUntilIdle();
 
@@ -2542,7 +2553,7 @@ TEST_F(ExtensionServiceTest, UpdateNotInstalledExtension) {
 TEST_F(ExtensionServiceTest, UpdateWillNotDowngrade) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good2.crx");
+  base::FilePath path = data_dir_.AppendASCII("good2.crx");
 
   const Extension* good = InstallCRX(path, INSTALL_NEW);
   ASSERT_EQ("1.0.0.1", good->VersionString());
@@ -2560,7 +2571,7 @@ TEST_F(ExtensionServiceTest, UpdateWillNotDowngrade) {
 TEST_F(ExtensionServiceTest, UpdateToSameVersionIsNoop) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
 
   const Extension* good = InstallCRX(path, INSTALL_NEW);
   ASSERT_EQ(good_crx, good->id());
@@ -2571,7 +2582,7 @@ TEST_F(ExtensionServiceTest, UpdateToSameVersionIsNoop) {
 TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
 
   const Extension* good = InstallCRX(path, INSTALL_NEW);
   ASSERT_EQ("1.0.0.0", good->VersionString());
@@ -2597,7 +2608,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
 TEST_F(ExtensionServiceTest, UpdateExtensionPreservesLocation) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
 
   const Extension* good =
       InstallCRXWithLocation(path, Manifest::EXTERNAL_PREF, INSTALL_NEW);
@@ -2621,8 +2632,9 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
 
   // We'll write the extension manifest dynamically to a temporary path
   // to make it easier to change the version number.
-  FilePath extension_path = temp.path();
-  FilePath manifest_path = extension_path.Append(Extension::kManifestFilename);
+  base::FilePath extension_path = temp.path();
+  base::FilePath manifest_path =
+      extension_path.Append(Extension::kManifestFilename);
   ASSERT_FALSE(file_util::PathExists(manifest_path));
 
   // Start with version 2.0.
@@ -2661,12 +2673,12 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
 #if !defined(OS_CHROMEOS)
 // LOAD extensions with plugins require approval.
 TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
-  FilePath extension_with_plugin_path = data_dir_
+  base::FilePath extension_with_plugin_path = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII(good1)
       .AppendASCII("2");
-  FilePath extension_no_plugin_path = data_dir_
+  base::FilePath extension_no_plugin_path = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII(good2)
@@ -2781,7 +2793,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
       kGoodInstallSilently));
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(kGoodId));
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   UpdateExtension(kGoodId, path, ENABLED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(kGoodId));
@@ -2806,7 +2818,7 @@ TEST_F(ExtensionServiceTest, DISABLED_UpdatePendingTheme) {
       theme_crx, GURL(), &IsTheme, false));
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
 
-  FilePath path = data_dir_.AppendASCII("theme.crx");
+  base::FilePath path = data_dir_.AppendASCII("theme.crx");
   UpdateExtension(theme_crx, path, ENABLED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(theme_crx));
@@ -2835,7 +2847,7 @@ TEST_F(ExtensionServiceTest, MAYBE_UpdatePendingExternalCrx) {
 
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
 
-  FilePath path = data_dir_.AppendASCII("theme.crx");
+  base::FilePath path = data_dir_.AppendASCII("theme.crx");
   UpdateExtension(theme_crx, path, ENABLED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(theme_crx));
@@ -2899,7 +2911,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingCrxThemeMismatch) {
 
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(theme_crx));
 
-  FilePath path = data_dir_.AppendASCII("theme.crx");
+  base::FilePath path = data_dir_.AppendASCII("theme.crx");
   UpdateExtension(theme_crx, path, FAILED_SILENTLY);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(theme_crx));
@@ -2920,7 +2932,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionFailedShouldInstallTest) {
       kGoodId, GURL(kGoodUpdateURL), &IsTheme, kGoodInstallSilently));
   EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(kGoodId));
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   UpdateExtension(kGoodId, path, UPDATED);
 
   // TODO(akalin): Figure out how to check that the extensions
@@ -2936,7 +2948,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionFailedShouldInstallTest) {
 TEST_F(ExtensionServiceTest, UpdatePendingExtensionNotPending) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   UpdateExtension(kGoodId, path, UPDATED);
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(kGoodId));
@@ -2947,7 +2959,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionNotPending) {
 TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   const Extension* good = InstallCRX(path, INSTALL_NEW);
   ASSERT_EQ(1u, service_->extensions()->size());
 
@@ -2999,7 +3011,7 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
 TEST_F(ExtensionServiceTest, UnloadBlacklistedExtension) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
 
   const Extension* good = InstallCRX(path, INSTALL_NEW);
   EXPECT_EQ(good_crx, good->id());
@@ -3043,7 +3055,7 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
   ValidateBooleanPref(good_crx, "blacklist", true);
 
   // We can not install good_crx.
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_WITHOUT_LOAD);
   EXPECT_EQ(0u, service_->extensions()->size());
   ValidateBooleanPref(good_crx, "blacklist", true);
@@ -3052,7 +3064,7 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
 // Unload blacklisted extension on policy change.
 TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
   InitializeEmptyExtensionService();
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
 
   const Extension* good = InstallCRX(path, INSTALL_NEW);
   EXPECT_EQ(good_crx, good->id());
@@ -3081,10 +3093,10 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
 // blacklisted ones.
 TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   // Initialize the test dir with a good Preferences/extensions.
-  FilePath source_install_dir = data_dir_
+  base::FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
-  FilePath pref_path = source_install_dir
+  base::FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("Preferences");
   InitializeInstalledExtensionService(pref_path, source_install_dir);
@@ -3129,7 +3141,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   }
 
   // Blacklist prevents us from installing good_crx.
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_FAILED);
   EXPECT_EQ(0u, service_->extensions()->size());
 
@@ -3151,7 +3163,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
   InitializeEmptyExtensionService();
 
   // Install good_crx.
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
   EXPECT_EQ(1u, service_->extensions()->size());
 
@@ -3183,7 +3195,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   }
 
   // Install a component extension.
-  FilePath path = data_dir_
+  base::FilePath path = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII(good0)
@@ -3282,7 +3294,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   InitializeEmptyExtensionService();
 
   // Create a fake extension to be loaded as though it were read from prefs.
-  FilePath path = data_dir_.AppendASCII("management")
+  base::FilePath path = data_dir_.AppendASCII("management")
                            .AppendASCII("simple_extension");
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "simple_extension");
@@ -3511,7 +3523,7 @@ TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
 TEST_F(ExtensionServiceTest, DisableAllExtensions) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
 
   EXPECT_EQ(1u, service_->extensions()->size());
@@ -3547,7 +3559,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
   InitializeRequestContext();
 
   // Simple extension that should install without error.
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW,
              Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT);
   const char* extension_id = good_crx;
@@ -3620,8 +3632,8 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsEnabled) {
   InitializeEmptyExtensionService();
   BlackListWebGL();
 
-  FilePath path = data_dir_.AppendASCII("requirements");
-  FilePath pem_path = data_dir_.AppendASCII("requirements")
+  base::FilePath path = data_dir_.AppendASCII("requirements");
+  base::FilePath pem_path = data_dir_.AppendASCII("requirements")
                                .AppendASCII("v1_good.pem");
   const Extension* extension_v1 = PackAndInstallCRX(path.AppendASCII("v1_good"),
                                                     pem_path,
@@ -3629,7 +3641,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsEnabled) {
   std::string id = extension_v1->id();
   EXPECT_TRUE(service_->IsExtensionEnabled(id));
 
-  FilePath v2_bad_requirements_crx = GetTemporaryFile();
+  base::FilePath v2_bad_requirements_crx = GetTemporaryFile();
 
   PackCRX(path.AppendASCII("v2_bad_requirements"),
           pem_path,
@@ -3637,7 +3649,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsEnabled) {
   UpdateExtension(id, v2_bad_requirements_crx, INSTALLED);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 
-  FilePath v3_good_crx = GetTemporaryFile();
+  base::FilePath v3_good_crx = GetTemporaryFile();
 
   PackCRX(path.AppendASCII("v3_good"), pem_path, v3_good_crx);
   UpdateExtension(id, v3_good_crx, ENABLED);
@@ -3649,8 +3661,8 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsDisabled) {
   InitializeEmptyExtensionService();
   BlackListWebGL();
 
-  FilePath path = data_dir_.AppendASCII("requirements");
-  FilePath pem_path = data_dir_.AppendASCII("requirements")
+  base::FilePath path = data_dir_.AppendASCII("requirements");
+  base::FilePath pem_path = data_dir_.AppendASCII("requirements")
                                .AppendASCII("v1_good.pem");
   const Extension* extension_v1 = PackAndInstallCRX(path.AppendASCII("v1_good"),
                                                     pem_path,
@@ -3659,7 +3671,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsDisabled) {
   service_->DisableExtension(id, Extension::DISABLE_USER_ACTION);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 
-  FilePath v2_bad_requirements_crx = GetTemporaryFile();
+  base::FilePath v2_bad_requirements_crx = GetTemporaryFile();
 
   PackCRX(path.AppendASCII("v2_bad_requirements"),
           pem_path,
@@ -3667,7 +3679,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsDisabled) {
   UpdateExtension(id, v2_bad_requirements_crx, INSTALLED);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 
-  FilePath v3_good_crx = GetTemporaryFile();
+  base::FilePath v3_good_crx = GetTemporaryFile();
 
   PackCRX(path.AppendASCII("v3_good"), pem_path, v3_good_crx);
   UpdateExtension(id, v3_good_crx, INSTALLED);
@@ -3680,8 +3692,8 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsPermissions) {
   InitializeEmptyExtensionService();
   BlackListWebGL();
 
-  FilePath path = data_dir_.AppendASCII("requirements");
-  FilePath pem_path = data_dir_.AppendASCII("requirements")
+  base::FilePath path = data_dir_.AppendASCII("requirements");
+  base::FilePath pem_path = data_dir_.AppendASCII("requirements")
                                .AppendASCII("v1_good.pem");
   const Extension* extension_v1 = PackAndInstallCRX(path.AppendASCII("v1_good"),
                                                     pem_path,
@@ -3689,7 +3701,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsPermissions) {
   std::string id = extension_v1->id();
   EXPECT_TRUE(service_->IsExtensionEnabled(id));
 
-  FilePath v2_bad_requirements_and_permissions_crx = GetTemporaryFile();
+  base::FilePath v2_bad_requirements_and_permissions_crx = GetTemporaryFile();
 
   PackCRX(path.AppendASCII("v2_bad_requirements_and_permissions"),
           pem_path,
@@ -3697,7 +3709,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsPermissions) {
   UpdateExtension(id, v2_bad_requirements_and_permissions_crx, INSTALLED);
   EXPECT_FALSE(service_->IsExtensionEnabled(id));
 
-  FilePath v3_bad_permissions_crx = GetTemporaryFile();
+  base::FilePath v3_bad_permissions_crx = GetTemporaryFile();
 
   PackCRX(path.AppendASCII("v3_bad_permissions"),
           pem_path,
@@ -3712,7 +3724,7 @@ TEST_F(ExtensionServiceTest, UnpackedRequirements) {
   InitializeEmptyExtensionService();
   BlackListWebGL();
 
-  FilePath path = data_dir_.AppendASCII("requirements")
+  base::FilePath path = data_dir_.AppendASCII("requirements")
                            .AppendASCII("v2_bad_requirements");
   extensions::UnpackedInstaller::Create(service_)->Load(path);
   loop_.RunUntilIdle();
@@ -3748,7 +3760,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   ExtensionCookieCallback callback;
 
   // Load a test extension.
-  FilePath path = data_dir_;
+  base::FilePath path = data_dir_;
   path = path.AppendASCII("good.crx");
   const Extension* extension = InstallCRX(path, INSTALL_NEW);
   ASSERT_TRUE(extension);
@@ -3793,8 +3805,9 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   // Create local storage. We only simulate this by creating the backing files.
   // Note: This test depends on details of how the dom_storage library
   // stores data in the host file system.
-  FilePath lso_dir_path = profile_->GetPath().AppendASCII("Local Storage");
-  FilePath lso_file_path = lso_dir_path.AppendASCII(
+  base::FilePath lso_dir_path =
+      profile_->GetPath().AppendASCII("Local Storage");
+  base::FilePath lso_file_path = lso_dir_path.AppendASCII(
       UTF16ToUTF8(origin_id) + ".localstorage");
   EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
   EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
@@ -3805,7 +3818,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   IndexedDBContext* idb_context =
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetIndexedDBContext();
-  FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
+  base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));
 
@@ -3906,8 +3919,9 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   // Create local storage. We only simulate this by creating the backing files.
   // Note: This test depends on details of how the dom_storage library
   // stores data in the host file system.
-  FilePath lso_dir_path = profile_->GetPath().AppendASCII("Local Storage");
-  FilePath lso_file_path = lso_dir_path.AppendASCII(
+  base::FilePath lso_dir_path =
+      profile_->GetPath().AppendASCII("Local Storage");
+  base::FilePath lso_file_path = lso_dir_path.AppendASCII(
       UTF16ToUTF8(origin_id) + ".localstorage");
   EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
   EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
@@ -3918,7 +3932,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   IndexedDBContext* idb_context =
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetIndexedDBContext();
-  FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
+  base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
   EXPECT_TRUE(file_util::DirectoryExists(idb_path));
 
@@ -3967,7 +3981,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 TEST_F(ExtensionServiceTest, LoadExtension) {
   InitializeEmptyExtensionService();
 
-  FilePath ext1 = data_dir_
+  base::FilePath ext1 = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
@@ -3981,7 +3995,7 @@ TEST_F(ExtensionServiceTest, LoadExtension) {
 
   ValidatePrefKeyCount(1);
 
-  FilePath no_manifest = data_dir_
+  base::FilePath no_manifest = data_dir_
       .AppendASCII("bad")
       // .AppendASCII("Extensions")
       .AppendASCII("cccccccccccccccccccccccccccccccc")
@@ -4007,7 +4021,7 @@ TEST_F(ExtensionServiceTest, LoadExtension) {
 TEST_F(ExtensionServiceTest, GenerateID) {
   InitializeEmptyExtensionService();
 
-  FilePath no_id_ext = data_dir_.AppendASCII("no_id");
+  base::FilePath no_id_ext = data_dir_.AppendASCII("no_id");
   extensions::UnpackedInstaller::Create(service_)->Load(no_id_ext);
   loop_.RunUntilIdle();
   EXPECT_EQ(0u, GetErrors().size());
@@ -4035,7 +4049,7 @@ void ExtensionServiceTest::TestExternalProvider(
   provider->set_visit_count(0);
 
   // Register a test extension externally using the mock registry provider.
-  FilePath source_path = data_dir_.AppendASCII("good.crx");
+  base::FilePath source_path = data_dir_.AppendASCII("good.crx");
 
   // Add the extension.
   provider->UpdateOrAddExtension(good_crx, "1.0.0.0", source_path);
@@ -4085,7 +4099,7 @@ void ExtensionServiceTest::TestExternalProvider(
   service_->UninstallExtension(id, false, NULL);
   loop_.RunUntilIdle();
 
-  FilePath install_path = extensions_install_dir_.AppendASCII(id);
+  base::FilePath install_path = extensions_install_dir_.AppendASCII(id);
   if (no_uninstall) {
     // Policy controlled extensions should not have been touched by uninstall.
     ASSERT_TRUE(file_util::PathExists(install_path));
@@ -4226,10 +4240,10 @@ TEST_F(ExtensionServiceTest, ExternalInstallPolicyUpdateUrl) {
 // providers can't account for them.
 TEST_F(ExtensionServiceTest, ExternalUninstall) {
   // Start the extensions service with one external extension already installed.
-  FilePath source_install_dir = data_dir_
+  base::FilePath source_install_dir = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions");
-  FilePath pref_path = source_install_dir
+  base::FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("PreferencesExternal");
 
@@ -4276,7 +4290,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalUpdateCheck) {
   EXPECT_EQ(0u, loaded_.size());
 
   // Register a test extension externally using the mock registry provider.
-  FilePath source_path = data_dir_.AppendASCII("good.crx");
+  base::FilePath source_path = data_dir_.AppendASCII("good.crx");
   provider->UpdateOrAddExtension(good_crx, "1.0.0.0", source_path);
 
   // Two checks for external updates should find the extension, and install it
@@ -4332,7 +4346,7 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
   // Test some valid extension records.
   // Set a base path to avoid erroring out on relative paths.
   // Paths starting with // are absolute on every platform we support.
-  FilePath base_path(FILE_PATH_LITERAL("//base/path"));
+  base::FilePath base_path(FILE_PATH_LITERAL("//base/path"));
   ASSERT_TRUE(base_path.IsAbsolute());
   MockProviderVisitor visitor(base_path);
   std::string json_data =
@@ -4406,7 +4420,7 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
 
   // Check that if a base path is not provided, use of a relative
   // path fails.
-  FilePath empty;
+  base::FilePath empty;
   MockProviderVisitor visitor_no_relative_paths(empty);
 
   // Use absolute paths.  Expect success.
@@ -4490,9 +4504,9 @@ TEST_F(ExtensionServiceTest, LoadAndRelocalizeExtensions) {
   extension_l10n_util::ScopedLocaleForTest testLocale("en");
 
   // Initialize the test dir with a good Preferences/extensions.
-  FilePath source_install_dir = data_dir_
+  base::FilePath source_install_dir = data_dir_
       .AppendASCII("l10n");
-  FilePath pref_path = source_install_dir.AppendASCII("Preferences");
+  base::FilePath pref_path = source_install_dir.AppendASCII("Preferences");
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   service_->Init();
@@ -4558,7 +4572,7 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   content::TestBrowserThread ui_thread(BrowserThread::UI, &loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE, &loop);
   scoped_ptr<CommandLine> command_line;
-  FilePath install_dir = profile->GetPath()
+  base::FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionService::kInstallDirectoryName);
 
 #if defined(ENABLE_PLUGINS)
@@ -4641,19 +4655,19 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
 TEST_F(ExtensionServiceTest, StorageQuota) {
   InitializeEmptyExtensionService();
 
-  FilePath extensions_path = data_dir_
+  base::FilePath extensions_path = data_dir_
       .AppendASCII("storage_quota");
 
-  FilePath limited_quota_ext =
+  base::FilePath limited_quota_ext =
       extensions_path.AppendASCII("limited_quota")
       .AppendASCII("1.0");
 
   // The old permission name for unlimited quota was "unlimited_storage", but
   // we changed it to "unlimitedStorage". This tests both versions.
-  FilePath unlimited_quota_ext =
+  base::FilePath unlimited_quota_ext =
       extensions_path.AppendASCII("unlimited_quota")
       .AppendASCII("1.0");
-  FilePath unlimited_quota_ext2 =
+  base::FilePath unlimited_quota_ext2 =
       extensions_path.AppendASCII("unlimited_quota")
       .AppendASCII("2.0");
   extensions::UnpackedInstaller::Create(service_)->Load(limited_quota_ext);
@@ -4679,7 +4693,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
   // Component extensions should work even when extensions are disabled.
   set_extensions_enabled(false);
 
-  FilePath path = data_dir_
+  base::FilePath path = data_dir_
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
@@ -5006,7 +5020,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
   EXPECT_FALSE(service_->GetExtensionById(good_crx, true));
 
   // Install the extension.
-  FilePath extension_path = data_dir_.AppendASCII("good.crx");
+  base::FilePath extension_path = data_dir_.AppendASCII("good.crx");
   InstallCRX(extension_path, INSTALL_NEW);
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
 
@@ -5023,7 +5037,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
   InitializeEmptyExtensionService();
 
   // Install the extension.
-  FilePath extension_path = data_dir_.AppendASCII("good.crx");
+  base::FilePath extension_path = data_dir_.AppendASCII("good.crx");
   InstallCRX(extension_path, INSTALL_NEW);
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
 
@@ -5280,7 +5294,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
 TEST_F(ExtensionServiceTest, InstallPriorityExternalUpdateUrl) {
   InitializeEmptyExtensionService();
 
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
   ValidatePrefKeyCount(1u);
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
@@ -5326,7 +5340,7 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
 
   // We don't want the extension to be installed.  A path that doesn't
   // point to a valid CRX ensures this.
-  const FilePath kInvalidPathToCrx = FilePath();
+  const base::FilePath kInvalidPathToCrx = base::FilePath();
 
   const int kCreationFlags = 0;
   const bool kDontMarkAcknowledged = false;
@@ -5408,7 +5422,7 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
   pending->Remove(kGoodId);
 
   // Install the extension.
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   const Extension* ext = InstallCRX(path, INSTALL_NEW);
   ValidatePrefKeyCount(1u);
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
@@ -5482,7 +5496,7 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
   Version kVersion123("1.2.3");
   Version kVersion124("1.2.4");
   Version kVersion125("1.2.5");
-  const FilePath kInvalidPathToCrx = FilePath();
+  const base::FilePath kInvalidPathToCrx = base::FilePath();
   const int kCreationFlags = 0;
   const bool kDontMarkAcknowledged = false;
 
@@ -5547,9 +5561,9 @@ TEST_F(ExtensionServiceTest, InstallWhitelistedExtension) {
       switches::kWhitelistedExtensionID, test_id);
 
   InitializeEmptyExtensionService();
-  FilePath path = data_dir_
+  base::FilePath path = data_dir_
       .AppendASCII("permissions");
-  FilePath pem_path = path
+  base::FilePath pem_path = path
       .AppendASCII("whitelist.pem");
   path = path
       .AppendASCII("whitelist");
@@ -5633,7 +5647,7 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
   // All tests use a single extension.  Making the id and path member
   // vars avoids pasing the same argument to every method.
   std::string crx_id_;
-  FilePath crx_path_;
+  base::FilePath crx_path_;
 };
 
 // Test that a pending request for installation of an external CRX from
@@ -5729,7 +5743,7 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
   // This is a normal extension, installed normally.
   // This should NOT trigger an alert.
   set_extensions_enabled(true);
-  FilePath path = data_dir_.AppendASCII("good.crx");
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
 
   service_->CheckForExternalUpdates();

@@ -57,7 +57,7 @@ using content::WebContents;
 
 namespace {
 
-const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
+const base::FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
 }  // namespace
 
@@ -119,8 +119,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ShutdownWhileOpen) {
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
   // Open a new tab and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                     FilePath(kTitle1File)));
+  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
+      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
   AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
 
@@ -184,8 +184,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
   // Open a new background contents and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                     FilePath(kTitle1File)));
+  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
+      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
 
   BackgroundContentsService* service =
       BackgroundContentsServiceFactory::GetForProfile(browser()->profile());
@@ -207,8 +207,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
 
   // Open a new background contents and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                     FilePath(kTitle1File)));
+  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
+      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
 
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
@@ -533,8 +533,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
 
   // Open a new tab and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                     FilePath(kTitle1File)));
+  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
+      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
   AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
 

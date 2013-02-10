@@ -40,7 +40,7 @@ const char kScaleFactor[] = "scale";
 // a FilePath and return the resulting |file_path| and |query|.  The path
 // portion may have been encoded using encodeURIComponent().
 void GetFilePathAndQuery(const std::string& url,
-                         FilePath* file_path,
+                         base::FilePath* file_path,
                          std::string* query) {
   // We receive the url with chrome://fileicon/ stripped but GURL expects it.
   const GURL gurl("chrome://fileicon/" + url);
@@ -52,10 +52,10 @@ void GetFilePathAndQuery(const std::string& url,
   // The path we receive has the wrong slashes and escaping for what we need;
   // this only appears to matter for getting icons from .exe files.
   std::replace(path.begin(), path.end(), '/', '\\');
-  *file_path = FilePath(UTF8ToWide(path));
+  *file_path = base::FilePath(UTF8ToWide(path));
 #elif defined(OS_POSIX)
   // The correct encoding on Linux may not actually be UTF8.
-  *file_path = FilePath(path);
+  *file_path = base::FilePath(path);
 #endif
   query->assign(gurl.query());
 }
@@ -101,7 +101,7 @@ FileIconSource::FileIconSource() {}
 FileIconSource::~FileIconSource() {}
 
 void FileIconSource::FetchFileIcon(
-    const FilePath& path,
+    const base::FilePath& path,
     ui::ScaleFactor scale_factor,
     IconLoader::IconSize icon_size,
     const content::URLDataSource::GotDataCallback& callback) {
@@ -139,7 +139,7 @@ void FileIconSource::StartDataRequest(
     bool is_incognito,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string query;
-  FilePath file_path;
+  base::FilePath file_path;
   ui::ScaleFactor scale_factor;
   IconLoader::IconSize icon_size;
   GetFilePathAndQuery(url_path, &file_path, &query);

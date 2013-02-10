@@ -327,7 +327,7 @@ class CrxUpdateService : public ComponentUpdateService {
 
   void ParseManifest(const std::string& xml);
 
-  void Install(const CRXContext* context, const FilePath& crx_path);
+  void Install(const CRXContext* context, const base::FilePath& crx_path);
 
   void DoneInstalling(const std::string& component_id,
                       ComponentUnpacker::Error error);
@@ -723,7 +723,7 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
     url_fetcher_.reset();
     ScheduleNextRun(false);
   } else {
-    FilePath temp_crx_path;
+    base::FilePath temp_crx_path;
     CHECK(source->GetResponseAsFilePath(true, &temp_crx_path));
     size_t count = ChangeItemStatus(CrxUpdateItem::kDownloading,
                                     CrxUpdateItem::kUpdating);
@@ -752,7 +752,7 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
 // |unpacker|. If there is an error this function is in charge of deleting
 // the files created.
 void CrxUpdateService::Install(const CRXContext* context,
-                               const FilePath& crx_path) {
+                               const base::FilePath& crx_path) {
   // This function owns the |crx_path| and the |context| object.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   ComponentUnpacker

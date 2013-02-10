@@ -80,7 +80,7 @@ CustomizationDocument::CustomizationDocument(
 CustomizationDocument::~CustomizationDocument() {}
 
 bool CustomizationDocument::LoadManifestFromFile(
-    const FilePath& manifest_path) {
+    const base::FilePath& manifest_path) {
   std::string manifest;
   if (!file_util::ReadFileToString(manifest_path, &manifest))
     return false;
@@ -146,7 +146,7 @@ StartupCustomizationDocument::StartupCustomizationDocument()
     // Loading manifest causes us to do blocking IO on UI thread.
     // Temporarily allow it until we fix http://crosbug.com/11103
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    LoadManifestFromFile(FilePath(kStartupCustomizationManifestPath));
+    LoadManifestFromFile(base::FilePath(kStartupCustomizationManifestPath));
   }
   Init(chromeos::system::StatisticsProvider::GetInstance());
 }
@@ -270,13 +270,14 @@ void ServicesCustomizationDocument::StartFetching() {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&ServicesCustomizationDocument::ReadFileInBackground,
                    base::Unretained(this),  // this class is a singleton.
-                   FilePath(url_.path())));
+                   base::FilePath(url_.path())));
   } else {
     StartFileFetch();
   }
 }
 
-void ServicesCustomizationDocument::ReadFileInBackground(const FilePath& file) {
+void ServicesCustomizationDocument::ReadFileInBackground(
+    const base::FilePath& file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string manifest;

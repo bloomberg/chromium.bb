@@ -16,14 +16,14 @@ namespace history {
 
 TEST(HistoryDatabaseTest, DropBookmarks) {
   base::ScopedTempDir temp_dir;
-  FilePath db_file;
+  base::FilePath db_file;
 
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("DropBookmarks.db");
   file_util::Delete(db_file, false);
 
   // Copy db file over that contains starred URLs.
-  FilePath old_history_path;
+  base::FilePath old_history_path;
   PathService::Get(chrome::DIR_TEST_DATA, &old_history_path);
   old_history_path = old_history_path.AppendASCII("bookmarks");
   old_history_path = old_history_path.Append(

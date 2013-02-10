@@ -578,7 +578,7 @@ std::string ResourceEntry::GetHostedDocumentExtension() const {
 }
 
 // static
-bool ResourceEntry::HasHostedDocumentExtension(const FilePath& file) {
+bool ResourceEntry::HasHostedDocumentExtension(const base::FilePath& file) {
 #if defined(OS_WIN)
   std::string file_extension = WideToUTF8(file.Extension());
 #else

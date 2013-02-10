@@ -119,7 +119,7 @@ class TextDatabaseTest : public PlatformTest {
   base::ScopedTempDir temp_dir_;
 
   // Name of the main database file.
-  FilePath file_name_;
+  base::FilePath file_name_;
 };
 
 TEST_F(TextDatabaseTest, AttachDetach) {

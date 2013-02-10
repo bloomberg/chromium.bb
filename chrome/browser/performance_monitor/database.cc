@@ -84,7 +84,7 @@ base::Time Database::SystemClock::GetTime() {
 }
 
 // Static
-scoped_ptr<Database> Database::Create(FilePath path) {
+scoped_ptr<Database> Database::Create(base::FilePath path) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (path.empty()) {
     CHECK(PathService::Get(chrome::DIR_USER_DATA, &path));
@@ -416,7 +416,7 @@ Database::MetricVectorMap Database::GetStatsForMetricByActivity(
   return results;
 }
 
-Database::Database(const FilePath& path)
+Database::Database(const base::FilePath& path)
     : key_builder_(new KeyBuilder()),
       path_(path),
       read_options_(leveldb::ReadOptions()),

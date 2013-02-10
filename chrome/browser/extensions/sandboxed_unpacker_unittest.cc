@@ -26,8 +26,8 @@ using testing::Invoke;
 
 namespace {
 
-void OnUnpackSuccess(const FilePath& temp_dir,
-                     const FilePath& extension_root,
+void OnUnpackSuccess(const base::FilePath& temp_dir,
+                     const base::FilePath& extension_root,
                      const DictionaryValue* original_manifest,
                      const extensions::Extension* extension) {
   // Don't delete temp_dir here, we need to do some post op checking.
@@ -40,8 +40,8 @@ namespace extensions {
 class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
  public:
   MOCK_METHOD4(OnUnpackSuccess,
-               void(const FilePath& temp_dir,
-                    const FilePath& extension_root,
+               void(const base::FilePath& temp_dir,
+                    const base::FilePath& extension_root,
                     const DictionaryValue* original_manifest,
                     const Extension* extension));
 
@@ -80,7 +80,7 @@ class SandboxedUnpackerTest : public testing::Test {
   }
 
   void SetupUnpacker(const std::string& crx_name) {
-    FilePath original_path;
+    base::FilePath original_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &original_path));
     original_path = original_path.AppendASCII("extensions")
         .AppendASCII("unpacker")
@@ -90,7 +90,7 @@ class SandboxedUnpackerTest : public testing::Test {
     // Try bots won't let us write into DIR_TEST_DATA, so we have to write the
     // CRX to the temp directory, and create a subdirectory into which to
     // unpack it.
-    FilePath crx_path = temp_dir_.path().AppendASCII(crx_name);
+    base::FilePath crx_path = temp_dir_.path().AppendASCII(crx_name);
     ASSERT_TRUE(file_util::CopyFile(original_path, crx_path)) <<
         "Original path: " << original_path.value() <<
         ", Crx path: " << crx_path.value();
@@ -129,7 +129,7 @@ class SandboxedUnpackerTest : public testing::Test {
         *unpacker_->parsed_manifest());
   }
 
-  FilePath GetInstallPath() {
+  base::FilePath GetInstallPath() {
     return temp_dir_.path().AppendASCII(
         extension_filenames::kTempExtensionName);
   }
@@ -145,7 +145,7 @@ class SandboxedUnpackerTest : public testing::Test {
       files_and_dirs
     );
     int items_not_removed = 0;
-    FilePath item_in_temp;
+    base::FilePath item_in_temp;
     item_in_temp = temp_iterator.Next();
     while (!item_in_temp.value().empty()) {
       items_not_removed++;
@@ -159,7 +159,7 @@ class SandboxedUnpackerTest : public testing::Test {
  protected:
   base::ScopedTempDir temp_dir_;
   base::ScopedTempDir extensions_dir_;
-  FilePath temp_path_;
+  base::FilePath temp_path_;
   MockSandboxedUnpackerClient* client_;
   scoped_ptr<Unpacker> unpacker_;
   scoped_refptr<SandboxedUnpacker> sandboxed_unpacker_;
@@ -177,7 +177,7 @@ TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
   ASSERT_TRUE(unpacker_->DumpMessageCatalogsToFile());
 
   // Check that there is no _locales folder.
-  FilePath install_path =
+  base::FilePath install_path =
     GetInstallPath().Append(Extension::kLocaleFolder);
   EXPECT_FALSE(file_util::PathExists(install_path));
 
@@ -199,7 +199,7 @@ TEST_F(SandboxedUnpackerTest, WithCatalogsSuccess) {
   ASSERT_TRUE(unpacker_->DumpMessageCatalogsToFile());
 
   // Set timestamp on _locales/en_US/messages.json into the past.
-  FilePath messages_file;
+  base::FilePath messages_file;
   messages_file = GetInstallPath().Append(Extension::kLocaleFolder)
       .AppendASCII("en_US")
       .Append(Extension::kMessagesFilename);

@@ -60,7 +60,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
     RunUntilIdle();
   }
 
-  FilePath policy_file() {
+  base::FilePath policy_file() {
     return tmp_dir_.path().AppendASCII("policy");
   }
 

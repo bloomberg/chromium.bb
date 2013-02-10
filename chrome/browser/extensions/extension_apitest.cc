@@ -192,7 +192,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
 
   const extensions::Extension* extension = NULL;
   if (!std::string(extension_name).empty()) {
-    FilePath extension_path = test_data_dir_.AppendASCII(extension_name);
+    base::FilePath extension_path = test_data_dir_.AppendASCII(extension_name);
     if (load_as_component) {
       extension = LoadExtensionAsComponent(extension_path);
     } else {
@@ -294,7 +294,8 @@ bool ExtensionApiTest::StartTestServer() {
   return true;
 }
 
-bool ExtensionApiTest::StartWebSocketServer(const FilePath& root_directory) {
+bool ExtensionApiTest::StartWebSocketServer(
+    const base::FilePath& root_directory) {
   websocket_server_.reset(new net::TestServer(
       net::TestServer::TYPE_WS,
       net::TestServer::kLocalhost,

@@ -422,7 +422,7 @@ Browser::Browser(const CreateParams& params)
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
-  FilePath profile_path = profile_->GetPath();
+  base::FilePath profile_path = profile_->GetPath();
   ProfileMetrics::LogProfileLaunch(profile_path);
 
   window_ = params.window ? params.window : CreateBrowserWindow(this);
@@ -820,7 +820,7 @@ void Browser::OpenFile() {
       this, new ChromeSelectFilePolicy(
           tab_strip_model_->GetActiveWebContents()));
 
-  const FilePath directory = profile_->last_selected_directory();
+  const base::FilePath directory = profile_->last_selected_directory();
 
   // TODO(beng): figure out how to juggle this.
   gfx::NativeWindow parent_window = window_->GetNativeWindow();
@@ -1568,7 +1568,7 @@ void Browser::RunFileChooser(WebContents* web_contents,
 
 void Browser::EnumerateDirectory(WebContents* web_contents,
                                  int request_id,
-                                 const FilePath& path) {
+                                 const base::FilePath& path) {
   FileSelectHelper::EnumerateDirectory(web_contents, request_id, path);
 }
 
@@ -1714,7 +1714,7 @@ void Browser::RequestMediaAccessPermission(
 bool Browser::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,
-    const FilePath& plugin_path,
+    const base::FilePath& plugin_path,
     const base::Callback<void(bool)>& callback) {
   PepperBrokerInfoBarDelegate::Create(web_contents, url, plugin_path, callback);
   return true;
@@ -1802,7 +1802,8 @@ void Browser::OnZoomChanged(content::WebContents* source,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, ui::SelectFileDialog::Listener implementation:
 
-void Browser::FileSelected(const FilePath& path, int index, void* params) {
+void Browser::FileSelected(const base::FilePath& path, int index,
+                           void* params) {
   FileSelectedWithExtraInfo(ui::SelectedFileInfo(path, path), index, params);
 }
 
@@ -1812,7 +1813,7 @@ void Browser::FileSelectedWithExtraInfo(
     void* params) {
   profile_->set_last_selected_directory(file_info.file_path.DirName());
 
-  const FilePath& path = file_info.local_path;
+  const base::FilePath& path = file_info.local_path;
   GURL file_url = net::FilePathToFileURL(path);
 
 #if defined(OS_CHROMEOS)

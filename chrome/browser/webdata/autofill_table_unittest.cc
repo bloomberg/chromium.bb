@@ -114,7 +114,7 @@ class AutofillTableTest : public testing::Test {
         AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)), timestamps);
   }
 
-  FilePath file_;
+  base::FilePath file_;
   base::ScopedTempDir temp_dir_;
 
  private:

@@ -74,7 +74,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
     virtual void OnCustomDictionaryChanged(const Change& dictionary_change) = 0;
   };
 
-  explicit SpellcheckCustomDictionary(const FilePath& path);
+  explicit SpellcheckCustomDictionary(const base::FilePath& path);
   virtual ~SpellcheckCustomDictionary();
 
   // Returns the in-memory cache of words in the custom dictionary.
@@ -126,13 +126,13 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   // Makes sure that the custom dictionary file does not have duplicates and
   // contains only valid words.
   static chrome::spellcheck_common::WordList LoadDictionaryFile(
-      const FilePath& path);
+      const base::FilePath& path);
 
   // Applies the change in |dictionary_change| to the custom spellcheck
   // dictionary. Assumes that |dictionary_change| has been sanitized.
   static void UpdateDictionaryFile(
       const Change& dictionary_change,
-      const FilePath& path);
+      const base::FilePath& path);
 
   // The reply point for PostTaskAndReplyWithResult, called when
   // LoadDictionaryFile finishes reading the dictionary file. Does not modify
@@ -161,7 +161,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   chrome::spellcheck_common::WordList words_;
 
   // A path for custom dictionary.
-  FilePath custom_dictionary_path_;
+  base::FilePath custom_dictionary_path_;
 
   // Used to create weak pointers for an instance of this class.
   base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_;

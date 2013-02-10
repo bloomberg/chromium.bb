@@ -92,7 +92,7 @@ class DriveServiceInterface {
 
   // Cancels ongoing operation for a given virtual |file_path|. Returns true if
   // the operation was found and canceled.
-  virtual bool CancelForFilePath(const FilePath& file_path) = 0;
+  virtual bool CancelForFilePath(const base::FilePath& file_path) = 0;
 
   // Obtains the list of currently active operations.
   virtual OperationProgressStatusList GetProgressStatusList() const = 0;
@@ -226,8 +226,8 @@ class DriveServiceInterface {
   // |download_action_callback| must not be null.
   // |get_content_callback| may be null.
   virtual void DownloadFile(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
+      const base::FilePath& virtual_path,
+      const base::FilePath& local_cache_path,
       const GURL& download_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback) = 0;
@@ -248,7 +248,7 @@ class DriveServiceInterface {
   // |callback| must not be null.
   virtual void GetUploadStatus(
       UploadMode upload_mode,
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,
       const UploadRangeCallback& callback) = 0;

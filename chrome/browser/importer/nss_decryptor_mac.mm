@@ -19,12 +19,13 @@
 // fallback path needs to be set to the directory containing the libraries.
 // To do so, the process this function runs in must have the
 // DYLD_FALLBACK_LIBRARY_PATH set on startup to said directory.
-bool NSSDecryptor::Init(const FilePath& dll_path, const FilePath& db_path) {
+bool NSSDecryptor::Init(const base::FilePath& dll_path,
+                        const base::FilePath& db_path) {
   if (getenv("DYLD_FALLBACK_LIBRARY_PATH") == NULL) {
     LOG(ERROR) << "DYLD_FALLBACK_LIBRARY_PATH variable not set";
     return false;
   }
-  FilePath nss3_path = dll_path.Append("libnss3.dylib");
+  base::FilePath nss3_path = dll_path.Append("libnss3.dylib");
 
   void* nss_3_lib = dlopen(nss3_path.value().c_str(), RTLD_LAZY);
   if (!nss_3_lib) {

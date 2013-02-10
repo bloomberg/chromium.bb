@@ -359,9 +359,9 @@ bool InstallFromDiskImage(AuthorizationRef authorization_arg,
 // call EjectAndTrashDiskImage on dmg_bsd_device_name.
 bool LaunchInstalledApp(NSString* installed_path,
                         const std::string& dmg_bsd_device_name) {
-  FilePath browser_path([installed_path fileSystemRepresentation]);
+  base::FilePath browser_path([installed_path fileSystemRepresentation]);
 
-  FilePath helper_path = browser_path.Append("Contents/Versions");
+  base::FilePath helper_path = browser_path.Append("Contents/Versions");
   helper_path = helper_path.Append(chrome::kChromeVersion);
   helper_path = helper_path.Append(chrome::kHelperProcessExecutablePath);
 
@@ -672,10 +672,10 @@ void EjectAndTrashDiskImage(const std::string& dmg_bsd_device_name) {
   // Dock indicating that any garbage has been placed within it. Using the
   // trash path that FSPathMoveObjectToTrashSync claims to have used, call
   // FNNotifyByPath to fatten up the icon.
-  FilePath disk_image_path_in_trash(disk_image_path_in_trash_c);
+  base::FilePath disk_image_path_in_trash(disk_image_path_in_trash_c);
   free(disk_image_path_in_trash_c);
 
-  FilePath trash_path = disk_image_path_in_trash.DirName();
+  base::FilePath trash_path = disk_image_path_in_trash.DirName();
   const UInt8* trash_path_u8 = reinterpret_cast<const UInt8*>(
       trash_path.value().c_str());
   status = FNNotifyByPath(trash_path_u8,

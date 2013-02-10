@@ -37,9 +37,9 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
  protected:
   scoped_refptr<Extension> CreateProtectedApp() {
 #if defined(OS_WIN)
-    FilePath path(FILE_PATH_LITERAL("c:\\foo"));
+    base::FilePath path(FILE_PATH_LITERAL("c:\\foo"));
 #elif defined(OS_POSIX)
-    FilePath path(FILE_PATH_LITERAL("/foo"));
+    base::FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
     DictionaryValue manifest;
     manifest.SetString(keys::kName, "Protected");
@@ -59,9 +59,9 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
 
   scoped_refptr<Extension> CreateUnlimitedApp() {
 #if defined(OS_WIN)
-    FilePath path(FILE_PATH_LITERAL("c:\\bar"));
+    base::FilePath path(FILE_PATH_LITERAL("c:\\bar"));
 #elif defined(OS_POSIX)
-    FilePath path(FILE_PATH_LITERAL("/bar"));
+    base::FilePath path(FILE_PATH_LITERAL("/bar"));
 #endif
     DictionaryValue manifest;
     manifest.SetString(keys::kName, "Unlimited");
@@ -84,9 +84,9 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
 
   scoped_refptr<Extension> CreateComponentApp() {
 #if defined(OS_WIN)
-    FilePath path(FILE_PATH_LITERAL("c:\\component"));
+    base::FilePath path(FILE_PATH_LITERAL("c:\\component"));
 #elif defined(OS_POSIX)
-    FilePath path(FILE_PATH_LITERAL("/component"));
+    base::FilePath path(FILE_PATH_LITERAL("/component"));
 #endif
     DictionaryValue manifest;
     manifest.SetString(keys::kName, "Component");
@@ -110,9 +110,9 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
 
   scoped_refptr<Extension> CreateHandlerApp() {
 #if defined(OS_WIN)
-    FilePath path(FILE_PATH_LITERAL("c:\\handler"));
+    base::FilePath path(FILE_PATH_LITERAL("c:\\handler"));
 #elif defined(OS_POSIX)
-    FilePath path(FILE_PATH_LITERAL("/handler"));
+    base::FilePath path(FILE_PATH_LITERAL("/handler"));
 #endif
     DictionaryValue manifest;
     manifest.SetString(keys::kName, "Handler");
@@ -137,9 +137,9 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
 #if defined(ENABLE_WEB_INTENTS)
   scoped_refptr<Extension> CreateWebIntentViewApp() {
 #if defined(OS_WIN)
-    FilePath path(FILE_PATH_LITERAL("c:\\bar"));
+    base::FilePath path(FILE_PATH_LITERAL("c:\\bar"));
 #elif defined(OS_POSIX)
-    FilePath path(FILE_PATH_LITERAL("/bar"));
+    base::FilePath path(FILE_PATH_LITERAL("/bar"));
 #endif
     DictionaryValue manifest;
     manifest.SetString(keys::kName, "WebIntent");

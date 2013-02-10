@@ -729,12 +729,13 @@ void ExpireHistoryBackend::DoExpireHistoryIndexFiles() {
   TextDatabase::DBIdent cutoff_id =
       (cutoff_month / 12) * 100 + (cutoff_month % 12);
 
-  FilePath::StringType history_index_files_pattern = TextDatabase::file_base();
+  base::FilePath::StringType history_index_files_pattern =
+      TextDatabase::file_base();
   history_index_files_pattern.append(FILE_PATH_LITERAL("*"));
   file_util::FileEnumerator file_enumerator(
       text_db_->GetDir(), false, file_util::FileEnumerator::FILES,
       history_index_files_pattern);
-  for (FilePath file = file_enumerator.Next(); !file.empty();
+  for (base::FilePath file = file_enumerator.Next(); !file.empty();
        file = file_enumerator.Next()) {
     TextDatabase::DBIdent file_id = TextDatabase::FileNameToID(file);
     if (file_id < cutoff_id)

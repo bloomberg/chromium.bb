@@ -39,7 +39,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
-    FilePath certs_dir = net::GetTestCertsDirectory();
+    base::FilePath certs_dir = net::GetTestCertsDirectory();
 
     mit_davidben_cert_ = net::ImportCertFromFile(certs_dir, "mit.davidben.der");
     ASSERT_NE(static_cast<net::X509Certificate*>(NULL), mit_davidben_cert_);

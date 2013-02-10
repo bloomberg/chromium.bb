@@ -68,7 +68,7 @@ class ProfilerWebUIDataSource : public content::URLDataSource {
       const std::string& path,
       bool is_incognito,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
-    FilePath base_path;
+    base::FilePath base_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
     base_path = base_path.AppendASCII("chrome");
     base_path = base_path.AppendASCII("browser");
@@ -78,7 +78,7 @@ class ProfilerWebUIDataSource : public content::URLDataSource {
     // If no resource was specified, default to profiler.html.
     std::string filename = path.empty() ? "profiler.html" : path;
 
-    FilePath file_path;
+    base::FilePath file_path;
     file_path = base_path.AppendASCII(filename);
 
     // Read the file synchronously and send it as the response.

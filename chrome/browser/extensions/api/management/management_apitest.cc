@@ -48,7 +48,7 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
   }
 
   virtual void LoadExtensions() {
-    FilePath basedir = test_data_dir_.AppendASCII("management");
+    base::FilePath basedir = test_data_dir_.AppendASCII("management");
 
     // Load 4 enabled items.
     LoadNamedExtension(basedir, "enabled_extension");
@@ -77,14 +77,14 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
   }
 
  protected:
-  void LoadNamedExtension(const FilePath& path,
+  void LoadNamedExtension(const base::FilePath& path,
                           const std::string& name) {
     const Extension* extension = LoadExtension(path.AppendASCII(name));
     ASSERT_TRUE(extension);
     extension_ids_[name] = extension->id();
   }
 
-  void InstallNamedExtension(const FilePath& path,
+  void InstallNamedExtension(const base::FilePath& path,
                              const std::string& name,
                              Manifest::Location install_source) {
     const Extension* extension = InstallExtension(path.AppendASCII(name), 1,
@@ -100,7 +100,7 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Basics) {
   LoadExtensions();
 
-  FilePath basedir = test_data_dir_.AppendASCII("management");
+  base::FilePath basedir = test_data_dir_.AppendASCII("management");
   InstallNamedExtension(basedir, "internal_extension", Manifest::INTERNAL);
   InstallNamedExtension(basedir, "external_extension",
                         Manifest::EXTERNAL_PREF);

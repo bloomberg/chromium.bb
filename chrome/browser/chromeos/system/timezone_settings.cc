@@ -162,9 +162,9 @@ void SetTimezoneIDFromString(const std::string& id) {
   // We want to do this in an atomic way. So we are going to create the symlink
   // at kTimezoneSymlink2 and then move it to kTimezoneSymlink
 
-  FilePath timezone_symlink(kTimezoneSymlink);
-  FilePath timezone_symlink2(kTimezoneSymlink2);
-  FilePath timezone_file(kTimezoneFilesDir + id);
+  base::FilePath timezone_symlink(kTimezoneSymlink);
+  base::FilePath timezone_symlink2(kTimezoneSymlink2);
+  base::FilePath timezone_file(kTimezoneFilesDir + id);
 
   // Make sure timezone_file exists.
   if (!file_util::PathExists(timezone_file)) {

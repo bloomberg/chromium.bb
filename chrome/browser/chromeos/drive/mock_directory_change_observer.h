@@ -18,7 +18,7 @@ class MockDirectoryChangeObserver : public DriveFileSystemObserver {
   virtual ~MockDirectoryChangeObserver();
 
   // DriveFileSystemInterface::Observer overrides.
-  MOCK_METHOD1(OnDirectoryChanged, void(const FilePath& directory_path));
+  MOCK_METHOD1(OnDirectoryChanged, void(const base::FilePath& directory_path));
 };
 
 }  // namespace drive

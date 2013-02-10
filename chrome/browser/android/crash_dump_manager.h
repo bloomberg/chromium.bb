@@ -45,9 +45,9 @@ class CrashDumpManager : public content::NotificationObserver {
   // Should be created on the UI thread.
   CrashDumpManager();
 
-  typedef std::map<int, FilePath> ChildProcessIDToMinidumpPath;
+  typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
 
-  static void ProcessMinidump(const FilePath& minidump_path,
+  static void ProcessMinidump(const base::FilePath& minidump_path,
                               base::ProcessHandle pid);
 
   // NotificationObserver implementation:

@@ -14,7 +14,7 @@ namespace drive {
 namespace {
 
 // Emits debug log when DriveFileSystem::CloseFile() is complete.
-void EmitDebugLogForCloseFile(const FilePath& file_path,
+void EmitDebugLogForCloseFile(const base::FilePath& file_path,
                               DriveFileError file_error) {
   if (file_error != DRIVE_FILE_OK) {
     LOG(WARNING) << "CloseFile failed: " << file_path.AsUTF8Unsafe() << ": "
@@ -37,7 +37,7 @@ FileWriteHelper::~FileWriteHelper() {
 }
 
 void FileWriteHelper::PrepareWritableFileAndRun(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -52,7 +52,7 @@ void FileWriteHelper::PrepareWritableFileAndRun(
 }
 
 void FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const OpenFileCallback& callback,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -61,7 +61,7 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile(
   if (error != DRIVE_FILE_OK) {
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE,
-        base::Bind(callback, error, FilePath()));
+        base::Bind(callback, error, base::FilePath()));
     return;
   }
   file_system_->OpenFile(
@@ -73,17 +73,17 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile(
 }
 
 void FileWriteHelper::PrepareWritableFileAndRunAfterOpenFile(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const OpenFileCallback& callback,
     DriveFileError error,
-    const FilePath& local_cache_path) {
+    const base::FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE,
-        base::Bind(callback, error, FilePath()));
+        base::Bind(callback, error, base::FilePath()));
     return;
   }
 
@@ -96,7 +96,7 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterOpenFile(
 }
 
 void FileWriteHelper::PrepareWritableFileAndRunAfterCallback(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   file_system_->CloseFile(file_path,
                           base::Bind(&EmitDebugLogForCloseFile, file_path));

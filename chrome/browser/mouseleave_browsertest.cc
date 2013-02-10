@@ -22,7 +22,7 @@ class MouseLeaveTest : public InProcessBrowserTest {
 
   void MouseLeaveTestCommon() {
     GURL test_url = ui_test_utils::GetTestUrl(
-        FilePath(), FilePath(FILE_PATH_LITERAL("mouseleave.html")));
+        base::FilePath(), base::FilePath(FILE_PATH_LITERAL("mouseleave.html")));
 
     content::WebContents* tab =
         browser()->tab_strip_model()->GetActiveWebContents();

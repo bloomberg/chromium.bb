@@ -35,28 +35,28 @@ class PrefRegistrySimple;
 class ProfileInfoCache : public ProfileInfoInterface,
                          public base::SupportsWeakPtr<ProfileInfoCache> {
  public:
-  ProfileInfoCache(PrefService* prefs, const FilePath& user_data_dir);
+  ProfileInfoCache(PrefService* prefs, const base::FilePath& user_data_dir);
   virtual ~ProfileInfoCache();
 
   // This |is_managed| refers to local management (formerly "managed mode"),
   // not enterprise management.
-  void AddProfileToCache(const FilePath& profile_path,
+  void AddProfileToCache(const base::FilePath& profile_path,
                          const string16& name,
                          const string16& username,
                          size_t icon_index,
                          bool is_managed);
-  void DeleteProfileFromCache(const FilePath& profile_path);
+  void DeleteProfileFromCache(const base::FilePath& profile_path);
 
   // ProfileInfoInterface:
   virtual size_t GetNumberOfProfiles() const OVERRIDE;
   // Don't cache this value and reuse, because resorting the menu could cause
   // the item being referred to to change out from under you.
   virtual size_t GetIndexOfProfileWithPath(
-      const FilePath& profile_path) const OVERRIDE;
+      const base::FilePath& profile_path) const OVERRIDE;
   virtual string16 GetNameOfProfileAtIndex(size_t index) const OVERRIDE;
   virtual string16 GetShortcutNameOfProfileAtIndex(size_t index)
       const OVERRIDE;
-  virtual FilePath GetPathOfProfileAtIndex(size_t index) const OVERRIDE;
+  virtual base::FilePath GetPathOfProfileAtIndex(size_t index) const OVERRIDE;
   virtual string16 GetUserNameOfProfileAtIndex(size_t index) const OVERRIDE;
   virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
       size_t index) const OVERRIDE;
@@ -107,7 +107,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // set of default icons.
   size_t ChooseAvatarIconIndexForNewProfile() const;
 
-  const FilePath& GetUserDataDir() const;
+  const base::FilePath& GetUserDataDir() const;
 
   // Gets the number of default avatar icons that exist.
   static size_t GetDefaultAvatarIconCount();
@@ -140,7 +140,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Currently the only information that is cached is the profile's name,
   // user name, and avatar icon.
   void SetInfoForProfileAtIndex(size_t index, base::DictionaryValue* info);
-  std::string CacheKeyFromProfilePath(const FilePath& profile_path) const;
+  std::string CacheKeyFromProfilePath(const base::FilePath& profile_path) const;
   std::vector<std::string>::iterator FindPositionForProfile(
       const std::string& search_key,
       const string16& search_name);
@@ -158,12 +158,13 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // of profiles is still sorted.
   void UpdateSortForProfileIndex(size_t index);
 
-  void OnGAIAPictureLoaded(const FilePath& path, gfx::Image** image) const;
-  void OnGAIAPictureSaved(const FilePath& path, bool* success) const;
+  void OnGAIAPictureLoaded(const base::FilePath& path,
+                           gfx::Image** image) const;
+  void OnGAIAPictureSaved(const base::FilePath& path, bool* success) const;
 
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;
-  FilePath user_data_dir_;
+  base::FilePath user_data_dir_;
 
   ObserverList<ProfileInfoCacheObserver> observer_list_;
 

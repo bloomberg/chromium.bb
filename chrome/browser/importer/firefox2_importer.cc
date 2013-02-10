@@ -90,9 +90,9 @@ void Firefox2Importer::StartImport(
 }
 
 // static
-void Firefox2Importer::LoadDefaultBookmarks(const FilePath& app_path,
+void Firefox2Importer::LoadDefaultBookmarks(const base::FilePath& app_path,
                                             std::set<GURL> *urls) {
-  FilePath file = app_path.AppendASCII("defaults")
+  base::FilePath file = app_path.AppendASCII("defaults")
                       .AppendASCII("profile")
                       .AppendASCII("bookmarks.html");
 
@@ -145,7 +145,7 @@ TemplateURL* Firefox2Importer::CreateTemplateURL(const string16& title,
 
 // static
 void Firefox2Importer::ImportBookmarksFile(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const std::set<GURL>& default_urls,
     Importer* importer,
     std::vector<ProfileWriter::BookmarkEntry>* bookmarks,
@@ -299,7 +299,7 @@ void Firefox2Importer::ImportBookmarks() {
   std::vector<ProfileWriter::BookmarkEntry> bookmarks, toolbar_bookmarks;
   std::vector<TemplateURL*> template_urls;
   std::vector<history::ImportedFaviconUsage> favicons;
-  FilePath file = source_path_;
+  base::FilePath file = source_path_;
   if (!parsing_bookmarks_html_file_)
     file = file.AppendASCII("bookmarks.html");
 
@@ -331,7 +331,7 @@ void Firefox2Importer::ImportPasswords() {
 
   // Firefox 2 uses signons2.txt to store the pssswords. If it doesn't
   // exist, we try to find its older version.
-  FilePath file = source_path_.AppendASCII("signons2.txt");
+  base::FilePath file = source_path_.AppendASCII("signons2.txt");
   if (!file_util::PathExists(file)) {
     file = source_path_.AppendASCII("signons.txt");
   }
@@ -349,12 +349,12 @@ void Firefox2Importer::ImportPasswords() {
 }
 
 void Firefox2Importer::ImportHistory() {
-  FilePath file = source_path_.AppendASCII("history.dat");
+  base::FilePath file = source_path_.AppendASCII("history.dat");
   ImportHistoryFromFirefox2(file, bridge_);
 }
 
 void Firefox2Importer::ImportSearchEngines() {
-  std::vector<FilePath> files;
+  std::vector<base::FilePath> files;
   GetSearchEnginesXMLFiles(&files);
 
   std::vector<TemplateURL*> search_engines;
@@ -371,15 +371,15 @@ void Firefox2Importer::ImportHomepage() {
 }
 
 void Firefox2Importer::GetSearchEnginesXMLFiles(
-    std::vector<FilePath>* files) {
+    std::vector<base::FilePath>* files) {
   // Search engines are contained in XML files in a searchplugins directory that
   // can be found in 2 locations:
   // - Firefox install dir (default search engines)
   // - the profile dir (user added search engines)
-  FilePath dir = app_path_.AppendASCII("searchplugins");
+  base::FilePath dir = app_path_.AppendASCII("searchplugins");
   FindXMLFilesInDir(dir, files);
 
-  FilePath profile_dir = source_path_.AppendASCII("searchplugins");
+  base::FilePath profile_dir = source_path_.AppendASCII("searchplugins");
   FindXMLFilesInDir(profile_dir, files);
 }
 
@@ -622,12 +622,12 @@ void Firefox2Importer::HTMLUnescape(string16* text) {
 
 // static
 void Firefox2Importer::FindXMLFilesInDir(
-    const FilePath& dir,
-    std::vector<FilePath>* xml_files) {
+    const base::FilePath& dir,
+    std::vector<base::FilePath>* xml_files) {
   file_util::FileEnumerator file_enum(dir, false,
                                       file_util::FileEnumerator::FILES,
                                       FILE_PATH_LITERAL("*.xml"));
-  FilePath file(file_enum.Next());
+  base::FilePath file(file_enum.Next());
   while (!file.empty()) {
     xml_files->push_back(file);
     file = file_enum.Next();

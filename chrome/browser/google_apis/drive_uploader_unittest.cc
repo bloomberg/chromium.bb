@@ -35,9 +35,9 @@ const char kTestETag[] = "test_etag";
 // Creates a |size| byte file and returns its |path|. The file is filled with
 // random bytes so that the test assertions can identify correct
 // portion of the file is being sent.
-bool CreateFileOfSpecifiedSize(const FilePath& temp_dir,
+bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
                                size_t size,
-                               FilePath* path,
+                               base::FilePath* path,
                                std::string* data) {
   data->resize(size);
   for (size_t i = 0; i < size; ++i)
@@ -208,8 +208,8 @@ class DriveUploaderTest : public testing::Test {
 struct UploadCompletionCallbackResult {
   UploadCompletionCallbackResult() : error(DRIVE_UPLOAD_ERROR_ABORT) {}
   DriveUploadError error;
-  FilePath drive_path;
-  FilePath file_path;
+  base::FilePath drive_path;
+  base::FilePath file_path;
   scoped_ptr<ResourceEntry> resource_entry;
 };
 
@@ -217,8 +217,8 @@ struct UploadCompletionCallbackResult {
 void CopyResultsFromUploadCompletionCallbackAndQuit(
     UploadCompletionCallbackResult* out,
     DriveUploadError error,
-    const FilePath& drive_path,
-    const FilePath& file_path,
+    const base::FilePath& drive_path,
+    const base::FilePath& file_path,
     scoped_ptr<ResourceEntry> resource_entry) {
   out->error = error;
   out->drive_path = drive_path;
@@ -230,7 +230,7 @@ void CopyResultsFromUploadCompletionCallbackAndQuit(
 }  // namespace
 
 TEST_F(DriveUploaderTest, UploadExisting0KB) {
-  FilePath local_path;
+  base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 0,
                                         &local_path, &data));
@@ -241,7 +241,7 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       GURL(kTestInitialUploadURL),
-      FilePath::FromUTF8Unsafe(kTestDrivePath),
+      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       "",  // etag
@@ -251,14 +251,14 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   EXPECT_EQ(1, mock_service.resume_upload_call_count());
   EXPECT_EQ(0, mock_service.received_bytes());
   EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
   EXPECT_EQ(local_path, out.file_path);
   ASSERT_TRUE(out.resource_entry);
   EXPECT_EQ(kTestDummyId, out.resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, UploadExisting512KB) {
-  FilePath local_path;
+  base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
                                         &local_path, &data));
@@ -269,7 +269,7 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       GURL(kTestInitialUploadURL),
-      FilePath::FromUTF8Unsafe(kTestDrivePath),
+      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       "",  // etag
@@ -280,14 +280,14 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   EXPECT_EQ(1, mock_service.resume_upload_call_count());
   EXPECT_EQ(512 * 1024, mock_service.received_bytes());
   EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
   EXPECT_EQ(local_path, out.file_path);
   ASSERT_TRUE(out.resource_entry);
   EXPECT_EQ(kTestDummyId, out.resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, UploadExisting1234KB) {
-  FilePath local_path;
+  base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 1234 * 1024,
                                         &local_path, &data));
@@ -298,7 +298,7 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       GURL(kTestInitialUploadURL),
-      FilePath::FromUTF8Unsafe(kTestDrivePath),
+      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       "",  // etag
@@ -309,14 +309,14 @@ TEST_F(DriveUploaderTest, UploadExisting1234KB) {
   EXPECT_EQ(3, mock_service.resume_upload_call_count());
   EXPECT_EQ(1234 * 1024, mock_service.received_bytes());
   EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
   EXPECT_EQ(local_path, out.file_path);
   ASSERT_TRUE(out.resource_entry);
   EXPECT_EQ(kTestDummyId, out.resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, UploadNew1234KB) {
-  FilePath local_path;
+  base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 1234 * 1024,
                                         &local_path, &data));
@@ -327,7 +327,7 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
   DriveUploader uploader(&mock_service);
   uploader.UploadNewFile(
       GURL(kTestInitialUploadURL),
-      FilePath::FromUTF8Unsafe(kTestDrivePath),
+      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestDocumentTitle,
       kTestMimeType,
@@ -338,14 +338,14 @@ TEST_F(DriveUploaderTest, UploadNew1234KB) {
   EXPECT_EQ(3, mock_service.resume_upload_call_count());
   EXPECT_EQ(1234 * 1024, mock_service.received_bytes());
   EXPECT_EQ(DRIVE_UPLOAD_OK, out.error);
-  EXPECT_EQ(FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe(kTestDrivePath), out.drive_path);
   EXPECT_EQ(local_path, out.file_path);
   ASSERT_TRUE(out.resource_entry);
   EXPECT_EQ(kTestDummyId, out.resource_entry->id());
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadFail) {
-  FilePath local_path;
+  base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
                                         &local_path, &data));
@@ -356,7 +356,7 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       GURL(kTestInitialUploadURL),
-      FilePath::FromUTF8Unsafe(kTestDrivePath),
+      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       "",  // etag
@@ -367,7 +367,7 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
-  FilePath local_path;
+  base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
                                         &local_path, &data));
@@ -376,7 +376,7 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       GURL(kTestInitialUploadURL),
-      FilePath::FromUTF8Unsafe(kTestDrivePath),
+      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       kTestETag,
@@ -387,7 +387,7 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
 }
 
 TEST_F(DriveUploaderTest, InitiateUploadConflict) {
-  FilePath local_path;
+  base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
                                         &local_path, &data));
@@ -398,7 +398,7 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       GURL(kTestInitialUploadURL),
-      FilePath::FromUTF8Unsafe(kTestDrivePath),
+      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       kDestinationETag,
@@ -409,7 +409,7 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
 }
 
 TEST_F(DriveUploaderTest, ResumeUploadFail) {
-  FilePath local_path;
+  base::FilePath local_path;
   std::string data;
   ASSERT_TRUE(CreateFileOfSpecifiedSize(temp_dir_.path(), 512 * 1024,
                                         &local_path, &data));
@@ -420,7 +420,7 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       GURL(kTestInitialUploadURL),
-      FilePath::FromUTF8Unsafe(kTestDrivePath),
+      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       "",  // etag
@@ -436,7 +436,7 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
   DriveUploader uploader(NULL);  // NULL, the service won't be used.
   uploader.UploadExistingFile(
       GURL(kTestInitialUploadURL),
-      FilePath::FromUTF8Unsafe(kTestDrivePath),
+      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       temp_dir_.path().AppendASCII("_this_path_should_not_exist_"),
       kTestMimeType,
       "",  // etag

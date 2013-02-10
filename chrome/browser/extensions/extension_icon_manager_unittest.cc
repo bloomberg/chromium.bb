@@ -105,9 +105,9 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
   scoped_ptr<Profile> profile(new TestingProfile());
   SkBitmap default_icon = GetDefaultIcon();
 
-  FilePath test_dir;
+  base::FilePath test_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
-  FilePath manifest_path = test_dir.AppendASCII(
+  base::FilePath manifest_path = test_dir.AppendASCII(
       "extensions/image_loading_tracker/app.json");
 
   JSONFileValueSerializer serializer(manifest_path);
@@ -146,9 +146,9 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
 TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
   SkBitmap default_icon = GetDefaultIcon();
 
-  FilePath test_dir;
+  base::FilePath test_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
-  FilePath manifest_path = test_dir.AppendASCII(
+  base::FilePath manifest_path = test_dir.AppendASCII(
       "extensions/file_manager/app.json");
 
   JSONFileValueSerializer serializer(manifest_path);

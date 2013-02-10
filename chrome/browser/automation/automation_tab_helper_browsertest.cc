@@ -107,7 +107,7 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  FilePath test_data_dir_;
+  base::FilePath test_data_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(AutomationTabHelperBrowserTest, FormSubmission) {

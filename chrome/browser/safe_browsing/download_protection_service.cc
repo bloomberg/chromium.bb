@@ -50,11 +50,11 @@ const char DownloadProtectionService::kDownloadRequestUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/download";
 
 namespace {
-bool IsArchiveFile(const FilePath& file) {
+bool IsArchiveFile(const base::FilePath& file) {
   return file.MatchesExtension(FILE_PATH_LITERAL(".zip"));
 }
 
-bool IsBinaryFile(const FilePath& file) {
+bool IsBinaryFile(const base::FilePath& file) {
   return (
       // Executable extensions for MS Windows.
       file.MatchesExtension(FILE_PATH_LITERAL(".bas")) ||
@@ -77,7 +77,8 @@ bool IsBinaryFile(const FilePath& file) {
       IsArchiveFile(file));
 }
 
-ClientDownloadRequest::DownloadType GetDownloadType(const FilePath& file) {
+ClientDownloadRequest::DownloadType GetDownloadType(
+    const base::FilePath& file) {
   DCHECK(IsBinaryFile(file));
   if (file.MatchesExtension(FILE_PATH_LITERAL(".apk")))
     return ClientDownloadRequest::ANDROID_APK;
@@ -116,7 +117,7 @@ enum MaliciousExtensionType {
   EXTENSION_MAX,
 };
 
-MaliciousExtensionType GetExtensionType(const FilePath& f) {
+MaliciousExtensionType GetExtensionType(const base::FilePath& f) {
   if (f.MatchesExtension(FILE_PATH_LITERAL(".exe"))) return EXTENSION_EXE;
   if (f.MatchesExtension(FILE_PATH_LITERAL(".msi"))) return EXTENSION_MSI;
   if (f.MatchesExtension(FILE_PATH_LITERAL(".cab"))) return EXTENSION_CAB;
@@ -140,7 +141,7 @@ MaliciousExtensionType GetExtensionType(const FilePath& f) {
   return EXTENSION_OTHER;
 }
 
-void RecordFileExtensionType(const FilePath& file) {
+void RecordFileExtensionType(const base::FilePath& file) {
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.DownloadExtensions",
                             GetExtensionType(file),
                             EXTENSION_MAX);
@@ -569,7 +570,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
                   << info_.local_file.value();
           continue;
         }
-        const FilePath& file = reader.current_entry_info()->file_path();
+        const base::FilePath& file = reader.current_entry_info()->file_path();
         if (IsBinaryFile(file)) {
           // Don't consider an archived archive to be executable, but record
           // a histogram.

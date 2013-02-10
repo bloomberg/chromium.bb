@@ -72,7 +72,7 @@ bool ReadMapKey(const std::map<std::string, std::string>& map,
 }  // namespace
 
 // Cache file name.
-const FilePath::CharType EnterpriseInstallAttributes::kCacheFilePath[] =
+const base::FilePath::CharType EnterpriseInstallAttributes::kCacheFilePath[] =
     FILE_PATH_LITERAL("/var/run/lockbox/install_attributes.pb");
 
 EnterpriseInstallAttributes::EnterpriseInstallAttributes(
@@ -81,7 +81,8 @@ EnterpriseInstallAttributes::EnterpriseInstallAttributes(
       device_locked_(false),
       registration_mode_(DEVICE_MODE_PENDING) {}
 
-void EnterpriseInstallAttributes::ReadCacheFile(const FilePath& cache_file) {
+void EnterpriseInstallAttributes::ReadCacheFile(
+    const base::FilePath& cache_file) {
   if (device_locked_ || !file_util::PathExists(cache_file))
     return;
 

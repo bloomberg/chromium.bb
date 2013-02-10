@@ -15,7 +15,7 @@ namespace extensions {
 
 // static
 bool NativeProcessLauncher::LaunchNativeProcess(
-    const FilePath& path,
+    const base::FilePath& path,
     base::ProcessHandle* native_process_handle,
     base::PlatformFile* read_file,
     base::PlatformFile* write_file) {

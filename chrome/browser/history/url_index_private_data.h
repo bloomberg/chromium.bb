@@ -89,7 +89,7 @@ class URLIndexPrivateData
   // of the cache file stored in |file_path|, and assigns it to |private_data|.
   // |languages| will be used to break URLs and page titles into words.
   static void RestoreFromFileTask(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       scoped_refptr<URLIndexPrivateData> private_data,
       const std::string& languages);
 
@@ -106,7 +106,7 @@ class URLIndexPrivateData
   // Writes |private_data| as a cache file to |file_path| and returns success.
   static bool WritePrivateDataToCacheFileTask(
       scoped_refptr<URLIndexPrivateData> private_data,
-      const FilePath& file_path);
+      const base::FilePath& file_path);
 
   // Creates a copy of ourself.
   scoped_refptr<URLIndexPrivateData> Duplicate() const;
@@ -259,7 +259,7 @@ class URLIndexPrivateData
 
   // Caches the index private data and writes the cache file to the profile
   // directory.  Called by WritePrivateDataToCacheFileTask.
-  bool SaveToFile(const FilePath& file_path);
+  bool SaveToFile(const base::FilePath& file_path);
 
   // Encode a data structure into the protobuf |cache|.
   void SavePrivateData(imui::InMemoryURLIndexCacheItem* cache) const;
@@ -275,7 +275,7 @@ class URLIndexPrivateData
   // restored data but upon failure will be empty.  |languages| will be used to
   // break URLs and page titles into words
   static scoped_refptr<URLIndexPrivateData> RestoreFromFile(
-      const FilePath& path,
+      const base::FilePath& path,
       const std::string& languages);
 
   // Decode a data structure from the protobuf |cache|. Return false if there

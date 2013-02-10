@@ -16,11 +16,11 @@
 namespace {
 
 ProfileMetrics::ProfileType GetProfileType(
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ProfileMetrics::ProfileType metric = ProfileMetrics::SECONDARY;
   ProfileManager* manager = g_browser_process->profile_manager();
-  FilePath user_data_dir;
+  base::FilePath user_data_dir;
   // In unittests, we do not always have a profile_manager so check.
   if (manager) {
     user_data_dir = manager->user_data_dir();
@@ -224,19 +224,19 @@ void ProfileMetrics::LogProfileSyncInfo(ProfileSync metric) {
                             NUM_PROFILE_SYNC_METRICS);
 }
 
-void ProfileMetrics::LogProfileLaunch(const FilePath& profile_path) {
+void ProfileMetrics::LogProfileLaunch(const base::FilePath& profile_path) {
   UMA_HISTOGRAM_ENUMERATION("Profile.LaunchBrowser",
                             GetProfileType(profile_path),
                             NUM_PROFILE_TYPE_METRICS);
 }
 
-void ProfileMetrics::LogProfileSyncSignIn(const FilePath& profile_path) {
+void ProfileMetrics::LogProfileSyncSignIn(const base::FilePath& profile_path) {
   UMA_HISTOGRAM_ENUMERATION("Profile.SyncSignIn",
                             GetProfileType(profile_path),
                             NUM_PROFILE_TYPE_METRICS);
 }
 
-void ProfileMetrics::LogProfileUpdate(const FilePath& profile_path) {
+void ProfileMetrics::LogProfileUpdate(const base::FilePath& profile_path) {
   UMA_HISTOGRAM_ENUMERATION("Profile.Update",
                             GetProfileType(profile_path),
                             NUM_PROFILE_TYPE_METRICS);

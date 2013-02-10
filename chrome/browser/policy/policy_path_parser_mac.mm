@@ -35,9 +35,9 @@ const MacFolderNamesToSPDMaping mac_folder_mapping[] = {
 
 // Replaces all variable occurrences in the policy string with the respective
 // system settings values.
-FilePath::StringType ExpandPathVariables(
-    const FilePath::StringType& untranslated_string) {
-  FilePath::StringType result(untranslated_string);
+base::FilePath::StringType ExpandPathVariables(
+    const base::FilePath::StringType& untranslated_string) {
+  base::FilePath::StringType result(untranslated_string);
   if (result.length() == 0)
     return result;
   // Sanitize quotes in case of any around the whole string.

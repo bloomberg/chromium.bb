@@ -14,7 +14,7 @@ class MostVisitedWebUITest : public WebUIBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     WebUIBrowserTest::SetUpInProcessBrowserTestFixture();
-    AddLibrary(FilePath(FILE_PATH_LITERAL("most_visited_page_test.js")));
+    AddLibrary(base::FilePath(FILE_PATH_LITERAL("most_visited_page_test.js")));
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

@@ -58,7 +58,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
         GetExtensionsRequestContextGetter() const;
     scoped_refptr<ChromeURLRequestContextGetter>
         GetIsolatedAppRequestContextGetter(
-            const FilePath& partition_path,
+            const base::FilePath& partition_path,
             bool in_memory) const;
     scoped_refptr<ChromeURLRequestContextGetter>
         CreateIsolatedAppRequestContextGetter(

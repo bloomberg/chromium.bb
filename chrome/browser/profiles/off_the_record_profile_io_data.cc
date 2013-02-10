@@ -110,7 +110,7 @@ OffTheRecordProfileIOData::Handle::GetExtensionsRequestContextGetter() const {
 
 scoped_refptr<ChromeURLRequestContextGetter>
 OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!partition_path.empty());

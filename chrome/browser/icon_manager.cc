@@ -38,7 +38,7 @@ IconManager::~IconManager() {
   STLDeleteValues(&icon_cache_);
 }
 
-gfx::Image* IconManager::LookupIcon(const FilePath& file_name,
+gfx::Image* IconManager::LookupIcon(const base::FilePath& file_name,
                                     IconLoader::IconSize size) {
   IconGroupID group = GetGroupIDFromFilepath(file_name);
   IconMap::iterator it = icon_cache_.find(CacheKey(group, size));
@@ -49,7 +49,7 @@ gfx::Image* IconManager::LookupIcon(const FilePath& file_name,
 }
 
 CancelableTaskTracker::TaskId IconManager::LoadIcon(
-    const FilePath& file_name,
+    const base::FilePath& file_name,
     IconLoader::IconSize size,
     const IconRequestCallback& callback,
     CancelableTaskTracker* tracker) {

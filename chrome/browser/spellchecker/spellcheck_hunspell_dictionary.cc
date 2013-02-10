@@ -91,7 +91,7 @@ void SpellcheckHunspellDictionary::InitializeDictionaryLocation() {
   // Initialize the BDICT path. Initialization should be in the FILE thread
   // because it checks if there is a "Dictionaries" directory and create it.
   if (bdict_file_path_.empty()) {
-    FilePath dict_dir;
+    base::FilePath dict_dir;
     PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
     bdict_file_path_ =
         chrome::spellcheck_common::GetVersionedFileName(language_, dict_dir);
@@ -100,9 +100,9 @@ void SpellcheckHunspellDictionary::InitializeDictionaryLocation() {
 #if defined(OS_WIN)
   // Check if the dictionary exists in the fallback location. If so, use it
   // rather than downloading anew.
-  FilePath user_dir;
+  base::FilePath user_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_dir);
-  FilePath fallback = user_dir.Append(bdict_file_path_.BaseName());
+  base::FilePath fallback = user_dir.Append(bdict_file_path_.BaseName());
   if (!file_util::PathExists(bdict_file_path_) &&
       file_util::PathExists(fallback)) {
     bdict_file_path_ = fallback;
@@ -240,9 +240,10 @@ void SpellcheckHunspellDictionary::SaveDictionaryData(std::string* data) {
   if (bytes_written != data->length()) {
     bool success = false;
 #if defined(OS_WIN)
-    FilePath dict_dir;
+    base::FilePath dict_dir;
     PathService::Get(chrome::DIR_USER_DATA, &dict_dir);
-    FilePath fallback_file_path = dict_dir.Append(bdict_file_path_.BaseName());
+    base::FilePath fallback_file_path =
+        dict_dir.Append(bdict_file_path_.BaseName());
     bytes_written =
         file_util::WriteFile(fallback_file_path, data->data(), data->length());
     if (bytes_written == data->length())
@@ -279,7 +280,8 @@ void SpellcheckHunspellDictionary::SaveDictionaryDataComplete() {
   }
 }
 
-bool SpellcheckHunspellDictionary::VerifyBDict(const FilePath& path) const {
+bool SpellcheckHunspellDictionary::VerifyBDict(
+    const base::FilePath& path) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Read the dictionary file and scan its data. We need to close this file

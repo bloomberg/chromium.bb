@@ -227,7 +227,7 @@ class DownloadItemGtk : public content::DownloadItem::Observer,
   gfx::Image* icon_large_;
 
   // The last download file path for which we requested an icon.
-  FilePath icon_filepath_;
+  base::FilePath icon_filepath_;
 
   content::NotificationRegistrar registrar_;
 

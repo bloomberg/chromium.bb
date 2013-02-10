@@ -28,7 +28,7 @@ void ActivityDatabase::SetErrorDelegate(sql::ErrorDelegate* error_delegate) {
   db_.set_error_delegate(error_delegate);
 }
 
-void ActivityDatabase::Init(const FilePath& db_name) {
+void ActivityDatabase::Init(const base::FilePath& db_name) {
   db_.set_page_size(4096);
   db_.set_cache_size(32);
 

@@ -22,7 +22,7 @@ TEST(UserStyleSheetWatcherTest, StyleLoad) {
   ASSERT_TRUE(dir.CreateUniqueTempDir());
 
   std::string css_file_contents = "a { color: green; }";
-  FilePath style_sheet_file = dir.path().AppendASCII("User StyleSheets")
+  base::FilePath style_sheet_file = dir.path().AppendASCII("User StyleSheets")
                               .AppendASCII("Custom.css");
   file_util::CreateDirectory(style_sheet_file.DirName());
   ASSERT_TRUE(file_util::WriteFile(style_sheet_file,

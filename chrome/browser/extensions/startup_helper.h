@@ -19,8 +19,9 @@ class StartupHelper : public PackExtensionJob::Client {
   StartupHelper();
   virtual ~StartupHelper();
 
-  virtual void OnPackSuccess(const FilePath& crx_path,
-                             const FilePath& output_private_key_path) OVERRIDE;
+  virtual void OnPackSuccess(
+      const base::FilePath& crx_path,
+      const base::FilePath& output_private_key_path) OVERRIDE;
   virtual void OnPackFailure(const std::string& error_message,
                              ExtensionCreator::ErrorType type) OVERRIDE;
 

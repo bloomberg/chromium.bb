@@ -81,8 +81,8 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     LaunchedCallback callback) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
-  FilePath native_host_program;
-  FilePath native_host_registry;
+  base::FilePath native_host_program;
+  base::FilePath native_host_registry;
   CHECK(PathService::Get(chrome::DIR_USER_DATA, &native_host_registry));
   native_host_registry =
       native_host_registry.AppendASCII(kNativeHostsDirectoryName);

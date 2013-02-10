@@ -23,7 +23,7 @@ string16 GetShortcutFilenameForProfile(const string16& profile_name,
                                        BrowserDistribution* distribution);
 
 // Returns the command-line flags to launch Chrome with the given profile.
-string16 CreateProfileShortcutFlags(const FilePath& profile_path);
+string16 CreateProfileShortcutFlags(const base::FilePath& profile_path);
 
 }  // namespace internal
 }  // namespace profiles
@@ -46,29 +46,34 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
   virtual ~ProfileShortcutManagerWin();
 
   // ProfileShortcutManager implementation:
-  virtual void CreateProfileShortcut(const FilePath& profile_path) OVERRIDE;
-  virtual void RemoveProfileShortcuts(const FilePath& profile_path) OVERRIDE;
+  virtual void CreateProfileShortcut(
+      const base::FilePath& profile_path) OVERRIDE;
+  virtual void RemoveProfileShortcuts(
+      const base::FilePath& profile_path) OVERRIDE;
   virtual void HasProfileShortcuts(
-      const FilePath& profile_path,
+      const base::FilePath& profile_path,
       const base::Callback<void(bool)>& callback) OVERRIDE;
 
   // ProfileInfoCacheObserver implementation:
-  virtual void OnProfileAdded(const FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileWillBeRemoved(const FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileWasRemoved(const FilePath& profile_path,
+  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWillBeRemoved(
+      const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
                                    const string16& profile_name) OVERRIDE;
-  virtual void OnProfileNameChanged(const FilePath& profile_path,
+  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
                                     const string16& old_profile_name) OVERRIDE;
-  virtual void OnProfileAvatarChanged(const FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileAvatarChanged(
+      const base::FilePath& profile_path) OVERRIDE;
 
  private:
   // Gives the profile path of an alternate profile than |profile_path|.
   // Must only be called when the number profiles is 2.
-  FilePath GetOtherProfilePath(const FilePath& profile_path);
+  base::FilePath GetOtherProfilePath(const base::FilePath& profile_path);
 
-  void CreateOrUpdateShortcutsForProfileAtPath(const FilePath& profile_path,
-                                               CreateOrUpdateMode create_mode,
-                                               NonProfileShortcutAction action);
+  void CreateOrUpdateShortcutsForProfileAtPath(
+      const base::FilePath& profile_path,
+      CreateOrUpdateMode create_mode,
+      NonProfileShortcutAction action);
 
   ProfileManager* profile_manager_;
 

@@ -20,7 +20,7 @@ AndroidCacheDatabase::~AndroidCacheDatabase() {
 }
 
 sql::InitStatus AndroidCacheDatabase::InitAndroidCacheDatabase(
-    const FilePath& db_name) {
+    const base::FilePath& db_name) {
   if (!CreateDatabase(db_name))
     return sql::INIT_FAILURE;
 
@@ -171,7 +171,7 @@ bool AndroidCacheDatabase::DeleteUnusedSearchTerms() {
   return statement.Run();
 }
 
-bool AndroidCacheDatabase::CreateDatabase(const FilePath& db_name) {
+bool AndroidCacheDatabase::CreateDatabase(const base::FilePath& db_name) {
   db_name_ = db_name;
   if (file_util::PathExists(db_name_))
     file_util::Delete(db_name_, false);

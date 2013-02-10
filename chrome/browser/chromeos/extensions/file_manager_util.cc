@@ -196,7 +196,7 @@ DictionaryValue* ProgessStatusToDictionaryValue(
   GURL file_url;
   if (file_manager_util::ConvertFileToFileSystemUrl(profile,
           drive::util::GetSpecialRemoteRootPath().Append(
-              FilePath(status.file_path)),
+              base::FilePath(status.file_path)),
           extension_id,
           &file_url)) {
     result->SetString("fileUrl", file_url.spec());
@@ -223,7 +223,7 @@ void OpenNewTab(const GURL& url, Profile* profile) {
 }
 
 // Shows a warning message box saying that the file could not be opened.
-void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
+void ShowWarningMessageBox(Profile* profile, const base::FilePath& path) {
   // TODO: if FindOrCreateTabbedBrowser creates a new browser the returned
   // browser is leaked.
   Browser* browser =
@@ -241,7 +241,7 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
 // Called when a file on Drive was found. Opens the file found at |file_path|
 // in a new tab with a URL computed based on the |file_type|
 void OnDriveFileFound(Profile* profile,
-                      const FilePath& file_path,
+                      const base::FilePath& file_path,
                       drive::DriveFileType file_type,
                       drive::DriveFileError error,
                       scoped_ptr<drive::DriveEntryProto> entry_proto) {
@@ -267,7 +267,7 @@ void OnDriveFileFound(Profile* profile,
   }
 }
 
-void InstallCRX(Browser* browser, const FilePath& path) {
+void InstallCRX(Browser* browser, const base::FilePath& path) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(browser->profile())->extension_service();
   CHECK(service);
@@ -287,7 +287,7 @@ void InstallCRX(Browser* browser, const FilePath& path) {
 // Called when a crx file on Drive was downloaded.
 void OnCRXDownloadCallback(Browser* browser,
                            drive::DriveFileError error,
-                           const FilePath& file,
+                           const base::FilePath& file,
                            const std::string& unused_mime_type,
                            drive::DriveFileType file_type) {
   if (error != drive::DRIVE_FILE_OK || file_type != drive::REGULAR_FILE)
@@ -301,7 +301,7 @@ enum TAB_REUSE_MODE {
   REUSE_NEVER
 };
 
-bool FileManageTabExists(const FilePath& path, TAB_REUSE_MODE mode) {
+bool FileManageTabExists(const base::FilePath& path, TAB_REUSE_MODE mode) {
   if (mode == REUSE_NEVER)
     return false;
 
@@ -379,7 +379,7 @@ void ExecuteHandler(Profile* profile,
   executor->Execute(urls);
 }
 
-void OpenFileBrowser(const FilePath& path,
+void OpenFileBrowser(const base::FilePath& path,
                      TAB_REUSE_MODE mode,
                      const std::string& action_id) {
   content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
@@ -409,7 +409,7 @@ void OpenFileBrowser(const FilePath& path,
     url += "?" + net::EscapeUrlEncodedData(query, false);
   }
   if (!path.empty()) {
-    FilePath virtual_path;
+    base::FilePath virtual_path;
     if (!ConvertFileToRelativeFileSystemPath(profile, kFileBrowserDomain, path,
                                              &virtual_path))
       return;
@@ -448,7 +448,7 @@ Browser* GetBrowserForUrl(GURL target_url) {
   return NULL;
 }
 
-bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
+bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
   GURL url;
   if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
     return false;
@@ -498,7 +498,7 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
 }
 
 // Reads an entire file into a string. Fails is the file is 4K or longer.
-bool ReadSmallFileToString(const FilePath& path, std::string* contents) {
+bool ReadSmallFileToString(const base::FilePath& path, std::string* contents) {
   FILE* file = file_util::OpenFile(path, "rb");
   if (!file) {
     return false;
@@ -516,7 +516,7 @@ bool ReadSmallFileToString(const FilePath& path, std::string* contents) {
 
 // Reads JSON from a Google Docs file, extracts a document url and opens it
 // in a tab.
-void ReadUrlFromGDocOnFileThread(const FilePath& file_path) {
+void ReadUrlFromGDocOnFileThread(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   std::string contents;
   if (!ReadSmallFileToString(file_path, &contents)) {
@@ -542,7 +542,7 @@ void ReadUrlFromGDocOnFileThread(const FilePath& file_path) {
 
 // Used to implement ViewItem().
 void ContinueViewItem(Profile* profile,
-                      const FilePath& path,
+                      const base::FilePath& path,
                       base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -607,11 +607,11 @@ GURL GetVideoPlayerUrl(const GURL& source_url) {
 }
 
 bool ConvertFileToFileSystemUrl(Profile* profile,
-                                const FilePath& full_file_path,
+                                const base::FilePath& full_file_path,
                                 const std::string& extension_id,
                                 GURL* url) {
   GURL origin_url = Extension::GetBaseURLFromExtensionId(extension_id);
-  FilePath virtual_path;
+  base::FilePath virtual_path;
   if (!ConvertFileToRelativeFileSystemPath(profile, extension_id,
            full_file_path, &virtual_path)) {
     return false;
@@ -626,8 +626,8 @@ bool ConvertFileToFileSystemUrl(Profile* profile,
 bool ConvertFileToRelativeFileSystemPath(
     Profile* profile,
     const std::string& extension_id,
-    const FilePath& full_file_path,
-    FilePath* virtual_path) {
+    const base::FilePath& full_file_path,
+    base::FilePath* virtual_path) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   // May be NULL during unit_tests.
@@ -654,10 +654,10 @@ bool ConvertFileToRelativeFileSystemPath(
 GURL GetFileBrowserUrlWithParams(
     ui::SelectFileDialog::Type type,
     const string16& title,
-    const FilePath& default_virtual_path,
+    const base::FilePath& default_virtual_path,
     const ui::SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
-    const FilePath::StringType& default_extension) {
+    const base::FilePath::StringType& default_extension) {
   DictionaryValue arg_value;
   arg_value.SetString("type", GetDialogTypeAsString(type));
   arg_value.SetString("title", title);
@@ -740,11 +740,11 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
   return title;
 }
 
-void ViewRemovableDrive(const FilePath& path) {
+void ViewRemovableDrive(const base::FilePath& path) {
   OpenFileBrowser(path, REUSE_ANY_FILE_MANAGER, "auto-open");
 }
 
-void OpenActionChoiceDialog(const FilePath& path) {
+void OpenActionChoiceDialog(const base::FilePath& path) {
   const int kDialogWidth = 394;
   // TODO(dgozman): remove 50, which is a title height once popup window
   // will have no title.
@@ -752,7 +752,7 @@ void OpenActionChoiceDialog(const FilePath& path) {
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
-  FilePath virtual_path;
+  base::FilePath virtual_path;
   if (!ConvertFileToRelativeFileSystemPath(profile, kFileBrowserDomain, path,
                                            &virtual_path))
     return;
@@ -781,7 +781,7 @@ void OpenActionChoiceDialog(const FilePath& path) {
   browser->window()->Show();
 }
 
-void ViewItem(const FilePath& path) {
+void ViewItem(const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
@@ -802,12 +802,12 @@ void ViewItem(const FilePath& path) {
                          base::Bind(&ContinueViewItem, profile, path));
 }
 
-void ShowFileInFolder(const FilePath& path) {
+void ShowFileInFolder(const base::FilePath& path) {
   // This action changes the selection so we do not reuse existing tabs.
   OpenFileBrowser(path, REUSE_NEVER, "select");
 }
 
-bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
+bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
     const std::string& internal_task_id) {
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -922,7 +922,7 @@ bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension) {
   if (base::strcasecmp(file_extension, kPdfExtension) != 0)
     return false;
 
-  FilePath pdf_path;
+  base::FilePath pdf_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
 
   content::PepperPluginInfo* pepper_info =

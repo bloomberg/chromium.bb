@@ -39,7 +39,7 @@ class MockSettingsObserver : public SettingsObserver {
 // tests.
 class MutablePolicyValueStore : public PolicyValueStore {
  public:
-  explicit MutablePolicyValueStore(const FilePath& path)
+  explicit MutablePolicyValueStore(const base::FilePath& path)
       : PolicyValueStore(kTestExtensionId,
                          make_scoped_refptr(new SettingsObserverList()),
                          scoped_ptr<ValueStore>(new LeveldbValueStore(path))) {}
@@ -73,7 +73,7 @@ class MutablePolicyValueStore : public PolicyValueStore {
   DISALLOW_COPY_AND_ASSIGN(MutablePolicyValueStore);
 };
 
-ValueStore* Param(const FilePath& file_path) {
+ValueStore* Param(const base::FilePath& file_path) {
   return new MutablePolicyValueStore(file_path);
 }
 

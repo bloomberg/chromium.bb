@@ -189,9 +189,9 @@ class AndroidProviderBackendTest : public testing::Test {
   HistoryDatabase history_db_;
   ThumbnailDatabase thumbnail_db_;
   base::ScopedTempDir temp_dir_;
-  FilePath android_cache_db_name_;
-  FilePath history_db_name_;
-  FilePath thumbnail_db_name_;
+  base::FilePath android_cache_db_name_;
+  base::FilePath history_db_name_;
+  base::FilePath thumbnail_db_name_;
 
   TestingProfileManager profile_manager_;
   BookmarkModel* bookmark_model_;

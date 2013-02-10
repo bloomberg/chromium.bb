@@ -167,7 +167,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {
 // Intent. This test does not test the mechanics of invoking a Web Intent
 // from a source page, and short-circuits to LaunchPlatformAppWithWebIntent.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchReply) {
-  FilePath path = test_data_dir_.AppendASCII("platform_apps/launch_reply");
+  base::FilePath path =
+      test_data_dir_.AppendASCII("platform_apps/launch_reply");
   const extensions::Extension* extension = LoadExtension(path);
   ASSERT_TRUE(extension) << "Failed to load extension.";
 
@@ -495,7 +496,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
   // Setup the command line
   ClearCommandLineArgs();
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  FilePath relative_test_doc = FilePath::FromUTF8Unsafe(kTestFilePath);
+  base::FilePath relative_test_doc =
+      base::FilePath::FromUTF8Unsafe(kTestFilePath);
   relative_test_doc = relative_test_doc.NormalizePathSeparators();
   command_line->AppendArgPath(relative_test_doc);
 

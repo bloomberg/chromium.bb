@@ -26,8 +26,8 @@ void StickySettings::StoreAppState(const std::string& data) {
   printer_app_state_.reset(new std::string(data));
 }
 
-void StickySettings::StoreSavePath(const FilePath& path) {
-  save_path_.reset(new FilePath(path));
+void StickySettings::StoreSavePath(const base::FilePath& path) {
+  save_path_.reset(new base::FilePath(path));
 }
 
 void StickySettings::SaveInPrefs(PrefService* prefs) {
@@ -49,9 +49,9 @@ void StickySettings::RestoreFromPrefs(PrefService* prefs) {
     const DictionaryValue* value =
         prefs->GetDictionary(prefs::kPrintPreviewStickySettings);
 
-    FilePath::StringType save_path;
+    base::FilePath::StringType save_path;
     if (value->GetString(printing::kSettingSavePath, &save_path))
-      save_path_.reset(new FilePath(save_path));
+      save_path_.reset(new base::FilePath(save_path));
     std::string buffer;
     if (value->GetString(printing::kSettingAppState, &buffer))
       printer_app_state_.reset(new std::string(buffer));
@@ -67,7 +67,7 @@ std::string* StickySettings::printer_app_state() {
   return printer_app_state_.get();
 }
 
-FilePath* StickySettings::save_path() {
+base::FilePath* StickySettings::save_path() {
   return save_path_.get();
 }
 

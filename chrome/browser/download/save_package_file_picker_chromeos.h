@@ -21,7 +21,7 @@ class SavePackageFilePickerChromeOS : public ui::SelectFileDialog::Listener,
  public:
   SavePackageFilePickerChromeOS(
       content::WebContents* web_contents,
-      const FilePath& suggested_path,
+      const base::FilePath& suggested_path,
       const content::SavePackagePathPickedCallback& callback);
 
   // Used to disable prompting the user for a directory/filename of the saved
@@ -32,7 +32,7 @@ class SavePackageFilePickerChromeOS : public ui::SelectFileDialog::Listener,
   virtual ~SavePackageFilePickerChromeOS();
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& selected_path,
+  virtual void FileSelected(const base::FilePath& selected_path,
                             int unused_index,
                             void* unused_params) OVERRIDE;
   virtual void FileSelectedWithExtraInfo(
@@ -45,7 +45,7 @@ class SavePackageFilePickerChromeOS : public ui::SelectFileDialog::Listener,
 
   // For managing select file dialogs.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
-  FilePath selected_path_;
+  base::FilePath selected_path_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageFilePickerChromeOS);
 };

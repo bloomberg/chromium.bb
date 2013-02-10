@@ -243,7 +243,7 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
   void LocalizeCSS(
       const std::string& data,
       const std::string& extension_id,
-      const FilePath& extension_path,
+      const base::FilePath& extension_path,
       const std::string& extension_default_locale);
 
   // Called when contents from the loaded file have been localized.

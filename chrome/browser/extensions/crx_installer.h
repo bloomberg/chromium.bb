@@ -89,10 +89,10 @@ class CrxInstaller
       const WebstoreInstaller::Approval* approval);
 
   // Install the crx in |source_file|.
-  void InstallCrx(const FilePath& source_file);
+  void InstallCrx(const base::FilePath& source_file);
 
   // Convert the specified user script into an extension and install it.
-  void InstallUserScript(const FilePath& source_file,
+  void InstallUserScript(const base::FilePath& source_file,
                          const GURL& download_url);
 
   // Convert the specified web app into an extension and install it.
@@ -108,7 +108,7 @@ class CrxInstaller
   const GURL& download_url() const { return download_url_; }
   void set_download_url(const GURL& val) { download_url_ = val; }
 
-  const FilePath& source_file() const { return source_file_; }
+  const base::FilePath& source_file() const { return source_file_; }
 
   Manifest::Location install_source() const {
     return install_source_;
@@ -204,7 +204,7 @@ class CrxInstaller
 
   // Converts the source web app to an extension.
   void ConvertWebAppOnFileThread(const WebApplicationInfo& web_app,
-                                 const FilePath& install_directory);
+                                 const base::FilePath& install_directory);
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.
@@ -212,8 +212,8 @@ class CrxInstaller
 
   // SandboxedUnpackerClient
   virtual void OnUnpackFailure(const string16& error_message) OVERRIDE;
-  virtual void OnUnpackSuccess(const FilePath& temp_dir,
-                               const FilePath& extension_dir,
+  virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
+                               const base::FilePath& extension_dir,
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension) OVERRIDE;
 
@@ -249,13 +249,13 @@ class CrxInstaller
   scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner();
 
   // The file we're installing.
-  FilePath source_file_;
+  base::FilePath source_file_;
 
   // The URL the file was downloaded from.
   GURL download_url_;
 
   // The directory extensions are installed to.
-  FilePath install_directory_;
+  base::FilePath install_directory_;
 
   // The location the installation came from (bundled with Chromium, registry,
   // manual install, etc). This metadata is saved with the installation if
@@ -319,7 +319,7 @@ class CrxInstaller
 
   // The temp directory extension resources were unpacked to. We own this and
   // must delete it when we are done with it.
-  FilePath temp_dir_;
+  base::FilePath temp_dir_;
 
   // The frontend we will report results back to.
   base::WeakPtr<ExtensionService> frontend_weak_;
@@ -335,7 +335,7 @@ class CrxInstaller
 
   // The root of the unpacked extension directory. This is a subdirectory of
   // temp_dir_, so we don't have to delete it explicitly.
-  FilePath unpacked_extension_root_;
+  base::FilePath unpacked_extension_root_;
 
   // True when the CRX being installed was just downloaded.
   // Used to trigger extra checks before installing.

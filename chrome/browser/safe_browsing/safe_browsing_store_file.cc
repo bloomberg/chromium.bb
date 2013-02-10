@@ -132,7 +132,7 @@ void DeleteChunksFromSet(const base::hash_set<int32>& deleted,
 // Sanity-check the header against the file's size to make sure our
 // vectors aren't gigantic.  This doubles as a cheap way to detect
 // corruption without having to checksum the entire file.
-bool FileHeaderSanityCheck(const FilePath& filename,
+bool FileHeaderSanityCheck(const base::FilePath& filename,
                            const FileHeader& header) {
   int64 size = 0;
   if (!file_util::GetFileSize(filename, &size))
@@ -154,7 +154,7 @@ bool FileHeaderSanityCheck(const FilePath& filename,
 
 // This a helper function that reads header to |header|. Returns true if the
 // magic number is correct and santiy check passes.
-bool ReadAndVerifyHeader(const FilePath& filename,
+bool ReadAndVerifyHeader(const base::FilePath& filename,
                          FILE* fp,
                          FileHeader* header,
                          base::MD5Context* context) {
@@ -176,8 +176,8 @@ void SafeBrowsingStoreFile::RecordFormatEvent(FormatEventType event_type) {
 
 // static
 void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
-    const FilePath& current_filename) {
-  const FilePath original_filename(
+    const base::FilePath& current_filename) {
+  const base::FilePath original_filename(
       current_filename.DirName().AppendASCII("Safe Browsing"));
   if (file_util::PathExists(original_filename)) {
     int64 size = 0;
@@ -194,7 +194,7 @@ void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
 
     // Just best-effort on the journal file, don't want to get lost in
     // the weeds.
-    const FilePath journal_filename(
+    const base::FilePath journal_filename(
         current_filename.DirName().AppendASCII("Safe Browsing-journal"));
     file_util::Delete(journal_filename, false);
   }
@@ -225,7 +225,7 @@ bool SafeBrowsingStoreFile::Delete() {
     return false;
   }
 
-  const FilePath new_filename = TemporaryFileForFilename(filename_);
+  const base::FilePath new_filename = TemporaryFileForFilename(filename_);
   if (!file_util::Delete(new_filename, false) &&
       file_util::PathExists(new_filename)) {
     NOTREACHED();
@@ -235,7 +235,7 @@ bool SafeBrowsingStoreFile::Delete() {
   // With SQLite support gone, one way to get to this code is if the
   // existing file is a SQLite file.  Make sure the journal file is
   // also removed.
-  const FilePath journal_filename(
+  const base::FilePath journal_filename(
       filename_.value() + FILE_PATH_LITERAL("-journal"));
   if (file_util::PathExists(journal_filename))
     file_util::Delete(journal_filename, false);
@@ -298,7 +298,7 @@ bool SafeBrowsingStoreFile::CheckValidity() {
 }
 
 void SafeBrowsingStoreFile::Init(
-    const FilePath& filename,
+    const base::FilePath& filename,
     const base::Closure& corruption_callback
 ) {
   filename_ = filename;
@@ -421,7 +421,7 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
 
   corruption_seen_ = false;
 
-  const FilePath new_filename = TemporaryFileForFilename(filename_);
+  const base::FilePath new_filename = TemporaryFileForFilename(filename_);
   file_util::ScopedFILE new_file(file_util::OpenFile(new_filename, "wb+"));
   if (new_file.get() == NULL)
     return false;
@@ -683,7 +683,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
       file_util::PathExists(filename_))
     return false;
 
-  const FilePath new_filename = TemporaryFileForFilename(filename_);
+  const base::FilePath new_filename = TemporaryFileForFilename(filename_);
   if (!file_util::Move(new_filename, filename_))
     return false;
 

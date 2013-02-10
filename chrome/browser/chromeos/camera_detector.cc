@@ -68,9 +68,9 @@ bool CameraDetector::CheckPresence() {
   // device may trigger costly device initialization.
   using file_util::FileEnumerator;
   FileEnumerator file_enum(
-      FilePath(kV4LSubsystemDir), false /* not recursive */,
+      base::FilePath(kV4LSubsystemDir), false /* not recursive */,
       FileEnumerator::FILES | FileEnumerator::SHOW_SYM_LINKS);
-  for (FilePath path = file_enum.Next(); !path.empty();
+  for (base::FilePath path = file_enum.Next(); !path.empty();
        path = file_enum.Next()) {
     std::string v4l_capabilities;
     if (chrome::GetUdevDevicePropertyValueByPath(

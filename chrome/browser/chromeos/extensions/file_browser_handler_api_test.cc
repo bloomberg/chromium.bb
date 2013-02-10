@@ -34,10 +34,10 @@ namespace {
 
 // Data that defines FileSelector behaviour in each test case.
 struct TestCase {
-  TestCase(const FilePath& suggested_name,
+  TestCase(const base::FilePath& suggested_name,
            const std::vector<std::string>& allowed_extensions,
            bool success,
-           const FilePath& selected_path)
+           const base::FilePath& selected_path)
       : suggested_name(suggested_name),
         allowed_extensions(allowed_extensions),
         success(success),
@@ -46,7 +46,7 @@ struct TestCase {
   ~TestCase() {}
 
   // Path that we expect to be suggested to the file selector.
-  FilePath suggested_name;
+  base::FilePath suggested_name;
 
   // Extensions that we expect to be allowed to the file selector.
   std::vector<std::string> allowed_extensions;
@@ -54,12 +54,12 @@ struct TestCase {
   // Whether file selector should fail.
   bool success;
   // The path file selector should return back to the function.
-  FilePath selected_path;
+  base::FilePath selected_path;
 };
 
 // Checks that file under path |selected_path| contains |expected_contents|.
 // Must be called on the file thread.
-void ExpectFileContentEquals(const FilePath& selected_path,
+void ExpectFileContentEquals(const base::FilePath& selected_path,
                              const std::string& expected_contents) {
   std::string test_file_contents;
   ASSERT_TRUE(file_util::ReadFileToString(selected_path, &test_file_contents));
@@ -72,10 +72,10 @@ void ExpectFileContentEquals(const FilePath& selected_path,
 // results.
 class MockFileSelector : public file_handler::FileSelector {
  public:
-  MockFileSelector(const FilePath& suggested_name,
+  MockFileSelector(const base::FilePath& suggested_name,
                    const std::vector<std::string>& allowed_extensions,
                    bool success,
-                   const FilePath& selected_path)
+                   const base::FilePath& selected_path)
       : suggested_name_(suggested_name),
         allowed_extensions_(allowed_extensions),
         success_(success),
@@ -86,7 +86,7 @@ class MockFileSelector : public file_handler::FileSelector {
   // file_handler::FileSelector implementation.
   // |browser| is not used.
   virtual void SelectFile(
-      const FilePath& suggested_name,
+      const base::FilePath& suggested_name,
       const std::vector<std::string>& allowed_extensions,
       Browser* browser,
       FileBrowserHandlerInternalSelectFileFunction* function) OVERRIDE {
@@ -111,7 +111,7 @@ class MockFileSelector : public file_handler::FileSelector {
 
  private:
   // File name that is expected to be suggested by the function.
-  FilePath suggested_name_;
+  base::FilePath suggested_name_;
 
   // Extensions that is expected to be allowed by the function.
   std::vector<std::string> allowed_extensions_;
@@ -119,7 +119,7 @@ class MockFileSelector : public file_handler::FileSelector {
   // Whether the selection should succeed.
   bool success_;
   // File path that should be returned to the function.
-  FilePath selected_path_;
+  base::FilePath selected_path_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFileSelector);
 };
@@ -147,13 +147,13 @@ class MockFileSelectorFactory : public file_handler::FileSelectorFactory {
 
  private:
   // File name that is expected to be suggested by the function.
-  FilePath suggested_name_;
+  base::FilePath suggested_name_;
   // Extensions that is expected to be allowed by the function.
   std::vector<std::string> allowed_extensions_;
   // Whether the selection should succeed.
   bool success_;
   // File path that should be returned to the function.
-  FilePath selected_path_;
+  base::FilePath selected_path_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFileSelectorFactory);
 };
@@ -165,7 +165,7 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
     // Create mount point directory that will be used in the test.
     // Mount point will be called "tmp", and it will be located in a tmp
     // directory with an unique name.
-    FilePath tmp_dir_path;
+    base::FilePath tmp_dir_path;
     PathService::Get(base::DIR_TEMP, &tmp_dir_path);
     ASSERT_TRUE(scoped_tmp_dir_.CreateUniqueTempDirUnderPath(tmp_dir_path));
     tmp_mount_point_ = scoped_tmp_dir_.path().Append("tmp");
@@ -182,7 +182,8 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
         tmp_mount_point_);
   }
 
-  FilePath GetFullPathOnTmpMountPoint(const FilePath& relative_path) {
+  base::FilePath GetFullPathOnTmpMountPoint(
+      const base::FilePath& relative_path) {
     return tmp_mount_point_.Append(relative_path);
   }
 
@@ -224,7 +225,7 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
 
   base::ScopedTempDir scoped_tmp_dir_;
   // Our test mount point path.
-  FilePath tmp_mount_point_;
+  base::FilePath tmp_mount_point_;
 };
 
 const std::vector<TestCase>* FileBrowserHandlerExtensionTest::test_cases_ =
@@ -241,8 +242,8 @@ size_t FileBrowserHandlerExtensionTest::current_test_case_ = 0;
 // create, read and write the file under the selected file path.
 IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
   // Path that will be "selected" by file selector.
-  const FilePath selected_path =
-      GetFullPathOnTmpMountPoint(FilePath("test_file.txt"));
+  const base::FilePath selected_path =
+      GetFullPathOnTmpMountPoint(base::FilePath("test_file.txt"));
 
   std::vector<std::string> allowed_extensions;
   allowed_extensions.push_back("txt");
@@ -250,15 +251,15 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
 
   std::vector<TestCase> test_cases;
   test_cases.push_back(
-      TestCase(FilePath("some_file_name.txt"),
+      TestCase(base::FilePath("some_file_name.txt"),
                allowed_extensions,
                true,
                selected_path));
   test_cases.push_back(
-      TestCase(FilePath("fail"),
+      TestCase(base::FilePath("fail"),
                std::vector<std::string>(),
                false,
-               FilePath()));
+               base::FilePath()));
 
   SetTestCases(&test_cases);
 
@@ -322,10 +323,10 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, NoUserGesture) {
 // dictionary with |success == false| and no file entry when user cancels file
 // selection.
 IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, SelectionFailed) {
-  TestCase test_case(FilePath("some_file_name.txt"),
+  TestCase test_case(base::FilePath("some_file_name.txt"),
                      std::vector<std::string>(),
                      false,
-                     FilePath());
+                     base::FilePath());
 
   scoped_refptr<FileBrowserHandlerInternalSelectFileFunction>
       select_file_function(
@@ -351,10 +352,10 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, SelectionFailed) {
 // only a file name (i.e. that extension function caller has no influence on
 // which directory contents will be initially displayed in selection dialog).
 IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, SuggestedFullPath) {
-  TestCase test_case(FilePath("some_file_name.txt"),
+  TestCase test_case(base::FilePath("some_file_name.txt"),
                      std::vector<std::string>(),
                      false,
-                     FilePath());
+                     base::FilePath());
 
   scoped_refptr<FileBrowserHandlerInternalSelectFileFunction>
       select_file_function(

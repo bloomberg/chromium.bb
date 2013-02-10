@@ -146,8 +146,8 @@ ActivityLog::ActivityLog(Profile* profile) {
   // is being written to the database.
   db_ = new ActivityDatabase();
   if (!IsLogEnabled()) return;
-  FilePath base_dir = profile->GetPath();
-  FilePath database_name = base_dir.Append(
+  base::FilePath base_dir = profile->GetPath();
+  base::FilePath database_name = base_dir.Append(
       chrome::kExtensionActivityLogFilename);
   KillActivityDatabaseErrorDelegate* error_delegate =
       new KillActivityDatabaseErrorDelegate(this);

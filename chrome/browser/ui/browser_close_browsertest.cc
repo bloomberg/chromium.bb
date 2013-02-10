@@ -84,7 +84,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
 
   // Create a second profile to work within multi-profile.
   Profile* CreateSecondProfile() {
-    FilePath user_data_dir;
+    base::FilePath user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
 
     if (!second_profile_data_dir_.CreateUniqueTempDirUnderPath(user_data_dir))

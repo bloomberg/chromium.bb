@@ -17,7 +17,7 @@ class TestFirefoxProxySettings : public FirefoxProxySettings {
  public:
   TestFirefoxProxySettings() {}
 
-  static bool TestGetSettingsFromFile(const FilePath& pref_file,
+  static bool TestGetSettingsFromFile(const base::FilePath& pref_file,
                                       FirefoxProxySettings* settings) {
     return GetSettingsFromFile(pref_file, settings);
   }
@@ -26,7 +26,7 @@ class TestFirefoxProxySettings : public FirefoxProxySettings {
 TEST_F(FirefoxProxySettingsTest, TestParse) {
   FirefoxProxySettings settings;
 
-  FilePath js_pref_path;
+  base::FilePath js_pref_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &js_pref_path));
   js_pref_path = js_pref_path.AppendASCII("firefox3_pref.js");
 
@@ -68,7 +68,7 @@ TEST_F(FirefoxProxySettingsTest, TestParse) {
 TEST_F(FirefoxProxySettingsTest, TestParseAutoConfigUrl) {
   FirefoxProxySettings settings;
 
-  FilePath js_pref_path;
+  base::FilePath js_pref_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &js_pref_path));
   js_pref_path = js_pref_path.AppendASCII("firefox3_pref_pac_url.js");
 

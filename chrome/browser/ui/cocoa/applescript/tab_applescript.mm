@@ -272,11 +272,11 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
     return;
   }
 
-  FilePath mainFile(base::SysNSStringToUTF8([fileURL path]));
+  base::FilePath mainFile(base::SysNSStringToUTF8([fileURL path]));
   // We create a directory path at the folder within which the file exists.
   // Eg.    if main_file = '/Users/Foo/Documents/Google.html'
   // then directory_path = '/Users/Foo/Documents/Google_files/'.
-  FilePath directoryPath = mainFile.RemoveExtension();
+  base::FilePath directoryPath = mainFile.RemoveExtension();
   directoryPath = directoryPath.InsertBeforeExtension(std::string("_files/"));
 
   NSString* saveType = [dictionary objectForKey:@"FileType"];

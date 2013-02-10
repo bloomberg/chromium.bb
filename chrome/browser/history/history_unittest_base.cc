@@ -15,8 +15,8 @@ namespace history {
 HistoryUnitTestBase::~HistoryUnitTestBase() {
 }
 
-void HistoryUnitTestBase::ExecuteSQLScript(const FilePath& sql_path,
-                                           const FilePath& db_path) {
+void HistoryUnitTestBase::ExecuteSQLScript(const base::FilePath& sql_path,
+                                           const base::FilePath& db_path) {
   std::string sql;
   ASSERT_TRUE(file_util::ReadFileToString(sql_path, &sql));
 

@@ -56,7 +56,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
 
     // Create the directory for history database.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath history_db_name = temp_dir_.path().AppendASCII(
+    base::FilePath history_db_name = temp_dir_.path().AppendASCII(
         chrome::kHistoryFilename);
     history_db_.Init(history_db_name, NULL);
   }

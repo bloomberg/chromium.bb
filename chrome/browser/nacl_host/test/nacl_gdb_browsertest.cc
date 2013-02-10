@@ -10,7 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ppapi/ppapi_test.h"
 
-static const FilePath::CharType kMockNaClGdb[] =
+static const base::FilePath::CharType kMockNaClGdb[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("mock_nacl_gdb.exe");
 #else
@@ -25,7 +25,7 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     PPAPINaClNewlibTest::SetUpCommandLine(command_line);
 
-    FilePath mock_nacl_gdb;
+    base::FilePath mock_nacl_gdb;
     EXPECT_TRUE(PathService::Get(base::DIR_EXE, &mock_nacl_gdb));
     mock_nacl_gdb = mock_nacl_gdb.Append(kMockNaClGdb);
     command_line->AppendSwitchPath(switches::kNaClGdb, mock_nacl_gdb);
@@ -34,7 +34,7 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
   }
 
   void RunWithNaClGdb(std::string test_name) {
-    FilePath mock_nacl_gdb_file;
+    base::FilePath mock_nacl_gdb_file;
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string content;
     // TODO(halyavin): Make this test work on Windows 32-bit. Currently this
@@ -65,7 +65,7 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
   }
 
  private:
-  FilePath script_;
+  base::FilePath script_;
 };
 
 // Fails on the ASAN test bot. See http://crbug.com/122219

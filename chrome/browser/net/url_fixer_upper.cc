@@ -90,8 +90,8 @@ TrimPositions TrimWhitespaceUTF8(const std::string& input,
 }  // namespace
 
 // does some basic fixes for input that we want to test for file-ness
-static void PrepareStringForFileOps(const FilePath& text,
-                                    FilePath::StringType* output) {
+static void PrepareStringForFileOps(const base::FilePath& text,
+                                    base::FilePath::StringType* output) {
 #if defined(OS_WIN)
   TrimWhitespace(text.value(), TRIM_ALL, output);
   replace(output->begin(), output->end(), '/', '\\');
@@ -103,9 +103,9 @@ static void PrepareStringForFileOps(const FilePath& text,
 // Tries to create a full path from |text|.  If the result is valid and the
 // file exists, returns true and sets |full_path| to the result.  Otherwise,
 // returns false and leaves |full_path| unchanged.
-static bool ValidPathForFile(const FilePath::StringType& text,
-                             FilePath* full_path) {
-  FilePath file_path(text);
+static bool ValidPathForFile(const base::FilePath::StringType& text,
+                             base::FilePath* full_path) {
+  base::FilePath file_path(text);
   if (!file_util::AbsolutePath(&file_path))
     return false;
 
@@ -154,23 +154,23 @@ static std::string FixupHomedir(const std::string& text) {
 static std::string FixupPath(const std::string& text) {
   DCHECK(!text.empty());
 
-  FilePath::StringType filename;
+  base::FilePath::StringType filename;
 #if defined(OS_WIN)
-  FilePath input_path(UTF8ToWide(text));
+  base::FilePath input_path(UTF8ToWide(text));
   PrepareStringForFileOps(input_path, &filename);
 
   // Fixup Windows-style drive letters, where "C:" gets rewritten to "C|".
   if (filename.length() > 1 && filename[1] == '|')
     filename[1] = ':';
 #elif defined(OS_POSIX)
-  FilePath input_path(text);
+  base::FilePath input_path(text);
   PrepareStringForFileOps(input_path, &filename);
   if (filename.length() > 0 && filename[0] == '~')
     filename = FixupHomedir(filename);
 #endif
 
   // Here, we know the input looks like a file.
-  GURL file_url = net::FilePathToFileURL(FilePath(filename));
+  GURL file_url = net::FilePathToFileURL(base::FilePath(filename));
   if (file_url.is_valid()) {
     return UTF16ToUTF8(net::FormatUrl(file_url, std::string(),
         net::kFormatUrlOmitUsernamePassword, net::UnescapeRule::NORMAL, NULL,
@@ -393,7 +393,8 @@ std::string URLFixerUpper::SegmentURL(const std::string& text,
       url_parse::DoesBeginUNCPath(trimmed.data(), 0, trimmed_length, true))
     return "file";
 #elif defined(OS_POSIX)
-  if (FilePath::IsSeparator(trimmed.data()[0]) || trimmed.data()[0] == '~')
+  if (base::FilePath::IsSeparator(trimmed.data()[0]) ||
+      trimmed.data()[0] == '~')
     return "file";
 #endif
 
@@ -538,9 +539,9 @@ GURL URLFixerUpper::FixupURL(const std::string& text,
 // fixup will look for cues that it is actually a file path before trying to
 // figure out what file it is.  If our logic doesn't work, we will fall back on
 // regular fixup.
-GURL URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
-                                      const FilePath& text) {
-  FilePath old_cur_directory;
+GURL URLFixerUpper::FixupRelativeFile(const base::FilePath& base_dir,
+                                      const base::FilePath& text) {
+  base::FilePath old_cur_directory;
   if (!base_dir.empty()) {
     // Save the old current directory before we move to the new one.
     file_util::GetCurrentDirectory(&old_cur_directory);
@@ -548,7 +549,7 @@ GURL URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
   }
 
   // Allow funny input with extra whitespace and the wrong kind of slashes.
-  FilePath::StringType trimmed;
+  base::FilePath::StringType trimmed;
   PrepareStringForFileOps(text, &trimmed);
 
   bool is_file = true;
@@ -556,7 +557,7 @@ GURL URLFixerUpper::FixupRelativeFile(const FilePath& base_dir,
   GURL gurl(trimmed);
   if (gurl.is_valid() && gurl.IsStandard())
     is_file = false;
-  FilePath full_path;
+  base::FilePath full_path;
   if (is_file && !ValidPathForFile(trimmed, &full_path)) {
     // Not a path as entered, try unescaping it in case the user has
     // escaped things. We need to go through 8-bit since the escaped values

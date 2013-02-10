@@ -54,7 +54,7 @@ class SystemInfoEventRouter
   // is fixed.
   void OnRemovableStorageAttached(const std::string& id,
                                   const string16& name,
-                                  const FilePath::StringType& location);
+                                  const base::FilePath::StringType& location);
   void OnRemovableStorageDetached(const std::string& id);
 
   // gfx::DisplayObserver implementation.

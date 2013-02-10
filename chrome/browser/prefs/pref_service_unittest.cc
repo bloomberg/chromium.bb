@@ -306,7 +306,7 @@ class PrefServiceUserFilePrefsTest : public testing::Test {
   // The path to temporary directory used to contain the test operations.
   base::ScopedTempDir temp_dir_;
   // The path to the directory where the test data is stored.
-  FilePath data_dir_;
+  base::FilePath data_dir_;
   // A message loop that we can use as the file thread message loop.
   MessageLoop message_loop_;
 };
@@ -314,7 +314,7 @@ class PrefServiceUserFilePrefsTest : public testing::Test {
 // Verifies that ListValue and DictionaryValue pref with non emtpy default
 // preserves its empty value.
 TEST_F(PrefServiceUserFilePrefsTest, PreserveEmptyValue) {
-  FilePath pref_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath pref_file = temp_dir_.path().AppendASCII("write.json");
 
   ASSERT_TRUE(file_util::CopyFile(
       data_dir_.AppendASCII("read.need_empty_value.json"),
@@ -353,7 +353,7 @@ TEST_F(PrefServiceUserFilePrefsTest, PreserveEmptyValue) {
   message_loop_.RunUntilIdle();
 
   // Compare to expected output.
-  FilePath golden_output_file =
+  base::FilePath golden_output_file =
       data_dir_.AppendASCII("write.golden.need_empty_value.json");
   ASSERT_TRUE(file_util::PathExists(golden_output_file));
   EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, pref_file));

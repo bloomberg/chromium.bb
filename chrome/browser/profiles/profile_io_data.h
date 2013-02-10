@@ -246,7 +246,7 @@ class ProfileIOData {
     ProfileParams();
     ~ProfileParams();
 
-    FilePath path;
+    base::FilePath path;
     IOThread* io_thread;
     scoped_refptr<CookieSettings> cookie_settings;
     scoped_refptr<net::SSLConfigService> ssl_config_service;

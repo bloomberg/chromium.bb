@@ -79,14 +79,14 @@ class SessionRestoreTest : public InProcessBrowserTest {
     first_run::CreateSentinel();
 
     url1_ = ui_test_utils::GetTestUrl(
-        FilePath().AppendASCII("session_history"),
-        FilePath().AppendASCII("bot1.html"));
+        base::FilePath().AppendASCII("session_history"),
+        base::FilePath().AppendASCII("bot1.html"));
     url2_ = ui_test_utils::GetTestUrl(
-        FilePath().AppendASCII("session_history"),
-        FilePath().AppendASCII("bot2.html"));
+        base::FilePath().AppendASCII("session_history"),
+        base::FilePath().AppendASCII("bot2.html"));
     url3_ = ui_test_utils::GetTestUrl(
-        FilePath().AppendASCII("session_history"),
-        FilePath().AppendASCII("bot3.html"));
+        base::FilePath().AppendASCII("session_history"),
+        base::FilePath().AppendASCII("bot3.html"));
 
     return InProcessBrowserTest::SetUpUserDataDirectory();
   }
@@ -173,8 +173,8 @@ class SessionRestoreTest : public InProcessBrowserTest {
 // (http://crbug.com/120927)
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoSessionRestoreNewWindowChromeOS) {
   GURL url(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title1.html"))));
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title1.html"))));
 
   // Add a single tab.
   ui_test_utils::NavigateToURL(browser(), url);
@@ -219,9 +219,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   if (browser_defaults::kRestorePopups)
     return;
 
-  const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
-  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                     FilePath(kTitle1File)));
+  const base::FilePath::CharType* kTitle1File =
+      FILE_PATH_LITERAL("title1.html");
+  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
+      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Turn on session restore.
@@ -256,14 +257,14 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   GURL url1(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title1.html"))));
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title1.html"))));
   GURL url2(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title2.html"))));
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title2.html"))));
   GURL url3(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title3.html"))));
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title3.html"))));
 
   // Add and navigate three tabs.
   ui_test_utils::NavigateToURL(browser(), url1);
@@ -333,8 +334,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
   GURL url(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title1.html"))));
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title1.html"))));
 
   // Add a single tab.
   ui_test_utils::NavigateToURL(browser(), url);
@@ -370,8 +371,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
 // non-incognito window while an incognito window is open.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
   GURL url(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title1.html"))));
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title1.html"))));
 
   // Add a single tab.
   ui_test_utils::NavigateToURL(browser(), url);

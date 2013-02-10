@@ -23,7 +23,7 @@ void EnableScreenLockOnFileThread(bool enable) {
 
   if (base::chromeos::IsRunningOnChromeOS()) {
     std::string config = base::StringPrintf("%d", enable);
-    file_util::WriteFile(FilePath(kLockOnIdleSuspendPath),
+    file_util::WriteFile(base::FilePath(kLockOnIdleSuspendPath),
                          config.c_str(),
                          config.size());
   }

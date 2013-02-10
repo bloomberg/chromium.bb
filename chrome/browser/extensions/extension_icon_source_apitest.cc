@@ -24,7 +24,7 @@ class ExtensionIconSourceTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoaded) {
-  FilePath basedir = test_data_dir_.AppendASCII("icons");
+  base::FilePath basedir = test_data_dir_.AppendASCII("icons");
   ASSERT_TRUE(LoadExtension(basedir.AppendASCII("extension_with_permission")));
   ASSERT_TRUE(LoadExtension(basedir.AppendASCII("extension_no_permission")));
   std::string result;
@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, InvalidURL) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, IconsLoadedIncognito) {
-  FilePath basedir = test_data_dir_.AppendASCII("icons");
+  base::FilePath basedir = test_data_dir_.AppendASCII("icons");
   ASSERT_TRUE(LoadExtensionIncognito(
       basedir.AppendASCII("extension_with_permission")));
   ASSERT_TRUE(LoadExtensionIncognito(

@@ -793,7 +793,7 @@ void ExternalTabContainerWin::RunFileChooser(
 
 void ExternalTabContainerWin::EnumerateDirectory(WebContents* tab,
                                                  int request_id,
-                                                 const FilePath& path) {
+                                                 const base::FilePath& path) {
   FileSelectHelper::EnumerateDirectory(tab, request_id, path);
 }
 
@@ -848,7 +848,7 @@ void ExternalTabContainerWin::RequestMediaAccessPermission(
 bool ExternalTabContainerWin::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,
-    const FilePath& plugin_path,
+    const base::FilePath& plugin_path,
     const base::Callback<void(bool)>& callback) {
   PepperBrokerInfoBarDelegate::Create(web_contents, url, plugin_path, callback);
   return true;

@@ -145,7 +145,7 @@ void ExtensionSyncEventObserver::OnFileSynced(
                                                             url.type());
   GURL root_url = fileapi::GetSyncableFileSystemRootURI(url.origin(),
                                                         url.filesystem_id());
-  FilePath file_path = url.path();
+  base::FilePath file_path = url.path();
 
   // Arguments must all be basic types.
   scoped_ptr<base::ListValue> params(new ListValue());

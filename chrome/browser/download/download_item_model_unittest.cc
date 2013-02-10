@@ -43,10 +43,10 @@ char kInterruptReasonCounter[] = {
 const size_t kInterruptReasonCount = ARRAYSIZE_UNSAFE(kInterruptReasonCounter);
 
 // Default target path for a mock download item in DownloadItemModelTest.
-const FilePath::CharType kDefaultTargetFilePath[] =
+const base::FilePath::CharType kDefaultTargetFilePath[] =
     FILE_PATH_LITERAL("/foo/bar/foo.bar");
 
-const FilePath::CharType kDefaultDisplayFileName[] =
+const base::FilePath::CharType kDefaultDisplayFileName[] =
     FILE_PATH_LITERAL("foo.bar");
 
 // Default URL for a mock download item in DownloadItemModelTest.
@@ -77,9 +77,9 @@ class DownloadItemModelTest : public testing::Test {
     ON_CALL(item_, GetURL())
         .WillByDefault(ReturnRefOfCopy(GURL(kDefaultURL)));
     ON_CALL(item_, GetFileNameToReportUser())
-        .WillByDefault(Return(FilePath(kDefaultDisplayFileName)));
+        .WillByDefault(Return(base::FilePath(kDefaultDisplayFileName)));
     ON_CALL(item_, GetTargetFilePath())
-        .WillByDefault(ReturnRefOfCopy(FilePath(kDefaultTargetFilePath)));
+        .WillByDefault(ReturnRefOfCopy(base::FilePath(kDefaultTargetFilePath)));
     ON_CALL(item_, GetTargetDisposition())
         .WillByDefault(
             Return(DownloadItem::TARGET_DISPOSITION_OVERWRITE));

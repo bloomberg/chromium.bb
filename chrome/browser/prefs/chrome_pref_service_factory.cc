@@ -54,7 +54,7 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
 
 void PrepareBuilder(
     PrefServiceSyncableBuilder* builder,
-    const FilePath& pref_filename,
+    const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     const scoped_refptr<PrefStore>& extension_prefs,
@@ -100,7 +100,7 @@ PrefServiceBase* PrefServiceBase::FromBrowserContext(BrowserContext* context) {
 namespace chrome_prefs {
 
 PrefService* CreateLocalState(
-    const FilePath& pref_filename,
+    const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     const scoped_refptr<PrefStore>& extension_prefs,
@@ -117,7 +117,7 @@ PrefService* CreateLocalState(
 }
 
 PrefServiceSyncable* CreateProfilePrefs(
-    const FilePath& pref_filename,
+    const base::FilePath& pref_filename,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     const scoped_refptr<PrefStore>& extension_prefs,

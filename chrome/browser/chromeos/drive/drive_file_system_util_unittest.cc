@@ -12,42 +12,42 @@ namespace util {
 
 TEST(DriveFileSystemUtilTest, IsUnderDriveMountPoint) {
   EXPECT_FALSE(IsUnderDriveMountPoint(
-      FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
   EXPECT_FALSE(IsUnderDriveMountPoint(
-      FilePath::FromUTF8Unsafe("/special/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
   EXPECT_FALSE(IsUnderDriveMountPoint(
-      FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
   EXPECT_FALSE(IsUnderDriveMountPoint(
-      FilePath::FromUTF8Unsafe("special/drivex/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("special/drivex/foo.txt")));
 
   EXPECT_TRUE(IsUnderDriveMountPoint(
-      FilePath::FromUTF8Unsafe("/special/drive")));
+      base::FilePath::FromUTF8Unsafe("/special/drive")));
   EXPECT_TRUE(IsUnderDriveMountPoint(
-      FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
   EXPECT_TRUE(IsUnderDriveMountPoint(
-      FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
 }
 
 TEST(DriveFileSystemUtilTest, ExtractDrivePath) {
-  EXPECT_EQ(FilePath(),
+  EXPECT_EQ(base::FilePath(),
             ExtractDrivePath(
-                FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
-  EXPECT_EQ(FilePath(),
+                base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
+  EXPECT_EQ(base::FilePath(),
             ExtractDrivePath(
-                FilePath::FromUTF8Unsafe("/special/foo.txt")));
-  EXPECT_EQ(FilePath(),
+                base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
+  EXPECT_EQ(base::FilePath(),
             ExtractDrivePath(
-                FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
+                base::FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
 
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive"),
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive"),
             ExtractDrivePath(
-                FilePath::FromUTF8Unsafe("/special/drive")));
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/foo.txt"),
+                base::FilePath::FromUTF8Unsafe("/special/drive")));
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
             ExtractDrivePath(
-                FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
-            ExtractDrivePath(
-                FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
+                base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
+            ExtractDrivePath(base::FilePath::FromUTF8Unsafe(
+                "/special/drive/subdir/foo.txt")));
 }
 
 TEST(DriveFileSystemUtilTest, EscapeUnescapeCacheFileName) {
@@ -80,7 +80,7 @@ TEST(DriveFileSystemUtilTest, ExtractResourceIdFromUrl) {
 TEST(DriveFileSystemUtilTest, ParseCacheFilePath) {
   std::string resource_id, md5, extra_extension;
   ParseCacheFilePath(
-      FilePath::FromUTF8Unsafe(
+      base::FilePath::FromUTF8Unsafe(
           "/home/user/GCache/v1/persistent/pdf:a1b2.0123456789abcdef.mounted"),
       &resource_id,
       &md5,
@@ -90,7 +90,7 @@ TEST(DriveFileSystemUtilTest, ParseCacheFilePath) {
   EXPECT_EQ(extra_extension, "mounted");
 
   ParseCacheFilePath(
-      FilePath::FromUTF8Unsafe(
+      base::FilePath::FromUTF8Unsafe(
           "/home/user/GCache/v1/tmp/pdf:a1b2.0123456789abcdef"),
       &resource_id,
       &md5,
@@ -100,7 +100,7 @@ TEST(DriveFileSystemUtilTest, ParseCacheFilePath) {
   EXPECT_EQ(extra_extension, "");
 
   ParseCacheFilePath(
-      FilePath::FromUTF8Unsafe(
+      base::FilePath::FromUTF8Unsafe(
           "/home/user/GCache/v1/pinned/pdf:a1b2"),
       &resource_id,
       &md5,

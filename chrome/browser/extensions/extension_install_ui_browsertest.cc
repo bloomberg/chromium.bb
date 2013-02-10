@@ -42,7 +42,7 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   // Install the given theme from the data dir and verify expected name.
   void InstallThemeAndVerify(const char* theme_name,
                              const std::string& expected_name) {
-    const FilePath theme_path = test_data_dir_.AppendASCII(theme_name);
+    const base::FilePath theme_path = test_data_dir_.AppendASCII(theme_name);
     ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_path, 1, browser()));
     const Extension* theme = GetTheme();
     ASSERT_TRUE(theme);
@@ -65,7 +65,7 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        MAYBE_TestThemeInstallUndoResetsToDefault) {
   // Install theme once and undo to verify we go back to default theme.
-  FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
+  base::FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 1, browser()));
   const Extension* theme = GetTheme();
   ASSERT_TRUE(theme);
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        MAYBE_AppInstallConfirmation) {
   int num_tabs = browser()->tab_strip_model()->count();
 
-  FilePath app_dir = test_data_dir_.AppendASCII("app");
+  base::FilePath app_dir = test_data_dir_.AppendASCII("app");
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1, browser()));
 
   if (NewTabUI::ShouldShowApps()) {
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   int num_incognito_tabs = incognito_browser->tab_strip_model()->count();
   int num_normal_tabs = browser()->tab_strip_model()->count();
 
-  FilePath app_dir = test_data_dir_.AppendASCII("app");
+  base::FilePath app_dir = test_data_dir_.AppendASCII("app");
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1,
                                                 incognito_browser));
 

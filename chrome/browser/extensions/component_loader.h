@@ -52,22 +52,22 @@ class ComponentLoader {
   //   ssh-keygen -t rsa -b 1024 -N '' -f /tmp/key.pem
   //   openssl rsa -pubout -outform DER < /tmp/key.pem 2>/dev/null | base64 -w 0
   std::string Add(const std::string& manifest_contents,
-                  const FilePath& root_directory);
+                  const base::FilePath& root_directory);
 
   // Convenience method for registering a component extension by resource id.
   std::string Add(int manifest_resource_id,
-                  const FilePath& root_directory);
+                  const base::FilePath& root_directory);
 
   // Loads a component extension from file system. Replaces previously added
   // extension with the same ID.
-  std::string AddOrReplace(const FilePath& path);
+  std::string AddOrReplace(const base::FilePath& path);
 
   // Returns true if an extension with the specified id has been added.
   bool Exists(const std::string& id) const;
 
   // Unloads a component extension and removes it from the list of component
   // extensions to be loaded.
-  void Remove(const FilePath& root_directory);
+  void Remove(const base::FilePath& root_directory);
   void Remove(const std::string& id);
 
   // Call this during test setup to load component extensions that have
@@ -96,20 +96,20 @@ class ComponentLoader {
   // Information about a registered component extension.
   struct ComponentExtensionInfo {
     ComponentExtensionInfo(const DictionaryValue* manifest,
-                           const FilePath& root_directory);
+                           const base::FilePath& root_directory);
 
     // The parsed contents of the extensions's manifest file.
     const DictionaryValue* manifest;
 
     // Directory where the extension is stored.
-    FilePath root_directory;
+    base::FilePath root_directory;
 
     // The component extension's ID.
     std::string extension_id;
   };
 
   std::string Add(const DictionaryValue* parsed_manifest,
-                  const FilePath& root_directory);
+                  const base::FilePath& root_directory);
 
   // Loads a registered component extension.
   void Load(const ComponentExtensionInfo& info);

@@ -245,7 +245,7 @@ class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
 
   virtual ~DownloadFileIconExtractorImpl() {}
 
-  virtual bool ExtractIconURLForPath(const FilePath& path,
+  virtual bool ExtractIconURLForPath(const base::FilePath& path,
                                      IconLoader::IconSize icon_size,
                                      IconURLCallback callback) OVERRIDE;
  private:
@@ -256,7 +256,7 @@ class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
 };
 
 bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
-    const FilePath& path,
+    const base::FilePath& path,
     IconLoader::IconSize icon_size,
     IconURLCallback callback) {
   callback_ = callback;

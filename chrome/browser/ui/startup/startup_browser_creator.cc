@@ -245,7 +245,7 @@ bool StartupBrowserCreator::InSynchronousProfileLaunch() {
 bool StartupBrowserCreator::LaunchBrowser(
     const CommandLine& command_line,
     Profile* profile,
-    const FilePath& cur_dir,
+    const base::FilePath& cur_dir,
     chrome::startup::IsProcessStartup process_startup,
     chrome::startup::IsFirstRun is_first_run,
     int* return_code) {
@@ -357,13 +357,13 @@ void StartupBrowserCreator::ClearLaunchedProfilesForTesting() {
 // static
 std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     const CommandLine& command_line,
-    const FilePath& cur_dir,
+    const base::FilePath& cur_dir,
     Profile* profile) {
   std::vector<GURL> urls;
   const CommandLine::StringVector& params = command_line.GetArgs();
 
   for (size_t i = 0; i < params.size(); ++i) {
-    FilePath param = FilePath(params[i]);
+    base::FilePath param = base::FilePath(params[i]);
     // Handle Vista way of searching - "? <search-term>"
     if (param.value().size() > 2 &&
         param.value()[0] == '?' && param.value()[1] == ' ') {
@@ -423,7 +423,7 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
 // static
 bool StartupBrowserCreator::ProcessCmdLineImpl(
     const CommandLine& command_line,
-    const FilePath& cur_dir,
+    const base::FilePath& cur_dir,
     bool process_startup,
     Profile* last_used_profile,
     const Profiles& last_opened_profiles,
@@ -654,7 +654,7 @@ bool StartupBrowserCreator::CreateAutomationProvider(
 // static
 void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
     const CommandLine& command_line,
-    const FilePath& cur_dir,
+    const base::FilePath& cur_dir,
     Profile* profile,
     Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
@@ -665,8 +665,8 @@ void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
 // static
 void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
     const CommandLine& command_line,
-    const FilePath& cur_dir,
-    const FilePath& profile_path) {
+    const base::FilePath& cur_dir,
+    const base::FilePath& profile_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = profile_manager->GetProfileByPath(profile_path);
 

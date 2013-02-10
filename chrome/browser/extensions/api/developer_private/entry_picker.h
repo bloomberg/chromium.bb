@@ -18,7 +18,7 @@ namespace api {
 
 class EntryPickerClient {
  public:
-  virtual void FileSelected(const FilePath& path) = 0;
+  virtual void FileSelected(const base::FilePath& path) = 0;
   virtual void FileSelectionCanceled() = 0;
 };
 
@@ -28,11 +28,11 @@ class EntryPicker : public ui::SelectFileDialog::Listener {
   EntryPicker(EntryPickerClient* client,
               content::WebContents* web_contents,
               ui::SelectFileDialog::Type picker_type,
-              const FilePath& last_directory,
+              const base::FilePath& last_directory,
               const string16& select_title);
 
   // Allow picker UI to be skipped in testing.
-  static void SkipPickerAndAlwaysSelectPathForTest(FilePath* path);
+  static void SkipPickerAndAlwaysSelectPathForTest(base::FilePath* path);
   static void SkipPickerAndAlwaysCancelForTest();
   static void StopSkippingPickerForTest();
 
@@ -42,7 +42,7 @@ class EntryPicker : public ui::SelectFileDialog::Listener {
 
  private:
   // ui::SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
 

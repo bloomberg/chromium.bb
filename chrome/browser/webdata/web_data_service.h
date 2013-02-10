@@ -123,7 +123,7 @@ class WebDataService
 
   // Initializes the web data service. Returns false on failure
   // Takes the path of the profile directory as its argument.
-  bool Init(const FilePath& profile_path);
+  bool Init(const base::FilePath& profile_path);
 
   // Returns false if Shutdown() has been called.
   bool IsRunning() const;
@@ -327,7 +327,7 @@ class WebDataService
   virtual ~WebDataService();
 
   // This is invoked by the unit test; path is the path of the Web Data file.
-  bool InitWithPath(const FilePath& path);
+  bool InitWithPath(const base::FilePath& path);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -483,7 +483,7 @@ class WebDataService
   bool is_running_;
 
   // The path with which to initialize the database.
-  FilePath path_;
+  base::FilePath path_;
 
   // Our database.  We own the |db_|, but don't use a |scoped_ptr| because the
   // |db_| lifetime must be managed on the database thread.

@@ -171,18 +171,18 @@ class ExtensionManagementApiEscalationTest :
 
   virtual void SetUpOnMainThread() OVERRIDE {
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    FilePath pem_path = test_data_dir_.
+    base::FilePath pem_path = test_data_dir_.
         AppendASCII("permissions_increase").AppendASCII("permissions.pem");
-    FilePath path_v1 = PackExtensionWithOptions(
+    base::FilePath path_v1 = PackExtensionWithOptions(
         test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v1"),
         scoped_temp_dir_.path().AppendASCII("permissions1.crx"),
         pem_path,
-        FilePath());
-    FilePath path_v2 = PackExtensionWithOptions(
+        base::FilePath());
+    base::FilePath path_v2 = PackExtensionWithOptions(
         test_data_dir_.AppendASCII("permissions_increase").AppendASCII("v2"),
         scoped_temp_dir_.path().AppendASCII("permissions2.crx"),
         pem_path,
-        FilePath());
+        base::FilePath());
 
     ExtensionService* service = ExtensionSystem::Get(browser()->profile())->
         extension_service();

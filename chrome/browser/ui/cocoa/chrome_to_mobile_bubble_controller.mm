@@ -52,7 +52,7 @@ void ChromeToMobileBubbleNotificationBridge::Observe(
 }
 
 void ChromeToMobileBubbleNotificationBridge::SnapshotGenerated(
-    const FilePath& path,
+    const base::FilePath& path,
     int64 bytes) {
   [controller_ snapshotGenerated:path bytes:bytes];
 }
@@ -201,7 +201,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   const DictionaryValue* mobile = NULL;
   if (mobiles->GetDictionary(selected_index, &mobile)) {
     service_->SendToMobile(mobile,
-        ([sendCopy_ state] == NSOnState) ? snapshotPath_ : FilePath(),
+        ([sendCopy_ state] == NSOnState) ? snapshotPath_ : base::FilePath(),
         browser_, bridge_->AsWeakPtr());
   } else {
     NOTREACHED();
@@ -219,7 +219,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   [self close];
 }
 
-- (void)snapshotGenerated:(const FilePath&)path
+- (void)snapshotGenerated:(const base::FilePath&)path
                     bytes:(int64)bytes {
   snapshotPath_ = path;
   NSString* text = nil;

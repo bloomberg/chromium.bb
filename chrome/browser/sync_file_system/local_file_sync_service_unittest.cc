@@ -169,7 +169,7 @@ class LocalFileSyncServiceTest
   }
 
   SyncStatusCode ApplyRemoteChange(const FileChange& change,
-                                   const FilePath& local_path,
+                                   const base::FilePath& local_path,
                                    const FileSystemURL& url) {
     base::RunLoop run_loop;
     SyncStatusCode sync_status = fileapi::SYNC_STATUS_UNKNOWN;
@@ -204,7 +204,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
   const char kTestFileData[] = "0123456789";
   const int kTestFileDataSize = static_cast<int>(arraysize(kTestFileData) - 1);
 
-  FilePath local_path;
+  base::FilePath local_path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                   &local_path));
   ASSERT_EQ(kTestFileDataSize,
@@ -237,7 +237,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
   change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                       fileapi::SYNC_FILE_TYPE_DIRECTORY);
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            ApplyRemoteChange(change, FilePath(), kDir));
+            ApplyRemoteChange(change, base::FilePath(), kDir));
 
   // Verify the directory.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -254,7 +254,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
   change = FileChange(FileChange::FILE_CHANGE_DELETE,
                       fileapi::SYNC_FILE_TYPE_UNKNOWN);
   EXPECT_EQ(fileapi::SYNC_STATUS_OK,
-            ApplyRemoteChange(change, FilePath(), kDir));
+            ApplyRemoteChange(change, base::FilePath(), kDir));
 
   // Now the directory must have deleted.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
@@ -341,7 +341,7 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
 
   // Retrieve the expected platform_path.
   base::PlatformFileInfo info;
-  FilePath platform_path;
+  base::FilePath platform_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_->GetMetadata(kFile, &info, &platform_path));
 

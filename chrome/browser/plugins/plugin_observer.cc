@@ -183,7 +183,7 @@ PluginObserver::~PluginObserver() {
 #endif
 }
 
-void PluginObserver::PluginCrashed(const FilePath& plugin_path,
+void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
                                    base::ProcessId plugin_pid) {
   DCHECK(!plugin_path.value().empty());
 
@@ -351,7 +351,7 @@ void PluginObserver::OnOpenAboutPlugins() {
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
 }
 
-void PluginObserver::OnCouldNotLoadPlugin(const FilePath& plugin_path) {
+void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
   g_browser_process->metrics_service()->LogPluginLoadingError(plugin_path);
   string16 plugin_name =
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);

@@ -98,7 +98,7 @@ PerformanceMonitor::PerformanceMonitor() : database_(NULL),
 PerformanceMonitor::~PerformanceMonitor() {
 }
 
-bool PerformanceMonitor::SetDatabasePath(const FilePath& path) {
+bool PerformanceMonitor::SetDatabasePath(const base::FilePath& path) {
   if (!database_.get()) {
     database_path_ = path;
     return true;

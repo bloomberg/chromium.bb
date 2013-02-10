@@ -8,17 +8,17 @@ namespace web_app {
 namespace internals {
 
 bool CreatePlatformShortcuts(
-    const FilePath& web_app_path,
+    const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   return true;
 }
 
 void DeletePlatformShortcuts(
-    const FilePath& web_app_path,
+    const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {}
 
 void UpdatePlatformShortcuts(
-    const FilePath& web_app_path,
+    const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {}
 
 }  // namespace internals

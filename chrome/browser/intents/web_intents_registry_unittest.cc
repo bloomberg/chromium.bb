@@ -43,7 +43,7 @@ class MockExtensionService: public TestExtensionService {
 namespace {
 
 // TODO(groby): Unify loading functions with extension_manifest_unittest code.
-DictionaryValue* LoadManifestFile(const FilePath& path,
+DictionaryValue* LoadManifestFile(const base::FilePath& path,
                                   std::string* error) {
   EXPECT_TRUE(file_util::PathExists(path));
   JSONFileValueSerializer serializer(path);
@@ -54,7 +54,7 @@ scoped_refptr<Extension> LoadExtensionWithLocation(
     const std::string& name,
     Manifest::Location location,
     std::string* error) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
       .AppendASCII("manifest_tests")

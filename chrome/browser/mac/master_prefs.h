@@ -12,7 +12,7 @@ namespace master_prefs {
 // Returns the path to the master preferences file. Note that this path may be
 // empty (in the case where this type of build cannot have a master preferences
 // file) or may not actually exist on the filesystem.
-FilePath MasterPrefsPath();
+base::FilePath MasterPrefsPath();
 
 }  // namespace master_prefs
 

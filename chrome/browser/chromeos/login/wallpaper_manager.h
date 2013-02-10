@@ -101,15 +101,15 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                              gfx::ImageSkia* wallpaper);
 
   // Returns filepath to save original custom wallpaper for the given user.
-  FilePath GetOriginalWallpaperPathForUser(const std::string& username);
+  base::FilePath GetOriginalWallpaperPathForUser(const std::string& username);
 
   // Returns small resolution custom wallpaper filepath for the given user when
   // |is_small| is ture. Otherwise, returns large resolution custom wallpaper
   // path.
   // TODO(bshe): Remove this function when all custom wallpapers moved to the
   // new direcotry. crbug.com/174925
-  FilePath GetWallpaperPathForUser(const std::string& username,
-                                   bool is_small);
+  base::FilePath GetWallpaperPathForUser(const std::string& username,
+                                         bool is_small);
 
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(WallpaperInfo* info);
@@ -131,7 +131,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // and |preferred_height| while maintaining aspect ratio. And saves the
   // resized wallpaper to |path|.
   void ResizeAndSaveWallpaper(const UserImage& wallpaper,
-                              const FilePath& path,
+                              const base::FilePath& path,
                               ash::WallpaperLayout layout,
                               int preferred_width,
                               int preferred_height);
@@ -205,7 +205,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   void ClearObsoleteWallpaperPrefs();
 
   // Deletes a list of wallpaper files in |file_list|.
-  void DeleteWallpaperInList(const std::vector<FilePath>& file_list);
+  void DeleteWallpaperInList(const std::vector<base::FilePath>& file_list);
 
   // Deletes all |email| related custom or converted wallpapers.
   void DeleteUserWallpapers(const std::string& email);
@@ -258,7 +258,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // loaded wallpaper. Must run on wallpaper sequenced worker thread.
   void GetCustomWallpaperInternal(const std::string& email,
                                   const WallpaperInfo& info,
-                                  const FilePath& wallpaper_path,
+                                  const base::FilePath& wallpaper_path,
                                   bool update_wallpaper);
 
   // Gets wallpaper information of |email| from Local State or memory. Returns
@@ -287,19 +287,20 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Saves original custom wallpaper to |path| (absolute path) on filesystem
   // and starts resizing operation of the custom wallpaper if necessary.
   void SaveCustomWallpaper(const std::string& email,
-                           const FilePath& path,
+                           const base::FilePath& path,
                            ash::WallpaperLayout layout,
                            const UserImage& wallpaper);
 
   // Saves wallpaper image raw |data| to |path| (absolute path) in file system.
-  void SaveWallpaperInternal(const FilePath& path, const char* data, int size);
+  void SaveWallpaperInternal(const base::FilePath& path, const char* data,
+                             int size);
 
   // Starts to load wallpaper at |wallpaper_path|. If |wallpaper_path| is the
   // same as |current_wallpaper_path_|, do nothing. Must be called on UI thread.
   void StartLoad(const std::string& email,
                  const WallpaperInfo& info,
                  bool update_wallpaper,
-                 const FilePath& wallpaper_path);
+                 const base::FilePath& wallpaper_path);
 
   // Overridden from chromeos::PowerManagerObserver.
   virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
@@ -320,7 +321,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The file path of current loaded/loading custom/online wallpaper.
-  FilePath current_wallpaper_path_;
+  base::FilePath current_wallpaper_path_;
 
   // Loads user wallpaper from its file.
   scoped_refptr<UserImageLoader> wallpaper_loader_;

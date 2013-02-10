@@ -34,7 +34,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile_))->CreateExtensionService(
-            &command_line, FilePath(), false);
+            &command_line, base::FilePath(), false);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityUI);
     ActivityLog::RecomputeLoggingIsEnabled();
@@ -90,7 +90,7 @@ TEST_F(ActivityLogTest, ConstructAndLog) {
   // whether the writes have been completed, instead of waiting.
 #if 0
   base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(3));
-  FilePath db_file = profile_->GetPath().Append(
+  base::FilePath db_file = profile_->GetPath().Append(
       chrome::kExtensionActivityLogFilename);
   sql::Connection db;
   ASSERT_TRUE(db.Open(db_file));

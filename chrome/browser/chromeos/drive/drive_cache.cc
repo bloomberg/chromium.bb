@@ -27,21 +27,23 @@ using content::BrowserThread;
 namespace drive {
 namespace {
 
-const FilePath::CharType kDriveCacheVersionDir[] = FILE_PATH_LITERAL("v1");
-const FilePath::CharType kDriveCacheMetaDir[] = FILE_PATH_LITERAL("meta");
-const FilePath::CharType kDriveCachePinnedDir[] = FILE_PATH_LITERAL("pinned");
-const FilePath::CharType kDriveCacheOutgoingDir[] =
+const base::FilePath::CharType kDriveCacheVersionDir[] =
+    FILE_PATH_LITERAL("v1");
+const base::FilePath::CharType kDriveCacheMetaDir[] = FILE_PATH_LITERAL("meta");
+const base::FilePath::CharType kDriveCachePinnedDir[] =
+    FILE_PATH_LITERAL("pinned");
+const base::FilePath::CharType kDriveCacheOutgoingDir[] =
     FILE_PATH_LITERAL("outgoing");
-const FilePath::CharType kDriveCachePersistentDir[] =
+const base::FilePath::CharType kDriveCachePersistentDir[] =
     FILE_PATH_LITERAL("persistent");
-const FilePath::CharType kDriveCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
-const FilePath::CharType kDriveCacheTmpDownloadsDir[] =
+const base::FilePath::CharType kDriveCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
+const base::FilePath::CharType kDriveCacheTmpDownloadsDir[] =
     FILE_PATH_LITERAL("tmp/downloads");
-const FilePath::CharType kDriveCacheTmpDocumentsDir[] =
+const base::FilePath::CharType kDriveCacheTmpDocumentsDir[] =
     FILE_PATH_LITERAL("tmp/documents");
 
 // Create cache directory paths and set permissions.
-bool InitCachePaths(const std::vector<FilePath>& cache_paths) {
+bool InitCachePaths(const std::vector<base::FilePath>& cache_paths) {
   if (cache_paths.size() < DriveCache::NUM_CACHE_TYPES) {
     NOTREACHED();
     LOG(ERROR) << "Size of cache_paths is invalid.";
@@ -65,12 +67,12 @@ bool InitCachePaths(const std::vector<FilePath>& cache_paths) {
 // Remove all files under the given directory, non-recursively.
 // Do not remove recursively as we don't want to touch <gcache>/tmp/downloads,
 // which is used for user initiated downloads like "Save As"
-void RemoveAllFiles(const FilePath& directory) {
+void RemoveAllFiles(const base::FilePath& directory) {
   using file_util::FileEnumerator;
 
   FileEnumerator enumerator(directory, false /* recursive */,
                             FileEnumerator::FILES);
-  for (FilePath file_path = enumerator.Next(); !file_path.empty();
+  for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
        file_path = enumerator.Next()) {
     DVLOG(1) << "Removing " << file_path.value();
     if (!file_util::Delete(file_path, false /* recursive */))
@@ -79,7 +81,7 @@ void RemoveAllFiles(const FilePath& directory) {
 }
 
 // Deletes the symlink.
-void DeleteSymlink(const FilePath& symlink_path) {
+void DeleteSymlink(const base::FilePath& symlink_path) {
   // We try to save one file operation by not checking if link exists before
   // deleting it, so unlink may return error if link doesn't exist, but it
   // doesn't really matter to us.
@@ -87,8 +89,8 @@ void DeleteSymlink(const FilePath& symlink_path) {
 }
 
 // Creates a symlink.
-bool CreateSymlink(const FilePath& cache_file_path,
-                   const FilePath& symlink_path) {
+bool CreateSymlink(const base::FilePath& cache_file_path,
+                   const base::FilePath& symlink_path) {
   // Remove symlink because creating a link will not overwrite an existing one.
   DeleteSymlink(symlink_path);
 
@@ -102,7 +104,8 @@ bool CreateSymlink(const FilePath& cache_file_path,
 }
 
 // Moves the file.
-bool MoveFile(const FilePath& source_path, const FilePath& dest_path) {
+bool MoveFile(const base::FilePath& source_path,
+              const base::FilePath& dest_path) {
   if (!file_util::Move(source_path, dest_path)) {
     LOG(ERROR) << "Failed to move " << source_path.value()
                << " to " << dest_path.value();
@@ -113,7 +116,8 @@ bool MoveFile(const FilePath& source_path, const FilePath& dest_path) {
 }
 
 // Copies the file.
-bool CopyFile(const FilePath& source_path, const FilePath& dest_path) {
+bool CopyFile(const base::FilePath& source_path,
+              const base::FilePath& dest_path) {
   if (!file_util::CopyFile(source_path, dest_path)) {
     LOG(ERROR) << "Failed to copy " << source_path.value()
                << " to " << dest_path.value();
@@ -127,8 +131,8 @@ bool CopyFile(const FilePath& source_path, const FilePath& dest_path) {
 // |path_to_keep| on blocking pool.
 // If |path_to_keep| is empty, all files in |path_to_delete_pattern| are
 // deleted.
-void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
-                            const FilePath& path_to_keep) {
+void DeleteFilesSelectively(const base::FilePath& path_to_delete_pattern,
+                            const base::FilePath& path_to_keep) {
   // Enumerate all files in directory of |path_to_delete_pattern| that match
   // base name of |path_to_delete_pattern|.
   // If a file is not |path_to_keep|, delete it.
@@ -138,7 +142,7 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
       file_util::FileEnumerator::FILES |
       file_util::FileEnumerator::SHOW_SYM_LINKS,
       path_to_delete_pattern.BaseName().value());
-  for (FilePath current = enumerator.Next(); !current.empty();
+  for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
     // If |path_to_keep| is not empty and same as current, don't delete it.
     if (!path_to_keep.empty() && current == path_to_keep)
@@ -156,7 +160,7 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
 // Used to implement GetFile, MarkAsMounted.
 void RunGetFileFromCacheCallback(
     const GetFileFromCacheCallback& callback,
-    scoped_ptr<std::pair<DriveFileError, FilePath> > result) {
+    scoped_ptr<std::pair<DriveFileError, base::FilePath> > result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(result.get());
@@ -176,7 +180,7 @@ void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
 
 }  // namespace
 
-DriveCache::DriveCache(const FilePath& cache_root_path,
+DriveCache::DriveCache(const base::FilePath& cache_root_path,
                        base::SequencedTaskRunner* blocking_task_runner,
                        FreeDiskSpaceGetterInterface* free_disk_space_getter)
     : cache_root_path_(cache_root_path),
@@ -194,17 +198,18 @@ DriveCache::~DriveCache() {
   AssertOnSequencedWorkerPool();
 }
 
-FilePath DriveCache::GetCacheDirectoryPath(
+base::FilePath DriveCache::GetCacheDirectoryPath(
     CacheSubDirectoryType sub_dir_type) const {
   DCHECK_LE(0, sub_dir_type);
   DCHECK_GT(NUM_CACHE_TYPES, sub_dir_type);
   return cache_paths_[sub_dir_type];
 }
 
-FilePath DriveCache::GetCacheFilePath(const std::string& resource_id,
-                                      const std::string& md5,
-                                      CacheSubDirectoryType sub_dir_type,
-                                      CachedFileOrigin file_origin) const {
+base::FilePath DriveCache::GetCacheFilePath(
+    const std::string& resource_id,
+    const std::string& md5,
+    CacheSubDirectoryType sub_dir_type,
+    CachedFileOrigin file_origin) const {
   DCHECK(sub_dir_type != CACHE_TYPE_META);
 
   // Runs on any thread.
@@ -213,17 +218,17 @@ FilePath DriveCache::GetCacheFilePath(const std::string& resource_id,
   std::string base_name = util::EscapeCacheFileName(resource_id);
   if (file_origin == CACHED_FILE_LOCALLY_MODIFIED) {
     DCHECK(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    base_name += FilePath::kExtensionSeparator;
+    base_name += base::FilePath::kExtensionSeparator;
     base_name += util::kLocallyModifiedFileExtension;
   } else if (!md5.empty()) {
-    base_name += FilePath::kExtensionSeparator;
+    base_name += base::FilePath::kExtensionSeparator;
     base_name += util::EscapeCacheFileName(md5);
   }
   // For mounted archives the filename is formatted as resource_id.md5.mounted,
   // i.e. resource_id.md5 is the base name and ".mounted" is the extension
   if (file_origin == CACHED_FILE_MOUNTED) {
     DCHECK(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    base_name += FilePath::kExtensionSeparator;
+    base_name += base::FilePath::kExtensionSeparator;
     base_name += util::kMountedArchiveFileExtension;
   }
   return GetCacheDirectoryPath(sub_dir_type).Append(base_name);
@@ -234,7 +239,7 @@ void DriveCache::AssertOnSequencedWorkerPool() {
          blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
-bool DriveCache::IsUnderDriveCacheDirectory(const FilePath& path) const {
+bool DriveCache::IsUnderDriveCacheDirectory(const base::FilePath& path) const {
   return cache_root_path_ == path || cache_root_path_.IsParent(path);
 }
 
@@ -309,7 +314,7 @@ void DriveCache::GetFile(const std::string& resource_id,
 
 void DriveCache::Store(const std::string& resource_id,
                        const std::string& md5,
-                       const FilePath& source_path,
+                       const base::FilePath& source_path,
                        FileOperationType file_operation_type,
                        const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -368,7 +373,7 @@ void DriveCache::MarkAsMounted(const std::string& resource_id,
       base::Bind(RunGetFileFromCacheCallback, callback));
 }
 
-void DriveCache::MarkAsUnmounted(const FilePath& file_path,
+void DriveCache::MarkAsUnmounted(const base::FilePath& file_path,
                                  const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -574,7 +579,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::GetFileOnBlockingPool(
 DriveFileError DriveCache::StoreOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
-    const FilePath& source_path,
+    const base::FilePath& source_path,
     FileOperationType file_operation_type) {
   AssertOnSequencedWorkerPool();
 
@@ -590,7 +595,7 @@ DriveFileError DriveCache::StoreOnBlockingPool(
       return DRIVE_FILE_ERROR_NO_SPACE;
   }
 
-  FilePath symlink_path;
+  base::FilePath symlink_path;
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
 
   // If file was previously pinned, store it in persistent dir.
@@ -610,7 +615,7 @@ DriveFileError DriveCache::StoreOnBlockingPool(
       sub_dir_type = CACHE_TYPE_PERSISTENT;
   }
 
-  FilePath dest_path = GetCacheFilePath(resource_id, md5, sub_dir_type,
+  base::FilePath dest_path = GetCacheFilePath(resource_id, md5, sub_dir_type,
                                         CACHED_FILE_FROM_SERVER);
   bool success = false;
   switch (file_operation_type) {
@@ -626,7 +631,7 @@ DriveFileError DriveCache::StoreOnBlockingPool(
 
   // Create symlink in pinned directory if the file is pinned.
   if (success && cache_entry.is_pinned()) {
-    FilePath symlink_path = GetCacheFilePath(resource_id, std::string(),
+    base::FilePath symlink_path = GetCacheFilePath(resource_id, std::string(),
                                              CACHE_TYPE_PINNED,
                                              CACHED_FILE_FROM_SERVER);
     success = CreateSymlink(dest_path, symlink_path);
@@ -634,7 +639,7 @@ DriveFileError DriveCache::StoreOnBlockingPool(
 
   // Determine search pattern for stale filenames corresponding to resource_id,
   // either "<resource_id>*" or "<resource_id>.*".
-  FilePath stale_filenames_pattern;
+  base::FilePath stale_filenames_pattern;
   if (md5.empty()) {
     // No md5 means no extension, append '*' after base name, i.e.
     // "<resource_id>*".
@@ -642,7 +647,8 @@ DriveFileError DriveCache::StoreOnBlockingPool(
     // if base name of |dest_path| (i.e. escaped resource_id) contains the
     // extension separator '.', ReplaceExtension will remove it and everything
     // after it.  The result will be nothing like the escaped resource_id.
-    stale_filenames_pattern = FilePath(dest_path.value() + util::kWildCard);
+    stale_filenames_pattern =
+        base::FilePath(dest_path.value() + util::kWildCard);
   } else {
     // Replace md5 extension with '*' i.e. "<resource_id>.*".
     // Note that ReplaceExtension automatically prefixes the extension with the
@@ -668,7 +674,7 @@ DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
                                              const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
-  FilePath dest_path;
+  base::FilePath dest_path;
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
 
   DriveCacheEntry cache_entry;
@@ -676,7 +682,7 @@ DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
     // Entry does not exist in cache. Set |dest_path| to /dev/null, so that
     // symlinks to /dev/null will be picked up by DriveSyncClient to download
     // pinned files that don't exist in cache.
-    dest_path = FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull);
+    dest_path = base::FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull);
 
     // Set sub_dir_type to TMP. The file will be first downloaded in 'tmp',
     // then moved to 'persistent'.
@@ -701,7 +707,7 @@ DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
       }
       // File exists, move it to persistent dir.
       // Gets the current path of the file in cache.
-      FilePath source_path = GetCacheFilePath(resource_id,
+      base::FilePath source_path = GetCacheFilePath(resource_id,
                                               md5,
                                               GetSubDirectoryType(cache_entry),
                                               CACHED_FILE_FROM_SERVER);
@@ -715,7 +721,7 @@ DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
   }
 
   // Create symlink in pinned dir.
-  FilePath symlink_path = GetCacheFilePath(resource_id,
+  base::FilePath symlink_path = GetCacheFilePath(resource_id,
                                            std::string(),
                                            CACHE_TYPE_PINNED,
                                            CACHED_FILE_FROM_SERVER);
@@ -755,12 +761,12 @@ DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
     // don't need to move the file.
     if (cache_entry.is_present()) {
       // Gets the current path of the file in cache.
-      FilePath source_path = GetCacheFilePath(resource_id,
+      base::FilePath source_path = GetCacheFilePath(resource_id,
                                               md5,
                                               GetSubDirectoryType(cache_entry),
                                               CACHED_FILE_FROM_SERVER);
       // File exists, move it to tmp dir.
-      FilePath dest_path = GetCacheFilePath(resource_id,
+      base::FilePath dest_path = GetCacheFilePath(resource_id,
                                             md5,
                                             CACHE_TYPE_TMP,
                                             CACHED_FILE_FROM_SERVER);
@@ -771,7 +777,7 @@ DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
 
   // If file was pinned, remove the symlink in pinned dir.
   if (cache_entry.is_pinned()) {
-    FilePath symlink_path = GetCacheFilePath(resource_id,
+    base::FilePath symlink_path = GetCacheFilePath(resource_id,
                                              std::string(),
                                              CACHE_TYPE_PINNED,
                                              CACHED_FILE_FROM_SERVER);
@@ -813,12 +819,12 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkAsMountedOnBlockingPool(
   // Get the subdir type and path for the unmounted state.
   CacheSubDirectoryType unmounted_subdir =
       cache_entry.is_pinned() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
-  FilePath unmounted_path = GetCacheFilePath(
+  base::FilePath unmounted_path = GetCacheFilePath(
       resource_id, md5, unmounted_subdir, CACHED_FILE_FROM_SERVER);
 
   // Get the subdir type and path for the mounted state.
   CacheSubDirectoryType mounted_subdir = CACHE_TYPE_PERSISTENT;
-  FilePath mounted_path = GetCacheFilePath(
+  base::FilePath mounted_path = GetCacheFilePath(
       resource_id, md5, mounted_subdir, CACHED_FILE_MOUNTED);
 
   // Move cache file.
@@ -837,7 +843,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkAsMountedOnBlockingPool(
 }
 
 DriveFileError DriveCache::MarkAsUnmountedOnBlockingPool(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   AssertOnSequencedWorkerPool();
 
   // Parse file path to obtain resource_id, md5 and extra_extension.
@@ -859,12 +865,12 @@ DriveFileError DriveCache::MarkAsUnmountedOnBlockingPool(
   // Get the subdir type and path for the unmounted state.
   CacheSubDirectoryType unmounted_subdir =
       cache_entry.is_pinned() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
-  FilePath unmounted_path = GetCacheFilePath(
+  base::FilePath unmounted_path = GetCacheFilePath(
       resource_id, md5, unmounted_subdir, CACHED_FILE_FROM_SERVER);
 
   // Get the subdir type and path for the mounted state.
   CacheSubDirectoryType mounted_subdir = CACHE_TYPE_PERSISTENT;
-  FilePath mounted_path = GetCacheFilePath(
+  base::FilePath mounted_path = GetCacheFilePath(
       resource_id, md5, mounted_subdir, CACHED_FILE_MOUNTED);
 
   // Move cache file.
@@ -911,7 +917,7 @@ DriveFileError DriveCache::MarkDirtyOnBlockingPool(
     DCHECK(cache_entry.is_persistent());
 
     // Determine symlink path in outgoing dir, so as to remove it.
-    FilePath symlink_path = GetCacheFilePath(resource_id,
+    base::FilePath symlink_path = GetCacheFilePath(resource_id,
                                              std::string(),
                                              CACHE_TYPE_OUTGOING,
                                              CACHED_FILE_FROM_SERVER);
@@ -923,13 +929,13 @@ DriveFileError DriveCache::MarkDirtyOnBlockingPool(
   // Move file to persistent dir with new .local extension.
 
   // Get the current path of the file in cache.
-  FilePath source_path = GetCacheFilePath(resource_id,
+  base::FilePath source_path = GetCacheFilePath(resource_id,
                                           md5,
                                           GetSubDirectoryType(cache_entry),
                                           CACHED_FILE_FROM_SERVER);
   // Determine destination path.
   const CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
-  FilePath cache_file_path = GetCacheFilePath(resource_id,
+  base::FilePath cache_file_path = GetCacheFilePath(resource_id,
                                               md5,
                                               sub_dir_type,
                                               CACHED_FILE_LOCALLY_MODIFIED);
@@ -938,7 +944,7 @@ DriveFileError DriveCache::MarkDirtyOnBlockingPool(
 
   // If file is pinned, update symlink in pinned dir.
   if (success && cache_entry.is_pinned()) {
-    FilePath symlink_path = GetCacheFilePath(resource_id,
+    base::FilePath symlink_path = GetCacheFilePath(resource_id,
                                              std::string(),
                                              CACHE_TYPE_PINNED,
                                              CACHED_FILE_FROM_SERVER);
@@ -989,13 +995,13 @@ DriveFileError DriveCache::CommitDirtyOnBlockingPool(
   DCHECK(cache_entry.is_persistent());
 
   // Create symlink in outgoing dir.
-  FilePath symlink_path = GetCacheFilePath(resource_id,
+  base::FilePath symlink_path = GetCacheFilePath(resource_id,
                                            std::string(),
                                            CACHE_TYPE_OUTGOING,
                                            CACHED_FILE_FROM_SERVER);
 
   // Get target path of symlink i.e. current path of the file in cache.
-  FilePath target_path = GetCacheFilePath(resource_id,
+  base::FilePath target_path = GetCacheFilePath(resource_id,
                                           md5,
                                           GetSubDirectoryType(cache_entry),
                                           CACHED_FILE_LOCALLY_MODIFIED);
@@ -1036,7 +1042,7 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
   DCHECK(cache_entry.is_persistent());
 
   // Get the current path of the file in cache.
-  FilePath source_path = GetCacheFilePath(resource_id,
+  base::FilePath source_path = GetCacheFilePath(resource_id,
                                           md5,
                                           GetSubDirectoryType(cache_entry),
                                           CACHED_FILE_LOCALLY_MODIFIED);
@@ -1046,7 +1052,7 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
   // otherwise, move it to tmp dir with .md5 extension.
   const CacheSubDirectoryType sub_dir_type =
       cache_entry.is_pinned() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
-  FilePath dest_path = GetCacheFilePath(resource_id,
+  base::FilePath dest_path = GetCacheFilePath(resource_id,
                                         md5,
                                         sub_dir_type,
                                         CACHED_FILE_FROM_SERVER);
@@ -1055,7 +1061,7 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
 
   if (success) {
     // Delete symlink in outgoing dir.
-    FilePath symlink_path = GetCacheFilePath(resource_id,
+    base::FilePath symlink_path = GetCacheFilePath(resource_id,
                                              std::string(),
                                              CACHE_TYPE_OUTGOING,
                                              CACHED_FILE_FROM_SERVER);
@@ -1064,7 +1070,7 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
 
   // If file is pinned, update symlink in pinned dir.
   if (success && cache_entry.is_pinned()) {
-    FilePath symlink_path = GetCacheFilePath(resource_id,
+    base::FilePath symlink_path = GetCacheFilePath(resource_id,
                                              std::string(),
                                              CACHE_TYPE_PINNED,
                                              CACHED_FILE_FROM_SERVER);
@@ -1106,7 +1112,7 @@ DriveFileError DriveCache::RemoveOnBlockingPool(
 
   // Determine paths to delete all cache versions of |resource_id| in
   // persistent, tmp and pinned directories.
-  std::vector<FilePath> paths_to_delete;
+  std::vector<base::FilePath> paths_to_delete;
 
   // For files in persistent and tmp dirs, delete files that match
   // "<resource_id>.*".
@@ -1129,7 +1135,7 @@ DriveFileError DriveCache::RemoveOnBlockingPool(
   // Don't delete locally modified (i.e. dirty and possibly outgoing) files.
   // Since we're not deleting outgoing symlinks, we don't need to append
   // outgoing path to |paths_to_delete|.
-  FilePath path_to_keep = GetCacheFilePath(resource_id,
+  base::FilePath path_to_keep = GetCacheFilePath(resource_id,
                                            std::string(),
                                            CACHE_TYPE_PERSISTENT,
                                            CACHED_FILE_LOCALLY_MODIFIED);
@@ -1212,7 +1218,8 @@ void DriveCache::OnCommitDirty(const std::string& resource_id,
                       OnCacheCommitted(resource_id));
 }
 
-bool DriveCache::HasEnoughSpaceFor(int64 num_bytes, const FilePath& path) {
+bool DriveCache::HasEnoughSpaceFor(int64 num_bytes,
+                                   const base::FilePath& path) {
   int64 free_space = 0;
   if (free_disk_space_getter_)
     free_space = free_disk_space_getter_->AmountOfFreeDiskSpace();
@@ -1225,18 +1232,18 @@ bool DriveCache::HasEnoughSpaceFor(int64 num_bytes, const FilePath& path) {
 }
 
 // static
-FilePath DriveCache::GetCacheRootPath(Profile* profile) {
-  FilePath cache_base_path;
+base::FilePath DriveCache::GetCacheRootPath(Profile* profile) {
+  base::FilePath cache_base_path;
   chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
-  FilePath cache_root_path =
+  base::FilePath cache_root_path =
       cache_base_path.Append(chrome::kDriveCacheDirname);
   return cache_root_path.Append(kDriveCacheVersionDir);
 }
 
 // static
-std::vector<FilePath> DriveCache::GetCachePaths(
-    const FilePath& cache_root_path) {
-  std::vector<FilePath> cache_paths;
+std::vector<base::FilePath> DriveCache::GetCachePaths(
+    const base::FilePath& cache_root_path) {
+  std::vector<base::FilePath> cache_paths;
   // The order should match DriveCache::CacheSubDirectoryType enum.
   cache_paths.push_back(cache_root_path.Append(kDriveCacheMetaDir));
   cache_paths.push_back(cache_root_path.Append(kDriveCachePinnedDir));
@@ -1250,7 +1257,7 @@ std::vector<FilePath> DriveCache::GetCachePaths(
 
 // static
 bool DriveCache::CreateCacheDirectories(
-    const std::vector<FilePath>& paths_to_create) {
+    const std::vector<base::FilePath>& paths_to_create) {
   bool success = true;
 
   for (size_t i = 0; i < paths_to_create.size(); ++i) {

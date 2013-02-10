@@ -231,7 +231,7 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
 }
 
 // Callback that stores a PDF file on disk.
-void PrintToPdfCallback(Metafile* metafile, const FilePath& path) {
+void PrintToPdfCallback(Metafile* metafile, const base::FilePath& path) {
   metafile->SaveTo(path);
   // |metafile| must be deleted on the UI thread.
   BrowserThread::PostTask(
@@ -242,7 +242,7 @@ void PrintToPdfCallback(Metafile* metafile, const FilePath& path) {
 #ifdef OS_CHROMEOS
 void PrintToPdfCallbackWithCheck(Metafile* metafile,
                                  drive::DriveFileError error,
-                                 const FilePath& path) {
+                                 const base::FilePath& path) {
   if (error != drive::DRIVE_FILE_OK) {
     LOG(ERROR) << "Save to pdf failed to write: " << error;
   } else {
@@ -522,13 +522,14 @@ void PrintPreviewHandler::PrintToPdf() {
     string16 print_job_title_utf16 = print_preview_ui->initiator_tab_title();
 
 #if defined(OS_WIN)
-    FilePath::StringType print_job_title(print_job_title_utf16);
+    base::FilePath::StringType print_job_title(print_job_title_utf16);
 #elif defined(OS_POSIX)
-    FilePath::StringType print_job_title = UTF16ToUTF8(print_job_title_utf16);
+    base::FilePath::StringType print_job_title =
+        UTF16ToUTF8(print_job_title_utf16);
 #endif
 
     file_util::ReplaceIllegalCharactersInPath(&print_job_title, '_');
-    FilePath default_filename(print_job_title);
+    base::FilePath default_filename(print_job_title);
     default_filename =
         default_filename.ReplaceExtension(FILE_PATH_LITERAL("pdf"));
 
@@ -857,7 +858,7 @@ void PrintPreviewHandler::OnPrintDialogShown() {
   ClosePreviewDialogAndActivateInitiatorTab();
 }
 
-void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
+void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
@@ -870,7 +871,7 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
     // the select file dialog performs IO anyway in order to display the
     // folders and also it is modal.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    FilePath file_path;
+    base::FilePath file_path;
     PathService::Get(chrome::DIR_USER_DOCUMENTS, &file_path);
     sticky_settings->StoreSavePath(file_path);
     sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
@@ -911,7 +912,7 @@ void PrintPreviewHandler::ShowSystemDialog() {
   HandleShowSystemDialog(NULL);
 }
 
-void PrintPreviewHandler::FileSelected(const FilePath& path,
+void PrintPreviewHandler::FileSelected(const base::FilePath& path,
                                        int index, void* params) {
   // Updating |save_path_| to the newly selected folder.
   printing::StickySettings* sticky_settings = GetStickySettings();
@@ -919,7 +920,7 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
   sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());
   web_ui()->CallJavascriptFunction("fileSelectionCompleted");
-  print_to_pdf_path_.reset(new FilePath(path));
+  print_to_pdf_path_.reset(new base::FilePath(path));
   PostPrintToPdfTask();
 }
 

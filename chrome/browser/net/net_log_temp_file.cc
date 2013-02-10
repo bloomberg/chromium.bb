@@ -115,7 +115,7 @@ void NetLogTempFile::StopNetLog() {
   state_ = STATE_ALLOW_START_SEND;
 }
 
-bool NetLogTempFile::GetFilePath(FilePath* path) {
+bool NetLogTempFile::GetFilePath(base::FilePath* path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
   if (state_ != STATE_ALLOW_START_SEND)
     return false;
@@ -136,7 +136,7 @@ bool NetLogTempFile::GetFilePath(FilePath* path) {
 
 bool NetLogTempFile::GetNetExportLog() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
-  FilePath temp_dir;
+  base::FilePath temp_dir;
   if (!GetNetExportLogDirectory(&temp_dir))
     return false;
 
@@ -144,7 +144,7 @@ bool NetLogTempFile::GetNetExportLog() {
   return true;
 }
 
-bool NetLogTempFile::GetNetExportLogDirectory(FilePath* path) {
+bool NetLogTempFile::GetNetExportLogDirectory(base::FilePath* path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
   return file_util::GetTempDir(path);
 }

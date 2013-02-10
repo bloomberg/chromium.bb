@@ -126,7 +126,7 @@ static bool ConvertByteUnitToScale(char unit, uint64_t* out_scale) {
 static bool GetProcessMemoryInfoUsingPS(
     const std::vector<base::ProcessId>& pid_list,
     std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
-  const FilePath kProgram("/bin/ps");
+  const base::FilePath kProgram("/bin/ps");
   CommandLine command_line(kProgram);
 
   // Get resident set size, virtual memory size.
@@ -187,7 +187,7 @@ static bool GetProcessMemoryInfoUsingPS(
 
 static bool GetProcessMemoryInfoUsingTop(
     std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
-  const FilePath kProgram("/usr/bin/top");
+  const base::FilePath kProgram("/usr/bin/top");
   CommandLine command_line(kProgram);
 
   // -stats tells top to print just the given fields as ordered.

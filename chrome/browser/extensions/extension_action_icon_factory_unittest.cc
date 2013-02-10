@@ -59,7 +59,7 @@ gfx::ImageSkiaRep CreateBlankRep(int size_dip, ui::ScaleFactor scale_factor) {
 }
 
 gfx::Image LoadIcon(const std::string& filename) {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions/api_test").AppendASCII(filename);
 
@@ -97,7 +97,7 @@ class ExtensionActionIconFactoryTest
   scoped_refptr<Extension> CreateExtension(const char* name,
                                            Manifest::Location location) {
     // Create and load an extension.
-    FilePath test_file;
+    base::FilePath test_file;
     if (!PathService::Get(chrome::DIR_TEST_DATA, &test_file)) {
       EXPECT_FALSE(true);
       return NULL;
@@ -134,7 +134,7 @@ class ExtensionActionIconFactoryTest
     CommandLine command_line(CommandLine::NO_PROGRAM);
     extension_service_ = static_cast<extensions::TestExtensionSystem*>(
         extensions::ExtensionSystem::Get(profile_.get()))->
-        CreateExtensionService(&command_line, FilePath(), false);
+        CreateExtensionService(&command_line, base::FilePath(), false);
   }
 
   virtual void TearDown() OVERRIDE {

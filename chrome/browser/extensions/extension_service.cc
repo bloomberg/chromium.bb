@@ -331,7 +331,7 @@ bool ExtensionService::UninstallExtensionHelper(
 
 ExtensionService::ExtensionService(Profile* profile,
                                    const CommandLine* command_line,
-                                   const FilePath& install_directory,
+                                   const base::FilePath& install_directory,
                                    extensions::ExtensionPrefs* extension_prefs,
                                    extensions::Blacklist* blacklist,
                                    bool autoupdate_enabled,
@@ -618,7 +618,7 @@ void ExtensionService::Init() {
 }
 
 bool ExtensionService::UpdateExtension(const std::string& id,
-                                       const FilePath& extension_path,
+                                       const base::FilePath& extension_path,
                                        const GURL& download_url,
                                        CrxInstaller** out_crx_installer) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -712,7 +712,7 @@ void ExtensionService::ReloadExtensionWithEvents(
     const std::string& extension_id,
     int events) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FilePath path;
+  base::FilePath path;
   const Extension* current_extension = GetExtensionById(extension_id, false);
 
   // Disable the extension if it's loaded. It might not be loaded if it crashed.
@@ -1997,7 +1997,7 @@ void ExtensionService::GarbageCollectExtensions() {
   scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> info(
       extension_prefs_->GetInstalledExtensionsInfo());
 
-  std::multimap<std::string, FilePath> extension_paths;
+  std::multimap<std::string, base::FilePath> extension_paths;
   for (size_t i = 0; i < info->size(); ++i)
     extension_paths.insert(std::make_pair(info->at(i)->extension_id,
                                           info->at(i)->extension_path));
@@ -2558,7 +2558,7 @@ bool ExtensionService::ShouldBlockUrlInBrowserTab(GURL* url) {
 bool ExtensionService::OnExternalExtensionFileFound(
          const std::string& id,
          const Version* version,
-         const FilePath& path,
+         const base::FilePath& path,
          Manifest::Location location,
          int creation_flags,
          bool mark_acknowledged) {
@@ -2629,7 +2629,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
 }
 
 void ExtensionService::ReportExtensionLoadError(
-    const FilePath& extension_path,
+    const base::FilePath& extension_path,
     const std::string &error,
     bool be_noisy) {
   content::NotificationService::current()->Notify(
@@ -2864,7 +2864,7 @@ void ExtensionService::UpdatePluginListWithNaClModules() {
   // there is a MIME type that module wants to handle, so we need to add that
   // MIME type to plugins which handle NaCl modules in order to allow the
   // individual modules to handle these types.
-  FilePath path;
+  base::FilePath path;
   if (!PathService::Get(chrome::FILE_NACL_PLUGIN, &path))
     return;
   const content::PepperPluginInfo* pepper_info =
@@ -2947,7 +2947,7 @@ void ExtensionService::LaunchApplication(
 #if !defined(OS_ANDROID)
   extensions::LaunchPlatformApp(extension_host->profile(),
                                 extension_host->extension(),
-                                NULL, FilePath());
+                                NULL, base::FilePath());
 #endif
 }
 
@@ -3036,8 +3036,8 @@ bool ExtensionService::ShouldDelayExtensionUpdate(
 }
 
 void ExtensionService::GarbageCollectIsolatedStorage() {
-  scoped_ptr<base::hash_set<FilePath> > active_paths(
-      new base::hash_set<FilePath>());
+  scoped_ptr<base::hash_set<base::FilePath> > active_paths(
+      new base::hash_set<base::FilePath>());
   for (ExtensionSet::const_iterator it = extensions_.begin();
        it != extensions_.end(); ++it) {
     if ((*it)->is_storage_isolated()) {

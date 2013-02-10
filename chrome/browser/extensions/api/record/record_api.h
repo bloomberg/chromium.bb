@@ -12,7 +12,8 @@
 
 namespace {
 
-const FilePath::CharType kURLErrorsSuffix[] = FILE_PATH_LITERAL(".errors");
+const base::FilePath::CharType kURLErrorsSuffix[] =
+    FILE_PATH_LITERAL(".errors");
 const char kErrorsKey[] = "errors";
 const char kStatsKey[] = "stats";
 
@@ -93,7 +94,7 @@ class RunPageCyclerFunction : public AsyncExtensionFunction {
   // logic is in subclasses.
   virtual void Finish() {}
 
-  FilePath user_data_dir_;
+  base::FilePath user_data_dir_;
   std::string url_contents_;
   int repeat_count_;
   std::vector<std::string> errors_;
@@ -151,8 +152,8 @@ class RecordReplayURLsFunction : public RunPageCyclerFunction {
 
   // These data are additional information added to the sub-browser
   // commandline or used to repeatedly run the sub-browser.
-  FilePath extension_path_;
-  FilePath stats_file_path_;
+  base::FilePath extension_path_;
+  base::FilePath stats_file_path_;
 
   // This time datum marks the start and end of the sub-browser run.
   base::Time timer_;

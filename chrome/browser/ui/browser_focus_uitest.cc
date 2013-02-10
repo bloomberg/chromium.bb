@@ -187,7 +187,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
 class TestInterstitialPage : public content::InterstitialPageDelegate {
  public:
   TestInterstitialPage(WebContents* tab, bool new_navigation, const GURL& url) {
-    FilePath file_path;
+    base::FilePath file_path;
     bool r = PathService::Get(chrome::DIR_TEST_DATA, &file_path);
     EXPECT_TRUE(r);
     file_path = file_path.AppendASCII("focus");

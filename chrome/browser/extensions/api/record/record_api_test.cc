@@ -55,18 +55,19 @@ const char kCaptureArgs1[] =
 const char kPlaybackArgs1[] =
     "[\"%s\", 2, {\"extensionPath\": \"MockExtension\"}]";
 
-// Use this as the value of FilePath switches (e.g. user-data-dir) that
+// Use this as the value of base::FilePath switches (e.g. user-data-dir) that
 // should be replaced by the record methods.
-const FilePath::CharType kDummyDirName[] = FILE_PATH_LITERAL("ReplaceMe");
+const base::FilePath::CharType kDummyDirName[] = FILE_PATH_LITERAL("ReplaceMe");
 
 // Use this as the filename for a mock "cache" file in the user-data-dir.
-const FilePath::CharType kMockCacheFile[] = FILE_PATH_LITERAL("MockCache");
+const base::FilePath::CharType kMockCacheFile[] =
+    FILE_PATH_LITERAL("MockCache");
 
 }
 
 class TestProcessStrategy : public ProcessStrategy {
  public:
-  explicit TestProcessStrategy(std::vector<FilePath>* temp_files)
+  explicit TestProcessStrategy(std::vector<base::FilePath>* temp_files)
       : command_line_(CommandLine::NO_PROGRAM), temp_files_(temp_files) {}
 
   virtual ~TestProcessStrategy() {}
@@ -92,15 +93,15 @@ class TestProcessStrategy : public ProcessStrategy {
     visited_urls_.clear();
 
     if (command_line.HasSwitch(switches::kVisitURLs)) {
-      FilePath url_path =
+      base::FilePath url_path =
           command_line.GetSwitchValuePath(switches::kVisitURLs);
 
       temp_files_->push_back(url_path);
       if (command_line.HasSwitch(switches::kRecordMode) ||
           command_line.HasSwitch(switches::kPlaybackMode)) {
-        FilePath url_path_copy = command_line.GetSwitchValuePath(
+        base::FilePath url_path_copy = command_line.GetSwitchValuePath(
             switches::kUserDataDir).Append(
-            FilePath(FilePath::StringType(kMockCacheFile)));
+            base::FilePath(base::FilePath::StringType(kMockCacheFile)));
 
         if (command_line.HasSwitch(switches::kRecordMode)) {
           file_util::CopyFile(url_path, url_path_copy);
@@ -129,9 +130,9 @@ class TestProcessStrategy : public ProcessStrategy {
       }
 
       if (!bad_urls.empty()) {
-        FilePath url_errors_path = url_path.DirName()
+        base::FilePath url_errors_path = url_path.DirName()
             .Append(url_path.BaseName().value() +
-            FilePath::StringType(kURLErrorsSuffix));
+            base::FilePath::StringType(kURLErrorsSuffix));
         std::string error_content = JoinString(bad_urls, '\n');
         temp_files_->push_back(url_errors_path);
         file_util::WriteFile(url_errors_path, error_content.c_str(),
@@ -140,7 +141,7 @@ class TestProcessStrategy : public ProcessStrategy {
     }
 
     if (command_line.HasSwitch(switches::kRecordStats)) {
-      FilePath record_stats_path(command_line.GetSwitchValuePath(
+      base::FilePath record_stats_path(command_line.GetSwitchValuePath(
           switches::kRecordStats));
       temp_files_->push_back(record_stats_path);
       file_util::WriteFile(record_stats_path, kTestStatistics.c_str(),
@@ -159,7 +160,7 @@ class TestProcessStrategy : public ProcessStrategy {
  private:
   CommandLine command_line_;
   std::vector<std::string> visited_urls_;
-  std::vector<FilePath>* temp_files_;
+  std::vector<base::FilePath>* temp_files_;
 };
 
 class RecordApiTest : public InProcessBrowserTest {
@@ -171,7 +172,7 @@ class RecordApiTest : public InProcessBrowserTest {
   // browser test.
   virtual void SetUp() OVERRIDE {
     InProcessBrowserTest::SetUp();
-    if (!scoped_temp_user_data_dir_.Set(FilePath(kDummyDirName)))
+    if (!scoped_temp_user_data_dir_.Set(base::FilePath(kDummyDirName)))
       NOTREACHED();
   }
 
@@ -185,7 +186,7 @@ class RecordApiTest : public InProcessBrowserTest {
   // Override to delete temporary files created during execution.
   virtual void CleanUpOnMainThread() OVERRIDE {
     InProcessBrowserTest::CleanUpOnMainThread();
-    for (std::vector<FilePath>::const_iterator it = temp_files_.begin();
+    for (std::vector<base::FilePath>::const_iterator it = temp_files_.begin();
         it != temp_files_.end(); ++it) {
       if (!file_util::Delete(*it, false))
         NOTREACHED();
@@ -207,7 +208,7 @@ class RecordApiTest : public InProcessBrowserTest {
         remove_switches);
 
     command_line->AppendSwitchPath(switches::kUserDataDir,
-        FilePath(kDummyDirName));
+        base::FilePath(kDummyDirName));
     // Adding a dummy load-extension switch is rather complex since the
     // preent design of InProcessBrowserTest requires a *real* extension
     // for the flag, even if we're just testing its replacement.  Opted
@@ -220,7 +221,7 @@ class RecordApiTest : public InProcessBrowserTest {
   // RecordCaptureURLsFunction that was used, so that its state may be
   // queried.
   scoped_refptr<RecordCaptureURLsFunction> RunCapture(
-      const FilePath& user_data_dir,
+      const base::FilePath& user_data_dir,
       scoped_ptr<base::ListValue>* out_list) {
 
     scoped_refptr<RecordCaptureURLsFunction> capture_function(
@@ -264,7 +265,7 @@ class RecordApiTest : public InProcessBrowserTest {
   }
 
  protected:
-  std::vector<FilePath> temp_files_;
+  std::vector<base::FilePath> temp_files_;
 
  private:
   base::ScopedTempDir scoped_temp_user_data_dir_;
@@ -289,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, DISABLED_CheckCapture) {
 
   EXPECT_TRUE(command_line.HasSwitch(switches::kUserDataDir));
   EXPECT_TRUE(command_line.GetSwitchValuePath(switches::kUserDataDir) !=
-      FilePath(kDummyDirName));
+      base::FilePath(kDummyDirName));
 
   EXPECT_TRUE(VerifyURLHandling(result.get(), strategy));
 }
@@ -333,12 +334,12 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
 
   EXPECT_TRUE(command_line.HasSwitch(switches::kUserDataDir));
   EXPECT_TRUE(command_line.GetSwitchValuePath(switches::kUserDataDir) !=
-      FilePath(kDummyDirName));
+      base::FilePath(kDummyDirName));
 
    // Check that command line load-extension was overridden.
   EXPECT_TRUE(command_line.HasSwitch(switches::kLoadExtension) &&
       command_line.GetSwitchValuePath(switches::kLoadExtension)
-      != FilePath(kDummyDirName));
+      != base::FilePath(kDummyDirName));
 
    // Check for return value with proper stats.
   EXPECT_EQ(kTestStatistics, utils::GetString(result.get(), kStatsKey));

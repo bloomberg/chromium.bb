@@ -98,7 +98,7 @@ ExtensionUpdater::CheckParams::~CheckParams() {}
 
 ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(
     const std::string& i,
-    const FilePath& p,
+    const base::FilePath& p,
     const GURL& u,
     const std::set<int>& request_ids)
     : extension_id(i),
@@ -482,7 +482,7 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
 
 void ExtensionUpdater::OnExtensionDownloadFinished(
     const std::string& id,
-    const FilePath& path,
+    const base::FilePath& path,
     const GURL& download_url,
     const std::string& version,
     const PingResult& ping,

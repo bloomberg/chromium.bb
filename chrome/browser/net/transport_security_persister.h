@@ -47,7 +47,7 @@ class TransportSecurityPersister
       public base::ImportantFileWriter::DataSerializer {
  public:
   TransportSecurityPersister(net::TransportSecurityState* state,
-                             const FilePath& profile_path,
+                             const base::FilePath& profile_path,
                              bool readonly);
   virtual ~TransportSecurityPersister();
 

@@ -70,7 +70,8 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
   // A wrapper around SpellcheckCustomDictionary::LoadDictionaryFile private
   // function to avoid a large number of FRIEND_TEST declarations in
   // SpellcheckCustomDictionary.
-  chrome::spellcheck_common::WordList LoadDictionaryFile(const FilePath& path) {
+  chrome::spellcheck_common::WordList LoadDictionaryFile(
+      const base::FilePath& path) {
     return SpellcheckCustomDictionary::LoadDictionaryFile(path);
   }
 
@@ -79,7 +80,7 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
   // SpellcheckCustomDictionary.
   void UpdateDictionaryFile(
       const SpellcheckCustomDictionary::Change& dictionary_change,
-      const FilePath& path) {
+      const base::FilePath& path) {
     SpellcheckCustomDictionary::UpdateDictionaryFile(dictionary_change, path);
   }
 
@@ -171,7 +172,8 @@ class DictionaryObserverCounter : public SpellcheckCustomDictionary::Observer {
 };
 
 TEST_F(SpellcheckCustomDictionaryTest, SaveAndLoad) {
-  FilePath path = profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
+  base::FilePath path =
+      profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
   WordList loaded_custom_words = LoadDictionaryFile(path);
 
   // The custom word list should be empty now.
@@ -246,7 +248,8 @@ TEST_F(SpellcheckCustomDictionaryTest, MultiProfile) {
 
 // Legacy empty dictionary should be converted to new format empty dictionary.
 TEST_F(SpellcheckCustomDictionaryTest, LegacyEmptyDictionaryShouldBeConverted) {
-  FilePath path = profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
+  base::FilePath path =
+      profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
 
   std::string content;
   file_util::WriteFile(path, content.c_str(), content.length());
@@ -262,7 +265,8 @@ TEST_F(SpellcheckCustomDictionaryTest, LegacyEmptyDictionaryShouldBeConverted) {
 // with two words.
 TEST_F(SpellcheckCustomDictionaryTest,
        LegacyDictionaryWithTwoWordsShouldBeConverted) {
-  FilePath path = profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
+  base::FilePath path =
+      profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
 
   std::string content = "foo\nbar\nfoo\n";
   file_util::WriteFile(path, content.c_str(), content.length());
@@ -281,7 +285,8 @@ TEST_F(SpellcheckCustomDictionaryTest,
 // trimmed.
 TEST_F(SpellcheckCustomDictionaryTest,
        IllegalWordsShouldBeRemovedFromDictionary) {
-  FilePath path = profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
+  base::FilePath path =
+      profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
 
   std::string content = "foo\n foo bar \n\n \nbar\n"
       "01234567890123456789012345678901234567890123456789"
@@ -303,7 +308,8 @@ TEST_F(SpellcheckCustomDictionaryTest,
 // end of the dictionary. If the dictionary file is corrupted on disk, the
 // previous version should be reloaded.
 TEST_F(SpellcheckCustomDictionaryTest, CorruptedWriteShouldBeRecovered) {
-  FilePath path = profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
+  base::FilePath path =
+      profile_->GetPath().Append(chrome::kCustomDictionaryFileName);
 
   std::string content = "foo\nbar";
   file_util::WriteFile(path, content.c_str(), content.length());

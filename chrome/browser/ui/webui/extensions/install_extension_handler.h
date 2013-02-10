@@ -43,7 +43,7 @@ class InstallExtensionHandler : public content::WebUIMessageHandler {
   void HandleInstallMessage(const ListValue* args);
 
   // The extension that will be installed when HandleInstallMessage() is called.
-  FilePath file_to_install_;
+  base::FilePath file_to_install_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallExtensionHandler);
 };

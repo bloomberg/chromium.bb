@@ -48,7 +48,7 @@ PluginPrefsFactory::BuildServiceInstanceFor(Profile* profile) const {
 }
 
 void PluginPrefsFactory::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  FilePath internal_dir;
+  base::FilePath internal_dir;
   PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
   prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
                               internal_dir,

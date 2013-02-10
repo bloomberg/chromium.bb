@@ -13,12 +13,12 @@
 // a unique key to look up RequestContext objects in the ProfileIOData derived
 // classes.
 struct StoragePartitionDescriptor {
-  StoragePartitionDescriptor(const FilePath& partition_path,
+  StoragePartitionDescriptor(const base::FilePath& partition_path,
                              const bool in_memory_only)
     : path(partition_path),
       in_memory(in_memory_only) {}
 
-  const FilePath path;
+  const base::FilePath path;
   const bool in_memory;
 };
 

@@ -47,7 +47,7 @@ class FileSelectionUser : public ui::SelectFileDialog::Listener {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(NULL));
 
-    const FilePath file_path;
+    const base::FilePath file_path;
     const string16 title=string16();
 
     file_selection_initialisation_in_progress = true;
@@ -63,12 +63,12 @@ class FileSelectionUser : public ui::SelectFileDialog::Listener {
   }
 
   // ui::SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index, void* params) OVERRIDE{
     ASSERT_FALSE(file_selection_initialisation_in_progress);
   }
   virtual void MultiFilesSelected(
-      const std::vector<FilePath>& files,
+      const std::vector<base::FilePath>& files,
       void* params) OVERRIDE {
     ASSERT_FALSE(file_selection_initialisation_in_progress);
   }

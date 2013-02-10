@@ -32,7 +32,7 @@ class LocalChangeProcessor {
   // (as the remote service is supposed to maintain a list of conflict files).
   virtual void ApplyLocalChange(
       const fileapi::FileChange& change,
-      const FilePath& local_file_path,
+      const base::FilePath& local_file_path,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) = 0;
 

@@ -25,11 +25,12 @@ namespace policy {
 
 namespace {
 // Subdirectory in the user's profile for storing user policies.
-const FilePath::CharType kPolicyDir[] = FILE_PATH_LITERAL("Device Management");
+const base::FilePath::CharType kPolicyDir[] =
+    FILE_PATH_LITERAL("Device Management");
 // File in the above directory for stroing user policy dmtokens.
-const FilePath::CharType kTokenCacheFile[] = FILE_PATH_LITERAL("Token");
+const base::FilePath::CharType kTokenCacheFile[] = FILE_PATH_LITERAL("Token");
 // File in the above directory for storing user policy data.
-const FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
+const base::FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
 }  // namespace
 
 
@@ -42,8 +43,8 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
                               CloudPolicyStore::Status,
                               scoped_ptr<em::PolicyFetchResponse>)> Callback;
 
-  LegacyPolicyCacheLoader(const FilePath& token_cache_file,
-                          const FilePath& policy_cache_file);
+  LegacyPolicyCacheLoader(const base::FilePath& token_cache_file,
+                          const base::FilePath& policy_cache_file);
   virtual ~LegacyPolicyCacheLoader();
 
   // Starts loading, and reports the result to |callback| when done.
@@ -84,8 +85,8 @@ class LegacyPolicyCacheLoader : public UserPolicyTokenLoader::Delegate,
 };
 
 LegacyPolicyCacheLoader::LegacyPolicyCacheLoader(
-    const FilePath& token_cache_file,
-    const FilePath& policy_cache_file)
+    const base::FilePath& token_cache_file,
+    const base::FilePath& policy_cache_file)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       has_policy_(false),
       status_(CloudPolicyStore::STATUS_OK) {
@@ -148,8 +149,8 @@ CloudPolicyStore::Status LegacyPolicyCacheLoader::TranslateLoadResult(
 UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
     chromeos::SessionManagerClient* session_manager_client,
     const std::string& username,
-    const FilePath& legacy_token_cache_file,
-    const FilePath& legacy_policy_cache_file)
+    const base::FilePath& legacy_token_cache_file,
+    const base::FilePath& legacy_policy_cache_file)
     : session_manager_client_(session_manager_client),
       username_(username),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
@@ -341,7 +342,8 @@ void UserCloudPolicyStoreChromeOS::InstallLegacyTokens(
 }
 
 // static
-void UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir(const FilePath& dir) {
+void UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir(
+    const base::FilePath& dir) {
   if (file_util::PathExists(dir) && !file_util::Delete(dir, true))
     LOG(ERROR) << "Failed to remove cache dir " << dir.value();
 }

@@ -110,7 +110,7 @@ void TemplateURLFetcherTestCallbacks::ConfirmAddSearchProvider(
 TemplateURLFetcherTest::TemplateURLFetcherTest()
     : test_server_(net::TestServer::TYPE_HTTP,
                    net::TestServer::kLocalhost,
-                   FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
+                   base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
       callbacks_destroyed_(0),
       add_provider_called_(0),
       waiting_for_download_(false) {
@@ -137,7 +137,7 @@ void TemplateURLFetcherTest::StartDownload(
     bool check_that_file_exists) {
 
   if (check_that_file_exists) {
-    FilePath osdd_full_path;
+    base::FilePath osdd_full_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &osdd_full_path));
     osdd_full_path = osdd_full_path.AppendASCII(osdd_file_name);
     ASSERT_TRUE(file_util::PathExists(osdd_full_path));

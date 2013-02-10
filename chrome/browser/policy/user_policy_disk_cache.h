@@ -44,7 +44,7 @@ class UserPolicyDiskCache
   };
 
   UserPolicyDiskCache(const base::WeakPtr<Delegate>& delegate,
-                      const FilePath& backing_file_path);
+                      const base::FilePath& backing_file_path);
 
   // Starts reading the policy cache from disk. Passes the read policy
   // information back to the hosting UserPolicyCache after a successful cache
@@ -75,7 +75,7 @@ class UserPolicyDiskCache
       const enterprise_management::CachedCloudPolicyResponse& policy);
 
   base::WeakPtr<Delegate> delegate_;
-  const FilePath backing_file_path_;
+  const base::FilePath backing_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyDiskCache);
 };

@@ -62,7 +62,7 @@ class ProcessSingletonMacTest : public PlatformTest {
   }
 
   base::ScopedTempDir temp_dir_;
-  FilePath lock_path_;
+  base::FilePath lock_path_;
 };
 
 // Test that the base case doesn't blow up.

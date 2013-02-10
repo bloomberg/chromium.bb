@@ -183,7 +183,7 @@ void MockDisplaySettingsProviderImpl::SetDesktopBarThickness(
 
 }  // namespace
 
-const FilePath::CharType* BasePanelBrowserTest::kTestDir =
+const base::FilePath::CharType* BasePanelBrowserTest::kTestDir =
     FILE_PATH_LITERAL("panels");
 
 BasePanelBrowserTest::BasePanelBrowserTest()
@@ -410,13 +410,13 @@ NativePanelTesting* BasePanelBrowserTest::CreateNativePanelTesting(
 }
 
 scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
-    const FilePath::StringType& path,
+    const base::FilePath::StringType& path,
     extensions::Manifest::Location location,
     const DictionaryValue& extra_value) {
 #if defined(OS_WIN)
-  FilePath full_path(FILE_PATH_LITERAL("c:\\"));
+  base::FilePath full_path(FILE_PATH_LITERAL("c:\\"));
 #else
-  FilePath full_path(FILE_PATH_LITERAL("/"));
+  base::FilePath full_path(FILE_PATH_LITERAL("/"));
 #endif
   full_path = full_path.Append(path);
 

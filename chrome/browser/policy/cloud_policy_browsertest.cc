@@ -118,7 +118,7 @@ class CloudPolicyTest : public InProcessBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     // The TestServer wants the docroot as a path relative to the source dir.
-    FilePath source;
+    base::FilePath source;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source));
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDirUnderPath(source));
     ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetEmptyPolicy()));

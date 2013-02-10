@@ -139,7 +139,7 @@ CrxInstaller::~CrxInstaller() {
   }
 }
 
-void CrxInstaller::InstallCrx(const FilePath& source_file) {
+void CrxInstaller::InstallCrx(const base::FilePath& source_file) {
   source_file_ = source_file;
 
   scoped_refptr<SandboxedUnpacker> unpacker(
@@ -158,7 +158,7 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
     NOTREACHED();
 }
 
-void CrxInstaller::InstallUserScript(const FilePath& source_file,
+void CrxInstaller::InstallUserScript(const base::FilePath& source_file,
                                      const GURL& download_url) {
   DCHECK(!download_url.is_empty());
 
@@ -194,7 +194,8 @@ void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
 }
 
 void CrxInstaller::ConvertWebAppOnFileThread(
-    const WebApplicationInfo& web_app, const FilePath& install_directory) {
+    const WebApplicationInfo& web_app,
+    const base::FilePath& install_directory) {
   string16 error;
   scoped_refptr<Extension> extension(
       ConvertWebAppToExtension(web_app, base::Time::Now(), install_directory));
@@ -351,8 +352,8 @@ void CrxInstaller::OnUnpackFailure(const string16& error_message) {
   ReportFailureFromFileThread(CrxInstallerError(error_message));
 }
 
-void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
-                                   const FilePath& extension_dir,
+void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
+                                   const base::FilePath& extension_dir,
                                    const DictionaryValue* original_manifest,
                                    const Extension* extension) {
   DCHECK(installer_task_runner_->RunsTasksOnCurrentThread());
@@ -515,7 +516,7 @@ void CrxInstaller::CompleteInstall() {
     "Extensions.CrxInstallDirPathLength",
         install_directory_.value().length(), 0, 500, 100);
 
-  FilePath version_dir = extension_file_util::InstallExtension(
+  base::FilePath version_dir = extension_file_util::InstallExtension(
       unpacked_extension_root_,
       extension_->id(),
       extension_->VersionString(),
@@ -665,12 +666,12 @@ void CrxInstaller::CleanupTempFiles() {
   // Delete the temp directory and crx file as necessary.
   if (!temp_dir_.value().empty()) {
     extension_file_util::DeleteFile(temp_dir_, true);
-    temp_dir_ = FilePath();
+    temp_dir_ = base::FilePath();
   }
 
   if (delete_source_ && !source_file_.value().empty()) {
     extension_file_util::DeleteFile(source_file_, false);
-    source_file_ = FilePath();
+    source_file_ = base::FilePath();
   }
 }
 

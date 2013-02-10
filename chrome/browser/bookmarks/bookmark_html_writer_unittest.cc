@@ -119,7 +119,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  FilePath path_;
+  base::FilePath path_;
 };
 
 // Class that will notify message loop when file is written.

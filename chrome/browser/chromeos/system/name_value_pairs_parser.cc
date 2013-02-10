@@ -24,7 +24,7 @@ const char kTrimChars[] = "\" ";
 bool GetToolOutput(int argc, const char* argv[], std::string& output) {
   DCHECK_GE(argc, 1);
 
-  if (!file_util::PathExists(FilePath(argv[0]))) {
+  if (!file_util::PathExists(base::FilePath(argv[0]))) {
     LOG(WARNING) << "Tool for statistics not found: " << argv[0];
     return false;
   }
@@ -118,9 +118,10 @@ bool NameValuePairsParser::GetSingleValueFromTool(int argc,
   return true;
 }
 
-bool NameValuePairsParser::GetNameValuePairsFromFile(const FilePath& file_path,
-                                                     const std::string& eq,
-                                                     const std::string& delim) {
+bool NameValuePairsParser::GetNameValuePairsFromFile(
+    const base::FilePath& file_path,
+    const std::string& eq,
+    const std::string& delim) {
   std::string contents;
   if (file_util::ReadFileToString(file_path, &contents)) {
     return ParseNameValuePairs(contents, eq, delim);

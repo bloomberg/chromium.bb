@@ -73,17 +73,17 @@ class NativeFilePickerService
 
   // Reads the length of the file on the FILE thread, then returns
   // the file and the length to the UI thread.
-  void ReadFileLength(const FilePath& path);
+  void ReadFileLength(const base::FilePath& path);
 
   // Handles sending of data back to dispatcher
-  void PostDataFileReply(const FilePath& path, int64 length);
+  void PostDataFileReply(const base::FilePath& path, int64 length);
 
   // Implements IntentServiceHost:
   virtual void HandleIntent(content::WebIntentsDispatcher* dispatcher) OVERRIDE;
 
   // Implements SelectFileDialog::Listener
   virtual void FileSelected(
-      const FilePath& path, int index, void* params) OVERRIDE;
+      const base::FilePath& path, int index, void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
  private:
@@ -121,7 +121,7 @@ void NativeFilePickerService::HandleIntent(
   dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE,
       FilePickerFactory::GetServiceTitle(),
-      FilePath(FILE_PATH_LITERAL(".")),
+      base::FilePath(FILE_PATH_LITERAL(".")),
       &type_info,
       1,  // Index of which file description to show.
       FILE_PATH_LITERAL(""),
@@ -129,7 +129,7 @@ void NativeFilePickerService::HandleIntent(
       NULL);
 }
 
-void NativeFilePickerService::ReadFileLength(const FilePath& path) {
+void NativeFilePickerService::ReadFileLength(const base::FilePath& path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   int64 file_size;
@@ -143,7 +143,7 @@ void NativeFilePickerService::ReadFileLength(const FilePath& path) {
 }
 
 void NativeFilePickerService::PostDataFileReply(
-    const FilePath& path, int64 length) {
+    const base::FilePath& path, int64 length) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (length <= kInvalidFileSize) {
@@ -163,7 +163,7 @@ void NativeFilePickerService::PostDataFileReply(
 }
 
 void NativeFilePickerService::FileSelected(
-    const FilePath& path, int index, void* params) {
+    const base::FilePath& path, int index, void* params) {
   DCHECK(dispatcher_);
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,

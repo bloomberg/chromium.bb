@@ -39,7 +39,7 @@ class DriveCacheMetadata {
   typedef std::map<std::string, DriveCacheEntry> CacheMap;
 
   // Database path.
-  static const FilePath::CharType* kDriveCacheMetadataDBPath;
+  static const base::FilePath::CharType* kDriveCacheMetadataDBPath;
 
   virtual ~DriveCacheMetadata();
 
@@ -53,7 +53,7 @@ class DriveCacheMetadata {
       base::SequencedTaskRunner* blocking_task_runner);
 
   // Initialize the cache metadata store. Returns true on success.
-  virtual bool Initialize(const std::vector<FilePath>& cache_paths) = 0;
+  virtual bool Initialize(const std::vector<base::FilePath>& cache_paths) = 0;
   // Adds a new cache entry corresponding to |resource_id| if it doesn't
   // exist, otherwise update the existing entry.
   virtual void AddOrUpdateCacheEntry(const std::string& resource_id,

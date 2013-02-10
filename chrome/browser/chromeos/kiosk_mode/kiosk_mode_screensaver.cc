@@ -37,18 +37,18 @@ namespace {
 
 typedef base::Callback<void(
     scoped_refptr<Extension>,
-    const FilePath&)> UnpackCallback;
+    const base::FilePath&)> UnpackCallback;
 
 class ScreensaverUnpackerClient
     : public extensions::SandboxedUnpackerClient {
  public:
-  ScreensaverUnpackerClient(const FilePath& crx_path,
+  ScreensaverUnpackerClient(const base::FilePath& crx_path,
                             const UnpackCallback& unpacker_callback)
       : crx_path_(crx_path),
         unpack_callback_(unpacker_callback) {}
 
-  virtual void OnUnpackSuccess(const FilePath& temp_dir,
-                               const FilePath& extension_root,
+  virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
+                               const base::FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension) OVERRIDE;
   virtual void OnUnpackFailure(const string16& error) OVERRIDE;
@@ -58,20 +58,20 @@ class ScreensaverUnpackerClient
 
  private:
   void LoadScreensaverExtension(
-      const FilePath& extension_base_path,
-      const FilePath& screensaver_extension_path);
+      const base::FilePath& extension_base_path,
+      const base::FilePath& screensaver_extension_path);
 
   void NotifyAppPackOfDamagedFile();
 
-  FilePath crx_path_;
+  base::FilePath crx_path_;
   UnpackCallback unpack_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreensaverUnpackerClient);
 };
 
 void ScreensaverUnpackerClient::OnUnpackSuccess(
-    const FilePath& temp_dir,
-    const FilePath& extension_root,
+    const base::FilePath& temp_dir,
+    const base::FilePath& extension_root,
     const base::DictionaryValue* original_manifest,
     const Extension* extension) {
   content::BrowserThread::PostTask(
@@ -89,8 +89,8 @@ void ScreensaverUnpackerClient::OnUnpackFailure(const string16& error) {
 }
 
 void ScreensaverUnpackerClient::LoadScreensaverExtension(
-    const FilePath& extension_base_path,
-    const FilePath& screensaver_extension_path) {
+    const base::FilePath& extension_base_path,
+    const base::FilePath& screensaver_extension_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   std::string error;
@@ -173,15 +173,15 @@ void KioskModeScreensaver::GetScreensaverCrxPath() {
 }
 
 void KioskModeScreensaver::ScreensaverPathCallback(
-    const FilePath& screensaver_crx) {
+    const base::FilePath& screensaver_crx) {
   if (screensaver_crx.empty())
     return;
 
   Profile* default_profile = ProfileManager::GetDefaultProfile();
   if (!default_profile)
     return;
-  FilePath extensions_dir = extensions::ExtensionSystem::Get(default_profile)->
-      extension_service()->install_directory();
+  base::FilePath extensions_dir = extensions::ExtensionSystem::Get(
+      default_profile)->extension_service()->install_directory();
   scoped_refptr<SandboxedUnpacker> screensaver_unpacker(
       new SandboxedUnpacker(
           screensaver_crx,
@@ -207,7 +207,7 @@ void KioskModeScreensaver::ScreensaverPathCallback(
 
 void KioskModeScreensaver::SetupScreensaver(
     scoped_refptr<Extension> extension,
-    const FilePath& extension_base_path) {
+    const base::FilePath& extension_base_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   extension_base_path_ = extension_base_path;
 

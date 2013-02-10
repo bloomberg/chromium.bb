@@ -158,7 +158,7 @@ void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
 
-  FilePath downloads_path;
+  base::FilePath downloads_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_path)) {
     NOTREACHED();
     return;
@@ -362,7 +362,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     image_decoder_->set_delegate(NULL);
 }
 
-void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
+void ChangePictureOptionsHandler::FileSelected(const base::FilePath& path,
                                                int index,
                                                void* params) {
   UserManager* user_manager = UserManager::Get();

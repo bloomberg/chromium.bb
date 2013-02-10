@@ -50,24 +50,24 @@ static const char* const kMockJobTitle = "Mock Job Title";
 static const char* const kMockPrintTicket = "Resolution=300";
 
 
-FilePath GetTestDataFileName() {
-  FilePath test_data_directory;
+base::FilePath GetTestDataFileName() {
+  base::FilePath test_data_directory;
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
-  FilePath test_file = test_data_directory.AppendASCII(kPDFTestFile);
+  base::FilePath test_file = test_data_directory.AppendASCII(kPDFTestFile);
   return test_file;
 }
 
-FilePath GetEmptyDataFileName() {
-  FilePath test_data_directory;
+base::FilePath GetEmptyDataFileName() {
+  base::FilePath test_data_directory;
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
-  FilePath test_file = test_data_directory.AppendASCII(kEmptyPDFTestFile);
+  base::FilePath test_file = test_data_directory.AppendASCII(kEmptyPDFTestFile);
   return test_file;
 }
 
 char* GetTestData() {
   static std::string sTestFileData;
   if (sTestFileData.empty()) {
-    FilePath test_file = GetTestDataFileName();
+    base::FilePath test_file = GetTestDataFileName();
     file_util::ReadFileToString(test_file, &sTestFileData);
   }
   return &sTestFileData[0];
@@ -90,7 +90,7 @@ class MockCloudPrintFlowHandler
     : public CloudPrintFlowHandler,
       public base::SupportsWeakPtr<MockCloudPrintFlowHandler> {
  public:
-  MockCloudPrintFlowHandler(const FilePath& path,
+  MockCloudPrintFlowHandler(const base::FilePath& path,
                             const string16& title,
                             const string16& print_ticket,
                             const std::string& file_type,
@@ -255,7 +255,7 @@ TEST_F(CloudPrintDataSenderTest, CanSend) {
               CallJavascriptFunction(_, _, StringValueEq(&mock_job_title))).
       WillOnce(Return());
 
-  FilePath test_data_file_name = GetTestDataFileName();
+  base::FilePath test_data_file_name = GetTestDataFileName();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CloudPrintDataSender::ReadPrintDataFile,
@@ -267,9 +267,9 @@ TEST_F(CloudPrintDataSenderTest, BadFile) {
   EXPECT_CALL(*mock_helper_, CallJavascriptFunction(_, _, _)).Times(0);
 
 #if defined(OS_WIN)
-  FilePath bad_data_file_name(L"/some/file/that/isnot/there");
+  base::FilePath bad_data_file_name(L"/some/file/that/isnot/there");
 #else
-  FilePath bad_data_file_name("/some/file/that/isnot/there");
+  base::FilePath bad_data_file_name("/some/file/that/isnot/there");
 #endif
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -281,7 +281,7 @@ TEST_F(CloudPrintDataSenderTest, BadFile) {
 TEST_F(CloudPrintDataSenderTest, EmptyFile) {
   EXPECT_CALL(*mock_helper_, CallJavascriptFunction(_, _, _)).Times(0);
 
-  FilePath empty_data_file_name = GetEmptyDataFileName();
+  base::FilePath empty_data_file_name = GetEmptyDataFileName();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CloudPrintDataSender::ReadPrintDataFile,
@@ -306,7 +306,7 @@ class CloudPrintWebDialogDelegateTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    FilePath mock_path;
+    base::FilePath mock_path;
     string16 mock_title;
     string16 mock_print_ticket;
     std::string mock_file_type;

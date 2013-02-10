@@ -335,8 +335,8 @@ class DownloadHistoryTest : public testing::Test {
   // routine.
   void InitItem(
       int32 id,
-      const FilePath& current_path,
-      const FilePath& target_path,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer,
       const base::Time& start_time,
@@ -431,7 +431,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Load) {
   // Load a download from history, create the item, OnDownloadCreated,
   // OnDownloadUpdated, OnDownloadRemoved.
   history::DownloadRow info;
-  FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
+  base::FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
   std::vector<GURL> url_chain;
@@ -481,7 +481,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Create) {
 
   // Note that db_handle must be -1 at first because it isn't in the db yet.
   history::DownloadRow info;
-  FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
+  base::FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
   std::vector<GURL> url_chain;
@@ -533,7 +533,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Temporary) {
 
   // Note that db_handle must be -1 at first because it isn't in the db yet.
   history::DownloadRow info;
-  FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
+  base::FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
   std::vector<GURL> url_chain;
@@ -599,7 +599,7 @@ TEST_F(DownloadHistoryTest,
 
   // Note that db_handle must be -1 at first because it isn't in the db yet.
   history::DownloadRow info;
-  FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
+  base::FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
   std::vector<GURL> url_chain;
@@ -655,7 +655,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Multiple) {
   // Load a download from history, create the item, OnDownloadCreated,
   // OnDownloadUpdated, OnDownloadRemoved.
   history::DownloadRow info0, info1;
-  FilePath path0(FILE_PATH_LITERAL("/foo/bar.pdf"));
+  base::FilePath path0(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url0("http://example.com/bar.pdf");
   GURL referrer0("http://example.com/referrer.html");
   std::vector<GURL> url0_chain;
@@ -675,7 +675,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Multiple) {
            base::RandInt(0, 1 << 10),
            false,
            &info0);
-  FilePath path1(FILE_PATH_LITERAL("/foo/qux.pdf"));
+  base::FilePath path1(FILE_PATH_LITERAL("/foo/qux.pdf"));
   GURL url1("http://example.com/qux.pdf");
   GURL referrer1("http://example.com/referrer.html");
   std::vector<GURL> url1_chain;
@@ -723,7 +723,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_CreateFailed) {
 
   // Note that db_handle must be -1 at first because it isn't in the db yet.
   history::DownloadRow info;
-  FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
+  base::FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
   std::vector<GURL> url_chain;
@@ -766,7 +766,7 @@ TEST_F(DownloadHistoryTest,
 
   // Note that db_handle must be -1 at first because it isn't in the db yet.
   history::DownloadRow info;
-  FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
+  base::FilePath path(FILE_PATH_LITERAL("/foo/bar.pdf"));
   GURL url("http://example.com/bar.pdf");
   GURL referrer("http://example.com/referrer.html");
   std::vector<GURL> url_chain;

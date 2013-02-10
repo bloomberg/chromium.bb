@@ -49,24 +49,24 @@ class ChromeLauncherControllerPerBrowserTest : public testing::Test {
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get())));
     extension_service_ = extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), FilePath(), false);
+        CommandLine::ForCurrentProcess(), base::FilePath(), false);
 
     std::string error;
-    extension1_ = Extension::Create(FilePath(), Manifest::LOAD, manifest,
+    extension1_ = Extension::Create(base::FilePath(), Manifest::LOAD, manifest,
                                     Extension::NO_FLAGS,
                                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                                     &error);
-    extension2_ = Extension::Create(FilePath(), Manifest::LOAD, manifest,
+    extension2_ = Extension::Create(base::FilePath(), Manifest::LOAD, manifest,
                                     Extension::NO_FLAGS,
                                     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                                     &error);
     // Fake gmail extension.
-    extension3_ = Extension::Create(FilePath(), Manifest::LOAD, manifest,
+    extension3_ = Extension::Create(base::FilePath(), Manifest::LOAD, manifest,
                                     Extension::NO_FLAGS,
                                     "pjkljhegncpnkpknbcohdijeoejaedia",
                                     &error);
     // Fake search extension.
-    extension4_ = Extension::Create(FilePath(), Manifest::LOAD, manifest,
+    extension4_ = Extension::Create(base::FilePath(), Manifest::LOAD, manifest,
                                     Extension::NO_FLAGS,
                                     "coobgpohoikkiipiblmjeljniedjpjpf",
                                     &error);

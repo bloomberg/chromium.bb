@@ -40,7 +40,7 @@ class PageCyclerBrowserTest : public content::NotificationObserver,
 
   // Initialize file paths within a temporary directory; this should be
   // empty and nonexistent.
-  virtual void InitFilePaths(FilePath temp_path) {
+  virtual void InitFilePaths(base::FilePath temp_path) {
     temp_path_ = temp_path;
     urls_file_ = temp_path.AppendASCII("urls_file");
     errors_file_ = temp_path.AppendASCII("errors");
@@ -59,9 +59,9 @@ class PageCyclerBrowserTest : public content::NotificationObserver,
     page_cycler_->set_stats_file(stats_file());
   }
 
-  void InitPageCycler(FilePath urls_file,
-                      FilePath errors_file,
-                      FilePath stats_file) {
+  void InitPageCycler(base::FilePath urls_file,
+                      base::FilePath errors_file,
+                      base::FilePath stats_file) {
     page_cycler_ = new PageCycler(browser(), urls_file);
     page_cycler_->set_errors_file(errors_file);
     page_cycler_->set_stats_file(stats_file);
@@ -120,16 +120,16 @@ class PageCyclerBrowserTest : public content::NotificationObserver,
     }
   }
 
-  FilePath urls_file() { return urls_file_; }
-  FilePath errors_file() { return errors_file_; }
-  FilePath stats_file() { return stats_file_; }
+  base::FilePath urls_file() { return urls_file_; }
+  base::FilePath errors_file() { return errors_file_; }
+  base::FilePath stats_file() { return stats_file_; }
   PageCycler* page_cycler() { return page_cycler_; }
 
  protected:
-  FilePath temp_path_;
-  FilePath urls_file_;
-  FilePath errors_file_;
-  FilePath stats_file_;
+  base::FilePath temp_path_;
+  base::FilePath urls_file_;
+  base::FilePath errors_file_;
+  base::FilePath stats_file_;
   PageCycler* page_cycler_;
   content::NotificationRegistrar registrar_;
 };
@@ -141,16 +141,16 @@ class PageCyclerCachedBrowserTest : public PageCyclerBrowserTest {
   // For a cached test, we use the provided user data directory from the test
   // directory.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    FilePath test_dir;
+    base::FilePath test_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
     test_dir = test_dir.AppendASCII("page_cycler");
 
-    FilePath source_data_dir = test_dir.AppendASCII("cached_data_dir");
+    base::FilePath source_data_dir = test_dir.AppendASCII("cached_data_dir");
     CHECK(file_util::PathExists(source_data_dir));
 
     CHECK(user_data_dir_.CreateUniqueTempDir());
 
-    FilePath dest_data_dir =
+    base::FilePath dest_data_dir =
         user_data_dir_.path().AppendASCII("cached_data_dir");
     CHECK(!file_util::PathExists(dest_data_dir));
 
@@ -166,7 +166,7 @@ class PageCyclerCachedBrowserTest : public PageCyclerBrowserTest {
 
   // Initialize the file paths to use the UserDataDir's urls file, instead
   // of one to be written.
-  virtual void InitFilePaths(FilePath temp_path) OVERRIDE {
+  virtual void InitFilePaths(base::FilePath temp_path) OVERRIDE {
     urls_file_ = user_data_dir_.path().AppendASCII("cached_data_dir")
                                       .AppendASCII("urls");
     errors_file_ = temp_path.AppendASCII("errors");
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_URLNotInCache) {
   // scenario, and makes things faster than needlessly cycling through all the
   // other URLs.
 
-  FilePath new_urls_file = temp.path().AppendASCII("urls");
+  base::FilePath new_urls_file = temp.path().AppendASCII("urls");
   ASSERT_FALSE(file_util::PathExists(new_urls_file));
 
   ASSERT_TRUE(file_util::WriteFile(new_urls_file, kCacheMissURL,

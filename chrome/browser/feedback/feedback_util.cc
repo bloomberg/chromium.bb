@@ -88,7 +88,8 @@ const int64 kInitialRetryDelay = 900000;  // 15 minutes
 const int64 kRetryDelayIncreaseFactor = 2;
 const int64 kRetryDelayLimit = 14400000;  // 4 hours
 
-void ReadFileToStringNoResult(const FilePath& path, std::string* contents) {
+void ReadFileToStringNoResult(const base::FilePath& path,
+                              std::string* contents) {
   if (!file_util::ReadFileToString(path, contents))
     if (contents)
       contents->clear();
@@ -248,15 +249,15 @@ bool FeedbackUtil::ValidFeedbackSize(const std::string& content) {
 void FeedbackUtil::SendReport(const FeedbackData& data) {
 #if defined(OS_CHROMEOS)
   if (data.attached_filename().size() &&
-      FilePath::IsSeparator(data.attached_filename()[0]) &&
+      base::FilePath::IsSeparator(data.attached_filename()[0]) &&
       !data.attached_filedata()) {
     // Read the attached file and then send this report.
     std::string* file_data = new std::string;
 
-    FilePath root =
+    base::FilePath root =
         ash::Shell::GetInstance()->delegate()->
             GetCurrentBrowserContext()->GetPath();
-    FilePath filepath = root.Append(data.attached_filename().substr(1));
+    base::FilePath filepath = root.Append(data.attached_filename().substr(1));
     std::string stripped_filename = filepath.BaseName().value();
 
     // Read the file into file_data, then call send report again with the

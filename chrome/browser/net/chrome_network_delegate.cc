@@ -582,7 +582,7 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
 }
 
 bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
-                                            const FilePath& path) const {
+                                            const base::FilePath& path) const {
   if (g_allow_file_access_)
     return true;
 
@@ -610,7 +610,7 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
   };
 #elif defined(OS_ANDROID)
   // Access to files in external storage is allowed.
-  FilePath external_storage_path;
+  base::FilePath external_storage_path;
   PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &external_storage_path);
   if (external_storage_path.IsParent(path))
     return true;
@@ -623,8 +623,8 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 #endif
 
   for (size_t i = 0; i < arraysize(kLocalAccessWhiteList); ++i) {
-    const FilePath white_listed_path(kLocalAccessWhiteList[i]);
-    // FilePath::operator== should probably handle trailing separators.
+    const base::FilePath white_listed_path(kLocalAccessWhiteList[i]);
+    // base::FilePath::operator== should probably handle trailing separators.
     if (white_listed_path == path.StripTrailingSeparators() ||
         white_listed_path.IsParent(path)) {
       return true;

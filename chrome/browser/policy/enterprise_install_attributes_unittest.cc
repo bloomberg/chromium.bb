@@ -30,7 +30,7 @@ class EnterpriseInstallAttributesTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  FilePath GetTempPath() const {
+  base::FilePath GetTempPath() const {
     return temp_dir_.path().Append("install_attrs_test");
   }
 

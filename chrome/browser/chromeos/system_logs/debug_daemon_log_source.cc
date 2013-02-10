@@ -139,7 +139,7 @@ void DebugDaemonLogSource::ReadUserLogFiles(const KeyValueMap& user_log_files) {
        ++it) {
     std::string value;
     bool read_success = file_util::ReadFileToString(
-        FilePath(it->second), &value);
+        base::FilePath(it->second), &value);
     if (read_success && !value.empty())
       (*response_)[it->first] = value;
     else

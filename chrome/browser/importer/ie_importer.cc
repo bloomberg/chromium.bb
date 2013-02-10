@@ -120,21 +120,21 @@ struct IEOrderBookmarkComparator {
   bool operator()(const ProfileWriter::BookmarkEntry& lhs,
                   const ProfileWriter::BookmarkEntry& rhs) const {
     static const uint32 kNotSorted = 0xfffffffb; // IE uses this magic value.
-    FilePath lhs_prefix;
-    FilePath rhs_prefix;
+    base::FilePath lhs_prefix;
+    base::FilePath rhs_prefix;
     for (size_t i = 0; i <= lhs.path.size() && i <= rhs.path.size(); ++i) {
-      const FilePath::StringType lhs_i =
+      const base::FilePath::StringType lhs_i =
         (i < lhs.path.size() ? lhs.path[i] : lhs.title + L".url");
-      const FilePath::StringType rhs_i =
+      const base::FilePath::StringType rhs_i =
         (i < rhs.path.size() ? rhs.path[i] : rhs.title + L".url");
       lhs_prefix = lhs_prefix.Append(lhs_i);
       rhs_prefix = rhs_prefix.Append(rhs_i);
       if (lhs_i == rhs_i)
         continue;
       // The first path element that differs between the two.
-      std::map<FilePath, uint32>::const_iterator lhs_iter =
+      std::map<base::FilePath, uint32>::const_iterator lhs_iter =
         sort_index_->find(lhs_prefix);
-      std::map<FilePath, uint32>::const_iterator rhs_iter =
+      std::map<base::FilePath, uint32>::const_iterator rhs_iter =
         sort_index_->find(rhs_prefix);
       uint32 lhs_sort_index = (lhs_iter == sort_index_->end() ? kNotSorted
         : lhs_iter->second);
@@ -147,7 +147,7 @@ struct IEOrderBookmarkComparator {
     }
     return lhs.path.size() < rhs.path.size();
   }
-  const std::map<FilePath, uint32>* sort_index_;
+  const std::map<base::FilePath, uint32>* sort_index_;
 };
 
 // IE stores the order of the Favorites menu in registry under:
@@ -169,8 +169,8 @@ struct IEOrderBookmarkComparator {
 bool ParseFavoritesOrderBlob(
     const Importer* importer,
     const std::vector<uint8>& blob,
-    const FilePath& path,
-    std::map<FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
+    const base::FilePath& path,
+    std::map<base::FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
   static const int kItemCountOffset = 16;
   static const int kItemListStartOffset = 20;
 
@@ -204,8 +204,8 @@ bool ParseFavoritesOrderBlob(
     TCHAR item_filename[MAX_PATH];
     if (!idlist || FAILED(SHGetPathFromIDList(idlist, item_filename)))
       return false;
-    FilePath item_relative_path =
-      path.Append(FilePath(item_filename).BaseName());
+    base::FilePath item_relative_path =
+      path.Append(base::FilePath(item_filename).BaseName());
 
     // Record the retrieved information and go to the next item.
     sort_index->insert(std::make_pair(item_relative_path, item_sort_index));
@@ -217,8 +217,8 @@ bool ParseFavoritesOrderBlob(
 bool ParseFavoritesOrderRegistryTree(
     const Importer* importer,
     const base::win::RegKey& key,
-    const FilePath& path,
-    std::map<FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
+    const base::FilePath& path,
+    std::map<base::FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
   // Parse the order information of the current folder.
   DWORD blob_length = 0;
   if (key.ReadValue(L"Order", NULL, &blob_length, NULL) == ERROR_SUCCESS) {
@@ -237,7 +237,7 @@ bool ParseFavoritesOrderRegistryTree(
        ++child) {
     base::win::RegKey subkey(key.Handle(), child.Name(), KEY_READ);
     if (subkey.Valid()) {
-      FilePath subpath(path.Append(child.Name()));
+      base::FilePath subpath(path.Append(child.Name()));
       if (!ParseFavoritesOrderRegistryTree(importer, subkey, subpath,
                                            sort_index)) {
         return false;
@@ -249,11 +249,12 @@ bool ParseFavoritesOrderRegistryTree(
 
 bool ParseFavoritesOrderInfo(
     const Importer* importer,
-    std::map<FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
+    std::map<base::FilePath, uint32>* sort_index) WARN_UNUSED_RESULT {
   base::win::RegKey key(HKEY_CURRENT_USER, kIEFavoritesOrderKey, KEY_READ);
   if (!key.Valid())
     return false;
-  return ParseFavoritesOrderRegistryTree(importer, key, FilePath(), sort_index);
+  return ParseFavoritesOrderRegistryTree(importer, key, base::FilePath(),
+                                         sort_index);
 }
 
 // Reads the sort order from registry. If failed, we don't touch the list
@@ -261,7 +262,7 @@ bool ParseFavoritesOrderInfo(
 void SortBookmarksInIEOrder(
     const Importer* importer,
     std::vector<ProfileWriter::BookmarkEntry>* bookmarks) {
-  std::map<FilePath, uint32> sort_index;
+  std::map<base::FilePath, uint32> sort_index;
   if (!ParseFavoritesOrderInfo(importer, &sort_index))
     return;
   IEOrderBookmarkComparator compare = {&sort_index};
@@ -327,7 +328,8 @@ GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
 // IE7 and above store the data.
 bool ReadFaviconDataFromInternetShortcut(const string16& file,
                                          std::string* data) {
-  return file_util::ReadFileToString(FilePath(file + kFaviconStreamName), data);
+  return file_util::ReadFileToString(
+      base::FilePath(file + kFaviconStreamName), data);
 }
 
 // Reads the favicon imaga data in the Internet cache. IE6 doesn't hold the data
@@ -347,7 +349,8 @@ bool ReadFaviconDataFromCache(const GURL& favicon_url, std::string* data) {
                               NULL, NULL, 0)) {
     return false;
   }
-  return file_util::ReadFileToString(FilePath(cache->lpszLocalFileName), data);
+  return file_util::ReadFileToString(base::FilePath(cache->lpszLocalFileName),
+                                     data);
 }
 
 // Reads the binary image data of favicon of an internet shortcut file |file|.
@@ -774,7 +777,7 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo* info) {
   if (FAILED(SHGetFolderPath(NULL, CSIDL_FAVORITES, NULL,
                              SHGFP_TYPE_CURRENT, buffer)))
     return false;
-  info->path = FilePath(buffer);
+  info->path = base::FilePath(buffer);
 
   // There is a Links folder under Favorites folder in Windows Vista, but it
   // is not recording in Vista's registry. So in Vista, we assume the Links
@@ -799,9 +802,9 @@ void IEImporter::ParseFavoritesFolder(
     const FavoritesInfo& info,
     BookmarkVector* bookmarks,
     std::vector<history::ImportedFaviconUsage>* favicons) {
-  FilePath file;
-  std::vector<FilePath::StringType> file_list;
-  FilePath favorites_path(info.path);
+  base::FilePath file;
+  std::vector<base::FilePath::StringType> file_list;
+  base::FilePath favorites_path(info.path);
   // Favorites path length.  Make sure it doesn't include the trailing \.
   size_t favorites_path_len =
       favorites_path.StripTrailingSeparators().value().size();
@@ -818,9 +821,9 @@ void IEImporter::ParseFavoritesFolder(
   typedef std::map<GURL, history::ImportedFaviconUsage> FaviconMap;
   FaviconMap favicon_map;
 
-  for (std::vector<FilePath::StringType>::iterator it = file_list.begin();
+  for (std::vector<base::FilePath::StringType>::iterator it = file_list.begin();
        it != file_list.end(); ++it) {
-    FilePath shortcut(*it);
+    base::FilePath shortcut(*it);
     if (!LowerCaseEqualsASCII(shortcut.Extension(), ".url"))
       continue;
 
@@ -845,11 +848,12 @@ void IEImporter::ParseFavoritesFolder(
     // ex. Suppose that the Favorites folder is C:\Users\Foo\Favorites.
     //   C:\Users\Foo\Favorites\Foo.url -> ""
     //   C:\Users\Foo\Favorites\Links\Bar\Baz.url -> "Links\Bar"
-    FilePath::StringType relative_string =
+    base::FilePath::StringType relative_string =
         shortcut.DirName().value().substr(favorites_path_len);
-    if (!relative_string.empty() && FilePath::IsSeparator(relative_string[0]))
+    if (!relative_string.empty() &&
+        base::FilePath::IsSeparator(relative_string[0]))
       relative_string = relative_string.substr(1);
-    FilePath relative_path(relative_string);
+    base::FilePath relative_path(relative_string);
 
     ProfileWriter::BookmarkEntry entry;
     // Remove the dot, the file extension, and the directory path.

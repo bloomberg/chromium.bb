@@ -51,10 +51,10 @@ PluginPrefs::PluginState::PluginState() {
 PluginPrefs::PluginState::~PluginState() {
 }
 
-bool PluginPrefs::PluginState::Get(const FilePath& plugin,
+bool PluginPrefs::PluginState::Get(const base::FilePath& plugin,
                                    bool* enabled) const {
-  FilePath key = ConvertMapKey(plugin);
-  std::map<FilePath, bool>::const_iterator iter = state_.find(key);
+  base::FilePath key = ConvertMapKey(plugin);
+  std::map<base::FilePath, bool>::const_iterator iter = state_.find(key);
   if (iter != state_.end()) {
     *enabled = iter->second;
     return true;
@@ -62,18 +62,19 @@ bool PluginPrefs::PluginState::Get(const FilePath& plugin,
   return false;
 }
 
-void PluginPrefs::PluginState::Set(const FilePath& plugin, bool enabled) {
+void PluginPrefs::PluginState::Set(const base::FilePath& plugin, bool enabled) {
   state_[ConvertMapKey(plugin)] = enabled;
 }
 
-FilePath PluginPrefs::PluginState::ConvertMapKey(const FilePath& plugin) const {
+base::FilePath PluginPrefs::PluginState::ConvertMapKey(
+    const base::FilePath& plugin) const {
   // Keep the state of component-updated and bundled Pepper Flash in sync.
   if (plugin.BaseName().value() == chrome::kPepperFlashPluginFilename) {
-    FilePath component_updated_pepper_flash_dir;
+    base::FilePath component_updated_pepper_flash_dir;
     if (PathService::Get(chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN,
                          &component_updated_pepper_flash_dir) &&
         component_updated_pepper_flash_dir.IsParent(plugin)) {
-      FilePath bundled_pepper_flash;
+      base::FilePath bundled_pepper_flash;
       if (PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN,
                            &bundled_pepper_flash)) {
         return bundled_pepper_flash;
@@ -133,7 +134,7 @@ void PluginPrefs::EnablePluginGroupInternal(
 }
 
 void PluginPrefs::EnablePlugin(
-    bool enabled, const FilePath& path,
+    bool enabled, const base::FilePath& path,
     const base::Callback<void(bool)>& callback) {
   PluginFinder* finder = PluginFinder::GetInstance();
   webkit::WebPluginInfo plugin;
@@ -167,7 +168,7 @@ void PluginPrefs::EnablePlugin(
 
 void PluginPrefs::EnablePluginInternal(
     bool enabled,
-    const FilePath& path,
+    const base::FilePath& path,
     PluginFinder* plugin_finder,
     const base::Callback<void(bool)>& callback,
     const std::vector<webkit::WebPluginInfo>& plugins) {
@@ -307,9 +308,9 @@ void PluginPrefs::ListValueToStringSet(const ListValue* src,
 void PluginPrefs::SetPrefs(PrefService* prefs) {
   prefs_ = prefs;
   bool update_internal_dir = false;
-  FilePath last_internal_dir =
+  base::FilePath last_internal_dir =
       prefs_->GetFilePath(prefs::kPluginsLastInternalDirectory);
-  FilePath cur_internal_dir;
+  base::FilePath cur_internal_dir;
   if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &cur_internal_dir) &&
       cur_internal_dir != last_internal_dir) {
     update_internal_dir = true;
@@ -321,9 +322,9 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
   bool internal_pdf_enabled = false;
   string16 pdf_group_name =
       ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName);
-  FilePath pdf_path;
+  base::FilePath pdf_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-  FilePath::StringType pdf_path_str = pdf_path.value();
+  base::FilePath::StringType pdf_path_str = pdf_path.value();
   if (!prefs_->GetBoolean(prefs::kPluginsEnabledInternalPDF)) {
     // We switched to the internal pdf plugin being on by default, and so we
     // need to force it to be enabled.  We only want to do it this once though,
@@ -339,9 +340,9 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
   // check for both because either could be stored as the plugin group name.
   string16 old_nacl_group_name =
       ASCIIToUTF16(chrome::ChromeContentClient::kNaClOldPluginName);
-  FilePath nacl_path;
+  base::FilePath nacl_path;
   PathService::Get(chrome::FILE_NACL_PLUGIN, &nacl_path);
-  FilePath::StringType nacl_path_str = nacl_path.value();
+  base::FilePath::StringType nacl_path_str = nacl_path.value();
   if (!prefs_->GetBoolean(prefs::kPluginsEnabledNaCl)) {
     // We switched to the nacl plugin being on by default, and so we need to
     // force it to be enabled.  We only want to do it this once though, i.e.
@@ -369,8 +370,8 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     if (saved_plugins_list && !saved_plugins_list->empty()) {
       // The following four variables are only valid when
       // |migrate_to_pepper_flash| is set to true.
-      FilePath npapi_flash;
-      FilePath pepper_flash;
+      base::FilePath npapi_flash;
+      base::FilePath pepper_flash;
       DictionaryValue* pepper_flash_node = NULL;
       bool npapi_flash_enabled = false;
       if (migrate_to_pepper_flash) {
@@ -392,12 +393,12 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
         if (!plugin->GetBoolean("enabled", &enabled))
           enabled = true;
 
-        FilePath::StringType path;
+        base::FilePath::StringType path;
         // The plugin list constains all the plugin files in addition to the
         // plugin groups.
         if (plugin->GetString("path", &path)) {
           // Files have a path attribute, groups don't.
-          FilePath plugin_path(path);
+          base::FilePath plugin_path(path);
 
           // The path to the intenral plugin directory changes everytime Chrome
           // is auto-updated, since it contains the current version number. For
@@ -408,7 +409,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
           // that are within the previous internal plugin directory, and update
           // them in the prefs accordingly.
           if (update_internal_dir) {
-            FilePath relative_path;
+            base::FilePath relative_path;
 
             // Extract the part of |plugin_path| that is relative to
             // |last_internal_dir|. For example, |relative_path| will be
@@ -420,7 +421,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
             while (last_internal_dir.IsParent(plugin_path)) {
               relative_path = plugin_path.BaseName().Append(relative_path);
 
-              FilePath old_path = plugin_path;
+              base::FilePath old_path = plugin_path;
               plugin_path = plugin_path.DirName();
               // To be extra sure that we won't end up in an infinite loop.
               if (old_path == plugin_path) {
@@ -438,23 +439,26 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
             }
           }
 
-          if (FilePath::CompareIgnoreCase(path, pdf_path_str) == 0) {
+          if (base::FilePath::CompareIgnoreCase(path, pdf_path_str) == 0) {
             if (!enabled && force_enable_internal_pdf) {
               enabled = true;
               plugin->SetBoolean("enabled", true);
             }
 
             internal_pdf_enabled = enabled;
-          } else if (FilePath::CompareIgnoreCase(path, nacl_path_str) == 0) {
+          } else if (
+              base::FilePath::CompareIgnoreCase(path, nacl_path_str) == 0) {
             if (!enabled && force_enable_nacl) {
               enabled = true;
               plugin->SetBoolean("enabled", true);
             }
           } else if (migrate_to_pepper_flash &&
-              FilePath::CompareEqualIgnoreCase(path, npapi_flash.value())) {
+                     base::FilePath::CompareEqualIgnoreCase(
+                         path, npapi_flash.value())) {
             npapi_flash_enabled = enabled;
           } else if (migrate_to_pepper_flash &&
-              FilePath::CompareEqualIgnoreCase(path, pepper_flash.value())) {
+                     base::FilePath::CompareEqualIgnoreCase(
+                         path, pepper_flash.value())) {
             if (!enabled)
               pepper_flash_node = plugin;
           }
@@ -585,7 +589,7 @@ void PluginPrefs::OnUpdatePreferences(
   ListValue* plugins_list = update.Get();
   plugins_list->Clear();
 
-  FilePath internal_dir;
+  base::FilePath internal_dir;
   if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir))
     prefs_->SetFilePath(prefs::kPluginsLastInternalDirectory, internal_dir);
 

@@ -71,8 +71,8 @@ void DriveOperations::InitForTesting(CopyOperation* copy_operation,
   update_operation_.reset(update_operation);
 }
 
-void DriveOperations::Copy(const FilePath& src_file_path,
-                           const FilePath& dest_file_path,
+void DriveOperations::Copy(const base::FilePath& src_file_path,
+                           const base::FilePath& dest_file_path,
                            const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -81,8 +81,8 @@ void DriveOperations::Copy(const FilePath& src_file_path,
 }
 
 void DriveOperations::TransferFileFromRemoteToLocal(
-    const FilePath& remote_src_file_path,
-    const FilePath& local_dest_file_path,
+    const base::FilePath& remote_src_file_path,
+    const base::FilePath& local_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -93,8 +93,8 @@ void DriveOperations::TransferFileFromRemoteToLocal(
 }
 
 void DriveOperations::TransferFileFromLocalToRemote(
-    const FilePath& local_src_file_path,
-    const FilePath& remote_dest_file_path,
+    const base::FilePath& local_src_file_path,
+    const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -105,8 +105,8 @@ void DriveOperations::TransferFileFromLocalToRemote(
 }
 
 void DriveOperations::TransferRegularFile(
-    const FilePath& local_src_file_path,
-    const FilePath& remote_dest_file_path,
+    const base::FilePath& local_src_file_path,
+    const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -117,7 +117,7 @@ void DriveOperations::TransferRegularFile(
 }
 
 void DriveOperations::CreateDirectory(
-    const FilePath& directory_path,
+    const base::FilePath& directory_path,
     bool is_exclusive,
     bool is_recursive,
     const FileOperationCallback& callback) {
@@ -128,8 +128,8 @@ void DriveOperations::CreateDirectory(
       directory_path, is_exclusive, is_recursive, callback);
 }
 
-void DriveOperations::Move(const FilePath& src_file_path,
-                           const FilePath& dest_file_path,
+void DriveOperations::Move(const base::FilePath& src_file_path,
+                           const base::FilePath& dest_file_path,
                            const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -137,7 +137,7 @@ void DriveOperations::Move(const FilePath& src_file_path,
   move_operation_->Move(src_file_path, dest_file_path, callback);
 }
 
-void DriveOperations::Remove(const FilePath& file_path,
+void DriveOperations::Remove(const base::FilePath& file_path,
                              bool is_recursive,
                              const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

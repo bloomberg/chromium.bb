@@ -32,7 +32,7 @@ class NetworkStatsTestUDP : public NetworkStatsTest {
   NetworkStatsTestUDP()
       : test_server_(net::TestServer::TYPE_UDP_ECHO,
                      net::TestServer::kLocalhost,
-                     FilePath(FILE_PATH_LITERAL("net/data"))) {
+                     base::FilePath(FILE_PATH_LITERAL("net/data"))) {
   }
 
  protected:

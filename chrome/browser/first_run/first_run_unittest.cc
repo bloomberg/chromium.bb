@@ -21,7 +21,7 @@ class FirstRunTest : public testing::Test {
     first_run::internal::GetFirstRunSentinelFilePath(&sentinel_path_);
   }
 
-  FilePath sentinel_path_;
+  base::FilePath sentinel_path_;
 
  private:
   base::ScopedPathOverride user_data_dir_override_;

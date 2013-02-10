@@ -137,20 +137,21 @@ const char kNullVersion[] = "0.0.0.0";
 // <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\0.1.2.3\.
 // and the base directory will be:
 // <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\.
-FilePath GetPnaclBaseDirectory() {
-  FilePath result;
+base::FilePath GetPnaclBaseDirectory() {
+  base::FilePath result;
   CHECK(PathService::Get(chrome::DIR_PNACL_BASE, &result));
   return result;
 }
 
-bool GetLatestPnaclDirectory(FilePath* latest_dir, Version* latest_version,
-                             std::vector<FilePath>* older_dirs) {
+bool GetLatestPnaclDirectory(base::FilePath* latest_dir,
+                             Version* latest_version,
+                             std::vector<base::FilePath>* older_dirs) {
   // Enumerate all versions starting from the base directory.
-  FilePath base_dir = GetPnaclBaseDirectory();
+  base::FilePath base_dir = GetPnaclBaseDirectory();
   bool found = false;
   file_util::FileEnumerator
       file_enumerator(base_dir, false, file_util::FileEnumerator::DIRECTORIES);
-  for (FilePath path = file_enumerator.Next(); !path.value().empty();
+  for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     Version version(path.BaseName().MaybeAsASCII());
     if (!version.IsValid())
@@ -173,8 +174,8 @@ bool GetLatestPnaclDirectory(FilePath* latest_dir, Version* latest_version,
 }
 
 // Read the PNaCl specific manifest.
-base::DictionaryValue* ReadPnaclManifest(const FilePath& unpack_path) {
-  FilePath manifest = unpack_path.Append(
+base::DictionaryValue* ReadPnaclManifest(const base::FilePath& unpack_path) {
+  base::FilePath manifest = unpack_path.Append(
       FILE_PATH_LITERAL("pnacl_public_pnacl_json"));
   if (!file_util::PathExists(manifest))
     return NULL;
@@ -235,7 +236,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
   virtual void OnUpdateError(int error) OVERRIDE;
 
   virtual bool Install(base::DictionaryValue* manifest,
-                       const FilePath& unpack_path) OVERRIDE;
+                       const base::FilePath& unpack_path) OVERRIDE;
 
  private:
   Version current_version_;
@@ -252,7 +253,7 @@ void PnaclComponentInstaller::OnUpdateError(int error) {
 
 namespace {
 
-bool PathContainsPnacl(const FilePath& base_path) {
+bool PathContainsPnacl(const base::FilePath& base_path) {
   // Check that at least one of the compiler files exists, for the current ISA.
   std::string expected_filename("pnacl_public_");
   std::string arch = PnaclArch();
@@ -264,7 +265,7 @@ bool PathContainsPnacl(const FilePath& base_path) {
 }  // namespace
 
 bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
-                                      const FilePath& unpack_path) {
+                                      const base::FilePath& unpack_path) {
   scoped_ptr<base::DictionaryValue> pnacl_manifest(
       ReadPnaclManifest(unpack_path));
   if (pnacl_manifest == NULL) {
@@ -290,7 +291,7 @@ bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
   }
 
   // Passed the basic tests. Time to install it.
-  FilePath path =
+  base::FilePath path =
       GetPnaclBaseDirectory().AppendASCII(version.GetString());
   if (file_util::PathExists(path)) {
     LOG(WARNING) << "Target path already exists, not installing.";
@@ -334,7 +335,7 @@ void FinishPnaclUpdateRegistration(ComponentUpdateService* cus,
 // a hosted version is actually newer.
 void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath path = GetPnaclBaseDirectory();
+  base::FilePath path = GetPnaclBaseDirectory();
   if (!file_util::PathExists(path)) {
     if (!file_util::CreateDirectory(path)) {
       NOTREACHED() << "Could not create base Pnacl directory.";
@@ -343,7 +344,7 @@ void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
   }
 
   Version version(kNullVersion);
-  std::vector<FilePath> older_dirs;
+  std::vector<base::FilePath> older_dirs;
   if (GetLatestPnaclDirectory(&path, &version, &older_dirs)) {
     if (!PathContainsPnacl(path)) {
       version = Version(kNullVersion);
@@ -357,7 +358,7 @@ void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
       base::Bind(&FinishPnaclUpdateRegistration, cus, version));
 
   // Remove older versions of PNaCl.
-  for (std::vector<FilePath>::iterator iter = older_dirs.begin();
+  for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
        iter != older_dirs.end(); ++iter) {
     file_util::Delete(*iter, true);
   }

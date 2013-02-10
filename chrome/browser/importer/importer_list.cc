@@ -56,13 +56,13 @@ void DetectSafariProfiles(std::vector<importer::SourceProfile*>* profiles) {
 #endif  // defined(OS_MACOSX)
 
 void DetectFirefoxProfiles(std::vector<importer::SourceProfile*>* profiles) {
-  FilePath profile_path = GetFirefoxProfilePath();
+  base::FilePath profile_path = GetFirefoxProfilePath();
   if (profile_path.empty())
     return;
 
   // Detects which version of Firefox is installed.
   importer::ImporterType firefox_type;
-  FilePath app_path;
+  base::FilePath app_path;
   int version = 0;
 #if defined(OS_WIN)
   version = GetCurrentFirefoxMajorVersionFromRegistry();

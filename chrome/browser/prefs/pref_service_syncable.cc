@@ -179,9 +179,10 @@ void PrefServiceSyncable::RegisterStringPref(const char* path,
                              sync_status);
 }
 
-void PrefServiceSyncable::RegisterFilePathPref(const char* path,
-                                               const FilePath& default_value,
-                                               PrefSyncStatus sync_status) {
+void PrefServiceSyncable::RegisterFilePathPref(
+    const char* path,
+    const base::FilePath& default_value,
+    PrefSyncStatus sync_status) {
   RegisterSyncablePreference(path,
                              Value::CreateStringValue(default_value.value()),
                              sync_status);

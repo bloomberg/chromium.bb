@@ -1745,7 +1745,7 @@ void MetricsService::LogChromeOSCrash(const std::string &crash_type) {
 }
 #endif  // OS_CHROMEOS
 
-void MetricsService::LogPluginLoadingError(const FilePath& plugin_path) {
+void MetricsService::LogPluginLoadingError(const base::FilePath& plugin_path) {
   webkit::WebPluginInfo plugin;
   bool success =
       content::PluginService::GetInstance()->GetPluginInfoByPath(plugin_path,

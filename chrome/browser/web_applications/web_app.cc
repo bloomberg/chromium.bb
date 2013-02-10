@@ -33,7 +33,7 @@ void DeleteShortcutsOnFileThread(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
+  base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
       shortcut_info.profile_path, shortcut_info.extension_id, GURL());
   return web_app::internals::DeletePlatformShortcuts(
       shortcut_data_dir, shortcut_info);
@@ -43,7 +43,7 @@ void UpdateShortcutsOnFileThread(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
+  base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
       shortcut_info.profile_path, shortcut_info.extension_id, GURL());
   return web_app::internals::UpdatePlatformShortcuts(
       shortcut_data_dir, shortcut_info);
@@ -63,23 +63,23 @@ static const char* kCrxAppPrefix = "_crx_";
 
 namespace internals {
 
-FilePath GetSanitizedFileName(const string16& name) {
+base::FilePath GetSanitizedFileName(const string16& name) {
 #if defined(OS_WIN)
   string16 file_name = name;
 #else
   std::string file_name = UTF16ToUTF8(name);
 #endif
   file_util::ReplaceIllegalCharactersInPath(&file_name, '_');
-  return FilePath(file_name);
+  return base::FilePath(file_name);
 }
 
 }  // namespace internals
 
-FilePath GetWebAppDataDirectory(const FilePath& profile_path,
-                                const std::string& extension_id,
-                                const GURL& url) {
+base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
+                                      const std::string& extension_id,
+                                      const GURL& url) {
   DCHECK(!profile_path.empty());
-  FilePath app_data_dir(profile_path.Append(chrome::kWebAppDirname));
+  base::FilePath app_data_dir(profile_path.Append(chrome::kWebAppDirname));
 
   if (!extension_id.empty()) {
     return app_data_dir.AppendASCII(
@@ -92,18 +92,18 @@ FilePath GetWebAppDataDirectory(const FilePath& profile_path,
   std::string scheme_port(scheme + "_" + port);
 
 #if defined(OS_WIN)
-  FilePath::StringType host_path(UTF8ToUTF16(host));
-  FilePath::StringType scheme_port_path(UTF8ToUTF16(scheme_port));
+  base::FilePath::StringType host_path(UTF8ToUTF16(host));
+  base::FilePath::StringType scheme_port_path(UTF8ToUTF16(scheme_port));
 #elif defined(OS_POSIX)
-  FilePath::StringType host_path(host);
-  FilePath::StringType scheme_port_path(scheme_port);
+  base::FilePath::StringType host_path(host);
+  base::FilePath::StringType scheme_port_path(scheme_port);
 #endif
 
   return app_data_dir.Append(host_path).Append(scheme_port_path);
 }
 
-FilePath GetWebAppDataDirectory(const FilePath& profile_path,
-                                const extensions::Extension& extension) {
+base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
+                                      const extensions::Extension& extension) {
   return GetWebAppDataDirectory(
       profile_path, extension.id(), GURL(extension.launch_web_url()));
 }
@@ -172,7 +172,7 @@ bool CreateShortcutsOnFileThread(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath shortcut_data_dir = GetWebAppDataDirectory(
+  base::FilePath shortcut_data_dir = GetWebAppDataDirectory(
       shortcut_info.profile_path, shortcut_info.extension_id,
       shortcut_info.url);
   return internals::CreatePlatformShortcuts(shortcut_data_dir, shortcut_info);

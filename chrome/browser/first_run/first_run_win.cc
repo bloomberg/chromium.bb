@@ -66,12 +66,13 @@ namespace {
 // in |*ret_code|, and returns true if the exit code is valid.
 // For metro Windows, it launches setup via ShellExecuteEx and returns in order
 // to bounce the user back to the desktop, then returns immediately.
-bool LaunchSetupForEula(const FilePath::StringType& value, int* ret_code) {
-  FilePath exe_dir;
+bool LaunchSetupForEula(const base::FilePath::StringType& value,
+                        int* ret_code) {
+  base::FilePath exe_dir;
   if (!PathService::Get(base::DIR_MODULE, &exe_dir))
     return false;
   exe_dir = exe_dir.Append(installer::kInstallerDir);
-  FilePath exe_path = exe_dir.Append(installer::kSetupExe);
+  base::FilePath exe_path = exe_dir.Append(installer::kSetupExe);
   base::ProcessHandle ph;
 
   CommandLine cl(CommandLine::NO_PROGRAM);
@@ -114,8 +115,8 @@ bool LaunchSetupForEula(const FilePath::StringType& value, int* ret_code) {
 // Populates |path| with the path to |file| in the sentinel directory. This is
 // the application directory for user-level installs, and the default user data
 // dir for system-level installs. Returns false on error.
-bool GetSentinelFilePath(const wchar_t* file, FilePath* path) {
-  FilePath exe_path;
+bool GetSentinelFilePath(const wchar_t* file, base::FilePath* path) {
+  base::FilePath exe_path;
   if (!PathService::Get(base::DIR_EXE, &exe_path))
     return false;
   if (InstallUtil::IsPerUserInstall(exe_path.value().c_str()))
@@ -126,7 +127,7 @@ bool GetSentinelFilePath(const wchar_t* file, FilePath* path) {
   return true;
 }
 
-bool GetEULASentinelFilePath(FilePath* path) {
+bool GetEULASentinelFilePath(base::FilePath* path) {
   return GetSentinelFilePath(installer::kEULASentinelFile, path);
 }
 
@@ -137,7 +138,7 @@ bool IsEULANotAccepted(installer::MasterPreferences* install_prefs) {
   bool value = false;
   if (install_prefs->GetBool(installer::master_preferences::kRequireEula,
           &value) && value) {
-    FilePath eula_sentinel;
+    base::FilePath eula_sentinel;
     // Be conservative and show the EULA if the path to the sentinel can't be
     // determined.
     if (!GetEULASentinelFilePath(&eula_sentinel) ||
@@ -150,7 +151,7 @@ bool IsEULANotAccepted(installer::MasterPreferences* install_prefs) {
 
 // Writes the EULA to a temporary file, returned in |*eula_path|, and returns
 // true if successful.
-bool WriteEULAtoTempFile(FilePath* eula_path) {
+bool WriteEULAtoTempFile(base::FilePath* eula_path) {
   std::string terms = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
   if (terms.empty())
     return false;
@@ -165,7 +166,7 @@ bool WriteEULAtoTempFile(FilePath* eula_path) {
 // Creates the sentinel indicating that the EULA was required and has been
 // accepted.
 bool CreateEULASentinel() {
-  FilePath eula_sentinel;
+  base::FilePath eula_sentinel;
   if (!GetEULASentinelFilePath(&eula_sentinel))
     return false;
 
@@ -320,7 +321,7 @@ int ImportFromBrowser(Profile* profile,
 bool ImportSettingsWin(Profile* profile,
                        int importer_type,
                        int items_to_import,
-                       const FilePath& import_bookmarks_path,
+                       const base::FilePath& import_bookmarks_path,
                        bool skip_first_run_ui) {
   if (!items_to_import && import_bookmarks_path.empty()) {
     return true;
@@ -390,7 +391,7 @@ void DoPostImportPlatformSpecificTasks() {
   // making sure shortcuts are created promptly to avoid annoying the user by
   // re-creating shortcuts he previously deleted.
   static const int64 kTiggerActiveSetupDelaySeconds = 5;
-  FilePath chrome_exe;
+  base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
   } else if (!InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
@@ -409,11 +410,11 @@ bool ImportSettings(Profile* profile,
       profile,
       importer_list->GetSourceProfileAt(0).importer_type,
       items_to_import,
-      FilePath(),
+      base::FilePath(),
       false);
 }
 
-bool GetFirstRunSentinelFilePath(FilePath* path) {
+bool GetFirstRunSentinelFilePath(base::FilePath* path) {
   return GetSentinelFilePath(chrome::kFirstRunSentinel, path);
 }
 
@@ -445,10 +446,10 @@ void SetImportPreferencesAndLaunchImport(
     // the importer process and blocks until done or until it fails.
     scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
     importer_list->DetectSourceProfilesHack();
-    if (!ImportSettingsWin(NULL,
-          importer_list->GetSourceProfileAt(0).importer_type,
-          out_prefs->do_import_items,
-          FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)), true)) {
+    if (!ImportSettingsWin(
+        NULL, importer_list->GetSourceProfileAt(0).importer_type,
+        out_prefs->do_import_items, base::FilePath::FromWStringHack(UTF8ToWide(
+                                        import_bookmarks_path)), true)) {
       LOG(WARNING) << "silent import failed";
     }
   }
@@ -462,7 +463,7 @@ bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
 
     // The actual eula text is in a resource in chrome. We extract it to
     // a text file so setup.exe can use it as an inner frame.
-    FilePath inner_html;
+    base::FilePath inner_html;
     if (WriteEULAtoTempFile(&inner_html)) {
       int retcode = 0;
       if (!LaunchSetupForEula(inner_html.value(), &retcode) ||
@@ -500,11 +501,11 @@ int ImportNow(Profile* profile, const CommandLine& cmdline) {
   return return_code;
 }
 
-FilePath MasterPrefsPath() {
+base::FilePath MasterPrefsPath() {
   // The standard location of the master prefs is next to the chrome binary.
-  FilePath master_prefs;
+  base::FilePath master_prefs;
   if (!PathService::Get(base::DIR_EXE, &master_prefs))
-    return FilePath();
+    return base::FilePath();
   return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
 

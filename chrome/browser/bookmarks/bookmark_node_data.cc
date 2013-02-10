@@ -208,7 +208,7 @@ void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
 }
 
 bool BookmarkNodeData::ReadFromClipboard() {
-  FilePath file_path;
+  base::FilePath file_path;
   if (!bookmark_pasteboard_helper_mac::ReadFromPasteboard(
       bookmark_pasteboard_helper_mac::kCopyPastePasteboard,
       elements,
@@ -221,7 +221,7 @@ bool BookmarkNodeData::ReadFromClipboard() {
 }
 
 bool BookmarkNodeData::ReadFromDragClipboard() {
-  FilePath file_path;
+  base::FilePath file_path;
   if (!bookmark_pasteboard_helper_mac::ReadFromPasteboard(
       bookmark_pasteboard_helper_mac::kDragPasteboard,
       elements,
@@ -284,7 +284,7 @@ bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
 #endif
 
 void BookmarkNodeData::WriteToPickle(Profile* profile, Pickle* pickle) const {
-  FilePath path = profile ? profile->GetPath() : FilePath();
+  base::FilePath path = profile ? profile->GetPath() : base::FilePath();
   path.WriteToPickle(pickle);
   pickle->WriteUInt64(elements.size());
 

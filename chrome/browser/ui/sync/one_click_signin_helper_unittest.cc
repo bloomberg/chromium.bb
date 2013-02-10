@@ -755,7 +755,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailNotAllowed) {
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
   ProfileInfoCache* cache = testing_profile_manager_.profile_info_cache();
-  const FilePath& user_data_dir = cache->GetUserDataDir();
+  const base::FilePath& user_data_dir = cache->GetUserDataDir();
   cache->AddProfileToCache(user_data_dir.Append(FILE_PATH_LITERAL("user")),
                            UTF8ToUTF16("user"),
                            UTF8ToUTF16("user@gmail.com"), 0, false);

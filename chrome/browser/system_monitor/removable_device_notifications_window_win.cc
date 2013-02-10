@@ -79,7 +79,7 @@ void RemovableDeviceNotificationsWindowWin::Init() {
 }
 
 bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
-    const FilePath& path,
+    const base::FilePath& path,
     StorageInfo* device_info) const {
   string16 location;
   std::string unique_id;
@@ -164,7 +164,7 @@ LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProc(
 }
 
 bool RemovableDeviceNotificationsWindowWin::GetDeviceInfo(
-    const FilePath& device_path, string16* device_location,
+    const base::FilePath& device_path, string16* device_location,
     std::string* unique_id, string16* name, bool* removable) const {
   // TODO(kmadhusu) Implement PortableDeviceWatcherWin::GetDeviceInfo()
   // function when we have the functionality to add a sub directory of

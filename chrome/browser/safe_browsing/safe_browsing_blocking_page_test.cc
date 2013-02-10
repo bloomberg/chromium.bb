@@ -711,9 +711,9 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ReportingDisabled) {
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingReportingEnabled, true);
 
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-                               net::TestServer::kLocalhost,
-                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS, net::TestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL url = https_server.GetURL(kEmptyPage);
   SetURLThreatType(url, SB_THREAT_TYPE_URL_MALWARE);

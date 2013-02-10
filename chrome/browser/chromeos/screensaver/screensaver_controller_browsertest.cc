@@ -17,7 +17,7 @@ namespace {
 scoped_refptr<extensions::Extension> CreateTestScreensaverExtension() {
   scoped_refptr<extensions::Extension> extension =
       extensions::ExtensionBuilder()
-      .SetPath(FilePath())
+      .SetPath(base::FilePath())
       .SetManifest(extensions::DictionaryBuilder()
                    .Set("name", "Screensaver Extension")
                    .Set("version", "1")

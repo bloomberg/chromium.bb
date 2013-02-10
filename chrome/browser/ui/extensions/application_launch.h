@@ -68,7 +68,7 @@ struct AppLaunchParams {
 
   // If non-empty, the current directory from which any relative paths on the
   // command line should be expanded from.
-  FilePath current_directory;
+  base::FilePath current_directory;
 };
 
 // Open the application in a way specified by |params|.

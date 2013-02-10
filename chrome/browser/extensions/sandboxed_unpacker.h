@@ -35,8 +35,8 @@ class SandboxedUnpackerClient
   //
   // extension - The extension that was unpacked. The client is responsible
   // for deleting this memory.
-  virtual void OnUnpackSuccess(const FilePath& temp_dir,
-                               const FilePath& extension_root,
+  virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
+                               const base::FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension) = 0;
   virtual void OnUnpackFailure(const string16& error) = 0;
@@ -73,11 +73,11 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // Unpacks the extension in |crx_path| into a temporary directory and calls
   // |client| with the result. If |run_out_of_process| is provided, unpacking
   // is done in a sandboxed subprocess. Otherwise, it is done in-process.
-  SandboxedUnpacker(const FilePath& crx_path,
+  SandboxedUnpacker(const base::FilePath& crx_path,
                     bool run_out_of_process,
                     Manifest::Location location,
                     int creation_flags,
-                    const FilePath& extensions_dir,
+                    const base::FilePath& extensions_dir,
                     base::SequencedTaskRunner* unpacker_io_task_runner,
                     SandboxedUnpackerClient* client);
 
@@ -166,7 +166,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   bool ValidateSignature();
 
   // Starts the utility process that unpacks our extension.
-  void StartProcessOnIOThread(const FilePath& temp_crx_path);
+  void StartProcessOnIOThread(const base::FilePath& temp_crx_path);
 
   // UtilityProcessHostClient
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -193,7 +193,7 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   void Cleanup();
 
   // The path to the CRX to unpack.
-  FilePath crx_path_;
+  base::FilePath crx_path_;
 
   // True if unpacking should be done by the utility process.
   bool run_out_of_process_;
@@ -202,13 +202,13 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   scoped_refptr<SandboxedUnpackerClient> client_;
 
   // The Extensions directory inside the profile.
-  FilePath extensions_dir_;
+  base::FilePath extensions_dir_;
 
   // A temporary directory to use for unpacking.
   base::ScopedTempDir temp_dir_;
 
   // The root directory of the unpacked extension. This is a child of temp_dir_.
-  FilePath extension_root_;
+  base::FilePath extension_root_;
 
   // Represents the extension we're unpacking.
   scoped_refptr<Extension> extension_;

@@ -164,15 +164,15 @@ std::string PrefService::GetString(const char* path) const {
   return result;
 }
 
-FilePath PrefService::GetFilePath(const char* path) const {
+base::FilePath PrefService::GetFilePath(const char* path) const {
   DCHECK(CalledOnValidThread());
 
-  FilePath result;
+  base::FilePath result;
 
   const base::Value* value = GetPreferenceValue(path);
   if (!value) {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
-    return FilePath(result);
+    return base::FilePath(result);
   }
   bool rv = base::GetValueAsFilePath(*value, &result);
   DCHECK(rv);
@@ -395,7 +395,7 @@ void PrefService::SetString(const char* path, const std::string& value) {
   SetUserPrefValue(path, Value::CreateStringValue(value));
 }
 
-void PrefService::SetFilePath(const char* path, const FilePath& value) {
+void PrefService::SetFilePath(const char* path, const base::FilePath& value) {
   SetUserPrefValue(path, base::CreateFilePathValue(value));
 }
 

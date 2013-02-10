@@ -61,7 +61,7 @@ void StateStore::DelayedTaskQueue::SetReady() {
 }
 
 StateStore::StateStore(Profile* profile,
-                       const FilePath& db_path,
+                       const base::FilePath& db_path,
                        bool deferred_load)
     : db_path_(db_path), task_queue_(new DelayedTaskQueue()) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,

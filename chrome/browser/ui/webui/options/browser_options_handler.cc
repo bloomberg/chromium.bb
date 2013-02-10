@@ -695,7 +695,7 @@ void BrowserOptionsHandler::InitializePage() {
 // static
 void BrowserOptionsHandler::CheckAutoLaunch(
     base::WeakPtr<BrowserOptionsHandler> weak_this,
-    const FilePath& profile_path) {
+    const base::FilePath& profile_path) {
 #if defined(OS_WIN)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -712,7 +712,7 @@ void BrowserOptionsHandler::CheckAutoLaunch(
                  auto_launch_util::AutoStartRequested(
                      profile_path.BaseName().value(),
                      true,  // Window requested.
-                     FilePath())));
+                     base::FilePath())));
 #endif
 }
 
@@ -946,10 +946,11 @@ void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
-      enable ? base::Bind(&auto_launch_util::EnableForegroundStartAtLogin,
-                          profile->GetPath().BaseName().value(), FilePath()) :
-               base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,
-                          profile->GetPath().BaseName().value()));
+      enable ?
+          base::Bind(&auto_launch_util::EnableForegroundStartAtLogin,
+                     profile->GetPath().BaseName().value(), base::FilePath()) :
+          base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,
+                      profile->GetPath().BaseName().value()));
 #endif  // OS_WIN
 }
 
@@ -957,13 +958,13 @@ scoped_ptr<ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   scoped_ptr<ListValue> profile_info_list(new ListValue);
-  FilePath current_profile_path =
+  base::FilePath current_profile_path =
       web_ui()->GetWebContents()->GetBrowserContext()->GetPath();
 
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
     DictionaryValue* profile_value = new DictionaryValue();
     profile_value->SetString("name", cache.GetNameOfProfileAtIndex(i));
-    FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
+    base::FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
     profile_value->Set("filePath", base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean("isCurrentProfile",
                               profile_path == current_profile_path);
@@ -1138,7 +1139,7 @@ void BrowserOptionsHandler::HandleSelectDownloadLocation(
       web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
 }
 
-void BrowserOptionsHandler::FileSelected(const FilePath& path, int index,
+void BrowserOptionsHandler::FileSelected(const base::FilePath& path, int index,
                                          void* params) {
   content::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();

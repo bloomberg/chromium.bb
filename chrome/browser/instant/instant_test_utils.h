@@ -43,7 +43,7 @@ class InstantTestBase : public InProcessBrowserTest {
       : https_test_server_(
             net::TestServer::TYPE_HTTPS,
             net::BaseTestServer::SSLOptions(),
-            FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+            base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   }
 
  protected:

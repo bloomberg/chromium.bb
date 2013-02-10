@@ -29,19 +29,22 @@ using content::BrowserThread;
 namespace {
 
 // Filename suffix for the bloom filter.
-const FilePath::CharType kBloomFilterFile[] = FILE_PATH_LITERAL(" Filter 2");
+const base::FilePath::CharType kBloomFilterFile[] =
+    FILE_PATH_LITERAL(" Filter 2");
 // Filename suffix for the prefix set.
-const FilePath::CharType kPrefixSetFile[] = FILE_PATH_LITERAL(" Prefix Set");
+const base::FilePath::CharType kPrefixSetFile[] =
+    FILE_PATH_LITERAL(" Prefix Set");
 // Filename suffix for download store.
-const FilePath::CharType kDownloadDBFile[] = FILE_PATH_LITERAL(" Download");
+const base::FilePath::CharType kDownloadDBFile[] =
+    FILE_PATH_LITERAL(" Download");
 // Filename suffix for client-side phishing detection whitelist store.
-const FilePath::CharType kCsdWhitelistDBFile[] =
+const base::FilePath::CharType kCsdWhitelistDBFile[] =
     FILE_PATH_LITERAL(" Csd Whitelist");
 // Filename suffix for the download whitelist store.
-const FilePath::CharType kDownloadWhitelistDBFile[] =
+const base::FilePath::CharType kDownloadWhitelistDBFile[] =
     FILE_PATH_LITERAL(" Download Whitelist");
 // Filename suffix for the extension blacklist store.
-const FilePath::CharType kExtensionBlacklistDBFile[] =
+const base::FilePath::CharType kExtensionBlacklistDBFile[] =
     FILE_PATH_LITERAL(" Extension Blacklist");
 // Filename suffix for browse store.
 // TODO(shess): "Safe Browsing Bloom Prefix Set" is full of win.
@@ -49,7 +52,7 @@ const FilePath::CharType kExtensionBlacklistDBFile[] =
 // for little benefit.  If/when file formats change (say to put all
 // the data in one file), that would be a convenient point to rectify
 // this.
-const FilePath::CharType kBrowseDBFile[] = FILE_PATH_LITERAL(" Bloom");
+const base::FilePath::CharType kBrowseDBFile[] = FILE_PATH_LITERAL(" Bloom");
 
 // The maximum staleness for a cached entry.
 const int kMaxStalenessMinutes = 45;
@@ -298,7 +301,7 @@ bool SBAddFullHashPrefixLess(const SBAddFullHash& a, const SBAddFullHash& b) {
 
 // This code always checks for non-zero file size.  This helper makes
 // that less verbose.
-int64 GetFileSizeOrZero(const FilePath& file_path) {
+int64 GetFileSizeOrZero(const base::FilePath& file_path) {
   int64 size_64;
   if (!file_util::GetFileSize(file_path, &size_64))
     return 0;
@@ -354,45 +357,45 @@ SafeBrowsingDatabase::~SafeBrowsingDatabase() {
 }
 
 // static
-FilePath SafeBrowsingDatabase::BrowseDBFilename(
-         const FilePath& db_base_filename) {
-  return FilePath(db_base_filename.value() + kBrowseDBFile);
+base::FilePath SafeBrowsingDatabase::BrowseDBFilename(
+    const base::FilePath& db_base_filename) {
+  return base::FilePath(db_base_filename.value() + kBrowseDBFile);
 }
 
 // static
-FilePath SafeBrowsingDatabase::DownloadDBFilename(
-    const FilePath& db_base_filename) {
-  return FilePath(db_base_filename.value() + kDownloadDBFile);
+base::FilePath SafeBrowsingDatabase::DownloadDBFilename(
+    const base::FilePath& db_base_filename) {
+  return base::FilePath(db_base_filename.value() + kDownloadDBFile);
 }
 
 // static
-FilePath SafeBrowsingDatabase::BloomFilterForFilename(
-    const FilePath& db_filename) {
-  return FilePath(db_filename.value() + kBloomFilterFile);
+base::FilePath SafeBrowsingDatabase::BloomFilterForFilename(
+    const base::FilePath& db_filename) {
+  return base::FilePath(db_filename.value() + kBloomFilterFile);
 }
 
 // static
-FilePath SafeBrowsingDatabase::PrefixSetForFilename(
-    const FilePath& db_filename) {
-  return FilePath(db_filename.value() + kPrefixSetFile);
+base::FilePath SafeBrowsingDatabase::PrefixSetForFilename(
+    const base::FilePath& db_filename) {
+  return base::FilePath(db_filename.value() + kPrefixSetFile);
 }
 
 // static
-FilePath SafeBrowsingDatabase::CsdWhitelistDBFilename(
-    const FilePath& db_filename) {
-  return FilePath(db_filename.value() + kCsdWhitelistDBFile);
+base::FilePath SafeBrowsingDatabase::CsdWhitelistDBFilename(
+    const base::FilePath& db_filename) {
+  return base::FilePath(db_filename.value() + kCsdWhitelistDBFile);
 }
 
 // static
-FilePath SafeBrowsingDatabase::DownloadWhitelistDBFilename(
-    const FilePath& db_filename) {
-  return FilePath(db_filename.value() + kDownloadWhitelistDBFile);
+base::FilePath SafeBrowsingDatabase::DownloadWhitelistDBFilename(
+    const base::FilePath& db_filename) {
+  return base::FilePath(db_filename.value() + kDownloadWhitelistDBFile);
 }
 
 // static
-FilePath SafeBrowsingDatabase::ExtensionBlacklistDBFilename(
-    const FilePath& db_filename) {
-  return FilePath(db_filename.value() + kExtensionBlacklistDBFile);
+base::FilePath SafeBrowsingDatabase::ExtensionBlacklistDBFilename(
+    const base::FilePath& db_filename) {
+  return base::FilePath(db_filename.value() + kExtensionBlacklistDBFile);
 }
 
 SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
@@ -455,7 +458,7 @@ SafeBrowsingDatabaseNew::~SafeBrowsingDatabaseNew() {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
 }
 
-void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
+void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
   // Ensure we haven't been run before.
   DCHECK(browse_filename_.empty());
@@ -1114,7 +1117,7 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
 }
 
 void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
-    const FilePath& store_filename,
+    const base::FilePath& store_filename,
     SafeBrowsingStore* store,
     SBWhitelist* whitelist) {
   if (!store)
@@ -1146,7 +1149,7 @@ void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
 }
 
 int64 SafeBrowsingDatabaseNew::UpdateHashPrefixStore(
-    const FilePath& store_filename,
+    const base::FilePath& store_filename,
     SafeBrowsingStore* store,
     FailureType failure_type) {
   // We don't cache and save full hashes.
@@ -1314,7 +1317,8 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet() {
 
   // Cleanup any stale bloom filter (no longer used).
   // TODO(shess): Track failure to delete?
-  FilePath bloom_filter_filename = BloomFilterForFilename(browse_filename_);
+  base::FilePath bloom_filter_filename =
+      BloomFilterForFilename(browse_filename_);
   file_util::Delete(bloom_filter_filename, false);
 
   const base::TimeTicks before = base::TimeTicks::Now();
@@ -1348,7 +1352,8 @@ bool SafeBrowsingDatabaseNew::Delete() {
   if (!r4)
     RecordFailure(FAILURE_DATABASE_STORE_DELETE);
 
-  FilePath bloom_filter_filename = BloomFilterForFilename(browse_filename_);
+  base::FilePath bloom_filter_filename =
+      BloomFilterForFilename(browse_filename_);
   const bool r5 = file_util::Delete(bloom_filter_filename, false);
   if (!r5)
     RecordFailure(FAILURE_DATABASE_FILTER_DELETE);

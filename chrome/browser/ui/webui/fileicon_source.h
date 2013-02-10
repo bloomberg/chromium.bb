@@ -38,7 +38,7 @@ class FileIconSource : public content::URLDataSource {
   // function is called to perform the actual fetch. Declared as virtual for
   // testing.
   virtual void FetchFileIcon(
-      const FilePath& path,
+      const base::FilePath& path,
       ui::ScaleFactor scale_factor,
       IconLoader::IconSize icon_size,
       const content::URLDataSource::GotDataCallback& callback);

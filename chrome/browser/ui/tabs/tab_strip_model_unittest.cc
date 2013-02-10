@@ -1707,9 +1707,9 @@ TEST_F(TabStripModelTest, Apps) {
   typedef MockTabStripModelObserver::State State;
 
 #if defined(OS_WIN)
-  FilePath path(FILE_PATH_LITERAL("c:\\foo"));
+  base::FilePath path(FILE_PATH_LITERAL("c:\\foo"));
 #elif defined(OS_POSIX)
-  FilePath path(FILE_PATH_LITERAL("/foo"));
+  base::FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
 
   DictionaryValue manifest;

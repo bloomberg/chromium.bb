@@ -33,7 +33,7 @@ enum DownloadItemMousePosition {
   scoped_nsobject<NSTrackingArea> trackingAreaButton_;
   scoped_nsobject<NSTrackingArea> trackingAreaDropdown_;
 
-  FilePath downloadPath_;  // stored unelided
+  base::FilePath downloadPath_;  // stored unelided
   NSString* secondaryTitle_;
   NSFont* secondaryFont_;
   int percentDone_;

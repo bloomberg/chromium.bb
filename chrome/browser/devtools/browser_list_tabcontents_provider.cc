@@ -54,13 +54,13 @@ bool BrowserListTabContentsProvider::BundlesFrontendResources() {
   return true;
 }
 
-FilePath BrowserListTabContentsProvider::GetDebugFrontendDir() {
+base::FilePath BrowserListTabContentsProvider::GetDebugFrontendDir() {
 #if defined(DEBUG_DEVTOOLS)
-  FilePath inspector_dir;
+  base::FilePath inspector_dir;
   PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir);
   return inspector_dir;
 #else
-  return FilePath();
+  return base::FilePath();
 #endif
 }
 

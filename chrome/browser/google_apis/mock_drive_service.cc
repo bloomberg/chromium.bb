@@ -156,8 +156,8 @@ void MockDriveService::CreateDirectoryStub(
 }
 
 void MockDriveService::DownloadFileStub(
-    const FilePath& virtual_path,
-    const FilePath& local_tmp_path,
+    const base::FilePath& virtual_path,
+    const base::FilePath& local_tmp_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback) {

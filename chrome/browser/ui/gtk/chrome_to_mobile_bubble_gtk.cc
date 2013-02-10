@@ -105,7 +105,7 @@ void ChromeToMobileBubbleGtk::Observe(
     gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, color);
 }
 
-void ChromeToMobileBubbleGtk::SnapshotGenerated(const FilePath& path,
+void ChromeToMobileBubbleGtk::SnapshotGenerated(const base::FilePath& path,
                                                 int64 bytes) {
   snapshot_path_ = path;
   if (bytes > 0) {
@@ -304,7 +304,7 @@ void ChromeToMobileBubbleGtk::OnSendClicked(GtkWidget* widget) {
   const DictionaryValue* mobile = NULL;
   if (mobiles->GetDictionary(selected_index, &mobile)) {
     bool snapshot = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(send_copy_));
-    service_->SendToMobile(mobile, snapshot ? snapshot_path_ : FilePath(),
+    service_->SendToMobile(mobile, snapshot ? snapshot_path_ : base::FilePath(),
                            browser_, weak_ptr_factory_.GetWeakPtr());
   } else {
     NOTREACHED();

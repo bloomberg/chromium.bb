@@ -57,7 +57,7 @@ using content::BrowserThread;
 
 namespace {
 
-const FilePath::CharType kDataFile[] =
+const base::FilePath::CharType kDataFile[] =
     FILE_PATH_LITERAL("testing_input_nomac.dat");
 const char kUrlVerifyPath[] = "safebrowsing/verify_urls";
 const char kDBVerifyPath[] = "safebrowsing/verify_database";
@@ -218,7 +218,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    FilePath datafile_path;
+    base::FilePath datafile_path;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &datafile_path));
 
     datafile_path = datafile_path.Append(FILE_PATH_LITERAL("third_party"))

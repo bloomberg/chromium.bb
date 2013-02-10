@@ -231,7 +231,7 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
 
 void LocalFileSyncService::ApplyRemoteChange(
     const FileChange& change,
-    const FilePath& local_path,
+    const base::FilePath& local_path,
     const FileSystemURL& url,
     const SyncStatusCallback& callback) {
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));

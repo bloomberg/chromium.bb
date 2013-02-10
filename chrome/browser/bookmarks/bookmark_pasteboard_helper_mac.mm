@@ -242,7 +242,7 @@ namespace bookmark_pasteboard_helper_mac {
 
 void WriteToPasteboard(PasteboardType type,
                        const std::vector<BookmarkNodeData::Element>& elements,
-                       const FilePath& profile_path) {
+                       const base::FilePath& profile_path) {
   if (elements.empty())
     return;
 
@@ -264,12 +264,12 @@ void WriteToPasteboard(PasteboardType type,
 
 bool ReadFromPasteboard(PasteboardType type,
                         std::vector<BookmarkNodeData::Element>& elements,
-                        FilePath* profile_path) {
+                        base::FilePath* profile_path) {
   NSPasteboard* pb = PasteboardFromType(type);
 
   elements.clear();
   NSString* profile = [pb stringForType:kChromiumProfilePathPboardType];
-  *profile_path = FilePath(base::SysNSStringToUTF8(profile));
+  *profile_path = base::FilePath(base::SysNSStringToUTF8(profile));
   return ReadBookmarkDictionaryListPboardType(pb, elements) ||
          ReadWebURLsWithTitlesPboardType(pb, elements) ||
          ReadNSURLPboardType(pb, elements);

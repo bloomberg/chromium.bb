@@ -133,7 +133,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 };
 
 TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
-  FilePath dummy_file =
+  base::FilePath dummy_file =
       google_apis::test_util::GetTestFilePath("gdata/root_feed.json");
   std::string resource_id("pdf:1a2b3c");
   std::string md5("abcdef0123456789");
@@ -149,13 +149,13 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Verify that the cache file exists.
-  FilePath path = cache_->GetCacheFilePath(resource_id,
+  base::FilePath path = cache_->GetCacheFilePath(resource_id,
                                            md5,
                                            DriveCache::CACHE_TYPE_TMP,
                                            DriveCache::CACHED_FILE_FROM_SERVER);
   EXPECT_TRUE(file_util::PathExists(path));
 
-  FilePath unused;
+  base::FilePath unused;
   scoped_ptr<DriveEntryProto> entry_proto;
   file_system_->GetEntryInfoByResourceId(
       resource_id,

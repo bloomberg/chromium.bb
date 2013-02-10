@@ -117,7 +117,7 @@ class Database {
 
   virtual ~Database();
 
-  static scoped_ptr<Database> Create(FilePath path);
+  static scoped_ptr<Database> Create(base::FilePath path);
 
   // A "state" value is anything that can only have one value at a time, and
   // usually describes the state of the browser eg. version.
@@ -229,7 +229,7 @@ class Database {
   std::vector<TimeRange> GetActiveIntervals(const base::Time& start,
                                             const base::Time& end);
 
-  FilePath path() const { return path_; }
+  base::FilePath path() const { return path_; }
 
   void set_clock(scoped_ptr<Clock> clock) {
     clock_ = clock.Pass();
@@ -249,7 +249,7 @@ class Database {
     virtual base::Time GetTime() OVERRIDE;
   };
 
-  explicit Database(const FilePath& path);
+  explicit Database(const base::FilePath& path);
 
   void InitDBs();
 
@@ -278,7 +278,7 @@ class Database {
   MaxValueMap max_value_map_;
 
   // The directory where all the databases will reside.
-  FilePath path_;
+  base::FilePath path_;
 
   // The key for the beginning of the active interval.
   std::string start_time_key_;

@@ -15,8 +15,8 @@
 
 class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
  protected:
-  virtual FilePath GetPreferencesFilePath() {
-    FilePath test_data_directory;
+  virtual base::FilePath GetPreferencesFilePath() {
+    base::FilePath test_data_directory;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
     return test_data_directory
         .AppendASCII("profiles")
@@ -26,20 +26,20 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
   }
 
   virtual bool SetUpUserDataDirectory() OVERRIDE {
-    FilePath user_data_directory;
+    base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
-    FilePath default_profile =
+    base::FilePath default_profile =
         user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
     if (!file_util::CreateDirectory(default_profile)) {
       LOG(ERROR) << "Can't create " << default_profile.MaybeAsASCII();
       return false;
     }
-    FilePath non_global_pref_file = GetPreferencesFilePath();
+    base::FilePath non_global_pref_file = GetPreferencesFilePath();
     if (!file_util::PathExists(non_global_pref_file)) {
       LOG(ERROR) << "Doesn't exist " << non_global_pref_file.MaybeAsASCII();
       return false;
     }
-    FilePath default_pref_file =
+    base::FilePath default_pref_file =
         default_profile.Append(chrome::kPreferencesFilename);
     if (!file_util::CopyFile(non_global_pref_file, default_pref_file)) {
       LOG(ERROR) << "Copy error from " << non_global_pref_file.MaybeAsASCII()
@@ -107,8 +107,8 @@ IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, PrefsAreMigratedToFontMap) {
 
 class PrefsTabHelperBrowserTest2 : public PrefsTabHelperBrowserTest {
  protected:
-  virtual FilePath GetPreferencesFilePath() OVERRIDE {
-    FilePath test_data_directory;
+  virtual base::FilePath GetPreferencesFilePath() OVERRIDE {
+    base::FilePath test_data_directory;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
     return test_data_directory
         .AppendASCII("profiles")

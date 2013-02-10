@@ -102,7 +102,7 @@ SettingsFrontend::SettingsFrontend(
 
   observers_->AddObserver(profile_observer_.get());
 
-  const FilePath& profile_path = profile->GetPath();
+  const base::FilePath& profile_path = profile->GetPath();
   caches_[settings_namespace::LOCAL] =
       new SyncOrLocalValueStoreCache(
           settings_namespace::LOCAL,

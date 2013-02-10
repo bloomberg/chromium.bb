@@ -49,7 +49,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
       command_line->AppendSwitch(switches::kDisableExtensions);
 
     if (!load_extensions_.empty()) {
-      FilePath::StringType paths = JoinString(load_extensions_, ',');
+      base::FilePath::StringType paths = JoinString(load_extensions_, ',');
       command_line->AppendSwitchNative(switches::kLoadExtension,
                                        paths);
       command_line->AppendSwitch(switches::kDisableExtensionsFileAccessCheck);
@@ -57,7 +57,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   }
 
   virtual bool SetUpUserDataDirectory() OVERRIDE {
-    FilePath profile_dir;
+    base::FilePath profile_dir;
     PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
     profile_dir = profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir);
     file_util::CreateDirectory(profile_dir);
@@ -67,7 +67,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     extensions_dir_ = profile_dir.AppendASCII("Extensions");
 
     if (enable_extensions_ && load_extensions_.empty()) {
-      FilePath src_dir;
+      base::FilePath src_dir;
       PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
       src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
 
@@ -118,7 +118,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
   void TestInjection(bool expect_css, bool expect_script) {
     // Load a page affected by the content script and test to see the effect.
-    FilePath test_file;
+    base::FilePath test_file;
     PathService::Get(chrome::DIR_TEST_DATA, &test_file);
     test_file = test_file.AppendASCII("extensions")
                          .AppendASCII("test_file.html");
@@ -142,12 +142,12 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     EXPECT_EQ(expect_script, result);
   }
 
-  FilePath preferences_file_;
-  FilePath extensions_dir_;
-  FilePath user_scripts_dir_;
+  base::FilePath preferences_file_;
+  base::FilePath extensions_dir_;
+  base::FilePath user_scripts_dir_;
   bool enable_extensions_;
   // Extensions to load from the command line.
-  std::vector<FilePath::StringType> load_extensions_;
+  std::vector<base::FilePath::StringType> load_extensions_;
 
   // Disable the sideload wipeout UI.
   FeatureSwitch::ScopedOverride override_sideload_wipeout_;
@@ -216,7 +216,7 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
  public:
   ExtensionsLoadTest() {
     enable_extensions_ = true;
-    FilePath one_extension_path;
+    base::FilePath one_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
     one_extension_path = one_extension_path
         .AppendASCII("extensions")
@@ -243,7 +243,7 @@ class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
  public:
   ExtensionsLoadMultipleTest() {
     enable_extensions_ = true;
-    FilePath one_extension_path;
+    base::FilePath one_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
     one_extension_path = one_extension_path
         .AppendASCII("extensions")
@@ -253,21 +253,21 @@ class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
         .AppendASCII("1.0.0.0");
     load_extensions_.push_back(one_extension_path.value());
 
-    FilePath second_extension_path;
+    base::FilePath second_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &second_extension_path);
     second_extension_path = second_extension_path
         .AppendASCII("extensions")
         .AppendASCII("app");
     load_extensions_.push_back(second_extension_path.value());
 
-    FilePath third_extension_path;
+    base::FilePath third_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &third_extension_path);
     third_extension_path = third_extension_path
         .AppendASCII("extensions")
         .AppendASCII("app1");
     load_extensions_.push_back(third_extension_path.value());
 
-    FilePath fourth_extension_path;
+    base::FilePath fourth_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &fourth_extension_path);
     fourth_extension_path = fourth_extension_path
         .AppendASCII("extensions")

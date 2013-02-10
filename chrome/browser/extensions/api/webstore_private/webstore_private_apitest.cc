@@ -180,9 +180,10 @@ class ExtensionWebstorePrivateBundleTest
     ASSERT_TRUE(tmp.CreateUniqueTempDir());
     ASSERT_TRUE(file_util::CreateDirectory(tmp.path()));
 
-    FilePath tmp_manifest = tmp.path().AppendASCII("manifest.json");
-    FilePath data_path = test_data_dir_.AppendASCII("webstore_private/bundle");
-    FilePath manifest_path = data_path.AppendASCII(manifest);
+    base::FilePath tmp_manifest = tmp.path().AppendASCII("manifest.json");
+    base::FilePath data_path =
+        test_data_dir_.AppendASCII("webstore_private/bundle");
+    base::FilePath manifest_path = data_path.AppendASCII(manifest);
 
     ASSERT_TRUE(file_util::PathExists(manifest_path));
     ASSERT_TRUE(file_util::CopyFile(manifest_path, tmp_manifest));
@@ -191,12 +192,13 @@ class ExtensionWebstorePrivateBundleTest
   }
 
   // Packs the extension at |ext_path| using |id|'s PEM key.
-  void PackCRX(const std::string& id, const FilePath& ext_path) {
-    FilePath data_path = tmp_.path().AppendASCII("webstore_private/bundle");
-    FilePath pem_path = data_path.AppendASCII(id + ".pem");
-    FilePath crx_path = data_path.AppendASCII(id + ".crx");
-    FilePath destination = PackExtensionWithOptions(
-        ext_path, crx_path, pem_path, FilePath());
+  void PackCRX(const std::string& id, const base::FilePath& ext_path) {
+    base::FilePath data_path =
+        tmp_.path().AppendASCII("webstore_private/bundle");
+    base::FilePath pem_path = data_path.AppendASCII(id + ".pem");
+    base::FilePath crx_path = data_path.AppendASCII(id + ".crx");
+    base::FilePath destination = PackExtensionWithOptions(
+        ext_path, crx_path, pem_path, base::FilePath());
 
     ASSERT_FALSE(destination.empty());
     ASSERT_EQ(destination, crx_path);
@@ -206,10 +208,10 @@ class ExtensionWebstorePrivateBundleTest
 
   // Creates an invalid CRX.
   void PackInvalidCRX(const std::string& id) {
-    FilePath contents = test_data_dir_
+    base::FilePath contents = test_data_dir_
         .AppendASCII("webstore_private")
         .AppendASCII("install_bundle_invalid.html");
-    FilePath crx_path = test_data_dir_
+    base::FilePath crx_path = test_data_dir_
         .AppendASCII("webstore_private/bundle")
         .AppendASCII(id + ".crx");
 
@@ -219,7 +221,7 @@ class ExtensionWebstorePrivateBundleTest
   }
 
  private:
-  std::vector<FilePath> test_crx_;
+  std::vector<base::FilePath> test_crx_;
 };
 
 class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
@@ -293,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
   // Set a non-existent directory as the download path.
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath missing_directory = temp_dir.Take();
+  base::FilePath missing_directory = temp_dir.Take();
   EXPECT_TRUE(file_util::Delete(missing_directory, true));
   WebstoreInstaller::SetDownloadDirectoryForTests(&missing_directory);
 

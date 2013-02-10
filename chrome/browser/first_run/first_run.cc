@@ -118,14 +118,14 @@ void DoDelayedInstallExtensionsIfNeeded(
   }
 }
 
-FilePath GetDefaultPrefFilePath(bool create_profile_dir,
-                                const FilePath& user_data_dir) {
-  FilePath default_pref_dir =
+base::FilePath GetDefaultPrefFilePath(bool create_profile_dir,
+                                      const base::FilePath& user_data_dir) {
+  base::FilePath default_pref_dir =
       ProfileManager::GetDefaultProfileDir(user_data_dir);
   if (create_profile_dir) {
     if (!file_util::PathExists(default_pref_dir)) {
       if (!file_util::CreateDirectory(default_pref_dir))
-        return FilePath();
+        return base::FilePath();
     }
   }
   return ProfileManager::GetProfilePrefsPath(default_pref_dir);
@@ -184,7 +184,8 @@ void SetImportItem(PrefService* user_prefs,
 // Imports bookmarks from an html file. The path to the file is provided in
 // the command line.
 int ImportFromFile(Profile* profile, const CommandLine& cmdline) {
-  FilePath file_path = cmdline.GetSwitchValuePath(switches::kImportFromFile);
+  base::FilePath file_path =
+      cmdline.GetSwitchValuePath(switches::kImportFromFile);
   if (file_path.empty()) {
     NOTREACHED();
     return false;
@@ -215,14 +216,15 @@ namespace internal {
 
 FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
 
-static base::LazyInstance<FilePath> master_prefs_path_for_testing
+static base::LazyInstance<base::FilePath> master_prefs_path_for_testing
     = LAZY_INSTANCE_INITIALIZER;
 
-installer::MasterPreferences* LoadMasterPrefs(FilePath* master_prefs_path) {
+installer::MasterPreferences*
+    LoadMasterPrefs(base::FilePath* master_prefs_path) {
   if (!master_prefs_path_for_testing.Get().empty())
     *master_prefs_path = master_prefs_path_for_testing.Get();
   else
-    *master_prefs_path = FilePath(MasterPrefsPath());
+    *master_prefs_path = base::FilePath(MasterPrefsPath());
   if (master_prefs_path->empty())
     return NULL;
   installer::MasterPreferences* install_prefs =
@@ -235,9 +237,9 @@ installer::MasterPreferences* LoadMasterPrefs(FilePath* master_prefs_path) {
   return install_prefs;
 }
 
-bool CopyPrefFile(const FilePath& user_data_dir,
-                  const FilePath& master_prefs_path) {
-  FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
+bool CopyPrefFile(const base::FilePath& user_data_dir,
+                  const base::FilePath& master_prefs_path) {
+  base::FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
   if (user_prefs.empty())
     return false;
 
@@ -385,7 +387,7 @@ bool IsChromeFirstRun() {
   if (internal::first_run_ != internal::FIRST_RUN_UNKNOWN)
     return internal::first_run_ == internal::FIRST_RUN_TRUE;
 
-  FilePath first_run_sentinel;
+  base::FilePath first_run_sentinel;
   if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel) ||
       file_util::PathExists(first_run_sentinel)) {
     internal::first_run_ = internal::FIRST_RUN_FALSE;
@@ -396,7 +398,7 @@ bool IsChromeFirstRun() {
 }
 
 bool CreateSentinel() {
-  FilePath first_run_sentinel;
+  base::FilePath first_run_sentinel;
   if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
     return false;
   return file_util::WriteFile(first_run_sentinel, "", 0) != -1;
@@ -415,7 +417,7 @@ void RegisterUserPrefs(PrefServiceSyncable* prefs) {
 }
 
 bool RemoveSentinel() {
-  FilePath first_run_sentinel;
+  base::FilePath first_run_sentinel;
   if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
     return false;
   return file_util::Delete(first_run_sentinel, false);
@@ -558,12 +560,12 @@ void FirstRunBubbleLauncher::Observe(
   delete this;
 }
 
-void SetMasterPrefsPathForTesting(const FilePath& master_prefs) {
+void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs) {
   internal::master_prefs_path_for_testing.Get() = master_prefs;
 }
 
 ProcessMasterPreferencesResult ProcessMasterPreferences(
-    const FilePath& user_data_dir,
+    const base::FilePath& user_data_dir,
     MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
@@ -574,7 +576,7 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
   return SKIP_FIRST_RUN_TASKS;
 #endif
 
-  FilePath master_prefs_path;
+  base::FilePath master_prefs_path;
   scoped_ptr<installer::MasterPreferences>
       install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
   if (!install_prefs.get())
@@ -626,7 +628,7 @@ void AutoImport(
   importer_host = new ImporterHost;
 #endif
 
-  FilePath local_state_path;
+  base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = file_util::PathExists(local_state_path);
 
@@ -701,7 +703,7 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
   }
 
 #if !defined(USE_AURA)
-  FilePath local_state_path;
+  base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = file_util::PathExists(local_state_path);
 

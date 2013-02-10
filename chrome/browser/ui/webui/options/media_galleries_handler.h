@@ -26,7 +26,7 @@ class MediaGalleriesHandler : public OptionsPageUIHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE;
 

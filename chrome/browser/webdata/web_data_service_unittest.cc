@@ -102,7 +102,7 @@ class WebDataServiceTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
-  FilePath profile_dir_;
+  base::FilePath profile_dir_;
   scoped_refptr<WebDataService> wds_;
   base::ScopedTempDir temp_dir_;
 };

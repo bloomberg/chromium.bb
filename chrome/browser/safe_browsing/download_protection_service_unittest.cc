@@ -90,8 +90,8 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
 class MockSignatureUtil : public SignatureUtil {
  public:
   MockSignatureUtil() {}
-  MOCK_METHOD2(CheckSignature,
-               void(const FilePath&, ClientDownloadRequest_SignatureInfo*));
+  MOCK_METHOD2(CheckSignature, void (const base::FilePath&,
+                                     ClientDownloadRequest_SignatureInfo*));
 
  protected:
   virtual ~MockSignatureUtil() {}
@@ -159,7 +159,7 @@ class DownloadProtectionServiceTest : public testing::Test {
     msg_loop_.RunUntilIdle();
     has_result_ = false;
 
-    FilePath source_path;
+    base::FilePath source_path;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source_path));
     testdata_path_ = source_path
         .AppendASCII("chrome")
@@ -305,7 +305,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   bool has_result_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
-  FilePath testdata_path_;
+  base::FilePath testdata_path_;
 };
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
@@ -317,8 +317,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   msg_loop_.Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = base::FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("file://www.google.com/"));
   download_service_->CheckClientDownload(
       info,
@@ -330,8 +330,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = base::FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/bla.exe"));
   info.download_url_chain.push_back(GURL("http://www.google.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
@@ -369,8 +369,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
       DownloadProtectionService::GetDownloadRequestUrl(), "", false);
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = base::FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
 
@@ -398,8 +398,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       true);
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = base::FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
 
@@ -495,8 +495,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
       true);
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = base::FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("a.exe"));
   info.download_url_chain.push_back(GURL("https://www.evil.com/a.exe"));
   info.referrer_url = GURL("http://www.google.com/");
 
@@ -532,7 +532,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
 
   DownloadProtectionService::DownloadInfo info;
   info.local_file = download_dir.path().Append(FILE_PATH_LITERAL("a.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("a.zip"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("a.zip"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/a.zip"));
   info.referrer_url = GURL("http://www.google.com/");
 
@@ -600,7 +600,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
 
   DownloadProtectionService::DownloadInfo info;
   info.local_file = download_dir.path().Append(FILE_PATH_LITERAL("a.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("a.zip"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("a.zip"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/a.zip"));
   info.referrer_url = GURL("http://www.google.com/");
 
@@ -633,8 +633,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
       true);
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("a.crx"));
+  info.local_file = base::FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("a.crx"));
   info.download_url_chain.push_back(GURL("http://www.evil.com/a.crx"));
   info.referrer_url = GURL("http://www.google.com/");
 
@@ -656,8 +656,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   net::TestURLFetcherFactory factory;
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("bla.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("bla.exe"));
+  info.local_file = base::FilePath(FILE_PATH_LITERAL("bla.tmp"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("bla.exe"));
   info.download_url_chain.push_back(GURL("http://www.google.com/"));
   info.download_url_chain.push_back(GURL("http://www.google.com/bla.exe"));
   info.referrer_url = GURL("http://www.google.com/");
@@ -723,8 +723,8 @@ TEST_F(DownloadProtectionServiceTest,
   net::TestURLFetcherFactory factory;
 
   DownloadProtectionService::DownloadInfo info;
-  info.local_file = FilePath(FILE_PATH_LITERAL("bla.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("bla.exe"));
+  info.local_file = base::FilePath(FILE_PATH_LITERAL("bla.tmp"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("bla.exe"));
   info.download_url_chain.push_back(GURL("http://www.google.com/"));
   info.download_url_chain.push_back(GURL("ftp://www.google.com/bla.exe"));
   info.referrer_url = GURL("http://www.google.com/");
@@ -845,8 +845,8 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   DownloadProtectionService::DownloadInfo info;
   info.download_url_chain.push_back(GURL("http://www.evil.com/bla.exe"));
   info.referrer_url = GURL("http://www.google.com/");
-  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
-  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.local_file = base::FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = base::FilePath(FILE_PATH_LITERAL("a.exe"));
 
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))

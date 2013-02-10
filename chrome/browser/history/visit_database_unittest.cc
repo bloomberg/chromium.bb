@@ -48,7 +48,7 @@ class VisitDatabaseTest : public PlatformTest,
   virtual void SetUp() {
     PlatformTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath db_file = temp_dir_.path().AppendASCII("VisitTest.db");
+    base::FilePath db_file = temp_dir_.path().AppendASCII("VisitTest.db");
 
     EXPECT_TRUE(db_.Open(db_file));
 

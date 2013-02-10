@@ -347,21 +347,21 @@ bool NaClProcessHost::Send(IPC::Message* msg) {
 
 #if defined(OS_WIN)
 scoped_ptr<CommandLine> NaClProcessHost::GetCommandForLaunchWithGdb(
-    const FilePath& nacl_gdb,
+    const base::FilePath& nacl_gdb,
     CommandLine* line) {
   CommandLine* cmd_line = new CommandLine(nacl_gdb);
   // We can't use PrependWrapper because our parameters contain spaces.
   cmd_line->AppendArg("--eval-command");
-  const FilePath::StringType& irt_path =
+  const base::FilePath::StringType& irt_path =
       NaClBrowser::GetInstance()->GetIrtFilePath().value();
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("nacl-irt ") + irt_path);
-  FilePath manifest_path = GetManifestPath();
+  base::FilePath manifest_path = GetManifestPath();
   if (!manifest_path.empty()) {
     cmd_line->AppendArg("--eval-command");
     cmd_line->AppendArgNative(FILE_PATH_LITERAL("nacl-manifest ") +
                               manifest_path.value());
   }
-  FilePath script = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+  base::FilePath script = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kNaClGdbScript);
   if (!script.empty()) {
     cmd_line->AppendArg("--command");
@@ -418,10 +418,10 @@ bool NaClProcessHost::LaunchNaClGdb(base::ProcessId pid) {
   base::SplitString(nacl_gdb, static_cast<CommandLine::CharType>(' '), &argv);
   CommandLine cmd_line(argv);
   cmd_line.AppendArg("--eval-command");
-  const FilePath::StringType& irt_path =
+  const base::FilePath::StringType& irt_path =
       NaClBrowser::GetInstance()->GetIrtFilePath().value();
   cmd_line.AppendArgNative(FILE_PATH_LITERAL("nacl-irt ") + irt_path);
-  FilePath manifest_path = GetManifestPath();
+  base::FilePath manifest_path = GetManifestPath();
   if (!manifest_path.empty()) {
     cmd_line.AppendArg("--eval-command");
     cmd_line.AppendArgNative(FILE_PATH_LITERAL("nacl-manifest ") +
@@ -440,7 +440,7 @@ bool NaClProcessHost::LaunchNaClGdb(base::ProcessId pid) {
   cmd_line.AppendArg("dump binary value /proc/" +
                      base::IntToString(base::GetCurrentProcId()) +
                      "/fd/" + base::IntToString(fds[1]) + " (char)0");
-  FilePath script = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+  base::FilePath script = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kNaClGdbScript);
   if (!script.empty()) {
     cmd_line.AppendArg("--command");
@@ -471,7 +471,7 @@ void NaClProcessHost::OnNaClGdbAttached() {
 }
 #endif
 
-FilePath NaClProcessHost::GetManifestPath() {
+base::FilePath NaClProcessHost::GetManifestPath() {
   const extensions::Extension* extension = extension_info_map_->extensions()
       .GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url_));
   if (extension != NULL &&
@@ -480,7 +480,7 @@ FilePath NaClProcessHost::GetManifestPath() {
     TrimString(path, "/", &path);  // Remove first slash
     return extension->path().AppendASCII(path);
   }
-  return FilePath();
+  return base::FilePath();
 }
 
 bool NaClProcessHost::LaunchSelLdr() {
@@ -513,14 +513,14 @@ bool NaClProcessHost::LaunchSelLdr() {
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif
 
-  FilePath exe_path = ChildProcessHost::GetChildPath(flags);
+  base::FilePath exe_path = ChildProcessHost::GetChildPath(flags);
   if (exe_path.empty())
     return false;
 
 #if defined(OS_WIN)
   // On Windows 64-bit NaCl loader is called nacl64.exe instead of chrome.exe
   if (RunningOnWOW64()) {
-    FilePath module_path;
+    base::FilePath module_path;
     if (!PathService::Get(base::FILE_MODULE, &module_path)) {
       LOG(ERROR) << "NaCl process launch failed: could not resolve module";
       return false;
@@ -541,8 +541,8 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (!nacl_loader_prefix.empty())
     cmd_line->PrependWrapper(nacl_loader_prefix);
 
-  FilePath nacl_gdb = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-      switches::kNaClGdb);
+  base::FilePath nacl_gdb =
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(switches::kNaClGdb);
   if (!nacl_gdb.empty()) {
 #if defined(OS_WIN)
     cmd_line->AppendSwitch(switches::kNoSandbox);
@@ -572,7 +572,7 @@ bool NaClProcessHost::LaunchSelLdr() {
       return false;
     }
   } else {
-    process_->Launch(FilePath(), cmd_line.release());
+    process_->Launch(base::FilePath(), cmd_line.release());
   }
 #elif defined(OS_POSIX)
   process_->Launch(nacl_loader_prefix.empty(),  // use_zygote

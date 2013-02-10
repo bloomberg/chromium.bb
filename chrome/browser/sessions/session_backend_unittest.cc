@@ -46,7 +46,7 @@ class SessionBackendTest : public testing::Test {
   }
 
   // Path used in testing.
-  FilePath path_;
+  base::FilePath path_;
   base::ScopedTempDir temp_dir_;
 };
 

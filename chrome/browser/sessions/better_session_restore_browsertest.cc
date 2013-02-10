@@ -119,14 +119,14 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     test_files.push_back("post_with_password.html");
     test_files.push_back("session_cookies.html");
     test_files.push_back("session_storage.html");
-    FilePath test_file_dir;
+    base::FilePath test_file_dir;
     CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &test_file_dir));
     test_file_dir =
         test_file_dir.AppendASCII("chrome/test/data").AppendASCII(test_path_);
 
     for (std::vector<std::string>::const_iterator it = test_files.begin();
          it != test_files.end(); ++it) {
-      FilePath path = test_file_dir.AppendASCII(*it);
+      base::FilePath path = test_file_dir.AppendASCII(*it);
       std::string contents;
       CHECK(file_util::ReadFileToString(path, &contents));
       g_file_contents.Get()["/" + test_path_ + *it] = contents;

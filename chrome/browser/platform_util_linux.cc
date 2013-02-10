@@ -54,8 +54,8 @@ void XDGEmail(const std::string& email) {
 // TODO(estade): It would be nice to be able to select the file in the file
 // manager, but that probably requires extending xdg-open. For now just
 // show the folder.
-void ShowItemInFolderOnFileThread(const FilePath& full_path) {
-  FilePath dir = full_path.DirName();
+void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
+  base::FilePath dir = full_path.DirName();
   if (!file_util::DirectoryExists(dir))
     return;
 
@@ -66,13 +66,13 @@ void ShowItemInFolderOnFileThread(const FilePath& full_path) {
 
 namespace platform_util {
 
-void ShowItemInFolder(const FilePath& full_path) {
+void ShowItemInFolder(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ShowItemInFolderOnFileThread, full_path));
 }
 
-void OpenItem(const FilePath& full_path) {
+void OpenItem(const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&XDGOpen, full_path.value()));

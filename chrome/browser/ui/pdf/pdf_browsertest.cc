@@ -48,7 +48,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     pdf_test_server_.reset(new net::TestServer(
         net::TestServer::TYPE_HTTP,
         net::TestServer::kLocalhost,
-        FilePath(FILE_PATH_LITERAL("pdf/test"))));
+        base::FilePath(FILE_PATH_LITERAL("pdf/test"))));
   }
 
  protected:
@@ -59,8 +59,8 @@ class PDFBrowserTest : public InProcessBrowserTest,
     return load_stop_notification_count_;
   }
 
-  FilePath GetPDFTestDir() {
-    return FilePath(FilePath::kCurrentDirectory).AppendASCII("..").
+  base::FilePath GetPDFTestDir() {
+    return base::FilePath(base::FilePath::kCurrentDirectory).AppendASCII("..").
         AppendASCII("..").AppendASCII("..").AppendASCII("pdf").
         AppendASCII("test");
   }
@@ -78,7 +78,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
 
     GURL url(ui_test_utils::GetTestUrl(
         GetPDFTestDir(),
-        FilePath(FILE_PATH_LITERAL("pdf_browsertest.pdf"))));
+        base::FilePath(FILE_PATH_LITERAL("pdf_browsertest.pdf"))));
     ui_test_utils::NavigateToURL(browser(), url);
   }
 
@@ -124,9 +124,9 @@ class PDFBrowserTest : public InProcessBrowserTest,
                        const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN) {
       MessageLoopForUI::current()->Quit();
-      FilePath reference = ui_test_utils::GetTestFilePath(
+      base::FilePath reference = ui_test_utils::GetTestFilePath(
           GetPDFTestDir(),
-          FilePath().AppendASCII(expected_filename_));
+          base::FilePath().AppendASCII(expected_filename_));
       base::PlatformFileInfo info;
       ASSERT_TRUE(file_util::GetFileInfo(reference, &info));
       int size = static_cast<size_t>(info.size);
@@ -197,7 +197,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
   // The filename of the bitmap to compare the snapshot to.
   std::string expected_filename_;
   // If the snapshot is different, holds the location where it's saved.
-  FilePath snapshot_filename_;
+  base::FilePath snapshot_filename_;
   // How many times we've seen chrome::LOAD_STOP.
   int load_stop_notification_count_;
 
@@ -308,11 +308,11 @@ IN_PROC_BROWSER_TEST_P(PDFBrowserTest, Loading) {
   std::string base_url = std::string("files/");
 
   file_util::FileEnumerator file_enumerator(
-      ui_test_utils::GetTestFilePath(GetPDFTestDir(), FilePath()),
+      ui_test_utils::GetTestFilePath(GetPDFTestDir(), base::FilePath()),
       false,
       file_util::FileEnumerator::FILES,
       FILE_PATH_LITERAL("*.pdf"));
-  for (FilePath file_path = file_enumerator.Next();
+  for (base::FilePath file_path = file_enumerator.Next();
        !file_path.empty();
        file_path = file_enumerator.Next()) {
     std::string filename = file_path.BaseName().MaybeAsASCII();

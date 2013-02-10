@@ -35,7 +35,7 @@ using content::WebContents;
 void PepperBrokerInfoBarDelegate::Create(
     WebContents* web_contents,
     const GURL& url,
-    const FilePath& plugin_path,
+    const base::FilePath& plugin_path,
     const base::Callback<void(bool)>& callback) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -147,7 +147,7 @@ gfx::Image* PepperBrokerInfoBarDelegate::GetIcon() const {
 PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
     InfoBarService* infobar_service,
     const GURL& url,
-    const FilePath& plugin_path,
+    const base::FilePath& plugin_path,
     const std::string& languages,
     HostContentSettingsMap* content_settings,
     const base::Callback<void(bool)>& callback)

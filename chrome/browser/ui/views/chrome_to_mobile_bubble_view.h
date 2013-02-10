@@ -58,7 +58,8 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // ChromeToMobileService::Observer methods.
-  virtual void SnapshotGenerated(const FilePath& path, int64 bytes) OVERRIDE;
+  virtual void SnapshotGenerated(
+      const base::FilePath& path, int64 bytes) OVERRIDE;
   virtual void OnSendComplete(bool success) OVERRIDE;
 
  protected:
@@ -89,7 +90,7 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
   std::vector<views::RadioButton*> radio_buttons_;
 
   // The file path for the MHTML page snapshot.
-  FilePath snapshot_path_;
+  base::FilePath snapshot_path_;
 
   views::Checkbox* send_copy_;
   views::TextButton* send_;

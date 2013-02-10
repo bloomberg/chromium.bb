@@ -157,7 +157,7 @@ void RecordLastRunAppBundlePath() {
   // real, user-visible app bundle directory. (The alternatives give either the
   // framework's path or the initial app's path, which may be an app mode shim
   // or a unit test.)
-  FilePath appBundlePath =
+  base::FilePath appBundlePath =
       chrome::GetVersionedDirectory().DirName().DirName().DirName();
   CFPreferencesSetAppValue(
       base::mac::NSToCFCast(app_mode::kLastRunAppBundlePathPrefsKey),
@@ -1022,7 +1022,7 @@ void RecordLastRunAppBundlePath() {
     int return_code;
     StartupBrowserCreator browser_creator;
     browser_creator.LaunchBrowser(
-        command_line, [self lastProfile], FilePath(),
+        command_line, [self lastProfile], base::FilePath(),
         chrome::startup::IS_NOT_PROCESS_STARTUP,
         chrome::startup::IS_NOT_FIRST_RUN, &return_code);
   }
@@ -1126,7 +1126,7 @@ void RecordLastRunAppBundlePath() {
   CommandLine dummy(CommandLine::NO_PROGRAM);
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(FilePath(), dummy, first_run);
+  StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
   launch.OpenURLsInBrowser(browser, false, urls);
 }
 
@@ -1151,7 +1151,7 @@ void RecordLastRunAppBundlePath() {
           stringValue];
 
   ProfileManager* profileManager = g_browser_process->profile_manager();
-  FilePath path = FilePath(base::SysNSStringToUTF8(profileDir));
+  base::FilePath path = base::FilePath(base::SysNSStringToUTF8(profileDir));
   path = profileManager->user_data_dir().Append(path);
   Profile* profile = profileManager->GetProfile(path);
   if (!profile) {
@@ -1192,7 +1192,7 @@ void RecordLastRunAppBundlePath() {
     string16 printTicket16 = base::SysNSStringToUTF16(printTicket);
     print_dialog_cloud::CreatePrintDialogForFile(
         ProfileManager::GetDefaultProfile(), NULL,
-        FilePath([inputPath UTF8String]), title16,
+        base::FilePath([inputPath UTF8String]), title16,
         printTicket16, [mime UTF8String], /*delete_on_close=*/false);
   }
 }
@@ -1201,7 +1201,8 @@ void RecordLastRunAppBundlePath() {
           openFiles:(NSArray*)filenames {
   std::vector<GURL> gurlVector;
   for (NSString* file in filenames) {
-    GURL gurl = net::FilePathToFileURL(FilePath(base::SysNSStringToUTF8(file)));
+    GURL gurl =
+        net::FilePathToFileURL(base::FilePath(base::SysNSStringToUTF8(file)));
     gurlVector.push_back(gurl);
   }
   if (!gurlVector.empty())

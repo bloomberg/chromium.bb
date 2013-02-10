@@ -97,7 +97,7 @@ using content::DownloadItem;
 
 class DefaultDownloadDirectory {
  public:
-  const FilePath& path() const { return path_; }
+  const base::FilePath& path() const { return path_; }
  private:
   DefaultDownloadDirectory() {
     if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path_)) {
@@ -112,21 +112,21 @@ class DefaultDownloadDirectory {
     }
   }
   friend struct base::DefaultLazyInstanceTraits<DefaultDownloadDirectory>;
-  FilePath path_;
+  base::FilePath path_;
 };
 
 static base::LazyInstance<DefaultDownloadDirectory>
     g_default_download_directory = LAZY_INSTANCE_INITIALIZER;
 
-const FilePath& GetDefaultDownloadDirectory() {
+const base::FilePath& GetDefaultDownloadDirectory() {
   return g_default_download_directory.Get().path();
 }
 
 // Consider downloads 'dangerous' if they go to the home directory on Linux and
 // to the desktop on any platform.
-bool DownloadPathIsDangerous(const FilePath& download_path) {
+bool DownloadPathIsDangerous(const base::FilePath& download_path) {
 #if defined(OS_LINUX)
-  FilePath home_dir = file_util::GetHomeDir();
+  base::FilePath home_dir = file_util::GetHomeDir();
   if (download_path == home_dir) {
     return true;
   }
@@ -136,7 +136,7 @@ bool DownloadPathIsDangerous(const FilePath& download_path) {
   // Android does not have a desktop dir.
   return false;
 #else
-  FilePath desktop_dir;
+  base::FilePath desktop_dir;
   if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_dir)) {
     NOTREACHED();
     return false;
@@ -358,7 +358,7 @@ void DragDownload(const DownloadItem* download,
         download->GetFileNameToReportUser(), icon->ToImageSkia(), &data);
   }
 
-  const FilePath full_path = download->GetTargetFilePath();
+  const base::FilePath full_path = download->GetTargetFilePath();
   data.SetFilename(full_path);
 
   std::string mime_type = download->GetMimeType();
@@ -459,8 +459,9 @@ string16 GetProgressStatusText(DownloadItem* download) {
                                     speed_text, amount, time_remaining);
 }
 
-FilePath GetCrDownloadPath(const FilePath& suggested_path) {
-  return FilePath(suggested_path.value() + FILE_PATH_LITERAL(".crdownload"));
+base::FilePath GetCrDownloadPath(const base::FilePath& suggested_path) {
+  return base::FilePath(suggested_path.value() +
+                        FILE_PATH_LITERAL(".crdownload"));
 }
 
 bool IsSavableURL(const GURL& url) {

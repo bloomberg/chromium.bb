@@ -20,7 +20,7 @@ using content::BrowserThread;
 namespace {
 
 // Gets the file size of |file| and stores it in |size| on the blocking pool.
-void GetFileSizeOnBlockingPool(const FilePath& file, int64* size) {
+void GetFileSizeOnBlockingPool(const base::FilePath& file, int64* size) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   // Get file size. In case of error, sets 0 as file size to let the installer
@@ -38,7 +38,7 @@ namespace extensions {
 
 InstallLimiter::DeferredInstall::DeferredInstall(
     const scoped_refptr<CrxInstaller>& installer,
-    const FilePath& path)
+    const base::FilePath& path)
     : installer(installer),
       path(path) {
 }
@@ -64,7 +64,7 @@ void InstallLimiter::DisableForTest() {
 }
 
 void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
-                         const FilePath& path) {
+                         const base::FilePath& path) {
   // No deferred installs when disabled for test.
   if (disabled_for_test_) {
     installer->InstallCrx(path);
@@ -81,7 +81,7 @@ void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
 
 void InstallLimiter::AddWithSize(
     const scoped_refptr<CrxInstaller>& installer,
-    const FilePath& path,
+    const base::FilePath& path,
     int64* size) {
   const int64 kBigAppSizeThreshold = 1048576;  // 1MB
 
@@ -117,7 +117,7 @@ void InstallLimiter::CheckAndRunDeferrredInstalls() {
 }
 
 void InstallLimiter::RunInstall(const scoped_refptr<CrxInstaller>& installer,
-                                const FilePath& path) {
+                                const base::FilePath& path) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                  content::Source<CrxInstaller>(installer.get()));
