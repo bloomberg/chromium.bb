@@ -23,7 +23,7 @@ class BaseTest : public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
 
-  FilePath test_dir_;
+  base::FilePath test_dir_;
 };
 
 #endif  // COURGETTE_BASE_TEST_UNITTEST_H_

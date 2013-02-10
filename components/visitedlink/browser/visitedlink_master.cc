@@ -68,7 +68,7 @@ void GenerateSalt(uint8 salt[LINK_SALT_LENGTH]) {
 }
 
 // Opens file on a background thread to not block UI thread.
-void AsyncOpen(FILE** file, const FilePath& filename) {
+void AsyncOpen(FILE** file, const base::FilePath& filename) {
   *file = OpenFile(filename, "wb+");
   DLOG_IF(ERROR, !(*file)) << "Failed to open file " << filename.value();
 }
@@ -194,7 +194,7 @@ VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
                                      VisitedLinkDelegate* delegate,
                                      bool persist_to_disk,
                                      bool suppress_rebuild,
-                                     const FilePath& filename,
+                                     const base::FilePath& filename,
                                      int32 default_table_size)
     : browser_context_(NULL),
       delegate_(delegate),
@@ -516,7 +516,7 @@ void VisitedLinkMaster::WriteFullTable() {
 
   if (!file_) {
     file_ = static_cast<FILE**>(calloc(1, sizeof(*file_)));
-    FilePath filename;
+    base::FilePath filename;
     GetDatabaseFileName(&filename);
     PostIOTask(FROM_HERE, base::Bind(&AsyncOpen, file_, filename));
   }
@@ -542,7 +542,7 @@ bool VisitedLinkMaster::InitFromFile() {
   DCHECK(file_ == NULL);
   DCHECK(persist_to_disk_);
 
-  FilePath filename;
+  base::FilePath filename;
   GetDatabaseFileName(&filename);
   ScopedFILE file_closer(OpenFile(filename, "rb+"));
   if (!file_closer.get())
@@ -653,7 +653,7 @@ bool VisitedLinkMaster::ReadFileHeader(FILE* file,
   return true;
 }
 
-bool VisitedLinkMaster::GetDatabaseFileName(FilePath* filename) {
+bool VisitedLinkMaster::GetDatabaseFileName(base::FilePath* filename) {
   if (!database_name_override_.empty()) {
     // use this filename, the directory must exist
     *filename = database_name_override_;
@@ -663,7 +663,7 @@ bool VisitedLinkMaster::GetDatabaseFileName(FilePath* filename) {
   if (!browser_context_ || browser_context_->GetPath().empty())
     return false;
 
-  FilePath profile_dir = browser_context_->GetPath();
+  base::FilePath profile_dir = browser_context_->GetPath();
   *filename = profile_dir.Append(FILE_PATH_LITERAL("Visited Links"));
   return true;
 }

@@ -26,8 +26,8 @@ namespace chromeos {
 
 class BluetoothServiceRecordChromeOSTest : public testing::Test {
  public:
-  FilePath GetTestDataFilePath(const char* file) {
-    FilePath path;
+  base::FilePath GetTestDataFilePath(const char* file) {
+    base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.AppendASCII("device");
     path = path.AppendASCII("test");

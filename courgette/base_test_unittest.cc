@@ -17,7 +17,7 @@ void BaseTest::TearDown() {
 
 //  Reads a test file into a string.
 std::string BaseTest::FileContents(const char* file_name) const {
-  FilePath file_path = test_dir_;
+  base::FilePath file_path = test_dir_;
   file_path = file_path.AppendASCII(file_name);
   std::string file_bytes;
 

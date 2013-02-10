@@ -83,7 +83,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
                     VisitedLinkDelegate* delegate,
                     bool persist_to_disk,
                     bool suppress_rebuild,
-                    const FilePath& filename,
+                    const base::FilePath& filename,
                     int32 default_table_size);
   virtual ~VisitedLinkMaster();
 
@@ -222,7 +222,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
                       uint8 salt[LINK_SALT_LENGTH]);
 
   // Fills *filename with the name of the link database filename
-  bool GetDatabaseFileName(FilePath* filename);
+  bool GetDatabaseFileName(base::FilePath* filename);
 
   // Wrapper around Window's WriteFile using asynchronous I/O. This will proxy
   // the write to a background thread.
@@ -409,7 +409,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // in release builds that give "regular" behavior.
 
   // Overridden database file name for testing
-  FilePath database_name_override_;
+  base::FilePath database_name_override_;
 
   // When nonzero, overrides the table size for new databases for testing
   int32 table_size_override_;

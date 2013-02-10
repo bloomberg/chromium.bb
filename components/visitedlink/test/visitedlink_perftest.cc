@@ -66,7 +66,7 @@ void FillTable(VisitedLinkMaster& master, const char* prefix,
 
 class VisitedLink : public testing::Test {
  protected:
-  FilePath db_path_;
+  base::FilePath db_path_;
   virtual void SetUp() {
     ASSERT_TRUE(file_util::CreateTemporaryFile(&db_path_));
   }

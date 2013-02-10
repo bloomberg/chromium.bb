@@ -77,9 +77,9 @@ Status ApplyEnsemblePatch(SourceStream* old, SourceStream* patch,
 // Returns C_OK unless something went wrong.
 // This function first validates that the patch file has a proper header, so the
 // function can be used to 'try' a patch.
-Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
-                          const FilePath::CharType* patch_file_name,
-                          const FilePath::CharType* new_file_name);
+Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
+                          const base::FilePath::CharType* patch_file_name,
+                          const base::FilePath::CharType* new_file_name);
 
 // Generates a patch that will transform the bytes in |old| into the bytes in
 // |target|.

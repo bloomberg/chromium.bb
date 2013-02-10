@@ -79,7 +79,7 @@ TEST(LibjingleLogTest, DefaultConfiguration) {
   LOG_V(talk_base::LS_SENSITIVE) << AsString(talk_base::LS_SENSITIVE);
 
   // Read file to string.
-  FilePath file_path(log_file_name);
+  base::FilePath file_path(log_file_name);
   std::string contents_of_file;
   file_util::ReadFileToString(file_path, &contents_of_file);
 
@@ -106,7 +106,7 @@ TEST(LibjingleLogTest, InfoConfiguration) {
   LOG_V(talk_base::LS_SENSITIVE) << AsString(talk_base::LS_SENSITIVE);
 
   // Read file to string.
-  FilePath file_path(log_file_name);
+  base::FilePath file_path(log_file_name);
   std::string contents_of_file;
   file_util::ReadFileToString(file_path, &contents_of_file);
 
@@ -140,7 +140,7 @@ TEST(LibjingleLogTest, LogEverythingConfiguration) {
   LOG_V(talk_base::LS_SENSITIVE) << AsString(talk_base::LS_SENSITIVE);
 
   // Read file to string.
-  FilePath file_path(log_file_name);
+  base::FilePath file_path(log_file_name);
   std::string contents_of_file;
   file_util::ReadFileToString(file_path, &contents_of_file);
 

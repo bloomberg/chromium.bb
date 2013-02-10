@@ -31,7 +31,7 @@ void TempFile::Close() {
 
 bool TempFile::Create() {
   DCHECK(file_ == base::kInvalidPlatformFileValue);
-  FilePath path;
+  base::FilePath path;
   if (!file_util::CreateTemporaryFile(&path))
     return false;
 

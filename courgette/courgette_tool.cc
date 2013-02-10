@@ -47,7 +47,7 @@ void Problem(const char* format, ...) {
   exit(1);
 }
 
-std::string ReadOrFail(const FilePath& file_name, const char* kind) {
+std::string ReadOrFail(const base::FilePath& file_name, const char* kind) {
   int64 file_size = 0;
   if (!file_util::GetFileSize(file_name, &file_size))
     Problem("Can't read %s file.", kind);
@@ -59,7 +59,7 @@ std::string ReadOrFail(const FilePath& file_name, const char* kind) {
 }
 
 void WriteSinkToFile(const courgette::SinkStream *sink,
-                     const FilePath& output_file) {
+                     const base::FilePath& output_file) {
   int count =
       file_util::WriteFile(output_file,
                            reinterpret_cast<const char*>(sink->Buffer()),
@@ -70,8 +70,8 @@ void WriteSinkToFile(const courgette::SinkStream *sink,
     Problem("Incomplete write.");
 }
 
-void Disassemble(const FilePath& input_file,
-                 const FilePath& output_file) {
+void Disassemble(const base::FilePath& input_file,
+                 const base::FilePath& output_file) {
   std::string buffer = ReadOrFail(input_file, "input");
 
   courgette::AssemblyProgram* program = NULL;
@@ -106,7 +106,7 @@ void Disassemble(const FilePath& input_file,
   WriteSinkToFile(&sink, output_file);
 }
 
-bool Supported(const FilePath& input_file) {
+bool Supported(const base::FilePath& input_file) {
   bool result = false;
 
   std::string buffer = ReadOrFail(input_file, "input");
@@ -141,9 +141,9 @@ bool Supported(const FilePath& input_file) {
   return result;
 }
 
-void DisassembleAndAdjust(const FilePath& program_file,
-                          const FilePath& model_file,
-                          const FilePath& output_file) {
+void DisassembleAndAdjust(const base::FilePath& program_file,
+                          const base::FilePath& model_file,
+                          const base::FilePath& output_file) {
   std::string program_buffer = ReadOrFail(program_file, "program");
   std::string model_buffer = ReadOrFail(model_file, "reference");
 
@@ -196,9 +196,9 @@ void DisassembleAndAdjust(const FilePath& program_file,
 // original file's stream and the new file's stream.  This is completely
 // uninteresting to users, but it is handy for seeing how much each which
 // streams are contributing to the final file size.  Adjustment is optional.
-void DisassembleAdjustDiff(const FilePath& model_file,
-                           const FilePath& program_file,
-                           const FilePath& output_file_root,
+void DisassembleAdjustDiff(const base::FilePath& model_file,
+                           const base::FilePath& program_file,
+                           const base::FilePath& output_file_root,
                            bool adjust) {
   std::string model_buffer = ReadOrFail(model_file, "'old'");
   std::string program_buffer = ReadOrFail(program_file, "'new'");
@@ -275,8 +275,8 @@ void DisassembleAdjustDiff(const FilePath& model_file,
   }
 }
 
-void Assemble(const FilePath& input_file,
-              const FilePath& output_file) {
+void Assemble(const base::FilePath& input_file,
+              const base::FilePath& output_file) {
   std::string buffer = ReadOrFail(input_file, "input");
 
   courgette::SourceStreamSet sources;
@@ -297,9 +297,9 @@ void Assemble(const FilePath& input_file,
   WriteSinkToFile(&sink, output_file);
 }
 
-void GenerateEnsemblePatch(const FilePath& old_file,
-                           const FilePath& new_file,
-                           const FilePath& patch_file) {
+void GenerateEnsemblePatch(const base::FilePath& old_file,
+                           const base::FilePath& new_file,
+                           const base::FilePath& patch_file) {
   std::string old_buffer = ReadOrFail(old_file, "'old' input");
   std::string new_buffer = ReadOrFail(new_file, "'new' input");
 
@@ -317,9 +317,9 @@ void GenerateEnsemblePatch(const FilePath& old_file,
   WriteSinkToFile(&patch_stream, patch_file);
 }
 
-void ApplyEnsemblePatch(const FilePath& old_file,
-                        const FilePath& patch_file,
-                        const FilePath& new_file) {
+void ApplyEnsemblePatch(const base::FilePath& old_file,
+                        const base::FilePath& patch_file,
+                        const base::FilePath& new_file) {
   // We do things a little differently here in order to call the same Courgette
   // entry point as the installer.  That entry point point takes file names and
   // returns an status code but does not output any diagnostics.
@@ -374,9 +374,9 @@ void ApplyEnsemblePatch(const FilePath& old_file,
   Problem("-apply failed.");
 }
 
-void GenerateBSDiffPatch(const FilePath& old_file,
-                         const FilePath& new_file,
-                         const FilePath& patch_file) {
+void GenerateBSDiffPatch(const base::FilePath& old_file,
+                         const base::FilePath& new_file,
+                         const base::FilePath& patch_file) {
   std::string old_buffer = ReadOrFail(old_file, "'old' input");
   std::string new_buffer = ReadOrFail(new_file, "'new' input");
 
@@ -394,9 +394,9 @@ void GenerateBSDiffPatch(const FilePath& old_file,
   WriteSinkToFile(&patch_stream, patch_file);
 }
 
-void ApplyBSDiffPatch(const FilePath& old_file,
-                      const FilePath& patch_file,
-                      const FilePath& new_file) {
+void ApplyBSDiffPatch(const base::FilePath& old_file,
+                      const base::FilePath& patch_file,
+                      const base::FilePath& new_file) {
   std::string old_buffer = ReadOrFail(old_file, "'old' input");
   std::string patch_buffer = ReadOrFail(patch_file, "'patch' input");
 
@@ -438,10 +438,10 @@ int main(int argc, const char* argv[]) {
   bool cmd_spread_1_adjusted = command_line.HasSwitch("gen1a");
   bool cmd_spread_1_unadjusted = command_line.HasSwitch("gen1u");
 
-  std::vector<FilePath> values;
+  std::vector<base::FilePath> values;
   const CommandLine::StringVector& args = command_line.GetArgs();
   for (size_t i = 0; i < args.size(); ++i) {
-    values.push_back(FilePath(args[i]));
+    values.push_back(base::FilePath(args[i]));
   }
 
   // '-repeat=N' is for debugging.  Running many iterations can reveal leaks and

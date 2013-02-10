@@ -62,7 +62,7 @@ const char kChapsModuleName[] = "Chaps";
 const char kChapsPath[] = "libchaps.so";
 
 // Fake certificate authority database used for testing.
-static const FilePath::CharType kReadOnlyCertDB[] =
+static const base::FilePath::CharType kReadOnlyCertDB[] =
     FILE_PATH_LITERAL("/etc/fake_root_ca/nssdb");
 #endif  // defined(OS_CHROMEOS)
 
@@ -79,8 +79,8 @@ std::string GetNSSErrorMessage() {
 }
 
 #if defined(USE_NSS)
-FilePath GetDefaultConfigDirectory() {
-  FilePath dir = file_util::GetHomeDir();
+base::FilePath GetDefaultConfigDirectory() {
+  base::FilePath dir = file_util::GetHomeDir();
   if (dir.empty()) {
     LOG(ERROR) << "Failed to get home directory.";
     return dir;
@@ -108,9 +108,9 @@ unsigned char kSupplementalUserKeyId[] = {
 // by the local Google Accounts server mock we use when testing our login code.
 // If this directory is not present, NSS_Init() will fail.  It is up to the
 // caller to failover to NSS_NoDB_Init() at that point.
-FilePath GetInitialConfigDirectory() {
+base::FilePath GetInitialConfigDirectory() {
 #if defined(OS_CHROMEOS)
-  return FilePath(kReadOnlyCertDB);
+  return base::FilePath(kReadOnlyCertDB);
 #else
   return GetDefaultConfigDirectory();
 #endif  // defined(OS_CHROMEOS)
@@ -161,7 +161,7 @@ char* PKCS11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
 //
 // Because this function sets an environment variable it must be run before we
 // go multi-threaded.
-void UseLocalCacheOfNSSDatabaseIfNFS(const FilePath& database_dir) {
+void UseLocalCacheOfNSSDatabaseIfNFS(const base::FilePath& database_dir) {
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   struct statfs buf;
   if (statfs(database_dir.value().c_str(), &buf) == 0) {
@@ -472,7 +472,7 @@ class NSSInitSingleton {
 #endif  // defined(OS_IOS)
     } else {
 #if defined(USE_NSS)
-      FilePath database_dir = GetInitialConfigDirectory();
+      base::FilePath database_dir = GetInitialConfigDirectory();
       if (!database_dir.empty()) {
         // This duplicates the work which should have been done in
         // EarlySetupForNSSInit. However, this function is idempotent so
@@ -605,7 +605,7 @@ class NSSInitSingleton {
   }
 #endif
 
-  static PK11SlotInfo* OpenUserDB(const FilePath& path,
+  static PK11SlotInfo* OpenUserDB(const base::FilePath& path,
                                   const char* description) {
     const std::string modspec =
         StringPrintf("configDir='sql:%s' tokenDescription='%s'",
@@ -650,7 +650,7 @@ base::LazyInstance<NSSInitSingleton>::Leaky
 
 #if defined(USE_NSS)
 void EarlySetupForNSSInit() {
-  FilePath database_dir = GetInitialConfigDirectory();
+  base::FilePath database_dir = GetInitialConfigDirectory();
   if (!database_dir.empty())
     UseLocalCacheOfNSSDatabaseIfNFS(database_dir);
 }
@@ -692,21 +692,21 @@ void LoadNSSLibraries() {
   // Some NSS libraries are linked dynamically so load them here.
 #if defined(USE_NSS)
   // Try to search for multiple directories to load the libraries.
-  std::vector<FilePath> paths;
+  std::vector<base::FilePath> paths;
 
   // Use relative path to Search PATH for the library files.
-  paths.push_back(FilePath());
+  paths.push_back(base::FilePath());
 
   // For Debian derivatives NSS libraries are located here.
-  paths.push_back(FilePath("/usr/lib/nss"));
+  paths.push_back(base::FilePath("/usr/lib/nss"));
 
   // Ubuntu 11.10 (Oneiric) places the libraries here.
 #if defined(ARCH_CPU_X86_64)
-  paths.push_back(FilePath("/usr/lib/x86_64-linux-gnu/nss"));
+  paths.push_back(base::FilePath("/usr/lib/x86_64-linux-gnu/nss"));
 #elif defined(ARCH_CPU_X86)
-  paths.push_back(FilePath("/usr/lib/i386-linux-gnu/nss"));
+  paths.push_back(base::FilePath("/usr/lib/i386-linux-gnu/nss"));
 #elif defined(ARCH_CPU_ARMEL)
-  paths.push_back(FilePath("/usr/lib/arm-linux-gnueabi/nss"));
+  paths.push_back(base::FilePath("/usr/lib/arm-linux-gnueabi/nss"));
 #endif
 
   // A list of library files to load.
@@ -719,7 +719,7 @@ void LoadNSSLibraries() {
   size_t loaded = 0;
   for (size_t i = 0; i < libs.size(); ++i) {
     for (size_t j = 0; j < paths.size(); ++j) {
-      FilePath path = paths[j].Append(libs[i]);
+      base::FilePath path = paths[j].Append(libs[i]);
       base::NativeLibrary lib = base::LoadNativeLibrary(path, NULL);
       if (lib) {
         ++loaded;

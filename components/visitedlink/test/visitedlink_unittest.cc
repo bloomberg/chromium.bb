@@ -227,8 +227,8 @@ class VisitedLinkTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   // Filenames for the services;
-  FilePath history_dir_;
-  FilePath visited_file_;
+  base::FilePath history_dir_;
+  base::FilePath visited_file_;
 
   scoped_ptr<VisitedLinkMaster> master_;
   TestVisitedLinkDelegate delegate_;

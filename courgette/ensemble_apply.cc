@@ -372,12 +372,12 @@ Status ApplyEnsemblePatch(SourceStream* base,
   return C_OK;
 }
 
-Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
-                          const FilePath::CharType* patch_file_name,
-                          const FilePath::CharType* new_file_name) {
+Status ApplyEnsemblePatch(const base::FilePath::CharType* old_file_name,
+                          const base::FilePath::CharType* patch_file_name,
+                          const base::FilePath::CharType* new_file_name) {
   // First read enough of the patch file to validate the header is well-formed.
   // A few varint32 numbers should fit in 100.
-  FilePath patch_file_path(patch_file_name);
+  base::FilePath patch_file_path(patch_file_name);
   file_util::MemoryMappedFile patch_file;
   if (!patch_file.Initialize(patch_file_path))
     return C_READ_OPEN_ERROR;
@@ -391,7 +391,7 @@ Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
     return status;
 
   // Read the old_file.
-  FilePath old_file_path(old_file_name);
+  base::FilePath old_file_path(old_file_name);
   file_util::MemoryMappedFile old_file;
   if (!old_file.Initialize(old_file_path))
     return C_READ_ERROR;
@@ -408,7 +408,7 @@ Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
     return status;
 
   // Write the patched data to |new_file_name|.
-  FilePath new_file_path(new_file_name);
+  base::FilePath new_file_path(new_file_name);
   int written =
       file_util::WriteFile(
           new_file_path,
