@@ -237,6 +237,14 @@ message DeviceLocalAccountsProto {
   repeated DeviceLocalAccountInfoProto account = 1;
 }
 
+message AllowRedeemChromeOsRegistrationOffersProto {
+  // Chrome OS Registration service provides way for chromeos device users
+  // to redeem electronic offers provided by service provider.
+  // This value determines if users are allowed to redeem offers through
+  // Chrome OS Registration service.
+  optional bool allow_redeem_offers = 1 [default = true];
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -259,4 +267,5 @@ message ChromeDeviceSettingsProto {
   optional PinnedAppsProto pinned_apps = 19;
   optional SystemTimezoneProto system_timezone = 20;
   optional DeviceLocalAccountsProto device_local_accounts = 21;
+  optional AllowRedeemChromeOsRegistrationOffersProto allow_redeem_offers = 22;
 }

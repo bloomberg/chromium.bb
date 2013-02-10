@@ -1764,6 +1764,9 @@
   "DeviceLocalAccounts": {
   },
 
+  "DeviceAllowRedeemChromeOsRegistrationOffers": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

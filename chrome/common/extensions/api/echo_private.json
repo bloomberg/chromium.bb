@@ -49,6 +49,24 @@
             ]
           }
         ]
+      },
+      {
+        "name": "checkAllowRedeemOffers",
+        "description": "Check if device policy allows users to redeem offers.",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "boolean",
+                "description" : "true if allowed to redeem offers."
+              }
+            ]
+          }
+        ]
       }
     ]
   }

@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 184
+#   For your editing convenience: highest ID currently used: 185
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4205,6 +4205,24 @@
           The scale factor must be 100% or more. Values that would make the idle delay in presentation mode shorter than the regular idle delay are not allowed.''',
         },
       ],
+    },
+    {
+      'name': 'DeviceAllowRedeemChromeOsRegistrationOffers',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:26-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 185,
+      'caption': '''Allow users to redeem offers through Chrome OS Registration.''',
+      'desc': '''IT admins for enterprise devices can use this flag to controll whether to allow users to redeem offers through Chrome OS Registration.
+
+      If this policy is set to true or left not set, users will be able to redeem offers through Chrome OS Registration.
+
+      If this policy is set to false, user will not be able to redeem offers.''',
     },
   ],
   'messages': {

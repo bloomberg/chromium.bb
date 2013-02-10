@@ -413,6 +413,18 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                         policy.system_timezone().timezone()));
     }
   }
+
+  if (policy.has_allow_redeem_offers()) {
+    const em::AllowRedeemChromeOsRegistrationOffersProto& container(
+        policy.allow_redeem_offers());
+    if (container.has_allow_redeem_offers()) {
+      policies->Set(key::kDeviceAllowRedeemChromeOsRegistrationOffers,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateBooleanValue(
+                        container.allow_redeem_offers()));
+    }
+  }
 }
 
 }  // namespace

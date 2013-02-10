@@ -44,6 +44,7 @@ const char* kKnownSettings[] = {
   kAccountsPrefShowUserNamesOnSignIn,
   kAccountsPrefUsers,
   kAccountsPrefDeviceLocalAccounts,
+  kAllowRedeemChromeOsRegistrationOffers,
   kAppPack,
   kDeviceOwner,
   kIdleLogoutTimeout,
@@ -287,6 +288,16 @@ void DeviceSettingsProvider::SetInPolicy() {
     if (value->GetAsBoolean(&ephemeral_users_enabled_value)) {
       ephemeral_users_enabled->set_ephemeral_users_enabled(
           ephemeral_users_enabled_value);
+    } else {
+      NOTREACHED();
+    }
+  } else if (prop == kAllowRedeemChromeOsRegistrationOffers) {
+    em::AllowRedeemChromeOsRegistrationOffersProto* allow_redeem_offers =
+        device_settings_.mutable_allow_redeem_offers();
+    bool allow_redeem_offers_value = true;
+    if (value->GetAsBoolean(&allow_redeem_offers_value)) {
+      allow_redeem_offers->set_allow_redeem_offers(
+          allow_redeem_offers_value);
     } else {
       NOTREACHED();
     }
@@ -535,6 +546,16 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
           kSystemTimezonePolicy,
           policy.system_timezone().timezone());
     }
+  }
+
+  if (policy.has_allow_redeem_offers()) {
+    new_values_cache->SetBoolean(
+        kAllowRedeemChromeOsRegistrationOffers,
+        policy.allow_redeem_offers().allow_redeem_offers());
+  } else {
+    new_values_cache->SetBoolean(
+        kAllowRedeemChromeOsRegistrationOffers,
+        true);
   }
 }
 
