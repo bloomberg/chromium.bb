@@ -15,6 +15,8 @@
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/mock_pref_change_callback.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -59,10 +61,10 @@ ExtensionPrefsTest::ExtensionPrefsTest()
 ExtensionPrefsTest::~ExtensionPrefsTest() {
 }
 
-void ExtensionPrefsTest::RegisterPreferences() {}
+void ExtensionPrefsTest::RegisterPreferences(PrefRegistrySyncable* registry) {}
 
 void ExtensionPrefsTest::SetUp() {
-  RegisterPreferences();
+  RegisterPreferences(prefs_.pref_registry());
   Initialize();
 }
 
@@ -70,8 +72,9 @@ void ExtensionPrefsTest::TearDown() {
   Verify();
 
   // Reset ExtensionPrefs, and re-verify.
+  prefs_.ResetPrefRegistry();
+  RegisterPreferences(prefs_.pref_registry());
   prefs_.RecreateExtensionPrefs();
-  RegisterPreferences();
   Verify();
   prefs_.pref_service()->CommitPendingWrite();
   message_loop_.RunUntilIdle();
@@ -820,15 +823,16 @@ ExtensionPrefsPrepopulatedTest::ExtensionPrefsPrepopulatedTest()
 
 ExtensionPrefsPrepopulatedTest::~ExtensionPrefsPrepopulatedTest() {}
 
-void ExtensionPrefsPrepopulatedTest::RegisterPreferences() {
-  prefs()->pref_service()->RegisterStringPref(
-      kPref1, kDefaultPref1, PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs()->pref_service()->RegisterStringPref(
-      kPref2, kDefaultPref2, PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs()->pref_service()->RegisterStringPref(
-      kPref3, kDefaultPref3, PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs()->pref_service()->RegisterStringPref(
-      kPref4, kDefaultPref4, PrefServiceSyncable::UNSYNCABLE_PREF);
+void ExtensionPrefsPrepopulatedTest::RegisterPreferences(
+    PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(
+      kPref1, kDefaultPref1, PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      kPref2, kDefaultPref2, PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      kPref3, kDefaultPref3, PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      kPref4, kDefaultPref4, PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void ExtensionPrefsPrepopulatedTest::InstallExtControlledPref(

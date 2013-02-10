@@ -17,8 +17,10 @@
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -134,16 +136,18 @@ TEST_F(PrefProviderTest, Incognito) {
 
   PrefServiceMockBuilder builder;
   builder.WithUserPrefs(user_prefs);
-  PrefServiceSyncable* regular_prefs = builder.CreateSyncable();
+  scoped_refptr<PrefRegistrySyncable> registry(new PrefRegistrySyncable);
+  PrefServiceSyncable* regular_prefs = builder.CreateSyncable(registry);
 
-  Profile::RegisterUserPrefs(regular_prefs);
-  chrome::RegisterUserPrefs(regular_prefs);
+  Profile::RegisterUserPrefs(registry);
+  chrome::RegisterUserPrefs(regular_prefs, registry);
 
   builder.WithUserPrefs(otr_user_prefs);
-  PrefServiceSyncable* otr_prefs = builder.CreateSyncable();
+  scoped_refptr<PrefRegistrySyncable> otr_registry(new PrefRegistrySyncable);
+  PrefServiceSyncable* otr_prefs = builder.CreateSyncable(otr_registry);
 
-  Profile::RegisterUserPrefs(otr_prefs);
-  chrome::RegisterUserPrefs(otr_prefs);
+  Profile::RegisterUserPrefs(otr_registry);
+  chrome::RegisterUserPrefs(otr_prefs, otr_registry);
 
   TestingProfile profile;
   TestingProfile* otr_profile = new TestingProfile;
@@ -368,7 +372,7 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
 // http://crosbug.com/17760
 TEST_F(PrefProviderTest, Deadlock) {
   TestingPrefServiceSyncable prefs;
-  PrefProvider::RegisterUserPrefs(&prefs);
+  PrefProvider::RegisterUserPrefs(prefs.registry());
 
   // Chain of events: a preference changes, |PrefProvider| notices it, and reads
   // and writes the preference. When the preference is written, a notification

@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -476,12 +477,13 @@ bool MediaGalleriesPreferences::APIHasBeenUsed(Profile* profile) {
 }
 
 // static
-void MediaGalleriesPreferences::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterListPref(prefs::kMediaGalleriesRememberedGalleries,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterUint64Pref(prefs::kMediaGalleriesUniqueId,
-                            kInvalidMediaGalleryPrefId + 1,
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
+void MediaGalleriesPreferences::RegisterUserPrefs(
+    PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kMediaGalleriesRememberedGalleries,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterUint64Pref(prefs::kMediaGalleriesUniqueId,
+                               kInvalidMediaGalleryPrefId + 1,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 extensions::ExtensionPrefs*

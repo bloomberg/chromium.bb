@@ -9,6 +9,7 @@
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_default.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -192,16 +193,16 @@ PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
   return ps;
 }
 
-void PasswordStoreFactory::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+void PasswordStoreFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID) \
   && defined(OS_POSIX)
-  prefs->RegisterIntegerPref(prefs::kLocalProfileId,
-                             kInvalidLocalProfileId,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kLocalProfileId,
+                                kInvalidLocalProfileId,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Notice that the preprocessor conditions above are exactly those that will
   // result in using PasswordStoreX in CreatePasswordStore() below.
-  PasswordStoreX::RegisterUserPrefs(prefs);
+  PasswordStoreX::RegisterUserPrefs(registry);
 #endif
 }
 

@@ -13,7 +13,7 @@
 
 class PrintPreviewHandlerTest;
 class PrefService;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 namespace base {
 class DictionaryValue;
@@ -40,7 +40,7 @@ class StickySettings {
 
   void SaveInPrefs(PrefService* profile);
   void RestoreFromPrefs(PrefService* profile);
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
  private:
 
   scoped_ptr<base::FilePath> save_path_;

@@ -10,10 +10,12 @@
 #include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/prefs/pref_registry.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 
 class PrefModelAssociator;
 class PrefNotifierImpl;
 class PrefRegistrySimple;
+class PrefRegistrySyncable;
 class TestingBrowserProcess;
 class TestingPrefStore;
 
@@ -101,6 +103,12 @@ class TestingPrefServiceSyncable
  public:
   TestingPrefServiceSyncable();
   virtual ~TestingPrefServiceSyncable();
+
+  // This is provided as a convenience; on a production PrefService
+  // you would do all registrations before constructing it, passing it
+  // a PrefRegistry via its constructor (or via
+  // e.g. PrefServiceBuilder).
+  PrefRegistrySyncable* registry();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceSyncable);

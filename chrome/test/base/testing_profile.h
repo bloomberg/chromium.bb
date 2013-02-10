@@ -237,7 +237,7 @@ class TestingProfile : public Profile {
   // to set a pref service you must invoke this before GetPrefs.
   // TestingPrefService takes ownership of |prefs|.
   void SetPrefService(PrefServiceSyncable* prefs);
-  virtual PrefServiceSyncable* GetPrefs() OVERRIDE;
+  virtual PrefService* GetPrefs() OVERRIDE;
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
 
@@ -315,7 +315,7 @@ class TestingProfile : public Profile {
       const base::Closure& completion) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
 
-  virtual PrefServiceSyncable* GetOffTheRecordPrefs() OVERRIDE;
+  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
 
  protected:
   base::Time start_time_;

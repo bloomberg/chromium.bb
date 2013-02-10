@@ -33,7 +33,7 @@ class ProviderInterface;
 class ExtensionService;
 class GURL;
 class PrefService;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 class HostContentSettingsMap
     : public content_settings::Observer,
@@ -57,7 +57,7 @@ class HostContentSettingsMap
   void RegisterExtensionService(ExtensionService* extension_service);
 #endif
 
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Returns the default setting for a particular content type. If |provider_id|
   // is not NULL, the id of the provider which provided the default setting is

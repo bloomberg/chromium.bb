@@ -18,7 +18,7 @@
 
 class BackingStore;
 class GURL;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class SkBitmap;
 
 namespace base {
@@ -177,7 +177,7 @@ class TabsDetectLanguageFunction : public AsyncExtensionFunction,
 class TabsCaptureVisibleTabFunction : public AsyncExtensionFunction,
                                   public content::NotificationObserver {
  public:
-  static void RegisterUserPrefs(PrefServiceSyncable* service);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
  protected:
   enum ImageFormat {

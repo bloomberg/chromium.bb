@@ -10,6 +10,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_registry_simple.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,7 +65,7 @@ TestingPrefServiceBase<PrefServiceSyncable>::TestingPrefServiceBase(
                               pref_registry->defaults(),
                               pref_notifier),
                           user_prefs,
-                          pref_registry,
+                          static_cast<PrefRegistrySyncable*>(pref_registry),
                           base::Bind(&HandleReadError),
                           false),
       managed_prefs_(managed_prefs),
@@ -88,24 +89,27 @@ PrefRegistrySimple* TestingPrefServiceSimple::registry() {
   return static_cast<PrefRegistrySimple*>(DeprecatedGetPrefRegistry());
 }
 
-// TODO(joi): Switch to PrefRegistrySyncable once available.
 TestingPrefServiceSyncable::TestingPrefServiceSyncable()
     : TestingPrefServiceBase<PrefServiceSyncable>(
         new TestingPrefStore(),
         new TestingPrefStore(),
         new TestingPrefStore(),
-        new PrefRegistrySimple(),
+        new PrefRegistrySyncable(),
         new PrefNotifierImpl()) {
 }
 
 TestingPrefServiceSyncable::~TestingPrefServiceSyncable() {
 }
 
+PrefRegistrySyncable* TestingPrefServiceSyncable::registry() {
+  return static_cast<PrefRegistrySyncable*>(DeprecatedGetPrefRegistry());
+}
+
 ScopedTestingLocalState::ScopedTestingLocalState(
     TestingBrowserProcess* browser_process)
     : browser_process_(browser_process) {
-  chrome::RegisterLocalState(static_cast<PrefRegistrySimple*>(
-      local_state_.DeprecatedGetPrefRegistry()), &local_state_);
+  chrome::RegisterLocalState(&local_state_,
+                             local_state_.registry());
   EXPECT_FALSE(browser_process->local_state());
   browser_process->SetLocalState(&local_state_);
 }

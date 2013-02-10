@@ -56,7 +56,9 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -444,9 +446,10 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   PrefServiceMockBuilder builder;
   builder.WithUserFilePrefs(
       pref_file, loop_.message_loop_proxy());
-  scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable());
-  Profile::RegisterUserPrefs(prefs.get());
-  chrome::RegisterUserPrefs(prefs.get());
+  scoped_refptr<PrefRegistrySyncable> registry(new PrefRegistrySyncable);
+  scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable(registry));
+  Profile::RegisterUserPrefs(registry);
+  chrome::RegisterUserPrefs(prefs.get(), registry);
   profile_builder.SetPrefService(prefs.Pass());
   profile_builder.SetPath(profile_path);
   profile_ = profile_builder.Build();

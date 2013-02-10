@@ -16,6 +16,8 @@
 using base::Time;
 using base::TimeDelta;
 
+class PrefServiceSyncable;
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // OffTheRecordProfileImpl is a profile subclass that wraps an existing profile
@@ -43,8 +45,8 @@ class OffTheRecordProfileImpl : public Profile {
   virtual policy::ManagedModePolicyProvider*
       GetManagedModePolicyProvider() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
-  virtual PrefServiceSyncable* GetPrefs() OVERRIDE;
-  virtual PrefServiceSyncable* GetOffTheRecordPrefs() OVERRIDE;
+  virtual PrefService* GetPrefs() OVERRIDE;
+  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(

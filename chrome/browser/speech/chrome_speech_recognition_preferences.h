@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "content/public/browser/speech_recognition_preferences.h"
 
+class PrefRegistrySyncable;
 class PrefService;
 
 namespace base {
@@ -70,7 +71,7 @@ class ChromeSpeechRecognitionPreferences
     // ProfileKeyedServiceFactory methods:
     virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile)
         const OVERRIDE;
-    virtual void RegisterUserPrefs(PrefServiceSyncable* prefs) OVERRIDE;
+    virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
     virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
     virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
     virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;

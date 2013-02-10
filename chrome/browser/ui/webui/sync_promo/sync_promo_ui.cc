@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -136,15 +137,15 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
 }
 
 // static
-void SyncPromoUI::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(prefs::kSyncPromoStartupCount, 0,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kSyncPromoUserSkipped, false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kSyncPromoShowOnFirstRunAllowed, true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void SyncPromoUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(prefs::kSyncPromoStartupCount, 0,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSyncPromoUserSkipped, false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSyncPromoShowOnFirstRunAllowed, true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  SyncPromoHandler::RegisterUserPrefs(prefs);
+  SyncPromoHandler::RegisterUserPrefs(registry);
 }
 
 // static

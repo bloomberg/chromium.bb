@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -22,7 +23,7 @@ AlternateErrorPageTabObserver::AlternateErrorPageTabObserver(
     WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
-  PrefServiceSyncable* prefs = profile_->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   if (prefs) {
     pref_change_registrar_.Init(prefs);
     pref_change_registrar_.Add(
@@ -41,9 +42,9 @@ AlternateErrorPageTabObserver::~AlternateErrorPageTabObserver() {
 
 // static
 void AlternateErrorPageTabObserver::RegisterUserPrefs(
-    PrefServiceSyncable* prefs) {
+    PrefRegistrySyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kAlternateErrorPagesEnabled, true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+                             PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

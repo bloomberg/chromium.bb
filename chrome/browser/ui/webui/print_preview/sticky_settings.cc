@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -58,9 +59,9 @@ void StickySettings::RestoreFromPrefs(PrefService* prefs) {
   }
 }
 
-void StickySettings::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kPrintPreviewStickySettings,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+void StickySettings::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kPrintPreviewStickySettings,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 std::string* StickySettings::printer_app_state() {

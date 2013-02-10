@@ -17,8 +17,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_registry_simple.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -315,11 +315,13 @@ void NotificationPromo::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void NotificationPromo::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+void NotificationPromo::RegisterUserPrefs(PrefService* prefs,
+                                          PrefRegistrySyncable* registry) {
   // TODO(dbeam): Remove in M28 when we're reasonably sure all prefs are gone.
   // http://crbug.com/168887
-  prefs->RegisterDictionaryPref(kPrefPromoObject,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+  // TODO(joi): Remove PrefService parameter; move this to migration code.
+  registry->RegisterDictionaryPref(kPrefPromoObject,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
   prefs->ClearPref(kPrefPromoObject);
 }
 

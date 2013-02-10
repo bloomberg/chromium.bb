@@ -52,22 +52,20 @@ class PrefRegistry : public base::RefCounted<PrefRegistry> {
   void SetUnregistrationCallback(const UnregistrationCallback& callback);
 
   // Unregisters a preference. This is going away soon.
-  virtual void DeprecatedUnregisterPreference(const char* path);
+  void DeprecatedUnregisterPreference(const char* path);
 
  protected:
   friend class base::RefCounted<PrefRegistry>;
   virtual ~PrefRegistry();
 
-  // TODO(joi): Temporary until we have PrefRegistrySyncable.
-  friend class PrefServiceSyncable;
-
   // Used by subclasses to register a default value for a preference.
   void RegisterPreference(const char* path, base::Value* default_value);
+
+  scoped_refptr<DefaultPrefStore> defaults_;
 
  private:
   RegistrationCallback registration_callback_;
   UnregistrationCallback unregistration_callback_;
-  scoped_refptr<DefaultPrefStore> defaults_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefRegistry);
 };

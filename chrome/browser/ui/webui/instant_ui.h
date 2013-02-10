@@ -7,7 +7,7 @@
 
 #include "content/public/browser/web_ui_controller.h"
 
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 namespace content {
 class BrowserContext;
@@ -20,7 +20,7 @@ class InstantUI : public content::WebUIController {
   // handlers.
   explicit InstantUI(content::WebUI* web_ui);
 
-  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstantUI);

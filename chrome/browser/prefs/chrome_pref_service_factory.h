@@ -17,6 +17,7 @@ class PolicyService;
 }
 
 class PrefRegistry;
+class PrefRegistrySyncable;
 class PrefService;
 class PrefServiceSyncable;
 class PrefStore;
@@ -51,6 +52,7 @@ PrefServiceSyncable* CreateProfilePrefs(
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     const scoped_refptr<PrefStore>& extension_prefs,
+    const scoped_refptr<PrefRegistrySyncable>& pref_registry,
     bool async);
 
 }  // namespace chrome_prefs

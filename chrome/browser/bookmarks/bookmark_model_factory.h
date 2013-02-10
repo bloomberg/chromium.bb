@@ -11,7 +11,7 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 class BookmarkModel;
 
@@ -34,7 +34,7 @@ class BookmarkModelFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

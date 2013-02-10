@@ -6,6 +6,7 @@
 
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/pref_registry_simple.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -19,19 +20,19 @@ void RegisterBrowserPrefs(PrefRegistrySimple* registry) {
                              first_run::FIRST_RUN_BUBBLE_DONT_SHOW);
 }
 
-void RegisterBrowserUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kHomePageChanged,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kShowHomeButton,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kExtensionsSideloadWipeoutBubbleShown,
-                             0,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+void RegisterBrowserUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kHomePageChanged,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kShowHomeButton,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kExtensionsSideloadWipeoutBubbleShown,
+                                0,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(OS_MACOSX)
   // This really belongs in platform code, but there's no good place to
   // initialize it between the time when the AppController is created
@@ -41,120 +42,120 @@ void RegisterBrowserUserPrefs(PrefServiceSyncable* prefs) {
   // late: we need the pref to be already initialized. Doing it here also saves
   // us from having to hard-code pref registration in the several unit tests
   // that use this preference.
-  prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-  prefs->RegisterBooleanPref(prefs::kDeleteBrowsingHistory,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteDownloadHistory,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteCache,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteCookies,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeletePasswords,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteFormData,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDeleteHostedAppsData,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod,
-                             0,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterInt64Pref(prefs::kLastClearBrowsingDataTime,
-                           0,
-                           PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDeleteBrowsingHistory,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDeleteDownloadHistory,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDeleteCache,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDeleteCookies,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDeletePasswords,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDeleteFormData,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDeleteHostedAppsData,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kDeleteTimePeriod,
+                                0,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterInt64Pref(prefs::kLastClearBrowsingDataTime,
+                              0,
+                              PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kCheckDefaultBrowser,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #if defined(OS_WIN)
   // As with Mac-spacific code above, it should be in a platform-specific
   // section somewhere, but there is no good place for it.
-  prefs->RegisterBooleanPref(prefs::kSuppressSwitchToMetroModeOnSetDefault,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSuppressSwitchToMetroModeOnSetDefault,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-  prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableTranslate,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kCloudPrintEmail,
-                            std::string(),
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kCloudPrintSubmitEnabled,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDevToolsDisabled,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDevToolsHSplitLocation,
-                             -1,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDevToolsVSplitLocation,
-                             -1,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportBookmarks,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportHistory,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportHomepage,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportSearchEngine,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kImportSavedPasswords,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableDoNotTrack,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kShowOmniboxSearchHint,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kEnableTranslate,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kCloudPrintEmail,
+                               std::string(),
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kCloudPrintProxyEnabled,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kCloudPrintSubmitEnabled,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDevToolsDisabled,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kDevToolsHSplitLocation,
+                                -1,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kDevToolsVSplitLocation,
+                                -1,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kBrowserWindowPlacement,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kImportBookmarks,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kImportHistory,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kImportHomepage,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kImportSearchEngine,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kImportSavedPasswords,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kEnableDoNotTrack,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 
   // Dictionaries to keep track of default tasks in the file browser.
-  prefs->RegisterDictionaryPref(prefs::kDefaultTasksByMimeType,
-                                PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kDefaultTasksBySuffix,
-                                PrefServiceSyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kDefaultTasksByMimeType,
+                                   PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kDefaultTasksBySuffix,
+                                   PrefRegistrySyncable::SYNCABLE_PREF);
 
   // We need to register the type of these preferences in order to query
   // them even though they're only typically controlled via policy.
-  prefs->RegisterBooleanPref(prefs::kPluginsAllowOutdated,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPluginsAllowOutdated,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void RegisterAppPrefs(const std::string& app_name, Profile* profile) {
@@ -165,13 +166,13 @@ void RegisterAppPrefs(const std::string& app_name, Profile* profile) {
   std::string window_pref(prefs::kBrowserWindowPlacement);
   window_pref.append("_");
   window_pref.append(app_name);
-  PrefServiceSyncable* prefs = profile->GetPrefs();
+  PrefService* prefs = profile->GetPrefs();
   if (!prefs->FindPreference(window_pref.c_str())) {
-    // TODO(joi): Switch to official way of registering local prefs
-    // for this class, i.e. in a function called from
-    // browser_prefs::RegisterUserPrefs.
-    prefs->RegisterDictionaryPref(window_pref.c_str(),
-                                  PrefServiceSyncable::UNSYNCABLE_PREF);
+    // TODO(joi): Do all registration up front.
+    scoped_refptr<PrefRegistrySyncable> registry(
+        static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
+    registry->RegisterDictionaryPref(window_pref.c_str(),
+                                     PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 }
 

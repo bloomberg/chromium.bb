@@ -15,7 +15,8 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
+class PrefService;
 class ProfileIOData;
 
 namespace browser_sync {
@@ -49,11 +50,12 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // |pref_service| may be NULL (for unit tests), but in that case no
   // setter methods should be called.  Does not take ownership of
   // |pref_service|.
-  explicit SyncPrefs(PrefServiceSyncable* pref_service);
+  explicit SyncPrefs(PrefService* pref_service);
 
   virtual ~SyncPrefs();
 
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefService* prefs,
+                                PrefRegistrySyncable* registry);
 
   // Checks if sync is enabled for the profile that owns |io_data|. This must
   // be invoked on the IO thread, and can be used to check if sync is enabled
@@ -131,7 +133,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void RegisterPrefGroups();
 
   static void RegisterDataTypePreferredPref(
-      PrefServiceSyncable* prefs, syncer::ModelType type, bool is_preferred);
+      PrefRegistrySyncable* prefs, syncer::ModelType type, bool is_preferred);
   bool GetDataTypePreferred(syncer::ModelType type) const;
   void SetDataTypePreferred(syncer::ModelType type, bool is_preferred);
 
@@ -144,7 +146,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void OnSyncManagedPrefChanged();
 
   // May be NULL.
-  PrefServiceSyncable* const pref_service_;
+  PrefService* const pref_service_;
 
   ObserverList<SyncPrefObserver> sync_pref_observers_;
 

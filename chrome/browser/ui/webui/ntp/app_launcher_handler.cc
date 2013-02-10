@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -776,9 +777,9 @@ void AppLauncherHandler::OnPreferenceChanged() {
 }
 
 // static
-void AppLauncherHandler::RegisterUserPrefs(PrefServiceSyncable* pref_service) {
-  pref_service->RegisterListPref(prefs::kNtpAppPageNames,
-                                 PrefServiceSyncable::SYNCABLE_PREF);
+void AppLauncherHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kNtpAppPageNames,
+                             PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void AppLauncherHandler::CleanupAfterUninstall() {

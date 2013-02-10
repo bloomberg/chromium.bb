@@ -39,6 +39,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
@@ -559,11 +560,11 @@ void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
   testing_prefs_ = new TestingPrefServiceSyncable();
   prefs_.reset(testing_prefs_);
-  Profile::RegisterUserPrefs(prefs_.get());
-  chrome::RegisterUserPrefs(prefs_.get());
+  Profile::RegisterUserPrefs(testing_prefs_->registry());
+  chrome::RegisterUserPrefs(testing_prefs_, testing_prefs_->registry());
 }
 
-PrefServiceSyncable* TestingProfile::GetPrefs() {
+PrefService* TestingProfile::GetPrefs() {
   if (!prefs_.get()) {
     CreateTestingPrefService();
   }
@@ -769,7 +770,7 @@ GURL TestingProfile::GetHomePage() {
   return GURL(chrome::kChromeUINewTabURL);
 }
 
-PrefServiceSyncable* TestingProfile::GetOffTheRecordPrefs() {
+PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return NULL;
 }
 

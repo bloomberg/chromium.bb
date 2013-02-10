@@ -26,7 +26,7 @@ class ContentSettingsPattern;
 class Notification;
 class NotificationDelegate;
 class NotificationUIManager;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 
 namespace content {
@@ -49,7 +49,7 @@ class DesktopNotificationService : public content::NotificationObserver,
   };
 
   // Register profile-specific prefs of notifications.
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* prefs);
 
   DesktopNotificationService(Profile* profile,
                              NotificationUIManager* ui_manager);

@@ -26,7 +26,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -137,7 +138,10 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       profile_(profile),
       // |profile| may be NULL in unit tests.
       sync_prefs_(profile_ ? profile_->GetPrefs() : NULL),
-      invalidator_storage_(profile_ ? profile_->GetPrefs(): NULL),
+      invalidator_storage_(
+          profile_ ? profile_->GetPrefs(): NULL,
+          profile_ ? static_cast<PrefRegistrySyncable*>(
+              profile_->GetPrefs()->DeprecatedGetPrefRegistry()) : NULL),
       sync_service_url_(kDevServerUrl),
       is_first_time_sync_configure_(false),
       backend_initialized_(false),

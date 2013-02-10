@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -98,14 +99,14 @@ bool ManagedUserService::ProfileIsManaged() const {
 }
 
 // static
-void ManagedUserService::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kManagedModeManualHosts,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kManagedModeManualURLs,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDefaultManagedModeFilteringBehavior,
-                             ManagedModeURLFilter::BLOCK,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void ManagedUserService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kManagedModeManualHosts,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kManagedModeManualURLs,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kDefaultManagedModeFilteringBehavior,
+                                ManagedModeURLFilter::BLOCK,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 scoped_refptr<const ManagedModeURLFilter>

@@ -4,6 +4,7 @@
 
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/prefs/mock_pref_change_callback.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,8 +20,9 @@ class ScopedUserPrefUpdateTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    prefs_.RegisterDictionaryPref(kPref,
-                                  PrefServiceSyncable::UNSYNCABLE_PREF);
+    prefs_.registry()->RegisterDictionaryPref(
+        kPref,
+        PrefRegistrySyncable::UNSYNCABLE_PREF);
     registrar_.Init(&prefs_);
     registrar_.Add(kPref, observer_.GetCallback());
   }

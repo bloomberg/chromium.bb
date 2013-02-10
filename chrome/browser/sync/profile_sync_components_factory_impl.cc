@@ -13,7 +13,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -285,7 +285,8 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
   }
   switch (type) {
     case syncer::PREFERENCES:
-      return profile_->GetPrefs()->GetSyncableService()->AsWeakPtr();
+      return PrefServiceSyncable::FromProfile(
+          profile_)->GetSyncableService()->AsWeakPtr();
     case syncer::AUTOFILL:
     case syncer::AUTOFILL_PROFILE: {
       if (!web_data_service_.get())

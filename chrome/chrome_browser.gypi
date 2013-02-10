@@ -1502,6 +1502,8 @@
         'browser/prefs/pref_registry.h',
         'browser/prefs/pref_registry_simple.cc',
         'browser/prefs/pref_registry_simple.h',
+        'browser/prefs/pref_registry_syncable.cc',
+        'browser/prefs/pref_registry_syncable.h',
         'browser/prefs/pref_service.cc',
         'browser/prefs/pref_service.h',
         'browser/prefs/pref_service_builder.cc',

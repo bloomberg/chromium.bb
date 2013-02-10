@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class GoogleURLTracker;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 
 // Singleton that owns all GoogleURLTrackers and associates them with Profiles.
@@ -31,7 +31,7 @@ class GoogleURLTrackerFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;

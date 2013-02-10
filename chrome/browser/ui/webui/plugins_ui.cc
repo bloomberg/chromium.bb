@@ -23,6 +23,7 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -490,10 +491,10 @@ base::RefCountedMemory* PluginsUI::GetFaviconResourceBytes(
 }
 
 // static
-void PluginsUI::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kPluginsShowDetails,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kContentSettingsPluginWhitelist,
-                                PrefServiceSyncable::SYNCABLE_PREF);
+void PluginsUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kPluginsShowDetails,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kContentSettingsPluginWhitelist,
+                                   PrefRegistrySyncable::SYNCABLE_PREF);
 }

@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -123,9 +124,10 @@ class ProfileSyncServicePreferenceTest
     profile_->CreateRequestContext();
     prefs_ = profile_->GetTestingPrefService();
 
-    prefs_->RegisterStringPref(not_synced_preference_name_.c_str(),
-                               not_synced_preference_default_value_,
-                               PrefServiceSyncable::UNSYNCABLE_PREF);
+    prefs_->registry()->RegisterStringPref(
+        not_synced_preference_name_.c_str(),
+        not_synced_preference_default_value_,
+        PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
   virtual void TearDown() {

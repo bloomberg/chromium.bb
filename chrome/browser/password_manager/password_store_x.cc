@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_change.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -270,11 +271,12 @@ ssize_t PasswordStoreX::MigrateLogins() {
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // static
-void PasswordStoreX::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+void PasswordStoreX::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   // Normally we should be on the UI thread here, but in tests we might not.
-  prefs->RegisterBooleanPref(prefs::kPasswordsUseLocalProfileId,
-                             false,  // default: passwords don't use local ids
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPasswordsUseLocalProfileId,
+                                // default: passwords don't use local ids
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

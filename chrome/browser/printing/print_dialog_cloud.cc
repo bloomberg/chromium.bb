@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -531,22 +532,25 @@ void GetDialogWidthAndHeightFromPrefs(content::BrowserContext* browser_context,
     return;
   }
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (!profile->GetPrefs()->FindPreference(prefs::kCloudPrintDialogWidth)) {
-    profile->GetPrefs()->RegisterIntegerPref(
+  // TODO(joi): Do registration up front.
+  PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
+  scoped_refptr<PrefRegistrySyncable> registry(
+      static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
+  if (!prefs->FindPreference(prefs::kCloudPrintDialogWidth)) {
+    registry->RegisterIntegerPref(
         prefs::kCloudPrintDialogWidth,
         kDefaultWidth,
-        PrefServiceSyncable::UNSYNCABLE_PREF);
+        PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
-  if (!profile->GetPrefs()->FindPreference(prefs::kCloudPrintDialogHeight)) {
-    profile->GetPrefs()->RegisterIntegerPref(
+  if (!prefs->FindPreference(prefs::kCloudPrintDialogHeight)) {
+    registry->RegisterIntegerPref(
         prefs::kCloudPrintDialogHeight,
         kDefaultHeight,
-        PrefServiceSyncable::UNSYNCABLE_PREF);
+        PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
-  *width = profile->GetPrefs()->GetInteger(prefs::kCloudPrintDialogWidth);
-  *height = profile->GetPrefs()->GetInteger(prefs::kCloudPrintDialogHeight);
+  *width = prefs->GetInteger(prefs::kCloudPrintDialogWidth);
+  *height = prefs->GetInteger(prefs::kCloudPrintDialogHeight);
 }
 
 void CloudPrintWebDialogDelegate::Init(content::BrowserContext* browser_context,

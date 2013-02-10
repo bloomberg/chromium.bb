@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class GAIAInfoUpdateService;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 
 // Singleton that owns all GAIAInfoUpdateServices and associates them with
@@ -35,7 +35,7 @@ class GAIAInfoUpdateServiceFactory : public ProfileKeyedServiceFactory {
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
 
-  virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(GAIAInfoUpdateServiceFactory);

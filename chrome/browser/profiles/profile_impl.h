@@ -20,8 +20,10 @@
 #include "content/public/browser/host_zoom_map.h"
 
 class NetPrefObserver;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
+class PrefService;
 class PrefServiceBase;
+class PrefServiceSyncable;
 class SSLConfigServiceManager;
 
 #if defined(OS_CHROMEOS)
@@ -56,7 +58,7 @@ class ProfileImpl : public Profile {
 
   virtual ~ProfileImpl();
 
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // content::BrowserContext implementation:
   virtual base::FilePath GetPath() OVERRIDE;
@@ -95,8 +97,8 @@ class ProfileImpl : public Profile {
   virtual policy::ManagedModePolicyProvider*
       GetManagedModePolicyProvider() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
-  virtual PrefServiceSyncable* GetPrefs() OVERRIDE;
-  virtual PrefServiceSyncable* GetOffTheRecordPrefs() OVERRIDE;
+  virtual PrefService* GetPrefs() OVERRIDE;
+  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
@@ -231,6 +233,7 @@ class ProfileImpl : public Profile {
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
   // |net_pref_observer_|, |io_data_| an others store pointers to |prefs_| and
   // shall be destructed first.
+  scoped_refptr<PrefRegistrySyncable> pref_registry_;
   scoped_ptr<PrefServiceSyncable> prefs_;
   scoped_ptr<PrefServiceSyncable> otr_prefs_;
   ProfileImplIOData::Handle io_data_;

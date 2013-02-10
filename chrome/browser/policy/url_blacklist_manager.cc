@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -359,11 +360,11 @@ bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
 }
 
 // static
-void URLBlacklistManager::RegisterUserPrefs(PrefServiceSyncable* pref_service) {
-  pref_service->RegisterListPref(prefs::kUrlBlacklist,
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
-  pref_service->RegisterListPref(prefs::kUrlWhitelist,
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
+void URLBlacklistManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kUrlBlacklist,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kUrlWhitelist,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace policy

@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_registry.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_syncable_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -121,6 +122,7 @@ PrefServiceSyncable* CreateProfilePrefs(
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     const scoped_refptr<PrefStore>& extension_prefs,
+    const scoped_refptr<PrefRegistrySyncable>& pref_registry,
     bool async) {
   PrefServiceSyncableBuilder builder;
   PrepareBuilder(&builder,
@@ -129,7 +131,7 @@ PrefServiceSyncable* CreateProfilePrefs(
                  policy_service,
                  extension_prefs,
                  async);
-  return builder.CreateSyncable();
+  return builder.CreateSyncable(pref_registry);
 }
 
 }  // namespace chrome_prefs

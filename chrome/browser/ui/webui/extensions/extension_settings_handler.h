@@ -28,7 +28,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class ExtensionService;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 namespace base {
 class DictionaryValue;
@@ -75,7 +75,7 @@ class ExtensionSettingsHandler
   ExtensionSettingsHandler();
   virtual ~ExtensionSettingsHandler();
 
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Extension Detail JSON Struct for page. |pages| is injected for unit
   // testing.

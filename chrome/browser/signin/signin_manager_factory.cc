@@ -5,7 +5,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 
 #include "chrome/browser/prefs/pref_registry_simple.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -38,18 +38,18 @@ SigninManagerFactory* SigninManagerFactory::GetInstance() {
   return Singleton<SigninManagerFactory>::get();
 }
 
-void SigninManagerFactory::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
-  user_prefs->RegisterStringPref(prefs::kGoogleServicesLastUsername, "",
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername, "",
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled, true,
-                                  PrefServiceSyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kReverseAutologinEnabled, true,
-                                  PrefServiceSyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterListPref(prefs::kReverseAutologinRejectedEmailList,
-                               new ListValue,
-                               PrefServiceSyncable::UNSYNCABLE_PREF);
+void SigninManagerFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(prefs::kGoogleServicesLastUsername, "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kGoogleServicesUsername, "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAutologinEnabled, true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kReverseAutologinEnabled, true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList,
+                             new ListValue,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

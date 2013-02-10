@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/prefs/pref_registry_simple.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
@@ -588,11 +589,10 @@ void ProxyConfigServiceImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void ProxyConfigServiceImpl::RegisterUserPrefs(
-    PrefServiceSyncable* pref_service) {
-  pref_service->RegisterBooleanPref(prefs::kUseSharedProxies,
-                                    true,
-                                    PrefServiceSyncable::UNSYNCABLE_PREF);
+void ProxyConfigServiceImpl::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kUseSharedProxies,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 //------------------ ProxyConfigServiceImpl: private methods -------------------

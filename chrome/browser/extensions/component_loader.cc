@@ -12,6 +12,7 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -437,13 +438,13 @@ void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
 }
 
 // static
-void ComponentLoader::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterStringPref(prefs::kEnterpriseWebStoreURL,
-                            std::string() /* default_value */,
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kEnterpriseWebStoreName,
-                            std::string() /* default_value */,
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
+void ComponentLoader::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(prefs::kEnterpriseWebStoreURL,
+                               std::string() /* default_value */,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kEnterpriseWebStoreName,
+                               std::string() /* default_value */,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace extensions

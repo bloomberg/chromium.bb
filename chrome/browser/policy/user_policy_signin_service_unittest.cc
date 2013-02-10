@@ -91,7 +91,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     g_browser_process->browser_policy_connector()->Init();
 
     local_state_.reset(new TestingPrefServiceSimple);
-    chrome::RegisterLocalState(local_state_->registry(), local_state_.get());
+    chrome::RegisterLocalState(local_state_.get(), local_state_->registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(
         local_state_.get());
 
@@ -99,8 +99,8 @@ class UserPolicySigninServiceTest : public testing::Test {
     // up a UserCloudPolicyManager with a MockUserCloudPolicyStore.
     scoped_ptr<TestingPrefServiceSyncable> prefs(
         new TestingPrefServiceSyncable());
-    Profile::RegisterUserPrefs(prefs.get());
-    chrome::RegisterUserPrefs(prefs.get());
+    Profile::RegisterUserPrefs(prefs->registry());
+    chrome::RegisterUserPrefs(prefs.get(), prefs->registry());
     TestingProfile::Builder builder;
     builder.SetPrefService(scoped_ptr<PrefServiceSyncable>(prefs.Pass()));
     profile_ = builder.Build().Pass();

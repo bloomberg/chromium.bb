@@ -5,11 +5,12 @@
 #include "chrome/browser/password_manager/password_manager.h"
 
 #include "base/metrics/histogram.h"
-#include "base/threading/platform_thread.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/autofill_messages.h"
@@ -57,13 +58,13 @@ void ReportMetrics(bool password_manager_enabled) {
 }  // anonymous namespace
 
 // static
-void PasswordManager::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kPasswordManagerEnabled,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void PasswordManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kPasswordManagerEnabled,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"

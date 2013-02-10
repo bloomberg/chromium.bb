@@ -813,7 +813,7 @@ void BrowserProcessImpl::CreateLocalState() {
   // TODO(joi): Once we clean up so none of the registration methods
   // need the PrefService pointer, this should happen before the call
   // to CreateLocalState.
-  chrome::RegisterLocalState(pref_registry, local_state_.get());
+  chrome::RegisterLocalState(local_state_.get(), pref_registry);
 
   pref_change_registrar_.Init(local_state_.get());
 

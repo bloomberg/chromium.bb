@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -65,10 +66,10 @@ CookieSettings::Factory::Factory()
 CookieSettings::Factory::~Factory() {}
 
 void CookieSettings::Factory::RegisterUserPrefs(
-    PrefServiceSyncable* user_prefs) {
-  user_prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies,
-                                  false,
-                                  PrefServiceSyncable::SYNCABLE_PREF);
+    PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kBlockThirdPartyCookies,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 bool CookieSettings::Factory::ServiceRedirectedInIncognito() const {

@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 namespace policy {
 
@@ -34,7 +34,7 @@ class UserPolicySigninServiceFactory : public ProfileKeyedServiceFactory {
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
 
   // Register the preferences related to cloud-based user policy.
-  virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<UserPolicySigninServiceFactory>;

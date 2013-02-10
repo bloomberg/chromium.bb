@@ -23,6 +23,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/intents/web_intents_util.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -130,19 +131,21 @@ void HostContentSettingsMap::RegisterExtensionService(
 #endif
 
 // static
-void HostContentSettingsMap::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex,
-                             0,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kContentSettingsDefaultWhitelistVersion,
-                             0, PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kContentSettingsClearOnExitMigrated,
-                             false, PrefServiceSyncable::SYNCABLE_PREF);
+void HostContentSettingsMap::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex,
+                                0,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kContentSettingsDefaultWhitelistVersion,
+                                0,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kContentSettingsClearOnExitMigrated,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 
   // Register the prefs for the content settings providers.
-  content_settings::DefaultProvider::RegisterUserPrefs(prefs);
-  content_settings::PrefProvider::RegisterUserPrefs(prefs);
-  content_settings::PolicyProvider::RegisterUserPrefs(prefs);
+  content_settings::DefaultProvider::RegisterUserPrefs(registry);
+  content_settings::PrefProvider::RegisterUserPrefs(registry);
+  content_settings::PolicyProvider::RegisterUserPrefs(registry);
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(

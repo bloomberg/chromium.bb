@@ -15,6 +15,7 @@
 #include "sync/api/sync_data.h"
 #include "sync/api/syncable_service.h"
 
+class PrefRegistrySyncable;
 class PrefServiceSyncable;
 
 namespace sync_pb {

@@ -5,6 +5,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 
@@ -148,24 +149,25 @@ bool TranslatePrefs::ShouldAutoTranslate(PrefService* user_prefs,
   return prefs.IsLanguageWhitelisted(original_language, target_language);
 }
 
-void TranslatePrefs::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
-  if (!user_prefs->FindPreference(kPrefTranslateLanguageBlacklist))
-    user_prefs->RegisterListPref(kPrefTranslateLanguageBlacklist,
-                                 PrefServiceSyncable::SYNCABLE_PREF);
-  if (!user_prefs->FindPreference(kPrefTranslateSiteBlacklist))
-    user_prefs->RegisterListPref(kPrefTranslateSiteBlacklist,
-                                 PrefServiceSyncable::SYNCABLE_PREF);
-  if (!user_prefs->FindPreference(kPrefTranslateWhitelists)) {
-    user_prefs->RegisterDictionaryPref(kPrefTranslateWhitelists,
-                                       PrefServiceSyncable::SYNCABLE_PREF);
-    MigrateTranslateWhitelists(user_prefs);
+void TranslatePrefs::RegisterUserPrefs(PrefService* prefs,
+                                       PrefRegistrySyncable* registry) {
+  if (!prefs->FindPreference(kPrefTranslateLanguageBlacklist))
+    registry->RegisterListPref(kPrefTranslateLanguageBlacklist,
+                               PrefRegistrySyncable::SYNCABLE_PREF);
+  if (!prefs->FindPreference(kPrefTranslateSiteBlacklist))
+    registry->RegisterListPref(kPrefTranslateSiteBlacklist,
+                               PrefRegistrySyncable::SYNCABLE_PREF);
+  if (!prefs->FindPreference(kPrefTranslateWhitelists)) {
+    registry->RegisterDictionaryPref(kPrefTranslateWhitelists,
+                                     PrefRegistrySyncable::SYNCABLE_PREF);
+    MigrateTranslateWhitelists(prefs);
   }
-  if (!user_prefs->FindPreference(kPrefTranslateDeniedCount))
-    user_prefs->RegisterDictionaryPref(kPrefTranslateDeniedCount,
-                                       PrefServiceSyncable::SYNCABLE_PREF);
-  if (!user_prefs->FindPreference(kPrefTranslateAcceptedCount))
-    user_prefs->RegisterDictionaryPref(kPrefTranslateAcceptedCount,
-                                       PrefServiceSyncable::SYNCABLE_PREF);
+  if (!prefs->FindPreference(kPrefTranslateDeniedCount))
+    registry->RegisterDictionaryPref(kPrefTranslateDeniedCount,
+                                     PrefRegistrySyncable::SYNCABLE_PREF);
+  if (!prefs->FindPreference(kPrefTranslateAcceptedCount))
+    registry->RegisterDictionaryPref(kPrefTranslateAcceptedCount,
+                                     PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 // TranslatePrefs: private, static: --------------------------------------------

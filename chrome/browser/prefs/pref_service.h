@@ -183,7 +183,8 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   void AddRegisteredPreference(const char* path,
                                base::Value* default_value);
 
-  void RemoveRegisteredPreference(const char* path);
+  // Updates local caches for a preference unregistered at |path|.
+  virtual void RemoveRegisteredPreference(const char* path);
 
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for
@@ -254,10 +255,5 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };
-
-// TODO(joi): Remove these forwards. They were placed here temporarily
-// to limit the size of the initial change that split
-// PrefServiceSimple and PrefServiceSyncable out of PrefService.
-#include "chrome/browser/prefs/pref_service_syncable.h"
 
 #endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_H_

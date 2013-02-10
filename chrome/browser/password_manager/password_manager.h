@@ -21,7 +21,7 @@
 class PasswordManagerDelegate;
 class PasswordManagerTest;
 class PasswordFormManager;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
@@ -31,7 +31,7 @@ class PasswordManager : public LoginModel,
                         public content::WebContentsObserver,
                         public content::WebContentsUserData<PasswordManager> {
  public:
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   static void CreateForWebContentsAndDelegate(
       content::WebContents* contents,

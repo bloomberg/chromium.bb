@@ -16,7 +16,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sync/glue/device_info.h"
@@ -95,15 +96,17 @@ SessionModelAssociator::SessionModelAssociator(ProfileSyncService* sync_service,
       waiting_for_change_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(test_weak_factory_(this)),
       profile_(sync_service->profile()),
-      pref_service_(profile_->GetPrefs()),
+      pref_service_(PrefServiceSyncable::FromProfile(profile_)),
       error_handler_(error_handler) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_service_);
   DCHECK(profile_);
   if (pref_service_->FindPreference(kSyncSessionsGUID) == NULL) {
-    pref_service_->RegisterStringPref(kSyncSessionsGUID,
-                                      std::string(),
-                                      PrefServiceSyncable::UNSYNCABLE_PREF);
+    static_cast<PrefRegistrySyncable*>(
+        pref_service_->DeprecatedGetPrefRegistry())->RegisterStringPref(
+            kSyncSessionsGUID,
+            std::string(),
+            PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 }
 

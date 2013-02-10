@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -59,9 +60,9 @@ const char kQuickOfficeViewerServiceURL[] =
 const char kQuickOfficeViewerDevServiceURL[] =
     "chrome-extension://ionpfmkccalenbmnddpbmocokhaknphg/views/appEditor.html";
 
-void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
-  user_prefs->RegisterBooleanPref(prefs::kWebIntentsEnabled, true,
-                                  PrefServiceSyncable::SYNCABLE_PREF);
+void RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kWebIntentsEnabled, true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 bool IsWebIntentsEnabled(PrefService* prefs) {

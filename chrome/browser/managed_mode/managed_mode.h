@@ -25,7 +25,7 @@ class ManagedModeSiteList;
 class ManagedModeURLFilter;
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 
 namespace policy {

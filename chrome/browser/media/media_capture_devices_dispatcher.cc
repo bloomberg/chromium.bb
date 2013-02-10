@@ -5,6 +5,8 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 
 #include "chrome/browser/media/media_stream_capture_indicator.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -47,16 +49,18 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
 
 void MediaCaptureDevicesDispatcher::RegisterUserPrefs(
-    PrefServiceSyncable* user_prefs) {
+    PrefService* user_prefs,
+    PrefRegistrySyncable* registry) {
+  // TODO(joi): Get rid of the need for PrefService param above.
   if (!user_prefs->FindPreference(prefs::kDefaultAudioCaptureDevice)) {
-    user_prefs->RegisterStringPref(prefs::kDefaultAudioCaptureDevice,
-                                   std::string(),
-                                   PrefServiceSyncable::UNSYNCABLE_PREF);
+    registry->RegisterStringPref(prefs::kDefaultAudioCaptureDevice,
+                                 std::string(),
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
   if (!user_prefs->FindPreference(prefs::kDefaultVideoCaptureDevice)) {
-    user_prefs->RegisterStringPref(prefs::kDefaultVideoCaptureDevice,
-                                   std::string(),
-                                   PrefServiceSyncable::UNSYNCABLE_PREF);
+    registry->RegisterStringPref(prefs::kDefaultVideoCaptureDevice,
+                                 std::string(),
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 }
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -71,13 +72,13 @@ namespace content_settings {
 //
 
 // static
-void PrefProvider::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(
+void PrefProvider::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
       prefs::kContentSettingsVersion,
       ContentSettingsPattern::kContentSettingsPatternVersion,
-      PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kContentSettingsPatternPairs,
-                                PrefServiceSyncable::SYNCABLE_PREF);
+      PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kContentSettingsPatternPairs,
+                                   PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 PrefProvider::PrefProvider(PrefService* prefs,

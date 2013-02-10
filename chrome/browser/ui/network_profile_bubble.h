@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 
 class Browser;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 
 namespace base {
@@ -58,7 +58,7 @@ class NetworkProfileBubble {
   static void SetNotificationShown(bool shown);
 
   // Register the pref that controls whether the bubble should be shown anymore.
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Helper function wrapping the UMA_HISTOGRAM_ENUMERATION macro.
   static void RecordUmaEvent(MetricNetworkedProfileCheck event);

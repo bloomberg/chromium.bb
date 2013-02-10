@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -75,13 +76,13 @@ SyncPromoHandler::~SyncPromoHandler() {
 }
 
 // static
-void SyncPromoHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(prefs::kSyncPromoViewCount, 0,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kSyncPromoShowNTPBubble, false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kSyncPromoErrorMessage, std::string(),
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
+void SyncPromoHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(prefs::kSyncPromoViewCount, 0,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSyncPromoShowNTPBubble, false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kSyncPromoErrorMessage, std::string(),
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void SyncPromoHandler::RegisterMessages() {

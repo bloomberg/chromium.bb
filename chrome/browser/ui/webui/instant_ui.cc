@@ -8,6 +8,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -149,7 +150,7 @@ InstantUI::InstantUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-void InstantUI::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
-  user_prefs->RegisterStringPref(prefs::kInstantUIZeroSuggestUrlPrefix, "",
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
+void InstantUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(prefs::kInstantUIZeroSuggestUrlPrefix, "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }

@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,15 +54,15 @@ void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
 }  // namespace
 
 // static
-void SessionStartupPref::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(prefs::kRestoreOnStartup,
-                             TypeToPrefValue(GetDefaultStartupType()),
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kURLsToRestoreOnStartup,
-                          PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kRestoreOnStartupMigrated,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void SessionStartupPref::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(prefs::kRestoreOnStartup,
+                                TypeToPrefValue(GetDefaultStartupType()),
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kURLsToRestoreOnStartup,
+                             PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kRestoreOnStartupMigrated,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

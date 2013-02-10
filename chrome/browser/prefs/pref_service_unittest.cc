@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/mock_pref_change_callback.h"
 #include "chrome/browser/prefs/pref_registry_simple.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -322,25 +323,26 @@ TEST_F(PrefServiceUserFilePrefsTest, PreserveEmptyValue) {
 
   PrefServiceMockBuilder builder;
   builder.WithUserFilePrefs(pref_file, message_loop_.message_loop_proxy());
-  scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable());
+  scoped_refptr<PrefRegistrySyncable> registry(new PrefRegistrySyncable);
+  scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable(registry));
 
   // Register testing prefs.
-  prefs->RegisterListPref("list",
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref("dict",
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref("list",
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref("dict",
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   base::ListValue* non_empty_list = new base::ListValue;
   non_empty_list->Append(base::Value::CreateStringValue("test"));
-  prefs->RegisterListPref("list_needs_empty_value",
-                          non_empty_list,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref("list_needs_empty_value",
+                             non_empty_list,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   base::DictionaryValue* non_empty_dict = new base::DictionaryValue;
   non_empty_dict->SetString("dummy", "whatever");
-  prefs->RegisterDictionaryPref("dict_needs_empty_value",
-                                non_empty_dict,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref("dict_needs_empty_value",
+                                   non_empty_dict,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Set all testing prefs to empty.
   ClearListValue(prefs.get(), "list");

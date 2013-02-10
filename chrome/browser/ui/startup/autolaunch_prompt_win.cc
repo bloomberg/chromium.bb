@@ -11,6 +11,7 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -197,9 +198,9 @@ bool ShowAutolaunchPrompt(Browser* browser) {
   return true;
 }
 
-void RegisterAutolaunchUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(
-      prefs::kShownAutoLaunchInfobar, 0, PrefServiceSyncable::UNSYNCABLE_PREF);
+void RegisterAutolaunchUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kShownAutoLaunchInfobar, 0, PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace chrome

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_registry_simple.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -203,11 +204,11 @@ void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 void PrefProxyConfigTrackerImpl::RegisterUserPrefs(
-    PrefServiceSyncable* pref_service) {
+    PrefRegistrySyncable* pref_service) {
   DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
   pref_service->RegisterDictionaryPref(prefs::kProxy,
                                        default_settings,
-                                       PrefServiceSyncable::UNSYNCABLE_PREF);
+                                       PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::GetProxyConfig(

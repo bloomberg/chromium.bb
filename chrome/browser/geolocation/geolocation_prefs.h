@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PREFS_H_
 
 class PrefRegistrySimple;
-class PrefServiceSyncable;
 
 namespace geolocation {
 void RegisterPrefs(PrefRegistrySimple* registry);

@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -46,10 +47,10 @@ const int kItemSpacing = ToolbarView::kStandardSpacing;
 // Horizontal spacing before the chevron (if visible).
 const int kChevronSpacing = kItemSpacing - 2;
 
-void RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(prefs::kBrowserActionContainerWidth,
-                             0,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(prefs::kBrowserActionContainerWidth,
+                                0,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace
@@ -123,7 +124,8 @@ void BrowserActionsContainer::Init() {
   // browser_prefs::RegisterUserPrefs.
   if (!profile_->GetPrefs()->FindPreference(
           prefs::kBrowserActionContainerWidth))
-    RegisterUserPrefs(profile_->GetPrefs());
+    RegisterUserPrefs(static_cast<PrefRegistrySyncable*>(
+        profile_->GetPrefs()->DeprecatedGetPrefRegistry()));
 
   // We wait to set the container width until now so that the chevron images
   // will be loaded.  The width calculation needs to know the chevron size.

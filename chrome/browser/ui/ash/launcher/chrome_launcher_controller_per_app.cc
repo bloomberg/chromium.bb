@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -247,7 +247,7 @@ ChromeLauncherControllerPerApp::~ChromeLauncherControllerPerApp() {
   if (app_sync_ui_state_)
     app_sync_ui_state_->RemoveObserver(this);
 
-  profile_->GetPrefs()->RemoveObserver(this);
+  PrefServiceSyncable::FromProfile(profile_)->RemoveObserver(this);
 }
 
 void ChromeLauncherControllerPerApp::Init() {
@@ -257,7 +257,7 @@ void ChromeLauncherControllerPerApp::Init() {
   if (ash::Shell::HasInstance()) {
     SetShelfAutoHideBehaviorFromPrefs();
     SetShelfAlignmentFromPrefs();
-    PrefServiceSyncable* prefs = profile_->GetPrefs();
+    PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
     if (!prefs->FindPreference(prefs::kShelfAlignmentLocal)->HasUserSetting() ||
         !prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal)->
             HasUserSetting()) {
@@ -964,10 +964,11 @@ void ChromeLauncherControllerPerApp::OnShelfAlignmentChanged(
 }
 
 void ChromeLauncherControllerPerApp::OnIsSyncingChanged() {
-  MaybePropagatePrefToLocal(profile_->GetPrefs(),
+  PrefServiceSyncable* prefs = PrefServiceSyncable::FromProfile(profile_);
+  MaybePropagatePrefToLocal(prefs,
                             prefs::kShelfAlignmentLocal,
                             prefs::kShelfAlignment);
-  MaybePropagatePrefToLocal(profile_->GetPrefs(),
+  MaybePropagatePrefToLocal(prefs,
                             prefs::kShelfAutoHideBehaviorLocal,
                             prefs::kShelfAutoHideBehavior);
 }

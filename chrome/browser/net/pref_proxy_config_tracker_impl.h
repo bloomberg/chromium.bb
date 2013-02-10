@@ -16,7 +16,7 @@
 
 class PrefService;
 class PrefRegistrySimple;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 // A net::ProxyConfigService implementation that applies preference proxy
 // settings (pushed from PrefProxyConfigTrackerImpl) as overrides to the proxy
@@ -120,7 +120,7 @@ class PrefProxyConfigTrackerImpl {
   // Registers the proxy preferences. These are actually registered
   // the same way in local state and in user prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
  protected:
   // Get the proxy configuration currently defined by preferences.

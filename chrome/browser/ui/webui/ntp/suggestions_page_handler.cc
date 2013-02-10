@@ -17,10 +17,11 @@
 #include "base/values.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "chrome/browser/ui/webui/ntp/ntp_stats.h"
+#include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source_top_sites.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -191,6 +192,6 @@ std::string SuggestionsHandler::GetDictionaryKeyForURL(const std::string& url) {
 }
 
 // static
-void SuggestionsHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+void SuggestionsHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   // TODO(georgey) add user preferences (such as own blacklist) as needed.
 }

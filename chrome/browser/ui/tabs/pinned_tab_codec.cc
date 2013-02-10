@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -98,9 +99,9 @@ static bool DecodeTab(const DictionaryValue& value, StartupTab* tab) {
 }
 
 // static
-void PinnedTabCodec::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterListPref(prefs::kPinnedTabs,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
+void PinnedTabCodec::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kPinnedTabs,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

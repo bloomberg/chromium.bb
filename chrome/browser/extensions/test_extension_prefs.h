@@ -13,6 +13,8 @@
 #include "chrome/common/extensions/manifest.h"
 
 class ExtensionPrefValueMap;
+class PrefRegistrySyncable;
+class PrefService;
 class PrefServiceSyncable;
 
 namespace base {
@@ -35,7 +37,9 @@ class TestExtensionPrefs {
   const ExtensionPrefs& const_prefs() const {
       return *prefs_.get();
   }
-  PrefServiceSyncable* pref_service() { return pref_service_.get(); }
+  PrefService* pref_service();
+  const scoped_refptr<PrefRegistrySyncable>& pref_registry();
+  void ResetPrefRegistry();
   const base::FilePath& temp_dir() const { return temp_dir_.path(); }
   const base::FilePath& extensions_dir() const { return extensions_dir_; }
 
@@ -67,7 +71,7 @@ class TestExtensionPrefs {
   // assigned.
   std::string AddExtensionAndReturnId(std::string name);
 
-  PrefServiceSyncable* CreateIncognitoPrefService() const;
+  PrefService* CreateIncognitoPrefService() const;
 
   // Allows disabling the loading of preferences of extensions. Becomes
   // active after calling RecreateExtensionPrefs(). Defaults to false.
@@ -77,6 +81,7 @@ class TestExtensionPrefs {
   base::ScopedTempDir temp_dir_;
   base::FilePath preferences_file_;
   base::FilePath extensions_dir_;
+  scoped_refptr<PrefRegistrySyncable> pref_registry_;
   scoped_ptr<PrefServiceSyncable> pref_service_;
   scoped_ptr<ExtensionPrefs> prefs_;
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;

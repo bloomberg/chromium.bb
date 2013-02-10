@@ -18,7 +18,7 @@
 
 class CommandLine;
 class GURL;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 class ProcessSingleton;
 
@@ -83,7 +83,7 @@ bool CreateSentinel();
 std::string GetPingDelayPrefName();
 
 // Register user preferences used by the MasterPrefs structure.
-void RegisterUserPrefs(PrefServiceSyncable* prefs);
+void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
 // Removes the sentinel file created in ConfigDone(). Returns false if the
 // sentinel file could not be removed.

@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -250,9 +251,9 @@ bool ChromeToMobileService::UpdateAndGetCommandState(Browser* browser) {
 }
 
 // static
-void ChromeToMobileService::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterListPref(prefs::kChromeToMobileDeviceList,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
+void ChromeToMobileService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kChromeToMobileDeviceList,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 ChromeToMobileService::ChromeToMobileService(Profile* profile)

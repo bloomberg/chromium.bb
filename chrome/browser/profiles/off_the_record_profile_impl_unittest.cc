@@ -42,7 +42,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
     return off_the_record_profile_.get();
   }
 
-  virtual PrefServiceSyncable* GetOffTheRecordPrefs() OVERRIDE {
+  virtual PrefService* GetOffTheRecordPrefs() OVERRIDE {
     return GetPrefs();
   }
 
@@ -84,7 +84,7 @@ class OffTheRecordProfileImplTest : public BrowserWithTestWindowTest {
 
   virtual void SetUp() OVERRIDE {
     prefs_.reset(new TestingPrefServiceSimple);
-    chrome::RegisterLocalState(prefs_->registry(), prefs_.get());
+    chrome::RegisterLocalState(prefs_.get(), prefs_->registry());
 
     browser_process()->SetLocalState(prefs_.get());
 

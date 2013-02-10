@@ -11,6 +11,8 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
@@ -144,7 +146,10 @@ class SyncBackendHostTest : public testing::Test {
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
     sync_prefs_.reset(new SyncPrefs(profile_->GetPrefs()));
-    invalidator_storage_.reset(new InvalidatorStorage(profile_->GetPrefs()));
+    invalidator_storage_.reset(new InvalidatorStorage(
+        profile_->GetPrefs(),
+        static_cast<PrefRegistrySyncable*>(
+            profile_->GetPrefs()->DeprecatedGetPrefRegistry())));
     backend_.reset(new SyncBackendHost(
         profile_->GetDebugName(),
         profile_.get(),

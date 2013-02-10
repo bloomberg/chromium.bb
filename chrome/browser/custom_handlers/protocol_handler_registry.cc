@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -732,13 +733,13 @@ void ProtocolHandlerRegistry::Shutdown() {
 
 // static
 void ProtocolHandlerRegistry::RegisterUserPrefs(
-    PrefServiceSyncable* pref_service) {
-  pref_service->RegisterListPref(prefs::kRegisteredProtocolHandlers,
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
-  pref_service->RegisterListPref(prefs::kIgnoredProtocolHandlers,
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
-  pref_service->RegisterBooleanPref(prefs::kCustomHandlersEnabled, true,
-                                    PrefServiceSyncable::UNSYNCABLE_PREF);
+    PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kRegisteredProtocolHandlers,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kIgnoredProtocolHandlers,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kCustomHandlersEnabled, true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/app_launcher.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -183,10 +184,10 @@ void NewTabPageHandler::GotIsAppLauncherEnabled(bool is_enabled) {
 }
 
 // static
-void NewTabPageHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+void NewTabPageHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   // TODO(estade): should be syncable.
-  prefs->RegisterIntegerPref(prefs::kNtpShownPage, APPS_PAGE_ID,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kNtpShownPage, APPS_PAGE_ID,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

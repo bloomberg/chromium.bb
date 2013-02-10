@@ -42,7 +42,7 @@ class AutofillMetrics;
 class CreditCard;
 class FormGroup;
 class GURL;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class ProfileSyncService;
 
 struct FormData;
@@ -84,7 +84,7 @@ class AutofillManager : public content::WebContentsObserver,
   static AutofillManager* FromWebContents(content::WebContents* contents);
 
   // Registers our Enable/Disable Autofill pref.
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Set an external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);

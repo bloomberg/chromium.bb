@@ -8,7 +8,9 @@
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service.h"
 
+class PrefRegistrySyncable;
 class PrefServiceSyncableObserver;
+class Profile;
 
 namespace syncer {
 class SyncableService;
@@ -19,13 +21,17 @@ class SyncableService;
 // this PrefService.
 class PrefServiceSyncable : public PrefService {
  public:
-  // Enum used when registering preferences to determine if it should be synced
-  // or not. This is only used for profile prefs, not local state prefs.
-  // See the Register*Pref methods for profile prefs below.
-  enum PrefSyncStatus {
-    UNSYNCABLE_PREF,
-    SYNCABLE_PREF
-  };
+  // PrefServiceSyncable is a PrefService with added integration for
+  // sync, and knowledge of how to create an incognito
+  // PrefService. For code that does not need to know about the sync
+  // integration, you should use only the plain PrefService type.
+  //
+  // For this reason, Profile does not expose an accessor for the
+  // PrefServiceSyncable type. Instead, you can use the utilities
+  // below to retrieve the PrefServiceSyncable (or its incognito
+  // version) from a Profile.
+  static PrefServiceSyncable* FromProfile(Profile* profile);
+  static PrefServiceSyncable* IncognitoFromProfile(Profile* profile);
 
   // You may wish to use PrefServiceBuilder or one of its subclasses
   // for simplified construction.
@@ -33,7 +39,7 @@ class PrefServiceSyncable : public PrefService {
       PrefNotifierImpl* pref_notifier,
       PrefValueStore* pref_value_store,
       PersistentPrefStore* user_prefs,
-      PrefRegistry* pref_registry,
+      PrefRegistrySyncable* pref_registry,
       base::Callback<void(PersistentPrefStore::PrefReadError)>
           read_error_callback,
       bool async);
@@ -55,52 +61,6 @@ class PrefServiceSyncable : public PrefService {
   void AddObserver(PrefServiceSyncableObserver* observer);
   void RemoveObserver(PrefServiceSyncableObserver* observer);
 
-  void RegisterBooleanPref(const char* path,
-                           bool default_value,
-                           PrefSyncStatus sync_status);
-  void RegisterIntegerPref(const char* path,
-                           int default_value,
-                           PrefSyncStatus sync_status);
-  void RegisterDoublePref(const char* path,
-                          double default_value,
-                          PrefSyncStatus sync_status);
-  void RegisterStringPref(const char* path,
-                          const std::string& default_value,
-                          PrefSyncStatus sync_status);
-  void RegisterFilePathPref(const char* path,
-                            const base::FilePath& default_value,
-                            PrefSyncStatus sync_status);
-  void RegisterListPref(const char* path,
-                        PrefSyncStatus sync_status);
-  void RegisterDictionaryPref(const char* path,
-                              PrefSyncStatus sync_status);
-  void RegisterListPref(const char* path,
-                        base::ListValue* default_value,
-                        PrefSyncStatus sync_status);
-  void RegisterDictionaryPref(const char* path,
-                              base::DictionaryValue* default_value,
-                              PrefSyncStatus sync_status);
-  void RegisterLocalizedBooleanPref(const char* path,
-                                    int locale_default_message_id,
-                                    PrefSyncStatus sync_status);
-  void RegisterLocalizedIntegerPref(const char* path,
-                                    int locale_default_message_id,
-                                    PrefSyncStatus sync_status);
-  void RegisterLocalizedDoublePref(const char* path,
-                                   int locale_default_message_id,
-                                   PrefSyncStatus sync_status);
-  void RegisterLocalizedStringPref(const char* path,
-                                   int locale_default_message_id,
-                                   PrefSyncStatus sync_status);
-  void RegisterInt64Pref(const char* path,
-                         int64 default_value,
-                         PrefSyncStatus sync_status);
-  void RegisterUint64Pref(const char* path,
-                          uint64 default_value,
-                          PrefSyncStatus sync_status);
-
-  void UnregisterPreference(const char* path);
-
   // TODO(zea): Have PrefServiceSyncable implement
   // syncer::SyncableService directly.
   syncer::SyncableService* GetSyncableService();
@@ -111,15 +71,11 @@ class PrefServiceSyncable : public PrefService {
  private:
   friend class PrefModelAssociator;
 
+  void AddRegisteredSyncablePreference(const char* path);
+  virtual void RemoveRegisteredPreference(const char* path) OVERRIDE;
+
   // Invoked internally when the IsSyncing() state changes.
   void OnIsSyncingChanged();
-
-  // Registers a preference at |path| with |default_value|. If the
-  // preference is syncable per |sync_status|, also registers it with
-  // PrefModelAssociator.
-  void RegisterSyncablePreference(const char* path,
-                                  Value* default_value,
-                                  PrefSyncStatus sync_status);
 
   // Whether CreateIncognitoPrefService() has been called to create a
   // "forked" PrefService.

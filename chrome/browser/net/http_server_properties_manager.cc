@@ -8,6 +8,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -90,9 +91,9 @@ void HttpServerPropertiesManager::ShutdownOnUIThread() {
 
 // static
 void HttpServerPropertiesManager::RegisterUserPrefs(
-    PrefServiceSyncable* prefs) {
+    PrefRegistrySyncable* prefs) {
   prefs->RegisterDictionaryPref(prefs::kHttpServerProperties,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // This is required for conformance with the HttpServerProperties interface.

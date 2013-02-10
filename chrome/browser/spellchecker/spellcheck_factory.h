@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
+class PrefRegistrySyncable;
 class SpellcheckService;
 
 // Entry into the SpellCheck system.
@@ -30,7 +31,7 @@ class SpellcheckServiceFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

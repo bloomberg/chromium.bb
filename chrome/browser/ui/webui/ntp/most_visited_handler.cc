@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -256,7 +257,7 @@ std::string MostVisitedHandler::GetDictionaryKeyForUrl(const std::string& url) {
 }
 
 // static
-void MostVisitedHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kNtpMostVisitedURLsBlacklist,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+void MostVisitedHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kNtpMostVisitedURLsBlacklist,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
 }

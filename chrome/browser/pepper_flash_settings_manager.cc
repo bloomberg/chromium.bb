@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -927,14 +928,15 @@ bool PepperFlashSettingsManager::IsPepperFlashInUse(
 }
 
 // static
-void PepperFlashSettingsManager::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kDeauthorizeContentLicenses,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void PepperFlashSettingsManager::RegisterUserPrefs(
+    PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kDeauthorizeContentLicenses,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  prefs->RegisterBooleanPref(prefs::kPepperFlashSettingsEnabled,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPepperFlashSettingsEnabled,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 uint32 PepperFlashSettingsManager::DeauthorizeContentLicenses() {

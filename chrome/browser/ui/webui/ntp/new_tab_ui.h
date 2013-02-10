@@ -13,13 +13,13 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class GURL;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 
 namespace base {
@@ -33,7 +33,7 @@ class NewTabUI : public content::WebUIController,
   explicit NewTabUI(content::WebUI* web_ui);
   virtual ~NewTabUI();
 
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Returns whether or not to show apps pages.
   static bool ShouldShowApps();

@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -110,10 +111,11 @@ ExtensionSettingsHandler::ExtensionSettingsHandler(ExtensionService* service,
 }
 
 // static
-void ExtensionSettingsHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kExtensionsUIDeveloperMode,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+void ExtensionSettingsHandler::RegisterUserPrefs(
+    PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kExtensionsUIDeveloperMode,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(

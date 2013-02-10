@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -17,15 +18,15 @@ class SessionStartupPrefTest : public testing::Test {
  public:
   virtual void SetUp() {
     pref_service_.reset(new TestingPrefServiceSyncable);
-    SessionStartupPref::RegisterUserPrefs(pref_service_.get());
-    pref_service_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
-                                       true,
-                                       PrefServiceSyncable::UNSYNCABLE_PREF);
+    SessionStartupPref::RegisterUserPrefs(registry());
+    registry()->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
+                                    true,
+                                    PrefRegistrySyncable::UNSYNCABLE_PREF);
     // Make the tests independent of the Mac startup pref migration (see
     // SessionStartupPref::MigrateMacDefaultPrefIfNecessary).
-    pref_service_->RegisterStringPref(prefs::kProfileCreatedByVersion,
-                                      "22.0.0.0",
-                                      PrefServiceSyncable::UNSYNCABLE_PREF);
+    registry()->RegisterStringPref(prefs::kProfileCreatedByVersion,
+                                   "22.0.0.0",
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
   bool IsUseLastOpenDefault() {
@@ -35,6 +36,10 @@ class SessionStartupPrefTest : public testing::Test {
 #else
     return false;
 #endif
+  }
+
+  PrefRegistrySyncable* registry() {
+    return pref_service_->registry();
   }
 
   scoped_ptr<TestingPrefServiceSyncable> pref_service_;
@@ -82,8 +87,8 @@ TEST_F(SessionStartupPrefTest, URLListManagedOverridesUser) {
 // (so that, in effect, the default value "Open the homepage" was selected),
 // their preferences are migrated on upgrade to m19.
 TEST_F(SessionStartupPrefTest, DefaultMigration) {
-  pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com/",
-                                    PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry()->RegisterStringPref(prefs::kHomePage, "http://google.com/",
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   pref_service_->SetString(prefs::kHomePage, "http://chromium.org/");
   pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, false);
 
@@ -107,8 +112,8 @@ TEST_F(SessionStartupPrefTest, DefaultMigration) {
 // and the NTP is being used for the homepage, their preferences are migrated
 // to "Open the New Tab Page" on upgrade to M19.
 TEST_F(SessionStartupPrefTest, DefaultMigrationHomepageIsNTP) {
-  pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com/",
-                                    PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry()->RegisterStringPref(prefs::kHomePage, "http://google.com/",
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   pref_service_->SetString(prefs::kHomePage, "http://chromium.org/");
   pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, true);
 
@@ -129,8 +134,8 @@ TEST_F(SessionStartupPrefTest, DefaultMigrationHomepageIsNTP) {
 // Checks to make sure that if the user had previously selected "Open the
 // "homepage", their preferences are migrated on upgrade to M19.
 TEST_F(SessionStartupPrefTest, HomePageMigration) {
-  pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com/",
-                                    PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry()->RegisterStringPref(prefs::kHomePage, "http://google.com/",
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // By design, it's impossible to set the 'restore on startup' pref to 0
   // ("open the homepage") using SessionStartupPref::SetStartupPref(), so set it
@@ -151,8 +156,8 @@ TEST_F(SessionStartupPrefTest, HomePageMigration) {
 // "homepage", and the NTP is being used for the homepage, their preferences
 // are migrated on upgrade to M19.
 TEST_F(SessionStartupPrefTest, HomePageMigrationHomepageIsNTP) {
-  pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com/",
-                                    PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry()->RegisterStringPref(prefs::kHomePage, "http://google.com/",
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // By design, it's impossible to set the 'restore on startup' pref to 0
   // ("open the homepage") using SessionStartupPref::SetStartupPref(), so set it

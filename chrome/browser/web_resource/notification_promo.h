@@ -20,7 +20,7 @@ class ListValue;
 
 class PrefRegistrySimple;
 class PrefService;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 // Helper class for PromoResourceService that parses promo notification info
 // from json or prefs.
@@ -67,7 +67,8 @@ class NotificationPromo {
 
   // Register preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefService* prefs,
+                                PrefRegistrySyncable* registry);
 
  private:
   // For testing.

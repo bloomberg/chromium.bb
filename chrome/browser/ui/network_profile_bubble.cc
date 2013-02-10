@@ -18,6 +18,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -156,11 +157,13 @@ void NetworkProfileBubble::SetNotificationShown(bool shown) {
 }
 
 // static
-void NetworkProfileBubble::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(prefs::kNetworkProfileWarningsLeft, kMaxWarnings,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterInt64Pref(prefs::kNetworkProfileLastWarningTime, 0,
-                           PrefServiceSyncable::UNSYNCABLE_PREF);
+void NetworkProfileBubble::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(prefs::kNetworkProfileWarningsLeft,
+                                kMaxWarnings,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(prefs::kNetworkProfileLastWarningTime,
+                              0,
+                              PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

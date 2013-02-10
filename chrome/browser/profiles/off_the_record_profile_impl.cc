@@ -32,7 +32,7 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -83,7 +83,7 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
     : profile_(real_profile),
-      prefs_(real_profile->GetOffTheRecordPrefs()),
+      prefs_(PrefServiceSyncable::IncognitoFromProfile(real_profile)),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       start_time_(Time::Now()),
       zoom_callback_(base::Bind(&OffTheRecordProfileImpl::OnZoomLevelChanged,
@@ -240,11 +240,11 @@ policy::PolicyService* OffTheRecordProfileImpl::GetPolicyService() {
   return profile_->GetPolicyService();
 }
 
-PrefServiceSyncable* OffTheRecordProfileImpl::GetPrefs() {
+PrefService* OffTheRecordProfileImpl::GetPrefs() {
   return prefs_;
 }
 
-PrefServiceSyncable* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
+PrefService* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
   return prefs_;
 }
 
@@ -470,7 +470,7 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
 
   virtual void InitChromeOSPreferences() OVERRIDE {
     chromeos_preferences_.reset(new chromeos::Preferences());
-    chromeos_preferences_->Init(GetPrefs());
+    chromeos_preferences_->Init(static_cast<PrefServiceSyncable*>(GetPrefs()));
   }
 
  private:

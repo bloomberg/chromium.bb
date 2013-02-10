@@ -17,7 +17,7 @@
 
 class ManagedModeURLFilter;
 class ManagedModeSiteList;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 
 // This class handles all the information related to a given managed profile
@@ -40,7 +40,7 @@ class ManagedUserService : public ProfileKeyedService,
 
   bool ProfileIsManaged() const;
 
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Returns the URL filter for the IO thread, for filtering network requests
   // (in ManagedModeResourceThrottle).

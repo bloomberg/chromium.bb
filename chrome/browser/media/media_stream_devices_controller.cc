@@ -12,6 +12,8 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -66,13 +68,13 @@ MediaStreamDevicesController::~MediaStreamDevicesController() {}
 
 // static
 void MediaStreamDevicesController::RegisterUserPrefs(
-    PrefServiceSyncable* prefs) {
+    PrefRegistrySyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kVideoCaptureAllowed,
                              true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kAudioCaptureAllowed,
                              true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 
@@ -184,11 +186,11 @@ MediaStreamDevicesController::DevicePolicy
 MediaStreamDevicesController::GetDevicePolicy(const char* policy_name) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  PrefServiceSyncable* pref = profile_->GetPrefs();
-  if (!pref->IsManagedPreference(policy_name))
+  PrefService* prefs = profile_->GetPrefs();
+  if (!prefs->IsManagedPreference(policy_name))
     return POLICY_NOT_SET;
 
-  return pref->GetBoolean(policy_name) ? ALWAYS_ALLOW : ALWAYS_DENY;
+  return prefs->GetBoolean(policy_name) ? ALWAYS_ALLOW : ALWAYS_DENY;
 }
 
 bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {

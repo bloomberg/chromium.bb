@@ -19,7 +19,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -192,10 +192,11 @@ bool NotificationPermissionInfoBarDelegate::Cancel() {
 // DesktopNotificationService -------------------------------------------------
 
 // static
-void DesktopNotificationService::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+void DesktopNotificationService::RegisterUserPrefs(
+    PrefRegistrySyncable* registry) {
 #if defined(OS_CHROMEOS) || defined(ENABLE_MESSAGE_CENTER)
-  prefs->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds,
-                          PrefServiceSyncable::SYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds,
+                             PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
 }
 

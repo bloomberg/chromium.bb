@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
@@ -875,8 +876,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   std::string pref_path("extensions.settings.");
   pref_path += extension->id();
   pref_path += ".manifest.version";
-  extension_prefs->pref_service()->RegisterStringPref(
-      pref_path.c_str(), std::string(), PrefServiceSyncable::UNSYNCABLE_PREF);
+  // TODO(joi): Do registrations up front.
+  PrefRegistrySyncable* registry = static_cast<PrefRegistrySyncable*>(
+      extension_prefs->pref_service()->DeprecatedGetPrefRegistry());
+  registry->RegisterStringPref(
+      pref_path.c_str(), std::string(), PrefRegistrySyncable::UNSYNCABLE_PREF);
   extension_prefs->pref_service()->Set(pref_path.c_str(), old_version);
 }
 

@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1485,7 +1486,9 @@ GtkWidget* BrowserWindowGtk::titlebar_widget() const {
 }
 
 // static
-void BrowserWindowGtk::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs,
+                                         PrefRegistrySyncable* registry) {
+  // TODO(joi): Remove PrefService parameter.
   bool custom_frame_default = false;
   // Avoid checking the window manager if we're not connected to an X server (as
   // is the case in Valgrind tests).
@@ -1493,9 +1496,9 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefServiceSyncable* prefs) {
       !prefs->HasPrefPath(prefs::kUseCustomChromeFrame)) {
     custom_frame_default = GetCustomFramePrefDefault();
   }
-  prefs->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
-                             custom_frame_default,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
+                                custom_frame_default,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 WebContents* BrowserWindowGtk::GetDisplayedTab() {

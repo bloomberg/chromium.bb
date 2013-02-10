@@ -17,7 +17,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/file_select_helper.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -91,17 +92,17 @@ const int kMinDevToolsWidth = 150;
 const int kMinContentsSize = 50;
 
 // static
-void DevToolsWindow::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kDevToolsDockSide,
-                            kDockSideBottom,
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kDevToolsEditedFiles,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+void DevToolsWindow::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kDevToolsOpenDocked,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kDevToolsDockSide,
+                               kDockSideBottom,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kDevToolsEditedFiles,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -386,10 +387,13 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   wp_key.append("_");
   wp_key.append(kDevToolsApp);
 
-  PrefServiceSyncable* prefs = profile_->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
+  scoped_refptr<PrefRegistrySyncable> registry(
+      static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
+  // TODO(joi): All registration should be done up front.
   if (!prefs->FindPreference(wp_key.c_str())) {
-    prefs->RegisterDictionaryPref(wp_key.c_str(),
-                                  PrefServiceSyncable::UNSYNCABLE_PREF);
+    registry->RegisterDictionaryPref(wp_key.c_str(),
+                                     PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
   const DictionaryValue* wp_pref = prefs->GetDictionary(wp_key.c_str());

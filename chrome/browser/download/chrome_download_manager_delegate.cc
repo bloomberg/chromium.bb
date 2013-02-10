@@ -34,6 +34,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -507,7 +508,7 @@ void ChromeDownloadManagerDelegate::GetSaveDir(
     base::FilePath* download_save_dir,
     bool* skip_dir_check) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  PrefServiceSyncable* prefs = profile->GetPrefs();
+  PrefService* prefs = profile->GetPrefs();
 
   // Check whether the preference has the preferred directory for saving file.
   // If not, initialize it with default directory.
@@ -515,9 +516,13 @@ void ChromeDownloadManagerDelegate::GetSaveDir(
     DCHECK(prefs->FindPreference(prefs::kDownloadDefaultDirectory));
     base::FilePath default_save_path = prefs->GetFilePath(
         prefs::kDownloadDefaultDirectory);
-    prefs->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
-                                default_save_path,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+
+    // TODO(joi): All registration should be done up front.
+    scoped_refptr<PrefRegistrySyncable> registry(
+        static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
+    registry->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
+                                   default_save_path,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
   // Get the directory from preference.

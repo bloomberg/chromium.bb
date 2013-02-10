@@ -15,7 +15,7 @@
 
 class ExtensionServiceInterface;
 class PrefServiceBase;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 namespace extensions {
 
@@ -80,7 +80,7 @@ class ComponentLoader {
   // platforms this |skip_session_components| is expected to be unset.
   void AddDefaultComponentExtensions(bool skip_session_components);
 
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Parse the given JSON manifest. Returns NULL if it cannot be parsed, or if
   // if the result is not a DictionaryValue.

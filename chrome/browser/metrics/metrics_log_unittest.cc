@@ -51,7 +51,7 @@ class TestMetricsLog : public MetricsLog {
   TestMetricsLog(const std::string& client_id, int session_id)
       : MetricsLog(client_id, session_id),
         brand_for_testing_(kBrandForTesting) {
-          chrome::RegisterLocalState(prefs_.registry(), &prefs_);
+    chrome::RegisterLocalState(&prefs_, prefs_.registry());
 
 #if defined(OS_CHROMEOS)
     prefs_.SetInteger(prefs::kStabilityChildProcessCrashCount, 10);

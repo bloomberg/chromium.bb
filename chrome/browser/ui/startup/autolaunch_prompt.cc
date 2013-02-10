@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
 
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+
 namespace chrome {
 
 bool ShowAutolaunchPrompt(Browser* browser) {
@@ -11,7 +13,7 @@ bool ShowAutolaunchPrompt(Browser* browser) {
   return false;
 }
 
-void RegisterAutolaunchUserPrefs(PrefServiceSyncable* prefs) {
+void RegisterAutolaunchUserPrefs(PrefRegistrySyncable* registry) {
   // Autolaunch is only implemented on Windows right now.
 }
 

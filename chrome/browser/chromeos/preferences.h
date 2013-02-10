@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 
+class PrefRegistrySyncable;
 class PrefService;
 class PrefServiceSyncable;
 
@@ -33,7 +34,8 @@ class Preferences : public PrefServiceSyncableObserver {
   virtual ~Preferences();
 
   // This method will register the prefs associated with Chrome OS settings.
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefService* prefs,
+                                PrefRegistrySyncable* registry);
 
   // This method will initialize Chrome OS settings to values in user prefs.
   void Init(PrefServiceSyncable* prefs);

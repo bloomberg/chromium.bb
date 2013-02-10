@@ -20,6 +20,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -67,26 +68,27 @@ DownloadPrefs::~DownloadPrefs() {
 }
 
 // static
-void DownloadPrefs::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kPromptForDownload,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kDownloadExtensionsToOpen,
-                            "",
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDownloadDirUpgraded,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kSaveFileType,
-                             content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void DownloadPrefs::RegisterUserPrefs(PrefService* prefs,
+                                      PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kPromptForDownload,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kDownloadExtensionsToOpen,
+                               "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDownloadDirUpgraded,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kSaveFileType,
+                                content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // The default download path is userprofile\download.
   const base::FilePath& default_download_path =
       download_util::GetDefaultDownloadDirectory();
-  prefs->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
-                              default_download_path,
-                              PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
+                                 default_download_path,
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
 
 #if defined(OS_CHROMEOS)
   // Ensure that the download directory specified in the preferences exists.
@@ -95,6 +97,8 @@ void DownloadPrefs::RegisterUserPrefs(PrefServiceSyncable* prefs) {
       base::Bind(base::IgnoreResult(&file_util::CreateDirectory),
                  default_download_path));
 #endif  // defined(OS_CHROMEOS)
+
+  // TODO(joi): Move this out, and get rid of PrefService param above.
 
   // If the download path is dangerous we forcefully reset it. But if we do
   // so we set a flag to make sure we only do it once, to avoid fighting

@@ -28,8 +28,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/net/url_info.h"
 #include "chrome/browser/net/referrer.h"
+#include "chrome/browser/net/url_info.h"
 #include "chrome/common/net/predictor_common.h"
 #include "net/base/host_port_pair.h"
 
@@ -48,7 +48,7 @@ class URLRequestContextGetter;
 
 class IOThread;
 class PrefService;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 
 namespace chrome_browser_net {
@@ -102,7 +102,7 @@ class Predictor {
   static Predictor* CreatePredictor(bool preconnect_enabled,
                                     bool simple_shutdown);
 
-  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // ------------- Start UI thread methods.
 

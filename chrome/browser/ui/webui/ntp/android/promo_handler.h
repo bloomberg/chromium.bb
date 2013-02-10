@@ -9,7 +9,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 namespace base {
   class DictionaryValue;
@@ -27,7 +27,7 @@ class PromoHandler : public content::WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // Register preferences.
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
  private:
   // NotificationObserver override and implementation.

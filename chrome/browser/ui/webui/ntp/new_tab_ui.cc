@@ -20,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/app_launcher.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -281,15 +282,15 @@ void NewTabUI::InitializeCSSCaches() {
 }
 
 // static
-void NewTabUI::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+void NewTabUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 #if !defined(OS_ANDROID)
-  AppLauncherHandler::RegisterUserPrefs(prefs);
-  NewTabPageHandler::RegisterUserPrefs(prefs);
+  AppLauncherHandler::RegisterUserPrefs(registry);
+  NewTabPageHandler::RegisterUserPrefs(registry);
   if (NewTabUI::IsDiscoveryInNTPEnabled())
-    SuggestionsHandler::RegisterUserPrefs(prefs);
+    SuggestionsHandler::RegisterUserPrefs(registry);
 #endif
-  MostVisitedHandler::RegisterUserPrefs(prefs);
-  browser_sync::ForeignSessionHandler::RegisterUserPrefs(prefs);
+  MostVisitedHandler::RegisterUserPrefs(registry);
+  browser_sync::ForeignSessionHandler::RegisterUserPrefs(registry);
 }
 
 // static

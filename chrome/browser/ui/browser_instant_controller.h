@@ -17,7 +17,8 @@
 
 class Browser;
 struct InstantSuggestion;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
+class PrefService;
 class Profile;
 class ThemeService;
 
@@ -41,7 +42,8 @@ class BrowserInstantController : public content::NotificationObserver,
   static bool IsInstantEnabled(Profile* profile);
 
   // Registers Instant related preferences.
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefService* prefs,
+                                PrefRegistrySyncable* registry);
 
   // If |url| is the new tab page URL, set |target_contents| to the preloaded
   // NTP contents from InstantController. If |source_contents| is not NULL, we

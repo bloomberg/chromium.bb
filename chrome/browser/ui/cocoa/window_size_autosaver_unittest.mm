@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -25,9 +26,12 @@ class WindowSizeAutosaverTest : public CocoaProfileTest {
                                               NSResizableWindowMask
                                       backing:NSBackingStoreBuffered
                                         defer:NO];
-    profile()->GetPrefs()->RegisterDictionaryPref(
-        path_,
-        PrefServiceSyncable::UNSYNCABLE_PREF);
+    // TODO(joi): Do all registration up front.
+    static_cast<PrefRegistrySyncable*>(
+        profile()->GetPrefs()->DeprecatedGetPrefRegistry())->
+            RegisterDictionaryPref(
+                path_,
+                PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
   virtual void TearDown() {

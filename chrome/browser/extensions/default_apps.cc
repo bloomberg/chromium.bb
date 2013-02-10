@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #if !defined(OS_ANDROID)
 #include "chrome/browser/first_run/first_run.h"
 #endif
@@ -48,9 +49,9 @@ bool IsLocaleSupported() {
 
 namespace default_apps {
 
-void RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(prefs::kDefaultAppsInstallState, kUnknown,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(prefs::kDefaultAppsInstallState, kUnknown,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool Provider::ShouldInstallInProfile() {

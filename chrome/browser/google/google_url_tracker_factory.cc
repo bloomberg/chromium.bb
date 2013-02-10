@@ -5,6 +5,7 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
@@ -35,13 +36,13 @@ ProfileKeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
 }
 
 void GoogleURLTrackerFactory::RegisterUserPrefs(
-    PrefServiceSyncable* user_prefs) {
+    PrefRegistrySyncable* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kLastKnownGoogleURL,
                                  GoogleURLTracker::kDefaultGoogleHomepage,
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kLastPromptedGoogleURL,
                                  std::string(),
-                                 PrefServiceSyncable::UNSYNCABLE_PREF);
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool GoogleURLTrackerFactory::ServiceRedirectedInIncognito() const {

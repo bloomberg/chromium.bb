@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
-class PrefServiceSyncable;
 class Profile;
 class ProfileDownloader;
 

@@ -22,7 +22,7 @@
 class Browser;
 class BrowserWindow;
 class DevToolsControllerTest;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 
 namespace base {
@@ -56,7 +56,7 @@ class DevToolsWindow : private content::NotificationObserver,
                        private content::DevToolsFrontendHostDelegate {
  public:
   static const char kDevToolsApp[];
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
   static DevToolsWindow* GetDockedInstanceForInspectedTab(
       content::WebContents* inspected_tab);
   static bool IsDevToolsWindow(content::RenderViewHost* window_rvh);

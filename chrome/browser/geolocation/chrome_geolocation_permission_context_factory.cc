@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
 #if defined(OS_ANDROID)
@@ -71,11 +72,11 @@ ChromeGeolocationPermissionContextFactory::BuildServiceInstanceFor(
 }
 
 void ChromeGeolocationPermissionContextFactory::RegisterUserPrefs(
-    PrefServiceSyncable* user_prefs) {
+    PrefRegistrySyncable* registry) {
 #if defined(OS_ANDROID)
-  user_prefs->RegisterBooleanPref(prefs::kGeolocationEnabled,
-                                  true,
-                                  PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kGeolocationEnabled,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 }
 

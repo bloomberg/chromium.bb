@@ -48,6 +48,7 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/plugin_info_message_filter.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -494,16 +495,17 @@ ChromeContentBrowserClient::~ChromeContentBrowserClient() {
 }
 
 // static
-void ChromeContentBrowserClient::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kDisable3DAPIs,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kEnableMemoryInfo,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void ChromeContentBrowserClient::RegisterUserPrefs(
+    PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kDisable3DAPIs,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kEnableMemoryInfo,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(

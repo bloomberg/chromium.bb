@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -39,9 +40,9 @@ std::string GetPlatformKeybindingKeyForAccelerator(
 namespace extensions {
 
 // static
-void CommandService::RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
-  user_prefs->RegisterDictionaryPref(prefs::kExtensionCommands,
-                                     PrefServiceSyncable::SYNCABLE_PREF);
+void CommandService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kExtensionCommands,
+                                   PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 CommandService::CommandService(Profile* profile)

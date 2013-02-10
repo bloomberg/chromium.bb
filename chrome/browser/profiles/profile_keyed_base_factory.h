@@ -9,7 +9,8 @@
 
 #include "base/threading/non_thread_safe.h"
 
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
+class PrefService;
 class Profile;
 class ProfileDependencyManager;
 
@@ -50,7 +51,11 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe {
   // Register any user preferences on this service. This is called during
   // CreateProfileService() since preferences are registered on a per Profile
   // basis.
-  virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {}
+  //
+  // TODO(joi): Remove need for the version with the PrefService parameter.
+  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) {}
+  virtual void DeprecatedRegisterUserPrefs(PrefService* prefs,
+                                           PrefRegistrySyncable* registry) {}
 
   // By default, if we are asked for a service with an Incognito profile, we
   // pass back NULL. To redirect to the Incognito's original profile or to

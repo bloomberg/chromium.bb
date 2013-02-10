@@ -14,6 +14,9 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 
+class PrefRegistrySimple;
+class PrefRegistrySyncable;
+
 namespace chromeos {
 
 // Implementation of proxy config service for chromeos that:
@@ -200,7 +203,7 @@ class ProxyConfigServiceImpl
 
   // Register UseShardProxies preference.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterUserPrefs(PrefServiceSyncable* pref_service);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
 #if defined(UNIT_TEST)
   void SetTesting(ProxyConfig* test_config) {

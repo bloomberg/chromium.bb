@@ -16,7 +16,8 @@ class DictionaryValue;
 
 class NotificationPromo;
 class PrefRegistrySimple;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
+class PrefService;
 
 // A PromoResourceService fetches data from a web resource server to be used to
 // dynamically change the appearance of the New Tab Page. For example, it has
@@ -25,7 +26,8 @@ class PrefServiceSyncable;
 class PromoResourceService : public WebResourceService {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefService* prefs,
+                                PrefRegistrySyncable* registry);
 
   PromoResourceService();
 

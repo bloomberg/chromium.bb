@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 
 class PluginPrefs;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class Profile;
 class ProfileKeyedService;
 
@@ -36,7 +36,7 @@ class PluginPrefsFactory : public RefcountedProfileKeyedServiceFactory {
       Profile* profile) const OVERRIDE;
 
   // ProfileKeyedServiceFactory methods:
-  virtual void RegisterUserPrefs(PrefServiceSyncable* prefs) OVERRIDE;
+  virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;

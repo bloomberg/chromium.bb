@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/prefs/pref_registry_simple.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -92,12 +93,14 @@ class ComponentLoaderTest : public testing::Test {
                                &manifest_contents_));
 
     // Register the user prefs that ComponentLoader will read.
-    prefs_.RegisterStringPref(prefs::kEnterpriseWebStoreURL,
-                              std::string(),
-                              PrefServiceSyncable::UNSYNCABLE_PREF);
-    prefs_.RegisterStringPref(prefs::kEnterpriseWebStoreName,
-                              std::string(),
-                              PrefServiceSyncable::UNSYNCABLE_PREF);
+    prefs_.registry()->RegisterStringPref(
+        prefs::kEnterpriseWebStoreURL,
+        std::string(),
+        PrefRegistrySyncable::UNSYNCABLE_PREF);
+    prefs_.registry()->RegisterStringPref(
+        prefs::kEnterpriseWebStoreName,
+        std::string(),
+        PrefRegistrySyncable::UNSYNCABLE_PREF);
 
     // Register the local state prefs.
 #if defined(OS_CHROMEOS)

@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/android/intent_helper.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -122,10 +123,10 @@ void PromoHandler::RegisterMessages() {
 }
 
 // static
-void PromoHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kNtpPromoDesktopSessionFound,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void PromoHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kNtpPromoDesktopSessionFound,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void PromoHandler::Observe(int type,

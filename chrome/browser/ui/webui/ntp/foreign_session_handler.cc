@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,9 +61,9 @@ ForeignSessionHandler::ForeignSessionHandler() {
 }
 
 // static
-void ForeignSessionHandler::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kNtpCollapsedForeignSessions,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+void ForeignSessionHandler::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(prefs::kNtpCollapsedForeignSessions,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

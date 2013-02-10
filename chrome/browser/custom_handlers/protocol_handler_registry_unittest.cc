@@ -10,6 +10,8 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/test/base/testing_browser_process.h"

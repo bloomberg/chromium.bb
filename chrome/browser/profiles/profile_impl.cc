@@ -55,6 +55,8 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
@@ -270,53 +272,53 @@ int ProfileImpl::create_readme_delay_ms = 60000;
 const char* const ProfileImpl::kPrefExitTypeNormal = "Normal";
 
 // static
-void ProfileImpl::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kForceSafeSearch,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kProfileAvatarIndex,
-                             -1,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kProfileName,
-                            "",
-                            PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kProfileIsManaged,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kHomePage,
-                            std::string(),
-                            PrefServiceSyncable::SYNCABLE_PREF);
+void ProfileImpl::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kForceSafeSearch,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kProfileAvatarIndex,
+                                -1,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kProfileName,
+                               "",
+                               PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kProfileIsManaged,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kHomePage,
+                               std::string(),
+                               PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(ENABLE_PRINTING)
-  prefs->RegisterBooleanPref(prefs::kPrintingEnabled,
-                             true,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPrintingEnabled,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-  prefs->RegisterBooleanPref(prefs::kPrintPreviewDisabled,
+  registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled,
 #if defined(GOOGLE_CHROME_BUILD)
-                             false,
+                                false,
 #else
-                             true,
+                                true,
 #endif
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Initialize the cache prefs.
-  prefs->RegisterFilePathPref(prefs::kDiskCacheDir,
-                              base::FilePath(),
-                              PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDiskCacheSize,
-                             0,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kMediaCacheSize,
-                             0,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(prefs::kDiskCacheDir,
+                                 base::FilePath(),
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kDiskCacheSize,
+                                0,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kMediaCacheSize,
+                                0,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Deprecated. Kept around for migration.
-  prefs->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kClearSiteDataOnExit,
+                                false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 ProfileImpl::ProfileImpl(
@@ -327,6 +329,7 @@ ProfileImpl::ProfileImpl(
     : zoom_callback_(base::Bind(&ProfileImpl::OnZoomLevelChanged,
                                 base::Unretained(this))),
       path_(path),
+      pref_registry_(new PrefRegistrySyncable),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       host_content_settings_map_(NULL),
       last_session_exit_type_(EXIT_NORMAL),
@@ -382,6 +385,8 @@ ProfileImpl::ProfileImpl(
          create_mode == CREATE_MODE_SYNCHRONOUS);
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
 
+  Profile::RegisterUserPrefs(pref_registry_);
+
   {
     // On startup, preference loading is always synchronous so a scoped timer
     // will work here.
@@ -393,6 +398,7 @@ ProfileImpl::ProfileImpl(
         policy_service_.get(),
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForProfile(this), false),
+        pref_registry_,
         async_prefs));
   }
 
@@ -700,10 +706,10 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
     return;
   }
 
-  // The Profile class and ProfileManager class may read some prefs so
-  // register known prefs as soon as possible.
-  Profile::RegisterUserPrefs(prefs_.get());
-  chrome::RegisterUserPrefs(prefs_.get());
+  // TODO(joi): Registration can move to the constructor once it
+  // doesn't need the PrefService parameter.
+  chrome::RegisterUserPrefs(prefs_.get(), pref_registry_);
+
   // TODO(mirandac): remove migration code after 6 months (crbug.com/69995).
   if (g_browser_process->local_state())
     chrome::MigrateBrowserPrefs(this, g_browser_process->local_state());
@@ -786,16 +792,17 @@ policy::PolicyService* ProfileImpl::GetPolicyService() {
   return policy_service_.get();
 }
 
-PrefServiceSyncable* ProfileImpl::GetPrefs() {
+PrefService* ProfileImpl::GetPrefs() {
   DCHECK(prefs_.get());  // Should explicitly be initialized.
   return prefs_.get();
 }
 
-PrefServiceSyncable* ProfileImpl::GetOffTheRecordPrefs() {
+PrefService* ProfileImpl::GetOffTheRecordPrefs() {
+  DCHECK(prefs_.get());
   if (!otr_prefs_.get()) {
     // The new ExtensionPrefStore is ref_counted and the new PrefService
     // stores a reference so that we do not leak memory here.
-    otr_prefs_.reset(GetPrefs()->CreateIncognitoPrefService(
+    otr_prefs_.reset(prefs_->CreateIncognitoPrefService(
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForProfile(this), true)));
   }
@@ -1084,7 +1091,7 @@ void ProfileImpl::SetupChromeOSEnterpriseExtensionObserver() {
 
 void ProfileImpl::InitChromeOSPreferences() {
   chromeos_preferences_.reset(new chromeos::Preferences());
-  chromeos_preferences_->Init(GetPrefs());
+  chromeos_preferences_->Init(PrefServiceSyncable::FromProfile(this));
 }
 #endif  // defined(OS_CHROMEOS)
 

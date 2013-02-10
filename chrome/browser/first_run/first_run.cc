@@ -26,6 +26,7 @@
 #include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/prefs/pref_registry_simple.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -410,10 +411,10 @@ std::string GetPingDelayPrefName() {
                             installer::master_preferences::kDistroPingDelay);
 }
 
-void RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(GetPingDelayPrefName().c_str(),
-                             0,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(GetPingDelayPrefName().c_str(),
+                                0,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool RemoveSentinel() {

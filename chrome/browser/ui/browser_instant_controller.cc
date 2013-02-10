@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -73,11 +74,14 @@ bool BrowserInstantController::IsInstantEnabled(Profile* profile) {
          profile->GetPrefs()->GetBoolean(GetInstantPrefName(profile));
 }
 
-void BrowserInstantController::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kInstantEnabled, false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+void BrowserInstantController::RegisterUserPrefs(
+    PrefService* prefs,
+    PrefRegistrySyncable* registry) {
+  // TODO(joi): Get rid of the need for PrefService param above.
+  registry->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kInstantEnabled, false,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 
   search::InstantExtendedDefault instant_extended_default_setting =
       search::GetInstantExtendedDefaultSetting();
@@ -94,9 +98,9 @@ void BrowserInstantController::RegisterUserPrefs(PrefServiceSyncable* prefs) {
       break;
   }
 
-  prefs->RegisterBooleanPref(prefs::kInstantExtendedEnabled,
-                             instant_extended_value,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kInstantExtendedEnabled,
+                                instant_extended_value,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 bool BrowserInstantController::MaybeSwapInInstantNTPContents(

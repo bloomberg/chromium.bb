@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -26,16 +27,20 @@ const char kTestPageURL[] =
 
 void CloudPrintURL::RegisterPreferences() {
   DCHECK(profile_);
-  PrefServiceSyncable* pref_service = profile_->GetPrefs();
+  PrefService* pref_service = profile_->GetPrefs();
+  // TODO(joi): Do all registration up front.
+  scoped_refptr<PrefRegistrySyncable> registry(
+      static_cast<PrefRegistrySyncable*>(
+          pref_service->DeprecatedGetPrefRegistry()));
   if (!pref_service->FindPreference(prefs::kCloudPrintServiceURL)) {
-    pref_service->RegisterStringPref(prefs::kCloudPrintServiceURL,
-                                     kDefaultCloudPrintServiceURL,
-                                     PrefServiceSyncable::UNSYNCABLE_PREF);
+    registry->RegisterStringPref(prefs::kCloudPrintServiceURL,
+                                 kDefaultCloudPrintServiceURL,
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
   if (!pref_service->FindPreference(prefs::kCloudPrintSigninURL)) {
-    pref_service->RegisterStringPref(prefs::kCloudPrintSigninURL,
-                                     kDefaultCloudPrintSigninURL,
-                                     PrefServiceSyncable::UNSYNCABLE_PREF);
+    registry->RegisterStringPref(prefs::kCloudPrintSigninURL,
+                                 kDefaultCloudPrintSigninURL,
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 }
 

@@ -10,7 +10,7 @@
 class Browser;
 class Profile;
 class PrefService;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 
 namespace web_intents {
 
@@ -38,7 +38,7 @@ extern const char kQuickOfficeViewerServiceURL[];
 extern const char kQuickOfficeViewerDevServiceURL[];
 
 // Registers the preferences related to Web Intents.
-void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
+void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
 // Returns true if WebIntents are enabled in preferences.
 bool IsWebIntentsEnabled(PrefService* prefs);

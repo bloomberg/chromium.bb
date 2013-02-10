@@ -23,8 +23,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/sync/profile_sync_service_base.h"
-#include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autocheckout_infobar_delegate.h"
+#include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_country.h"
@@ -41,6 +41,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -227,28 +228,28 @@ AutofillManager::~AutofillManager() {
 }
 
 // static
-void AutofillManager::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kAutofillEnabled,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPasswordGenerationEnabled,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+void AutofillManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kAutofillEnabled,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPasswordGenerationEnabled,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(OS_MACOSX)
-  prefs->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
-                             true,
-                             PrefServiceSyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
+                                true,
+                                PrefRegistrySyncable::SYNCABLE_PREF);
 #else
-  prefs->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-  prefs->RegisterDoublePref(prefs::kAutofillPositiveUploadRate,
-                            kAutofillPositiveUploadRateDefaultValue,
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
-                            kAutofillNegativeUploadRateDefaultValue,
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kAutofillPositiveUploadRate,
+                               kAutofillPositiveUploadRateDefaultValue,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
+                               kAutofillNegativeUploadRateDefaultValue,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void AutofillManager::RegisterWithSyncService() {

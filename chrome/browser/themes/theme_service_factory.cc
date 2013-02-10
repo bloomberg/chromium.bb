@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -56,26 +57,26 @@ ProfileKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
   return provider;
 }
 
-void ThemeServiceFactory::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+void ThemeServiceFactory::RegisterUserPrefs(PrefRegistrySyncable* registry) {
 #if defined(TOOLKIT_GTK)
-  prefs->RegisterBooleanPref(prefs::kUsesSystemTheme,
-                             GtkThemeService::DefaultUsesSystemTheme(),
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kUsesSystemTheme,
+                                GtkThemeService::DefaultUsesSystemTheme(),
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
-  prefs->RegisterFilePathPref(prefs::kCurrentThemePackFilename,
-                              base::FilePath(),
-                              PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kCurrentThemeID,
-                            ThemeService::kDefaultThemeID,
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kCurrentThemeImages,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kCurrentThemeColors,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kCurrentThemeTints,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kCurrentThemeDisplayProperties,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(prefs::kCurrentThemePackFilename,
+                                 base::FilePath(),
+                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kCurrentThemeID,
+                               ThemeService::kDefaultThemeID,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kCurrentThemeImages,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kCurrentThemeColors,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kCurrentThemeTints,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kCurrentThemeDisplayProperties,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool ThemeServiceFactory::ServiceRedirectedInIncognito() const {

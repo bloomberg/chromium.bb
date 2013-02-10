@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
@@ -91,17 +92,20 @@ TokenService* OAuth2LoginManager::SetupTokenService() {
 }
 
 void OAuth2LoginManager::RemoveLegacyTokens() {
-  PrefServiceSyncable* prefs = user_profile_->GetPrefs();
-  prefs->RegisterStringPref(prefs::kOAuth1Token,
-                            "",
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kOAuth1Secret,
-                            "",
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
+  PrefService* prefs = user_profile_->GetPrefs();
+  // TODO(joi): Registration should only be done up front.
+  scoped_refptr<PrefRegistrySyncable> registry(
+      static_cast<PrefRegistrySyncable*>(prefs->DeprecatedGetPrefRegistry()));
+  registry->RegisterStringPref(prefs::kOAuth1Token,
+                               "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kOAuth1Secret,
+                               "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
   prefs->ClearPref(prefs::kOAuth1Token);
   prefs->ClearPref(prefs::kOAuth1Secret);
-  prefs->UnregisterPreference(prefs::kOAuth1Token);
-  prefs->UnregisterPreference(prefs::kOAuth1Secret);
+  registry->DeprecatedUnregisterPreference(prefs::kOAuth1Token);
+  registry->DeprecatedUnregisterPreference(prefs::kOAuth1Secret);
 }
 
 void OAuth2LoginManager::StoreOAuth2Tokens(

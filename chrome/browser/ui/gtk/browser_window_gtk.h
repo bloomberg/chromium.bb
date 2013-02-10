@@ -40,7 +40,8 @@ class GlobalMenuBar;
 class InfoBarContainerGtk;
 class InstantPreviewControllerGtk;
 class LocationBar;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
+class PrefService;
 class StatusBubbleGtk;
 class TabContentsContainerGtk;
 class TabStripGtk;
@@ -247,7 +248,8 @@ class BrowserWindowGtk
   // Returns the tab we're currently displaying in the tab contents container.
   content::WebContents* GetDisplayedTab();
 
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefService* prefs,
+                                PrefRegistrySyncable* registry);
 
   // Tells GTK that the toolbar area is invalidated and needs redrawing. We
   // have this method as a hack because GTK doesn't queue the toolbar area for

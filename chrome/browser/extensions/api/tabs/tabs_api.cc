@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -1813,9 +1814,9 @@ void TabsCaptureVisibleTabFunction::SendResultFromBitmap(
 }
 
 void TabsCaptureVisibleTabFunction::RegisterUserPrefs(
-    PrefServiceSyncable* service) {
-  service->RegisterBooleanPref(prefs::kDisableScreenshots, false,
-                               PrefServiceSyncable::UNSYNCABLE_PREF);
+    PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kDisableScreenshots, false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool TabsDetectLanguageFunction::RunImpl() {

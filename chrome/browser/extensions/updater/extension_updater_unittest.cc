@@ -39,7 +39,7 @@
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "chrome/browser/extensions/updater/request_queue_impl.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -224,7 +224,7 @@ class MockService : public TestExtensionService {
 
   ExtensionPrefs* extension_prefs() { return prefs_->prefs(); }
 
-  PrefServiceSyncable* pref_service() { return prefs_->pref_service(); }
+  PrefService* pref_service() { return prefs_->pref_service(); }
 
   Blacklist* blacklist() { return &blacklist_; }
 

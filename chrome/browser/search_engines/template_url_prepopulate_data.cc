@@ -11,12 +11,13 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/prepopulated_engines.h"
@@ -1088,19 +1089,19 @@ const LogoURLs google_logos = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterIntegerPref(prefs::kCountryIDAtInstall,
-                             kCountryIDUnknown,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kSearchProviderOverrides,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kSearchProviderOverridesVersion,
-                             -1,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(prefs::kCountryIDAtInstall,
+                                kCountryIDUnknown,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kSearchProviderOverrides,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kSearchProviderOverridesVersion,
+                                -1,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
   // Obsolete pref, for migration.
-  prefs->RegisterIntegerPref(prefs::kGeoIDAtInstall,
-                             -1,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kGeoIDAtInstall,
+                                -1,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 int GetDataVersion(PrefService* prefs) {

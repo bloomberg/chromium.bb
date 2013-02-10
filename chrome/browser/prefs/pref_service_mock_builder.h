@@ -8,6 +8,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_builder.h"
 
 class PrefService;
+class PrefRegistrySyncable;
 class PrefServiceSyncable;
 
 // A helper that allows convenient building of custom PrefServices in tests.
@@ -19,7 +20,8 @@ class PrefServiceMockBuilder : public PrefServiceSyncableBuilder {
   // Creates a PrefService for testing, invalidating the entire
   // builder configuration.
   virtual PrefService* Create(PrefRegistry* pref_registry) OVERRIDE;
-  virtual PrefServiceSyncable* CreateSyncable() OVERRIDE;
+  virtual PrefServiceSyncable* CreateSyncable(
+      PrefRegistrySyncable* pref_registry) OVERRIDE;
 
  private:
   virtual void ResetDefaultState() OVERRIDE;

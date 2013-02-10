@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/favicon/favicon_util.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -180,9 +181,9 @@ ExtensionWebUI::bookmark_manager_private_event_router() {
 // chrome:// URL overrides
 
 // static
-void ExtensionWebUI::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterDictionaryPref(kExtensionURLOverrides,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
+void ExtensionWebUI::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(kExtensionURLOverrides,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static

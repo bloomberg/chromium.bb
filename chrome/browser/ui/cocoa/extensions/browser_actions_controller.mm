@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -27,9 +28,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -263,9 +264,12 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     browser_ = browser;
     profile_ = browser->profile();
 
+    // TODO(joi): Do all registrations up front.
     if (!profile_->GetPrefs()->FindPreference(
         prefs::kBrowserActionContainerWidth))
-      [BrowserActionsController registerUserPrefs:profile_->GetPrefs()];
+      [BrowserActionsController registerUserPrefs:(
+          (PrefRegistrySyncable*)
+          profile_->GetPrefs()->DeprecatedGetPrefRegistry())];
 
     observer_.reset(new ExtensionServiceObserverBridge(self, browser_));
     ExtensionService* extensionService =
@@ -440,10 +444,10 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   return YES;
 }
 
-+ (void)registerUserPrefs:(PrefServiceSyncable*)prefs {
-  prefs->RegisterDoublePref(prefs::kBrowserActionContainerWidth,
-                            0,
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
++ (void)registerUserPrefs:(PrefRegistrySyncable*)registry {
+  registry->RegisterDoublePref(prefs::kBrowserActionContainerWidth,
+                               0,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 #pragma mark -

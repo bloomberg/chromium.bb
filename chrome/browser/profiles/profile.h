@@ -22,7 +22,7 @@ class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class HostContentSettingsMap;
 class PasswordStore;
-class PrefServiceSyncable;
+class PrefRegistrySyncable;
 class PromoCounter;
 class ProtocolHandlerRegistry;
 class TestingProfile;
@@ -136,7 +136,7 @@ class Profile : public content::BrowserContext {
 
   // Profile prefs are registered as soon as the prefs are loaded for the first
   // time.
-  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+  static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
   // Gets task runner for I/O operations associated with |profile|.
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunnerForProfile(
@@ -209,15 +209,14 @@ class Profile : public content::BrowserContext {
   // Returns the PolicyService that provides policies for this profile.
   virtual policy::PolicyService* GetPolicyService() = 0;
 
-  // Retrieves a pointer to the PrefServiceSyncable that manages the preferences
-  // for this user profile.
-  // TODO(joi): Make this and the below return just a PrefService.
-  virtual PrefServiceSyncable* GetPrefs() = 0;
+  // Retrieves a pointer to the PrefService that manages the
+  // preferences for this user profile.
+  virtual PrefService* GetPrefs() = 0;
 
   // Retrieves a pointer to the PrefService that manages the preferences
   // for OffTheRecord Profiles.  This PrefService is lazily created the first
   // time that this method is called.
-  virtual PrefServiceSyncable* GetOffTheRecordPrefs() = 0;
+  virtual PrefService* GetOffTheRecordPrefs() = 0;
 
   // Returns the main request context.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;

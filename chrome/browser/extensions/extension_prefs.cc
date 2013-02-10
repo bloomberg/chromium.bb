@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_sorting.h"
+#include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -370,7 +371,7 @@ base::Time ExtensionPrefs::TimeProvider::GetCurrentTime() const {
 
 // static
 scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
-    PrefServiceSyncable* prefs,
+    PrefService* prefs,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
     bool extensions_disabled) {
@@ -383,7 +384,7 @@ scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
 
 // static
 scoped_ptr<ExtensionPrefs> ExtensionPrefs::Create(
-    PrefServiceSyncable* pref_service,
+    PrefService* pref_service,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
     bool extensions_disabled,
@@ -2188,7 +2189,7 @@ void ExtensionPrefs::SetGeometryCache(
 }
 
 ExtensionPrefs::ExtensionPrefs(
-    PrefServiceSyncable* prefs,
+    PrefService* prefs,
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
     scoped_ptr<TimeProvider> time_provider)
@@ -2218,51 +2219,51 @@ bool ExtensionPrefs::NeedsStorageGarbageCollection() {
 }
 
 // static
-void ExtensionPrefs::RegisterUserPrefs(PrefServiceSyncable* prefs) {
-  prefs->RegisterDictionaryPref(kExtensionsPref,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(kExtensionToolbar,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(kExtensionActionBox,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(kExtensionActionBoxBar,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize,
-                             -1,  // default value
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kExtensionInstallAllowList,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kExtensionInstallDenyList,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterDictionaryPref(prefs::kExtensionInstallForceList,
-                                PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kExtensionAllowedTypes,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(kWebStoreLogin,
-                            std::string(),  // default value
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion,
-                            "0",  // default value
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kExtensionStorageGarbageCollect,
-                             false,  // default value
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterInt64Pref(prefs::kLastExtensionsUpdateCheck,
-                           0,  // default value
-                           PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterInt64Pref(prefs::kNextExtensionsUpdateCheck,
-                           0,  // default value
-                           PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kExtensionAllowedInstallSites,
-                          PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(kExtensionsLastChromeVersion,
-                            std::string(),  // default value
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(kSideloadWipeoutDone,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
+void ExtensionPrefs::RegisterUserPrefs(PrefRegistrySyncable* registry) {
+  registry->RegisterDictionaryPref(kExtensionsPref,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(kExtensionToolbar,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(kExtensionActionBox,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(kExtensionActionBoxBar,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kExtensionToolbarSize,
+                                -1,  // default value
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kExtensionsBlacklistUpdate,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kExtensionInstallAllowList,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kExtensionInstallDenyList,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kExtensionInstallForceList,
+                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kExtensionAllowedTypes,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(kWebStoreLogin,
+                               std::string(),  // default value
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion,
+                               "0",  // default value
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kExtensionStorageGarbageCollect,
+                                false,  // default value
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(prefs::kLastExtensionsUpdateCheck,
+                              0,  // default value
+                              PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(prefs::kNextExtensionsUpdateCheck,
+                              0,  // default value
+                              PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kExtensionAllowedInstallSites,
+                             PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(kExtensionsLastChromeVersion,
+                               std::string(),  // default value
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(kSideloadWipeoutDone,
+                                false,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 ExtensionIdList ExtensionPrefs::GetExtensionPrefAsVector(
