@@ -72,6 +72,7 @@
 #include "webkit/plugins/webplugininfo.h"
 #include "webkit/support/platform_support.h"
 #include "webkit/support/simple_database_system.h"
+#include "webkit/support/test_webidbfactory.h"
 #include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
@@ -171,8 +172,8 @@ class TestEnvironment {
         new TestWebKitPlatformSupport(unit_test_mode,
                                       shadow_platform_delegate));
 
-    // TODO(darin): Uncomment this once DRT calls ResetTestEnvironment().
-    //WebKit::setIDBFactory(webkit_platform_support_->idbFactory());
+    idb_factory_.reset(new TestWebIDBFactory());
+    WebKit::setIDBFactory(idb_factory_.get());
 
 #if defined(OS_ANDROID)
     // Make sure we have enough decoding resources for layout tests.
@@ -186,13 +187,6 @@ class TestEnvironment {
 
   ~TestEnvironment() {
     SimpleResourceLoaderBridge::Shutdown();
-  }
-
-  void Reset() {
-#if defined(OS_ANDROID)
-    media_player_manager_->ReleaseMediaResources();
-#endif
-    WebKit::setIDBFactory(webkit_platform_support_->idbFactory());
   }
 
   TestWebKitPlatformSupport* webkit_platform_support() const {
@@ -238,6 +232,7 @@ class TestEnvironment {
   scoped_ptr<base::AtExitManager> at_exit_manager_;
   scoped_ptr<MessageLoopType> main_message_loop_;
   scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
+  scoped_ptr<TestWebIDBFactory> idb_factory_;
 
 #if defined(OS_ANDROID)
   base::FilePath mock_current_directory_;
@@ -395,10 +390,6 @@ void TearDownTestEnvironment() {
   test_environment = NULL;
   AfterShutdown();
   logging::CloseLogFile();
-}
-
-void ResetTestEnvironment() {
-  test_environment->Reset();
 }
 
 WebKit::WebKitPlatformSupport* GetWebKitPlatformSupport() {
