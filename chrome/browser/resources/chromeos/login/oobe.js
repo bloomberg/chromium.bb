@@ -78,6 +78,7 @@ cr.define('cr.ui', function() {
     login.TPMErrorMessageScreen.register();
     login.PasswordChangedScreen.register();
     login.ManagedUserCreationScreen.register();
+    oobe.TermsOfServiceScreen.register();
 
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
@@ -486,6 +487,34 @@ cr.define('cr.ui', function() {
    */
   Oobe.forceLockedUserPodFocus = function() {
     login.AccountPickerScreen.forceLockedUserPodFocus();
+  };
+
+  /**
+   * Sets the domain name whose Terms of Service are being shown on the Terms of
+   * Service screen.
+   * @param {string} domain The domain name.
+   */
+  Oobe.setTermsOfServiceDomain = function(domain) {
+    oobe.TermsOfServiceScreen.setDomain(domain);
+  };
+
+  /**
+   * Displays an error message on the Terms of Service screen. Called when the
+   * download of the Terms of Service has failed.
+   */
+  Oobe.setTermsOfServiceLoadError = function() {
+    $('terms-of-service').classList.remove('tos-loading');
+    $('terms-of-service').classList.add('error');
+  };
+
+  /**
+   * Displays the given |termsOfService| on the Terms of Service screen.
+   * @param {string} termsOfService The terms of service, as plain text.
+   */
+  Oobe.setTermsOfService = function(termsOfService) {
+    $('terms-of-service').classList.remove('tos-loading');
+    $('tos-content-main').textContent = termsOfService;
+    $('tos-accept-button').disabled = false;
   };
 
   // Export

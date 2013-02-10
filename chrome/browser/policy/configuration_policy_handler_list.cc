@@ -354,6 +354,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPowerManagementUsesVideoActivity,
     prefs::kPowerUseVideoActivity,
     Value::TYPE_BOOLEAN },
+  { key::kTermsOfServiceURL,
+    prefs::kTermsOfServiceURL,
+    Value::TYPE_STRING },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

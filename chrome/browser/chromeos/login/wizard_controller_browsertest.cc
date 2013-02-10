@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
                        ControlFlowEnterpriseAutoEnrollmentCompleted) {
-  WizardController::default_controller()->SkipImageSelectionForTesting();
+  WizardController::default_controller()->SkipPostLoginScreensForTesting();
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
             WizardController::default_controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowResetScreen) {
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 14,
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 16,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

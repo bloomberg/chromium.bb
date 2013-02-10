@@ -404,14 +404,17 @@ void TestingAutomationProvider::PickUserImage(DictionaryValue* args,
 
 void TestingAutomationProvider::SkipToLogin(DictionaryValue* args,
                                             IPC::Message* reply_message) {
-  bool skip_image_selection;
-  if (!args->GetBoolean("skip_image_selection", &skip_image_selection)) {
+  bool skip_post_login_screens;
+  // The argument name is a legacy. If set to |true|, this argument causes any
+  // screens that may otherwise be shown after login (registration, Terms of
+  // Service, user image selection) to be skipped.
+  if (!args->GetBoolean("skip_image_selection", &skip_post_login_screens)) {
     AutomationJSONReply reply(this, reply_message);
     reply.SendError("Invalid or missing args.");
     return;
   }
-  if (skip_image_selection)
-    WizardController::SkipImageSelectionForTesting();
+  if (skip_post_login_screens)
+    WizardController::SkipPostLoginScreensForTesting();
 
   WizardController* wizard_controller = WizardController::default_controller();
   if (!wizard_controller) {

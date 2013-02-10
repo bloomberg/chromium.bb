@@ -339,6 +339,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs,
   registry->RegisterDoublePref(prefs::kPowerPresentationIdleDelayFactor,
                                2.0,
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterStringPref(prefs::kTermsOfServiceURL,
+                               "",
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {

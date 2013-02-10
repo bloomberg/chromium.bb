@@ -984,6 +984,13 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <message name="IDS_APP_LIST_SIGNIN_TEXT" desc="Text for when the launcher needs to sign in.">
         You need to be signed into Chromium to use apps. This allows Chromium to sync your apps, bookmarks, history, passwords and other settings across devices.
       </message>
+
+      <!-- Chrome OS OOBE Terms of Service screen-->
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING" desc="Subheading at the top of the Terms of Service screen.">
+          <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Chromium OS Terms.
+        </message>
+      </if>
     </messages>
   </release>
 </grit>
