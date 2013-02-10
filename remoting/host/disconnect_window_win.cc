@@ -47,8 +47,8 @@ class DisconnectWindowWin : public DisconnectWindow {
   virtual void Hide() OVERRIDE;
 
 private:
-  static BOOL CALLBACK DialogProc(HWND hwnd, UINT message, WPARAM wparam,
-                                  LPARAM lparam);
+  static INT_PTR CALLBACK DialogProc(HWND hwnd, UINT message, WPARAM wparam,
+                                     LPARAM lparam);
 
   BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -122,8 +122,8 @@ void DisconnectWindowWin::Hide() {
   EndDialog();
 }
 
-BOOL CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd, UINT message,
-                                              WPARAM wparam, LPARAM lparam) {
+INT_PTR CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd, UINT message,
+                                                 WPARAM wparam, LPARAM lparam) {
   LONG_PTR self = NULL;
   if (message == WM_INITDIALOG) {
     self = lparam;
@@ -189,7 +189,7 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT message,
     // Let the window be draggable by its client area by responding
     // that the entire window is the title bar.
     case WM_NCHITTEST:
-      SetWindowLong(hwnd, DWL_MSGRESULT, HTCAPTION);
+      SetWindowLongPtr(hwnd, DWLP_MSGRESULT, HTCAPTION);
       return TRUE;
 
     case WM_PAINT: {

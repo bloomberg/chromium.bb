@@ -560,6 +560,8 @@
                 '../google_update/google_update.gyp:google_update',
                 'remoting_controller_idl',
               ],
+              # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+              'msvs_disabled_warnings': [4267, ],
             }],
           ],
         },  # end of target 'remoting_host_setup_base'
