@@ -15,7 +15,7 @@ namespace extensions {
 // Media Galleries permissions are as follows:
 //   <media-galleries-permission-pattern>
 //             := <access> | <access> 'allAutoDetected' | 'allAutoDetected'
-//   <access>  := 'read' | 'write'
+//   <access>  := 'read'
 class MediaGalleriesPermission
   : public SetDisjunctionPermission<MediaGalleriesPermissionData,
                                     MediaGalleriesPermission> {
@@ -40,7 +40,6 @@ class MediaGalleriesPermission
   // Permission strings.
   static const char kAllAutoDetectedPermission[];
   static const char kReadPermission[];
-  static const char kWritePermission[];
 };
 
 }  // namespace extensions
