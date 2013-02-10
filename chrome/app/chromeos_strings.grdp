@@ -1472,6 +1472,19 @@ Press any key to continue exploring.
     Reset
   </message>
 
+  <message name="IDS_WRONG_HWID_SCREEN_HEADER" desc="Header of message shown on screen notifying about malformed hardware ID.">
+    A factory error has been detected
+  </message>
+  <message name="IDS_WRONG_HWID_SCREEN_MESSAGE_FIRST_PART" desc="Warning message shown on screen notifying about malformed hardware ID. First paragraph.">
+    Unfortunately, your computer is configured with a malformed hardware ID. This prevents Chrome OS from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD">$1</ph>may be vulnerable to malicious attacks<ph name="END_BOLD">$2</ph>.
+  </message>
+  <message name="IDS_WRONG_HWID_SCREEN_MESSAGE_SECOND_PART" desc="Warning message shown on screen notifying about malformed hardware ID. Second paragraph.">
+    Please contact your hardware manufacturer immediately to send your computer to a repair facility.
+  </message>
+  <message name="IDS_WRONG_HWID_SCREEN_SKIP_LINK" desc="Text on link that skips warning about malformed hardware ID.">
+    Skip for now
+  </message>
+
   <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by enterprise policy">
     This option is controlled by enterprise policy. Please contact your administrator for more information.
   </message>
