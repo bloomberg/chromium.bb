@@ -41,43 +41,64 @@ struct KeySystemPluginTypePair {
 // TODO(ddorwin): Automatically support parent systems: http://crbug.com/164303.
 static const char kWidevineBaseKeySystem[] = "com.widevine";
 
+
+#if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
+// The supported codecs depend on what the CDM provides.
+static const char kWidevineVideoMp4Codecs[] =
+#if defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE) && \
+    defined(WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE)
+    "avc1,mp4a";
+#elif defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
+    "avc1";
+#else
+    "";  // No codec strings are supported.
+#endif
+
+static const char kWidevineAudioMp4Codecs[] =
+#if defined(WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE)
+    "mp4a";
+#else
+    "";  // No codec strings are supported.
+#endif
+#endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
+
 // Specifies the container and codec combinations supported by individual
 // key systems. Each line is a container-codecs combination and the key system
-// that supports it. Multiple codecs can be listed. A trailing commas in
-// the |codecs_list| allows the container to be specified without a codec.
+// that supports it. Multiple codecs can be listed. In all cases, the container
+// without a codec is also supported.
 // This list is converted at runtime into individual container-codec-key system
 // entries in KeySystems::key_system_map_.
 static const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   // Clear Key.
-  { "video/webm", "vorbis,vp8,vp8.0,", kClearKeyKeySystem },
-  { "audio/webm", "vorbis,", kClearKeyKeySystem },
+  { "video/webm", "vorbis,vp8,vp8.0", kClearKeyKeySystem },
+  { "audio/webm", "vorbis", kClearKeyKeySystem },
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-  { "video/mp4", "avc1,mp4a,", kClearKeyKeySystem },
-  { "audio/mp4", "mp4a,", kClearKeyKeySystem },
+  { "video/mp4", "avc1,mp4a", kClearKeyKeySystem },
+  { "audio/mp4", "mp4a", kClearKeyKeySystem },
 #endif
 
   // External Clear Key (used for testing).
-  { "video/webm", "vorbis,vp8,vp8.0,", kExternalClearKeyKeySystem },
-  { "audio/webm", "vorbis,", kExternalClearKeyKeySystem },
+  { "video/webm", "vorbis,vp8,vp8.0", kExternalClearKeyKeySystem },
+  { "audio/webm", "vorbis", kExternalClearKeyKeySystem },
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-  { "video/mp4", "avc1,mp4a,", kExternalClearKeyKeySystem },
-  { "audio/mp4", "mp4a,", kExternalClearKeyKeySystem },
+  { "video/mp4", "avc1,mp4a", kExternalClearKeyKeySystem },
+  { "audio/mp4", "mp4a", kExternalClearKeyKeySystem },
 #endif
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   // Widevine.
-  { "video/webm", "vorbis,vp8,vp8.0,", kWidevineKeySystem },
-  { "audio/webm", "vorbis,", kWidevineKeySystem },
-  { "video/webm", "vorbis,vp8,vp8.0,", kWidevineBaseKeySystem },
-  { "audio/webm", "vorbis,", kWidevineBaseKeySystem },
-#if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
+  { "video/webm", "vorbis,vp8,vp8.0", kWidevineKeySystem },
+  { "audio/webm", "vorbis", kWidevineKeySystem },
+  { "video/webm", "vorbis,vp8,vp8.0", kWidevineBaseKeySystem },
+  { "audio/webm", "vorbis", kWidevineBaseKeySystem },
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-  { "video/mp4", "avc1,mp4a,", kWidevineKeySystem },
-  { "audio/mp4", "mp4a,", kWidevineKeySystem },
-  { "video/mp4", "avc1,mp4a,", kWidevineBaseKeySystem },
-  { "audio/mp4", "mp4a,", kWidevineBaseKeySystem },
-#endif
-#endif
+#if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
+  { "video/mp4", kWidevineVideoMp4Codecs, kWidevineKeySystem },
+  { "video/mp4", kWidevineVideoMp4Codecs, kWidevineBaseKeySystem },
+  { "audio/mp4", kWidevineAudioMp4Codecs, kWidevineKeySystem },
+  { "audio/mp4", kWidevineAudioMp4Codecs, kWidevineBaseKeySystem },
+#endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
+#endif  // defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
 #endif  // WIDEVINE_CDM_AVAILABLE
 };
 
@@ -132,6 +153,8 @@ KeySystems::KeySystems() {
     CodecMappings codecs;
     for (size_t j = 0; j < mime_type_codecs.size(); ++j)
       codecs.insert(mime_type_codecs[j]);
+    // Support the MIME type string alone, without codec(s) specified.
+    codecs.insert("");
 
     // Key systems can be repeated, so there may already be an entry.
     KeySystemMappings::iterator key_system_iter =

@@ -21,21 +21,48 @@ using WebKit::WebString;
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 #define EXPECT_WV EXPECT_TRUE
+
+#if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
+#define EXPECT_WVCENC EXPECT_TRUE
+
+#if defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
+#define EXPECT_WVAVC1 EXPECT_TRUE
+#if defined(WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE)
+#define EXPECT_WVAVC1AAC EXPECT_TRUE
 #else
-#define EXPECT_WV EXPECT_FALSE
+#define EXPECT_WVAVC1AAC EXPECT_FALSE
+#endif  // defined(WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE)
+#else  // !defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
+#define EXPECT_WVAVC1 EXPECT_FALSE
+#define EXPECT_WVAVC1AAC EXPECT_FALSE
+#endif  // defined(WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE)
+
+#if defined(WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE)
+#define EXPECT_WVAAC EXPECT_TRUE
+#else
+#define EXPECT_WVAAC EXPECT_FALSE
 #endif
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && \
-    defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-#define EXPECT_WVISO EXPECT_TRUE
-#else
-#define EXPECT_WVISO EXPECT_FALSE
-#endif
+#else  // !defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
+#define EXPECT_WVCENC EXPECT_FALSE
+#define EXPECT_WVAVC1 EXPECT_FALSE
+#define EXPECT_WVAVC1AAC EXPECT_FALSE
+#define EXPECT_WVAAC EXPECT_FALSE
+#endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
+
+#else  // !defined(WIDEVINE_CDM_AVAILABLE)
+#define EXPECT_WV EXPECT_FALSE
+#define EXPECT_WVCENC EXPECT_FALSE
+#define EXPECT_WVAVC1 EXPECT_FALSE
+#define EXPECT_WVAVC1AAC EXPECT_FALSE
+#define EXPECT_WVAAC EXPECT_FALSE
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 namespace webkit_media {
 
 static const char* const kClearKey = "webkit-org.w3.clearkey";
 static const char* const kExternalClearKey = "org.chromium.externalclearkey";
+static const char* const kWidevine = "com.widevine";
 static const char* const kWidevineAlpha = "com.widevine.alpha";
 
 class KeySystemsTest : public testing::Test {
@@ -515,7 +542,7 @@ TEST_F(KeySystemsTest, Widevine_Basic) {
 }
 
 TEST_F(KeySystemsTest, Widevine_Parent) {
-  const char* const kWidevineParent = "com.widevine";
+  const char* const kWidevineParent = kWidevine;
 
   EXPECT_WV(IsSupportedKeySystem(WebString::fromUTF8(kWidevineParent)));
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
@@ -568,9 +595,9 @@ TEST_F(KeySystemsTest, Widevine_IsSupportedKeySystem_InvalidVariants) {
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_NoType) {
   // These two should be true. See http://crbug.com/164303.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "", no_codecs(), "com.widevine.alpha"));
+      "", no_codecs(), kWidevineAlpha));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      "", no_codecs(), "com.widevine"));
+      "", no_codecs(), kWidevine));
 
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "", no_codecs(), "com.widevine.foo"));
@@ -583,8 +610,6 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_WebM) {
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kWidevineAlpha));
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
-      "video/webm", no_codecs(), "com.widevine"));
-  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp8_codec(), kWidevineAlpha));
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vp80_codec(), kWidevineAlpha));
@@ -592,6 +617,18 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_WebM) {
       "video/webm", vp8_and_vorbis_codecs(), kWidevineAlpha));
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", vorbis_codec(), kWidevineAlpha));
+
+  // Valid video types - parent key system.
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", no_codecs(), kWidevine));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp8_codec(), kWidevine));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp80_codec(), kWidevine));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vp8_and_vorbis_codecs(), kWidevine));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "video/webm", vorbis_codec(), kWidevine));
 
   // Non-Webm codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
@@ -607,6 +644,12 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_WebM) {
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "audio/webm", vorbis_codec(), kWidevineAlpha));
 
+  // Valid audio types - parent key system.
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "audio/webm", no_codecs(), kWidevine));
+  EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
+      "audio/webm", vorbis_codec(), kWidevine));
+
   // Non-audio codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       "audio/webm", vp8_codec(), kWidevineAlpha));
@@ -620,16 +663,24 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_WebM) {
 
 TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_MP4) {
   // Valid video types.
-  EXPECT_WVISO(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", no_codecs(), kWidevineAlpha));
-  EXPECT_WVISO(IsSupportedKeySystemWithMediaMimeType(
-      "video/mp4", no_codecs(), "com.widevine"));
-  EXPECT_WVISO(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_codec(), kWidevineAlpha));
-  EXPECT_WVISO(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", avc1_and_aac_codecs(), kWidevineAlpha));
-  EXPECT_WVISO(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
       "video/mp4", aac_codec(), kWidevineAlpha));
+
+  // Valid video types - parent key system.
+  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", no_codecs(), kWidevine));
+  EXPECT_WVAVC1(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc1_codec(), kWidevine));
+  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", avc1_and_aac_codecs(), kWidevine));
+  EXPECT_WVAVC1AAC(IsSupportedKeySystemWithMediaMimeType(
+      "video/mp4", aac_codec(), kWidevine));
 
   // Extended codecs fail because this is handled by SimpleWebMimeRegistryImpl.
   // They should really pass canPlayType().
@@ -651,10 +702,16 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_MP4) {
       "video/mp4", mixed_codecs(), kWidevineAlpha));
 
   // Valid audio types.
-  EXPECT_WVISO(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", no_codecs(), kWidevineAlpha));
-  EXPECT_WVISO(IsSupportedKeySystemWithMediaMimeType(
+  EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
       "audio/mp4", aac_codec(), kWidevineAlpha));
+
+  // Valid audio types - parent key system.
+  EXPECT_WVCENC(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", no_codecs(), kWidevine));
+  EXPECT_WVAAC(IsSupportedKeySystemWithMediaMimeType(
+      "audio/mp4", aac_codec(), kWidevine));
 
   // Non-audio codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
