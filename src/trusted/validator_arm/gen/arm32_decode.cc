@@ -20,6 +20,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1_instance_()
   , Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_instance_()
   , Actual_ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_1_instance_()
+  , Actual_BFC_cccc0111110mmmmmddddlllll0011111_case_1_instance_()
+  , Actual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1_instance_()
   , Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1_instance_()
   , Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1_instance_()
   , Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_()
@@ -55,6 +57,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_NOP_cccc0011001000001111000000000000_case_1_instance_()
   , Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1_instance_()
   , Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_()
+  , Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1_instance_()
+  , Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_instance_()
   , Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_instance_()
   , Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_instance_()
   , Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1_instance_()
@@ -71,12 +75,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_Unnamed_case_1_instance_()
-  , Binary2RegisterBitRangeMsbGeLsb_instance_()
-  , Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_()
-  , Binary3RegisterOpAltA_instance_()
   , Binary3RegisterOpAltANoCondsUpdate_instance_()
   , Binary3RegisterOpAltBNoCondUpdates_instance_()
-  , Binary4RegisterDualOp_instance_()
   , Binary4RegisterDualOpNoCondsUpdate_instance_()
   , Binary4RegisterDualResultNoCondsUpdate_instance_()
   , BranchImmediate24_instance_()
@@ -99,7 +99,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreRegisterList_instance_()
   , StoreVectorRegister_instance_()
   , StoreVectorRegisterList_instance_()
-  , Unary1RegisterBitRangeMsbGeLsb_instance_()
   , Unary2RegisterImmedShiftedOp_instance_()
   , Unary2RegisterSatImmedShiftedOp_instance_()
   , Undefined_instance_()
@@ -1373,7 +1372,7 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000)  !=
           0x0000F000 /* Rd(15:12)=~1111 */) {
-    return Binary4RegisterDualOp_instance_;
+    return Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000)  ==
@@ -1382,7 +1381,7 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* Rd(15:12)=1111 */) {
-    return Binary3RegisterOpAltA_instance_;
+    return Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000)  ==
@@ -1398,7 +1397,7 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
           0x00000000 /* op2(7:5)=x00 */ &&
       (inst.Bits() & 0x0000000F)  !=
           0x0000000F /* Rn(3:0)=~1111 */) {
-    return Binary2RegisterBitRangeMsbGeLsb_instance_;
+    return Actual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -1407,14 +1406,14 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
           0x00000000 /* op2(7:5)=x00 */ &&
       (inst.Bits() & 0x0000000F)  ==
           0x0000000F /* Rn(3:0)=1111 */) {
-    return Unary1RegisterBitRangeMsbGeLsb_instance_;
+    return Actual_BFC_cccc0111110mmmmmddddlllll0011111_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01A00000)  ==
           0x01A00000 /* op1(24:20)=11x1x */ &&
       (inst.Bits() & 0x00000060)  ==
           0x00000040 /* op2(7:5)=x10 */) {
-    return Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_;
+    return Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01C00000)  ==

@@ -543,6 +543,7 @@ class ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0
 //
 //   {Pc: 15,
 //    Rd: Rd(15:12),
+//    actual: Actual_BFC_cccc0111110mmmmmddddlllll0011111_case_1,
 //    arch: v6T2,
 //    baseline: Unary1RegisterBitRangeMsbGeLsb,
 //    cond: cond(31:28),
@@ -577,6 +578,7 @@ class BFC_cccc0111110mmmmmddddlllll0011111_case_0
 //   {Pc: 15,
 //    Rd: Rd(15:12),
 //    Rn: Rn(3:0),
+//    actual: Actual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1,
 //    arch: v6T2,
 //    baseline: Binary2RegisterBitRangeMsbGeLsb,
 //    cond: cond(31:28),
@@ -5426,6 +5428,7 @@ class SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0
 //   {Pc: 15,
 //    Rd: Rd(15:12),
 //    Rn: Rn(3:0),
+//    actual: Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1,
 //    arch: v6T2,
 //    baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
 //    cond: cond(31:28),

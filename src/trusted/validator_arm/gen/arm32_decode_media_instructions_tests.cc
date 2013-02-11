@@ -40,7 +40,7 @@ namespace nacl_arm_test {
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -115,7 +115,7 @@ bool Binary4RegisterDualOpTesterCase0
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd},
@@ -220,7 +220,7 @@ bool PermanentlyUndefinedTesterCase2
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rn: Rn(3:0),
-//       actual: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       actual: Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1,
 //       baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
 //       constraints: ,
 //       defs: {Rd},
@@ -292,7 +292,7 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rn: Rn(3:0),
-//       actual: Binary2RegisterBitRangeMsbGeLsb,
+//       actual: Actual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1,
 //       baseline: Binary2RegisterBitRangeMsbGeLsb,
 //       constraints: ,
 //       defs: {Rd},
@@ -373,7 +373,7 @@ bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
-//       actual: Unary1RegisterBitRangeMsbGeLsb,
+//       actual: Actual_BFC_cccc0111110mmmmmddddlllll0011111_case_1,
 //       baseline: Unary1RegisterBitRangeMsbGeLsb,
 //       constraints: ,
 //       defs: {Rd},
@@ -449,7 +449,7 @@ bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rn: Rn(3:0),
-//       actual: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       actual: Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1,
 //       baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
 //       constraints: ,
 //       defs: {Rd},
@@ -528,7 +528,7 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -554,7 +554,7 @@ class Binary4RegisterDualOpTester_Case0
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd},
@@ -592,7 +592,7 @@ class PermanentlyUndefinedTester_Case2
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rn: Rn(3:0),
-//       actual: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       actual: Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1,
 //       baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
 //       constraints: ,
 //       defs: {Rd},
@@ -619,7 +619,7 @@ class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rn: Rn(3:0),
-//       actual: Binary2RegisterBitRangeMsbGeLsb,
+//       actual: Actual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1,
 //       baseline: Binary2RegisterBitRangeMsbGeLsb,
 //       constraints: ,
 //       defs: {Rd},
@@ -648,7 +648,7 @@ class Binary2RegisterBitRangeMsbGeLsbTester_Case4
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
-//       actual: Unary1RegisterBitRangeMsbGeLsb,
+//       actual: Actual_BFC_cccc0111110mmmmmddddlllll0011111_case_1,
 //       baseline: Unary1RegisterBitRangeMsbGeLsb,
 //       constraints: ,
 //       defs: {Rd},
@@ -676,7 +676,7 @@ class Unary1RegisterBitRangeMsbGeLsbTester_Case5
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rn: Rn(3:0),
-//       actual: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       actual: Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1,
 //       baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
 //       constraints: ,
 //       defs: {Rd},
@@ -714,7 +714,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOp,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOp,
 //       constraints: ,
 //       defs: {Rd},
@@ -728,8 +728,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case0_TestCase0) {
-  Binary4RegisterDualOpTester_Case0 tester;
-  tester.Test("cccc01111000ddddaaaammmm0001nnnn");
+  Binary4RegisterDualOpTester_Case0 baseline_tester;
+  NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_USADA8 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01111000ddddaaaammmm0001nnnn");
 }
 
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=1111
@@ -737,7 +739,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltA,
+//       actual: Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1,
 //       baseline: Binary3RegisterOpAltA,
 //       constraints: ,
 //       defs: {Rd},
@@ -749,8 +751,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case1_TestCase1) {
-  Binary3RegisterOpAltATester_Case1 tester;
-  tester.Test("cccc01111000dddd1111mmmm0001nnnn");
+  Binary3RegisterOpAltATester_Case1 baseline_tester;
+  NamedActual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1_USAD8 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01111000dddd1111mmmm0001nnnn");
 }
 
 // op1(24:20)=11111 & op2(7:5)=111
@@ -769,7 +773,7 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rn: Rn(3:0),
-//       actual: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       actual: Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1,
 //       baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
 //       constraints: ,
 //       defs: {Rd},
@@ -785,15 +789,17 @@ TEST_F(Arm32DecoderStateTests,
 //       widthm1: widthm1(20:16)}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3_TestCase3) {
-  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3 tester;
-  tester.Test("cccc0111101wwwwwddddlllll101nnnn");
+  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3 baseline_tester;
+  NamedActual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1_SBFX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0111101wwwwwddddlllll101nnnn");
 }
 
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=~1111
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rn: Rn(3:0),
-//       actual: Binary2RegisterBitRangeMsbGeLsb,
+//       actual: Actual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1,
 //       baseline: Binary2RegisterBitRangeMsbGeLsb,
 //       constraints: ,
 //       defs: {Rd},
@@ -812,14 +818,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rd}}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterBitRangeMsbGeLsbTester_Case4_TestCase4) {
-  Binary2RegisterBitRangeMsbGeLsbTester_Case4 tester;
-  tester.Test("cccc0111110mmmmmddddlllll001nnnn");
+  Binary2RegisterBitRangeMsbGeLsbTester_Case4 baseline_tester;
+  NamedActual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1_BFI actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0111110mmmmmddddlllll001nnnn");
 }
 
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
-//       actual: Unary1RegisterBitRangeMsbGeLsb,
+//       actual: Actual_BFC_cccc0111110mmmmmddddlllll0011111_case_1,
 //       baseline: Unary1RegisterBitRangeMsbGeLsb,
 //       constraints: ,
 //       defs: {Rd},
@@ -836,15 +844,17 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rd}}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterBitRangeMsbGeLsbTester_Case5_TestCase5) {
-  Unary1RegisterBitRangeMsbGeLsbTester_Case5 tester;
-  tester.Test("cccc0111110mmmmmddddlllll0011111");
+  Unary1RegisterBitRangeMsbGeLsbTester_Case5 baseline_tester;
+  NamedActual_BFC_cccc0111110mmmmmddddlllll0011111_case_1_BFC actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0111110mmmmmddddlllll0011111");
 }
 
 // op1(24:20)=1111x & op2(7:5)=x10
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
 //       Rn: Rn(3:0),
-//       actual: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//       actual: Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1,
 //       baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
 //       constraints: ,
 //       defs: {Rd},
@@ -860,8 +870,10 @@ TEST_F(Arm32DecoderStateTests,
 //       widthm1: widthm1(20:16)}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case6_TestCase6) {
-  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case6 tester;
-  tester.Test("cccc0111111mmmmmddddlllll101nnnn");
+  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case6 baseline_tester;
+  NamedActual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1_UBFX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0111111mmmmmddddlllll101nnnn");
 }
 
 }  // namespace nacl_arm_test
