@@ -69,7 +69,7 @@ struct TestEntry {
 // resource_id (arg0) to |fetched_list|, and calls back a successful completion.
 ACTION_P(MockGetFile, fetched_list) {
   fetched_list->push_back(arg0);
-  arg1.Run(DRIVE_FILE_OK, base::FilePath(), std::string(), REGULAR_FILE);
+  arg2.Run(DRIVE_FILE_OK, base::FilePath(), std::string(), REGULAR_FILE);
 }
 
 // Mocks DriveFileSystem::ReadDirectory. It holds the flat list of all entries
@@ -170,12 +170,12 @@ class DrivePrefetcherTest : public testing::Test {
                       const std::vector<std::string>& expected) {
     EXPECT_CALL(*mock_file_system_, ReadDirectoryByPath(_, _))
         .WillRepeatedly(MockReadDirectory(test_entries));
-    EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
+    EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _, _)).Times(0);
     prefetcher_->OnInitialLoadFinished(DRIVE_FILE_OK);
     RunMessageLoop();
 
     std::vector<std::string> fetched_list;
-    EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _))
+    EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _, _))
         .WillRepeatedly(MockGetFile(&fetched_list));
     prefetcher_->OnSyncClientIdle();
     RunMessageLoop();

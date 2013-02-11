@@ -1977,6 +1977,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
   DriveFileType file_type;
   file_system_->GetFileByResourceId(
       entry_proto->resource_id(),
+      DriveClientContext(USER_INITIATED),
       base::Bind(&test_util::CopyResultsFromGetFileCallback,
                  &error, &file_path, &file_type),
       google_apis::GetContentCallback());
@@ -2015,6 +2016,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   DriveFileType file_type;
   file_system_->GetFileByResourceId(
       entry_proto->resource_id(),
+      DriveClientContext(USER_INITIATED),
       base::Bind(&test_util::CopyResultsFromGetFileCallback,
                  &error, &file_path, &file_type),
       google_apis::GetContentCallback());
@@ -2118,6 +2120,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->UpdateFileByResourceId(
       kResourceId,
+      DriveClientContext(USER_INITIATED),
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
@@ -2144,6 +2147,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
   DriveFileError error = DRIVE_FILE_OK;
   file_system_->UpdateFileByResourceId(
       kResourceId,
+      DriveClientContext(USER_INITIATED),
       base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);

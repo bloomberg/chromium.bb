@@ -200,6 +200,7 @@ void ScreenshotSource::SendScreenshot(
               profile_)->file_system();
       file_system->GetFileByResourceId(
           decoded_filename,
+          drive::DriveClientContext(drive::USER_INITIATED),
           base::Bind(&ScreenshotSource::GetSavedScreenshotCallback,
                      base::Unretained(this), screenshot_path, callback),
           google_apis::GetContentCallback());

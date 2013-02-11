@@ -39,6 +39,7 @@ UpdateOperation::~UpdateOperation() {
 
 void UpdateOperation::UpdateFileByResourceId(
     const std::string& resource_id,
+    DriveClientContext context,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -49,10 +50,12 @@ void UpdateOperation::UpdateFileByResourceId(
       resource_id,
       base::Bind(&UpdateOperation::UpdateFileByEntryInfo,
                  weak_ptr_factory_.GetWeakPtr(),
+                 context,
                  callback));
 }
 
 void UpdateOperation::UpdateFileByEntryInfo(
+    DriveClientContext context,
     const FileOperationCallback& callback,
     DriveFileError error,
     const base::FilePath& drive_file_path,
@@ -77,12 +80,14 @@ void UpdateOperation::UpdateFileByEntryInfo(
                   entry_proto_ptr->file_specific_info().file_md5(),
                   base::Bind(&UpdateOperation::OnGetFileCompleteForUpdateFile,
                              weak_ptr_factory_.GetWeakPtr(),
+                             context,
                              callback,
                              drive_file_path,
                              base::Passed(&entry_proto)));
 }
 
 void UpdateOperation::OnGetFileCompleteForUpdateFile(
+    DriveClientContext context,
     const FileOperationCallback& callback,
     const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto,
@@ -102,6 +107,7 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
       cache_file_path,
       entry_proto->file_specific_info().content_mime_type(),
       "",  // etag
+      context,
       base::Bind(&UpdateOperation::OnUpdatedFileUploaded,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

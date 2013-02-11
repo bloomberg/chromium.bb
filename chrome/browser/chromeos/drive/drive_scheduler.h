@@ -5,14 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SCHEDULER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SCHEDULER_H_
 
-#include "base/memory/linked_ptr.h"
+#include <list>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "net/base/network_change_notifier.h"
-
-#include <deque>
 
 class Profile;
 
@@ -27,7 +26,6 @@ namespace drive {
 class DriveScheduler
     : public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
-
   // Enum representing the type of job.
   enum JobType {
     TYPE_GET_ACCOUNT_METADATA,
@@ -108,6 +106,7 @@ class DriveScheduler
 
   // Adds a GetResourceEntry operation to the queue.
   void GetResourceEntry(const std::string& resource_id,
+                        const DriveClientContext& context,
                         const google_apis::GetResourceEntryCallback& callback);
 
 
@@ -148,6 +147,7 @@ class DriveScheduler
       const base::FilePath& virtual_path,
       const base::FilePath& local_cache_path,
       const GURL& download_url,
+      const DriveClientContext& context,
       const google_apis::DownloadActionCallback& download_action_callback,
       const google_apis::GetContentCallback& get_content_callback);
 
@@ -158,6 +158,7 @@ class DriveScheduler
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const std::string& etag,
+      const DriveClientContext& context,
       const google_apis::UploadCompletionCallback& upload_completion_callback);
 
  private:
@@ -168,7 +169,12 @@ class DriveScheduler
     explicit QueueEntry(JobType in_job_type);
     ~QueueEntry();
 
+    static bool Compare(const QueueEntry* left, const QueueEntry* right);
+
     JobInfo job_info;
+
+    // Context of the job.
+    DriveClientContext context;
 
     // Resource ID to use for the operation.
     // Used by:
@@ -264,7 +270,7 @@ class DriveScheduler
   };
 
   // Adds the specified job to the queue.  Takes ownership of |job|
-  int QueueJob(scoped_ptr<QueueEntry> job);
+  void QueueJob(scoped_ptr<QueueEntry> job);
 
   // Starts the job loop, if it is not already running.
   void StartJobLoop();
@@ -287,43 +293,45 @@ class DriveScheduler
 
   // Retries the job if needed, otherwise cleans up the job, invokes the
   // callback, and continues the job loop.
-  scoped_ptr<QueueEntry> OnJobDone(int job_id, DriveFileError error);
+  scoped_ptr<QueueEntry> OnJobDone(scoped_ptr<QueueEntry> queue_entry,
+                                   DriveFileError error);
 
   // Callback for job finishing with a GetResourceListCallback.
   void OnGetResourceListJobDone(
-      int job_id,
+      scoped_ptr<QueueEntry> queue_entry,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> resource_list);
 
   // Callback for job finishing with a GetResourceEntryCallback.
   void OnGetResourceEntryJobDone(
-      int job_id,
+      scoped_ptr<QueueEntry> queue_entry,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);
 
   // Callback for job finishing with a GetAccountMetadataCallback.
   void OnGetAccountMetadataJobDone(
-      int job_id,
+      scoped_ptr<QueueEntry> queue_entry,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
 
   // Callback for job finishing with a GetAppListCallback.
   void OnGetAppListJobDone(
-      int job_id,
+      scoped_ptr<QueueEntry> queue_entry,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::AppList> app_list);
 
   // Callback for job finishing with a EntryActionCallback.
-  void OnEntryActionJobDone(int job_id, google_apis::GDataErrorCode error);
+  void OnEntryActionJobDone(scoped_ptr<QueueEntry> queue_entry,
+                            google_apis::GDataErrorCode error);
 
   // Callback for job finishing with a DownloadActionCallback.
-  void OnDownloadActionJobDone(int job_id,
+  void OnDownloadActionJobDone(scoped_ptr<QueueEntry> queue_entry,
                                google_apis::GDataErrorCode error,
                                const base::FilePath& temp_file);
 
   // Callback for job finishing with a UploadCompletionCallback.
   void OnUploadCompletionJobDone(
-      int job_id,
+      scoped_ptr<QueueEntry> queue_entry,
       google_apis::DriveUploadError error,
       const base::FilePath& drive_path,
       const base::FilePath& file_path,
@@ -351,12 +359,8 @@ class DriveScheduler
   // Disables throttling for testing.
   bool disable_throttling_;
 
-  // Mapping of id to QueueEntry.
-  typedef std::map<int, linked_ptr<QueueEntry> > JobMap;
-  JobMap job_info_map_;
-
-  // The queue of jobs id.  Sorted by priority.
-  std::deque<int> queue_;
+  // The queue of jobs.  Sorted by priority.
+  std::list<QueueEntry*> queue_;
 
   google_apis::DriveServiceInterface* drive_service_;
   google_apis::DriveUploaderInterface* uploader_;

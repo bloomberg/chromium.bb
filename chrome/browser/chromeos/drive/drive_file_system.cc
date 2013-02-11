@@ -194,6 +194,7 @@ struct DriveFileSystem::GetFileFromCacheParams {
       const std::string& resource_id,
       const std::string& md5,
       const std::string& mime_type,
+      const DriveClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback)
       : virtual_file_path(virtual_file_path),
@@ -201,6 +202,7 @@ struct DriveFileSystem::GetFileFromCacheParams {
         resource_id(resource_id),
         md5(md5),
         mime_type(mime_type),
+        context(context),
         get_file_callback(get_file_callback),
         get_content_callback(get_content_callback) {
   }
@@ -211,6 +213,7 @@ struct DriveFileSystem::GetFileFromCacheParams {
   std::string resource_id;
   std::string md5;
   std::string mime_type;
+  DriveClientContext context;
   GetFileCallback get_file_callback;
   google_apis::GetContentCallback get_content_callback;
 };
@@ -589,6 +592,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
   DCHECK(entry_proto.get());
 
   GetResolvedFileByPath(file_path,
+                        DriveClientContext(USER_INITIATED),
                         callback,
                         google_apis::GetContentCallback(),
                         entry_proto.Pass());
@@ -596,6 +600,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
 
 void DriveFileSystem::GetResolvedFileByPath(
     const base::FilePath& file_path,
+    const DriveClientContext& context,
     const GetFileCallback& get_file_callback,
     const google_apis::GetContentCallback& get_content_callback,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -653,12 +658,14 @@ void DriveFileSystem::GetResolvedFileByPath(
                           entry_proto->resource_id(),
                           entry_proto->file_specific_info().file_md5(),
                           entry_proto->file_specific_info().content_mime_type(),
+                          context,
                           get_file_callback,
                           get_content_callback)));
 }
 
 void DriveFileSystem::GetFileByResourceId(
     const std::string& resource_id,
+    const DriveClientContext& context,
     const GetFileCallback& get_file_callback,
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -668,11 +675,13 @@ void DriveFileSystem::GetFileByResourceId(
       resource_id,
       base::Bind(&DriveFileSystem::GetFileByResourceIdAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
+                 context,
                  get_file_callback,
                  get_content_callback));
 }
 
 void DriveFileSystem::GetFileByResourceIdAfterGetEntry(
+    const DriveClientContext& context,
     const GetFileCallback& get_file_callback,
     const google_apis::GetContentCallback& get_content_callback,
     DriveFileError error,
@@ -690,6 +699,7 @@ void DriveFileSystem::GetFileByResourceIdAfterGetEntry(
   }
 
   GetResolvedFileByPath(file_path,
+                        context,
                         get_file_callback,
                         get_content_callback,
                         entry_proto.Pass());
@@ -726,6 +736,7 @@ void DriveFileSystem::OnGetFileFromCache(
   params.cache_file_path = cache_file_path;
   scheduler_->GetResourceEntry(
       params.resource_id,
+      params.context,
       base::Bind(&DriveFileSystem::OnGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  params));
@@ -798,12 +809,14 @@ void DriveFileSystem::CheckForSpaceBeforeDownload(
                  weak_ptr_factory_.GetWeakPtr(),
                  params,
                  download_url,
+                 params.context,
                  params.cache_file_path));
 }
 
 void DriveFileSystem::StartDownloadFileIfEnoughSpace(
     const GetFileFromCacheParams& params,
     const GURL& download_url,
+    const DriveClientContext& context,
     const base::FilePath& cache_file_path,
     bool has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -823,6 +836,7 @@ void DriveFileSystem::StartDownloadFileIfEnoughSpace(
       params.virtual_file_path,
       params.local_tmp_path,
       download_url,
+      context,
       base::Bind(&DriveFileSystem::OnFileDownloaded,
                  weak_ptr_factory_.GetWeakPtr(),
                  params),
@@ -983,11 +997,12 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
 
 void DriveFileSystem::UpdateFileByResourceId(
     const std::string& resource_id,
+    const DriveClientContext& context,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_operations_.UpdateFileByResourceId(resource_id, callback);
+  drive_operations_.UpdateFileByResourceId(resource_id, context, callback);
 }
 
 void DriveFileSystem::GetAvailableSpace(
@@ -1469,6 +1484,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
   DriveEntryProto* entry_proto_ptr = entry_proto.get();
   GetResolvedFileByPath(
       file_path,
+      DriveClientContext(USER_INITIATED),
       base::Bind(&DriveFileSystem::OnGetFileCompleteForOpenFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  GetFileCompleteForOpenParams(

@@ -61,6 +61,14 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
   }
 };
 
+void CopyResourceIdFromGetResourceEntryCallback(
+    std::vector<std::string>* id_list_out,
+    const std::string& requested_id,
+    google_apis::GDataErrorCode error_in,
+    scoped_ptr<google_apis::ResourceEntry> resource_entry_in) {
+  id_list_out->push_back(requested_id);
+}
+
 }  // namespace
 
 class DriveSchedulerTest : public testing::Test {
@@ -205,6 +213,7 @@ TEST_F(DriveSchedulerTest, GetResourceEntry) {
 
   scheduler_->GetResourceEntry(
       "file:2_file_resource_id",  // resource ID
+      DriveClientContext(USER_INITIATED),
       base::Bind(
           &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
           &error,
@@ -315,5 +324,48 @@ TEST_F(DriveSchedulerTest, AddNewDirectory) {
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
 }
+
+TEST_F(DriveSchedulerTest, GetResourceEntryPriority) {
+  ConnectToWifi();
+
+  std::string resource_1("file:1_file_resource_id");
+  std::string resource_2("file:2_file_resource_id");
+  std::string resource_3("file:3_file_resource_id");
+  std::string resource_4("file:4_file_resource_id");
+  std::vector<std::string> resource_ids;
+
+  scheduler_->GetResourceEntry(
+      resource_1,  // resource ID
+      DriveClientContext(USER_INITIATED),
+      base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
+                 &resource_ids,
+                 resource_1));
+  scheduler_->GetResourceEntry(
+      resource_2,  // resource ID
+      DriveClientContext(USER_INITIATED),
+      base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
+                 &resource_ids,
+                 resource_2));
+  scheduler_->GetResourceEntry(
+      resource_3,  // resource ID
+      DriveClientContext(BACKGROUND),
+      base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
+                 &resource_ids,
+                 resource_3));
+  scheduler_->GetResourceEntry(
+      resource_4,  // resource ID
+      DriveClientContext(USER_INITIATED),
+      base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
+                 &resource_ids,
+                 resource_4));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(resource_ids.size(), 4ul);
+  ASSERT_EQ(resource_ids[0], resource_1);
+  ASSERT_EQ(resource_ids[1], resource_2);
+  ASSERT_EQ(resource_ids[2], resource_4);
+  ASSERT_EQ(resource_ids[3], resource_3);
+}
+
 
 }  // namespace drive

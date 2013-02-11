@@ -72,13 +72,15 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   MOCK_METHOD2(GetFileByPath,
                void(const base::FilePath& file_path,
                     const GetFileCallback& callback));
-  MOCK_METHOD3(
+  MOCK_METHOD4(
       GetFileByResourceId,
       void(const std::string& resource_id,
+           const DriveClientContext& context,
            const GetFileCallback& get_file_callback,
            const google_apis::GetContentCallback& get_content_callback));
-  MOCK_METHOD2(UpdateFileByResourceId,
+  MOCK_METHOD3(UpdateFileByResourceId,
                void(const std::string& resource_id,
+                    const DriveClientContext& context,
                     const FileOperationCallback& callback));
   MOCK_METHOD2(GetEntryInfoByPath, void(const base::FilePath& file_path,
                                         const GetEntryInfoCallback& callback));

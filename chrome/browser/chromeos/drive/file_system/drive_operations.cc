@@ -148,11 +148,12 @@ void DriveOperations::Remove(const base::FilePath& file_path,
 
 void DriveOperations::UpdateFileByResourceId(
     const std::string& resource_id,
+    DriveClientContext context,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  update_operation_->UpdateFileByResourceId(resource_id, callback);
+  update_operation_->UpdateFileByResourceId(resource_id, context, callback);
 }
 
 }  // namespace file_system

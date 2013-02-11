@@ -50,6 +50,7 @@ class UpdateOperation {
   // Can only be called from UI thread.  |callback| must not be null.
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
+      DriveClientContext context,
       const FileOperationCallback& callback);
 
  private:
@@ -57,6 +58,7 @@ class UpdateOperation {
   // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
   // |callback| must not be null.
   void UpdateFileByEntryInfo(
+      DriveClientContext context,
       const FileOperationCallback& callback,
       DriveFileError error,
       const base::FilePath& drive_file_path,
@@ -66,11 +68,13 @@ class UpdateOperation {
   // Called when DriveCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
   // |callback| must not be null.
-  void OnGetFileCompleteForUpdateFile(const FileOperationCallback& callback,
-                                      const base::FilePath& drive_file_path,
-                                      scoped_ptr<DriveEntryProto> entry_proto,
-                                      DriveFileError error,
-                                      const base::FilePath& cache_file_path);
+  void OnGetFileCompleteForUpdateFile(
+      DriveClientContext context,
+      const FileOperationCallback& callback,
+      const base::FilePath& drive_file_path,
+      scoped_ptr<DriveEntryProto> entry_proto,
+      DriveFileError error,
+      const base::FilePath& cache_file_path);
 
   // Part of UpdateFileByResourceId().
   // Called when DriveUploader::UploadUpdatedFile() is completed for

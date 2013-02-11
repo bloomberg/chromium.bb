@@ -41,12 +41,12 @@ namespace {
 
 // Action used to set mock expectations for GetFileByResourceId().
 ACTION_P4(MockGetFileByResourceId, error, local_path, mime_type, file_type) {
-  arg1.Run(error, local_path, mime_type, file_type);
+  arg2.Run(error, local_path, mime_type, file_type);
 }
 
 // Action used to set mock expectations for UpdateFileByResourceId().
 ACTION_P(MockUpdateFileByResourceId, error) {
-  arg1.Run(error);
+  arg2.Run(error);
 }
 
 // Action used to set mock expectations for GetFileInfoByResourceId().
@@ -214,7 +214,7 @@ class DriveSyncClientTest : public testing::Test {
   // that simulates successful retrieval of a file for the given resource ID.
   void SetExpectationForGetFileByResourceId(const std::string& resource_id) {
     EXPECT_CALL(*mock_file_system_,
-                GetFileByResourceId(resource_id, _, _))
+                GetFileByResourceId(resource_id, _, _, _))
         .WillOnce(DoAll(
             InvokeWithoutArgs(this,
                               &DriveSyncClientTest::VerifyStartNotified),
@@ -230,7 +230,7 @@ class DriveSyncClientTest : public testing::Test {
   void SetExpectationForUpdateFileByResourceId(
       const std::string& resource_id) {
     EXPECT_CALL(*mock_file_system_,
-                UpdateFileByResourceId(resource_id, _))
+                UpdateFileByResourceId(resource_id, _, _))
         .WillOnce(MockUpdateFileByResourceId(DRIVE_FILE_OK));
   }
 

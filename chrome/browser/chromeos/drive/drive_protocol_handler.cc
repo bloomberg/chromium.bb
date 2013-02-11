@@ -155,6 +155,7 @@ void GetFileByResourceIdOnUIThread(
     return;
   }
   file_system->GetFileByResourceId(resource_id,
+                                   DriveClientContext(USER_INITIATED),
                                    get_file_callback,
                                    get_content_callback);
 }

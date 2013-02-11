@@ -130,6 +130,7 @@ void DrivePrefetcher::DoPrefetch() {
   ++number_of_inflight_prefetches_;
   file_system_->GetFileByResourceId(
       resource_id,
+      DriveClientContext(BACKGROUND),
       base::Bind(&DrivePrefetcher::OnPrefetchFinished,
                  weak_ptr_factory_.GetWeakPtr(),
                  resource_id),

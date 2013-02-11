@@ -205,6 +205,7 @@ void DriveSyncClient::StartTask(SyncType type, const std::string& resource_id) {
 
         file_system_->GetFileByResourceId(
             resource_id,
+            DriveClientContext(BACKGROUND),
             base::Bind(&DriveSyncClient::OnFetchFileComplete,
                        weak_ptr_factory_.GetWeakPtr(),
                        resource_id),
@@ -218,6 +219,7 @@ void DriveSyncClient::StartTask(SyncType type, const std::string& resource_id) {
       DVLOG(1) << "Uploading " << resource_id;
       file_system_->UpdateFileByResourceId(
           resource_id,
+          DriveClientContext(BACKGROUND),
           base::Bind(&DriveSyncClient::OnUploadFileComplete,
                      weak_ptr_factory_.GetWeakPtr(),
                      resource_id));

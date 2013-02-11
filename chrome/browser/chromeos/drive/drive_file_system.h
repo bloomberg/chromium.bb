@@ -113,10 +113,12 @@ class DriveFileSystem : public DriveFileSystemInterface,
                              const GetFileCallback& callback) OVERRIDE;
   virtual void GetFileByResourceId(
       const std::string& resource_id,
+      const DriveClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback) OVERRIDE;
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
+      const DriveClientContext& context,
       const FileOperationCallback& callback) OVERRIDE;
   virtual void GetEntryInfoByPath(
       const base::FilePath& file_path,
@@ -347,6 +349,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |has_enough_space|.
   void StartDownloadFileIfEnoughSpace(const GetFileFromCacheParams& params,
                                       const GURL& download_url,
+                                      const DriveClientContext& context,
                                       const base::FilePath& cache_file_path,
                                       bool has_enough_space);
 
@@ -392,6 +395,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |get_content_callback| may be null.
   void GetResolvedFileByPath(
       const base::FilePath& file_path,
+      const DriveClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback,
       scoped_ptr<DriveEntryProto> entry_proto);
@@ -416,6 +420,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |get_file_callback| must not be null.
   // |get_content_callback| may be null.
   void GetFileByResourceIdAfterGetEntry(
+      const DriveClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback,
       DriveFileError error,

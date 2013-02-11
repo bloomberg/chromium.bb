@@ -101,6 +101,7 @@ class DriveOperations {
   // Wrapper function for update_operation_.
   // |callback| must not be null.
   void UpdateFileByResourceId(const std::string& resource_id,
+                              DriveClientContext context,
                               const FileOperationCallback& callback);
 
  private:
