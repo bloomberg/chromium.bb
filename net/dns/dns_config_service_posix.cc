@@ -110,14 +110,15 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* config) {
 
 class DnsConfigServicePosix::Watcher {
  public:
-  explicit Watcher(DnsConfigServicePosix* service) : service_(service) {}
+  explicit Watcher(DnsConfigServicePosix* service)
+      : weak_factory_(this),
+        service_(service) {}
   ~Watcher() {}
 
   bool Watch() {
     bool success = true;
-    if (!config_watcher_.Watch(
-        base::Bind(&DnsConfigServicePosix::OnConfigChanged,
-                   base::Unretained(service_)))) {
+    if (!config_watcher_.Watch(base::Bind(&Watcher::OnConfigChanged,
+                                          base::Unretained(this)))) {
       LOG(ERROR) << "DNS config watch failed to start.";
       success = false;
       UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
@@ -137,10 +138,24 @@ class DnsConfigServicePosix::Watcher {
   }
 
  private:
+  void OnConfigChanged(bool succeeded) {
+    // Ignore transient flutter of resolv.conf by delaying the signal a bit.
+    const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(50);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&Watcher::OnConfigChangedDelayed,
+                   weak_factory_.GetWeakPtr(),
+                   succeeded),
+        kDelay);
+  }
+  void OnConfigChangedDelayed(bool succeeded) {
+    service_->OnConfigChanged(succeeded);
+  }
   void OnHostsChanged(const base::FilePath& path, bool error) {
     service_->OnHostsChanged(!error);
   }
 
+  base::WeakPtrFactory<Watcher> weak_factory_;
   DnsConfigServicePosix* service_;
   ConfigWatcher config_watcher_;
   base::FilePathWatcher hosts_watcher_;
@@ -213,7 +228,6 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
 
   DnsConfigServicePosix* service_;
   const base::FilePath path_;
-  const CallbackType callback_;
   // Written in DoWork, read in OnWorkFinished, no locking necessary.
   DnsHosts hosts_;
   bool success_;

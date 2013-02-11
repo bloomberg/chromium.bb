@@ -185,10 +185,10 @@ void DnsConfigService::StartTimer() {
   // unnecessary Job aborts in HostResolverImpl. The signals come from multiple
   // sources so it might receive multiple events during a config change.
 
-  // DHCP and user-induced changes are on the order of seconds, so 100ms should
+  // DHCP and user-induced changes are on the order of seconds, so 150ms should
   // not add perceivable delay. On the other hand, config readers should finish
-  // within 100ms with the rare exception of I/O block or extra large HOSTS.
-  const base::TimeDelta kTimeout = base::TimeDelta::FromMilliseconds(100);
+  // within 150ms with the rare exception of I/O block or extra large HOSTS.
+  const base::TimeDelta kTimeout = base::TimeDelta::FromMilliseconds(150);
 
   timer_.Start(FROM_HERE,
                kTimeout,
