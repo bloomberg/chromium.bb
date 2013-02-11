@@ -4,6 +4,7 @@
 
 #include "content/browser/web_contents/navigation_entry_impl.h"
 
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/common/content_constants.h"
@@ -300,6 +301,8 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
 void NavigationEntryImpl::SetScreenshotPNGData(
     const std::vector<unsigned char>& png_data) {
   screenshot_ = png_data.empty() ? NULL : new base::RefCountedBytes(png_data);
+  if (screenshot_)
+    UMA_HISTOGRAM_MEMORY_KB("Overscroll.ScreenshotSize", screenshot_->size());
 }
 
 }  // namespace content

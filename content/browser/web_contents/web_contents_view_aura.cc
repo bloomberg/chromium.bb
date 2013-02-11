@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/web_contents_view_aura.h"
 
 #include "base/auto_reset.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -699,6 +700,9 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
   if (current_overscroll_gesture_ == OVERSCROLL_NONE)
     return;
 
+  UMA_HISTOGRAM_ENUMERATION("Overscroll.Navigated",
+                            current_overscroll_gesture_, OVERSCROLL_COUNT);
+
   completed_overscroll_gesture_ = mode;
   aura::Window* target = GetWindowToAnimateForOverscroll();
   ui::ScopedLayerAnimationSettings settings(target->layer()->GetAnimator());
@@ -1051,6 +1055,8 @@ void WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
 }
 
 void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
+  UMA_HISTOGRAM_ENUMERATION("Overscroll.Completed", mode, OVERSCROLL_COUNT);
+
   NavigationControllerImpl& controller = web_contents_->GetController();
   if (ShouldNavigateForward(controller, mode) ||
       ShouldNavigateBack(controller, mode)) {
@@ -1075,6 +1081,8 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
 
     current_overscroll_gesture_ = new_mode;
     PrepareOverscrollWindow();
+
+    UMA_HISTOGRAM_ENUMERATION("Overscroll.Started", new_mode, OVERSCROLL_COUNT);
   }
   completed_overscroll_gesture_ = OVERSCROLL_NONE;
 }

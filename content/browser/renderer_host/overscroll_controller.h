@@ -21,6 +21,7 @@ enum OverscrollMode {
   OVERSCROLL_SOUTH,
   OVERSCROLL_WEST,
   OVERSCROLL_EAST,
+  OVERSCROLL_COUNT
 };
 
 // When a page is scrolled beyond the scrollable region, it will trigger an
