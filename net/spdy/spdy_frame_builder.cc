@@ -63,41 +63,34 @@ SpdyFrameBuilder::SpdyFrameBuilder(SpdyStreamId stream_id,
 SpdyFrameBuilder::~SpdyFrameBuilder() {
 }
 
-char* SpdyFrameBuilder::BeginWrite(size_t length) {
-  size_t offset = length_;
-  size_t needed_size = length_ + length;
-  if (needed_size > capacity_)
-    return NULL;
-
-#ifdef ARCH_CPU_64_BITS
-  DCHECK_LE(length, std::numeric_limits<uint32>::max());
-#endif
-
-  return buffer_.get() + offset;
-}
-
-void SpdyFrameBuilder::EndWrite(char* dest, int length) {
-}
-
 bool SpdyFrameBuilder::WriteBytes(const void* data, uint32 data_len) {
   if (data_len > kLengthMask) {
+    DCHECK(false);
     return false;
   }
 
-  char* dest = BeginWrite(data_len);
-  if (!dest)
+  size_t offset = length_;
+  size_t needed_size = length_ + data_len;
+  if (needed_size > capacity_) {
+    DCHECK(false);
     return false;
+  }
 
+#ifdef ARCH_CPU_64_BITS
+  DCHECK_LE(data_len, std::numeric_limits<uint32>::max());
+#endif
+
+  char* dest = buffer_.get() + offset;
   memcpy(dest, data, data_len);
-
-  EndWrite(dest, data_len);
   length_ += data_len;
   return true;
 }
 
 bool SpdyFrameBuilder::WriteString(const std::string& value) {
-  if (value.size() > 0xffff)
+  if (value.size() > 0xffff) {
+    DCHECK(false) << "Tried to write string with length > 16bit.";
     return false;
+  }
 
   if (!WriteUInt16(static_cast<int>(value.size())))
     return false;
