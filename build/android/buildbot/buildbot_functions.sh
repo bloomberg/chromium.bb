@@ -260,14 +260,20 @@ function bb_extract_build {
 }
 
 # Runs the license checker for the WebView build.
+# License checker may return error code 1 meaning that
+# there are non-fatal problems (warnings). Everything
+# above 1 is considered to be a show-stopper.
 function bb_check_webview_licenses {
   echo "@@@BUILD_STEP Check licenses for WebView@@@"
   (
   set +e
   cd "${SRC_ROOT}"
   python android_webview/tools/webview_licenses.py scan
-  if [[ $? -ne 0 ]]; then
+  local licenses_exit_code=$?
+  if [[ $licenses_exit_code -eq 1 ]]; then
     echo "@@@STEP_WARNINGS@@@"
+  elif [[ $licenses_exit_code -gt 1 ]]; then
+    echo "@@@STEP_FAILURE@@@"
   fi
   return 0
   )

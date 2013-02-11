@@ -79,7 +79,8 @@ def GetBotStepMap():
   bot_configs = [
       # Main builders
       B('main-builder-dbg',
-        ['bb_compile', 'bb_run_findbugs', 'bb_zip_build'], None, None),
+        ['bb_check_webview_licenses', 'bb_compile', 'bb_run_findbugs',
+         'bb_zip_build'], None, None),
       B('main-builder-rel',
         ['bb_compile', 'bb_zip_build'], None, None),
       B('main-clang-builder', compile_step, None, None),
