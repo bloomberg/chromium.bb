@@ -48,6 +48,7 @@ const char kOnContextMenus[] = "contextMenus";
 const char kOnContextMenuClicked[] = "contextMenus.onClicked";
 
 const char kOnDialDeviceList[] = "dial.onDeviceList";
+const char kOnDialError[] = "dial.onError";
 
 const char kOnDownloadCreated[] = "downloads.onCreated";
 const char kOnDownloadChanged[] = "downloads.onChanged";

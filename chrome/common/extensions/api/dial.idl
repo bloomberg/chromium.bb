@@ -47,6 +47,19 @@ namespace dial {
     long? configId;
   };
 
+  enum DialErrorCode {
+    no_listeners,
+    no_valid_network_interfaces,
+    network_disconnected,
+    cellular_network,
+    socket_error,
+    unknown
+  };
+
+  dictionary DialError {
+    DialErrorCode code;
+  };
+
   callback BooleanCallback = void (boolean result);
 
   interface Functions {
@@ -69,8 +82,9 @@ namespace dial {
     // (3) An event happened that should invalidate the device list
     //     (e.g., a network interface went offline), in which case it is fired
     //     with an empty array.
-    //
-    // TODO(mfoltz): Rename to onDeviceListReady.
     static void onDeviceList(DialDevice[] result);
+
+    // Event fired to inform clients on errors during device discovery.
+    static void onError(DialError error);
   };
 };

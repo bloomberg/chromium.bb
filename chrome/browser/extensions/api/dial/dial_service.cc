@@ -99,6 +99,17 @@ std::string BuildRequest() {
   return request;
 }
 
+void GetNetworkListOnFileThread(
+    const scoped_refptr<base::MessageLoopProxy>& loop,
+    const base::Callback<void(const NetworkInterfaceList& networks)>& cb) {
+  NetworkInterfaceList list;
+  bool success = net::GetNetworkList(&list);
+  if (!success)
+    DVLOG(1) << "Could not retrieve network list!";
+
+  loop->PostTask(FROM_HERE, base::Bind(cb, list));
+}
+
 }  // namespace
 
 DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
@@ -114,7 +125,7 @@ DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
   net_log_source_.id = net_log_->NextID();
   finish_delay_ = TimeDelta::FromMilliseconds((kDialNumRequests - 1) *
                                               kDialRequestIntervalMillis) +
-    TimeDelta::FromSeconds(kDialResponseTimeoutSecs);
+      TimeDelta::FromSeconds(kDialResponseTimeoutSecs);
 }
 
 DialServiceImpl::~DialServiceImpl() {
@@ -184,10 +195,7 @@ bool DialServiceImpl::BindAndWriteSocket(
   if (!CheckResult("Bind", socket_->Bind(address)))
     return false;
 
-  if (!socket_.get()) {
-    DLOG(WARNING) << "Socket not connected.";
-    return false;
-  }
+  DCHECK(socket_.get());
 
   recv_buffer_ = new IOBufferWithSize(kDialRecvBufferSize);
   ReadSocket();
@@ -198,9 +206,8 @@ bool DialServiceImpl::BindAndWriteSocket(
   }
   is_writing_ = true;
   int result = socket_->SendTo(
-      send_buffer_.get(),
-      send_buffer_->size(), send_address_,
-      base::Bind(&DialServiceImpl::OnSocketWrite, this));
+      send_buffer_.get(), send_buffer_->size(), send_address_,
+      base::Bind(&DialServiceImpl::OnSocketWrite, AsWeakPtr()));
   bool result_ok = CheckResult("SendTo", result);
   if (result_ok && result > 0) {
     // Synchronous write.
@@ -215,12 +222,41 @@ void DialServiceImpl::StartRequest() {
   if (socket_.get())
     return;
 
-  // TODO(mfoltz): Add a net::NetworkChangeNotifier() to listen for connection
-  // type/IP address changes, and notify via observer.  Also sanity check the
-  // connection type, i.e. !IsOffline && !IsCellular
-  // http://crbug.com/165290
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &DialServiceImpl::DoGetNetworkList, this));
+      &GetNetworkListOnFileThread,
+      base::MessageLoopProxy::current(), base::Bind(
+          &DialServiceImpl::SendNetworkList, AsWeakPtr())));
+}
+
+void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!networks.size()) {
+    DVLOG(1) << "No network interfaces found!";
+    FOR_EACH_OBSERVER(
+        Observer, observer_list_, OnError(this, DIAL_SERVICE_NO_INTERFACES));
+    return;
+  }
+
+  const NetworkInterface* interface = NULL;
+  // Returns the first IPv4 address found.  If there is a need for discovery
+  // across multiple networks, we could manage multiple sockets.
+
+  // TODO(mfoltz): Support IPV6 multicast.  http://crbug.com/165286
+  for (NetworkInterfaceList::const_iterator iter = networks.begin();
+       iter != networks.end(); ++iter) {
+    DVLOG(1) << "Found " << iter->name << ", "
+             << net::IPAddressToString(iter->address);
+    if (iter->address.size() == net::kIPv4AddressSize) {
+      interface = &*iter;
+      break;
+    }
+  }
+
+  if (interface == NULL) {
+    DVLOG(1) << "Could not find a valid interface to bind.";
+  } else {
+    BindAndWriteSocket(*interface);
+  }
 }
 
 void DialServiceImpl::OnSocketWrite(int result) {
@@ -261,7 +297,7 @@ bool DialServiceImpl::ReadSocket() {
     result = socket_->RecvFrom(
         recv_buffer_.get(),
         kDialRecvBufferSize, &recv_address_,
-        base::Bind(&DialServiceImpl::OnSocketRead, this));
+        base::Bind(&DialServiceImpl::OnSocketRead, AsWeakPtr()));
     result_ok = CheckResult("RecvFrom", result);
     if (result != net::ERR_IO_PENDING)
       is_reading_ = false;
@@ -368,51 +404,10 @@ bool DialServiceImpl::ParseResponse(const std::string& response,
   return true;
 }
 
-void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!networks.size()) {
-    DVLOG(1) << "No network interfaces found!";
-    return;
-  }
-
-  const NetworkInterface* interface = NULL;
-  // Returns the first IPv4 address found.  If there is a need for discovery
-  // across multiple networks, we could manage multiple sockets.
-
-  // TODO(mfoltz): Support IPV6 multicast.  http://crbug.com/165286
-  for (NetworkInterfaceList::const_iterator iter = networks.begin();
-       iter != networks.end(); ++iter) {
-    DVLOG(1) << "Found " << iter->name << ", "
-             << net::IPAddressToString(iter->address);
-    if (iter->address.size() == net::kIPv4AddressSize) {
-      interface = &*iter;
-      break;
-    }
-  }
-
-  if (interface == NULL) {
-    DVLOG(1) << "Could not find a valid interface to bind.";
-  } else {
-    BindAndWriteSocket(*interface);
-  }
-}
-
-void DialServiceImpl::DoGetNetworkList() {
-  NetworkInterfaceList list;
-  bool success = net::GetNetworkList(&list);
-  if (!success) {
-    DVLOG(1) << "Could not retrieve network list!";
-  }
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &DialServiceImpl::SendNetworkList, this, list));
-}
-
 void DialServiceImpl::CloseSocket() {
   DCHECK(thread_checker_.CalledOnValidThread());
   is_reading_ = false;
   is_writing_ = false;
-  if (!socket_.get())
-    return;
   socket_.reset();
 }
 
@@ -423,7 +418,9 @@ bool DialServiceImpl::CheckResult(const char* operation, int result) {
     CloseSocket();
     std::string error_str(net::ErrorToString(result));
     DVLOG(0) << "dial socket error: " << error_str;
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnError(this, error_str));
+    // TODO(justinlin): More granular socket errors.
+    FOR_EACH_OBSERVER(
+        Observer, observer_list_, OnError(this, DIAL_SERVICE_SOCKET_ERROR));
     return false;
   }
   return true;

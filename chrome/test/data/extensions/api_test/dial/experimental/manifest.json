@@ -4,8 +4,5 @@
   "name": "Test DIAL Extension",
   "version": "1.0",
   "description": "Test DIAL Extension",
-  "background": {
-    "scripts": ["runtest.js"]
-  },
   "permissions": ["dial"]
 }

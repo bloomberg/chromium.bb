@@ -86,6 +86,12 @@ void DialAPI::OnDialDeviceEvent(const DialRegistry::DeviceList& devices) {
       base::Bind(&DialAPI::SendEventOnUIThread, this, devices));
 }
 
+void DialAPI::OnDialError(const DialRegistry::DialErrorCode code) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&DialAPI::SendErrorOnUIThread, this, code));
+}
+
 void DialAPI::SendEventOnUIThread(const DialRegistry::DeviceList& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -98,10 +104,39 @@ void DialAPI::SendEventOnUIThread(const DialRegistry::DeviceList& devices) {
     args.push_back(api_device);
   }
   scoped_ptr<base::ListValue> results = api::dial::OnDeviceList::Create(args);
-
   scoped_ptr<Event> event(
       new Event(event_names::kOnDialDeviceList, results.Pass()));
+  extensions::ExtensionSystem::Get(profile_)->event_router()->
+      BroadcastEvent(event.Pass());
+}
 
+void DialAPI::SendErrorOnUIThread(const DialRegistry::DialErrorCode code) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  api::dial::DialError dial_error;
+  switch (code) {
+    case DialRegistry::DIAL_NO_LISTENERS:
+      dial_error.code = api::dial::DIAL_ERROR_CODE_NO_LISTENERS;
+      break;
+    case DialRegistry::DIAL_NO_INTERFACES:
+      dial_error.code = api::dial::DIAL_ERROR_CODE_NO_VALID_NETWORK_INTERFACES;
+      break;
+    case DialRegistry::DIAL_CELLULAR_NETWORK:
+      dial_error.code = api::dial::DIAL_ERROR_CODE_CELLULAR_NETWORK;
+      break;
+    case DialRegistry::DIAL_NETWORK_DISCONNECTED:
+      dial_error.code = api::dial::DIAL_ERROR_CODE_NETWORK_DISCONNECTED;
+      break;
+    case DialRegistry::DIAL_SOCKET_ERROR:
+      dial_error.code = api::dial::DIAL_ERROR_CODE_SOCKET_ERROR;
+      break;
+    default:
+      dial_error.code = api::dial::DIAL_ERROR_CODE_UNKNOWN;
+      break;
+  }
+
+  scoped_ptr<base::ListValue> results = api::dial::OnError::Create(dial_error);
+  scoped_ptr<Event> event(new Event(event_names::kOnDialError, results.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
       BroadcastEvent(event.Pass());
 }

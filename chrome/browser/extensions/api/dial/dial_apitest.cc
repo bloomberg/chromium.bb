@@ -34,25 +34,18 @@ class DialAPITest : public ExtensionApiTest {
 }  // namespace
 
 // Test receiving DIAL API events.
-IN_PROC_BROWSER_TEST_F(DialAPITest, DeviceEvents) {
+IN_PROC_BROWSER_TEST_F(DialAPITest, DeviceListEvents) {
+  // Setup the test.
+  ASSERT_TRUE(RunExtensionSubtest("dial/experimental", "device_list.html"));
+
+  // Send three device list updates.
   scoped_refptr<extensions::DialAPI> api =
       extensions::DialAPIFactory::GetInstance()->GetForProfile(profile());
   ASSERT_TRUE(api.get());
-
-  // Make sure we get device data.
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
-  ExtensionTestMessageListener listener("ready", true);
-  ExtensionTestMessageListener listener2("setup", true);
-
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("dial/experimental")));
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-
-  listener.Reply("setup");
-  listener2.WaitUntilSatisfied();
-
   extensions::DialRegistry::DeviceList devices;
+
+
+  ResultCatcher catcher;
 
   DialDeviceData device1;
   device1.set_device_id("1");
@@ -77,8 +70,6 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, DeviceEvents) {
 
   devices.push_back(device3);
   api->SendEventOnUIThread(devices);
-
-  listener2.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
@@ -105,4 +96,8 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, NonWhitelistedExtension) {
 
   listener.Reply("go");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(DialAPITest, OnError) {
+  ASSERT_TRUE(RunExtensionSubtest("dial/experimental", "on_error.html"));
 }

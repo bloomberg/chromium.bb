@@ -32,50 +32,50 @@ class MockObserver : public DialService::Observer {
   MOCK_METHOD1(OnDiscoveryRequest, void(DialService*));
   MOCK_METHOD2(OnDeviceDiscovered, void(DialService*, const DialDeviceData&));
   MOCK_METHOD1(OnDiscoveryFinished, void(DialService*));
-  MOCK_METHOD2(OnError, void(DialService*, const std::string&));
+  MOCK_METHOD2(OnError, void(DialService*,
+                             const DialService::DialServiceErrorCode&));
 };
 
 class DialServiceTest : public testing::Test {
  public:
-  DialServiceTest() {
-    dial_service_ = new DialServiceImpl(&capturing_net_log_);
-    dial_service_->AddObserver(&mock_observer_);
+  DialServiceTest() : dial_service_(&capturing_net_log_) {
+    dial_service_.AddObserver(&mock_observer_);
   }
  protected:
   net::CapturingNetLog capturing_net_log_;
-  scoped_refptr<DialServiceImpl> dial_service_;
+  DialServiceImpl dial_service_;
   MockObserver mock_observer_;
 };
 
 TEST_F(DialServiceTest, TestOnDiscoveryRequest) {
-  dial_service_->discovery_active_ = true;
-  size_t num_bytes = dial_service_->send_buffer_->size();
+  dial_service_.discovery_active_ = true;
+  size_t num_bytes = dial_service_.send_buffer_->size();
 
   EXPECT_CALL(mock_observer_, OnDiscoveryRequest(A<DialService*>())).Times(1);
-  dial_service_->OnSocketWrite(num_bytes);
+  dial_service_.OnSocketWrite(num_bytes);
 }
 
 TEST_F(DialServiceTest, TestOnDeviceDiscovered) {
-  dial_service_->discovery_active_ = true;
+  dial_service_.discovery_active_ = true;
   int response_size = arraysize(kValidResponse) - 1;
-  dial_service_->recv_buffer_ = new net::IOBufferWithSize(response_size);
-  strncpy(dial_service_->recv_buffer_->data(), kValidResponse, response_size);
+  dial_service_.recv_buffer_ = new net::IOBufferWithSize(response_size);
+  strncpy(dial_service_.recv_buffer_->data(), kValidResponse, response_size);
 
   DialDeviceData expected_device;
   expected_device.set_device_id("some_id");
 
   EXPECT_CALL(mock_observer_,
               OnDeviceDiscovered(A<DialService*>(), expected_device))
-    .Times(1);
-  dial_service_->OnSocketRead(response_size);
+      .Times(1);
+  dial_service_.OnSocketRead(response_size);
 };
 
 TEST_F(DialServiceTest, TestOnDiscoveryFinished) {
-  dial_service_->discovery_active_ = true;
+  dial_service_.discovery_active_ = true;
 
   EXPECT_CALL(mock_observer_, OnDiscoveryFinished(A<DialService*>())).Times(1);
-  dial_service_->FinishDiscovery();
-  EXPECT_FALSE(dial_service_->discovery_active_);
+  dial_service_.FinishDiscovery();
+  EXPECT_FALSE(dial_service_.discovery_active_);
 }
 
 TEST_F(DialServiceTest, TestResponseParsing) {

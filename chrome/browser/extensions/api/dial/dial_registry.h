@@ -19,21 +19,33 @@
 #include "base/timer.h"
 #include "chrome/browser/extensions/api/dial/dial_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "net/base/network_change_notifier.h"
 
 namespace extensions {
 
 // Keeps track of devices that have responded to discovery requests and notifies
 // the observer with an updated, complete set of active devices.  The registry's
 // observer (i.e., the Dial API) owns the registry instance.
-class DialRegistry : public DialService::Observer {
+class DialRegistry : public DialService::Observer,
+                     public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   typedef std::vector<DialDeviceData> DeviceList;
 
+  enum DialErrorCode {
+    DIAL_NO_LISTENERS = 0,
+    DIAL_NO_INTERFACES,
+    DIAL_NETWORK_DISCONNECTED,
+    DIAL_CELLULAR_NETWORK,
+    DIAL_SOCKET_ERROR,
+    DIAL_UNKNOWN
+  };
+
   class Observer {
    public:
-    // Invoked on the IO thread by the DialRegistry during a device event (new
-    // device discovered or an update triggered by dial.discoverNow).
+    // Methods invoked on the IO thread when a new device is discovered, an
+    // update is triggered by dial.discoverNow or an error occured.
     virtual void OnDialDeviceEvent(const DeviceList& devices) = 0;
+    virtual void OnDialError(DialErrorCode type) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -61,9 +73,14 @@ class DialRegistry : public DialService::Observer {
  protected:
   // Returns a new instance of the DIAL service.  Overridden by tests.
   virtual DialService* CreateDialService();
+  virtual void ClearDialService();
 
   // Returns the current time.  Overridden by tests.
   virtual base::Time Now() const;
+
+ protected:
+  // The DIAL service. Periodic discovery is active when this is not NULL.
+  scoped_ptr<DialService> dial_;
 
  private:
   typedef base::hash_map<std::string, linked_ptr<DialDeviceData> >
@@ -75,12 +92,21 @@ class DialRegistry : public DialService::Observer {
   virtual void OnDeviceDiscovered(DialService* service,
                                   const DialDeviceData& device) OVERRIDE;
   virtual void OnDiscoveryFinished(DialService* service) OVERRIDE;
-  virtual void OnError(DialService* service, const std::string& msg) OVERRIDE;
+  virtual void OnError(DialService* service,
+                       const DialService::DialServiceErrorCode& code) OVERRIDE;
+
+  // net::NetworkChangeObserver:
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   // Starts and stops periodic discovery.  Periodic discovery is done when there
   // are registered event listeners.
   void StartPeriodicDiscovery();
   void StopPeriodicDiscovery();
+
+  // Check whether we are in a state ready to discover and dispatch error
+  // notifications if not.
+  bool ReadyToDiscover();
 
   // Purge our whole registry. We may need to do this occasionally, e.g. when
   // the network status changes.  Increments the registry generation.
@@ -132,9 +158,6 @@ class DialRegistry : public DialService::Observer {
   base::TimeDelta expiration_delta_;
   size_t max_devices_;
 
-  // The DIAL service.
-  scoped_refptr<DialService> dial_;
-
   // A map used to track known devices by their device_id.
   DeviceByIdMap device_by_id_map_;
 
@@ -156,6 +179,11 @@ class DialRegistry : public DialService::Observer {
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestNoDevicesDiscovered);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestDevicesDiscovered);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestDeviceExpires);
+  FRIEND_TEST_ALL_PREFIXES(DialRegistryTest,
+                           TestRemovingListenerDoesNotClearList);
+  FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestNetworkEventConnectionLost);
+  FRIEND_TEST_ALL_PREFIXES(DialRegistryTest,
+                           TestNetworkEventConnectionRestored);
   DISALLOW_COPY_AND_ASSIGN(DialRegistry);
 };
 

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer.h"
@@ -52,8 +52,13 @@ class DialDeviceData;
 //
 // TODO(mfoltz): Port this into net/.
 // See https://code.google.com/p/chromium/issues/detail?id=164473
-class DialService : public base::RefCountedThreadSafe<DialService> {
+class DialService {
  public:
+  enum DialServiceErrorCode {
+    DIAL_SERVICE_NO_INTERFACES = 0,
+    DIAL_SERVICE_SOCKET_ERROR
+  };
+
   class Observer {
    public:
     // Called when a single discovery request was sent.
@@ -67,11 +72,14 @@ class DialService : public base::RefCountedThreadSafe<DialService> {
     virtual void OnDiscoveryFinished(DialService* service) = 0;
 
     // Called when an error occurs.
-    virtual void OnError(DialService* service, const std::string& msg) = 0;
+    virtual void OnError(DialService* service,
+                         const DialServiceErrorCode& code) = 0;
 
    protected:
     virtual ~Observer() {}
   };
+
+  virtual ~DialService() {}
 
   // Starts a new round of discovery.  Returns |true| if discovery was started
   // successfully or there is already one active. Returns |false| on error.
@@ -81,17 +89,13 @@ class DialService : public base::RefCountedThreadSafe<DialService> {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual bool HasObserver(Observer* observer) = 0;
-
- protected:
-  virtual ~DialService() {}
-
- private:
-  friend class base::RefCountedThreadSafe<DialService>;
 };
 
-class DialServiceImpl : public DialService {
+class DialServiceImpl : public DialService,
+                        public base::SupportsWeakPtr<DialServiceImpl> {
  public:
   explicit DialServiceImpl(net::NetLog* net_log);
+  virtual ~DialServiceImpl();
 
   // DialService implementation
   virtual bool Discover() OVERRIDE;
@@ -100,8 +104,6 @@ class DialServiceImpl : public DialService {
   virtual bool HasObserver(Observer* observer) OVERRIDE;
 
  private:
-  virtual ~DialServiceImpl();
-
   // Starts the flow to construct and send a discovery request.
   void StartRequest();
 
@@ -112,9 +114,6 @@ class DialServiceImpl : public DialService {
 
   // Callback invoked for socket writes.
   void OnSocketWrite(int result);
-
-  // Method to get the network list on the FILE thread.
-  void DoGetNetworkList();
 
   // Send the network list to IO thread.
   void SendNetworkList(const net::NetworkInterfaceList& list);

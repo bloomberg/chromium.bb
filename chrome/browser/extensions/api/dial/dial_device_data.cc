@@ -10,6 +10,13 @@ namespace extensions {
 
 DialDeviceData::DialDeviceData() : max_age_(-1), config_id_(-1) { }
 
+DialDeviceData::DialDeviceData(const std::string& device_id,
+                               const GURL& device_description_url,
+                               const base::Time& response_time)
+    : device_id_(device_id), device_description_url_(device_description_url),
+      response_time_(response_time), max_age_(-1), config_id_(-1) {
+}
+
 DialDeviceData::~DialDeviceData() { }
 
 const GURL& DialDeviceData::device_description_url() const {

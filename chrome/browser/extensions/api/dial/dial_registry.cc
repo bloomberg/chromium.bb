@@ -19,6 +19,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using net::NetworkChangeNotifier;
 
 namespace extensions {
 
@@ -26,25 +27,33 @@ DialRegistry::DialRegistry(Observer* dial_api,
                            const base::TimeDelta& refresh_interval,
                            const base::TimeDelta& expiration,
                            const size_t max_devices)
-  : num_listeners_(0), discovery_generation_(0), registry_generation_(0),
-    last_event_discovery_generation_(0), last_event_registry_generation_(0),
+  : num_listeners_(0),
+    discovery_generation_(0),
+    registry_generation_(0),
+    last_event_discovery_generation_(0),
+    last_event_registry_generation_(0),
     label_count_(0),
     refresh_interval_delta_(refresh_interval),
     expiration_delta_(expiration),
     max_devices_(max_devices),
     dial_api_(dial_api) {
   DCHECK(max_devices_ > 0);
+  NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 DialRegistry::~DialRegistry() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0, num_listeners_);
-  DCHECK(!dial_.get());
+  NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 DialService* DialRegistry::CreateDialService() {
   DCHECK(g_browser_process->net_log());
   return new DialServiceImpl(g_browser_process->net_log());
+}
+
+void DialRegistry::ClearDialService() {
+  dial_.reset();
 }
 
 base::Time DialRegistry::Now() const {
@@ -68,12 +77,33 @@ void DialRegistry::OnListenerRemoved() {
   }
 }
 
-bool DialRegistry::DiscoverNow() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!dial_.get()) {
-    DLOG(INFO) << "DiscoverNow called without listeners.  Ignoring.";
+bool DialRegistry::ReadyToDiscover() {
+  if (num_listeners_ == 0) {
+    dial_api_->OnDialError(DIAL_NO_LISTENERS);
     return false;
   }
+  if (NetworkChangeNotifier::IsOffline()) {
+    dial_api_->OnDialError(DIAL_NETWORK_DISCONNECTED);
+    return false;
+  }
+  if (NetworkChangeNotifier::IsConnectionCellular(
+          NetworkChangeNotifier::GetConnectionType())) {
+    dial_api_->OnDialError(DIAL_CELLULAR_NETWORK);
+    return false;
+  }
+  return true;
+}
+
+bool DialRegistry::DiscoverNow() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!ReadyToDiscover()) {
+    return false;
+  }
+  if (!dial_.get()) {
+    dial_api_->OnDialError(DIAL_UNKNOWN);
+    return false;
+  }
+
   if (!dial_->HasObserver(this))
     NOTREACHED() << "DiscoverNow() called without observing dial_";
   discovery_generation_++;
@@ -82,7 +112,10 @@ bool DialRegistry::DiscoverNow() {
 
 void DialRegistry::StartPeriodicDiscovery() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  dial_ = CreateDialService();
+  if (!ReadyToDiscover() || dial_.get())
+    return;
+
+  dial_.reset(CreateDialService());
   dial_->AddObserver(this);
   DoDiscovery();
   repeating_timer_.Start(FROM_HERE,
@@ -101,10 +134,12 @@ void DialRegistry::DoDiscovery() {
 
 void DialRegistry::StopPeriodicDiscovery() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(dial_.get());
+  if (!dial_.get())
+    return;
+
   repeating_timer_.Stop();
   dial_->RemoveObserver(this);
-  dial_ = NULL;
+  ClearDialService();
 }
 
 bool DialRegistry::PruneExpiredDevices() {
@@ -156,8 +191,9 @@ void DialRegistry::MaybeSendEvent() {
   // We need to send an event if:
   // (1) We haven't sent one yet in this round of discovery, or
   // (2) The device list changed since the last MaybeSendEvent.
-  bool needs_event = last_event_discovery_generation_ < discovery_generation_ ||
-      last_event_registry_generation_ < registry_generation_;
+  bool needs_event =
+      (last_event_discovery_generation_ < discovery_generation_ ||
+       last_event_registry_generation_ < registry_generation_);
   DVLOG(1) << "ledg = " << last_event_discovery_generation_ << ", dg = "
            << discovery_generation_
            << ", lerg = " << last_event_registry_generation_ << ", rg = "
@@ -168,8 +204,7 @@ void DialRegistry::MaybeSendEvent() {
 
   DeviceList device_list;
   for (DeviceByLabelMap::const_iterator i = device_by_label_map_.begin();
-       i != device_by_label_map_.end();
-       i++) {
+       i != device_by_label_map_.end(); i++) {
     device_list.push_back(*(i->second));
   }
   dial_api_->OnDialDeviceEvent(device_list);
@@ -225,7 +260,7 @@ bool DialRegistry::MaybeAddDevice(
     const linked_ptr<DialDeviceData>& device_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_by_id_map_.size() == max_devices_) {
-    DLOG(WARNING) << "Maxmimum registry size reached.  Cannot add device.";
+    DLOG(WARNING) << "Maximum registry size reached.  Cannot add device.";
     return false;
   }
   device_data->set_label(NextLabel());
@@ -243,9 +278,59 @@ void DialRegistry::OnDiscoveryFinished(DialService* service) {
   MaybeSendEvent();
 }
 
-void DialRegistry::OnError(DialService* service, const std::string& msg) {
+void DialRegistry::OnError(DialService* service,
+                           const DialService::DialServiceErrorCode& code) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(mfoltz,justinlin): Implement. http://crbug.com/165294
+  switch (code) {
+    case DialService::DIAL_SERVICE_SOCKET_ERROR:
+      dial_api_->OnDialError(DIAL_SOCKET_ERROR);
+      break;
+    case DialService::DIAL_SERVICE_NO_INTERFACES:
+      dial_api_->OnDialError(DIAL_NO_INTERFACES);
+      break;
+    default:
+      NOTREACHED();
+      dial_api_->OnDialError(DIAL_UNKNOWN);
+      break;
+  }
+}
+
+void DialRegistry::OnNetworkChanged(
+    NetworkChangeNotifier::ConnectionType type) {
+  switch (type) {
+    case NetworkChangeNotifier::CONNECTION_NONE:
+    case NetworkChangeNotifier::CONNECTION_2G:
+    case NetworkChangeNotifier::CONNECTION_3G:
+    case NetworkChangeNotifier::CONNECTION_4G:
+      if (dial_.get()) {
+        DVLOG(1) << "Lost connection, shutting down discovery and clearing"
+                 << " list.";
+
+        if (NetworkChangeNotifier::IsConnectionCellular(type))
+          dial_api_->OnDialError(DIAL_CELLULAR_NETWORK);
+        else
+          dial_api_->OnDialError(DIAL_NETWORK_DISCONNECTED);
+
+        StopPeriodicDiscovery();
+        // TODO(justinlin): As an optimization, we can probably keep our device
+        // list around and restore it if we reconnected to the exact same
+        // network.
+        Clear();
+        MaybeSendEvent();
+      }
+      break;
+    case NetworkChangeNotifier::CONNECTION_UNKNOWN:
+    case NetworkChangeNotifier::CONNECTION_ETHERNET:
+    case NetworkChangeNotifier::CONNECTION_WIFI:
+      if (!dial_.get()) {
+        DVLOG(1) << "Connection detected, restarting discovery.";
+        StartPeriodicDiscovery();
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace extensions

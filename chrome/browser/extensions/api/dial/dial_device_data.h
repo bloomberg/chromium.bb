@@ -26,6 +26,9 @@ struct DialDevice;
 class DialDeviceData {
  public:
   DialDeviceData();
+  DialDeviceData(const std::string& device_id,
+                 const GURL& device_description_url,
+                 const base::Time& response_time);
   ~DialDeviceData();
 
   bool operator==(const DialDeviceData& other_data) const {

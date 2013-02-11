@@ -34,6 +34,7 @@ class DialAPI : public RefcountedProfileKeyedService,
   // Called by the DialRegistry on the IO thread so that the DialAPI dispatches
   // the event to listeners on the UI thread.
   void SendEventOnUIThread(const DialRegistry::DeviceList& devices);
+  void SendErrorOnUIThread(const DialRegistry::DialErrorCode type);
 
  private:
   virtual ~DialAPI();
@@ -48,6 +49,7 @@ class DialAPI : public RefcountedProfileKeyedService,
   // DialRegistry::Observer:
   virtual void OnDialDeviceEvent(
       const DialRegistry::DeviceList& devices) OVERRIDE;
+  virtual void OnDialError(DialRegistry::DialErrorCode type) OVERRIDE;
 
   // Methods to notify the DialRegistry on the correct thread of new/removed
   // listeners.
