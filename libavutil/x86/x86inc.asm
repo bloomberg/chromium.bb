@@ -449,7 +449,7 @@ DECLARE_REG 14, R15, 120
         %endrep
     %endif
     %if stack_size_padded > 0
-        %if mmsize == 32 || HAVE_ALIGNED_STACK == 0
+        %if stack_size_aligned != 0 && (mmsize == 32 || HAVE_ALIGNED_STACK == 0)
             mov rsp, [rsp+stack_size_padded]
         %else
             add %1, stack_size_padded

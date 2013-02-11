@@ -1,7 +1,13 @@
-Current Status as of Dec 11, 2012
+Current Status as of Feb 11, 2013
 
 
 Upstream cherry-picks:
+<upstream in progress> - Win64 AVX alignment fix in x86inc.asm's
+  WIN64_RESTORE_XMM_INTERNAL.
+  TODO(rbultje): Fix may already be in ffmpeg HEAD, though code is
+  significantly different versus current Chromium ffmpeg. This fix
+  is needed prior to m27 merge so patched directly in Chromium's ffmpeg.
+  See also http://crbug.com/174160#c15
 <upstream in progress> - aligned stack fixes for MSVC++.
 <upstream in progress> - vp3 double-free fixes.
 2c16bf2de07c68513072bf3cc96401d2c6291a3e - vorbisdec: Check bark_map_size.
