@@ -64,7 +64,7 @@ def GetIncompatibleDirectories():
     except licenses.LicenseError as e:
       print 'Got LicenseError while scanning ' + directory
       raise
-    if metadata.get('License Android Compatible', 'no') == 'yes':
+    if metadata.get('License Android Compatible', 'no').upper() == 'YES':
       continue
     license = re.split(' [Ll]icenses?$', metadata['License'])[0]
     tokens = [x.strip() for x in re.split(' and |,', license) if len(x) > 0]
