@@ -1049,8 +1049,8 @@ class BisectPerformanceMetrics(object):
     last_broken_revision = None
 
     for k, v in revision_data_sorted:
-      if v['passed']:
-        if first_working_revision is None:
+      if v['passed'] == 1:
+        if not first_working_revision:
           first_working_revision = k
 
       if not v['passed']:
