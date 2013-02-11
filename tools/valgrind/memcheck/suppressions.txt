@@ -6510,16 +6510,6 @@
    fun:_ZN7WebCore9RenderBox14styleDidChangeENS_15StyleDifferenceEPKNS_11RenderStyleE
 }
 {
-   bug_173097
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7WebCore22SkiaImageFilterBuilder5buildERKNS_16FilterOperationsE
-   fun:_ZN7WebCore21GraphicsLayerChromium10setFiltersERKNS_16FilterOperationsE
-   fun:_ZN7WebCore18RenderLayerBacking13updateFiltersEPKNS_11RenderStyleE
-   fun:_ZN7WebCore18RenderLayerBacking*GraphicsLayer*
-}
-{
    bug_173356
    Memcheck:Overlap
    fun:memcpy
