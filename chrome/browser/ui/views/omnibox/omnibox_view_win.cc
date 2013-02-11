@@ -1693,8 +1693,25 @@ void OmniboxViewWin::OnLButtonDblClk(UINT keys, const CPoint& point) {
   // track "changes" made by clicking the mouse button.
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
+
   DefWindowProc(WM_LBUTTONDBLCLK, keys,
                 MAKELPARAM(ClipXCoordToVisibleText(point.x, false), point.y));
+
+  // Rich Edit 4.1 doesn't select the last word when the user double clicks
+  // past the text. Do it manually.
+  CHARRANGE selection;
+  GetSelection(selection);
+  // The default window proc for Rich Edit 4.1 seems to select the CHARRANGE
+  // {text_length, text_length + 1} after a double click past the text.
+  int length = GetTextLength();
+  if (selection.cpMin == length && selection.cpMax == length + 1) {
+    string16 text = GetText();
+    int word_break = WordBreakProc(&text[0], length, length, WB_LEFT);
+    selection.cpMin = word_break;
+    selection.cpMax = length;
+    SetSelectionRange(selection);
+  }
+
   OnAfterPossibleChange();
 
   gaining_focus_.reset();  // See NOTE in OnMouseActivate().
