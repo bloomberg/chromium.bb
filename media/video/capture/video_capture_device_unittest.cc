@@ -62,6 +62,11 @@ class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
     wait_event_->Signal();
   }
 
+  virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
+                                            base::Time timestamp) OVERRIDE {
+    wait_event_->Signal();
+  }
+
  private:
   base::WaitableEvent* wait_event_;
 };

@@ -68,6 +68,8 @@ class CONTENT_EXPORT VideoCaptureController
   virtual void OnIncomingCapturedFrame(const uint8* data,
                                        int length,
                                        base::Time timestamp) OVERRIDE;
+  virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
+                                            base::Time timestamp) OVERRIDE;
   virtual void OnError() OVERRIDE;
   virtual void OnFrameInfo(
       const media::VideoCaptureCapability& info) OVERRIDE;
@@ -93,21 +95,31 @@ class CONTENT_EXPORT VideoCaptureController
   // Send frame info and init buffers to |client|.
   void SendFrameInfoAndBuffers(ControllerClient* client, int buffer_size);
 
-  // Helpers.
   // Find a client of |id| and |handler| in |clients|.
   ControllerClient* FindClient(
       const VideoCaptureControllerID& id,
       VideoCaptureControllerEventHandler* handler,
       const ControllerClients& clients);
+
   // Find a client of |session_id| in |clients|.
   ControllerClient* FindClient(
       int session_id,
       const ControllerClients& clients);
+
   // Decide what to do after kStopping state. Dependent on events, controller
   // can stay in kStopping state, or go to kStopped, or restart capture.
   void PostStopping();
+
   // Check if any DIB is used by client.
   bool ClientHasDIB();
+
+  // DIB reservation. Locate an available DIB object, reserve it, and provide
+  // the caller the reserved DIB's buffer_id as well as pointers to its color
+  // planes. Returns true if successful.
+  bool ReserveSharedMemory(int* buffer_id_out,
+                           uint8** yplane,
+                           uint8** uplane,
+                           uint8** vplane);
 
   // Lock to protect free_dibs_ and owned_dibs_.
   base::Lock lock_;

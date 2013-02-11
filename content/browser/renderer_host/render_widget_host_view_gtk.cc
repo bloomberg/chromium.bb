@@ -1064,6 +1064,18 @@ void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
   callback.Run(true, bitmap);
 }
 
+void RenderWidgetHostViewGtk::CopyFromCompositingSurfaceToVideoFrame(
+      const gfx::Rect& src_subrect,
+      const scoped_refptr<media::VideoFrame>& target,
+      const base::Callback<void(bool)>& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(false);
+}
+
+bool RenderWidgetHostViewGtk::CanCopyToVideoFrame() const {
+  return false;
+}
+
 void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {

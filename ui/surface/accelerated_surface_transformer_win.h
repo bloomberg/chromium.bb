@@ -61,7 +61,8 @@ class SURFACE_EXPORT AcceleratedSurfaceTransformer {
   bool ResizeBilinear(
     IDirect3DSurface9* src_surface,
     const gfx::Rect& src_subrect,
-    IDirect3DSurface9* dst_surface);
+    IDirect3DSurface9* dst_surface,
+    const gfx::Rect& dst_subrect);
 
   // Color format conversion from RGB to planar YV12 (also known as YUV420).
   //

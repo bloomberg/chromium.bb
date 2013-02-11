@@ -12,6 +12,8 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/base/yuv_convert.h"
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
@@ -245,13 +247,10 @@ void VideoCaptureController::ReturnBuffer(
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Implements VideoCaptureDevice::EventHandler.
-// OnIncomingCapturedFrame is called the thread running the capture device.
-// I.e.- DirectShow thread on windows and v4l2_thread on Linux.
-void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
-                                                     int length,
-                                                     base::Time timestamp) {
+bool VideoCaptureController::ReserveSharedMemory(int* buffer_id_out,
+                                                 uint8** yplane,
+                                                 uint8** uplane,
+                                                 uint8** vplane) {
   int buffer_id = 0;
   base::SharedMemory* dib = NULL;
   {
@@ -269,17 +268,31 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
     }
   }
 
-  if (!dib) {
-    return;
-  }
+  if (!dib)
+    return false;
 
+  *buffer_id_out = buffer_id;
+  CHECK_GE(dib->created_size(),
+           static_cast<size_t>(frame_info_.width * frame_info_.height * 3) / 2);
   uint8* target = static_cast<uint8*>(dib->memory());
-  CHECK(dib->created_size() >= static_cast<size_t> (frame_info_.width *
-                                                    frame_info_.height * 3) /
-                                                    2);
-  uint8* yplane = target;
-  uint8* uplane = target + frame_info_.width * frame_info_.height;
-  uint8* vplane = uplane + (frame_info_.width * frame_info_.height) / 4;
+  *yplane = target;
+  *uplane = *yplane + frame_info_.width * frame_info_.height;
+  *vplane = *uplane + (frame_info_.width * frame_info_.height) / 4;
+  return true;
+}
+
+// Implements VideoCaptureDevice::EventHandler.
+// OnIncomingCapturedFrame is called the thread running the capture device.
+// I.e.- DirectShow thread on windows and v4l2_thread on Linux.
+void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
+                                                     int length,
+                                                     base::Time timestamp) {
+  int buffer_id = 0;
+  uint8* yplane = NULL;
+  uint8* uplane = NULL;
+  uint8* vplane = NULL;
+  if (!ReserveSharedMemory(&buffer_id, &yplane, &uplane, &vplane))
+    return;
 
   // Do color conversion from the camera format to I420.
   switch (frame_info_.color) {
@@ -287,7 +300,7 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
       break;
     case media::VideoCaptureCapability::kI420: {
       DCHECK(!chopped_width_ && !chopped_height_);
-      memcpy(target, data, (frame_info_.width * frame_info_.height * 3) / 2);
+      memcpy(yplane, data, (frame_info_.width * frame_info_.height * 3) / 2);
       break;
     }
     case media::VideoCaptureCapability::kYV12: {
@@ -357,6 +370,93 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
 #endif
     default:
       NOTREACHED();
+  }
+
+  BrowserThread::PostTask(BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
+                 this, buffer_id, timestamp));
+}
+
+// OnIncomingCapturedVideoFrame is called the thread running the capture device.
+void VideoCaptureController::OnIncomingCapturedVideoFrame(
+    media::VideoFrame* frame,
+    base::Time timestamp) {
+  // Validate the inputs.
+  gfx::Size target_size = gfx::Size(frame_info_.width, frame_info_.height);
+  if (frame->coded_size() != target_size)
+    return;  // Only exact copies are supported.
+  if (!(frame->format() == media::VideoFrame::I420 ||
+        frame->format() == media::VideoFrame::YV12 ||
+        frame->format() == media::VideoFrame::RGB32)) {
+    NOTREACHED() << "Unsupported format passed to OnIncomingCapturedVideoFrame";
+    return;
+  }
+
+  // Carve out a shared memory buffer.
+  int buffer_id = 0;
+  uint8* yplane = NULL;
+  uint8* uplane = NULL;
+  uint8* vplane = NULL;
+  if (!ReserveSharedMemory(&buffer_id, &yplane, &uplane, &vplane))
+    return;
+
+  scoped_refptr<media::VideoFrame> target_as_frame(
+      media::VideoFrame::WrapExternalYuvData(
+          media::VideoFrame::YV12,  // Actually I420, but it's equivalent here.
+          target_size, gfx::Rect(target_size), target_size,
+          frame_info_.width,        // y stride
+          frame_info_.width / 2,    // v stride
+          frame_info_.width / 2,    // u stride
+          yplane,
+          uplane,
+          vplane,
+          base::TimeDelta(),
+          base::Bind(&base::DoNothing)));
+
+  const int kYPlane = media::VideoFrame::kYPlane;
+  const int kUPlane = media::VideoFrame::kUPlane;
+  const int kVPlane = media::VideoFrame::kVPlane;
+  const int kRGBPlane = media::VideoFrame::kRGBPlane;
+
+  // Do color conversion from the camera format to I420.
+  switch (frame->format()) {
+    case media::VideoFrame::INVALID:
+    case media::VideoFrame::YV16:
+    case media::VideoFrame::EMPTY:
+    case media::VideoFrame::NATIVE_TEXTURE: {
+      NOTREACHED();
+      break;
+    }
+    case media::VideoFrame::I420:
+    case media::VideoFrame::YV12: {
+      DCHECK(!chopped_width_ && !chopped_height_);
+      media::CopyYPlane(frame->data(kYPlane),
+                        frame->stride(kYPlane),
+                        frame->rows(kYPlane),
+                        target_as_frame);
+      media::CopyUPlane(frame->data(kUPlane),
+                        frame->stride(kUPlane),
+                        frame->rows(kUPlane),
+                        target_as_frame);
+      media::CopyVPlane(frame->data(kVPlane),
+                        frame->stride(kVPlane),
+                        frame->rows(kVPlane),
+                        target_as_frame);
+      break;
+    }
+    case media::VideoFrame::RGB32: {
+      media::ConvertRGB32ToYUV(frame->data(kRGBPlane),
+                               target_as_frame->data(kYPlane),
+                               target_as_frame->data(kUPlane),
+                               target_as_frame->data(kVPlane),
+                               target_size.width(),
+                               target_size.height(),
+                               frame->stride(kRGBPlane),
+                               target_as_frame->stride(kYPlane),
+                               target_as_frame->stride(kUPlane));
+      break;
+    }
   }
 
   BrowserThread::PostTask(BrowserThread::IO,

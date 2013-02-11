@@ -355,7 +355,8 @@ bool AssertSameColor(uint8 color_a, uint8 color_b) {
 
     FillSymmetricRandomCheckerboard(src, src_size, checkerboard_size);
 
-    ASSERT_TRUE(gpu_ops->ResizeBilinear(src, gfx::Rect(src_size), dst));
+    ASSERT_TRUE(gpu_ops->ResizeBilinear(src, gfx::Rect(src_size), dst,
+                                        gfx::Rect(dst_size)));
 
     AssertSymmetry(dst, dst_size);
   }

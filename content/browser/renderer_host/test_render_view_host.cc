@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/test_backing_store.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
+
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/renderer_host/test_backing_store.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/test_web_contents.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/password_form.h"
+#include "media/base/video_frame.h"
 #include "ui/gfx/rect.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/glue/glue_serialize.h"
@@ -120,6 +122,17 @@ void TestRenderWidgetHostView::CopyFromCompositingSurface(
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
   callback.Run(false, SkBitmap());
+}
+
+void TestRenderWidgetHostView::CopyFromCompositingSurfaceToVideoFrame(
+    const gfx::Rect& src_subrect,
+    const scoped_refptr<media::VideoFrame>& target,
+    const base::Callback<void(bool)>& callback) {
+  callback.Run(false);
+}
+
+bool TestRenderWidgetHostView::CanCopyToVideoFrame() const {
+  return false;
 }
 
 void TestRenderWidgetHostView::OnAcceleratedCompositingStateChange() {

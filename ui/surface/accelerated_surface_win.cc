@@ -21,8 +21,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time.h"
 #include "base/win/wrapped_window_proc.h"
+#include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
@@ -52,6 +53,49 @@ bool DoFirstShowPresentWithGDI() {
 bool DoAllShowPresentWithGDI() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDoAllShowPresentWithGDI);
+}
+
+// Lock a D3D surface, and invoke a VideoFrame copier on the result.
+bool LockAndCopyPlane(IDirect3DSurface9* src_surface,
+                      media::VideoFrame* dst_frame,
+                      size_t plane_id) {
+  gfx::Size src_size = d3d_utils::GetSize(src_surface);
+
+  D3DLOCKED_RECT locked_rect;
+  {
+    TRACE_EVENT0("gpu", "LockRect");
+    HRESULT hr = src_surface->LockRect(&locked_rect, NULL,
+                                       D3DLOCK_READONLY | D3DLOCK_NOSYSLOCK);
+    if (FAILED(hr))
+      return false;
+  }
+
+  {
+    TRACE_EVENT0("gpu", "memcpy");
+    uint8* src = reinterpret_cast<uint8*>(locked_rect.pBits);
+    int src_stride = locked_rect.Pitch;
+    media::CopyPlane(plane_id, src, src_stride, src_size.height(), dst_frame);
+  }
+  src_surface->UnlockRect();
+  return true;
+}
+
+// Return the largest centered rectangle with the same aspect ratio of |content|
+// that fits entirely inside of |bounds|.
+gfx::Rect ComputeLetterboxRegion(
+    const gfx::Rect& bounds,
+    const gfx::Size& content) {
+  int64 x = static_cast<int64>(content.width()) * bounds.height();
+  int64 y = static_cast<int64>(bounds.width()) * content.height();
+
+  gfx::Size letterbox(bounds.width(), bounds.height());
+  if (y < x)
+    letterbox.set_height(static_cast<int>(y / content.width()));
+  else
+    letterbox.set_width(static_cast<int>(x / content.height()));
+  gfx::Rect result = bounds;
+  result.ClampToCenteredSize(letterbox);
+  return result;
 }
 
 }  // namespace
@@ -318,32 +362,51 @@ void AcceleratedPresenter::AsyncCopyTo(
                  callback));
 }
 
+void AcceleratedPresenter::AsyncCopyToVideoFrame(
+    const gfx::Rect& requested_src_subrect,
+    const scoped_refptr<media::VideoFrame>& target,
+    const base::Callback<void(bool)>& callback) {
+  present_thread_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&AcceleratedPresenter::DoCopyToVideoFrameAndAcknowledge,
+                 this,
+                 requested_src_subrect,
+                 target,
+                 base::MessageLoopProxy::current(),
+                 callback));
+}
+
 void AcceleratedPresenter::DoCopyToAndAcknowledge(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
-
   SkBitmap target;
-  bool result = DoCopyTo(src_subrect, dst_size, &target);
+  bool result = DoCopyToARGB(src_subrect, dst_size, &target);
   if (!result)
     target.reset();
-  callback_runner->PostTask(
-      FROM_HERE,
-      base::Bind(callback, result, target));
+  callback_runner->PostTask(FROM_HERE, base::Bind(callback, result, target));
 }
 
-bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
-                                    const gfx::Size& dst_size,
-                                    SkBitmap* bitmap) {
+void AcceleratedPresenter::DoCopyToVideoFrameAndAcknowledge(
+    const gfx::Rect& src_subrect,
+    const scoped_refptr<media::VideoFrame>& target,
+    const scoped_refptr<base::SingleThreadTaskRunner>& callback_runner,
+    const base::Callback<void(bool)>& callback) {
+
+  bool result = DoCopyToYUV(src_subrect, target);
+  callback_runner->PostTask(FROM_HERE, base::Bind(callback, result));
+}
+
+bool AcceleratedPresenter::DoCopyToARGB(const gfx::Rect& requested_src_subrect,
+                                        const gfx::Size& dst_size,
+                                        SkBitmap* bitmap) {
   TRACE_EVENT2(
       "gpu", "CopyTo",
       "width", dst_size.width(),
       "height", dst_size.height());
 
   base::AutoLock locked(lock_);
-
-  TRACE_EVENT0("gpu", "CopyTo_locked");
 
   if (!swap_chain_)
     return false;
@@ -389,7 +452,8 @@ bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
   {
     // Let the surface transformer start the resize into |final_surface|.
     TRACE_EVENT0("gpu", "ResizeBilinear");
-    if (!gpu_ops->ResizeBilinear(back_buffer, src_subrect, final_surface)) {
+    if (!gpu_ops->ResizeBilinear(back_buffer, src_subrect,
+                                 final_surface, gfx::Rect(dst_size))) {
       LOG(ERROR) << "Failed to resize bilinear";
       return false;
     }
@@ -427,6 +491,93 @@ bool AcceleratedPresenter::DoCopyTo(const gfx::Rect& requested_src_subrect,
   }
   final_surface->UnlockRect();
 
+  return true;
+}
+
+bool AcceleratedPresenter::DoCopyToYUV(
+    const gfx::Rect& requested_src_subrect,
+    const scoped_refptr<media::VideoFrame>& frame) {
+  gfx::Size dst_size = frame->coded_size();
+  TRACE_EVENT2(
+      "gpu", "CopyToYUV",
+      "width", dst_size.width(),
+      "height", dst_size.height());
+
+  base::AutoLock locked(lock_);
+
+  if (!swap_chain_)
+    return false;
+
+  AcceleratedSurfaceTransformer* gpu_ops =
+      present_thread_->surface_transformer();
+
+  base::win::ScopedComPtr<IDirect3DSurface9> back_buffer;
+  HRESULT hr = swap_chain_->GetBackBuffer(0,
+                                          D3DBACKBUFFER_TYPE_MONO,
+                                          back_buffer.Receive());
+  if (FAILED(hr))
+    return false;
+
+  D3DSURFACE_DESC desc;
+  hr = back_buffer->GetDesc(&desc);
+  if (FAILED(hr))
+    return false;
+
+  const gfx::Size back_buffer_size(desc.Width, desc.Height);
+  if (back_buffer_size.IsEmpty())
+    return false;
+
+  // With window resizing, it's possible that the back buffer is smaller than
+  // the requested src subset. Clip to the actual back buffer.
+  gfx::Rect src_subrect = requested_src_subrect;
+  src_subrect.Intersect(gfx::Rect(back_buffer_size));
+
+  base::win::ScopedComPtr<IDirect3DTexture9> resized_as_texture;
+  base::win::ScopedComPtr<IDirect3DSurface9> resized;
+  {
+    TRACE_EVENT0("gpu", "CreateTemporaryRenderTargetTexture");
+    if (!d3d_utils::CreateTemporaryRenderTargetTexture(
+            present_thread_->device(),
+            dst_size,
+            resized_as_texture.Receive(),
+            resized.Receive())) {
+      return false;
+    }
+  }
+
+  // Shrink the source to fit entirely in the destination while preserving
+  // aspect ratio. Fill in any margin with black.
+  // TODO(nick): It would be more efficient all around to implement
+  // letterboxing as a memset() on the dst.
+  gfx::Rect letterbox = ComputeLetterboxRegion(gfx::Rect(dst_size),
+                                               src_subrect.size());
+  if (letterbox != gfx::Rect(dst_size)) {
+    TRACE_EVENT0("gpu", "Letterbox");
+    present_thread_->device()->ColorFill(resized, NULL, 0xFF000000);
+  }
+
+  {
+    TRACE_EVENT0("gpu", "ResizeBilinear");
+    if (!gpu_ops->ResizeBilinear(back_buffer, src_subrect, resized, letterbox))
+      return false;
+  }
+
+  base::win::ScopedComPtr<IDirect3DSurface9> y, u, v;
+  {
+    TRACE_EVENT0("gpu", "TransformRGBToYV12");
+    if (!gpu_ops->TransformRGBToYV12(resized_as_texture,
+                                     dst_size,
+                                     y.Receive(), u.Receive(), v.Receive())) {
+      return false;
+    }
+  }
+
+  if (!LockAndCopyPlane(y, frame, media::VideoFrame::kYPlane))
+    return false;
+  if (!LockAndCopyPlane(u, frame, media::VideoFrame::kUPlane))
+    return false;
+  if (!LockAndCopyPlane(v, frame, media::VideoFrame::kVPlane))
+    return false;
   return true;
 }
 
@@ -857,6 +1008,13 @@ void AcceleratedSurface::AsyncCopyTo(
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
   presenter_->AsyncCopyTo(src_subrect, dst_size, callback);
+}
+
+void AcceleratedSurface::AsyncCopyToVideoFrame(
+    const gfx::Rect& src_subrect,
+    const scoped_refptr<media::VideoFrame>& target,
+    const base::Callback<void(bool)>& callback) {
+  presenter_->AsyncCopyToVideoFrame(src_subrect, target, callback);
 }
 
 void AcceleratedSurface::Suspend() {

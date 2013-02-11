@@ -230,6 +230,9 @@
     // but VideoCaptureController::OnIncomingCapturedFrame() requires
     // it to do so.  Plumbing things through is intrusive, for now
     // just deliver an adjusted buffer.
+    // TODO(nick): This workaround could probably be eliminated by using
+    // VideoCaptureController::OnIncomingCapturedVideoFrame, which supports
+    // pitches.
     UInt8* addressToPass = static_cast<UInt8*>(baseAddress);
     size_t expectedBytesPerRow = frameWidth_ * 4;
     if (bytesPerRow > expectedBytesPerRow) {

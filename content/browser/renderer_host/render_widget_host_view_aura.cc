@@ -757,6 +757,18 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
       wrapper_callback);
 }
 
+void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
+      const gfx::Rect& src_subrect,
+      const scoped_refptr<media::VideoFrame>& target,
+      const base::Callback<void(bool)>& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(false);
+}
+
+bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
+  return false;
+}
+
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
   // Delay processing the state change until we either get a software frame if
   // switching to software mode or receive a buffers swapped notification

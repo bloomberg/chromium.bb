@@ -233,6 +233,18 @@ void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
   callback.Run(false, SkBitmap());
 }
 
+void RenderWidgetHostViewGuest::CopyFromCompositingSurfaceToVideoFrame(
+      const gfx::Rect& src_subrect,
+      const scoped_refptr<media::VideoFrame>& target,
+      const base::Callback<void(bool)>& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(false);
+}
+
+bool RenderWidgetHostViewGuest::CanCopyToVideoFrame() const {
+  return false;
+}
+
 void RenderWidgetHostViewGuest::AcceleratedSurfaceSuspend() {
   NOTREACHED();
 }

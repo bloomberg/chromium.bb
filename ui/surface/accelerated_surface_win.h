@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -21,6 +22,10 @@ class PresentThread;
 
 namespace gfx {
 class Rect;
+}
+
+namespace media {
+class VideoFrame;
 }
 
 class SURFACE_EXPORT AcceleratedPresenter
@@ -65,6 +70,10 @@ class SURFACE_EXPORT AcceleratedPresenter
   void AsyncCopyTo(const gfx::Rect& src_subrect,
                    const gfx::Size& dst_size,
                    const base::Callback<void(bool, const SkBitmap&)>& callback);
+  void AsyncCopyToVideoFrame(
+      const gfx::Rect& src_subrect,
+      const scoped_refptr<media::VideoFrame>& target,
+      const base::Callback<void(bool)>& callback);
   void Invalidate();
 
 #if defined(USE_AURA)
@@ -92,9 +101,16 @@ class SURFACE_EXPORT AcceleratedPresenter
       const gfx::Size& dst_size,
       scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
       const base::Callback<void(bool, const SkBitmap&)>& callback);
-  bool DoCopyTo(const gfx::Rect& src_subrect,
-                const gfx::Size& dst_size,
-                SkBitmap* bitmap);
+  void DoCopyToVideoFrameAndAcknowledge(
+      const gfx::Rect& src_subrect,
+      const scoped_refptr<media::VideoFrame>& target,
+      const scoped_refptr<base::SingleThreadTaskRunner>& callback_runner,
+      const base::Callback<void(bool)>& callback);
+  bool DoCopyToYUV(const gfx::Rect& src_subrect,
+                   const scoped_refptr<media::VideoFrame>& frame);
+  bool DoCopyToARGB(const gfx::Rect& src_subrect,
+                    const gfx::Size& dst_size,
+                    SkBitmap* bitmap);
 
   void PresentWithGDI(HDC dc);
   gfx::Size GetWindowSize();
@@ -165,14 +181,18 @@ class SURFACE_EXPORT AcceleratedSurface {
   // Synchronously present a frame with no acknowledgement.
   void Present(HDC dc);
 
-  // Copies the surface data to |buf|. The copied region is specified with
-  // |src_subrect| and the image data is transformed so that it fits in
-  // |dst_size|.
-  // Caller must ensure that |buf| is allocated with the size no less than
-  // |4 * dst_size.width() * dst_size.height()| bytes.
+  // Transfer the contents of the surface to an SkBitmap, and invoke a callback
+  // with the result.
   void AsyncCopyTo(const gfx::Rect& src_subrect,
                    const gfx::Size& dst_size,
                    const base::Callback<void(bool, const SkBitmap&)>& callback);
+
+  // Transfer the contents of the surface to an already-allocated YV12
+  // VideoFrame, and invoke a callback to indicate success or failure.
+  void AsyncCopyToVideoFrame(
+      const gfx::Rect& src_subrect,
+      const scoped_refptr<media::VideoFrame>& target,
+      const base::Callback<void(bool)>& callback);
 
   // Temporarily release resources until a new surface is asynchronously
   // presented. Present will not be able to represent the last surface after

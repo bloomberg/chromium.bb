@@ -37,6 +37,8 @@ class MockFrameObserver : public VideoCaptureDevice::EventHandler {
   MOCK_METHOD1(OnFrameInfo, void(const VideoCaptureCapability& info));
   MOCK_METHOD3(OnIncomingCapturedFrame, void(const uint8* data, int length,
                                              base::Time timestamp));
+  MOCK_METHOD2(OnIncomingCapturedVideoFrame, void(media::VideoFrame* frame,
+                                                  base::Time timestamp));
 };
 
 // TODO(sergeyu): Move this to a separate file where it can be reused.

@@ -365,6 +365,18 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   callback.Run(false, SkBitmap());
 }
 
+void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
+      const gfx::Rect& src_subrect,
+      const scoped_refptr<media::VideoFrame>& target,
+      const base::Callback<void(bool)>& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(false);
+}
+
+bool RenderWidgetHostViewAndroid::CanCopyToVideoFrame() const {
+  return false;
+}
+
 void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
     const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap) {
   if (!content_view_core_)

@@ -26,6 +26,10 @@ struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 
+namespace media {
+class VideoFrame;
+}
+
 namespace webkit {
 namespace npapi {
 struct WebPluginGeometry;
@@ -158,12 +162,31 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // contents, scaled to |dst_size|, and written to |output|.
   // |callback| is invoked with true on success, false otherwise. |output| can
   // be initialized even on failure.
-  // NOTE: |callback| is called asynchronously on Aura and synchronously on the
-  // other platforms.
+  // NOTE: |callback| is called asynchronously.
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback) = 0;
+
+  // Copies a given subset of the compositing surface's content into a YV12
+  // VideoFrame, and invokes a callback with a success/fail parameter. |target|
+  // must contain an allocated, YV12 video frame of the intended size. If the
+  // copy rectangle does not match |target|'s size, the copied content will be
+  // scaled and letterboxed with black borders. The copy will happen
+  // asynchronously. This operation will fail if there is no available
+  // compositing surface.
+  virtual void CopyFromCompositingSurfaceToVideoFrame(
+      const gfx::Rect& src_subrect,
+      const scoped_refptr<media::VideoFrame>& target,
+      const base::Callback<void(bool)>& callback) = 0;
+
+  // Returns true if CopyFromCompositingSurfaceToVideoFrame() is likely to
+  // succeed.
+  //
+  // TODO(nick): When VideoFrame copies are broadly implemented, this method
+  // should be renamed to HasCompositingSurface(), or unified with
+  // IsSurfaceAvailableForCopy() and HasAcceleratedSurface().
+  virtual bool CanCopyToVideoFrame() const = 0;
 
   // Called when accelerated compositing state changes.
   virtual void OnAcceleratedCompositingStateChange() = 0;

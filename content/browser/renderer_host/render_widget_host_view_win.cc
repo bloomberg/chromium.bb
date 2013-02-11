@@ -825,14 +825,34 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurface(
   if (!accelerated_surface_.get())
     return;
 
-  if (dst_size.IsEmpty())
+  if (dst_size.IsEmpty() || src_subrect.IsEmpty())
     return;
 
   scoped_callback_runner.Release();
-  accelerated_surface_->AsyncCopyTo(
-      src_subrect,
-      dst_size,
-      callback);
+  accelerated_surface_->AsyncCopyTo(src_subrect, dst_size, callback);
+}
+
+void RenderWidgetHostViewWin::CopyFromCompositingSurfaceToVideoFrame(
+    const gfx::Rect& src_subrect,
+    const scoped_refptr<media::VideoFrame>& target,
+    const base::Callback<void(bool)>& callback) {
+  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+  if (!accelerated_surface_.get())
+    return;
+
+  if (!target || target->format() != media::VideoFrame::YV12)
+    return;
+
+  if (src_subrect.IsEmpty())
+    return;
+
+  scoped_callback_runner.Release();
+  accelerated_surface_->AsyncCopyToVideoFrame(src_subrect, target, callback);
+}
+
+bool RenderWidgetHostViewWin::CanCopyToVideoFrame() const {
+  return accelerated_surface_.get() && render_widget_host_ &&
+      render_widget_host_->is_accelerated_compositing_active();
 }
 
 void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {

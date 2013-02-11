@@ -36,15 +36,23 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
   class MEDIA_EXPORT EventHandler {
    public:
-    // Captured a new video frame.
+    // Captured a new video frame as a raw buffer. The size, color format, and
+    // layout are taken from the parameters specified by an earlier call to
+    // OnFrameInfo(). |data| must be packed, with no padding between rows and/or
+    // color planes.
     virtual void OnIncomingCapturedFrame(const uint8* data,
                                          int length,
                                          base::Time timestamp) = 0;
-    // An error has occurred that can not be handled
-    // and VideoCaptureDevice must be DeAllocated.
+    // Captured a new video frame, held in a VideoFrame container. |frame| must
+    // be allocated as RGB32, YV12 or I420, and the size must match that
+    // specified by an earlier call to OnFrameInfo().
+    virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
+                                              base::Time timestamp) = 0;
+    // An error has occurred that cannot be handled and VideoCaptureDevice must
+    // be DeAllocate()-ed.
     virtual void OnError() = 0;
-    // Called when VideoCaptureDevice::Allocate has been called
-    // to inform of the resulting frame size and color format.
+    // Called when VideoCaptureDevice::Allocate() has been called to inform of
+    // the resulting frame size.
     virtual void OnFrameInfo(const VideoCaptureCapability& info) = 0;
 
    protected:
@@ -59,9 +67,9 @@ class MEDIA_EXPORT VideoCaptureDevice {
   static void GetDeviceNames(Names* device_names);
 
   // Prepare the camera for use. After this function has been called no other
-  // applications can use the camera. On completion EventHandler::OnFrameInfo is
-  // called informing of the resulting resolution and frame rate.
-  // DeAllocate must be called before this function can be called again and
+  // applications can use the camera. On completion EventHandler::OnFrameInfo()
+  // is called informing of the resulting resolution and frame rate.
+  // DeAllocate() must be called before this function can be called again and
   // before the object is deleted.
   virtual void Allocate(int width,
                         int height,
@@ -74,9 +82,9 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // Stop capturing video frames.
   virtual void Stop() = 0;
 
-  // DeAllocates the camera. This means other applications can use it.
-  // After this function has been called the Capture device is reset to the
-  // state it was when created.
+  // Deallocates the camera. This means other applications can use it. After
+  // this function has been called the capture device is reset to the state it
+  // was when created.
   virtual void DeAllocate() = 0;
 
   // Get the name of the capture device.

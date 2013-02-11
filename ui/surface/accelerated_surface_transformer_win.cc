@@ -69,8 +69,7 @@ class ScopedRenderTargetRestorer {
 // by repeating downsampling of the image of |src_subrect| by a factor no more
 // than 2.
 int GetResampleCount(const gfx::Rect& src_subrect,
-                     const gfx::Size& dst_size,
-                     const gfx::Size& back_buffer_size) {
+                     const gfx::Size& dst_size) {
   // At least one copy is required, since the back buffer itself is not
   // lockable.
   int min_resample_count = 1;
@@ -319,17 +318,17 @@ void AcceleratedSurfaceTransformer::DrawScreenAlignedQuad(
 bool AcceleratedSurfaceTransformer::ResizeBilinear(
     IDirect3DSurface9* src_surface,
     const gfx::Rect& src_subrect,
-    IDirect3DSurface9* dst_surface) {
-  gfx::Size src_size = d3d_utils::GetSize(src_surface);
-  gfx::Size dst_size = d3d_utils::GetSize(dst_surface);
+    IDirect3DSurface9* dst_surface,
+    const gfx::Rect& dst_rect) {
+  gfx::Size src_size = src_subrect.size();
+  gfx::Size dst_size = dst_rect.size();
 
   if (src_size.IsEmpty() || dst_size.IsEmpty())
     return false;
 
   HRESULT hr = S_OK;
   // Set up intermediate buffers needed for downsampling.
-  const int resample_count =
-      GetResampleCount(src_subrect, dst_size, src_size);
+  const int resample_count = GetResampleCount(src_subrect, dst_size);
   base::win::ScopedComPtr<IDirect3DSurface9> temp_buffer[2];
   const gfx::Size half_size =
       GetHalfSizeNoLessThan(src_subrect.size(), dst_size);
@@ -360,10 +359,16 @@ bool AcceleratedSurfaceTransformer::ResizeBilinear(
     TRACE_EVENT0("gpu", "StretchRect");
     IDirect3DSurface9* read_buffer =
         (i == 0) ? src_surface : temp_buffer[read_buffer_index];
-    IDirect3DSurface9* write_buffer =
-        (i == resample_count - 1) ? dst_surface :
-                                    temp_buffer[write_buffer_index];
-    RECT write_rect = gfx::Rect(write_size).ToRECT();
+    IDirect3DSurface9* write_buffer;
+    RECT write_rect;
+    if (i == resample_count - 1) {
+      write_buffer = dst_surface;
+      write_rect = dst_rect.ToRECT();
+    } else {
+      write_buffer = temp_buffer[write_buffer_index];
+      write_rect = gfx::Rect(write_size).ToRECT();
+    }
+
     hr = device()->StretchRect(read_buffer,
                                &read_rect,
                                write_buffer,

@@ -30,8 +30,8 @@ gfx::Size GetNaturalSize(const gfx::Size& visible_size,
   return gfx::Size(width & ~1, height);
 }
 
-static void CopyPlane(size_t plane, const uint8* source, int stride, int rows,
-                      VideoFrame* frame) {
+void CopyPlane(size_t plane, const uint8* source, int stride, int rows,
+               VideoFrame* frame) {
   uint8* dest = frame->data(plane);
   int dest_stride = frame->stride(plane);
 

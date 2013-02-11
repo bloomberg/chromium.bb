@@ -28,6 +28,11 @@ MEDIA_EXPORT void CopyUPlane(const uint8* source, int stride, int rows,
                              VideoFrame* frame);
 MEDIA_EXPORT void CopyVPlane(const uint8* source, int stride, int rows,
                              VideoFrame* frame);
+// |plane| is one of VideoFrame::kYPlane, VideoFrame::kUPlane,
+// or VideoFrame::kVPlane.
+MEDIA_EXPORT void CopyPlane(size_t plane, const uint8* source, int stride,
+                            int rows, VideoFrame* frame);
+
 
 // Fills |frame| containing YUV data to the given color values.
 MEDIA_EXPORT void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v);

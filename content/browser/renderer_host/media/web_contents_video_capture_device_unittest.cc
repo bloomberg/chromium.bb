@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "media/base/video_util.h"
 #include "media/video/capture/video_capture_types.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -152,6 +153,35 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
     }
   }
 
+  virtual void OnIncomingCapturedVideoFrame(media::VideoFrame* frame,
+                                            base::Time timestamp) OVERRIDE {
+    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->coded_size());
+    EXPECT_EQ(media::VideoFrame::YV12, frame->format());
+    bool all_pixels_are_the_same_color = true;
+    uint8 yuv[3] = {0};
+    for (int plane = 0; plane < 3; ++plane) {
+      yuv[plane] = frame->data(plane)[0];
+      for (int y = 0; y < frame->rows(plane); ++y) {
+        for (int x = 0; x < frame->row_bytes(plane); ++x) {
+          if (yuv[plane] != frame->data(plane)[x + y * frame->stride(plane)]) {
+            all_pixels_are_the_same_color = false;
+            break;
+          }
+        }
+      }
+    }
+    EXPECT_TRUE(all_pixels_are_the_same_color);
+    const SkColor color = SkColorSetRGB(yuv[0], yuv[1], yuv[2]);
+
+    {
+      base::AutoLock guard(lock_);
+      if (color != picture_color_) {
+        picture_color_ = color;
+        output_changed_.Signal();
+      }
+    }
+  }
+
   virtual void OnError() OVERRIDE {
     base::AutoLock guard(lock_);
     error_encountered_ = true;
@@ -236,20 +266,33 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
 // The "happy case" test.  No scaling is needed, so we should be able to change
 // the picture emitted from the source and expect to see each delivered to the
-// consumer.
+// consumer. The test will alternate between the SkBitmap and the VideoFrame
+// paths, just as RenderWidgetHost might if the content falls in and out of
+// accelerated compositing.
 TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
   device()->Allocate(kTestWidth, kTestHeight, kTestFramesPerSecond,
                      consumer());
 
   device()->Start();
-  source()->SetSolidColor(SK_ColorRED);
-  EXPECT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorRED));
-  source()->SetSolidColor(SK_ColorGREEN);
-  EXPECT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorGREEN));
-  source()->SetSolidColor(SK_ColorBLUE);
-  EXPECT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorBLUE));
-  source()->SetSolidColor(SK_ColorBLACK);
-  EXPECT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorBLACK));
+
+  bool use_video_frames = false;
+  for (int i = 0; i < 4; i++, use_video_frames = !use_video_frames) {
+    SCOPED_TRACE(
+        testing::Message() << "Using "
+                           << (use_video_frames ? "VideoFrame" : "SkBitmap")
+                           << " path, iteration #" << i);
+    // TODO(nick): Implement this.
+    // source()->SetUseVideoFrames(use_video_frames);
+    source()->SetSolidColor(SK_ColorRED);
+    source()->WaitForNextBackingStoreCopy();
+    ASSERT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorRED));
+    source()->SetSolidColor(SK_ColorGREEN);
+    ASSERT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorGREEN));
+    source()->SetSolidColor(SK_ColorBLUE);
+    ASSERT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorBLUE));
+    source()->SetSolidColor(SK_ColorBLACK);
+    ASSERT_TRUE(consumer()->WaitForNextColorOrError(SK_ColorBLACK));
+  }
 
   device()->DeAllocate();
 }
