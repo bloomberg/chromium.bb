@@ -39,7 +39,7 @@ namespace nacl_arm_test {
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -108,7 +108,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase0
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -177,7 +177,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase1
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -246,7 +246,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -315,7 +315,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase3
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -384,7 +384,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase4
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -453,7 +453,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -522,7 +522,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase6
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -591,7 +591,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase7
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -660,7 +660,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -729,7 +729,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase9
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -798,7 +798,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase10
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -867,7 +867,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -936,7 +936,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase12
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1005,7 +1005,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase13
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1074,7 +1074,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1143,7 +1143,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase15
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1212,7 +1212,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase16
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1286,7 +1286,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1310,7 +1310,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case0
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1334,7 +1334,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case1
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1358,7 +1358,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case2
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1382,7 +1382,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case3
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1406,7 +1406,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case4
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1430,7 +1430,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case5
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1454,7 +1454,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case6
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1478,7 +1478,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case7
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1502,7 +1502,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case8
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1526,7 +1526,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case9
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1550,7 +1550,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case10
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1574,7 +1574,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case11
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1598,7 +1598,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case12
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1622,7 +1622,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case13
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1646,7 +1646,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case14
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1670,7 +1670,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case15
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1694,7 +1694,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case16
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1727,7 +1727,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1739,8 +1739,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case0_TestCase0) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case0 tester;
-  tester.Test("cccc01100101nnnndddd11110001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case0 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UADD16 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100101nnnndddd11110001mmmm");
 }
 
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1748,7 +1750,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1760,8 +1762,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case1_TestCase1) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case1 tester;
-  tester.Test("cccc01100101nnnndddd11110011mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case1 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UASX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100101nnnndddd11110011mmmm");
 }
 
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1769,7 +1773,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1781,8 +1785,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case2_TestCase2) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case2 tester;
-  tester.Test("cccc01100101nnnndddd11110101mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case2 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_USAX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100101nnnndddd11110101mmmm");
 }
 
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1790,7 +1796,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1802,8 +1808,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case3_TestCase3) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case3 tester;
-  tester.Test("cccc01100101nnnndddd11110111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case3 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_USUB16 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100101nnnndddd11110111mmmm");
 }
 
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1811,7 +1819,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1823,8 +1831,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case4_TestCase4) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case4 tester;
-  tester.Test("cccc01100101nnnndddd11111001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case4 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UADD8 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100101nnnndddd11111001mmmm");
 }
 
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1832,7 +1842,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1844,8 +1854,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case5_TestCase5) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case5 tester;
-  tester.Test("cccc01100101nnnndddd11111111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case5 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_USUB8 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100101nnnndddd11111111mmmm");
 }
 
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1853,7 +1865,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1865,8 +1877,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case6_TestCase6) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case6 tester;
-  tester.Test("cccc01100110nnnndddd11110001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case6 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UQADD16 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100110nnnndddd11110001mmmm");
 }
 
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1874,7 +1888,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1886,8 +1900,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case7_TestCase7) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case7 tester;
-  tester.Test("cccc01100110nnnndddd11110011mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case7 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UQASX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100110nnnndddd11110011mmmm");
 }
 
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1895,7 +1911,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1907,8 +1923,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case8_TestCase8) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case8 tester;
-  tester.Test("cccc01100110nnnndddd11110101mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case8 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UQSAX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100110nnnndddd11110101mmmm");
 }
 
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1916,7 +1934,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1928,8 +1946,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case9_TestCase9) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case9 tester;
-  tester.Test("cccc01100110nnnndddd11110111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case9 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UQSUB16 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100110nnnndddd11110111mmmm");
 }
 
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1937,7 +1957,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1949,8 +1969,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case10_TestCase10) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case10 tester;
-  tester.Test("cccc01100110nnnndddd11111001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case10 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UQADD8 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100110nnnndddd11111001mmmm");
 }
 
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1958,7 +1980,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1970,8 +1992,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case11_TestCase11) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case11 tester;
-  tester.Test("cccc01100110nnnndddd11111111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case11 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UQSUB8 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100110nnnndddd11111111mmmm");
 }
 
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1979,7 +2003,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -1991,8 +2015,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case12_TestCase12) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case12 tester;
-  tester.Test("cccc01100111nnnndddd11110001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case12 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UHADD16 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100111nnnndddd11110001mmmm");
 }
 
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -2000,7 +2026,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -2012,8 +2038,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case13_TestCase13) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case13 tester;
-  tester.Test("cccc01100111nnnndddd11110011mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case13 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UHASX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100111nnnndddd11110011mmmm");
 }
 
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -2021,7 +2049,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -2033,8 +2061,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case14_TestCase14) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case14 tester;
-  tester.Test("cccc01100111nnnndddd11110101mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case14 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UHSAX actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100111nnnndddd11110101mmmm");
 }
 
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -2042,7 +2072,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -2054,8 +2084,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case15_TestCase15) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case15 tester;
-  tester.Test("cccc01100111nnnndddd11110111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case15 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UHSUB16 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100111nnnndddd11110111mmmm");
 }
 
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -2063,7 +2095,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -2075,8 +2107,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case16_TestCase16) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case16 tester;
-  tester.Test("cccc01100111nnnndddd11111001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case16 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UHADD8 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100111nnnndddd11111001mmmm");
 }
 
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -2084,7 +2118,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rm: Rm(3:0),
 //       Rn: Rn(19:16),
-//       actual: Binary3RegisterOpAltBNoCondUpdates,
+//       actual: Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
 //       defs: {Rd},
@@ -2096,8 +2130,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case17_TestCase17) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case17 tester;
-  tester.Test("cccc01100111nnnndddd11111111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case17 baseline_tester;
+  NamedActual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_UHSUB8 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01100111nnnndddd11111111mmmm");
 }
 
 }  // namespace nacl_arm_test

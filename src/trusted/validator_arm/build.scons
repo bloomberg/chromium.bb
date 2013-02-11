@@ -101,6 +101,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "load_store_word_and_unsigned_byte",
                      "media_instructions",
                      "parallel_addition_and_subtraction_signed",
+                     "parallel_addition_and_subtraction_unsigned",
                      ]
 
 # The list of tables in armv7.table that should test the automatically
