@@ -19,9 +19,14 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationController.IntentProtocol;
+import org.chromium.sync.signin.AccountManagerHelper;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Tests for the {@link InvalidationController}.
@@ -61,8 +66,22 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"Sync"})
     public void testRegisterForSpecificTypes() {
+        final String controllerFlag = "resolveModelTypes";
+        final ModelTypeResolver resolver = new ModelTypeResolver() {
+            @Override
+            public Set<ModelType> resolveModelTypes(Set<ModelType> modelTypes) {
+                mContext.setFlag(controllerFlag);
+                return modelTypes;
+            }
+        };
+        InvalidationController controller = new InvalidationController(mContext) {
+            @Override
+            ModelTypeResolver getModelTypeResolver() {
+                return resolver;
+            }
+        };
         Account account = new Account("test@example.com", "bogus");
-        mController.setRegisteredTypes(account, false,
+        controller.setRegisteredTypes(account, false,
                 Sets.newHashSet(ModelType.BOOKMARK, ModelType.SESSION));
         assertEquals(1, mContext.getNumStartedIntents());
 
@@ -81,6 +100,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         Set<String> actualTypes = Sets.newHashSet();
         actualTypes.addAll(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
         assertEquals(expectedTypes, actualTypes);
+        assertTrue(mContext.isFlagSet(controllerFlag));
     }
 
     @SmallTest
@@ -105,6 +125,83 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         Set<String> actualTypes = Sets.newHashSet();
         actualTypes.addAll(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
         assertEquals(expectedTypes, actualTypes);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testRefreshShouldReadValuesFromDiskWithSpecificTypes() {
+        // Store some preferences for ModelTypes and account. We are using the helper class
+        // for this, so we don't have to deal with low-level details such as preference keys.
+        InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
+        InvalidationPreferences.EditContext edit = invalidationPreferences.edit();
+        Set<String> storedModelTypes = new HashSet<String>();
+        storedModelTypes.add(ModelType.BOOKMARK.name());
+        storedModelTypes.add(ModelType.TYPED_URL.name());
+        invalidationPreferences.setSyncTypes(edit, storedModelTypes);
+        Account storedAccount = AccountManagerHelper.createAccountFromName("test@gmail.com");
+        invalidationPreferences.setAccount(edit, storedAccount);
+        invalidationPreferences.commit(edit);
+
+        // Ensure all calls to {@link InvalidationController#setRegisteredTypes} store values
+        // we can inspect in the test.
+        final AtomicReference<Account> resultAccount = new AtomicReference<Account>();
+        final AtomicBoolean resultAllTypes = new AtomicBoolean();
+        final AtomicReference<Set<ModelType>> resultTypes = new AtomicReference<Set<ModelType>>();
+        InvalidationController controller = new InvalidationController(mContext) {
+            @Override
+            public void setRegisteredTypes(
+                    Account account, boolean allTypes, Set<ModelType> types) {
+                resultAccount.set(account);
+                resultAllTypes.set(allTypes);
+                resultTypes.set(types);
+            }
+        };
+
+        // Execute the test.
+        controller.refreshRegisteredTypes();
+
+        // Validate the values.
+        assertEquals(storedAccount, resultAccount.get());
+        assertEquals(false, resultAllTypes.get());
+        assertEquals(ModelType.syncTypesToModelTypes(storedModelTypes), resultTypes.get());
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testRefreshShouldReadValuesFromDiskWithAllTypes() {
+        // Store preferences for the ModelType.ALL_TYPES_TYPE and account. We are using the
+        // helper class for this, so we don't have to deal with low-level details such as preference
+        // keys.
+        InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
+        InvalidationPreferences.EditContext edit = invalidationPreferences.edit();
+        List<String> storedModelTypes = new ArrayList<String>();
+        storedModelTypes.add(ModelType.ALL_TYPES_TYPE);
+        invalidationPreferences.setSyncTypes(edit, storedModelTypes);
+        Account storedAccount = AccountManagerHelper.createAccountFromName("test@gmail.com");
+        invalidationPreferences.setAccount(edit, storedAccount);
+        invalidationPreferences.commit(edit);
+
+        // Ensure all calls to {@link InvalidationController#setRegisteredTypes} store values
+        // we can inspect in the test.
+        final AtomicReference<Account> resultAccount = new AtomicReference<Account>();
+        final AtomicBoolean resultAllTypes = new AtomicBoolean();
+        final AtomicReference<Set<ModelType>> resultTypes = new AtomicReference<Set<ModelType>>();
+        InvalidationController controller = new InvalidationController(mContext) {
+            @Override
+            public void setRegisteredTypes(
+                    Account account, boolean allTypes, Set<ModelType> types) {
+                resultAccount.set(account);
+                resultAllTypes.set(allTypes);
+                resultTypes.set(types);
+            }
+        };
+
+        // Execute the test.
+        controller.refreshRegisteredTypes();
+
+        // Validate the values.
+        assertEquals(storedAccount, resultAccount.get());
+        assertEquals(true, resultAllTypes.get());
     }
 
     @SmallTest

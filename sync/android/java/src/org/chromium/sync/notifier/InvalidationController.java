@@ -18,6 +18,7 @@ import com.google.common.collect.Lists;
 
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -113,9 +114,28 @@ public class InvalidationController {
      * @param types    Set of types for which to register. Ignored if {@code allTypes == true}.
      */
     public void setRegisteredTypes(Account account, boolean allTypes, Set<ModelType> types) {
-        Intent registerIntent = IntentProtocol.createRegisterIntent(account, allTypes, types);
+        Set<ModelType> typesToRegister = getModelTypeResolver().resolveModelTypes(types);
+        Intent registerIntent = IntentProtocol.createRegisterIntent(account, allTypes,
+                typesToRegister);
         setDestinationClassName(registerIntent);
         mContext.startService(registerIntent);
+    }
+
+    /**
+     * Reads all stored preferences and calls
+     * {@link #setRegisteredTypes(android.accounts.Account, boolean, java.util.Set)} with the stored
+     * values. It can be used on startup of Chrome to ensure we always have a consistent set of
+     * registrations.
+     */
+    public void refreshRegisteredTypes() {
+        InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
+        Set<String> savedSyncedTypes = invalidationPreferences.getSavedSyncedTypes();
+        Account account = invalidationPreferences.getSavedSyncedAccount();
+        boolean allTypes = savedSyncedTypes != null &&
+                savedSyncedTypes.contains(ModelType.ALL_TYPES_TYPE);
+        Set<ModelType> modelTypes = savedSyncedTypes == null ?
+                new HashSet<ModelType>() : ModelType.syncTypesToModelTypes(savedSyncedTypes);
+        setRegisteredTypes(account, allTypes, modelTypes);
     }
 
     /**
@@ -152,7 +172,8 @@ public class InvalidationController {
     /**
      * Creates an instance using {@code context} to send intents.
      */
-    private InvalidationController(Context context) {
+    @VisibleForTesting
+    InvalidationController(Context context) {
         this.mContext = Preconditions.checkNotNull(context.getApplicationContext());
     }
 
@@ -191,5 +212,10 @@ public class InvalidationController {
             Log.wtf(TAG, "Cannot read own application info", exception);
         }
         return null;
+    }
+
+    @VisibleForTesting
+    ModelTypeResolver getModelTypeResolver() {
+        return new ModelTypeResolverImpl();
     }
 }

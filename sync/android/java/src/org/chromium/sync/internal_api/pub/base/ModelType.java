@@ -6,11 +6,14 @@ package org.chromium.sync.internal_api.pub.base;
 
 import android.util.Log;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protos.ipc.invalidation.Types;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -30,17 +33,25 @@ public enum ModelType {
      */
     BOOKMARK("BOOKMARK"),
     /**
+     * Flags to enable experimental features.
+     */
+    EXPERIMENTS("EXPERIMENTS", true),
+    /**
+     * An object representing a set of Nigori keys.
+     */
+    NIGORI("NIGORI", true),
+    /**
      * A password entry.
      */
     PASSWORD("PASSWORD"),
     /**
-     * A typed_url folder or a typed_url object.
-     */
-    TYPED_URL("TYPED_URL"),
-    /**
      * An object representing a browser session or tab.
      */
-    SESSION("SESSION");
+    SESSION("SESSION"),
+    /**
+     * A typed_url folder or a typed_url object.
+     */
+    TYPED_URL("TYPED_URL");
 
     /** Special type representing all possible types. */
     public static final String ALL_TYPES_TYPE = "ALL_TYPES";
@@ -49,8 +60,18 @@ public enum ModelType {
 
     private final String mModelType;
 
+    /**
+     * True if this is a control type.
+     */
+    private final boolean mControl;
+
     ModelType(String modelType) {
+        this(modelType, false);
+    }
+
+    ModelType(String modelType, boolean control) {
         mModelType = modelType;
+        mControl = control;
     }
 
     public ObjectId toObjectId() {
@@ -83,7 +104,7 @@ public enum ModelType {
             Set<ModelType> modelTypes = Sets.newHashSetWithExpectedSize(syncTypes.size());
             for (String syncType : syncTypes) {
                 try {
-                    modelTypes.add(ModelType.valueOf(syncType));
+                    modelTypes.add(valueOf(syncType));
                 } catch (IllegalArgumentException exception) {
                     // Drop invalid sync types.
                     Log.w(TAG, "Could not translate sync type to model type: " + syncType);
@@ -109,5 +130,28 @@ public enum ModelType {
             objectIds.add(modelType.toString());
         }
         return objectIds;
+    }
+
+    /**
+     * Returns a set of all the control {@link ModelType}s.
+     */
+    public static Set<ModelType> controlTypes() {
+        Set<ModelType> controlTypes = new HashSet<ModelType>();
+        for (ModelType modelType : values()) {
+            if (modelType.mControl) {
+                controlTypes.add(modelType);
+            }
+        }
+        return controlTypes;
+    }
+
+    /**
+     * Returns a Multimap of all the {@link ModelType} groups. The key is the main
+     * {@link ModelType}, and the value is a collection of {@link ModelType}s in the same group.
+     */
+    public static Multimap<ModelType, ModelType> modelTypeGroups() {
+        Multimap<ModelType, ModelType> modelTypeGroups = HashMultimap.create();
+        modelTypeGroups.put(AUTOFILL, AUTOFILL_PROFILE);
+        return modelTypeGroups;
     }
 }
