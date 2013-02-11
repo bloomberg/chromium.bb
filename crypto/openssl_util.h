@@ -11,7 +11,7 @@
 
 namespace crypto {
 
-// A helper class that takes care of destroying OpenSSL objects when it goes out
+// A helper class that takes care of destroying OpenSSL objects when they go out
 // of scope.
 template <typename T, void (*destructor)(T*)>
 class ScopedOpenSSL {
@@ -23,6 +23,11 @@ class ScopedOpenSSL {
   }
 
   T* get() const { return ptr_; }
+  T* release() {
+    T* ptr = ptr_;
+    ptr_ = NULL;
+    return ptr;
+  }
   void reset(T* ptr) {
     if (ptr != ptr_) {
       if (ptr_) (*destructor)(ptr_);

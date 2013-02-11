@@ -62,7 +62,7 @@ BASE_EXPORT void JavaIntArrayToIntVector(
 // Assuming |array| is an byte[][] (array of byte arrays), replaces the
 // content of |out| with the corresponding vector of strings. No UTF-8
 // conversion is performed.
-void JavaArrayOfByteArrayToStringVector(
+BASE_EXPORT void JavaArrayOfByteArrayToStringVector(
     JNIEnv* env,
     jobjectArray array,
     std::vector<std::string>* out);

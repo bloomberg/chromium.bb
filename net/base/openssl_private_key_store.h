@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 
+// Avoid including <openssl/evp.h> here.
 typedef struct evp_pkey_st EVP_PKEY;
 
 class GURL;

@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "net/android/gurl_utils.h"
+#include "net/android/keystore.h"
 #include "net/android/network_change_notifier_android.h"
 #include "net/android/network_library.h"
 #include "net/proxy/proxy_config_service_android.h"
@@ -16,6 +17,7 @@ namespace net {
 namespace android {
 
 static base::android::RegistrationMethod kNetRegisteredMethods[] = {
+  { "AndroidKeyStore", net::android::RegisterKeyStore },
   { "AndroidNetworkLibrary", net::android::RegisterNetworkLibrary },
   { "GURLUtils", net::RegisterGURLUtils },
   { "NetworkChangeNotifierAndroid",

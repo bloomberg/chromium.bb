@@ -16,9 +16,14 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/client_socket_handle.h"
 
+// Avoid including misc OpenSSL headers, i.e.:
+// <openssl/bio.h>
 typedef struct bio_st BIO;
+// <openssl/evp.h>
 typedef struct evp_pkey_st EVP_PKEY;
+// <openssl/ssl.h>
 typedef struct ssl_st SSL;
+// <openssl/x509.h>
 typedef struct x509_st X509;
 
 namespace net {

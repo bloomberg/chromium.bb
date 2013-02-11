@@ -56,6 +56,10 @@
         'net_resources',
       ],
       'sources': [
+        'android/keystore.cc',
+        'android/keystore.h',
+        'android/keystore_openssl.cc',
+        'android/keystore_openssl.h',
         'android/gurl_utils.cc',
         'android/gurl_utils.h',
         'android/net_jni_registrar.cc',
@@ -1240,6 +1244,11 @@
               'base/openssl_memory_private_key_store.cc',
               'base/test_root_certs_openssl.cc',
             ],
+            # The net/android/keystore_openssl.cc source file needs to
+            # access an OpenSSL-internal header.
+            'include_dirs': [
+              '../third_party/openssl',
+            ],
           }, {  # else OS != "android"
             'defines': [
               # These are the features Android doesn't support.
@@ -1303,6 +1312,7 @@
         'net_test_support',
       ],
       'sources': [
+        'android/keystore_unittest.cc',
         'android/network_change_notifier_android_unittest.cc',
         'base/address_list_unittest.cc',
         'base/address_tracker_linux_unittest.cc',
@@ -1611,6 +1621,10 @@
             # sense.
             'dns/dns_config_service_posix_unittest.cc',
             'base/client_cert_store_impl_unittest.cc',
+          ],
+          'dependencies': [
+            'net_javatests',
+            'net_test_jni_headers',
           ],
         }],
         [ 'use_glib == 1', {
@@ -2327,6 +2341,7 @@
           'target_name': 'net_jni_headers',
           'type': 'none',
           'sources': [
+            'android/java/src/org/chromium/net/AndroidKeyStore.java',
             'android/java/src/org/chromium/net/AndroidNetworkLibrary.java',
             'android/java/src/org/chromium/net/GURLUtils.java',
             'android/java/src/org/chromium/net/NetworkChangeNotifier.java',
@@ -2334,6 +2349,27 @@
           ],
           'variables': {
             'jni_gen_dir': 'net',
+          },
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)/net',
+            ],
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'net_test_jni_headers',
+          'type': 'none',
+          'sources': [
+            'android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java',
+          ],
+          'variables': {
+            'jni_gen_dir': 'net',
+          },
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)/net',
+            ],
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
@@ -2348,6 +2384,7 @@
             '../base/base.gyp:base',
             'net_errors_java',
             'certificate_mime_types_java',
+            'private_key_types_java',
           ],
           'includes': [ '../build/java.gypi' ],
         },
@@ -2398,6 +2435,18 @@
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
+        {
+          'target_name': 'private_key_types_java',
+          'type': 'none',
+          'sources': [
+            'android/java/PrivateKeyType.template',
+          ],
+          'variables': {
+            'package_name': 'org.chromium.net',
+            'template_deps': ['android/private_key_type_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
       ],
     }],
     # Special target to wrap a gtest_target_type==shared_library
@@ -2410,6 +2459,7 @@
           'type': 'none',
           'dependencies': [
             'net_java',
+            'net_javatests',
             'net_unittests',
           ],
           'variables': {
