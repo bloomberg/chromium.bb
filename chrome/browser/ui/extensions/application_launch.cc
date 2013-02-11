@@ -31,6 +31,10 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/browser_commands_mac.h"
+#endif
+
 #if defined(OS_WIN)
 #include "win8/util/win8_util.h"
 #endif
@@ -225,7 +229,11 @@ WebContents* OpenApplicationTab(Profile* profile,
   // full screen mode in this case?
   if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN &&
       !browser->window()->IsFullscreen()) {
+#if defined(OS_MACOSX)
+    chrome::ToggleFullscreenWithChromeOrFallback(browser);
+#else
     chrome::ToggleFullscreenMode(browser);
+#endif
   }
 #endif
 

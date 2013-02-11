@@ -41,7 +41,6 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
 #include "chrome/browser/ui/browser_commands_mac.h"
 #endif
 
@@ -419,10 +418,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_FULLSCREEN:
 #if defined(OS_MACOSX)
-      if (base::mac::IsOSLionOrLater())
-        chrome::ToggleFullscreenWithChrome(browser_);
-      else
-        chrome::ToggleFullscreenMode(browser_);
+      chrome::ToggleFullscreenWithChromeOrFallback(browser_);
 #else
       chrome::ToggleFullscreenMode(browser_);
 #endif
