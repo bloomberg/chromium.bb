@@ -484,9 +484,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNothing) {
       << message_;
 }
 
+// TODO(thakis): Figure out what to do with this test.
 // Test that platform apps can use the chrome.fileSystem.getDisplayPath
 // function to get the native file system path of a file they are launched with.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, GetDisplayPath) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_GetDisplayPath) {
   SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/get_display_path"))
       << message_;
