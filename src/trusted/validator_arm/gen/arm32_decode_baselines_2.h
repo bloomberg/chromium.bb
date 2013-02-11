@@ -4248,6 +4248,7 @@ class VAND_register_111100100d00nnnndddd0001nqm1mmmm_case_0
 //    cmode: cmode(11:8),
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    fields: [i(24),
 //      D(22),
 //      imm3(18:16),
@@ -4270,13 +4271,16 @@ class VAND_register_111100100d00nnnndddd0001nqm1mmmm_case_0
 //    safety: [cmode(0)=0 ||
 //         cmode(3:2)=11 => DECODER_ERROR,
 //      Q(6)=1 &&
-//         Vd(0)=1 => UNDEFINED]}
+//         Vd(0)=1 => UNDEFINED],
+//    uses: {}}
 class VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0
      : public ClassDecoder {
  public:
   VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0);

@@ -7300,6 +7300,7 @@ uses(Instruction inst) const {
 //    cmode: cmode(11:8),
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    fields: [i(24),
 //      D(22),
 //      imm3(18:16),
@@ -7322,7 +7323,15 @@ uses(Instruction inst) const {
 //    safety: [cmode(0)=0 ||
 //         cmode(3:2)=11 => DECODER_ERROR,
 //      Q(6)=1 &&
-//         Vd(0)=1 => UNDEFINED]}
+//         Vd(0)=1 => UNDEFINED],
+//    uses: {}}
+RegisterList VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -7346,6 +7355,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // VBIC_register_111100100d01nnnndddd0001nqm1mmmm_case_0:
 //

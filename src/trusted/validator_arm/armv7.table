@@ -3512,13 +3512,15 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:            = Undefined
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_1imm (See Section A7.4.6)
 *V1RI
    { i(24), D(22), imm3(18:16), Vd(15:12), cmode(11:8), Q(6), op(5), imm4(3:0) }
    baseline := Vector1RegisterImmediate;
    imm64 := AdvSIMDExpandImm(op, cmode, i:imm3:imm4);
    d := D:Vd; regs := 1 if Q=0 else 2;
+   # TODO(karl): Add vector defs/uses etc.
+   defs := {};
+   uses := {};
    arch := ASIMD;
 *V1RI_MOV *V1RI
    baseline := Vector1RegisterImmediate_MOV;
@@ -3572,7 +3574,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "     1111        = Undefined
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- advanced_simd_element_or_structure_load_store_instructions (See Section A7.7)
 *VLSM
    { D(22), Rn(19:16), Vd(15:12), type(11:8), size(7:6), align(5:4), Rm(3:0) }
@@ -3582,6 +3583,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    d := D:Vd; n := Rn; m := Rm;
    wback := (m != Pc); register_index := (m != Pc & m != Sp);
    base := n;
+   # TODO(karl): Add vector defs/uses etc.
    # defs ignores FPRs. It only models GPRs and conditions.
    defs := { base } if wback else {};
    # Note: register_index defines if Rm is used (rather than a small constant).
@@ -3640,6 +3642,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    d := D:Vd; n := Rn; m := Rm;
    wback := (m != Pc); register_index := (m != Pc & m != Sp);
    base := n;
+   # TODO(karl): Add vector defs/uses etc.
    # defs ignores FPRs. It only models GPRs and conditions.
    defs := { base } if wback else {};
    # Note: register_index defines if Rm is used (rather than a small constant).
@@ -3697,6 +3700,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    d := D:Vd; n := Rn; m := Rm;
    wback := (m != Pc); register_index := (m != Pc & m != Sp);
    base := n;
+   # TODO(karl): Add vector defs/uses etc.
    # defs ignores FPRs. It only models GPRs and conditions.
    defs := { base } if wback else {};
    # Note: register_index defines if Rm is used (rather than a small constant).

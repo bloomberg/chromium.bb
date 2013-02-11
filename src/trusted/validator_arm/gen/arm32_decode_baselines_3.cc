@@ -4278,6 +4278,7 @@ uses(Instruction inst) const {
 //    cmode: cmode(11:8),
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    false: false,
 //    fields: [i(24),
 //      D(22),
@@ -4305,7 +4306,15 @@ uses(Instruction inst) const {
 //         cmode(11:8)=~1110 => DECODER_ERROR,
 //      Q(6)=1 &&
 //         Vd(0)=1 => UNDEFINED],
-//    single_register: false}
+//    single_register: false,
+//    uses: {}}
+RegisterList VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -4340,6 +4349,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0:
 //
@@ -5274,6 +5290,7 @@ uses(Instruction inst) const {
 //    cmode: cmode(11:8),
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    fields: [i(24),
 //      D(22),
 //      imm3(18:16),
@@ -5297,7 +5314,15 @@ uses(Instruction inst) const {
 //         cmode(3:2)=~11) ||
 //         cmode(3:1)=111 => DECODER_ERROR,
 //      Q(6)=1 &&
-//         Vd(0)=1 => UNDEFINED]}
+//         Vd(0)=1 => UNDEFINED],
+//    uses: {}}
+RegisterList VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -5324,6 +5349,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0:
 //
@@ -5827,6 +5859,7 @@ uses(Instruction inst) const {
 //    cmode: cmode(11:8),
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    fields: [i(24),
 //      D(22),
 //      imm3(18:16),
@@ -5849,7 +5882,15 @@ uses(Instruction inst) const {
 //    safety: [cmode(0)=0 ||
 //         cmode(3:2)=11 => DECODER_ERROR,
 //      Q(6)=1 &&
-//         Vd(0)=1 => UNDEFINED]}
+//         Vd(0)=1 => UNDEFINED],
+//    uses: {}}
+RegisterList VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -5873,6 +5914,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0:
 //

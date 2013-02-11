@@ -367,10 +367,19 @@ uses(Instruction inst) const {
 // Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1
 //
 // Actual:
-//   {safety: [inst(11:8)(0)=0 ||
+//   {defs: {},
+//    safety: [inst(11:8)(0)=0 ||
 //         inst(11:8)(3:2)=11 => DECODER_ERROR,
 //      inst(6)=1 &&
-//         inst(15:12)(0)=1 => UNDEFINED]}
+//         inst(15:12)(0)=1 => UNDEFINED],
+//    uses: {}}
+
+RegisterList Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
 
 SafetyLevel Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1::
 safety(Instruction inst) const {
@@ -395,6 +404,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1
 //
@@ -2998,13 +3014,22 @@ uses(Instruction inst) const {
 // Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1
 //
 // Actual:
-//   {safety: [inst(5)=0 &&
+//   {defs: {},
+//    safety: [inst(5)=0 &&
 //         inst(11:8)(0)=1 &&
 //         inst(11:8)(3:2)=~11 => DECODER_ERROR,
 //      inst(5)=1 &&
 //         inst(11:8)=~1110 => DECODER_ERROR,
 //      inst(6)=1 &&
-//         inst(15:12)(0)=1 => UNDEFINED]}
+//         inst(15:12)(0)=1 => UNDEFINED],
+//    uses: {}}
+
+RegisterList Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
 
 SafetyLevel Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1::
 safety(Instruction inst) const {
@@ -3040,6 +3065,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // Actual_VMRS_cccc111011110001tttt101000010000_case_1
 //
@@ -3211,11 +3243,20 @@ uses(Instruction inst) const {
 // Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1
 //
 // Actual:
-//   {safety: [(inst(11:8)(0)=1 &&
+//   {defs: {},
+//    safety: [(inst(11:8)(0)=1 &&
 //         inst(11:8)(3:2)=~11) ||
 //         inst(11:8)(3:1)=111 => DECODER_ERROR,
 //      inst(6)=1 &&
-//         inst(15:12)(0)=1 => UNDEFINED]}
+//         inst(15:12)(0)=1 => UNDEFINED],
+//    uses: {}}
+
+RegisterList Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
 
 SafetyLevel Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1::
 safety(Instruction inst) const {
@@ -3243,6 +3284,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1
 //

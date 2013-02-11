@@ -2441,6 +2441,7 @@ class VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_ccc
 //    cmode: cmode(11:8),
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    false: false,
 //    fields: [i(24),
 //      D(22),
@@ -2468,13 +2469,16 @@ class VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_ccc
 //         cmode(11:8)=~1110 => DECODER_ERROR,
 //      Q(6)=1 &&
 //         Vd(0)=1 => UNDEFINED],
-//    single_register: false}
+//    single_register: false,
+//    uses: {}}
 class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0
      : public ClassDecoder {
  public:
   VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0);
@@ -3134,6 +3138,7 @@ class VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_0
 //    cmode: cmode(11:8),
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    fields: [i(24),
 //      D(22),
 //      imm3(18:16),
@@ -3157,13 +3162,16 @@ class VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_0
 //         cmode(3:2)=~11) ||
 //         cmode(3:1)=111 => DECODER_ERROR,
 //      Q(6)=1 &&
-//         Vd(0)=1 => UNDEFINED]}
+//         Vd(0)=1 => UNDEFINED],
+//    uses: {}}
 class VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0
      : public ClassDecoder {
  public:
   VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0);
@@ -3532,6 +3540,7 @@ class VORN_register_111100100d11nnnndddd0001nqm1mmmm_case_0
 //    cmode: cmode(11:8),
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    fields: [i(24),
 //      D(22),
 //      imm3(18:16),
@@ -3554,13 +3563,16 @@ class VORN_register_111100100d11nnnndddd0001nqm1mmmm_case_0
 //    safety: [cmode(0)=0 ||
 //         cmode(3:2)=11 => DECODER_ERROR,
 //      Q(6)=1 &&
-//         Vd(0)=1 => UNDEFINED]}
+//         Vd(0)=1 => UNDEFINED],
+//    uses: {}}
 class VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0
      : public ClassDecoder {
  public:
   VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0);
