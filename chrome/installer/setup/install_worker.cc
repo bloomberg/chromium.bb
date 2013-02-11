@@ -247,8 +247,9 @@ void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
 
 // Returns the basic CommandLine to setup.exe for a quick-enable operation on
 // the binaries. This will unconditionally include --multi-install as well as
-// --system-level and/or --verbose-logging as appropriate.  |setup_path| and
-// |new_version| are optional only when the operation is an uninstall.
+// --verbose-logging if the current installation was launched with
+// --verbose-logging.  |setup_path| and |new_version| are optional only when
+// the operation is an uninstall.
 CommandLine GetGenericQuickEnableCommand(
     const InstallerState& installer_state,
     const InstallationState& machine_state,
@@ -285,8 +286,6 @@ CommandLine GetGenericQuickEnableCommand(
 
   CommandLine cmd_line(binaries_setup_path);
   cmd_line.AppendSwitch(switches::kMultiInstall);
-  if (installer_state.system_install())
-    cmd_line.AppendSwitch(switches::kSystemLevel);
   if (installer_state.verbose_logging())
     cmd_line.AppendSwitch(switches::kVerboseLogging);
   return cmd_line;
@@ -321,7 +320,7 @@ void AddQuickEnableApplicationLauncherWorkItems(
                                                       machine_state,
                                                       setup_path,
                                                       new_version));
-    // kMultiInstall, kSystemLevel, and kVerboseLogging were processed above.
+    // kMultiInstall and kVerboseLogging were processed above.
     cmd_line.AppendSwitch(switches::kChromeAppLauncher);
     cmd_line.AppendSwitch(switches::kEnsureGoogleUpdatePresent);
     AppCommand cmd(cmd_line.GetCommandLineString());
@@ -1650,8 +1649,10 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
                                                       machine_state,
                                                       setup_path,
                                                       new_version));
-    // kMultiInstall, kSystemLevel, and kVerboseLogging were processed above.
+    // kMultiInstall and kVerboseLogging were processed above.
     cmd_line.AppendSwitch(switches::kChromeFrameQuickEnable);
+    if (installer_state.system_install())
+      cmd_line.AppendSwitch(switches::kSystemLevel);
     AppCommand cmd(cmd_line.GetCommandLineString());
     cmd.set_sends_pings(true);
     cmd.set_is_web_accessible(true);
