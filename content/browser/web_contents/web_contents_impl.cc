@@ -802,8 +802,13 @@ void WebContentsImpl::SetDelegate(WebContentsDelegate* delegate) {
   if (delegate_)
     delegate_->Detach(this);
   delegate_ = delegate;
-  if (delegate_)
+  if (delegate_) {
     delegate_->Attach(this);
+    // Ensure the visible RVH reflects the new delegate's preferences.
+    RenderViewHostImpl* host = render_manager_.current_host();
+    if (host)
+      host->SetOverscrollControllerEnabled(delegate->CanOverscrollContent());
+  }
 }
 
 RenderProcessHost* WebContentsImpl::GetRenderProcessHost() const {
@@ -2709,6 +2714,11 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   if (static_cast<RenderViewHostImpl*>(render_view_host)->is_swapped_out())
     return;
 
+  if (delegate_) {
+    static_cast<RenderViewHostImpl*>(render_view_host)->
+        SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
+  }
+
   NotificationService::current()->Notify(
       NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
       Source<WebContents>(this),
@@ -3359,6 +3369,13 @@ void WebContentsImpl::UpdateRenderViewSizeForRenderManager() {
 
 void WebContentsImpl::NotifySwappedFromRenderManager(RenderViewHost* rvh) {
   NotifySwapped(rvh);
+
+  // Make sure the visible RVH reflects the new delegate's preferences.
+  if (delegate_) {
+    RenderViewHostImpl* host = render_manager_.current_host();
+    if (host)
+      host->SetOverscrollControllerEnabled(delegate_->CanOverscrollContent());
+  }
 }
 
 int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(

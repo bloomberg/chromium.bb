@@ -201,8 +201,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 #if defined(USE_AURA)
   bool overscroll_enabled = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableOverscrollHistoryNavigation);
-  if (overscroll_enabled)
-    InitializeOverscrollController();
+  SetOverscrollControllerEnabled(overscroll_enabled);
 #endif
 }
 
@@ -297,6 +296,13 @@ void RenderWidgetHostImpl::SendScreenRects() {
 
 int RenderWidgetHostImpl::SyntheticScrollMessageInterval() const {
   return kSyntheticScrollMessageIntervalMs;
+}
+
+void RenderWidgetHostImpl::SetOverscrollControllerEnabled(bool enabled) {
+  if (!enabled)
+    overscroll_controller_.reset();
+  else if (!overscroll_controller_.get())
+    overscroll_controller_.reset(new OverscrollController(this));
 }
 
 void RenderWidgetHostImpl::Init() {
@@ -1364,10 +1370,6 @@ bool RenderWidgetHostImpl::IsFullscreen() const {
 
 void RenderWidgetHostImpl::SetShouldAutoResize(bool enable) {
   should_auto_resize_ = enable;
-}
-
-void RenderWidgetHostImpl::InitializeOverscrollController() {
-  overscroll_controller_.reset(new OverscrollController(this));
 }
 
 bool RenderWidgetHostImpl::IsInOverscrollGesture() const {

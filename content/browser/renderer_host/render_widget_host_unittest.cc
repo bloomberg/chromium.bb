@@ -174,7 +174,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   void SetupForOverscrollControllerTest() {
-    InitializeOverscrollController();
+    SetOverscrollControllerEnabled(true);
     overscroll_delegate_.reset(new TestOverscrollDelegate);
     overscroll_controller_->set_delegate(overscroll_delegate_.get());
   }
