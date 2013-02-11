@@ -938,12 +938,14 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     // Do first run tasks unless:
     //  - Explicitly forced not to by |force_skip_first_run_tasks| or
     //    |pmp_result|.
-    //  - Running in App mode, where showing the importer (first run) UI is
-    //    undesired.
-    do_first_run_tasks_ = (!force_skip_first_run_tasks &&
-                           pmp_result != first_run::SKIP_FIRST_RUN_TASKS &&
-                           !parsed_command_line().HasSwitch(switches::kApp) &&
-                           !parsed_command_line().HasSwitch(switches::kAppId));
+    //  - Running in App (or App Launcher) mode, where showing the importer
+    //    (first run) UI is undesired.
+    do_first_run_tasks_ = (
+        !force_skip_first_run_tasks &&
+        pmp_result != first_run::SKIP_FIRST_RUN_TASKS &&
+        !parsed_command_line().HasSwitch(switches::kApp) &&
+        !parsed_command_line().HasSwitch(switches::kAppId) &&
+        !parsed_command_line().HasSwitch(switches::kShowAppList));
 
     if (do_first_run_tasks_) {
       AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
