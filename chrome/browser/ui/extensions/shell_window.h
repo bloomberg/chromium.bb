@@ -133,6 +133,11 @@ class ShellWindow : public content::NotificationObserver,
   // per platform). Public users of ShellWindow should use ShellWindow::Create.
   void Init(const GURL& url, const CreateParams& params);
 
+  // Remove the window from the ShellWindowRegistry and tell the native
+  // window to close. The native window won't be actually closed until
+  // OnNativeClose().
+  void Close();
+
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
