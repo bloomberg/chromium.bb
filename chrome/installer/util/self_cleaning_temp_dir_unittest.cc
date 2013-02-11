@@ -47,16 +47,16 @@ class SelfCleaningTempDirTest : public testing::Test {
 // Test the implementation of GetTopDirToCreate when given the root of a
 // volume.
 TEST_F(SelfCleaningTempDirTest, TopLevel) {
-  FilePath base_dir;
-  SelfCleaningTempDir::GetTopDirToCreate(FilePath(L"C:\\"), &base_dir);
+  base::FilePath base_dir;
+  SelfCleaningTempDir::GetTopDirToCreate(base::FilePath(L"C:\\"), &base_dir);
   EXPECT_TRUE(base_dir.empty());
 }
 
 // Test the implementation of GetTopDirToCreate when given a non-existant dir
 // under the root of a volume.
 TEST_F(SelfCleaningTempDirTest, TopLevelPlusOne) {
-  FilePath base_dir;
-  FilePath parent_dir(L"C:\\");
+  base::FilePath base_dir;
+  base::FilePath parent_dir(L"C:\\");
   parent_dir = parent_dir.Append(GetRandomFilename());
   SelfCleaningTempDir::GetTopDirToCreate(parent_dir, &base_dir);
   EXPECT_EQ(parent_dir, base_dir);
@@ -70,7 +70,7 @@ TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDelete) {
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
-  FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  base::FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
   SelfCleaningTempDir temp_dir;
   EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
   EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir.path());
@@ -91,7 +91,7 @@ TEST_F(SelfCleaningTempDirTest, TwoClients) {
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
-  FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  base::FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
   SelfCleaningTempDir temp_dir1;
   SelfCleaningTempDir temp_dir2;
   // First client is created.
@@ -128,7 +128,7 @@ TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDestroy) {
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
-  FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  base::FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
   {
     SelfCleaningTempDir temp_dir;
     EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
@@ -153,7 +153,7 @@ TEST_F(SelfCleaningTempDirTest, LeaveUsedOnDestroy) {
   EXPECT_TRUE(work_dir.CreateUniqueTempDir());
 
   // Make up some path under the temp dir.
-  FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  base::FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
   {
     SelfCleaningTempDir temp_dir;
     EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));

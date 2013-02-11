@@ -47,9 +47,9 @@ BrowserDistribution* g_chrome_app_host_distribution = NULL;
 
 // Returns true if currently running in npchrome_frame.dll
 bool IsChromeFrameModule() {
-  FilePath module_path;
+  base::FilePath module_path;
   PathService::Get(base::FILE_MODULE, &module_path);
-  return FilePath::CompareEqualIgnoreCase(module_path.BaseName().value(),
+  return base::FilePath::CompareEqualIgnoreCase(module_path.BaseName().value(),
                                           installer::kChromeFrameDll);
 }
 
@@ -138,7 +138,7 @@ BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
 }
 
 void BrowserDistribution::DoPostUninstallOperations(
-    const Version& version, const FilePath& local_data_path,
+    const Version& version, const base::FilePath& local_data_path,
     const string16& distribution_data) {
 }
 
@@ -268,7 +268,7 @@ bool BrowserDistribution::GetExperimentDetails(
 }
 
 void BrowserDistribution::LaunchUserExperiment(
-    const FilePath& setup_path, installer::InstallStatus status,
+    const base::FilePath& setup_path, installer::InstallStatus status,
     const Version& version, const installer::Product& product,
     bool system_level) {
 }
@@ -280,5 +280,5 @@ bool BrowserDistribution::ShouldSetExperimentLabels() {
 void BrowserDistribution::InactiveUserToastExperiment(int flavor,
     const string16& experiment_group,
     const installer::Product& installation,
-    const FilePath& application_path) {
+    const base::FilePath& application_path) {
 }

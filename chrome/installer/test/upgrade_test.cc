@@ -20,7 +20,7 @@ class UpgradeTest : public testing::Test {
  public:
   // Generate a newer version of mini_installer.exe.
   static void SetUpTestCase() {
-    FilePath dir_exe;
+    base::FilePath dir_exe;
     ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dir_exe));
     ASSERT_TRUE(file_util::CreateTemporaryFile(&next_mini_installer_path_));
     ASSERT_TRUE(
@@ -35,7 +35,7 @@ class UpgradeTest : public testing::Test {
     EXPECT_TRUE(file_util::Delete(next_mini_installer_path_, false));
   }
  private:
-  static FilePath next_mini_installer_path_;
+  static base::FilePath next_mini_installer_path_;
 };  // class UpgradeTest
 
 FilePath UpgradeTest::next_mini_installer_path_;

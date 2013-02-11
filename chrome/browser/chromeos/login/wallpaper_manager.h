@@ -92,9 +92,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Returns custom wallpaper path. Append |sub_dir|, |email| and |file| to
   // custom wallpaper directory.
-  FilePath GetCustomWallpaperPath(const char* sub_dir,
-                                  const std::string& email,
-                                  const std::string& file);
+  base::FilePath GetCustomWallpaperPath(const char* sub_dir,
+                                        const std::string& email,
+                                        const std::string& file);
 
   // Gets encoded wallpaper from cache. Returns true if success.
   bool GetWallpaperFromCache(const std::string& email,
@@ -250,7 +250,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // new direcotry. crbug.com/174925
   void GetCustomWallpaperInternalOld(const std::string& email,
                                      const WallpaperInfo& info,
-                                     const FilePath& wallpaper_path,
+                                     const base::FilePath& wallpaper_path,
                                      bool update_wallpaper);
 
   // Gets |email|'s custom wallpaper at |wallpaper_path|. Falls back on original

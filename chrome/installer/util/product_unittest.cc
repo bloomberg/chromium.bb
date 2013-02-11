@@ -71,10 +71,10 @@ TEST_F(ProductTest, MAYBE_ProductInstallBasic) {
   BrowserDistribution* distribution = product->distribution();
   EXPECT_EQ(BrowserDistribution::CHROME_BROWSER, distribution->GetType());
 
-  std::vector<FilePath> user_data_paths;
+  std::vector<base::FilePath> user_data_paths;
   product->GetUserDataPaths(&user_data_paths);
   EXPECT_GE(user_data_paths.size(), static_cast<size_t>(1));
-  const FilePath& user_data = user_data_paths[0];
+  const base::FilePath& user_data = user_data_paths[0];
   EXPECT_FALSE(user_data_paths[0].empty());
   EXPECT_NE(std::wstring::npos,
             user_data_paths[0].value().find(installer::kInstallUserDataDir));
@@ -85,7 +85,7 @@ TEST_F(ProductTest, MAYBE_ProductInstallBasic) {
         user_data_paths[1].value().find(chrome::kMetroChromeUserDataSubDir));
   }
 
-  FilePath program_files;
+  base::FilePath program_files;
   PathService::Get(base::DIR_PROGRAM_FILES, &program_files);
   // The User Data path should never be under program files, even though
   // system_level is true.

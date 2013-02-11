@@ -179,8 +179,8 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
     std::vector<UInt16> file_name(file_name_length);
     SzArEx_GetFileNameUtf16(&db, i, &file_name[0]);
     // |file_name| is NULL-terminated.
-    FilePath file_path = FilePath(location).Append(
-        FilePath::StringType(file_name.begin(), file_name.end() - 1));
+    base::FilePath file_path = base::FilePath(location).Append(
+        base::FilePath::StringType(file_name.begin(), file_name.end() - 1));
 
     if (output_file)
       *output_file = file_path.value();
@@ -239,7 +239,7 @@ void LzmaUtil::CloseArchive() {
   }
 }
 
-bool LzmaUtil::CreateDirectory(const FilePath& dir) {
+bool LzmaUtil::CreateDirectory(const base::FilePath& dir) {
   bool ret = true;
   if (directories_created_.find(dir.value()) == directories_created_.end()) {
     ret = file_util::CreateDirectory(dir);

@@ -31,18 +31,18 @@ namespace chrome {
 class MTPDeviceDelegateImplMac : public fileapi::MTPDeviceDelegate {
  public:
   MTPDeviceDelegateImplMac(const std::string& device_id,
-                           const FilePath::StringType& synthetic_path,
+                           const base::FilePath::StringType& synthetic_path,
                            base::SequencedTaskRunner* media_task_runner);
 
   // MTPDeviceDelegate:
   virtual base::PlatformFileError GetFileInfo(
-      const FilePath& file_path,
+      const base::FilePath& file_path,
       base::PlatformFileInfo* file_info) OVERRIDE;
   virtual scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-      CreateFileEnumerator(const FilePath& root, bool recursive) OVERRIDE;
+      CreateFileEnumerator(const base::FilePath& root, bool recursive) OVERRIDE;
   virtual base::PlatformFileError CreateSnapshotFile(
-      const FilePath& device_file_path,
-      const FilePath& local_path,
+      const base::FilePath& device_file_path,
+      const base::FilePath& local_path,
       base::PlatformFileInfo* file_info) OVERRIDE;
   virtual void CancelPendingTasksAndDeleteDelegate() OVERRIDE;
 
@@ -61,7 +61,7 @@ class MTPDeviceDelegateImplMac : public fileapi::MTPDeviceDelegate {
     explicit Enumerator(MTPDeviceDelegateImplMac* delegate);
     virtual ~Enumerator();
 
-    virtual FilePath Next() OVERRIDE;
+    virtual base::FilePath Next() OVERRIDE;
     virtual int64 Size() OVERRIDE;
     virtual base::Time LastModifiedTime() OVERRIDE;
     virtual bool IsDirectory() OVERRIDE;
@@ -77,7 +77,7 @@ class MTPDeviceDelegateImplMac : public fileapi::MTPDeviceDelegate {
   };
 
   // GetFile and HasAllFiles called by enumerators.
-  FilePath GetFile(size_t index);
+  base::FilePath GetFile(size_t index);
   bool ReceivedAllFiles();
   void RemoveEnumerator(Enumerator* enumerator);
 
@@ -89,7 +89,7 @@ class MTPDeviceDelegateImplMac : public fileapi::MTPDeviceDelegate {
   virtual ~MTPDeviceDelegateImplMac();
 
   std::string device_id_;
-  FilePath root_path_;
+  base::FilePath root_path_;
 
   // Stores a reference to worker pool thread. All requests and response of file
   // operations are posted on |media_task_runner_|. All callbacks from the
@@ -109,7 +109,7 @@ class MTPDeviceDelegateImplMac : public fileapi::MTPDeviceDelegate {
   Enumerator* enumerator_;
 
   // Stores a map from filename to file metadata received from the camera.
-  base::hash_map<FilePath::StringType, base::PlatformFileInfo> file_info_;
+  base::hash_map<base::FilePath::StringType, base::PlatformFileInfo> file_info_;
 
   // Notification for pending download.
   base::WaitableEvent* file_download_event_;
@@ -118,7 +118,7 @@ class MTPDeviceDelegateImplMac : public fileapi::MTPDeviceDelegate {
   base::PlatformFileError file_download_error_;
 
   // List of files received from the camera.
-  std::vector<FilePath> file_paths_;
+  std::vector<base::FilePath> file_paths_;
 
   // Set to true when all file metadata has been received from the camera.
   bool received_all_files_;

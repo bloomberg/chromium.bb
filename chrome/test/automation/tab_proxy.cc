@@ -369,7 +369,7 @@ bool TabProxy::OverrideEncoding(const std::string& encoding) {
   return succeeded;
 }
 
-bool TabProxy::CaptureEntirePageAsPNG(const FilePath& path) {
+bool TabProxy::CaptureEntirePageAsPNG(const base::FilePath& path) {
   if (!is_valid())
     return false;
 

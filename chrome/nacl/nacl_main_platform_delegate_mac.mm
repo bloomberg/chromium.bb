@@ -45,7 +45,7 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
   // Comment-out guard and recompile if you REALLY want to test w/out the SB.
   // TODO(jvoung): allow testing without sandbox, but change expected ret vals.
   if (!no_sandbox) {
-    FilePath test_dll_name =
+    base::FilePath test_dll_name =
       command_line.GetSwitchValuePath(switches::kTestNaClSandbox);
     if (!test_dll_name.empty()) {
       sandbox_test_module_ = base::LoadNativeLibrary(test_dll_name, NULL);
@@ -55,7 +55,8 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 }
 
 void NaClMainPlatformDelegate::EnableSandbox() {
-  CHECK(content::InitializeSandbox(CHROME_SANDBOX_TYPE_NACL_LOADER, FilePath()))
+  CHECK(content::InitializeSandbox(CHROME_SANDBOX_TYPE_NACL_LOADER,
+                                   base::FilePath()))
       << "Error initializing sandbox for " << switches::kNaClLoaderProcess;
 }
 

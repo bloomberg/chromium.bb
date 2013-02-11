@@ -110,7 +110,7 @@ const wchar_t kChromeDll[] = L"chrome.dll";
 bool g_append_page_id = false;
 int32 g_start_page;
 int32 g_end_page;
-FilePath g_url_file_path;
+base::FilePath g_url_file_path;
 int32 g_start_index = 1;
 int32 g_end_index = kint32max;
 int32 g_iterations = 1;
@@ -120,11 +120,11 @@ bool g_browser_existing = false;
 bool g_page_down = true;
 bool g_clear_profile = true;
 std::string g_end_url;
-FilePath g_log_file_path;
+base::FilePath g_log_file_path;
 bool g_save_debug_log = false;
-FilePath g_chrome_log_path;
-FilePath g_v8_log_path;
-FilePath g_test_log_path;
+base::FilePath g_chrome_log_path;
+base::FilePath g_v8_log_path;
+base::FilePath g_test_log_path;
 bool g_stand_alone = false;
 bool g_stress_opt = false;
 bool g_stress_deopt = false;
@@ -224,7 +224,7 @@ void SetPageRange(const CommandLine& parsed_command_line) {
         if (v8_command_line.HasSwitch(kV8LogFileSwitch)) {
           g_v8_log_path = v8_command_line.GetSwitchValuePath(kV8LogFileSwitch);
           if (!file_util::AbsolutePath(&g_v8_log_path))
-            g_v8_log_path = FilePath();
+            g_v8_log_path = base::FilePath();
         }
       }
     }
@@ -297,7 +297,7 @@ class PageLoadTest : public UITest {
     std::ofstream test_log;
 
     // Create a test log.
-    g_test_log_path = FilePath(FILE_PATH_LITERAL("test_log.log"));
+    g_test_log_path = base::FilePath(FILE_PATH_LITERAL("test_log.log"));
     test_log.open(g_test_log_path.value().c_str());
 
     // Get the version of Chrome we're running.
@@ -306,7 +306,7 @@ class PageLoadTest : public UITest {
     // Check file version info for chrome dll.
     scoped_ptr<FileVersionInfo> file_info;
     file_info.reset(
-        FileVersionInfo::CreateFileVersionInfo(FilePath(kChromeDll)));
+        FileVersionInfo::CreateFileVersionInfo(base::FilePath(kChromeDll)));
     last_change = WideToASCII(file_info->last_change());
 #elif defined(OS_POSIX)
     // TODO(fmeawad): On Mac, the version retrieved here belongs to the test
@@ -334,7 +334,7 @@ class PageLoadTest : public UITest {
 
     // Create crash dump directory with pid.
     if (g_search_dumps_by_pid) {
-      actual_crash_dumps_dir_path_ = FilePath(crash_dumps_dir_path_);
+      actual_crash_dumps_dir_path_ = base::FilePath(crash_dumps_dir_path_);
       ChromeProcessList processes =
           GetRunningChromeProcesses(browser_process_id());
       if (!processes.empty())
@@ -401,7 +401,7 @@ class PageLoadTest : public UITest {
     }
 
     // Get crash dumps - don't delete them if logging.
-    std::vector<FilePath> new_crash_dumps;
+    std::vector<base::FilePath> new_crash_dumps;
     CollectNewCrashDumps(new_crash_dumps, &metrics, !log_file.is_open());
 
     bool do_log = log_file.is_open() &&
@@ -492,9 +492,9 @@ class PageLoadTest : public UITest {
       // has focus.
       g_page_down = false;
 
-      FilePath sample_data_dir = GetSampleDataDir();
-      FilePath test_page_1 = sample_data_dir.AppendASCII(kTestPage1);
-      FilePath test_page_2 = sample_data_dir.AppendASCII(kTestPage2);
+      base::FilePath sample_data_dir = GetSampleDataDir();
+      base::FilePath test_page_1 = sample_data_dir.AppendASCII(kTestPage1);
+      base::FilePath test_page_2 = sample_data_dir.AppendASCII(kTestPage2);
 
       GURL test_url_1 = net::FilePathToFileURL(test_page_1);
       GURL test_url_2 = net::FilePathToFileURL(test_page_2);
@@ -647,7 +647,7 @@ class PageLoadTest : public UITest {
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string alternate_minidump_location;
     if (env->GetVar("BREAKPAD_DUMP_LOCATION", &alternate_minidump_location)) {
-      crash_dumps_dir_path_ = FilePath::FromUTF8Unsafe(
+      crash_dumps_dir_path_ = base::FilePath::FromUTF8Unsafe(
           alternate_minidump_location);
     } else {
       PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dumps_dir_path_);
@@ -656,24 +656,25 @@ class PageLoadTest : public UITest {
     file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
                                          false,  // not recursive
                                          file_util::FileEnumerator::FILES);
-    for (FilePath path = enumerator.Next(); !path.value().empty();
+    for (base::FilePath path = enumerator.Next(); !path.value().empty();
          path = enumerator.Next()) {
       if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")))
         crash_dumps_[path.BaseName()] = true;
     }
   }
 
-  FilePath ConstructSavedDebugLogPath(const FilePath& debug_log_path,
-                                      int index) {
+  base::FilePath ConstructSavedDebugLogPath(
+      const base::FilePath& debug_log_path,
+      int index) {
     std::string suffix("_");
     suffix.append(base::IntToString(index));
     return debug_log_path.InsertBeforeExtensionASCII(suffix);
   }
 
-  void SaveDebugLog(const FilePath& log_path, const std::wstring& log_id,
+  void SaveDebugLog(const base::FilePath& log_path, const std::wstring& log_id,
                     std::ofstream& log_file, int index) {
     if (!log_path.empty()) {
-      FilePath saved_log_file_path =
+      base::FilePath saved_log_file_path =
           ConstructSavedDebugLogPath(log_path, index);
       if (file_util::Move(log_path, saved_log_file_path)) {
         log_file << " " << log_id << "=" << saved_log_file_path.value();
@@ -692,10 +693,10 @@ class PageLoadTest : public UITest {
   }
 
   // Delete a crash dump file.
-  void DeleteCrashDump(FilePath crash_dump_file_name) {
-    FilePath crash_dump_file_path(crash_dumps_dir_path_);
+  void DeleteCrashDump(base::FilePath crash_dump_file_name) {
+    base::FilePath crash_dump_file_path(crash_dumps_dir_path_);
     crash_dump_file_path = crash_dump_file_path.Append(crash_dump_file_name);
-    FilePath crash_text_file_path =
+    base::FilePath crash_text_file_path =
         crash_dump_file_path.ReplaceExtension(FILE_PATH_LITERAL("txt"));
 
     ASSERT_TRUE(file_util::DieFileDie(crash_dump_file_path, false));
@@ -706,7 +707,7 @@ class PageLoadTest : public UITest {
     file_util::FileEnumerator enumerator(actual_crash_dumps_dir_path_,
                                          false,  // not recursive
                                          file_util::FileEnumerator::FILES);
-    for (FilePath path = enumerator.Next(); !path.value().empty();
+    for (base::FilePath path = enumerator.Next(); !path.value().empty();
          path = enumerator.Next()) {
       if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")) &&
           !crash_dumps_[path.BaseName()]) {
@@ -719,19 +720,19 @@ class PageLoadTest : public UITest {
 
   // Check whether there are new .dmp files. Return the list and optionally
   // delete them afterwards.
-  void CollectNewCrashDumps(std::vector<FilePath>& new_crash_dumps,
+  void CollectNewCrashDumps(std::vector<base::FilePath>& new_crash_dumps,
                             NavigationMetrics* metrics,
                             bool delete_dumps) {
     int num_dumps = 0;
     file_util::FileEnumerator enumerator(actual_crash_dumps_dir_path_,
                                          false,  // not recursive
                                          file_util::FileEnumerator::FILES);
-    for (FilePath path = enumerator.Next(); !path.value().empty();
+    for (base::FilePath path = enumerator.Next(); !path.value().empty();
          path = enumerator.Next()) {
       if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")) &&
           !crash_dumps_[path.BaseName()]) {
         crash_dumps_[path.BaseName()] = true;
-        FilePath crash_dump_file_path(actual_crash_dumps_dir_path_);
+        base::FilePath crash_dump_file_path(actual_crash_dumps_dir_path_);
         crash_dump_file_path = crash_dump_file_path.Append(path.BaseName());
         new_crash_dumps.push_back(crash_dump_file_path);
         if (delete_dumps)
@@ -747,7 +748,7 @@ class PageLoadTest : public UITest {
   // that was saved by the app as it closed.  The caller takes ownership of the
   // returned PrefService object.
   PrefService* GetLocalState(PrefRegistry* registry) {
-    FilePath path = user_data_dir().Append(chrome::kLocalStateFilename);
+    base::FilePath path = user_data_dir().Append(chrome::kLocalStateFilename);
     PrefServiceMockBuilder builder;
     builder.WithUserFilePrefs(path,
                               MessageLoop::current()->message_loop_proxy());
@@ -785,8 +786,8 @@ class PageLoadTest : public UITest {
       metrics->browser_crash_count++;
   }
 
-  FilePath GetSampleDataDir() {
-    FilePath test_dir;
+  base::FilePath GetSampleDataDir() {
+    base::FilePath test_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
     test_dir = test_dir.AppendASCII("reliability");
     test_dir = test_dir.AppendASCII("sample_pages");
@@ -794,10 +795,10 @@ class PageLoadTest : public UITest {
   }
 
   // The pathname of Chrome's crash dumps directory.
-  FilePath crash_dumps_dir_path_;
+  base::FilePath crash_dumps_dir_path_;
 
   // The actual crash dumps directory that will be used.
-  FilePath actual_crash_dumps_dir_path_;
+  base::FilePath actual_crash_dumps_dir_path_;
 
   // The set of all the crash dumps we have seen.  Each crash generates a
   // .dmp and a .txt file in the crash dumps directory.  We only store the
@@ -808,7 +809,7 @@ class PageLoadTest : public UITest {
   // in the set).  The initial value for any key in std::map is 0 (false),
   // which in this case means a new file is not in the set initially,
   // exactly the semantics we want.
-  std::map<FilePath, bool> crash_dumps_;
+  std::map<base::FilePath, bool> crash_dumps_;
 };
 
 TEST_F(PageLoadTest, Reliability) {

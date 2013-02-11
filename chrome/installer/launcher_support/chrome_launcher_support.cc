@@ -46,13 +46,13 @@ const wchar_t kUninstallStringField[] = L"UninstallString";
 
 #ifndef OFFICIAL_BUILD
 FilePath GetDevelopmentExe(const wchar_t* exe_file) {
-  FilePath current_directory;
+  base::FilePath current_directory;
   if (PathService::Get(base::DIR_EXE, &current_directory)) {
-    FilePath chrome_exe_path(current_directory.Append(exe_file));
+    base::FilePath chrome_exe_path(current_directory.Append(exe_file));
     if (file_util::PathExists(chrome_exe_path))
       return chrome_exe_path;
   }
-  return FilePath();
+  return base::FilePath();
 }
 #endif
 
@@ -111,23 +111,23 @@ FilePath GetSetupExeFromRegistry(InstallationLevel level,
                                  const wchar_t* app_guid) {
   string16 uninstall;
   if (GetClientStateValue(level, app_guid, kUninstallStringField, &uninstall)) {
-    FilePath setup_exe_path(uninstall);
+    base::FilePath setup_exe_path(uninstall);
     if (file_util::PathExists(setup_exe_path))
       return setup_exe_path;
   }
-  return FilePath();
+  return base::FilePath();
 }
 
 // Returns the path to an installed |exe_file| (e.g. chrome.exe, app_host.exe)
 // at the specified level, given |setup_exe_path| from Omaha client state.
-// Returns empty FilePath if none found, or if |setup_exe_path| is empty.
-FilePath FindExeRelativeToSetupExe(const FilePath setup_exe_path,
+// Returns empty base::FilePath if none found, or if |setup_exe_path| is empty.
+FilePath FindExeRelativeToSetupExe(const base::FilePath setup_exe_path,
                                    const wchar_t* exe_file) {
   if (!setup_exe_path.empty()) {
     // The uninstall path contains the path to setup.exe, which is two levels
     // down from |exe_file|. Move up two levels (plus one to drop the file
     // name) and look for chrome.exe from there.
-    FilePath exe_path(
+    base::FilePath exe_path(
         setup_exe_path.DirName().DirName().DirName().Append(exe_file));
     if (file_util::PathExists(exe_path))
       return exe_path;
@@ -137,14 +137,15 @@ FilePath FindExeRelativeToSetupExe(const FilePath setup_exe_path,
     if (file_util::PathExists(exe_path))
       return exe_path;
   }
-  return FilePath();
+  return base::FilePath();
 }
 
 }  // namespace
 
 FilePath GetSetupExeForInstallationLevel(InstallationLevel level) {
   // Look in the registry for Chrome Binaries first.
-  FilePath setup_exe_path(GetSetupExeFromRegistry(level, kBinariesAppGuid));
+  base::FilePath setup_exe_path(
+      GetSetupExeFromRegistry(level, kBinariesAppGuid));
   // If the above fails, look in the registry for Chrome next.
   if (setup_exe_path.empty())
     setup_exe_path = GetSetupExeFromRegistry(level, kBrowserAppGuid);
@@ -163,7 +164,7 @@ FilePath GetAppHostPathForInstallationLevel(InstallationLevel level) {
 }
 
 FilePath GetAnyChromePath() {
-  FilePath chrome_path;
+  base::FilePath chrome_path;
 #ifndef OFFICIAL_BUILD
   // For development mode, chrome.exe should be in same dir as the stub.
   chrome_path = GetDevelopmentExe(kChromeExe);
@@ -176,7 +177,7 @@ FilePath GetAnyChromePath() {
 }
 
 FilePath GetAnyAppHostPath() {
-  FilePath app_host_path;
+  base::FilePath app_host_path;
 #ifndef OFFICIAL_BUILD
   // For development mode, app_host.exe should be in same dir as chrome.exe.
   app_host_path = GetDevelopmentExe(kChromeAppHostExe);
@@ -191,7 +192,7 @@ FilePath GetAnyAppHostPath() {
 }
 
 bool IsAppHostPresent() {
-  FilePath app_host_exe = GetAnyAppHostPath();
+  base::FilePath app_host_exe = GetAnyAppHostPath();
   return !app_host_exe.empty();
 }
 

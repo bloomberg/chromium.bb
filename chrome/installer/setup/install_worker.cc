@@ -117,7 +117,7 @@ void AddRegisterComDllWorkItemsForPackage(const InstallerState& installer_state,
                                           const Version& new_version,
                                           WorkItemList* work_item_list) {
   // First collect the list of DLLs to be registered from each product.
-  std::vector<FilePath> com_dll_list;
+  std::vector<base::FilePath> com_dll_list;
   installer_state.AddComDllList(&com_dll_list);
 
   // Then, if we got some, attempt to unregister the DLLs from the old
@@ -130,7 +130,7 @@ void AddRegisterComDllWorkItemsForPackage(const InstallerState& installer_state,
   // saved state instead of assuming it is the same as the registration list.
   if (!com_dll_list.empty()) {
     if (old_version) {
-      FilePath old_dll_path(installer_state.target_path().AppendASCII(
+      base::FilePath old_dll_path(installer_state.target_path().AppendASCII(
           old_version->GetString()));
 
       installer::AddRegisterComDllWorkItems(old_dll_path,
@@ -141,7 +141,7 @@ void AddRegisterComDllWorkItemsForPackage(const InstallerState& installer_state,
                                             work_item_list);
     }
 
-    FilePath dll_path(installer_state.target_path().AppendASCII(
+    base::FilePath dll_path(installer_state.target_path().AppendASCII(
         new_version.GetString()));
     installer::AddRegisterComDllWorkItems(dll_path,
                                           com_dll_list,
@@ -153,16 +153,17 @@ void AddRegisterComDllWorkItemsForPackage(const InstallerState& installer_state,
 }
 
 void AddInstallerCopyTasks(const InstallerState& installer_state,
-                           const FilePath& setup_path,
-                           const FilePath& archive_path,
-                           const FilePath& temp_path,
+                           const base::FilePath& setup_path,
+                           const base::FilePath& archive_path,
+                           const base::FilePath& temp_path,
                            const Version& new_version,
                            WorkItemList* install_list) {
   DCHECK(install_list);
-  FilePath installer_dir(installer_state.GetInstallerDirectory(new_version));
+  base::FilePath installer_dir(
+      installer_state.GetInstallerDirectory(new_version));
   install_list->AddCreateDirWorkItem(installer_dir);
 
-  FilePath exe_dst(installer_dir.Append(setup_path.BaseName()));
+  base::FilePath exe_dst(installer_dir.Append(setup_path.BaseName()));
 
   if (exe_dst != setup_path) {
     install_list->AddCopyTreeWorkItem(setup_path.value(), exe_dst.value(),
@@ -172,7 +173,7 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
   if (installer_state.RequiresActiveSetup()) {
     // Make a copy of setup.exe with a different name so that Active Setup
     // doesn't require an admin on XP thanks to Application Compatibility.
-    FilePath active_setup_exe(installer_dir.Append(kActiveSetupExe));
+    base::FilePath active_setup_exe(installer_dir.Append(kActiveSetupExe));
     install_list->AddCopyTreeWorkItem(
         setup_path.value(), active_setup_exe.value(), temp_path.value(),
         WorkItem::ALWAYS);
@@ -183,7 +184,7 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
   // Binaries. Only setup.exe is required, and only for uninstall.
   if (installer_state.products().size() != 1 ||
       !installer_state.FindProduct(BrowserDistribution::CHROME_APP_HOST)) {
-    FilePath archive_dst(installer_dir.Append(archive_path.BaseName()));
+    base::FilePath archive_dst(installer_dir.Append(archive_path.BaseName()));
     if (archive_path != archive_dst) {
       // In the past, we copied rather than moved for system level installs so
       // that the permissions of %ProgramFiles% would be picked up.  Now that
@@ -213,9 +214,9 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
 string16 GetRegCommandKey(BrowserDistribution* dist,
                           const wchar_t* name) {
   string16 cmd_key(dist->GetVersionKey());
-  cmd_key.append(1, FilePath::kSeparators[0])
+  cmd_key.append(1, base::FilePath::kSeparators[0])
       .append(google_update::kRegCommandsKey)
-      .append(1, FilePath::kSeparators[0])
+      .append(1, base::FilePath::kSeparators[0])
       .append(name);
   return cmd_key;
 }
@@ -251,7 +252,7 @@ void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
 CommandLine GetGenericQuickEnableCommand(
     const InstallerState& installer_state,
     const InstallationState& machine_state,
-    const FilePath& setup_path,
+    const base::FilePath& setup_path,
     const Version& new_version) {
   // Only valid for multi-install operations.
   DCHECK(installer_state.is_multi_install());
@@ -264,7 +265,7 @@ CommandLine GetGenericQuickEnableCommand(
 
   // The path to setup.exe contains the version of the Chrome Binaries, so it
   // takes a little work to get it right.
-  FilePath binaries_setup_path;
+  base::FilePath binaries_setup_path;
   if (installer_state.operation() == InstallerState::UNINSTALL) {
     // One or more products are being uninstalled, but not Chrome Binaries.
     // Use the path to the currently installed Chrome Binaries' setup.exe.
@@ -298,7 +299,7 @@ CommandLine GetGenericQuickEnableCommand(
 void AddQuickEnableApplicationLauncherWorkItems(
     const InstallerState& installer_state,
     const InstallationState& machine_state,
-    const FilePath& setup_path,
+    const base::FilePath& setup_path,
     const Version& new_version,
     WorkItemList* work_item_list) {
   DCHECK(work_item_list);
@@ -332,7 +333,7 @@ void AddQuickEnableApplicationLauncherWorkItems(
 
 void AddProductSpecificWorkItems(const InstallationState& original_state,
                                  const InstallerState& installer_state,
-                                 const FilePath& setup_path,
+                                 const base::FilePath& setup_path,
                                  const Version& new_version,
                                  WorkItemList* list) {
   const Products& products = installer_state.products();
@@ -370,7 +371,7 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
 void AddDeleteUninstallShortcutsForMSIWorkItems(
     const InstallerState& installer_state,
     const Product& product,
-    const FilePath& temp_path,
+    const base::FilePath& temp_path,
     WorkItemList* work_item_list) {
   DCHECK(installer_state.is_msi())
       << "This must only be called for MSI installations!";
@@ -384,7 +385,7 @@ void AddDeleteUninstallShortcutsForMSIWorkItems(
   delete_reg_key->set_ignore_failure(true);
 
   // Then attempt to delete the old installation's start menu shortcut.
-  FilePath uninstall_link;
+  base::FilePath uninstall_link;
   if (installer_state.system_install()) {
     PathService::Get(base::DIR_COMMON_START_MENU, &uninstall_link);
   } else {
@@ -412,22 +413,23 @@ void AddDeleteUninstallShortcutsForMSIWorkItems(
 // |current_version| can be NULL to indicate no Chrome is currently installed.
 void AddChromeWorkItems(const InstallationState& original_state,
                         const InstallerState& installer_state,
-                        const FilePath& setup_path,
-                        const FilePath& archive_path,
-                        const FilePath& src_path,
-                        const FilePath& temp_path,
+                        const base::FilePath& setup_path,
+                        const base::FilePath& archive_path,
+                        const base::FilePath& src_path,
+                        const base::FilePath& temp_path,
                         const Version* current_version,
                         const Version& new_version,
                         WorkItemList* install_list) {
-  const FilePath& target_path = installer_state.target_path();
+  const base::FilePath& target_path = installer_state.target_path();
 
   if (current_version) {
     // Delete the archive from an existing install to save some disk space.  We
     // make this an unconditional work item since there's no need to roll this
     // back; if installation fails we'll be moved to the "-full" channel anyway.
-    FilePath old_installer_dir(
+    base::FilePath old_installer_dir(
         installer_state.GetInstallerDirectory(*current_version));
-    FilePath old_archive(old_installer_dir.Append(installer::kChromeArchive));
+    base::FilePath old_archive(
+        old_installer_dir.Append(installer::kChromeArchive));
     // Don't delete the archive that we are actually installing from.
     if (archive_path != old_archive) {
       install_list->AddDeleteTreeWorkItem(old_archive, temp_path)->
@@ -437,7 +439,7 @@ void AddChromeWorkItems(const InstallationState& original_state,
 
   // Delete any new_chrome.exe if present (we will end up creating a new one
   // if required) and then copy chrome.exe
-  FilePath new_chrome_exe(target_path.Append(installer::kChromeNewExe));
+  base::FilePath new_chrome_exe(target_path.Append(installer::kChromeNewExe));
 
   install_list->AddDeleteTreeWorkItem(new_chrome_exe, temp_path);
 
@@ -493,9 +495,9 @@ void AddChromeWorkItems(const InstallationState& original_state,
   // config file and a manifest by chrome.exe. These files are only found in
   // the archive if this is a component build.
 #if defined(COMPONENT_BUILD)
-  static const FilePath::CharType kChromeExeConfig[] =
+  static const base::FilePath::CharType kChromeExeConfig[] =
       FILE_PATH_LITERAL("chrome.exe.config");
-  static const FilePath::CharType kChromeExeManifest[] =
+  static const base::FilePath::CharType kChromeExeManifest[] =
       FILE_PATH_LITERAL("chrome.exe.manifest");
   install_list->AddMoveTreeWorkItem(
       src_path.Append(kChromeExeConfig).value(),
@@ -591,8 +593,9 @@ void AddUninstallDelegateExecuteWorkItems(HKEY root,
 // left-behind Canary registrations in HKCU mask the HKLM registrations for the
 // same GUID. Cleanup those registrations if they still exist and belong to this
 // Canary (i.e., the registered delegate_execute's path is under |target_path|).
-void CleanupBadCanaryDelegateExecuteRegistration(const FilePath& target_path,
-                                                 WorkItemList* list) {
+void CleanupBadCanaryDelegateExecuteRegistration(
+    const base::FilePath& target_path,
+    WorkItemList* list) {
   string16 google_chrome_delegate_execute_path(
       L"Software\\Classes\\CLSID\\{5C65F4B0-3651-4514-B207-D10CB699B14B}");
   string16 google_chrome_local_server_32(
@@ -605,7 +608,7 @@ void CleanupBadCanaryDelegateExecuteRegistration(const FilePath& target_path,
                                KEY_QUERY_VALUE) == ERROR_SUCCESS &&
       local_server_32_key.ReadValue(L"ServerExecutable",
                                     &registered_server) == ERROR_SUCCESS &&
-      target_path.IsParent(FilePath(registered_server))) {
+      target_path.IsParent(base::FilePath(registered_server))) {
     scoped_ptr<WorkItemList> no_rollback_list(
         WorkItem::CreateNoRollbackWorkItemList());
     AddUninstallDelegateExecuteWorkItems(
@@ -622,7 +625,7 @@ void CleanupBadCanaryDelegateExecuteRegistration(const FilePath& target_path,
 // either the Control Panel->Add/Remove Programs list or in the Omaha client
 // state key if running under an MSI installer.
 void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
-                                   const FilePath& setup_path,
+                                   const base::FilePath& setup_path,
                                    const Version& new_version,
                                    const Product& product,
                                    WorkItemList* install_list) {
@@ -638,8 +641,9 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
   // value placed in the client state key is also used by the mini_installer to
   // locate the setup.exe instance used for binary patching.
   // Do not quote the command line for the MSI invocation.
-  FilePath install_path(installer_state.target_path());
-  FilePath installer_path(installer_state.GetInstallerDirectory(new_version));
+  base::FilePath install_path(installer_state.target_path());
+  base::FilePath installer_path(
+      installer_state.GetInstallerDirectory(new_version));
   installer_path = installer_path.Append(setup_path.BaseName());
 
   CommandLine uninstall_arguments(CommandLine::NO_PROGRAM);
@@ -978,16 +982,16 @@ void AddUsageStatsWorkItems(const InstallationState& original_state,
 }
 
 bool AppendPostInstallTasks(const InstallerState& installer_state,
-                            const FilePath& setup_path,
+                            const base::FilePath& setup_path,
                             const Version* current_version,
                             const Version& new_version,
-                            const FilePath& temp_path,
+                            const base::FilePath& temp_path,
                             WorkItemList* post_install_task_list) {
   DCHECK(post_install_task_list);
 
   HKEY root = installer_state.root_key();
   const Products& products = installer_state.products();
-  FilePath new_chrome_exe(
+  base::FilePath new_chrome_exe(
       installer_state.target_path().Append(installer::kChromeNewExe));
 
   // Append work items that will only be executed if this was an update.
@@ -1004,8 +1008,9 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
     // version considered critical relative to the version being updated.
     Version critical_version(installer_state.DetermineCriticalVersion(
         current_version, new_version));
-    FilePath installer_path(installer_state.GetInstallerDirectory(new_version)
-        .Append(setup_path.BaseName()));
+    base::FilePath installer_path(
+        installer_state.GetInstallerDirectory(new_version).Append(
+            setup_path.BaseName()));
 
     CommandLine rename(installer_path);
     rename.AppendSwitch(switches::kRenameChromeExe);
@@ -1111,16 +1116,16 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
 
 void AddInstallWorkItems(const InstallationState& original_state,
                          const InstallerState& installer_state,
-                         const FilePath& setup_path,
-                         const FilePath& archive_path,
-                         const FilePath& src_path,
-                         const FilePath& temp_path,
+                         const base::FilePath& setup_path,
+                         const base::FilePath& archive_path,
+                         const base::FilePath& src_path,
+                         const base::FilePath& temp_path,
                          const Version* current_version,
                          const Version& new_version,
                          WorkItemList* install_list) {
   DCHECK(install_list);
 
-  const FilePath& target_path = installer_state.target_path();
+  const base::FilePath& target_path = installer_state.target_path();
 
   // A temp directory that work items need and the actual install directory.
   install_list->AddCreateDirWorkItem(temp_path);
@@ -1193,8 +1198,8 @@ void AddInstallWorkItems(const InstallationState& original_state,
                          install_list);
 }
 
-void AddRegisterComDllWorkItems(const FilePath& dll_folder,
-                                const std::vector<FilePath>& dll_list,
+void AddRegisterComDllWorkItems(const base::FilePath& dll_folder,
+                                const std::vector<base::FilePath>& dll_list,
                                 bool system_level,
                                 bool do_register,
                                 bool ignore_failures,
@@ -1203,9 +1208,9 @@ void AddRegisterComDllWorkItems(const FilePath& dll_folder,
   if (dll_list.empty()) {
     VLOG(1) << "No COM DLLs to register";
   } else {
-    std::vector<FilePath>::const_iterator dll_iter(dll_list.begin());
+    std::vector<base::FilePath>::const_iterator dll_iter(dll_list.begin());
     for (; dll_iter != dll_list.end(); ++dll_iter) {
-      FilePath dll_path = dll_folder.Append(*dll_iter);
+      base::FilePath dll_path = dll_folder.Append(*dll_iter);
       WorkItem* work_item = work_item_list->AddSelfRegWorkItem(
           dll_path.value(), do_register, !system_level);
       DCHECK(work_item);
@@ -1230,7 +1235,7 @@ void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
 
 void AddChromeFrameWorkItems(const InstallationState& original_state,
                              const InstallerState& installer_state,
-                             const FilePath& setup_path,
+                             const base::FilePath& setup_path,
                              const Version& new_version,
                              const Product& product,
                              WorkItemList* list) {
@@ -1258,7 +1263,7 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
         static_cast<int64>(is_install ? 1 : 0),  // The value we want to set.
         !is_install);  // Overwrite existing value.
     if (is_install) {
-      FilePath installer_path(installer_state
+      base::FilePath installer_path(installer_state
           .GetInstallerDirectory(new_version).Append(setup_path.BaseName()));
 
       CommandLine basic_cl(installer_path);
@@ -1366,7 +1371,7 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
 }
 
 void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
-                                 const FilePath& target_path,
+                                 const base::FilePath& target_path,
                                  const Version& new_version,
                                  const Product& product,
                                  WorkItemList* list) {
@@ -1402,7 +1407,7 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
                                          handler_class_uuid));
 
     // The path to the exe (in the version directory).
-    FilePath delegate_execute(target_path);
+    base::FilePath delegate_execute(target_path);
     if (new_version.IsValid())
       delegate_execute = delegate_execute.AppendASCII(new_version.GetString());
     delegate_execute = delegate_execute.Append(kDelegateExecuteExe);
@@ -1428,7 +1433,7 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
 }
 
 void AddActiveSetupWorkItems(const InstallerState& installer_state,
-                             const FilePath& setup_path,
+                             const base::FilePath& setup_path,
                              const Version& new_version,
                              const Product& product,
                              WorkItemList* list) {
@@ -1453,8 +1458,8 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
   list->AddSetRegValueWorkItem(root, active_setup_path, L"",
                                distribution->GetAppShortCutName(), true);
 
-  FilePath active_setup_exe(installer_state.GetInstallerDirectory(new_version)
-      .Append(kActiveSetupExe));
+  base::FilePath active_setup_exe(installer_state.GetInstallerDirectory(
+      new_version).Append(kActiveSetupExe));
   CommandLine cmd(active_setup_exe);
   cmd.AppendSwitch(installer::switches::kConfigureUserSettings);
   cmd.AppendSwitch(installer::switches::kVerboseLogging);
@@ -1551,7 +1556,7 @@ void RefreshElevationPolicy() {
 }
 
 void AddOsUpgradeWorkItems(const InstallerState& installer_state,
-                           const FilePath& setup_path,
+                           const base::FilePath& setup_path,
                            const Version& new_version,
                            const Product& product,
                            WorkItemList* install_list) {
@@ -1583,7 +1588,7 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
 }
 
 void AddQueryEULAAcceptanceWorkItems(const InstallerState& installer_state,
-                                     const FilePath& setup_path,
+                                     const base::FilePath& setup_path,
                                      const Version& new_version,
                                      const Product& product,
                                      WorkItemList* work_item_list) {
@@ -1611,7 +1616,7 @@ void AddQueryEULAAcceptanceWorkItems(const InstallerState& installer_state,
 
 void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
                                         const InstallationState& machine_state,
-                                        const FilePath& setup_path,
+                                        const base::FilePath& setup_path,
                                         const Version& new_version,
                                         WorkItemList* work_item_list) {
   DCHECK(work_item_list);

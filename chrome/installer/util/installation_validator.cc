@@ -235,12 +235,12 @@ void InstallationValidator::ValidateInstallAppCommand(
   CommandLine cmd_line(CommandLine::FromString(app_cmd.command_line()));
   string16 name(kCmdInstallApp);
 
-  FilePath expected_path(
+  base::FilePath expected_path(
       installer::GetChromeInstallPath(ctx.system_install, ctx.dist)
       .Append(installer::kChromeAppHostExe));
 
-  if (!FilePath::CompareEqualIgnoreCase(expected_path.value(),
-                                        cmd_line.GetProgram().value())) {
+  if (!base::FilePath::CompareEqualIgnoreCase(expected_path.value(),
+                                              cmd_line.GetProgram().value())) {
     *is_valid = false;
     LOG(ERROR) << name << "'s path is not "
                << expected_path.value() << ": "
@@ -566,7 +566,7 @@ void InstallationValidator::ValidateBinaries(
 
 // Validates the path to |setup_exe| for the product described by |ctx|.
 void InstallationValidator::ValidateSetupPath(const ProductContext& ctx,
-                                              const FilePath& setup_exe,
+                                              const base::FilePath& setup_exe,
                                               const string16& purpose,
                                               bool* is_valid) {
   DCHECK(is_valid);
@@ -577,14 +577,14 @@ void InstallationValidator::ValidateSetupPath(const ProductContext& ctx,
         BrowserDistribution::CHROME_BINARIES);
   }
 
-  FilePath expected_path = installer::GetChromeInstallPath(ctx.system_install,
-                                                           bins_dist);
+  base::FilePath expected_path = installer::GetChromeInstallPath(
+      ctx.system_install, bins_dist);
   expected_path = expected_path
       .AppendASCII(ctx.state.version().GetString())
       .Append(installer::kInstallerDir)
       .Append(installer::kSetupExe);
-  if (!FilePath::CompareEqualIgnoreCase(expected_path.value(),
-                                        setup_exe.value())) {
+  if (!base::FilePath::CompareEqualIgnoreCase(expected_path.value(),
+                                              setup_exe.value())) {
     *is_valid = false;
     LOG(ERROR) << ctx.dist->GetAppShortCutName() << " path to " << purpose
                << " is not " << expected_path.value() << ": "

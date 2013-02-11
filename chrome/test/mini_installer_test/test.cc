@@ -61,19 +61,19 @@ class MiniInstallTest : public testing::Test {
   }
 
   static InstallerPathProvider* provider_;
-  static FilePath full_installer_;
-  static FilePath previous_installer_;
-  static FilePath diff_installer_;
-  static FilePath standalone_installer_;
-  static FilePath mini_installer_;
+  static base::FilePath full_installer_;
+  static base::FilePath previous_installer_;
+  static base::FilePath diff_installer_;
+  static base::FilePath standalone_installer_;
+  static base::FilePath mini_installer_;
 };
 
 InstallerPathProvider* MiniInstallTest::provider_;
-FilePath MiniInstallTest::full_installer_;
-FilePath MiniInstallTest::previous_installer_;
-FilePath MiniInstallTest::diff_installer_;
-FilePath MiniInstallTest::standalone_installer_;
-FilePath MiniInstallTest::mini_installer_;
+base::FilePath MiniInstallTest::full_installer_;
+base::FilePath MiniInstallTest::previous_installer_;
+base::FilePath MiniInstallTest::diff_installer_;
+base::FilePath MiniInstallTest::standalone_installer_;
+base::FilePath MiniInstallTest::mini_installer_;
 
 }  // namespace
 

@@ -36,7 +36,7 @@ TEST(ZipFileTest, ZipEntryToZipArchive) {
       "UEsDBBQACAAIAJpyXEAAAAAAAAAAAAAAAAAEAAAAdGVzdHP2D+"
       "cCAFBLBwi/wAzGBgAAAAQAAAA=";
   ASSERT_TRUE(base::Base64Decode(kBase64ZipEntry, &data));
-  FilePath file;
+  base::FilePath file;
   std::string error_msg;
   ASSERT_TRUE(UnzipSoleFile(temp_dir.path(), data, &file, &error_msg))
       << error_msg;

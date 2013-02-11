@@ -55,9 +55,9 @@ const char kReferenceDir[] = "reference-dir";
 
 // Reads and decodes a PNG image to a bitmap. Returns true on success. The PNG
 // should have been encoded using |gfx::PNGCodec::Encode|.
-bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
+bool ReadPNGFile(const base::FilePath& file_path, SkBitmap* bitmap) {
   DCHECK(bitmap);
-  FilePath abs_path(file_path);
+  base::FilePath abs_path(file_path);
   if (!file_util::AbsolutePath(&abs_path))
     return false;
 
@@ -70,7 +70,7 @@ bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
 
 // Encodes a bitmap into a PNG and write to disk. Returns true on success. The
 // parent directory does not have to exist.
-bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
+bool WritePNGFile(const SkBitmap& bitmap, const base::FilePath& file_path) {
   std::vector<unsigned char> png_data;
   if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data) &&
       file_util::CreateDirectory(file_path.DirName())) {
@@ -84,7 +84,7 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
 
 // Write an empty file, whose name indicates the chrome revision when the ref
 // image was generated.
-bool WriteREVFile(const FilePath& file_path) {
+bool WriteREVFile(const base::FilePath& file_path) {
   if (file_util::CreateDirectory(file_path.DirName())) {
     char one_byte = 0;
     int bytes_written = file_util::WriteFile(file_path, &one_byte, 1);
@@ -153,7 +153,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   // If the existing ref image was saved from an revision older than the
   // ref_img_update_revision, refresh the ref image.
   void RunPixelTest(const gfx::Size& tab_container_size,
-                    const FilePath& url,
+                    const base::FilePath& url,
                     int64 ref_img_update_revision,
                     const ReferencePixel* ref_pixels,
                     size_t ref_pixel_count) {
@@ -195,14 +195,14 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 #endif
   }
 
-  const FilePath& test_data_dir() const {
+  const base::FilePath& test_data_dir() const {
     return test_data_dir_;
   }
 
  private:
-  FilePath test_data_dir_;
-  FilePath generated_img_dir_;
-  FilePath ref_img_dir_;
+  base::FilePath test_data_dir_;
+  base::FilePath generated_img_dir_;
+  base::FilePath ref_img_dir_;
   int64 ref_img_revision_;
   // The name of the test, with any special prefixes dropped.
   std::string test_name_;
@@ -232,7 +232,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   bool CompareImages(const SkBitmap& gen_bmp) {
     SkBitmap ref_bmp_on_disk;
 
-    FilePath img_path = ref_img_dir_.AppendASCII(test_name_ + ".png");
+    base::FilePath img_path = ref_img_dir_.AppendASCII(test_name_ + ".png");
     bool found_ref_img = ReadPNGFile(img_path, &ref_bmp_on_disk);
 
     if (!found_ref_img && ref_img_option_ == kReferenceImageCheckedIn) {
@@ -250,7 +250,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     if ((ref_img_revision_ <= 0 && ref_img_option_ == kReferenceImageLocal) ||
         !found_ref_img) {
       chrome::VersionInfo chrome_version_info;
-      FilePath rev_path = ref_img_dir_.AppendASCII(
+      base::FilePath rev_path = ref_img_dir_.AppendASCII(
           test_name_ + "_" + chrome_version_info.LastChange() + ".rev");
       if (!WritePNGFile(gen_bmp, img_path)) {
         LOG(ERROR) << "Can't save generated image to: "
@@ -333,7 +333,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
     std::string ref_img_filename = img_path.BaseName().MaybeAsASCII();
     if (save_gen) {
-      FilePath img_fail_path = generated_img_dir_.AppendASCII(
+      base::FilePath img_fail_path = generated_img_dir_.AppendASCII(
           "FAIL_" + ref_img_filename);
       if (!WritePNGFile(gen_bmp, img_fail_path)) {
         LOG(ERROR) << "Can't save generated image to: "
@@ -344,7 +344,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       }
     }
     if (save_diff) {
-      FilePath img_diff_path = generated_img_dir_.AppendASCII(
+      base::FilePath img_diff_path = generated_img_dir_.AppendASCII(
           "DIFF_" + ref_img_filename);
       if (!WritePNGFile(diff_bmp, img_diff_path)) {
         LOG(ERROR) << "Can't save generated diff image to: "
@@ -417,15 +417,15 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
   // If no valid local revision file is located, the ref_img_revision_ is 0.
   void ObtainLocalRefImageRevision() {
-    FilePath filter;
+    base::FilePath filter;
     filter = filter.AppendASCII(test_name_ + "_*.rev");
     file_util::FileEnumerator locator(ref_img_dir_,
                                       false,  // non recursive
                                       file_util::FileEnumerator::FILES,
                                       filter.value());
     int64 max_revision = 0;
-    std::vector<FilePath> outdated_revs;
-    for (FilePath full_path = locator.Next();
+    std::vector<base::FilePath> outdated_revs;
+    for (base::FilePath full_path = locator.Next();
          !full_path.empty();
          full_path = locator.Next()) {
       std::string filename =
@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, WebGLGreenTriangle) {
   const size_t ref_pixel_count = sizeof(ref_pixels) / sizeof(ReferencePixel);
 
   gfx::Size container_size(400, 300);
-  FilePath url =
+  base::FilePath url =
       test_data_dir().AppendASCII("pixel_webgl.html");
   RunPixelTest(container_size, url, ref_img_revision_update,
                ref_pixels, ref_pixel_count);
@@ -491,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, CSS3DBlueBox) {
   const size_t ref_pixel_count = sizeof(ref_pixels) / sizeof(ReferencePixel);
 
   gfx::Size container_size(400, 300);
-  FilePath url =
+  base::FilePath url =
       test_data_dir().AppendASCII("pixel_css3d.html");
   RunPixelTest(container_size, url, ref_img_revision_update,
                ref_pixels, ref_pixel_count);
@@ -512,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, Canvas2DRedBoxHD) {
   const size_t ref_pixel_count = sizeof(ref_pixels) / sizeof(ReferencePixel);
 
   gfx::Size container_size(400, 300);
-  FilePath url =
+  base::FilePath url =
       test_data_dir().AppendASCII("pixel_canvas2d.html");
   RunPixelTest(container_size, url, ref_img_revision_update,
                ref_pixels, ref_pixel_count);
@@ -541,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(Canvas2DPixelTestSD, Canvas2DRedBoxSD) {
   const size_t ref_pixel_count = sizeof(ref_pixels) / sizeof(ReferencePixel);
 
   gfx::Size container_size(400, 300);
-  FilePath url =
+  base::FilePath url =
       test_data_dir().AppendASCII("pixel_canvas2d.html");
   RunPixelTest(container_size, url, ref_img_revision_update,
                ref_pixels, ref_pixel_count);

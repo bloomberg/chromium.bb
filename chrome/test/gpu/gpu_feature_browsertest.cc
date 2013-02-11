@@ -50,7 +50,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
   GpuFeatureTest() : trace_categories_("test_gpu"), gpu_enabled_(false) {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    FilePath test_dir;
+    base::FilePath test_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
     gpu_test_dir_ = test_dir.AppendASCII("gpu");
   }
@@ -78,7 +78,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
   // If expected_reply is NULL, we don't check the reply content.
-  void RunTest(const FilePath& url,
+  void RunTest(const base::FilePath& url,
                const char* expected_reply,
                bool new_tab) {
 #if defined(OS_LINUX) && !defined(NDEBUG)
@@ -87,7 +87,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
       return;
 #endif
 
-    FilePath test_path;
+    base::FilePath test_path;
     test_path = gpu_test_dir_.Append(url);
     ASSERT_TRUE(file_util::PathExists(test_path))
         << "Missing test file: " << test_path.value();
@@ -110,7 +110,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
   // Open the URL and check the trace stream for the given event.
-  void RunEventTest(const FilePath& url,
+  void RunEventTest(const base::FilePath& url,
                     const char* event_name = NULL,
                     bool event_expected = false) {
 #if defined(OS_LINUX) && !defined(NDEBUG)
@@ -167,7 +167,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
  protected:
-  FilePath gpu_test_dir_;
+  base::FilePath gpu_test_dir_;
   scoped_ptr<TraceAnalyzer> analyzer_;
   std::string trace_categories_;
   std::string trace_events_json_;
@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingAllowed) {
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, 0);
 
-  const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kSwapBuffersEvent, true);
 }
 
@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,
 
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
 
-  const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kSwapBuffersEvent, false);
 }
 
@@ -251,7 +251,7 @@ class AcceleratedCompositingTest : public GpuFeatureTest {
 IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
                        MAYBE_AcceleratedCompositingDisabled) {
 // Compositing is always on for Windows Aura.
-  const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kSwapBuffersEvent, false);
 }
 
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, 0);
 
-  const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
   RunEventTest(url, kWebGLCreationEvent, true);
 }
 
@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
   type = IgnoreGpuFeatures(type);
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 
-  const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
   RunEventTest(url, kWebGLCreationEvent, false);
 }
 
@@ -300,7 +300,7 @@ class WebGLTest : public GpuFeatureTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
-  const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
   RunEventTest(url, kWebGLCreationEvent, false);
 }
 
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
   if (GPUTestBotConfig::CurrentConfigMatches(configs))
     return;
 
-  const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
   RunTest(url, "\"TRUE\"", true);
 }
 
@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
   type = IgnoreGpuFeatures(type);
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_MULTISAMPLING);
 
-  const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
   RunTest(url, "\"FALSE\"", true);
 }
 
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
   if (GPUTestBotConfig::CurrentConfigMatches("MAC VMWARE"))
     return;
 
-  const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
   RunTest(url, "\"FALSE\"", true);
 }
 
@@ -381,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, 0);
 
-  const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
   RunEventTest(url, kAcceleratedCanvasCreationEvent, true);
 }
 
@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
   type = IgnoreGpuFeatures(type);
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
 
-  const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
   RunEventTest(url, kAcceleratedCanvasCreationEvent, false);
 }
 
@@ -418,18 +418,18 @@ class Canvas2DDisabledTest : public GpuFeatureTest {
 };
 
 IN_PROC_BROWSER_TEST_F(Canvas2DDisabledTest, Canvas2DDisabled) {
-  const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
   RunEventTest(url, kAcceleratedCanvasCreationEvent, false);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
                        CanOpenPopupAndRenderWithWebGLCanvas) {
-  const FilePath url(FILE_PATH_LITERAL("webgl_popup.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("webgl_popup.html"));
   RunTest(url, "\"SUCCESS\"", false);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, CanOpenPopupAndRenderWith2DCanvas) {
-  const FilePath url(FILE_PATH_LITERAL("canvas_popup.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("canvas_popup.html"));
   RunTest(url, "\"SUCCESS\"", false);
 }
 
@@ -448,7 +448,7 @@ class ThreadedCompositorTest : public GpuFeatureTest {
 #define MAYBE_ThreadedCompositor ThreadedCompositor
 #endif
 IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, MAYBE_ThreadedCompositor) {
-  const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunEventTest(url, kSwapBuffersEvent, true);
 }
 
@@ -461,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, MAYBE_ThreadedCompositor) {
 #endif
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_RafNoDamage) {
   trace_categories_ = "-test_*";
-  const FilePath url(FILE_PATH_LITERAL("feature_raf_no_damage.html"));
+  const base::FilePath url(FILE_PATH_LITERAL("feature_raf_no_damage.html"));
   RunEventTest(url);
 
   if (!analyzer_.get())
@@ -501,8 +501,9 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
   if (!IOSurfaceSupport::Initialize())
     return;
 
-  const FilePath url(FILE_PATH_LITERAL("feature_compositing_static.html"));
-  FilePath test_path = gpu_test_dir_.Append(url);
+  const base::FilePath url(
+      FILE_PATH_LITERAL("feature_compositing_static.html"));
+  base::FilePath test_path = gpu_test_dir_.Append(url);
   ASSERT_TRUE(file_util::PathExists(test_path))
       << "Missing test file: " << test_path.value();
 

@@ -85,7 +85,7 @@ class UrlFetchTest : public UIPerfTest {
   }
 };
 
-bool WriteValueToFile(std::string value, const FilePath& path) {
+bool WriteValueToFile(std::string value, const base::FilePath& path) {
   int retval = file_util::WriteFile(path, value.c_str(), value.length());
   return retval == static_cast<int>(value.length());
 }
@@ -166,14 +166,15 @@ TEST_F(UrlFetchTest, UrlFetch) {
           &result);
 
   // Write out the cookie if requested
-  FilePath cookie_output_path =
+  base::FilePath cookie_output_path =
       cmd_line->GetSwitchValuePath("wait_cookie_output");
   if (!cookie_output_path.value().empty()) {
     ASSERT_TRUE(WriteValueToFile(result.cookie_value, cookie_output_path));
   }
 
   // Write out the JS Variable if requested
-  FilePath jsvar_output_path = cmd_line->GetSwitchValuePath("jsvar_output");
+  base::FilePath jsvar_output_path =
+      cmd_line->GetSwitchValuePath("jsvar_output");
   if (!jsvar_output_path.value().empty()) {
     ASSERT_TRUE(WriteValueToFile(result.javascript_variable,
                                  jsvar_output_path));

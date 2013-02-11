@@ -45,12 +45,13 @@ class ProductOperations {
   // this function does not return a full path to the key file(s), only (a) file
   // name(s).
   virtual void AddKeyFiles(const std::set<std::wstring>& options,
-                           std::vector<FilePath>* key_files) const = 0;
+                           std::vector<base::FilePath>* key_files) const = 0;
 
   // Adds to |com_dll_list| the list of COM DLLs that are to be registered
   // and/or unregistered. The list may be empty.
-  virtual void AddComDllList(const std::set<std::wstring>& options,
-                             std::vector<FilePath>* com_dll_list) const = 0;
+  virtual void AddComDllList(
+      const std::set<std::wstring>& options,
+      std::vector<base::FilePath>* com_dll_list) const = 0;
 
   // Given a command line, appends the set of product-specific flags.  These are
   // required for product-specific uninstall commands, but are of use for any
@@ -78,7 +79,7 @@ class ProductOperations {
   // to unintialized members.
   virtual void AddDefaultShortcutProperties(
       BrowserDistribution* dist,
-      const FilePath& target_exe,
+      const base::FilePath& target_exe,
       ShellUtil::ShortcutProperties* properties) const = 0;
 };
 

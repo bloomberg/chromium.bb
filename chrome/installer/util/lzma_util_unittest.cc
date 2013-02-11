@@ -26,13 +26,13 @@ class LzmaUtilTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 
   // The path to input data used in tests.
-  FilePath data_dir_;
+  base::FilePath data_dir_;
 };
 };
 
 // Test that we can open archives successfully.
 TEST_F(LzmaUtilTest, OpenArchiveTest) {
-  FilePath archive = data_dir_.AppendASCII("archive1.7z");
+  base::FilePath archive = data_dir_.AppendASCII("archive1.7z");
   LzmaUtil lzma_util;
   EXPECT_EQ(lzma_util.OpenArchive(archive.value()), NO_ERROR);
 
@@ -53,13 +53,13 @@ TEST_F(LzmaUtilTest, OpenArchiveTest) {
 
 // Test that we can extract archives successfully.
 TEST_F(LzmaUtilTest, UnPackTest) {
-  FilePath extract_dir(temp_dir_.path());
+  base::FilePath extract_dir(temp_dir_.path());
   extract_dir = extract_dir.AppendASCII("UnPackTest");
   ASSERT_FALSE(file_util::PathExists(extract_dir));
   EXPECT_TRUE(file_util::CreateDirectory(extract_dir));
   ASSERT_TRUE(file_util::PathExists(extract_dir));
 
-  FilePath archive = data_dir_.AppendASCII("archive1.7z");
+  base::FilePath archive = data_dir_.AppendASCII("archive1.7z");
   LzmaUtil lzma_util;
   EXPECT_EQ(lzma_util.OpenArchive(archive.value()), NO_ERROR);
   std::wstring unpacked_file;
@@ -94,13 +94,13 @@ TEST_F(LzmaUtilTest, UnPackTest) {
 
 // Test the static method that can be used to unpack archives.
 TEST_F(LzmaUtilTest, UnPackArchiveTest) {
-  FilePath extract_dir(temp_dir_.path());
+  base::FilePath extract_dir(temp_dir_.path());
   extract_dir = extract_dir.AppendASCII("UnPackArchiveTest");
   ASSERT_FALSE(file_util::PathExists(extract_dir));
   EXPECT_TRUE(file_util::CreateDirectory(extract_dir));
   ASSERT_TRUE(file_util::PathExists(extract_dir));
 
-  FilePath archive = data_dir_.AppendASCII("archive1.7z");
+  base::FilePath archive = data_dir_.AppendASCII("archive1.7z");
   std::wstring unpacked_file;
   EXPECT_EQ(LzmaUtil::UnPackArchive(archive.value(), extract_dir.value(),
                                     &unpacked_file), NO_ERROR);

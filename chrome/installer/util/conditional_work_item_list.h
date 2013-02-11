@@ -36,12 +36,12 @@ class ConditionalWorkItemList : public WorkItemList {
 //------------------------------------------------------------------------------
 class ConditionRunIfFileExists : public WorkItem::Condition {
  public:
-  explicit ConditionRunIfFileExists(const FilePath& key_path)
+  explicit ConditionRunIfFileExists(const base::FilePath& key_path)
       : key_path_(key_path) {}
   bool ShouldRun() const;
 
  private:
-  FilePath key_path_;
+  base::FilePath key_path_;
 };
 
 // Condition class that inverts the ShouldRun result of another Condition.

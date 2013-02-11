@@ -47,7 +47,7 @@ class CreateDirectoryOperation {
   // needed just like mkdir -p does.
   // Invokes |callback| when finished with the result of the operation.
   // |callback| must not be null.
-  void CreateDirectory(const FilePath& directory_path,
+  void CreateDirectory(const base::FilePath& directory_path,
                        bool is_exclusive,
                        bool is_recursive,
                        const FileOperationCallback& callback);
@@ -77,7 +77,7 @@ class CreateDirectoryOperation {
 
     // Initializes the struct.
     void Init(FindFirstMissingParentDirectoryError error,
-              FilePath first_missing_parent_path,
+              base::FilePath first_missing_parent_path,
               const std::string& last_dir_resource_id);
 
     FindFirstMissingParentDirectoryError error;
@@ -87,7 +87,7 @@ class CreateDirectoryOperation {
     // Suppose "drive/foo/bar/baz/qux" is being checked, and only
     // "drive/foo/bar" is present, "drive/foo/bar/baz" is the first missing
     // parent path.
-    FilePath first_missing_parent_path;
+    base::FilePath first_missing_parent_path;
 
     // The resource id of the last found directory. In the above example, the
     // resource id of "drive/foo/bar".
@@ -112,21 +112,21 @@ class CreateDirectoryOperation {
   // Callback for handling directory create requests. Adds the directory
   // represented by |entry| to the local filesystem.
   void AddNewDirectory(scoped_ptr<CreateDirectoryParams> params,
-                       const FilePath& created_directory_path,
+                       const base::FilePath& created_directory_path,
                        google_apis::GDataErrorCode status,
                        scoped_ptr<google_apis::ResourceEntry> entry);
 
   // Callback for DriveResourceMetadata::AddEntryToDirectory. Continues the
   // recursive creation of a directory path by calling CreateDirectory again.
   void ContinueCreateDirectory(scoped_ptr<CreateDirectoryParams> params,
-                               const FilePath& created_directory_path,
+                               const base::FilePath& created_directory_path,
                                DriveFileError error,
-                               const FilePath& moved_file_path);
+                               const base::FilePath& moved_file_path);
 
   // Finds the first missing parent directory of |directory_path|.
   // |callback| must not be null.
   void FindFirstMissingParentDirectory(
-      const FilePath& directory_path,
+      const base::FilePath& directory_path,
       const FindFirstMissingParentDirectoryCallback& callback);
 
   // Helper function for FindFirstMissingParentDirectory, for recursive search

@@ -312,7 +312,7 @@ class AutomatedUITest : public AutomatedUITestBase {
   // crash_dump - Location of crash dump if applicable.
   // command_completed - True if all actions in the command were completed
   //                     before the crash occured.
-  void LogCrashResult(const FilePath& crash_dump,
+  void LogCrashResult(const base::FilePath& crash_dump,
                       bool command_completed);
 
   // Logs a successful command to the xml_writer in the form of:
@@ -343,7 +343,7 @@ class AutomatedUITest : public AutomatedUITestBase {
   // Returns the full path of the crash dump. This is likely to be the
   // .txt file, not the actual crash dump. Although they do share
   // a common name.
-  FilePath GetMostRecentCrashDump();
+  base::FilePath GetMostRecentCrashDump();
 
   // Returns true if the test has produced any new crash logs.
   // A "new" crash log is one that was produced since DidCrash was last called

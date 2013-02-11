@@ -79,7 +79,7 @@ class TestingProfile : public Profile {
         scoped_refptr<ExtensionSpecialStoragePolicy> policy);
 
     // Sets the path to the directory to be used to hold profile data.
-    void SetPath(const FilePath& path);
+    void SetPath(const base::FilePath& path);
 
     // Sets the PrefService to be used by this profile.
     void SetPrefService(scoped_ptr<PrefServiceSyncable> prefs);
@@ -97,7 +97,7 @@ class TestingProfile : public Profile {
     // Various staging variables where values are held until Build() is invoked.
     scoped_ptr<PrefServiceSyncable> pref_service_;
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
-    FilePath path_;
+    base::FilePath path_;
     Delegate* delegate_;
     bool off_the_record_;
 
@@ -110,16 +110,16 @@ class TestingProfile : public Profile {
   // profile profiles, use that factory method instead of this directly.
   // Exception: if you need to create multi-profile profiles for testing the
   // ProfileManager, then use the constructor below instead.
-  explicit TestingProfile(const FilePath& path);
+  explicit TestingProfile(const base::FilePath& path);
 
   // Multi-profile aware constructor that takes the path to a directory managed
   // for this profile and a delegate. This constructor is meant to be used
   // for unittesting the ProfileManager.
-  TestingProfile(const FilePath& path, Delegate* delegate);
+  TestingProfile(const base::FilePath& path, Delegate* delegate);
 
   // Full constructor allowing the setting of all possible instance data.
   // Callers should use Builder::Build() instead of invoking this constructor.
-  TestingProfile(const FilePath& path,
+  TestingProfile(const base::FilePath& path,
                  Delegate* delegate,
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
                  scoped_ptr<PrefServiceSyncable> prefs,
@@ -176,7 +176,7 @@ class TestingProfile : public Profile {
   TestingPrefServiceSyncable* GetTestingPrefService();
 
   // content::BrowserContext
-  virtual FilePath GetPath() OVERRIDE;
+  virtual base::FilePath GetPath() OVERRIDE;
   virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::DownloadManagerDelegate*
@@ -253,10 +253,10 @@ class TestingProfile : public Profile {
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const FilePath& partition_path,
+          const base::FilePath& partition_path,
           bool in_memory) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       bool in_memory,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           blob_protocol_handler,
@@ -285,8 +285,8 @@ class TestingProfile : public Profile {
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
 
-  virtual FilePath last_selected_directory() OVERRIDE;
-  virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
+  virtual base::FilePath last_selected_directory() OVERRIDE;
+  virtual void set_last_selected_directory(const base::FilePath& path) OVERRIDE;
   virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
   virtual void SetExitType(ExitType exit_type) OVERRIDE {}
   virtual ExitType GetLastSessionExitType() OVERRIDE;
@@ -354,7 +354,7 @@ class TestingProfile : public Profile {
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 
-  FilePath last_selected_directory_;
+  base::FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
 
   scoped_refptr<ExtensionSpecialStoragePolicy>
@@ -369,7 +369,7 @@ class TestingProfile : public Profile {
   base::ScopedTempDir temp_dir_;
   // The path to this profile. This will be valid in either of the two above
   // cases.
-  FilePath profile_path_;
+  base::FilePath profile_path_;
 
   // We keep a weak pointer to the dependency manager we want to notify on our
   // death. Defaults to the Singleton implementation but overridable for

@@ -38,13 +38,13 @@ bool DeleteRegistryKey(
 // Locates the Chrome installation directory based on the
 // provided |system_level|. Returns true if successful, otherwise false.
 // Returns true if successful, otherwise false.
-bool GetChromeInstallDirectory(bool system_level, FilePath* path);
+bool GetChromeInstallDirectory(bool system_level, base::FilePath* path);
 
 // Gets the installation directory of either Chrome or Chrome Frame
 // as specified by the |system_level| and |type|.
 // Returns true if successful, otherwise false.
 bool GetInstallDirectory(bool system_level,
-                         BrowserDistribution::Type type, FilePath* path);
+                         BrowserDistribution::Type type, base::FilePath* path);
 
 // Returns the version of the specified |product|.
 std::string GetVersion(
@@ -54,8 +54,8 @@ std::string GetVersion(
 // Returns true if there are installed products.
 bool GetInstalledProducts(std::vector<InstalledProduct>* products);
 
-bool Install(const FilePath& installer);
-bool Install(const FilePath& installer, const SwitchBuilder& switches);
+bool Install(const base::FilePath& installer);
+bool Install(const base::FilePath& installer, const SwitchBuilder& switches);
 bool LaunchChrome(bool close_after_launch, bool system_level);
 bool LaunchIE(const std::string& url);
 

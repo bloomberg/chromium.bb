@@ -51,7 +51,7 @@ class WebUIBrowserTest
   // Add a custom helper JS library for your test.
   // If a relative path is specified, it'll be read
   // as relative to the test data dir.
-  void AddLibrary(const FilePath& library_path);
+  void AddLibrary(const base::FilePath& library_path);
 
   // Runs a javascript function in the context of all libraries.
   // Note that calls to functions in test_api.js are not supported.
@@ -137,7 +137,7 @@ class WebUIBrowserTest
 
   // Returns a file:// GURL constructed from |path| inside the test data dir for
   // webui tests.
-  static GURL WebUITestDataPathToURL(const FilePath::StringType& path);
+  static GURL WebUITestDataPathToURL(const base::FilePath::StringType& path);
 
  private:
   // content::JsInjectionReadyObserver implementation.
@@ -173,13 +173,13 @@ class WebUIBrowserTest
   scoped_ptr<WebUITestHandler> test_handler_;
 
   // Location of test data (currently test/data/webui).
-  FilePath test_data_directory_;
+  base::FilePath test_data_directory_;
 
   // Location of generated test data (<(PROGRAM_DIR)/test_data).
-  FilePath gen_test_data_directory_;
+  base::FilePath gen_test_data_directory_;
 
   // User added libraries
-  std::vector<FilePath> user_libraries_;
+  std::vector<base::FilePath> user_libraries_;
 
   // Indicates that the libraries have been pre-loaded and to not load them
   // again.

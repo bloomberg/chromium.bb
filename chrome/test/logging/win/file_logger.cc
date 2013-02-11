@@ -146,7 +146,7 @@ void FileLogger::Initialize(uint32 event_provider_mask) {
   is_initialized_ = true;
 }
 
-bool FileLogger::StartLogging(const FilePath& log_file) {
+bool FileLogger::StartLogging(const base::FilePath& log_file) {
   HRESULT hr =
       controller_.StartFileSession(kChromeTestSession,
                                    log_file.value().c_str(), false);

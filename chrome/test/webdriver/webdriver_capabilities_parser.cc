@@ -47,7 +47,7 @@ Capabilities::~Capabilities() { }
 
 CapabilitiesParser::CapabilitiesParser(
     const DictionaryValue* capabilities_dict,
-    const FilePath& root_path,
+    const base::FilePath& root_path,
     const Logger& logger,
     Capabilities* capabilities)
     : dict_(capabilities_dict),
@@ -171,11 +171,11 @@ Error* CapabilitiesParser::ParseArgs(const Value* option) {
 }
 
 Error* CapabilitiesParser::ParseBinary(const Value* option) {
-  FilePath::StringType path;
+  base::FilePath::StringType path;
   if (!option->GetAsString(&path)) {
     return CreateBadInputError("binary path", Value::TYPE_STRING, option);
   }
-  caps_->command.SetProgram(FilePath(path));
+  caps_->command.SetProgram(base::FilePath(path));
   return NULL;
 }
 
@@ -201,7 +201,7 @@ Error* CapabilitiesParser::ParseExtensions(const Value* option) {
       return new Error(kBadRequest,
                        "Each extension must be a base64 encoded string");
     }
-    FilePath extension = root_.AppendASCII(
+    base::FilePath extension = root_.AppendASCII(
         base::StringPrintf("extension%" PRIuS ".crx", i));
     std::string decoded_extension;
     if (!Base64Decode(extension_base64, &decoded_extension))

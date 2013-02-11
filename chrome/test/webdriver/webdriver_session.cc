@@ -321,7 +321,7 @@ Error* Session::SendKeys(const string16& keys) {
 
 Error* Session::DragAndDropFilePaths(
     const Point& location,
-    const std::vector<FilePath::StringType>& paths) {
+    const std::vector<base::FilePath::StringType>& paths) {
   Error* error = NULL;
   RunSessionTask(base::Bind(
       &Automation::DragAndDropFilePaths,
@@ -1173,7 +1173,7 @@ Error* Session::WaitForAllViewsToStopLoading() {
 }
 
 Error* Session::InstallExtension(
-    const FilePath& path, std::string* extension_id) {
+    const base::FilePath& path, std::string* extension_id) {
   Error* error = NULL;
   RunSessionTask(base::Bind(
       &Automation::InstallExtension,
@@ -1428,7 +1428,7 @@ const Logger& Session::logger() const {
   return logger_;
 }
 
-const FilePath& Session::temp_dir() const {
+const base::FilePath& Session::temp_dir() const {
   return temp_dir_.path();
 }
 
@@ -1832,7 +1832,7 @@ Error* Session::GetScreenShot(std::string* png) {
                      "Could not create temp directory for screenshot");
   }
 
-  FilePath path = screenshots_dir.path().AppendASCII("screen");
+  base::FilePath path = screenshots_dir.path().AppendASCII("screen");
   RunSessionTask(base::Bind(
       &Automation::CaptureEntirePageAsPNG,
       base::Unretained(automation_.get()),

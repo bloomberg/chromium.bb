@@ -39,23 +39,23 @@ class CopyTreeWorkItem : public WorkItem {
   // Notes on temp_path: to facilitate rollback, the caller needs to supply
   // a temporary directory to save the original files if they exist under
   // dest_path.
-  CopyTreeWorkItem(const FilePath& source_path,
-                   const FilePath& dest_path,
-                   const FilePath& temp_dir,
+  CopyTreeWorkItem(const base::FilePath& source_path,
+                   const base::FilePath& dest_path,
+                   const base::FilePath& temp_dir,
                    CopyOverWriteOption overwrite_option,
-                   const FilePath& alternative_path);
+                   const base::FilePath& alternative_path);
 
   // Checks if the path specified is in use (and hence can not be deleted)
-  bool IsFileInUse(const FilePath& path);
+  bool IsFileInUse(const base::FilePath& path);
 
   // Source path to copy files from.
-  FilePath source_path_;
+  base::FilePath source_path_;
 
   // Destination path to copy files to.
-  FilePath dest_path_;
+  base::FilePath dest_path_;
 
   // Temporary directory that can be used.
-  FilePath temp_dir_;
+  base::FilePath temp_dir_;
 
   // Controls the behavior for overwriting.
   CopyOverWriteOption overwrite_option_;
@@ -63,7 +63,7 @@ class CopyTreeWorkItem : public WorkItem {
   // If overwrite_option_ = NEW_NAME_IF_IN_USE, this variables stores the path
   // to be used if the file is in use and hence we want to copy it to a
   // different path.
-  FilePath alternative_path_;
+  base::FilePath alternative_path_;
 
   // Whether the source was copied to dest_path_
   bool copied_to_dest_path_;

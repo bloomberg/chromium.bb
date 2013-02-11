@@ -237,7 +237,7 @@ int RunChromeDriver() {
 
   // Parse command line flags.
   std::string port = "9515";
-  FilePath log_path;
+  base::FilePath log_path;
   std::string root;
   std::string url_base;
   int http_threads = 4;
@@ -266,7 +266,7 @@ int RunChromeDriver() {
   bool logging_success = InitWebDriverLogging(log_path, kAllLogLevel);
   std::string chromedriver_info = base::StringPrintf(
       "ChromeDriver %s", chrome::kChromeVersion);
-  FilePath chromedriver_exe;
+  base::FilePath chromedriver_exe;
   if (PathService::Get(base::FILE_EXE, &chromedriver_exe)) {
     chromedriver_info += base::StringPrintf(
         " %" PRFilePath, chromedriver_exe.value().c_str());

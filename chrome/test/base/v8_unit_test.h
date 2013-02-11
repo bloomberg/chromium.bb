@@ -27,7 +27,7 @@ class V8UnitTest : public testing::Test {
  protected:
   // Add a custom helper JS library for your test. If |library_path| is
   // relative, it'll be read as relative to the test data dir.
-  void AddLibrary(const FilePath& library_path);
+  void AddLibrary(const base::FilePath& library_path);
 
   // Runs |test_fixture|.|test_name| using the framework in test_api.js.
   bool RunJavascriptTestF(const std::string& test_fixture,
@@ -81,7 +81,7 @@ class V8UnitTest : public testing::Test {
   v8::Handle<v8::Context> context_;
 
   // User added libraries.
-  std::vector<FilePath> user_libraries_;
+  std::vector<base::FilePath> user_libraries_;
 };
 
 #endif  // CHROME_TEST_BASE_V8_UNIT_TEST_H_

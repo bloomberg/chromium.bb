@@ -28,7 +28,7 @@
 
 namespace {
 
-static const FilePath::CharType kTempDirName[] =
+static const base::FilePath::CharType kTempDirName[] =
     FILE_PATH_LITERAL("memory_test_profile");
 
 class MemoryTest : public UIPerfTest {
@@ -42,7 +42,7 @@ class MemoryTest : public UIPerfTest {
   }
 
   // Called from SetUp() to determine the user data dir to copy.
-  virtual FilePath GetUserDataDirSource() const = 0;
+  virtual base::FilePath GetUserDataDirSource() const = 0;
 
   // Called from RunTest() to determine the set of URLs to retrieve.
   // Returns the length of the list.
@@ -69,7 +69,7 @@ class MemoryTest : public UIPerfTest {
       launch_arguments_.AppendSwitch(switches::kNoEvents);
 
       // Get the specified user data dir (optional)
-      FilePath profile_dir =
+      base::FilePath profile_dir =
           CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kUserDataDir);
 
@@ -217,7 +217,7 @@ class MemoryTest : public UIPerfTest {
   //   On success, modifies user_data_dir_ to be a new profile directory
   //   sets temp_dir_ to the containing temporary directory,
   //   and sets cleanup_temp_dir_on_exit_ to true.
-  bool SetupTempDirectory(const FilePath& src_dir) {
+  bool SetupTempDirectory(const base::FilePath& src_dir) {
     VLOG(1) << "Setting up temp directory in " << src_dir.value();
     // We create a copy of the test dir and use it so that each
     // run of this test starts with the same data.  Running this
@@ -241,15 +241,15 @@ class MemoryTest : public UIPerfTest {
   }
 
   bool cleanup_temp_dir_on_exit_;
-  FilePath temp_dir_;
-  FilePath user_data_dir_;
+  base::FilePath temp_dir_;
+  base::FilePath user_data_dir_;
   base::ThreadRestrictions::ScopedAllowIO allow_io_;
 };
 
 class GeneralMixMemoryTest : public MemoryTest {
  public:
-  virtual FilePath GetUserDataDirSource() const {
-    FilePath profile_dir;
+  virtual base::FilePath GetUserDataDirSource() const {
+    base::FilePath profile_dir;
     PathService::Get(base::DIR_SOURCE_ROOT, &profile_dir);
     profile_dir = profile_dir.AppendASCII("data");
     profile_dir = profile_dir.AppendASCII("memory_test");
@@ -413,8 +413,8 @@ class MembusterMemoryTest : public MemoryTest {
     delete[] test_urls_;
   }
 
-  virtual FilePath GetUserDataDirSource() const {
-    FilePath profile_dir;
+  virtual base::FilePath GetUserDataDirSource() const {
+    base::FilePath profile_dir;
     PathService::Get(base::DIR_SOURCE_ROOT, &profile_dir);
     profile_dir = profile_dir.AppendASCII("data");
     profile_dir = profile_dir.AppendASCII("memory_test");

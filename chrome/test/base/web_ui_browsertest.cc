@@ -45,12 +45,13 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-const FilePath::CharType kA11yAuditLibraryJSPath[] = FILE_PATH_LITERAL(
+const base::FilePath::CharType kA11yAuditLibraryJSPath[] = FILE_PATH_LITERAL(
     "third_party/accessibility-developer-tools/gen/axs_testing.js");
-const FilePath::CharType kMockJSPath[] =
+const base::FilePath::CharType kMockJSPath[] =
     FILE_PATH_LITERAL("chrome/third_party/mock4js/mock4js.js");
-const FilePath::CharType kWebUILibraryJS[] = FILE_PATH_LITERAL("test_api.js");
-const FilePath::CharType kWebUITestFolder[] = FILE_PATH_LITERAL("webui");
+const base::FilePath::CharType kWebUILibraryJS[] =
+    FILE_PATH_LITERAL("test_api.js");
+const base::FilePath::CharType kWebUITestFolder[] = FILE_PATH_LITERAL("webui");
 base::LazyInstance<std::vector<std::string> > error_messages_ =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -73,7 +74,7 @@ bool LogHandler(int severity,
 
 WebUIBrowserTest::~WebUIBrowserTest() {}
 
-void WebUIBrowserTest::AddLibrary(const FilePath& library_path) {
+void WebUIBrowserTest::AddLibrary(const base::FilePath& library_path) {
   user_libraries_.push_back(library_path);
 }
 
@@ -81,8 +82,8 @@ void WebUIBrowserTest::AddLibrary(const FilePath& library_path) {
 // base::DIR_SOURCE_ROOT.
 // static
 void AddLibraryFromSourceRoot(WebUIBrowserTest* browser_test,
-                              const FilePath& path) {
-  FilePath filePath;
+                              const base::FilePath& path) {
+  base::FilePath filePath;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &filePath));
   filePath = filePath.Append(path);
   browser_test->AddLibrary(filePath);
@@ -339,14 +340,14 @@ void WebUIBrowserTest::SetUpOnMainThread() {
                                &gen_test_data_directory_));
 
   // TODO(dtseng): should this be part of every BrowserTest or just WebUI test.
-  FilePath resources_pack_path;
+  base::FilePath resources_pack_path;
   PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_NONE);
 
-  AddLibraryFromSourceRoot(this, FilePath(kA11yAuditLibraryJSPath));
-  AddLibraryFromSourceRoot(this, FilePath(kMockJSPath));
-  AddLibrary(FilePath(kWebUILibraryJS));
+  AddLibraryFromSourceRoot(this, base::FilePath(kA11yAuditLibraryJSPath));
+  AddLibraryFromSourceRoot(this, base::FilePath(kMockJSPath));
+  AddLibrary(base::FilePath(kWebUILibraryJS));
 }
 
 void WebUIBrowserTest::CleanUpOnMainThread() {
@@ -373,10 +374,10 @@ WebUIMessageHandler* WebUIBrowserTest::GetMockMessageHandler() {
 }
 
 GURL WebUIBrowserTest::WebUITestDataPathToURL(
-    const FilePath::StringType& path) {
-  FilePath dir_test_data;
+    const base::FilePath::StringType& path) {
+  base::FilePath dir_test_data;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data));
-  FilePath test_path(dir_test_data.Append(kWebUITestFolder).Append(path));
+  base::FilePath test_path(dir_test_data.Append(kWebUITestFolder).Append(path));
   EXPECT_TRUE(file_util::PathExists(test_path));
   return net::FilePathToFileURL(test_path);
 }
@@ -389,7 +390,7 @@ void WebUIBrowserTest::OnJsInjectionReady(RenderViewHost* render_view_host) {
 void WebUIBrowserTest::BuildJavascriptLibraries(string16* content) {
   ASSERT_TRUE(content != NULL);
   std::string utf8_content;
-  std::vector<FilePath>::iterator user_libraries_iterator;
+  std::vector<base::FilePath>::iterator user_libraries_iterator;
   for (user_libraries_iterator = user_libraries_.begin();
        user_libraries_iterator != user_libraries_.end();
        ++user_libraries_iterator) {
@@ -533,7 +534,7 @@ WebUIBrowserTest* WebUIBrowserExpectFailTest::s_test_ = NULL;
 
 // Test that bogus javascript fails fast - no timeout waiting for result.
 IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsFast) {
-  AddLibrary(FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
+  AddLibrary(base::FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("DISABLED_BogusFunctionName"),
                        "WebUITestHandler::JavaScriptComplete");
@@ -541,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsFast) {
 
 // Test that bogus javascript fails fast - no timeout waiting for result.
 IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestRuntimeErrorFailsFast) {
-  AddLibrary(FilePath(FILE_PATH_LITERAL("runtime_error.js")));
+  AddLibrary(base::FilePath(FILE_PATH_LITERAL("runtime_error.js")));
   ui_test_utils::NavigateToURL(browser(), GURL(kDummyURL));
   EXPECT_FATAL_FAILURE(RunJavascriptTestNoReturn("TestRuntimeErrorFailsFast"),
                        "WebUITestHandler::JavaScriptComplete");
@@ -550,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestRuntimeErrorFailsFast) {
 // Test that bogus javascript fails async test fast as well - no timeout waiting
 // for result.
 IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsAsyncFast) {
-  AddLibrary(FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
+  AddLibrary(base::FilePath(FILE_PATH_LITERAL("sample_downloads.js")));
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   EXPECT_FATAL_FAILURE(
       RunJavascriptAsyncTestNoReturn("DISABLED_BogusFunctionName"),
@@ -626,7 +627,7 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
   // Set up and browse to kDummyURL for all tests.
   virtual void SetUpOnMainThread() OVERRIDE {
     WebUIBrowserTest::SetUpOnMainThread();
-    AddLibrary(FilePath(FILE_PATH_LITERAL("async.js")));
+    AddLibrary(base::FilePath(FILE_PATH_LITERAL("async.js")));
     ui_test_utils::NavigateToURL(browser(), GURL(kDummyURL));
   }
 

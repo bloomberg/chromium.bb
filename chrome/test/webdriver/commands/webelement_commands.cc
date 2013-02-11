@@ -536,9 +536,9 @@ Error* ElementValueCommand::DragAndDropFilePaths() const {
     return new Error(kBadRequest, "Missing or invalid 'value' parameter");
 
   // Compress array into single string.
-  FilePath::StringType paths_string;
+  base::FilePath::StringType paths_string;
   for (size_t i = 0; i < path_list->GetSize(); ++i) {
-    FilePath::StringType path_part;
+    base::FilePath::StringType path_part;
     if (!path_list->GetString(i, &path_part)) {
       return new Error(
           kBadRequest,
@@ -548,7 +548,7 @@ Error* ElementValueCommand::DragAndDropFilePaths() const {
   }
 
   // Separate the string into separate paths, delimited by \n.
-  std::vector<FilePath::StringType> paths;
+  std::vector<base::FilePath::StringType> paths;
   base::SplitString(paths_string, '\n', &paths);
 
   // Return an error if trying to drop multiple paths on a single file input.
@@ -562,11 +562,12 @@ Error* ElementValueCommand::DragAndDropFilePaths() const {
 
   // Check the files exist.
   for (size_t i = 0; i < paths.size(); ++i) {
-    if (!file_util::PathExists(FilePath(paths[i]))) {
+    if (!file_util::PathExists(base::FilePath(paths[i]))) {
       return new Error(
           kBadRequest,
           base::StringPrintf("'%s' does not exist on the file system",
-              UTF16ToUTF8(FilePath(paths[i]).LossyDisplayName()).c_str()));
+              UTF16ToUTF8(
+                  base::FilePath(paths[i]).LossyDisplayName()).c_str()));
     }
   }
 

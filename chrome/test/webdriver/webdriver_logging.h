@@ -76,11 +76,11 @@ class FileLog : public LogHandler {
   // Creates a log file with the given name in the current directory.
   // If the current directory is not writable, the system's temp directory
   // is used.
-  static FileLog* CreateFileLog(const FilePath::StringType& log_name,
+  static FileLog* CreateFileLog(const base::FilePath::StringType& log_name,
                                 LogLevel level);
 
   // Creates a log file at the given path.
-  FileLog(const FilePath& path, LogLevel level);
+  FileLog(const base::FilePath& path, LogLevel level);
 
   virtual ~FileLog();
 
@@ -95,12 +95,12 @@ class FileLog : public LogHandler {
   void set_min_log_level(LogLevel level);
 
   // Returns the path of the log file. The file is not guaranteed to exist.
-  const FilePath& path() const;
+  const base::FilePath& path() const;
 
  private:
   static FileLog* singleton_;
 
-  FilePath path_;
+  base::FilePath path_;
   file_util::ScopedFILE file_;
   base::Lock lock_;
 
@@ -148,7 +148,8 @@ class Logger {
 // log path. If the specified log path is empty, the log will write to
 // 'chromedriver.log' in the current working directory, if writeable, or the
 // system temp directory. Returns true on success.
-bool InitWebDriverLogging(const FilePath& log_path, LogLevel min_log_level);
+bool InitWebDriverLogging(const base::FilePath& log_path,
+                          LogLevel min_log_level);
 
 }  // namespace webdriver
 

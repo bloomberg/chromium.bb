@@ -10,18 +10,18 @@
 CreateDirWorkItem::~CreateDirWorkItem() {
 }
 
-CreateDirWorkItem::CreateDirWorkItem(const FilePath& path)
+CreateDirWorkItem::CreateDirWorkItem(const base::FilePath& path)
     : path_(path),
       rollback_needed_(false) {
 }
 
 void CreateDirWorkItem::GetTopDirToCreate() {
   if (file_util::PathExists(path_)) {
-    top_path_ = FilePath();
+    top_path_ = base::FilePath();
     return;
   }
 
-  FilePath parent_dir(path_);
+  base::FilePath parent_dir(path_);
   do {
     top_path_ = parent_dir;
     parent_dir = parent_dir.DirName();
@@ -53,7 +53,7 @@ void CreateDirWorkItem::Rollback() {
   // delete non-empty directory. (We may have created a shared directory).
   // Instead we walk through path_ to top_path_ and delete directories
   // along the way.
-  FilePath path_to_delete(path_);
+  base::FilePath path_to_delete(path_);
 
   while (1) {
     if (file_util::PathExists(path_to_delete)) {

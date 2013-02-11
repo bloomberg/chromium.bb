@@ -237,7 +237,7 @@ void ChromeTestSuite::Initialize() {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Look in the framework bundle for resources.
-  FilePath path;
+  base::FilePath path;
   PathService::Get(base::DIR_EXE, &path);
   path = path.Append(chrome::kFrameworkName);
   base::mac::SetOverrideFrameworkBundlePath(path);
@@ -246,7 +246,7 @@ void ChromeTestSuite::Initialize() {
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
-  FilePath resources_pack_path;
+  base::FilePath resources_pack_path;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   PathService::Get(base::DIR_MODULE, &resources_pack_path);
   resources_pack_path =

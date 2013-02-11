@@ -19,7 +19,7 @@ namespace {
 FilePath GetChromeInstallBasePath(bool system,
                                   BrowserDistribution* distribution,
                                   const wchar_t* sub_path) {
-  FilePath install_path;
+  base::FilePath install_path;
   if (system) {
     PathService::Get(base::DIR_PROGRAM_FILES, &install_path);
   } else {
@@ -43,10 +43,11 @@ FilePath GetChromeInstallPath(bool system_install, BrowserDistribution* dist) {
 }
 
 void GetChromeUserDataPaths(BrowserDistribution* dist,
-                            std::vector<FilePath>* paths) {
+                            std::vector<base::FilePath>* paths) {
   const bool has_metro_data = dist->CanSetAsDefault() &&
       base::win::GetVersion() >= base::win::VERSION_WIN8;
-  FilePath data_dir(GetChromeInstallBasePath(false, dist, kInstallUserDataDir));
+  base::FilePath data_dir(GetChromeInstallBasePath(false, dist,
+                                                   kInstallUserDataDir));
   if (data_dir.empty()) {
     paths->clear();
   } else {

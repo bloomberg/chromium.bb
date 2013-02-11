@@ -55,7 +55,7 @@ bool DeleteInstallDirectory(bool system_level,
   std::string version = GetVersion(type);
   if (version.empty())
     return false;
-  FilePath path;
+  base::FilePath path;
   bool has_install_dir = GetInstallDirectory(system_level,
                                              ToBrowserDistributionType(type),
                                              &path);
@@ -69,24 +69,24 @@ bool DeleteRegistryKey(bool system_level,
                        InstallationValidator::InstallationType type) {
   BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
       ToBrowserDistributionType(type));
-  FilePath::StringType key(google_update::kRegPathClients);
-  key.push_back(FilePath::kSeparators[0]);
+  base::FilePath::StringType key(google_update::kRegPathClients);
+  key.push_back(base::FilePath::kSeparators[0]);
   key.append(dist->GetAppGuid());
   HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   return InstallUtil::DeleteRegistryKey(root, key);
 }
 
-bool GetChromeInstallDirectory(bool system_level, FilePath* path) {
+bool GetChromeInstallDirectory(bool system_level, base::FilePath* path) {
   return GetInstallDirectory(system_level,
       BrowserDistribution::CHROME_BROWSER, path);
 }
 
 bool GetInstallDirectory(bool system_level,
-                         BrowserDistribution::Type type, FilePath* path) {
+                         BrowserDistribution::Type type, base::FilePath* path) {
   BrowserDistribution* dist =
       BrowserDistribution::GetSpecificDistribution(type);
   *path = installer::GetChromeInstallPath(system_level, dist);
-  FilePath parent;
+  base::FilePath parent;
   if (system_level) {
     PathService::Get(base::DIR_PROGRAM_FILES, &parent);
     return file_util::ContainsPath(parent, *path);
@@ -155,7 +155,7 @@ std::string GetVersion(InstallationValidator::InstallationType product) {
   return "";
 }
 
-bool Install(const FilePath& installer) {
+bool Install(const base::FilePath& installer) {
   if (!file_util::PathExists(installer)) {
     LOG(ERROR) << "Installer does not exist: " << installer.MaybeAsASCII();
     return false;
@@ -166,7 +166,7 @@ bool Install(const FilePath& installer) {
   return installer_test::RunAndWaitForCommandToFinish(command);
 }
 
-bool Install(const FilePath& installer, const SwitchBuilder& switches) {
+bool Install(const base::FilePath& installer, const SwitchBuilder& switches) {
   if (!file_util::PathExists(installer)) {
     LOG(ERROR) << "Installer does not exist: " << installer.MaybeAsASCII();
     return false;
@@ -181,7 +181,7 @@ bool Install(const FilePath& installer, const SwitchBuilder& switches) {
 bool LaunchChrome(bool close_after_launch, bool system_level) {
   base::CleanupProcesses(installer::kChromeExe, base::TimeDelta(),
                          content::RESULT_CODE_HUNG, NULL);
-  FilePath install_path;
+  base::FilePath install_path;
   if (!GetChromeInstallDirectory(
       system_level, &install_path)) {
     LOG(ERROR) << "Could not find Chrome install directory";
@@ -190,7 +190,7 @@ bool LaunchChrome(bool close_after_launch, bool system_level) {
   install_path = install_path.Append(installer::kChromeExe);
   CommandLine browser(install_path);
 
-  FilePath exe = browser.GetProgram();
+  base::FilePath exe = browser.GetProgram();
   LOG(INFO) << "Browser launch command: " << browser.GetCommandLineString();
   base::ProcessHandle chrome;
   if (!base::LaunchProcess(browser, base::LaunchOptions(), &chrome)) {
@@ -207,7 +207,7 @@ bool LaunchChrome(bool close_after_launch, bool system_level) {
 }
 
 bool LaunchIE(const std::string& url) {
-  FilePath browser_path;
+  base::FilePath browser_path;
   PathService::Get(base::DIR_PROGRAM_FILES, &browser_path);
   browser_path = browser_path.Append(mini_installer_constants::kIELocation);
   browser_path = browser_path.Append(mini_installer_constants::kIEProcessName);

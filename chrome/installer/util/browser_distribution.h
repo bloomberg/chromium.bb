@@ -64,7 +64,7 @@ class BrowserDistribution {
   Type GetType() const { return type_; }
 
   virtual void DoPostUninstallOperations(const Version& version,
-                                         const FilePath& local_data_path,
+                                         const base::FilePath& local_data_path,
                                          const string16& distribution_data);
 
   // Returns the GUID to be used when registering for Active Setup.
@@ -154,7 +154,7 @@ class BrowserDistribution {
   // After an install or upgrade the user might qualify to participate in an
   // experiment. This function determines if the user qualifies and if so it
   // sets the wheels in motion or in simple cases does the experiment itself.
-  virtual void LaunchUserExperiment(const FilePath& setup_path,
+  virtual void LaunchUserExperiment(const base::FilePath& setup_path,
                                     installer::InstallStatus status,
                                     const Version& version,
                                     const installer::Product& product,
@@ -165,7 +165,7 @@ class BrowserDistribution {
   virtual void InactiveUserToastExperiment(int flavor,
       const string16& experiment_group,
       const installer::Product& installation,
-      const FilePath& application_path);
+      const base::FilePath& application_path);
 
   // Returns true if this distribution should set the Omaha experiment_labels
   // registry value.

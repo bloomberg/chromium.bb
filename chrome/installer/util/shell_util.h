@@ -83,7 +83,7 @@ class ShellUtil {
 
     // Sets the target executable to launch from this shortcut.
     // This is mandatory when creating a shortcut.
-    void set_target(const FilePath& target_in) {
+    void set_target(const base::FilePath& target_in) {
       target = target_in;
       options |= PROPERTIES_TARGET;
     }
@@ -111,7 +111,7 @@ class ShellUtil {
 
     // Sets the path to the icon (icon_index set to 0).
     // icon index unless otherwise specified in master_preferences).
-    void set_icon(const FilePath& icon_in, int icon_index_in) {
+    void set_icon(const base::FilePath& icon_in, int icon_index_in) {
       icon = icon_in;
       icon_index = icon_index_in;
       options |= PROPERTIES_ICON;
@@ -179,10 +179,10 @@ class ShellUtil {
     // shortcut and SYSTEM_LEVEL for an all-users shortcut).
     ShellChange level;
 
-    FilePath target;
+    base::FilePath target;
     string16 arguments;
     string16 description;
-    FilePath icon;
+    base::FilePath icon;
     int icon_index;
     string16 app_id;
     string16 shortcut_name;
@@ -301,7 +301,7 @@ class ShellUtil {
   static bool GetShortcutPath(ShellUtil::ShortcutLocation location,
                               BrowserDistribution* dist,
                               ShellChange level,
-                              FilePath* path);
+                              base::FilePath* path);
 
   // Updates shortcut in |location| (or creates it if |options| specify
   // SHELL_SHORTCUT_CREATE_ALWAYS).
@@ -511,7 +511,7 @@ class ShellUtil {
   // none at |location| pointing to |target_exe|).
   static bool RemoveShortcut(ShellUtil::ShortcutLocation location,
                              BrowserDistribution* dist,
-                             const FilePath& target_exe,
+                             const base::FilePath& target_exe,
                              ShellChange level,
                              const string16* shortcut_name);
 

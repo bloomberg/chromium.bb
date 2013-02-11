@@ -56,7 +56,7 @@ class DriveOperations {
 
   // Wrapper function for create_directory_operation_.
   // |callback| must not be null.
-  void CreateDirectory(const FilePath& directory_path,
+  void CreateDirectory(const base::FilePath& directory_path,
                        bool is_exclusive,
                        bool is_recursive,
                        const FileOperationCallback& callback);

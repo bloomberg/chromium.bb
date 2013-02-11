@@ -18,7 +18,7 @@ TEST(LoggingInstallerTest, TestTruncate) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  FilePath temp_file = temp_dir.path().Append(L"temp");
+  base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
   ASSERT_TRUE(file_util::PathExists(temp_file));
@@ -43,7 +43,7 @@ TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  FilePath temp_file = temp_dir.path().Append(L"temp");
+  base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
   ASSERT_TRUE(file_util::PathExists(temp_file));
@@ -65,7 +65,7 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  FilePath temp_file = temp_dir.path().Append(L"temp");
+  base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
   ASSERT_TRUE(file_util::PathExists(temp_file));
@@ -94,7 +94,7 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  FilePath temp_file = temp_dir.path().Append(L"temp");
+  base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
   ASSERT_TRUE(file_util::PathExists(temp_file));
@@ -107,7 +107,8 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
   const int file_flags = base::PLATFORM_FILE_CREATE |
                          base::PLATFORM_FILE_READ |
                          base::PLATFORM_FILE_EXCLUSIVE_READ;
-  FilePath temp_file_move_dest(temp_file.value() + FILE_PATH_LITERAL(".tmp"));
+  base::FilePath temp_file_move_dest(
+      temp_file.value() + FILE_PATH_LITERAL(".tmp"));
   base::win::ScopedHandle temp_move_destination_file(
       base::CreatePlatformFile(temp_file_move_dest, file_flags, NULL, NULL));
   ASSERT_TRUE(temp_move_destination_file.IsValid());

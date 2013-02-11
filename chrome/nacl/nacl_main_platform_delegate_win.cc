@@ -36,7 +36,7 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
       parameters_.sandbox_info->target_services;
 
   if (target_services && !no_sandbox) {
-    FilePath test_dll_name =
+    base::FilePath test_dll_name =
       command_line.GetSwitchValuePath(switches::kTestNaClSandbox);
     if (!test_dll_name.empty()) {
       // At this point, hack on the suffix according to with bitness

@@ -286,7 +286,7 @@ struct InitiateUploadParams {
                        const std::string& content_type,
                        int64 content_length,
                        const GURL& upload_location,
-                       const FilePath& drive_file_path,
+                       const base::FilePath& drive_file_path,
                        const std::string& etag);
   ~InitiateUploadParams();
 
@@ -295,7 +295,7 @@ struct InitiateUploadParams {
   const std::string content_type;
   const int64 content_length;
   const GURL upload_location;
-  const FilePath drive_file_path;
+  const base::FilePath drive_file_path;
   const std::string etag;
 };
 
@@ -325,7 +325,7 @@ class InitiateUploadOperationBase : public UrlFetchOperationBase {
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const InitiateUploadCallback& callback,
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length);
   virtual ~InitiateUploadOperationBase();
@@ -338,7 +338,7 @@ class InitiateUploadOperationBase : public UrlFetchOperationBase {
 
  private:
   const InitiateUploadCallback callback_;
-  const FilePath drive_file_path_;
+  const base::FilePath drive_file_path_;
   const std::string content_type_;
   const int64 content_length_;
 

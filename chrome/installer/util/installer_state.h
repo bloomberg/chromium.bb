@@ -119,7 +119,7 @@ class InstallerState {
   }
 
   // The full path to the place where the operand resides.
-  const FilePath& target_path() const { return target_path_; }
+  const base::FilePath& target_path() const { return target_path_; }
 
   // True if the "msi" preference is set or if a product with the "msi" state
   // flag is set is to be operated on.
@@ -172,18 +172,18 @@ class InstallerState {
 
   // Returns the path to the installer under Chrome version folder
   // (for example <target_path>\Google\Chrome\Application\<Version>\Installer)
-  FilePath GetInstallerDirectory(const Version& version) const;
+  base::FilePath GetInstallerDirectory(const Version& version) const;
 
   // Try to delete all directories under |temp_path| whose versions are less
   // than |new_version| and not equal to |existing_version|. |existing_version|
   // may be NULL.
   void RemoveOldVersionDirectories(const Version& new_version,
                                    Version* existing_version,
-                                   const FilePath& temp_path) const;
+                                   const base::FilePath& temp_path) const;
 
   // Adds to |com_dll_list| the list of COM DLLs that are to be registered
   // and/or unregistered. The list may be empty.
-  void AddComDllList(std::vector<FilePath>* com_dll_list) const;
+  void AddComDllList(std::vector<base::FilePath>* com_dll_list) const;
 
   bool SetChannelFlags(bool set, ChannelInfo* channel_info) const;
 
@@ -211,11 +211,12 @@ class InstallerState {
  protected:
   // Returns true if |file| exists and cannot be opened for exclusive write
   // access.
-  static bool IsFileInUse(const FilePath& file);
+  static bool IsFileInUse(const base::FilePath& file);
 
-  FilePath GetDefaultProductInstallPath(BrowserDistribution* dist) const;
-  bool CanAddProduct(const Product& product, const FilePath* product_dir) const;
-  Product* AddProductInDirectory(const FilePath* product_dir,
+  base::FilePath GetDefaultProductInstallPath(BrowserDistribution* dist) const;
+  bool CanAddProduct(const Product& product,
+                     const base::FilePath* product_dir) const;
+  Product* AddProductInDirectory(const base::FilePath* product_dir,
                                  scoped_ptr<Product>* product);
   Product* AddProductFromPreferences(
       BrowserDistribution::Type distribution_type,
@@ -237,7 +238,7 @@ class InstallerState {
   void set_package_type(PackageType type);
 
   Operation operation_;
-  FilePath target_path_;
+  base::FilePath target_path_;
   std::wstring state_key_;
   BrowserDistribution::Type state_type_;
   ScopedVector<Product> products_;

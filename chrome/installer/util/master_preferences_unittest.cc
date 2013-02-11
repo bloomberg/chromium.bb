@@ -27,10 +27,10 @@ class MasterPreferencesTest : public testing::Test {
     EXPECT_TRUE(file_util::Delete(prefs_file_, false));
   }
 
-  const FilePath& prefs_file() const { return prefs_file_; }
+  const base::FilePath& prefs_file() const { return prefs_file_; }
 
  private:
-  FilePath prefs_file_;
+  base::FilePath prefs_file_;
 };
 
 // Used to specify an expected value for a set boolean preference variable.
@@ -205,7 +205,7 @@ TEST_F(MasterPreferencesTest, FirstRunTabs) {
 // they change something in the manifest this test will break, but in
 // general it is expected the extension format to be backwards compatible.
 TEST(MasterPrefsExtension, ValidateExtensionJSON) {
-  FilePath prefs_path;
+  base::FilePath prefs_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &prefs_path));
   prefs_path = prefs_path.AppendASCII("extensions")
       .AppendASCII("good").AppendASCII("Preferences");
@@ -236,7 +236,7 @@ TEST(MasterPrefsExtension, ValidateExtensionJSON) {
 // Test that we are parsing master preferences correctly.
 TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   // Create a temporary prefs file.
-  FilePath prefs_file;
+  base::FilePath prefs_file;
   ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
   const char text[] =
     "{ \n"

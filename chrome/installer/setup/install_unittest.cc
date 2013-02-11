@@ -59,10 +59,10 @@ class CreateVisualElementsManifestTest : public testing::Test {
   Version version_;
 
   // The path to |test_dir_|\|version_|.
-  FilePath version_dir_;
+  base::FilePath version_dir_;
 
   // The path to VisualElementsManifest.xml.
-  FilePath manifest_path_;
+  base::FilePath manifest_path_;
 };
 
 class InstallShortcutTest : public testing::Test {
@@ -181,7 +181,7 @@ class InstallShortcutTest : public testing::Test {
   base::win::ShortcutProperties expected_start_menu_properties_;
 
   BrowserDistribution* dist_;
-  FilePath chrome_exe_;
+  base::FilePath chrome_exe_;
   scoped_ptr<installer::Product> product_;
   scoped_ptr<installer::MasterPreferences> prefs_;
 
@@ -199,13 +199,13 @@ class InstallShortcutTest : public testing::Test {
   scoped_ptr<base::ScopedPathOverride> start_menu_override_;
   scoped_ptr<base::ScopedPathOverride> common_start_menu_override_;
 
-  FilePath user_desktop_shortcut_;
-  FilePath user_quick_launch_shortcut_;
-  FilePath user_start_menu_shortcut_;
-  FilePath system_desktop_shortcut_;
-  FilePath system_quick_launch_shortcut_;
-  FilePath system_start_menu_shortcut_;
-  FilePath user_alternate_desktop_shortcut_;
+  base::FilePath user_desktop_shortcut_;
+  base::FilePath user_quick_launch_shortcut_;
+  base::FilePath user_start_menu_shortcut_;
+  base::FilePath system_desktop_shortcut_;
+  base::FilePath system_quick_launch_shortcut_;
+  base::FilePath system_start_menu_shortcut_;
+  base::FilePath user_alternate_desktop_shortcut_;
 };
 
 }  // namespace
@@ -310,7 +310,7 @@ TEST_F(InstallShortcutTest, CreateAllShortcutsButQuickLaunchShortcut) {
 
 TEST_F(InstallShortcutTest, ReplaceAll) {
   base::win::ShortcutProperties dummy_properties;
-  FilePath dummy_target;
+  base::FilePath dummy_target;
   ASSERT_TRUE(
       file_util::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
   dummy_properties.set_target(dummy_target);
@@ -341,7 +341,7 @@ TEST_F(InstallShortcutTest, ReplaceAll) {
 
 TEST_F(InstallShortcutTest, ReplaceExisting) {
   base::win::ShortcutProperties dummy_properties;
-  FilePath dummy_target;
+  base::FilePath dummy_target;
   ASSERT_TRUE(
       file_util::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
   dummy_properties.set_target(dummy_target);
@@ -364,7 +364,7 @@ TEST_F(InstallShortcutTest, ReplaceExisting) {
 
 TEST_F(InstallShortcutTest, CreateIfNoSystemLevelAllSystemShortcutsExist) {
   base::win::ShortcutProperties dummy_properties;
-  FilePath dummy_target;
+  base::FilePath dummy_target;
   ASSERT_TRUE(
       file_util::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
   dummy_properties.set_target(dummy_target);
@@ -402,7 +402,7 @@ TEST_F(InstallShortcutTest, CreateIfNoSystemLevelNoSystemShortcutsExist) {
 
 TEST_F(InstallShortcutTest, CreateIfNoSystemLevelSomeSystemShortcutsExist) {
   base::win::ShortcutProperties dummy_properties;
-  FilePath dummy_target;
+  base::FilePath dummy_target;
   ASSERT_TRUE(
       file_util::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
   dummy_properties.set_target(dummy_target);

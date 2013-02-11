@@ -35,24 +35,24 @@ class DuplicateTreeDetectorTest : public testing::Test {
 
   // Creates a two level deep source dir with a file in each in |first_root| and
   // copy it (files properties will be identical) in |second_root|.
-  void CreateTwoIdenticalHierarchies(const FilePath& first_root,
-                                     const FilePath& second_root) {
-    FilePath d1(first_root);
+  void CreateTwoIdenticalHierarchies(const base::FilePath& first_root,
+                                     const base::FilePath& second_root) {
+    base::FilePath d1(first_root);
     d1 = d1.AppendASCII("D1");
     file_util::CreateDirectory(d1);
     ASSERT_TRUE(file_util::PathExists(d1));
 
-    FilePath f1(d1);
+    base::FilePath f1(d1);
     f1 = f1.AppendASCII("F1");
     CreateTextFile(f1.MaybeAsASCII(), text_content_1_);
     ASSERT_TRUE(file_util::PathExists(f1));
 
-    FilePath d2(d1);
+    base::FilePath d2(d1);
     d2 = d2.AppendASCII("D2");
     file_util::CreateDirectory(d2);
     ASSERT_TRUE(file_util::PathExists(d2));
 
-    FilePath f2(d2);
+    base::FilePath f2(d2);
     f2 = f2.AppendASCII("F2");
     CreateTextFile(f2.MaybeAsASCII(), text_content_2_);
     ASSERT_TRUE(file_util::PathExists(f2));
@@ -91,7 +91,7 @@ TEST_F(DuplicateTreeDetectorTest, TestIdenticalDirs) {
 TEST_F(DuplicateTreeDetectorTest, TestSourceContainsDest) {
   CreateTwoIdenticalHierarchies(temp_source_dir_.path(), temp_dest_dir_.path());
 
-  FilePath new_file(temp_source_dir_.path());
+  base::FilePath new_file(temp_source_dir_.path());
   new_file = new_file.AppendASCII("FNew");
   CreateTextFile(new_file.MaybeAsASCII(), text_content_1_);
   ASSERT_TRUE(file_util::PathExists(new_file));
@@ -105,7 +105,7 @@ TEST_F(DuplicateTreeDetectorTest, TestSourceContainsDest) {
 TEST_F(DuplicateTreeDetectorTest, TestDestContainsSource) {
   CreateTwoIdenticalHierarchies(temp_source_dir_.path(), temp_dest_dir_.path());
 
-  FilePath new_file(temp_dest_dir_.path());
+  base::FilePath new_file(temp_dest_dir_.path());
   new_file = new_file.AppendASCII("FNew");
   CreateTextFile(new_file.MaybeAsASCII(), text_content_1_);
   ASSERT_TRUE(file_util::PathExists(new_file));
@@ -118,7 +118,7 @@ TEST_F(DuplicateTreeDetectorTest, TestDestContainsSource) {
 TEST_F(DuplicateTreeDetectorTest, TestIdenticalDirsDifferentFiles) {
   CreateTwoIdenticalHierarchies(temp_source_dir_.path(), temp_dest_dir_.path());
 
-  FilePath existing_file(temp_dest_dir_.path());
+  base::FilePath existing_file(temp_dest_dir_.path());
   existing_file = existing_file.AppendASCII("D1")
                                .AppendASCII("D2")
                                .AppendASCII("F2");
@@ -137,17 +137,17 @@ TEST_F(DuplicateTreeDetectorTest, TestEmptyDirs) {
 // Test on single files.
 TEST_F(DuplicateTreeDetectorTest, TestSingleFiles) {
   // Create a source file.
-  FilePath source_file(temp_source_dir_.path());
+  base::FilePath source_file(temp_source_dir_.path());
   source_file = source_file.AppendASCII("F1");
   CreateTextFile(source_file.MaybeAsASCII(), text_content_1_);
 
   // This file should be the same.
-  FilePath dest_file(temp_dest_dir_.path());
+  base::FilePath dest_file(temp_dest_dir_.path());
   dest_file = dest_file.AppendASCII("F1");
   ASSERT_TRUE(installer::test::CopyFileHierarchy(source_file, dest_file));
 
   // This file should be different.
-  FilePath other_file(temp_dest_dir_.path());
+  base::FilePath other_file(temp_dest_dir_.path());
   other_file = other_file.AppendASCII("F2");
   CreateTextFile(other_file.MaybeAsASCII(), text_content_2_);
 

@@ -143,7 +143,7 @@ class TestLogCollector {
   scoped_ptr<FileLogger> file_logger_;
 
   // The current log file.  Valid only during a test.
-  FilePath log_file_;
+  base::FilePath log_file_;
 
   // True if --also-emit-success-logs was specified on the command line.
   bool also_emit_success_logs_;

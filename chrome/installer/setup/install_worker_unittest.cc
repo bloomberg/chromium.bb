@@ -56,15 +56,16 @@ class MockWorkItemList : public WorkItemList {
                                               const std::wstring&,
                                               CopyOverWriteOption,
                                               const std::wstring&));
-  MOCK_METHOD1(AddCreateDirWorkItem, WorkItem* (const FilePath&));
+  MOCK_METHOD1(AddCreateDirWorkItem, WorkItem* (const base::FilePath&));
   MOCK_METHOD2(AddCreateRegKeyWorkItem, WorkItem* (HKEY, const std::wstring&));
   MOCK_METHOD2(AddDeleteRegKeyWorkItem, WorkItem* (HKEY, const std::wstring&));
   MOCK_METHOD3(AddDeleteRegValueWorkItem, WorkItem* (HKEY,
                                                      const std::wstring&,
                                                      const std::wstring&));
-  MOCK_METHOD2(AddDeleteTreeWorkItem, WorkItem* (const FilePath&,
-                                                 const std::vector<FilePath>&));
-  MOCK_METHOD1(AddDeleteTreeWorkItem, WorkItem* (const FilePath&));
+  MOCK_METHOD2(AddDeleteTreeWorkItem, WorkItem* (
+      const base::FilePath&,
+      const std::vector<base::FilePath>&));
+  MOCK_METHOD1(AddDeleteTreeWorkItem, WorkItem* (const base::FilePath&));
   MOCK_METHOD3(AddMoveTreeWorkItem, WorkItem* (const std::wstring&,
                                                const std::wstring&,
                                                const std::wstring&));
@@ -117,7 +118,7 @@ class MockProductState : public ProductState {
     oem_install_ = oem_install;
   }
   void clear_oem_install() { has_oem_install_ = false; }
-  void SetUninstallProgram(const FilePath& setup_exe) {
+  void SetUninstallProgram(const base::FilePath& setup_exe) {
     uninstall_command_ = CommandLine(setup_exe);
   }
   void AddUninstallSwitch(const std::string& option) {
@@ -172,14 +173,17 @@ class InstallWorkerTest : public testing::Test {
     // Don't bother ensuring that these paths exist. Since we're just
     // building the work item lists and not running them, they shouldn't
     // actually be touched.
-    archive_path_ = FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123\\chrome.7z");
+    archive_path_ =
+        base::FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123\\chrome.7z");
     // TODO(robertshield): Take this from the BrowserDistribution once that
     // no longer depends on MasterPreferences.
-    installation_path_ = FilePath(L"C:\\Program Files\\Google\\Chrome\\");
-    src_path_ =
-        FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123\\source\\Chrome-bin");
-    setup_path_ = FilePath(L"C:\\UnlikelyPath\\Temp\\CR_123.tmp\\setup.exe");
-    temp_dir_ = FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123");
+    installation_path_ =
+        base::FilePath(L"C:\\Program Files\\Google\\Chrome\\");
+    src_path_ = base::FilePath(
+        L"C:\\UnlikelyPath\\Temp\\chrome_123\\source\\Chrome-bin");
+    setup_path_ = base::FilePath(
+        L"C:\\UnlikelyPath\\Temp\\CR_123.tmp\\setup.exe");
+    temp_dir_ = base::FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123");
   }
 
   virtual void TearDown() {
@@ -197,7 +201,7 @@ class InstallWorkerTest : public testing::Test {
       BrowserDistribution* dist =
           BrowserDistribution::GetSpecificDistribution(
               BrowserDistribution::CHROME_BINARIES);
-      FilePath install_path =
+      base::FilePath install_path =
           installer::GetChromeInstallPath(system_level, dist);
       product_state.SetUninstallProgram(
           install_path.AppendASCII(current_version_->GetString())
@@ -228,7 +232,7 @@ class InstallWorkerTest : public testing::Test {
     BrowserDistribution* dist =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER);
-    FilePath install_path =
+    base::FilePath install_path =
         installer::GetChromeInstallPath(system_level, dist);
     product_state.SetUninstallProgram(
       install_path.AppendASCII(current_version_->GetString())
@@ -266,7 +270,7 @@ class InstallWorkerTest : public testing::Test {
         BrowserDistribution::GetSpecificDistribution(
             multi_install ? BrowserDistribution::CHROME_BINARIES :
                 BrowserDistribution::CHROME_FRAME);
-    FilePath install_path =
+    base::FilePath install_path =
         installer::GetChromeInstallPath(system_level, dist);
     product_state.SetUninstallProgram(
       install_path.AppendASCII(current_version_->GetString())
@@ -434,11 +438,11 @@ class InstallWorkerTest : public testing::Test {
  protected:
   scoped_ptr<Version> current_version_;
   scoped_ptr<Version> new_version_;
-  FilePath archive_path_;
-  FilePath installation_path_;
-  FilePath setup_path_;
-  FilePath src_path_;
-  FilePath temp_dir_;
+  base::FilePath archive_path_;
+  base::FilePath installation_path_;
+  base::FilePath setup_path_;
+  base::FilePath src_path_;
+  base::FilePath temp_dir_;
 };
 
 // Tests

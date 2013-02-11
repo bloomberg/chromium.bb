@@ -58,8 +58,9 @@ namespace {
 // reboot.  Don't report that a reboot is required in this case, however.
 // TODO(erikwright): Shouldn't this still lead to
 // ScheduleParentAndGrandparentForDeletion?
-void DeleteInstallTempDir(const FilePath& target_path) {
-  FilePath temp_path(target_path.DirName().Append(installer::kInstallTempDir));
+void DeleteInstallTempDir(const base::FilePath& target_path) {
+  base::FilePath temp_path(target_path.DirName().Append(
+      installer::kInstallTempDir));
   if (file_util::DirectoryExists(temp_path)) {
     installer::SelfCleaningTempDir temp_dir;
     if (!temp_dir.Initialize(target_path.DirName(),
@@ -149,7 +150,7 @@ void ProcessOnOsUpgradeWorkItems(
     const installer::Product& product) {
   scoped_ptr<WorkItemList> work_item_list(
       WorkItem::CreateNoRollbackWorkItemList());
-  AddOsUpgradeWorkItems(installer_state, FilePath(), Version(), product,
+  AddOsUpgradeWorkItems(installer_state, base::FilePath(), Version(), product,
                         work_item_list.get());
   if (!work_item_list->Do())
     LOG(ERROR) << "Failed to remove on-os-upgrade command.";
@@ -163,7 +164,8 @@ void ProcessQuickEnableWorkItems(
   scoped_ptr<WorkItemList> work_item_list(
       WorkItem::CreateNoRollbackWorkItemList());
 
-  AddQuickEnableChromeFrameWorkItems(installer_state, machine_state, FilePath(),
+  AddQuickEnableChromeFrameWorkItems(installer_state, machine_state,
+                                     base::FilePath(),
                                      Version(), work_item_list.get());
 
   if (!work_item_list->Do())
@@ -247,7 +249,7 @@ void CheckShouldRemoveSetupAndArchive(
 // Removes all files from the installer directory, leaving setup.exe iff
 // |remove_setup| is false.
 // Returns false in case of an error.
-bool RemoveInstallerFiles(const FilePath& installer_directory,
+bool RemoveInstallerFiles(const base::FilePath& installer_directory,
                           bool remove_setup) {
   using file_util::FileEnumerator;
   FileEnumerator file_enumerator(
@@ -256,10 +258,10 @@ bool RemoveInstallerFiles(const FilePath& installer_directory,
       FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
   bool success = true;
 
-  FilePath setup_exe_base_name(installer::kSetupExe);
+  base::FilePath setup_exe_base_name(installer::kSetupExe);
 
   while (true) {
-    FilePath to_delete(file_enumerator.Next());
+    base::FilePath to_delete(file_enumerator.Next());
     if (to_delete.empty())
       break;
     if (!remove_setup && to_delete.BaseName() == setup_exe_base_name)
@@ -328,7 +330,7 @@ void CloseChromeFrameHelperProcess() {
 // Only shortcuts pointing to |target_exe| will be removed.
 void DeleteShortcuts(const InstallerState& installer_state,
                      const Product& product,
-                     const FilePath& target_exe) {
+                     const base::FilePath& target_exe) {
   BrowserDistribution* dist = product.distribution();
 
   // The per-user shortcut for this user, if present on a system-level install,
@@ -373,14 +375,14 @@ void DeleteShortcuts(const InstallerState& installer_state,
                                         target_exe.value());
 }
 
-bool ScheduleParentAndGrandparentForDeletion(const FilePath& path) {
-  FilePath parent_dir = path.DirName();
+bool ScheduleParentAndGrandparentForDeletion(const base::FilePath& path) {
+  base::FilePath parent_dir = path.DirName();
   bool ret = ScheduleFileSystemEntityForDeletion(parent_dir.value().c_str());
   if (!ret) {
     LOG(ERROR) << "Failed to schedule parent dir for deletion: "
                << parent_dir.value();
   } else {
-    FilePath grandparent_dir(parent_dir.DirName());
+    base::FilePath grandparent_dir(parent_dir.DirName());
     ret = ScheduleFileSystemEntityForDeletion(grandparent_dir.value().c_str());
     if (!ret) {
       LOG(ERROR) << "Failed to schedule grandparent dir for deletion: "
@@ -400,7 +402,7 @@ enum DeleteResult {
 // Deletes the given directory if it is empty. Returns DELETE_SUCCEEDED if the
 // directory is deleted, DELETE_NOT_EMPTY if it is not empty, and DELETE_FAILED
 // otherwise.
-DeleteResult DeleteEmptyDir(const FilePath& path) {
+DeleteResult DeleteEmptyDir(const base::FilePath& path) {
   if (!file_util::IsDirectoryEmpty(path))
     return DELETE_NOT_EMPTY;
 
@@ -412,7 +414,7 @@ DeleteResult DeleteEmptyDir(const FilePath& path) {
 }
 
 void GetLocalStateFolders(const Product& product,
-                          std::vector<FilePath>* paths) {
+                          std::vector<base::FilePath>* paths) {
   // Obtain the location of the user profile data.
   product.GetUserDataPaths(paths);
   LOG_IF(ERROR, paths->empty())
@@ -421,13 +423,14 @@ void GetLocalStateFolders(const Product& product,
 
 // Creates a copy of the local state file and returns a path to the copy.
 FilePath BackupLocalStateFile(
-    const std::vector<FilePath>& local_state_folders) {
-  FilePath backup;
+    const std::vector<base::FilePath>& local_state_folders) {
+  base::FilePath backup;
 
   // Copy the first local state file that is found.
   for (size_t i = 0; i < local_state_folders.size(); ++i) {
-    const FilePath& local_state_folder = local_state_folders[i];
-    FilePath state_file(local_state_folder.Append(chrome::kLocalStateFilename));
+    const base::FilePath& local_state_folder = local_state_folders[i];
+    base::FilePath state_file(
+        local_state_folder.Append(chrome::kLocalStateFilename));
     if (!file_util::PathExists(state_file))
       continue;
     if (!file_util::CreateTemporaryFile(&backup))
@@ -440,14 +443,15 @@ FilePath BackupLocalStateFile(
 }
 
 // Deletes all user data directories for a product.
-DeleteResult DeleteLocalState(const std::vector<FilePath>& local_state_folders,
-                              bool schedule_on_failure) {
+DeleteResult DeleteLocalState(
+    const std::vector<base::FilePath>& local_state_folders,
+    bool schedule_on_failure) {
   if (local_state_folders.empty())
     return DELETE_SUCCEEDED;
 
   DeleteResult result = DELETE_SUCCEEDED;
   for (size_t i = 0; i < local_state_folders.size(); ++i) {
-    const FilePath& user_local_state = local_state_folders[i];
+    const base::FilePath& user_local_state = local_state_folders[i];
     VLOG(1) << "Deleting user profile " << user_local_state.value();
     if (!file_util::Delete(user_local_state, true)) {
       LOG(ERROR) << "Failed to delete user profile dir: "
@@ -464,10 +468,10 @@ DeleteResult DeleteLocalState(const std::vector<FilePath>& local_state_folders,
   if (result == DELETE_REQUIRES_REBOOT) {
     ScheduleParentAndGrandparentForDeletion(local_state_folders[0]);
   } else {
-    const FilePath user_data_dir(local_state_folders[0].DirName());
+    const base::FilePath user_data_dir(local_state_folders[0].DirName());
     if (!user_data_dir.empty() &&
         DeleteEmptyDir(user_data_dir) == DELETE_SUCCEEDED) {
-      const FilePath product_dir(user_data_dir.DirName());
+      const base::FilePath product_dir(user_data_dir.DirName());
       if (!product_dir.empty())
         DeleteEmptyDir(product_dir);
     }
@@ -481,10 +485,10 @@ DeleteResult DeleteLocalState(const std::vector<FilePath>& local_state_folders,
 // process has a handle to its CWD. If setup.exe's CWD happens to be within the
 // install directory, deletion will fail as a result of the open handle.
 bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
-                                 const FilePath& setup_exe) {
+                                 const base::FilePath& setup_exe) {
   bool ret = false;
-  FilePath tmp_dir;
-  FilePath temp_file;
+  base::FilePath tmp_dir;
+  base::FilePath temp_file;
   if (!PathService::Get(base::DIR_TEMP, &tmp_dir)) {
     NOTREACHED();
   } else if (!file_util::CreateTemporaryFileInDir(tmp_dir, &temp_file)) {
@@ -509,16 +513,16 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
 }
 
 DeleteResult DeleteApplicationProductAndVendorDirectories(
-    const FilePath& application_directory) {
+    const base::FilePath& application_directory) {
   DeleteResult result(DeleteEmptyDir(application_directory));
   if (result == DELETE_SUCCEEDED) {
     // Now check and delete if the parent directories are empty
     // For example Google\Chrome or Chromium
-    const FilePath product_directory(application_directory.DirName());
+    const base::FilePath product_directory(application_directory.DirName());
     if (!product_directory.empty()) {
         result = DeleteEmptyDir(product_directory);
         if (result == DELETE_SUCCEEDED) {
-          const FilePath vendor_directory(product_directory.DirName());
+          const base::FilePath vendor_directory(product_directory.DirName());
           if (!vendor_directory.empty())
             result = DeleteEmptyDir(vendor_directory);
         }
@@ -531,7 +535,7 @@ DeleteResult DeleteApplicationProductAndVendorDirectories(
 
 DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
                                           const Version& installed_version) {
-  const FilePath& target_path = installer_state.target_path();
+  const base::FilePath& target_path = installer_state.target_path();
   if (target_path.empty()) {
     LOG(ERROR) << "DeleteAppHostFilesAndFolders: no installation destination "
                << "path.";
@@ -542,7 +546,7 @@ DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
 
   DeleteResult result = DELETE_SUCCEEDED;
 
-  FilePath app_host_exe(target_path.Append(installer::kChromeAppHostExe));
+  base::FilePath app_host_exe(target_path.Append(installer::kChromeAppHostExe));
   if (!file_util::Delete(app_host_exe, false)) {
     result = DELETE_FAILED;
     LOG(ERROR) << "Failed to delete path: " << app_host_exe.value();
@@ -552,8 +556,8 @@ DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
 }
 
 DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
-                                         const FilePath& setup_exe) {
-  const FilePath& target_path = installer_state.target_path();
+                                         const base::FilePath& setup_exe) {
+  const base::FilePath& target_path = installer_state.target_path();
   if (target_path.empty()) {
     LOG(ERROR) << "DeleteChromeFilesAndFolders: no installation destination "
                << "path.";
@@ -564,7 +568,7 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
 
   DeleteResult result = DELETE_SUCCEEDED;
 
-  FilePath installer_directory;
+  base::FilePath installer_directory;
   if (target_path.IsParent(setup_exe))
     installer_directory = setup_exe.DirName();
 
@@ -577,7 +581,7 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
   FileEnumerator file_enumerator(
       target_path, true, FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
   while (true) {
-    FilePath to_delete(file_enumerator.Next());
+    base::FilePath to_delete(file_enumerator.Next());
     if (to_delete.empty())
       break;
     if (to_delete.BaseName().value() == installer::kChromeAppHostExe)
@@ -685,7 +689,7 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
                                 HKEY root,
                                 const string16& browser_entry_suffix) {
   string16 classes_path(ShellUtil::kRegClasses);
-  classes_path.push_back(FilePath::kSeparators[0]);
+  classes_path.push_back(base::FilePath::kSeparators[0]);
 
   const string16 prog_id(ShellUtil::kChromeHTMLProgId + browser_entry_suffix);
 
@@ -756,7 +760,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
     return true;
   }
 
-  FilePath chrome_exe(installer_state.target_path().Append(kChromeExe));
+  base::FilePath chrome_exe(installer_state.target_path().Append(kChromeExe));
 
   // Delete Software\Classes\ChromeHTML.
   // For user-level installs we now only write these entries in HKCU, but since
@@ -764,13 +768,13 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   // well anyways.
   const string16 prog_id(ShellUtil::kChromeHTMLProgId + browser_entry_suffix);
   string16 reg_prog_id(ShellUtil::kRegClasses);
-  reg_prog_id.push_back(FilePath::kSeparators[0]);
+  reg_prog_id.push_back(base::FilePath::kSeparators[0]);
   reg_prog_id.append(prog_id);
   InstallUtil::DeleteRegistryKey(root, reg_prog_id);
 
   // Delete Software\Classes\Chrome (Same comment as above applies for this too)
   string16 reg_app_id(ShellUtil::kRegClasses);
-  reg_app_id.push_back(FilePath::kSeparators[0]);
+  reg_app_id.push_back(base::FilePath::kSeparators[0]);
   // Append the requested suffix manually here (as ShellUtil::GetBrowserModelId
   // would otherwise try to figure out the currently installed suffix).
   reg_app_id.append(dist->GetBaseAppId() + browser_entry_suffix);
@@ -818,14 +822,14 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   // Delete the App Paths and Applications keys that let Explorer find Chrome:
   // http://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
   string16 app_key(ShellUtil::kRegClasses);
-  app_key.push_back(FilePath::kSeparators[0]);
+  app_key.push_back(base::FilePath::kSeparators[0]);
   app_key.append(L"Applications");
-  app_key.push_back(FilePath::kSeparators[0]);
+  app_key.push_back(base::FilePath::kSeparators[0]);
   app_key.append(installer::kChromeExe);
   InstallUtil::DeleteRegistryKey(root, app_key);
 
   string16 app_path_key(ShellUtil::kAppPathsRegistryKey);
-  app_path_key.push_back(FilePath::kSeparators[0]);
+  app_path_key.push_back(base::FilePath::kSeparators[0]);
   app_path_key.append(installer::kChromeExe);
   InstallUtil::DeleteRegistryKey(root, app_path_key);
 
@@ -836,13 +840,13 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   string16 open_with_progids_key;
   for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; ++i) {
     file_assoc_key.assign(ShellUtil::kRegClasses);
-    file_assoc_key.push_back(FilePath::kSeparators[0]);
+    file_assoc_key.push_back(base::FilePath::kSeparators[0]);
     file_assoc_key.append(ShellUtil::kFileAssociations[i]);
-    file_assoc_key.push_back(FilePath::kSeparators[0]);
+    file_assoc_key.push_back(base::FilePath::kSeparators[0]);
 
     open_with_list_key.assign(file_assoc_key);
     open_with_list_key.append(L"OpenWithList");
-    open_with_list_key.push_back(FilePath::kSeparators[0]);
+    open_with_list_key.push_back(base::FilePath::kSeparators[0]);
     open_with_list_key.append(installer::kChromeExe);
     InstallUtil::DeleteRegistryKey(root, open_with_list_key);
 
@@ -864,7 +868,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   // Delete each protocol association if it references this Chrome.
   InstallUtil::ProgramCompare open_command_pred(chrome_exe);
   string16 parent_key(ShellUtil::kRegClasses);
-  parent_key.push_back(FilePath::kSeparators[0]);
+  parent_key.push_back(base::FilePath::kSeparators[0]);
   const string16::size_type base_length = parent_key.size();
   string16 child_key;
   for (const wchar_t* const* proto =
@@ -904,7 +908,7 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
 
     // Delete Software\Classes\ChromeExt,
     string16 ext_prog_id(ShellUtil::kRegClasses);
-    ext_prog_id.push_back(FilePath::kSeparators[0]);
+    ext_prog_id.push_back(base::FilePath::kSeparators[0]);
     ext_prog_id.append(kChromeExtProgId);
     ext_prog_id.append(suffix);
     InstallUtil::DeleteRegistryKey(roots[i], ext_prog_id);
@@ -924,8 +928,8 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
 bool ProcessDelegateExecuteWorkItems(const InstallerState& installer_state,
                                      const Product& product) {
   scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());
-  AddDelegateExecuteWorkItems(installer_state, FilePath(), Version(), product,
-                              item_list.get());
+  AddDelegateExecuteWorkItems(installer_state, base::FilePath(), Version(),
+                              product, item_list.get());
   return item_list->Do();
 }
 
@@ -1015,7 +1019,7 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
         LOG(ERROR) << "Error reading ProfileImagePath: " << result;
         continue;
       }
-      FilePath registry_hive_file(profile_path);
+      base::FilePath registry_hive_file(profile_path);
       registry_hive_file = registry_hive_file.AppendASCII("NTUSER.DAT");
 
       result = RegLoadKey(HKEY_USERS, profile_sid,
@@ -1054,7 +1058,7 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
 
 bool ProcessChromeFrameWorkItems(const InstallationState& original_state,
                                  const InstallerState& installer_state,
-                                 const FilePath& setup_path,
+                                 const base::FilePath& setup_path,
                                  const Product& product) {
   if (!product.is_chrome_frame())
     return false;
@@ -1067,7 +1071,7 @@ bool ProcessChromeFrameWorkItems(const InstallationState& original_state,
 
 InstallStatus UninstallProduct(const InstallationState& original_state,
                                const InstallerState& installer_state,
-                               const FilePath& setup_path,
+                               const base::FilePath& setup_path,
                                const Product& product,
                                bool remove_all,
                                bool force_uninstall,
@@ -1139,12 +1143,12 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     auto_launch_util::DisableAllAutoStartFeatures(
         ASCIIToUTF16(chrome::kInitialProfile));
 
-    DeleteShortcuts(installer_state, product, FilePath(chrome_exe));
+    DeleteShortcuts(installer_state, product, base::FilePath(chrome_exe));
 
   } else if (product.is_chrome_app_host()) {
     // TODO(huangs): Remove this check once we have system-level App Host.
     DCHECK(!installer_state.system_install());
-    const FilePath app_host_exe(
+    const base::FilePath app_host_exe(
         installer_state.target_path().Append(installer::kChromeAppHostExe));
     DeleteShortcuts(installer_state, product, app_host_exe);
   }
@@ -1260,7 +1264,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
       // We don't delete this key in SxS uninstall or Chrome Frame uninstall
       // as we never set the key for those products.
       string16 reg_path(installer::kMediaPlayerRegPath);
-      reg_path.push_back(FilePath::kSeparators[0]);
+      reg_path.push_back(base::FilePath::kSeparators[0]);
       reg_path.append(installer::kChromeExe);
       InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, reg_path);
     }
@@ -1268,9 +1272,9 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     // Unregister any dll servers that we may have registered for this
     // product.
     if (product_state != NULL) {
-      std::vector<FilePath> com_dll_list;
+      std::vector<base::FilePath> com_dll_list;
       product.AddComDllList(&com_dll_list);
-      FilePath dll_folder = installer_state.target_path().AppendASCII(
+      base::FilePath dll_folder = installer_state.target_path().AppendASCII(
           product_state->version().GetString());
 
       scoped_ptr<WorkItemList> unreg_work_item_list(
@@ -1307,15 +1311,15 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // When deleting files, we must make sure that we're either a "single"
   // (aka non-multi) installation or we are the Chrome Binaries.
 
-  std::vector<FilePath> local_state_folders;
+  std::vector<base::FilePath> local_state_folders;
   GetLocalStateFolders(product, &local_state_folders);
-  FilePath backup_state_file(BackupLocalStateFile(local_state_folders));
+  base::FilePath backup_state_file(BackupLocalStateFile(local_state_folders));
 
   if (product.is_chrome_app_host()) {
     DeleteAppHostFilesAndFolders(installer_state, product_state->version());
   } else if (!installer_state.is_multi_install() ||
              product.is_chrome_binaries()) {
-    FilePath setup_exe(cmd_line.GetProgram());
+    base::FilePath setup_exe(cmd_line.GetProgram());
     file_util::AbsolutePath(&setup_exe);
     DeleteResult delete_result = DeleteChromeFilesAndFolders(
         installer_state, setup_exe);
@@ -1352,19 +1356,19 @@ void CleanUpInstallationDirectoryAfterUninstall(
       *uninstall_status != installer::UNINSTALL_REQUIRES_REBOOT) {
     return;
   }
-  const FilePath target_path(installer_state.target_path());
+  const base::FilePath target_path(installer_state.target_path());
   if (target_path.empty()) {
     LOG(ERROR) << "No installation destination path.";
     *uninstall_status = installer::UNINSTALL_FAILED;
     return;
   }
-  FilePath setup_exe(cmd_line.GetProgram());
+  base::FilePath setup_exe(cmd_line.GetProgram());
   file_util::AbsolutePath(&setup_exe);
   if (!target_path.IsParent(setup_exe)) {
     LOG(INFO) << "setup.exe is not in target path. Skipping installer cleanup.";
     return;
   }
-  FilePath install_directory(setup_exe.DirName());
+  base::FilePath install_directory(setup_exe.DirName());
 
   bool remove_setup = true;
   bool remove_archive = true;

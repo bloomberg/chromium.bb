@@ -75,17 +75,17 @@ void ChromeFrameOperations::ReadOptions(
 
 void ChromeFrameOperations::AddKeyFiles(
     const std::set<std::wstring>& options,
-    std::vector<FilePath>* key_files) const {
+    std::vector<base::FilePath>* key_files) const {
   DCHECK(key_files);
-  key_files->push_back(FilePath(installer::kChromeFrameDll));
-  key_files->push_back(FilePath(installer::kChromeFrameHelperExe));
+  key_files->push_back(base::FilePath(installer::kChromeFrameDll));
+  key_files->push_back(base::FilePath(installer::kChromeFrameHelperExe));
 }
 
 void ChromeFrameOperations::AddComDllList(
     const std::set<std::wstring>& options,
-    std::vector<FilePath>* com_dll_list) const {
+    std::vector<base::FilePath>* com_dll_list) const {
   DCHECK(com_dll_list);
-  com_dll_list->push_back(FilePath(installer::kChromeFrameDll));
+  com_dll_list->push_back(base::FilePath(installer::kChromeFrameDll));
 }
 
 void ChromeFrameOperations::AppendProductFlags(
@@ -147,7 +147,7 @@ bool ChromeFrameOperations::ShouldCreateUninstallEntry(
 
 void ChromeFrameOperations::AddDefaultShortcutProperties(
     BrowserDistribution* dist,
-    const FilePath& target_exe,
+    const base::FilePath& target_exe,
     ShellUtil::ShortcutProperties* properties) const {
   NOTREACHED() << "Chrome Frame does not create shortcuts.";
 }

@@ -95,7 +95,7 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
   InitializeFromCommandLine(cmd_line);
 }
 
-MasterPreferences::MasterPreferences(const FilePath& prefs_path)
+MasterPreferences::MasterPreferences(const base::FilePath& prefs_path)
     : distribution_(NULL),
       preferences_read_from_file_(false),
       chrome_(true),
@@ -132,7 +132,7 @@ MasterPreferences::~MasterPreferences() {
 void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
 #if defined(OS_WIN)
   if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
-    FilePath prefs_path(cmd_line.GetSwitchValuePath(
+    base::FilePath prefs_path(cmd_line.GetSwitchValuePath(
         installer::switches::kInstallerData));
     this->MasterPreferences::MasterPreferences(prefs_path);
   } else {

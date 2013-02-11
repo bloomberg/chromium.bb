@@ -41,7 +41,7 @@ struct Capabilities {
   bool detach;
 
   // List of paths for extensions to install on startup.
-  std::vector<FilePath> extensions;
+  std::vector<base::FilePath> extensions;
 
   // Whether Chrome should not block when loading.
   bool load_async;
@@ -70,7 +70,7 @@ struct Capabilities {
   scoped_ptr<base::DictionaryValue> prefs;
 
   // Path to a custom profile to use.
-  FilePath profile;
+  base::FilePath profile;
 };
 
 // Parses the given capabilities dictionary to produce a |Capabilities|
@@ -84,7 +84,7 @@ class CapabilitiesParser {
   // create it or delete it. All files written to disk will be placed in
   // this directory.
   CapabilitiesParser(const base::DictionaryValue* capabilities_dict,
-                     const FilePath& root_path,
+                     const base::FilePath& root_path,
                      const Logger& logger,
                      Capabilities* capabilities);
   ~CapabilitiesParser();
@@ -117,7 +117,7 @@ class CapabilitiesParser {
   const base::DictionaryValue* dict_;
 
   // The root directory under which to write all files.
-  const FilePath root_;
+  const base::FilePath root_;
 
   // Reference to the logger to use.
   const Logger& logger_;

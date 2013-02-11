@@ -59,7 +59,7 @@ ResourceLoader::~ResourceLoader() {
   }
 }
 
-bool ResourceLoader::Initialize(const FilePath& pe_image_path) {
+bool ResourceLoader::Initialize(const base::FilePath& pe_image_path) {
   DCHECK(module_ == NULL);
   module_ = LoadLibraryEx(pe_image_path.value().c_str(), NULL,
                           (LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE |

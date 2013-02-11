@@ -109,7 +109,7 @@ class LocalFileSyncService
       const PrepareChangeCallback& callback) OVERRIDE;
   virtual void ApplyRemoteChange(
       const fileapi::FileChange& change,
-      const FilePath& local_path,
+      const base::FilePath& local_path,
       const fileapi::FileSystemURL& url,
       const fileapi::SyncStatusCallback& callback) OVERRIDE;
   virtual void ClearLocalChanges(

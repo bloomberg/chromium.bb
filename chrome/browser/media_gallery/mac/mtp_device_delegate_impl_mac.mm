@@ -32,7 +32,7 @@ class MTPDeviceDelegateImplMac::DeviceListener
   void OpenCameraSession(const std::string& device_id);
   void CloseCameraSessionAndDelete();
 
-  void DownloadFile(const std::string& name, const FilePath& local_path);
+  void DownloadFile(const std::string& name, const base::FilePath& local_path);
 
   // ImageCaptureDeviceListener
   virtual void ItemAdded(const std::string& name,
@@ -68,7 +68,7 @@ void MTPDeviceDelegateImplMac::DeviceListener::CloseCameraSessionAndDelete() {
 
 void MTPDeviceDelegateImplMac::DeviceListener::DownloadFile(
     const std::string& name,
-    const FilePath& local_path) {
+    const base::FilePath& local_path) {
   [camera_device_ downloadFile:name localPath:local_path];
 }
 
@@ -95,7 +95,7 @@ void MTPDeviceDelegateImplMac::DeviceListener::DeviceRemoved() {
 
 MTPDeviceDelegateImplMac::MTPDeviceDelegateImplMac(
     const std::string& device_id,
-    const FilePath::StringType& synthetic_path,
+    const base::FilePath::StringType& synthetic_path,
     base::SequencedTaskRunner* media_task_runner)
     : device_id_(device_id),
       root_path_(synthetic_path),
@@ -123,10 +123,10 @@ MTPDeviceDelegateImplMac::~MTPDeviceDelegateImplMac() {
 }
 
 base::PlatformFileError MTPDeviceDelegateImplMac::GetFileInfo(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     base::PlatformFileInfo* file_info) {
   base::AutoLock lock(mutex_);
-  base::hash_map<FilePath::StringType,
+  base::hash_map<base::FilePath::StringType,
                  base::PlatformFileInfo>::const_iterator i =
       file_info_.find(file_path.value());
   if (i == file_info_.end())
@@ -137,7 +137,7 @@ base::PlatformFileError MTPDeviceDelegateImplMac::GetFileInfo(
 }
 
 scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-MTPDeviceDelegateImplMac::CreateFileEnumerator(const FilePath& root,
+MTPDeviceDelegateImplMac::CreateFileEnumerator(const base::FilePath& root,
                                                bool recursive) {
   base::AutoLock lock(mutex_);
   DCHECK(!enumerator_);
@@ -147,8 +147,8 @@ MTPDeviceDelegateImplMac::CreateFileEnumerator(const FilePath& root,
 }
 
 base::PlatformFileError MTPDeviceDelegateImplMac::CreateSnapshotFile(
-    const FilePath& device_file_path,
-    const FilePath& local_path,
+    const base::FilePath& device_file_path,
+    const base::FilePath& local_path,
     base::PlatformFileInfo* file_info) {
   base::PlatformFileError error = GetFileInfo(device_file_path, file_info);
   if (error != base::PLATFORM_FILE_OK)
@@ -220,7 +220,7 @@ void MTPDeviceDelegateImplMac::ItemAdded(
   if (info.is_directory)
     return;
 
-  FilePath item_filename = root_path_.Append(name);
+  base::FilePath item_filename = root_path_.Append(name);
   file_info_[item_filename.value()] = info;
   file_paths_.push_back(item_filename);
 
@@ -247,10 +247,10 @@ void MTPDeviceDelegateImplMac::DownloadedFile(
   file_download_event_->Signal();
 }
 
-FilePath MTPDeviceDelegateImplMac::GetFile(size_t index) {
+base::FilePath MTPDeviceDelegateImplMac::GetFile(size_t index) {
   base::AutoLock lock(mutex_);
   if (index >= file_paths_.size())
-    return FilePath();
+    return base::FilePath();
   else
     return file_paths_[index];
 }
@@ -276,8 +276,8 @@ MTPDeviceDelegateImplMac::Enumerator::~Enumerator() {
   delegate_->RemoveEnumerator(this);
 }
 
-FilePath MTPDeviceDelegateImplMac::Enumerator::Next() {
-  FilePath next_file = delegate_->GetFile(position_);
+base::FilePath MTPDeviceDelegateImplMac::Enumerator::Next() {
+  base::FilePath next_file = delegate_->GetFile(position_);
   while (next_file.empty() && !delegate_->ReceivedAllFiles()) {
     wait_for_items_.Wait();
     next_file = delegate_->GetFile(position_);
@@ -312,7 +312,7 @@ void MTPDeviceDelegateImplMac::Enumerator::ItemsChanged() {
 void CreateMTPDeviceDelegate(const std::string& device_location,
                              base::SequencedTaskRunner* media_task_runner,
                              const CreateMTPDeviceDelegateCallback& cb) {
-  std::string device_name = FilePath(device_location).BaseName().value();
+  std::string device_name = base::FilePath(device_location).BaseName().value();
   std::string device_id;
   MediaStorageUtil::Type type;
   bool cracked = MediaStorageUtil::CrackDeviceId(device_name,

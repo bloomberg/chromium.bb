@@ -26,12 +26,12 @@ class ChromeTestSuite : public content::ContentTestSuiteBase {
 
   virtual content::ContentClient* CreateClientForInitialization() OVERRIDE;
 
-  void SetBrowserDirectory(const FilePath& browser_dir) {
+  void SetBrowserDirectory(const base::FilePath& browser_dir) {
     browser_dir_ = browser_dir;
   }
 
   // Alternative path to browser binaries.
-  FilePath browser_dir_;
+  base::FilePath browser_dir_;
 
   std::string stats_filename_;
   scoped_ptr<base::StatsTable> stats_table_;

@@ -167,10 +167,10 @@ function TEST_F(testFixture, testFunction, testBody) {
 
   print(testF + '(' + testFixture + ', ' + testFunction + ') {');
   for (var i = 0; i < extraLibraries.length; i++) {
-    print('  AddLibrary(FilePath(FILE_PATH_LITERAL("' +
+    print('  AddLibrary(base::FilePath(FILE_PATH_LITERAL("' +
         extraLibraries[i].replace(/\\/g, '/') + '")));');
   }
-  print('  AddLibrary(FilePath(FILE_PATH_LITERAL("' +
+  print('  AddLibrary(base::FilePath(FILE_PATH_LITERAL("' +
       jsFileBase.replace(/\\/g, '/') + '")));');
   if (addSetPreloadInfo) {
     print('  set_preload_test_fixture("' + testFixture + '");');

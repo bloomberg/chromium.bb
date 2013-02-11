@@ -80,8 +80,9 @@ int RoundPositive(double x) {
 
 // Returns custom wallpaper directory by appending |sub_dir| and |email| as sub
 // directories.
-FilePath GetCustomWallpaperDir(const char* sub_dir, const std::string& email) {
-  FilePath custom_wallpaper_dir;
+base::FilePath GetCustomWallpaperDir(const char* sub_dir,
+                                     const std::string& email) {
+  base::FilePath custom_wallpaper_dir;
   CHECK(PathService::Get(chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS,
                          &custom_wallpaper_dir));
   return custom_wallpaper_dir.Append(sub_dir).Append(email);
@@ -192,10 +193,11 @@ void WallpaperManager::ClearWallpaperCache() {
   wallpaper_cache_.clear();
 }
 
-FilePath WallpaperManager::GetCustomWallpaperPath(const char* sub_dir,
-                                                  const std::string& email,
-                                                  const std::string& file) {
-  FilePath custom_wallpaper_path = GetCustomWallpaperDir(sub_dir, email);
+base::FilePath WallpaperManager::GetCustomWallpaperPath(
+    const char* sub_dir,
+    const std::string& email,
+    const std::string& file) {
+  base::FilePath custom_wallpaper_path = GetCustomWallpaperDir(sub_dir, email);
   return custom_wallpaper_path.Append(file);
 }
 
@@ -420,9 +422,10 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::string file = base::Int64ToString(base::Time::Now().ToInternalValue());
-  FilePath wallpaper_path = GetCustomWallpaperPath(kOriginalWallpaperSubDir,
-                                                   username,
-                                                   file);
+  base::FilePath wallpaper_path = GetCustomWallpaperPath(
+      kOriginalWallpaperSubDir,
+      username,
+      file);
 
   // If decoded wallpaper is empty, we are probably failed to decode the file.
   // Use default wallpaper in this case.
@@ -709,7 +712,7 @@ void WallpaperManager::DeleteUserWallpapers(const std::string& email) {
 
 void WallpaperManager::EnsureCustomWallpaperDirectories(
     const std::string& email) {
-  FilePath dir;
+  base::FilePath dir;
   dir = GetCustomWallpaperDir(kSmallWallpaperSubDir, email);
   if (!file_util::PathExists(dir))
     file_util::CreateDirectory(dir);
@@ -730,7 +733,7 @@ void WallpaperManager::FallbackToOldCustomWallpaper(const std::string& email,
   ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
       desktop_background_controller()->GetAppropriateResolution();
   bool is_small  = resolution == ash::WALLPAPER_RESOLUTION_SMALL;
-  FilePath wallpaper_path = GetWallpaperPathForUser(email, is_small);
+  base::FilePath wallpaper_path = GetWallpaperPathForUser(email, is_small);
 
   task_runner_->PostTask(FROM_HERE,
       base::Bind(&WallpaperManager::GetCustomWallpaperInternalOld,
@@ -818,8 +821,8 @@ void WallpaperManager::MoveCustomWallpapersOnWorker(const UserList& users) {
   DCHECK(BrowserThread::GetBlockingPool()->
       IsRunningSequenceOnCurrentThread(sequence_token_));
 
-  FilePath from_path;
-  FilePath to_path;
+  base::FilePath from_path;
+  base::FilePath to_path;
   // Move old custom wallpapers to new place for all existing users.
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     std::string email = (*it)->email();
@@ -930,12 +933,12 @@ void WallpaperManager::GetCustomWallpaperInternalOld(
 void WallpaperManager::GetCustomWallpaperInternal(
     const std::string& email,
     const WallpaperInfo& info,
-    const FilePath& wallpaper_path,
+    const base::FilePath& wallpaper_path,
     bool update_wallpaper) {
   DCHECK(BrowserThread::GetBlockingPool()->
       IsRunningSequenceOnCurrentThread(sequence_token_));
 
-  FilePath valid_path = wallpaper_path;
+  base::FilePath valid_path = wallpaper_path;
   if (!file_util::PathExists(wallpaper_path)) {
     // Falls back on original file if the correct resoltuion file does not
     // exist. This may happen when the original custom wallpaper is small or

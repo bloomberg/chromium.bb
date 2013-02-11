@@ -71,9 +71,9 @@ class FrameRateTest
     return suffix;
   }
 
-  virtual FilePath GetDataPath(const std::string& name) {
+  virtual base::FilePath GetDataPath(const std::string& name) {
     // Make sure the test data is checked out.
-    FilePath test_path;
+    base::FilePath test_path;
     PathService::Get(chrome::DIR_TEST_DATA, &test_path);
     test_path = test_path.Append(FILE_PATH_LITERAL("perf"));
     test_path = test_path.Append(FILE_PATH_LITERAL("frame_rate"));
@@ -161,7 +161,7 @@ class FrameRateTest
     ASSERT_TRUE(HasFlag(kUseGpu) || !HasFlag(kForceGpuComposited));
     ASSERT_TRUE(!HasFlag(kUseGpu) || IsGpuAvailable());
 
-    FilePath test_path = GetDataPath(name);
+    base::FilePath test_path = GetDataPath(name);
     ASSERT_TRUE(file_util::DirectoryExists(test_path))
         << "Missing test directory: " << test_path.value();
 

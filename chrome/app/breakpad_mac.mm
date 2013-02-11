@@ -224,14 +224,15 @@ void InitCrashReporter() {
   // location to write brekapad crash dumps can be set.
   const char* alternate_minidump_location = getenv("BREAKPAD_DUMP_LOCATION");
   if (alternate_minidump_location) {
-    FilePath alternate_minidump_location_path(alternate_minidump_location);
+    base::FilePath alternate_minidump_location_path(
+        alternate_minidump_location);
     if (!file_util::PathExists(alternate_minidump_location_path)) {
       LOG(ERROR) << "Directory " << alternate_minidump_location <<
           " doesn't exist";
     } else {
       PathService::Override(
           chrome::DIR_CRASH_DUMPS,
-          FilePath(alternate_minidump_location));
+          base::FilePath(alternate_minidump_location));
       if (is_browser) {
         // Print out confirmation message to the stdout, but only print
         // from browser process so we don't flood the terminal.
@@ -241,7 +242,7 @@ void InitCrashReporter() {
     }
   }
 
-  FilePath dir_crash_dumps;
+  base::FilePath dir_crash_dumps;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &dir_crash_dumps);
   [breakpad_config setObject:base::SysUTF8ToNSString(dir_crash_dumps.value())
                       forKey:@BREAKPAD_DUMP_DIRECTORY];

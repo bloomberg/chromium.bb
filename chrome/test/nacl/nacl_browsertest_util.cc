@@ -168,8 +168,8 @@ MessageResponse NaClIntegrationMessageHandler::HandleStructuredMessage(
 //             nacl_test_data/
 //                            newlib/
 //                            glibc/
-static bool GetNaClVariantRoot(const FilePath::StringType& variant,
-                               FilePath* document_root) {
+static bool GetNaClVariantRoot(const base::FilePath::StringType& variant,
+                               base::FilePath* document_root) {
   if (!ui_test_utils::GetRelativeBuildDirectory(document_root))
     return false;
   *document_root = document_root->Append(FILE_PATH_LITERAL("nacl_test_data"));
@@ -190,14 +190,14 @@ void NaClBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
 
 void NaClBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   // Sanity check.
-  FilePath plugin_lib;
+  base::FilePath plugin_lib;
   ASSERT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
   ASSERT_TRUE(file_util::PathExists(plugin_lib)) << plugin_lib.value();
 
   ASSERT_TRUE(StartTestServer()) << "Cannot start test server.";
 }
 
-bool NaClBrowserTestBase::GetDocumentRoot(FilePath* document_root) {
+bool NaClBrowserTestBase::GetDocumentRoot(base::FilePath* document_root) {
   return GetNaClVariantRoot(Variant(), document_root);
 }
 
@@ -205,8 +205,9 @@ bool NaClBrowserTestBase::IsPnacl() {
   return false;
 }
 
-GURL NaClBrowserTestBase::TestURL(const FilePath::StringType& url_fragment) {
-  FilePath expanded_url = FilePath(FILE_PATH_LITERAL("files"));
+GURL NaClBrowserTestBase::TestURL(
+    const base::FilePath::StringType& url_fragment) {
+  base::FilePath expanded_url = base::FilePath(FILE_PATH_LITERAL("files"));
   expanded_url = expanded_url.Append(url_fragment);
   return test_server_->GetURL(expanded_url.MaybeAsASCII());
 }
@@ -220,7 +221,8 @@ bool NaClBrowserTestBase::RunJavascriptTest(const GURL& url,
   return observer.Run();
 }
 
-void NaClBrowserTestBase::RunLoadTest(const FilePath::StringType& test_file) {
+void NaClBrowserTestBase::RunLoadTest(
+    const base::FilePath::StringType& test_file) {
   LoadTestMessageHandler handler;
   bool ok = RunJavascriptTest(TestURL(test_file), &handler);
   ASSERT_TRUE(ok) << handler.error_message();
@@ -228,7 +230,7 @@ void NaClBrowserTestBase::RunLoadTest(const FilePath::StringType& test_file) {
 }
 
 void NaClBrowserTestBase::RunNaClIntegrationTest(
-    const FilePath::StringType& url_fragment) {
+    const base::FilePath::StringType& url_fragment) {
   NaClIntegrationMessageHandler handler;
   bool ok = RunJavascriptTest(TestURL(url_fragment), &handler);
   ASSERT_TRUE(ok) << handler.error_message();
@@ -237,7 +239,7 @@ void NaClBrowserTestBase::RunNaClIntegrationTest(
 
 bool NaClBrowserTestBase::StartTestServer() {
   // Launch the web server.
-  FilePath document_root;
+  base::FilePath document_root;
   if (!GetDocumentRoot(&document_root))
     return false;
   test_server_.reset(new net::TestServer(net::TestServer::TYPE_HTTP,
@@ -246,15 +248,15 @@ bool NaClBrowserTestBase::StartTestServer() {
   return test_server_->Start();
 }
 
-FilePath::StringType NaClBrowserTestNewlib::Variant() {
+base::FilePath::StringType NaClBrowserTestNewlib::Variant() {
   return FILE_PATH_LITERAL("newlib");
 }
 
-FilePath::StringType NaClBrowserTestGLibc::Variant() {
+base::FilePath::StringType NaClBrowserTestGLibc::Variant() {
   return FILE_PATH_LITERAL("glibc");
 }
 
-FilePath::StringType NaClBrowserTestPnacl::Variant() {
+base::FilePath::StringType NaClBrowserTestPnacl::Variant() {
   return FILE_PATH_LITERAL("pnacl");
 }
 
@@ -267,11 +269,11 @@ void NaClBrowserTestPnacl::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnablePnacl);
 }
 
-FilePath::StringType NaClBrowserTestStatic::Variant() {
+base::FilePath::StringType NaClBrowserTestStatic::Variant() {
   return FILE_PATH_LITERAL("static");
 }
 
-bool NaClBrowserTestStatic::GetDocumentRoot(FilePath* document_root) {
-  *document_root = FilePath(FILE_PATH_LITERAL("chrome/test/data/nacl"));
+bool NaClBrowserTestStatic::GetDocumentRoot(base::FilePath* document_root) {
+  *document_root = base::FilePath(FILE_PATH_LITERAL("chrome/test/data/nacl"));
   return true;
 }

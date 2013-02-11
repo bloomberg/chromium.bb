@@ -20,7 +20,8 @@ namespace test_launcher_utils {
 void PrepareBrowserCommandLineForTests(CommandLine* command_line);
 
 // Overrides the current process' user data dir.
-bool OverrideUserDataDir(const FilePath& user_data_dir) WARN_UNUSED_RESULT;
+bool OverrideUserDataDir(
+    const base::FilePath& user_data_dir) WARN_UNUSED_RESULT;
 
 // Override the GL implementation. The names are the same as for the --use-gl
 // command line switch. Use the constants in the gfx namespace.

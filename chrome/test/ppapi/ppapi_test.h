@@ -88,7 +88,7 @@ class PPAPITestBase : public InProcessBrowserTest {
 
   // Return the document root for the HTTP server on which tests will be run.
   // The result is placed in |document_root|. False is returned upon failure.
-  bool GetHTTPDocumentRoot(FilePath* document_root);
+  bool GetHTTPDocumentRoot(base::FilePath* document_root);
 };
 
 // In-process plugin test runner.  See OutOfProcessPPAPITest below for the

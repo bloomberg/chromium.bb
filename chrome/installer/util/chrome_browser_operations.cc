@@ -44,14 +44,14 @@ void ChromeBrowserOperations::ReadOptions(
 
 void ChromeBrowserOperations::AddKeyFiles(
     const std::set<std::wstring>& options,
-    std::vector<FilePath>* key_files) const {
+    std::vector<base::FilePath>* key_files) const {
   DCHECK(key_files);
-  key_files->push_back(FilePath(installer::kChromeDll));
+  key_files->push_back(base::FilePath(installer::kChromeDll));
 }
 
 void ChromeBrowserOperations::AddComDllList(
     const std::set<std::wstring>& options,
-    std::vector<FilePath>* com_dll_list) const {
+    std::vector<base::FilePath>* com_dll_list) const {
 }
 
 void ChromeBrowserOperations::AppendProductFlags(
@@ -108,14 +108,14 @@ bool ChromeBrowserOperations::ShouldCreateUninstallEntry(
 // - description: |dist|'s description.
 void ChromeBrowserOperations::AddDefaultShortcutProperties(
       BrowserDistribution* dist,
-      const FilePath& target_exe,
+      const base::FilePath& target_exe,
       ShellUtil::ShortcutProperties* properties) const {
   if (!properties->has_target())
     properties->set_target(target_exe);
 
   if (!properties->has_icon()) {
     int icon_index = dist->GetIconIndex();
-    FilePath prefs_path(target_exe.DirName().AppendASCII(
+    base::FilePath prefs_path(target_exe.DirName().AppendASCII(
         installer::kDefaultMasterPrefs));
     if (file_util::PathExists(prefs_path)) {
       installer::MasterPreferences prefs(prefs_path);

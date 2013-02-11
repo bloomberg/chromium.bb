@@ -167,7 +167,7 @@ bool GetUpdatePolicyFromDword(
 
 bool GoogleUpdateSettings::IsSystemInstall() {
   bool system_install = false;
-  FilePath module_dir;
+  base::FilePath module_dir;
   if (!PathService::Get(base::DIR_MODULE, &module_dir)) {
     LOG(WARNING)
         << "Failed to get directory of module; assuming per-user install.";

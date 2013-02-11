@@ -49,10 +49,10 @@ class InstallerStateTest : public TestWithTempDirAndDeleteTempOverrideKeys {
 class MockInstallerState : public InstallerState {
  public:
   MockInstallerState() : InstallerState() { }
-  void set_target_path(const FilePath& target_path) {
+  void set_target_path(const base::FilePath& target_path) {
     target_path_ = target_path;
   }
-  static bool IsFileInUse(const FilePath& file) {
+  static bool IsFileInUse(const base::FilePath& file) {
     return InstallerState::IsFileInUse(file);
   }
   const Version& critical_update_version() const {
@@ -73,7 +73,7 @@ void CreateTextFile(const std::wstring& filename,
   file.close();
 }
 
-void BuildSingleChromeState(const FilePath& target_dir,
+void BuildSingleChromeState(const base::FilePath& target_dir,
                             MockInstallerState* installer_state) {
   CommandLine cmd_line = CommandLine::FromString(L"setup.exe");
   MasterPreferences prefs(cmd_line);
@@ -95,47 +95,47 @@ wchar_t text_content_2[] = L"delete me as well";
 TEST_F(InstallerStateTest, Delete) {
   // TODO(grt): move common stuff into the test fixture.
   // Create a Chrome dir
-  FilePath chrome_dir(test_dir_.path());
+  base::FilePath chrome_dir(test_dir_.path());
   chrome_dir = chrome_dir.AppendASCII("chrome");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
 
-  FilePath chrome_dir_1(chrome_dir);
+  base::FilePath chrome_dir_1(chrome_dir);
   chrome_dir_1 = chrome_dir_1.AppendASCII("1.0.1.0");
   file_util::CreateDirectory(chrome_dir_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_1));
 
-  FilePath chrome_dir_2(chrome_dir);
+  base::FilePath chrome_dir_2(chrome_dir);
   chrome_dir_2 = chrome_dir_2.AppendASCII("1.0.2.0");
   file_util::CreateDirectory(chrome_dir_2);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_2));
 
-  FilePath chrome_dir_3(chrome_dir);
+  base::FilePath chrome_dir_3(chrome_dir);
   chrome_dir_3 = chrome_dir_3.AppendASCII("1.0.3.0");
   file_util::CreateDirectory(chrome_dir_3);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_3));
 
-  FilePath chrome_dir_4(chrome_dir);
+  base::FilePath chrome_dir_4(chrome_dir);
   chrome_dir_4 = chrome_dir_4.AppendASCII("1.0.4.0");
   file_util::CreateDirectory(chrome_dir_4);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_4));
 
-  FilePath chrome_dll_1(chrome_dir_1);
+  base::FilePath chrome_dll_1(chrome_dir_1);
   chrome_dll_1 = chrome_dll_1.AppendASCII("chrome.dll");
   CreateTextFile(chrome_dll_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_1));
 
-  FilePath chrome_dll_2(chrome_dir_2);
+  base::FilePath chrome_dll_2(chrome_dir_2);
   chrome_dll_2 = chrome_dll_2.AppendASCII("chrome.dll");
   CreateTextFile(chrome_dll_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_2));
 
-  FilePath chrome_dll_3(chrome_dir_3);
+  base::FilePath chrome_dll_3(chrome_dir_3);
   chrome_dll_3 = chrome_dll_3.AppendASCII("chrome.dll");
   CreateTextFile(chrome_dll_3.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_3));
 
-  FilePath chrome_dll_4(chrome_dir_4);
+  base::FilePath chrome_dll_4(chrome_dir_4);
   chrome_dll_4 = chrome_dll_4.AppendASCII("chrome.dll");
   CreateTextFile(chrome_dll_4.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
@@ -161,37 +161,37 @@ TEST_F(InstallerStateTest, Delete) {
 // Delete older version directories, keeping the one in used intact.
 TEST_F(InstallerStateTest, DeleteInUsed) {
   // Create a Chrome dir
-  FilePath chrome_dir(test_dir_.path());
+  base::FilePath chrome_dir(test_dir_.path());
   chrome_dir = chrome_dir.AppendASCII("chrome");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
 
-  FilePath chrome_dir_1(chrome_dir);
+  base::FilePath chrome_dir_1(chrome_dir);
   chrome_dir_1 = chrome_dir_1.AppendASCII("1.0.1.0");
   file_util::CreateDirectory(chrome_dir_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_1));
 
-  FilePath chrome_dir_2(chrome_dir);
+  base::FilePath chrome_dir_2(chrome_dir);
   chrome_dir_2 = chrome_dir_2.AppendASCII("1.0.2.0");
   file_util::CreateDirectory(chrome_dir_2);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_2));
 
-  FilePath chrome_dir_3(chrome_dir);
+  base::FilePath chrome_dir_3(chrome_dir);
   chrome_dir_3 = chrome_dir_3.AppendASCII("1.0.3.0");
   file_util::CreateDirectory(chrome_dir_3);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_3));
 
-  FilePath chrome_dir_4(chrome_dir);
+  base::FilePath chrome_dir_4(chrome_dir);
   chrome_dir_4 = chrome_dir_4.AppendASCII("1.0.4.0");
   file_util::CreateDirectory(chrome_dir_4);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_4));
 
-  FilePath chrome_dll_1(chrome_dir_1);
+  base::FilePath chrome_dll_1(chrome_dir_1);
   chrome_dll_1 = chrome_dll_1.AppendASCII("chrome.dll");
   CreateTextFile(chrome_dll_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_1));
 
-  FilePath chrome_dll_2(chrome_dir_2);
+  base::FilePath chrome_dll_2(chrome_dir_2);
   chrome_dll_2 = chrome_dll_2.AppendASCII("chrome.dll");
   CreateTextFile(chrome_dll_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_2));
@@ -200,22 +200,22 @@ TEST_F(InstallerStateTest, DeleteInUsed) {
   std::ofstream file;
   file.open(chrome_dll_2.value().c_str());
 
-  FilePath chrome_othera_2(chrome_dir_2);
+  base::FilePath chrome_othera_2(chrome_dir_2);
   chrome_othera_2 = chrome_othera_2.AppendASCII("othera.dll");
   CreateTextFile(chrome_othera_2.value(), text_content_2);
   ASSERT_TRUE(file_util::PathExists(chrome_othera_2));
 
-  FilePath chrome_otherb_2(chrome_dir_2);
+  base::FilePath chrome_otherb_2(chrome_dir_2);
   chrome_otherb_2 = chrome_otherb_2.AppendASCII("otherb.dll");
   CreateTextFile(chrome_otherb_2.value(), text_content_2);
   ASSERT_TRUE(file_util::PathExists(chrome_otherb_2));
 
-  FilePath chrome_dll_3(chrome_dir_3);
+  base::FilePath chrome_dll_3(chrome_dir_3);
   chrome_dll_3 = chrome_dll_3.AppendASCII("chrome.dll");
   CreateTextFile(chrome_dll_3.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_3));
 
-  FilePath chrome_dll_4(chrome_dir_4);
+  base::FilePath chrome_dll_4(chrome_dir_4);
   chrome_dll_4 = chrome_dll_4.AppendASCII("chrome.dll");
   CreateTextFile(chrome_dll_4.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
@@ -271,12 +271,13 @@ TEST_F(InstallerStateTest, Basic) {
   ASSERT_TRUE(new_version.IsValid());
   ASSERT_TRUE(old_version.IsValid());
 
-  FilePath installer_dir(installer_state.GetInstallerDirectory(new_version));
+  base::FilePath installer_dir(
+      installer_state.GetInstallerDirectory(new_version));
   EXPECT_FALSE(installer_dir.empty());
 
-  FilePath new_version_dir(installer_state.target_path().Append(
+  base::FilePath new_version_dir(installer_state.target_path().Append(
       UTF8ToWide(new_version.GetString())));
-  FilePath old_version_dir(installer_state.target_path().Append(
+  base::FilePath old_version_dir(installer_state.target_path().Append(
       UTF8ToWide(old_version.GetString())));
 
   EXPECT_FALSE(file_util::PathExists(new_version_dir));
@@ -291,7 +292,7 @@ TEST_F(InstallerStateTest, Basic) {
 
   // Create a fake chrome.dll key file in the old version directory.  This
   // should prevent the old version directory from getting deleted.
-  FilePath old_chrome_dll(old_version_dir.Append(installer::kChromeDll));
+  base::FilePath old_chrome_dll(old_version_dir.Append(installer::kChromeDll));
   EXPECT_FALSE(file_util::PathExists(old_chrome_dll));
 
   // Hold on to the file exclusively to prevent the directory from
@@ -472,7 +473,7 @@ TEST_F(InstallerStateTest, IsFileInUse) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  FilePath temp_file;
+  base::FilePath temp_file;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(), &temp_file));
 
   EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
@@ -519,7 +520,7 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
   ASSERT_TRUE(new_chrome_exe_version.IsValid());
 
   // Set up a bunch of version dir paths.
-  FilePath version_dirs[] = {
+  base::FilePath version_dirs[] = {
     installer_state.target_path().Append(L"1.2.3.4"),
     installer_state.target_path().Append(L"1.2.3.5"),
     installer_state.target_path().Append(L"1.2.3.6"),
@@ -539,11 +540,11 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
 
   // Create exes with the appropriate version resource.
   // Use the current test exe as a baseline.
-  FilePath exe_path;
+  base::FilePath exe_path;
   ASSERT_TRUE(PathService::Get(base::FILE_EXE, &exe_path));
 
   struct target_info {
-    FilePath target_file;
+    base::FilePath target_file;
     const Version& target_version;
   } targets[] = {
     { installer_state.target_path().Append(installer::kChromeOldExe),
@@ -585,9 +586,9 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
   // Enumerate dirs in target_path(), ensure only desired remain.
   file_util::FileEnumerator version_enum(installer_state.target_path(), false,
       file_util::FileEnumerator::DIRECTORIES);
-  for (FilePath next_version = version_enum.Next(); !next_version.empty();
+  for (base::FilePath next_version = version_enum.Next(); !next_version.empty();
        next_version = version_enum.Next()) {
-    FilePath dir_name(next_version.BaseName());
+    base::FilePath dir_name(next_version.BaseName());
     Version version(WideToASCII(dir_name.value()));
     if (version.IsValid()) {
       EXPECT_TRUE(expected_remaining_dirs.erase(version.GetString()))

@@ -42,19 +42,19 @@ class MoveTreeWorkItem : public WorkItem {
   // dest_path and all files in source_path are present and of the same length
   // in dest_path. If so, it will do nothing and return true, otherwise it will
   // attempt to move source_path to dest_path as stated above.
-  MoveTreeWorkItem(const FilePath& source_path,
-                   const FilePath& dest_path,
-                   const FilePath& temp_dir,
+  MoveTreeWorkItem(const base::FilePath& source_path,
+                   const base::FilePath& dest_path,
+                   const base::FilePath& temp_dir,
                    MoveTreeOption duplicate_option);
 
   // Source path to move files from.
-  FilePath source_path_;
+  base::FilePath source_path_;
 
   // Destination path to move files to.
-  FilePath dest_path_;
+  base::FilePath dest_path_;
 
   // Temporary directory to backup dest_path_ (if it already exists).
-  FilePath temp_dir_;
+  base::FilePath temp_dir_;
 
   // The temporary directory into which the original dest_path_ has been moved.
   base::ScopedTempDir backup_path_;

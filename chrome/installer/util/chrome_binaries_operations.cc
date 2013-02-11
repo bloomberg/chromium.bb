@@ -31,14 +31,14 @@ void ChromeBinariesOperations::ReadOptions(
 
 void ChromeBinariesOperations::AddKeyFiles(
     const std::set<std::wstring>& options,
-    std::vector<FilePath>* key_files) const {
+    std::vector<base::FilePath>* key_files) const {
   DCHECK(key_files);
-  key_files->push_back(FilePath(installer::kChromeDll));
+  key_files->push_back(base::FilePath(installer::kChromeDll));
 }
 
 void ChromeBinariesOperations::AddComDllList(
     const std::set<std::wstring>& options,
-    std::vector<FilePath>* com_dll_list) const {
+    std::vector<base::FilePath>* com_dll_list) const {
 }
 
 void ChromeBinariesOperations::AppendProductFlags(
@@ -79,7 +79,7 @@ bool ChromeBinariesOperations::ShouldCreateUninstallEntry(
 
 void ChromeBinariesOperations::AddDefaultShortcutProperties(
     BrowserDistribution* dist,
-    const FilePath& target_exe,
+    const base::FilePath& target_exe,
     ShellUtil::ShortcutProperties* properties) const {
   NOTREACHED() << "Chrome Binaries do not create shortcuts.";
 }

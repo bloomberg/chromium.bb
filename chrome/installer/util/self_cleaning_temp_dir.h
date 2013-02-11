@@ -16,7 +16,7 @@ namespace installer {
 // directories of the temporary directory that are created by an instance.
 class SelfCleaningTempDir {
  public:
-  typedef FilePath::StringType StringType;
+  typedef base::FilePath::StringType StringType;
 
   SelfCleaningTempDir();
 
@@ -25,10 +25,11 @@ class SelfCleaningTempDir {
 
   // Creates a temporary directory named |temp_name| under |parent_dir|,
   // creating intermediate directories as needed.
-  bool Initialize(const FilePath& parent_dir, const StringType& temp_name);
+  bool Initialize(const base::FilePath& parent_dir,
+                  const StringType& temp_name);
 
   // Returns the temporary directory created in Initialize().
-  const FilePath& path() const { return temp_dir_; }
+  const base::FilePath& path() const { return temp_dir_; }
 
   // Deletes the temporary directory created in Initialize() and all of its
   // contents, as well as all empty intermediate directories.  Any of these that
@@ -36,14 +37,14 @@ class SelfCleaningTempDir {
   bool Delete();
 
  private:
-  static void GetTopDirToCreate(const FilePath& temp_parent_dir,
-                                FilePath* base_dir);
+  static void GetTopDirToCreate(const base::FilePath& temp_parent_dir,
+                                base::FilePath* base_dir);
 
   // The topmost directory created.
-  FilePath base_dir_;
+  base::FilePath base_dir_;
 
   // The temporary directory.
-  FilePath temp_dir_;
+  base::FilePath temp_dir_;
 
   FRIEND_TEST_ALL_PREFIXES(SelfCleaningTempDirTest, TopLevel);
   FRIEND_TEST_ALL_PREFIXES(SelfCleaningTempDirTest, TopLevelPlusOne);

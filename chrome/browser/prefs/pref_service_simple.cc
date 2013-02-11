@@ -46,8 +46,9 @@ void PrefServiceSimple::RegisterStringPref(const char* path,
   RegisterPreference(path, Value::CreateStringValue(default_value));
 }
 
-void PrefServiceSimple::RegisterFilePathPref(const char* path,
-                                             const FilePath& default_value) {
+void PrefServiceSimple::RegisterFilePathPref(
+    const char* path,
+    const base::FilePath& default_value) {
   RegisterPreference(path, Value::CreateStringValue(default_value.value()));
 }
 

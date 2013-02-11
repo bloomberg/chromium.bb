@@ -33,7 +33,7 @@ namespace {
 // waits indefinitely for it to exit and populates |exit_code| as expected. On
 // the off chance that waiting itself fails, |exit_code| is set to
 // WAIT_FOR_EXISTING_FAILED.
-bool LaunchAndWaitForExistingInstall(const FilePath& setup_exe,
+bool LaunchAndWaitForExistingInstall(const base::FilePath& setup_exe,
                                      const CommandLine& command_line,
                                      int* exit_code) {
   DCHECK(exit_code);
@@ -84,9 +84,9 @@ bool SupportsSingleInstall(BrowserDistribution::Type type) {
 
 }  // namespace
 
-int ApplyDiffPatch(const FilePath& src,
-                   const FilePath& patch,
-                   const FilePath& dest,
+int ApplyDiffPatch(const base::FilePath& src,
+                   const base::FilePath& patch,
+                   const base::FilePath& dest,
                    const InstallerState* installer_state) {
   VLOG(1) << "Applying patch " << patch.value() << " to file " << src.value()
           << " and generating file " << dest.value();
@@ -121,7 +121,7 @@ int ApplyDiffPatch(const FilePath& src,
                           dest.value().c_str());
 }
 
-Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path) {
+Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
   VLOG(1) << "Looking for Chrome version folder under " << chrome_path.value();
   Version* version = NULL;
   file_util::FileEnumerator version_enum(chrome_path, false,
@@ -149,7 +149,7 @@ Version* GetMaxVersionFromArchiveDir(const FilePath& chrome_path) {
   return (version_found ? max_version.release() : NULL);
 }
 
-bool DeleteFileFromTempProcess(const FilePath& path,
+bool DeleteFileFromTempProcess(const base::FilePath& path,
                                uint32 delay_before_delete_ms) {
   static const wchar_t kRunDll32Path[] =
       L"%SystemRoot%\\System32\\rundll32.exe";
@@ -211,7 +211,7 @@ bool GetExistingHigherInstaller(
     const InstallationState& original_state,
     bool system_install,
     const Version& installer_version,
-    FilePath* setup_exe) {
+    base::FilePath* setup_exe) {
   DCHECK(setup_exe);
   bool trying_single_browser = false;
   const ProductState* existing_state =
@@ -239,19 +239,19 @@ bool GetExistingHigherInstaller(
   return !setup_exe->empty();
 }
 
-bool DeferToExistingInstall(const FilePath& setup_exe,
+bool DeferToExistingInstall(const base::FilePath& setup_exe,
                             const CommandLine& command_line,
                             const InstallerState& installer_state,
-                            const FilePath& temp_path,
+                            const base::FilePath& temp_path,
                             InstallStatus* install_status) {
   // Copy a master_preferences file if there is one.
-  FilePath prefs_source_path(command_line.GetSwitchValueNative(
+  base::FilePath prefs_source_path(command_line.GetSwitchValueNative(
       switches::kInstallerData));
-  FilePath prefs_dest_path(installer_state.target_path().AppendASCII(
+  base::FilePath prefs_dest_path(installer_state.target_path().AppendASCII(
       kDefaultMasterPrefs));
   scoped_ptr<WorkItem> copy_prefs(WorkItem::CreateCopyTreeWorkItem(
       prefs_source_path, prefs_dest_path, temp_path, WorkItem::ALWAYS,
-      FilePath()));
+      base::FilePath()));
   // There's nothing to rollback if the copy fails, so punt if so.
   if (!copy_prefs->Do())
     copy_prefs.reset();

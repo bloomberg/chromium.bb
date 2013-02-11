@@ -98,7 +98,7 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
       installer_state->RemoveProduct(
           installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER));
 
-      FilePath setup_path(chrome_state->GetSetupPath());
+      base::FilePath setup_path(chrome_state->GetSetupPath());
       const Version& new_version = chrome_state->version();
 
       // This creates the uninstallation entry for GCF.

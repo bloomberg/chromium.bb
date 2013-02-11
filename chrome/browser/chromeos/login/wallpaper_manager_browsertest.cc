@@ -93,10 +93,10 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
 
  protected:
   // Return custom wallpaper path. Create directory if not exist.
-  FilePath GetCustomWallpaperPath(const char* sub_dir,
+  base::FilePath GetCustomWallpaperPath(const char* sub_dir,
                                   const std::string& email,
                                   const std::string& id) {
-    FilePath wallpaper_path =
+    base::FilePath wallpaper_path =
         WallpaperManager::Get()->GetCustomWallpaperPath(sub_dir, email, id);
     if (!file_util::DirectoryExists(wallpaper_path.DirName()))
       file_util::CreateDirectory(wallpaper_path.DirName());
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   LogIn(kTestUser1);
   WaitAsyncWallpaperLoad();
 
-  FilePath old_wallpaper_path = wallpaper_manager->
+  base::FilePath old_wallpaper_path = wallpaper_manager->
       GetOriginalWallpaperPathForUser(kTestUser1);
   SaveUserWallpaperData(kTestUser1,
                         old_wallpaper_path,
@@ -337,9 +337,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // worker pool we use.
   WaitAsyncWallpaperLoad();
   EXPECT_EQ(3, LoadedWallpapers());
-  FilePath new_wallpaper_path = GetCustomWallpaperPath(kOriginalWallpaperSubDir,
-                                                       kTestUser1,
-                                                       "DUMMY");
+  base::FilePath new_wallpaper_path = GetCustomWallpaperPath(
+      kOriginalWallpaperSubDir, kTestUser1, "DUMMY");
   EXPECT_FALSE(file_util::PathExists(old_wallpaper_path));
   EXPECT_TRUE(file_util::PathExists(new_wallpaper_path));
 }

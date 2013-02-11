@@ -58,11 +58,11 @@ class WebGLInfobarTest : public InProcessBrowserTest {
 #endif
   }
   virtual void SetUpInProcessBrowserTestFixture() {
-    FilePath test_dir;
+    base::FilePath test_dir;
     ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &test_dir));
     gpu_test_dir_ = test_dir.AppendASCII("gpu");
   }
-  FilePath gpu_test_dir_;
+  base::FilePath gpu_test_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossRaisesInfobar) {

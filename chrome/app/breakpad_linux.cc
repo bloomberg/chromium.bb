@@ -512,12 +512,12 @@ void AsanLinuxBreakpadCallback(const char* report) {
 void EnableCrashDumping(bool unattended) {
   g_is_crash_reporter_enabled = true;
 
-  FilePath tmp_path("/tmp");
+  base::FilePath tmp_path("/tmp");
   PathService::Get(base::DIR_TEMP, &tmp_path);
 
-  FilePath dumps_path(tmp_path);
+  base::FilePath dumps_path(tmp_path);
   if (PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
-    FilePath logfile =
+    base::FilePath logfile =
         dumps_path.AppendASCII(CrashUploadList::kReporterLogFilename);
     std::string logfile_str = logfile.value();
     const size_t crash_log_path_len = logfile_str.size() + 1;

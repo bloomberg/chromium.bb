@@ -161,7 +161,8 @@ ProxyLauncher* UITestBase::CreateProxyLauncher() {
 }
 
 ProxyLauncher::LaunchState UITestBase::DefaultLaunchState() {
-  FilePath browser_executable = browser_directory_.Append(GetExecutablePath());
+  base::FilePath browser_executable =
+      browser_directory_.Append(GetExecutablePath());
   CommandLine command(browser_executable);
   command.AppendArguments(launch_arguments_, false);
   base::Closure setup_profile_callback = base::Bind(&UITestBase::SetUpProfile,
@@ -383,7 +384,7 @@ void UITestBase::WaitUntilTabCount(int tab_count) {
   ADD_FAILURE() << "Timeout reached in WaitUntilTabCount";
 }
 
-const FilePath::CharType* UITestBase::GetExecutablePath() {
+const base::FilePath::CharType* UITestBase::GetExecutablePath() {
   if (launch_arguments_.HasSwitch(switches::kEnableChromiumBranding))
     return chrome::kBrowserProcessExecutablePathChromium;
   return chrome::kBrowserProcessExecutablePath;
@@ -414,9 +415,9 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
 }
 
 // static
-FilePath UITestBase::ComputeTypicalUserDataSource(
+base::FilePath UITestBase::ComputeTypicalUserDataSource(
     UITestBase::ProfileType profile_type) {
-  FilePath source_history_file;
+  base::FilePath source_history_file;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA,
                                &source_history_file));
   source_history_file = source_history_file.AppendASCII("profiles");
@@ -437,7 +438,7 @@ FilePath UITestBase::ComputeTypicalUserDataSource(
 }
 
 int UITestBase::GetCrashCount() const {
-  FilePath crash_dump_path;
+  base::FilePath crash_dump_path;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_path);
   int actual_crashes = file_util::CountFilesCreatedAfter(
       crash_dump_path, test_start_time_);
@@ -488,7 +489,7 @@ std::string UITestBase::CheckErrorsAndCrashes() const {
   return std::string(wide_result.begin(), wide_result.end());
 }
 
-void UITestBase::SetBrowserDirectory(const FilePath& dir) {
+void UITestBase::SetBrowserDirectory(const base::FilePath& dir) {
   browser_directory_ = dir;
 }
 
@@ -548,7 +549,8 @@ bool UITest::GetBrowserProcessCount(int* count) {
   return true;
 }
 
-static DictionaryValue* LoadDictionaryValueFromPath(const FilePath& path) {
+static DictionaryValue* LoadDictionaryValueFromPath(
+    const base::FilePath& path) {
   if (path.empty())
     return NULL;
 
@@ -561,13 +563,13 @@ static DictionaryValue* LoadDictionaryValueFromPath(const FilePath& path) {
 }
 
 DictionaryValue* UITest::GetLocalState() {
-  FilePath local_state_path;
+  base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   return LoadDictionaryValueFromPath(local_state_path);
 }
 
 DictionaryValue* UITest::GetDefaultProfilePreferences() {
-  FilePath path;
+  base::FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.AppendASCII(TestingProfile::kTestUserProfileDir);
   return LoadDictionaryValueFromPath(path.Append(chrome::kPreferencesFilename));
@@ -598,7 +600,7 @@ void UITest::WaitForFinish(const std::string &name,
   EXPECT_EQ(expected_cookie_value, cookie_value);
 }
 
-bool UITest::EvictFileFromSystemCacheWrapper(const FilePath& path) {
+bool UITest::EvictFileFromSystemCacheWrapper(const base::FilePath& path) {
   const int kCycles = 10;
   const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
   for (int i = 0; i < kCycles; i++) {

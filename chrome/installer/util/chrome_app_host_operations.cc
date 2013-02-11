@@ -47,12 +47,12 @@ void ChromeAppHostOperations::ReadOptions(
 
 void ChromeAppHostOperations::AddKeyFiles(
     const std::set<std::wstring>& options,
-    std::vector<FilePath>* key_files) const {
+    std::vector<base::FilePath>* key_files) const {
 }
 
 void ChromeAppHostOperations::AddComDllList(
     const std::set<std::wstring>& options,
-    std::vector<FilePath>* com_dll_list) const {
+    std::vector<base::FilePath>* com_dll_list) const {
 }
 
 void ChromeAppHostOperations::AppendProductFlags(
@@ -116,7 +116,7 @@ bool ChromeAppHostOperations::ShouldCreateUninstallEntry(
 
 void ChromeAppHostOperations::AddDefaultShortcutProperties(
     BrowserDistribution* dist,
-    const FilePath& target_exe,
+    const base::FilePath& target_exe,
     ShellUtil::ShortcutProperties* properties) const {
   if (!properties->has_target())
     properties->set_target(target_exe);

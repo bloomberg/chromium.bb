@@ -380,7 +380,7 @@ InitiateUploadParams::InitiateUploadParams(
     const std::string& content_type,
     int64 content_length,
     const GURL& upload_location,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const std::string& etag)
     : upload_mode(upload_mode),
       title(title),
@@ -398,7 +398,7 @@ InitiateUploadOperationBase::InitiateUploadOperationBase(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const InitiateUploadCallback& callback,
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length)
     : UrlFetchOperationBase(registry,

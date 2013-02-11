@@ -13,11 +13,11 @@
 CopyTreeWorkItem::~CopyTreeWorkItem() {
 }
 
-CopyTreeWorkItem::CopyTreeWorkItem(const FilePath& source_path,
-                                   const FilePath& dest_path,
-                                   const FilePath& temp_dir,
+CopyTreeWorkItem::CopyTreeWorkItem(const base::FilePath& source_path,
+                                   const base::FilePath& dest_path,
+                                   const base::FilePath& temp_dir,
                                    CopyOverWriteOption overwrite_option,
-                                   const FilePath& alternative_path)
+                                   const base::FilePath& alternative_path)
     : source_path_(source_path),
       dest_path_(dest_path),
       temp_dir_(temp_dir),
@@ -77,7 +77,7 @@ bool CopyTreeWorkItem::Do() {
       return false;
     }
 
-    FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
+    base::FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
     if (file_util::Move(dest_path_, backup)) {
       moved_to_backup_ = true;
       VLOG(1) << "Moved destination " << dest_path_.value() <<
@@ -113,7 +113,7 @@ void CopyTreeWorkItem::Rollback() {
     LOG(ERROR) << "Can not delete " << dest_path_.value();
   }
   if (moved_to_backup_) {
-    FilePath backup(backup_path_.path().Append(dest_path_.BaseName()));
+    base::FilePath backup(backup_path_.path().Append(dest_path_.BaseName()));
     if (!file_util::Move(backup, dest_path_)) {
       LOG(ERROR) << "failed move " << backup.value()
                  << " to " << dest_path_.value();
@@ -125,7 +125,7 @@ void CopyTreeWorkItem::Rollback() {
   }
 }
 
-bool CopyTreeWorkItem::IsFileInUse(const FilePath& path) {
+bool CopyTreeWorkItem::IsFileInUse(const base::FilePath& path) {
   if (!file_util::PathExists(path))
     return false;
 

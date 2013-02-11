@@ -53,7 +53,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
   virtual bool AdjustChildProcessCommandLine(
-      CommandLine* command_line, const FilePath& temp_data_dir) OVERRIDE {
+      CommandLine* command_line, const base::FilePath& temp_data_dir) OVERRIDE {
     CommandLine new_command_line(command_line->GetProgram());
     CommandLine::SwitchMap switches = command_line->GetSwitches();
 

@@ -16,15 +16,16 @@ namespace installer {
 // |temp_parent_dir| that does not exist.  If |temp_parent_dir| exists,
 // |base_dir| is cleared.
 // static
-void SelfCleaningTempDir::GetTopDirToCreate(const FilePath& temp_parent_dir,
-                                        FilePath* base_dir) {
+void SelfCleaningTempDir::GetTopDirToCreate(
+    const base::FilePath& temp_parent_dir,
+    base::FilePath* base_dir) {
   DCHECK(base_dir);
 
   if (file_util::PathExists(temp_parent_dir)) {
     // Empty base_dir means that we didn't create any extra directories.
     base_dir->clear();
   } else {
-    FilePath parent_dir(temp_parent_dir);
+    base::FilePath parent_dir(temp_parent_dir);
     do {
       *base_dir = parent_dir;
       parent_dir = parent_dir.DirName();
@@ -43,7 +44,7 @@ SelfCleaningTempDir::~SelfCleaningTempDir() {
     LOG(WARNING) << "Failed to clean temp dir in dtor " << path().value();
 }
 
-bool SelfCleaningTempDir::Initialize(const FilePath& parent_dir,
+bool SelfCleaningTempDir::Initialize(const base::FilePath& parent_dir,
                                      const StringType& temp_name) {
   DCHECK(parent_dir.IsAbsolute());
   DCHECK(!temp_name.empty());
@@ -53,8 +54,8 @@ bool SelfCleaningTempDir::Initialize(const FilePath& parent_dir,
     return false;
   }
 
-  FilePath temp_dir(parent_dir.Append(temp_name));
-  FilePath base_dir;
+  base::FilePath temp_dir(parent_dir.Append(temp_name));
+  base::FilePath base_dir;
   GetTopDirToCreate(parent_dir, &base_dir);
 
   if (file_util::CreateDirectory(temp_dir)) {
@@ -72,7 +73,7 @@ bool SelfCleaningTempDir::Delete() {
     return false;
   }
 
-  FilePath next_dir(path().DirName());
+  base::FilePath next_dir(path().DirName());
   bool schedule_deletes = false;
 
   // First try to recursively delete the leaf directory managed by our

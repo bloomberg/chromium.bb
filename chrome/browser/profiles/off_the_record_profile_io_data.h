@@ -62,7 +62,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
             bool in_memory) const;
     scoped_refptr<ChromeURLRequestContextGetter>
         CreateIsolatedAppRequestContextGetter(
-            const FilePath& partition_path,
+            const base::FilePath& partition_path,
             bool in_memory,
             scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
                 blob_protocol_handler,

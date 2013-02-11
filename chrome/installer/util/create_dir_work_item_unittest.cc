@@ -26,15 +26,15 @@ namespace {
 };
 
 TEST_F(CreateDirWorkItemTest, CreatePath) {
-  FilePath parent_dir(temp_dir_.path());
+  base::FilePath parent_dir(temp_dir_.path());
   parent_dir = parent_dir.AppendASCII("a");
   file_util::CreateDirectory(parent_dir);
   ASSERT_TRUE(file_util::PathExists(parent_dir));
 
-  FilePath top_dir_to_create(parent_dir);
+  base::FilePath top_dir_to_create(parent_dir);
   top_dir_to_create = top_dir_to_create.AppendASCII("b");
 
-  FilePath dir_to_create(top_dir_to_create);
+  base::FilePath dir_to_create(top_dir_to_create);
   dir_to_create = dir_to_create.AppendASCII("c");
   dir_to_create = dir_to_create.AppendASCII("d");
 
@@ -53,7 +53,7 @@ TEST_F(CreateDirWorkItemTest, CreatePath) {
 }
 
 TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
-  FilePath dir_to_create(temp_dir_.path());
+  base::FilePath dir_to_create(temp_dir_.path());
   dir_to_create = dir_to_create.AppendASCII("aa");
   file_util::CreateDirectory(dir_to_create);
   ASSERT_TRUE(file_util::PathExists(dir_to_create));
@@ -73,13 +73,13 @@ TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
 }
 
 TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
-  FilePath dir_to_create_1(temp_dir_.path());
+  base::FilePath dir_to_create_1(temp_dir_.path());
   dir_to_create_1 = dir_to_create_1.AppendASCII("aaa");
 
-  FilePath dir_to_create_2(dir_to_create_1);
+  base::FilePath dir_to_create_2(dir_to_create_1);
   dir_to_create_2 = dir_to_create_2.AppendASCII("bbb");
 
-  FilePath dir_to_create_3(dir_to_create_2);
+  base::FilePath dir_to_create_3(dir_to_create_2);
   dir_to_create_3 = dir_to_create_3.AppendASCII("ccc");
 
   scoped_ptr<CreateDirWorkItem> work_item(
@@ -90,7 +90,7 @@ TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
   EXPECT_TRUE(file_util::PathExists(dir_to_create_3));
 
   // Create another directory under dir_to_create_2
-  FilePath dir_to_create_4(dir_to_create_2);
+  base::FilePath dir_to_create_4(dir_to_create_2);
   dir_to_create_4 = dir_to_create_4.AppendASCII("ddd");
   file_util::CreateDirectory(dir_to_create_4);
   ASSERT_TRUE(file_util::PathExists(dir_to_create_4));
@@ -106,13 +106,13 @@ TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
 }
 
 TEST_F(CreateDirWorkItemTest, RollbackWithMissingDir) {
-  FilePath dir_to_create_1(temp_dir_.path());
+  base::FilePath dir_to_create_1(temp_dir_.path());
   dir_to_create_1 = dir_to_create_1.AppendASCII("aaaa");
 
-  FilePath dir_to_create_2(dir_to_create_1);
+  base::FilePath dir_to_create_2(dir_to_create_1);
   dir_to_create_2 = dir_to_create_2.AppendASCII("bbbb");
 
-  FilePath dir_to_create_3(dir_to_create_2);
+  base::FilePath dir_to_create_3(dir_to_create_2);
   dir_to_create_3 = dir_to_create_3.AppendASCII("cccc");
 
   scoped_ptr<CreateDirWorkItem> work_item(

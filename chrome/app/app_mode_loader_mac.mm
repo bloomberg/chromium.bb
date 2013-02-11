@@ -44,7 +44,7 @@ void LoadFramework(void** cr_dylib, app_mode::ChromeAppModeInfo* info) {
   CHECK(cr_bundle_id) << "couldn't get browser bundle ID";
 
   // First check if Chrome exists at the last known location.
-  FilePath cr_bundle_path;
+  base::FilePath cr_bundle_path;
   NSString* cr_bundle_path_ns =
       [CFToNSCast(CFCastStrict<CFStringRef>(CFPreferencesCopyAppValue(
           NSToCFCast(app_mode::kLastRunAppBundlePathPrefsKey),
@@ -64,8 +64,8 @@ void LoadFramework(void** cr_dylib, app_mode::ChromeAppModeInfo* info) {
 
   // ** 2: Read information from the Chrome bundle.
   string16 raw_version_str;
-  FilePath version_path;
-  FilePath framework_shlib_path;
+  base::FilePath version_path;
+  base::FilePath framework_shlib_path;
   if (!app_mode::GetChromeBundleInfo(cr_bundle_path, &raw_version_str,
           &version_path, &framework_shlib_path)) {
     LOG(FATAL) << "Couldn't ready Chrome bundle info";

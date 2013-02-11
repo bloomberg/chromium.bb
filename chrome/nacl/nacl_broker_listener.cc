@@ -75,7 +75,7 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
 
   // Create the path to the nacl broker/loader executable - it's the executable
   // this code is running in.
-  FilePath exe_path;
+  base::FilePath exe_path;
   PathService::Get(base::FILE_EXE, &exe_path);
   if (!exe_path.empty()) {
     CommandLine* cmd_line = new CommandLine(exe_path);
@@ -87,7 +87,8 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
                                 loader_channel_id);
 
-    loader_process = content::StartProcessWithAccess(cmd_line, FilePath());
+    loader_process =
+        content::StartProcessWithAccess(cmd_line, base::FilePath());
     if (loader_process) {
       DuplicateHandle(::GetCurrentProcess(), loader_process,
           browser_handle_, &loader_handle_in_browser,

@@ -91,22 +91,22 @@ FileLog* FileLog::Get() {
 }
 
 // static
-FileLog* FileLog::CreateFileLog(const FilePath::StringType& log_name,
+FileLog* FileLog::CreateFileLog(const base::FilePath::StringType& log_name,
                                 LogLevel level) {
-  FilePath log_path(log_name);
+  base::FilePath log_path(log_name);
   file_util::ScopedFILE file(file_util::OpenFile(log_path, "w"));
-  FilePath temp_dir;
+  base::FilePath temp_dir;
   if (!file.get() && file_util::GetTempDir(&temp_dir))
     log_path = temp_dir.Append(log_name);
   file.reset();
   return new FileLog(log_path, level);
 }
 
-FileLog::FileLog(const FilePath& path, LogLevel level)
+FileLog::FileLog(const base::FilePath& path, LogLevel level)
     : path_(path),
       min_log_level_(level) {
   if (!path_.IsAbsolute()) {
-    FilePath cwd;
+    base::FilePath cwd;
     if (file_util::GetCurrentDirectory(&cwd))
       path_ = cwd.Append(path_);
   }
@@ -177,7 +177,7 @@ void FileLog::set_min_log_level(LogLevel level) {
   min_log_level_ = level;
 }
 
-const FilePath& FileLog::path() const {
+const base::FilePath& FileLog::path() const {
   return path_;
 }
 
@@ -224,7 +224,8 @@ void Logger::set_min_log_level(LogLevel level) {
   min_log_level_ = level;
 }
 
-bool InitWebDriverLogging(const FilePath& log_path, LogLevel min_log_level) {
+bool InitWebDriverLogging(const base::FilePath& log_path,
+                          LogLevel min_log_level) {
   start_time = base::Time::Now().ToDoubleT();
   // Turn off base/logging.
   bool success = InitLogging(

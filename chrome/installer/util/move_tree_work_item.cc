@@ -14,9 +14,9 @@
 MoveTreeWorkItem::~MoveTreeWorkItem() {
 }
 
-MoveTreeWorkItem::MoveTreeWorkItem(const FilePath& source_path,
-                                   const FilePath& dest_path,
-                                   const FilePath& temp_dir,
+MoveTreeWorkItem::MoveTreeWorkItem(const base::FilePath& source_path,
+                                   const base::FilePath& dest_path,
+                                   const base::FilePath& temp_dir,
                                    MoveTreeOption duplicate_option)
     : source_path_(source_path),
       dest_path_(dest_path),
@@ -48,7 +48,7 @@ bool MoveTreeWorkItem::Do() {
                   << temp_dir_.value();
       return false;
     }
-    FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
+    base::FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
 
     if (duplicate_option_ == CHECK_DUPLICATES) {
       if (installer::IsIdenticalFileHierarchy(source_path_, dest_path_)) {
@@ -104,7 +104,7 @@ void MoveTreeWorkItem::Rollback() {
     LOG(ERROR) << "Can not move " << dest_path_.value()
                << " to " << source_path_.value();
 
-  FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
+  base::FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
   if (moved_to_backup_ && !file_util::Move(backup, dest_path_)) {
     LOG(ERROR) << "failed move " << backup.value()
                << " to " << dest_path_.value();

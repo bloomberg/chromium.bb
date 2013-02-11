@@ -88,13 +88,13 @@ class ScopedTempDirectory {
     }
     return true;
   }
-  const FilePath& directory() const {
+  const base::FilePath& directory() const {
     DCHECK(!directory_.empty());
     return directory_;
   }
 
  private:
-  FilePath directory_;
+  base::FilePath directory_;
   DISALLOW_COPY_AND_ASSIGN(ScopedTempDirectory);
 };  // class ScopedTempDirectory
 
@@ -233,7 +233,7 @@ bool RunProcessAndWait(const wchar_t* exe_path, const std::wstring& cmdline,
 
 // Retrieves the version number of |pe_file| from its version
 // resource, placing the value in |version|.  Returns true on success.
-bool GetFileVersion(const FilePath& pe_file, ChromeVersion* version) {
+bool GetFileVersion(const base::FilePath& pe_file, ChromeVersion* version) {
   DCHECK(version);
   bool result = false;
   upgrade_test::ResourceLoader pe_file_loader;
@@ -262,7 +262,8 @@ bool GetFileVersion(const FilePath& pe_file, ChromeVersion* version) {
 
 // Retrieves the version number of setup.exe in |work_dir| from its version
 // resource, placing the value in |version|.  Returns true on success.
-bool GetSetupExeVersion(const FilePath& work_dir, ChromeVersion* version) {
+bool GetSetupExeVersion(const base::FilePath& work_dir,
+                        ChromeVersion* version) {
   return GetFileVersion(work_dir.Append(&kSetupExe[0]), version);
 }
 
@@ -342,7 +343,7 @@ void VisitResource(const upgrade_test::EntryPath& path,
 }
 
 // Updates the version strings and numbers in all of |image_file|'s resources.
-bool UpdateVersionIfMatch(const FilePath& image_file,
+bool UpdateVersionIfMatch(const base::FilePath& image_file,
                           VisitResourceContext* context) {
   if (!context ||
       context->current_version_str.size() < context->new_version_str.size()) {
@@ -415,7 +416,7 @@ bool IncrementNewVersion(upgrade_test::Direction direction,
 // as the |work-dir|\Chrome-bin\w.x.y.z directory.  |original_version| and
 // |new_version|, when non-NULL, are given the original and new version numbers
 // on success.
-bool ApplyAlternateVersion(const FilePath& work_dir,
+bool ApplyAlternateVersion(const base::FilePath& work_dir,
                            upgrade_test::Direction direction,
                            std::wstring* original_version,
                            std::wstring* new_version) {
@@ -434,7 +435,7 @@ bool ApplyAlternateVersion(const FilePath& work_dir,
   file_util::FileEnumerator all_files(work_dir, true,
                                       file_util::FileEnumerator::FILES);
   do {
-    FilePath file = all_files.Next();
+    base::FilePath file = all_files.Next();
     if (file.empty()) {
       break;
     }
@@ -445,7 +446,7 @@ bool ApplyAlternateVersion(const FilePath& work_dir,
   } while (doing_great);
 
   // Change the versioned directory.
-  FilePath chrome_bin = work_dir.Append(&kChromeBin[0]);
+  base::FilePath chrome_bin = work_dir.Append(&kChromeBin[0]);
   doing_great = file_util::Move(chrome_bin.Append(ctx.current_version_str),
                                 chrome_bin.Append(ctx.new_version_str));
 
@@ -466,10 +467,11 @@ bool ApplyAlternateVersion(const FilePath& work_dir,
 // executable's directory.  This can be overridden with the --7za_path
 // command-line switch.
 FilePath Get7zaPath() {
-  FilePath l7za_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-      &kSwitch7zaPath[0]);
+  base::FilePath l7za_path =
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          &kSwitch7zaPath[0]);
   if (l7za_path.empty()) {
-    FilePath dir_exe;
+    base::FilePath dir_exe;
     if (!PathService::Get(base::DIR_EXE, &dir_exe))
       LOG(DFATAL) << "Failed getting directory of host executable";
     l7za_path = dir_exe.Append(&k7zaPathRelative[0]);
@@ -477,7 +479,8 @@ FilePath Get7zaPath() {
   return l7za_path;
 }
 
-bool CreateArchive(const FilePath& output_file, const FilePath& input_path,
+bool CreateArchive(const base::FilePath& output_file,
+                   const base::FilePath& input_path,
                    int compression_level) {
   DCHECK(compression_level == 0 ||
          compression_level >= 1 && compression_level <= 9 &&
@@ -508,8 +511,8 @@ bool CreateArchive(const FilePath& output_file, const FilePath& input_path,
 
 namespace upgrade_test {
 
-bool GenerateAlternateVersion(const FilePath& original_installer_path,
-                              const FilePath& target_path,
+bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
+                              const base::FilePath& target_path,
                               Direction direction,
                               std::wstring* original_version,
                               std::wstring* new_version) {
@@ -519,7 +522,7 @@ bool GenerateAlternateVersion(const FilePath& original_installer_path,
     return false;
 
   // Copy the original mini_installer.
-  FilePath mini_installer =
+  base::FilePath mini_installer =
       work_dir.directory().Append(original_installer_path.BaseName());
   if (!file_util::CopyFile(original_installer_path, mini_installer)) {
     LOG(DFATAL) << "Failed copying \"" << original_installer_path.value()
@@ -527,8 +530,9 @@ bool GenerateAlternateVersion(const FilePath& original_installer_path,
     return false;
   }
 
-  FilePath setup_ex_ = work_dir.directory().Append(&kSetupEx_[0]);
-  FilePath chrome_packed_7z = work_dir.directory().Append(&kChromePacked7z[0]);
+  base::FilePath setup_ex_ = work_dir.directory().Append(&kSetupEx_[0]);
+  base::FilePath chrome_packed_7z =
+      work_dir.directory().Append(&kChromePacked7z[0]);
   // Load the original file and extract setup.ex_ and chrome.packed.7z
   {
     ResourceLoader resource_loader;
@@ -563,7 +567,7 @@ bool GenerateAlternateVersion(const FilePath& original_installer_path,
   }
 
   // Expand setup.ex_
-  FilePath setup_exe = setup_ex_.ReplaceExtension(&kExe[0]);
+  base::FilePath setup_exe = setup_ex_.ReplaceExtension(&kExe[0]);
   std::wstring command_line;
   command_line.append(1, L'"')
     .append(&kExpandExe[0])
@@ -597,7 +601,7 @@ bool GenerateAlternateVersion(const FilePath& original_installer_path,
   }
 
   // Get rid of intermediate files
-  FilePath chrome_7z(chrome_7z_name);
+  base::FilePath chrome_7z(chrome_7z_name);
   if (!file_util::Delete(chrome_7z, false) ||
       !file_util::Delete(chrome_packed_7z, false) ||
       !file_util::Delete(setup_ex_, false)) {
@@ -648,8 +652,8 @@ bool GenerateAlternateVersion(const FilePath& original_installer_path,
   return file_util::Move(mini_installer, target_path);
 }
 
-bool GenerateAlternatePEFileVersion(const FilePath& original_file,
-                                    const FilePath& target_file,
+bool GenerateAlternatePEFileVersion(const base::FilePath& original_file,
+                                    const base::FilePath& target_file,
                                     Direction direction) {
   VisitResourceContext ctx;
   if (!GetFileVersion(original_file, &ctx.current_version)) {
@@ -671,8 +675,8 @@ bool GenerateAlternatePEFileVersion(const FilePath& original_file,
   return true;
 }
 
-bool GenerateSpecificPEFileVersion(const FilePath& original_file,
-                                   const FilePath& target_file,
+bool GenerateSpecificPEFileVersion(const base::FilePath& original_file,
+                                   const base::FilePath& target_file,
                                    const Version& version) {
   // First copy original_file to target_file.
   if (!file_util::CopyFile(original_file, target_file)) {

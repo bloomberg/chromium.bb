@@ -86,7 +86,7 @@ class FileManagerBrowserTest : public ExtensionApiTest {
   // test.
   void StartTest(const std::string& test_name);
 
-  FilePath downloads_path_;
+  base::FilePath downloads_path_;
 
  private:
   base::ScopedTempDir tmp_dir_;
@@ -97,7 +97,7 @@ void FileManagerBrowserTest::CreateTestFile(
     int length,
     const std::string& modification_time) {
   ASSERT_GE(length, 0);
-  FilePath path = downloads_path_.AppendASCII(name);
+  base::FilePath path = downloads_path_.AppendASCII(name);
   int flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
   bool created = false;
   base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
@@ -115,7 +115,7 @@ void FileManagerBrowserTest::CreateTestFile(
 void FileManagerBrowserTest::CreateTestDirectory(
     const std::string& name,
     const std::string& modification_time) {
-  FilePath path = downloads_path_.AppendASCII(name);
+  base::FilePath path = downloads_path_.AppendASCII(name);
   ASSERT_TRUE(file_util::CreateDirectory(path));
   base::Time time;
   ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
@@ -157,7 +157,7 @@ void FileManagerBrowserTest::SetShorterRefreshInterval() {
 }
 
 void FileManagerBrowserTest::StartTest(const std::string& test_name) {
-  FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
+  base::FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
   const extensions::Extension* extension = LoadExtensionAsComponent(path);
   ASSERT_TRUE(extension);
 
@@ -174,10 +174,12 @@ void FileManagerBrowserTest::StartTest(const std::string& test_name) {
 //   watcher.RunMessageLoopUntilConditionSatisfied();
 class TestFilePathWatcher {
  public:
-  typedef base::Callback<bool(const FilePath& file_path)> ConditionCallback;
+  typedef base::Callback<bool(const base::FilePath& file_path)>
+      ConditionCallback;
 
   // Stores the supplied |path| and |condition| for later use (no side effects).
-  TestFilePathWatcher(const FilePath& path, const ConditionCallback& condition);
+  TestFilePathWatcher(const base::FilePath& path,
+                      const ConditionCallback& condition);
 
   // Starts the FilePathWatcher and returns once it's watching for changes.
   void StartAndWaitUntilReady();
@@ -192,12 +194,12 @@ class TestFilePathWatcher {
 
   // FilePathWatcher callback (on the FILE thread). Posts Done() to the UI
   // thread when the condition is satisfied or there is an error.
-  void FilePathWatcherCallback(const FilePath& path, bool error);
+  void FilePathWatcherCallback(const base::FilePath& path, bool error);
 
   // Sets done_ and stops the message pump if running.
   void Done();
 
-  const FilePath path_;
+  const base::FilePath path_;
   ConditionCallback condition_;
   scoped_ptr<base::FilePathWatcher> watcher_;
   base::Closure quit_closure_;
@@ -205,7 +207,7 @@ class TestFilePathWatcher {
   bool error_;
 };
 
-TestFilePathWatcher::TestFilePathWatcher(const FilePath& path,
+TestFilePathWatcher::TestFilePathWatcher(const base::FilePath& path,
                                          const ConditionCallback& condition)
     : path_(path),
       condition_(condition),
@@ -235,7 +237,7 @@ void TestFilePathWatcher::StartWatching() {
   ASSERT_TRUE(ok);
 }
 
-void TestFilePathWatcher::FilePathWatcherCallback(const FilePath& path,
+void TestFilePathWatcher::FilePathWatcherCallback(const base::FilePath& path,
                                                   bool error) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   ASSERT_EQ(path_, path);
@@ -266,7 +268,7 @@ bool TestFilePathWatcher::RunMessageLoopUntilConditionSatisfied() {
   return !error_;
 }
 
-bool CopiedFilePresent(const FilePath& path) {
+bool CopiedFilePresent(const base::FilePath& path) {
   int64 copy_size = 0;
   // If the file doesn't exist yet this will fail and we'll keep waiting.
   if (!file_util::GetFileSize(path, &copy_size))
@@ -274,7 +276,7 @@ bool CopiedFilePresent(const FilePath& path) {
   return (copy_size == kKeyboardTestFileSize);
 }
 
-bool DeletedFileGone(const FilePath& path) {
+bool DeletedFileGone(const base::FilePath& path) {
   return !file_util::PathExists(path);
 };
 
@@ -298,7 +300,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerBrowserTest, TestKeyboardCopy) {
   StartFileManager();
   SetShorterRefreshInterval();
 
-  FilePath copy_path = downloads_path_.AppendASCII(kKeyboardTestFileCopyName);
+  base::FilePath copy_path =
+      downloads_path_.AppendASCII(kKeyboardTestFileCopyName);
   ASSERT_FALSE(file_util::PathExists(copy_path));
   TestFilePathWatcher watcher(copy_path, base::Bind(CopiedFilePresent));
   watcher.StartAndWaitUntilReady();
@@ -310,7 +313,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerBrowserTest, TestKeyboardCopy) {
   ASSERT_TRUE(watcher.RunMessageLoopUntilConditionSatisfied());
 
   // Check that it was a copy, not a move.
-  FilePath source_path = downloads_path_.AppendASCII(kKeyboardTestFileName);
+  base::FilePath source_path =
+      downloads_path_.AppendASCII(kKeyboardTestFileName);
   ASSERT_TRUE(file_util::PathExists(source_path));
 }
 
@@ -322,7 +326,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerBrowserTest, TestKeyboardDelete) {
   // If it doesn't, this test will take more than 30 seconds to complete.
   SetShorterDeleteTimeout();
 
-  FilePath delete_path = downloads_path_.AppendASCII(kKeyboardTestFileName);
+  base::FilePath delete_path =
+      downloads_path_.AppendASCII(kKeyboardTestFileName);
   ASSERT_TRUE(file_util::PathExists(delete_path));
   TestFilePathWatcher watcher(delete_path, base::Bind(DeletedFileGone));
   watcher.StartAndWaitUntilReady();

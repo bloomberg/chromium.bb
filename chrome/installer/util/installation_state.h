@@ -45,7 +45,7 @@ class ProductState {
   const ChannelInfo& channel() const { return channel_; }
 
   // Returns the path to the product's "setup.exe"; may be empty.
-  FilePath GetSetupPath() const;
+  base::FilePath GetSetupPath() const;
 
   // Returns the product's version.  This method may only be called on an
   // instance that has been initialized for an installed product.

@@ -91,10 +91,10 @@ class DeleteAfterRebootHelperTest : public testing::Test {
 
   std::vector<PendingMove> original_pending_moves_;
 
-  FilePath temp_dir_;
-  FilePath temp_file_;
-  FilePath temp_subdir_;
-  FilePath temp_subdir_file_;
+  base::FilePath temp_dir_;
+  base::FilePath temp_file_;
+  base::FilePath temp_subdir_;
+  base::FilePath temp_subdir_file_;
 };
 }
 
@@ -163,7 +163,7 @@ TEST_F(DeleteAfterRebootHelperTest, TestFileDeleteScheduleAndUnschedule) {
   }
 
   // Check that each of the deletes we expect are there in order.
-  FilePath expected_paths[] =
+  base::FilePath expected_paths[] =
       { temp_file_, temp_subdir_file_, temp_subdir_, temp_dir_ };
   for (int i = 0; i < arraysize(expected_paths); ++i) {
     EXPECT_FALSE(iter == pending_moves.end());
@@ -215,7 +215,7 @@ TEST_F(DeleteAfterRebootHelperTest, TestFileDeleteSchedulingWithActualDeletes) {
   }
 
   // Check that each of the deletes we expect are there in order.
-  FilePath expected_paths[] =
+  base::FilePath expected_paths[] =
       { temp_file_, temp_subdir_file_, temp_subdir_, temp_dir_ };
   for (int i = 0; i < arraysize(expected_paths); ++i) {
     EXPECT_FALSE(iter == pending_moves.end());

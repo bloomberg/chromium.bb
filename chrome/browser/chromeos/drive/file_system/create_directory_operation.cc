@@ -18,7 +18,7 @@ namespace drive {
 namespace file_system {
 
 struct CreateDirectoryOperation::CreateDirectoryParams {
-  CreateDirectoryParams(const FilePath& target_directory_path,
+  CreateDirectoryParams(const base::FilePath& target_directory_path,
                         bool is_exclusive,
                         bool is_recursive,
                         const FileOperationCallback& callback)
@@ -28,7 +28,7 @@ struct CreateDirectoryOperation::CreateDirectoryParams {
         callback(callback) {}
   ~CreateDirectoryParams() {}
 
-  const FilePath target_directory_path;
+  const base::FilePath target_directory_path;
   const bool is_exclusive;
   const bool is_recursive;
   FileOperationCallback callback;
@@ -43,7 +43,7 @@ FindFirstMissingParentDirectoryResult()
 
 void CreateDirectoryOperation::FindFirstMissingParentDirectoryResult::Init(
     FindFirstMissingParentDirectoryError in_error,
-    FilePath in_first_missing_parent_path,
+    base::FilePath in_first_missing_parent_path,
     const std::string& in_last_dir_resource_id) {
   error = in_error;
   first_missing_parent_path = in_first_missing_parent_path;
@@ -56,7 +56,7 @@ CreateDirectoryOperation::FindFirstMissingParentDirectoryResult::
 
 struct CreateDirectoryOperation::FindFirstMissingParentDirectoryParams {
   FindFirstMissingParentDirectoryParams(
-      const std::vector<FilePath::StringType>& path_parts,
+      const std::vector<base::FilePath::StringType>& path_parts,
       const FindFirstMissingParentDirectoryCallback& callback)
       : path_parts(path_parts),
         index(0),
@@ -65,9 +65,9 @@ struct CreateDirectoryOperation::FindFirstMissingParentDirectoryParams {
   }
   ~FindFirstMissingParentDirectoryParams() {}
 
-  std::vector<FilePath::StringType> path_parts;
+  std::vector<base::FilePath::StringType> path_parts;
   size_t index;
-  FilePath current_path;
+  base::FilePath current_path;
   std::string last_dir_resource_id;
   const FindFirstMissingParentDirectoryCallback callback;
 };
@@ -88,7 +88,7 @@ CreateDirectoryOperation::~CreateDirectoryOperation() {
 }
 
 void CreateDirectoryOperation::CreateDirectory(
-    const FilePath& directory_path,
+    const base::FilePath& directory_path,
     bool is_exclusive,
     bool is_recursive,
     const FileOperationCallback& callback) {
@@ -152,7 +152,7 @@ void CreateDirectoryOperation::CreateDirectoryAfterFindFirstMissingPath(
 
 void CreateDirectoryOperation::AddNewDirectory(
     scoped_ptr<CreateDirectoryParams> params,
-    const FilePath& created_directory_path,
+    const base::FilePath& created_directory_path,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -175,9 +175,9 @@ void CreateDirectoryOperation::AddNewDirectory(
 
 void CreateDirectoryOperation::ContinueCreateDirectory(
     scoped_ptr<CreateDirectoryParams> params,
-    const FilePath& created_directory_path,
+    const base::FilePath& created_directory_path,
     DriveFileError error,
-    const FilePath& moved_file_path) {
+    const base::FilePath& moved_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params->callback.is_null());
 
@@ -201,12 +201,12 @@ void CreateDirectoryOperation::ContinueCreateDirectory(
 }
 
 void CreateDirectoryOperation::FindFirstMissingParentDirectory(
-    const FilePath& directory_path,
+    const base::FilePath& directory_path,
     const FindFirstMissingParentDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  std::vector<FilePath::StringType> path_parts;
+  std::vector<base::FilePath::StringType> path_parts;
   directory_path.GetComponents(&path_parts);
 
   scoped_ptr<FindFirstMissingParentDirectoryParams> params(
@@ -230,7 +230,7 @@ void CreateDirectoryOperation::FindFirstMissingParentDirectoryInternal(
   // Terminate recursion if we're at the last element.
   if (params->index == params->path_parts.size()) {
     FindFirstMissingParentDirectoryResult result;
-    result.Init(FIND_FIRST_DIRECTORY_ALREADY_PRESENT, FilePath(), "");
+    result.Init(FIND_FIRST_DIRECTORY_ALREADY_PRESENT, base::FilePath(), "");
     params->callback.Run(result);
     return;
   }
@@ -239,7 +239,7 @@ void CreateDirectoryOperation::FindFirstMissingParentDirectoryInternal(
       params->path_parts[params->index]);
   // Need a reference to current_path before we call base::Passed because the
   // order of evaluation of arguments is indeterminate.
-  const FilePath& current_path = params->current_path;
+  const base::FilePath& current_path = params->current_path;
   metadata_->GetEntryInfoByPath(
       current_path,
       base::Bind(
@@ -265,7 +265,7 @@ void CreateDirectoryOperation::ContinueFindFirstMissingParentDirectory(
   } else if (error != DRIVE_FILE_OK ||
              !entry_proto->file_info().is_directory()) {
     // Unexpected error, or found a file when we were expecting a directory.
-    result.Init(FIND_FIRST_FOUND_INVALID, FilePath(), "");
+    result.Init(FIND_FIRST_FOUND_INVALID, base::FilePath(), "");
     params->callback.Run(result);
   } else {
     // This parent exists, so recursively look at the next element.

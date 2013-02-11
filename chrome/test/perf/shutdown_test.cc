@@ -43,17 +43,17 @@ class ShutdownTest : public UIPerfTest {
         automation()->GetBrowserWindow(0));
     ASSERT_TRUE(browser_proxy.get());
 
-    const FilePath kFastShutdownDir(FILE_PATH_LITERAL("fast_shutdown"));
-    const FilePath kCurrentDir(FilePath::kCurrentDirectory);
-    const FilePath test_cases[] = {
+    const base::FilePath kFastShutdownDir(FILE_PATH_LITERAL("fast_shutdown"));
+    const base::FilePath kCurrentDir(base::FilePath::kCurrentDirectory);
+    const base::FilePath test_cases[] = {
       ui_test_utils::GetTestFilePath(kFastShutdownDir,
-          FilePath(FILE_PATH_LITERAL("on_before_unloader.html"))),
+          base::FilePath(FILE_PATH_LITERAL("on_before_unloader.html"))),
       ui_test_utils::GetTestFilePath(kCurrentDir,
-          FilePath(FILE_PATH_LITERAL("animated-gifs.html"))),
+          base::FilePath(FILE_PATH_LITERAL("animated-gifs.html"))),
       ui_test_utils::GetTestFilePath(kCurrentDir,
-          FilePath(FILE_PATH_LITERAL("french_page.html"))),
+          base::FilePath(FILE_PATH_LITERAL("french_page.html"))),
       ui_test_utils::GetTestFilePath(kCurrentDir,
-          FilePath(FILE_PATH_LITERAL("setcookie.html"))),
+          base::FilePath(FILE_PATH_LITERAL("setcookie.html"))),
     };
 
     for (size_t i = 0; i < arraysize(test_cases); i++) {
@@ -107,7 +107,7 @@ class ShutdownTest : public UIPerfTest {
         clear_profile_ = false;
         // Clear template_user_data_ so we don't try to copy it over each time
         // through.
-        set_template_user_data(FilePath());
+        set_template_user_data(base::FilePath());
       }
     }
 

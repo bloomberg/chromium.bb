@@ -22,7 +22,7 @@ namespace webdriver {
 TEST(CapabilitiesParser, NoCaps) {
   Capabilities caps;
   DictionaryValue dict;
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
 }
 
@@ -99,11 +99,11 @@ TEST(CapabilitiesParser, Profile) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath folder = temp_dir.path().AppendASCII("folder");
+  base::FilePath folder = temp_dir.path().AppendASCII("folder");
   ASSERT_TRUE(file_util::CreateDirectory(folder));
   ASSERT_EQ(4, file_util::WriteFile(
       folder.AppendASCII("data"), "data", 4));
-  FilePath zip = temp_dir.path().AppendASCII("data.zip");
+  base::FilePath zip = temp_dir.path().AppendASCII("data.zip");
   ASSERT_TRUE(zip::Zip(folder, zip, false /* include_hidden_files */));
   std::string contents;
   ASSERT_TRUE(file_util::ReadFileToString(zip, &contents));
@@ -124,7 +124,7 @@ TEST(CapabilitiesParser, UnknownCap) {
   Capabilities caps;
   DictionaryValue dict;
   dict.SetString("chromeOptions.nosuchcap", "none");
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_TRUE(parser.Parse());
 }
 
@@ -138,7 +138,7 @@ TEST(CapabilitiesParser, ProxyCap) {
   options->SetString("proxyType", "PAC");
   options->SetString("proxyAutoconfigUrl", kPacUrl);
 
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
   EXPECT_STREQ(kPacUrl,
       caps.command.GetSwitchValueASCII(switches::kProxyPacUrl).c_str());
@@ -153,7 +153,7 @@ TEST(CapabilitiesParser, ProxyTypeCapIncompatiblePac) {
   options->SetString("proxyType", "pac");
   options->SetString("httpProxy", "http://localhost:8001");
 
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_TRUE(parser.Parse());
 }
 
@@ -165,7 +165,7 @@ TEST(CapabilitiesParser, ProxyTypeCapIncompatibleManual) {
 
   options->SetString("proxyType", "manual");
 
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_TRUE(parser.Parse());
 }
 
@@ -177,7 +177,7 @@ TEST(CapabilitiesParser, ProxyTypeCapNullValue) {
 
   options->Set("proxyType", Value::CreateNullValue());
 
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_TRUE(parser.Parse());
 }
 
@@ -192,7 +192,7 @@ TEST(CapabilitiesParser, ProxyTypeManualCap) {
   options->SetString("httpProxy", "localhost:8001");
   options->SetString("ftpProxy", "localhost:9001");
 
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
   EXPECT_STREQ(kProxyServers,
       caps.command.GetSwitchValueASCII(switches::kProxyServer).c_str());
@@ -208,7 +208,7 @@ TEST(CapabilitiesParser, ProxyBypassListCap) {
   options->SetString("proxyType", "manual");
   options->SetString("noProxy", kBypassList);
 
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
   EXPECT_STREQ(kBypassList,
       caps.command.GetSwitchValueASCII(switches::kProxyBypassList).c_str());
@@ -224,7 +224,7 @@ TEST(CapabilitiesParser, ProxyBypassListCapNullValue) {
   options->Set("noProxy", Value::CreateNullValue());
   options->SetString("httpProxy", "localhost:8001");
 
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
   EXPECT_FALSE(caps.command.HasSwitch(switches::kProxyBypassList));
 }
@@ -238,7 +238,7 @@ TEST(CapabilitiesParser, UnknownProxyCap) {
   options->SetString("proxyType", "DIRECT");
   options->SetString("badProxyCap", "error");
 
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
 }
 
@@ -252,7 +252,7 @@ TEST(CapabilitiesParser, ProxyFtpServerCapNullValue) {
   options->SetString("httpProxy", "localhost:8001");
   options->Set("ftpProxy", Value::CreateNullValue());
 
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
   EXPECT_STREQ("http=localhost:8001",
       caps.command.GetSwitchValueASCII(switches::kProxyServer).c_str());
@@ -263,7 +263,7 @@ TEST(CapabilitiesParser, DriverLoggingCapString) {
   DictionaryValue dict;
   DictionaryValue* options = new DictionaryValue();
   dict.Set("loggingPrefs", options);
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
 
   // A string as the driver logging level works.
   options->SetString("driver", "INFO");
@@ -286,7 +286,7 @@ TEST(CapabilitiesParser, ExcludeSwitches) {
   options->Set("excludeSwitches", switches);
 
   Capabilities caps;
-  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+  CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
 
   const std::set<std::string>& rm_set = caps.exclude_switches;

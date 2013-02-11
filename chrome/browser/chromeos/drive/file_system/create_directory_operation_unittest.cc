@@ -103,7 +103,7 @@ class CreateDirectoryOperationTest
   }
 
   virtual void OnDirectoryChangedByOperation(
-      const FilePath& directory_path) OVERRIDE {
+      const base::FilePath& directory_path) OVERRIDE {
     // Do nothing.
   }
 
@@ -147,44 +147,45 @@ TEST_F(CreateDirectoryOperationTest, FindFirstMissingParentDirectory) {
   CreateDirectoryOperation::FindFirstMissingParentDirectoryResult result;
 
   // Create directory in root.
-  FilePath dir_path(FILE_PATH_LITERAL("drive/New Folder 1"));
+  base::FilePath dir_path(FILE_PATH_LITERAL("drive/New Folder 1"));
   operation()->FindFirstMissingParentDirectory(
       dir_path,
       base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
                  &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(CreateDirectoryOperation::FIND_FIRST_FOUND_MISSING, result.error);
-  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/New Folder 1")),
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/New Folder 1")),
             result.first_missing_parent_path);
   EXPECT_EQ("fake_root", result.last_dir_resource_id);
 
   // Missing folders in subdir of an existing folder.
-  FilePath dir_path2(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2"));
+  base::FilePath dir_path2(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2"));
   operation()->FindFirstMissingParentDirectory(
       dir_path2,
       base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
                  &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(CreateDirectoryOperation::FIND_FIRST_FOUND_MISSING, result.error);
-  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
             result.first_missing_parent_path);
   EXPECT_NE("fake_root", result.last_dir_resource_id);  // non-root dir.
 
   // Missing two folders on the path.
-  FilePath dir_path3 = dir_path2.Append(FILE_PATH_LITERAL("Another Folder"));
+  base::FilePath dir_path3 =
+      dir_path2.Append(FILE_PATH_LITERAL("Another Folder"));
   operation()->FindFirstMissingParentDirectory(
       dir_path3,
       base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
                  &result));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(CreateDirectoryOperation::FIND_FIRST_FOUND_MISSING, result.error);
-  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
             result.first_missing_parent_path);
   EXPECT_NE("fake_root", result.last_dir_resource_id);  // non-root dir.
 
   // Folders on top of an existing file.
   operation()->FindFirstMissingParentDirectory(
-      FilePath(FILE_PATH_LITERAL("drive/File 1.txt/BadDir")),
+      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt/BadDir")),
       base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
                  &result));
   google_apis::test_util::RunBlockingPoolTask();
@@ -192,7 +193,7 @@ TEST_F(CreateDirectoryOperationTest, FindFirstMissingParentDirectory) {
 
   // Existing folder.
   operation()->FindFirstMissingParentDirectory(
-      FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
       base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
                  &result));
   google_apis::test_util::RunBlockingPoolTask();

@@ -170,7 +170,7 @@ class LatencyTest
   void PrintEvents(const TraceEventVector& events);
 
   // Path to html file.
-  FilePath test_path_;
+  base::FilePath test_path_;
 
   // Query INSTANT events.
   Query query_instant_;

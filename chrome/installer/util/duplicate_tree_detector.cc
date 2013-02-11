@@ -10,8 +10,8 @@
 
 namespace installer {
 
-bool IsIdenticalFileHierarchy(const FilePath& src_path,
-                              const FilePath& dest_path) {
+bool IsIdenticalFileHierarchy(const base::FilePath& src_path,
+                              const base::FilePath& dest_path) {
   using file_util::FileEnumerator;
   base::PlatformFileInfo src_info;
   base::PlatformFileInfo dest_info;
@@ -37,7 +37,8 @@ bool IsIdenticalFileHierarchy(const FilePath& src_path,
 
       FileEnumerator path_enum(src_path, false /* not recursive */,
           FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
-      for (FilePath path = path_enum.Next(); is_identical && !path.empty();
+      for (base::FilePath path = path_enum.Next();
+           is_identical && !path.empty();
            path = path_enum.Next()) {
         is_identical =
             IsIdenticalFileHierarchy(path, dest_path.Append(path.BaseName()));

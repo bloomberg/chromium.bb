@@ -824,7 +824,7 @@ ChromeContentBrowserClient::CreateRequestContext(
 net::URLRequestContextGetter*
 ChromeContentBrowserClient::CreateRequestContextForStoragePartition(
     content::BrowserContext* browser_context,
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory,
     scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
         blob_protocol_handler,

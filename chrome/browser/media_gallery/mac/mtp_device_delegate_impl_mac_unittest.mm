@@ -90,14 +90,14 @@ const char kTestFileContents[] = "test";
            downloadDelegate:(id<ICCameraDeviceDownloadDelegate>)downloadDelegate
         didDownloadSelector:(SEL)selector
                 contextInfo:(void*)contextInfo {
-  FilePath saveDir(base::SysNSStringToUTF8(
+  base::FilePath saveDir(base::SysNSStringToUTF8(
       [[options objectForKey:ICDownloadsDirectoryURL] path]));
   std::string saveAsFilename =
       base::SysNSStringToUTF8([options objectForKey:ICSaveAsFilename]);
   // It appears that the ImageCapture library adds an extension to the requested
   // filename. Do that here to require a rename.
   saveAsFilename += ".jpg";
-  FilePath toBeSaved = saveDir.Append(saveAsFilename);
+  base::FilePath toBeSaved = saveDir.Append(saveAsFilename);
   ASSERT_EQ(static_cast<int>(strlen(kTestFileContents)),
             file_util::WriteFile(toBeSaved, kTestFileContents,
                                  strlen(kTestFileContents)));
@@ -163,7 +163,7 @@ const char kTestFileContents[] = "test";
 void EnumerateAndSignal(
     fileapi::FileSystemFileUtil::AbstractFileEnumerator* enumerator,
     base::WaitableEvent* event,
-    FilePath* path) {
+    base::FilePath* path) {
   *path = enumerator->Next();
   event->Signal();
 }
@@ -219,16 +219,16 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestGetRootFileInfo) {
   // Making a fresh delegate should have a single file entry for the synthetic
   // root directory, with the name equal to the device id string.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            delegate_->GetFileInfo(FilePath("/ic:id"), &info));
+            delegate_->GetFileInfo(base::FilePath("/ic:id"), &info));
   EXPECT_TRUE(info.is_directory);
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            delegate_->GetFileInfo(FilePath("/nonexistent"), &info));
+            delegate_->GetFileInfo(base::FilePath("/nonexistent"), &info));
 
   // Signal the delegate that no files are coming.
   delegate_->NoMoreItems();
 
   scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator> enumerator =
-      delegate_->CreateFileEnumerator(FilePath("/ic:id"), true);
+      delegate_->CreateFileEnumerator(base::FilePath("/ic:id"), true);
   EXPECT_TRUE(enumerator->Next().empty());
 }
 
@@ -245,7 +245,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestGetFileInfo) {
 
   base::PlatformFileInfo info;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            delegate_->GetFileInfo(FilePath("/ic:id/name1"), &info));
+            delegate_->GetFileInfo(base::FilePath("/ic:id/name1"), &info));
   EXPECT_EQ(info1.size, info.size);
   EXPECT_EQ(info1.is_directory, info.is_directory);
   EXPECT_EQ(info1.last_modified, info.last_modified);
@@ -257,12 +257,12 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestGetFileInfo) {
   delegate_->NoMoreItems();
 
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            delegate_->GetFileInfo(FilePath("/ic:id/name2"), &info));
+            delegate_->GetFileInfo(base::FilePath("/ic:id/name2"), &info));
   EXPECT_EQ(info1.size, info.size);
 
   scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator> enumerator =
-      delegate_->CreateFileEnumerator(FilePath("/ic:id"), true);
-  FilePath next = enumerator->Next();
+      delegate_->CreateFileEnumerator(base::FilePath("/ic:id"), true);
+  base::FilePath next = enumerator->Next();
   ASSERT_FALSE(next.empty());
   EXPECT_EQ(1, enumerator->Size());
   EXPECT_EQ(time1, enumerator->LastModifiedTime());
@@ -300,8 +300,8 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestIgnoreDirectories) {
   delegate_->NoMoreItems();
 
   scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator> enumerator =
-      delegate_->CreateFileEnumerator(FilePath("/ic:id"), true);
-  FilePath next = enumerator->Next();
+      delegate_->CreateFileEnumerator(base::FilePath("/ic:id"), true);
+  base::FilePath next = enumerator->Next();
   ASSERT_FALSE(next.empty());
   EXPECT_EQ("/ic:id/name1", next.value());
 
@@ -325,10 +325,10 @@ TEST_F(MTPDeviceDelegateImplMacTest, EnumeratorWaitsForEntries) {
   delegate_->ItemAdded("name1", info1);
 
   scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator> enumerator =
-      delegate_->CreateFileEnumerator(FilePath("/ic:id"), true);
+      delegate_->CreateFileEnumerator(base::FilePath("/ic:id"), true);
   // Event is manually reset, initially unsignaled
   base::WaitableEvent event(true, false);
-  FilePath next;
+  base::FilePath next;
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&EnumerateAndSignal,
                          enumerator.get(), &event, &next));

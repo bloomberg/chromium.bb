@@ -94,9 +94,9 @@ L"                            relative to this program's location.\n",
 // Gets the path to the source mini_installer.exe on which to operate, putting
 // the result in |mini_installer|.  Returns true on success.
 bool GetMiniInstallerPath(const CommandLine& cmd_line,
-                          FilePath* mini_installer) {
+                          base::FilePath* mini_installer) {
   DCHECK(mini_installer);
-  FilePath result = cmd_line.GetSwitchValuePath(switches::kMiniInstaller);
+  base::FilePath result = cmd_line.GetSwitchValuePath(switches::kMiniInstaller);
   if (result.empty() && PathService::Get(base::DIR_EXE, &result))
     result = result.Append(kDefaultMiniInstallerFile);
   if (result.empty())
@@ -106,11 +106,11 @@ bool GetMiniInstallerPath(const CommandLine& cmd_line,
 }
 
 // Gets the path to the output file, putting the result in |out|.
-void GetOutPath(const CommandLine& cmd_line, FilePath* out) {
+void GetOutPath(const CommandLine& cmd_line, base::FilePath* out) {
   DCHECK(out);
-  FilePath result = cmd_line.GetSwitchValuePath(switches::kOut);
+  base::FilePath result = cmd_line.GetSwitchValuePath(switches::kOut);
   if (result.empty())
-    *out = FilePath(kDefaultOutPath);
+    *out = base::FilePath(kDefaultOutPath);
   else
     *out = result;
 }
@@ -134,7 +134,7 @@ int wmain(int argc, wchar_t *argv[]) {
     return EXIT_SUCCESS;
   }
 
-  FilePath mini_installer;
+  base::FilePath mini_installer;
   if (!GetMiniInstallerPath(*cmd_line, &mini_installer)) {
     DumpUsage(*cmd_line, errors::MINI_INSTALLER_NOT_FOUND, std::wstring());
     return EXIT_FAILURE;
@@ -146,7 +146,7 @@ int wmain(int argc, wchar_t *argv[]) {
     return EXIT_FAILURE;
   }
 
-  FilePath out;
+  base::FilePath out;
   GetOutPath(*cmd_line, &out);
   if (!cmd_line->HasSwitch(switches::kForce) && file_util::PathExists(out)) {
     DumpUsage(*cmd_line, errors::OUT_FILE_EXISTS, out.value());

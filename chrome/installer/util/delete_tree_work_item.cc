@@ -28,16 +28,16 @@ bool SafeCast(L left, R* right) {
 }  // namespace
 
 DeleteTreeWorkItem::DeleteTreeWorkItem(
-    const FilePath& root_path,
-    const FilePath& temp_path,
-    const std::vector<FilePath>& key_paths)
+    const base::FilePath& root_path,
+    const base::FilePath& temp_path,
+    const std::vector<base::FilePath>& key_paths)
     : root_path_(root_path),
       temp_path_(temp_path),
       copied_to_backup_(false) {
   if (!SafeCast(key_paths.size(), &num_key_files_)) {
     NOTREACHED() << "Impossibly large key_paths collection";
   } else if (num_key_files_ != 0) {
-    key_paths_.reset(new FilePath[num_key_files_]);
+    key_paths_.reset(new base::FilePath[num_key_files_]);
     key_backup_paths_.reset(new base::ScopedTempDir[num_key_files_]);
     std::copy(key_paths.begin(), key_paths.end(), &key_paths_[0]);
   }
@@ -56,7 +56,7 @@ bool DeleteTreeWorkItem::Do() {
   opened_key_files.reserve(num_key_files_);
   bool abort = false;
   for (ptrdiff_t i = 0; !abort && i != num_key_files_; ++i) {
-    FilePath& key_file = key_paths_[i];
+    base::FilePath& key_file = key_paths_[i];
     base::ScopedTempDir& backup = key_backup_paths_[i];
     if (!ignore_failure_) {
       if (!backup.CreateUniqueTempDirUnderPath(temp_path_)) {
@@ -90,7 +90,7 @@ bool DeleteTreeWorkItem::Do() {
     // of the key files and also have created backups of those files.
     // We can safely delete the key files now.
     for (ptrdiff_t i = 0; !abort && i != num_key_files_; ++i) {
-      FilePath& key_file = key_paths_[i];
+      base::FilePath& key_file = key_paths_[i];
       if (!file_util::Delete(key_file, true)) {
         // This should not really be possible because of the above.
         PLOG(DFATAL) << "Unexpectedly could not delete " << key_file.value();
@@ -115,7 +115,8 @@ bool DeleteTreeWorkItem::Do() {
                     << temp_path_.value();
         return false;
       } else {
-        FilePath backup = backup_path_.path().Append(root_path_.BaseName());
+        base::FilePath backup =
+            backup_path_.path().Append(root_path_.BaseName());
         if (!file_util::CopyDirectory(root_path_, backup, true)) {
           LOG(ERROR) << "can not copy " << root_path_.value()
                      << " to backup path " << backup.value();
@@ -141,7 +142,7 @@ void DeleteTreeWorkItem::Rollback() {
 
   if (copied_to_backup_) {
     DCHECK(!backup_path_.path().empty());
-    FilePath backup = backup_path_.path().Append(root_path_.BaseName());
+    base::FilePath backup = backup_path_.path().Append(root_path_.BaseName());
     if (file_util::PathExists(backup))
       file_util::Move(backup, root_path_);
   }
@@ -149,8 +150,9 @@ void DeleteTreeWorkItem::Rollback() {
   for (ptrdiff_t i = 0; i != num_key_files_; ++i) {
     base::ScopedTempDir& backup_dir = key_backup_paths_[i];
     if (!backup_dir.path().empty()) {
-      FilePath& key_file = key_paths_[i];
-      FilePath backup_file = backup_dir.path().Append(key_file.BaseName());
+      base::FilePath& key_file = key_paths_[i];
+      base::FilePath backup_file =
+          backup_dir.path().Append(key_file.BaseName());
       if (file_util::PathExists(backup_file) &&
           !file_util::Move(backup_file, key_file)) {
         // This could happen if we could not delete the key file to begin with.

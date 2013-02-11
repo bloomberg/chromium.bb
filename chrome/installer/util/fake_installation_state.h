@@ -22,7 +22,7 @@ class FakeInstallationState : public InstallationState {
     FakeProductState chrome_state;
     chrome_state.set_version(version);
     chrome_state.set_multi_install(multi_install);
-    FilePath setup_exe(
+    base::FilePath setup_exe(
         GetChromeInstallPath(system_install,
                              BrowserDistribution::GetSpecificDistribution(
                                  BrowserDistribution::CHROME_BROWSER)));

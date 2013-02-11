@@ -42,11 +42,11 @@ const char kUITestType[] = "ui";
 // We want to have a current history database when we start the browser so
 // things like the NTP will have thumbnails.  This method updates the dates
 // in the history to be more recent.
-void UpdateHistoryDates(const FilePath& user_data_dir) {
+void UpdateHistoryDates(const base::FilePath& user_data_dir) {
   // Migrate the times in the segment_usage table to yesterday so we get
   // actual thumbnails on the NTP.
   sql::Connection db;
-  FilePath history =
+  base::FilePath history =
       user_data_dir.AppendASCII("Default").AppendASCII("History");
   // Not all test profiles have a history file.
   if (!file_util::PathExists(history))
@@ -478,7 +478,7 @@ AutomationProxy* ProxyLauncher::automation() const {
   return automation_proxy_.get();
 }
 
-FilePath ProxyLauncher::user_data_dir() const {
+base::FilePath ProxyLauncher::user_data_dir() const {
   EXPECT_TRUE(temp_profile_dir_.IsValid());
   return temp_profile_dir_.path();
 }
@@ -523,7 +523,7 @@ bool NamedProxyLauncher::InitializeConnection(const LaunchState& state,
 #if defined(OS_POSIX)
     // Because we are waiting on the existence of the testing file below,
     // make sure there isn't one already there before browser launch.
-    if (!file_util::Delete(FilePath(channel_id_), false)) {
+    if (!file_util::Delete(base::FilePath(channel_id_), false)) {
       LOG(ERROR) << "Failed to delete " << channel_id_;
       return false;
     }

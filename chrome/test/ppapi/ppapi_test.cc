@@ -170,9 +170,9 @@ void PPAPITestBase::RunTestAndReload(const std::string& test_case) {
 }
 
 void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
-  FilePath document_root;
+  base::FilePath document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
-  FilePath http_document_root;
+  base::FilePath http_document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
   net::TestServer http_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
@@ -182,7 +182,7 @@ void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
 }
 
 void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
-  FilePath http_document_root;
+  base::FilePath http_document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
   net::TestServer http_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
@@ -204,7 +204,7 @@ void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
 }
 
 void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
-  FilePath http_document_root;
+  base::FilePath http_document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
   net::TestServer http_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
@@ -281,12 +281,12 @@ void PPAPITest::SetUpCommandLine(CommandLine* command_line) {
   // Append the switch to register the pepper plugin.
   // library name = <out dir>/<test_name>.<library_extension>
   // MIME type = application/x-ppapi-<test_name>
-  FilePath plugin_dir;
+  base::FilePath plugin_dir;
   EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
 
-  FilePath plugin_lib = plugin_dir.Append(library_name);
+  base::FilePath plugin_lib = plugin_dir.Append(library_name);
   EXPECT_TRUE(file_util::PathExists(plugin_lib));
-  FilePath::StringType pepper_plugin = plugin_lib.value();
+  base::FilePath::StringType pepper_plugin = plugin_lib.value();
   pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
   command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                    pepper_plugin);
@@ -311,7 +311,7 @@ void OutOfProcessPPAPITest::SetUpCommandLine(CommandLine* command_line) {
 void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
 
-  FilePath plugin_lib;
+  base::FilePath plugin_lib;
   EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
   EXPECT_TRUE(file_util::PathExists(plugin_lib));
 
@@ -338,7 +338,7 @@ void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
     CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
 
-  FilePath plugin_lib;
+  base::FilePath plugin_lib;
   EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
   EXPECT_TRUE(file_util::PathExists(plugin_lib));
 

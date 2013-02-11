@@ -51,7 +51,7 @@ static const char kWebPageReplayHttpsPort[] = "8413";
 
 namespace {
 
-void PopulateBufferCache(const FilePath& test_dir) {
+void PopulateBufferCache(const base::FilePath& test_dir) {
   // This will recursively walk the directory given and read all the
   // files it finds.  This is done so the system file cache is likely
   // to have as much loaded as possible.  Without this, the tests of
@@ -63,14 +63,14 @@ void PopulateBufferCache(const FilePath& test_dir) {
   // We don't want to walk into .svn dirs, so we have to do the tree walk
   // ourselves.
 
-  std::vector<FilePath> dirs;
+  std::vector<base::FilePath> dirs;
   dirs.push_back(test_dir);
-  const FilePath svn_dir(FILE_PATH_LITERAL(".svn"));
+  const base::FilePath svn_dir(FILE_PATH_LITERAL(".svn"));
 
   for (size_t idx = 0; idx < dirs.size(); ++idx) {
     file_util::FileEnumerator dir_enumerator(dirs[idx], false,
                                       file_util::FileEnumerator::DIRECTORIES);
-    FilePath path;
+    base::FilePath path;
     for (path = dir_enumerator.Next();
          !path.empty();
          path = dir_enumerator.Next()) {
@@ -83,27 +83,27 @@ void PopulateBufferCache(const FilePath& test_dir) {
 
   // We seem to have some files in the data dirs that are just there for
   // reference, make a quick attempt to skip them by matching suffixes.
-  std::vector<FilePath::StringType> ignore_suffixes;
+  std::vector<base::FilePath::StringType> ignore_suffixes;
   ignore_suffixes.push_back(FILE_PATH_LITERAL(".orig.html"));
   ignore_suffixes.push_back(FILE_PATH_LITERAL(".html-original"));
 
-  std::vector<FilePath>::const_iterator iter;
+  std::vector<base::FilePath>::const_iterator iter;
   for (iter = dirs.begin(); iter != dirs.end(); ++iter) {
     file_util::FileEnumerator file_enumerator(*iter, false,
                                               file_util::FileEnumerator::FILES);
-    FilePath path;
+    base::FilePath path;
     for (path = file_enumerator.Next();
          !path.empty();
          path = file_enumerator.Next()) {
-      const FilePath base_name = path.BaseName();
+      const base::FilePath base_name = path.BaseName();
       const size_t base_name_size = base_name.value().size();
 
       bool should_skip = false;
-      std::vector<FilePath::StringType>::const_iterator ignore_iter;
+      std::vector<base::FilePath::StringType>::const_iterator ignore_iter;
       for (ignore_iter = ignore_suffixes.begin();
            ignore_iter != ignore_suffixes.end();
            ++ignore_iter) {
-        const FilePath::StringType &suffix = *ignore_iter;
+        const base::FilePath::StringType &suffix = *ignore_iter;
 
         if ((base_name_size > suffix.size()) &&
             (base_name.value().compare(base_name_size - suffix.size(),
@@ -147,9 +147,9 @@ class PageCyclerTest : public UIPerfTest {
                                         "--expose_gc");
   }
 
-  virtual FilePath GetDataPath(const char* name) {
+  virtual base::FilePath GetDataPath(const char* name) {
     // Make sure the test data is checked out
-    FilePath test_path;
+    base::FilePath test_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
     test_path = test_path.Append(FILE_PATH_LITERAL("data"));
     test_path = test_path.Append(FILE_PATH_LITERAL("page_cycler"));
@@ -166,7 +166,7 @@ class PageCyclerTest : public UIPerfTest {
   }
 
   virtual void GetTestUrl(const char* name, bool use_http, GURL *test_url) {
-    FilePath test_path = GetDataPath(name);
+    base::FilePath test_path = GetDataPath(name);
     ASSERT_TRUE(file_util::DirectoryExists(test_path))
         << "Missing test directory " << test_path.value();
     PopulateBufferCache(test_path);
@@ -324,7 +324,7 @@ class PageCyclerExtensionTest : public PageCyclerTest {
                const char* output_suffix, const char* name, bool use_http) {
     // Set up the extension profile directory.
     ASSERT_TRUE(extension_profile != NULL);
-    FilePath data_dir;
+    base::FilePath data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &data_dir);
     data_dir = data_dir.AppendASCII("extensions").AppendASCII("profiles").
         AppendASCII(extension_profile);
@@ -347,8 +347,8 @@ class PageCyclerExtensionWebRequestTest : public PageCyclerExtensionTest {
   }
 };
 
-static FilePath GetDatabaseDataPath(const char* name) {
-  FilePath test_path;
+static base::FilePath GetDatabaseDataPath(const char* name) {
+  base::FilePath test_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
   test_path = test_path.Append(FILE_PATH_LITERAL("tools"));
   test_path = test_path.Append(FILE_PATH_LITERAL("page_cycler"));
@@ -357,8 +357,8 @@ static FilePath GetDatabaseDataPath(const char* name) {
   return test_path;
 }
 
-static FilePath GetIndexedDatabaseDataPath(const char* name) {
-  FilePath test_path;
+static base::FilePath GetIndexedDatabaseDataPath(const char* name) {
+  base::FilePath test_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
   test_path = test_path.Append(FILE_PATH_LITERAL("tools"));
   test_path = test_path.Append(FILE_PATH_LITERAL("page_cycler"));
@@ -411,7 +411,7 @@ class PageCyclerDatabaseTest : public PageCyclerTest {
     print_times_only_ = true;
   }
 
-  virtual FilePath GetDataPath(const char* name) {
+  virtual base::FilePath GetDataPath(const char* name) {
     return GetDatabaseDataPath(name);
   }
 
@@ -430,7 +430,7 @@ class PageCyclerDatabaseReferenceTest : public PageCyclerReferenceTest {
     print_times_only_ = true;
   }
 
-  virtual FilePath GetDataPath(const char* name) {
+  virtual base::FilePath GetDataPath(const char* name) {
     return GetDatabaseDataPath(name);
   }
 
@@ -449,7 +449,7 @@ class PageCyclerIndexedDatabaseTest : public PageCyclerTest {
     print_times_only_ = true;
   }
 
-  virtual FilePath GetDataPath(const char* name) {
+  virtual base::FilePath GetDataPath(const char* name) {
     return GetIndexedDatabaseDataPath(name);
   }
 
@@ -468,7 +468,7 @@ class PageCyclerIndexedDatabaseReferenceTest : public PageCyclerReferenceTest {
     print_times_only_ = true;
   }
 
-  virtual FilePath GetDataPath(const char* name) {
+  virtual base::FilePath GetDataPath(const char* name) {
     return GetIndexedDatabaseDataPath(name);
   }
 
@@ -489,7 +489,7 @@ class PageCyclerWebPageReplayTest : public PageCyclerTest {
   PageCyclerWebPageReplayTest() {
     // These Chrome command-line arguments need to be kept in sync
     // with src/tools/python/google/webpagereplay_utils.py.
-    FilePath extension_path = GetPageCyclerWprPath("extension");
+    base::FilePath extension_path = GetPageCyclerWprPath("extension");
     launch_arguments_.AppendSwitchPath(
         switches::kLoadExtension, extension_path);
     // TODO(slamm): Instead of kHostResolverRules, add a new switch,
@@ -508,8 +508,8 @@ class PageCyclerWebPageReplayTest : public PageCyclerTest {
     launch_arguments_.AppendSwitch(switches::kNoProxyServer);
   }
 
-  FilePath GetPageCyclerWprPath(const char* name) {
-    FilePath wpr_path;
+  base::FilePath GetPageCyclerWprPath(const char* name) {
+    base::FilePath wpr_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &wpr_path);
     wpr_path = wpr_path.AppendASCII("tools");
     wpr_path = wpr_path.AppendASCII("page_cycler");
@@ -524,7 +524,7 @@ class PageCyclerWebPageReplayTest : public PageCyclerTest {
 
   virtual void GetTestUrl(const char* name, bool use_http,
                           GURL *test_url) OVERRIDE {
-    FilePath start_path = GetPageCyclerWprPath("start.html");
+    base::FilePath start_path = GetPageCyclerWprPath("start.html");
 
     // Add query parameters for iterations and test name.
     const std::string query_string =
@@ -541,7 +541,7 @@ class PageCyclerWebPageReplayTest : public PageCyclerTest {
   }
 
   void RunTest(const char* graph, const char* name) {
-    FilePath test_path = GetPageCyclerWprPath("tests");
+    base::FilePath test_path = GetPageCyclerWprPath("tests");
     test_path = test_path.AppendASCII(name);
     test_path = test_path.ReplaceExtension(FILE_PATH_LITERAL(".js"));
     ASSERT_TRUE(file_util::PathExists(test_path))

@@ -22,7 +22,7 @@ GoogleChromeDistribution::GoogleChromeDistribution()
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const Version& version,
-    const FilePath& local_data_path,
+    const base::FilePath& local_data_path,
     const string16& distribution_data) {
 }
 
@@ -150,7 +150,7 @@ bool GoogleChromeDistribution::GetExperimentDetails(
 }
 
 void GoogleChromeDistribution::LaunchUserExperiment(
-    const FilePath& setup_path, installer::InstallStatus status,
+    const base::FilePath& setup_path, installer::InstallStatus status,
     const Version& version, const installer::Product& product,
     bool system_level) {
   NOTREACHED();
@@ -159,12 +159,12 @@ void GoogleChromeDistribution::LaunchUserExperiment(
 void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
     const string16& experiment_group,
     const installer::Product& installation,
-    const FilePath& application_path) {
+    const base::FilePath& application_path) {
   NOTREACHED();
 }
 
 bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
-    const FilePath& file_path, string16* uninstall_metrics_string) {
+    const base::FilePath& file_path, string16* uninstall_metrics_string) {
   NOTREACHED();
   return false;
 }

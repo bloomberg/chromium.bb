@@ -58,13 +58,13 @@ const char kWaitSwitch[] = "wait-after-action";
 
 const char kTestLogFilePathSwitch[] = "testlog";
 
-const FilePath::CharType* const kDefaultInputFilePath =
+const base::FilePath::CharType* const kDefaultInputFilePath =
 FILE_PATH_LITERAL("automated_ui_tests.txt");
 
-const FilePath::CharType* const kDefaultOutputFilePath =
+const base::FilePath::CharType* const kDefaultOutputFilePath =
 FILE_PATH_LITERAL("automated_ui_tests_error_report.txt");
 
-const FilePath::CharType* const kDefaultTestLogFilePath =
+const base::FilePath::CharType* const kDefaultTestLogFilePath =
 FILE_PATH_LITERAL("automated_ui_tests_log.txt");
 
 const int kDebuggingTimeoutMsec = 5000;
@@ -78,30 +78,30 @@ const wchar_t kChromeDll[] = L"chrome.dll";
 void SilentRuntimeReportHandler(const std::string& str) {
 }
 
-FilePath GetInputFilePath() {
+base::FilePath GetInputFilePath() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(kInputFilePathSwitch)) {
     return parsed_command_line.GetSwitchValuePath(kInputFilePathSwitch);
   } else {
-    return FilePath(kDefaultInputFilePath);
+    return base::FilePath(kDefaultInputFilePath);
   }
 }
 
-FilePath GetOutputFilePath() {
+base::FilePath GetOutputFilePath() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(kOutputFilePathSwitch)) {
     return parsed_command_line.GetSwitchValuePath(kOutputFilePathSwitch);
   } else {
-    return FilePath(kDefaultOutputFilePath);
+    return base::FilePath(kDefaultOutputFilePath);
   }
 }
 
-FilePath GetTestLogFilePath() {
+base::FilePath GetTestLogFilePath() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(kTestLogFilePathSwitch)) {
     return parsed_command_line.GetSwitchValuePath(kTestLogFilePathSwitch);
   } else {
-    return FilePath(kDefaultTestLogFilePath);
+    return base::FilePath(kDefaultTestLogFilePath);
   }
 }
 
@@ -112,7 +112,7 @@ std::string GetChromeRevision() {
   // Check file version info for chrome dll.
   scoped_ptr<FileVersionInfo> file_info;
   file_info.reset(
-      FileVersionInfo::CreateFileVersionInfo(FilePath(kChromeDll)));
+      FileVersionInfo::CreateFileVersionInfo(base::FilePath(kChromeDll)));
   last_change = WideToASCII(file_info->last_change());
 #elif defined(OS_POSIX)
   chrome::VersionInfo version_info;
@@ -122,7 +122,7 @@ std::string GetChromeRevision() {
 }
 
 void InitTestLog(base::Time start_time) {
-  FilePath path = GetTestLogFilePath();
+  base::FilePath path = GetTestLogFilePath();
   std::ofstream test_log_file;
   if (!path.empty())
     test_log_file.open(path.value().c_str(), std::ios::out);
@@ -136,7 +136,7 @@ void InitTestLog(base::Time start_time) {
 }
 
 void AppendToTestLog(const std::string& append_string) {
-  FilePath path = GetTestLogFilePath();
+  base::FilePath path = GetTestLogFilePath();
   std::ofstream test_log_file;
   if (!path.empty()) {
     test_log_file.open(path.value().c_str(),
@@ -245,8 +245,8 @@ void AutomatedUITest::RunReproduction() {
   }
 
   if (did_crash) {
-    FilePath crash_dump = GetMostRecentCrashDump();
-    FilePath::StringType result =
+    base::FilePath crash_dump = GetMostRecentCrashDump();
+    base::FilePath::StringType result =
         FILE_PATH_LITERAL("*** Crash dump produced. ")
         FILE_PATH_LITERAL("See result file for more details. Dump = ");
     result.append(crash_dump.value());
@@ -678,7 +678,7 @@ bool AutomatedUITest::SimulateKeyPress(ui::KeyboardCode key) {
 }
 
 bool AutomatedUITest::InitXMLReader() {
-  FilePath input_path = GetInputFilePath();
+  base::FilePath input_path = GetInputFilePath();
 
   if (!file_util::ReadFileToString(input_path, &xml_init_file_))
     return false;
@@ -686,7 +686,7 @@ bool AutomatedUITest::InitXMLReader() {
 }
 
 bool AutomatedUITest::WriteReportToFile() {
-  FilePath path = GetOutputFilePath();
+  base::FilePath path = GetOutputFilePath();
   std::ofstream error_file;
   if (!path.empty())
     error_file.open(path.value().c_str(), std::ios::out);
@@ -700,7 +700,7 @@ bool AutomatedUITest::WriteReportToFile() {
 }
 
 void AutomatedUITest::AppendToOutputFile(const std::string& append_string) {
-  FilePath path = GetOutputFilePath();
+  base::FilePath path = GetOutputFilePath();
   std::ofstream error_file;
   if (!path.empty())
     error_file.open(path.value().c_str(), std::ios::out | std::ios_base::app);
@@ -709,7 +709,7 @@ void AutomatedUITest::AppendToOutputFile(const std::string& append_string) {
   error_file.close();
 }
 
-void AutomatedUITest::LogCrashResult(const FilePath& crash_dump,
+void AutomatedUITest::LogCrashResult(const base::FilePath& crash_dump,
                                      bool command_completed) {
   xml_writer_.StartElement("result");
   xml_writer_.AddAttribute("test_log_path",
@@ -763,9 +763,9 @@ void AutomatedUITest::LogInfoMessage(const std::string& info) {
   AddWarningAttribute(info);
 }
 
-FilePath AutomatedUITest::GetMostRecentCrashDump() {
-  FilePath crash_dump_path;
-  FilePath most_recent_file_name;
+base::FilePath AutomatedUITest::GetMostRecentCrashDump() {
+  base::FilePath crash_dump_path;
+  base::FilePath most_recent_file_name;
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_path);
   base::Time most_recent_file_time;
 
@@ -774,7 +774,7 @@ FilePath AutomatedUITest::GetMostRecentCrashDump() {
   file_util::FileEnumerator enumerator(crash_dump_path,
                                        false,  // not recursive
                                        file_util::FileEnumerator::FILES);
-  for (FilePath path = enumerator.Next(); !path.value().empty();
+  for (base::FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
     base::PlatformFileInfo file_info;
     file_util::GetFileInfo(path, &file_info);
@@ -788,7 +788,7 @@ FilePath AutomatedUITest::GetMostRecentCrashDump() {
     }
   }
   if (most_recent_file_name.empty()) {
-    return FilePath();
+    return base::FilePath();
   } else {
     crash_dump_path = crash_dump_path.Append(most_recent_file_name);
     return crash_dump_path;

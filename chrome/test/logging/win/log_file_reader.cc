@@ -65,7 +65,8 @@ class LogFileReader {
   explicit LogFileReader(LogFileDelegate* delegate);
   ~LogFileReader();
 
-  static void ReadFile(const FilePath& log_file, LogFileDelegate* delegate);
+  static void ReadFile(const base::FilePath& log_file,
+                       LogFileDelegate* delegate);
 
  private:
   // An implementation of a trace consumer that delegates to a given (at
@@ -94,7 +95,7 @@ class LogFileReader {
 
   // Reads the file using a trace consumer.  |ProcessEvent| will be invoked for
   // each event in the file.
-  void Read(const FilePath& log_file);
+  void Read(const base::FilePath& log_file);
 
   // Protects use of the class; only one instance may be live at a time.
   static base::LazyInstance<base::Lock>::Leaky reader_lock_;
@@ -223,7 +224,7 @@ void LogFileReader::DispatchEvent(const EVENT_TRACE* event) {
     delegate_->OnUnparsableEvent(event);
 }
 
-void LogFileReader::Read(const FilePath& log_file) {
+void LogFileReader::Read(const base::FilePath& log_file) {
   TraceConsumer<&ProcessEvent> consumer;
   HRESULT hr = S_OK;
 
@@ -238,7 +239,7 @@ void LogFileReader::Read(const FilePath& log_file) {
 }
 
 // static
-void LogFileReader::ReadFile(const FilePath& log_file,
+void LogFileReader::ReadFile(const base::FilePath& log_file,
                              LogFileDelegate* delegate) {
   base::AutoLock lock(reader_lock_.Get());
 
@@ -253,7 +254,7 @@ LogFileDelegate::LogFileDelegate() {
 LogFileDelegate::~LogFileDelegate() {
 }
 
-void ReadLogFile(const FilePath& log_file, LogFileDelegate* delegate) {
+void ReadLogFile(const base::FilePath& log_file, LogFileDelegate* delegate) {
   DCHECK(delegate);
   LogFileReader::ReadFile(log_file, delegate);
 }

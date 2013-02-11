@@ -37,7 +37,7 @@ void UIPerfTest::PrintMemoryUsageInfo(const char* test_name) {
 }
 
 void UIPerfTest::UseReferenceBuild() {
-  FilePath dir;
+  base::FilePath dir;
   PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
   dir = dir.AppendASCII("reference_build");
 #if defined(OS_WIN)

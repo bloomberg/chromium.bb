@@ -105,7 +105,7 @@ class FakeProductState : public ProductState {
     bool (ChannelInfo::*method)(bool value);
   };
 
-  static FilePath GetSetupExePath(
+  static base::FilePath GetSetupExePath(
       BrowserDistribution::Type dist_type,
       Level install_level,
       const char* version,
@@ -144,7 +144,7 @@ FilePath FakeProductState::GetSetupExePath(BrowserDistribution::Type dist_type,
                                            const char* version,
                                            int channel_modifiers) {
   const bool is_multi_install = (channel_modifiers & CM_MULTI) != 0;
-  FilePath setup_path = installer::GetChromeInstallPath(
+  base::FilePath setup_path = installer::GetChromeInstallPath(
       install_level == SYSTEM_LEVEL,
       BrowserDistribution::GetSpecificDistribution(is_multi_install ?
               BrowserDistribution::CHROME_BINARIES : dist_type));

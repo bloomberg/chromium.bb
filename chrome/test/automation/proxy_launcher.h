@@ -44,7 +44,7 @@ class ProxyLauncher {
 
     // If set, the profiles in this path are copied
     // into the user data directory for the test.
-    FilePath template_user_data;
+    base::FilePath template_user_data;
 
     // Called just before starting the browser to allow any setup of the
     // profile for the run time environment.
@@ -110,7 +110,7 @@ class ProxyLauncher {
   AutomationProxy* automation() const;
 
   // Return the user data directory being used by the browser instance.
-  FilePath user_data_dir() const;
+  base::FilePath user_data_dir() const;
 
   // Get the handle of browser process connected to the automation. This
   // function only returns a reference to the handle so the caller does not

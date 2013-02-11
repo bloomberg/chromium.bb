@@ -38,10 +38,10 @@ bool had_errors = false;
 bool testResult_ok = false;
 
 // Location of test data (currently test/data/webui).
-FilePath test_data_directory;
+base::FilePath test_data_directory;
 
 // Location of generated test data (<(PROGRAM_DIR)/test_data).
-FilePath gen_test_data_directory;
+base::FilePath gen_test_data_directory;
 
 }  // namespace
 
@@ -51,20 +51,20 @@ V8UnitTest::V8UnitTest() {
 
 V8UnitTest::~V8UnitTest() {}
 
-void V8UnitTest::AddLibrary(const FilePath& library_path) {
+void V8UnitTest::AddLibrary(const base::FilePath& library_path) {
   user_libraries_.push_back(library_path);
 }
 
 bool V8UnitTest::ExecuteJavascriptLibraries() {
   std::string utf8_content;
-  for (std::vector<FilePath>::iterator user_libraries_iterator =
+  for (std::vector<base::FilePath>::iterator user_libraries_iterator =
            user_libraries_.begin();
        user_libraries_iterator != user_libraries_.end();
        ++user_libraries_iterator) {
     std::string library_content;
-    FilePath library_file(*user_libraries_iterator);
+    base::FilePath library_file(*user_libraries_iterator);
     if (!user_libraries_iterator->IsAbsolute()) {
-      FilePath gen_file = gen_test_data_directory.Append(library_file);
+      base::FilePath gen_file = gen_test_data_directory.Append(library_file);
       library_file = file_util::PathExists(gen_file) ? gen_file :
           test_data_directory.Append(*user_libraries_iterator);
     }
@@ -128,7 +128,7 @@ void V8UnitTest::InitPathsAndLibraries() {
   ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA,
                                &gen_test_data_directory));
 
-  FilePath mockPath;
+  base::FilePath mockPath;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &mockPath));
   mockPath = mockPath.AppendASCII("chrome");
   mockPath = mockPath.AppendASCII("third_party");
@@ -136,7 +136,7 @@ void V8UnitTest::InitPathsAndLibraries() {
   mockPath = mockPath.AppendASCII("mock4js.js");
   AddLibrary(mockPath);
 
-  FilePath accessibilityAuditPath;
+  base::FilePath accessibilityAuditPath;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &accessibilityAuditPath));
   accessibilityAuditPath = accessibilityAuditPath.AppendASCII("third_party");
   accessibilityAuditPath =
@@ -145,7 +145,7 @@ void V8UnitTest::InitPathsAndLibraries() {
   accessibilityAuditPath = accessibilityAuditPath.AppendASCII("axs_testing.js");
   AddLibrary(accessibilityAuditPath);
 
-  FilePath testApiPath;
+  base::FilePath testApiPath;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &testApiPath));
   testApiPath = testApiPath.AppendASCII("webui");
   testApiPath = testApiPath.AppendASCII("test_api.js");

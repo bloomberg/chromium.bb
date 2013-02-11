@@ -22,7 +22,7 @@ bool IsChromeFirstRunPending(BrowserDistribution* dist) {
   // Chrome creates the first run sentinel after the user has gone through the
   // first-run flow. Assume Chrome has been run if the path to the sentinel
   // cannot be determined.
-  FilePath first_run_sentinel;
+  base::FilePath first_run_sentinel;
   return InstallUtil::GetSentinelFilePath(chrome::kFirstRunSentinel,
                                           dist,
                                           &first_run_sentinel)
@@ -33,7 +33,7 @@ bool IsEULAAcceptanceFlagged(BrowserDistribution* dist) {
   // Chrome creates the EULA sentinel after the EULA has been accepted when
   // doing so is required by master_preferences. Assume the EULA has not been
   // accepted if the path to the sentinel cannot be determined.
-  FilePath eula_sentinel;
+  base::FilePath eula_sentinel;
   return InstallUtil::GetSentinelFilePath(kEULASentinelFile,
                                           dist,
                                           &eula_sentinel)
@@ -42,7 +42,7 @@ bool IsEULAAcceptanceFlagged(BrowserDistribution* dist) {
 
 scoped_ptr<MasterPreferences> GetMasterPrefs(const ProductState& prod_state) {
   // The standard location of the master prefs is next to the chrome binary.
-  FilePath master_prefs_path(
+  base::FilePath master_prefs_path(
       prod_state.GetSetupPath().DirName().DirName().DirName());
   scoped_ptr<MasterPreferences> install_prefs(new MasterPreferences(
       master_prefs_path.AppendASCII(kDefaultMasterPrefs)));

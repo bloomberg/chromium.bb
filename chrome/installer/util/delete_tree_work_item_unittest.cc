@@ -46,27 +46,27 @@ namespace {
 // Delete a tree without key path. Everything should be deleted.
 TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   // Create tree to be deleted.
-  FilePath dir_name_delete(temp_dir_.path());
+  base::FilePath dir_name_delete(temp_dir_.path());
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
   file_util::CreateDirectory(dir_name_delete);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
 
-  FilePath dir_name_delete_1(dir_name_delete);
+  base::FilePath dir_name_delete_1(dir_name_delete);
   dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
   file_util::CreateDirectory(dir_name_delete_1);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
 
-  FilePath dir_name_delete_2(dir_name_delete);
+  base::FilePath dir_name_delete_2(dir_name_delete);
   dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
   file_util::CreateDirectory(dir_name_delete_2);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
 
-  FilePath file_name_delete_1(dir_name_delete_1);
+  base::FilePath file_name_delete_1(dir_name_delete_1);
   file_name_delete_1 = file_name_delete_1.AppendASCII("File_1.txt");
   CreateTextFile(file_name_delete_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_1));
 
-  FilePath file_name_delete_2(dir_name_delete_2);
+  base::FilePath file_name_delete_2(dir_name_delete_2);
   file_name_delete_2 = file_name_delete_2.AppendASCII("File_2.txt");
   CreateTextFile(file_name_delete_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
@@ -75,7 +75,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  std::vector<FilePath> key_files;
+  std::vector<base::FilePath> key_files;
   scoped_ptr<DeleteTreeWorkItem> work_item(
       WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
                                          key_files));
@@ -98,27 +98,27 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
 // Rollback should bring back everything
 TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   // Create tree to be deleted
-  FilePath dir_name_delete(temp_dir_.path());
+  base::FilePath dir_name_delete(temp_dir_.path());
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
   file_util::CreateDirectory(dir_name_delete);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
 
-  FilePath dir_name_delete_1(dir_name_delete);
+  base::FilePath dir_name_delete_1(dir_name_delete);
   dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
   file_util::CreateDirectory(dir_name_delete_1);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
 
-  FilePath dir_name_delete_2(dir_name_delete);
+  base::FilePath dir_name_delete_2(dir_name_delete);
   dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
   file_util::CreateDirectory(dir_name_delete_2);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
 
-  FilePath file_name_delete_1(dir_name_delete_1);
+  base::FilePath file_name_delete_1(dir_name_delete_1);
   file_name_delete_1 = file_name_delete_1.AppendASCII("File_1.txt");
   CreateTextFile(file_name_delete_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_1));
 
-  FilePath file_name_delete_2(dir_name_delete_2);
+  base::FilePath file_name_delete_2(dir_name_delete_2);
   file_name_delete_2 = file_name_delete_2.AppendASCII("File_2.txt");
   CreateTextFile(file_name_delete_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
@@ -127,7 +127,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  std::vector<FilePath> key_files(1, file_name_delete_1);
+  std::vector<base::FilePath> key_files(1, file_name_delete_1);
   scoped_ptr<DeleteTreeWorkItem> work_item(
       WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
                                          key_files));
@@ -148,38 +148,38 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
 // Delete a tree with key_path in use. Everything should still be there.
 TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   // Create tree to be deleted
-  FilePath dir_name_delete(temp_dir_.path());
+  base::FilePath dir_name_delete(temp_dir_.path());
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
   file_util::CreateDirectory(dir_name_delete);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
 
-  FilePath dir_name_delete_1(dir_name_delete);
+  base::FilePath dir_name_delete_1(dir_name_delete);
   dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
   file_util::CreateDirectory(dir_name_delete_1);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
 
-  FilePath dir_name_delete_2(dir_name_delete);
+  base::FilePath dir_name_delete_2(dir_name_delete);
   dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
   file_util::CreateDirectory(dir_name_delete_2);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
 
-  FilePath file_name_delete_1(dir_name_delete_1);
+  base::FilePath file_name_delete_1(dir_name_delete_1);
   file_name_delete_1 = file_name_delete_1.AppendASCII("File_1.txt");
   CreateTextFile(file_name_delete_1.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_1));
 
-  FilePath file_name_delete_2(dir_name_delete_2);
+  base::FilePath file_name_delete_2(dir_name_delete_2);
   file_name_delete_2 = file_name_delete_2.AppendASCII("File_2.txt");
   CreateTextFile(file_name_delete_2.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(file_name_delete_2));
 
   // Create a key path file.
-  FilePath key_path(dir_name_delete);
+  base::FilePath key_path(dir_name_delete);
   key_path = key_path.AppendASCII("key_file.exe");
 
   wchar_t exe_full_path_str[MAX_PATH];
   ::GetModuleFileNameW(NULL, exe_full_path_str, MAX_PATH);
-  FilePath exe_full_path(exe_full_path_str);
+  base::FilePath exe_full_path(exe_full_path_str);
 
   file_util::CopyFile(exe_full_path, key_path);
   ASSERT_TRUE(file_util::PathExists(key_path));
@@ -200,7 +200,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-    std::vector<FilePath> key_paths(1, key_path);
+    std::vector<base::FilePath> key_paths(1, key_path);
     scoped_ptr<DeleteTreeWorkItem> work_item(
         WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
                                            key_paths));

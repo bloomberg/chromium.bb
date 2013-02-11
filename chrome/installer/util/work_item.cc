@@ -39,16 +39,17 @@ CopyRegKeyWorkItem* WorkItem::CreateCopyRegKeyWorkItem(
 }
 
 CopyTreeWorkItem* WorkItem::CreateCopyTreeWorkItem(
-    const FilePath& source_path,
-    const FilePath& dest_path,
-    const FilePath& temp_dir,
+    const base::FilePath& source_path,
+    const base::FilePath& dest_path,
+    const base::FilePath& temp_dir,
     CopyOverWriteOption overwrite_option,
-    const FilePath& alternative_path) {
+    const base::FilePath& alternative_path) {
   return new CopyTreeWorkItem(source_path, dest_path, temp_dir,
                               overwrite_option, alternative_path);
 }
 
-CreateDirWorkItem* WorkItem::CreateCreateDirWorkItem(const FilePath& path) {
+CreateDirWorkItem* WorkItem::CreateCreateDirWorkItem(
+    const base::FilePath& path) {
   return new CreateDirWorkItem(path);
 }
 
@@ -70,16 +71,16 @@ DeleteRegValueWorkItem* WorkItem::CreateDeleteRegValueWorkItem(
 }
 
 DeleteTreeWorkItem* WorkItem::CreateDeleteTreeWorkItem(
-    const FilePath& root_path,
-    const FilePath& temp_path,
-    const std::vector<FilePath>& key_paths) {
+    const base::FilePath& root_path,
+    const base::FilePath& temp_path,
+    const std::vector<base::FilePath>& key_paths) {
   return new DeleteTreeWorkItem(root_path, temp_path, key_paths);
 }
 
 MoveTreeWorkItem* WorkItem::CreateMoveTreeWorkItem(
-    const FilePath& source_path,
-    const FilePath& dest_path,
-    const FilePath& temp_dir,
+    const base::FilePath& source_path,
+    const base::FilePath& dest_path,
+    const base::FilePath& temp_dir,
     MoveTreeOption duplicate_option) {
   return new MoveTreeWorkItem(source_path,
                               dest_path,

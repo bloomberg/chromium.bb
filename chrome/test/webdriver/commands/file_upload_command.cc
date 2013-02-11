@@ -40,14 +40,14 @@ void FileUploadCommand::ExecutePost(Response* const response) {
     return;
   }
 
-  FilePath upload_dir;
+  base::FilePath upload_dir;
   if (!file_util::CreateTemporaryDirInDir(
           session_->temp_dir(), FILE_PATH_LITERAL("upload"), &upload_dir)) {
     response->SetError(new Error(kUnknownError, "Failed to create temp dir"));
     return;
   }
   std::string error_msg;
-  FilePath upload;
+  base::FilePath upload;
   if (!UnzipSoleFile(upload_dir, zip_data, &upload, &error_msg)) {
     response->SetError(new Error(kUnknownError, error_msg));
     return;

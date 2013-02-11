@@ -17,11 +17,12 @@ namespace testing {
 
 class ProfileManager : public ::ProfileManager {
  public:
-  explicit ProfileManager(const FilePath& user_data_dir)
+  explicit ProfileManager(const base::FilePath& user_data_dir)
       : ::ProfileManager(user_data_dir) {}
 
  protected:
-  virtual Profile* CreateProfileHelper(const FilePath& file_path) OVERRIDE {
+  virtual Profile* CreateProfileHelper(
+      const base::FilePath& file_path) OVERRIDE {
     return new TestingProfile(file_path);
   }
 };
@@ -49,7 +50,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   DCHECK(called_set_up_);
 
   // Create a path for the profile based on the name.
-  FilePath profile_path(profiles_dir_.path());
+  base::FilePath profile_path(profiles_dir_.path());
   profile_path = profile_path.AppendASCII(profile_name);
 
   // Create the profile and register it.

@@ -19,10 +19,10 @@ void BackUpProfile(bool chrome_frame) {
            "Please close Chrome and run the tests again.\n");
     exit(1);
   }
-  FilePath path;
+  base::FilePath path;
   installer_test::GetChromeInstallDirectory(false /* system_level */, &path);
   path = path.Append(mini_installer_constants::kChromeAppDir).DirName();
-  FilePath backup_path = path;
+  base::FilePath backup_path = path;
   // Will hold User Data path that needs to be backed-up.
   path = path.Append(mini_installer_constants::kChromeUserDataDir);
   // Will hold new backup path to save the profile.

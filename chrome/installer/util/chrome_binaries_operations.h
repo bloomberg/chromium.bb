@@ -23,12 +23,13 @@ class ChromeBinariesOperations : public ProductOperations {
   virtual void ReadOptions(const CommandLine& uninstall_command,
                            std::set<std::wstring>* options) const OVERRIDE;
 
-  virtual void AddKeyFiles(const std::set<std::wstring>& options,
-                           std::vector<FilePath>* key_files) const OVERRIDE;
+  virtual void AddKeyFiles(
+      const std::set<std::wstring>& options,
+      std::vector<base::FilePath>* key_files) const OVERRIDE;
 
   virtual void AddComDllList(
       const std::set<std::wstring>& options,
-      std::vector<FilePath>* com_dll_list) const OVERRIDE;
+      std::vector<base::FilePath>* com_dll_list) const OVERRIDE;
 
   virtual void AppendProductFlags(
       const std::set<std::wstring>& options,
@@ -47,7 +48,7 @@ class ChromeBinariesOperations : public ProductOperations {
 
   virtual void AddDefaultShortcutProperties(
       BrowserDistribution* dist,
-      const FilePath& target_exe,
+      const base::FilePath& target_exe,
       ShellUtil::ShortcutProperties* properties) const OVERRIDE;
 
  private:

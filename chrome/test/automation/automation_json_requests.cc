@@ -351,7 +351,7 @@ bool SendReloadJSONRequest(
 bool SendCaptureEntirePageJSONRequest(
     AutomationMessageSender* sender,
     const WebViewLocator& locator,
-    const FilePath& path,
+    const base::FilePath& path,
     Error* error) {
   DictionaryValue dict;
   dict.SetString("command", "CaptureEntirePage");
@@ -677,7 +677,7 @@ bool SendDragAndDropFilePathsJSONRequest(
     const WebViewLocator& locator,
     int x,
     int y,
-    const std::vector<FilePath::StringType>& paths,
+    const std::vector<base::FilePath::StringType>& paths,
     Error* error) {
   DictionaryValue dict;
   dict.SetString("command", "DragAndDropFilePaths");
@@ -785,7 +785,7 @@ bool SendGetChromeDriverAutomationVersion(
 
 bool SendInstallExtensionJSONRequest(
     AutomationMessageSender* sender,
-    const FilePath& path,
+    const base::FilePath& path,
     bool with_ui,
     std::string* extension_id,
     Error* error) {

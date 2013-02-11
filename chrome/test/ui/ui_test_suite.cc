@@ -57,7 +57,7 @@ void UITestSuite::LoadCrashService() {
     return;
   }
 
-  FilePath exe_dir;
+  base::FilePath exe_dir;
   if (!PathService::Get(base::DIR_EXE, &exe_dir)) {
     LOG(ERROR) << "Failed to get path to DIR_EXE, "
                << "not starting crash_service.exe!";
@@ -66,7 +66,7 @@ void UITestSuite::LoadCrashService() {
 
   base::LaunchOptions launch_options;
   launch_options.job_handle = job_handle_.Get();
-  FilePath crash_service = exe_dir.Append(L"crash_service.exe");
+  base::FilePath crash_service = exe_dir.Append(L"crash_service.exe");
   if (!base::LaunchProcess(crash_service.value(), base::LaunchOptions(),
                            &crash_service_)) {
     LOG(ERROR) << "Couldn't start crash_service.exe, so this ui_tests run "

@@ -173,7 +173,7 @@ TestingProfile::TestingProfile()
   FinishInit();
 }
 
-TestingProfile::TestingProfile(const FilePath& path)
+TestingProfile::TestingProfile(const base::FilePath& path)
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       incognito_(false),
@@ -185,7 +185,7 @@ TestingProfile::TestingProfile(const FilePath& path)
   FinishInit();
 }
 
-TestingProfile::TestingProfile(const FilePath& path,
+TestingProfile::TestingProfile(const base::FilePath& path,
                                Delegate* delegate)
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
@@ -205,7 +205,7 @@ TestingProfile::TestingProfile(const FilePath& path,
 }
 
 TestingProfile::TestingProfile(
-    const FilePath& path,
+    const base::FilePath& path,
     Delegate* delegate,
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
     scoped_ptr<PrefServiceSyncable> prefs,
@@ -245,7 +245,7 @@ void TestingProfile::CreateTempProfileDir() {
     LOG(ERROR) << "Failed to create unique temporary directory.";
 
     // Fallback logic in case we fail to create unique temporary directory.
-    FilePath system_tmp_dir;
+    base::FilePath system_tmp_dir;
     bool success = PathService::Get(base::DIR_TEMP, &system_tmp_dir);
 
     // We're severly screwed if we can't get the system temporary
@@ -253,7 +253,8 @@ void TestingProfile::CreateTempProfileDir() {
     // or other bad places.
     CHECK(success);
 
-    FilePath fallback_dir(system_tmp_dir.AppendASCII("TestingProfilePath"));
+    base::FilePath fallback_dir(
+        system_tmp_dir.AppendASCII("TestingProfilePath"));
     file_util::Delete(fallback_dir, true);
     file_util::CreateDirectory(fallback_dir);
     if (!temp_dir_.Set(fallback_dir)) {
@@ -325,7 +326,7 @@ static ProfileKeyedService* BuildHistoryService(Profile* profile) {
 void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   DestroyHistoryService();
   if (delete_file) {
-    FilePath path = GetPath();
+    base::FilePath path = GetPath();
     path = path.Append(chrome::kHistoryFilename);
     file_util::Delete(path, false);
   }
@@ -366,7 +367,7 @@ void TestingProfile::DestroyHistoryService() {
 void TestingProfile::CreateTopSites() {
   DestroyTopSites();
   top_sites_ = new history::TopSites(this);
-  FilePath file_name = GetPath().Append(chrome::kTopSitesFilename);
+  base::FilePath file_name = GetPath().Append(chrome::kTopSitesFilename);
   top_sites_->Init(file_name);
 }
 
@@ -392,7 +393,7 @@ static ProfileKeyedService* BuildBookmarkModel(Profile* profile) {
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
 
   if (delete_file) {
-    FilePath path = GetPath();
+    base::FilePath path = GetPath();
     path = path.Append(chrome::kBookmarksFileName);
     file_util::Delete(path, false);
   }
@@ -469,7 +470,7 @@ void TestingProfile::BlockUntilTopSitesLoaded() {
   top_sites_loaded_observer.Wait();
 }
 
-FilePath TestingProfile::GetPath() {
+base::FilePath TestingProfile::GetPath() {
   return profile_path_;
 }
 
@@ -635,7 +636,7 @@ TestingProfile::GetMediaRequestContextForRenderProcess(
 
 net::URLRequestContextGetter*
 TestingProfile::GetMediaRequestContextForStoragePartition(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory) {
   return NULL;
 }
@@ -654,7 +655,7 @@ net::SSLConfigService* TestingProfile::GetSSLConfigService() {
 
 net::URLRequestContextGetter*
 TestingProfile::CreateRequestContextForStoragePartition(
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory,
     scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
         blob_protocol_handler,
@@ -727,11 +728,11 @@ ProtocolHandlerRegistry* TestingProfile::GetProtocolHandlerRegistry() {
   return NULL;
 }
 
-FilePath TestingProfile::last_selected_directory() {
+base::FilePath TestingProfile::last_selected_directory() {
   return last_selected_directory_;
 }
 
-void TestingProfile::set_last_selected_directory(const FilePath& path) {
+void TestingProfile::set_last_selected_directory(const base::FilePath& path) {
   last_selected_directory_ = path;
 }
 
@@ -795,7 +796,7 @@ TestingProfile::Builder::Builder()
 TestingProfile::Builder::~Builder() {
 }
 
-void TestingProfile::Builder::SetPath(const FilePath& path) {
+void TestingProfile::Builder::SetPath(const base::FilePath& path) {
   path_ = path;
 }
 

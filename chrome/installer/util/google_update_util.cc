@@ -54,11 +54,11 @@ FilePath GetGoogleUpdateSetupExe(bool system_install) {
     if ((update_key.ReadValue(kRegPathField, &path_str) == ERROR_SUCCESS) &&
         (update_key.ReadValue(kRegGoogleUpdateVersion, &version_str) ==
              ERROR_SUCCESS)) {
-      return FilePath(path_str).DirName().Append(version_str).
+      return base::FilePath(path_str).DirName().Append(version_str).
           Append(kGoogleUpdateSetupExe);
     }
   }
-  return FilePath();
+  return base::FilePath();
 }
 
 // If Google Update is present at system-level, sets |cmd_string| to the command
@@ -66,7 +66,8 @@ FilePath GetGoogleUpdateSetupExe(bool system_install) {
 // Otherwise, clears |cmd_string| and returns false.
 bool GetUserLevelGoogleUpdateInstallCommandLine(string16* cmd_string) {
   cmd_string->clear();
-  FilePath google_update_setup(GetGoogleUpdateSetupExe(true));  // system-level.
+  base::FilePath google_update_setup(
+      GetGoogleUpdateSetupExe(true));  // system-level.
   if (!google_update_setup.empty()) {
     CommandLine cmd(google_update_setup);
     // Appends parameter "/install runtime=true&needsadmin=false /silent"
