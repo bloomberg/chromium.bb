@@ -105,9 +105,23 @@ ACTUAL_GEN_TABLES = ["ARMv7",
 # switch tables over to using automatically generated baselines, as they
 # pass the appropriate tests.
 BASELINE_TEST_TABLES = [
-  "data_processing_and_miscellaneous_instructions",
   "data_processing_register",
   ]
+
+# The list of tables in armv7.table that should use the automatically generated,
+# baseline decoders. This list is used to allow us to incrementally change over
+# testing, as baselines pass the appropriate tests.
+BASELINE_GEN_TABLES = [
+    "data_processing_and_miscellaneous_instructions",
+    ]
+
+# Verify that BASELINE_TEST_TABLES and BASELINE_GEN_TABLES don't intersect.
+# Generated baselines should first be added to BASELINE_TEST_TABLES to verify
+# that they implement the same concept as the hand written code, and then
+# should be moved to BASELINE_GEN_TABLES to replace the hand written code.
+_BAD_BASES = [b for b in BASELINE_GEN_TABLES if b in BASELINE_TEST_TABLES]
+if any(_BAD_BASES):
+  raise Exception('Bad handling of baseline classes: %s' % _BAD_BASES)
 
 # The separators to use for splitting up automatically generated actual
 # classes.
@@ -192,6 +206,8 @@ def _generate_source(filename, table=None):
     cl_args += ' --table=' + table
   for tbl in ACTUAL_GEN_TABLES:
     cl_args += ' --auto-actual=' + tbl
+  for tbl in BASELINE_GEN_TABLES:
+    cl_args += ' --auto-base=' + tbl
   for tbl in BASELINE_TEST_TABLES:
     cl_args += ' --test-base=' + tbl
   for sep in AUTO_ACTUAL_SEPARATORS:

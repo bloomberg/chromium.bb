@@ -865,30 +865,6 @@ class NamedMOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_cas
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0);
 };
 
-class NamedMOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0
-    : public NamedClassDecoder {
- public:
-  NamedMOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0()
-    : NamedClassDecoder(decoder_, "MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0")
-  {}
-
- private:
-  nacl_arm_dec::MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0);
-};
-
-class NamedMOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0
-    : public NamedClassDecoder {
- public:
-  NamedMOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0()
-    : NamedClassDecoder(decoder_, "MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0")
-  {}
-
- private:
-  nacl_arm_dec::MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0);
-};
-
 class NamedMOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0
     : public NamedClassDecoder {
  public:

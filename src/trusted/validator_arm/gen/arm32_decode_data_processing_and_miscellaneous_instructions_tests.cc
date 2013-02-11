@@ -120,25 +120,24 @@ bool ForbiddenCondDecoderTesterCase1
 //       Rd: Rd(15:12),
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
-//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
 //       dynamic_code_replace_immediates: {imm4, imm12},
 //       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//       generated_baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
 //       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
 //       rule: MOVW,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
-class Unary1RegisterImmediateOpDynCodeReplaceTesterCase2
-    : public Unary1RegisterImmediateOpTester {
+class MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2
+    : public Arm32DecoderTester {
  public:
-  Unary1RegisterImmediateOpDynCodeReplaceTesterCase2(const NamedClassDecoder& decoder)
-    : Unary1RegisterImmediateOpTester(decoder) {}
+  MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -146,7 +145,7 @@ class Unary1RegisterImmediateOpDynCodeReplaceTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase2
+bool MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -163,14 +162,14 @@ bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase2
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary1RegisterImmediateOpTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase2
+bool MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary1RegisterImmediateOpTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rd(15:12)=1111 => UNPREDICTABLE
@@ -195,25 +194,24 @@ bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase2
 //       Rd: Rd(15:12),
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
-//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
 //       dynamic_code_replace_immediates: {imm4, imm12},
 //       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//       generated_baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
 //       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
 //       rule: MOVT,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
-class Unary1RegisterImmediateOpDynCodeReplaceTesterCase3
-    : public Unary1RegisterImmediateOpTester {
+class MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3
+    : public Arm32DecoderTester {
  public:
-  Unary1RegisterImmediateOpDynCodeReplaceTesterCase3(const NamedClassDecoder& decoder)
-    : Unary1RegisterImmediateOpTester(decoder) {}
+  MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -221,7 +219,7 @@ class Unary1RegisterImmediateOpDynCodeReplaceTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase3
+bool MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -238,14 +236,14 @@ bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase3
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary1RegisterImmediateOpTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase3
+bool MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary1RegisterImmediateOpTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rd(15:12)=1111 => UNPREDICTABLE
@@ -305,26 +303,25 @@ class ForbiddenCondDecoderTester_Case1
 //       Rd: Rd(15:12),
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
-//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
 //       dynamic_code_replace_immediates: {imm4, imm12},
 //       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//       generated_baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
 //       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
 //       rule: MOVW,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
-class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
-    : public Unary1RegisterImmediateOpDynCodeReplaceTesterCase2 {
+class MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0Tester_Case2
+    : public MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2 {
  public:
-  Unary1RegisterImmediateOpDynCodeReplaceTester_Case2()
-    : Unary1RegisterImmediateOpDynCodeReplaceTesterCase2(
-      state_.Unary1RegisterImmediateOpDynCodeReplace_MOVW_instance_)
+  MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0Tester_Case2()
+    : MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0TesterCase2(
+      state_.MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0_MOVW_instance_)
   {}
 };
 
@@ -334,26 +331,25 @@ class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
 //       Rd: Rd(15:12),
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
-//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
 //       dynamic_code_replace_immediates: {imm4, imm12},
 //       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//       generated_baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
 //       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
 //       rule: MOVT,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
-class Unary1RegisterImmediateOpDynCodeReplaceTester_Case3
-    : public Unary1RegisterImmediateOpDynCodeReplaceTesterCase3 {
+class MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0Tester_Case3
+    : public MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3 {
  public:
-  Unary1RegisterImmediateOpDynCodeReplaceTester_Case3()
-    : Unary1RegisterImmediateOpDynCodeReplaceTesterCase3(
-      state_.Unary1RegisterImmediateOpDynCodeReplace_MOVT_instance_)
+  MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0Tester_Case3()
+    : MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0TesterCase3(
+      state_.MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0_MOVT_instance_)
   {}
 };
 
@@ -396,14 +392,13 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
-//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
 //       dynamic_code_replace_immediates: {imm4, imm12},
 //       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//       generated_baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
 //       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
@@ -411,8 +406,8 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Unary1RegisterImmediateOpDynCodeReplaceTester_Case2_TestCase2) {
-  Unary1RegisterImmediateOpDynCodeReplaceTester_Case2 baseline_tester;
+       MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0Tester_Case2_TestCase2) {
+  MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0Tester_Case2 baseline_tester;
   NamedActual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1_MOVW actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00110000iiiiddddiiiiiiiiiiii");
@@ -424,14 +419,13 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       S: S(20),
 //       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
-//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//       baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Rd, NZCV
 //            if S
 //            else None},
 //       dynamic_code_replace_immediates: {imm4, imm12},
 //       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//       generated_baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
 //       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
@@ -439,67 +433,11 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
-       Unary1RegisterImmediateOpDynCodeReplaceTester_Case3_TestCase3) {
-  Unary1RegisterImmediateOpDynCodeReplaceTester_Case3 baseline_tester;
+       MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0Tester_Case3_TestCase3) {
+  MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0Tester_Case3 baseline_tester;
   NamedActual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1_MOVT actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00110100iiiiddddiiiiiiiiiiii");
-}
-
-// op(25)=1 & op1(24:20)=10000
-//    = {NZCV: 16,
-//       None: 32,
-//       Rd: Rd(15:12),
-//       S: S(20),
-//       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
-//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
-//       constraints: ,
-//       defs: {Rd, NZCV
-//            if S
-//            else None},
-//       dynamic_code_replace_immediates: {imm4, imm12},
-//       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//       generated_baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
-//       imm12: imm12(11:0),
-//       imm4: imm4(19:16),
-//       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
-//       rule: MOVW,
-//       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
-//       uses: {}}
-TEST_F(Arm32DecoderStateTests,
-       BvB_Unary1RegisterImmediateOpDynCodeReplaceTester_Case2_TestCase2) {
-  Unary1RegisterImmediateOpDynCodeReplaceTester_Case2 old_baseline_tester;
-  NamedMOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0 gen_baseline;
-  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
-  b_vs_b_tester.Test("cccc00110000iiiiddddiiiiiiiiiiii");
-}
-
-// op(25)=1 & op1(24:20)=10100
-//    = {NZCV: 16,
-//       None: 32,
-//       Rd: Rd(15:12),
-//       S: S(20),
-//       actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
-//       baseline: Unary1RegisterImmediateOpDynCodeReplace,
-//       constraints: ,
-//       defs: {Rd, NZCV
-//            if S
-//            else None},
-//       dynamic_code_replace_immediates: {imm4, imm12},
-//       fields: [S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//       generated_baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
-//       imm12: imm12(11:0),
-//       imm4: imm4(19:16),
-//       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
-//       rule: MOVT,
-//       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
-//       uses: {}}
-TEST_F(Arm32DecoderStateTests,
-       BvB_Unary1RegisterImmediateOpDynCodeReplaceTester_Case3_TestCase3) {
-  Unary1RegisterImmediateOpDynCodeReplaceTester_Case3 old_baseline_tester;
-  NamedMOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0 gen_baseline;
-  BaselineVsBaselineTester b_vs_b_tester(gen_baseline, old_baseline_tester);
-  b_vs_b_tester.Test("cccc00110100iiiiddddiiiiiiiiiiii");
 }
 
 }  // namespace nacl_arm_test

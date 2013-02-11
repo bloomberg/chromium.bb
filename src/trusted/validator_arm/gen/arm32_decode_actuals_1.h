@@ -4638,7 +4638,7 @@ class Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_c
 //    S: S(20),
 //    actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
 //    arch: v6T2,
-//    baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//    baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rd, NZCV
@@ -4646,7 +4646,6 @@ class Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_c
 //         else None},
 //    dynamic_code_replace_immediates: {imm4, imm12},
 //    fields: [cond(31:28), S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//    generated_baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //    imm: imm4:imm12,
 //    imm12: imm12(11:0),
 //    imm4: imm4(19:16),
@@ -4662,7 +4661,7 @@ class Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_c
 //    S: S(20),
 //    actual: Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1,
 //    arch: v6T2,
-//    baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//    baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rd, NZCV
@@ -4670,7 +4669,6 @@ class Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_c
 //         else None},
 //    dynamic_code_replace_immediates: {imm4, imm12},
 //    fields: [cond(31:28), S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
-//    generated_baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //    imm: imm4:imm12,
 //    imm12: imm12(11:0),
 //    imm4: imm4(19:16),

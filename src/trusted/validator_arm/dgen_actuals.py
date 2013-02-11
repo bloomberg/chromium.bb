@@ -190,9 +190,10 @@ def _AddActualToRow(r):
   if (isinstance(action, dgen_core.DecoderAction) and
       dgen_decoder.ActionDefinesDecoder(action)):
     actual = dgen_decoder.BaselineToActual(action)
+    action.remove('actual')  # In case it is already defined.
     action.define('actual', ActualName(actual))
-  row = dgen_core.Row(patterns, action)
-  return row
+    action.freeze()
+  return dgen_core.Row(patterns, action)
 
 ACTUAL_BASE_H_HEADER="""%(FILE_HEADER)s
 #ifndef %(IFDEF_NAME)s

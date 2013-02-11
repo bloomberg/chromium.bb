@@ -1249,7 +1249,7 @@ class SymbolTable(object):
     self._frozen = True
 
   def remove(self, name):
-    self._dict.pop(name)
+    self._dict.pop(name, None)
 
   def inherits(self, context, excludes):
     """Adds inheriting symbol table."""
@@ -1961,6 +1961,10 @@ class DecoderAction:
                 else:
                     type(value)
     return self._st.define(name, value, fail_if_defined)
+
+  def freeze(self):
+      """Don't allow any modifications of fields (unless copying)."""
+      self._st.freeze()
 
   def remove(self, name):
     self._st.remove(name)

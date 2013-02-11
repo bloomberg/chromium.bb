@@ -103,6 +103,11 @@ def _BuildBaselineMaps(decoder):
                         BASELINE_NAME_TO_BASELINES_MAP,
                         BASELINE_TO_NAME_MAP))
 
+  # Before returning, don't forget to install the tester to
+  # use for each baseline class.
+  for baseline in BASELINE_DECODERS:
+    decoder.add_class_def(BaselineName(baseline),'Arm32Decoder')
+
 def _ReinstallBaselineMaps(maps):
   assert len(maps) == 3
   global BASELINE_DECODERS
@@ -340,3 +345,31 @@ def _AddBaselineToRow(row):
       dgen_decoder.ActionDefinesDecoder(action)):
     action.define('generated_baseline', BaselineName(action))
   return dgen_core.Row(list(row.patterns), action)
+
+def InstallGeneratedBaselinesIntoTables(decoder, tables):
+  """Generates a copy of the given decoder, where for the given
+     tables, the decoder actions are updated by replacing the
+     'baseline' entry with the corresponding generated base name."""
+  return decoder.table_filter(
+    lambda tbl: InstallGeneratedBaselinesIntoTable(tbl)
+                if tbl.name in tables else tbl.copy())
+
+def InstallGeneratedBaselinesIntoTable(table):
+  """Generates a copy of the given table, where decoder actions are
+     updated by replacing the 'baseline' entry with the corresponding
+     generated base name."""
+  return table.row_filter(_InstallGeneratedBaselinesIntoRow)
+
+def _InstallGeneratedBaselinesIntoRow(r):
+  """Generates a copy of the given row, where (if applicable), the
+     'baseline' field is defined by the value of the corresponding
+     'generated_baseline' field."""
+  patterns = list(r.patterns)
+  action = r.action.copy()
+  if (isinstance(action, dgen_core.DecoderAction) and
+      action.find('generated_baseline')):
+    action.remove('baseline')  # Incase it is already defined.
+    action.define('baseline', action.find('generated_baseline'))
+    action.remove('generated_baseline')
+    action.freeze()
+  return dgen_core.Row(patterns, action)

@@ -934,6 +934,14 @@ class LoadVectorRegisterList_VPOP
     : public LoadVectorRegisterList {
 };
 
+class MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0_MOVT
+    : public MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0 {
+};
+
+class MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0_MOVW
+    : public MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0 {
+};
+
 class MaskedBinary2RegisterImmediateOp_BIC_immediate
     : public MaskedBinary2RegisterImmediateOp {
 };
@@ -1076,14 +1084,6 @@ class Unary1RegisterImmediateOp12DynCodeReplace_MOV_immediate_A1
 
 class Unary1RegisterImmediateOp12DynCodeReplace_MVN_immediate
     : public Unary1RegisterImmediateOp12DynCodeReplace {
-};
-
-class Unary1RegisterImmediateOpDynCodeReplace_MOVT
-    : public Unary1RegisterImmediateOpDynCodeReplace {
-};
-
-class Unary1RegisterImmediateOpDynCodeReplace_MOVW
-    : public Unary1RegisterImmediateOpDynCodeReplace {
 };
 
 class Unary1RegisterImmediateOpPc_ADR_A1
@@ -5097,6 +5097,30 @@ class NamedLoadVectorRegisterList_VPOP
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadVectorRegisterList_VPOP);
 };
 
+class NamedMOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0_MOVT
+    : public NamedClassDecoder {
+ public:
+  NamedMOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0_MOVT()
+    : NamedClassDecoder(decoder_, "MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0 MOVT")
+  {}
+
+ private:
+  nacl_arm_dec::MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0_MOVT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0_MOVT);
+};
+
+class NamedMOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0_MOVW
+    : public NamedClassDecoder {
+ public:
+  NamedMOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0_MOVW()
+    : NamedClassDecoder(decoder_, "MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0 MOVW")
+  {}
+
+ private:
+  nacl_arm_dec::MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0_MOVW decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0_MOVW);
+};
+
 class NamedMaskedBinary2RegisterImmediateOp_BIC_immediate
     : public NamedClassDecoder {
  public:
@@ -5527,30 +5551,6 @@ class NamedUnary1RegisterImmediateOp12DynCodeReplace_MVN_immediate
  private:
   nacl_arm_dec::Unary1RegisterImmediateOp12DynCodeReplace_MVN_immediate decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOp12DynCodeReplace_MVN_immediate);
-};
-
-class NamedUnary1RegisterImmediateOpDynCodeReplace_MOVT
-    : public NamedClassDecoder {
- public:
-  NamedUnary1RegisterImmediateOpDynCodeReplace_MOVT()
-    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOpDynCodeReplace MOVT")
-  {}
-
- private:
-  nacl_arm_dec::Unary1RegisterImmediateOpDynCodeReplace_MOVT decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOpDynCodeReplace_MOVT);
-};
-
-class NamedUnary1RegisterImmediateOpDynCodeReplace_MOVW
-    : public NamedClassDecoder {
- public:
-  NamedUnary1RegisterImmediateOpDynCodeReplace_MOVW()
-    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOpDynCodeReplace MOVW")
-  {}
-
- private:
-  nacl_arm_dec::Unary1RegisterImmediateOpDynCodeReplace_MOVW decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOpDynCodeReplace_MOVW);
 };
 
 class NamedUnary1RegisterImmediateOpPc_ADR_A1
