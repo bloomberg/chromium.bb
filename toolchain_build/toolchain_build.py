@@ -9,6 +9,7 @@ The real entry plumbing is in toolchain_main.py.
 """
 
 import os
+import platform
 import sys
 
 import command
@@ -49,12 +50,18 @@ REMOVE_INFO_DIR = command.Remove(os.path.join('%(output)s',
 
 CONFIGURE_HOST_ARCH = []
 if sys.platform.startswith('linux'):
-  # We build the tools for x86-32 hosts so they will run on either x86-32
-  # or x86-64 hosts (with the right compatibility libraries installed).
+  cc = ['gcc']
+  cxx = ['g++', '-static-libstdc++']
+  if any(platform.machine().lower().startswith(machine) for machine in
+         ['x86_64', 'amd64', 'x64', 'i686']):
+    # We build the tools for x86-32 hosts so they will run on either x86-32
+    # or x86-64 hosts (with the right compatibility libraries installed).
+    cc += ['-m32']
+    cxx += ['-m32']
+    CONFIGURE_HOST_ARCH += ['--build=i686-linux']
   CONFIGURE_HOST_ARCH += [
-      'CC=gcc -m32',
-      'CXX=g++ -m32 -static-libstdc++',
-      '--build=i686-linux',
+      'CC=' + ' '.join(cc),
+      'CXX=' + ' '.join(cxx),
       ]
 elif sys.platform.startswith('win'):
   # The i18n support brings in runtime dependencies on MinGW DLLs
