@@ -70,29 +70,11 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual std::string makeURLErrorDescription(const WebKit::WebURLError& error);
 
   void Reset();
-  void Display();
-  void SetXSSAuditorEnabled(bool enabled);
   void NotifyDone();
   void DumpAsText();
   void DumpChildFramesAsText();
-  void SetPrinting();
-  void SetShouldStayOnPageAfterHandlingBeforeUnload(bool should_stay_on_page);
   void WaitUntilDone();
-  void CanOpenWindows();
-  void ShowWebInspector();
-  void CloseWebInspector();
-  void EvaluateInWebInspector(int32_t call_id, const std::string& script);
-  void ExecCommand(const std::string& command, const std::string& value);
   void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
-  void DumpEditingCallbacks();
-  void DumpFrameLoadCallbacks();
-  void DumpUserGestureInFrameLoadCallbacks();
-  void StopProvisionalFrameLoads();
-  void DumpTitleChanges();
-  void DumpResourceLoadCallbacks();
-  void DumpResourceRequestCallbacks();
-  void DumpResourceResponseMIMETypes();
-  void DumpCreateView();
 
   void NotImplemented(const std::string& object, const std::string& method);
 

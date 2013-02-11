@@ -77,10 +77,7 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
     bool is_reload,
     const DialogClosedCallback& callback) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    WebKitTestController* controller = WebKitTestController::Get();
-    callback.Run(
-        !controller->should_stay_on_page_after_handling_before_unload(),
-        string16());
+    callback.Run(true, string16());
     return;
   }
 

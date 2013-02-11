@@ -196,17 +196,11 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   expected_pixel_hash_.clear();
   captured_dump_ = false;
   dump_as_text_ = false;
-  dump_child_frames_ = false;
-  is_printing_ = false;
-  should_stay_on_page_after_handling_before_unload_ = false;
+  dump_child_frames_as_text_ = false;
   wait_until_done_ = false;
   did_finish_load_ = false;
   prefs_ = webkit_glue::WebPreferences();
   should_override_prefs_ = false;
-  {
-    base::AutoLock lock(lock_);
-    can_open_windows_ = false;
-  }
   watchdog_.Cancel();
   if (main_window_) {
     WebContentsObserver::Observe(NULL);
@@ -241,11 +235,6 @@ void WebKitTestController::OverrideWebkitPrefs(
   }
 }
 
-bool WebKitTestController::CanOpenWindows() const {
-  base::AutoLock lock(lock_);
-  return can_open_windows_;
-}
-
 bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   bool handled = true;
@@ -260,14 +249,7 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpAsText, OnDumpAsText)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpChildFramesAsText,
                         OnDumpChildFramesAsText)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetPrinting, OnSetPrinting)
-    IPC_MESSAGE_HANDLER(
-        ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload,
-        OnSetShouldStayOnPageAfterHandlingBeforeUnload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_WaitUntilDone, OnWaitUntilDone)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CanOpenWindows, OnCanOpenWindows)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ShowWebInspector, OnShowWebInspector)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseWebInspector, OnCloseWebInspector)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -348,8 +330,8 @@ void WebKitTestController::CaptureDump() {
   render_view_host->Send(new ShellViewMsg_CaptureTextDump(
       render_view_host->GetRoutingID(),
       dump_as_text_,
-      is_printing_,
-      dump_child_frames_));
+      false,
+      dump_child_frames_as_text_));
   if (!dump_as_text_ && enable_pixel_dumping_) {
     render_view_host->Send(new ShellViewMsg_CaptureImageDump(
         render_view_host->GetRoutingID(),
@@ -450,17 +432,8 @@ void WebKitTestController::OnDumpAsText() {
   dump_as_text_ = true;
 }
 
-void WebKitTestController::OnSetPrinting() {
-  is_printing_ = true;
-}
-
-void WebKitTestController::OnSetShouldStayOnPageAfterHandlingBeforeUnload(
-    bool should_stay_on_page) {
-  should_stay_on_page_after_handling_before_unload_ = should_stay_on_page;
-}
-
 void WebKitTestController::OnDumpChildFramesAsText() {
-  dump_child_frames_ = true;
+  dump_as_text_ = true;
 }
 
 void WebKitTestController::OnWaitUntilDone() {
@@ -475,19 +448,6 @@ void WebKitTestController::OnWaitUntilDone() {
         base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds));
   }
   wait_until_done_ = true;
-}
-
-void WebKitTestController::OnCanOpenWindows() {
-  base::AutoLock lock(lock_);
-  can_open_windows_ = true;
-}
-
-void WebKitTestController::OnShowWebInspector() {
-  main_window_->ShowDevTools();
-}
-
-void WebKitTestController::OnCloseWebInspector() {
-  main_window_->CloseDevTools();
 }
 
 void WebKitTestController::OnNotImplemented(

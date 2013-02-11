@@ -60,16 +60,9 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_ReadFileToString,
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_NotifyDone)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpAsText)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpChildFramesAsText)
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_SetPrinting)
-IPC_MESSAGE_ROUTED1(
-    ShellViewHostMsg_SetShouldStayOnPageAfterHandlingBeforeUnload,
-    bool /* should_stay_on_page */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_WaitUntilDone)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_OverridePreferences,
                     webkit_glue::WebPreferences /* preferences */)
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CanOpenWindows)
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ShowWebInspector)
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseWebInspector)
 IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_RegisterIsolatedFileSystem,
                            std::vector<base::FilePath> /* absolute_filenames */,
                            std::string /* filesystem_id */)

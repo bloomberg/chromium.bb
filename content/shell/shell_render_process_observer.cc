@@ -101,7 +101,6 @@ void ShellRenderProcessObserver::OnResetAll() {
     WebTestingSupport::resetInternalsObject(
         main_render_view_->GetWebView()->mainFrame());
   }
-  WebKitTestRunnerBindings::Reset();
 }
 
 void ShellRenderProcessObserver::OnSetWebKitSourceDir(
