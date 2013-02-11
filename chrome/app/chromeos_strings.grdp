@@ -1492,7 +1492,7 @@ Press any key to continue exploring.
     <ph name="DOMAIN">$1<ex>example.com</ex></ph> Terms
   </message>
   <message name="IDS_TERMS_OF_SERVICE_SCREEN_LOADING" desc="Message shown while the Terms of Service are being downloaded.">
-    loading...
+    Loading...
   </message>
   <message name="IDS_TERMS_OF_SERVICE_SCREEN_ERROR" desc="Error message shown when the Terms of Service could not be loaded.">
     Oops, something went wrong.
