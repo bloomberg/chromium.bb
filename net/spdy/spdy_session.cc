@@ -233,7 +233,6 @@ SpdySession::SpdySession(const HostPortProxyPair& host_port_proxy_pair,
       http_server_properties_(http_server_properties),
       connection_(new ClientSocketHandle),
       read_buffer_(new IOBuffer(kReadBufferSize)),
-      read_pending_(false),
       stream_hi_water_mark_(kFirstStreamId),
       write_pending_(false),
       delayed_write_pending_(false),
@@ -782,13 +781,11 @@ LoadState SpdySession::GetLoadState() const {
 
 void SpdySession::OnReadComplete(int bytes_read) {
   DCHECK_NE(state_, STATE_DO_READ);
-  read_pending_ = false;
   DoLoop(bytes_read);
 }
 
 void SpdySession::StartRead() {
   DCHECK_NE(state_, STATE_DO_READ_COMPLETE);
-  read_pending_ = false;
   DoLoop(OK);
 }
 
@@ -802,9 +799,6 @@ int SpdySession::DoLoop(int result) {
   scoped_refptr<SpdySession> self(this);
 
   do {
-    if (read_pending_)
-      return OK;
-
     switch (state_) {
       case STATE_DO_READ:
         DCHECK_EQ(result, OK);
@@ -826,7 +820,6 @@ int SpdySession::DoLoop(int result) {
 }
 
 int SpdySession::DoRead() {
-  DCHECK(!read_pending_);
   if (bytes_read_ > kMaxReadBytes) {
     state_ = STATE_DO_READ;
     MessageLoop::current()->PostTask(
@@ -839,21 +832,16 @@ int SpdySession::DoRead() {
   CHECK(connection_.get());
   CHECK(connection_->socket());
   state_ = STATE_DO_READ_COMPLETE;
-  int result = connection_->socket()->Read(
+  return connection_->socket()->Read(
       read_buffer_.get(),
       kReadBufferSize,
       base::Bind(&SpdySession::OnReadComplete, base::Unretained(this)));
-  if (result == net::ERR_IO_PENDING)
-    read_pending_ = true;
-  return result;
 }
 
 int SpdySession::DoReadComplete(int result) {
   // Parse a frame.  For now this code requires that the frame fit into our
   // buffer (32KB).
   // TODO(mbelshe): support arbitrarily large frames!
-
-  DCHECK(!read_pending_);
 
   if (result <= 0) {
     // Session is tearing down.
