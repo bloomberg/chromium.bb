@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if !defined(OS_WIN)
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -16,6 +17,9 @@
 #include "content/test/gpu/gpu_test_config.h"
 #include "content/test/gpu/gpu_test_expectations_parser.h"
 #include "net/base/net_util.h"
+#else
+#include "content/test/content_browser_test.h"
+#endif
 
 namespace content {
 
@@ -23,13 +27,13 @@ class WebGLConformanceTest : public ContentBrowserTest {
  public:
   WebGLConformanceTest() {}
 
+#if !defined(OS_WIN)
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // Allow privileged WebGL extensions.
     command_line->AppendSwitch(switches::kEnablePrivilegedWebGLExtensions);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
-#if !defined(OS_WIN)
     base::FilePath webgl_conformance_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &webgl_conformance_path);
     webgl_conformance_path = webgl_conformance_path.Append(
@@ -38,13 +42,11 @@ class WebGLConformanceTest : public ContentBrowserTest {
         FILE_PATH_LITERAL("webgl_conformance"));
     ASSERT_TRUE(file_util::DirectoryExists(webgl_conformance_path))
         << "Missing conformance tests: " << webgl_conformance_path.value();
-#endif
 
     PathService::Get(DIR_TEST_DATA, &test_path_);
     test_path_ = test_path_.Append(FILE_PATH_LITERAL("gpu"));
     test_path_ = test_path_.Append(FILE_PATH_LITERAL("webgl_conformance.html"));
 
-#if !defined(OS_WIN)
     ASSERT_TRUE(bot_config_.LoadCurrentConfig(NULL))
         << "Fail to load bot configuration";
     ASSERT_TRUE(bot_config_.IsValid())
@@ -52,17 +54,11 @@ class WebGLConformanceTest : public ContentBrowserTest {
 
     ASSERT_TRUE(test_expectations_.LoadTestExpectations(
         GPUTestExpectationsParser::kWebGLConformanceTest));
-#endif
   }
-
-  void RunTest(const std::string& url) {
-#if defined(OS_WIN)
-    return;
 #endif
-    std::string test_name =
-        testing::UnitTest::GetInstance()->current_test_info()->name();
-    if (StartsWithASCII(test_name, "MANUAL_", true))
-      test_name = test_name.substr(strlen("MANUAL_"));
+
+  void RunTest(std::string url, std::string test_name) {
+#if !defined(OS_WIN)
     int32 expectation =
         test_expectations_.GetTestExpectation(test_name, bot_config_);
     if (expectation != GPUTestExpectationsParser::kGpuTestPass) {
@@ -78,17 +74,20 @@ class WebGLConformanceTest : public ContentBrowserTest {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
 
     EXPECT_STREQ("\"SUCCESS\"", message.c_str()) << message;
+#endif
   }
 
+#if !defined(OS_WIN)
  private:
   base::FilePath test_path_;
   GPUTestBotConfig bot_config_;
   GPUTestExpectationsParser test_expectations_;
+#endif
 };
 
 #define CONFORMANCE_TEST(name, url) \
 IN_PROC_BROWSER_TEST_F(WebGLConformanceTest, MANUAL_##name) { \
-  RunTest(url); \
+  RunTest(url, #name);                                        \
 }
 
 // The test declarations are located in webgl_conformance_test_list_autogen.h,
