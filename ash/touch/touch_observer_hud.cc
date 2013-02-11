@@ -50,6 +50,24 @@ const int kAlpha = 0x60;
 const int kMaxPaths = arraysize(kColors);
 const int kReducedScale = 10;
 
+const char* GetTouchEventLabel(ui::EventType type) {
+  switch (type) {
+    case ui::ET_UNKNOWN:
+      return " ";
+    case ui::ET_TOUCH_PRESSED:
+      return "P";
+    case ui::ET_TOUCH_MOVED:
+      return "M";
+    case ui::ET_TOUCH_RELEASED:
+      return "R";
+    case ui::ET_TOUCH_CANCELLED:
+      return "C";
+    default:
+      break;
+  }
+  return "?";
+}
+
 int GetTrackingId(const ui::TouchEvent& event) {
   if (!event.HasNativeEvent())
     return 0;
@@ -80,11 +98,13 @@ struct TouchPointLog {
  public:
   explicit TouchPointLog(const ui::TouchEvent& touch)
       : id(touch.touch_id()),
-        tracking_id(GetTrackingId(touch)),
+        type(touch.type()),
         location(touch.root_location()),
+        timestamp(touch.time_stamp().InMillisecondsF()),
         radius_x(touch.radius_x()),
         radius_y(touch.radius_y()),
         pressure(touch.force()),
+        tracking_id(GetTrackingId(touch)),
         source_device(GetSourceDeviceId(touch)) {
   }
 
@@ -94,22 +114,26 @@ struct TouchPointLog {
     scoped_ptr<DictionaryValue> value(new DictionaryValue());
 
     value->SetInteger("id", id);
-    value->SetInteger("tracking_id", tracking_id);
+    value->SetString("type", std::string(GetTouchEventLabel(type)));
     value->SetString("location", location.ToString());
+    value->SetDouble("timestamp", timestamp);
     value->SetDouble("radius_x", radius_x);
     value->SetDouble("radius_y", radius_y);
     value->SetDouble("pressure", pressure);
+    value->SetInteger("tracking_id", tracking_id);
     value->SetInteger("source_device", source_device);
 
     return value.Pass();
   }
 
   int id;
-  int tracking_id;
+  ui::EventType type;
   gfx::Point location;
+  double timestamp;
   float radius_x;
   float radius_y;
   float pressure;
+  int tracking_id;
   int source_device;
 };
 
@@ -328,33 +352,15 @@ std::string TouchObserverHUD::GetLogAsString() const {
   std::string string;
   scoped_ptr<ListValue> list = canvas_->GetAsList();
   JSONStringValueSerializer json(&string);
+  json.set_pretty_print(true);
   return json.Serialize(*list) ? string : std::string();
 }
 
 void TouchObserverHUD::UpdateTouchPointLabel(int index) {
-  const char* status = NULL;
-  switch (touch_status_[index]) {
-    case ui::ET_UNKNOWN:
-      status = " ";
-      break;
-    case ui::ET_TOUCH_PRESSED:
-      status = "P";
-      break;
-    case ui::ET_TOUCH_MOVED:
-      status = "M";
-      break;
-    case ui::ET_TOUCH_RELEASED:
-      status = "R";
-      break;
-    case ui::ET_TOUCH_CANCELLED:
-      status = "C";
-      break;
-    default:
-      status = "?";
-      break;
-  }
-  std::string string = base::StringPrintf("%2d: %s %s",
-      index, status, touch_positions_[index].ToString().c_str());
+  std::string string = base::StringPrintf("%2d: %s %s (%.4f)",
+      index, GetTouchEventLabel(touch_status_[index]),
+      touch_positions_[index].ToString().c_str(),
+      touch_radius_[index]);
   touch_labels_[index]->SetText(UTF8ToUTF16(string));
 }
 
@@ -364,9 +370,13 @@ void TouchObserverHUD::OnTouchEvent(ui::TouchEvent* event) {
 
   if (event->type() != ui::ET_TOUCH_CANCELLED)
     touch_positions_[event->touch_id()] = event->root_location();
+
+  touch_radius_[event->touch_id()] = std::max(event->radius_x(),
+                                              event->radius_y());
+
   if (event->type() == ui::ET_TOUCH_PRESSED)
     canvas_->Start(*event);
-  else
+  else if (event->type() != ui::ET_TOUCH_CANCELLED)
     canvas_->AddPoint(*event);
   touch_status_[event->touch_id()] = event->type();
 

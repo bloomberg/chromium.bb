@@ -59,6 +59,7 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
   views::View* label_container_;
   views::Label* touch_labels_[kMaxTouchPoints];
   gfx::Point touch_positions_[kMaxTouchPoints];
+  float touch_radius_[kMaxTouchPoints];
   ui::EventType touch_status_[kMaxTouchPoints];
 
   DISALLOW_COPY_AND_ASSIGN(TouchObserverHUD);
