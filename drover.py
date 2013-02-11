@@ -525,8 +525,8 @@ def drover(options, args):
   elif options.merge and options.sbranch:
     url = BRANCH_URL.replace("$branch", options.sbranch)
   elif options.revert and options.url:
-      url = options.url
-      file_pattern_ = r"[ ]+([MADUC])[ ]+((/.*)/(.*))"
+    url = options.url
+    file_pattern_ = r"[ ]+([MADUC])[ ]+((/.*)/(.*))"
   else:
     url = TRUNK_URL
 
