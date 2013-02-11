@@ -12,16 +12,12 @@
 #include "chrome/test/chromedriver/devtools_client.h"
 #include "chrome/test/chromedriver/status.h"
 
-FrameTracker::FrameTracker() {}
+FrameTracker::FrameTracker(DevToolsClient* client) : client_(client) {
+  DCHECK(client_);
+  client_->AddListener(this);
+}
 
 FrameTracker::~FrameTracker() {}
-
-Status FrameTracker::Init(DevToolsClient* client) {
-  // Enable runtime events to allow tracking execution context creation.
-  base::DictionaryValue params;
-  DCHECK(client);
-  return client->SendCommand("Runtime.enable", params);
-}
 
 Status FrameTracker::GetFrameForContextId(
     int context_id, std::string* frame_id) {
@@ -37,6 +33,12 @@ Status FrameTracker::GetContextIdForFrame(
     return Status(kUnknownError, "frame does not have execution context");
   *context_id = frame_to_context_map_[frame_id];
   return Status(kOk);
+}
+
+Status FrameTracker::OnConnected() {
+  // Enable runtime events to allow tracking execution context creation.
+  base::DictionaryValue params;
+  return client_->SendCommand("Runtime.enable", params);
 }
 
 void FrameTracker::OnEvent(const std::string& method,

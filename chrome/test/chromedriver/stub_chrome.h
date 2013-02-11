@@ -6,12 +6,12 @@
 #define CHROME_TEST_CHROMEDRIVER_STUB_CHROME_H_
 
 #include <list>
-#include <string>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 #include "chrome/test/chromedriver/chrome.h"
 
 class Status;
+class WebView;
 
 class StubChrome : public Chrome {
  public:
@@ -19,26 +19,8 @@ class StubChrome : public Chrome {
   virtual ~StubChrome();
 
   // Overridden from Chrome:
-  virtual Status Load(const std::string& url) OVERRIDE;
-  virtual Status Reload() OVERRIDE;
-  virtual Status EvaluateScript(const std::string& frame,
-                                const std::string& function,
-                                scoped_ptr<base::Value>* result) OVERRIDE;
-  virtual Status CallFunction(const std::string& frame,
-                              const std::string& function,
-                              const base::ListValue& args,
-                              scoped_ptr<base::Value>* result) OVERRIDE;
-  virtual Status GetFrameByFunction(const std::string& frame,
-                                    const std::string& function,
-                                    const base::ListValue& args,
-                                    std::string* out_frame) OVERRIDE;
-  virtual Status DispatchMouseEvents(
-      const std::list<MouseEvent>& events) OVERRIDE;
-  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE;
+  virtual Status GetWebViews(std::list<WebView*>* web_views) OVERRIDE;
   virtual Status Quit() OVERRIDE;
-  virtual Status WaitForPendingNavigations(
-      const std::string& frame_id) OVERRIDE;
-  virtual Status GetMainFrame(std::string* frame_id) OVERRIDE;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_STUB_CHROME_H_

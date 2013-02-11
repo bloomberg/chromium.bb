@@ -9,6 +9,7 @@ import ctypes
 import optparse
 import os
 import sys
+import time
 import unittest
 
 import chromedriver
@@ -51,6 +52,20 @@ class ChromeDriverTest(unittest.TestCase):
 
   def testLoadUrl(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+
+  def testGetCurrentWindowHandle(self):
+    self._driver.GetCurrentWindowHandle()
+
+  def testGetWindowHandles(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    window_count = len(self._driver.GetWindowHandles())
+    self._driver.FindElement('id', 'link').Click()
+    timeout = time.time() + 20
+    while time.time() < timeout:
+      if (len(self._driver.GetWindowHandles()) > window_count):
+        return
+      time.sleep(0.01)
+    self.assertTrue(False)
 
   def testEvaluateScript(self):
     self.assertEquals(1, self._driver.ExecuteScript('return 1'))

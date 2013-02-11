@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/test/chromedriver/devtools_client.h"
 #include "chrome/test/chromedriver/devtools_event_listener.h"
 #include "chrome/test/chromedriver/status.h"
 
@@ -24,13 +23,13 @@ class Status;
 // Tracks the navigation state of frames.
 class NavigationTracker : public DevToolsEventListener {
  public:
-  NavigationTracker();
+  explicit NavigationTracker(DevToolsClient* client);
   virtual ~NavigationTracker();
 
-  Status Init(DevToolsClient* client);
   bool IsPendingNavigation(const std::string& frame_id);
 
   // Overridden from DevToolsEventListener:
+  virtual Status OnConnected() OVERRIDE;
   virtual void OnEvent(const std::string& method,
                        const base::DictionaryValue& params) OVERRIDE;
 
@@ -55,6 +54,7 @@ class NavigationTracker : public DevToolsEventListener {
     Mask state_bitfield_;
   };
 
+  DevToolsClient* client_;
   std::map<std::string, NavigationState> frame_state_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationTracker);

@@ -8,10 +8,12 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/navigation_tracker.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/stub_devtools_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(NavigationTracker, IsPendingNavigation) {
-  NavigationTracker tracker;
+  StubDevToolsClient client;
+  NavigationTracker tracker(&client);
   ASSERT_FALSE(tracker.IsPendingNavigation("f"));
 
   base::DictionaryValue params;
@@ -23,7 +25,8 @@ TEST(NavigationTracker, IsPendingNavigation) {
 }
 
 TEST(NavigationTracker, NavigationScheduledThenLoaded) {
-  NavigationTracker tracker;
+  StubDevToolsClient client;
+  NavigationTracker tracker(&client);
   base::DictionaryValue params;
   params.SetString("frameId", "f");
   base::DictionaryValue params_scheduled;
@@ -41,7 +44,8 @@ TEST(NavigationTracker, NavigationScheduledThenLoaded) {
 }
 
 TEST(NavigationTracker, NavigationScheduledThenCancelled) {
-  NavigationTracker tracker;
+  StubDevToolsClient client;
+  NavigationTracker tracker(&client);
   base::DictionaryValue params;
   params.SetString("frameId", "f");
   base::DictionaryValue params_scheduled;
@@ -55,7 +59,8 @@ TEST(NavigationTracker, NavigationScheduledThenCancelled) {
 }
 
 TEST(NavigationTracker, InterleavedMultipleFrameNavigations) {
-  NavigationTracker tracker;
+  StubDevToolsClient client;
+  NavigationTracker tracker(&client);
   base::DictionaryValue params_f1;
   params_f1.SetString("frameId", "f1");
   base::DictionaryValue params_f1_scheduled;

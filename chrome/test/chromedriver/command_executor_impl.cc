@@ -11,34 +11,17 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/command_names.h"
 #include "chrome/test/chromedriver/commands.h"
+#include "chrome/test/chromedriver/element_commands.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/session.h"
-#include "chrome/test/chromedriver/session_command.h"
+#include "chrome/test/chromedriver/session_commands.h"
 #include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/window_commands.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
-
-namespace {
-
-Status ExecuteElementCommand(
-    base::Callback<Status(
-        Session* session,
-        const std::string&,
-        const base::DictionaryValue&,
-        scoped_ptr<base::Value>*)> command,
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
-  std::string id;
-  if (!params.GetString("id", &id))
-    return Status(kUnknownError, "'id' of element must be a string");
-  return command.Run(session, id, params, value);
-}
-
-}  // namespace
 
 CommandExecutorImpl::CommandExecutorImpl()
     : io_thread_("ChromeDriver IO") {}
@@ -55,7 +38,80 @@ void CommandExecutorImpl::Init() {
       io_thread_.message_loop_proxy());
   socket_factory_ = CreateSyncWebSocketFactory(context_getter_);
 
-  // Session commands.
+  // Commands which require an element id.
+  typedef std::map<std::string, ElementCommand> ElementCommandMap;
+  ElementCommandMap element_command_map;
+  element_command_map[CommandNames::kFindChildElement] =
+      base::Bind(&ExecuteFindChildElement, 50);
+  element_command_map[CommandNames::kFindChildElements] =
+      base::Bind(&ExecuteFindChildElements, 50);
+  element_command_map[CommandNames::kHoverOverElement] =
+      base::Bind(&ExecuteHoverOverElement);
+  element_command_map[CommandNames::kClickElement] =
+      base::Bind(&ExecuteClickElement);
+  element_command_map[CommandNames::kClearElement] =
+      base::Bind(&ExecuteClearElement);
+  element_command_map[CommandNames::kSendKeysToElement] =
+      base::Bind(&ExecuteSendKeysToElement);
+
+  // Commands which require a window.
+  typedef std::map<std::string, WindowCommand> WindowCommandMap;
+  WindowCommandMap window_command_map;
+  // Wrap ElementCommand into WindowCommand.
+  for (ElementCommandMap::const_iterator it = element_command_map.begin();
+       it != element_command_map.end(); ++it) {
+    window_command_map[it->first] =
+        base::Bind(&ExecuteElementCommand, it->second);
+  }
+  window_command_map[CommandNames::kGet] = base::Bind(&ExecuteGet);
+  window_command_map[CommandNames::kExecuteScript] =
+      base::Bind(&ExecuteExecuteScript);
+  window_command_map[CommandNames::kSwitchToFrame] =
+      base::Bind(&ExecuteSwitchToFrame);
+  window_command_map[CommandNames::kGetTitle] =
+      base::Bind(&ExecuteGetTitle);
+  window_command_map[CommandNames::kFindElement] =
+      base::Bind(&ExecuteFindElement, 50);
+  window_command_map[CommandNames::kFindElements] =
+      base::Bind(&ExecuteFindElements, 50);
+  window_command_map[CommandNames::kGetCurrentUrl] =
+      base::Bind(&ExecuteGetCurrentUrl);
+  window_command_map[CommandNames::kGoBack] =
+      base::Bind(&ExecuteGoBack);
+  window_command_map[CommandNames::kGoForward] =
+      base::Bind(&ExecuteGoForward);
+  window_command_map[CommandNames::kRefresh] =
+      base::Bind(&ExecuteRefresh);
+  window_command_map[CommandNames::kMouseMoveTo] =
+      base::Bind(&ExecuteMouseMoveTo);
+  window_command_map[CommandNames::kMouseClick] =
+      base::Bind(&ExecuteMouseClick);
+  window_command_map[CommandNames::kMouseButtonDown] =
+      base::Bind(&ExecuteMouseButtonDown);
+  window_command_map[CommandNames::kMouseButtonUp] =
+      base::Bind(&ExecuteMouseButtonUp);
+  window_command_map[CommandNames::kMouseDoubleClick] =
+      base::Bind(&ExecuteMouseDoubleClick);
+
+  // Commands which require a session.
+  typedef std::map<std::string, SessionCommand> SessionCommandMap;
+  SessionCommandMap session_command_map;
+  // Wrap WindowCommand into SessionCommand.
+  for (WindowCommandMap::const_iterator it = window_command_map.begin();
+       it != window_command_map.end(); ++it) {
+    session_command_map[it->first] =
+        base::Bind(&ExecuteWindowCommand, it->second);
+  }
+  session_command_map[CommandNames::kQuit] =
+      base::Bind(&ExecuteQuit, &session_map_);
+  session_command_map[CommandNames::kGetCurrentWindowHandle] =
+      base::Bind(&ExecuteGetCurrentWindowHandle);
+  session_command_map[CommandNames::kGetWindowHandles] =
+      base::Bind(&ExecuteGetWindowHandles);
+  session_command_map[CommandNames::kSetTimeout] =
+      base::Bind(&ExecuteSetTimeout);
+
+  // Wrap SessionCommand into non-session Command.
   base::Callback<Status(
       const SessionCommand&,
       const base::DictionaryValue&,
@@ -64,94 +120,11 @@ void CommandExecutorImpl::Init() {
       std::string*)> execute_session_command = base::Bind(
           &ExecuteSessionCommand,
           &session_map_);
-  command_map_.Set(
-      CommandNames::kGet,
-      base::Bind(execute_session_command, base::Bind(&ExecuteGet)));
-  command_map_.Set(
-      CommandNames::kExecuteScript,
-      base::Bind(execute_session_command, base::Bind(&ExecuteExecuteScript)));
-  command_map_.Set(
-      CommandNames::kSwitchToFrame,
-      base::Bind(execute_session_command, base::Bind(&ExecuteSwitchToFrame)));
-  command_map_.Set(
-      CommandNames::kGetTitle,
-      base::Bind(execute_session_command, base::Bind(&ExecuteGetTitle)));
-  command_map_.Set(
-      CommandNames::kFindElement,
-      base::Bind(execute_session_command,
-          base::Bind(&ExecuteFindElement, 50)));
-  command_map_.Set(
-      CommandNames::kFindElements,
-      base::Bind(execute_session_command,
-          base::Bind(&ExecuteFindElements, 50)));
-  command_map_.Set(
-      CommandNames::kSetTimeout,
-      base::Bind(execute_session_command, base::Bind(&ExecuteSetTimeout)));
-  command_map_.Set(
-      CommandNames::kGetCurrentUrl,
-      base::Bind(execute_session_command, base::Bind(&ExecuteGetCurrentUrl)));
-  command_map_.Set(
-      CommandNames::kGoBack,
-      base::Bind(execute_session_command, base::Bind(&ExecuteGoBack)));
-  command_map_.Set(
-      CommandNames::kGoForward,
-      base::Bind(execute_session_command, base::Bind(&ExecuteGoForward)));
-  command_map_.Set(
-      CommandNames::kRefresh,
-      base::Bind(execute_session_command, base::Bind(&ExecuteRefresh)));
-  command_map_.Set(
-      CommandNames::kMouseMoveTo,
-      base::Bind(execute_session_command, base::Bind(&ExecuteMouseMoveTo)));
-  command_map_.Set(
-      CommandNames::kMouseClick,
-      base::Bind(execute_session_command, base::Bind(&ExecuteMouseClick)));
-  command_map_.Set(
-      CommandNames::kMouseButtonDown,
-      base::Bind(execute_session_command, base::Bind(&ExecuteMouseButtonDown)));
-  command_map_.Set(
-      CommandNames::kMouseButtonUp,
-      base::Bind(execute_session_command, base::Bind(&ExecuteMouseButtonUp)));
-  command_map_.Set(
-      CommandNames::kMouseDoubleClick,
-      base::Bind(execute_session_command,
-                 base::Bind(&ExecuteMouseDoubleClick)));
-  Command quit_command = base::Bind(execute_session_command,
-      base::Bind(&ExecuteQuit, &session_map_));
-  command_map_.Set(CommandNames::kQuit, quit_command);
-
-  // Element commands.
-  command_map_.Set(
-      CommandNames::kFindChildElement,
-      base::Bind(execute_session_command,
-                 base::Bind(&ExecuteElementCommand,
-                            base::Bind(&ExecuteFindChildElement, 50))));
-  command_map_.Set(
-      CommandNames::kFindChildElements,
-      base::Bind(execute_session_command,
-                 base::Bind(&ExecuteElementCommand,
-                            base::Bind(&ExecuteFindChildElements, 50))));
-  command_map_.Set(
-      CommandNames::kHoverOverElement,
-      base::Bind(execute_session_command,
-                 base::Bind(&ExecuteElementCommand,
-                            base::Bind(&ExecuteHoverOverElement))));
-  command_map_.Set(
-      CommandNames::kClickElement,
-      base::Bind(execute_session_command,
-                 base::Bind(&ExecuteElementCommand,
-                            base::Bind(&ExecuteClickElement))));
-  command_map_.Set(
-      CommandNames::kClearElement,
-      base::Bind(execute_session_command,
-                 base::Bind(&ExecuteElementCommand,
-                            base::Bind(&ExecuteClearElement))));
-  command_map_.Set(
-      CommandNames::kSendKeysToElement,
-      base::Bind(execute_session_command,
-                 base::Bind(&ExecuteElementCommand,
-                            base::Bind(&ExecuteSendKeysToElement))));
-
-  // Non-session commands.
+  for (SessionCommandMap::const_iterator it = session_command_map.begin();
+       it != session_command_map.end(); ++it) {
+    command_map_.Set(it->first,
+                     base::Bind(execute_session_command, it->second));
+  }
   command_map_.Set(CommandNames::kStatus, base::Bind(&ExecuteGetStatus));
   command_map_.Set(
       CommandNames::kNewSession,
@@ -159,7 +132,10 @@ void CommandExecutorImpl::Init() {
                  socket_factory_));
   command_map_.Set(
       CommandNames::kQuitAll,
-      base::Bind(&ExecuteQuitAll, quit_command, &session_map_));
+      base::Bind(&ExecuteQuitAll,
+                 base::Bind(execute_session_command,
+                            base::Bind(&ExecuteQuit, &session_map_)),
+                 &session_map_));
 }
 
 void CommandExecutorImpl::ExecuteCommand(

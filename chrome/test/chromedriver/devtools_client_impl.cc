@@ -126,6 +126,12 @@ Status DevToolsClientImpl::SendCommandInternal(
     if (!socket_->Connect(url_))
       return Status(kDisconnected, "unable to connect to renderer");
     connected_ = true;
+    for (std::list<DevToolsEventListener*>::iterator iter = listeners_.begin();
+         iter != listeners_.end(); ++iter) {
+      Status status = (*iter)->OnConnected();
+      if (status.IsError())
+        return status;
+    }
   }
 
   int command_id = next_id_++;

@@ -8,10 +8,12 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/frame_tracker.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/stub_devtools_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(FrameTracker, GetContextIdForFrame) {
-  FrameTracker tracker;
+  StubDevToolsClient client;
+  FrameTracker tracker(&client);
   int context_id = -1;
   ASSERT_TRUE(tracker.GetContextIdForFrame("f", &context_id).IsError());
   ASSERT_EQ(-1, context_id);
@@ -30,7 +32,8 @@ TEST(FrameTracker, GetContextIdForFrame) {
 }
 
 TEST(FrameTracker, GetFrameForContextId) {
-  FrameTracker tracker;
+  StubDevToolsClient client;
+  FrameTracker tracker(&client);
   std::string frame_id = "NONE";
   ASSERT_TRUE(tracker.GetFrameForContextId(0, &frame_id).IsError());
   ASSERT_EQ("NONE", frame_id);

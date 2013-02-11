@@ -13,9 +13,14 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
 #include "chrome/test/chromedriver/commands.h"
+#include "chrome/test/chromedriver/element_commands.h"
 #include "chrome/test/chromedriver/fake_session_accessor.h"
+#include "chrome/test/chromedriver/session_commands.h"
 #include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/stub_chrome.h"
+#include "chrome/test/chromedriver/stub_web_view.h"
+#include "chrome/test/chromedriver/web_view.h"
+#include "chrome/test/chromedriver/window_commands.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webdriver/atoms.h"
 
@@ -121,9 +126,9 @@ enum TestScenario {
   kElementExistsTimeout
 };
 
-class FindElementChrome : public StubChrome {
+class FindElementWebView : public StubWebView {
  public:
-  FindElementChrome(bool only_one, TestScenario scenario)
+  FindElementWebView(bool only_one, TestScenario scenario)
       : only_one_(only_one), scenario_(scenario), current_count_(0) {
     switch (scenario_) {
       case kElementExistsQueryOnce:
@@ -154,7 +159,7 @@ class FindElementChrome : public StubChrome {
       }
     }
   }
-  virtual ~FindElementChrome() {}
+  virtual ~FindElementWebView() {}
 
   void Verify(const std::string& expected_frame,
               const base::ListValue* expected_args,
@@ -172,7 +177,7 @@ class FindElementChrome : public StubChrome {
     EXPECT_TRUE(result_->Equals(actrual_result));
   }
 
-  // Overridden from Chrome:
+  // Overridden from WebView:
   virtual Status CallFunction(const std::string& frame,
                               const std::string& function,
                               const base::ListValue& args,
@@ -222,71 +227,71 @@ class FindElementChrome : public StubChrome {
 }  // namespace
 
 TEST(CommandsTest, SuccessfulFindElement) {
-  FindElementChrome* chrome =
-      new FindElementChrome(true, kElementExistsQueryTwice);
-  Session session("id", scoped_ptr<Chrome>(chrome));
+  FindElementWebView web_view(true, kElementExistsQueryTwice);
+  Session session("id");
   session.implicit_wait = 1000;
   session.frame = "frame_id1";
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");
   scoped_ptr<base::Value> result;
-  ASSERT_EQ(kOk, ExecuteFindElement(1, &session, params, &result).code());
+  ASSERT_EQ(kOk,
+            ExecuteFindElement(1, &session, &web_view, params, &result).code());
   base::DictionaryValue param;
   param.SetString("id", "a");
   base::ListValue expected_args;
   expected_args.Append(param.DeepCopy());
-  chrome->Verify("frame_id1", &expected_args, result.get());
+  web_view.Verify("frame_id1", &expected_args, result.get());
 }
 
 TEST(CommandsTest, FailedFindElement) {
-  Session session("id",
-      scoped_ptr<Chrome>(
-          new FindElementChrome(true, kElementNotExistsQueryOnce)));
+  FindElementWebView web_view(true, kElementNotExistsQueryOnce);
+  Session session("id");
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");
   scoped_ptr<base::Value> result;
   ASSERT_EQ(kNoSuchElement,
-            ExecuteFindElement(1, &session, params, &result).code());
+            ExecuteFindElement(1, &session, &web_view, params, &result).code());
 }
 
 TEST(CommandsTest, SuccessfulFindElements) {
-  FindElementChrome* chrome =
-      new FindElementChrome(false, kElementExistsQueryTwice);
-  Session session("id", scoped_ptr<Chrome>(chrome));
+  FindElementWebView web_view(false, kElementExistsQueryTwice);
+  Session session("id");
   session.implicit_wait = 1000;
   session.frame = "frame_id2";
   base::DictionaryValue params;
   params.SetString("using", "name");
   params.SetString("value", "b");
   scoped_ptr<base::Value> result;
-  ASSERT_EQ(kOk, ExecuteFindElements(1, &session, params, &result).code());
+  ASSERT_EQ(
+      kOk,
+      ExecuteFindElements(1, &session, &web_view, params, &result).code());
   base::DictionaryValue param;
   param.SetString("name", "b");
   base::ListValue expected_args;
   expected_args.Append(param.DeepCopy());
-  chrome->Verify("frame_id2", &expected_args, result.get());
+  web_view.Verify("frame_id2", &expected_args, result.get());
 }
 
 TEST(CommandsTest, FailedFindElements) {
-  Session session("id",
-      scoped_ptr<Chrome>(
-          new FindElementChrome(false, kElementNotExistsQueryOnce)));
+  Session session("id");
+  FindElementWebView web_view(false, kElementNotExistsQueryOnce);
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");
   scoped_ptr<base::Value> result;
-  ASSERT_EQ(kOk, ExecuteFindElements(1, &session, params, &result).code());
+  ASSERT_EQ(
+      kOk,
+      ExecuteFindElements(1, &session, &web_view, params, &result).code());
   base::ListValue* list;
   ASSERT_TRUE(result->GetAsList(&list));
   ASSERT_EQ(0U, list->GetSize());
 }
 
 TEST(CommandsTest, SuccessfulFindChildElement) {
-  FindElementChrome* chrome =
-      new FindElementChrome(true, kElementExistsQueryTwice);
-  Session session("id", scoped_ptr<Chrome>(chrome));
+  FindElementWebView web_view(true, kElementExistsQueryTwice);
+  Session session("id");
   session.implicit_wait = 1000;
   session.frame = "frame_id3";
   base::DictionaryValue params;
@@ -296,7 +301,8 @@ TEST(CommandsTest, SuccessfulFindChildElement) {
   scoped_ptr<base::Value> result;
   ASSERT_EQ(
       kOk,
-      ExecuteFindChildElement(1, &session, element_id, params, &result).code());
+      ExecuteFindChildElement(
+          1, &session, &web_view, element_id, params, &result).code());
   base::DictionaryValue locator_param;
   locator_param.SetString("tag name", "div");
   base::DictionaryValue root_element_param;
@@ -304,13 +310,12 @@ TEST(CommandsTest, SuccessfulFindChildElement) {
   base::ListValue expected_args;
   expected_args.Append(locator_param.DeepCopy());
   expected_args.Append(root_element_param.DeepCopy());
-  chrome->Verify("frame_id3", &expected_args, result.get());
+  web_view.Verify("frame_id3", &expected_args, result.get());
 }
 
 TEST(CommandsTest, FailedFindChildElement) {
-  Session session("id",
-      scoped_ptr<Chrome>(
-          new FindElementChrome(true, kElementNotExistsQueryOnce)));
+  Session session("id");
+  FindElementWebView web_view(true, kElementNotExistsQueryOnce);
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");
@@ -318,13 +323,13 @@ TEST(CommandsTest, FailedFindChildElement) {
   scoped_ptr<base::Value> result;
   ASSERT_EQ(
       kNoSuchElement,
-      ExecuteFindChildElement(1, &session, element_id, params, &result).code());
+      ExecuteFindChildElement(
+          1, &session, &web_view, element_id, params, &result).code());
 }
 
 TEST(CommandsTest, SuccessfulFindChildElements) {
-  FindElementChrome* chrome =
-      new FindElementChrome(false, kElementExistsQueryTwice);
-  Session session("id", scoped_ptr<Chrome>(chrome));
+  FindElementWebView web_view(false, kElementExistsQueryTwice);
+  Session session("id");
   session.implicit_wait = 1000;
   session.frame = "frame_id4";
   base::DictionaryValue params;
@@ -335,7 +340,7 @@ TEST(CommandsTest, SuccessfulFindChildElements) {
   ASSERT_EQ(
       kOk,
       ExecuteFindChildElements(
-          1, &session, element_id, params, &result).code());
+          1, &session, &web_view, element_id, params, &result).code());
   base::DictionaryValue locator_param;
   locator_param.SetString("class name", "c");
   base::DictionaryValue root_element_param;
@@ -343,13 +348,12 @@ TEST(CommandsTest, SuccessfulFindChildElements) {
   base::ListValue expected_args;
   expected_args.Append(locator_param.DeepCopy());
   expected_args.Append(root_element_param.DeepCopy());
-  chrome->Verify("frame_id4", &expected_args, result.get());
+  web_view.Verify("frame_id4", &expected_args, result.get());
 }
 
 TEST(CommandsTest, FailedFindChildElements) {
-  Session session("id",
-      scoped_ptr<Chrome>(
-          new FindElementChrome(false, kElementNotExistsQueryOnce)));
+  Session session("id");
+  FindElementWebView web_view(false, kElementNotExistsQueryOnce);
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");
@@ -358,16 +362,15 @@ TEST(CommandsTest, FailedFindChildElements) {
   ASSERT_EQ(
       kOk,
       ExecuteFindChildElements(
-          1, &session, element_id, params, &result).code());
+          1, &session, &web_view, element_id, params, &result).code());
   base::ListValue* list;
   ASSERT_TRUE(result->GetAsList(&list));
   ASSERT_EQ(0U, list->GetSize());
 }
 
 TEST(CommandsTest, TimeoutInFindElement) {
-  Session session("id",
-      scoped_ptr<Chrome>(
-          new FindElementChrome(true, kElementExistsTimeout)));
+  Session session("id");
+  FindElementWebView web_view(true, kElementExistsTimeout);
   session.implicit_wait = 2;
   base::DictionaryValue params;
   params.SetString("using", "id");
@@ -375,17 +378,17 @@ TEST(CommandsTest, TimeoutInFindElement) {
   params.SetString("id", "1");
   scoped_ptr<base::Value> result;
   ASSERT_EQ(kNoSuchElement,
-            ExecuteFindElement(1, &session, params, &result).code());
+            ExecuteFindElement(1, &session, &web_view, params, &result).code());
 }
 
 namespace {
 
-class ErrorCallFunctionChrome : public StubChrome {
+class ErrorCallFunctionWebView : public StubWebView {
  public:
-  explicit ErrorCallFunctionChrome(StatusCode code) : code_(code) {}
-  virtual ~ErrorCallFunctionChrome() {}
+  explicit ErrorCallFunctionWebView(StatusCode code) : code_(code) {}
+  virtual ~ErrorCallFunctionWebView() {}
 
-  // Overridden from Chrome:
+  // Overridden from WebView:
   virtual Status CallFunction(const std::string& frame,
                               const std::string& function,
                               const base::ListValue& args,
@@ -400,21 +403,21 @@ class ErrorCallFunctionChrome : public StubChrome {
 }  // namespace
 
 TEST(CommandsTest, ErrorFindElement) {
-  Session session("id",
-      scoped_ptr<Chrome>(new ErrorCallFunctionChrome(kUnknownError)));
+  Session session("id");
+  ErrorCallFunctionWebView web_view(kUnknownError);
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");
   scoped_ptr<base::Value> value;
   ASSERT_EQ(kUnknownError,
-            ExecuteFindElement(1, &session, params, &value).code());
+            ExecuteFindElement(1, &session, &web_view, params, &value).code());
   ASSERT_EQ(kUnknownError,
-            ExecuteFindElements(1, &session, params, &value).code());
+            ExecuteFindElements(1, &session, &web_view, params, &value).code());
 }
 
 TEST(CommandsTest, ErrorFindChildElement) {
-  Session session("id",
-      scoped_ptr<Chrome>(new ErrorCallFunctionChrome(kStaleElementReference)));
+  Session session("id");
+  ErrorCallFunctionWebView web_view(kStaleElementReference);
   base::DictionaryValue params;
   params.SetString("using", "id");
   params.SetString("value", "a");
@@ -422,9 +425,10 @@ TEST(CommandsTest, ErrorFindChildElement) {
   scoped_ptr<base::Value> result;
   ASSERT_EQ(
       kStaleElementReference,
-      ExecuteFindChildElement(1, &session, element_id, params, &result).code());
+      ExecuteFindChildElement(
+          1, &session, &web_view, element_id, params, &result).code());
   ASSERT_EQ(
       kStaleElementReference,
       ExecuteFindChildElements(
-          1, &session, element_id, params, &result).code());
+          1, &session, &web_view, element_id, params, &result).code());
 }

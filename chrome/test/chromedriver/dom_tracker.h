@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/test/chromedriver/devtools_client.h"
 #include "chrome/test/chromedriver/devtools_event_listener.h"
 
 namespace base {
@@ -18,6 +17,7 @@ class DictionaryValue;
 class Value;
 }
 
+class DevToolsClient;
 class Status;
 
 // Tracks the state of the DOM and execution context creation.
@@ -26,10 +26,10 @@ class DomTracker : public DevToolsEventListener {
   explicit DomTracker(DevToolsClient* client);
   virtual ~DomTracker();
 
-  Status Init();
   Status GetFrameIdForNode(int node_id, std::string* frame_id);
 
   // Overridden from DevToolsEventListener:
+  virtual Status OnConnected() OVERRIDE;
   virtual void OnEvent(const std::string& method,
                        const base::DictionaryValue& params) OVERRIDE;
 

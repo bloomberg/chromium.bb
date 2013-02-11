@@ -9,20 +9,15 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/devtools_client.h"
 #include "chrome/test/chromedriver/status.h"
 
 DomTracker::DomTracker(DevToolsClient* client) : client_(client) {
   DCHECK(client_);
+  client_->AddListener(this);
 }
 
 DomTracker::~DomTracker() {}
-
-Status DomTracker::Init() {
-  // Fetch the root document node so that Inspector will push DOM node
-  // information to the client.
-  base::DictionaryValue params;
-  return client_->SendCommand("DOM.getDocument", params);
-}
 
 Status DomTracker::GetFrameIdForNode(
     int node_id, std::string* frame_id) {
@@ -30,6 +25,13 @@ Status DomTracker::GetFrameIdForNode(
     return Status(kUnknownError, "element is not a frame");
   *frame_id = node_to_frame_map_[node_id];
   return Status(kOk);
+}
+
+Status DomTracker::OnConnected() {
+  // Fetch the root document node so that Inspector will push DOM node
+  // information to the client.
+  base::DictionaryValue params;
+  return client_->SendCommand("DOM.getDocument", params);
 }
 
 void DomTracker::OnEvent(const std::string& method,

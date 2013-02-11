@@ -293,6 +293,10 @@ class MockListener : public DevToolsEventListener {
     EXPECT_TRUE(called_);
   }
 
+  virtual Status OnConnected() OVERRIDE {
+    return Status(kOk);
+  }
+
   virtual void OnEvent(const std::string& method,
                        const base::DictionaryValue& params) OVERRIDE {
     called_ = true;

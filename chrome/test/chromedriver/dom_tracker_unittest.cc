@@ -9,11 +9,12 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/dom_tracker.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/stub_devtools_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class FakeDevToolsClient : public DevToolsClient {
+class FakeDevToolsClient : public StubDevToolsClient {
  public:
   FakeDevToolsClient() {}
   virtual ~FakeDevToolsClient() {}
@@ -38,11 +39,6 @@ class FakeDevToolsClient : public DevToolsClient {
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) OVERRIDE {
     return SendCommand(method, params);
-  }
-  virtual void AddListener(DevToolsEventListener* listener) OVERRIDE {}
-  virtual Status HandleEventsUntil(
-      const ConditionalFunc& conditional_func) OVERRIDE {
-    return Status(kOk);
   }
 
  private:

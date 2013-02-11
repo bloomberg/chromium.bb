@@ -7,20 +7,24 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/devtools_client.h"
+#include "chrome/test/chromedriver/status.h"
 
-NavigationTracker::NavigationTracker() {}
+NavigationTracker::NavigationTracker(DevToolsClient* client) : client_(client) {
+  DCHECK(client_);
+  client_->AddListener(this);
+}
 
 NavigationTracker::~NavigationTracker() {}
 
-Status NavigationTracker::Init(DevToolsClient* client) {
-  // Enable page domain notifications to allow tracking navigation state.
-  base::DictionaryValue params;
-  DCHECK(client);
-  return client->SendCommand("Page.enable", params);
-}
-
 bool NavigationTracker::IsPendingNavigation(const std::string& frame_id) {
   return frame_state_[frame_id].IsPendingNavigation();
+}
+
+Status NavigationTracker::OnConnected() {
+  // Enable page domain notifications to allow tracking navigation state.
+  base::DictionaryValue params;
+  return client_->SendCommand("Page.enable", params);
 }
 
 void NavigationTracker::OnEvent(const std::string& method,

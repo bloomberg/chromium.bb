@@ -17,6 +17,7 @@ enum StatusCode {
   kInvalidElementState = 12,
   kUnknownError = 13,
   kXPathLookupError = 19,
+  kNoSuchWindow = 23,
   kInvalidSelector = 32,
   kSessionNotCreatedException = 33,
   // Chrome-specific status codes.

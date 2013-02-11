@@ -25,6 +25,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "unknown error";
     case kXPathLookupError:
       return "xpath lookup error";
+    case kNoSuchWindow:
+      return "no such window";
     case kInvalidSelector:
       return "invalid selector";
     case kSessionNotCreatedException:

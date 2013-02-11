@@ -17,18 +17,6 @@ Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
 
 Session::~Session() {}
 
-Status Session::WaitForPendingNavigations() {
-  if (!chrome)
-    return Status(kOk);
-  std::string full_frame_id(frame);
-  if (full_frame_id == "") {
-    Status status = chrome->GetMainFrame(&full_frame_id);
-    if (status.IsError())
-      return status;
-  }
-  return chrome->WaitForPendingNavigations(full_frame_id);
-}
-
 SessionAccessorImpl::SessionAccessorImpl(scoped_ptr<Session> session)
     : session_(session.Pass()) {}
 

@@ -20,10 +20,10 @@ struct Session {
   explicit Session(const std::string& id);
   Session(const std::string& id, scoped_ptr<Chrome> chrome);
   ~Session();
-  Status WaitForPendingNavigations();
 
   const std::string id;
   scoped_ptr<Chrome> chrome;
+  std::string window;
   std::string frame;
   WebPoint mouse_position;
   int implicit_wait;

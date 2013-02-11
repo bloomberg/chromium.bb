@@ -23,18 +23,19 @@ class Status;
 // Tracks execution context creation.
 class FrameTracker : public DevToolsEventListener {
  public:
-  FrameTracker();
+  explicit FrameTracker(DevToolsClient* client);
   virtual ~FrameTracker();
 
-  Status Init(DevToolsClient* client);
   Status GetFrameForContextId(int context_id, std::string* frame_id);
   Status GetContextIdForFrame(const std::string& frame_id, int* context_id);
 
   // Overridden from DevToolsEventListener:
+  virtual Status OnConnected() OVERRIDE;
   virtual void OnEvent(const std::string& method,
                        const base::DictionaryValue& params) OVERRIDE;
 
  private:
+  DevToolsClient* client_;
   std::map<std::string, int> frame_to_context_map_;
   std::map<int, std::string> context_to_frame_map_;
 

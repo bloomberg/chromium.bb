@@ -11,6 +11,7 @@
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/web_view.h"
 
 ChromeAndroidImpl::ChromeAndroidImpl(
     URLRequestContextGetter* context_getter,
@@ -41,9 +42,19 @@ Status ChromeAndroidImpl::Launch(const std::string& package_name,
   }
 
   Status status = Init();
-  if (status.IsError())
+  if (status.IsError()) {
+    Quit();
     return status;
-  return Load(landing_url);
+  }
+  std::list<WebView*> web_views;
+  status = GetWebViews(&web_views);
+  if (status.IsError() || web_views.empty()) {
+    Quit();
+    return status.IsError() ? status :
+        Status(kUnknownError, "unable to discover open window in chrome");
+  }
+
+  return web_views.front()->Load(landing_url);
 }
 
 Status ChromeAndroidImpl::Quit() {

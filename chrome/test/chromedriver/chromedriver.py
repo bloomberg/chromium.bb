@@ -123,6 +123,12 @@ class ChromeDriver(object):
     return self._UnwrapValue(
         self._ExecuteCommand(name, params, self._session_id)['value'])
 
+  def GetWindowHandles(self):
+    return self.ExecuteSessionCommand('getWindowHandles')
+
+  def GetCurrentWindowHandle(self):
+    return self.ExecuteSessionCommand('getCurrentWindowHandle')
+
   def Load(self, url):
     self.ExecuteSessionCommand('get', {'url': url})
 

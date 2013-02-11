@@ -9,10 +9,10 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
-#include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/js.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/status.h"
+#include "chrome/test/chromedriver/web_view.h"
 #include "third_party/webdriver/atoms.h"
 
 namespace {
@@ -87,10 +87,11 @@ base::Value* CreateValueFrom(const WebRect* rect) {
 
 Status CallAtomsJs(
     Session* session,
+    WebView* web_view,
     const char* const* atom_function,
     const base::ListValue& args,
     scoped_ptr<base::Value>* result) {
-  return session->chrome->CallFunction(
+  return web_view->CallFunction(
       session->frame, webdriver::atoms::asString(atom_function),
       args, result);
 }
@@ -108,6 +109,7 @@ Status FindElement(
     bool only_one,
     const std::string* root_element_id,
     Session* session,
+    WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   std::string strategy;
@@ -132,7 +134,7 @@ Status FindElement(
   base::Time start_time = base::Time::Now();
   while (true) {
     scoped_ptr<base::Value> temp;
-    Status status = session->chrome->CallFunction(
+    Status status = web_view->CallFunction(
         session->frame, script, arguments, &temp);
     if (status.IsError())
       return status;
@@ -170,24 +172,27 @@ Status FindElement(
 
 Status GetElementAttribute(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     const std::string& attribute_name,
     scoped_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   args.AppendString(element_id);
-  return CallAtomsJs(session, webdriver::atoms::GET_ATTRIBUTE, args, value);
+  return CallAtomsJs(
+      session, web_view, webdriver::atoms::GET_ATTRIBUTE, args, value);
 }
 
 Status IsElementAttributeEqualToIgnoreCase(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     const std::string& attribute_name,
     const std::string& attribute_value,
     bool* is_equal) {
   scoped_ptr<base::Value> result;
   Status status = GetElementAttribute(
-      session, element_id, attribute_name, &result);
+      session, web_view, element_id, attribute_name, &result);
   if (status.IsError())
     return status;
   std::string actual_value;
@@ -200,40 +205,44 @@ Status IsElementAttributeEqualToIgnoreCase(
 
 Status GetElementClickableLocation(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     WebPoint* location,
     bool* is_clickable) {
   bool is_displayed = false;
-  Status status = IsElementDisplayed(session, element_id, true, &is_displayed);
+  Status status = IsElementDisplayed(
+      session, web_view, element_id, true, &is_displayed);
   if (status.IsError())
     return status;
   if (!is_displayed)
     return Status(kElementNotVisible);
 
   WebRect rect;
-  status = GetElementRegion(session, element_id, &rect);
+  status = GetElementRegion(session, web_view, element_id, &rect);
   if (status.IsError())
     return status;
 
   status = ScrollElementRegionIntoView(
-      session, element_id, rect, true, location);
+      session, web_view, element_id, rect, true, location);
   if (status.IsError())
     return status;
   location->offset(rect.width() / 2, rect.height() / 2);
-  if (is_clickable)
-    return IsElementClickable(session, element_id, location, is_clickable);
-  else
-    return Status(kOk);
+  if (is_clickable) {
+    return IsElementClickable(
+        session, web_view, element_id, location, is_clickable);
+  }
+  return Status(kOk);
 }
 
 Status GetElementRegion(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     WebRect* rect) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
-  Status status = session->chrome->CallFunction(
+  Status status = web_view->CallFunction(
       session->frame, kGetElementRegionScript, args, &result);
   if (status.IsError())
     return status;
@@ -246,12 +255,13 @@ Status GetElementRegion(
 
 Status GetElementTagName(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     std::string* name) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
-  Status status = session->chrome->CallFunction(
+  Status status = web_view->CallFunction(
       session->frame, "function(elem) { return elem.tagName.toLowerCase(); }",
       args, &result);
   if (status.IsError())
@@ -263,13 +273,14 @@ Status GetElementTagName(
 
 Status GetElementSize(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     WebSize* size) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
-      session, webdriver::atoms::GET_SIZE, args, &result);
+      session, web_view, webdriver::atoms::GET_SIZE, args, &result);
   if (status.IsError())
     return status;
   if (!ParseFromValue(result.get(), size))
@@ -279,6 +290,7 @@ Status GetElementSize(
 
 Status IsElementClickable(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     WebPoint* location,
     bool* is_clickable) {
@@ -287,7 +299,7 @@ Status IsElementClickable(
   args.Append(CreateValueFrom(location));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
-      session, webdriver::atoms::IS_ELEMENT_CLICKABLE, args, &result);
+      session, web_view, webdriver::atoms::IS_ELEMENT_CLICKABLE, args, &result);
   if (status.IsError())
     return status;
   base::DictionaryValue* dict;
@@ -306,6 +318,7 @@ Status IsElementClickable(
 
 Status IsElementDisplayed(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     bool ignore_opacity,
     bool* is_displayed) {
@@ -314,7 +327,7 @@ Status IsElementDisplayed(
   args.AppendBoolean(ignore_opacity);
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
-      session, webdriver::atoms::IS_DISPLAYED, args, &result);
+      session, web_view, webdriver::atoms::IS_DISPLAYED, args, &result);
   if (status.IsError())
     return status;
   if (!result->GetAsBoolean(is_displayed))
@@ -324,13 +337,14 @@ Status IsElementDisplayed(
 
 Status IsElementEnabled(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     bool* is_enabled) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
-      session, webdriver::atoms::IS_ENABLED, args, &result);
+      session, web_view, webdriver::atoms::IS_ENABLED, args, &result);
   if (status.IsError())
     return status;
   if (!result->GetAsBoolean(is_enabled))
@@ -340,13 +354,14 @@ Status IsElementEnabled(
 
 Status IsOptionElementSelected(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     bool* is_selected) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
   Status status = CallAtomsJs(
-      session, webdriver::atoms::IS_SELECTED, args, &result);
+      session, web_view, webdriver::atoms::IS_SELECTED, args, &result);
   if (status.IsError())
     return status;
   if (!result->GetAsBoolean(is_selected))
@@ -356,12 +371,13 @@ Status IsOptionElementSelected(
 
 Status IsOptionElementTogglable(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     bool* is_togglable) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   scoped_ptr<base::Value> result;
-  Status status = session->chrome->CallFunction(
+  Status status = web_view->CallFunction(
       session->frame, kIsOptionElementToggleableScript, args, &result);
   if (status.IsError())
     return status;
@@ -372,6 +388,7 @@ Status IsOptionElementTogglable(
 
 Status SetOptionElementSelected(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     bool selected) {
   // TODO(171034): need to fix throwing error if an alert is triggered.
@@ -380,33 +397,37 @@ Status SetOptionElementSelected(
   args.AppendBoolean(selected);
   scoped_ptr<base::Value> result;
   return CallAtomsJs(
-      session, webdriver::atoms::CLICK, args, &result);
+      session, web_view, webdriver::atoms::CLICK, args, &result);
 }
 
 Status ToggleOptionElement(
     Session* session,
+    WebView* web_view,
     const std::string& element_id) {
   bool is_selected;
-  Status status = IsOptionElementSelected(session, element_id, &is_selected);
+  Status status = IsOptionElementSelected(
+      session, web_view, element_id, &is_selected);
   if (status.IsError())
     return status;
-  return SetOptionElementSelected(session, element_id, !is_selected);
+  return SetOptionElementSelected(session, web_view, element_id, !is_selected);
 }
 
 Status ScrollElementIntoView(
     Session* session,
+    WebView* web_view,
     const std::string& id,
     WebPoint* location) {
   WebSize size;
-  Status status = GetElementSize(session, id, &size);
+  Status status = GetElementSize(session, web_view, id, &size);
   if (status.IsError())
     return status;
   return ScrollElementRegionIntoView(
-      session, id, WebRect(WebPoint(0, 0), size), false, location);
+      session, web_view, id, WebRect(WebPoint(0, 0), size), false, location);
 }
 
 Status ScrollElementRegionIntoView(
     Session* session,
+    WebView* web_view,
     const std::string& element_id,
     const WebRect& region,
     bool center,
@@ -420,7 +441,7 @@ Status ScrollElementRegionIntoView(
 
   // TODO(chrisgao): Nested frame. See http://crbug.com/170998.
   Status status = CallAtomsJs(
-      session, webdriver::atoms::GET_LOCATION_IN_VIEW, args, &result);
+      session, web_view, webdriver::atoms::GET_LOCATION_IN_VIEW, args, &result);
   if (status.IsError())
     return status;
   if (!ParseFromValue(result.get(), &region_offset))
