@@ -258,7 +258,7 @@ class TestInstructionPrinter(unittest.TestCase):
   def test_modrm_reg(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
     instr = gen_dfa.Instruction.Parse(
-        'mov Gw !Rw, 0x89')
+        'mov Gd !Rd, 0x89')
 
     printer.PrintInstructionWithModRMReg(instr)
 
@@ -269,12 +269,40 @@ class TestInstructionPrinter(unittest.TestCase):
         0x89
         @instruction_mov
         @operands_count_is_2
-        @operand0_16bit
-        @operand1_16bit
+        @operand0_32bit
+        @operand1_32bit
         modrm_registers
         @operand0_from_modrm_reg
         @operand1_from_modrm_rm
         @set_spurious_rex_x
+        """.split())
+
+  def test_modrm_memory(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
+    instr = gen_dfa.Instruction.Parse(
+        'mov Gd !Md, 0x89')
+
+    printer.PrintInstructionWithModRMMemory(
+        instr,
+        gen_dfa.AddressMode('operand_sib_pure_index',
+                            x_matters=True,
+                            b_matters=False))
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        REX_RXB?
+        0x89
+        @instruction_mov
+        @operands_count_is_2
+        @operand0_32bit
+        @operand1_32bit
+        (any
+         @operand0_from_modrm_reg
+         @operand1_rm
+         any* &
+         operand_sib_pure_index)
+        @set_spurious_rex_b
         """.split())
 
 

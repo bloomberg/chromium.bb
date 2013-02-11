@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
+import copy
 import itertools
 import re
 import StringIO
@@ -325,6 +327,18 @@ class Instruction(object):
     return False
 
 
+AddressMode = collections.namedtuple(
+    'AddressMode',
+    ['mode', 'x_matters', 'b_matters'])
+
+ALL_ADDRESS_MODES = [
+    AddressMode('operand_disp', False, True),
+    AddressMode('operand_rip', False, False),
+    AddressMode('single_register_memory', False, True),
+    AddressMode('operand_sib_pure_index', True, False),
+    AddressMode('operand_sib_base_index', True, True)]
+
+
 DECODER = object()
 VALIDATOR = object()
 
@@ -524,6 +538,8 @@ class InstructionPrinter(object):
   def PrintInstructionWithModRMReg(self, instruction):
     """Print instruction that encodes register in its ModRM.r/m field."""
 
+    instruction = copy.deepcopy(instruction)
+
     assert not instruction.IsVexOrXop(), 'not supported yet'
     assert instruction.HasModRM()
 
@@ -571,6 +587,81 @@ class InstructionPrinter(object):
       self._PrintOperandSource(operand, source)
 
     self._PrintSpuriousRexInfo(instruction)
+
+    # TODO(shcherbina): print immediate args.
+
+  def PrintInstructionWithModRMMemory(self, instruction, address_mode):
+    """Print instruction that has memory access.
+
+    There are several addressing modes corresponding to various combinations of
+    ModRM and SIB (and additional displacement fields).
+
+    Args:
+      instruction: instruction.
+      address_mode: instance of AddressMode.
+
+    Returns:
+      None.
+    """
+
+    instruction = copy.deepcopy(instruction)
+
+    assert not instruction.IsVexOrXop(), 'not supported yet'
+    assert instruction.HasModRM()
+
+    assert address_mode in ALL_ADDRESS_MODES
+
+    if instruction.RMatters():
+      instruction.rex.r_matters = True
+    if address_mode.x_matters:
+      instruction.rex.x_matters = True
+    if address_mode.b_matters:
+      instruction.rex.b_matters = True
+
+    self._PrintLegacyPrefixes(instruction)
+    self._PrintRexPrefix(instruction)
+
+    assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'
+
+    self._PrintOpcode(instruction)
+    self._out.write('\n')
+
+    self._PrintSignature(instruction)
+    self._PrintImplicitOperandSources(instruction)
+
+    # Here we print something like
+    # (any @operand0_from_modrm_reg @operand1_rm any* &
+    #  operand_sib_base_index)
+    # The first term specifies operand sources (they are known after the first
+    # byte we read, ModRM), in this case operand0 come from ModRM.reg, and
+    # operand1 is memory operand.
+    # The second term parses information about specific addressing mode
+    # (together with disp), independently of which operand will refer to it.
+
+    self._out.write('(any\n')
+    for operand in instruction.operands:
+      if operand.arg_type in [
+          def_format.OperandType.REGISTER_IN_REG,
+          def_format.OperandType.XMM_REGISTER_IN_REG]:
+        source = 'from_modrm_reg'
+      elif operand.arg_type in [
+          def_format.OperandType.MMX_REGISTER_IN_REG,
+          def_format.OperandType.SEGMENT_REGISTER_IN_REG]:
+        source = 'from_modrm_reg_norex'
+      elif operand.arg_type == def_format.OperandType.MEMORY:
+        source = 'rm'
+      else:
+        continue
+      self._PrintOperandSource(operand, source)
+    self._out.write('  any* &\n')
+    self._out.write('%s)\n' % address_mode.mode)
+
+    # TODO(shcherbina): we don't have to parse parts like disp (only ModRM
+    # (and possibly SIB)) to determine spurious rex bits. Perhaps move it
+    # a little bit earlier? But it would require third intersectee, ew...
+    self._PrintSpuriousRexInfo(instruction)
+
+    # TODO(shcherbina): @check_access when appropriate.
 
     # TODO(shcherbina): print immediate args.
 
