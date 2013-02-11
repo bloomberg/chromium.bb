@@ -517,7 +517,8 @@ class STC2_1111110pudw0nnnniiiiiiiiiiiiiiii_case_0
 
 // STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0,
@@ -1559,7 +1560,8 @@ class SUB_register_shifted_register_cccc0000010snnnnddddssss0tt1mmmm_case_0
 
 // SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
@@ -3435,7 +3437,8 @@ class Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0
 
 // Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0:
 //
-//   {baseline: Undefined,
+//   {actual: Actual_Unnamed_case_1,
+//    baseline: Undefined,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0,

@@ -35,7 +35,7 @@ namespace nacl_arm_test {
 
 
 // coproc(11:8)=~101x & op1(25:20)=000100
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -94,7 +94,7 @@ bool ForbiddenTesterCase0
 }
 
 // coproc(11:8)=~101x & op1(25:20)=000101
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -153,7 +153,7 @@ bool ForbiddenTesterCase1
 }
 
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -215,7 +215,7 @@ bool ForbiddenTesterCase2
 }
 
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -277,7 +277,7 @@ bool ForbiddenTesterCase3
 }
 
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -339,7 +339,7 @@ bool ForbiddenTesterCase4
 }
 
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -404,7 +404,7 @@ bool ForbiddenTesterCase5
 }
 
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -469,7 +469,7 @@ bool ForbiddenTesterCase6
 }
 
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -531,7 +531,7 @@ bool ForbiddenTesterCase7
 }
 
 // op1(25:20)=00000x
-//    = {actual: Undefined,
+//    = {actual: Actual_Unnamed_case_1,
 //       baseline: Undefined,
 //       constraints: ,
 //       defs: {},
@@ -586,7 +586,7 @@ bool UndefinedTesterCase8
 }
 
 // op1(25:20)=11xxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -647,7 +647,7 @@ bool ForbiddenTesterCase9
 // to the corresponding instance in the generated DecoderState.
 
 // coproc(11:8)=~101x & op1(25:20)=000100
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -667,7 +667,7 @@ class ForbiddenTester_Case0
 };
 
 // coproc(11:8)=~101x & op1(25:20)=000101
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -687,7 +687,7 @@ class ForbiddenTester_Case1
 };
 
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -707,7 +707,7 @@ class ForbiddenTester_Case2
 };
 
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -727,7 +727,7 @@ class ForbiddenTester_Case3
 };
 
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -747,7 +747,7 @@ class ForbiddenTester_Case4
 };
 
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -767,7 +767,7 @@ class ForbiddenTester_Case5
 };
 
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -787,7 +787,7 @@ class ForbiddenTester_Case6
 };
 
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -807,7 +807,7 @@ class ForbiddenTester_Case7
 };
 
 // op1(25:20)=00000x
-//    = {actual: Undefined,
+//    = {actual: Actual_Unnamed_case_1,
 //       baseline: Undefined,
 //       constraints: ,
 //       defs: {},
@@ -826,7 +826,7 @@ class UndefinedTester_Case8
 };
 
 // op1(25:20)=11xxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -855,7 +855,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // decoder tables.
 
 // coproc(11:8)=~101x & op1(25:20)=000100
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -867,12 +867,14 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case0_TestCase0) {
-  ForbiddenTester_Case0 tester;
-  tester.Test("cccc11000100ttttttttccccoooommmm");
+  ForbiddenTester_Case0 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_MCRR actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11000100ttttttttccccoooommmm");
 }
 
 // coproc(11:8)=~101x & op1(25:20)=000101
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -884,12 +886,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case1_TestCase1) {
-  ForbiddenTester_Case1 tester;
-  tester.Test("cccc11000101ttttttttccccoooommmm");
+  ForbiddenTester_Case1 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_MRRC actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11000101ttttttttccccoooommmm");
 }
 
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -901,12 +905,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case2_TestCase2) {
-  ForbiddenTester_Case2 tester;
-  tester.Test("cccc1110ooo0nnnnttttccccooo1mmmm");
+  ForbiddenTester_Case2 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_MCR actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1110ooo0nnnnttttccccooo1mmmm");
 }
 
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -918,12 +924,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case3_TestCase3) {
-  ForbiddenTester_Case3 tester;
-  tester.Test("cccc1110ooo1nnnnttttccccooo1mmmm");
+  ForbiddenTester_Case3 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_MRC actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1110ooo1nnnnttttccccooo1mmmm");
 }
 
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -935,12 +943,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case4_TestCase4) {
-  ForbiddenTester_Case4 tester;
-  tester.Test("cccc110pudw0nnnnddddcccciiiiiiii");
+  ForbiddenTester_Case4 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_STC actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw0nnnnddddcccciiiiiiii");
 }
 
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -952,12 +962,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case5_TestCase5) {
-  ForbiddenTester_Case5 tester;
-  tester.Test("cccc110pudw1nnnnddddcccciiiiiiii");
+  ForbiddenTester_Case5 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_LDC_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw1nnnnddddcccciiiiiiii");
 }
 
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -969,12 +981,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case6_TestCase6) {
-  ForbiddenTester_Case6 tester;
-  tester.Test("cccc110pudw11111ddddcccciiiiiiii");
+  ForbiddenTester_Case6 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_LDC_literal actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw11111ddddcccciiiiiiii");
 }
 
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -986,12 +1000,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case7_TestCase7) {
-  ForbiddenTester_Case7 tester;
-  tester.Test("cccc1110oooonnnnddddccccooo0mmmm");
+  ForbiddenTester_Case7 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_CDP actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1110oooonnnnddddccccooo0mmmm");
 }
 
 // op1(25:20)=00000x
-//    = {actual: Undefined,
+//    = {actual: Actual_Unnamed_case_1,
 //       baseline: Undefined,
 //       constraints: ,
 //       defs: {},
@@ -1002,12 +1018,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        UndefinedTester_Case8_TestCase8) {
-  UndefinedTester_Case8 tester;
-  tester.Test("cccc1100000xnnnnxxxxccccxxxoxxxx");
+  UndefinedTester_Case8 baseline_tester;
+  NamedActual_Unnamed_case_1_None actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1100000xnnnnxxxxccccxxxoxxxx");
 }
 
 // op1(25:20)=11xxxx
-//    = {actual: Forbidden,
+//    = {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: Forbidden,
 //       constraints: ,
 //       defs: {},
@@ -1019,8 +1037,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        ForbiddenTester_Case9_TestCase9) {
-  ForbiddenTester_Case9 tester;
-  tester.Test("cccc1111iiiiiiiiiiiiiiiiiiiiiiii");
+  ForbiddenTester_Case9 baseline_tester;
+  NamedActual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_SVC actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1111iiiiiiiiiiiiiiiiiiiiiiii");
 }
 
 }  // namespace nacl_arm_test

@@ -1639,7 +1639,8 @@ uses(Instruction inst) const {
 
 // CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0,
@@ -2613,7 +2614,8 @@ uses(Instruction inst) const {
 
 // LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0,
@@ -2650,7 +2652,8 @@ uses(Instruction inst) const {
 
 // LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0,
@@ -5805,7 +5808,8 @@ uses(Instruction inst) const {
 
 // MCRR_cccc11000100ttttttttccccoooommmm_case_0:
 //
-//   {arch: v5TE,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5TE,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -5843,7 +5847,8 @@ uses(Instruction inst) const {
 
 // MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
@@ -6416,7 +6421,8 @@ uses(Instruction inst) const {
 
 // MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0,
@@ -6491,7 +6497,8 @@ uses(Instruction inst) const {
 
 // MRRC_cccc11000101ttttttttccccoooommmm_case_0:
 //
-//   {arch: v5TE,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5TE,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},

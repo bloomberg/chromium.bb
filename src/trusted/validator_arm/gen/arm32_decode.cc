@@ -549,14 +549,14 @@ const ClassDecoder& Arm32DecoderState::decode_coprocessor_instructions_and_super
 {
   if ((inst.Bits() & 0x03E00000)  ==
           0x00000000 /* op1(25:20)=00000x */) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
           0x00000A00 /* coproc(11:8)=~101x */ &&
       (inst.Bits() & 0x03E00000)  ==
           0x00400000 /* op1(25:20)=00010x */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
@@ -565,7 +565,7 @@ const ClassDecoder& Arm32DecoderState::decode_coprocessor_instructions_and_super
           0x00000000 /* op1(25:20)=0xxxx0 */ &&
       (inst.Bits() & 0x03B00000)  !=
           0x00000000 /* op1_repeated(25:20)=~000x00 */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
@@ -574,14 +574,14 @@ const ClassDecoder& Arm32DecoderState::decode_coprocessor_instructions_and_super
           0x00100000 /* op1(25:20)=0xxxx1 */ &&
       (inst.Bits() & 0x03B00000)  !=
           0x00100000 /* op1_repeated(25:20)=~000x01 */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  !=
           0x00000A00 /* coproc(11:8)=~101x */ &&
       (inst.Bits() & 0x03000000)  ==
           0x02000000 /* op1(25:20)=10xxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000E00)  ==
@@ -620,7 +620,7 @@ const ClassDecoder& Arm32DecoderState::decode_coprocessor_instructions_and_super
 
   if ((inst.Bits() & 0x03000000)  ==
           0x03000000 /* op1(25:20)=11xxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

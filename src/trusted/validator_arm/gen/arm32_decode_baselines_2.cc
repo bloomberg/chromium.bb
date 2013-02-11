@@ -869,7 +869,8 @@ uses(Instruction inst) const {
 
 // STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0,
@@ -2959,7 +2960,8 @@ uses(Instruction inst) const {
 
 // SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0:
 //
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
@@ -6105,7 +6107,8 @@ uses(Instruction inst) const {
 
 // Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0:
 //
-//   {baseline: Undefined,
+//   {actual: Actual_Unnamed_case_1,
+//    baseline: Undefined,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0,

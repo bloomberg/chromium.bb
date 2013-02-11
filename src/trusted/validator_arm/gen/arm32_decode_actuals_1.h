@@ -1537,7 +1537,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0,
@@ -1611,7 +1612,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0,
@@ -1622,7 +1624,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0,
@@ -1657,7 +1660,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5TE,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5TE,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1669,7 +1673,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
@@ -1692,7 +1697,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0,
@@ -1715,7 +1721,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5TE,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5TE,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1804,7 +1811,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0,
@@ -1815,7 +1823,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Forbidden,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
@@ -8304,7 +8313,8 @@ class Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Undefined,
+//   {actual: Actual_Unnamed_case_1,
+//    baseline: Undefined,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0,
