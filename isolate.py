@@ -99,10 +99,94 @@ def default_blacklist(f):
       f in ('.git', '.svn'))
 
 
+def path_starts_with(prefix, path):
+  """Returns true if the components of the path |prefix| are the same as the
+  initial components of |path| (or all of the components of |path|). The paths
+  must be absolute.
+  """
+  assert os.path.isabs(prefix) and os.path.isabs(path)
+  prefix = os.path.normpath(prefix)
+  path = os.path.normpath(path)
+  assert prefix == trace_inputs.get_native_path_case(prefix), prefix
+  assert path == trace_inputs.get_native_path_case(path), path
+  prefix = prefix.rstrip(os.path.sep) + os.path.sep
+  path = path.rstrip(os.path.sep) + os.path.sep
+  return path.startswith(prefix)
+
+
+def expand_symlinks(indir, relfile):
+  """Follows symlinks in |relfile|, but treating symlinks that point outside the
+  build tree as if they were ordinary directories/files. Returns the final
+  symlink-free target and a list of paths to symlinks encountered in the
+  process.
+
+  The rule about symlinks outside the build tree is for the benefit of the
+  Chromium OS ebuild, which symlinks the output directory to an unrelated path
+  in the chroot.
+
+  Fails when a directory loop is detected, although in theory we could support
+  that case.
+  """
+  if sys.platform == 'win32':
+    return relfile, []
+
+  filepath = os.path.join(indir, relfile)
+  assert filepath == trace_inputs.get_native_path_case(filepath)
+
+  is_directory = relfile.endswith(os.path.sep)
+  done = indir
+  todo = relfile.strip(os.path.sep)
+  symlinks = []
+
+  while todo:
+    pre_symlink, symlink, post_symlink = trace_inputs.split_at_symlink(
+        done, todo)
+    if not symlink:
+      done = os.path.join(done, todo)
+      break
+    symlink_path = os.path.join(done, pre_symlink, symlink)
+    post_symlink = post_symlink.lstrip(os.path.sep)
+    # readlink doesn't exist on Windows.
+    # pylint: disable=E1101
+    target = os.readlink(symlink_path)
+    target = os.path.normpath(os.path.join(done, pre_symlink, target))
+    if not os.path.exists(target):
+      raise run_isolated.MappingError(
+          'Symlink target doesn\'t exist: %s -> %s' % (symlink_path, target))
+    target = trace_inputs.get_native_path_case(target)
+    if not path_starts_with(indir, target):
+      done = symlink_path
+      todo = post_symlink
+      continue
+    if path_starts_with(target, symlink_path):
+      raise run_isolated.MappingError(
+          'Can\'t map recursive symlink reference %s -> %s' %
+          (symlink_path, target))
+    logging.info('Found symlink: %s -> %s', symlink_path, target)
+    symlinks.append(os.path.relpath(symlink_path, indir))
+    # Treat the common prefix of the old and new paths as done, and start
+    # scanning again.
+    target = target.split(os.path.sep)
+    symlink_path = symlink_path.split(os.path.sep)
+    prefix_length = 0
+    for target_piece, symlink_path_piece in zip(target, symlink_path):
+      if target_piece == symlink_path_piece:
+        prefix_length += 1
+      else:
+        break
+    done = os.path.sep.join(target[:prefix_length])
+    todo = os.path.join(
+        os.path.sep.join(target[prefix_length:]), post_symlink)
+
+  relfile = os.path.relpath(done, indir)
+  relfile = relfile.rstrip(os.path.sep) + is_directory * os.path.sep
+  return relfile, symlinks
+
+
 def expand_directory_and_symlink(indir, relfile, blacklist):
   """Expands a single input. It can result in multiple outputs.
 
-  This function is recursive when relfile is a directory or a symlink.
+  This function is recursive when relfile is a directory.
 
   Note: this code doesn't properly handle recursive symlink like one created
   with:
@@ -117,41 +201,14 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
     raise run_isolated.MappingError(
         'Can\'t map file %s outside %s' % (infile, indir))
 
-  if sys.platform != 'win32':
-    # Look if any item in relfile is a symlink.
-    base, symlink, rest = trace_inputs.split_at_symlink(indir, relfile)
-    if symlink:
-      # Append everything pointed by the symlink. If the symlink is recursive,
-      # this code blows up.
-      symlink_relfile = os.path.join(base, symlink)
-      symlink_path = os.path.join(indir, symlink_relfile)
-      # readlink doesn't exist on Windows.
-      pointed = os.readlink(symlink_path)  # pylint: disable=E1101
-      dest_infile = normpath(
-          os.path.join(os.path.dirname(symlink_path), pointed))
-      if rest:
-        dest_infile = trace_inputs.safe_join(dest_infile, rest)
-      if not dest_infile.startswith(indir):
-        raise run_isolated.MappingError(
-            'Can\'t map symlink reference %s (from %s) ->%s outside of %s' %
-            (symlink_relfile, relfile, dest_infile, indir))
-      if infile.startswith(dest_infile):
-        raise run_isolated.MappingError(
-            'Can\'t map recursive symlink reference %s->%s' %
-            (symlink_relfile, dest_infile))
-      dest_relfile = dest_infile[len(indir)+1:]
-      logging.info('Found symlink: %s -> %s' % (symlink_relfile, dest_relfile))
-      out = expand_directory_and_symlink(indir, dest_relfile, blacklist)
-      # Add the symlink itself.
-      out.append(symlink_relfile)
-      return out
+  relfile, symlinks = expand_symlinks(indir, relfile)
 
   if relfile.endswith(os.path.sep):
     if not os.path.isdir(infile):
       raise run_isolated.MappingError(
           '%s is not a directory but ends with "%s"' % (infile, os.path.sep))
 
-    outfiles = []
+    outfiles = symlinks
     try:
       for filename in os.listdir(infile):
         inner_relfile = os.path.join(relfile, filename)
@@ -175,7 +232,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
       raise run_isolated.MappingError(
           'Input file %s doesn\'t exist' % infile)
 
-    return [relfile]
+    return symlinks + [relfile]
 
 
 def expand_directories_and_symlinks(indir, infiles, blacklist,
@@ -384,6 +441,7 @@ def process_variables(cwd, variables, relative_base_dir):
   For each 'path' variable: first normalizes it based on |cwd|, verifies it
   exists then sets it as relative to relative_base_dir.
   """
+  relative_base_dir = trace_inputs.get_native_path_case(relative_base_dir)
   variables = variables.copy()
   for i in PATH_VARIABLES:
     if i not in variables:
@@ -391,12 +449,9 @@ def process_variables(cwd, variables, relative_base_dir):
     # Variables could contain / or \ on windows. Always normalize to
     # os.path.sep.
     variable = variables[i].replace('/', os.path.sep)
-    if os.path.isabs(variable):
-      raise ExecutionError(
-          'Variable can\'t be absolute: %s: %s' % (i, variables[i]))
-
     variable = os.path.join(cwd, variable)
     variable = os.path.normpath(variable)
+    variable = trace_inputs.get_native_path_case(variable)
     if not os.path.isdir(variable):
       raise ExecutionError('%s=%s is not a directory' % (i, variable))
 
@@ -1461,6 +1516,15 @@ class CompleteState(object):
     # between root_dir and the directory containing the .isolate file,
     # isolate_base_dir.
     relative_cwd = os.path.relpath(relative_base_dir, root_dir)
+    # Now that we know where the root is, check that the PATH_VARIABLES point
+    # inside it.
+    for i in PATH_VARIABLES:
+      if i in variables:
+        if not path_starts_with(
+            root_dir, os.path.join(relative_base_dir, variables[i])):
+          raise run_isolated.MappingError(
+              'Path variable %s=%r points outside the inferred root directory' %
+              (i, variables[i]))
     # Normalize the files based to root_dir. It is important to keep the
     # trailing os.path.sep at that step.
     infiles = [

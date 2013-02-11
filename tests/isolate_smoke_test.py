@@ -49,6 +49,7 @@ RELATIVE_CWD = {
   'split': '.',
   'symlink_full': '.',
   'symlink_partial': '.',
+  'symlink_outside_build_root': '.',
   'touch_only': '.',
   'touch_root': os.path.join('tests', 'isolate'),
   'with_flag': '.',
@@ -83,6 +84,10 @@ DEPENDENCIES = {
     # files2 is a symlink to files1.
     'files2',
     'symlink_partial.py',
+  ],
+  'symlink_outside_build_root': [
+    os.path.join('link_outside_build_root', 'test_file3.txt'),
+    'symlink_outside_build_root.py',
   ],
   'touch_only': [
     'touch_only.py',
@@ -492,6 +497,11 @@ class Isolate_check(IsolateModeBase):
       self._expect_no_tree()
       self._expect_results(['symlink_partial.py'], None, None, None)
 
+    def test_symlink_outside_build_root(self):
+      self._execute('check', 'symlink_outside_build_root.isolate', [], False)
+      self._expect_no_tree()
+      self._expect_results(['symlink_outside_build_root.py'], None, None, None)
+
 
 class Isolate_hashtable(IsolateModeBase):
   def _gen_expected_tree(self, empty_file):
@@ -617,6 +627,18 @@ class Isolate_hashtable(IsolateModeBase):
       self.assertEquals(sorted(expected), self._result_tree())
       self._expect_results(['symlink_partial.py'], None, None, None)
 
+    def test_symlink_outside_build_root(self):
+      self._execute(
+          'hashtable', 'symlink_outside_build_root.isolate', [], False)
+      # Construct our own tree.
+      expected = [
+        str(v['h'])
+        for v in self._gen_files(False, None, False).itervalues() if 'h' in v
+      ]
+      expected.append(calc_sha1(self.isolated))
+      self.assertEquals(sorted(expected), self._result_tree())
+      self._expect_results(['symlink_outside_build_root.py'], None, None, None)
+
 
 class Isolate_remap(IsolateModeBase):
   def test_fail(self):
@@ -669,6 +691,11 @@ class Isolate_remap(IsolateModeBase):
       self._execute('remap', 'symlink_partial.isolate', [], False)
       self._expected_tree()
       self._expect_results(['symlink_partial.py'], None, None, None)
+
+    def test_symlink_outside_build_root(self):
+      self._execute('remap', 'symlink_outside_build_root.isolate', [], False)
+      self._expected_tree()
+      self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
 class Isolate_run(IsolateModeBase):
@@ -734,6 +761,11 @@ class Isolate_run(IsolateModeBase):
       self._execute('run', 'symlink_partial.isolate', [], False)
       self._expect_empty_tree()
       self._expect_results(['symlink_partial.py'], None, None, None)
+
+    def test_symlink_outside_build_root(self):
+      self._execute('run', 'symlink_outside_build_root.isolate', [], False)
+      self._expect_empty_tree()
+      self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
 class Isolate_trace_read_merge(IsolateModeBase):
@@ -894,6 +926,25 @@ class Isolate_trace_read_merge(IsolateModeBase):
       out = self._execute('read', 'symlink_partial.isolate', [], True)
       self.assertEquals(self._wrap_in_condition(expected), out)
       self._check_merge('symlink_partial.isolate')
+
+    def test_symlink_outside_build_root(self):
+      out = self._execute(
+          'trace', 'symlink_outside_build_root.isolate', [], True)
+      self.assertEquals('', out)
+      self._expect_no_tree()
+      self._expect_results(['symlink_outside_build_root.py'], None, None, None)
+      expected = {
+        isolate.KEY_TRACKED: [
+          'symlink_outside_build_root.py',
+        ],
+        isolate.KEY_UNTRACKED: [
+          'link_outside_build_root/',
+        ],
+      }
+      out = self._execute(
+          'read', 'symlink_outside_build_root.isolate', [], True)
+      self.assertEquals(self._wrap_in_condition(expected), out)
+      self._check_merge('symlink_outside_build_root.isolate')
 
 
 class IsolateNoOutdir(IsolateBase):
