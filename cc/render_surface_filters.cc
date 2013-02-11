@@ -434,6 +434,7 @@ SkBitmap RenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filters,
         case WebKit::WebFilterOperation::FilterTypeHueRotate:
         case WebKit::WebFilterOperation::FilterTypeInvert:
         case WebKit::WebFilterOperation::FilterTypeOpacity:
+        default: // FIXME: temporary place holder to prevent build failures
             NOTREACHED();
             break;
         }
