@@ -40,6 +40,11 @@ void ParamTraits<WebKit::WebFilterOperation>::Write(
       WriteParam(m, p.zoomRect());
       WriteParam(m, p.amount());
       break;
+    default:
+      // FIXME: temporary place holder to prevent build failures
+      // (pending a new FilterType).
+      NOTREACHED();
+      break;
   }
 }
 
@@ -102,6 +107,11 @@ bool ParamTraits<WebKit::WebFilterOperation>::Read(
         success = true;
       }
       break;
+    default:
+      // FIXME: temporary place holder to prevent build failures
+      // (pending a new FilterType).
+      NOTREACHED();
+      break;
   }
   return success;
 }
@@ -142,6 +152,11 @@ void ParamTraits<WebKit::WebFilterOperation>::Log(
       LogParam(p.zoomRect(), l);
       l->append(", ");
       LogParam(p.amount(), l);
+      break;
+    default:
+      // FIXME: temporary place holder to prevent build failures
+      // (pending a new FilterType).
+      NOTREACHED();
       break;
   }
   l->append(")");
