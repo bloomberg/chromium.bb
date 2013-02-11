@@ -1255,7 +1255,7 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
 }
 
 // Disabled on GTK in metacity: http://crbug.com/167114
-#if defined(USE_GTK)
+#if defined(TOOLKIT_GTK)
 #define MAYBE_DetachWithSqueeze DISABLED_DetachWithSqueeze
 #else
 #define MAYBE_DetachWithSqueeze DetachWithSqueeze
