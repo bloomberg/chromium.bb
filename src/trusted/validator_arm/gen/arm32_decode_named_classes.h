@@ -2506,6 +2506,42 @@ class Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1_UBFX
     : public Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1 {
 };
 
+class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SDIV
+    : public Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 {
+};
+
+class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMMUL
+    : public Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 {
+};
+
+class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUAD
+    : public Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 {
+};
+
+class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUSD
+    : public Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 {
+};
+
+class Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_UDIV
+    : public Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 {
+};
+
+class Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLAD
+    : public Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1 {
+};
+
+class Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLSD
+    : public Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1 {
+};
+
+class Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLA
+    : public Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1 {
+};
+
+class Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLS
+    : public Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1 {
+};
+
 class Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_USADA8
     : public Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1 {
 };
@@ -2516,6 +2552,14 @@ class Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_ca
 
 class Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_UMAAL_A1
     : public Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1 {
+};
+
+class Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLALD
+    : public Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1 {
+};
+
+class Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLSLD
+    : public Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1 {
 };
 
 class Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_SMLAL_A1
@@ -10109,6 +10153,114 @@ class NamedActual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1_UBFX
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1_UBFX);
 };
 
+class NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SDIV
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SDIV()
+    : NamedClassDecoder(decoder_, "Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 SDIV")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SDIV decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SDIV);
+};
+
+class NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMMUL
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMMUL()
+    : NamedClassDecoder(decoder_, "Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 SMMUL")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMMUL decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMMUL);
+};
+
+class NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUAD
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUAD()
+    : NamedClassDecoder(decoder_, "Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 SMUAD")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUAD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUAD);
+};
+
+class NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUSD
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUSD()
+    : NamedClassDecoder(decoder_, "Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 SMUSD")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUSD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUSD);
+};
+
+class NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_UDIV
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_UDIV()
+    : NamedClassDecoder(decoder_, "Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1 UDIV")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_UDIV decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_UDIV);
+};
+
+class NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLAD
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLAD()
+    : NamedClassDecoder(decoder_, "Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1 SMLAD")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLAD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLAD);
+};
+
+class NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLSD
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLSD()
+    : NamedClassDecoder(decoder_, "Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1 SMLSD")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLSD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLSD);
+};
+
+class NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLA
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLA()
+    : NamedClassDecoder(decoder_, "Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1 SMMLA")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLA decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLA);
+};
+
+class NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLS
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLS()
+    : NamedClassDecoder(decoder_, "Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1 SMMLS")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLS decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLS);
+};
+
 class NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_USADA8
     : public NamedClassDecoder {
  public:
@@ -10143,6 +10295,30 @@ class NamedActual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nn
  private:
   nacl_arm_dec::Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_UMAAL_A1 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_UMAAL_A1);
+};
+
+class NamedActual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLALD
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLALD()
+    : NamedClassDecoder(decoder_, "Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1 SMLALD")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLALD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLALD);
+};
+
+class NamedActual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLSLD
+    : public NamedClassDecoder {
+ public:
+  NamedActual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLSLD()
+    : NamedClassDecoder(decoder_, "Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1 SMLSLD")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLSLD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLSLD);
 };
 
 class NamedActual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_SMLAL_A1

@@ -58,8 +58,10 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1_instance_()
   , Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_()
   , Actual_SBFX_cccc0111101wwwwwddddlllll101nnnn_case_1_instance_()
+  , Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_instance_()
   , Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_instance_()
   , Actual_SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_1_instance_()
+  , Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_instance_()
   , Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_instance_()
   , Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1_instance_()
   , Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_instance_()
@@ -76,9 +78,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_Unnamed_case_1_instance_()
-  , Binary3RegisterOpAltANoCondsUpdate_instance_()
-  , Binary4RegisterDualOpNoCondsUpdate_instance_()
-  , Binary4RegisterDualResultNoCondsUpdate_instance_()
   , BranchImmediate24_instance_()
   , CondVfpOp_instance_()
   , DataBarrier_instance_()
@@ -2282,7 +2281,7 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
           0x00000000 /* op2(7:5)=0xx */ &&
       (inst.Bits() & 0x0000F000)  !=
           0x0000F000 /* A(15:12)=~1111 */) {
-    return Binary4RegisterDualOpNoCondsUpdate_instance_;
+    return Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -2291,14 +2290,14 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
           0x00000000 /* op2(7:5)=0xx */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* A(15:12)=1111 */) {
-    return Binary3RegisterOpAltANoCondsUpdate_instance_;
+    return Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
           0x00400000 /* op1(22:20)=100 */ &&
       (inst.Bits() & 0x00000080)  ==
           0x00000000 /* op2(7:5)=0xx */) {
-    return Binary4RegisterDualResultNoCondsUpdate_instance_;
+    return Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -2307,7 +2306,7 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
           0x00000000 /* op2(7:5)=00x */ &&
       (inst.Bits() & 0x0000F000)  !=
           0x0000F000 /* A(15:12)=~1111 */) {
-    return Binary4RegisterDualOpNoCondsUpdate_instance_;
+    return Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -2316,14 +2315,14 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
           0x00000000 /* op2(7:5)=00x */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* A(15:12)=1111 */) {
-    return Binary3RegisterOpAltANoCondsUpdate_instance_;
+    return Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
           0x00500000 /* op1(22:20)=101 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x000000C0 /* op2(7:5)=11x */) {
-    return Binary4RegisterDualOpNoCondsUpdate_instance_;
+    return Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00500000)  ==
@@ -2332,7 +2331,7 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return Binary3RegisterOpAltANoCondsUpdate_instance_;
+    return Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_instance_;
   }
 
   if (true) {

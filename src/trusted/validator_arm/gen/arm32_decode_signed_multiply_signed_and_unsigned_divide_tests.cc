@@ -40,7 +40,7 @@ namespace nacl_arm_test {
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -115,7 +115,7 @@ bool Binary4RegisterDualOpNoCondsUpdateTesterCase0
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -185,7 +185,7 @@ bool Binary3RegisterOpAltANoCondsUpdateTesterCase1
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -260,7 +260,7 @@ bool Binary4RegisterDualOpNoCondsUpdateTesterCase2
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -329,7 +329,7 @@ bool Binary3RegisterOpAltANoCondsUpdateTesterCase3
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -398,7 +398,7 @@ bool Binary3RegisterOpAltANoCondsUpdateTesterCase4
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -468,7 +468,7 @@ bool Binary3RegisterOpAltANoCondsUpdateTesterCase5
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResultNoCondsUpdate,
+//       actual: Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
@@ -543,7 +543,7 @@ bool Binary4RegisterDualResultNoCondsUpdateTesterCase6
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResultNoCondsUpdate,
+//       actual: Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
@@ -618,7 +618,7 @@ bool Binary4RegisterDualResultNoCondsUpdateTesterCase7
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -693,7 +693,7 @@ bool Binary4RegisterDualOpNoCondsUpdateTesterCase8
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -763,7 +763,7 @@ bool Binary3RegisterOpAltANoCondsUpdateTesterCase9
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -841,7 +841,7 @@ bool Binary4RegisterDualOpNoCondsUpdateTesterCase10
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -867,7 +867,7 @@ class Binary4RegisterDualOpNoCondsUpdateTester_Case0
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -892,7 +892,7 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case1
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -918,7 +918,7 @@ class Binary4RegisterDualOpNoCondsUpdateTester_Case2
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -942,7 +942,7 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case3
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -966,7 +966,7 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case4
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -991,7 +991,7 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case5
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResultNoCondsUpdate,
+//       actual: Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
@@ -1018,7 +1018,7 @@ class Binary4RegisterDualResultNoCondsUpdateTester_Case6
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResultNoCondsUpdate,
+//       actual: Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
@@ -1045,7 +1045,7 @@ class Binary4RegisterDualResultNoCondsUpdateTester_Case7
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1071,7 +1071,7 @@ class Binary4RegisterDualOpNoCondsUpdateTester_Case8
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1096,7 +1096,7 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case9
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1132,7 +1132,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1146,8 +1146,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpNoCondsUpdateTester_Case0_TestCase0) {
-  Binary4RegisterDualOpNoCondsUpdateTester_Case0 tester;
-  tester.Test("cccc01110000ddddaaaammmm00m1nnnn");
+  Binary4RegisterDualOpNoCondsUpdateTester_Case0 baseline_tester;
+  NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLAD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110000ddddaaaammmm00m1nnnn");
 }
 
 // op1(22:20)=000 & op2(7:5)=00x & A(15:12)=1111
@@ -1155,7 +1157,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1167,8 +1169,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case1_TestCase1) {
-  Binary3RegisterOpAltANoCondsUpdateTester_Case1 tester;
-  tester.Test("cccc01110000dddd1111mmmm00m1nnnn");
+  Binary3RegisterOpAltANoCondsUpdateTester_Case1 baseline_tester;
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUAD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110000dddd1111mmmm00m1nnnn");
 }
 
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=~1111
@@ -1177,7 +1181,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1191,8 +1195,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpNoCondsUpdateTester_Case2_TestCase2) {
-  Binary4RegisterDualOpNoCondsUpdateTester_Case2 tester;
-  tester.Test("cccc01110000ddddaaaammmm01m1nnnn");
+  Binary4RegisterDualOpNoCondsUpdateTester_Case2 baseline_tester;
+  NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMLSD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110000ddddaaaammmm01m1nnnn");
 }
 
 // op1(22:20)=000 & op2(7:5)=01x & A(15:12)=1111
@@ -1200,7 +1206,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1212,8 +1218,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case3_TestCase3) {
-  Binary3RegisterOpAltANoCondsUpdateTester_Case3 tester;
-  tester.Test("cccc01110000dddd1111mmmm01m1nnnn");
+  Binary3RegisterOpAltANoCondsUpdateTester_Case3 baseline_tester;
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMUSD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110000dddd1111mmmm01m1nnnn");
 }
 
 // op1(22:20)=001 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
@@ -1221,7 +1229,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1233,8 +1241,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case4_TestCase4) {
-  Binary3RegisterOpAltANoCondsUpdateTester_Case4 tester;
-  tester.Test("cccc01110001dddd1111mmmm0001nnnn");
+  Binary3RegisterOpAltANoCondsUpdateTester_Case4 baseline_tester;
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SDIV actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110001dddd1111mmmm0001nnnn");
 }
 
 // op1(22:20)=011 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
@@ -1242,7 +1252,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1254,8 +1264,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case5_TestCase5) {
-  Binary3RegisterOpAltANoCondsUpdateTester_Case5 tester;
-  tester.Test("cccc01110011dddd1111mmmm0001nnnn");
+  Binary3RegisterOpAltANoCondsUpdateTester_Case5 baseline_tester;
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_UDIV actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110011dddd1111mmmm0001nnnn");
 }
 
 // op1(22:20)=100 & op2(7:5)=00x
@@ -1264,7 +1276,7 @@ TEST_F(Arm32DecoderStateTests,
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResultNoCondsUpdate,
+//       actual: Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
@@ -1278,8 +1290,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {RdHi, RdLo, Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultNoCondsUpdateTester_Case6_TestCase6) {
-  Binary4RegisterDualResultNoCondsUpdateTester_Case6 tester;
-  tester.Test("cccc01110100hhhhllllmmmm00m1nnnn");
+  Binary4RegisterDualResultNoCondsUpdateTester_Case6 baseline_tester;
+  NamedActual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLALD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110100hhhhllllmmmm00m1nnnn");
 }
 
 // op1(22:20)=100 & op2(7:5)=01x
@@ -1288,7 +1302,7 @@ TEST_F(Arm32DecoderStateTests,
 //       RdLo: RdLo(15:12),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualResultNoCondsUpdate,
+//       actual: Actual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualResultNoCondsUpdate,
 //       constraints: ,
 //       defs: {RdHi, RdLo},
@@ -1302,8 +1316,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {RdHi, RdLo, Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualResultNoCondsUpdateTester_Case7_TestCase7) {
-  Binary4RegisterDualResultNoCondsUpdateTester_Case7 tester;
-  tester.Test("cccc01110100hhhhllllmmmm01m1nnnn");
+  Binary4RegisterDualResultNoCondsUpdateTester_Case7 baseline_tester;
+  NamedActual_SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_1_SMLSLD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110100hhhhllllmmmm01m1nnnn");
 }
 
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=~1111
@@ -1312,7 +1328,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1326,8 +1342,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpNoCondsUpdateTester_Case8_TestCase8) {
-  Binary4RegisterDualOpNoCondsUpdateTester_Case8 tester;
-  tester.Test("cccc01110101ddddaaaammmm00r1nnnn");
+  Binary4RegisterDualOpNoCondsUpdateTester_Case8 baseline_tester;
+  NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLA actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110101ddddaaaammmm00r1nnnn");
 }
 
 // op1(22:20)=101 & op2(7:5)=00x & A(15:12)=1111
@@ -1335,7 +1353,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary3RegisterOpAltANoCondsUpdate,
+//       actual: Actual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1,
 //       baseline: Binary3RegisterOpAltANoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1347,8 +1365,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rm, Rn}}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltANoCondsUpdateTester_Case9_TestCase9) {
-  Binary3RegisterOpAltANoCondsUpdateTester_Case9 tester;
-  tester.Test("cccc01110101dddd1111mmmm00r1nnnn");
+  Binary3RegisterOpAltANoCondsUpdateTester_Case9 baseline_tester;
+  NamedActual_SDIV_cccc01110001dddd1111mmmm0001nnnn_case_1_SMMUL actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110101dddd1111mmmm00r1nnnn");
 }
 
 // op1(22:20)=101 & op2(7:5)=11x
@@ -1357,7 +1377,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(19:16),
 //       Rm: Rm(11:8),
 //       Rn: Rn(3:0),
-//       actual: Binary4RegisterDualOpNoCondsUpdate,
+//       actual: Actual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1,
 //       baseline: Binary4RegisterDualOpNoCondsUpdate,
 //       constraints: ,
 //       defs: {Rd},
@@ -1371,8 +1391,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn, Rm, Ra}}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpNoCondsUpdateTester_Case10_TestCase10) {
-  Binary4RegisterDualOpNoCondsUpdateTester_Case10 tester;
-  tester.Test("cccc01110101ddddaaaammmm11r1nnnn");
+  Binary4RegisterDualOpNoCondsUpdateTester_Case10 baseline_tester;
+  NamedActual_SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_1_SMMLS actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc01110101ddddaaaammmm11r1nnnn");
 }
 
 }  // namespace nacl_arm_test
