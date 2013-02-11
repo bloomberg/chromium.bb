@@ -62,7 +62,9 @@ namespace nacl_arm_test {
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
 //       regs: imm8,
+//       rule: VSTM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -110,6 +112,9 @@ bool StoreVectorRegisterListTesterCase0
   // S(8)=~0
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -213,7 +218,9 @@ bool StoreVectorRegisterListTesterCase0
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
+//       rule: VSTM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -266,6 +273,9 @@ bool StoreVectorRegisterListTesterCase1
   // S(8)=~1
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -378,7 +388,9 @@ bool StoreVectorRegisterListTesterCase1
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
+//       rule: VLDM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -402,10 +414,10 @@ bool StoreVectorRegisterListTesterCase1
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreVectorRegisterListTesterCase2
+class LoadVectorRegisterListTesterCase2
     : public LoadStoreVectorRegisterListTester {
  public:
-  LoadStoreVectorRegisterListTesterCase2(const NamedClassDecoder& decoder)
+  LoadVectorRegisterListTesterCase2(const NamedClassDecoder& decoder)
     : LoadStoreVectorRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -414,7 +426,7 @@ class LoadStoreVectorRegisterListTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorRegisterListTesterCase2
+bool LoadVectorRegisterListTesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -427,12 +439,15 @@ bool LoadStoreVectorRegisterListTesterCase2
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorRegisterListTesterCase2
+bool LoadVectorRegisterListTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorRegisterListTester::
@@ -529,7 +544,9 @@ bool LoadStoreVectorRegisterListTesterCase2
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
+//       rule: VLDM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -558,10 +575,10 @@ bool LoadStoreVectorRegisterListTesterCase2
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreVectorRegisterListTesterCase3
+class LoadVectorRegisterListTesterCase3
     : public LoadStoreVectorRegisterListTester {
  public:
-  LoadStoreVectorRegisterListTesterCase3(const NamedClassDecoder& decoder)
+  LoadVectorRegisterListTesterCase3(const NamedClassDecoder& decoder)
     : LoadStoreVectorRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -570,7 +587,7 @@ class LoadStoreVectorRegisterListTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorRegisterListTesterCase3
+bool LoadVectorRegisterListTesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -583,12 +600,15 @@ bool LoadStoreVectorRegisterListTesterCase3
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorRegisterListTesterCase3
+bool LoadVectorRegisterListTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorRegisterListTester::
@@ -694,7 +714,9 @@ bool LoadStoreVectorRegisterListTesterCase3
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
 //       regs: imm8,
+//       rule: VSTM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -742,6 +764,9 @@ bool StoreVectorRegisterListTesterCase4
   // S(8)=~0
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -845,7 +870,9 @@ bool StoreVectorRegisterListTesterCase4
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
+//       rule: VSTM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -898,6 +925,9 @@ bool StoreVectorRegisterListTesterCase5
   // S(8)=~1
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -1010,7 +1040,9 @@ bool StoreVectorRegisterListTesterCase5
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
+//       rule: VLDM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -1034,10 +1066,10 @@ bool StoreVectorRegisterListTesterCase5
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreVectorRegisterListTesterCase6
+class LoadVectorRegisterListTesterCase6
     : public LoadStoreVectorRegisterListTester {
  public:
-  LoadStoreVectorRegisterListTesterCase6(const NamedClassDecoder& decoder)
+  LoadVectorRegisterListTesterCase6(const NamedClassDecoder& decoder)
     : LoadStoreVectorRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1046,7 +1078,7 @@ class LoadStoreVectorRegisterListTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorRegisterListTesterCase6
+bool LoadVectorRegisterListTesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1062,12 +1094,15 @@ bool LoadStoreVectorRegisterListTesterCase6
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorRegisterListTesterCase6
+bool LoadVectorRegisterListTesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorRegisterListTester::
@@ -1164,7 +1199,9 @@ bool LoadStoreVectorRegisterListTesterCase6
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
+//       rule: VLDM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -1193,10 +1230,10 @@ bool LoadStoreVectorRegisterListTesterCase6
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreVectorRegisterListTesterCase7
+class LoadVectorRegisterListTesterCase7
     : public LoadStoreVectorRegisterListTester {
  public:
-  LoadStoreVectorRegisterListTesterCase7(const NamedClassDecoder& decoder)
+  LoadVectorRegisterListTesterCase7(const NamedClassDecoder& decoder)
     : LoadStoreVectorRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1205,7 +1242,7 @@ class LoadStoreVectorRegisterListTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorRegisterListTesterCase7
+bool LoadVectorRegisterListTesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1221,12 +1258,15 @@ bool LoadStoreVectorRegisterListTesterCase7
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorRegisterListTesterCase7
+bool LoadVectorRegisterListTesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorRegisterListTester::
@@ -1317,7 +1357,9 @@ bool LoadStoreVectorRegisterListTesterCase7
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
 //       generated_baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
+//       pattern: cccc11001d111101dddd1010iiiiiiii,
 //       regs: imm8,
+//       rule: VPOP,
 //       safety: [regs  ==
 //               0 ||
 //            d + regs  >
@@ -1325,10 +1367,10 @@ bool LoadStoreVectorRegisterListTesterCase7
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class LoadStoreVectorRegisterListTesterCase8
+class LoadVectorRegisterListTesterCase8
     : public LoadStoreVectorRegisterListTester {
  public:
-  LoadStoreVectorRegisterListTesterCase8(const NamedClassDecoder& decoder)
+  LoadVectorRegisterListTesterCase8(const NamedClassDecoder& decoder)
     : LoadStoreVectorRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1337,7 +1379,7 @@ class LoadStoreVectorRegisterListTesterCase8
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorRegisterListTesterCase8
+bool LoadVectorRegisterListTesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1353,12 +1395,15 @@ bool LoadStoreVectorRegisterListTesterCase8
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorRegisterListTesterCase8
+bool LoadVectorRegisterListTesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorRegisterListTester::
@@ -1391,7 +1436,9 @@ bool LoadStoreVectorRegisterListTesterCase8
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
 //       generated_baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
+//       pattern: cccc11001d111101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
+//       rule: VPOP,
 //       safety: [regs  ==
 //               0 ||
 //            regs  >
@@ -1404,10 +1451,10 @@ bool LoadStoreVectorRegisterListTesterCase8
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class LoadStoreVectorRegisterListTesterCase9
+class LoadVectorRegisterListTesterCase9
     : public LoadStoreVectorRegisterListTester {
  public:
-  LoadStoreVectorRegisterListTesterCase9(const NamedClassDecoder& decoder)
+  LoadVectorRegisterListTesterCase9(const NamedClassDecoder& decoder)
     : LoadStoreVectorRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1416,7 +1463,7 @@ class LoadStoreVectorRegisterListTesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorRegisterListTesterCase9
+bool LoadVectorRegisterListTesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1432,12 +1479,15 @@ bool LoadStoreVectorRegisterListTesterCase9
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorRegisterListTesterCase9
+bool LoadVectorRegisterListTesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorRegisterListTester::
@@ -1494,7 +1544,9 @@ bool LoadStoreVectorRegisterListTesterCase9
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
 //       regs: imm8,
+//       rule: VSTM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -1545,6 +1597,9 @@ bool StoreVectorRegisterListTesterCase10
   // S(8)=~0
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -1648,7 +1703,9 @@ bool StoreVectorRegisterListTesterCase10
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
+//       rule: VSTM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -1704,6 +1761,9 @@ bool StoreVectorRegisterListTesterCase11
   // S(8)=~1
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -1801,7 +1861,9 @@ bool StoreVectorRegisterListTesterCase11
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
 //       generated_baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
+//       pattern: cccc11010d101101dddd1010iiiiiiii,
 //       regs: imm8,
+//       rule: VPUSH,
 //       safety: [regs  ==
 //               0 ||
 //            d + regs  >
@@ -1836,6 +1898,9 @@ bool StoreVectorRegisterListTesterCase12
   // S(8)=~0
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -1875,7 +1940,9 @@ bool StoreVectorRegisterListTesterCase12
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
 //       generated_baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
+//       pattern: cccc11010d101101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
+//       rule: VPUSH,
 //       safety: [regs  ==
 //               0 ||
 //            regs  >
@@ -1915,6 +1982,9 @@ bool StoreVectorRegisterListTesterCase13
   // S(8)=~1
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -1978,7 +2048,9 @@ bool StoreVectorRegisterListTesterCase13
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
+//       rule: VLDM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -2002,10 +2074,10 @@ bool StoreVectorRegisterListTesterCase13
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreVectorRegisterListTesterCase14
+class LoadVectorRegisterListTesterCase14
     : public LoadStoreVectorRegisterListTester {
  public:
-  LoadStoreVectorRegisterListTesterCase14(const NamedClassDecoder& decoder)
+  LoadVectorRegisterListTesterCase14(const NamedClassDecoder& decoder)
     : LoadStoreVectorRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2014,7 +2086,7 @@ class LoadStoreVectorRegisterListTesterCase14
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorRegisterListTesterCase14
+bool LoadVectorRegisterListTesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2027,12 +2099,15 @@ bool LoadStoreVectorRegisterListTesterCase14
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorRegisterListTesterCase14
+bool LoadVectorRegisterListTesterCase14
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorRegisterListTester::
@@ -2129,7 +2204,9 @@ bool LoadStoreVectorRegisterListTesterCase14
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
+//       rule: VLDM,
 //       safety: [P(24)=0 &&
 //            U(23)=0 &&
 //            W(21)=0 => DECODER_ERROR,
@@ -2158,10 +2235,10 @@ bool LoadStoreVectorRegisterListTesterCase14
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreVectorRegisterListTesterCase15
+class LoadVectorRegisterListTesterCase15
     : public LoadStoreVectorRegisterListTester {
  public:
-  LoadStoreVectorRegisterListTesterCase15(const NamedClassDecoder& decoder)
+  LoadVectorRegisterListTesterCase15(const NamedClassDecoder& decoder)
     : LoadStoreVectorRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2170,7 +2247,7 @@ class LoadStoreVectorRegisterListTesterCase15
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorRegisterListTesterCase15
+bool LoadVectorRegisterListTesterCase15
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2183,12 +2260,15 @@ bool LoadStoreVectorRegisterListTesterCase15
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorRegisterListTesterCase15
+bool LoadVectorRegisterListTesterCase15
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorRegisterListTester::
@@ -2276,6 +2356,8 @@ bool LoadStoreVectorRegisterListTesterCase15
 //       fields: [Rn(19:16)],
 //       generated_baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       n: Rn,
+//       pattern: cccc1101ud00nnnndddd1010iiiiiiii,
+//       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rn}}
@@ -2303,6 +2385,9 @@ bool StoreVectorRegisterTesterCase16
   // S(8)=~0
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterTester::
@@ -2335,6 +2420,8 @@ bool StoreVectorRegisterTesterCase16
 //       fields: [Rn(19:16)],
 //       generated_baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       n: Rn,
+//       pattern: cccc1101ud00nnnndddd1011iiiiiiii,
+//       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rn}}
@@ -2362,6 +2449,9 @@ bool StoreVectorRegisterTesterCase17
   // S(8)=~1
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterTester::
@@ -2396,11 +2486,13 @@ bool StoreVectorRegisterTesterCase17
 //       generated_baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
+//       pattern: cccc1101ud01nnnndddd1010iiiiiiii,
+//       rule: VLDR,
 //       uses: {Rn}}
-class LoadStoreVectorOpTesterCase18
+class LoadVectorRegisterTesterCase18
     : public LoadStoreVectorOpTester {
  public:
-  LoadStoreVectorOpTesterCase18(const NamedClassDecoder& decoder)
+  LoadVectorRegisterTesterCase18(const NamedClassDecoder& decoder)
     : LoadStoreVectorOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2409,7 +2501,7 @@ class LoadStoreVectorOpTesterCase18
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorOpTesterCase18
+bool LoadVectorRegisterTesterCase18
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2422,12 +2514,15 @@ bool LoadStoreVectorOpTesterCase18
   if ((inst.Bits() & 0x00000100)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorOpTesterCase18
+bool LoadVectorRegisterTesterCase18
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorOpTester::
@@ -2451,11 +2546,13 @@ bool LoadStoreVectorOpTesterCase18
 //       generated_baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
+//       pattern: cccc1101ud01nnnndddd1011iiiiiiii,
+//       rule: VLDR,
 //       uses: {Rn}}
-class LoadStoreVectorOpTesterCase19
+class LoadVectorRegisterTesterCase19
     : public LoadStoreVectorOpTester {
  public:
-  LoadStoreVectorOpTesterCase19(const NamedClassDecoder& decoder)
+  LoadVectorRegisterTesterCase19(const NamedClassDecoder& decoder)
     : LoadStoreVectorOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2464,7 +2561,7 @@ class LoadStoreVectorOpTesterCase19
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreVectorOpTesterCase19
+bool LoadVectorRegisterTesterCase19
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2477,12 +2574,15 @@ bool LoadStoreVectorOpTesterCase19
   if ((inst.Bits() & 0x00000100)  !=
           0x00000100) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreVectorOpTesterCase19
+bool LoadVectorRegisterTesterCase19
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreVectorOpTester::
@@ -2527,6 +2627,7 @@ bool LoadStoreVectorOpTesterCase19
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VSTM,
 //       safety: [P(24)=0 &&
@@ -2589,6 +2690,7 @@ class StoreVectorRegisterListTester_Case0
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VSTM,
 //       safety: [P(24)=0 &&
@@ -2656,6 +2758,7 @@ class StoreVectorRegisterListTester_Case1
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
 //       safety: [P(24)=0 &&
@@ -2682,10 +2785,10 @@ class StoreVectorRegisterListTester_Case1
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case2
-    : public LoadStoreVectorRegisterListTesterCase2 {
+    : public LoadVectorRegisterListTesterCase2 {
  public:
   LoadVectorRegisterListTester_Case2()
-    : LoadStoreVectorRegisterListTesterCase2(
+    : LoadVectorRegisterListTesterCase2(
       state_.LoadVectorRegisterList_VLDM_instance_)
   {}
 };
@@ -2718,6 +2821,7 @@ class LoadVectorRegisterListTester_Case2
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
 //       safety: [P(24)=0 &&
@@ -2749,10 +2853,10 @@ class LoadVectorRegisterListTester_Case2
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case3
-    : public LoadStoreVectorRegisterListTesterCase3 {
+    : public LoadVectorRegisterListTesterCase3 {
  public:
   LoadVectorRegisterListTester_Case3()
-    : LoadStoreVectorRegisterListTesterCase3(
+    : LoadVectorRegisterListTesterCase3(
       state_.LoadVectorRegisterList_VLDM_instance_)
   {}
 };
@@ -2785,6 +2889,7 @@ class LoadVectorRegisterListTester_Case3
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VSTM,
 //       safety: [P(24)=0 &&
@@ -2847,6 +2952,7 @@ class StoreVectorRegisterListTester_Case4
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VSTM,
 //       safety: [P(24)=0 &&
@@ -2914,6 +3020,7 @@ class StoreVectorRegisterListTester_Case5
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
 //       safety: [P(24)=0 &&
@@ -2940,10 +3047,10 @@ class StoreVectorRegisterListTester_Case5
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case6
-    : public LoadStoreVectorRegisterListTesterCase6 {
+    : public LoadVectorRegisterListTesterCase6 {
  public:
   LoadVectorRegisterListTester_Case6()
-    : LoadStoreVectorRegisterListTesterCase6(
+    : LoadVectorRegisterListTesterCase6(
       state_.LoadVectorRegisterList_VLDM_instance_)
   {}
 };
@@ -2976,6 +3083,7 @@ class LoadVectorRegisterListTester_Case6
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
 //       safety: [P(24)=0 &&
@@ -3007,10 +3115,10 @@ class LoadVectorRegisterListTester_Case6
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case7
-    : public LoadStoreVectorRegisterListTesterCase7 {
+    : public LoadVectorRegisterListTesterCase7 {
  public:
   LoadVectorRegisterListTester_Case7()
-    : LoadStoreVectorRegisterListTesterCase7(
+    : LoadVectorRegisterListTesterCase7(
       state_.LoadVectorRegisterList_VLDM_instance_)
   {}
 };
@@ -3028,6 +3136,7 @@ class LoadVectorRegisterListTester_Case7
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
 //       generated_baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
+//       pattern: cccc11001d111101dddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VPOP,
 //       safety: [regs  ==
@@ -3038,10 +3147,10 @@ class LoadVectorRegisterListTester_Case7
 //       true: true,
 //       uses: {Sp}}
 class LoadVectorRegisterListTester_Case8
-    : public LoadStoreVectorRegisterListTesterCase8 {
+    : public LoadVectorRegisterListTesterCase8 {
  public:
   LoadVectorRegisterListTester_Case8()
-    : LoadStoreVectorRegisterListTesterCase8(
+    : LoadVectorRegisterListTesterCase8(
       state_.LoadVectorRegisterList_VPOP_instance_)
   {}
 };
@@ -3059,6 +3168,7 @@ class LoadVectorRegisterListTester_Case8
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
 //       generated_baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
+//       pattern: cccc11001d111101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VPOP,
 //       safety: [regs  ==
@@ -3074,10 +3184,10 @@ class LoadVectorRegisterListTester_Case8
 //       true: true,
 //       uses: {Sp}}
 class LoadVectorRegisterListTester_Case9
-    : public LoadStoreVectorRegisterListTesterCase9 {
+    : public LoadVectorRegisterListTesterCase9 {
  public:
   LoadVectorRegisterListTester_Case9()
-    : LoadStoreVectorRegisterListTesterCase9(
+    : LoadVectorRegisterListTesterCase9(
       state_.LoadVectorRegisterList_VPOP_instance_)
   {}
 };
@@ -3110,6 +3220,7 @@ class LoadVectorRegisterListTester_Case9
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VSTM,
 //       safety: [P(24)=0 &&
@@ -3172,6 +3283,7 @@ class StoreVectorRegisterListTester_Case10
 //       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VSTM,
 //       safety: [P(24)=0 &&
@@ -3224,6 +3336,7 @@ class StoreVectorRegisterListTester_Case11
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
 //       generated_baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
+//       pattern: cccc11010d101101dddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VPUSH,
 //       safety: [regs  ==
@@ -3255,6 +3368,7 @@ class StoreVectorRegisterListTester_Case12
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
 //       generated_baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
+//       pattern: cccc11010d101101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VPUSH,
 //       safety: [regs  ==
@@ -3306,6 +3420,7 @@ class StoreVectorRegisterListTester_Case13
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
 //       safety: [P(24)=0 &&
@@ -3332,10 +3447,10 @@ class StoreVectorRegisterListTester_Case13
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case14
-    : public LoadStoreVectorRegisterListTesterCase14 {
+    : public LoadVectorRegisterListTesterCase14 {
  public:
   LoadVectorRegisterListTester_Case14()
-    : LoadStoreVectorRegisterListTesterCase14(
+    : LoadVectorRegisterListTesterCase14(
       state_.LoadVectorRegisterList_VLDM_instance_)
   {}
 };
@@ -3368,6 +3483,7 @@ class LoadVectorRegisterListTester_Case14
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
+//       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
 //       safety: [P(24)=0 &&
@@ -3399,10 +3515,10 @@ class LoadVectorRegisterListTester_Case14
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadVectorRegisterListTester_Case15
-    : public LoadStoreVectorRegisterListTesterCase15 {
+    : public LoadVectorRegisterListTesterCase15 {
  public:
   LoadVectorRegisterListTester_Case15()
-    : LoadStoreVectorRegisterListTesterCase15(
+    : LoadVectorRegisterListTesterCase15(
       state_.LoadVectorRegisterList_VLDM_instance_)
   {}
 };
@@ -3417,6 +3533,7 @@ class LoadVectorRegisterListTester_Case15
 //       fields: [Rn(19:16)],
 //       generated_baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       n: Rn,
+//       pattern: cccc1101ud00nnnndddd1010iiiiiiii,
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
@@ -3440,6 +3557,7 @@ class StoreVectorRegisterTester_Case16
 //       fields: [Rn(19:16)],
 //       generated_baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       n: Rn,
+//       pattern: cccc1101ud00nnnndddd1011iiiiiiii,
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
@@ -3465,13 +3583,14 @@ class StoreVectorRegisterTester_Case17
 //       generated_baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
+//       pattern: cccc1101ud01nnnndddd1010iiiiiiii,
 //       rule: VLDR,
 //       uses: {Rn}}
 class LoadVectorRegisterTester_Case18
-    : public LoadStoreVectorOpTesterCase18 {
+    : public LoadVectorRegisterTesterCase18 {
  public:
   LoadVectorRegisterTester_Case18()
-    : LoadStoreVectorOpTesterCase18(
+    : LoadVectorRegisterTesterCase18(
       state_.LoadVectorRegister_VLDR_instance_)
   {}
 };
@@ -3488,13 +3607,14 @@ class LoadVectorRegisterTester_Case18
 //       generated_baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
+//       pattern: cccc1101ud01nnnndddd1011iiiiiiii,
 //       rule: VLDR,
 //       uses: {Rn}}
 class LoadVectorRegisterTester_Case19
-    : public LoadStoreVectorOpTesterCase19 {
+    : public LoadVectorRegisterTesterCase19 {
  public:
   LoadVectorRegisterTester_Case19()
-    : LoadStoreVectorOpTesterCase19(
+    : LoadVectorRegisterTesterCase19(
       state_.LoadVectorRegister_VLDR_instance_)
   {}
 };

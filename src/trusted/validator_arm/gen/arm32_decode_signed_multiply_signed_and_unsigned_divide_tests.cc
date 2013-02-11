@@ -46,14 +46,16 @@ namespace nacl_arm_test {
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0,
+//       pattern: cccc01110000ddddaaaammmm00m1nnnn,
+//       rule: SMLAD,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
 //         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
-class Binary4RegisterDualOpTesterCase0
+class Binary4RegisterDualOpNoCondsUpdateTesterCase0
     : public Binary4RegisterDualOpTester {
  public:
-  Binary4RegisterDualOpTesterCase0(const NamedClassDecoder& decoder)
+  Binary4RegisterDualOpNoCondsUpdateTesterCase0(const NamedClassDecoder& decoder)
     : Binary4RegisterDualOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -62,7 +64,7 @@ class Binary4RegisterDualOpTesterCase0
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary4RegisterDualOpTesterCase0
+bool Binary4RegisterDualOpNoCondsUpdateTesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -78,12 +80,15 @@ bool Binary4RegisterDualOpTesterCase0
   if ((inst.Bits() & 0x0000F000)  ==
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary4RegisterDualOpTesterCase0
+bool Binary4RegisterDualOpNoCondsUpdateTesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterDualOpTester::
@@ -116,12 +121,14 @@ bool Binary4RegisterDualOpTesterCase0
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMUAD_cccc01110000dddd1111mmmm00m1nnnn_case_0,
+//       pattern: cccc01110000dddd1111mmmm00m1nnnn,
+//       rule: SMUAD,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
-class Binary3RegisterOpAltATesterCase1
+class Binary3RegisterOpAltANoCondsUpdateTesterCase1
     : public Binary3RegisterOpAltATester {
  public:
-  Binary3RegisterOpAltATesterCase1(const NamedClassDecoder& decoder)
+  Binary3RegisterOpAltANoCondsUpdateTesterCase1(const NamedClassDecoder& decoder)
     : Binary3RegisterOpAltATester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -130,7 +137,7 @@ class Binary3RegisterOpAltATesterCase1
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterOpAltATesterCase1
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -146,12 +153,15 @@ bool Binary3RegisterOpAltATesterCase1
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltATester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterOpAltATesterCase1
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterOpAltATester::
@@ -181,14 +191,16 @@ bool Binary3RegisterOpAltATesterCase1
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0,
+//       pattern: cccc01110000ddddaaaammmm01m1nnnn,
+//       rule: SMLSD,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
 //         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
-class Binary4RegisterDualOpTesterCase2
+class Binary4RegisterDualOpNoCondsUpdateTesterCase2
     : public Binary4RegisterDualOpTester {
  public:
-  Binary4RegisterDualOpTesterCase2(const NamedClassDecoder& decoder)
+  Binary4RegisterDualOpNoCondsUpdateTesterCase2(const NamedClassDecoder& decoder)
     : Binary4RegisterDualOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -197,7 +209,7 @@ class Binary4RegisterDualOpTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary4RegisterDualOpTesterCase2
+bool Binary4RegisterDualOpNoCondsUpdateTesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -213,12 +225,15 @@ bool Binary4RegisterDualOpTesterCase2
   if ((inst.Bits() & 0x0000F000)  ==
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary4RegisterDualOpTesterCase2
+bool Binary4RegisterDualOpNoCondsUpdateTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterDualOpTester::
@@ -251,12 +266,14 @@ bool Binary4RegisterDualOpTesterCase2
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0,
+//       pattern: cccc01110000dddd1111mmmm01m1nnnn,
+//       rule: SMUSD,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
-class Binary3RegisterOpAltATesterCase3
+class Binary3RegisterOpAltANoCondsUpdateTesterCase3
     : public Binary3RegisterOpAltATester {
  public:
-  Binary3RegisterOpAltATesterCase3(const NamedClassDecoder& decoder)
+  Binary3RegisterOpAltANoCondsUpdateTesterCase3(const NamedClassDecoder& decoder)
     : Binary3RegisterOpAltATester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -265,7 +282,7 @@ class Binary3RegisterOpAltATesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterOpAltATesterCase3
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -281,12 +298,15 @@ bool Binary3RegisterOpAltATesterCase3
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltATester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterOpAltATesterCase3
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterOpAltATester::
@@ -315,12 +335,14 @@ bool Binary3RegisterOpAltATesterCase3
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0,
+//       pattern: cccc01110001dddd1111mmmm0001nnnn,
+//       rule: SDIV,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
-class Binary3RegisterOpAltATesterCase4
+class Binary3RegisterOpAltANoCondsUpdateTesterCase4
     : public Binary3RegisterOpAltATester {
  public:
-  Binary3RegisterOpAltATesterCase4(const NamedClassDecoder& decoder)
+  Binary3RegisterOpAltANoCondsUpdateTesterCase4(const NamedClassDecoder& decoder)
     : Binary3RegisterOpAltATester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -329,7 +351,7 @@ class Binary3RegisterOpAltATesterCase4
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterOpAltATesterCase4
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -345,12 +367,15 @@ bool Binary3RegisterOpAltATesterCase4
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltATester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterOpAltATesterCase4
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterOpAltATester::
@@ -379,12 +404,14 @@ bool Binary3RegisterOpAltATesterCase4
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0,
+//       pattern: cccc01110011dddd1111mmmm0001nnnn,
+//       rule: UDIV,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
-class Binary3RegisterOpAltATesterCase5
+class Binary3RegisterOpAltANoCondsUpdateTesterCase5
     : public Binary3RegisterOpAltATester {
  public:
-  Binary3RegisterOpAltATesterCase5(const NamedClassDecoder& decoder)
+  Binary3RegisterOpAltANoCondsUpdateTesterCase5(const NamedClassDecoder& decoder)
     : Binary3RegisterOpAltATester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -393,7 +420,7 @@ class Binary3RegisterOpAltATesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterOpAltATesterCase5
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -409,12 +436,15 @@ bool Binary3RegisterOpAltATesterCase5
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltATester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterOpAltATesterCase5
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterOpAltATester::
@@ -444,14 +474,16 @@ bool Binary3RegisterOpAltATesterCase5
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0,
+//       pattern: cccc01110100hhhhllllmmmm00m1nnnn,
+//       rule: SMLALD,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
 //               RdLo => UNPREDICTABLE],
 //       uses: {RdHi, RdLo, Rm, Rn}}
-class Binary4RegisterDualResultTesterCase6
+class Binary4RegisterDualResultNoCondsUpdateTesterCase6
     : public Binary4RegisterDualResultTester {
  public:
-  Binary4RegisterDualResultTesterCase6(const NamedClassDecoder& decoder)
+  Binary4RegisterDualResultNoCondsUpdateTesterCase6(const NamedClassDecoder& decoder)
     : Binary4RegisterDualResultTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -460,7 +492,7 @@ class Binary4RegisterDualResultTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary4RegisterDualResultTesterCase6
+bool Binary4RegisterDualResultNoCondsUpdateTesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -473,12 +505,15 @@ bool Binary4RegisterDualResultTesterCase6
   if ((inst.Bits() & 0x000000C0)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualResultTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary4RegisterDualResultTesterCase6
+bool Binary4RegisterDualResultNoCondsUpdateTesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterDualResultTester::
@@ -514,14 +549,16 @@ bool Binary4RegisterDualResultTesterCase6
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0,
+//       pattern: cccc01110100hhhhllllmmmm01m1nnnn,
+//       rule: SMLSLD,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
 //               RdLo => UNPREDICTABLE],
 //       uses: {RdHi, RdLo, Rm, Rn}}
-class Binary4RegisterDualResultTesterCase7
+class Binary4RegisterDualResultNoCondsUpdateTesterCase7
     : public Binary4RegisterDualResultTester {
  public:
-  Binary4RegisterDualResultTesterCase7(const NamedClassDecoder& decoder)
+  Binary4RegisterDualResultNoCondsUpdateTesterCase7(const NamedClassDecoder& decoder)
     : Binary4RegisterDualResultTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -530,7 +567,7 @@ class Binary4RegisterDualResultTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary4RegisterDualResultTesterCase7
+bool Binary4RegisterDualResultNoCondsUpdateTesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -543,12 +580,15 @@ bool Binary4RegisterDualResultTesterCase7
   if ((inst.Bits() & 0x000000C0)  !=
           0x00000040) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualResultTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary4RegisterDualResultTesterCase7
+bool Binary4RegisterDualResultNoCondsUpdateTesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterDualResultTester::
@@ -584,14 +624,16 @@ bool Binary4RegisterDualResultTesterCase7
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0,
+//       pattern: cccc01110101ddddaaaammmm00r1nnnn,
+//       rule: SMMLA,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
 //         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
-class Binary4RegisterDualOpTesterCase8
+class Binary4RegisterDualOpNoCondsUpdateTesterCase8
     : public Binary4RegisterDualOpTester {
  public:
-  Binary4RegisterDualOpTesterCase8(const NamedClassDecoder& decoder)
+  Binary4RegisterDualOpNoCondsUpdateTesterCase8(const NamedClassDecoder& decoder)
     : Binary4RegisterDualOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -600,7 +642,7 @@ class Binary4RegisterDualOpTesterCase8
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary4RegisterDualOpTesterCase8
+bool Binary4RegisterDualOpNoCondsUpdateTesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -616,12 +658,15 @@ bool Binary4RegisterDualOpTesterCase8
   if ((inst.Bits() & 0x0000F000)  ==
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary4RegisterDualOpTesterCase8
+bool Binary4RegisterDualOpNoCondsUpdateTesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterDualOpTester::
@@ -654,12 +699,14 @@ bool Binary4RegisterDualOpTesterCase8
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMMUL_cccc01110101dddd1111mmmm00r1nnnn_case_0,
+//       pattern: cccc01110101dddd1111mmmm00r1nnnn,
+//       rule: SMMUL,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
-class Binary3RegisterOpAltATesterCase9
+class Binary3RegisterOpAltANoCondsUpdateTesterCase9
     : public Binary3RegisterOpAltATester {
  public:
-  Binary3RegisterOpAltATesterCase9(const NamedClassDecoder& decoder)
+  Binary3RegisterOpAltANoCondsUpdateTesterCase9(const NamedClassDecoder& decoder)
     : Binary3RegisterOpAltATester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -668,7 +715,7 @@ class Binary3RegisterOpAltATesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary3RegisterOpAltATesterCase9
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -684,12 +731,15 @@ bool Binary3RegisterOpAltATesterCase9
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltATester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary3RegisterOpAltATesterCase9
+bool Binary3RegisterOpAltANoCondsUpdateTesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary3RegisterOpAltATester::
@@ -719,14 +769,16 @@ bool Binary3RegisterOpAltATesterCase9
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0,
+//       pattern: cccc01110101ddddaaaammmm11r1nnnn,
+//       rule: SMMLS,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
 //         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
-class Binary4RegisterDualOpTesterCase10
+class Binary4RegisterDualOpNoCondsUpdateTesterCase10
     : public Binary4RegisterDualOpTester {
  public:
-  Binary4RegisterDualOpTesterCase10(const NamedClassDecoder& decoder)
+  Binary4RegisterDualOpNoCondsUpdateTesterCase10(const NamedClassDecoder& decoder)
     : Binary4RegisterDualOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -735,7 +787,7 @@ class Binary4RegisterDualOpTesterCase10
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary4RegisterDualOpTesterCase10
+bool Binary4RegisterDualOpNoCondsUpdateTesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -748,12 +800,15 @@ bool Binary4RegisterDualOpTesterCase10
   if ((inst.Bits() & 0x000000C0)  !=
           0x000000C0) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary4RegisterDualOpTesterCase10
+bool Binary4RegisterDualOpNoCondsUpdateTesterCase10
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary4RegisterDualOpTester::
@@ -792,16 +847,17 @@ bool Binary4RegisterDualOpTesterCase10
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0,
+//       pattern: cccc01110000ddddaaaammmm00m1nnnn,
 //       rule: SMLAD,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
 //         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpNoCondsUpdateTester_Case0
-    : public Binary4RegisterDualOpTesterCase0 {
+    : public Binary4RegisterDualOpNoCondsUpdateTesterCase0 {
  public:
   Binary4RegisterDualOpNoCondsUpdateTester_Case0()
-    : Binary4RegisterDualOpTesterCase0(
+    : Binary4RegisterDualOpNoCondsUpdateTesterCase0(
       state_.Binary4RegisterDualOpNoCondsUpdate_SMLAD_instance_)
   {}
 };
@@ -817,14 +873,15 @@ class Binary4RegisterDualOpNoCondsUpdateTester_Case0
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMUAD_cccc01110000dddd1111mmmm00m1nnnn_case_0,
+//       pattern: cccc01110000dddd1111mmmm00m1nnnn,
 //       rule: SMUAD,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case1
-    : public Binary3RegisterOpAltATesterCase1 {
+    : public Binary3RegisterOpAltANoCondsUpdateTesterCase1 {
  public:
   Binary3RegisterOpAltANoCondsUpdateTester_Case1()
-    : Binary3RegisterOpAltATesterCase1(
+    : Binary3RegisterOpAltANoCondsUpdateTesterCase1(
       state_.Binary3RegisterOpAltANoCondsUpdate_SMUAD_instance_)
   {}
 };
@@ -841,16 +898,17 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case1
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0,
+//       pattern: cccc01110000ddddaaaammmm01m1nnnn,
 //       rule: SMLSD,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
 //         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpNoCondsUpdateTester_Case2
-    : public Binary4RegisterDualOpTesterCase2 {
+    : public Binary4RegisterDualOpNoCondsUpdateTesterCase2 {
  public:
   Binary4RegisterDualOpNoCondsUpdateTester_Case2()
-    : Binary4RegisterDualOpTesterCase2(
+    : Binary4RegisterDualOpNoCondsUpdateTesterCase2(
       state_.Binary4RegisterDualOpNoCondsUpdate_SMLSD_instance_)
   {}
 };
@@ -866,14 +924,15 @@ class Binary4RegisterDualOpNoCondsUpdateTester_Case2
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0,
+//       pattern: cccc01110000dddd1111mmmm01m1nnnn,
 //       rule: SMUSD,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case3
-    : public Binary3RegisterOpAltATesterCase3 {
+    : public Binary3RegisterOpAltANoCondsUpdateTesterCase3 {
  public:
   Binary3RegisterOpAltANoCondsUpdateTester_Case3()
-    : Binary3RegisterOpAltATesterCase3(
+    : Binary3RegisterOpAltANoCondsUpdateTesterCase3(
       state_.Binary3RegisterOpAltANoCondsUpdate_SMUSD_instance_)
   {}
 };
@@ -889,14 +948,15 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case3
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0,
+//       pattern: cccc01110001dddd1111mmmm0001nnnn,
 //       rule: SDIV,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case4
-    : public Binary3RegisterOpAltATesterCase4 {
+    : public Binary3RegisterOpAltANoCondsUpdateTesterCase4 {
  public:
   Binary3RegisterOpAltANoCondsUpdateTester_Case4()
-    : Binary3RegisterOpAltATesterCase4(
+    : Binary3RegisterOpAltANoCondsUpdateTesterCase4(
       state_.Binary3RegisterOpAltANoCondsUpdate_SDIV_instance_)
   {}
 };
@@ -912,14 +972,15 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case4
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0,
+//       pattern: cccc01110011dddd1111mmmm0001nnnn,
 //       rule: UDIV,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case5
-    : public Binary3RegisterOpAltATesterCase5 {
+    : public Binary3RegisterOpAltANoCondsUpdateTesterCase5 {
  public:
   Binary3RegisterOpAltANoCondsUpdateTester_Case5()
-    : Binary3RegisterOpAltATesterCase5(
+    : Binary3RegisterOpAltANoCondsUpdateTesterCase5(
       state_.Binary3RegisterOpAltANoCondsUpdate_UDIV_instance_)
   {}
 };
@@ -936,16 +997,17 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case5
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0,
+//       pattern: cccc01110100hhhhllllmmmm00m1nnnn,
 //       rule: SMLALD,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
 //               RdLo => UNPREDICTABLE],
 //       uses: {RdHi, RdLo, Rm, Rn}}
 class Binary4RegisterDualResultNoCondsUpdateTester_Case6
-    : public Binary4RegisterDualResultTesterCase6 {
+    : public Binary4RegisterDualResultNoCondsUpdateTesterCase6 {
  public:
   Binary4RegisterDualResultNoCondsUpdateTester_Case6()
-    : Binary4RegisterDualResultTesterCase6(
+    : Binary4RegisterDualResultNoCondsUpdateTesterCase6(
       state_.Binary4RegisterDualResultNoCondsUpdate_SMLALD_instance_)
   {}
 };
@@ -962,16 +1024,17 @@ class Binary4RegisterDualResultNoCondsUpdateTester_Case6
 //       defs: {RdHi, RdLo},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0,
+//       pattern: cccc01110100hhhhllllmmmm01m1nnnn,
 //       rule: SMLSLD,
 //       safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
 //               RdLo => UNPREDICTABLE],
 //       uses: {RdHi, RdLo, Rm, Rn}}
 class Binary4RegisterDualResultNoCondsUpdateTester_Case7
-    : public Binary4RegisterDualResultTesterCase7 {
+    : public Binary4RegisterDualResultNoCondsUpdateTesterCase7 {
  public:
   Binary4RegisterDualResultNoCondsUpdateTester_Case7()
-    : Binary4RegisterDualResultTesterCase7(
+    : Binary4RegisterDualResultNoCondsUpdateTesterCase7(
       state_.Binary4RegisterDualResultNoCondsUpdate_SMLSLD_instance_)
   {}
 };
@@ -988,16 +1051,17 @@ class Binary4RegisterDualResultNoCondsUpdateTester_Case7
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0,
+//       pattern: cccc01110101ddddaaaammmm00r1nnnn,
 //       rule: SMMLA,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
 //         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpNoCondsUpdateTester_Case8
-    : public Binary4RegisterDualOpTesterCase8 {
+    : public Binary4RegisterDualOpNoCondsUpdateTesterCase8 {
  public:
   Binary4RegisterDualOpNoCondsUpdateTester_Case8()
-    : Binary4RegisterDualOpTesterCase8(
+    : Binary4RegisterDualOpNoCondsUpdateTesterCase8(
       state_.Binary4RegisterDualOpNoCondsUpdate_SMMLA_instance_)
   {}
 };
@@ -1013,14 +1077,15 @@ class Binary4RegisterDualOpNoCondsUpdateTester_Case8
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMMUL_cccc01110101dddd1111mmmm00r1nnnn_case_0,
+//       pattern: cccc01110101dddd1111mmmm00r1nnnn,
 //       rule: SMMUL,
 //       safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
 //       uses: {Rm, Rn}}
 class Binary3RegisterOpAltANoCondsUpdateTester_Case9
-    : public Binary3RegisterOpAltATesterCase9 {
+    : public Binary3RegisterOpAltANoCondsUpdateTesterCase9 {
  public:
   Binary3RegisterOpAltANoCondsUpdateTester_Case9()
-    : Binary3RegisterOpAltATesterCase9(
+    : Binary3RegisterOpAltANoCondsUpdateTesterCase9(
       state_.Binary3RegisterOpAltANoCondsUpdate_SMMUL_instance_)
   {}
 };
@@ -1037,16 +1102,17 @@ class Binary3RegisterOpAltANoCondsUpdateTester_Case9
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0,
+//       pattern: cccc01110101ddddaaaammmm11r1nnnn,
 //       rule: SMMLS,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
 //         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpNoCondsUpdateTester_Case10
-    : public Binary4RegisterDualOpTesterCase10 {
+    : public Binary4RegisterDualOpNoCondsUpdateTesterCase10 {
  public:
   Binary4RegisterDualOpNoCondsUpdateTester_Case10()
-    : Binary4RegisterDualOpTesterCase10(
+    : Binary4RegisterDualOpNoCondsUpdateTesterCase10(
       state_.Binary4RegisterDualOpNoCondsUpdate_SMMLS_instance_)
   {}
 };

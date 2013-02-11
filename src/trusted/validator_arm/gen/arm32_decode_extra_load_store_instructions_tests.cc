@@ -52,6 +52,8 @@ namespace nacl_arm_test {
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w0nnnntttt00001011mmmm,
+//       rule: STRH_register,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         Pc in {Rt, Rm} => UNPREDICTABLE,
@@ -69,10 +71,10 @@ namespace nacl_arm_test {
 //       uses: {Rt, Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore3RegisterOpTesterCase0
+class Store3RegisterOpTesterCase0
     : public LoadStore3RegisterOpTester {
  public:
-  LoadStore3RegisterOpTesterCase0(const NamedClassDecoder& decoder)
+  Store3RegisterOpTesterCase0(const NamedClassDecoder& decoder)
     : LoadStore3RegisterOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -81,7 +83,7 @@ class LoadStore3RegisterOpTesterCase0
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterOpTesterCase0
+bool Store3RegisterOpTesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -97,12 +99,15 @@ bool LoadStore3RegisterOpTesterCase0
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore3RegisterOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore3RegisterOpTesterCase0
+bool Store3RegisterOpTesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore3RegisterOpTester::
@@ -179,6 +184,8 @@ bool LoadStore3RegisterOpTesterCase0
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w1nnnntttt00001011mmmm,
+//       rule: LDRH_register,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         Pc in {Rt, Rm} => UNPREDICTABLE,
@@ -196,10 +203,10 @@ bool LoadStore3RegisterOpTesterCase0
 //       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore3RegisterOpTesterCase1
+class Load3RegisterOpTesterCase1
     : public LoadStore3RegisterOpTester {
  public:
-  LoadStore3RegisterOpTesterCase1(const NamedClassDecoder& decoder)
+  Load3RegisterOpTesterCase1(const NamedClassDecoder& decoder)
     : LoadStore3RegisterOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -208,7 +215,7 @@ class LoadStore3RegisterOpTesterCase1
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterOpTesterCase1
+bool Load3RegisterOpTesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -224,12 +231,15 @@ bool LoadStore3RegisterOpTesterCase1
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore3RegisterOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore3RegisterOpTesterCase1
+bool Load3RegisterOpTesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore3RegisterOpTester::
@@ -305,6 +315,8 @@ bool LoadStore3RegisterOpTesterCase1
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
+//       pattern: cccc000pu1w0nnnnttttiiii1011iiii,
+//       rule: STRH_immediate,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         Rt  ==
@@ -318,10 +330,10 @@ bool LoadStore3RegisterOpTesterCase1
 //       uses: {Rt, Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore2RegisterImm8OpTesterCase2
+class Store2RegisterImm8OpTesterCase2
     : public LoadStore2RegisterImm8OpTester {
  public:
-  LoadStore2RegisterImm8OpTesterCase2(const NamedClassDecoder& decoder)
+  Store2RegisterImm8OpTesterCase2(const NamedClassDecoder& decoder)
     : LoadStore2RegisterImm8OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -330,7 +342,7 @@ class LoadStore2RegisterImm8OpTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm8OpTesterCase2
+bool Store2RegisterImm8OpTesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -343,12 +355,15 @@ bool LoadStore2RegisterImm8OpTesterCase2
   if ((inst.Bits() & 0x00500000)  !=
           0x00400000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8OpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore2RegisterImm8OpTesterCase2
+bool Store2RegisterImm8OpTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore2RegisterImm8OpTester::
@@ -407,6 +422,8 @@ bool LoadStore2RegisterImm8OpTesterCase2
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0,
+//       pattern: cccc000pu1w1nnnnttttiiii1011iiii,
+//       rule: LDRH_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -421,10 +438,10 @@ bool LoadStore2RegisterImm8OpTesterCase2
 //       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore2RegisterImm8OpTesterCase3
+class Load2RegisterImm8OpTesterCase3
     : public LoadStore2RegisterImm8OpTester {
  public:
-  LoadStore2RegisterImm8OpTesterCase3(const NamedClassDecoder& decoder)
+  Load2RegisterImm8OpTesterCase3(const NamedClassDecoder& decoder)
     : LoadStore2RegisterImm8OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -433,7 +450,7 @@ class LoadStore2RegisterImm8OpTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm8OpTesterCase3
+bool Load2RegisterImm8OpTesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -449,12 +466,15 @@ bool LoadStore2RegisterImm8OpTesterCase3
   if ((inst.Bits() & 0x000F0000)  ==
           0x000F0000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8OpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore2RegisterImm8OpTesterCase3
+bool Load2RegisterImm8OpTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore2RegisterImm8OpTester::
@@ -515,6 +535,8 @@ bool LoadStore2RegisterImm8OpTesterCase3
 //       fields: [P(24), W(21), Rt(15:12)],
 //       generated_baseline: LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0,
 //       is_literal_load: true,
+//       pattern: cccc000pu1w11111ttttiiii1011iiii,
+//       rule: LDRH_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
@@ -550,6 +572,9 @@ bool LoadRegisterImm8OpTesterCase4
   // Rn(19:16)=~1111
   if ((inst.Bits() & 0x000F0000)  !=
           0x000F0000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadRegisterImm8OpTester::
@@ -603,6 +628,8 @@ bool LoadRegisterImm8OpTesterCase4
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w0nnnntttt00001101mmmm,
+//       rule: LDRD_register,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
 //            W(21)=1 => UNPREDICTABLE,
@@ -630,10 +657,10 @@ bool LoadRegisterImm8OpTesterCase4
 //       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore3RegisterDoubleOpTesterCase5
+class Load3RegisterDoubleOpTesterCase5
     : public LoadStore3RegisterDoubleOpTester {
  public:
-  LoadStore3RegisterDoubleOpTesterCase5(const NamedClassDecoder& decoder)
+  Load3RegisterDoubleOpTesterCase5(const NamedClassDecoder& decoder)
     : LoadStore3RegisterDoubleOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -642,7 +669,7 @@ class LoadStore3RegisterDoubleOpTesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterDoubleOpTesterCase5
+bool Load3RegisterDoubleOpTesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -658,12 +685,15 @@ bool LoadStore3RegisterDoubleOpTesterCase5
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore3RegisterDoubleOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore3RegisterDoubleOpTesterCase5
+bool Load3RegisterDoubleOpTesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore3RegisterDoubleOpTester::
@@ -758,6 +788,8 @@ bool LoadStore3RegisterDoubleOpTesterCase5
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w1nnnntttt00001101mmmm,
+//       rule: LDRSB_register,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         Pc in {Rt, Rm} => UNPREDICTABLE,
@@ -775,10 +807,10 @@ bool LoadStore3RegisterDoubleOpTesterCase5
 //       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore3RegisterOpTesterCase6
+class Load3RegisterOpTesterCase6
     : public LoadStore3RegisterOpTester {
  public:
-  LoadStore3RegisterOpTesterCase6(const NamedClassDecoder& decoder)
+  Load3RegisterOpTesterCase6(const NamedClassDecoder& decoder)
     : LoadStore3RegisterOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -787,7 +819,7 @@ class LoadStore3RegisterOpTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterOpTesterCase6
+bool Load3RegisterOpTesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -803,12 +835,15 @@ bool LoadStore3RegisterOpTesterCase6
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore3RegisterOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore3RegisterOpTesterCase6
+bool Load3RegisterOpTesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore3RegisterOpTester::
@@ -885,6 +920,8 @@ bool LoadStore3RegisterOpTesterCase6
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0,
+//       pattern: cccc000pu1w0nnnnttttiiii1101iiii,
+//       rule: LDRD_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
@@ -900,10 +937,10 @@ bool LoadStore3RegisterOpTesterCase6
 //       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore2RegisterImm8DoubleOpTesterCase7
+class Load2RegisterImm8DoubleOpTesterCase7
     : public LoadStore2RegisterImm8DoubleOpTester {
  public:
-  LoadStore2RegisterImm8DoubleOpTesterCase7(const NamedClassDecoder& decoder)
+  Load2RegisterImm8DoubleOpTesterCase7(const NamedClassDecoder& decoder)
     : LoadStore2RegisterImm8DoubleOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -912,7 +949,7 @@ class LoadStore2RegisterImm8DoubleOpTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm8DoubleOpTesterCase7
+bool Load2RegisterImm8DoubleOpTesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -928,12 +965,15 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase7
   if ((inst.Bits() & 0x000F0000)  ==
           0x000F0000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8DoubleOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore2RegisterImm8DoubleOpTesterCase7
+bool Load2RegisterImm8DoubleOpTesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore2RegisterImm8DoubleOpTester::
@@ -998,6 +1038,8 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase7
 //       fields: [Rt(15:12)],
 //       generated_baseline: LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0,
 //       is_literal_load: true,
+//       pattern: cccc0001u1001111ttttiiii1101iiii,
+//       rule: LDRD_literal,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         Rt2  ==
 //               Pc => UNPREDICTABLE],
@@ -1033,6 +1075,9 @@ bool LoadRegisterImm8DoubleOpTesterCase8
   // $pattern(31:0)=~xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
   if ((inst.Bits() & 0x01200000)  !=
           0x01000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadRegisterImm8DoubleOpTester::
@@ -1077,6 +1122,8 @@ bool LoadRegisterImm8DoubleOpTesterCase8
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0,
+//       pattern: cccc000pu1w1nnnnttttiiii1101iiii,
+//       rule: LDRSB_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -1091,10 +1138,10 @@ bool LoadRegisterImm8DoubleOpTesterCase8
 //       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore2RegisterImm8OpTesterCase9
+class Load2RegisterImm8OpTesterCase9
     : public LoadStore2RegisterImm8OpTester {
  public:
-  LoadStore2RegisterImm8OpTesterCase9(const NamedClassDecoder& decoder)
+  Load2RegisterImm8OpTesterCase9(const NamedClassDecoder& decoder)
     : LoadStore2RegisterImm8OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1103,7 +1150,7 @@ class LoadStore2RegisterImm8OpTesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm8OpTesterCase9
+bool Load2RegisterImm8OpTesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1119,12 +1166,15 @@ bool LoadStore2RegisterImm8OpTesterCase9
   if ((inst.Bits() & 0x000F0000)  ==
           0x000F0000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8OpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore2RegisterImm8OpTesterCase9
+bool Load2RegisterImm8OpTesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore2RegisterImm8OpTester::
@@ -1185,6 +1235,8 @@ bool LoadStore2RegisterImm8OpTesterCase9
 //       fields: [P(24), W(21), Rt(15:12)],
 //       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0,
 //       is_literal_load: true,
+//       pattern: cccc0001u1011111ttttiiii1101iiii,
+//       rule: LDRSB_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
@@ -1223,6 +1275,9 @@ bool LoadRegisterImm8OpTesterCase10
   // $pattern(31:0)=~xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
   if ((inst.Bits() & 0x01200000)  !=
           0x01000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadRegisterImm8OpTester::
@@ -1276,6 +1331,8 @@ bool LoadRegisterImm8OpTesterCase10
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w0nnnntttt00001111mmmm,
+//       rule: STRD_register,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
 //            W(21)=1 => UNPREDICTABLE,
@@ -1299,10 +1356,10 @@ bool LoadRegisterImm8OpTesterCase10
 //       uses: {Rt, Rt2, Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore3RegisterDoubleOpTesterCase11
+class Store3RegisterDoubleOpTesterCase11
     : public LoadStore3RegisterDoubleOpTester {
  public:
-  LoadStore3RegisterDoubleOpTesterCase11(const NamedClassDecoder& decoder)
+  Store3RegisterDoubleOpTesterCase11(const NamedClassDecoder& decoder)
     : LoadStore3RegisterDoubleOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1311,7 +1368,7 @@ class LoadStore3RegisterDoubleOpTesterCase11
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterDoubleOpTesterCase11
+bool Store3RegisterDoubleOpTesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1327,12 +1384,15 @@ bool LoadStore3RegisterDoubleOpTesterCase11
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore3RegisterDoubleOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore3RegisterDoubleOpTesterCase11
+bool Store3RegisterDoubleOpTesterCase11
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore3RegisterDoubleOpTester::
@@ -1419,6 +1479,8 @@ bool LoadStore3RegisterDoubleOpTesterCase11
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w1nnnntttt00001111mmmm,
+//       rule: LDRSH_register,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         Pc in {Rt, Rm} => UNPREDICTABLE,
@@ -1436,10 +1498,10 @@ bool LoadStore3RegisterDoubleOpTesterCase11
 //       uses: {Rn, Rm},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore3RegisterOpTesterCase12
+class Load3RegisterOpTesterCase12
     : public LoadStore3RegisterOpTester {
  public:
-  LoadStore3RegisterOpTesterCase12(const NamedClassDecoder& decoder)
+  Load3RegisterOpTesterCase12(const NamedClassDecoder& decoder)
     : LoadStore3RegisterOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1448,7 +1510,7 @@ class LoadStore3RegisterOpTesterCase12
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore3RegisterOpTesterCase12
+bool Load3RegisterOpTesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1464,12 +1526,15 @@ bool LoadStore3RegisterOpTesterCase12
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore3RegisterOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore3RegisterOpTesterCase12
+bool Load3RegisterOpTesterCase12
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore3RegisterOpTester::
@@ -1546,6 +1611,8 @@ bool LoadStore3RegisterOpTesterCase12
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
+//       pattern: cccc000pu1w0nnnnttttiiii1111iiii,
+//       rule: STRD_immediate,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
 //            W(21)=1 => UNPREDICTABLE,
@@ -1562,10 +1629,10 @@ bool LoadStore3RegisterOpTesterCase12
 //       uses: {Rt, Rt2, Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore2RegisterImm8DoubleOpTesterCase13
+class Store2RegisterImm8DoubleOpTesterCase13
     : public LoadStore2RegisterImm8DoubleOpTester {
  public:
-  LoadStore2RegisterImm8DoubleOpTesterCase13(const NamedClassDecoder& decoder)
+  Store2RegisterImm8DoubleOpTesterCase13(const NamedClassDecoder& decoder)
     : LoadStore2RegisterImm8DoubleOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1574,7 +1641,7 @@ class LoadStore2RegisterImm8DoubleOpTesterCase13
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm8DoubleOpTesterCase13
+bool Store2RegisterImm8DoubleOpTesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1587,12 +1654,15 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase13
   if ((inst.Bits() & 0x00500000)  !=
           0x00400000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8DoubleOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore2RegisterImm8DoubleOpTesterCase13
+bool Store2RegisterImm8DoubleOpTesterCase13
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore2RegisterImm8DoubleOpTester::
@@ -1658,6 +1728,8 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase13
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0,
+//       pattern: cccc000pu1w1nnnnttttiiii1111iiii,
+//       rule: LDRSH_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -1672,10 +1744,10 @@ bool LoadStore2RegisterImm8DoubleOpTesterCase13
 //       uses: {Rn},
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
-class LoadStore2RegisterImm8OpTesterCase14
+class Load2RegisterImm8OpTesterCase14
     : public LoadStore2RegisterImm8OpTester {
  public:
-  LoadStore2RegisterImm8OpTesterCase14(const NamedClassDecoder& decoder)
+  Load2RegisterImm8OpTesterCase14(const NamedClassDecoder& decoder)
     : LoadStore2RegisterImm8OpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1684,7 +1756,7 @@ class LoadStore2RegisterImm8OpTesterCase14
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStore2RegisterImm8OpTesterCase14
+bool Load2RegisterImm8OpTesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1700,12 +1772,15 @@ bool LoadStore2RegisterImm8OpTesterCase14
   if ((inst.Bits() & 0x000F0000)  ==
           0x000F0000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStore2RegisterImm8OpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStore2RegisterImm8OpTesterCase14
+bool Load2RegisterImm8OpTesterCase14
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStore2RegisterImm8OpTester::
@@ -1766,6 +1841,8 @@ bool LoadStore2RegisterImm8OpTesterCase14
 //       fields: [P(24), W(21), Rt(15:12)],
 //       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
 //       is_literal_load: true,
+//       pattern: cccc0001u1011111ttttiiii1111iiii,
+//       rule: LDRSB_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
@@ -1804,6 +1881,9 @@ bool LoadRegisterImm8OpTesterCase15
   // $pattern(31:0)=~xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
   if ((inst.Bits() & 0x01200000)  !=
           0x01000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadRegisterImm8OpTester::
@@ -1861,6 +1941,7 @@ bool LoadRegisterImm8OpTesterCase15
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w0nnnntttt00001011mmmm,
 //       rule: STRH_register,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -1880,10 +1961,10 @@ bool LoadRegisterImm8OpTesterCase15
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Store3RegisterOpTester_Case0
-    : public LoadStore3RegisterOpTesterCase0 {
+    : public Store3RegisterOpTesterCase0 {
  public:
   Store3RegisterOpTester_Case0()
-    : LoadStore3RegisterOpTesterCase0(
+    : Store3RegisterOpTesterCase0(
       state_.Store3RegisterOp_STRH_register_instance_)
   {}
 };
@@ -1906,6 +1987,7 @@ class Store3RegisterOpTester_Case0
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w1nnnntttt00001011mmmm,
 //       rule: LDRH_register,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -1925,10 +2007,10 @@ class Store3RegisterOpTester_Case0
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load3RegisterOpTester_Case1
-    : public LoadStore3RegisterOpTesterCase1 {
+    : public Load3RegisterOpTesterCase1 {
  public:
   Load3RegisterOpTester_Case1()
-    : LoadStore3RegisterOpTesterCase1(
+    : Load3RegisterOpTesterCase1(
       state_.Load3RegisterOp_LDRH_register_instance_)
   {}
 };
@@ -1949,6 +2031,7 @@ class Load3RegisterOpTester_Case1
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
+//       pattern: cccc000pu1w0nnnnttttiiii1011iiii,
 //       rule: STRH_immediate,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -1964,10 +2047,10 @@ class Load3RegisterOpTester_Case1
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Store2RegisterImm8OpTester_Case2
-    : public LoadStore2RegisterImm8OpTesterCase2 {
+    : public Store2RegisterImm8OpTesterCase2 {
  public:
   Store2RegisterImm8OpTester_Case2()
-    : LoadStore2RegisterImm8OpTesterCase2(
+    : Store2RegisterImm8OpTesterCase2(
       state_.Store2RegisterImm8Op_STRH_immediate_instance_)
   {}
 };
@@ -1988,6 +2071,7 @@ class Store2RegisterImm8OpTester_Case2
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0,
+//       pattern: cccc000pu1w1nnnnttttiiii1011iiii,
 //       rule: LDRH_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
@@ -2004,10 +2088,10 @@ class Store2RegisterImm8OpTester_Case2
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load2RegisterImm8OpTester_Case3
-    : public LoadStore2RegisterImm8OpTesterCase3 {
+    : public Load2RegisterImm8OpTesterCase3 {
  public:
   Load2RegisterImm8OpTester_Case3()
-    : LoadStore2RegisterImm8OpTesterCase3(
+    : Load2RegisterImm8OpTesterCase3(
       state_.Load2RegisterImm8Op_LDRH_immediate_instance_)
   {}
 };
@@ -2025,6 +2109,7 @@ class Load2RegisterImm8OpTester_Case3
 //       fields: [P(24), W(21), Rt(15:12)],
 //       generated_baseline: LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0,
 //       is_literal_load: true,
+//       pattern: cccc000pu1w11111ttttiiii1011iiii,
 //       rule: LDRH_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -2062,6 +2147,7 @@ class LoadRegisterImm8OpTester_Case4
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w0nnnntttt00001101mmmm,
 //       rule: LDRD_register,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
@@ -2091,10 +2177,10 @@ class LoadRegisterImm8OpTester_Case4
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load3RegisterDoubleOpTester_Case5
-    : public LoadStore3RegisterDoubleOpTesterCase5 {
+    : public Load3RegisterDoubleOpTesterCase5 {
  public:
   Load3RegisterDoubleOpTester_Case5()
-    : LoadStore3RegisterDoubleOpTesterCase5(
+    : Load3RegisterDoubleOpTesterCase5(
       state_.Load3RegisterDoubleOp_LDRD_register_instance_)
   {}
 };
@@ -2117,6 +2203,7 @@ class Load3RegisterDoubleOpTester_Case5
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w1nnnntttt00001101mmmm,
 //       rule: LDRSB_register,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -2136,10 +2223,10 @@ class Load3RegisterDoubleOpTester_Case5
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load3RegisterOpTester_Case6
-    : public LoadStore3RegisterOpTesterCase6 {
+    : public Load3RegisterOpTesterCase6 {
  public:
   Load3RegisterOpTester_Case6()
-    : LoadStore3RegisterOpTesterCase6(
+    : Load3RegisterOpTesterCase6(
       state_.Load3RegisterOp_LDRSB_register_instance_)
   {}
 };
@@ -2161,6 +2248,7 @@ class Load3RegisterOpTester_Case6
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0,
+//       pattern: cccc000pu1w0nnnnttttiiii1101iiii,
 //       rule: LDRD_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Rt(0)=1 => UNPREDICTABLE,
@@ -2178,10 +2266,10 @@ class Load3RegisterOpTester_Case6
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load2RegisterImm8DoubleOpTester_Case7
-    : public LoadStore2RegisterImm8DoubleOpTesterCase7 {
+    : public Load2RegisterImm8DoubleOpTesterCase7 {
  public:
   Load2RegisterImm8DoubleOpTester_Case7()
-    : LoadStore2RegisterImm8DoubleOpTesterCase7(
+    : Load2RegisterImm8DoubleOpTesterCase7(
       state_.Load2RegisterImm8DoubleOp_LDRD_immediate_instance_)
   {}
 };
@@ -2198,6 +2286,7 @@ class Load2RegisterImm8DoubleOpTester_Case7
 //       fields: [Rt(15:12)],
 //       generated_baseline: LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0,
 //       is_literal_load: true,
+//       pattern: cccc0001u1001111ttttiiii1101iiii,
 //       rule: LDRD_literal,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         Rt2  ==
@@ -2229,6 +2318,7 @@ class LoadRegisterImm8DoubleOpTester_Case8
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0,
+//       pattern: cccc000pu1w1nnnnttttiiii1101iiii,
 //       rule: LDRSB_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
@@ -2245,10 +2335,10 @@ class LoadRegisterImm8DoubleOpTester_Case8
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load2RegisterImm8OpTester_Case9
-    : public LoadStore2RegisterImm8OpTesterCase9 {
+    : public Load2RegisterImm8OpTesterCase9 {
  public:
   Load2RegisterImm8OpTester_Case9()
-    : LoadStore2RegisterImm8OpTesterCase9(
+    : Load2RegisterImm8OpTesterCase9(
       state_.Load2RegisterImm8Op_LDRSB_immediate_instance_)
   {}
 };
@@ -2266,6 +2356,7 @@ class Load2RegisterImm8OpTester_Case9
 //       fields: [P(24), W(21), Rt(15:12)],
 //       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0,
 //       is_literal_load: true,
+//       pattern: cccc0001u1011111ttttiiii1101iiii,
 //       rule: LDRSB_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -2303,6 +2394,7 @@ class LoadRegisterImm8OpTester_Case10
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w0nnnntttt00001111mmmm,
 //       rule: STRD_register,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
@@ -2328,10 +2420,10 @@ class LoadRegisterImm8OpTester_Case10
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Store3RegisterDoubleOpTester_Case11
-    : public LoadStore3RegisterDoubleOpTesterCase11 {
+    : public Store3RegisterDoubleOpTesterCase11 {
  public:
   Store3RegisterDoubleOpTester_Case11()
-    : LoadStore3RegisterDoubleOpTesterCase11(
+    : Store3RegisterDoubleOpTesterCase11(
       state_.Store3RegisterDoubleOp_STRD_register_instance_)
   {}
 };
@@ -2354,6 +2446,7 @@ class Store3RegisterDoubleOpTester_Case11
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12), Rm(3:0)],
 //       generated_baseline: LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0,
 //       index: P(24)=1,
+//       pattern: cccc000pu0w1nnnntttt00001111mmmm,
 //       rule: LDRSH_register,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
@@ -2373,10 +2466,10 @@ class Store3RegisterDoubleOpTester_Case11
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load3RegisterOpTester_Case12
-    : public LoadStore3RegisterOpTesterCase12 {
+    : public Load3RegisterOpTesterCase12 {
  public:
   Load3RegisterOpTester_Case12()
-    : LoadStore3RegisterOpTesterCase12(
+    : Load3RegisterOpTesterCase12(
       state_.Load3RegisterOp_LDRSH_register_instance_)
   {}
 };
@@ -2398,6 +2491,7 @@ class Load3RegisterOpTester_Case12
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
+//       pattern: cccc000pu1w0nnnnttttiiii1111iiii,
 //       rule: STRD_immediate,
 //       safety: [Rt(0)=1 => UNPREDICTABLE,
 //         P(24)=0 &&
@@ -2416,10 +2510,10 @@ class Load3RegisterOpTester_Case12
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Store2RegisterImm8DoubleOpTester_Case13
-    : public LoadStore2RegisterImm8DoubleOpTesterCase13 {
+    : public Store2RegisterImm8DoubleOpTesterCase13 {
  public:
   Store2RegisterImm8DoubleOpTester_Case13()
-    : LoadStore2RegisterImm8DoubleOpTesterCase13(
+    : Store2RegisterImm8DoubleOpTesterCase13(
       state_.Store2RegisterImm8DoubleOp_STRD_immediate_instance_)
   {}
 };
@@ -2440,6 +2534,7 @@ class Store2RegisterImm8DoubleOpTester_Case13
 //            else None},
 //       fields: [P(24), W(21), Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0,
+//       pattern: cccc000pu1w1nnnnttttiiii1111iiii,
 //       rule: LDRSH_immediate,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         P(24)=0 &&
@@ -2456,10 +2551,10 @@ class Store2RegisterImm8DoubleOpTester_Case13
 //       wback: (P(24)=0) ||
 //            (W(21)=1)}
 class Load2RegisterImm8OpTester_Case14
-    : public LoadStore2RegisterImm8OpTesterCase14 {
+    : public Load2RegisterImm8OpTesterCase14 {
  public:
   Load2RegisterImm8OpTester_Case14()
-    : LoadStore2RegisterImm8OpTesterCase14(
+    : Load2RegisterImm8OpTesterCase14(
       state_.Load2RegisterImm8Op_LDRSH_immediate_instance_)
   {}
 };
@@ -2477,6 +2572,7 @@ class Load2RegisterImm8OpTester_Case14
 //       fields: [P(24), W(21), Rt(15:12)],
 //       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
 //       is_literal_load: true,
+//       pattern: cccc0001u1011111ttttiiii1111iiii,
 //       rule: LDRSB_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,

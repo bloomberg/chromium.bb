@@ -37,18 +37,20 @@ namespace nacl_arm_test {
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
-//       constraints: }
-class UnsafeCondDecoderTesterCase0
+//       constraints: ,
+//       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
+//       rule: extra_load_store_instructions_unpriviledged}
+class ForbiddenCondDecoderTesterCase0
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase0(const NamedClassDecoder& decoder)
+  ForbiddenCondDecoderTesterCase0(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase0
+bool ForbiddenCondDecoderTesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -64,6 +66,9 @@ bool UnsafeCondDecoderTesterCase0
   if ((inst.Bits() & 0x000000F0)  !=
           0x000000B0) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -72,18 +77,20 @@ bool UnsafeCondDecoderTesterCase0
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
-//       constraints: }
-class UnsafeCondDecoderTesterCase1
+//       constraints: ,
+//       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
+//       rule: extra_load_store_instructions_unpriviledged}
+class ForbiddenCondDecoderTesterCase1
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase1(const NamedClassDecoder& decoder)
+  ForbiddenCondDecoderTesterCase1(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase1
+bool ForbiddenCondDecoderTesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -98,6 +105,9 @@ bool UnsafeCondDecoderTesterCase1
   // op2(7:4)=~11x1
   if ((inst.Bits() & 0x000000D0)  !=
           0x000000D0) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -120,12 +130,14 @@ bool UnsafeCondDecoderTesterCase1
 //       generated_baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
+//       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
+//       rule: MOVW,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
-class Unary1RegisterImmediateOpTesterCase2
+class Unary1RegisterImmediateOpDynCodeReplaceTesterCase2
     : public Unary1RegisterImmediateOpTester {
  public:
-  Unary1RegisterImmediateOpTesterCase2(const NamedClassDecoder& decoder)
+  Unary1RegisterImmediateOpDynCodeReplaceTesterCase2(const NamedClassDecoder& decoder)
     : Unary1RegisterImmediateOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -134,7 +146,7 @@ class Unary1RegisterImmediateOpTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary1RegisterImmediateOpTesterCase2
+bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -147,12 +159,15 @@ bool Unary1RegisterImmediateOpTesterCase2
   if ((inst.Bits() & 0x01F00000)  !=
           0x01000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterImmediateOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary1RegisterImmediateOpTesterCase2
+bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Unary1RegisterImmediateOpTester::
@@ -190,12 +205,14 @@ bool Unary1RegisterImmediateOpTesterCase2
 //       generated_baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
+//       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
+//       rule: MOVT,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
-class Unary1RegisterImmediateOpTesterCase3
+class Unary1RegisterImmediateOpDynCodeReplaceTesterCase3
     : public Unary1RegisterImmediateOpTester {
  public:
-  Unary1RegisterImmediateOpTesterCase3(const NamedClassDecoder& decoder)
+  Unary1RegisterImmediateOpDynCodeReplaceTesterCase3(const NamedClassDecoder& decoder)
     : Unary1RegisterImmediateOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -204,7 +221,7 @@ class Unary1RegisterImmediateOpTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary1RegisterImmediateOpTesterCase3
+bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -217,12 +234,15 @@ bool Unary1RegisterImmediateOpTesterCase3
   if ((inst.Bits() & 0x01F00000)  !=
           0x01400000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterImmediateOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary1RegisterImmediateOpTesterCase3
+bool Unary1RegisterImmediateOpDynCodeReplaceTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Unary1RegisterImmediateOpTester::
@@ -253,12 +273,13 @@ bool Unary1RegisterImmediateOpTesterCase3
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
+//       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged}
 class ForbiddenCondDecoderTester_Case0
-    : public UnsafeCondDecoderTesterCase0 {
+    : public ForbiddenCondDecoderTesterCase0 {
  public:
   ForbiddenCondDecoderTester_Case0()
-    : UnsafeCondDecoderTesterCase0(
+    : ForbiddenCondDecoderTesterCase0(
       state_.ForbiddenCondDecoder_extra_load_store_instructions_unpriviledged_instance_)
   {}
 };
@@ -267,12 +288,13 @@ class ForbiddenCondDecoderTester_Case0
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
+//       pattern: cccc0000xx1xxxxxxxxxxxxx1xx1xxxx,
 //       rule: extra_load_store_instructions_unpriviledged}
 class ForbiddenCondDecoderTester_Case1
-    : public UnsafeCondDecoderTesterCase1 {
+    : public ForbiddenCondDecoderTesterCase1 {
  public:
   ForbiddenCondDecoderTester_Case1()
-    : UnsafeCondDecoderTesterCase1(
+    : ForbiddenCondDecoderTesterCase1(
       state_.ForbiddenCondDecoder_extra_load_store_instructions_unpriviledged_instance_)
   {}
 };
@@ -293,14 +315,15 @@ class ForbiddenCondDecoderTester_Case1
 //       generated_baseline: MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
+//       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
 //       rule: MOVW,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
 class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
-    : public Unary1RegisterImmediateOpTesterCase2 {
+    : public Unary1RegisterImmediateOpDynCodeReplaceTesterCase2 {
  public:
   Unary1RegisterImmediateOpDynCodeReplaceTester_Case2()
-    : Unary1RegisterImmediateOpTesterCase2(
+    : Unary1RegisterImmediateOpDynCodeReplaceTesterCase2(
       state_.Unary1RegisterImmediateOpDynCodeReplace_MOVW_instance_)
   {}
 };
@@ -321,14 +344,15 @@ class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
 //       generated_baseline: MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm4: imm4(19:16),
+//       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
 //       rule: MOVT,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE],
 //       uses: {}}
 class Unary1RegisterImmediateOpDynCodeReplaceTester_Case3
-    : public Unary1RegisterImmediateOpTesterCase3 {
+    : public Unary1RegisterImmediateOpDynCodeReplaceTesterCase3 {
  public:
   Unary1RegisterImmediateOpDynCodeReplaceTester_Case3()
-    : Unary1RegisterImmediateOpTesterCase3(
+    : Unary1RegisterImmediateOpDynCodeReplaceTesterCase3(
       state_.Unary1RegisterImmediateOpDynCodeReplace_MOVT_instance_)
   {}
 };

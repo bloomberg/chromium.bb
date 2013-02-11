@@ -40,6 +40,8 @@ namespace nacl_arm_test {
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: NOP_cccc0011001000001111000000000000_case_0,
+//       pattern: cccc0011001000001111000000000000,
+//       rule: NOP,
 //       uses: {}}
 class CondDecoderTesterCase0
     : public CondDecoderTester {
@@ -72,6 +74,9 @@ bool CondDecoderTesterCase0
   if ((inst.Bits() & 0x0000FF00)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return CondDecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -95,6 +100,8 @@ bool CondDecoderTesterCase0
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: YIELD_cccc0011001000001111000000000001_case_0,
+//       pattern: cccc0011001000001111000000000001,
+//       rule: YIELD,
 //       uses: {}}
 class CondDecoderTesterCase1
     : public CondDecoderTester {
@@ -127,6 +134,9 @@ bool CondDecoderTesterCase1
   if ((inst.Bits() & 0x0000FF00)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return CondDecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -150,13 +160,15 @@ bool CondDecoderTesterCase1
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: WFE_cccc0011001000001111000000000010_case_0,
+//       pattern: cccc0011001000001111000000000010,
+//       rule: WFE,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
-class UnsafeCondDecoderTesterCase2
+class ForbiddenTesterCase2
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase2(const NamedClassDecoder& decoder)
+  ForbiddenTesterCase2(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -165,7 +177,7 @@ class UnsafeCondDecoderTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase2
+bool ForbiddenTesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -184,12 +196,15 @@ bool UnsafeCondDecoderTesterCase2
   if ((inst.Bits() & 0x0000FF00)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UnsafeCondDecoderTesterCase2
+bool ForbiddenTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(UnsafeCondDecoderTester::
@@ -210,13 +225,15 @@ bool UnsafeCondDecoderTesterCase2
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: WFI_cccc0011001000001111000000000011_case_0,
+//       pattern: cccc0011001000001111000000000011,
+//       rule: WFI,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
-class UnsafeCondDecoderTesterCase3
+class ForbiddenTesterCase3
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase3(const NamedClassDecoder& decoder)
+  ForbiddenTesterCase3(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -225,7 +242,7 @@ class UnsafeCondDecoderTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase3
+bool ForbiddenTesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -244,12 +261,15 @@ bool UnsafeCondDecoderTesterCase3
   if ((inst.Bits() & 0x0000FF00)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UnsafeCondDecoderTesterCase3
+bool ForbiddenTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(UnsafeCondDecoderTester::
@@ -270,13 +290,15 @@ bool UnsafeCondDecoderTesterCase3
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: SEV_cccc0011001000001111000000000100_case_0,
+//       pattern: cccc0011001000001111000000000100,
+//       rule: SEV,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
-class UnsafeCondDecoderTesterCase4
+class ForbiddenTesterCase4
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase4(const NamedClassDecoder& decoder)
+  ForbiddenTesterCase4(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -285,7 +307,7 @@ class UnsafeCondDecoderTesterCase4
                                  const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase4
+bool ForbiddenTesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -304,12 +326,15 @@ bool UnsafeCondDecoderTesterCase4
   if ((inst.Bits() & 0x0000FF00)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UnsafeCondDecoderTesterCase4
+bool ForbiddenTesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(UnsafeCondDecoderTester::
@@ -330,13 +355,15 @@ bool UnsafeCondDecoderTesterCase4
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: DBG_cccc001100100000111100001111iiii_case_0,
+//       pattern: cccc001100100000111100001111iiii,
+//       rule: DBG,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
-class UnsafeCondDecoderTesterCase5
+class ForbiddenTesterCase5
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase5(const NamedClassDecoder& decoder)
+  ForbiddenTesterCase5(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -345,7 +372,7 @@ class UnsafeCondDecoderTesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase5
+bool ForbiddenTesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -364,12 +391,15 @@ bool UnsafeCondDecoderTesterCase5
   if ((inst.Bits() & 0x0000FF00)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UnsafeCondDecoderTesterCase5
+bool ForbiddenTesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(UnsafeCondDecoderTester::
@@ -396,6 +426,8 @@ bool UnsafeCondDecoderTesterCase5
 //       fields: [mask(19:18)],
 //       generated_baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
 //       mask: mask(19:18),
+//       pattern: cccc00110010mm001111iiiiiiiiiiii,
+//       rule: MSR_immediate,
 //       safety: [mask(19:18)=00 => DECODER_ERROR],
 //       uses: {},
 //       write_nzcvq: mask(1)=1}
@@ -427,6 +459,9 @@ bool MoveImmediate12ToApsrTesterCase6
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return MoveImmediate12ToApsrTester::
       PassesParsePreconditions(inst, decoder);
@@ -466,6 +501,8 @@ bool MoveImmediate12ToApsrTesterCase6
 //       fields: [mask(19:18)],
 //       generated_baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
 //       mask: mask(19:18),
+//       pattern: cccc00110010mm001111iiiiiiiiiiii,
+//       rule: MSR_immediate,
 //       safety: [mask(19:18)=00 => DECODER_ERROR],
 //       uses: {},
 //       write_nzcvq: mask(1)=1}
@@ -496,6 +533,9 @@ bool MoveImmediate12ToApsrTesterCase7
   // $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return MoveImmediate12ToApsrTester::
@@ -530,13 +570,15 @@ bool MoveImmediate12ToApsrTesterCase7
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
+//       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
+//       rule: MSR_immediate,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
-class UnsafeCondDecoderTesterCase8
+class ForbiddenTesterCase8
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase8(const NamedClassDecoder& decoder)
+  ForbiddenTesterCase8(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -545,7 +587,7 @@ class UnsafeCondDecoderTesterCase8
                                  const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase8
+bool ForbiddenTesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -561,12 +603,15 @@ bool UnsafeCondDecoderTesterCase8
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UnsafeCondDecoderTesterCase8
+bool ForbiddenTesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(UnsafeCondDecoderTester::
@@ -587,13 +632,15 @@ bool UnsafeCondDecoderTesterCase8
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
+//       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
+//       rule: MSR_immediate,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
-class UnsafeCondDecoderTesterCase9
+class ForbiddenTesterCase9
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase9(const NamedClassDecoder& decoder)
+  ForbiddenTesterCase9(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -602,7 +649,7 @@ class UnsafeCondDecoderTesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase9
+bool ForbiddenTesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -618,12 +665,15 @@ bool UnsafeCondDecoderTesterCase9
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UnsafeCondDecoderTesterCase9
+bool ForbiddenTesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(UnsafeCondDecoderTester::
@@ -644,13 +694,15 @@ bool UnsafeCondDecoderTesterCase9
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
+//       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
+//       rule: MSR_immediate,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
-class UnsafeCondDecoderTesterCase10
+class ForbiddenTesterCase10
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase10(const NamedClassDecoder& decoder)
+  ForbiddenTesterCase10(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -659,7 +711,7 @@ class UnsafeCondDecoderTesterCase10
                                  const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase10
+bool ForbiddenTesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -672,12 +724,15 @@ bool UnsafeCondDecoderTesterCase10
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool UnsafeCondDecoderTesterCase10
+bool ForbiddenTesterCase10
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(UnsafeCondDecoderTester::
@@ -703,6 +758,7 @@ bool UnsafeCondDecoderTesterCase10
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: NOP_cccc0011001000001111000000000000_case_0,
+//       pattern: cccc0011001000001111000000000000,
 //       rule: NOP,
 //       uses: {}}
 class CondDecoderTester_Case0
@@ -720,6 +776,7 @@ class CondDecoderTester_Case0
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: YIELD_cccc0011001000001111000000000001_case_0,
+//       pattern: cccc0011001000001111000000000001,
 //       rule: YIELD,
 //       uses: {}}
 class CondDecoderTester_Case1
@@ -737,15 +794,16 @@ class CondDecoderTester_Case1
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: WFE_cccc0011001000001111000000000010_case_0,
+//       pattern: cccc0011001000001111000000000010,
 //       rule: WFE,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
 class ForbiddenTester_Case2
-    : public UnsafeCondDecoderTesterCase2 {
+    : public ForbiddenTesterCase2 {
  public:
   ForbiddenTester_Case2()
-    : UnsafeCondDecoderTesterCase2(
+    : ForbiddenTesterCase2(
       state_.Forbidden_WFE_instance_)
   {}
 };
@@ -756,15 +814,16 @@ class ForbiddenTester_Case2
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: WFI_cccc0011001000001111000000000011_case_0,
+//       pattern: cccc0011001000001111000000000011,
 //       rule: WFI,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
 class ForbiddenTester_Case3
-    : public UnsafeCondDecoderTesterCase3 {
+    : public ForbiddenTesterCase3 {
  public:
   ForbiddenTester_Case3()
-    : UnsafeCondDecoderTesterCase3(
+    : ForbiddenTesterCase3(
       state_.Forbidden_WFI_instance_)
   {}
 };
@@ -775,15 +834,16 @@ class ForbiddenTester_Case3
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: SEV_cccc0011001000001111000000000100_case_0,
+//       pattern: cccc0011001000001111000000000100,
 //       rule: SEV,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
 class ForbiddenTester_Case4
-    : public UnsafeCondDecoderTesterCase4 {
+    : public ForbiddenTesterCase4 {
  public:
   ForbiddenTester_Case4()
-    : UnsafeCondDecoderTesterCase4(
+    : ForbiddenTesterCase4(
       state_.Forbidden_SEV_instance_)
   {}
 };
@@ -794,15 +854,16 @@ class ForbiddenTester_Case4
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: DBG_cccc001100100000111100001111iiii_case_0,
+//       pattern: cccc001100100000111100001111iiii,
 //       rule: DBG,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
 class ForbiddenTester_Case5
-    : public UnsafeCondDecoderTesterCase5 {
+    : public ForbiddenTesterCase5 {
  public:
   ForbiddenTester_Case5()
-    : UnsafeCondDecoderTesterCase5(
+    : ForbiddenTesterCase5(
       state_.Forbidden_DBG_instance_)
   {}
 };
@@ -819,6 +880,7 @@ class ForbiddenTester_Case5
 //       fields: [mask(19:18)],
 //       generated_baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
 //       mask: mask(19:18),
+//       pattern: cccc00110010mm001111iiiiiiiiiiii,
 //       rule: MSR_immediate,
 //       safety: [mask(19:18)=00 => DECODER_ERROR],
 //       uses: {},
@@ -844,6 +906,7 @@ class MoveImmediate12ToApsrTester_Case6
 //       fields: [mask(19:18)],
 //       generated_baseline: MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0,
 //       mask: mask(19:18),
+//       pattern: cccc00110010mm001111iiiiiiiiiiii,
 //       rule: MSR_immediate,
 //       safety: [mask(19:18)=00 => DECODER_ERROR],
 //       uses: {},
@@ -863,15 +926,16 @@ class MoveImmediate12ToApsrTester_Case7
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
+//       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
 class ForbiddenTester_Case8
-    : public UnsafeCondDecoderTesterCase8 {
+    : public ForbiddenTesterCase8 {
  public:
   ForbiddenTester_Case8()
-    : UnsafeCondDecoderTesterCase8(
+    : ForbiddenTesterCase8(
       state_.Forbidden_MSR_immediate_instance_)
   {}
 };
@@ -882,15 +946,16 @@ class ForbiddenTester_Case8
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
+//       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
 class ForbiddenTester_Case9
-    : public UnsafeCondDecoderTesterCase9 {
+    : public ForbiddenTesterCase9 {
  public:
   ForbiddenTester_Case9()
-    : UnsafeCondDecoderTesterCase9(
+    : ForbiddenTesterCase9(
       state_.Forbidden_MSR_immediate_instance_)
   {}
 };
@@ -901,15 +966,16 @@ class ForbiddenTester_Case9
 //       constraints: ,
 //       defs: {},
 //       generated_baseline: MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0,
+//       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
 //       rule: MSR_immediate,
 //       safety: [true => FORBIDDEN],
 //       true: true,
 //       uses: {}}
 class ForbiddenTester_Case10
-    : public UnsafeCondDecoderTesterCase10 {
+    : public ForbiddenTesterCase10 {
  public:
   ForbiddenTester_Case10()
-    : UnsafeCondDecoderTesterCase10(
+    : ForbiddenTesterCase10(
       state_.Forbidden_MSR_immediate_instance_)
   {}
 };

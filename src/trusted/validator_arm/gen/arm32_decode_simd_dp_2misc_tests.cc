@@ -45,6 +45,8 @@ namespace nacl_arm_test {
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
 //       generated_baseline: VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
+//       pattern: 111100111d11ss00dddd000ppqm0mmmm,
+//       rule: VREV64,
 //       safety: [op + size  >=
 //               3 => UNDEFINED,
 //         Q(6)=1 &&
@@ -52,10 +54,10 @@ namespace nacl_arm_test {
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase0
+class Vector2RegisterMiscellaneous_RGTesterCase0
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase0(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_RGTesterCase0(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -64,7 +66,7 @@ class Vector2RegisterMiscellaneousTesterCase0
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase0
+bool Vector2RegisterMiscellaneous_RGTesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -82,7 +84,7 @@ bool Vector2RegisterMiscellaneousTesterCase0
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase0
+bool Vector2RegisterMiscellaneous_RGTesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -119,6 +121,8 @@ bool Vector2RegisterMiscellaneousTesterCase0
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
 //       generated_baseline: VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
+//       pattern: 111100111d11ss00dddd000ppqm0mmmm,
+//       rule: VREV32,
 //       safety: [op + size  >=
 //               3 => UNDEFINED,
 //         Q(6)=1 &&
@@ -126,10 +130,10 @@ bool Vector2RegisterMiscellaneousTesterCase0
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase1
+class Vector2RegisterMiscellaneous_RGTesterCase1
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase1(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_RGTesterCase1(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -138,7 +142,7 @@ class Vector2RegisterMiscellaneousTesterCase1
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase1
+bool Vector2RegisterMiscellaneous_RGTesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -156,7 +160,7 @@ bool Vector2RegisterMiscellaneousTesterCase1
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase1
+bool Vector2RegisterMiscellaneous_RGTesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -193,6 +197,8 @@ bool Vector2RegisterMiscellaneousTesterCase1
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
 //       generated_baseline: VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
+//       pattern: 111100111d11ss00dddd000ppqm0mmmm,
+//       rule: VREV16,
 //       safety: [op + size  >=
 //               3 => UNDEFINED,
 //         Q(6)=1 &&
@@ -200,10 +206,10 @@ bool Vector2RegisterMiscellaneousTesterCase1
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase2
+class Vector2RegisterMiscellaneous_RGTesterCase2
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase2(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_RGTesterCase2(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -212,7 +218,7 @@ class Vector2RegisterMiscellaneousTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase2
+bool Vector2RegisterMiscellaneous_RGTesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -230,7 +236,7 @@ bool Vector2RegisterMiscellaneousTesterCase2
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase2
+bool Vector2RegisterMiscellaneous_RGTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -266,16 +272,18 @@ bool Vector2RegisterMiscellaneousTesterCase2
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLS_111100111d11ss00dddd01000qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01000qm0mmmm,
+//       rule: VCLS,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase3
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase3
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase3(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase3(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -284,7 +292,7 @@ class Vector2RegisterMiscellaneousTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase3
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -302,7 +310,7 @@ bool Vector2RegisterMiscellaneousTesterCase3
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase3
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -338,16 +346,18 @@ bool Vector2RegisterMiscellaneousTesterCase3
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01001qm0mmmm,
+//       rule: VCLZ,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase4
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase4
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase4(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase4(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -356,7 +366,7 @@ class Vector2RegisterMiscellaneousTesterCase4
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase4
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -374,7 +384,7 @@ bool Vector2RegisterMiscellaneousTesterCase4
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase4
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -410,16 +420,18 @@ bool Vector2RegisterMiscellaneousTesterCase4
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCNT_111100111d11ss00dddd01010qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01010qm0mmmm,
+//       rule: VCNT,
 //       safety: [size(19:18)=~00 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase5
+class Vector2RegisterMiscellaneous_V8TesterCase5
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase5(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8TesterCase5(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -428,7 +440,7 @@ class Vector2RegisterMiscellaneousTesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase5
+bool Vector2RegisterMiscellaneous_V8TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -446,7 +458,7 @@ bool Vector2RegisterMiscellaneousTesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase5
+bool Vector2RegisterMiscellaneous_V8TesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -482,16 +494,18 @@ bool Vector2RegisterMiscellaneousTesterCase5
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01011qm0mmmm,
+//       rule: VMVN_register,
 //       safety: [size(19:18)=~00 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase6
+class Vector2RegisterMiscellaneous_V8TesterCase6
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase6(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8TesterCase6(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -500,7 +514,7 @@ class Vector2RegisterMiscellaneousTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase6
+bool Vector2RegisterMiscellaneous_V8TesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -518,7 +532,7 @@ bool Vector2RegisterMiscellaneousTesterCase6
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase6
+bool Vector2RegisterMiscellaneous_V8TesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -554,16 +568,18 @@ bool Vector2RegisterMiscellaneousTesterCase6
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VQABS_111100111d11ss00dddd01110qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01110qm0mmmm,
+//       rule: VQABS,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase7
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase7
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase7(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase7(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -572,7 +588,7 @@ class Vector2RegisterMiscellaneousTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase7
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -590,7 +606,7 @@ bool Vector2RegisterMiscellaneousTesterCase7
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase7
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -626,16 +642,18 @@ bool Vector2RegisterMiscellaneousTesterCase7
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01111qm0mmmm,
+//       rule: VQNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase8
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase8
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase8(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase8(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -644,7 +662,7 @@ class Vector2RegisterMiscellaneousTesterCase8
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase8
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -662,7 +680,7 @@ bool Vector2RegisterMiscellaneousTesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase8
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -698,16 +716,18 @@ bool Vector2RegisterMiscellaneousTesterCase8
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd0010p1m0mmmm,
+//       rule: VPADDL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase9
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase9
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase9(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase9(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -716,7 +736,7 @@ class Vector2RegisterMiscellaneousTesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase9
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -737,7 +757,7 @@ bool Vector2RegisterMiscellaneousTesterCase9
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase9
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -773,16 +793,18 @@ bool Vector2RegisterMiscellaneousTesterCase9
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd0110p1m0mmmm,
+//       rule: VPADAL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase10
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase10
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase10(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase10(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -791,7 +813,7 @@ class Vector2RegisterMiscellaneousTesterCase10
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase10
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -812,7 +834,7 @@ bool Vector2RegisterMiscellaneousTesterCase10
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase10
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase10
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -848,16 +870,18 @@ bool Vector2RegisterMiscellaneousTesterCase10
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f000qm0mmmm,
+//       rule: VCGT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase11
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase11
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase11(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase11(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -866,7 +890,7 @@ class Vector2RegisterMiscellaneousTesterCase11
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase11
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -884,7 +908,7 @@ bool Vector2RegisterMiscellaneousTesterCase11
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase11
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase11
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -920,16 +944,18 @@ bool Vector2RegisterMiscellaneousTesterCase11
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f001qm0mmmm,
+//       rule: VCGE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase12
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase12
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase12(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase12(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -938,7 +964,7 @@ class Vector2RegisterMiscellaneousTesterCase12
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase12
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -956,7 +982,7 @@ bool Vector2RegisterMiscellaneousTesterCase12
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase12
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase12
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -992,16 +1018,18 @@ bool Vector2RegisterMiscellaneousTesterCase12
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f010qm0mmmm,
+//       rule: VCEQ_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase13
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase13
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase13(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase13(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1010,7 +1038,7 @@ class Vector2RegisterMiscellaneousTesterCase13
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase13
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1028,7 +1056,7 @@ bool Vector2RegisterMiscellaneousTesterCase13
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase13
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase13
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1064,16 +1092,18 @@ bool Vector2RegisterMiscellaneousTesterCase13
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f011qm0mmmm,
+//       rule: VCLE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase14
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase14
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase14(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase14(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1082,7 +1112,7 @@ class Vector2RegisterMiscellaneousTesterCase14
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase14
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1100,7 +1130,7 @@ bool Vector2RegisterMiscellaneousTesterCase14
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase14
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase14
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1136,16 +1166,18 @@ bool Vector2RegisterMiscellaneousTesterCase14
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f100qm0mmmm,
+//       rule: VCLT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase15
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase15
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase15(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase15(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1154,7 +1186,7 @@ class Vector2RegisterMiscellaneousTesterCase15
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase15
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase15
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1172,7 +1204,7 @@ bool Vector2RegisterMiscellaneousTesterCase15
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase15
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase15
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1208,16 +1240,18 @@ bool Vector2RegisterMiscellaneousTesterCase15
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f110qm0mmmm,
+//       rule: VABS_A1,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase16
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase16
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase16(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase16(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1226,7 +1260,7 @@ class Vector2RegisterMiscellaneousTesterCase16
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase16
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase16
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1244,7 +1278,7 @@ bool Vector2RegisterMiscellaneousTesterCase16
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase16
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase16
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1280,16 +1314,18 @@ bool Vector2RegisterMiscellaneousTesterCase16
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f111qm0mmmm,
+//       rule: VNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase17
+class Vector2RegisterMiscellaneous_V8_16_32TesterCase17
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase17(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TesterCase17(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1298,7 +1334,7 @@ class Vector2RegisterMiscellaneousTesterCase17
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase17
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase17
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1316,7 +1352,7 @@ bool Vector2RegisterMiscellaneousTesterCase17
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase17
+bool Vector2RegisterMiscellaneous_V8_16_32TesterCase17
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1352,16 +1388,18 @@ bool Vector2RegisterMiscellaneousTesterCase17
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f000qm0mmmm,
+//       rule: VCGT_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase18
+class Vector2RegisterMiscellaneous_F32TesterCase18
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase18(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_F32TesterCase18(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1370,7 +1408,7 @@ class Vector2RegisterMiscellaneousTesterCase18
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase18
+bool Vector2RegisterMiscellaneous_F32TesterCase18
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1388,7 +1426,7 @@ bool Vector2RegisterMiscellaneousTesterCase18
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase18
+bool Vector2RegisterMiscellaneous_F32TesterCase18
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1424,16 +1462,18 @@ bool Vector2RegisterMiscellaneousTesterCase18
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f001qm0mmmm,
+//       rule: VCGE_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase19
+class Vector2RegisterMiscellaneous_F32TesterCase19
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase19(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_F32TesterCase19(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1442,7 +1482,7 @@ class Vector2RegisterMiscellaneousTesterCase19
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase19
+bool Vector2RegisterMiscellaneous_F32TesterCase19
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1460,7 +1500,7 @@ bool Vector2RegisterMiscellaneousTesterCase19
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase19
+bool Vector2RegisterMiscellaneous_F32TesterCase19
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1496,16 +1536,18 @@ bool Vector2RegisterMiscellaneousTesterCase19
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f010qm0mmmm,
+//       rule: VCEQ_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase20
+class Vector2RegisterMiscellaneous_F32TesterCase20
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase20(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_F32TesterCase20(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1514,7 +1556,7 @@ class Vector2RegisterMiscellaneousTesterCase20
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase20
+bool Vector2RegisterMiscellaneous_F32TesterCase20
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1532,7 +1574,7 @@ bool Vector2RegisterMiscellaneousTesterCase20
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase20
+bool Vector2RegisterMiscellaneous_F32TesterCase20
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1568,16 +1610,18 @@ bool Vector2RegisterMiscellaneousTesterCase20
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f011qm0mmmm,
+//       rule: VCLE_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase21
+class Vector2RegisterMiscellaneous_F32TesterCase21
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase21(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_F32TesterCase21(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1586,7 +1630,7 @@ class Vector2RegisterMiscellaneousTesterCase21
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase21
+bool Vector2RegisterMiscellaneous_F32TesterCase21
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1604,7 +1648,7 @@ bool Vector2RegisterMiscellaneousTesterCase21
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase21
+bool Vector2RegisterMiscellaneous_F32TesterCase21
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1640,16 +1684,18 @@ bool Vector2RegisterMiscellaneousTesterCase21
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f100qm0mmmm,
+//       rule: VCLT_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase22
+class Vector2RegisterMiscellaneous_F32TesterCase22
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase22(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_F32TesterCase22(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1658,7 +1704,7 @@ class Vector2RegisterMiscellaneousTesterCase22
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase22
+bool Vector2RegisterMiscellaneous_F32TesterCase22
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1676,7 +1722,7 @@ bool Vector2RegisterMiscellaneousTesterCase22
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase22
+bool Vector2RegisterMiscellaneous_F32TesterCase22
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1712,16 +1758,18 @@ bool Vector2RegisterMiscellaneousTesterCase22
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f110qm0mmmm,
+//       rule: VABS_A1,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase23
+class Vector2RegisterMiscellaneous_F32TesterCase23
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase23(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_F32TesterCase23(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1730,7 +1778,7 @@ class Vector2RegisterMiscellaneousTesterCase23
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase23
+bool Vector2RegisterMiscellaneous_F32TesterCase23
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1748,7 +1796,7 @@ bool Vector2RegisterMiscellaneousTesterCase23
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase23
+bool Vector2RegisterMiscellaneous_F32TesterCase23
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1784,16 +1832,18 @@ bool Vector2RegisterMiscellaneousTesterCase23
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f111qm0mmmm,
+//       rule: VNEG,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase24
+class Vector2RegisterMiscellaneous_F32TesterCase24
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase24(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_F32TesterCase24(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1802,7 +1852,7 @@ class Vector2RegisterMiscellaneousTesterCase24
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase24
+bool Vector2RegisterMiscellaneous_F32TesterCase24
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1820,7 +1870,7 @@ bool Vector2RegisterMiscellaneousTesterCase24
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase24
+bool Vector2RegisterMiscellaneous_F32TesterCase24
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1854,13 +1904,15 @@ bool Vector2RegisterMiscellaneousTesterCase24
 //       defs: {},
 //       fields: [size(19:18), Vm(3:0)],
 //       generated_baseline: VMOVN_111100111d11ss10dddd001000m0mmmm_case_0,
+//       pattern: 111100111d11ss10dddd001000m0mmmm,
+//       rule: VMOVN,
 //       safety: [size(19:18)=11 => UNDEFINED, Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase25
+class Vector2RegisterMiscellaneous_V16_32_64NTesterCase25
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase25(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V16_32_64NTesterCase25(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1869,7 +1921,7 @@ class Vector2RegisterMiscellaneousTesterCase25
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase25
+bool Vector2RegisterMiscellaneous_V16_32_64NTesterCase25
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1887,7 +1939,7 @@ bool Vector2RegisterMiscellaneousTesterCase25
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase25
+bool Vector2RegisterMiscellaneous_V16_32_64NTesterCase25
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -1915,6 +1967,8 @@ bool Vector2RegisterMiscellaneousTesterCase25
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
 //       generated_baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
+//       pattern: 111100111d11ss10dddd0010ppm0mmmm,
+//       rule: VQMOVUN,
 //       safety: [op(7:6)=00 => DECODER_ERROR,
 //         size(19:18)=11 ||
 //            Vm(0)=1 => UNDEFINED],
@@ -1977,14 +2031,16 @@ bool Vector2RegisterMiscellaneous_I16_32_64NTesterCase26
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12)],
 //       generated_baseline: VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0,
+//       pattern: 111100111d11ss10dddd001100m0mmmm,
+//       rule: VSHLL_A2,
 //       safety: [size(19:18)=11 ||
 //            Vd(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase27
+class Vector2RegisterMiscellaneous_I8_16_32LTesterCase27
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase27(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_I8_16_32LTesterCase27(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1993,7 +2049,7 @@ class Vector2RegisterMiscellaneousTesterCase27
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase27
+bool Vector2RegisterMiscellaneous_I8_16_32LTesterCase27
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2011,7 +2067,7 @@ bool Vector2RegisterMiscellaneousTesterCase27
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase27
+bool Vector2RegisterMiscellaneous_I8_16_32LTesterCase27
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -2040,6 +2096,8 @@ bool Vector2RegisterMiscellaneousTesterCase27
 //       generated_baseline: CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0,
 //       half_to_single: op(8)=1,
 //       op: op(8),
+//       pattern: 111100111d11ss10dddd011p00m0mmmm,
+//       rule: CVT_between_half_precision_and_single_precision,
 //       safety: [size(19:18)=~01 => UNDEFINED,
 //         half_to_single &&
 //            Vd(0)=1 => UNDEFINED,
@@ -2117,6 +2175,8 @@ bool Vector2RegisterMiscellaneous_CVT_H2STesterCase28
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
 //       generated_baseline: VSWP_111100111d11ss10dddd00000qm0mmmm_case_0,
 //       m: M:Vm,
+//       pattern: 111100111d11ss10dddd00000qm0mmmm,
+//       rule: VSWP,
 //       safety: [d  ==
 //               m => UNKNOWN,
 //         size(19:18)=~00 => UNDEFINED,
@@ -2125,10 +2185,10 @@ bool Vector2RegisterMiscellaneous_CVT_H2STesterCase28
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase29
+class Vector2RegisterMiscellaneous_V8STesterCase29
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase29(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8STesterCase29(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2137,7 +2197,7 @@ class Vector2RegisterMiscellaneousTesterCase29
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase29
+bool Vector2RegisterMiscellaneous_V8STesterCase29
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2155,7 +2215,7 @@ bool Vector2RegisterMiscellaneousTesterCase29
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase29
+bool Vector2RegisterMiscellaneous_V8STesterCase29
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -2199,6 +2259,8 @@ bool Vector2RegisterMiscellaneousTesterCase29
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
 //       generated_baseline: VTRN_111100111d11ss10dddd00001qm0mmmm_case_0,
 //       m: M:Vm,
+//       pattern: 111100111d11ss10dddd00001qm0mmmm,
+//       rule: VTRN,
 //       safety: [d  ==
 //               m => UNKNOWN,
 //         size(19:18)=11 => UNDEFINED,
@@ -2207,10 +2269,10 @@ bool Vector2RegisterMiscellaneousTesterCase29
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase30
+class Vector2RegisterMiscellaneous_V8_16_32TTesterCase30
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase30(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32TTesterCase30(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2219,7 +2281,7 @@ class Vector2RegisterMiscellaneousTesterCase30
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase30
+bool Vector2RegisterMiscellaneous_V8_16_32TTesterCase30
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2237,7 +2299,7 @@ bool Vector2RegisterMiscellaneousTesterCase30
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase30
+bool Vector2RegisterMiscellaneous_V8_16_32TTesterCase30
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -2281,6 +2343,8 @@ bool Vector2RegisterMiscellaneousTesterCase30
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
 //       generated_baseline: VUZP_111100111d11ss10dddd00010qm0mmmm_case_0,
 //       m: M:Vm,
+//       pattern: 111100111d11ss10dddd00010qm0mmmm,
+//       rule: VUZP,
 //       safety: [d  ==
 //               m => UNKNOWN,
 //         size(19:18)=11 ||
@@ -2291,10 +2355,10 @@ bool Vector2RegisterMiscellaneousTesterCase30
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase31
+class Vector2RegisterMiscellaneous_V8_16_32ITesterCase31
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase31(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32ITesterCase31(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2303,7 +2367,7 @@ class Vector2RegisterMiscellaneousTesterCase31
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase31
+bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase31
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2321,7 +2385,7 @@ bool Vector2RegisterMiscellaneousTesterCase31
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase31
+bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase31
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -2371,6 +2435,8 @@ bool Vector2RegisterMiscellaneousTesterCase31
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
 //       generated_baseline: VZIP_111100111d11ss10dddd00011qm0mmmm_case_0,
 //       m: M:Vm,
+//       pattern: 111100111d11ss10dddd00011qm0mmmm,
+//       rule: VZIP,
 //       safety: [d  ==
 //               m => UNKNOWN,
 //         size(19:18)=11 ||
@@ -2381,10 +2447,10 @@ bool Vector2RegisterMiscellaneousTesterCase31
 //            Vm(0)=1) => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase32
+class Vector2RegisterMiscellaneous_V8_16_32ITesterCase32
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase32(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_V8_16_32ITesterCase32(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2393,7 +2459,7 @@ class Vector2RegisterMiscellaneousTesterCase32
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase32
+bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase32
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2411,7 +2477,7 @@ bool Vector2RegisterMiscellaneousTesterCase32
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase32
+bool Vector2RegisterMiscellaneous_V8_16_32ITesterCase32
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -2455,6 +2521,8 @@ bool Vector2RegisterMiscellaneousTesterCase32
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
 //       generated_baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
+//       pattern: 111100111d11ss10dddd0010ppm0mmmm,
+//       rule: VQMOVN,
 //       safety: [op(7:6)=00 => DECODER_ERROR,
 //         size(19:18)=11 ||
 //            Vm(0)=1 => UNDEFINED],
@@ -2519,16 +2587,18 @@ bool Vector2RegisterMiscellaneous_I16_32_64NTesterCase33
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0,
+//       pattern: 111100111d11ss11dddd010f0qm0mmmm,
+//       rule: VRECPE,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase34
+class Vector2RegisterMiscellaneous_F32TesterCase34
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase34(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_F32TesterCase34(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2537,7 +2607,7 @@ class Vector2RegisterMiscellaneousTesterCase34
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase34
+bool Vector2RegisterMiscellaneous_F32TesterCase34
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2555,7 +2625,7 @@ bool Vector2RegisterMiscellaneousTesterCase34
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase34
+bool Vector2RegisterMiscellaneous_F32TesterCase34
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -2591,16 +2661,18 @@ bool Vector2RegisterMiscellaneousTesterCase34
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0,
+//       pattern: 111100111d11ss11dddd010f1qm0mmmm,
+//       rule: VRSQRTE,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase35
+class Vector2RegisterMiscellaneous_F32TesterCase35
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase35(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_F32TesterCase35(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2609,7 +2681,7 @@ class Vector2RegisterMiscellaneousTesterCase35
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase35
+bool Vector2RegisterMiscellaneous_F32TesterCase35
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2627,7 +2699,7 @@ bool Vector2RegisterMiscellaneousTesterCase35
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase35
+bool Vector2RegisterMiscellaneous_F32TesterCase35
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -2663,16 +2735,18 @@ bool Vector2RegisterMiscellaneousTesterCase35
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0,
+//       pattern: 111100111d11ss11dddd011ppqm0mmmm,
+//       rule: VCVT,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
 //            Vm(0)=1) => UNDEFINED,
 //         size(19:18)=~10 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
-class Vector2RegisterMiscellaneousTesterCase36
+class Vector2RegisterMiscellaneous_CVT_F2ITesterCase36
     : public Vector2RegisterMiscellaneousTester {
  public:
-  Vector2RegisterMiscellaneousTesterCase36(const NamedClassDecoder& decoder)
+  Vector2RegisterMiscellaneous_CVT_F2ITesterCase36(const NamedClassDecoder& decoder)
     : Vector2RegisterMiscellaneousTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2681,7 +2755,7 @@ class Vector2RegisterMiscellaneousTesterCase36
                                  const NamedClassDecoder& decoder);
 };
 
-bool Vector2RegisterMiscellaneousTesterCase36
+bool Vector2RegisterMiscellaneous_CVT_F2ITesterCase36
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2699,7 +2773,7 @@ bool Vector2RegisterMiscellaneousTesterCase36
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Vector2RegisterMiscellaneousTesterCase36
+bool Vector2RegisterMiscellaneous_CVT_F2ITesterCase36
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Vector2RegisterMiscellaneousTester::
@@ -2741,6 +2815,7 @@ bool Vector2RegisterMiscellaneousTesterCase36
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
 //       generated_baseline: VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
+//       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV64,
 //       safety: [op + size  >=
 //               3 => UNDEFINED,
@@ -2750,10 +2825,10 @@ bool Vector2RegisterMiscellaneousTesterCase36
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_RGTester_Case0
-    : public Vector2RegisterMiscellaneousTesterCase0 {
+    : public Vector2RegisterMiscellaneous_RGTesterCase0 {
  public:
   Vector2RegisterMiscellaneous_RGTester_Case0()
-    : Vector2RegisterMiscellaneousTesterCase0(
+    : Vector2RegisterMiscellaneous_RGTesterCase0(
       state_.Vector2RegisterMiscellaneous_RG_VREV64_instance_)
   {}
 };
@@ -2769,6 +2844,7 @@ class Vector2RegisterMiscellaneous_RGTester_Case0
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
 //       generated_baseline: VREV32_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
+//       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV32,
 //       safety: [op + size  >=
 //               3 => UNDEFINED,
@@ -2778,10 +2854,10 @@ class Vector2RegisterMiscellaneous_RGTester_Case0
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_RGTester_Case1
-    : public Vector2RegisterMiscellaneousTesterCase1 {
+    : public Vector2RegisterMiscellaneous_RGTesterCase1 {
  public:
   Vector2RegisterMiscellaneous_RGTester_Case1()
-    : Vector2RegisterMiscellaneousTesterCase1(
+    : Vector2RegisterMiscellaneous_RGTesterCase1(
       state_.Vector2RegisterMiscellaneous_RG_VREV32_instance_)
   {}
 };
@@ -2797,6 +2873,7 @@ class Vector2RegisterMiscellaneous_RGTester_Case1
 //       fields: [size(19:18), Vd(15:12), op(8:7), Q(6), Vm(3:0)],
 //       generated_baseline: VREV16_111100111d11ss00dddd000ppqm0mmmm_case_0,
 //       op: op(8:7),
+//       pattern: 111100111d11ss00dddd000ppqm0mmmm,
 //       rule: VREV16,
 //       safety: [op + size  >=
 //               3 => UNDEFINED,
@@ -2806,10 +2883,10 @@ class Vector2RegisterMiscellaneous_RGTester_Case1
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_RGTester_Case2
-    : public Vector2RegisterMiscellaneousTesterCase2 {
+    : public Vector2RegisterMiscellaneous_RGTesterCase2 {
  public:
   Vector2RegisterMiscellaneous_RGTester_Case2()
-    : Vector2RegisterMiscellaneousTesterCase2(
+    : Vector2RegisterMiscellaneous_RGTesterCase2(
       state_.Vector2RegisterMiscellaneous_RG_VREV16_instance_)
   {}
 };
@@ -2824,6 +2901,7 @@ class Vector2RegisterMiscellaneous_RGTester_Case2
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLS_111100111d11ss00dddd01000qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01000qm0mmmm,
 //       rule: VCLS,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -2832,10 +2910,10 @@ class Vector2RegisterMiscellaneous_RGTester_Case2
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case3
-    : public Vector2RegisterMiscellaneousTesterCase3 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase3 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case3()
-    : Vector2RegisterMiscellaneousTesterCase3(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase3(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VCLS_instance_)
   {}
 };
@@ -2850,6 +2928,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case3
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLZ_111100111d11ss00dddd01001qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01001qm0mmmm,
 //       rule: VCLZ,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -2858,10 +2937,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case3
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case4
-    : public Vector2RegisterMiscellaneousTesterCase4 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase4 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case4()
-    : Vector2RegisterMiscellaneousTesterCase4(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase4(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VCLZ_instance_)
   {}
 };
@@ -2876,6 +2955,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case4
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCNT_111100111d11ss00dddd01010qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01010qm0mmmm,
 //       rule: VCNT,
 //       safety: [size(19:18)=~00 => UNDEFINED,
 //         Q(6)=1 &&
@@ -2884,10 +2964,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case4
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8Tester_Case5
-    : public Vector2RegisterMiscellaneousTesterCase5 {
+    : public Vector2RegisterMiscellaneous_V8TesterCase5 {
  public:
   Vector2RegisterMiscellaneous_V8Tester_Case5()
-    : Vector2RegisterMiscellaneousTesterCase5(
+    : Vector2RegisterMiscellaneous_V8TesterCase5(
       state_.Vector2RegisterMiscellaneous_V8_VCNT_instance_)
   {}
 };
@@ -2902,6 +2982,7 @@ class Vector2RegisterMiscellaneous_V8Tester_Case5
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VMVN_register_111100111d11ss00dddd01011qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01011qm0mmmm,
 //       rule: VMVN_register,
 //       safety: [size(19:18)=~00 => UNDEFINED,
 //         Q(6)=1 &&
@@ -2910,10 +2991,10 @@ class Vector2RegisterMiscellaneous_V8Tester_Case5
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8Tester_Case6
-    : public Vector2RegisterMiscellaneousTesterCase6 {
+    : public Vector2RegisterMiscellaneous_V8TesterCase6 {
  public:
   Vector2RegisterMiscellaneous_V8Tester_Case6()
-    : Vector2RegisterMiscellaneousTesterCase6(
+    : Vector2RegisterMiscellaneous_V8TesterCase6(
       state_.Vector2RegisterMiscellaneous_V8_VMVN_register_instance_)
   {}
 };
@@ -2928,6 +3009,7 @@ class Vector2RegisterMiscellaneous_V8Tester_Case6
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VQABS_111100111d11ss00dddd01110qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01110qm0mmmm,
 //       rule: VQABS,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -2936,10 +3018,10 @@ class Vector2RegisterMiscellaneous_V8Tester_Case6
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case7
-    : public Vector2RegisterMiscellaneousTesterCase7 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase7 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case7()
-    : Vector2RegisterMiscellaneousTesterCase7(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase7(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VQABS_instance_)
   {}
 };
@@ -2954,6 +3036,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case7
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd01111qm0mmmm,
 //       rule: VQNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -2962,10 +3045,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case7
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case8
-    : public Vector2RegisterMiscellaneousTesterCase8 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase8 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case8()
-    : Vector2RegisterMiscellaneousTesterCase8(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase8(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VQNEG_instance_)
   {}
 };
@@ -2980,6 +3063,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case8
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd0010p1m0mmmm,
 //       rule: VPADDL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -2988,10 +3072,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case8
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case9
-    : public Vector2RegisterMiscellaneousTesterCase9 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase9 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case9()
-    : Vector2RegisterMiscellaneousTesterCase9(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase9(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VPADDL_instance_)
   {}
 };
@@ -3006,6 +3090,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case9
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VPADAL_111100111d11ss00dddd0110p1m0mmmm_case_0,
+//       pattern: 111100111d11ss00dddd0110p1m0mmmm,
 //       rule: VPADAL,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -3014,10 +3099,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case9
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case10
-    : public Vector2RegisterMiscellaneousTesterCase10 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase10 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case10()
-    : Vector2RegisterMiscellaneousTesterCase10(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase10(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VPADAL_instance_)
   {}
 };
@@ -3032,6 +3117,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case10
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f000qm0mmmm,
 //       rule: VCGT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -3040,10 +3126,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case10
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case11
-    : public Vector2RegisterMiscellaneousTesterCase11 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase11 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case11()
-    : Vector2RegisterMiscellaneousTesterCase11(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase11(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VCGT_immediate_0_instance_)
   {}
 };
@@ -3058,6 +3144,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case11
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f001qm0mmmm,
 //       rule: VCGE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -3066,10 +3153,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case11
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case12
-    : public Vector2RegisterMiscellaneousTesterCase12 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase12 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case12()
-    : Vector2RegisterMiscellaneousTesterCase12(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase12(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VCGE_immediate_0_instance_)
   {}
 };
@@ -3084,6 +3171,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case12
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f010qm0mmmm,
 //       rule: VCEQ_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -3092,10 +3180,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case12
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case13
-    : public Vector2RegisterMiscellaneousTesterCase13 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase13 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case13()
-    : Vector2RegisterMiscellaneousTesterCase13(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase13(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VCEQ_immediate_0_instance_)
   {}
 };
@@ -3110,6 +3198,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case13
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f011qm0mmmm,
 //       rule: VCLE_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -3118,10 +3207,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case13
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case14
-    : public Vector2RegisterMiscellaneousTesterCase14 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase14 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case14()
-    : Vector2RegisterMiscellaneousTesterCase14(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase14(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VCLE_immediate_0_instance_)
   {}
 };
@@ -3136,6 +3225,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case14
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f100qm0mmmm,
 //       rule: VCLT_immediate_0,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -3144,10 +3234,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case14
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case15
-    : public Vector2RegisterMiscellaneousTesterCase15 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase15 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case15()
-    : Vector2RegisterMiscellaneousTesterCase15(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase15(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VCLT_immediate_0_instance_)
   {}
 };
@@ -3162,6 +3252,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case15
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f110qm0mmmm,
 //       rule: VABS_A1,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -3170,10 +3261,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case15
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case16
-    : public Vector2RegisterMiscellaneousTesterCase16 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase16 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case16()
-    : Vector2RegisterMiscellaneousTesterCase16(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase16(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VABS_A1_instance_)
   {}
 };
@@ -3188,6 +3279,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case16
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1,
+//       pattern: 111100111d11ss01dddd0f111qm0mmmm,
 //       rule: VNEG,
 //       safety: [size(19:18)=11 => UNDEFINED,
 //         Q(6)=1 &&
@@ -3196,10 +3288,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case16
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32Tester_Case17
-    : public Vector2RegisterMiscellaneousTesterCase17 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TesterCase17 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32Tester_Case17()
-    : Vector2RegisterMiscellaneousTesterCase17(
+    : Vector2RegisterMiscellaneous_V8_16_32TesterCase17(
       state_.Vector2RegisterMiscellaneous_V8_16_32_VNEG_instance_)
   {}
 };
@@ -3214,6 +3306,7 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case17
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f000qm0mmmm,
 //       rule: VCGT_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3222,10 +3315,10 @@ class Vector2RegisterMiscellaneous_V8_16_32Tester_Case17
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_F32Tester_Case18
-    : public Vector2RegisterMiscellaneousTesterCase18 {
+    : public Vector2RegisterMiscellaneous_F32TesterCase18 {
  public:
   Vector2RegisterMiscellaneous_F32Tester_Case18()
-    : Vector2RegisterMiscellaneousTesterCase18(
+    : Vector2RegisterMiscellaneous_F32TesterCase18(
       state_.Vector2RegisterMiscellaneous_F32_VCGT_immediate_0_instance_)
   {}
 };
@@ -3240,6 +3333,7 @@ class Vector2RegisterMiscellaneous_F32Tester_Case18
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f001qm0mmmm,
 //       rule: VCGE_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3248,10 +3342,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case18
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_F32Tester_Case19
-    : public Vector2RegisterMiscellaneousTesterCase19 {
+    : public Vector2RegisterMiscellaneous_F32TesterCase19 {
  public:
   Vector2RegisterMiscellaneous_F32Tester_Case19()
-    : Vector2RegisterMiscellaneousTesterCase19(
+    : Vector2RegisterMiscellaneous_F32TesterCase19(
       state_.Vector2RegisterMiscellaneous_F32_VCGE_immediate_0_instance_)
   {}
 };
@@ -3266,6 +3360,7 @@ class Vector2RegisterMiscellaneous_F32Tester_Case19
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f010qm0mmmm,
 //       rule: VCEQ_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3274,10 +3369,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case19
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_F32Tester_Case20
-    : public Vector2RegisterMiscellaneousTesterCase20 {
+    : public Vector2RegisterMiscellaneous_F32TesterCase20 {
  public:
   Vector2RegisterMiscellaneous_F32Tester_Case20()
-    : Vector2RegisterMiscellaneousTesterCase20(
+    : Vector2RegisterMiscellaneous_F32TesterCase20(
       state_.Vector2RegisterMiscellaneous_F32_VCEQ_immediate_0_instance_)
   {}
 };
@@ -3292,6 +3387,7 @@ class Vector2RegisterMiscellaneous_F32Tester_Case20
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f011qm0mmmm,
 //       rule: VCLE_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3300,10 +3396,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case20
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_F32Tester_Case21
-    : public Vector2RegisterMiscellaneousTesterCase21 {
+    : public Vector2RegisterMiscellaneous_F32TesterCase21 {
  public:
   Vector2RegisterMiscellaneous_F32Tester_Case21()
-    : Vector2RegisterMiscellaneousTesterCase21(
+    : Vector2RegisterMiscellaneous_F32TesterCase21(
       state_.Vector2RegisterMiscellaneous_F32_VCLE_immediate_0_instance_)
   {}
 };
@@ -3318,6 +3414,7 @@ class Vector2RegisterMiscellaneous_F32Tester_Case21
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f100qm0mmmm,
 //       rule: VCLT_immediate_0,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3326,10 +3423,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case21
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_F32Tester_Case22
-    : public Vector2RegisterMiscellaneousTesterCase22 {
+    : public Vector2RegisterMiscellaneous_F32TesterCase22 {
  public:
   Vector2RegisterMiscellaneous_F32Tester_Case22()
-    : Vector2RegisterMiscellaneousTesterCase22(
+    : Vector2RegisterMiscellaneous_F32TesterCase22(
       state_.Vector2RegisterMiscellaneous_F32_VCLT_immediate_0_instance_)
   {}
 };
@@ -3344,6 +3441,7 @@ class Vector2RegisterMiscellaneous_F32Tester_Case22
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f110qm0mmmm,
 //       rule: VABS_A1,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3352,10 +3450,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case22
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_F32Tester_Case23
-    : public Vector2RegisterMiscellaneousTesterCase23 {
+    : public Vector2RegisterMiscellaneous_F32TesterCase23 {
  public:
   Vector2RegisterMiscellaneous_F32Tester_Case23()
-    : Vector2RegisterMiscellaneousTesterCase23(
+    : Vector2RegisterMiscellaneous_F32TesterCase23(
       state_.Vector2RegisterMiscellaneous_F32_VABS_A1_instance_)
   {}
 };
@@ -3370,6 +3468,7 @@ class Vector2RegisterMiscellaneous_F32Tester_Case23
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
+//       pattern: 111100111d11ss01dddd0f111qm0mmmm,
 //       rule: VNEG,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3378,10 +3477,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case23
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_F32Tester_Case24
-    : public Vector2RegisterMiscellaneousTesterCase24 {
+    : public Vector2RegisterMiscellaneous_F32TesterCase24 {
  public:
   Vector2RegisterMiscellaneous_F32Tester_Case24()
-    : Vector2RegisterMiscellaneousTesterCase24(
+    : Vector2RegisterMiscellaneous_F32TesterCase24(
       state_.Vector2RegisterMiscellaneous_F32_VNEG_instance_)
   {}
 };
@@ -3394,15 +3493,16 @@ class Vector2RegisterMiscellaneous_F32Tester_Case24
 //       defs: {},
 //       fields: [size(19:18), Vm(3:0)],
 //       generated_baseline: VMOVN_111100111d11ss10dddd001000m0mmmm_case_0,
+//       pattern: 111100111d11ss10dddd001000m0mmmm,
 //       rule: VMOVN,
 //       safety: [size(19:18)=11 => UNDEFINED, Vm(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V16_32_64NTester_Case25
-    : public Vector2RegisterMiscellaneousTesterCase25 {
+    : public Vector2RegisterMiscellaneous_V16_32_64NTesterCase25 {
  public:
   Vector2RegisterMiscellaneous_V16_32_64NTester_Case25()
-    : Vector2RegisterMiscellaneousTesterCase25(
+    : Vector2RegisterMiscellaneous_V16_32_64NTesterCase25(
       state_.Vector2RegisterMiscellaneous_V16_32_64N_VMOVN_instance_)
   {}
 };
@@ -3415,6 +3515,7 @@ class Vector2RegisterMiscellaneous_V16_32_64NTester_Case25
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
 //       generated_baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
+//       pattern: 111100111d11ss10dddd0010ppm0mmmm,
 //       rule: VQMOVUN,
 //       safety: [op(7:6)=00 => DECODER_ERROR,
 //         size(19:18)=11 ||
@@ -3437,16 +3538,17 @@ class Vector2RegisterMiscellaneous_I16_32_64NTester_Case26
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12)],
 //       generated_baseline: VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_0,
+//       pattern: 111100111d11ss10dddd001100m0mmmm,
 //       rule: VSHLL_A2,
 //       safety: [size(19:18)=11 ||
 //            Vd(0)=1 => UNDEFINED],
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_I8_16_32LTester_Case27
-    : public Vector2RegisterMiscellaneousTesterCase27 {
+    : public Vector2RegisterMiscellaneous_I8_16_32LTesterCase27 {
  public:
   Vector2RegisterMiscellaneous_I8_16_32LTester_Case27()
-    : Vector2RegisterMiscellaneousTesterCase27(
+    : Vector2RegisterMiscellaneous_I8_16_32LTesterCase27(
       state_.Vector2RegisterMiscellaneous_I8_16_32L_VSHLL_A2_instance_)
   {}
 };
@@ -3461,6 +3563,7 @@ class Vector2RegisterMiscellaneous_I8_16_32LTester_Case27
 //       generated_baseline: CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0,
 //       half_to_single: op(8)=1,
 //       op: op(8),
+//       pattern: 111100111d11ss10dddd011p00m0mmmm,
 //       rule: CVT_between_half_precision_and_single_precision,
 //       safety: [size(19:18)=~01 => UNDEFINED,
 //         half_to_single &&
@@ -3491,6 +3594,7 @@ class Vector2RegisterMiscellaneous_CVT_H2STester_Case28
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
 //       generated_baseline: VSWP_111100111d11ss10dddd00000qm0mmmm_case_0,
 //       m: M:Vm,
+//       pattern: 111100111d11ss10dddd00000qm0mmmm,
 //       rule: VSWP,
 //       safety: [d  ==
 //               m => UNKNOWN,
@@ -3501,10 +3605,10 @@ class Vector2RegisterMiscellaneous_CVT_H2STester_Case28
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8STester_Case29
-    : public Vector2RegisterMiscellaneousTesterCase29 {
+    : public Vector2RegisterMiscellaneous_V8STesterCase29 {
  public:
   Vector2RegisterMiscellaneous_V8STester_Case29()
-    : Vector2RegisterMiscellaneousTesterCase29(
+    : Vector2RegisterMiscellaneous_V8STesterCase29(
       state_.Vector2RegisterMiscellaneous_V8S_VSWP_instance_)
   {}
 };
@@ -3523,6 +3627,7 @@ class Vector2RegisterMiscellaneous_V8STester_Case29
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
 //       generated_baseline: VTRN_111100111d11ss10dddd00001qm0mmmm_case_0,
 //       m: M:Vm,
+//       pattern: 111100111d11ss10dddd00001qm0mmmm,
 //       rule: VTRN,
 //       safety: [d  ==
 //               m => UNKNOWN,
@@ -3533,10 +3638,10 @@ class Vector2RegisterMiscellaneous_V8STester_Case29
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32TTester_Case30
-    : public Vector2RegisterMiscellaneousTesterCase30 {
+    : public Vector2RegisterMiscellaneous_V8_16_32TTesterCase30 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32TTester_Case30()
-    : Vector2RegisterMiscellaneousTesterCase30(
+    : Vector2RegisterMiscellaneous_V8_16_32TTesterCase30(
       state_.Vector2RegisterMiscellaneous_V8_16_32T_VTRN_instance_)
   {}
 };
@@ -3555,6 +3660,7 @@ class Vector2RegisterMiscellaneous_V8_16_32TTester_Case30
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
 //       generated_baseline: VUZP_111100111d11ss10dddd00010qm0mmmm_case_0,
 //       m: M:Vm,
+//       pattern: 111100111d11ss10dddd00010qm0mmmm,
 //       rule: VUZP,
 //       safety: [d  ==
 //               m => UNKNOWN,
@@ -3567,10 +3673,10 @@ class Vector2RegisterMiscellaneous_V8_16_32TTester_Case30
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32ITester_Case31
-    : public Vector2RegisterMiscellaneousTesterCase31 {
+    : public Vector2RegisterMiscellaneous_V8_16_32ITesterCase31 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32ITester_Case31()
-    : Vector2RegisterMiscellaneousTesterCase31(
+    : Vector2RegisterMiscellaneous_V8_16_32ITesterCase31(
       state_.Vector2RegisterMiscellaneous_V8_16_32I_VUZP_instance_)
   {}
 };
@@ -3589,6 +3695,7 @@ class Vector2RegisterMiscellaneous_V8_16_32ITester_Case31
 //       fields: [D(22), size(19:18), Vd(15:12), Q(6), M(5), Vm(3:0)],
 //       generated_baseline: VZIP_111100111d11ss10dddd00011qm0mmmm_case_0,
 //       m: M:Vm,
+//       pattern: 111100111d11ss10dddd00011qm0mmmm,
 //       rule: VZIP,
 //       safety: [d  ==
 //               m => UNKNOWN,
@@ -3601,10 +3708,10 @@ class Vector2RegisterMiscellaneous_V8_16_32ITester_Case31
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_V8_16_32ITester_Case32
-    : public Vector2RegisterMiscellaneousTesterCase32 {
+    : public Vector2RegisterMiscellaneous_V8_16_32ITesterCase32 {
  public:
   Vector2RegisterMiscellaneous_V8_16_32ITester_Case32()
-    : Vector2RegisterMiscellaneousTesterCase32(
+    : Vector2RegisterMiscellaneous_V8_16_32ITesterCase32(
       state_.Vector2RegisterMiscellaneous_V8_16_32I_VZIP_instance_)
   {}
 };
@@ -3617,6 +3724,7 @@ class Vector2RegisterMiscellaneous_V8_16_32ITester_Case32
 //       fields: [size(19:18), op(7:6), Vm(3:0)],
 //       generated_baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
 //       op: op(7:6),
+//       pattern: 111100111d11ss10dddd0010ppm0mmmm,
 //       rule: VQMOVN,
 //       safety: [op(7:6)=00 => DECODER_ERROR,
 //         size(19:18)=11 ||
@@ -3641,6 +3749,7 @@ class Vector2RegisterMiscellaneous_I16_32_64NTester_Case33
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0,
+//       pattern: 111100111d11ss11dddd010f0qm0mmmm,
 //       rule: VRECPE,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3649,10 +3758,10 @@ class Vector2RegisterMiscellaneous_I16_32_64NTester_Case33
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_F32Tester_Case34
-    : public Vector2RegisterMiscellaneousTesterCase34 {
+    : public Vector2RegisterMiscellaneous_F32TesterCase34 {
  public:
   Vector2RegisterMiscellaneous_F32Tester_Case34()
-    : Vector2RegisterMiscellaneousTesterCase34(
+    : Vector2RegisterMiscellaneous_F32TesterCase34(
       state_.Vector2RegisterMiscellaneous_F32_VRECPE_instance_)
   {}
 };
@@ -3667,6 +3776,7 @@ class Vector2RegisterMiscellaneous_F32Tester_Case34
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0,
+//       pattern: 111100111d11ss11dddd010f1qm0mmmm,
 //       rule: VRSQRTE,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3675,10 +3785,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case34
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_F32Tester_Case35
-    : public Vector2RegisterMiscellaneousTesterCase35 {
+    : public Vector2RegisterMiscellaneous_F32TesterCase35 {
  public:
   Vector2RegisterMiscellaneous_F32Tester_Case35()
-    : Vector2RegisterMiscellaneousTesterCase35(
+    : Vector2RegisterMiscellaneous_F32TesterCase35(
       state_.Vector2RegisterMiscellaneous_F32_VRSQRTE_instance_)
   {}
 };
@@ -3693,6 +3803,7 @@ class Vector2RegisterMiscellaneous_F32Tester_Case35
 //       defs: {},
 //       fields: [size(19:18), Vd(15:12), Q(6), Vm(3:0)],
 //       generated_baseline: VCVT_111100111d11ss11dddd011ppqm0mmmm_case_0,
+//       pattern: 111100111d11ss11dddd011ppqm0mmmm,
 //       rule: VCVT,
 //       safety: [Q(6)=1 &&
 //            (Vd(0)=1 ||
@@ -3701,10 +3812,10 @@ class Vector2RegisterMiscellaneous_F32Tester_Case35
 //       size: size(19:18),
 //       uses: {}}
 class Vector2RegisterMiscellaneous_CVT_F2ITester_Case36
-    : public Vector2RegisterMiscellaneousTesterCase36 {
+    : public Vector2RegisterMiscellaneous_CVT_F2ITesterCase36 {
  public:
   Vector2RegisterMiscellaneous_CVT_F2ITester_Case36()
-    : Vector2RegisterMiscellaneousTesterCase36(
+    : Vector2RegisterMiscellaneous_CVT_F2ITesterCase36(
       state_.Vector2RegisterMiscellaneous_CVT_F2I_VCVT_instance_)
   {}
 };

@@ -46,6 +46,8 @@ namespace nacl_arm_test {
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rt(3:0)],
 //       generated_baseline: STREX_cccc00011000nnnndddd11111001tttt_case_0,
+//       pattern: cccc00011000nnnndddd11111001tttt,
+//       rule: STREX,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
 //       uses: {Rn, Rt}}
@@ -73,6 +75,9 @@ bool StoreExclusive3RegisterOpTesterCase0
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreExclusive3RegisterOpTester::
@@ -112,6 +117,8 @@ bool StoreExclusive3RegisterOpTesterCase0
 //       defs: {Rt},
 //       fields: [Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDREX_cccc00011001nnnntttt111110011111_case_0,
+//       pattern: cccc00011001nnnntttt111110011111,
+//       rule: LDREX,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
 class LoadExclusive2RegisterOpTesterCase1
@@ -138,6 +145,9 @@ bool LoadExclusive2RegisterOpTesterCase1
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxx1111
   if ((inst.Bits() & 0x00000F0F)  !=
           0x00000F0F) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadExclusive2RegisterOpTester::
@@ -175,6 +185,8 @@ bool LoadExclusive2RegisterOpTesterCase1
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rt(3:0)],
 //       generated_baseline: STREXD_cccc00011010nnnndddd11111001tttt_case_0,
+//       pattern: cccc00011010nnnndddd11111001tttt,
+//       rule: STREXD,
 //       safety: [Pc in {Rd, Rn} ||
 //            Rt(0)=1 ||
 //            Rt  ==
@@ -205,6 +217,9 @@ bool StoreExclusive3RegisterDoubleOpTesterCase2
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreExclusive3RegisterDoubleOpTester::
@@ -252,6 +267,8 @@ bool StoreExclusive3RegisterDoubleOpTesterCase2
 //       defs: {Rt, Rt2},
 //       fields: [Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDREXD_cccc00011011nnnntttt111110011111_case_0,
+//       pattern: cccc00011011nnnntttt111110011111,
+//       rule: LDREXD,
 //       safety: [Rt(0)=1 ||
 //            Rt  ==
 //               Lr ||
@@ -282,6 +299,9 @@ bool LoadExclusive2RegisterDoubleOpTesterCase3
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxx1111
   if ((inst.Bits() & 0x00000F0F)  !=
           0x00000F0F) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadExclusive2RegisterDoubleOpTester::
@@ -324,6 +344,8 @@ bool LoadExclusive2RegisterDoubleOpTesterCase3
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rt(3:0)],
 //       generated_baseline: STREXB_cccc00011100nnnndddd11111001tttt_case_0,
+//       pattern: cccc00011100nnnndddd11111001tttt,
+//       rule: STREXB,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
 //       uses: {Rn, Rt}}
@@ -351,6 +373,9 @@ bool StoreExclusive3RegisterOpTesterCase4
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreExclusive3RegisterOpTester::
@@ -390,6 +415,8 @@ bool StoreExclusive3RegisterOpTesterCase4
 //       defs: {Rt},
 //       fields: [Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDREXB_cccc00011101nnnntttt111110011111_case_0,
+//       pattern: cccc00011101nnnntttt111110011111,
+//       rule: LDREXB,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
 class LoadExclusive2RegisterOpTesterCase5
@@ -416,6 +443,9 @@ bool LoadExclusive2RegisterOpTesterCase5
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxx1111
   if ((inst.Bits() & 0x00000F0F)  !=
           0x00000F0F) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadExclusive2RegisterOpTester::
@@ -451,6 +481,8 @@ bool LoadExclusive2RegisterOpTesterCase5
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rt(3:0)],
 //       generated_baseline: STREXH_cccc00011110nnnndddd11111001tttt_case_0,
+//       pattern: cccc00011110nnnndddd11111001tttt,
+//       rule: STREXH,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
 //       uses: {Rn, Rt}}
@@ -478,6 +510,9 @@ bool StoreExclusive3RegisterOpTesterCase6
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreExclusive3RegisterOpTester::
@@ -517,6 +552,8 @@ bool StoreExclusive3RegisterOpTesterCase6
 //       defs: {Rt},
 //       fields: [Rn(19:16), Rt(15:12)],
 //       generated_baseline: STREXH_cccc00011111nnnntttt111110011111_case_0,
+//       pattern: cccc00011111nnnntttt111110011111,
+//       rule: STREXH,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
 class LoadExclusive2RegisterOpTesterCase7
@@ -544,6 +581,9 @@ bool LoadExclusive2RegisterOpTesterCase7
   if ((inst.Bits() & 0x00000F0F)  !=
           0x00000F0F) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadExclusive2RegisterOpTester::
       PassesParsePreconditions(inst, decoder);
@@ -569,18 +609,20 @@ bool LoadExclusive2RegisterOpTesterCase7
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {actual: Deprecated,
 //       baseline: Deprecated,
-//       constraints: }
-class UnsafeCondDecoderTesterCase8
+//       constraints: ,
+//       pattern: cccc00010b00nnnntttt00001001tttt,
+//       rule: SWP_SWPB}
+class DeprecatedTesterCase8
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase8(const NamedClassDecoder& decoder)
+  DeprecatedTesterCase8(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase8
+bool DeprecatedTesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -592,6 +634,9 @@ bool UnsafeCondDecoderTesterCase8
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -615,6 +660,7 @@ bool UnsafeCondDecoderTesterCase8
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rt(3:0)],
 //       generated_baseline: STREX_cccc00011000nnnndddd11111001tttt_case_0,
+//       pattern: cccc00011000nnnndddd11111001tttt,
 //       rule: STREX,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
@@ -639,6 +685,7 @@ class StoreExclusive3RegisterOpTester_Case0
 //       defs: {Rt},
 //       fields: [Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDREX_cccc00011001nnnntttt111110011111_case_0,
+//       pattern: cccc00011001nnnntttt111110011111,
 //       rule: LDREX,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
@@ -665,6 +712,7 @@ class LoadExclusive2RegisterOpTester_Case1
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rt(3:0)],
 //       generated_baseline: STREXD_cccc00011010nnnndddd11111001tttt_case_0,
+//       pattern: cccc00011010nnnndddd11111001tttt,
 //       rule: STREXD,
 //       safety: [Pc in {Rd, Rn} ||
 //            Rt(0)=1 ||
@@ -694,6 +742,7 @@ class StoreExclusive3RegisterDoubleOpTester_Case2
 //       defs: {Rt, Rt2},
 //       fields: [Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDREXD_cccc00011011nnnntttt111110011111_case_0,
+//       pattern: cccc00011011nnnntttt111110011111,
 //       rule: LDREXD,
 //       safety: [Rt(0)=1 ||
 //            Rt  ==
@@ -722,6 +771,7 @@ class LoadExclusive2RegisterDoubleOpTester_Case3
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rt(3:0)],
 //       generated_baseline: STREXB_cccc00011100nnnndddd11111001tttt_case_0,
+//       pattern: cccc00011100nnnndddd11111001tttt,
 //       rule: STREXB,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
@@ -746,6 +796,7 @@ class StoreExclusive3RegisterOpTester_Case4
 //       defs: {Rt},
 //       fields: [Rn(19:16), Rt(15:12)],
 //       generated_baseline: LDREXB_cccc00011101nnnntttt111110011111_case_0,
+//       pattern: cccc00011101nnnntttt111110011111,
 //       rule: LDREXB,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
@@ -770,6 +821,7 @@ class LoadExclusive2RegisterOpTester_Case5
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rt(3:0)],
 //       generated_baseline: STREXH_cccc00011110nnnndddd11111001tttt_case_0,
+//       pattern: cccc00011110nnnndddd11111001tttt,
 //       rule: STREXH,
 //       safety: [Pc in {Rd, Rt, Rn} => UNPREDICTABLE,
 //         Rd in {Rn, Rt} => UNPREDICTABLE],
@@ -794,6 +846,7 @@ class StoreExclusive3RegisterOpTester_Case6
 //       defs: {Rt},
 //       fields: [Rn(19:16), Rt(15:12)],
 //       generated_baseline: STREXH_cccc00011111nnnntttt111110011111_case_0,
+//       pattern: cccc00011111nnnntttt111110011111,
 //       rule: STREXH,
 //       safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
@@ -810,12 +863,13 @@ class LoadExclusive2RegisterOpTester_Case7
 //    = {actual: Deprecated,
 //       baseline: Deprecated,
 //       constraints: ,
+//       pattern: cccc00010b00nnnntttt00001001tttt,
 //       rule: SWP_SWPB}
 class DeprecatedTester_Case8
-    : public UnsafeCondDecoderTesterCase8 {
+    : public DeprecatedTesterCase8 {
  public:
   DeprecatedTester_Case8()
-    : UnsafeCondDecoderTesterCase8(
+    : DeprecatedTesterCase8(
       state_.Deprecated_SWP_SWPB_instance_)
   {}
 };

@@ -46,6 +46,8 @@ namespace nacl_arm_test {
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0,
+//       pattern: cccc00010000ddddaaaammmm1xx0nnnn,
+//       rule: SMLABB_SMLABT_SMLATB_SMLATT,
 //       safety: [Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpTesterCase0
@@ -69,6 +71,9 @@ bool Binary4RegisterDualOpTesterCase0
   // op1(22:21)=~00
   if ((inst.Bits() & 0x00600000)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualOpTester::
@@ -106,6 +111,8 @@ bool Binary4RegisterDualOpTesterCase0
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLAWB_SMLAWT_cccc00010010ddddaaaammmm1x00nnnn_case_0,
+//       pattern: cccc00010010ddddaaaammmm1x00nnnn,
+//       rule: SMLAWB_SMLAWT,
 //       safety: [Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
 class Binary4RegisterDualOpTesterCase1
@@ -132,6 +139,9 @@ bool Binary4RegisterDualOpTesterCase1
   // op(5)=~0
   if ((inst.Bits() & 0x00000020)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualOpTester::
@@ -168,6 +178,8 @@ bool Binary4RegisterDualOpTesterCase1
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0,
+//       pattern: cccc00010010dddd0000mmmm1x10nnnn,
+//       rule: SMULWB_SMULWT,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
 class Binary3RegisterOpAltATesterCase2
@@ -197,6 +209,9 @@ bool Binary3RegisterOpAltATesterCase2
   // $pattern(31:0)=~xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
   if ((inst.Bits() & 0x0000F000)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltATester::
@@ -233,6 +248,8 @@ bool Binary3RegisterOpAltATesterCase2
 //       defs: {RdLo, RdHi},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_0,
+//       pattern: cccc00010100hhhhllllmmmm1xx0nnnn,
+//       rule: SMLALBB_SMLALBT_SMLALTB_SMLALTT,
 //       safety: [Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
 //               RdLo => UNPREDICTABLE],
@@ -258,6 +275,9 @@ bool Binary4RegisterDualResultTesterCase3
   // op1(22:21)=~10
   if ((inst.Bits() & 0x00600000)  !=
           0x00400000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualResultTester::
@@ -299,6 +319,8 @@ bool Binary4RegisterDualResultTesterCase3
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_0,
+//       pattern: cccc00010110dddd0000mmmm1xx0nnnn,
+//       rule: SMULBB_SMULBT_SMULTB_SMULTT,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
 class Binary3RegisterOpAltATesterCase4
@@ -325,6 +347,9 @@ bool Binary3RegisterOpAltATesterCase4
   // $pattern(31:0)=~xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
   if ((inst.Bits() & 0x0000F000)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltATester::
@@ -366,6 +391,7 @@ bool Binary3RegisterOpAltATesterCase4
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0,
+//       pattern: cccc00010000ddddaaaammmm1xx0nnnn,
 //       rule: SMLABB_SMLABT_SMLATB_SMLATT,
 //       safety: [Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
@@ -390,6 +416,7 @@ class Binary4RegisterDualOpTester_Case0
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLAWB_SMLAWT_cccc00010010ddddaaaammmm1x00nnnn_case_0,
+//       pattern: cccc00010010ddddaaaammmm1x00nnnn,
 //       rule: SMLAWB_SMLAWT,
 //       safety: [Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE],
 //       uses: {Rn, Rm, Ra}}
@@ -413,6 +440,7 @@ class Binary4RegisterDualOpTester_Case1
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0,
+//       pattern: cccc00010010dddd0000mmmm1x10nnnn,
 //       rule: SMULWB_SMULWT,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -437,6 +465,7 @@ class Binary3RegisterOpAltATester_Case2
 //       defs: {RdLo, RdHi},
 //       fields: [RdHi(19:16), RdLo(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_0,
+//       pattern: cccc00010100hhhhllllmmmm1xx0nnnn,
 //       rule: SMLALBB_SMLALBT_SMLALTB_SMLALTT,
 //       safety: [Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE,
 //         RdHi  ==
@@ -462,6 +491,7 @@ class Binary4RegisterDualResultTester_Case3
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_0,
+//       pattern: cccc00010110dddd0000mmmm1xx0nnnn,
 //       rule: SMULBB_SMULBT_SMULTB_SMULTT,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}

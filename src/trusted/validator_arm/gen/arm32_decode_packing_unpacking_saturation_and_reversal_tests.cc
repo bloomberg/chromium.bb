@@ -45,6 +45,8 @@ namespace nacl_arm_test {
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101000nnnnddddrr000111mmmm,
+//       rule: SXTAB16,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -78,6 +80,9 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase0
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTester::
@@ -115,6 +120,8 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase0
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTB16_cccc011010001111ddddrr000111mmmm_case_0,
+//       pattern: cccc011010001111ddddrr000111mmmm,
+//       rule: SXTB16,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase1
@@ -147,6 +154,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase1
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
@@ -181,6 +191,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase1
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: SEL_cccc01101000nnnndddd11111011mmmm_case_0,
+//       pattern: cccc01101000nnnndddd11111011mmmm,
+//       rule: SEL,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase2
@@ -210,6 +222,9 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTester::
@@ -245,6 +260,8 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0,
+//       pattern: cccc01101000nnnnddddiiiiit01mmmm,
+//       rule: PKH,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase3
@@ -271,6 +288,9 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase3
   // op2(7:5)=~xx0
   if ((inst.Bits() & 0x00000020)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTester::
@@ -305,6 +325,8 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase3
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rn(3:0)],
 //       generated_baseline: SSAT16_cccc01101010iiiidddd11110011nnnn_case_0,
+//       pattern: cccc01101010iiiidddd11110011nnnn,
+//       rule: SSAT16,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
 class Unary2RegisterSatImmedShiftedOpTesterCase4
@@ -334,6 +356,9 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase4
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterSatImmedShiftedOpTester::
@@ -368,6 +393,8 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase4
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTAB_cccc01101010nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101010nnnnddddrr000111mmmm,
+//       rule: SXTAB,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -401,6 +428,9 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTester::
@@ -438,6 +468,8 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTB_cccc011010101111ddddrr000111mmmm_case_0,
+//       pattern: cccc011010101111ddddrr000111mmmm,
+//       rule: SXTB,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase6
@@ -471,6 +503,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase6
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
@@ -503,6 +538,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase6
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: REV_cccc011010111111dddd11110011mmmm_case_0,
+//       pattern: cccc011010111111dddd11110011mmmm,
+//       rule: REV,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase7
@@ -532,6 +569,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase7
   // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx
   if ((inst.Bits() & 0x000F0F00)  !=
           0x000F0F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
@@ -566,6 +606,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase7
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTAH_cccc01101011nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101011nnnnddddrr000111mmmm,
+//       rule: SXTAH,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -599,6 +641,9 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTester::
@@ -636,6 +681,8 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTH_cccc011010111111ddddrr000111mmmm_case_0,
+//       pattern: cccc011010111111ddddrr000111mmmm,
+//       rule: SXTH,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase9
@@ -669,6 +716,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase9
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
@@ -701,6 +751,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase9
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: REV16_cccc011010111111dddd11111011mmmm_case_0,
+//       pattern: cccc011010111111dddd11111011mmmm,
+//       rule: REV16,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase10
@@ -730,6 +782,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase10
   // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx
   if ((inst.Bits() & 0x000F0F00)  !=
           0x000F0F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
@@ -764,6 +819,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase10
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTAB16_cccc01101100nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101100nnnnddddrr000111mmmm,
+//       rule: UXTAB16,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -797,6 +854,9 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTester::
@@ -834,6 +894,8 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTB16_cccc011011001111ddddrr000111mmmm_case_0,
+//       pattern: cccc011011001111ddddrr000111mmmm,
+//       rule: UXTB16,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase12
@@ -867,6 +929,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase12
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
@@ -899,6 +964,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase12
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rn(3:0)],
 //       generated_baseline: USAT16_cccc01101110iiiidddd11110011nnnn_case_0,
+//       pattern: cccc01101110iiiidddd11110011nnnn,
+//       rule: USAT16,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
 class Unary2RegisterSatImmedShiftedOpTesterCase13
@@ -928,6 +995,9 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase13
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
   if ((inst.Bits() & 0x00000F00)  !=
           0x00000F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterSatImmedShiftedOpTester::
@@ -962,6 +1032,8 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase13
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTAB_cccc01101110nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101110nnnnddddrr000111mmmm,
+//       rule: UXTAB,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -995,6 +1067,9 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTester::
@@ -1032,6 +1107,8 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTB_cccc011011101111ddddrr000111mmmm_case_0,
+//       pattern: cccc011011101111ddddrr000111mmmm,
+//       rule: UXTB,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase15
@@ -1065,6 +1142,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase15
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
@@ -1097,6 +1177,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase15
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: RBIT_cccc011011111111dddd11110011mmmm_case_0,
+//       pattern: cccc011011111111dddd11110011mmmm,
+//       rule: RBIT,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase16
@@ -1126,6 +1208,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase16
   // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx
   if ((inst.Bits() & 0x000F0F00)  !=
           0x000F0F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
@@ -1160,6 +1245,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase16
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTAH_cccc01101111nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101111nnnnddddrr000111mmmm,
+//       rule: UXTAH,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -1193,6 +1280,9 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTester::
@@ -1230,6 +1320,8 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTH_cccc011011111111ddddrr000111mmmm_case_0,
+//       pattern: cccc011011111111ddddrr000111mmmm,
+//       rule: UXTH,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase18
@@ -1263,6 +1355,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase18
   if ((inst.Bits() & 0x00000300)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
@@ -1295,6 +1390,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase18
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: REVSH_cccc011011111111dddd11111011mmmm_case_0,
+//       pattern: cccc011011111111dddd11111011mmmm,
+//       rule: REVSH,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
 class Unary2RegisterImmedShiftedOpTesterCase19
@@ -1324,6 +1421,9 @@ bool Unary2RegisterImmedShiftedOpTesterCase19
   // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx
   if ((inst.Bits() & 0x000F0F00)  !=
           0x000F0F00) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpTester::
@@ -1357,6 +1457,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase19
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rn(3:0)],
 //       generated_baseline: SSAT_cccc0110101iiiiiddddiiiiis01nnnn_case_0,
+//       pattern: cccc0110101iiiiiddddiiiiis01nnnn,
+//       rule: SSAT,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
 class Unary2RegisterSatImmedShiftedOpTesterCase20
@@ -1383,6 +1485,9 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase20
   // op2(7:5)=~xx0
   if ((inst.Bits() & 0x00000020)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterSatImmedShiftedOpTester::
@@ -1416,6 +1521,8 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase20
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rn(3:0)],
 //       generated_baseline: USAT_cccc0110111iiiiiddddiiiiis01nnnn_case_0,
+//       pattern: cccc0110111iiiiiddddiiiiis01nnnn,
+//       rule: USAT,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
 class Unary2RegisterSatImmedShiftedOpTesterCase21
@@ -1442,6 +1549,9 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase21
   // op2(7:5)=~xx0
   if ((inst.Bits() & 0x00000020)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterSatImmedShiftedOpTester::
@@ -1481,6 +1591,7 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase21
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101000nnnnddddrr000111mmmm,
 //       rule: SXTAB16,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -1504,6 +1615,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case0
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTB16_cccc011010001111ddddrr000111mmmm_case_0,
+//       pattern: cccc011010001111ddddrr000111mmmm,
 //       rule: SXTB16,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1527,6 +1639,7 @@ class Unary2RegisterImmedShiftedOpTester_Case1
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: SEL_cccc01101000nnnndddd11111011mmmm_case_0,
+//       pattern: cccc01101000nnnndddd11111011mmmm,
 //       rule: SEL,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -1550,6 +1663,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case2
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0,
+//       pattern: cccc01101000nnnnddddiiiiit01mmmm,
 //       rule: PKH,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -1572,6 +1686,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case3
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rn(3:0)],
 //       generated_baseline: SSAT16_cccc01101010iiiidddd11110011nnnn_case_0,
+//       pattern: cccc01101010iiiidddd11110011nnnn,
 //       rule: SSAT16,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
@@ -1595,6 +1710,7 @@ class Unary2RegisterSatImmedShiftedOpTester_Case4
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTAB_cccc01101010nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101010nnnnddddrr000111mmmm,
 //       rule: SXTAB,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -1618,6 +1734,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case5
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTB_cccc011010101111ddddrr000111mmmm_case_0,
+//       pattern: cccc011010101111ddddrr000111mmmm,
 //       rule: SXTB,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1640,6 +1757,7 @@ class Unary2RegisterImmedShiftedOpTester_Case6
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: REV_cccc011010111111dddd11110011mmmm_case_0,
+//       pattern: cccc011010111111dddd11110011mmmm,
 //       rule: REV,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1663,6 +1781,7 @@ class Unary2RegisterImmedShiftedOpTester_Case7
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTAH_cccc01101011nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101011nnnnddddrr000111mmmm,
 //       rule: SXTAH,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -1686,6 +1805,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case8
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: SXTH_cccc011010111111ddddrr000111mmmm_case_0,
+//       pattern: cccc011010111111ddddrr000111mmmm,
 //       rule: SXTH,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1708,6 +1828,7 @@ class Unary2RegisterImmedShiftedOpTester_Case9
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: REV16_cccc011010111111dddd11111011mmmm_case_0,
+//       pattern: cccc011010111111dddd11111011mmmm,
 //       rule: REV16,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1731,6 +1852,7 @@ class Unary2RegisterImmedShiftedOpTester_Case10
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTAB16_cccc01101100nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101100nnnnddddrr000111mmmm,
 //       rule: UXTAB16,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -1754,6 +1876,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case11
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTB16_cccc011011001111ddddrr000111mmmm_case_0,
+//       pattern: cccc011011001111ddddrr000111mmmm,
 //       rule: UXTB16,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1776,6 +1899,7 @@ class Unary2RegisterImmedShiftedOpTester_Case12
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rn(3:0)],
 //       generated_baseline: USAT16_cccc01101110iiiidddd11110011nnnn_case_0,
+//       pattern: cccc01101110iiiidddd11110011nnnn,
 //       rule: USAT16,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
@@ -1799,6 +1923,7 @@ class Unary2RegisterSatImmedShiftedOpTester_Case13
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTAB_cccc01101110nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101110nnnnddddrr000111mmmm,
 //       rule: UXTAB,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -1822,6 +1947,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case14
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTB_cccc011011101111ddddrr000111mmmm_case_0,
+//       pattern: cccc011011101111ddddrr000111mmmm,
 //       rule: UXTB,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1844,6 +1970,7 @@ class Unary2RegisterImmedShiftedOpTester_Case15
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: RBIT_cccc011011111111dddd11110011mmmm_case_0,
+//       pattern: cccc011011111111dddd11110011mmmm,
 //       rule: RBIT,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1867,6 +1994,7 @@ class Unary2RegisterImmedShiftedOpTester_Case16
 //       defs: {Rd},
 //       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTAH_cccc01101111nnnnddddrr000111mmmm_case_0,
+//       pattern: cccc01101111nnnnddddrr000111mmmm,
 //       rule: UXTAH,
 //       safety: [Rn(19:16)=1111 => DECODER_ERROR,
 //         Pc in {Rd, Rm} => UNPREDICTABLE],
@@ -1890,6 +2018,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case17
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: UXTH_cccc011011111111ddddrr000111mmmm_case_0,
+//       pattern: cccc011011111111ddddrr000111mmmm,
 //       rule: UXTH,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1912,6 +2041,7 @@ class Unary2RegisterImmedShiftedOpTester_Case18
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       generated_baseline: REVSH_cccc011011111111dddd11111011mmmm_case_0,
+//       pattern: cccc011011111111dddd11111011mmmm,
 //       rule: REVSH,
 //       safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
 //       uses: {Rm}}
@@ -1934,6 +2064,7 @@ class Unary2RegisterImmedShiftedOpTester_Case19
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rn(3:0)],
 //       generated_baseline: SSAT_cccc0110101iiiiiddddiiiiis01nnnn_case_0,
+//       pattern: cccc0110101iiiiiddddiiiiis01nnnn,
 //       rule: SSAT,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}
@@ -1956,6 +2087,7 @@ class Unary2RegisterSatImmedShiftedOpTester_Case20
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rn(3:0)],
 //       generated_baseline: USAT_cccc0110111iiiiiddddiiiiis01nnnn_case_0,
+//       pattern: cccc0110111iiiiiddddiiiiis01nnnn,
 //       rule: USAT,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE],
 //       uses: {Rn}}

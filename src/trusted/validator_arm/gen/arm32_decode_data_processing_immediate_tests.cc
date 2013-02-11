@@ -45,16 +45,18 @@ namespace nacl_arm_test {
 //       generated_baseline: TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm32: ARMExpandImm_C(imm12),
+//       pattern: cccc00110001nnnn0000iiiiiiiiiiii,
+//       rule: TST_immediate,
 //       sets_Z_if_clear_bits: Rn  ==
 //               RegIndex(test_register()) &&
 //            (imm32 &&
 //            clears_mask())  ==
 //               clears_mask(),
 //       uses: {Rn}}
-class BinaryRegisterImmediateTestTesterCase0
+class MaskedBinaryRegisterImmediateTestTesterCase0
     : public BinaryRegisterImmediateTestTester {
  public:
-  BinaryRegisterImmediateTestTesterCase0(const NamedClassDecoder& decoder)
+  MaskedBinaryRegisterImmediateTestTesterCase0(const NamedClassDecoder& decoder)
     : BinaryRegisterImmediateTestTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -63,7 +65,7 @@ class BinaryRegisterImmediateTestTesterCase0
                                  const NamedClassDecoder& decoder);
 };
 
-bool BinaryRegisterImmediateTestTesterCase0
+bool MaskedBinaryRegisterImmediateTestTesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -76,12 +78,15 @@ bool BinaryRegisterImmediateTestTesterCase0
   if ((inst.Bits() & 0x0000F000)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return BinaryRegisterImmediateTestTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool BinaryRegisterImmediateTestTesterCase0
+bool MaskedBinaryRegisterImmediateTestTesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(BinaryRegisterImmediateTestTester::
@@ -103,6 +108,8 @@ bool BinaryRegisterImmediateTestTesterCase0
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       generated_baseline: TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0,
+//       pattern: cccc00110011nnnn0000iiiiiiiiiiii,
+//       rule: TEQ_immediate,
 //       uses: {Rn}}
 class BinaryRegisterImmediateTestTesterCase1
     : public BinaryRegisterImmediateTestTester {
@@ -128,6 +135,9 @@ bool BinaryRegisterImmediateTestTesterCase1
   // $pattern(31:0)=~xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
   if ((inst.Bits() & 0x0000F000)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return BinaryRegisterImmediateTestTester::
@@ -156,6 +166,8 @@ bool BinaryRegisterImmediateTestTesterCase1
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       generated_baseline: CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0,
+//       pattern: cccc00110101nnnn0000iiiiiiiiiiii,
+//       rule: CMP_immediate,
 //       uses: {Rn}}
 class BinaryRegisterImmediateTestTesterCase2
     : public BinaryRegisterImmediateTestTester {
@@ -181,6 +193,9 @@ bool BinaryRegisterImmediateTestTesterCase2
   // $pattern(31:0)=~xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
   if ((inst.Bits() & 0x0000F000)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return BinaryRegisterImmediateTestTester::
@@ -209,6 +224,8 @@ bool BinaryRegisterImmediateTestTesterCase2
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       generated_baseline: CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0,
+//       pattern: cccc00110111nnnn0000iiiiiiiiiiii,
+//       rule: CMN_immediate,
 //       uses: {Rn}}
 class BinaryRegisterImmediateTestTesterCase3
     : public BinaryRegisterImmediateTestTester {
@@ -234,6 +251,9 @@ bool BinaryRegisterImmediateTestTesterCase3
   // $pattern(31:0)=~xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
   if ((inst.Bits() & 0x0000F000)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return BinaryRegisterImmediateTestTester::
@@ -267,6 +287,8 @@ bool BinaryRegisterImmediateTestTesterCase3
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010000snnnnddddiiiiiiiiiiii,
+//       rule: AND_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
@@ -293,6 +315,9 @@ bool Binary2RegisterImmediateOpTesterCase4
   // op(24:20)=~0000x
   if ((inst.Bits() & 0x01E00000)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
@@ -343,6 +368,8 @@ bool Binary2RegisterImmediateOpTesterCase4
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010001snnnnddddiiiiiiiiiiii,
+//       rule: EOR_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
@@ -369,6 +396,9 @@ bool Binary2RegisterImmediateOpTesterCase5
   // op(24:20)=~0001x
   if ((inst.Bits() & 0x01E00000)  !=
           0x00200000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
@@ -419,6 +449,8 @@ bool Binary2RegisterImmediateOpTesterCase5
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: SUB_immediate_cccc0010010snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010010snnnnddddiiiiiiiiiiii,
+//       rule: SUB_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         (Rn(19:16)=1111 &&
@@ -426,10 +458,10 @@ bool Binary2RegisterImmediateOpTesterCase5
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       setflags: S(20)=1,
 //       uses: {Rn}}
-class Binary2RegisterImmediateOpTesterCase6
+class Binary2RegisterImmediateOpAddSubTesterCase6
     : public Binary2RegisterImmediateOpTester {
  public:
-  Binary2RegisterImmediateOpTesterCase6(const NamedClassDecoder& decoder)
+  Binary2RegisterImmediateOpAddSubTesterCase6(const NamedClassDecoder& decoder)
     : Binary2RegisterImmediateOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -438,7 +470,7 @@ class Binary2RegisterImmediateOpTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary2RegisterImmediateOpTesterCase6
+bool Binary2RegisterImmediateOpAddSubTesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -451,12 +483,15 @@ bool Binary2RegisterImmediateOpTesterCase6
   if ((inst.Bits() & 0x000F0000)  ==
           0x000F0000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary2RegisterImmediateOpTesterCase6
+bool Binary2RegisterImmediateOpAddSubTesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary2RegisterImmediateOpTester::
@@ -502,6 +537,8 @@ bool Binary2RegisterImmediateOpTesterCase6
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       generated_baseline: ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0,
+//       pattern: cccc001001001111ddddiiiiiiiiiiii,
+//       rule: ADR_A2,
 //       safety: [Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       uses: {Pc}}
 class Unary1RegisterImmediateOpPcTesterCase7
@@ -528,6 +565,9 @@ bool Unary1RegisterImmediateOpPcTesterCase7
   // Rn(19:16)=~1111
   if ((inst.Bits() & 0x000F0000)  !=
           0x000F0000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterImmediateOpPcTester::
@@ -565,6 +605,8 @@ bool Unary1RegisterImmediateOpPcTesterCase7
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010011snnnnddddiiiiiiiiiiii,
+//       rule: RSB_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
@@ -591,6 +633,9 @@ bool Binary2RegisterImmediateOpTesterCase8
   // op(24:20)=~0011x
   if ((inst.Bits() & 0x01E00000)  !=
           0x00600000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
@@ -641,6 +686,8 @@ bool Binary2RegisterImmediateOpTesterCase8
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010100snnnnddddiiiiiiiiiiii,
+//       rule: ADD_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         (Rn(19:16)=1111 &&
@@ -648,10 +695,10 @@ bool Binary2RegisterImmediateOpTesterCase8
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       setflags: S(20)=1,
 //       uses: {Rn}}
-class Binary2RegisterImmediateOpTesterCase9
+class Binary2RegisterImmediateOpAddSubTesterCase9
     : public Binary2RegisterImmediateOpTester {
  public:
-  Binary2RegisterImmediateOpTesterCase9(const NamedClassDecoder& decoder)
+  Binary2RegisterImmediateOpAddSubTesterCase9(const NamedClassDecoder& decoder)
     : Binary2RegisterImmediateOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -660,7 +707,7 @@ class Binary2RegisterImmediateOpTesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary2RegisterImmediateOpTesterCase9
+bool Binary2RegisterImmediateOpAddSubTesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -673,12 +720,15 @@ bool Binary2RegisterImmediateOpTesterCase9
   if ((inst.Bits() & 0x000F0000)  ==
           0x000F0000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary2RegisterImmediateOpTesterCase9
+bool Binary2RegisterImmediateOpAddSubTesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary2RegisterImmediateOpTester::
@@ -724,6 +774,8 @@ bool Binary2RegisterImmediateOpTesterCase9
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       generated_baseline: ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0,
+//       pattern: cccc001010001111ddddiiiiiiiiiiii,
+//       rule: ADR_A1,
 //       safety: [Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       uses: {Pc}}
 class Unary1RegisterImmediateOpPcTesterCase10
@@ -750,6 +802,9 @@ bool Unary1RegisterImmediateOpPcTesterCase10
   // Rn(19:16)=~1111
   if ((inst.Bits() & 0x000F0000)  !=
           0x000F0000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterImmediateOpPcTester::
@@ -787,6 +842,8 @@ bool Unary1RegisterImmediateOpPcTesterCase10
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010101snnnnddddiiiiiiiiiiii,
+//       rule: ADC_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
@@ -813,6 +870,9 @@ bool Binary2RegisterImmediateOpTesterCase11
   // op(24:20)=~0101x
   if ((inst.Bits() & 0x01E00000)  !=
           0x00A00000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
@@ -863,6 +923,8 @@ bool Binary2RegisterImmediateOpTesterCase11
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010110snnnnddddiiiiiiiiiiii,
+//       rule: SBC_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
@@ -889,6 +951,9 @@ bool Binary2RegisterImmediateOpTesterCase12
   // op(24:20)=~0110x
   if ((inst.Bits() & 0x01E00000)  !=
           0x00C00000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
@@ -939,6 +1004,8 @@ bool Binary2RegisterImmediateOpTesterCase12
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010111snnnnddddiiiiiiiiiiii,
+//       rule: RSC_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
@@ -965,6 +1032,9 @@ bool Binary2RegisterImmediateOpTesterCase13
   // op(24:20)=~0111x
   if ((inst.Bits() & 0x01E00000)  !=
           0x00E00000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
@@ -1017,15 +1087,17 @@ bool Binary2RegisterImmediateOpTesterCase13
 //       fields: [S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
 //       generated_baseline: ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
+//       pattern: cccc0011100snnnnddddiiiiiiiiiiii,
+//       rule: ORR_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       setflags: S(20)=1,
 //       uses: {Rn}}
-class Binary2RegisterImmediateOpTesterCase14
+class Binary2RegisterImmediateOpDynCodeReplaceTesterCase14
     : public Binary2RegisterImmediateOpTester {
  public:
-  Binary2RegisterImmediateOpTesterCase14(const NamedClassDecoder& decoder)
+  Binary2RegisterImmediateOpDynCodeReplaceTesterCase14(const NamedClassDecoder& decoder)
     : Binary2RegisterImmediateOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1034,7 +1106,7 @@ class Binary2RegisterImmediateOpTesterCase14
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary2RegisterImmediateOpTesterCase14
+bool Binary2RegisterImmediateOpDynCodeReplaceTesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1044,12 +1116,15 @@ bool Binary2RegisterImmediateOpTesterCase14
   if ((inst.Bits() & 0x01E00000)  !=
           0x01800000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary2RegisterImmediateOpTesterCase14
+bool Binary2RegisterImmediateOpDynCodeReplaceTesterCase14
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary2RegisterImmediateOpTester::
@@ -1094,15 +1169,17 @@ bool Binary2RegisterImmediateOpTesterCase14
 //       fields: [S(20), Rd(15:12), imm12(11:0)],
 //       generated_baseline: MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
+//       pattern: cccc0011101s0000ddddiiiiiiiiiiii,
+//       rule: MOV_immediate_A1,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       setflags: S(20)=1,
 //       uses: {}}
-class Unary1RegisterImmediateOp12TesterCase15
+class Unary1RegisterImmediateOp12DynCodeReplaceTesterCase15
     : public Unary1RegisterImmediateOp12Tester {
  public:
-  Unary1RegisterImmediateOp12TesterCase15(const NamedClassDecoder& decoder)
+  Unary1RegisterImmediateOp12DynCodeReplaceTesterCase15(const NamedClassDecoder& decoder)
     : Unary1RegisterImmediateOp12Tester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1111,7 +1188,7 @@ class Unary1RegisterImmediateOp12TesterCase15
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary1RegisterImmediateOp12TesterCase15
+bool Unary1RegisterImmediateOp12DynCodeReplaceTesterCase15
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1124,12 +1201,15 @@ bool Unary1RegisterImmediateOp12TesterCase15
   if ((inst.Bits() & 0x000F0000)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterImmediateOp12Tester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary1RegisterImmediateOp12TesterCase15
+bool Unary1RegisterImmediateOp12DynCodeReplaceTesterCase15
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Unary1RegisterImmediateOp12Tester::
@@ -1178,15 +1258,17 @@ bool Unary1RegisterImmediateOp12TesterCase15
 //       generated_baseline: BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm32: ARMExpandImm(imm12),
+//       pattern: cccc0011110snnnnddddiiiiiiiiiiii,
+//       rule: BIC_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       setflags: S(20)=1,
 //       uses: {Rn}}
-class Binary2RegisterImmediateOpTesterCase16
+class MaskedBinary2RegisterImmediateOpTesterCase16
     : public Binary2RegisterImmediateOpTester {
  public:
-  Binary2RegisterImmediateOpTesterCase16(const NamedClassDecoder& decoder)
+  MaskedBinary2RegisterImmediateOpTesterCase16(const NamedClassDecoder& decoder)
     : Binary2RegisterImmediateOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1195,7 +1277,7 @@ class Binary2RegisterImmediateOpTesterCase16
                                  const NamedClassDecoder& decoder);
 };
 
-bool Binary2RegisterImmediateOpTesterCase16
+bool MaskedBinary2RegisterImmediateOpTesterCase16
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1205,12 +1287,15 @@ bool Binary2RegisterImmediateOpTesterCase16
   if ((inst.Bits() & 0x01E00000)  !=
           0x01C00000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterImmediateOpTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Binary2RegisterImmediateOpTesterCase16
+bool MaskedBinary2RegisterImmediateOpTesterCase16
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Binary2RegisterImmediateOpTester::
@@ -1255,15 +1340,17 @@ bool Binary2RegisterImmediateOpTesterCase16
 //       fields: [S(20), Rd(15:12), imm12(11:0)],
 //       generated_baseline: MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
+//       pattern: cccc0011111s0000ddddiiiiiiiiiiii,
+//       rule: MVN_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
 //         Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       setflags: S(20)=1,
 //       uses: {}}
-class Unary1RegisterImmediateOp12TesterCase17
+class Unary1RegisterImmediateOp12DynCodeReplaceTesterCase17
     : public Unary1RegisterImmediateOp12Tester {
  public:
-  Unary1RegisterImmediateOp12TesterCase17(const NamedClassDecoder& decoder)
+  Unary1RegisterImmediateOp12DynCodeReplaceTesterCase17(const NamedClassDecoder& decoder)
     : Unary1RegisterImmediateOp12Tester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1272,7 +1359,7 @@ class Unary1RegisterImmediateOp12TesterCase17
                                  const NamedClassDecoder& decoder);
 };
 
-bool Unary1RegisterImmediateOp12TesterCase17
+bool Unary1RegisterImmediateOp12DynCodeReplaceTesterCase17
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1285,12 +1372,15 @@ bool Unary1RegisterImmediateOp12TesterCase17
   if ((inst.Bits() & 0x000F0000)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterImmediateOp12Tester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool Unary1RegisterImmediateOp12TesterCase17
+bool Unary1RegisterImmediateOp12DynCodeReplaceTesterCase17
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(Unary1RegisterImmediateOp12Tester::
@@ -1336,6 +1426,7 @@ bool Unary1RegisterImmediateOp12TesterCase17
 //       generated_baseline: TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm32: ARMExpandImm_C(imm12),
+//       pattern: cccc00110001nnnn0000iiiiiiiiiiii,
 //       rule: TST_immediate,
 //       sets_Z_if_clear_bits: Rn  ==
 //               RegIndex(test_register()) &&
@@ -1344,10 +1435,10 @@ bool Unary1RegisterImmediateOp12TesterCase17
 //               clears_mask(),
 //       uses: {Rn}}
 class MaskedBinaryRegisterImmediateTestTester_Case0
-    : public BinaryRegisterImmediateTestTesterCase0 {
+    : public MaskedBinaryRegisterImmediateTestTesterCase0 {
  public:
   MaskedBinaryRegisterImmediateTestTester_Case0()
-    : BinaryRegisterImmediateTestTesterCase0(
+    : MaskedBinaryRegisterImmediateTestTesterCase0(
       state_.MaskedBinaryRegisterImmediateTest_TST_immediate_instance_)
   {}
 };
@@ -1361,6 +1452,7 @@ class MaskedBinaryRegisterImmediateTestTester_Case0
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       generated_baseline: TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0,
+//       pattern: cccc00110011nnnn0000iiiiiiiiiiii,
 //       rule: TEQ_immediate,
 //       uses: {Rn}}
 class BinaryRegisterImmediateTestTester_Case1
@@ -1381,6 +1473,7 @@ class BinaryRegisterImmediateTestTester_Case1
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       generated_baseline: CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0,
+//       pattern: cccc00110101nnnn0000iiiiiiiiiiii,
 //       rule: CMP_immediate,
 //       uses: {Rn}}
 class BinaryRegisterImmediateTestTester_Case2
@@ -1401,6 +1494,7 @@ class BinaryRegisterImmediateTestTester_Case2
 //       defs: {NZCV},
 //       fields: [Rn(19:16)],
 //       generated_baseline: CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0,
+//       pattern: cccc00110111nnnn0000iiiiiiiiiiii,
 //       rule: CMN_immediate,
 //       uses: {Rn}}
 class BinaryRegisterImmediateTestTester_Case3
@@ -1426,6 +1520,7 @@ class BinaryRegisterImmediateTestTester_Case3
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010000snnnnddddiiiiiiiiiiii,
 //       rule: AND_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1455,6 +1550,7 @@ class Binary2RegisterImmediateOpTester_Case4
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010001snnnnddddiiiiiiiiiiii,
 //       rule: EOR_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1484,6 +1580,7 @@ class Binary2RegisterImmediateOpTester_Case5
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: SUB_immediate_cccc0010010snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010010snnnnddddiiiiiiiiiiii,
 //       rule: SUB_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1493,10 +1590,10 @@ class Binary2RegisterImmediateOpTester_Case5
 //       setflags: S(20)=1,
 //       uses: {Rn}}
 class Binary2RegisterImmediateOpAddSubTester_Case6
-    : public Binary2RegisterImmediateOpTesterCase6 {
+    : public Binary2RegisterImmediateOpAddSubTesterCase6 {
  public:
   Binary2RegisterImmediateOpAddSubTester_Case6()
-    : Binary2RegisterImmediateOpTesterCase6(
+    : Binary2RegisterImmediateOpAddSubTesterCase6(
       state_.Binary2RegisterImmediateOpAddSub_SUB_immediate_instance_)
   {}
 };
@@ -1510,6 +1607,7 @@ class Binary2RegisterImmediateOpAddSubTester_Case6
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       generated_baseline: ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0,
+//       pattern: cccc001001001111ddddiiiiiiiiiiii,
 //       rule: ADR_A2,
 //       safety: [Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       uses: {Pc}}
@@ -1536,6 +1634,7 @@ class Unary1RegisterImmediateOpPcTester_Case7
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010011snnnnddddiiiiiiiiiiii,
 //       rule: RSB_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1565,6 +1664,7 @@ class Binary2RegisterImmediateOpTester_Case8
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010100snnnnddddiiiiiiiiiiii,
 //       rule: ADD_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1574,10 +1674,10 @@ class Binary2RegisterImmediateOpTester_Case8
 //       setflags: S(20)=1,
 //       uses: {Rn}}
 class Binary2RegisterImmediateOpAddSubTester_Case9
-    : public Binary2RegisterImmediateOpTesterCase9 {
+    : public Binary2RegisterImmediateOpAddSubTesterCase9 {
  public:
   Binary2RegisterImmediateOpAddSubTester_Case9()
-    : Binary2RegisterImmediateOpTesterCase9(
+    : Binary2RegisterImmediateOpAddSubTesterCase9(
       state_.Binary2RegisterImmediateOpAddSub_ADD_immediate_instance_)
   {}
 };
@@ -1591,6 +1691,7 @@ class Binary2RegisterImmediateOpAddSubTester_Case9
 //       defs: {Rd},
 //       fields: [Rd(15:12)],
 //       generated_baseline: ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0,
+//       pattern: cccc001010001111ddddiiiiiiiiiiii,
 //       rule: ADR_A1,
 //       safety: [Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //       uses: {Pc}}
@@ -1617,6 +1718,7 @@ class Unary1RegisterImmediateOpPcTester_Case10
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010101snnnnddddiiiiiiiiiiii,
 //       rule: ADC_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1646,6 +1748,7 @@ class Binary2RegisterImmediateOpTester_Case11
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010110snnnnddddiiiiiiiiiiii,
 //       rule: SBC_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1675,6 +1778,7 @@ class Binary2RegisterImmediateOpTester_Case12
 //            else None},
 //       fields: [S(20), Rn(19:16), Rd(15:12)],
 //       generated_baseline: RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0,
+//       pattern: cccc0010111snnnnddddiiiiiiiiiiii,
 //       rule: RSC_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1706,6 +1810,7 @@ class Binary2RegisterImmediateOpTester_Case13
 //       fields: [S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
 //       generated_baseline: ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
+//       pattern: cccc0011100snnnnddddiiiiiiiiiiii,
 //       rule: ORR_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1713,10 +1818,10 @@ class Binary2RegisterImmediateOpTester_Case13
 //       setflags: S(20)=1,
 //       uses: {Rn}}
 class Binary2RegisterImmediateOpDynCodeReplaceTester_Case14
-    : public Binary2RegisterImmediateOpTesterCase14 {
+    : public Binary2RegisterImmediateOpDynCodeReplaceTesterCase14 {
  public:
   Binary2RegisterImmediateOpDynCodeReplaceTester_Case14()
-    : Binary2RegisterImmediateOpTesterCase14(
+    : Binary2RegisterImmediateOpDynCodeReplaceTesterCase14(
       state_.Binary2RegisterImmediateOpDynCodeReplace_ORR_immediate_instance_)
   {}
 };
@@ -1736,6 +1841,7 @@ class Binary2RegisterImmediateOpDynCodeReplaceTester_Case14
 //       fields: [S(20), Rd(15:12), imm12(11:0)],
 //       generated_baseline: MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
+//       pattern: cccc0011101s0000ddddiiiiiiiiiiii,
 //       rule: MOV_immediate_A1,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1743,10 +1849,10 @@ class Binary2RegisterImmediateOpDynCodeReplaceTester_Case14
 //       setflags: S(20)=1,
 //       uses: {}}
 class Unary1RegisterImmediateOp12DynCodeReplaceTester_Case15
-    : public Unary1RegisterImmediateOp12TesterCase15 {
+    : public Unary1RegisterImmediateOp12DynCodeReplaceTesterCase15 {
  public:
   Unary1RegisterImmediateOp12DynCodeReplaceTester_Case15()
-    : Unary1RegisterImmediateOp12TesterCase15(
+    : Unary1RegisterImmediateOp12DynCodeReplaceTesterCase15(
       state_.Unary1RegisterImmediateOp12DynCodeReplace_MOV_immediate_A1_instance_)
   {}
 };
@@ -1770,6 +1876,7 @@ class Unary1RegisterImmediateOp12DynCodeReplaceTester_Case15
 //       generated_baseline: BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
 //       imm32: ARMExpandImm(imm12),
+//       pattern: cccc0011110snnnnddddiiiiiiiiiiii,
 //       rule: BIC_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1777,10 +1884,10 @@ class Unary1RegisterImmediateOp12DynCodeReplaceTester_Case15
 //       setflags: S(20)=1,
 //       uses: {Rn}}
 class MaskedBinary2RegisterImmediateOpTester_Case16
-    : public Binary2RegisterImmediateOpTesterCase16 {
+    : public MaskedBinary2RegisterImmediateOpTesterCase16 {
  public:
   MaskedBinary2RegisterImmediateOpTester_Case16()
-    : Binary2RegisterImmediateOpTesterCase16(
+    : MaskedBinary2RegisterImmediateOpTesterCase16(
       state_.MaskedBinary2RegisterImmediateOp_BIC_immediate_instance_)
   {}
 };
@@ -1800,6 +1907,7 @@ class MaskedBinary2RegisterImmediateOpTester_Case16
 //       fields: [S(20), Rd(15:12), imm12(11:0)],
 //       generated_baseline: MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0,
 //       imm12: imm12(11:0),
+//       pattern: cccc0011111s0000ddddiiiiiiiiiiii,
 //       rule: MVN_immediate,
 //       safety: [(Rd(15:12)=1111 &&
 //            S(20)=1) => DECODER_ERROR,
@@ -1807,10 +1915,10 @@ class MaskedBinary2RegisterImmediateOpTester_Case16
 //       setflags: S(20)=1,
 //       uses: {}}
 class Unary1RegisterImmediateOp12DynCodeReplaceTester_Case17
-    : public Unary1RegisterImmediateOp12TesterCase17 {
+    : public Unary1RegisterImmediateOp12DynCodeReplaceTesterCase17 {
  public:
   Unary1RegisterImmediateOp12DynCodeReplaceTester_Case17()
-    : Unary1RegisterImmediateOp12TesterCase17(
+    : Unary1RegisterImmediateOp12DynCodeReplaceTesterCase17(
       state_.Unary1RegisterImmediateOp12DynCodeReplace_MVN_immediate_instance_)
   {}
 };

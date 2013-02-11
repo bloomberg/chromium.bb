@@ -46,6 +46,8 @@ namespace nacl_arm_test {
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: USADA8_cccc01111000ddddaaaammmm0001nnnn_case_0,
+//       pattern: cccc01111000ddddaaaammmm0001nnnn,
+//       rule: USADA8,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
 //         Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
@@ -77,6 +79,9 @@ bool Binary4RegisterDualOpTesterCase0
   // Rd(15:12)=1111
   if ((inst.Bits() & 0x0000F000)  ==
           0x0000F000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualOpTester::
@@ -116,6 +121,8 @@ bool Binary4RegisterDualOpTesterCase0
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: USAD8_cccc01111000dddd1111mmmm0001nnnn_case_0,
+//       pattern: cccc01111000dddd1111mmmm0001nnnn,
+//       rule: USAD8,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
 class Binary3RegisterOpAltATesterCase1
@@ -146,6 +153,9 @@ bool Binary3RegisterOpAltATesterCase1
   if ((inst.Bits() & 0x0000F000)  !=
           0x0000F000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltATester::
       PassesParsePreconditions(inst, decoder);
@@ -172,7 +182,9 @@ bool Binary3RegisterOpAltATesterCase1
 // op1(24:20)=11111 & op2(7:5)=111
 //    = {actual: PermanentlyUndefined,
 //       baseline: PermanentlyUndefined,
-//       constraints: }
+//       constraints: ,
+//       pattern: cccc01111111iiiiiiiiiiii1111iiii,
+//       rule: UDF}
 class PermanentlyUndefinedTesterCase2
     : public PermanentlyUndefinedTester {
  public:
@@ -196,6 +208,9 @@ bool PermanentlyUndefinedTesterCase2
   if ((inst.Bits() & 0x000000E0)  !=
           0x000000E0) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return PermanentlyUndefinedTester::
       PassesParsePreconditions(inst, decoder);
@@ -212,6 +227,8 @@ bool PermanentlyUndefinedTesterCase2
 //       fields: [widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //       generated_baseline: SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0,
 //       lsb: lsb(11:7),
+//       pattern: cccc0111101wwwwwddddlllll101nnnn,
+//       rule: SBFX,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
 //         lsb + widthm1  >
 //               31 => UNPREDICTABLE],
@@ -241,6 +258,9 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
   // op2(7:5)=~x10
   if ((inst.Bits() & 0x00000060)  !=
           0x00000040) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::
@@ -280,6 +300,8 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
 //       generated_baseline: BFI_cccc0111110mmmmmddddlllll001nnnn_case_0,
 //       lsb: lsb(11:7),
 //       msb: msb(20:16),
+//       pattern: cccc0111110mmmmmddddlllll001nnnn,
+//       rule: BFI,
 //       safety: [Rn  ==
 //               Pc => DECODER_ERROR,
 //         Rd  ==
@@ -314,6 +336,9 @@ bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
   // Rn(3:0)=1111
   if ((inst.Bits() & 0x0000000F)  ==
           0x0000000F) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterBitRangeMsbGeLsbTester::
@@ -356,6 +381,8 @@ bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
 //       generated_baseline: BFC_cccc0111110mmmmmddddlllll0011111_case_0,
 //       lsb: lsb(11:7),
 //       msb: msb(20:16),
+//       pattern: cccc0111110mmmmmddddlllll0011111,
+//       rule: BFC,
 //       safety: [Rd  ==
 //               Pc => UNPREDICTABLE,
 //         msb  <
@@ -388,6 +415,9 @@ bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
   // Rn(3:0)=~1111
   if ((inst.Bits() & 0x0000000F)  !=
           0x0000000F) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterBitRangeMsbGeLsbTester::
@@ -426,6 +456,8 @@ bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
 //       fields: [widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //       generated_baseline: UBFX_cccc0111111mmmmmddddlllll101nnnn_case_0,
 //       lsb: lsb(11:7),
+//       pattern: cccc0111111mmmmmddddlllll101nnnn,
+//       rule: UBFX,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
 //         lsb + widthm1  >
 //               31 => UNPREDICTABLE],
@@ -455,6 +487,9 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
   // op2(7:5)=~x10
   if ((inst.Bits() & 0x00000060)  !=
           0x00000040) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::
@@ -499,6 +534,7 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       generated_baseline: USADA8_cccc01111000ddddaaaammmm0001nnnn_case_0,
+//       pattern: cccc01111000ddddaaaammmm0001nnnn,
 //       rule: USADA8,
 //       safety: [Ra  ==
 //               Pc => DECODER_ERROR,
@@ -524,6 +560,7 @@ class Binary4RegisterDualOpTester_Case0
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       generated_baseline: USAD8_cccc01111000dddd1111mmmm0001nnnn_case_0,
+//       pattern: cccc01111000dddd1111mmmm0001nnnn,
 //       rule: USAD8,
 //       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
 //       uses: {Rn, Rm}}
@@ -540,6 +577,7 @@ class Binary3RegisterOpAltATester_Case1
 //    = {actual: PermanentlyUndefined,
 //       baseline: PermanentlyUndefined,
 //       constraints: ,
+//       pattern: cccc01111111iiiiiiiiiiii1111iiii,
 //       rule: UDF}
 class PermanentlyUndefinedTester_Case2
     : public PermanentlyUndefinedTesterCase2 {
@@ -561,6 +599,7 @@ class PermanentlyUndefinedTester_Case2
 //       fields: [widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //       generated_baseline: SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0,
 //       lsb: lsb(11:7),
+//       pattern: cccc0111101wwwwwddddlllll101nnnn,
 //       rule: SBFX,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
 //         lsb + widthm1  >
@@ -588,6 +627,7 @@ class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3
 //       generated_baseline: BFI_cccc0111110mmmmmddddlllll001nnnn_case_0,
 //       lsb: lsb(11:7),
 //       msb: msb(20:16),
+//       pattern: cccc0111110mmmmmddddlllll001nnnn,
 //       rule: BFI,
 //       safety: [Rn  ==
 //               Pc => DECODER_ERROR,
@@ -616,6 +656,7 @@ class Binary2RegisterBitRangeMsbGeLsbTester_Case4
 //       generated_baseline: BFC_cccc0111110mmmmmddddlllll0011111_case_0,
 //       lsb: lsb(11:7),
 //       msb: msb(20:16),
+//       pattern: cccc0111110mmmmmddddlllll0011111,
 //       rule: BFC,
 //       safety: [Rd  ==
 //               Pc => UNPREDICTABLE,
@@ -642,6 +683,7 @@ class Unary1RegisterBitRangeMsbGeLsbTester_Case5
 //       fields: [widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //       generated_baseline: UBFX_cccc0111111mmmmmddddlllll101nnnn_case_0,
 //       lsb: lsb(11:7),
+//       pattern: cccc0111111mmmmmddddlllll101nnnn,
 //       rule: UBFX,
 //       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
 //         lsb + widthm1  >

@@ -44,6 +44,8 @@ namespace nacl_arm_test {
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
+//       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
+//       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
 //         Q(24)=1 &&
@@ -51,10 +53,10 @@ namespace nacl_arm_test {
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase0
+class VectorBinary2RegisterScalar_I16_32TesterCase0
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase0(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32TesterCase0(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -63,7 +65,7 @@ class VectorBinary2RegisterScalarTesterCase0
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase0
+bool VectorBinary2RegisterScalar_I16_32TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -83,7 +85,7 @@ bool VectorBinary2RegisterScalarTesterCase0
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase0
+bool VectorBinary2RegisterScalar_I16_32TesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -123,6 +125,8 @@ bool VectorBinary2RegisterScalarTesterCase0
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
+//       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
 //            size(21:20)=01) => UNDEFINED,
@@ -131,10 +135,10 @@ bool VectorBinary2RegisterScalarTesterCase0
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase1
+class VectorBinary2RegisterScalar_F32TesterCase1
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase1(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_F32TesterCase1(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -143,7 +147,7 @@ class VectorBinary2RegisterScalarTesterCase1
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase1
+bool VectorBinary2RegisterScalar_F32TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -163,7 +167,7 @@ bool VectorBinary2RegisterScalarTesterCase1
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase1
+bool VectorBinary2RegisterScalar_F32TesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -204,15 +208,17 @@ bool VectorBinary2RegisterScalarTesterCase1
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
+//       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
+//       rule: VMLAL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase2
+class VectorBinary2RegisterScalar_I16_32LTesterCase2
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase2(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32LTesterCase2(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -221,7 +227,7 @@ class VectorBinary2RegisterScalarTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase2
+bool VectorBinary2RegisterScalar_I16_32LTesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -241,7 +247,7 @@ bool VectorBinary2RegisterScalarTesterCase2
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase2
+bool VectorBinary2RegisterScalar_I16_32LTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -272,15 +278,17 @@ bool VectorBinary2RegisterScalarTesterCase2
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
+//       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
+//       rule: VQDMLAL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase3
+class VectorBinary2RegisterScalar_I16_32LTesterCase3
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase3(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32LTesterCase3(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -289,7 +297,7 @@ class VectorBinary2RegisterScalarTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase3
+bool VectorBinary2RegisterScalar_I16_32LTesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -312,7 +320,7 @@ bool VectorBinary2RegisterScalarTesterCase3
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase3
+bool VectorBinary2RegisterScalar_I16_32LTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -345,6 +353,8 @@ bool VectorBinary2RegisterScalarTesterCase3
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
+//       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
+//       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
 //         Q(24)=1 &&
@@ -352,10 +362,10 @@ bool VectorBinary2RegisterScalarTesterCase3
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase4
+class VectorBinary2RegisterScalar_I16_32TesterCase4
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase4(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32TesterCase4(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -364,7 +374,7 @@ class VectorBinary2RegisterScalarTesterCase4
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase4
+bool VectorBinary2RegisterScalar_I16_32TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -384,7 +394,7 @@ bool VectorBinary2RegisterScalarTesterCase4
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase4
+bool VectorBinary2RegisterScalar_I16_32TesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -424,6 +434,8 @@ bool VectorBinary2RegisterScalarTesterCase4
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
+//       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
 //            size(21:20)=01) => UNDEFINED,
@@ -432,10 +444,10 @@ bool VectorBinary2RegisterScalarTesterCase4
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase5
+class VectorBinary2RegisterScalar_F32TesterCase5
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase5(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_F32TesterCase5(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -444,7 +456,7 @@ class VectorBinary2RegisterScalarTesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase5
+bool VectorBinary2RegisterScalar_F32TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -464,7 +476,7 @@ bool VectorBinary2RegisterScalarTesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase5
+bool VectorBinary2RegisterScalar_F32TesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -505,15 +517,17 @@ bool VectorBinary2RegisterScalarTesterCase5
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
+//       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
+//       rule: VMLSL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase6
+class VectorBinary2RegisterScalar_I16_32LTesterCase6
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase6(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32LTesterCase6(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -522,7 +536,7 @@ class VectorBinary2RegisterScalarTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase6
+bool VectorBinary2RegisterScalar_I16_32LTesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -542,7 +556,7 @@ bool VectorBinary2RegisterScalarTesterCase6
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase6
+bool VectorBinary2RegisterScalar_I16_32LTesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -573,15 +587,17 @@ bool VectorBinary2RegisterScalarTesterCase6
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
+//       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
+//       rule: VQDMLSL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase7
+class VectorBinary2RegisterScalar_I16_32LTesterCase7
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase7(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32LTesterCase7(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -590,7 +606,7 @@ class VectorBinary2RegisterScalarTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase7
+bool VectorBinary2RegisterScalar_I16_32LTesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -613,7 +629,7 @@ bool VectorBinary2RegisterScalarTesterCase7
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase7
+bool VectorBinary2RegisterScalar_I16_32LTesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -646,6 +662,8 @@ bool VectorBinary2RegisterScalarTesterCase7
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
+//       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
+//       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
 //         Q(24)=1 &&
@@ -653,10 +671,10 @@ bool VectorBinary2RegisterScalarTesterCase7
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase8
+class VectorBinary2RegisterScalar_I16_32TesterCase8
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase8(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32TesterCase8(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -665,7 +683,7 @@ class VectorBinary2RegisterScalarTesterCase8
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase8
+bool VectorBinary2RegisterScalar_I16_32TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -685,7 +703,7 @@ bool VectorBinary2RegisterScalarTesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase8
+bool VectorBinary2RegisterScalar_I16_32TesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -725,6 +743,8 @@ bool VectorBinary2RegisterScalarTesterCase8
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
+//       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
 //            size(21:20)=01) => UNDEFINED,
@@ -733,10 +753,10 @@ bool VectorBinary2RegisterScalarTesterCase8
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase9
+class VectorBinary2RegisterScalar_F32TesterCase9
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase9(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_F32TesterCase9(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -745,7 +765,7 @@ class VectorBinary2RegisterScalarTesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase9
+bool VectorBinary2RegisterScalar_F32TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -765,7 +785,7 @@ bool VectorBinary2RegisterScalarTesterCase9
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase9
+bool VectorBinary2RegisterScalar_F32TesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -806,15 +826,17 @@ bool VectorBinary2RegisterScalarTesterCase9
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
+//       pattern: 1111001u1dssnnnndddd1010n1m0mmmm,
+//       rule: VMULL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase10
+class VectorBinary2RegisterScalar_I16_32LTesterCase10
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase10(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32LTesterCase10(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -823,7 +845,7 @@ class VectorBinary2RegisterScalarTesterCase10
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase10
+bool VectorBinary2RegisterScalar_I16_32LTesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -843,7 +865,7 @@ bool VectorBinary2RegisterScalarTesterCase10
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase10
+bool VectorBinary2RegisterScalar_I16_32LTesterCase10
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -874,15 +896,17 @@ bool VectorBinary2RegisterScalarTesterCase10
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
+//       pattern: 111100101dssnnnndddd1011n1m0mmmm,
+//       rule: VQDMULL_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
 //            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase11
+class VectorBinary2RegisterScalar_I16_32LTesterCase11
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase11(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32LTesterCase11(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -891,7 +915,7 @@ class VectorBinary2RegisterScalarTesterCase11
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase11
+bool VectorBinary2RegisterScalar_I16_32LTesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -914,7 +938,7 @@ bool VectorBinary2RegisterScalarTesterCase11
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase11
+bool VectorBinary2RegisterScalar_I16_32LTesterCase11
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -947,6 +971,8 @@ bool VectorBinary2RegisterScalarTesterCase11
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd1100n1m0mmmm,
+//       rule: VQDMULH_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
 //         Q(24)=1 &&
@@ -954,10 +980,10 @@ bool VectorBinary2RegisterScalarTesterCase11
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase12
+class VectorBinary2RegisterScalar_I16_32TesterCase12
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase12(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32TesterCase12(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -966,7 +992,7 @@ class VectorBinary2RegisterScalarTesterCase12
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase12
+bool VectorBinary2RegisterScalar_I16_32TesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -986,7 +1012,7 @@ bool VectorBinary2RegisterScalarTesterCase12
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase12
+bool VectorBinary2RegisterScalar_I16_32TesterCase12
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -1026,6 +1052,8 @@ bool VectorBinary2RegisterScalarTesterCase12
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd1101n1m0mmmm,
+//       rule: VQRDMULH,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
 //         Q(24)=1 &&
@@ -1033,10 +1061,10 @@ bool VectorBinary2RegisterScalarTesterCase12
 //            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20),
 //       uses: {}}
-class VectorBinary2RegisterScalarTesterCase13
+class VectorBinary2RegisterScalar_I16_32TesterCase13
     : public VectorBinary2RegisterScalarTester {
  public:
-  VectorBinary2RegisterScalarTesterCase13(const NamedClassDecoder& decoder)
+  VectorBinary2RegisterScalar_I16_32TesterCase13(const NamedClassDecoder& decoder)
     : VectorBinary2RegisterScalarTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1045,7 +1073,7 @@ class VectorBinary2RegisterScalarTesterCase13
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorBinary2RegisterScalarTesterCase13
+bool VectorBinary2RegisterScalar_I16_32TesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1065,7 +1093,7 @@ bool VectorBinary2RegisterScalarTesterCase13
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorBinary2RegisterScalarTesterCase13
+bool VectorBinary2RegisterScalar_I16_32TesterCase13
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorBinary2RegisterScalarTester::
@@ -1110,6 +1138,7 @@ bool VectorBinary2RegisterScalarTesterCase13
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
+//       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
@@ -1119,10 +1148,10 @@ bool VectorBinary2RegisterScalarTesterCase13
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32Tester_Case0
-    : public VectorBinary2RegisterScalarTesterCase0 {
+    : public VectorBinary2RegisterScalar_I16_32TesterCase0 {
  public:
   VectorBinary2RegisterScalar_I16_32Tester_Case0()
-    : VectorBinary2RegisterScalarTesterCase0(
+    : VectorBinary2RegisterScalar_I16_32TesterCase0(
       state_.VectorBinary2RegisterScalar_I16_32_VMLA_by_scalar_A1_instance_)
   {}
 };
@@ -1137,6 +1166,7 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case0
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
@@ -1147,10 +1177,10 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case0
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_F32Tester_Case1
-    : public VectorBinary2RegisterScalarTesterCase1 {
+    : public VectorBinary2RegisterScalar_F32TesterCase1 {
  public:
   VectorBinary2RegisterScalar_F32Tester_Case1()
-    : VectorBinary2RegisterScalarTesterCase1(
+    : VectorBinary2RegisterScalar_F32TesterCase1(
       state_.VectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1_instance_)
   {}
 };
@@ -1163,6 +1193,7 @@ class VectorBinary2RegisterScalar_F32Tester_Case1
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
+//       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLAL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
@@ -1170,10 +1201,10 @@ class VectorBinary2RegisterScalar_F32Tester_Case1
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32LTester_Case2
-    : public VectorBinary2RegisterScalarTesterCase2 {
+    : public VectorBinary2RegisterScalar_I16_32LTesterCase2 {
  public:
   VectorBinary2RegisterScalar_I16_32LTester_Case2()
-    : VectorBinary2RegisterScalarTesterCase2(
+    : VectorBinary2RegisterScalar_I16_32LTesterCase2(
       state_.VectorBinary2RegisterScalar_I16_32L_VMLAL_by_scalar_A2_instance_)
   {}
 };
@@ -1186,6 +1217,7 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case2
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VQDMLAL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
+//       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLAL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
@@ -1193,10 +1225,10 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case2
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32LTester_Case3
-    : public VectorBinary2RegisterScalarTesterCase3 {
+    : public VectorBinary2RegisterScalar_I16_32LTesterCase3 {
  public:
   VectorBinary2RegisterScalar_I16_32LTester_Case3()
-    : VectorBinary2RegisterScalarTesterCase3(
+    : VectorBinary2RegisterScalar_I16_32LTesterCase3(
       state_.VectorBinary2RegisterScalar_I16_32L_VQDMLAL_A1_instance_)
   {}
 };
@@ -1211,6 +1243,7 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case3
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1,
+//       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
@@ -1220,10 +1253,10 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case3
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32Tester_Case4
-    : public VectorBinary2RegisterScalarTesterCase4 {
+    : public VectorBinary2RegisterScalar_I16_32TesterCase4 {
  public:
   VectorBinary2RegisterScalar_I16_32Tester_Case4()
-    : VectorBinary2RegisterScalarTesterCase4(
+    : VectorBinary2RegisterScalar_I16_32TesterCase4(
       state_.VectorBinary2RegisterScalar_I16_32_VMLS_by_scalar_A1_instance_)
   {}
 };
@@ -1238,6 +1271,7 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case4
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
@@ -1248,10 +1282,10 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case4
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_F32Tester_Case5
-    : public VectorBinary2RegisterScalarTesterCase5 {
+    : public VectorBinary2RegisterScalar_F32TesterCase5 {
  public:
   VectorBinary2RegisterScalar_F32Tester_Case5()
-    : VectorBinary2RegisterScalarTesterCase5(
+    : VectorBinary2RegisterScalar_F32TesterCase5(
       state_.VectorBinary2RegisterScalar_F32_VMLS_by_scalar_A1_instance_)
   {}
 };
@@ -1264,6 +1298,7 @@ class VectorBinary2RegisterScalar_F32Tester_Case5
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VMLSL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0,
+//       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLSL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
@@ -1271,10 +1306,10 @@ class VectorBinary2RegisterScalar_F32Tester_Case5
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32LTester_Case6
-    : public VectorBinary2RegisterScalarTesterCase6 {
+    : public VectorBinary2RegisterScalar_I16_32LTesterCase6 {
  public:
   VectorBinary2RegisterScalar_I16_32LTester_Case6()
-    : VectorBinary2RegisterScalarTesterCase6(
+    : VectorBinary2RegisterScalar_I16_32LTesterCase6(
       state_.VectorBinary2RegisterScalar_I16_32L_VMLSL_by_scalar_A2_instance_)
   {}
 };
@@ -1287,6 +1322,7 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case6
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0,
+//       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLSL_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
@@ -1294,10 +1330,10 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case6
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32LTester_Case7
-    : public VectorBinary2RegisterScalarTesterCase7 {
+    : public VectorBinary2RegisterScalar_I16_32LTesterCase7 {
  public:
   VectorBinary2RegisterScalar_I16_32LTester_Case7()
-    : VectorBinary2RegisterScalarTesterCase7(
+    : VectorBinary2RegisterScalar_I16_32LTesterCase7(
       state_.VectorBinary2RegisterScalar_I16_32L_VQDMLSL_A1_instance_)
   {}
 };
@@ -1312,6 +1348,7 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case7
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1,
+//       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
@@ -1321,10 +1358,10 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case7
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32Tester_Case8
-    : public VectorBinary2RegisterScalarTesterCase8 {
+    : public VectorBinary2RegisterScalar_I16_32TesterCase8 {
  public:
   VectorBinary2RegisterScalar_I16_32Tester_Case8()
-    : VectorBinary2RegisterScalarTesterCase8(
+    : VectorBinary2RegisterScalar_I16_32TesterCase8(
       state_.VectorBinary2RegisterScalar_I16_32_VMUL_by_scalar_A1_instance_)
   {}
 };
@@ -1339,6 +1376,7 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case8
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
@@ -1349,10 +1387,10 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case8
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_F32Tester_Case9
-    : public VectorBinary2RegisterScalarTesterCase9 {
+    : public VectorBinary2RegisterScalar_F32TesterCase9 {
  public:
   VectorBinary2RegisterScalar_F32Tester_Case9()
-    : VectorBinary2RegisterScalarTesterCase9(
+    : VectorBinary2RegisterScalar_F32TesterCase9(
       state_.VectorBinary2RegisterScalar_F32_VMUL_by_scalar_A1_instance_)
   {}
 };
@@ -1365,6 +1403,7 @@ class VectorBinary2RegisterScalar_F32Tester_Case9
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VMULL_by_scalar_A2_1111001u1dssnnnndddd1010n1m0mmmm_case_0,
+//       pattern: 1111001u1dssnnnndddd1010n1m0mmmm,
 //       rule: VMULL_by_scalar_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
@@ -1372,10 +1411,10 @@ class VectorBinary2RegisterScalar_F32Tester_Case9
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32LTester_Case10
-    : public VectorBinary2RegisterScalarTesterCase10 {
+    : public VectorBinary2RegisterScalar_I16_32LTesterCase10 {
  public:
   VectorBinary2RegisterScalar_I16_32LTester_Case10()
-    : VectorBinary2RegisterScalarTesterCase10(
+    : VectorBinary2RegisterScalar_I16_32LTesterCase10(
       state_.VectorBinary2RegisterScalar_I16_32L_VMULL_by_scalar_A2_instance_)
   {}
 };
@@ -1388,6 +1427,7 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case10
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       generated_baseline: VQDMULL_A2_111100101dssnnnndddd1011n1m0mmmm_case_0,
+//       pattern: 111100101dssnnnndddd1011n1m0mmmm,
 //       rule: VQDMULL_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         (size(21:20)=00 ||
@@ -1395,10 +1435,10 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case10
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32LTester_Case11
-    : public VectorBinary2RegisterScalarTesterCase11 {
+    : public VectorBinary2RegisterScalar_I16_32LTesterCase11 {
  public:
   VectorBinary2RegisterScalar_I16_32LTester_Case11()
-    : VectorBinary2RegisterScalarTesterCase11(
+    : VectorBinary2RegisterScalar_I16_32LTesterCase11(
       state_.VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2_instance_)
   {}
 };
@@ -1413,6 +1453,7 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case11
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VQDMULH_A2_1111001q1dssnnnndddd1100n1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd1100n1m0mmmm,
 //       rule: VQDMULH_A2,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
@@ -1422,10 +1463,10 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case11
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32Tester_Case12
-    : public VectorBinary2RegisterScalarTesterCase12 {
+    : public VectorBinary2RegisterScalar_I16_32TesterCase12 {
  public:
   VectorBinary2RegisterScalar_I16_32Tester_Case12()
-    : VectorBinary2RegisterScalarTesterCase12(
+    : VectorBinary2RegisterScalar_I16_32TesterCase12(
       state_.VectorBinary2RegisterScalar_I16_32_VQDMULH_A2_instance_)
   {}
 };
@@ -1440,6 +1481,7 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case12
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       generated_baseline: VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0,
+//       pattern: 1111001q1dssnnnndddd1101n1m0mmmm,
 //       rule: VQRDMULH,
 //       safety: [size(21:20)=11 => DECODER_ERROR,
 //         size(21:20)=00 => UNDEFINED,
@@ -1449,10 +1491,10 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case12
 //       size: size(21:20),
 //       uses: {}}
 class VectorBinary2RegisterScalar_I16_32Tester_Case13
-    : public VectorBinary2RegisterScalarTesterCase13 {
+    : public VectorBinary2RegisterScalar_I16_32TesterCase13 {
  public:
   VectorBinary2RegisterScalar_I16_32Tester_Case13()
-    : VectorBinary2RegisterScalarTesterCase13(
+    : VectorBinary2RegisterScalar_I16_32TesterCase13(
       state_.VectorBinary2RegisterScalar_I16_32_VQRDMULH_instance_)
   {}
 };

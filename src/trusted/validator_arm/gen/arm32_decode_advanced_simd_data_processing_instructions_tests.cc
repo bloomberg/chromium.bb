@@ -37,7 +37,9 @@ namespace nacl_arm_test {
 // U(24)=0 & A(23:19)=1x11x & C(7:4)=xxx0
 //    = {actual: VectorBinary3RegisterImmOp,
 //       baseline: VectorBinary3RegisterImmOp,
-//       constraints: }
+//       constraints: ,
+//       pattern: 111100101d11nnnnddddiiiinqm0mmmm,
+//       rule: Vext_Rule_305_A1_P598}
 class VectorBinary3RegisterImmOpTesterCase0
     : public VectorBinary3RegisterImmOpTester {
  public:
@@ -72,7 +74,9 @@ bool VectorBinary3RegisterImmOpTesterCase0
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
 //    = {actual: VectorUnary2RegisterDup,
 //       baseline: VectorUnary2RegisterDup,
-//       constraints: }
+//       constraints: ,
+//       pattern: 111100111d11iiiidddd11000qm0mmmm,
+//       rule: Vdup_Rule_302_A1_P592}
 class VectorUnary2RegisterDupTesterCase1
     : public VectorUnary2RegisterDupTester {
  public:
@@ -110,7 +114,9 @@ bool VectorUnary2RegisterDupTesterCase1
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
 //    = {actual: VectorBinary3RegisterLookupOp,
 //       baseline: VectorBinary3RegisterLookupOp,
-//       constraints: }
+//       constraints: ,
+//       pattern: 111100111d11nnnndddd10ccnpm0mmmm,
+//       rule: Vtbl_Vtbx_Rule_406_A1_P798}
 class VectorBinary3RegisterLookupOpTesterCase2
     : public VectorBinary3RegisterLookupOpTester {
  public:
@@ -154,6 +160,7 @@ bool VectorBinary3RegisterLookupOpTesterCase2
 //    = {actual: VectorBinary3RegisterImmOp,
 //       baseline: VectorBinary3RegisterImmOp,
 //       constraints: ,
+//       pattern: 111100101d11nnnnddddiiiinqm0mmmm,
 //       rule: Vext_Rule_305_A1_P598}
 class VectorBinary3RegisterImmOpTester_Case0
     : public VectorBinary3RegisterImmOpTesterCase0 {
@@ -168,6 +175,7 @@ class VectorBinary3RegisterImmOpTester_Case0
 //    = {actual: VectorUnary2RegisterDup,
 //       baseline: VectorUnary2RegisterDup,
 //       constraints: ,
+//       pattern: 111100111d11iiiidddd11000qm0mmmm,
 //       rule: Vdup_Rule_302_A1_P592}
 class VectorUnary2RegisterDupTester_Case1
     : public VectorUnary2RegisterDupTesterCase1 {
@@ -182,6 +190,7 @@ class VectorUnary2RegisterDupTester_Case1
 //    = {actual: VectorBinary3RegisterLookupOp,
 //       baseline: VectorBinary3RegisterLookupOp,
 //       constraints: ,
+//       pattern: 111100111d11nnnndddd10ccnpm0mmmm,
 //       rule: Vtbl_Vtbx_Rule_406_A1_P798}
 class VectorBinary3RegisterLookupOpTester_Case2
     : public VectorBinary3RegisterLookupOpTesterCase2 {

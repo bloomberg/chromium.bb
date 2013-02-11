@@ -42,6 +42,8 @@ namespace nacl_arm_test {
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0,
+//       pattern: cccc11100d00nnnndddd101snom0mmmm,
+//       rule: VMLA_VMLS_floating_point,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
 class CondVfpOpTesterCase0
@@ -65,6 +67,9 @@ bool CondVfpOpTesterCase0
   // opc1(23:20)=~0x00
   if ((inst.Bits() & 0x00B00000)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -95,6 +100,8 @@ bool CondVfpOpTesterCase0
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0,
+//       pattern: cccc11100d01nnnndddd101snom0mmmm,
+//       rule: VNMLA_VNMLS,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
 class CondVfpOpTesterCase1
@@ -118,6 +125,9 @@ bool CondVfpOpTesterCase1
   // opc1(23:20)=~0x01
   if ((inst.Bits() & 0x00B00000)  !=
           0x00100000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -148,6 +158,8 @@ bool CondVfpOpTesterCase1
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0,
+//       pattern: cccc11100d10nnnndddd101sn0m0mmmm,
+//       rule: VMUL_floating_point,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
 class CondVfpOpTesterCase2
@@ -174,6 +186,9 @@ bool CondVfpOpTesterCase2
   // opc3(7:6)=~x0
   if ((inst.Bits() & 0x00000040)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -204,6 +219,8 @@ bool CondVfpOpTesterCase2
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0,
+//       pattern: cccc11100d10nnnndddd101sn1m0mmmm,
+//       rule: VNMUL,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
 class CondVfpOpTesterCase3
@@ -230,6 +247,9 @@ bool CondVfpOpTesterCase3
   // opc3(7:6)=~x1
   if ((inst.Bits() & 0x00000040)  !=
           0x00000040) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -260,6 +280,8 @@ bool CondVfpOpTesterCase3
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0,
+//       pattern: cccc11100d11nnnndddd101sn0m0mmmm,
+//       rule: VADD_floating_point,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
 class CondVfpOpTesterCase4
@@ -286,6 +308,9 @@ bool CondVfpOpTesterCase4
   // opc3(7:6)=~x0
   if ((inst.Bits() & 0x00000040)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -316,6 +341,8 @@ bool CondVfpOpTesterCase4
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0,
+//       pattern: cccc11100d11nnnndddd101sn1m0mmmm,
+//       rule: VSUB_floating_point,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
 class CondVfpOpTesterCase5
@@ -342,6 +369,9 @@ bool CondVfpOpTesterCase5
   // opc3(7:6)=~x1
   if ((inst.Bits() & 0x00000040)  !=
           0x00000040) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -372,6 +402,8 @@ bool CondVfpOpTesterCase5
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0,
+//       pattern: cccc11101d00nnnndddd101sn0m0mmmm,
+//       rule: VDIV,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
 class CondVfpOpTesterCase6
@@ -398,6 +430,9 @@ bool CondVfpOpTesterCase6
   // opc3(7:6)=~x0
   if ((inst.Bits() & 0x00000040)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -428,6 +463,8 @@ bool CondVfpOpTesterCase6
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0,
+//       pattern: cccc11101d01nnnndddd101snom0mmmm,
+//       rule: VFNMA_VFNMS,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
 class CondVfpOpTesterCase7
@@ -451,6 +488,9 @@ bool CondVfpOpTesterCase7
   // opc1(23:20)=~1x01
   if ((inst.Bits() & 0x00B00000)  !=
           0x00900000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -481,6 +521,8 @@ bool CondVfpOpTesterCase7
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0,
+//       pattern: cccc11101d10nnnndddd101snom0mmmm,
+//       rule: VFMA_VFMS,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
 class CondVfpOpTesterCase8
@@ -504,6 +546,9 @@ bool CondVfpOpTesterCase8
   // opc1(23:20)=~1x10
   if ((inst.Bits() & 0x00B00000)  !=
           0x00A00000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -539,6 +584,7 @@ bool CondVfpOpTesterCase8
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0,
+//       pattern: cccc11100d00nnnndddd101snom0mmmm,
 //       rule: VMLA_VMLS_floating_point,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
@@ -559,6 +605,7 @@ class CondVfpOpTester_Case0
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0,
+//       pattern: cccc11100d01nnnndddd101snom0mmmm,
 //       rule: VNMLA_VNMLS,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
@@ -579,6 +626,7 @@ class CondVfpOpTester_Case1
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0,
+//       pattern: cccc11100d10nnnndddd101sn0m0mmmm,
 //       rule: VMUL_floating_point,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
@@ -599,6 +647,7 @@ class CondVfpOpTester_Case2
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0,
+//       pattern: cccc11100d10nnnndddd101sn1m0mmmm,
 //       rule: VNMUL,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
@@ -619,6 +668,7 @@ class CondVfpOpTester_Case3
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0,
+//       pattern: cccc11100d11nnnndddd101sn0m0mmmm,
 //       rule: VADD_floating_point,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
@@ -639,6 +689,7 @@ class CondVfpOpTester_Case4
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0,
+//       pattern: cccc11100d11nnnndddd101sn1m0mmmm,
 //       rule: VSUB_floating_point,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
@@ -659,6 +710,7 @@ class CondVfpOpTester_Case5
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0,
+//       pattern: cccc11101d00nnnndddd101sn0m0mmmm,
 //       rule: VDIV,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
@@ -679,6 +731,7 @@ class CondVfpOpTester_Case6
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0,
+//       pattern: cccc11101d01nnnndddd101snom0mmmm,
 //       rule: VFNMA_VFNMS,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}
@@ -699,6 +752,7 @@ class CondVfpOpTester_Case7
 //       defs: {},
 //       fields: [cond(31:28)],
 //       generated_baseline: VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0,
+//       pattern: cccc11101d10nnnndddd101snom0mmmm,
 //       rule: VFMA_VFMS,
 //       safety: [cond(31:28)=1111 => DECODER_ERROR],
 //       uses: {}}

@@ -60,6 +60,7 @@ namespace nacl_arm_test {
 //       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -73,6 +74,7 @@ namespace nacl_arm_test {
 //            else 4
 //            if type(11:8)=0010
 //            else 0,
+//       rule: VST1_multiple_single_elements,
 //       safety: [type(11:8)=0111 &&
 //            align(1)=1 => UNDEFINED,
 //         type(11:8)=1010 &&
@@ -91,10 +93,10 @@ namespace nacl_arm_test {
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase0
+class VectorLoadStoreMultiple1TesterCase0
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase0(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple1TesterCase0(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -103,7 +105,7 @@ class VectorLoadStoreMultipleTesterCase0
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase0
+bool VectorLoadStoreMultiple1TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -124,7 +126,7 @@ bool VectorLoadStoreMultipleTesterCase0
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase0
+bool VectorLoadStoreMultiple1TesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -222,6 +224,7 @@ bool VectorLoadStoreMultipleTesterCase0
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -229,6 +232,7 @@ bool VectorLoadStoreMultipleTesterCase0
 //       regs: 1
 //            if type in bitset {'1000', '1001'}
 //            else 2,
+//       rule: VST2_multiple_2_element_structures,
 //       safety: [size(7:6)=11 => UNDEFINED,
 //         type in bitset {'1000', '1001'} &&
 //            align(5:4)=11 => UNDEFINED,
@@ -245,10 +249,10 @@ bool VectorLoadStoreMultipleTesterCase0
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase1
+class VectorLoadStoreMultiple2TesterCase1
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase1(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple2TesterCase1(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -257,7 +261,7 @@ class VectorLoadStoreMultipleTesterCase1
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase1
+bool VectorLoadStoreMultiple2TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -278,7 +282,7 @@ bool VectorLoadStoreMultipleTesterCase1
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase1
+bool VectorLoadStoreMultiple2TesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -357,6 +361,7 @@ bool VectorLoadStoreMultipleTesterCase1
 //       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -370,6 +375,7 @@ bool VectorLoadStoreMultipleTesterCase1
 //            else 4
 //            if type(11:8)=0010
 //            else 0,
+//       rule: VST1_multiple_single_elements,
 //       safety: [type(11:8)=0111 &&
 //            align(1)=1 => UNDEFINED,
 //         type(11:8)=1010 &&
@@ -388,10 +394,10 @@ bool VectorLoadStoreMultipleTesterCase1
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase2
+class VectorLoadStoreMultiple1TesterCase2
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase2(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple1TesterCase2(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -400,7 +406,7 @@ class VectorLoadStoreMultipleTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase2
+bool VectorLoadStoreMultiple1TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -421,7 +427,7 @@ bool VectorLoadStoreMultipleTesterCase2
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase2
+bool VectorLoadStoreMultiple1TesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -519,10 +525,12 @@ bool VectorLoadStoreMultipleTesterCase2
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST4_multiple_4_element_structures,
 //       safety: [size(7:6)=11 => UNDEFINED,
 //         not type in bitset {'0000', '0001'} => DECODER_ERROR,
 //         n  ==
@@ -537,10 +545,10 @@ bool VectorLoadStoreMultipleTesterCase2
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase3
+class VectorLoadStoreMultiple4TesterCase3
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase3(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple4TesterCase3(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -549,7 +557,7 @@ class VectorLoadStoreMultipleTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase3
+bool VectorLoadStoreMultiple4TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -570,7 +578,7 @@ bool VectorLoadStoreMultipleTesterCase3
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase3
+bool VectorLoadStoreMultiple4TesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -645,10 +653,12 @@ bool VectorLoadStoreMultipleTesterCase3
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST3_multiple_3_element_structures,
 //       safety: [size(7:6)=11 ||
 //            align(1)=1 => UNDEFINED,
 //         not type in bitset {'0100', '0101'} => DECODER_ERROR,
@@ -664,10 +674,10 @@ bool VectorLoadStoreMultipleTesterCase3
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase4
+class VectorLoadStoreMultiple3TesterCase4
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase4(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple3TesterCase4(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -676,7 +686,7 @@ class VectorLoadStoreMultipleTesterCase4
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase4
+bool VectorLoadStoreMultiple3TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -697,7 +707,7 @@ bool VectorLoadStoreMultipleTesterCase4
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase4
+bool VectorLoadStoreMultiple3TesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -766,6 +776,7 @@ bool VectorLoadStoreMultipleTesterCase4
 //       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -779,6 +790,7 @@ bool VectorLoadStoreMultipleTesterCase4
 //            else 4
 //            if type(11:8)=0010
 //            else 0,
+//       rule: VST1_multiple_single_elements,
 //       safety: [type(11:8)=0111 &&
 //            align(1)=1 => UNDEFINED,
 //         type(11:8)=1010 &&
@@ -797,10 +809,10 @@ bool VectorLoadStoreMultipleTesterCase4
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase5
+class VectorLoadStoreMultiple1TesterCase5
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase5(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple1TesterCase5(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -809,7 +821,7 @@ class VectorLoadStoreMultipleTesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase5
+bool VectorLoadStoreMultiple1TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -830,7 +842,7 @@ bool VectorLoadStoreMultipleTesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase5
+bool VectorLoadStoreMultiple1TesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -928,6 +940,7 @@ bool VectorLoadStoreMultipleTesterCase5
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -935,6 +948,7 @@ bool VectorLoadStoreMultipleTesterCase5
 //       regs: 1
 //            if type in bitset {'1000', '1001'}
 //            else 2,
+//       rule: VST2_multiple_2_element_structures,
 //       safety: [size(7:6)=11 => UNDEFINED,
 //         type in bitset {'1000', '1001'} &&
 //            align(5:4)=11 => UNDEFINED,
@@ -951,10 +965,10 @@ bool VectorLoadStoreMultipleTesterCase5
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase6
+class VectorLoadStoreMultiple2TesterCase6
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase6(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple2TesterCase6(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -963,7 +977,7 @@ class VectorLoadStoreMultipleTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase6
+bool VectorLoadStoreMultiple2TesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -984,7 +998,7 @@ bool VectorLoadStoreMultipleTesterCase6
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase6
+bool VectorLoadStoreMultiple2TesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -1055,10 +1069,12 @@ bool VectorLoadStoreMultipleTesterCase6
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss00aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST1_single_element_from_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=00 &&
 //            index_align(0)=~0 => UNDEFINED,
@@ -1078,10 +1094,10 @@ bool VectorLoadStoreMultipleTesterCase6
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase7
+class VectorLoadStoreSingle1TesterCase7
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase7(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle1TesterCase7(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1090,7 +1106,7 @@ class VectorLoadStoreSingleTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase7
+bool VectorLoadStoreSingle1TesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1111,7 +1127,7 @@ bool VectorLoadStoreSingleTesterCase7
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase7
+bool VectorLoadStoreSingle1TesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -1205,10 +1221,12 @@ bool VectorLoadStoreSingleTesterCase7
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss01aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST2_single_2_element_structure_from_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=10 &&
 //            index_align(1)=~0 => UNDEFINED,
@@ -1223,10 +1241,10 @@ bool VectorLoadStoreSingleTesterCase7
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase8
+class VectorLoadStoreSingle2TesterCase8
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase8(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle2TesterCase8(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1235,7 +1253,7 @@ class VectorLoadStoreSingleTesterCase8
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase8
+bool VectorLoadStoreSingle2TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1256,7 +1274,7 @@ bool VectorLoadStoreSingleTesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase8
+bool VectorLoadStoreSingle2TesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -1345,10 +1363,12 @@ bool VectorLoadStoreSingleTesterCase8
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss10aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST3_single_3_element_structure_from_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=00 &&
 //            index_align(0)=~0 => UNDEFINED,
@@ -1367,10 +1387,10 @@ bool VectorLoadStoreSingleTesterCase8
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase9
+class VectorLoadStoreSingle3TesterCase9
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase9(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle3TesterCase9(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1379,7 +1399,7 @@ class VectorLoadStoreSingleTesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase9
+bool VectorLoadStoreSingle3TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1400,7 +1420,7 @@ bool VectorLoadStoreSingleTesterCase9
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase9
+bool VectorLoadStoreSingle3TesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -1519,10 +1539,12 @@ bool VectorLoadStoreSingleTesterCase9
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss11aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST4_single_4_element_structure_form_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=10 &&
 //            index_align(1:0)=11 => UNDEFINED,
@@ -1537,10 +1559,10 @@ bool VectorLoadStoreSingleTesterCase9
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase10
+class VectorLoadStoreSingle4TesterCase10
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase10(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle4TesterCase10(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1549,7 +1571,7 @@ class VectorLoadStoreSingleTesterCase10
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase10
+bool VectorLoadStoreSingle4TesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1570,7 +1592,7 @@ bool VectorLoadStoreSingleTesterCase10
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase10
+bool VectorLoadStoreSingle4TesterCase10
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -1668,10 +1690,12 @@ bool VectorLoadStoreSingleTesterCase10
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss00aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST1_single_element_from_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=00 &&
 //            index_align(0)=~0 => UNDEFINED,
@@ -1691,10 +1715,10 @@ bool VectorLoadStoreSingleTesterCase10
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase11
+class VectorLoadStoreSingle1TesterCase11
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase11(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle1TesterCase11(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1703,7 +1727,7 @@ class VectorLoadStoreSingleTesterCase11
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase11
+bool VectorLoadStoreSingle1TesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1724,7 +1748,7 @@ bool VectorLoadStoreSingleTesterCase11
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase11
+bool VectorLoadStoreSingle1TesterCase11
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -1818,10 +1842,12 @@ bool VectorLoadStoreSingleTesterCase11
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss01aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST2_single_2_element_structure_from_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=10 &&
 //            index_align(1)=~0 => UNDEFINED,
@@ -1836,10 +1862,10 @@ bool VectorLoadStoreSingleTesterCase11
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase12
+class VectorLoadStoreSingle2TesterCase12
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase12(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle2TesterCase12(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1848,7 +1874,7 @@ class VectorLoadStoreSingleTesterCase12
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase12
+bool VectorLoadStoreSingle2TesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1869,7 +1895,7 @@ bool VectorLoadStoreSingleTesterCase12
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase12
+bool VectorLoadStoreSingle2TesterCase12
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -1958,10 +1984,12 @@ bool VectorLoadStoreSingleTesterCase12
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss10aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST3_single_3_element_structure_from_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=00 &&
 //            index_align(0)=~0 => UNDEFINED,
@@ -1980,10 +2008,10 @@ bool VectorLoadStoreSingleTesterCase12
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase13
+class VectorLoadStoreSingle3TesterCase13
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase13(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle3TesterCase13(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -1992,7 +2020,7 @@ class VectorLoadStoreSingleTesterCase13
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase13
+bool VectorLoadStoreSingle3TesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2013,7 +2041,7 @@ bool VectorLoadStoreSingleTesterCase13
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase13
+bool VectorLoadStoreSingle3TesterCase13
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -2132,10 +2160,12 @@ bool VectorLoadStoreSingleTesterCase13
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss11aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VST4_single_4_element_structure_form_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=10 &&
 //            index_align(1:0)=11 => UNDEFINED,
@@ -2150,10 +2180,10 @@ bool VectorLoadStoreSingleTesterCase13
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase14
+class VectorLoadStoreSingle4TesterCase14
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase14(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle4TesterCase14(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2162,7 +2192,7 @@ class VectorLoadStoreSingleTesterCase14
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase14
+bool VectorLoadStoreSingle4TesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2183,7 +2213,7 @@ bool VectorLoadStoreSingleTesterCase14
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase14
+bool VectorLoadStoreSingle4TesterCase14
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -2289,6 +2319,7 @@ bool VectorLoadStoreSingleTesterCase14
 //       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -2302,6 +2333,7 @@ bool VectorLoadStoreSingleTesterCase14
 //            else 4
 //            if type(11:8)=0010
 //            else 0,
+//       rule: VLD1_multiple_single_elements,
 //       safety: [type(11:8)=0111 &&
 //            align(1)=1 => UNDEFINED,
 //         type(11:8)=1010 &&
@@ -2320,10 +2352,10 @@ bool VectorLoadStoreSingleTesterCase14
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase15
+class VectorLoadStoreMultiple1TesterCase15
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase15(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple1TesterCase15(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2332,7 +2364,7 @@ class VectorLoadStoreMultipleTesterCase15
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase15
+bool VectorLoadStoreMultiple1TesterCase15
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2353,7 +2385,7 @@ bool VectorLoadStoreMultipleTesterCase15
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase15
+bool VectorLoadStoreMultiple1TesterCase15
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -2451,6 +2483,7 @@ bool VectorLoadStoreMultipleTesterCase15
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -2458,6 +2491,7 @@ bool VectorLoadStoreMultipleTesterCase15
 //       regs: 1
 //            if type in bitset {'1000', '1001'}
 //            else 2,
+//       rule: VLD2_multiple_2_element_structures,
 //       safety: [size(7:6)=11 => UNDEFINED,
 //         type in bitset {'1000', '1001'} &&
 //            align(5:4)=11 => UNDEFINED,
@@ -2474,10 +2508,10 @@ bool VectorLoadStoreMultipleTesterCase15
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase16
+class VectorLoadStoreMultiple2TesterCase16
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase16(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple2TesterCase16(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2486,7 +2520,7 @@ class VectorLoadStoreMultipleTesterCase16
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase16
+bool VectorLoadStoreMultiple2TesterCase16
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2507,7 +2541,7 @@ bool VectorLoadStoreMultipleTesterCase16
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase16
+bool VectorLoadStoreMultiple2TesterCase16
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -2586,6 +2620,7 @@ bool VectorLoadStoreMultipleTesterCase16
 //       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -2599,6 +2634,7 @@ bool VectorLoadStoreMultipleTesterCase16
 //            else 4
 //            if type(11:8)=0010
 //            else 0,
+//       rule: VLD1_multiple_single_elements,
 //       safety: [type(11:8)=0111 &&
 //            align(1)=1 => UNDEFINED,
 //         type(11:8)=1010 &&
@@ -2617,10 +2653,10 @@ bool VectorLoadStoreMultipleTesterCase16
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase17
+class VectorLoadStoreMultiple1TesterCase17
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase17(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple1TesterCase17(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2629,7 +2665,7 @@ class VectorLoadStoreMultipleTesterCase17
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase17
+bool VectorLoadStoreMultiple1TesterCase17
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2650,7 +2686,7 @@ bool VectorLoadStoreMultipleTesterCase17
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase17
+bool VectorLoadStoreMultiple1TesterCase17
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -2748,10 +2784,12 @@ bool VectorLoadStoreMultipleTesterCase17
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD4_multiple_4_element_structures,
 //       safety: [size(7:6)=11 => UNDEFINED,
 //         not type in bitset {'0000', '0001'} => DECODER_ERROR,
 //         n  ==
@@ -2766,10 +2804,10 @@ bool VectorLoadStoreMultipleTesterCase17
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase18
+class VectorLoadStoreMultiple4TesterCase18
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase18(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple4TesterCase18(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2778,7 +2816,7 @@ class VectorLoadStoreMultipleTesterCase18
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase18
+bool VectorLoadStoreMultiple4TesterCase18
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2799,7 +2837,7 @@ bool VectorLoadStoreMultipleTesterCase18
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase18
+bool VectorLoadStoreMultiple4TesterCase18
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -2874,10 +2912,12 @@ bool VectorLoadStoreMultipleTesterCase18
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD3_multiple_3_element_structures,
 //       safety: [size(7:6)=11 ||
 //            align(1)=1 => UNDEFINED,
 //         not type in bitset {'0100', '0101'} => DECODER_ERROR,
@@ -2893,10 +2933,10 @@ bool VectorLoadStoreMultipleTesterCase18
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase19
+class VectorLoadStoreMultiple3TesterCase19
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase19(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple3TesterCase19(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -2905,7 +2945,7 @@ class VectorLoadStoreMultipleTesterCase19
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase19
+bool VectorLoadStoreMultiple3TesterCase19
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2926,7 +2966,7 @@ bool VectorLoadStoreMultipleTesterCase19
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase19
+bool VectorLoadStoreMultiple3TesterCase19
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -2995,6 +3035,7 @@ bool VectorLoadStoreMultipleTesterCase19
 //       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -3008,6 +3049,7 @@ bool VectorLoadStoreMultipleTesterCase19
 //            else 4
 //            if type(11:8)=0010
 //            else 0,
+//       rule: VLD1_multiple_single_elements,
 //       safety: [type(11:8)=0111 &&
 //            align(1)=1 => UNDEFINED,
 //         type(11:8)=1010 &&
@@ -3026,10 +3068,10 @@ bool VectorLoadStoreMultipleTesterCase19
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase20
+class VectorLoadStoreMultiple1TesterCase20
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase20(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple1TesterCase20(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -3038,7 +3080,7 @@ class VectorLoadStoreMultipleTesterCase20
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase20
+bool VectorLoadStoreMultiple1TesterCase20
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3059,7 +3101,7 @@ bool VectorLoadStoreMultipleTesterCase20
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase20
+bool VectorLoadStoreMultiple1TesterCase20
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -3157,6 +3199,7 @@ bool VectorLoadStoreMultipleTesterCase20
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -3164,6 +3207,7 @@ bool VectorLoadStoreMultipleTesterCase20
 //       regs: 1
 //            if type in bitset {'1000', '1001'}
 //            else 2,
+//       rule: VLD2_multiple_2_element_structures,
 //       safety: [size(7:6)=11 => UNDEFINED,
 //         type in bitset {'1000', '1001'} &&
 //            align(5:4)=11 => UNDEFINED,
@@ -3180,10 +3224,10 @@ bool VectorLoadStoreMultipleTesterCase20
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreMultipleTesterCase21
+class VectorLoadStoreMultiple2TesterCase21
     : public VectorLoadStoreMultipleTester {
  public:
-  VectorLoadStoreMultipleTesterCase21(const NamedClassDecoder& decoder)
+  VectorLoadStoreMultiple2TesterCase21(const NamedClassDecoder& decoder)
     : VectorLoadStoreMultipleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -3192,7 +3236,7 @@ class VectorLoadStoreMultipleTesterCase21
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreMultipleTesterCase21
+bool VectorLoadStoreMultiple2TesterCase21
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3213,7 +3257,7 @@ bool VectorLoadStoreMultipleTesterCase21
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreMultipleTesterCase21
+bool VectorLoadStoreMultiple2TesterCase21
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreMultipleTester::
@@ -3284,10 +3328,12 @@ bool VectorLoadStoreMultipleTesterCase21
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss00aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD1_single_element_to_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=00 &&
 //            index_align(0)=~0 => UNDEFINED,
@@ -3307,10 +3353,10 @@ bool VectorLoadStoreMultipleTesterCase21
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase22
+class VectorLoadStoreSingle1TesterCase22
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase22(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle1TesterCase22(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -3319,7 +3365,7 @@ class VectorLoadStoreSingleTesterCase22
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase22
+bool VectorLoadStoreSingle1TesterCase22
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3340,7 +3386,7 @@ bool VectorLoadStoreSingleTesterCase22
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase22
+bool VectorLoadStoreSingle1TesterCase22
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -3434,10 +3480,12 @@ bool VectorLoadStoreSingleTesterCase22
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss01aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD2_single_2_element_structure_to_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=10 &&
 //            index_align(1)=~0 => UNDEFINED,
@@ -3452,10 +3500,10 @@ bool VectorLoadStoreSingleTesterCase22
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase23
+class VectorLoadStoreSingle2TesterCase23
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase23(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle2TesterCase23(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -3464,7 +3512,7 @@ class VectorLoadStoreSingleTesterCase23
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase23
+bool VectorLoadStoreSingle2TesterCase23
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3485,7 +3533,7 @@ bool VectorLoadStoreSingleTesterCase23
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase23
+bool VectorLoadStoreSingle2TesterCase23
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -3574,10 +3622,12 @@ bool VectorLoadStoreSingleTesterCase23
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss10aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD3_single_3_element_structure_to_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=00 &&
 //            index_align(0)=~0 => UNDEFINED,
@@ -3596,10 +3646,10 @@ bool VectorLoadStoreSingleTesterCase23
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase24
+class VectorLoadStoreSingle3TesterCase24
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase24(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle3TesterCase24(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -3608,7 +3658,7 @@ class VectorLoadStoreSingleTesterCase24
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase24
+bool VectorLoadStoreSingle3TesterCase24
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3629,7 +3679,7 @@ bool VectorLoadStoreSingleTesterCase24
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase24
+bool VectorLoadStoreSingle3TesterCase24
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -3748,10 +3798,12 @@ bool VectorLoadStoreSingleTesterCase24
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss11aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD4_single_4_element_structure_to_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=10 &&
 //            index_align(1:0)=11 => UNDEFINED,
@@ -3766,10 +3818,10 @@ bool VectorLoadStoreSingleTesterCase24
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase25
+class VectorLoadStoreSingle4TesterCase25
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase25(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle4TesterCase25(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -3778,7 +3830,7 @@ class VectorLoadStoreSingleTesterCase25
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase25
+bool VectorLoadStoreSingle4TesterCase25
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3799,7 +3851,7 @@ bool VectorLoadStoreSingleTesterCase25
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase25
+bool VectorLoadStoreSingle4TesterCase25
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -3907,6 +3959,7 @@ bool VectorLoadStoreSingleTesterCase25
 //       generated_baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnndddd1100sstammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -3914,6 +3967,7 @@ bool VectorLoadStoreSingleTesterCase25
 //       regs: 1
 //            if T(5)=0
 //            else 2,
+//       rule: VLD1_single_element_to_all_lanes,
 //       safety: [size(7:6)=11 ||
 //            (size(7:6)=00 &&
 //            a(4)=1) => UNDEFINED,
@@ -3928,10 +3982,10 @@ bool VectorLoadStoreSingleTesterCase25
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingleAllLanesTesterCase26
+class VectorLoadSingle1AllLanesTesterCase26
     : public VectorLoadSingleAllLanesTester {
  public:
-  VectorLoadSingleAllLanesTesterCase26(const NamedClassDecoder& decoder)
+  VectorLoadSingle1AllLanesTesterCase26(const NamedClassDecoder& decoder)
     : VectorLoadSingleAllLanesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -3940,7 +3994,7 @@ class VectorLoadSingleAllLanesTesterCase26
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadSingleAllLanesTesterCase26
+bool VectorLoadSingle1AllLanesTesterCase26
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3961,7 +4015,7 @@ bool VectorLoadSingleAllLanesTesterCase26
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadSingleAllLanesTesterCase26
+bool VectorLoadSingle1AllLanesTesterCase26
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadSingleAllLanesTester::
@@ -4023,10 +4077,12 @@ bool VectorLoadSingleAllLanesTesterCase26
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnndddd1101sstammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD2_single_2_element_structure_to_all_lanes,
 //       safety: [size(7:6)=11 => UNDEFINED,
 //         n  ==
 //               Pc ||
@@ -4039,10 +4095,10 @@ bool VectorLoadSingleAllLanesTesterCase26
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingleAllLanesTesterCase27
+class VectorLoadSingle2AllLanesTesterCase27
     : public VectorLoadSingleAllLanesTester {
  public:
-  VectorLoadSingleAllLanesTesterCase27(const NamedClassDecoder& decoder)
+  VectorLoadSingle2AllLanesTesterCase27(const NamedClassDecoder& decoder)
     : VectorLoadSingleAllLanesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -4051,7 +4107,7 @@ class VectorLoadSingleAllLanesTesterCase27
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadSingleAllLanesTesterCase27
+bool VectorLoadSingle2AllLanesTesterCase27
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -4072,7 +4128,7 @@ bool VectorLoadSingleAllLanesTesterCase27
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadSingleAllLanesTesterCase27
+bool VectorLoadSingle2AllLanesTesterCase27
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadSingleAllLanesTester::
@@ -4136,10 +4192,12 @@ bool VectorLoadSingleAllLanesTesterCase27
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnndddd1110sstammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD3_single_3_element_structure_to_all_lanes,
 //       safety: [size(7:6)=11 ||
 //            a(4)=1 => UNDEFINED,
 //         n  ==
@@ -4153,10 +4211,10 @@ bool VectorLoadSingleAllLanesTesterCase27
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingleAllLanesTesterCase28
+class VectorLoadSingle3AllLanesTesterCase28
     : public VectorLoadSingleAllLanesTester {
  public:
-  VectorLoadSingleAllLanesTesterCase28(const NamedClassDecoder& decoder)
+  VectorLoadSingle3AllLanesTesterCase28(const NamedClassDecoder& decoder)
     : VectorLoadSingleAllLanesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -4165,7 +4223,7 @@ class VectorLoadSingleAllLanesTesterCase28
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadSingleAllLanesTesterCase28
+bool VectorLoadSingle3AllLanesTesterCase28
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -4186,7 +4244,7 @@ bool VectorLoadSingleAllLanesTesterCase28
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadSingleAllLanesTesterCase28
+bool VectorLoadSingle3AllLanesTesterCase28
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadSingleAllLanesTester::
@@ -4257,10 +4315,12 @@ bool VectorLoadSingleAllLanesTesterCase28
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnndddd1111sstammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD4_single_4_element_structure_to_all_lanes,
 //       safety: [size(7:6)=11 &&
 //            a(4)=0 => UNDEFINED,
 //         n  ==
@@ -4274,10 +4334,10 @@ bool VectorLoadSingleAllLanesTesterCase28
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadSingleAllLanesTesterCase29
+class VectorLoadSingle4AllLanesTesterCase29
     : public VectorLoadSingleAllLanesTester {
  public:
-  VectorLoadSingleAllLanesTesterCase29(const NamedClassDecoder& decoder)
+  VectorLoadSingle4AllLanesTesterCase29(const NamedClassDecoder& decoder)
     : VectorLoadSingleAllLanesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -4286,7 +4346,7 @@ class VectorLoadSingleAllLanesTesterCase29
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadSingleAllLanesTesterCase29
+bool VectorLoadSingle4AllLanesTesterCase29
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -4307,7 +4367,7 @@ bool VectorLoadSingleAllLanesTesterCase29
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadSingleAllLanesTesterCase29
+bool VectorLoadSingle4AllLanesTesterCase29
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadSingleAllLanesTester::
@@ -4365,10 +4425,12 @@ bool VectorLoadSingleAllLanesTesterCase29
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss00aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD1_single_element_to_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=00 &&
 //            index_align(0)=~0 => UNDEFINED,
@@ -4388,10 +4450,10 @@ bool VectorLoadSingleAllLanesTesterCase29
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase30
+class VectorLoadStoreSingle1TesterCase30
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase30(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle1TesterCase30(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -4400,7 +4462,7 @@ class VectorLoadStoreSingleTesterCase30
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase30
+bool VectorLoadStoreSingle1TesterCase30
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -4421,7 +4483,7 @@ bool VectorLoadStoreSingleTesterCase30
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase30
+bool VectorLoadStoreSingle1TesterCase30
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -4515,10 +4577,12 @@ bool VectorLoadStoreSingleTesterCase30
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss01aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD2_single_2_element_structure_to_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=10 &&
 //            index_align(1)=~0 => UNDEFINED,
@@ -4533,10 +4597,10 @@ bool VectorLoadStoreSingleTesterCase30
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase31
+class VectorLoadStoreSingle2TesterCase31
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase31(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle2TesterCase31(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -4545,7 +4609,7 @@ class VectorLoadStoreSingleTesterCase31
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase31
+bool VectorLoadStoreSingle2TesterCase31
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -4566,7 +4630,7 @@ bool VectorLoadStoreSingleTesterCase31
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase31
+bool VectorLoadStoreSingle2TesterCase31
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -4655,10 +4719,12 @@ bool VectorLoadStoreSingleTesterCase31
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss10aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD3_single_3_element_structure_to_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=00 &&
 //            index_align(0)=~0 => UNDEFINED,
@@ -4677,10 +4743,10 @@ bool VectorLoadStoreSingleTesterCase31
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase32
+class VectorLoadStoreSingle3TesterCase32
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase32(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle3TesterCase32(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -4689,7 +4755,7 @@ class VectorLoadStoreSingleTesterCase32
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase32
+bool VectorLoadStoreSingle3TesterCase32
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -4710,7 +4776,7 @@ bool VectorLoadStoreSingleTesterCase32
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase32
+bool VectorLoadStoreSingle3TesterCase32
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -4829,10 +4895,12 @@ bool VectorLoadStoreSingleTesterCase32
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss11aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
 //               Sp),
+//       rule: VLD4_single_4_element_structure_to_one_lane,
 //       safety: [size(11:10)=11 => UNDEFINED,
 //         size(11:10)=10 &&
 //            index_align(1:0)=11 => UNDEFINED,
@@ -4847,10 +4915,10 @@ bool VectorLoadStoreSingleTesterCase32
 //            else None, n},
 //       wback: (m  !=
 //               Pc)}
-class VectorLoadStoreSingleTesterCase33
+class VectorLoadStoreSingle4TesterCase33
     : public VectorLoadStoreSingleTester {
  public:
-  VectorLoadStoreSingleTesterCase33(const NamedClassDecoder& decoder)
+  VectorLoadStoreSingle4TesterCase33(const NamedClassDecoder& decoder)
     : VectorLoadStoreSingleTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -4859,7 +4927,7 @@ class VectorLoadStoreSingleTesterCase33
                                  const NamedClassDecoder& decoder);
 };
 
-bool VectorLoadStoreSingleTesterCase33
+bool VectorLoadStoreSingle4TesterCase33
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -4880,7 +4948,7 @@ bool VectorLoadStoreSingleTesterCase33
       PassesParsePreconditions(inst, decoder);
 }
 
-bool VectorLoadStoreSingleTesterCase33
+bool VectorLoadStoreSingle4TesterCase33
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(VectorLoadStoreSingleTester::
@@ -4991,6 +5059,7 @@ bool VectorLoadStoreSingleTesterCase33
 //       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5024,10 +5093,10 @@ bool VectorLoadStoreSingleTesterCase33
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple1Tester_Case0
-    : public VectorLoadStoreMultipleTesterCase0 {
+    : public VectorLoadStoreMultiple1TesterCase0 {
  public:
   VectorLoadStoreMultiple1Tester_Case0()
-    : VectorLoadStoreMultipleTesterCase0(
+    : VectorLoadStoreMultiple1TesterCase0(
       state_.VectorLoadStoreMultiple1_VST1_multiple_single_elements_instance_)
   {}
 };
@@ -5063,6 +5132,7 @@ class VectorLoadStoreMultiple1Tester_Case0
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5088,10 +5158,10 @@ class VectorLoadStoreMultiple1Tester_Case0
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple2Tester_Case1
-    : public VectorLoadStoreMultipleTesterCase1 {
+    : public VectorLoadStoreMultiple2TesterCase1 {
  public:
   VectorLoadStoreMultiple2Tester_Case1()
-    : VectorLoadStoreMultipleTesterCase1(
+    : VectorLoadStoreMultiple2TesterCase1(
       state_.VectorLoadStoreMultiple2_VST2_multiple_2_element_structures_instance_)
   {}
 };
@@ -5122,6 +5192,7 @@ class VectorLoadStoreMultiple2Tester_Case1
 //       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5155,10 +5226,10 @@ class VectorLoadStoreMultiple2Tester_Case1
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple1Tester_Case2
-    : public VectorLoadStoreMultipleTesterCase2 {
+    : public VectorLoadStoreMultiple1TesterCase2 {
  public:
   VectorLoadStoreMultiple1Tester_Case2()
-    : VectorLoadStoreMultipleTesterCase2(
+    : VectorLoadStoreMultiple1TesterCase2(
       state_.VectorLoadStoreMultiple1_VST1_multiple_single_elements_instance_)
   {}
 };
@@ -5194,6 +5265,7 @@ class VectorLoadStoreMultiple1Tester_Case2
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5214,10 +5286,10 @@ class VectorLoadStoreMultiple1Tester_Case2
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple4Tester_Case3
-    : public VectorLoadStoreMultipleTesterCase3 {
+    : public VectorLoadStoreMultiple4TesterCase3 {
  public:
   VectorLoadStoreMultiple4Tester_Case3()
-    : VectorLoadStoreMultipleTesterCase3(
+    : VectorLoadStoreMultiple4TesterCase3(
       state_.VectorLoadStoreMultiple4_VST4_multiple_4_element_structures_instance_)
   {}
 };
@@ -5254,6 +5326,7 @@ class VectorLoadStoreMultiple4Tester_Case3
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5275,10 +5348,10 @@ class VectorLoadStoreMultiple4Tester_Case3
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple3Tester_Case4
-    : public VectorLoadStoreMultipleTesterCase4 {
+    : public VectorLoadStoreMultiple3TesterCase4 {
  public:
   VectorLoadStoreMultiple3Tester_Case4()
-    : VectorLoadStoreMultipleTesterCase4(
+    : VectorLoadStoreMultiple3TesterCase4(
       state_.VectorLoadStoreMultiple3_VST3_multiple_3_element_structures_instance_)
   {}
 };
@@ -5309,6 +5382,7 @@ class VectorLoadStoreMultiple3Tester_Case4
 //       generated_baseline: VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5342,10 +5416,10 @@ class VectorLoadStoreMultiple3Tester_Case4
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple1Tester_Case5
-    : public VectorLoadStoreMultipleTesterCase5 {
+    : public VectorLoadStoreMultiple1TesterCase5 {
  public:
   VectorLoadStoreMultiple1Tester_Case5()
-    : VectorLoadStoreMultipleTesterCase5(
+    : VectorLoadStoreMultiple1TesterCase5(
       state_.VectorLoadStoreMultiple1_VST1_multiple_single_elements_instance_)
   {}
 };
@@ -5381,6 +5455,7 @@ class VectorLoadStoreMultiple1Tester_Case5
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d00nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5406,10 +5481,10 @@ class VectorLoadStoreMultiple1Tester_Case5
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple2Tester_Case6
-    : public VectorLoadStoreMultipleTesterCase6 {
+    : public VectorLoadStoreMultiple2TesterCase6 {
  public:
   VectorLoadStoreMultiple2Tester_Case6()
-    : VectorLoadStoreMultipleTesterCase6(
+    : VectorLoadStoreMultiple2TesterCase6(
       state_.VectorLoadStoreMultiple2_VST2_multiple_2_element_structures_instance_)
   {}
 };
@@ -5432,6 +5507,7 @@ class VectorLoadStoreMultiple2Tester_Case6
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss00aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5457,10 +5533,10 @@ class VectorLoadStoreMultiple2Tester_Case6
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle1Tester_Case7
-    : public VectorLoadStoreSingleTesterCase7 {
+    : public VectorLoadStoreSingle1TesterCase7 {
  public:
   VectorLoadStoreSingle1Tester_Case7()
-    : VectorLoadStoreSingleTesterCase7(
+    : VectorLoadStoreSingle1TesterCase7(
       state_.VectorLoadStoreSingle1_VST1_single_element_from_one_lane_instance_)
   {}
 };
@@ -5503,6 +5579,7 @@ class VectorLoadStoreSingle1Tester_Case7
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss01aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5523,10 +5600,10 @@ class VectorLoadStoreSingle1Tester_Case7
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle2Tester_Case8
-    : public VectorLoadStoreSingleTesterCase8 {
+    : public VectorLoadStoreSingle2TesterCase8 {
  public:
   VectorLoadStoreSingle2Tester_Case8()
-    : VectorLoadStoreSingleTesterCase8(
+    : VectorLoadStoreSingle2TesterCase8(
       state_.VectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane_instance_)
   {}
 };
@@ -5570,6 +5647,7 @@ class VectorLoadStoreSingle2Tester_Case8
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss10aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5594,10 +5672,10 @@ class VectorLoadStoreSingle2Tester_Case8
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle3Tester_Case9
-    : public VectorLoadStoreSingleTesterCase9 {
+    : public VectorLoadStoreSingle3TesterCase9 {
  public:
   VectorLoadStoreSingle3Tester_Case9()
-    : VectorLoadStoreSingleTesterCase9(
+    : VectorLoadStoreSingle3TesterCase9(
       state_.VectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane_instance_)
   {}
 };
@@ -5642,6 +5720,7 @@ class VectorLoadStoreSingle3Tester_Case9
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss11aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5662,10 +5741,10 @@ class VectorLoadStoreSingle3Tester_Case9
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle4Tester_Case10
-    : public VectorLoadStoreSingleTesterCase10 {
+    : public VectorLoadStoreSingle4TesterCase10 {
  public:
   VectorLoadStoreSingle4Tester_Case10()
-    : VectorLoadStoreSingleTesterCase10(
+    : VectorLoadStoreSingle4TesterCase10(
       state_.VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane_instance_)
   {}
 };
@@ -5688,6 +5767,7 @@ class VectorLoadStoreSingle4Tester_Case10
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss00aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5713,10 +5793,10 @@ class VectorLoadStoreSingle4Tester_Case10
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle1Tester_Case11
-    : public VectorLoadStoreSingleTesterCase11 {
+    : public VectorLoadStoreSingle1TesterCase11 {
  public:
   VectorLoadStoreSingle1Tester_Case11()
-    : VectorLoadStoreSingleTesterCase11(
+    : VectorLoadStoreSingle1TesterCase11(
       state_.VectorLoadStoreSingle1_VST1_single_element_from_one_lane_instance_)
   {}
 };
@@ -5759,6 +5839,7 @@ class VectorLoadStoreSingle1Tester_Case11
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss01aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5779,10 +5860,10 @@ class VectorLoadStoreSingle1Tester_Case11
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle2Tester_Case12
-    : public VectorLoadStoreSingleTesterCase12 {
+    : public VectorLoadStoreSingle2TesterCase12 {
  public:
   VectorLoadStoreSingle2Tester_Case12()
-    : VectorLoadStoreSingleTesterCase12(
+    : VectorLoadStoreSingle2TesterCase12(
       state_.VectorLoadStoreSingle2_VST2_single_2_element_structure_from_one_lane_instance_)
   {}
 };
@@ -5826,6 +5907,7 @@ class VectorLoadStoreSingle2Tester_Case12
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss10aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5850,10 +5932,10 @@ class VectorLoadStoreSingle2Tester_Case12
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle3Tester_Case13
-    : public VectorLoadStoreSingleTesterCase13 {
+    : public VectorLoadStoreSingle3TesterCase13 {
  public:
   VectorLoadStoreSingle3Tester_Case13()
-    : VectorLoadStoreSingleTesterCase13(
+    : VectorLoadStoreSingle3TesterCase13(
       state_.VectorLoadStoreSingle3_VST3_single_3_element_structure_from_one_lane_instance_)
   {}
 };
@@ -5898,6 +5980,7 @@ class VectorLoadStoreSingle3Tester_Case13
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d00nnnnddddss11aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5918,10 +6001,10 @@ class VectorLoadStoreSingle3Tester_Case13
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle4Tester_Case14
-    : public VectorLoadStoreSingleTesterCase14 {
+    : public VectorLoadStoreSingle4TesterCase14 {
  public:
   VectorLoadStoreSingle4Tester_Case14()
-    : VectorLoadStoreSingleTesterCase14(
+    : VectorLoadStoreSingle4TesterCase14(
       state_.VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane_instance_)
   {}
 };
@@ -5952,6 +6035,7 @@ class VectorLoadStoreSingle4Tester_Case14
 //       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -5985,10 +6069,10 @@ class VectorLoadStoreSingle4Tester_Case14
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple1Tester_Case15
-    : public VectorLoadStoreMultipleTesterCase15 {
+    : public VectorLoadStoreMultiple1TesterCase15 {
  public:
   VectorLoadStoreMultiple1Tester_Case15()
-    : VectorLoadStoreMultipleTesterCase15(
+    : VectorLoadStoreMultiple1TesterCase15(
       state_.VectorLoadStoreMultiple1_VLD1_multiple_single_elements_instance_)
   {}
 };
@@ -6024,6 +6108,7 @@ class VectorLoadStoreMultiple1Tester_Case15
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6049,10 +6134,10 @@ class VectorLoadStoreMultiple1Tester_Case15
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple2Tester_Case16
-    : public VectorLoadStoreMultipleTesterCase16 {
+    : public VectorLoadStoreMultiple2TesterCase16 {
  public:
   VectorLoadStoreMultiple2Tester_Case16()
-    : VectorLoadStoreMultipleTesterCase16(
+    : VectorLoadStoreMultiple2TesterCase16(
       state_.VectorLoadStoreMultiple2_VLD2_multiple_2_element_structures_instance_)
   {}
 };
@@ -6083,6 +6168,7 @@ class VectorLoadStoreMultiple2Tester_Case16
 //       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6116,10 +6202,10 @@ class VectorLoadStoreMultiple2Tester_Case16
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple1Tester_Case17
-    : public VectorLoadStoreMultipleTesterCase17 {
+    : public VectorLoadStoreMultiple1TesterCase17 {
  public:
   VectorLoadStoreMultiple1Tester_Case17()
-    : VectorLoadStoreMultipleTesterCase17(
+    : VectorLoadStoreMultiple1TesterCase17(
       state_.VectorLoadStoreMultiple1_VLD1_multiple_single_elements_instance_)
   {}
 };
@@ -6155,6 +6241,7 @@ class VectorLoadStoreMultiple1Tester_Case17
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6175,10 +6262,10 @@ class VectorLoadStoreMultiple1Tester_Case17
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple4Tester_Case18
-    : public VectorLoadStoreMultipleTesterCase18 {
+    : public VectorLoadStoreMultiple4TesterCase18 {
  public:
   VectorLoadStoreMultiple4Tester_Case18()
-    : VectorLoadStoreMultipleTesterCase18(
+    : VectorLoadStoreMultiple4TesterCase18(
       state_.VectorLoadStoreMultiple4_VLD4_multiple_4_element_structures_instance_)
   {}
 };
@@ -6215,6 +6302,7 @@ class VectorLoadStoreMultiple4Tester_Case18
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6236,10 +6324,10 @@ class VectorLoadStoreMultiple4Tester_Case18
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple3Tester_Case19
-    : public VectorLoadStoreMultipleTesterCase19 {
+    : public VectorLoadStoreMultiple3TesterCase19 {
  public:
   VectorLoadStoreMultiple3Tester_Case19()
-    : VectorLoadStoreMultipleTesterCase19(
+    : VectorLoadStoreMultiple3TesterCase19(
       state_.VectorLoadStoreMultiple3_VLD3_multiple_3_element_structures_instance_)
   {}
 };
@@ -6270,6 +6358,7 @@ class VectorLoadStoreMultiple3Tester_Case19
 //       generated_baseline: VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6303,10 +6392,10 @@ class VectorLoadStoreMultiple3Tester_Case19
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple1Tester_Case20
-    : public VectorLoadStoreMultipleTesterCase20 {
+    : public VectorLoadStoreMultiple1TesterCase20 {
  public:
   VectorLoadStoreMultiple1Tester_Case20()
-    : VectorLoadStoreMultipleTesterCase20(
+    : VectorLoadStoreMultiple1TesterCase20(
       state_.VectorLoadStoreMultiple1_VLD1_multiple_single_elements_instance_)
   {}
 };
@@ -6342,6 +6431,7 @@ class VectorLoadStoreMultiple1Tester_Case20
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101000d10nnnnddddttttssaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6367,10 +6457,10 @@ class VectorLoadStoreMultiple1Tester_Case20
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreMultiple2Tester_Case21
-    : public VectorLoadStoreMultipleTesterCase21 {
+    : public VectorLoadStoreMultiple2TesterCase21 {
  public:
   VectorLoadStoreMultiple2Tester_Case21()
-    : VectorLoadStoreMultipleTesterCase21(
+    : VectorLoadStoreMultiple2TesterCase21(
       state_.VectorLoadStoreMultiple2_VLD2_multiple_2_element_structures_instance_)
   {}
 };
@@ -6393,6 +6483,7 @@ class VectorLoadStoreMultiple2Tester_Case21
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss00aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6418,10 +6509,10 @@ class VectorLoadStoreMultiple2Tester_Case21
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle1Tester_Case22
-    : public VectorLoadStoreSingleTesterCase22 {
+    : public VectorLoadStoreSingle1TesterCase22 {
  public:
   VectorLoadStoreSingle1Tester_Case22()
-    : VectorLoadStoreSingleTesterCase22(
+    : VectorLoadStoreSingle1TesterCase22(
       state_.VectorLoadStoreSingle1_VLD1_single_element_to_one_lane_instance_)
   {}
 };
@@ -6464,6 +6555,7 @@ class VectorLoadStoreSingle1Tester_Case22
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss01aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6484,10 +6576,10 @@ class VectorLoadStoreSingle1Tester_Case22
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle2Tester_Case23
-    : public VectorLoadStoreSingleTesterCase23 {
+    : public VectorLoadStoreSingle2TesterCase23 {
  public:
   VectorLoadStoreSingle2Tester_Case23()
-    : VectorLoadStoreSingleTesterCase23(
+    : VectorLoadStoreSingle2TesterCase23(
       state_.VectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane_instance_)
   {}
 };
@@ -6531,6 +6623,7 @@ class VectorLoadStoreSingle2Tester_Case23
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss10aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6555,10 +6648,10 @@ class VectorLoadStoreSingle2Tester_Case23
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle3Tester_Case24
-    : public VectorLoadStoreSingleTesterCase24 {
+    : public VectorLoadStoreSingle3TesterCase24 {
  public:
   VectorLoadStoreSingle3Tester_Case24()
-    : VectorLoadStoreSingleTesterCase24(
+    : VectorLoadStoreSingle3TesterCase24(
       state_.VectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane_instance_)
   {}
 };
@@ -6603,6 +6696,7 @@ class VectorLoadStoreSingle3Tester_Case24
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss11aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6623,10 +6717,10 @@ class VectorLoadStoreSingle3Tester_Case24
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle4Tester_Case25
-    : public VectorLoadStoreSingleTesterCase25 {
+    : public VectorLoadStoreSingle4TesterCase25 {
  public:
   VectorLoadStoreSingle4Tester_Case25()
-    : VectorLoadStoreSingleTesterCase25(
+    : VectorLoadStoreSingle4TesterCase25(
       state_.VectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane_instance_)
   {}
 };
@@ -6659,6 +6753,7 @@ class VectorLoadStoreSingle4Tester_Case25
 //       generated_baseline: VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnndddd1100sstammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6682,10 +6777,10 @@ class VectorLoadStoreSingle4Tester_Case25
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadSingle1AllLanesTester_Case26
-    : public VectorLoadSingleAllLanesTesterCase26 {
+    : public VectorLoadSingle1AllLanesTesterCase26 {
  public:
   VectorLoadSingle1AllLanesTester_Case26()
-    : VectorLoadSingleAllLanesTesterCase26(
+    : VectorLoadSingle1AllLanesTesterCase26(
       state_.VectorLoadSingle1AllLanes_VLD1_single_element_to_all_lanes_instance_)
   {}
 };
@@ -6715,6 +6810,7 @@ class VectorLoadSingle1AllLanesTester_Case26
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnndddd1101sstammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6733,10 +6829,10 @@ class VectorLoadSingle1AllLanesTester_Case26
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadSingle2AllLanesTester_Case27
-    : public VectorLoadSingleAllLanesTesterCase27 {
+    : public VectorLoadSingle2AllLanesTesterCase27 {
  public:
   VectorLoadSingle2AllLanesTester_Case27()
-    : VectorLoadSingleAllLanesTesterCase27(
+    : VectorLoadSingle2AllLanesTesterCase27(
       state_.VectorLoadSingle2AllLanes_VLD2_single_2_element_structure_to_all_lanes_instance_)
   {}
 };
@@ -6774,6 +6870,7 @@ class VectorLoadSingle2AllLanesTester_Case27
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnndddd1110sstammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6793,10 +6890,10 @@ class VectorLoadSingle2AllLanesTester_Case27
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadSingle3AllLanesTester_Case28
-    : public VectorLoadSingleAllLanesTesterCase28 {
+    : public VectorLoadSingle3AllLanesTesterCase28 {
  public:
   VectorLoadSingle3AllLanesTester_Case28()
-    : VectorLoadSingleAllLanesTesterCase28(
+    : VectorLoadSingle3AllLanesTesterCase28(
       state_.VectorLoadSingle3AllLanes_VLD3_single_3_element_structure_to_all_lanes_instance_)
   {}
 };
@@ -6835,6 +6932,7 @@ class VectorLoadSingle3AllLanesTester_Case28
 //            else 2,
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnndddd1111sstammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6854,10 +6952,10 @@ class VectorLoadSingle3AllLanesTester_Case28
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadSingle4AllLanesTester_Case29
-    : public VectorLoadSingleAllLanesTesterCase29 {
+    : public VectorLoadSingle4AllLanesTesterCase29 {
  public:
   VectorLoadSingle4AllLanesTester_Case29()
-    : VectorLoadSingleAllLanesTesterCase29(
+    : VectorLoadSingle4AllLanesTesterCase29(
       state_.VectorLoadSingle4AllLanes_VLD4_single_4_element_structure_to_all_lanes_instance_)
   {}
 };
@@ -6880,6 +6978,7 @@ class VectorLoadSingle4AllLanesTester_Case29
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss00aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6905,10 +7004,10 @@ class VectorLoadSingle4AllLanesTester_Case29
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle1Tester_Case30
-    : public VectorLoadStoreSingleTesterCase30 {
+    : public VectorLoadStoreSingle1TesterCase30 {
  public:
   VectorLoadStoreSingle1Tester_Case30()
-    : VectorLoadStoreSingleTesterCase30(
+    : VectorLoadStoreSingle1TesterCase30(
       state_.VectorLoadStoreSingle1_VLD1_single_element_to_one_lane_instance_)
   {}
 };
@@ -6951,6 +7050,7 @@ class VectorLoadStoreSingle1Tester_Case30
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss01aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -6971,10 +7071,10 @@ class VectorLoadStoreSingle1Tester_Case30
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle2Tester_Case31
-    : public VectorLoadStoreSingleTesterCase31 {
+    : public VectorLoadStoreSingle2TesterCase31 {
  public:
   VectorLoadStoreSingle2Tester_Case31()
-    : VectorLoadStoreSingleTesterCase31(
+    : VectorLoadStoreSingle2TesterCase31(
       state_.VectorLoadStoreSingle2_VLD2_single_2_element_structure_to_one_lane_instance_)
   {}
 };
@@ -7018,6 +7118,7 @@ class VectorLoadStoreSingle2Tester_Case31
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss10aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -7042,10 +7143,10 @@ class VectorLoadStoreSingle2Tester_Case31
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle3Tester_Case32
-    : public VectorLoadStoreSingleTesterCase32 {
+    : public VectorLoadStoreSingle3TesterCase32 {
  public:
   VectorLoadStoreSingle3Tester_Case32()
-    : VectorLoadStoreSingleTesterCase32(
+    : VectorLoadStoreSingle3TesterCase32(
       state_.VectorLoadStoreSingle3_VLD3_single_3_element_structure_to_one_lane_instance_)
   {}
 };
@@ -7090,6 +7191,7 @@ class VectorLoadStoreSingle3Tester_Case32
 //       index_align: index_align(7:4),
 //       m: Rm,
 //       n: Rn,
+//       pattern: 111101001d10nnnnddddss11aaaammmm,
 //       register_index: (m  !=
 //               Pc &&
 //            m  !=
@@ -7110,10 +7212,10 @@ class VectorLoadStoreSingle3Tester_Case32
 //       wback: (m  !=
 //               Pc)}
 class VectorLoadStoreSingle4Tester_Case33
-    : public VectorLoadStoreSingleTesterCase33 {
+    : public VectorLoadStoreSingle4TesterCase33 {
  public:
   VectorLoadStoreSingle4Tester_Case33()
-    : VectorLoadStoreSingleTesterCase33(
+    : VectorLoadStoreSingle4TesterCase33(
       state_.VectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane_instance_)
   {}
 };

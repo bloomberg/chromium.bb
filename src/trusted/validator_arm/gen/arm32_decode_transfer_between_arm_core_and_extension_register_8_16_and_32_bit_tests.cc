@@ -47,6 +47,8 @@ namespace nacl_arm_test {
 //       fields: [op(20), Rt(15:12)],
 //       generated_baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0,
 //       op: op(20),
+//       pattern: cccc1110000onnnntttt1010n0010000,
+//       rule: VMOV_between_ARM_core_register_and_single_precision_register,
 //       safety: [t  ==
 //               Pc => UNPREDICTABLE],
 //       t: Rt,
@@ -85,6 +87,9 @@ bool MoveVfpRegisterOpTesterCase0
   if ((inst.Bits() & 0x0000006F)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return MoveVfpRegisterOpTester::
       PassesParsePreconditions(inst, decoder);
@@ -121,6 +126,8 @@ bool MoveVfpRegisterOpTesterCase0
 //       defs: {},
 //       fields: [Rt(15:12)],
 //       generated_baseline: VMSR_cccc111011100001tttt101000010000_case_0,
+//       pattern: cccc111011100001tttt101000010000,
+//       rule: VMSR,
 //       safety: [t  ==
 //               Pc => UNPREDICTABLE],
 //       t: Rt,
@@ -156,6 +163,9 @@ bool VfpUsesRegOpTesterCase1
   if ((inst.Bits() & 0x000F00EF)  !=
           0x00010000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return VfpUsesRegOpTester::
       PassesParsePreconditions(inst, decoder);
@@ -188,6 +198,8 @@ bool VfpUsesRegOpTesterCase1
 //       generated_baseline: VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0,
 //       opc1: opc1(22:21),
 //       opc2: opc2(6:5),
+//       pattern: cccc11100ii0ddddtttt1011dii10000,
+//       rule: VMOV_ARM_core_register_to_scalar,
 //       safety: [opc1:opc2(3:0)=0x10 => UNDEFINED,
 //         t  ==
 //               Pc => UNPREDICTABLE],
@@ -223,6 +235,9 @@ bool MoveVfpRegisterOpWithTypeSelTesterCase2
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
   if ((inst.Bits() & 0x0000000F)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return MoveVfpRegisterOpWithTypeSelTester::
@@ -262,6 +277,8 @@ bool MoveVfpRegisterOpWithTypeSelTesterCase2
 //       defs: {},
 //       fields: [B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
 //       generated_baseline: VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
+//       pattern: cccc11101bq0ddddtttt1011d0e10000,
+//       rule: VDUP_arm_core_register,
 //       safety: [Q(21)=1 &&
 //            Vd(0)=1 => UNDEFINED,
 //         B:E(1:0)=11 => UNDEFINED,
@@ -302,6 +319,9 @@ bool DuplicateToAdvSIMDRegistersTesterCase3
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
   if ((inst.Bits() & 0x0000000F)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return DuplicateToAdvSIMDRegistersTester::
@@ -348,6 +368,8 @@ bool DuplicateToAdvSIMDRegistersTesterCase3
 //       fields: [op(20), Rt(15:12)],
 //       generated_baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0,
 //       op: op(20),
+//       pattern: cccc1110000xnnnntttt1010n0010000,
+//       rule: VMOV_between_ARM_core_register_and_single_precision_register,
 //       safety: [t  ==
 //               Pc => UNPREDICTABLE],
 //       t: Rt,
@@ -385,6 +407,9 @@ bool MoveVfpRegisterOpTesterCase4
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxxx00x0000
   if ((inst.Bits() & 0x0000006F)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return MoveVfpRegisterOpTester::
@@ -426,6 +451,8 @@ bool MoveVfpRegisterOpTesterCase4
 //            else Rt},
 //       fields: [Rt(15:12)],
 //       generated_baseline: VMRS_cccc111011110001tttt101000010000_case_0,
+//       pattern: cccc111011110001tttt101000010000,
+//       rule: VMRS,
 //       t: Rt}
 class VfpMrsOpTesterCase5
     : public VfpMrsOpTester {
@@ -457,6 +484,9 @@ bool VfpMrsOpTesterCase5
   // $pattern(31:0)=~xxxxxxxxxxxx0001xxxxxxxx000x0000
   if ((inst.Bits() & 0x000F00EF)  !=
           0x00010000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VfpMrsOpTester::
@@ -493,6 +523,8 @@ bool VfpMrsOpTesterCase5
 //       generated_baseline: MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0,
 //       opc1: opc1(22:21),
 //       opc2: opc2(6:5),
+//       pattern: cccc1110iii1nnnntttt1011nii10000,
+//       rule: MOVE_scalar_to_ARM_core_register,
 //       safety: [sel in bitset {'10x00', 'x0x10'} => UNDEFINED,
 //         t  ==
 //               Pc => UNPREDICTABLE],
@@ -525,6 +557,9 @@ bool MoveVfpRegisterOpWithTypeSelTesterCase6
   // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
   if ((inst.Bits() & 0x0000000F)  !=
           0x00000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return MoveVfpRegisterOpWithTypeSelTester::
@@ -572,6 +607,7 @@ bool MoveVfpRegisterOpWithTypeSelTesterCase6
 //       fields: [op(20), Rt(15:12)],
 //       generated_baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_0,
 //       op: op(20),
+//       pattern: cccc1110000onnnntttt1010n0010000,
 //       rule: VMOV_between_ARM_core_register_and_single_precision_register,
 //       safety: [t  ==
 //               Pc => UNPREDICTABLE],
@@ -598,6 +634,7 @@ class MoveVfpRegisterOpTester_Case0
 //       defs: {},
 //       fields: [Rt(15:12)],
 //       generated_baseline: VMSR_cccc111011100001tttt101000010000_case_0,
+//       pattern: cccc111011100001tttt101000010000,
 //       rule: VMSR,
 //       safety: [t  ==
 //               Pc => UNPREDICTABLE],
@@ -623,6 +660,7 @@ class VfpUsesRegOpTester_Case1
 //       generated_baseline: VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_0,
 //       opc1: opc1(22:21),
 //       opc2: opc2(6:5),
+//       pattern: cccc11100ii0ddddtttt1011dii10000,
 //       rule: VMOV_ARM_core_register_to_scalar,
 //       safety: [opc1:opc2(3:0)=0x10 => UNDEFINED,
 //         t  ==
@@ -651,6 +689,7 @@ class MoveVfpRegisterOpWithTypeSelTester_Case2
 //       defs: {},
 //       fields: [B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
 //       generated_baseline: VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
+//       pattern: cccc11101bq0ddddtttt1011d0e10000,
 //       rule: VDUP_arm_core_register,
 //       safety: [Q(21)=1 &&
 //            Vd(0)=1 => UNDEFINED,
@@ -681,6 +720,7 @@ class DuplicateToAdvSIMDRegistersTester_Case3
 //       fields: [op(20), Rt(15:12)],
 //       generated_baseline: VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000xnnnntttt1010n0010000_case_0,
 //       op: op(20),
+//       pattern: cccc1110000xnnnntttt1010n0010000,
 //       rule: VMOV_between_ARM_core_register_and_single_precision_register,
 //       safety: [t  ==
 //               Pc => UNPREDICTABLE],
@@ -711,6 +751,7 @@ class MoveVfpRegisterOpTester_Case4
 //            else Rt},
 //       fields: [Rt(15:12)],
 //       generated_baseline: VMRS_cccc111011110001tttt101000010000_case_0,
+//       pattern: cccc111011110001tttt101000010000,
 //       rule: VMRS,
 //       t: Rt}
 class VfpMrsOpTester_Case5
@@ -734,6 +775,7 @@ class VfpMrsOpTester_Case5
 //       generated_baseline: MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0,
 //       opc1: opc1(22:21),
 //       opc2: opc2(6:5),
+//       pattern: cccc1110iii1nnnntttt1011nii10000,
 //       rule: MOVE_scalar_to_ARM_core_register,
 //       safety: [sel in bitset {'10x00', 'x0x10'} => UNDEFINED,
 //         t  ==

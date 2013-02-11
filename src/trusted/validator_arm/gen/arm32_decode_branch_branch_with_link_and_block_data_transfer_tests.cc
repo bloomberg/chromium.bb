@@ -48,8 +48,10 @@ namespace nacl_arm_test {
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
+//       rule: STMDA_STMED,
 //       safety: [Rn  ==
 //               Pc ||
 //            NumGPRs(registers)  <
@@ -62,10 +64,10 @@ namespace nacl_arm_test {
 //       true: true,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class LoadStoreRegisterListTesterCase0
+class StoreRegisterListTesterCase0
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterCase0(const NamedClassDecoder& decoder)
+  StoreRegisterListTesterCase0(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -74,7 +76,7 @@ class LoadStoreRegisterListTesterCase0
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterCase0
+bool StoreRegisterListTesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -84,12 +86,15 @@ bool LoadStoreRegisterListTesterCase0
   if ((inst.Bits() & 0x03D00000)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreRegisterListTesterCase0
+bool StoreRegisterListTesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreRegisterListTester::
@@ -137,8 +142,10 @@ bool LoadStoreRegisterListTesterCase0
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
+//       rule: LDMDA_LDMFA,
 //       safety: [Rn  ==
 //               Pc ||
 //            NumGPRs(registers)  <
@@ -150,10 +157,10 @@ bool LoadStoreRegisterListTesterCase0
 //       true: true,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreRegisterListTesterCase1
+class LoadRegisterListTesterCase1
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterCase1(const NamedClassDecoder& decoder)
+  LoadRegisterListTesterCase1(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -162,7 +169,7 @@ class LoadStoreRegisterListTesterCase1
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterCase1
+bool LoadRegisterListTesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -172,12 +179,15 @@ bool LoadStoreRegisterListTesterCase1
   if ((inst.Bits() & 0x03D00000)  !=
           0x00100000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreRegisterListTesterCase1
+bool LoadRegisterListTesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreRegisterListTester::
@@ -225,8 +235,10 @@ bool LoadStoreRegisterListTesterCase1
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
+//       rule: STM_STMIA_STMEA,
 //       safety: [Rn  ==
 //               Pc ||
 //            NumGPRs(registers)  <
@@ -239,10 +251,10 @@ bool LoadStoreRegisterListTesterCase1
 //       true: true,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class LoadStoreRegisterListTesterCase2
+class StoreRegisterListTesterCase2
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterCase2(const NamedClassDecoder& decoder)
+  StoreRegisterListTesterCase2(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -251,7 +263,7 @@ class LoadStoreRegisterListTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterCase2
+bool StoreRegisterListTesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -261,12 +273,15 @@ bool LoadStoreRegisterListTesterCase2
   if ((inst.Bits() & 0x03D00000)  !=
           0x00800000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreRegisterListTesterCase2
+bool StoreRegisterListTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreRegisterListTester::
@@ -314,8 +329,10 @@ bool LoadStoreRegisterListTesterCase2
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100010w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
+//       rule: LDM_LDMIA_LDMFD,
 //       safety: [Rn  ==
 //               Pc ||
 //            NumGPRs(registers)  <
@@ -327,10 +344,10 @@ bool LoadStoreRegisterListTesterCase2
 //       true: true,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreRegisterListTesterCase3
+class LoadRegisterListTesterCase3
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterCase3(const NamedClassDecoder& decoder)
+  LoadRegisterListTesterCase3(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -339,7 +356,7 @@ class LoadStoreRegisterListTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterCase3
+bool LoadRegisterListTesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -349,12 +366,15 @@ bool LoadStoreRegisterListTesterCase3
   if ((inst.Bits() & 0x03D00000)  !=
           0x00900000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreRegisterListTesterCase3
+bool LoadRegisterListTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreRegisterListTester::
@@ -402,8 +422,10 @@ bool LoadStoreRegisterListTesterCase3
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100100w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
+//       rule: STMDB_STMFD,
 //       safety: [Rn  ==
 //               Pc ||
 //            NumGPRs(registers)  <
@@ -416,10 +438,10 @@ bool LoadStoreRegisterListTesterCase3
 //       true: true,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class LoadStoreRegisterListTesterCase4
+class StoreRegisterListTesterCase4
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterCase4(const NamedClassDecoder& decoder)
+  StoreRegisterListTesterCase4(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -428,7 +450,7 @@ class LoadStoreRegisterListTesterCase4
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterCase4
+bool StoreRegisterListTesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -438,12 +460,15 @@ bool LoadStoreRegisterListTesterCase4
   if ((inst.Bits() & 0x03D00000)  !=
           0x01000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreRegisterListTesterCase4
+bool StoreRegisterListTesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreRegisterListTester::
@@ -491,8 +516,10 @@ bool LoadStoreRegisterListTesterCase4
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
+//       rule: LDMDB_LDMEA,
 //       safety: [Rn  ==
 //               Pc ||
 //            NumGPRs(registers)  <
@@ -504,10 +531,10 @@ bool LoadStoreRegisterListTesterCase4
 //       true: true,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreRegisterListTesterCase5
+class LoadRegisterListTesterCase5
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterCase5(const NamedClassDecoder& decoder)
+  LoadRegisterListTesterCase5(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -516,7 +543,7 @@ class LoadStoreRegisterListTesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterCase5
+bool LoadRegisterListTesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -526,12 +553,15 @@ bool LoadStoreRegisterListTesterCase5
   if ((inst.Bits() & 0x03D00000)  !=
           0x01100000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreRegisterListTesterCase5
+bool LoadRegisterListTesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreRegisterListTester::
@@ -579,8 +609,10 @@ bool LoadStoreRegisterListTesterCase5
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
+//       rule: STMIB_STMFA,
 //       safety: [Rn  ==
 //               Pc ||
 //            NumGPRs(registers)  <
@@ -593,10 +625,10 @@ bool LoadStoreRegisterListTesterCase5
 //       true: true,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class LoadStoreRegisterListTesterCase6
+class StoreRegisterListTesterCase6
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterCase6(const NamedClassDecoder& decoder)
+  StoreRegisterListTesterCase6(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -605,7 +637,7 @@ class LoadStoreRegisterListTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterCase6
+bool StoreRegisterListTesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -615,12 +647,15 @@ bool LoadStoreRegisterListTesterCase6
   if ((inst.Bits() & 0x03D00000)  !=
           0x01800000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreRegisterListTesterCase6
+bool StoreRegisterListTesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreRegisterListTester::
@@ -668,8 +703,10 @@ bool LoadStoreRegisterListTesterCase6
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
+//       rule: LDMIB_LDMED,
 //       safety: [Rn  ==
 //               Pc ||
 //            NumGPRs(registers)  <
@@ -681,10 +718,10 @@ bool LoadStoreRegisterListTesterCase6
 //       true: true,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadStoreRegisterListTesterCase7
+class LoadRegisterListTesterCase7
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterCase7(const NamedClassDecoder& decoder)
+  LoadRegisterListTesterCase7(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -693,7 +730,7 @@ class LoadStoreRegisterListTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterCase7
+bool LoadRegisterListTesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -703,12 +740,15 @@ bool LoadStoreRegisterListTesterCase7
   if ((inst.Bits() & 0x03D00000)  !=
           0x01900000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadStoreRegisterListTesterCase7
+bool LoadRegisterListTesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
   NC_PRECOND(LoadStoreRegisterListTester::
@@ -745,18 +785,20 @@ bool LoadStoreRegisterListTesterCase7
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
-//       constraints: }
-class UnsafeCondDecoderTesterCase8
+//       constraints: ,
+//       pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
+//       rule: STM_User_registers}
+class ForbiddenCondDecoderTesterCase8
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase8(const NamedClassDecoder& decoder)
+  ForbiddenCondDecoderTesterCase8(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase8
+bool ForbiddenCondDecoderTesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -769,6 +811,9 @@ bool UnsafeCondDecoderTesterCase8
   if ((inst.Bits() & 0x00200000)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -777,18 +822,20 @@ bool UnsafeCondDecoderTesterCase8
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
-//       constraints: }
-class UnsafeCondDecoderTesterCase9
+//       constraints: ,
+//       pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
+//       rule: LDM_User_registers}
+class ForbiddenCondDecoderTesterCase9
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase9(const NamedClassDecoder& decoder)
+  ForbiddenCondDecoderTesterCase9(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase9
+bool ForbiddenCondDecoderTesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -804,6 +851,9 @@ bool UnsafeCondDecoderTesterCase9
   if ((inst.Bits() & 0x00200000)  !=
           0x00000000) return false;
 
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
+
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
@@ -812,18 +862,20 @@ bool UnsafeCondDecoderTesterCase9
 // op(25:20)=0xx1x1 & R(15)=1
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
-//       constraints: }
-class UnsafeCondDecoderTesterCase10
+//       constraints: ,
+//       pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
+//       rule: LDM_exception_return}
+class ForbiddenCondDecoderTesterCase10
     : public UnsafeCondDecoderTester {
  public:
-  UnsafeCondDecoderTesterCase10(const NamedClassDecoder& decoder)
+  ForbiddenCondDecoderTesterCase10(const NamedClassDecoder& decoder)
     : UnsafeCondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeCondDecoderTesterCase10
+bool ForbiddenCondDecoderTesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -835,6 +887,9 @@ bool UnsafeCondDecoderTesterCase10
   // R(15)=~1
   if ((inst.Bits() & 0x00008000)  !=
           0x00008000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -851,8 +906,10 @@ bool UnsafeCondDecoderTesterCase10
 //       generated_baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
+//       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
 //       relative_offset: imm32,
+//       rule: B,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
 //       uses: {Pc}}
@@ -877,6 +934,9 @@ bool BranchImmediate24TesterCase11
   // op(25:20)=~10xxxx
   if ((inst.Bits() & 0x03000000)  !=
           0x02000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return BranchImmediate24Tester::
@@ -910,8 +970,10 @@ bool BranchImmediate24TesterCase11
 //       generated_baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
+//       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
 //       relative_offset: imm32,
+//       rule: BL_BLX_immediate,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
 //       uses: {Pc}}
@@ -936,6 +998,9 @@ bool BranchImmediate24TesterCase12
   // op(25:20)=~11xxxx
   if ((inst.Bits() & 0x03000000)  !=
           0x03000000) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return BranchImmediate24Tester::
@@ -978,6 +1043,7 @@ bool BranchImmediate24TesterCase12
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: STMDA_STMED,
@@ -994,10 +1060,10 @@ bool BranchImmediate24TesterCase12
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case0
-    : public LoadStoreRegisterListTesterCase0 {
+    : public StoreRegisterListTesterCase0 {
  public:
   StoreRegisterListTester_Case0()
-    : LoadStoreRegisterListTesterCase0(
+    : StoreRegisterListTesterCase0(
       state_.StoreRegisterList_STMDA_STMED_instance_)
   {}
 };
@@ -1016,6 +1082,7 @@ class StoreRegisterListTester_Case0
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: LDMDA_LDMFA,
@@ -1031,10 +1098,10 @@ class StoreRegisterListTester_Case0
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case1
-    : public LoadStoreRegisterListTesterCase1 {
+    : public LoadRegisterListTesterCase1 {
  public:
   LoadRegisterListTester_Case1()
-    : LoadStoreRegisterListTesterCase1(
+    : LoadRegisterListTesterCase1(
       state_.LoadRegisterList_LDMDA_LDMFA_instance_)
   {}
 };
@@ -1053,6 +1120,7 @@ class LoadRegisterListTester_Case1
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: STM_STMIA_STMEA,
@@ -1069,10 +1137,10 @@ class LoadRegisterListTester_Case1
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case2
-    : public LoadStoreRegisterListTesterCase2 {
+    : public StoreRegisterListTesterCase2 {
  public:
   StoreRegisterListTester_Case2()
-    : LoadStoreRegisterListTesterCase2(
+    : StoreRegisterListTesterCase2(
       state_.StoreRegisterList_STM_STMIA_STMEA_instance_)
   {}
 };
@@ -1091,6 +1159,7 @@ class StoreRegisterListTester_Case2
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100010w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: LDM_LDMIA_LDMFD,
@@ -1106,10 +1175,10 @@ class StoreRegisterListTester_Case2
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case3
-    : public LoadStoreRegisterListTesterCase3 {
+    : public LoadRegisterListTesterCase3 {
  public:
   LoadRegisterListTester_Case3()
-    : LoadStoreRegisterListTesterCase3(
+    : LoadRegisterListTesterCase3(
       state_.LoadRegisterList_LDM_LDMIA_LDMFD_instance_)
   {}
 };
@@ -1128,6 +1197,7 @@ class LoadRegisterListTester_Case3
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100100w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: STMDB_STMFD,
@@ -1144,10 +1214,10 @@ class LoadRegisterListTester_Case3
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case4
-    : public LoadStoreRegisterListTesterCase4 {
+    : public StoreRegisterListTesterCase4 {
  public:
   StoreRegisterListTester_Case4()
-    : LoadStoreRegisterListTesterCase4(
+    : StoreRegisterListTesterCase4(
       state_.StoreRegisterList_STMDB_STMFD_instance_)
   {}
 };
@@ -1166,6 +1236,7 @@ class StoreRegisterListTester_Case4
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: LDMDB_LDMEA,
@@ -1181,10 +1252,10 @@ class StoreRegisterListTester_Case4
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case5
-    : public LoadStoreRegisterListTesterCase5 {
+    : public LoadRegisterListTesterCase5 {
  public:
   LoadRegisterListTester_Case5()
-    : LoadStoreRegisterListTesterCase5(
+    : LoadRegisterListTesterCase5(
       state_.LoadRegisterList_LDMDB_LDMEA_instance_)
   {}
 };
@@ -1203,6 +1274,7 @@ class LoadRegisterListTester_Case5
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: STMIB_STMFA,
@@ -1219,10 +1291,10 @@ class LoadRegisterListTester_Case5
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case6
-    : public LoadStoreRegisterListTesterCase6 {
+    : public StoreRegisterListTesterCase6 {
  public:
   StoreRegisterListTester_Case6()
-    : LoadStoreRegisterListTesterCase6(
+    : StoreRegisterListTesterCase6(
       state_.StoreRegisterList_STMIB_STMFA_instance_)
   {}
 };
@@ -1241,6 +1313,7 @@ class StoreRegisterListTester_Case6
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
 //       generated_baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
+//       pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
 //       rule: LDMIB_LDMED,
@@ -1256,10 +1329,10 @@ class StoreRegisterListTester_Case6
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case7
-    : public LoadStoreRegisterListTesterCase7 {
+    : public LoadRegisterListTesterCase7 {
  public:
   LoadRegisterListTester_Case7()
-    : LoadStoreRegisterListTesterCase7(
+    : LoadRegisterListTesterCase7(
       state_.LoadRegisterList_LDMIB_LDMED_instance_)
   {}
 };
@@ -1268,12 +1341,13 @@ class LoadRegisterListTester_Case7
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
+//       pattern: cccc100pu100nnnnrrrrrrrrrrrrrrrr,
 //       rule: STM_User_registers}
 class ForbiddenCondDecoderTester_Case8
-    : public UnsafeCondDecoderTesterCase8 {
+    : public ForbiddenCondDecoderTesterCase8 {
  public:
   ForbiddenCondDecoderTester_Case8()
-    : UnsafeCondDecoderTesterCase8(
+    : ForbiddenCondDecoderTesterCase8(
       state_.ForbiddenCondDecoder_STM_User_registers_instance_)
   {}
 };
@@ -1282,12 +1356,13 @@ class ForbiddenCondDecoderTester_Case8
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
+//       pattern: cccc100pu101nnnn0rrrrrrrrrrrrrrr,
 //       rule: LDM_User_registers}
 class ForbiddenCondDecoderTester_Case9
-    : public UnsafeCondDecoderTesterCase9 {
+    : public ForbiddenCondDecoderTesterCase9 {
  public:
   ForbiddenCondDecoderTester_Case9()
-    : UnsafeCondDecoderTesterCase9(
+    : ForbiddenCondDecoderTesterCase9(
       state_.ForbiddenCondDecoder_LDM_User_registers_instance_)
   {}
 };
@@ -1296,12 +1371,13 @@ class ForbiddenCondDecoderTester_Case9
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
 //       constraints: ,
+//       pattern: cccc100pu1w1nnnn1rrrrrrrrrrrrrrr,
 //       rule: LDM_exception_return}
 class ForbiddenCondDecoderTester_Case10
-    : public UnsafeCondDecoderTesterCase10 {
+    : public ForbiddenCondDecoderTesterCase10 {
  public:
   ForbiddenCondDecoderTester_Case10()
-    : UnsafeCondDecoderTesterCase10(
+    : ForbiddenCondDecoderTesterCase10(
       state_.ForbiddenCondDecoder_LDM_exception_return_instance_)
   {}
 };
@@ -1316,6 +1392,7 @@ class ForbiddenCondDecoderTester_Case10
 //       generated_baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
+//       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
 //       relative_offset: imm32,
 //       rule: B,
@@ -1342,6 +1419,7 @@ class BranchImmediate24Tester_Case11
 //       generated_baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
+//       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
 //       relative_offset: imm32,
 //       rule: BL_BLX_immediate,

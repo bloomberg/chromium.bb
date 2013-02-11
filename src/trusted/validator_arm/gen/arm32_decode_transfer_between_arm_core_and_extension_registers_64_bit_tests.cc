@@ -50,6 +50,8 @@ namespace nacl_arm_test {
 //       generated_baseline: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0,
 //       m: Vm:M,
 //       op: op(20),
+//       pattern: cccc1100010otttttttt101000m1mmmm,
+//       rule: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers,
 //       safety: [Pc in {t, t2} ||
 //            m  ==
 //               31 => UNPREDICTABLE,
@@ -86,6 +88,9 @@ bool MoveDoubleVfpRegisterOpTesterCase0
   // op(7:4)=~00x1
   if ((inst.Bits() & 0x000000D0)  !=
           0x00000010) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return MoveDoubleVfpRegisterOpTester::
@@ -138,6 +143,8 @@ bool MoveDoubleVfpRegisterOpTesterCase0
 //       fields: [op(20), Rt2(19:16), Rt(15:12)],
 //       generated_baseline: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0,
 //       op: op(20),
+//       pattern: cccc1100010otttttttt101100m1mmmm,
+//       rule: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register,
 //       safety: [Pc in {t, t2} => UNPREDICTABLE,
 //         to_arm_registers &&
 //            t  ==
@@ -172,6 +179,9 @@ bool MoveDoubleVfpRegisterOpTesterCase1
   // op(7:4)=~00x1
   if ((inst.Bits() & 0x000000D0)  !=
           0x00000010) return false;
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return MoveDoubleVfpRegisterOpTester::
@@ -229,6 +239,7 @@ bool MoveDoubleVfpRegisterOpTesterCase1
 //       generated_baseline: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_0,
 //       m: Vm:M,
 //       op: op(20),
+//       pattern: cccc1100010otttttttt101000m1mmmm,
 //       rule: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers,
 //       safety: [Pc in {t, t2} ||
 //            m  ==
@@ -264,6 +275,7 @@ class MoveDoubleVfpRegisterOpTester_Case0
 //       fields: [op(20), Rt2(19:16), Rt(15:12)],
 //       generated_baseline: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_0,
 //       op: op(20),
+//       pattern: cccc1100010otttttttt101100m1mmmm,
 //       rule: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register,
 //       safety: [Pc in {t, t2} => UNPREDICTABLE,
 //         to_arm_registers &&

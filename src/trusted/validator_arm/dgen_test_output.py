@@ -176,7 +176,7 @@ _cl_args = {}
 CLASS = '%(DECODER)s_%(rule)s'
 NAMED_CLASS = 'Named%(DECODER)s_%(rule)s'
 INSTANCE = '%(DECODER_class)s_instance_'
-BASE_TESTER='%(decoder_base)sTester%(base_test_case)s'
+BASE_TESTER='%(baseline)sTester%(base_test_case)s'
 BASE_BASE_TESTER='%(decoder_base)sTester%(qualifier)s'
 DECODER_TESTER='%(baseline)sTester_%(test_case)s'
 
@@ -787,6 +787,11 @@ CONSTRAINT_CHECK="""
   // %(comment)s
   if (%(code)s) return false;"""
 
+CONSTRAINT_TESTER_COND_TEST="""
+
+  // if cond(31:28)=1111, don't test instruction.
+  if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;"""
+
 CONSTRAINT_TESTER_CLASS_FOOTER="""
 
   // Check other preconditions defined for the base decoder.
@@ -910,31 +915,23 @@ def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
   _generate_test_patterns_with_baseline_tests(decoder, values, out, baselines)
   out.write(TEST_CC_FOOTER % values)
 
-def _filter_test_action(action, with_patterns, with_rules):
-  """Filters the actions to pull out relavant entries, based on whether we
-     want to include patterns and rules.
-     """
+def _filter_test_action(action):
+  """Filters the actions to pull out relavant entries."""
+
   action_fields = ['actual', 'baseline', 'generated_baseline',
-                   'constraints'] + dgen_decoder.METHODS
-  if with_patterns:
-    action_fields += ['pattern' ]
-  if with_rules:
-    action_fields += ['rule']
+                   'pattern', 'rule', 'constraints'] + dgen_decoder.METHODS
   return action.action_filter(action_fields)
 
-def _filter_test_row(row, with_patterns=False, with_rules=True):
-  """Filters a row t pulll out actions with relavant entries, based on
-     whether we want to include patterns and rules.
-     """
-  return row.copy_with_action(
-      _filter_test_action(row.action, with_patterns, with_rules))
+def _filter_test_row(row):
+  """Filters a row t to pull out actions with relavant entries."""
+  return row.copy_with_action(_filter_test_action(row.action))
 
 def _install_row_cases(row, values):
   """Installs row case names, based on values entries."""
   # First define base testers that add row constraints and safety checks.
   constraint_rows_map = values.get('constraint_rows')
   if constraint_rows_map:
-    base_row = _filter_test_row(row, with_rules=False)
+    base_row = _filter_test_row(row)
     values['base_test_case'] = (
         'Case%s' % constraint_rows_map[dgen_core.neutral_repr(base_row)])
   else:
@@ -952,27 +949,21 @@ def _install_row_cases(row, values):
   # Encorporate patterns with each row.
   pattern_rows_map = values.get('test_rows')
   if pattern_rows_map:
-    pattern_row = _filter_test_row(row, with_patterns=True)
+    pattern_row = _filter_test_row(row)
     values['test_pattern'] = (
         'Case%s' % pattern_rows_map[dgen_core.neutral_repr(pattern_row)])
   else:
     values['test_pattern'] = ''
 
-def _install_test_row(row, decoder, values,
-                      with_patterns=False, with_rules=True):
-  """Installs data associated with the given row into the values map.
-
-     Installs the baseline class, rule name, and constraints associated
-     with the row. If with_patterns is specified, then pattern information and
-     actual class information is also inserted.
-     """
-  action = _filter_test_action(row.action, with_patterns, with_rules)
+def _install_test_row(row, decoder, values):
+  """Installs data associated with the given row into the values map."""
+  action = _filter_test_action(row.action)
   values['row_comment'] = dgen_output.commented_string(
       repr(row.copy_with_action(action)))
   _install_action(decoder, action, values)
   return action
 
-def _rows_to_test(decoder, values, with_patterns=False, with_rules=True):
+def _rows_to_test(decoder, values):
   """Returns the rows of the decoder that define enough information
      that testing can be done.
      """
@@ -982,8 +973,7 @@ def _rows_to_test(decoder, values, with_patterns=False, with_rules=True):
     for row in table.rows():
       if (isinstance(row.action, dgen_core.DecoderAction) and
           row.action.pattern()):
-        new_row = row.copy_with_action(
-            _install_test_row(row, decoder, values, with_patterns, with_rules))
+        new_row = row.copy_with_action(_install_test_row(row, decoder, values))
         constraint_tester = dgen_core.neutral_repr(new_row)
         if constraint_tester not in generated_names:
           generated_names.add(constraint_tester)
@@ -994,12 +984,28 @@ def _row_filter_interesting_patterns(row):
   """Builds a copy of the row, removing uninteresting column patterns."""
   return row.copy_with_patterns(_interesting_patterns(row.patterns))
 
+def _row_action_has_parse_restrictions(row, action):
+  """Returns true if parse restrictions should be added to the
+     tester for row with the given action.
+     """
+  return (row.patterns or
+          action.constraints().restrictions or
+          _action_pattern_defines_condition(action))
+
+def _action_pattern_defines_condition(action):
+  """Returns true if the corresponding decoder action defines a
+     pattern that is conditional on bits 28-31."""
+  pattern = action.pattern()
+  return (pattern and
+          len(pattern) == 32 and
+          pattern[0:3].count('0') == 0 and
+          pattern[0:3].count('1') == 0)
 
 def _generate_constraint_testers(decoder, values, out):
   """Generates the testers needed to implement the constraints
      associated with each row having a pattern.
      """
-  rows = _rows_to_test(decoder, values, with_rules=False)
+  rows = _rows_to_test(decoder, values)
   values['constraint_rows'] = _index_neutral_map(rows)
   for r in rows:
     _install_row_cases(r, values)
@@ -1008,12 +1014,12 @@ def _generate_constraint_testers(decoder, values, out):
     safety_to_check = _safety_to_check(action.safety())
     defs_to_check = action.defs()
     out.write(CONSTRAINT_TESTER_CLASS_HEADER % values)
-    if row.patterns or action.constraints().restrictions:
+    if _row_action_has_parse_restrictions(row, action):
       out.write(CONSTRAINT_TESTER_RESTRICTIONS_HEADER % values);
     if safety_to_check or defs_to_check:
       out.write(CONSTRAINT_TESTER_SANITY_HEADER % values)
     out.write(CONSTRAINT_TESTER_CLASS_CLOSE % values)
-    if row.patterns or action.constraints().restrictions:
+    if _row_action_has_parse_restrictions(row, action):
       out.write(CONSTRAINT_TESTER_PARSE_HEADER % values)
       if row.patterns:
         out.write(ROW_CONSTRAINTS_HEADER % values);
@@ -1029,6 +1035,9 @@ def _generate_constraint_testers(decoder, values, out):
           values['comment'] = dgen_output.commented_string(repr(not_c), '  ')
           values['code'] = not_c.to_bool()
           out.write(CONSTRAINT_CHECK % values)
+      if _action_pattern_defines_condition(action):
+        # Special case where 'cccc' part of pattern can't be 1111.
+        out.write(CONSTRAINT_TESTER_COND_TEST % values)
       out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
     if safety_to_check or defs_to_check:
       out.write(SAFETY_TESTER_HEADER % values)
@@ -1080,12 +1089,12 @@ def _generate_test_patterns(decoder, values, out, add_baseline_tests):
   """Generates a test function for each row having a pattern associated
      with the table row.
      """
-  rows = _rows_to_test(decoder, values, with_patterns=True)
+  rows = _rows_to_test(decoder, values)
   values['test_rows'] = _index_neutral_map(rows)
   for r in rows:
     _install_row_cases(r, values)
     row = _row_filter_interesting_patterns(r)
-    action = _install_test_row(row, decoder, values, with_patterns=True)
+    action = _install_test_row(row, decoder, values)
     if add_baseline_tests:
       if action.find('generated_baseline'):
         values['gen_decoder'] = action.find('generated_baseline')
