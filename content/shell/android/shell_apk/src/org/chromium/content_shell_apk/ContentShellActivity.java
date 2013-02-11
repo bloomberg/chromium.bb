@@ -17,6 +17,7 @@ import android.view.KeyEvent;
 import org.chromium.base.ChromiumActivity;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ActivityContentVideoViewDelegate;
+import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
@@ -76,7 +77,7 @@ public class ContentShellActivity extends ChromiumActivity {
             if (!TextUtils.isEmpty(startupUrl)) {
                 mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
             }
-            if (!ContentView.enableMultiProcess(this, ContentView.MAX_RENDERERS_AUTOMATIC)) {
+            if (!AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_AUTOMATIC)) {
                 String shellUrl = ShellManager.DEFAULT_SHELL_URL;
                 if (savedInstanceState != null
                     && savedInstanceState.containsKey(ACTIVE_SHELL_URL_KEY)) {

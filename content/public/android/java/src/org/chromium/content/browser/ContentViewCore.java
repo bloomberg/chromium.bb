@@ -273,40 +273,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private boolean mHardwareAccelerated = false;
 
     /**
-     * Enable multi-process ContentView. This should be called by the application before
-     * constructing any ContentView instances. If enabled, ContentView will run renderers in
-     * separate processes up to the number of processes specified by maxRenderProcesses. If this is
-     * not called then the default is to run the renderer in the main application on a separate
-     * thread.
-     *
-     * @param context Context used to obtain the application context.
-     * @param maxRendererProcesses Limit on the number of renderers to use. Each tab runs in its own
-     * process until the maximum number of processes is reached. The special value of
-     * MAX_RENDERERS_SINGLE_PROCESS requests single-process mode where the renderer will run in the
-     * application process in a separate thread. If the special value MAX_RENDERERS_AUTOMATIC is
-     * used then the number of renderers will be determined based on the device memory class. The
-     * maximum number of allowed renderers is capped by MAX_RENDERERS_LIMIT.
-     * @return Whether the process actually needed to be initialized (false if already running).
-     */
-    public static boolean enableMultiProcess(Context context, int maxRendererProcesses)
-            throws ProcessInitException {
-        return AndroidBrowserProcess.initContentViewProcess(context, maxRendererProcesses);
-    }
-
-    /**
-     * Initialize the process as the platform browser. This must be called before accessing
-     * ContentView in order to treat this as a Chromium browser process.
-     *
-     * @param context Context used to obtain the application context.
-     * @param maxRendererProcesses Same as ContentView.enableMultiProcess()
-     * @return Whether the process actually needed to be initialized (false if already running).
-     */
-    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses)
-            throws ProcessInitException {
-        return AndroidBrowserProcess.initChromiumBrowserProcess(context, maxRendererProcesses);
-    }
-
-    /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
      * a ContentViewCore and before using it.
      *

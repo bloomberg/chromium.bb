@@ -15,6 +15,7 @@ import org.chromium.base.ChromiumActivity;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.TabBase;
 import org.chromium.content.app.LibraryLoader;
+import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.CommandLine;
@@ -42,7 +43,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
         try {
-            ContentView.initChromiumBrowserProcess(this, ContentView.MAX_RENDERERS_AUTOMATIC);
+            AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_AUTOMATIC);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Chromium browser process initialization failed", e);
             finish();

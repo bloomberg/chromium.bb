@@ -49,7 +49,7 @@ public abstract class AwBrowserProcess {
             public void run() {
                 try {
                     LibraryLoader.ensureInitialized();
-                    AndroidBrowserProcess.initContentViewProcess(context,
+                    AndroidBrowserProcess.init(context,
                             AndroidBrowserProcess.MAX_RENDERERS_SINGLE_PROCESS);
                 } catch (ProcessInitException e) {
                     throw new RuntimeException("Cannot initialize WebView", e);

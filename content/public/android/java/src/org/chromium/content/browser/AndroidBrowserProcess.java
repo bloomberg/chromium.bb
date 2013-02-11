@@ -14,7 +14,6 @@ import org.chromium.content.app.ContentMain;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
-import org.chromium.content.R;
 
 // NOTE: This file hasn't been fully upstreamed, please don't merge to downstream.
 @JNINamespace("content")
@@ -64,36 +63,17 @@ public class AndroidBrowserProcess {
      * initBrowserProcess() should already have been called and this is a no-op.
      *
      * @param context Context used to obtain the application context.
-     * @param maxRendererProcesses See ContentView.enableMultiProcess().
-     * @return Whether the process actually needed to be initialized (false if already running).
-     */
-    public static boolean initContentViewProcess(Context context, int maxRendererProcesses)
-            throws ProcessInitException {
-        return genericChromiumProcessInit(context, maxRendererProcesses, false);
-    }
+     * @param maxRendererProcesses Limit on the number of renderers to use. Each tab runs in its own
+     * process until the maximum number of processes is reached. The special value of
+     * MAX_RENDERERS_SINGLE_PROCESS requests single-process mode where the renderer will run in the
+     * application process in a separate thread. If the special value MAX_RENDERERS_AUTOMATIC is
+     * used then the number of renderers will be determined based on the device memory class. The
+     * maximum number of allowed renderers is capped by MAX_RENDERERS_LIMIT.
 
-    /**
-     * Initialize the platform browser process. This must be called from the main UI thread before
-     * accessing ContentView in order to treat this as a browser process.
-     *
-     * @param context Context used to obtain the application context.
-     * @param maxRendererProcesses See ContentView.enableMultiProcess().
      * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses)
-            throws ProcessInitException {
-        return genericChromiumProcessInit(context, maxRendererProcesses, true);
-    }
-
-    /**
-     * Shared implementation for the initXxx methods.
-     * @param context Context used to obtain the application context
-     * @param maxRendererProcesses See ContentView.enableMultiProcess()
-     * @param hostIsChrome pass true if running as the system browser process.
-     * @return Whether the process actually needed to be initialized (false if already running).
-     */
-    private static boolean genericChromiumProcessInit(Context context, int maxRendererProcesses,
-            boolean hostIsChrome) throws ProcessInitException {
+     public static boolean init(Context context, int maxRendererProcesses)
+             throws ProcessInitException {
         if (sInitialized) return false;
         sInitialized = true;
 
@@ -110,26 +90,8 @@ public class AndroidBrowserProcess {
 
         Context appContext = context.getApplicationContext();
 
-        // This block is inside genericChromiumProcessInit() instead
-        // of initChromiumBrowserProcess() to make sure we do it once.
-        // In here it is protected with the sInitialized.
-        if (hostIsChrome) {
-            if (nativeIsOfficialBuild() ||
-                    CommandLine.getInstance().hasSwitch(CommandLine.ADD_OFFICIAL_COMMAND_LINE)) {
-                Resources res = context.getResources();
-                try {
-                    String[] switches = res.getStringArray(R.array.official_command_line);
-                    CommandLine.getInstance().appendSwitchesAndArguments(switches);
-                } catch (Resources.NotFoundException e) {
-                    // Do nothing.  It is fine to have no command line
-                    // additions for an official build.
-                }
-            }
-        }
-
         int maxRenderers = normalizeMaxRendererProcesses(appContext, maxRendererProcesses);
-        Log.i(TAG, "Initializing chromium process, renderers=" + maxRenderers +
-                " hostIsChrome=" + hostIsChrome);
+        Log.i(TAG, "Initializing chromium process, renderers=" + maxRenderers);
 
         // Now we really need to have the resources ready.
         resourceExtractor.waitForCompletion();
@@ -150,8 +112,7 @@ public class AndroidBrowserProcess {
         nativeSetCommandLineFlags(1 /* maxRenderers */);
     }
 
-    private static native void nativeSetCommandLineFlags(
-        int maxRenderProcesses);
+    private static native void nativeSetCommandLineFlags(int maxRenderProcesses);
 
     // Is this an official build of Chrome?  Only native code knows
     // for sure.  Official build knowledge is needed very early in

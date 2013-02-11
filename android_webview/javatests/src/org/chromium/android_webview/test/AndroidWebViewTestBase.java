@@ -10,12 +10,12 @@ import android.test.ActivityInstrumentationTestCase2;
 
 import junit.framework.Assert;
 
+import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.content.browser.ContentSettings;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -52,13 +52,8 @@ public class AndroidWebViewTestBase
             @Override
             public void run() {
                 AwTestResourceProvider.registerResources(context);
-                try {
-                    ContentViewCore.initChromiumBrowserProcess(
-                            context, ContentView.MAX_RENDERERS_SINGLE_PROCESS);
-                } catch (ProcessInitException e) {
-                    throw new Error("Failed to initialize browser process", e);
-                }
-            }
+                AwBrowserProcess.start(context);
+             }
         });
     }
 
