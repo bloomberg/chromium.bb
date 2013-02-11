@@ -136,7 +136,7 @@ void ScrollbarLayerImpl::pushPropertiesTo(LayerImpl* layer)
 
 void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
-    bool premultipledAlpha = false;
+    bool premultipledAlpha = true;
     bool flipped = false;
     gfx::PointF uvTopLeft(0.f, 0.f);
     gfx::PointF uvBottomRight(1.f, 1.f);
