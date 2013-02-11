@@ -83,7 +83,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   virtual const std::vector<string16>& icons() const OVERRIDE;
   virtual const std::vector<int>& identifiers() const OVERRIDE;
 #if !defined(OS_ANDROID)
-  virtual const gfx::Font& name_font() const OVERRIDE;
+  virtual const gfx::Font& GetNameFontForRow(size_t index) const OVERRIDE;
   virtual const gfx::Font& subtext_font() const OVERRIDE;
 #endif
   virtual int selected_line() const OVERRIDE;
@@ -197,6 +197,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // The fonts for the popup text.
   gfx::Font name_font_;
   gfx::Font subtext_font_;
+  gfx::Font warning_font_;
 #endif
 
   // The line that is currently selected by the user.

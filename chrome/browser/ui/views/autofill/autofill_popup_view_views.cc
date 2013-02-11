@@ -155,12 +155,12 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
 
   canvas->DrawStringInt(
       controller_->names()[index],
-      controller_->name_font(),
+      controller_->GetNameFontForRow(index),
       kValueTextColor,
       kEndPadding,
       entry_rect.y(),
       canvas->GetStringWidth(controller_->names()[index],
-                             controller_->name_font()),
+                             controller_->GetNameFontForRow(index)),
       entry_rect.height(),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 

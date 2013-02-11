@@ -108,6 +108,7 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       weak_ptr_factory_(this) {
 #if !defined(OS_ANDROID)
   subtext_font_ = name_font_.DeriveFont(kLabelFontSizeDelta);
+  warning_font_ = name_font_.DeriveFont(0, gfx::Font::ITALIC);
 #endif
 }
 
@@ -133,7 +134,7 @@ void AutofillPopupControllerImpl::Show(
   // Elide the name and subtext strings so that the popup fits in the available
   // space.
   for (size_t i = 0; i < names_.size(); ++i) {
-    int name_width = name_font().GetStringWidth(names_[i]);
+    int name_width = GetNameFontForRow(i).GetStringWidth(names_[i]);
     int subtext_width = subtext_font().GetStringWidth(subtexts_[i]);
     int total_text_length = name_width + subtext_width;
 
@@ -147,7 +148,7 @@ void AutofillPopupControllerImpl::Show(
     // Each field recieves space in proportion to its length.
     int name_size = available_width * name_width / total_text_length;
     names_[i] = ui::ElideText(names_[i],
-                              name_font(),
+                              GetNameFontForRow(i),
                               name_size,
                               ui::ELIDE_AT_END);
 
@@ -311,7 +312,11 @@ const std::vector<int>& AutofillPopupControllerImpl::identifiers() const {
 }
 
 #if !defined(OS_ANDROID)
-const gfx::Font& AutofillPopupControllerImpl::name_font() const {
+const gfx::Font& AutofillPopupControllerImpl::GetNameFontForRow(size_t index)
+    const {
+  if (identifiers_[index] == WebAutofillClient::MenuItemIDWarningMessage)
+    return warning_font_;
+
   return name_font_;
 }
 

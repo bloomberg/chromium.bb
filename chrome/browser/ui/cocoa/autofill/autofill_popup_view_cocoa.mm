@@ -50,12 +50,12 @@ NSColor* SubtextColor() {
 
 // Draws an Autofill suggestion in the given |bounds|, labeled with the given
 // |name| and |subtext| hint.  If the suggestion |isSelected|, then it is drawn
-// with a highlight.  Some suggestions -- such as for credit cards -- might also
-// include an |icon| -- e.g. for the card type.  Finally, if |canDelete| is
-// true, a delete icon is also drawn.
+// with a highlight.  |index| determines the font to use, as well as the icon,
+// if the row requires it -- such as for credit cards. Finally, if |canDelete|
+// is true, a delete icon is also drawn.
 - (void)drawSuggestionWithName:(NSString*)name
                        subtext:(NSString*)subtext
-                          icon:(NSImage*)icon
+                         index:(size_t)index
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
                      canDelete:(BOOL)canDelete;
@@ -123,7 +123,7 @@ NSColor* SubtextColor() {
       BOOL isSelected = static_cast<int>(i) == controller_->selected_line();
       [self drawSuggestionWithName:name
                            subtext:subtext
-                              icon:[self iconAtIndex:i]
+                             index:i
                             bounds:rowBounds
                           selected:isSelected
                          canDelete:controller_->CanDelete(i)];
@@ -188,7 +188,7 @@ NSColor* SubtextColor() {
 
 - (void)drawSuggestionWithName:(NSString*)name
                        subtext:(NSString*)subtext
-                          icon:(NSImage*)icon
+                         index:(size_t)index
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
                      canDelete:(BOOL)canDelete {
@@ -202,8 +202,8 @@ NSColor* SubtextColor() {
 
   NSDictionary* nameAttributes =
       [NSDictionary dictionaryWithObjectsAndKeys:
-           controller_->name_font().GetNativeFont(), NSFontAttributeName,
-           NameColor(), NSForegroundColorAttributeName,
+           controller_->GetNameFontForRow(index).GetNativeFont(),
+           NSFontAttributeName, NameColor(), NSForegroundColorAttributeName,
            nil];
   NSSize nameSize = [name sizeWithAttributes:nameAttributes];
   CGFloat x = bounds.origin.x +
@@ -251,6 +251,7 @@ NSColor* SubtextColor() {
   }
 
   // Draw the Autofill icon, if one exists.
+  NSImage* icon = [self iconAtIndex:index];
   if (icon) {
     NSSize iconSize = [icon size];
     x += isRTL ? 0 : -iconSize.width;

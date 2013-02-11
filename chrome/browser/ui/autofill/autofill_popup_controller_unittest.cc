@@ -81,8 +81,8 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
     return AutofillPopupControllerImpl::element_bounds();
   }
 #if !defined(OS_ANDROID)
-  const gfx::Font& name_font() const {
-    return AutofillPopupControllerImpl::name_font();
+  const gfx::Font& GetNameFontForRow(size_t index) const {
+    return AutofillPopupControllerImpl::GetNameFontForRow(index);
   }
   const gfx::Font& subtext_font() const {
     return AutofillPopupControllerImpl::subtext_font();
@@ -301,9 +301,13 @@ TEST_F(AutofillPopupControllerUnitTest, ElideText) {
   std::vector<string16> icons(2, string16());
   std::vector<int> autofill_ids(2, 0);
 
+  // Show the popup once so we can easily generate the size it needs.
+  autofill_popup_controller_->Show(names, subtexts, icons, autofill_ids);
+
   // Ensure the popup will be too small to display all of the first row.
   int popup_max_width =
-      autofill_popup_controller_->name_font().GetStringWidth(names[0]) +
+      autofill_popup_controller_->GetNameFontForRow(0).GetStringWidth(
+          names[0]) +
       autofill_popup_controller_->subtext_font().GetStringWidth(subtexts[0]) -
       25;
   gfx::Rect popup_bounds = gfx::Rect(0, 0, popup_max_width, 0);

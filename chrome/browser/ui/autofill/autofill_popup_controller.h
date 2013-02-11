@@ -62,6 +62,9 @@ class AutofillPopupController {
   // The bounds of the form field element (screen coordinates).
   virtual const gfx::RectF& element_bounds() const = 0;
 
+  // TODO(csharp): The names, subtexts and icon getters can probably be adjusted
+  // to take in the row index and return a single element, instead of the
+  // whole vector.
   // The main labels for each autofill item.
   virtual const std::vector<string16>& names() const = 0;
 
@@ -75,7 +78,9 @@ class AutofillPopupController {
   virtual const std::vector<int>& identifiers() const = 0;
 
 #if !defined(OS_ANDROID)
-  virtual const gfx::Font& name_font() const = 0;
+  // The same font can vary based on the type of data it is showing,
+  // so we need to know the row.
+  virtual const gfx::Font& GetNameFontForRow(size_t index) const = 0;
   virtual const gfx::Font& subtext_font() const = 0;
 #endif
 

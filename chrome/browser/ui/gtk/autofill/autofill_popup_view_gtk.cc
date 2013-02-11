@@ -222,17 +222,17 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
 
   // Draw the value.
   SetLayoutText(controller_->names()[index],
-                controller_->name_font(),
+                controller_->GetNameFontForRow(index),
                 kNameColor);
-  int value_text_width =
-      controller_->name_font().GetStringWidth(controller_->names()[index]);
+  int value_text_width = controller_->GetNameFontForRow(index).GetStringWidth(
+      controller_->names()[index]);
 
   // Center the text within the line.
   int row_height = entry_rect.height();
   int value_content_y = std::max(
       entry_rect.y(),
       entry_rect.y() +
-          (row_height - controller_->name_font().GetHeight()) / 2);
+          (row_height - controller_->GetNameFontForRow(index).GetHeight()) / 2);
 
   bool is_rtl = base::i18n::IsRTL();
   int value_content_x = is_rtl ?
