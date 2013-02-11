@@ -180,6 +180,19 @@ TEST(TopControlsManagerTest, ensureScrollThresholdApplied) {
   EXPECT_EQ(0.f, manager->content_top_offset());
   client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 240));
 
+  // Reset the scroll threshold by going further up the page than the initial
+  // threshold.
+  manager->ScrollBy(gfx::Vector2dF(0.f, -100.f));
+  EXPECT_EQ(0.f, manager->controls_top_offset());
+  EXPECT_EQ(0.f, manager->content_top_offset());
+  client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 140));
+
+  // See that scrolling down the page now will result in the controls hiding.
+  manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
+  EXPECT_EQ(-20.f, manager->controls_top_offset());
+  EXPECT_EQ(0.f, manager->content_top_offset());
+  client.rootScrollLayer()->setScrollOffset(gfx::Vector2d(0, 160));
+
   manager->ScrollEnd();
 }
 

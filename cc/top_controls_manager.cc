@@ -57,7 +57,10 @@ gfx::Vector2dF TopControlsManager::ScrollBy(
     return pending_delta;
 
   float scroll_total_y = RootScrollLayerTotalScrollY();
-  if (in_scroll_gesture_ &&
+
+  if (in_scroll_gesture_ && pending_delta.y() > 0 && controls_top_offset_ == 0)
+    scroll_start_offset_ = scroll_total_y;
+  else if (in_scroll_gesture_ &&
       ((pending_delta.y() > 0 && scroll_total_y < scroll_start_offset_) ||
        (pending_delta.y() < 0 &&
            scroll_total_y > scroll_start_offset_ + top_controls_height_))) {
