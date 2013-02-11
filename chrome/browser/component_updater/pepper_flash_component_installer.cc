@@ -10,6 +10,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/pepper_flash.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pepper_flash.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -381,6 +383,11 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
 
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
 #if defined(GOOGLE_CHROME_BUILD)
+  // Component updated flash supersedes bundled flash therefore if that one
+  // is disabled then this one should never install.
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableBundledPpapiFlash))
+    return;
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&StartPepperFlashUpdateRegistration, cus));
 #endif
