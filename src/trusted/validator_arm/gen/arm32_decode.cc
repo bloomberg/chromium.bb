@@ -82,6 +82,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_Unnamed_case_1_instance_()
+  , Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_()
   , CondVfpOp_instance_()
   , DataBarrier_instance_()
   , Deprecated_instance_()
@@ -1151,19 +1152,19 @@ const ClassDecoder& Arm32DecoderState::decode_floating_point_data_processing_ins
 {
   if ((inst.Bits() & 0x00B00000)  ==
           0x00300000 /* opc1(23:20)=0x11 */) {
-    return CondVfpOp_instance_;
+    return Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00800000 /* opc1(23:20)=1x00 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */) {
-    return CondVfpOp_instance_;
+    return Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00900000 /* opc1(23:20)=1x01 */) {
-    return CondVfpOp_instance_;
+    return Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
@@ -1173,12 +1174,12 @@ const ClassDecoder& Arm32DecoderState::decode_floating_point_data_processing_ins
 
   if ((inst.Bits() & 0x00300000)  ==
           0x00200000 /* opc1(23:20)=xx10 */) {
-    return CondVfpOp_instance_;
+    return Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00A00000)  ==
           0x00000000 /* opc1(23:20)=0x0x */) {
-    return CondVfpOp_instance_;
+    return Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

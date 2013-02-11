@@ -215,6 +215,7 @@ class Arm32DecoderState : DecoderState {
   const Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1 Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1_instance_;
   const Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1 Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_;
   const Actual_Unnamed_case_1 Actual_Unnamed_case_1_instance_;
+  const Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1 Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_;
   const CondVfpOp CondVfpOp_instance_;
   const DataBarrier DataBarrier_instance_;
   const Deprecated Deprecated_instance_;

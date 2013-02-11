@@ -106,6 +106,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "signed_multiply_signed_and_unsigned_divide",
                      "branch_branch_with_link_and_block_data_transfer",
                      "coprocessor_instructions_and_supervisor_call",
+                     "floating_point_data_processing_instructions",
                      ]
 
 # The list of tables in armv7.table that should test the automatically
