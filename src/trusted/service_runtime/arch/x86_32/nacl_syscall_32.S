@@ -74,7 +74,6 @@ MACROENTRY
         test    %edx, %edx
         jz      1f
 
-        /* check NaClThreadContext in sel_rt_32.h for the offsets */
         movl    %ebx, NACL_THREAD_CONTEXT_OFFSET_EBX(%edx)
         movl    %esi, NACL_THREAD_CONTEXT_OFFSET_ESI(%edx)
         movl    %edi, NACL_THREAD_CONTEXT_OFFSET_EDI(%edx)

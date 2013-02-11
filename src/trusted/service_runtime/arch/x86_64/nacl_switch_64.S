@@ -130,7 +130,7 @@ MACROENTRY
 
         /*
          * Load the return address into %rcx rather than doing
-         * "jmp *0x88(%rcx)" so that we do not leak the address of the
+         * "jmp *XXX(%rcx)" so that we do not leak the address of the
          * struct NaClThreadContext to untrusted code.  Knowing this
          * address would make bugs in the sandbox easier to exploit.
          */
