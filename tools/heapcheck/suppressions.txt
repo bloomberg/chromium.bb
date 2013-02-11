@@ -1776,3 +1776,11 @@
    fun:OneClickSigninHelper::DidStopLoading
    fun:OneClickSigninHelperTest_SigninFromWebstoreWithConfigSyncfirst_Test::TestBody
 }
+{
+   bug_175435:
+   Heapcheck:Leak
+   ...
+   fun:::StartSync
+   fun:::StartExplicitSync
+   fun:OneClickSigninHelper::DidStopLoading
+}
