@@ -36,13 +36,7 @@ void test_stack_alignment(void) {
     g_regs.stack_ptr = (uintptr_t) stack + sizeof(stack) - offset;
     RegsApplySandboxConstraints(&g_regs);
     if (!setjmp(g_jmp_buf)) {
-#if defined(__i386__) || defined(__x86_64__)
-      ASM_WITH_REGS(&g_regs, "jmp CheckStackAlignmentEntry");
-#elif defined(__arm__)
-      ASM_WITH_REGS(&g_regs, "b CheckStackAlignmentEntry");
-#else
-# error Unsupported architecture
-#endif
+      JUMP_WITH_REGS(&g_regs, CheckStackAlignmentEntry);
     }
   }
 }

@@ -107,6 +107,19 @@
 # error Unsupported architecture
 #endif
 
+/*
+ * JUMP_WITH_REGS(regs, dest) jumps to symbol |dest| with most
+ * registers restored from |regs|, a pointer of type "struct
+ * NaClSignalContext *".
+ */
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+# define JUMP_WITH_REGS(regs, dest) ASM_WITH_REGS(regs, "jmp " #dest)
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+# define JUMP_WITH_REGS(regs, dest) ASM_WITH_REGS(regs, "b " #dest)
+#else
+# error Unsupported architecture
+#endif
+
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 /*

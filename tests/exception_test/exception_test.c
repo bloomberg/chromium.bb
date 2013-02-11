@@ -22,18 +22,13 @@
 
 typedef void (*handler_func_t)(struct NaClExceptionContext *context);
 
-void crash_at_known_address(void);
-extern uintptr_t stack_ptr_at_crash;
-extern char prog_ctr_at_crash[];
-
 char stack[4096];
 
+struct NaClSignalContext g_regs_at_crash;
 jmp_buf g_jmp_buf;
 
 char *g_registered_stack;
 size_t g_registered_stack_size;
-
-char *main_stack;
 
 
 #define STACK_ALIGNMENT 16
@@ -77,6 +72,36 @@ void check_stack_is_aligned(void) {
 }
 
 
+void crash_at_known_address(void);
+extern char prog_ctr_at_crash[];
+#if defined(__i386__)
+__asm__(".pushsection .text, \"ax\", @progbits\n"
+        ".p2align 5\n"
+        "crash_at_known_address:\n"
+        "prog_ctr_at_crash:\n"
+        "movl $0, 0\n"
+        ".popsection");
+#elif defined(__x86_64__)
+__asm__(".pushsection .text, \"ax\", @progbits\n"
+        ".p2align 5\n"
+        "crash_at_known_address:\n"
+        "prog_ctr_at_crash:\n"
+        "movl $0, (%r15)\n"
+        ".popsection");
+#elif defined(__arm__)
+__asm__(".pushsection .text, \"ax\", %progbits\n"
+        ".p2align 4\n"
+        "crash_at_known_address:\n"
+        "mov r0, #0\n"
+        "bic r0, r0, #0xc0000000\n"
+        "prog_ctr_at_crash:\n"
+        "str r0, [r0]\n"
+        ".popsection\n");
+#else
+# error Unsupported architecture
+#endif
+
+
 void exception_handler(struct NaClExceptionContext *context);
 REGS_SAVER_FUNC_NOPROTO(exception_handler, exception_handler_wrapped);
 
@@ -88,18 +113,19 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
 
   check_stack_is_aligned();
 
-  /*
-   * Check the saved stack pointer.  We cannot portably test this, but
-   * we assume the faulting function's stack frame is not excessively
-   * large.  We assume the stack grows down.
-   */
-  const int kMaxStackFrameSize = 0x1000;
-  assert(main_stack - kMaxStackFrameSize < (char *) context->stack_ptr);
-  assert((char *) context->stack_ptr < main_stack);
-
-  assert(context->stack_ptr == stack_ptr_at_crash);
+  assert(context->stack_ptr == g_regs_at_crash.stack_ptr);
   assert(context->prog_ctr == (uintptr_t) prog_ctr_at_crash);
+#if defined(__i386__)
+  assert(context->frame_ptr == g_regs_at_crash.ebp);
+#elif defined(__x86_64__)
+  assert(context->frame_ptr == (uint32_t) g_regs_at_crash.rbp);
+#elif defined(__arm__)
+  assert(context->frame_ptr == g_regs_at_crash.r11);
+#else
+# error Unsupported architecture
+#endif
 
+  const int kMaxStackFrameSize = 0x1000;
   char *stack_top;
   char local_var;
   if (g_registered_stack == NULL) {
@@ -152,14 +178,12 @@ void test_exception_stack_with_size(char *stack, size_t stack_size) {
   g_registered_stack = stack;
   g_registered_stack_size = stack_size;
 
-  /* Record the address of the current stack for testing against later. */
-  char local_var;
-  main_stack = &local_var;
+  char crash_stack[0x1000];
+  RegsFillTestValues(&g_regs_at_crash, /* seed= */ 0);
+  g_regs_at_crash.stack_ptr = (uintptr_t) crash_stack + sizeof(crash_stack);
 
   if (!setjmp(g_jmp_buf)) {
-    crash_at_known_address();
-    /* Should not reach here. */
-    exit(1);
+    JUMP_WITH_REGS(&g_regs_at_crash, crash_at_known_address);
   }
   /* Clear the jmp_buf to prevent it from being reused accidentally. */
   memset(g_jmp_buf, 0, sizeof(g_jmp_buf));
@@ -297,27 +321,6 @@ void frame_ptr_exception_handler(struct NaClExceptionContext *context) {
   longjmp(g_jmp_buf, 1);
 }
 
-void test_preserving_frame_ptr(void) {
-  int rc = NACL_SYSCALL(exception_handler)(frame_ptr_exception_handler, NULL);
-  assert(rc == 0);
-  if (!setjmp(g_jmp_buf)) {
-    /* Crash with frame_ptr set to a known value. */
-#if defined(__i386__)
-    asm("mov $0x12345678, %ebp\n");
-#elif defined(__x86_64__)
-    asm("movl $0x12345678, %ebp\n"
-        "addq %r15, %rbp\n");
-#else
-#  error Unsupported aritecture
-#endif
-    *((volatile int *) 0) = 0;
-    /* Should not reach here. */
-    exit(1);
-  }
-  /* Clear the jmp_buf to prevent it from being reused accidentally. */
-  memset(g_jmp_buf, 0, sizeof(g_jmp_buf));
-}
-
 #endif
 
 
@@ -340,7 +343,6 @@ int TestMain(void) {
 #if defined(__i386__) || defined(__x86_64__)
   RUN_TEST(test_get_x86_direction_flag);
   RUN_TEST(test_unsetting_x86_direction_flag);
-  RUN_TEST(test_preserving_frame_ptr);
 #endif
 
   fprintf(stderr, "** intended_exit_status=0\n");

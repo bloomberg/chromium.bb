@@ -101,9 +101,9 @@ int main(int argc, char **argv) {
     test_shm->expected_regs = call_regs;
     if (!setjmp(g_jmp_buf)) {
       if (call_count % 2 == 0) {
-        ASM_WITH_REGS(&call_regs, "jmp SyscallCaller1");
+        JUMP_WITH_REGS(&call_regs, SyscallCaller1);
       } else {
-        ASM_WITH_REGS(&call_regs, "jmp SyscallCaller2");
+        JUMP_WITH_REGS(&call_regs, SyscallCaller2);
       }
     }
   }

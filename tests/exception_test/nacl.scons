@@ -13,13 +13,9 @@ test_args = {'sel_ldr_flags': ['-e', '-E', 'OUTSIDE_BROWSER=1'],
 if env.Bit('target_arm') and env.UsingEmulator():
   test_args['sel_ldr_flags'].extend(['-E', 'UNDER_QEMU_ARM=1'])
 
-if env.Bit('target_arm'):
-  helper_files = ['crash_at_known_address_arm.S']
-elif env.Bit('target_x86'):
-  helper_files = ['crash_at_known_address_x86.S',
-                  'direction_flag_x86.S']
-else:
-  raise Exception('Unexpected platform')
+helper_files = []
+if env.Bit('target_x86'):
+  helper_files.append('direction_flag_x86.S')
 exception_test = env.ComponentProgram(
     env.ProgramNameForNmf('exception_test'),
     ['exception_test.c'] + helper_files,

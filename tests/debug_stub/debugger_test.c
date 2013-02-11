@@ -59,7 +59,6 @@ void set_registers_and_stop(void) {
   regs.edi = 0x66000077;
   regs.ebp = 0x77000088;
   regs.stack_ptr = 0x88000099;
-  ASM_WITH_REGS(&regs, "jmp fault_addr\n");
 #elif defined(__x86_64__)
   regs.rax = 0x1100000000000022;
   regs.rbx = 0x2200000000000033;
@@ -80,7 +79,6 @@ void set_registers_and_stop(void) {
    */
   regs.stack_ptr = 0x12300321;
   regs.rbp = 0x23400432;
-  ASM_WITH_REGS(&regs, "jmp fault_addr\n");
 #elif defined(__arm__)
   regs.r0 = 0x00000001;
   regs.r1 = 0x10000002;
@@ -102,10 +100,10 @@ void set_registers_and_stop(void) {
   regs.stack_ptr = 0x12345678;
   regs.lr = 0xe000000f;
   regs.cpsr = (1 << 29) | (1 << 27); /* C and Q flags */
-  ASM_WITH_REGS(&regs, "b fault_addr\n");
 #else
 # error Update set_registers_and_stop for other architectures
 #endif
+  JUMP_WITH_REGS(&regs, fault_addr);
 }
 
 void test_jump_to_address_zero(void) {
