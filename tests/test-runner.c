@@ -90,6 +90,24 @@ find_test(const char *name)
 }
 
 static void
+usage(const char *name, int status)
+{
+	const struct test *t;
+
+	fprintf(stderr, "Usage: %s [TEST]\n\n"
+		"With no arguments, run all test.  Specify test case to run\n"
+		"only that test without forking.  Available tests:\n\n",
+		name);
+
+	for (t = &__start_test_section; t < &__stop_test_section; t++)
+		fprintf(stderr, "  %s\n", t->name);
+
+	fprintf(stderr, "\n");
+
+	exit(status);
+}
+
+static void
 run_test(const struct test *t)
 {
 	int cur_alloc = num_alloc;
@@ -119,11 +137,14 @@ int main(int argc, char *argv[])
 
 	leak_check_enabled = !getenv("NO_ASSERT_LEAK_CHECK");
 
+	if (argc == 2 && strcmp(argv[1], "--help") == 0)
+		usage(argv[0], EXIT_SUCCESS);
+
 	if (argc == 2) {
 		t = find_test(argv[1]);
 		if (t == NULL) {
 			fprintf(stderr, "unknown test: \"%s\"\n", argv[1]);
-			exit(EXIT_FAILURE);
+			usage(argv[0], EXIT_FAILURE);
 		}
 
 		run_test(t);
