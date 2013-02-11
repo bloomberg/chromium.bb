@@ -276,6 +276,12 @@ void CollectD3D11Support() {
   UMA_HISTOGRAM_ENUMERATION("GPU.D3D11_FeatureLevel",
                             feature_level,
                             NUM_FEATURE_LEVELS);
+
+  // ANGLE requires at least feature level 10.0. Do not record any further
+  // stats if ANGLE would not work anyway.
+  if (feature_level < FEATURE_LEVEL_10_0)
+    return;
+
   UMA_HISTOGRAM_BOOLEAN(
       "GPU.D3D11_B8G8R8A8_Texture2DSupport",
       (bgra_support & D3D11_FORMAT_SUPPORT_TEXTURE2D) != 0);
