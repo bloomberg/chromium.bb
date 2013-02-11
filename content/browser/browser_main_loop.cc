@@ -401,7 +401,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   if (parsed_command_line_.HasSwitch(switches::kMemoryMetrics)) {
     memory_observer_.reset(new MemoryObserver());
-    main_message_loop_->AddTaskObserver(memory_observer_.get());
+    MessageLoop::current()->AddTaskObserver(memory_observer_.get());
   }
 }
 
