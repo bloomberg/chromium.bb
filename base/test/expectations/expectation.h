@@ -52,6 +52,9 @@ struct Platform {
 bool PlatformFromString(const base::StringPiece& modifier,
                         Platform* out_platform) WARN_UNUSED_RESULT;
 
+// Returns the Platform for the currently running binary.
+Platform GetCurrentPlatform();
+
 // The build configuration.
 enum Configuration {
   CONFIGURATION_UNSPECIFIED,
@@ -63,6 +66,9 @@ enum Configuration {
 // |out_configuration|. Returns true on success or false on failure.
 bool ConfigurationFromString(const base::StringPiece& modifier,
     Configuration* out_configuration) WARN_UNUSED_RESULT;
+
+// Returns the Configuration for the currently running binary.
+Configuration GetCurrentConfiguration();
 
 // An Expectation is records what the result for a given test name should be on
 // the specified platforms and configuration.

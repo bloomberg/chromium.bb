@@ -82,8 +82,8 @@ TEST(TestExpectationsFunctionsTest, IsValidPlatform) {
     "Mac-10.7",
     "Mac-10.8",
     "Linux",
-    "Linux-x32",
-    "Linux-x64",
+    "Linux-32",
+    "Linux-64",
     "ChromeOS",
     "iOS",
     "Android",
@@ -105,4 +105,16 @@ TEST(TestExpectationsFunctionsTest, IsValidPlatform) {
     EXPECT_FALSE(test_expectations::PlatformFromString(
         kInvalidPlatforms[i], &platform)) << kInvalidPlatforms[i];
   }
+}
+
+TEST(TestExpectationsFunctionsTest, CurrentPlatform) {
+  test_expectations::Platform current =
+      test_expectations::GetCurrentPlatform();
+  EXPECT_FALSE(current.name.empty());
+}
+
+TEST(TestExpectationsFunctionsTest, CurrentConfiguration) {
+  test_expectations::Configuration current =
+      test_expectations::GetCurrentConfiguration();
+  EXPECT_NE(test_expectations::CONFIGURATION_UNSPECIFIED, current);
 }
