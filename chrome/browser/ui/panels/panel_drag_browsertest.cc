@@ -1254,7 +1254,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
+// Disabled on GTK in metacity: http://crbug.com/167114
+#if defined(USE_GTK)
+#define MAYBE_DetachWithSqueeze DISABLED_DetachWithSqueeze
+#else
+#define MAYBE_DetachWithSqueeze DetachWithSqueeze
+#endif
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelCollection* docked_collection = panel_manager->docked_collection();
   DetachedPanelCollection* detached_collection =
