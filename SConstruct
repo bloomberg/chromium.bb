@@ -2304,15 +2304,15 @@ def SetupLinuxEnvArm(env):
     arm_abi = 'gnueabihf'
   else:
     arm_abi = 'gnueabi'
+  if not platform.machine().startswith('arm'):
+    # Allow emulation on non-ARM hosts.
+    env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
   if env.Bit('built_elsewhere'):
     def FakeInstall(dest, source, env):
       print 'Not installing', dest
       # Replace build commands with no-ops
     env.Replace(CC='true', CXX='true', LD='true',
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
-    # Allow emulation on x86 hosts for testing built_elsewhere flag
-    if not platform.machine().startswith('arm'):
-      env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
   else:
     arm_suffix = None
     for suffix in ['', '-4.5', '-4.6']:
@@ -2331,7 +2331,6 @@ def SetupLinuxEnvArm(env):
     env.Replace(CC='arm-linux-%s-gcc%s' % (arm_abi, arm_suffix),
                 CXX='arm-linux-%s-g++%s' % (arm_abi, arm_suffix),
                 LD='arm-linux-%s-ld%s' % (arm_abi, arm_suffix),
-                EMULATOR=jail + '/run_under_qemu_arm',
                 ASFLAGS=[],
                 LIBPATH=['${LIB_DIR}',
                          '%s/usr/lib' % jail,
@@ -2439,15 +2438,15 @@ def SetupAndroidEnv(env):
 
 def SetupLinuxEnvMips(env):
   jail = '${SCONSTRUCT_DIR}/toolchain/linux_mips-trusted'
+  if not platform.machine().startswith('mips'):
+    # Allow emulation on non-MIPS hosts.
+    env.Replace(EMULATOR=jail + '/run_under_qemu_mips32')
   if env.Bit('built_elsewhere'):
     def FakeInstall(dest, source, env):
       print 'Not installing', dest
       # Replace build commands with no-ops
     env.Replace(CC='true', CXX='true', LD='true',
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
-    # Allow emulation on x86 hosts for testing built_elsewhere flag
-    if not platform.machine().startswith('mips'):
-      env.Replace(EMULATOR=jail + '/run_under_qemu_mips32')
   else:
     tc_dir = os.path.join(os.getcwd(), 'toolchain', 'linux_mips-trusted',
                           'bin')
@@ -2459,8 +2458,6 @@ def SetupLinuxEnvMips(env):
     env.Replace(CC=os.path.join(tc_dir, 'mipsel-linux-gnu-gcc'),
                 CXX=os.path.join(tc_dir, 'mipsel-linux-gnu-g++'),
                 LD=os.path.join(tc_dir, 'mipsel-linux-gnu-ld'),
-                EMULATOR=os.path.join(jail,
-                                      'run_under_qemu_mips32'),
                 ASFLAGS=[],
                 LIBPATH=['${LIB_DIR}',
                          jail + '/sysroot/usr/lib'],
