@@ -327,7 +327,7 @@ weston_surface_to_global_float(struct weston_surface *surface,
 
 		if (fabsf(v.f[3]) < 1e-6) {
 			weston_log("warning: numerical instability in "
-				"weston_surface_to_global(), divisor = %g\n",
+				"%s(), divisor = %g\n", __func__,
 				v.f[3]);
 			*x = 0;
 			*y = 0;
