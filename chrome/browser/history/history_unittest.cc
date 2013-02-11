@@ -1446,8 +1446,6 @@ TEST_F(HistoryTest, ProcessLocalDeleteDirectiveSyncOnline) {
 }
 
 TEST_F(HistoryBackendDBTest, MigratePresentations) {
-  Time now(base::Time::Now());
-
   // Create the db we want. Use 22 since segments didn't change in that time
   // frame.
   ASSERT_NO_FATAL_FAILURE(CreateDBVersion(22));
