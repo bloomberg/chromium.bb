@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/power/suspend_observer.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/system/system_api.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"

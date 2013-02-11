@@ -4,6 +4,8 @@
 
 #include "chrome/browser/prefs/browser_prefs.h"
 
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/accessibility/invert_bubble_prefs.h"
 #include "chrome/browser/autofill/autofill_manager.h"
@@ -46,9 +48,7 @@
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/chrome_version_service.h"

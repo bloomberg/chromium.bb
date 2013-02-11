@@ -4,15 +4,15 @@
 
 #include "chrome/browser/search_engines/util.h"
 
+#include <map>
 #include <set>
 #include <string>
-#include <map>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/prefs/pref_service.h"
 #include "base/time.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"

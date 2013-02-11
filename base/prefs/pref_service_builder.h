@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_SERVICE_BUILDER_H_
-#define CHROME_BROWSER_PREFS_PREF_SERVICE_BUILDER_H_
+#ifndef BASE_PREFS_PREF_SERVICE_BUILDER_H_
+#define BASE_PREFS_PREF_SERVICE_BUILDER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/prefs/base_prefs_export.h"
 #include "base/prefs/persistent_pref_store.h"
+#include "base/prefs/pref_registry.h"
 #include "base/prefs/pref_store.h"
-#include "chrome/browser/prefs/pref_registry.h"
 
 class PrefService;
 
@@ -20,7 +21,7 @@ class SequencedTaskRunner;
 }
 
 // A class that allows convenient building of PrefService.
-class PrefServiceBuilder {
+class BASE_PREFS_EXPORT PrefServiceBuilder {
  public:
   PrefServiceBuilder();
   virtual ~PrefServiceBuilder();
@@ -68,4 +69,4 @@ class PrefServiceBuilder {
   DISALLOW_COPY_AND_ASSIGN(PrefServiceBuilder);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_BUILDER_H_
+#endif  // BASE_PREFS_PREF_SERVICE_BUILDER_H_

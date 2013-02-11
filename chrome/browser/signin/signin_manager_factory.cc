@@ -4,7 +4,7 @@
 
 #include "chrome/browser/signin/signin_manager_factory.h"
 
-#include "chrome/browser/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/signin_manager.h"

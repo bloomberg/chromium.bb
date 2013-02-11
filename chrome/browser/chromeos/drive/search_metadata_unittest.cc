@@ -5,11 +5,11 @@
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 
 #include "base/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"

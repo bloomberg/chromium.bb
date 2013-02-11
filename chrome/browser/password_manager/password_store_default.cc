@@ -7,9 +7,9 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_change.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"

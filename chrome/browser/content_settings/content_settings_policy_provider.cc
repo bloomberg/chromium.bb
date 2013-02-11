@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
+#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"

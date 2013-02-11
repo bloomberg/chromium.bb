@@ -33,9 +33,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/android/mock_google_location_settings_helper.h"
+#include "chrome/common/pref_names.h"
 #endif
 
 using content::MockRenderProcessHost;

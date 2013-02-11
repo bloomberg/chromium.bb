@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
 
 #include "base/memory/singleton.h"
+#include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class ChromeGeolocationPermissionContext;

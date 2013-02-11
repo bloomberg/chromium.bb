@@ -6,9 +6,9 @@
 
 #include <string>
 
+#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/common/chrome_notification_types.h"

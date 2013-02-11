@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 
+#include "base/prefs/pref_registry_simple.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"

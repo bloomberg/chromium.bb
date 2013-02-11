@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/password_generator.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"

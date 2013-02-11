@@ -4,8 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/browser_ui_prefs.h"
 
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 

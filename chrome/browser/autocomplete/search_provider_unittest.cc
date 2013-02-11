@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/search_provider.h"
 
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

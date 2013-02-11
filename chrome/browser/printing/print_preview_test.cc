@@ -4,7 +4,7 @@
 
 #include "chrome/browser/printing/print_preview_test.h"
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/plugin_service.h"
 

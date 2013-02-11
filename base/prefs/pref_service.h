@@ -8,17 +8,19 @@
 // information and MUST not be extracted, overwritten or modified except
 // through Chromium defined APIs.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_SERVICE_H_
-#define CHROME_BROWSER_PREFS_PREF_SERVICE_H_
+#ifndef BASE_PREFS_PREF_SERVICE_H_
+#define BASE_PREFS_PREF_SERVICE_H_
 
 #include <set>
 #include <string>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/prefs/base_prefs_export.h"
 #include "base/prefs/persistent_pref_store.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "base/threading/non_thread_safe.h"
@@ -37,7 +39,8 @@ class ScopedUserPrefUpdateBase;
 // Base class for PrefServices. You can use the base class to read and
 // interact with preferences, but not to register new preferences; for
 // that see e.g. PrefRegistrySimple.
-class PrefService : public PrefServiceBase, public base::NonThreadSafe {
+class BASE_PREFS_EXPORT PrefService : public NON_EXPORTED_BASE(PrefServiceBase),
+                                      public base::NonThreadSafe {
  public:
   enum PrefInitializationStatus {
     INITIALIZATION_STATUS_WAITING,
@@ -256,4 +259,4 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_H_
+#endif  // BASE_PREFS_PREF_SERVICE_H_

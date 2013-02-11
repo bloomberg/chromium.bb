@@ -4,7 +4,7 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/pref_names.h"

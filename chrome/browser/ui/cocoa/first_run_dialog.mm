@@ -25,9 +25,9 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
+#include "base/prefs/pref_service.h"
 #import "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif

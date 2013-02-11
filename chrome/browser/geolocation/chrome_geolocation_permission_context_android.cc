@@ -4,8 +4,8 @@
 
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_android.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/android/google_location_settings_helper.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"

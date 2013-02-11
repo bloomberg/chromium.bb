@@ -6,9 +6,9 @@
 
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
+#include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_global_error.h"

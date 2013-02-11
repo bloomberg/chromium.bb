@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud_policy_service.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
-#include "chrome/browser/prefs/pref_service.h"
 
 namespace policy {
 

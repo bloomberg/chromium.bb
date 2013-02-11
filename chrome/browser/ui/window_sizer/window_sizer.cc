@@ -4,18 +4,18 @@
 
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
-#include "base/compiler_specific.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "ui/gfx/screen.h"
 
 // Minimum height of the visible part of a window.

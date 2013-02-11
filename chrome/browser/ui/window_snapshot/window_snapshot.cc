@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "ui/snapshot/snapshot.h"
 

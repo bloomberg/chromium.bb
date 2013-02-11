@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 

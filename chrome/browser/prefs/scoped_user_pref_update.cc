@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_notifier.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 
 namespace subtle {
 

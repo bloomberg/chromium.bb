@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_H_
 #define CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_H_
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
-#include "chrome/browser/prefs/pref_service.h"
 
 class PrefRegistrySyncable;
 class PrefServiceSyncableObserver;

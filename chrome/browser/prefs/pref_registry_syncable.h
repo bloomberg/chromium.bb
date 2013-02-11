@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "chrome/browser/prefs/pref_registry.h"
+#include "base/prefs/pref_registry.h"
 
 namespace base {
 class DictionaryValue;

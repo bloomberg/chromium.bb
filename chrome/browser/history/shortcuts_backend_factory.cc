@@ -4,8 +4,8 @@
 
 #include "chrome/browser/history/shortcuts_backend_factory.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/history/shortcuts_backend.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
 

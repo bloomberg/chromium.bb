@@ -19,8 +19,8 @@
 
 #include "base/command_line.h"
 #include "base/linux_util.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/app/breakpad_linux.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/pref_names.h"
 

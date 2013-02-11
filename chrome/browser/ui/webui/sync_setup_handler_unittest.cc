@@ -10,9 +10,9 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/fake_auth_status_provider.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
@@ -27,8 +27,8 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 
 using ::testing::_;
 using ::testing::Mock;

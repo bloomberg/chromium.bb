@@ -5,7 +5,7 @@
 #include "chrome/browser/tab_contents/spelling_bubble_model.h"
 
 #include "base/logging.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

@@ -33,8 +33,8 @@
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
 #endif
 
 namespace {

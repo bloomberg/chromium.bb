@@ -4,8 +4,8 @@
 
 #include "chrome/browser/bookmarks/bookmark_prompt_prefs.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
 BookmarkPromptPrefs::BookmarkPromptPrefs(PrefServiceBase* user_prefs)

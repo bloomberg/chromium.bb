@@ -6,8 +6,8 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/public/test/test_browser_thread.h"

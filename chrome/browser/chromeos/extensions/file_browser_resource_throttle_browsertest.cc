@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/extensions/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_browser_resource_throttle.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
 #include "chrome/browser/google_apis/test_server/http_server.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.cc"

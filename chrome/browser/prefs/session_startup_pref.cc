@@ -6,11 +6,11 @@
 
 #include <string>
 
+#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"

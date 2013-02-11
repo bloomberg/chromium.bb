@@ -5,12 +5,12 @@
 #include "chrome/browser/sync/sync_prefs.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_member.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"

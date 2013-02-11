@@ -18,7 +18,7 @@
 #include "content/public/browser/notification_service.h"
 
 // #include "build/build_config.h"
-// #include "chrome/browser/prefs/pref_service.h"
+// #include "base/prefs/pref_service.h"
 
 
 #if defined(OS_CHROMEOS)

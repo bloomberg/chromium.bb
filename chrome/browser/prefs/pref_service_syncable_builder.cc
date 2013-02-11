@@ -5,13 +5,13 @@
 #include "chrome/browser/prefs/pref_service_syncable_builder.h"
 
 #include "base/prefs/default_pref_store.h"
+#include "base/prefs/pref_notifier_impl.h"
+#include "base/prefs/pref_value_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
-#include "chrome/browser/prefs/pref_value_store.h"
 
 PrefServiceSyncableBuilder::PrefServiceSyncableBuilder() {
 }

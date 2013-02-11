@@ -4,9 +4,9 @@
 
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"

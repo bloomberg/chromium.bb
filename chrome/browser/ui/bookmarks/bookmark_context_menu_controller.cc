@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 
 #include "base/compiler_specific.h"
+#include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"

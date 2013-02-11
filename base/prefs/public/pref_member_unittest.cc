@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

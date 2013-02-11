@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "base/task_runner.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
 

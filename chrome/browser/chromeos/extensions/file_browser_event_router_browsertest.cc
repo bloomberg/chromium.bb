@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"

@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/app_list/app_list_util.h"
 
 #include "base/file_util.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 

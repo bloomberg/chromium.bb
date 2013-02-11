@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/mock_pref_change_callback.h"
+#include "base/prefs/mock_pref_change_callback.h"
 
 #include "base/bind.h"
-#include "chrome/common/chrome_notification_types.h"
 
 MockPrefChangeCallback::MockPrefChangeCallback(PrefServiceBase* prefs)
     : prefs_(prefs) {

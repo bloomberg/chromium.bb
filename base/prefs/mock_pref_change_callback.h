@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
-#define CHROME_BROWSER_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
+#ifndef BASE_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
+#define BASE_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
 
 #include <string>
 
+#include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Pointee;
@@ -49,4 +49,4 @@ class MockPrefChangeCallback {
   PrefServiceBase* prefs_;
 };
 
-#endif  // CHROME_BROWSER_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
+#endif  // BASE_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_

@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/policy/user_policy_signin_service.h"
 #include "chrome/browser/policy/user_policy_signin_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"

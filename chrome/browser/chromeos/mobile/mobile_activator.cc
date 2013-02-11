@@ -17,6 +17,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/prefs/pref_service.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/timer.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 

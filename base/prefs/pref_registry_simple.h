@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_REGISTRY_SIMPLE_H_
-#define CHROME_BROWSER_PREFS_PREF_REGISTRY_SIMPLE_H_
+#ifndef BASE_PREFS_PREF_REGISTRY_SIMPLE_H_
+#define BASE_PREFS_PREF_REGISTRY_SIMPLE_H_
 
 #include <string>
 
-#include "chrome/browser/prefs/pref_registry.h"
+#include "base/prefs/base_prefs_export.h"
+#include "base/prefs/pref_registry.h"
 
 namespace base {
 class DictionaryValue;
@@ -16,7 +17,7 @@ class ListValue;
 }
 
 // A simple implementation of PrefRegistry.
-class PrefRegistrySimple : public PrefRegistry {
+class BASE_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
  public:
   PrefRegistrySimple();
 
@@ -40,4 +41,4 @@ class PrefRegistrySimple : public PrefRegistry {
   DISALLOW_COPY_AND_ASSIGN(PrefRegistrySimple);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_REGISTRY_SIMPLE_H_
+#endif  // BASE_PREFS_PREF_REGISTRY_SIMPLE_H_

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/admin_policy.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 

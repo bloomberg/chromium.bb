@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_NOTIFIER_IMPL_H_
-#define CHROME_BROWSER_PREFS_PREF_NOTIFIER_IMPL_H_
+#ifndef BASE_PREFS_PREF_NOTIFIER_IMPL_H_
+#define BASE_PREFS_PREF_NOTIFIER_IMPL_H_
 
 #include <list>
 #include <string>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "base/observer_list.h"
+#include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_observer.h"
 #include "base/threading/non_thread_safe.h"
@@ -18,8 +20,9 @@
 class PrefService;
 
 // The PrefNotifier implementation used by the PrefService.
-class PrefNotifierImpl : public PrefNotifier,
-                         public base::NonThreadSafe {
+class BASE_PREFS_EXPORT PrefNotifierImpl
+    : public NON_EXPORTED_BASE(PrefNotifier),
+      public base::NonThreadSafe {
  public:
   PrefNotifierImpl();
   explicit PrefNotifierImpl(PrefService* pref_service);
@@ -66,4 +69,4 @@ class PrefNotifierImpl : public PrefNotifier,
   DISALLOW_COPY_AND_ASSIGN(PrefNotifierImpl);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_NOTIFIER_IMPL_H_
+#endif  // BASE_PREFS_PREF_NOTIFIER_IMPL_H_

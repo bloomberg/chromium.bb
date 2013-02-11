@@ -7,9 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_registry.h"
+#include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_store.h"
-#include "chrome/browser/prefs/pref_registry.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 
 class PrefModelAssociator;

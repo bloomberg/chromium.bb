@@ -5,10 +5,10 @@
 #include "chrome/browser/plugins/plugin_status_pref_setter.h"
 
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/plugins/plugin_data_remover_helper.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/notifications/notification_prefs_manager.h"
 
-#include "chrome/browser/prefs/pref_registry_simple.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
 // static

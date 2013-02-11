@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/browser_view_prefs.h"
 
-#include "chrome/browser/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "chrome/common/pref_names.h"
 
 namespace {

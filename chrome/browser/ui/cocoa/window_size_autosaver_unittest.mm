@@ -7,8 +7,8 @@
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

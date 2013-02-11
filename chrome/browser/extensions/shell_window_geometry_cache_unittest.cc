@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/mock_pref_change_callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
-#include "chrome/browser/prefs/mock_pref_change_callback.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"

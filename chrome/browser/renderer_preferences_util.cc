@@ -4,7 +4,7 @@
 
 #include "chrome/browser/renderer_preferences_util.h"
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/renderer_preferences.h"

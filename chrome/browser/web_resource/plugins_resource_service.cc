@@ -5,9 +5,9 @@
 #include "chrome/browser/web_resource/plugins_resource_service.h"
 
 #include "base/command_line.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"

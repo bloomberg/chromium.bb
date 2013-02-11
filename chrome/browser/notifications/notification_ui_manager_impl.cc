@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "base/memory/linked_ptr.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/idle.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"

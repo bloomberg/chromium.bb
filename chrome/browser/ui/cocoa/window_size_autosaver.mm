@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 
 // If the window width stored in the prefs is smaller than this, the size is

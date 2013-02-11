@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"

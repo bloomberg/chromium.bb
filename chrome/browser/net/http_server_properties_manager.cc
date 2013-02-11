@@ -4,12 +4,12 @@
 #include "chrome/browser/net/http_server_properties_manager.h"
 
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/webui/gesture_config_ui.h"
 
-#include "base/values.h"
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"

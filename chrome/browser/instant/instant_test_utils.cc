@@ -5,7 +5,7 @@
 #include "chrome/browser/instant/instant_test_utils.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

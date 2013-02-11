@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/external_pref_loader.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/default_apps.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"

@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_page_zoom_constants.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"

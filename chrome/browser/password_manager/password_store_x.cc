@@ -10,10 +10,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"

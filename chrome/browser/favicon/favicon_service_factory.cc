@@ -5,10 +5,10 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 
 #include "base/memory/singleton.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
 

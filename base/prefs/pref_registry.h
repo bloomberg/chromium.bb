@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_REGISTRY_H_
-#define CHROME_BROWSER_PREFS_PREF_REGISTRY_H_
+#ifndef BASE_PREFS_PREF_REGISTRY_H_
+#define BASE_PREFS_PREF_REGISTRY_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_value_map.h"
 
 namespace base {
@@ -25,7 +26,7 @@ class PrefStore;
 //
 // Currently, registrations after constructing the PrefService will
 // also work, but this is being deprecated.
-class PrefRegistry : public base::RefCounted<PrefRegistry> {
+class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
  public:
   typedef PrefValueMap::const_iterator const_iterator;
   typedef base::Callback<void(const char*, base::Value*)> RegistrationCallback;
@@ -70,4 +71,4 @@ class PrefRegistry : public base::RefCounted<PrefRegistry> {
   DISALLOW_COPY_AND_ASSIGN(PrefRegistry);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_REGISTRY_H_
+#endif  // BASE_PREFS_PREF_REGISTRY_H_

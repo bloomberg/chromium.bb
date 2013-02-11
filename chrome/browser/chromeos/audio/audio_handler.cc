@@ -17,8 +17,8 @@
 #else
 #include "chrome/browser/chromeos/audio/audio_mixer_alsa.h"
 #endif
-#include "chrome/browser/prefs/pref_registry_simple.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 

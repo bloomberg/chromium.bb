@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/dns_probe_service.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/net_error_info.h"
 #include "chrome/common/pref_names.h"

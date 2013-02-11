@@ -9,11 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/prefs/public/pref_member.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"

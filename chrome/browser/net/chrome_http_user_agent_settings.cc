@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"

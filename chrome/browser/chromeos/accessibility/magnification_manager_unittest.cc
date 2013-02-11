@@ -6,7 +6,7 @@
 
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/test/ash_test_base.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"

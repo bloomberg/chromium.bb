@@ -5,12 +5,12 @@
 #include "chrome/browser/managed_mode/managed_user_service.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"

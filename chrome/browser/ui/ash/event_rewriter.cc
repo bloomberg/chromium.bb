@@ -8,8 +8,8 @@
 
 #include "ash/shell.h"
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "base/string_util.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"

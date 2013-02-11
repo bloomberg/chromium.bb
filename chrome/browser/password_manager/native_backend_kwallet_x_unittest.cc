@@ -9,11 +9,11 @@
 
 #include "base/bind.h"
 #include "base/pickle.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"

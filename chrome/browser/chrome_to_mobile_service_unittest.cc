@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chrome_to_mobile_service.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
-#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/feature_switch.h"

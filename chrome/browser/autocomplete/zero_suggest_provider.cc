@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/prefs/pref_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"

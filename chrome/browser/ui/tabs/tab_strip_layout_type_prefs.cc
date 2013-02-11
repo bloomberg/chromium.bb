@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_layout_type_prefs.h"
 
-#include "chrome/browser/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/ui/tabs/tab_strip_layout_type.h"
 #include "chrome/common/pref_names.h"
 

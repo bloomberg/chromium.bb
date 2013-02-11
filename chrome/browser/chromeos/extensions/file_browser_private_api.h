@@ -12,12 +12,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "googleurl/src/url_util.h"
 

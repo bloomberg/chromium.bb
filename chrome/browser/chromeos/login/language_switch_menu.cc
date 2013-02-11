@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "base/i18n/rtl.h"
+#include "base/prefs/pref_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_list.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"

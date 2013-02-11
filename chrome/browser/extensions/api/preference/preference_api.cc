@@ -9,6 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/permissions/api_permission.h"

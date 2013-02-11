@@ -4,9 +4,9 @@
 
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"

@@ -11,10 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/prefs/pref_service.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 
 class Profile;

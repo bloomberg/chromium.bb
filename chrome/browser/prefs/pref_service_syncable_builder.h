@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_BUILDER_H_
 #define CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_BUILDER_H_
 
-#include "chrome/browser/prefs/pref_service_builder.h"
+#include "base/prefs/pref_service_builder.h"
 
 class CommandLine;
 class PrefRegistrySyncable;

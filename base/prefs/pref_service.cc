@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 
 #include <algorithm>
 
@@ -12,14 +12,14 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/default_pref_store.h"
+#include "base/prefs/pref_notifier_impl.h"
+#include "base/prefs/pref_registry.h"
+#include "base/prefs/pref_value_store.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/prefs/pref_notifier_impl.h"
-#include "chrome/browser/prefs/pref_registry.h"
-#include "chrome/browser/prefs/pref_value_store.h"
 
 using content::BrowserContext;
 

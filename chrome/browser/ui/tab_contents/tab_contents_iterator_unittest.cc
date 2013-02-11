@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 
+#include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/prefs/pref_registry_simple.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list_impl.h"

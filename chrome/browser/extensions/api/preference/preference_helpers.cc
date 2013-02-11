@@ -5,12 +5,12 @@
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 
 #include "base/json/json_writer.h"
+#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace extensions {
