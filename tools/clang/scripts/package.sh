@@ -64,6 +64,13 @@ if [ "$(uname -s)" = "Darwin" ]; then
   # Keep only Release+Asserts/lib/clang/3.2/lib/darwin/libclang_rt.asan_osx.a
   find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/darwin*' | grep -v asan | \
        xargs rm
+  # Fix LC_ID_DYLIB for the ASan dynamic library to be relative to
+  # @executable_path.
+  # TODO(glider): this is transitional. We'll need to fix the dylib name
+  # either in our build system, or in Clang. See also http://crbug.com/170629.
+  ASAN_DYLIB_NAME=libclang_rt.asan_osx_dynamic.dylib
+  ASAN_DYLIB=$(find "${LLVM_LIB_DIR}/clang" -type f -path "*${ASAN_DYLIB_NAME}")
+  install_name_tool -id @executable_path/${ASAN_DYLIB_NAME} "${ASAN_DYLIB}"
 else
   # Keep only
   # Release+Asserts/lib/clang/3.2/lib/linux/libclang_rt.{asan,tsan}-x86_64.a
