@@ -143,9 +143,6 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
                 host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_INTENTS, ""));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_FULLSCREEN, ""));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
@@ -609,9 +606,6 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
                 host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_INTENTS, ""));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_FULLSCREEN, ""));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             host_content_settings_map->GetContentSetting(
@@ -1041,8 +1035,6 @@ TEST_F(HostContentSettingsMapTest, ShouldAllowAllContent) {
                   extension, extension, CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_FALSE(host_content_settings_map->ShouldAllowAllContent(
                    extension, extension, CONTENT_SETTINGS_TYPE_PLUGINS));
-  EXPECT_TRUE(host_content_settings_map->ShouldAllowAllContent(
-                  extension, extension, CONTENT_SETTINGS_TYPE_INTENTS));
   EXPECT_FALSE(host_content_settings_map->ShouldAllowAllContent(
                    extension, http_host, CONTENT_SETTINGS_TYPE_COOKIES));
 }

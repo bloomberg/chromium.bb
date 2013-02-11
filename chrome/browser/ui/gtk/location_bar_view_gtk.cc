@@ -61,7 +61,6 @@
 #include "chrome/browser/ui/gtk/script_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/gtk/zoom_bubble_gtk.h"
-#include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_url_fetcher.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
@@ -147,11 +146,6 @@ const int kPageToolAnimationTime = 150;
 const int kContentSettingImageDisplayTime = 3200;
 // The time, in ms, of the animation (open and close).
 const int kContentSettingImageAnimationTime = 150;
-
-#if defined(ENABLE_WEB_INTENTS)
-// Animation opening time for web intents button (in ms).
-const int kWebIntentsButtonAnimationTime = 150;
-#endif
 
 // Color of border of content setting area (icon/label).
 const GdkColor kContentSettingBorderColor = GDK_COLOR_RGB(0xe9, 0xb9, 0x66);
@@ -319,70 +313,6 @@ void ContentSettingImageViewGtk::BubbleClosing(
   content_setting_bubble_ = NULL;
 }
 
-#if defined(ENABLE_WEB_INTENTS)
-class WebIntentsButtonViewGtk : public LocationBarViewGtk::PageToolViewGtk {
- public:
-  explicit WebIntentsButtonViewGtk(const LocationBarViewGtk* parent)
-      : LocationBarViewGtk::PageToolViewGtk(parent) {
-    animation_.SetSlideDuration(kWebIntentsButtonAnimationTime);
-  }
-  virtual ~WebIntentsButtonViewGtk() {}
-
-  // PageToolViewGtk
-  virtual void Update(WebContents* web_contents) OVERRIDE;
-
- private:
-  // PageToolViewGtk
-  virtual GdkColor button_border_color() const OVERRIDE;
-  virtual GdkColor gradient_top_color() const OVERRIDE;
-  virtual GdkColor gradient_bottom_color() const OVERRIDE;
-  virtual void OnClick(GtkWidget* sender) OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(WebIntentsButtonViewGtk);
-};
-
-void WebIntentsButtonViewGtk::Update(WebContents* web_contents) {
-  WebIntentPickerController* web_intent_picker_controller =
-      web_contents ? WebIntentPickerController::FromWebContents(web_contents)
-                   : NULL;
-  if (!web_intent_picker_controller ||
-      !web_intent_picker_controller->ShowLocationBarPickerButton()) {
-    gtk_widget_hide(widget());
-    return;
-  }
-
-  gtk_widget_set_tooltip_text(widget(),
-      l10n_util::GetStringUTF8(IDS_INTENT_PICKER_USE_ANOTHER_SERVICE).c_str());
-  gtk_widget_show_all(widget());
-
-  gtk_label_set_text(GTK_LABEL(label_.get()),
-      l10n_util::GetStringUTF8(IDS_INTENT_PICKER_USE_ANOTHER_SERVICE).c_str());
-
-  StartAnimating();
-}
-
-void WebIntentsButtonViewGtk::OnClick(GtkWidget* sender) {
-  WebContents* web_contents = parent_->GetWebContents();
-  if (!web_contents)
-    return;
-
-  WebIntentPickerController::FromWebContents(web_contents)->
-      LocationBarPickerButtonClicked();
-}
-
-GdkColor WebIntentsButtonViewGtk::button_border_color() const {
-  return kGrayBorderColor;
-}
-
-GdkColor WebIntentsButtonViewGtk::gradient_top_color() const {
-  return kTopColorGray;
-}
-
-GdkColor WebIntentsButtonViewGtk::gradient_bottom_color() const {
-  return kBottomColorGray;
-}
-#endif
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -405,9 +335,6 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       drag_icon_(NULL),
       enable_location_drag_(false),
       security_info_label_(NULL),
-#if defined(ENABLE_WEB_INTENTS)
-      web_intents_button_view_(new WebIntentsButtonViewGtk(this)),
-#endif
       tab_to_search_alignment_(NULL),
       tab_to_search_box_(NULL),
       tab_to_search_full_label_(NULL),
@@ -440,9 +367,6 @@ LocationBarViewGtk::~LocationBarViewGtk() {
   hbox_.Destroy();
   content_setting_hbox_.Destroy();
   page_action_hbox_.Destroy();
-#if defined(ENABLE_WEB_INTENTS)
-  web_intents_hbox_.Destroy();
-#endif
 }
 
 void LocationBarViewGtk::Init(bool popup_window_mode) {
@@ -607,16 +531,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_.get(),
                    FALSE, FALSE, 0);
 
-#if defined(ENABLE_WEB_INTENTS)
-  web_intents_hbox_.Own(gtk_hbox_new(FALSE, InnerPadding()));
-  gtk_widget_set_name(web_intents_hbox_.get(),
-                      "chrome-web-intents-hbox");
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), web_intents_hbox_.get(),
-                   FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(web_intents_hbox_.get()),
-                   web_intents_button_view_->widget(), FALSE, FALSE, 0);
-#endif
-
   // Now that we've created the widget hierarchy, connect to the main |hbox_|'s
   // size-allocate so we can do proper resizing and eliding on
   // |security_info_label_|.
@@ -750,9 +664,6 @@ void LocationBarViewGtk::Update(const WebContents* contents) {
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
   UpdatePageActions();
-#if defined(ENABLE_WEB_INTENTS)
-  UpdateWebIntentsButton();
-#endif
   location_entry_->Update(contents);
   // The security level (background color) could have changed, etc.
   if (theme_service_->UsingNativeTheme()) {
@@ -1044,14 +955,6 @@ void LocationBarViewGtk::InvalidatePageActions() {
   }
 }
 
-#if defined(ENABLE_WEB_INTENTS)
-void LocationBarViewGtk::UpdateWebIntentsButton() {
-  web_intents_button_view_->Update(GetWebContents());
-  gtk_widget_set_visible(web_intents_hbox_.get(),
-                         web_intents_button_view_->IsVisible());
-}
-#endif
-
 void LocationBarViewGtk::UpdateOpenPDFInReaderPrompt() {
   // Not implemented on Gtk.
 }
@@ -1193,9 +1096,6 @@ void LocationBarViewGtk::Observe(int type,
       UpdateStarIcon();
       UpdateSiteTypeArea();
       UpdateContentSettingsIcons();
-#if defined(ENABLE_WEB_INTENTS)
-      UpdateWebIntentsButton();
-#endif
       break;
     }
 

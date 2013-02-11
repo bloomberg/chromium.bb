@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
@@ -48,7 +47,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -422,28 +420,6 @@ void ExtensionHost::OnStartDownload(
     return;
   static_cast<content::WebContentsDelegate*>(view()->browser())->
     OnStartDownload(source, download);
-}
-
-void ExtensionHost::WebIntentDispatch(
-    content::WebContents* web_contents,
-    content::WebIntentsDispatcher* intents_dispatcher) {
-#if !defined(OS_ANDROID)
-  scoped_ptr<content::WebIntentsDispatcher> dispatcher(intents_dispatcher);
-
-  Browser* browser = view() ? view()->browser()
-      : chrome::FindBrowserWithWebContents(web_contents);
-
-  // For background scripts/pages, there will be no view(). In this case, we
-  // want to treat the intent as a browser-initiated one and deliver it into the
-  // current browser. It probably came from a context menu click or similar.
-  if (!browser)
-    browser = web_intents::GetBrowserForBackgroundWebIntentDelivery(profile());
-
-  if (browser) {
-    static_cast<WebContentsDelegate*>(browser)->
-        WebIntentDispatch(NULL, dispatcher.release());
-  }
-#endif
 }
 
 void ExtensionHost::WillRunJavaScriptDialog() {

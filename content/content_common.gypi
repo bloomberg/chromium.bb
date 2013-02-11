@@ -284,7 +284,6 @@
     'common/indexed_db/proxy_webidbfactory_impl.h',
     'common/inter_process_time_ticks_converter.cc',
     'common/inter_process_time_ticks_converter.h',
-    'common/intents_messages.h',
     'common/java_bridge_messages.h',
     'common/mac/attributed_string_coder.h',
     'common/mac/attributed_string_coder.mm',

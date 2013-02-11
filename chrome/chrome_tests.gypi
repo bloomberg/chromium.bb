@@ -1220,7 +1220,6 @@
         'browser/importer/toolbar_importer_utils_browsertest.cc',
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/infobars/infobars_browsertest.cc',
-        'browser/intents/native_services_browsertest.cc',
         'browser/loadtimes_extension_bindings_browsertest.cc',
         'browser/locale_tests_browsertest.cc',
         'browser/logging_chrome_browsertest.cc',
@@ -1335,9 +1334,6 @@
         'browser/ui/gtk/location_bar_view_gtk_browsertest.cc',
         'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
         'browser/ui/gtk/view_id_util_browsertest.cc',
-        'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
-        'browser/ui/intents/web_intent_picker_delegate_mock.cc',
-        'browser/ui/intents/web_intent_picker_delegate_mock.h',
         'browser/ui/login/login_prompt_browsertest.cc',
         'browser/ui/panels/panel_extension_browsertest.cc',
         'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
@@ -1637,14 +1633,6 @@
         ['enable_webrtc==0', {
           'sources!': [
             'browser/media/chrome_webrtc_browsertest.cc',
-          ],
-        }],
-        ['enable_web_intents==0', {
-          'sources!': [
-            'browser/intents/native_services_browsertest.cc',
-            'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
-            'browser/ui/intents/web_intent_picker_delegate_mock.cc',
-            'browser/ui/intents/web_intent_picker_delegate_mock.h',
           ],
         }],
         ['OS=="win"', {

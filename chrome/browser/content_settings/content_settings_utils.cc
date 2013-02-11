@@ -30,7 +30,6 @@ const char* kTypeNames[] = {
   "popups",
   "geolocation",
   "notifications",
-  "intents",
   "auto-select-certificate",
   "fullscreen",
   "mouselock",

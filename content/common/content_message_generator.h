@@ -28,7 +28,6 @@
 #include "content/common/hyphenator_messages.h"
 #include "content/common/icon_messages.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
-#include "content/common/intents_messages.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/media/media_player_messages.h"

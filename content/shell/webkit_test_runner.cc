@@ -48,7 +48,6 @@ using WebKit::WebDevToolsAgent;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
-using WebKit::WebIntentRequest;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
@@ -294,17 +293,6 @@ void WebKitTestRunner::applyPreferences() {
   render_view()->SetWebkitPreferences(prefs);
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-void WebKitTestRunner::setCurrentWebIntentRequest(
-    const WebIntentRequest& request) {
-    intent_request_ = request;
-}
-
-WebIntentRequest* WebKitTestRunner::currentWebIntentRequest() {
-  return &intent_request_;
-}
-#endif
 
 std::string WebKitTestRunner::makeURLErrorDescription(
     const WebURLError& error) {

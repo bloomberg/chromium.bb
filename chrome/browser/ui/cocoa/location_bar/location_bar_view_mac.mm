@@ -44,12 +44,10 @@
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/separator_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/web_intents_button_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
-#include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_url_fetcher.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #import "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -108,10 +106,6 @@ LocationBarViewMac::LocationBarViewMac(
       zoom_decoration_(new ZoomDecoration(toolbar_model)),
       keyword_hint_decoration_(
           new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
-#if defined(ENABLE_WEB_INTENTS)
-      web_intents_button_decoration_(
-          new WebIntentsButtonDecoration(this, OmniboxViewMac::GetFieldFont())),
-#endif
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
@@ -129,14 +123,6 @@ LocationBarViewMac::LocationBarViewMac(
     content_setting_decorations_.push_back(
         new ContentSettingDecoration(type, this, profile_));
   }
-
-#if defined(ENABLE_WEB_INTENTS)
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  web_intents_button_decoration_->SetButtonImages(
-      rb.GetNativeImageNamed(IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_L).ToNSImage(),
-      rb.GetNativeImageNamed(IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_C).ToNSImage(),
-      rb.GetNativeImageNamed(IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_R).ToNSImage());
-#endif
 
   registrar_.Add(this,
       chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
@@ -246,12 +232,6 @@ void LocationBarViewMac::InvalidatePageActions() {
   }
 }
 
-#if defined(ENABLE_WEB_INTENTS)
-void LocationBarViewMac::UpdateWebIntentsButton() {
-  RefreshWebIntentsButtonDecoration();
-}
-#endif
-
 void LocationBarViewMac::UpdateOpenPDFInReaderPrompt() {
   // Not implemented on Mac.
 }
@@ -269,7 +249,6 @@ void LocationBarViewMac::Update(const WebContents* contents,
   UpdateZoomDecoration();
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
-  RefreshWebIntentsButtonDecoration();
   // OmniboxView restores state if the tab is non-NULL.
   omnibox_view_->Update(should_restore_state ? contents : NULL);
   OnChanged();
@@ -672,18 +651,6 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
   }
 }
 
-void LocationBarViewMac::RefreshWebIntentsButtonDecoration() {
-#if defined(ENABLE_WEB_INTENTS)
-  WebContents* web_contents = GetWebContents();
-  if (!web_contents) {
-    web_intents_button_decoration_->SetVisible(false);
-    return;
-  }
-
-  web_intents_button_decoration_->Update(web_contents);
-#endif
-}
-
 // TODO(shess): This function should over time grow to closely match
 // the views Layout() function.
 void LocationBarViewMac::Layout() {
@@ -712,10 +679,6 @@ void LocationBarViewMac::Layout() {
   }
 
   [cell addRightDecoration:keyword_hint_decoration_.get()];
-
-#if defined(ENABLE_WEB_INTENTS)
-  [cell addRightDecoration:web_intents_button_decoration_.get()];
-#endif
 
   [cell addRightDecoration:separator_decoration_.get()];
   [cell addRightDecoration:search_token_decoration_.get()];

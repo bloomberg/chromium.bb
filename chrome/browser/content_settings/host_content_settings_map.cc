@@ -22,7 +22,6 @@
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -335,12 +334,6 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     PrefService* prefs,
     ContentSetting setting,
     ContentSettingsType content_type) {
-  // Intents content settings are hidden behind a switch for now.
-  if (content_type == CONTENT_SETTINGS_TYPE_INTENTS) {
-    if (!web_intents::IsWebIntentsEnabled(prefs))
-      return false;
-  }
-
   // We don't yet support stored content settings for mixed scripting.
   if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT)
     return false;
@@ -369,7 +362,6 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     case CONTENT_SETTINGS_TYPE_PLUGINS:
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_INTENTS:
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:

@@ -4,26 +4,6 @@
 
 namespace app.runtime {
 
-  callback NullCallback = void ();
-
-  // A WebIntents intent object. Deprecated.
-  [nodoc] dictionary Intent {
-    // The WebIntent being invoked.
-    DOMString action;
-
-    // The MIME type of the data.
-    DOMString type;
-
-    // Data associated with the intent.
-    any data;
-
-    // Callback to be compatible with WebIntents.
-    NullCallback postResult;
-
-    // Callback to be compatible with WebIntents.
-    NullCallback postFailure;
-  };
-
   [inline_doc] dictionary LaunchItem {
     // FileEntry for the file.
     [instanceOf=FileEntry] object entry;
@@ -34,8 +14,6 @@ namespace app.runtime {
 
   // Optional data for the launch.
   [inline_doc] dictionary LaunchData {
-    [nodoc] Intent intent;
-
     // The id of the file handler that the app is being invoked with.
     DOMString? id;
 
@@ -43,30 +21,11 @@ namespace app.runtime {
   };
 
   interface Events {
-    // Fired when an app is launched from the launcher or in response to a web
-    // intent.
+    // Fired when an app is launched from the launcher.
     static void onLaunched(optional LaunchData launchData);
 
     // Fired at Chrome startup to apps that were running when Chrome last shut
     // down.
     static void onRestarted();
-  };
-
-  dictionary IntentResponse {
-    // Identifies the intent.
-    long intentId;
-
-    // Was this intent successful? (i.e., postSuccess vs postFailure).
-    boolean success;
-
-    // Data associated with the intent response.
-    any data;
-  };
-
-  interface Functions {
-    // postIntentResponse is an internal method to responds to an intent
-    // previously sent to a packaged app. This is identified by intentId, and
-    // should only be invoked at most once per intentId.
-    [nodoc] static void postIntentResponse(IntentResponse intentResponse);
   };
 };

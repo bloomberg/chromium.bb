@@ -164,7 +164,6 @@ class RendererPpapiHost;
 class RendererWebColorChooserImpl;
 class RenderWidgetFullscreenPepper;
 class SpeechRecognitionDispatcher;
-class WebIntentsHost;
 class WebPluginDelegateProxy;
 struct CustomContextMenuContext;
 struct FileChooserParams;
@@ -665,11 +664,6 @@ class CONTENT_EXPORT RenderViewImpl
       WebKit::WebStorageQuotaType type,
       unsigned long long requested_size,
       WebKit::WebStorageQuotaCallbacks* callbacks);
-  virtual void registerIntentService(
-      WebKit::WebFrame* frame,
-      const WebKit::WebIntentServiceInfo& service);
-  virtual void dispatchIntent(WebKit::WebFrame* frame,
-                              const WebKit::WebIntentRequest& intentRequest);
   virtual void willOpenSocketStream(
       WebKit::WebSocketStreamHandle* handle);
   virtual void willStartUsingPeerConnectionHandler(WebKit::WebFrame* frame,
@@ -820,7 +814,6 @@ class CONTENT_EXPORT RenderViewImpl
   friend class ExternalPopupMenuTest;
   friend class PepperDeviceTest;
   friend class RendererAccessibilityTest;
-  friend class WebIntentsHostTest;
   friend class RenderViewTest;
 
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
@@ -1396,9 +1389,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // The geolocation dispatcher attached to this view, lazily initialized.
   GeolocationDispatcher* geolocation_dispatcher_;
-
-  // The intents host attached to this view. Not lazily initialized.
-  WebIntentsHost* intents_host_;
 
   // The speech dispatcher attached to this view, lazily initialized.
   InputTagSpeechDispatcher* input_tag_speech_dispatcher_;

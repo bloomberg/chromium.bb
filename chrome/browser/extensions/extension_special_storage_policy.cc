@@ -9,38 +9,15 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/web_intents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
-#include "webkit/glue/web_intent_service_data.h"
 
 using content::BrowserThread;
 using extensions::APIPermission;
-
-namespace {
-
-// Does the specified extension support the passed Web Intent, |action|?
-bool ExtensionSupportsIntentAction(
-    const extensions::Extension* extension,
-    const std::string& action) {
-#if defined(ENABLE_WEB_INTENTS)
-  for (std::vector<webkit_glue::WebIntentServiceData>::const_iterator i =
-          extensions::WebIntentsInfo::GetIntentsServices(extension).begin();
-       i != extensions::WebIntentsInfo::GetIntentsServices(extension).end();
-       ++i) {
-    if (UTF16ToUTF8(i->action) == action)
-      return true;
-  }
-#endif
-  return false;
-}
-
-}  // namespace
 
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
     CookieSettings* cookie_settings)
@@ -88,8 +65,7 @@ bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
 bool ExtensionSpecialStoragePolicy::IsFileHandler(
     const std::string& extension_id) {
   base::AutoLock locker(lock_);
-  return web_intent_extensions_.ContainsExtension(extension_id) ||
-      file_handler_extensions_.ContainsExtension(extension_id);
+  return file_handler_extensions_.ContainsExtension(extension_id);
 }
 
 bool ExtensionSpecialStoragePolicy::NeedsProtection(
@@ -106,14 +82,11 @@ const ExtensionSet* ExtensionSpecialStoragePolicy::ExtensionsProtectingOrigin(
 void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     const extensions::Extension* extension) {
   DCHECK(extension);
-  const bool supports_intent_view = ExtensionSupportsIntentAction(
-      extension, web_intents::kActionView);
   if (!NeedsProtection(extension) &&
       !extension->HasAPIPermission(
           APIPermission::kUnlimitedStorage) &&
       !extension->HasAPIPermission(
-          APIPermission::kFileBrowserHandler) &&
-      !supports_intent_view) {
+          APIPermission::kFileBrowserHandler)) {
     return;
   }
   {
@@ -128,8 +101,6 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     if (extension->HasAPIPermission(
             APIPermission::kFileBrowserHandler))
       file_handler_extensions_.Add(extension);
-    if (supports_intent_view)
-      web_intent_extensions_.Add(extension);
   }
   NotifyChanged();
 }
@@ -137,14 +108,11 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
 void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     const extensions::Extension* extension) {
   DCHECK(extension);
-  const bool supports_intent_view = ExtensionSupportsIntentAction(
-      extension, web_intents::kActionView);
   if (!NeedsProtection(extension) &&
       !extension->HasAPIPermission(
           APIPermission::kUnlimitedStorage) &&
       !extension->HasAPIPermission(
-          APIPermission::kFileBrowserHandler) &&
-      !supports_intent_view) {
+          APIPermission::kFileBrowserHandler)) {
     return;
   }
   {
@@ -157,8 +125,6 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
       unlimited_extensions_.Remove(extension);
     if (extension->HasAPIPermission(APIPermission::kFileBrowserHandler))
       file_handler_extensions_.Remove(extension);
-    if (supports_intent_view)
-      web_intent_extensions_.Remove(extension);
   }
   NotifyChanged();
 }
@@ -170,7 +136,6 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForAllExtensions() {
     installed_apps_.Clear();
     unlimited_extensions_.Clear();
     file_handler_extensions_.Clear();
-    web_intent_extensions_.Clear();
   }
   NotifyChanged();
 }

@@ -58,9 +58,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
-#include "chrome/browser/intents/web_intents_reporting.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -116,7 +113,6 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/screen_capture_infobar_delegate.h"
@@ -171,7 +167,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
@@ -189,8 +184,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/point.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "webkit/glue/web_intent_data.h"
-#include "webkit/glue/web_intent_service_data.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -1595,72 +1588,6 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
   RegisterProtocolHandlerHelper(
       web_contents, protocol, url, title, user_gesture, window());
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-void Browser::RegisterIntentHandler(
-    WebContents* web_contents,
-    const webkit_glue::WebIntentServiceData& data,
-    bool user_gesture) {
-  RegisterIntentHandlerInfoBarDelegate::Create(web_contents, data);
-}
-
-void Browser::WebIntentDispatch(
-    WebContents* web_contents,
-    content::WebIntentsDispatcher* intents_dispatcher) {
-  if (!web_intents::IsWebIntentsEnabledForProfile(profile_)) {
-    web_intents::RecordIntentsDispatchDisabled();
-    delete intents_dispatcher;
-    return;
-  }
-
-  // Make sure the requester is coming from an extension/app page.
-  // Internal dispatches set |web_contents| to NULL.
-#if !defined(OS_CHROMEOS)
-  if (web_contents &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebIntentsInvocationEnabled)) {
-    ExtensionService* extensions_service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    if (!extensions_service ||
-        extensions_service->extensions()->GetExtensionOrAppByURL(
-            ExtensionURLInfo(web_contents->GetURL())) == NULL) {
-      web_intents::RecordIntentsDispatchDisabled();
-      intents_dispatcher->SendReply(webkit_glue::WebIntentReply(
-          webkit_glue::WEB_INTENT_REPLY_FAILURE,
-          ASCIIToUTF16("Intents may only be invoked from extensions/apps.")));
-      return;
-    }
-  }
-#else
-  // ChromeOS currently uses a couple specific intent actions.
-  // TODO(gbillock): delete this when we find good alternatives for those uses.
-  if (intents_dispatcher->GetIntent().action !=
-      ASCIIToUTF16(web_intents::kActionCrosEcho) &&
-      intents_dispatcher->GetIntent().action !=
-      ASCIIToUTF16(web_intents::kActionView)) {
-    web_intents::RecordIntentsDispatchDisabled();
-    intents_dispatcher->SendReply(webkit_glue::WebIntentReply(
-        webkit_glue::WEB_INTENT_REPLY_FAILURE,
-        ASCIIToUTF16("Intents may only be invoked from extensions/apps.")));
-    return;
-  }
-#endif
-
-  web_intents::RecordIntentDispatchRequested();
-
-  if (!web_contents) {
-    // Intent is system-caused and the picker will show over the currently
-    // active web contents.
-    web_contents = tab_strip_model_->GetActiveWebContents();
-  }
-  WebIntentPickerController* web_intent_picker_controller =
-      WebIntentPickerController::FromWebContents(web_contents);
-  web_intent_picker_controller->SetIntentsDispatcher(intents_dispatcher);
-  web_intent_picker_controller->ShowDialog(
-      intents_dispatcher->GetIntent().action,
-      intents_dispatcher->GetIntent().type);
-}
-#endif
 
 void Browser::UpdatePreferredSize(WebContents* source,
                                   const gfx::Size& pref_size) {

@@ -38,7 +38,6 @@
 #include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/fileapi/webfilesystem_callback_dispatcher.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/common/intents_messages.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/pepper_plugin_registry.h"
@@ -111,7 +110,6 @@
 #include "content/renderer/speech_recognition_dispatcher.h"
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter_impl.h"
-#include "content/renderer/web_intents_host.h"
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
@@ -160,9 +158,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
@@ -200,7 +195,6 @@
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/web_intent_service_data.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
@@ -279,8 +273,6 @@ using WebKit::WebIconURL;
 using WebKit::WebImage;
 using WebKit::WebInputElement;
 using WebKit::WebInputEvent;
-using WebKit::WebIntentRequest;
-using WebKit::WebIntentServiceInfo;
 using WebKit::WebMediaPlayer;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebMediaPlayerClient;
@@ -763,11 +755,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
   // along with the RenderView automatically.
   devtools_agent_ = new DevToolsAgent(this);
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
-#if defined(ENABLE_WEB_INTENTS)
-  intents_host_ = new WebIntentsHost(this);
-#else
-  intents_host_ = NULL;
-#endif
   favicon_helper_ = new FaviconHelper(this);
 
   // Create renderer_accessibility_ if needed.
@@ -3962,11 +3949,6 @@ void RenderViewImpl::didCreateScriptContext(WebFrame* frame,
                                             int world_id) {
   GetContentClient()->renderer()->DidCreateScriptContext(
       frame, context, extension_group, world_id);
-
-#if defined(ENABLE_WEB_INTENTS)
-  intents_host_->DidCreateScriptContext(
-      frame, context, extension_group, world_id);
-#endif
 }
 
 void RenderViewImpl::willReleaseScriptContext(WebFrame* frame,
@@ -4336,43 +4318,6 @@ void RenderViewImpl::requestStorageQuota(
       routing_id(), GURL(origin.toString()),
       static_cast<quota::StorageType>(type), requested_size,
       QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
-}
-
-void RenderViewImpl::registerIntentService(
-    WebFrame* frame, const WebIntentServiceInfo& service) {
-#if defined(ENABLE_WEB_INTENTS)
-  webkit_glue::WebIntentServiceData data(service);
-  if (data.title.empty())
-    data.title = webview()->mainFrame()->document().title();
-  bool user_gesture = frame->isProcessingUserGesture();
-  Send(new IntentsHostMsg_RegisterIntentService(routing_id_,
-                                                data,
-                                                user_gesture));
-#endif
-}
-
-void RenderViewImpl::dispatchIntent(
-    WebFrame* frame, const WebIntentRequest& intentRequest) {
-#if defined(ENABLE_WEB_INTENTS)
-  webkit_glue::WebIntentData intent_data(intentRequest.intent());
-
-  // See WebMessagePortChannelImpl::postMessage() and ::OnMessagedQueued()
-  WebKit::WebMessagePortChannelArray* channels =
-      intentRequest.intent().messagePortChannelsRelease();
-  if (channels) {
-    for (size_t i = 0; i < channels->size(); ++i) {
-      WebMessagePortChannelImpl* webchannel =
-          static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
-      intent_data.message_port_ids.push_back(webchannel->message_port_id());
-      DCHECK(intent_data.message_port_ids[i] != MSG_ROUTING_NONE);
-    }
-    delete channels;
-  }
-
-  int id = intents_host_->RegisterWebIntent(intentRequest);
-  Send(new IntentsHostMsg_WebIntentDispatch(
-      routing_id_, intent_data, id));
-#endif
 }
 
 bool RenderViewImpl::willCheckAndDispatchMessageEvent(

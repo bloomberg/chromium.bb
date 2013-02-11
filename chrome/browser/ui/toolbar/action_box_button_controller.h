@@ -68,20 +68,9 @@ class ActionBoxButtonController : public ui::SimpleMenuModel::Delegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Handles "share with X" commands.
-  void TriggerExplicitShareIntent(const GURL& share_service_url);
-
-  // Handles the "Find places to share" command. Navigates the browser to the
-  // web store to find extensions with share intents.
-  void NavigateToWebStoreShareIntentsList();
-
   Browser* browser_;
 
   Delegate* delegate_;
-
-  // The share service strings that have commands associated with them.
-  typedef std::map<int, GURL> ShareIntentServiceCommandMap;
-  ShareIntentServiceCommandMap share_intent_service_ids_;
 
   // The command ID to assign to the next extension that needs one.
   int next_extension_command_id_;

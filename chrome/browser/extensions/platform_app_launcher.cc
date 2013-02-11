@@ -17,22 +17,17 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/web_intents_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/glue/web_intent_data.h"
-#include "webkit/glue/web_intent_service_data.h"
 
 using content::BrowserThread;
 using extensions::app_file_handler_util::FileHandlerForId;
@@ -153,10 +148,7 @@ class PlatformAppPathLauncher
   }
 
   void LaunchWithMimeType(const std::string& mime_type) {
-    // Find the intent service or file handler from the platform app for the
-    // file being opened.
-    bool found_service = false;
-
+    // Find file handler from the platform app for the file being opened.
     const FileHandlerInfo* handler = NULL;
     if (!handler_id_.empty())
       handler = FileHandlerForId(*extension_, handler_id_);
@@ -169,28 +161,10 @@ class PlatformAppPathLauncher
       LaunchWithNoLaunchData();
       return;
     }
-    found_service = !!handler;
 
-    // TODO(benwells): remove this once we no longer support the "intents"
-    // syntax in platform app manifests.
-    if (!found_service) {
-#if defined(ENABLE_WEB_INTENTS)
-      std::vector<webkit_glue::WebIntentServiceData> services =
-          extensions::WebIntentsInfo::GetIntentsServices(extension_);
-      for (size_t i = 0; i < services.size(); i++) {
-        std::string service_type_ascii = UTF16ToASCII(services[i].type);
-        if (services[i].action == ASCIIToUTF16(web_intents::kActionView) &&
-            net::MatchesMimeType(service_type_ascii, mime_type)) {
-          found_service = true;
-          break;
-        }
-      }
-#endif
-    }
-
-    // If this app doesn't have an intent that supports the file, launch with
-    // no launch data.
-    if (!found_service) {
+    // If this app doesn't have a file handler that supports the file, launch
+    // with no launch data.
+    if (!handler) {
       LOG(WARNING) << "Extension does not provide a valid file handler for "
                    << file_path_.value();
       LaunchWithNoLaunchData();
@@ -249,8 +223,8 @@ class PlatformAppPathLauncher
     policy->GrantReadFileSystem(renderer_id, filesystem_id);
 
     AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
-        profile_, extension_, ASCIIToUTF16(web_intents::kActionView),
-        handler_id_, mime_type, filesystem_id, registered_name);
+        profile_, extension_, handler_id_, mime_type, filesystem_id,
+        registered_name);
   }
 
   // The profile the app should be run in.
@@ -264,115 +238,6 @@ class PlatformAppPathLauncher
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAppPathLauncher);
 };
-
-#if defined(ENABLE_WEB_INTENTS)
-// Class to handle launching of platform apps with WebIntent data.
-// An instance of this class is created for each launch. The lifetime of these
-// instances is managed by reference counted pointers. As long as an instance
-// has outstanding tasks on a message queue it will be retained; once all
-// outstanding tasks are completed it will be deleted.
-class PlatformAppWebIntentLauncher
-    : public base::RefCountedThreadSafe<PlatformAppWebIntentLauncher> {
- public:
-  PlatformAppWebIntentLauncher(
-      Profile* profile,
-      const Extension* extension,
-      content::WebIntentsDispatcher* intents_dispatcher,
-      content::WebContents* source)
-      : profile_(profile),
-        extension_(extension),
-        intents_dispatcher_(intents_dispatcher),
-        source_(source),
-        data_(intents_dispatcher->GetIntent()) {}
-
-  void Launch() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (data_.data_type != webkit_glue::WebIntentData::BLOB &&
-        data_.data_type != webkit_glue::WebIntentData::FILESYSTEM) {
-      InternalLaunch();
-      return;
-    }
-
-    // Access needs to be granted to the file or filesystem for the process
-    // associated with the extension. To do this the ExtensionHost is needed.
-    // This might not be available, or it might be in the process of being
-    // unloaded, in which case the lazy background task queue is used to load
-    // he extension and then call back to us.
-    LazyBackgroundTaskQueue* queue =
-        ExtensionSystem::Get(profile_)->lazy_background_task_queue();
-    if (queue->ShouldEnqueueTask(profile_, extension_)) {
-      queue->AddPendingTask(profile_, extension_->id(), base::Bind(
-              &PlatformAppWebIntentLauncher::GrantAccessToFileAndLaunch,
-              this));
-      return;
-    }
-    ExtensionProcessManager* process_manager =
-        ExtensionSystem::Get(profile_)->process_manager();
-    ExtensionHost* host =
-        process_manager->GetBackgroundHostForExtension(extension_->id());
-    DCHECK(host);
-    GrantAccessToFileAndLaunch(host);
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<PlatformAppWebIntentLauncher>;
-
-  virtual ~PlatformAppWebIntentLauncher() {}
-
-  void GrantAccessToFileAndLaunch(ExtensionHost* host) {
-    // If there was an error loading the app page, |host| will be NULL.
-    if (!host) {
-      LOG(ERROR) << "Could not load app page for " << extension_->id();
-      return;
-    }
-
-    content::ChildProcessSecurityPolicy* policy =
-        content::ChildProcessSecurityPolicy::GetInstance();
-    int renderer_id = host->render_process_host()->GetID();
-
-    if (data_.data_type == webkit_glue::WebIntentData::BLOB) {
-      // Granting read file permission to allow reading file content.
-      // If the renderer already has permission to read these paths, it is not
-      // regranted, as this would overwrite any other permissions which the
-      // renderer may already have.
-      if (!policy->CanReadFile(renderer_id, data_.blob_file))
-        policy->GrantReadFile(renderer_id, data_.blob_file);
-    } else if (data_.data_type == webkit_glue::WebIntentData::FILESYSTEM) {
-      // Grant read filesystem and read directory permission to allow reading
-      // any part of the specified filesystem.
-      base::FilePath path;
-      const bool valid =
-          fileapi::IsolatedContext::GetInstance()->GetRegisteredPath(
-              data_.filesystem_id, &path);
-      DCHECK(valid);
-      if (!policy->CanReadFile(renderer_id, path))
-        policy->GrantReadFile(renderer_id, path);
-      policy->GrantReadFileSystem(renderer_id, data_.filesystem_id);
-    } else {
-      NOTREACHED();
-    }
-    InternalLaunch();
-  }
-
-  void InternalLaunch() {
-    AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
-        profile_, extension_, intents_dispatcher_, source_);
-  }
-
-  // The profile the app should be run in.
-  Profile* profile_;
-  // The extension providing the app.
-  const Extension* extension_;
-  // The dispatcher so that platform apps can respond to this intent.
-  content::WebIntentsDispatcher* intents_dispatcher_;
-  // The source of this intent.
-  content::WebContents* source_;
-  // The WebIntent data from the dispatcher.
-  const webkit_glue::WebIntentData data_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformAppWebIntentLauncher);
-};
-#endif
 
 }  // namespace
 
@@ -409,18 +274,5 @@ void LaunchPlatformAppWithFileHandler(Profile* profile,
       new PlatformAppPathLauncher(profile, extension, file_path);
   launcher->LaunchWithHandler(handler_id);
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-void LaunchPlatformAppWithWebIntent(
-    Profile* profile,
-    const Extension* extension,
-    content::WebIntentsDispatcher* intents_dispatcher,
-    content::WebContents* source) {
-  scoped_refptr<PlatformAppWebIntentLauncher> launcher =
-      new PlatformAppWebIntentLauncher(
-          profile, extension, intents_dispatcher, source);
-  launcher->Launch();
-}
-#endif
 
 }  // namespace extensions

@@ -954,26 +954,6 @@
         'browser/instant/instant_tab.h',
         'browser/instant/instant_unload_handler.cc',
         'browser/instant/instant_unload_handler.h',
-        'browser/intents/cws_intents_registry.cc',
-        'browser/intents/cws_intents_registry.h',
-        'browser/intents/cws_intents_registry_factory.cc',
-        'browser/intents/cws_intents_registry_factory.h',
-        'browser/intents/default_web_intent_service.cc',
-        'browser/intents/default_web_intent_service.h',
-        'browser/intents/intent_service_host.h',
-        'browser/intents/native_services.cc',
-        'browser/intents/native_services.h',
-        'browser/intents/register_intent_handler_infobar_delegate.cc',
-        'browser/intents/register_intent_handler_infobar_delegate.h',
-        'browser/intents/web_intents_registry.cc',
-        'browser/intents/web_intents_registry.h',
-        'browser/intents/web_intents_registry_factory.cc',
-        'browser/intents/web_intents_registry_factory.h',
-        'browser/intents/web_intents_reporting.cc',
-        'browser/intents/web_intents_reporting.h',
-        'browser/intents/web_intents_util.cc',
-        'browser/intents/web_intents_util.h',
-        'browser/intents/web_intents_util_stub.cc',
         'browser/internal_auth.cc',
         'browser/internal_auth.h',
         'browser/intranet_redirect_detector.cc',
@@ -2703,16 +2683,6 @@
         ['notifications==0', {
           'sources/': [
             ['exclude', '^browser/notifications/'],
-          ],
-        }],
-        ['enable_web_intents==0', {
-          'sources/': [
-            ['exclude', '^browser/intents/'],
-            ['include', '^browser/intents/web_intents_util_stub.cc'],
-          ],
-        }, {  # enable_web_intents==1
-          'sources!': [
-            'browser/intents/web_intents_util_stub.cc',
           ],
         }],
         ['enable_themes==0', {

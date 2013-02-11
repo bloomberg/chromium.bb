@@ -36,7 +36,6 @@ namespace content {
 class RenderProcessHost;
 class RenderWidgetHostView;
 class SiteInstance;
-class WebIntentsDispatcher;
 }
 
 namespace extensions {
@@ -168,9 +167,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
   virtual void OnStartDownload(content::WebContents* source,
                                content::DownloadItem* download) OVERRIDE;
-  virtual void WebIntentDispatch(
-      content::WebContents* web_contents,
-      content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,

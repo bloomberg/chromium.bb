@@ -34,10 +34,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/web_intent_data.h"
 
 using content::WebContents;
 
@@ -66,54 +64,6 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
   virtual void PlatformInit() OVERRIDE {}
   virtual void PlatformCancel() OVERRIDE {}
 };
-
-#if defined(ENABLE_WEB_INTENTS)
-// State holder for the LaunchReply test. This provides an WebIntentsDispatcher
-// that will, when used to launch a Web Intent, will return its reply via this
-// class. The result may then be waited on via WaitUntilReply().
-class LaunchReplyHandler {
- public:
-  explicit LaunchReplyHandler(webkit_glue::WebIntentData& data)
-      : data_(data),
-        replied_(false),
-        weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-    intents_dispatcher_ = content::WebIntentsDispatcher::Create(data);
-    intents_dispatcher_->RegisterReplyNotification(base::Bind(
-        &LaunchReplyHandler::OnReply, weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  content::WebIntentsDispatcher* intents_dispatcher() {
-    return intents_dispatcher_;
-  }
-
-  // Waits until a reply to this Web Intent is provided via the
-  // WebIntentsDispatcher.
-  bool WaitUntilReply() {
-    if (replied_)
-      return true;
-    waiting_ = true;
-    content::RunMessageLoop();
-    waiting_ = false;
-    return replied_;
-  }
-
- private:
-  void OnReply(webkit_glue::WebIntentReplyType reply) {
-    // Note that the ReplyNotification registered on WebIntentsDispatcher does
-    // not include the result data: this is reserved for the source page (which
-    // we don't care about).
-    replied_ = true;
-    if (waiting_)
-      MessageLoopForUI::current()->Quit();
-  }
-
-  webkit_glue::WebIntentData data_;
-  bool replied_;
-  bool waiting_;
-  content::WebIntentsDispatcher* intents_dispatcher_;
-  base::WeakPtrFactory<LaunchReplyHandler> weak_ptr_factory_;
-};
-#endif
 
 // This class keeps track of tabs as they are added to the browser. It will be
 // "done" (i.e. won't block on Wait()) once |observations| tabs have been added.
@@ -162,39 +112,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, CreateAndCloseShellWindow) {
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch")) << message_;
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-// Tests that platform apps can reply to "launch" events that contain a Web
-// Intent. This test does not test the mechanics of invoking a Web Intent
-// from a source page, and short-circuits to LaunchPlatformAppWithWebIntent.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchReply) {
-  base::FilePath path =
-      test_data_dir_.AppendASCII("platform_apps/launch_reply");
-  const extensions::Extension* extension = LoadExtension(path);
-  ASSERT_TRUE(extension) << "Failed to load extension.";
-
-  webkit_glue::WebIntentData data(
-      UTF8ToUTF16("http://webintents.org/view"),
-      UTF8ToUTF16("text/plain"),
-      UTF8ToUTF16("irrelevant unserialized string data"));
-  LaunchReplyHandler handler(data);
-
-  // Navigate to a boring page: we don't care what it is, but we require some
-  // source WebContents to launch the Web Intent "from".
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents);
-
-  extensions::LaunchPlatformAppWithWebIntent(
-      browser()->profile(),
-      extension,
-      handler.intents_dispatcher(),
-      web_contents);
-
-  ASSERT_TRUE(handler.WaitUntilReply());
-}
-#endif
 
 // Tests that platform apps cannot use certain disabled window properties, but
 // can override them and then use them.

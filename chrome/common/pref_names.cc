@@ -994,11 +994,6 @@ const char kPluginsMetadata[] = "plugins.metadata";
 const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
 #endif
 
-#if defined(ENABLE_WEB_INTENTS)
-// Boolean that is true if Web Intents is enabled.
-const char kWebIntentsEnabled[] = "webintents.enabled";
-#endif
-
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";

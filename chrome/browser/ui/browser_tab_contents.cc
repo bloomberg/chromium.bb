@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
-#include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
@@ -153,9 +152,6 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   ThreeDAPIObserver::CreateForWebContents(web_contents);
   ThumbnailTabHelper::CreateForWebContents(web_contents);
   TranslateTabHelper::CreateForWebContents(web_contents);
-#if defined(ENABLE_WEB_INTENTS)
-  WebIntentPickerController::CreateForWebContents(web_contents);
-#endif
   ZoomController::CreateForWebContents(web_contents);
 
 #if defined(ENABLE_AUTOMATION)

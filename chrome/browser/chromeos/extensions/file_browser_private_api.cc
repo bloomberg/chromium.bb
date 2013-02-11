@@ -49,7 +49,6 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/google_apis/time_util.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -59,7 +58,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/web_intents_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -82,7 +80,6 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/glue/web_intent_service_data.h"
 #include "ui/webui/web_ui_util.h"
 
 using extensions::app_file_handler_util::FindFileHandlersForMimeTypes;
@@ -281,48 +278,6 @@ GURL FindPreferredIcon(const InstalledApp::IconList& icons,
   }
   return result;
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-// Finds the title of the given Web Intents |action|, if the passed extension
-// supports this action for all specified |mime_types|. Returns true and
-// provides the |title| as output on success.
-bool FindTitleForActionWithTypes(
-    const Extension* extension,
-    const std::string& action,
-    const std::set<std::string>& mime_types,
-    std::string* title) {
-  DCHECK(!mime_types.empty());
-  std::set<std::string> pending(mime_types.begin(), mime_types.end());
-  std::string found_title;
-
-  for (std::vector<webkit_glue::WebIntentServiceData>::const_iterator data =
-          extensions::WebIntentsInfo::GetIntentsServices(extension).begin();
-       data != extensions::WebIntentsInfo::GetIntentsServices(extension).end();
-       ++data) {
-    if (pending.empty())
-      break;
-
-    if (UTF16ToUTF8(data->action) != action)
-      continue;
-
-    std::set<std::string>::iterator pending_iter = pending.begin();
-    while (pending_iter != pending.end()) {
-      std::set<std::string>::iterator current = pending_iter++;
-      if (net::MatchesMimeType(UTF16ToUTF8(data->type), *current))
-        pending.erase(current);
-    }
-    if (found_title.empty())
-      found_title = UTF16ToUTF8(data->title);
-  }
-
-  // Not all mime-types have been found.
-  if (!pending.empty())
-    return false;
-
-  *title = found_title;
-  return true;
-}
-#endif  // defined(ENABLE_WEB_INTENTS)
 
 // Retrieves total and remaining available size on |mount_path|.
 void GetSizeStatsOnFileThread(const std::string& mount_path,
@@ -999,60 +954,6 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
   return true;
 }
 
-#if defined(ENABLE_WEB_INTENTS)
-// Find Web Intent platform apps that support the View task, and add them to
-// the |result_list|. These will be marked as kTaskWebIntent.
-bool GetFileTasksFileBrowserFunction::FindWebIntentTasks(
-    const std::vector<base::FilePath>& file_paths,
-    ListValue* result_list) {
-  DCHECK(!file_paths.empty());
-  ExtensionService* service = profile_->GetExtensionService();
-  if (!service)
-    return false;
-
-  std::set<std::string> mime_types;
-  GetMimeTypesForFileURLs(file_paths, &mime_types);
-
-  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
-       iter != service->extensions()->end();
-       ++iter) {
-    const Extension* extension = *iter;
-
-    // We don't support using hosted apps to open files.
-    if (!extension->is_platform_app())
-      continue;
-
-    if (profile_->IsOffTheRecord() &&
-        !service->IsIncognitoEnabled(extension->id()))
-      continue;
-
-    std::string title;
-    if (!FindTitleForActionWithTypes(
-            extension, web_intents::kActionView, mime_types, &title))
-      continue;
-
-    DictionaryValue* task = new DictionaryValue;
-    std::string task_id = file_handler_util::MakeTaskID(extension->id(),
-        file_handler_util::kTaskWebIntent, web_intents::kActionView);
-    task->SetString("taskId", task_id);
-    task->SetString("title", title);
-    task->SetBoolean("isDefault", false);
-
-    GURL best_icon = extension->GetIconURL(kPreferredIconSize,
-                                           ExtensionIconSet::MATCH_BIGGER);
-    if (!best_icon.is_empty())
-      task->SetString("iconUrl", best_icon.spec());
-    else
-      task->SetString("iconUrl", kDefaultIcon);
-
-    task->SetBoolean("driveApp", false);
-    result_list->Append(task);
-  }
-
-  return true;
-}
-#endif  // defined(ENABLE_WEB_INTENTS)
-
 bool GetFileTasksFileBrowserFunction::RunImpl() {
   // First argument is the list of files to get tasks for.
   ListValue* files_list = NULL;
@@ -1161,19 +1062,12 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     result_list->Append(task);
   }
 
-  // Take the union of platform app file handlers, Web Intents that platform
-  // apps may accept, and all previous Drive and extension tasks. As above, we
-  // know there aren't duplicates because they're entirely different kinds of
+  // Take the union of platform app file handlers, and all previous Drive
+  // and extension tasks. As above, we know there aren't duplicates because
+  // they're entirely different kinds of
   // tasks.
   if (!FindAppTasks(file_paths, result_list))
     return false;
-
-#if defined(ENABLE_WEB_INTENTS)
-  // TODO(benwells): remove the web intents tasks once we no longer support
-  // them.
-  if (!FindWebIntentTasks(file_paths, result_list))
-    return false;
-#endif
 
   if (VLOG_IS_ON(1)) {
     std::string result_json;

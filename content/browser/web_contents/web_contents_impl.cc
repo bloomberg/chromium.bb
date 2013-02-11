@@ -28,7 +28,6 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/intents/web_intents_dispatcher_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -42,7 +41,6 @@
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/icon_messages.h"
-#include "content/common/intents_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
@@ -83,8 +81,6 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gl/gl_switches.h"
-#include "webkit/glue/web_intent_data.h"
-#include "webkit/glue/web_intent_service_data.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_ANDROID)
@@ -716,12 +712,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
   bool handled = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebContentsImpl, message, message_is_ok)
-#if defined(ENABLE_WEB_INTENTS)
-    IPC_MESSAGE_HANDLER(IntentsHostMsg_RegisterIntentService,
-                        OnRegisterIntentService)
-    IPC_MESSAGE_HANDLER(IntentsHostMsg_WebIntentDispatch,
-                        OnWebIntentDispatch)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
@@ -2068,26 +2058,6 @@ void WebContentsImpl::SetFocusToLocationBar(bool select_all) {
   if (delegate_)
     delegate_->SetFocusToLocationBar(select_all);
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-void WebContentsImpl::OnRegisterIntentService(
-    const webkit_glue::WebIntentServiceData& data,
-    bool user_gesture) {
-  if (delegate_)
-    delegate_->RegisterIntentHandler(this, data, user_gesture);
-}
-
-void WebContentsImpl::OnWebIntentDispatch(
-    const webkit_glue::WebIntentData& intent,
-    int intent_id) {
-  if (!delegate_)
-    return;
-
-  WebIntentsDispatcherImpl* intents_dispatcher =
-      new WebIntentsDispatcherImpl(this, intent, intent_id);
-  delegate_->WebIntentDispatch(this, intents_dispatcher);
-}
-#endif
 
 void WebContentsImpl::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host,

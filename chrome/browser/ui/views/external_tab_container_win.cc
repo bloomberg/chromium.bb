@@ -25,7 +25,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/repost_form_warning_controller.h"
@@ -52,7 +51,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
@@ -810,23 +808,6 @@ void ExternalTabContainerWin::RegisterProtocolHandler(
   Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title,
                                          user_gesture, NULL);
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-void ExternalTabContainerWin::RegisterIntentHandler(
-    WebContents* tab,
-    const webkit_glue::WebIntentServiceData& data,
-    bool user_gesture) {
-  RegisterIntentHandlerInfoBarDelegate::Create(tab, data);
-}
-
-void ExternalTabContainerWin::WebIntentDispatch(
-    WebContents* tab,
-    content::WebIntentsDispatcher* intents_dispatcher) {
-  // TODO(binji) How do we want to display the WebIntentPicker bubble if there
-  // is no BrowserWindow?
-  delete intents_dispatcher;
-}
-#endif
 
 void ExternalTabContainerWin::FindReply(WebContents* tab,
                                         int request_id,

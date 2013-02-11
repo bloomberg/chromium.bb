@@ -294,8 +294,6 @@
         'browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
         'browser/in_process_webkit/indexed_db_unittest.cc',
         'browser/in_process_webkit/webkit_thread_unittest.cc',
-        'browser/intents/intent_injector_unittest.cc',
-        'browser/intents/internal_web_intents_dispatcher_unittest.cc',
         'browser/loader/resource_buffer_unittest.cc',
         'browser/loader/resource_dispatcher_host_unittest.cc',
         'browser/loader/resource_loader_unittest.cc',
@@ -567,12 +565,6 @@
             '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
           ]
         }],
-        ['enable_web_intents==0', {
-          'sources!': [
-            'browser/intents/intent_injector_unittest.cc',
-            'browser/intents/internal_web_intents_dispatcher_unittest.cc',
-          ],
-        }],
         # TODO(jrg): remove the OS=="android" section?
         # http://crbug.com/113172
         # Understand better how media_stream_ is tied into Chromium.
@@ -760,7 +752,6 @@
             'renderer/render_view_browsertest.cc',
             'renderer/render_view_browsertest_mac.mm',
             'renderer/render_widget_browsertest.cc',
-            'renderer/web_intents_host_browsertest.cc',
             'test/browser_test_message_pump_android.cc',
             'test/browser_test_message_pump_android.h',
             'test/content_browser_test.h',
@@ -873,11 +864,6 @@
             ['enable_webrtc==1', {
               'sources': [
                 'browser/media/webrtc_browsertest.cc',
-              ],
-            }],
-            ['enable_web_intents==0', {
-              'sources!': [
-                'renderer/web_intents_host_browsertest.cc',
               ],
             }],
             ['enable_plugins==0', {

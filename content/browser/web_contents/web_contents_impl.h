@@ -34,11 +34,6 @@ struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewHostMsg_DateTimeDialogValue_Params;
 struct ViewMsg_PostMessage_Params;
 
-namespace webkit_glue {
-struct WebIntentData;
-struct WebIntentServiceData;
-}
-
 namespace content {
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
@@ -520,12 +515,6 @@ class CONTENT_EXPORT WebContentsImpl
   void OnPpapiBrokerPermissionResult(int request_id, bool result);
 
   // IPC message handlers.
-#if defined(ENABLE_WEB_INTENTS)
-  void OnRegisterIntentService(const webkit_glue::WebIntentServiceData& data,
-                               bool user_gesture);
-  void OnWebIntentDispatch(const webkit_glue::WebIntentData& intent,
-                           int intent_id);
-#endif
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
                                         const std::string& security_info,
                                         const std::string& http_request,

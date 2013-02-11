@@ -8,7 +8,6 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
 #include "v8/include/v8.h"
@@ -63,10 +62,6 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual WebKit::WebURL rewriteLayoutTestsURL(const std::string& utf8_url);
   virtual ::WebTestRunner::WebPreferences* preferences();
   virtual void applyPreferences();
-#if defined(ENABLE_WEB_INTENTS)
-  virtual void setCurrentWebIntentRequest(const WebKit::WebIntentRequest&);
-  virtual WebKit::WebIntentRequest* currentWebIntentRequest();
-#endif
   virtual std::string makeURLErrorDescription(const WebKit::WebURLError& error);
 
   void Reset();
@@ -99,10 +94,6 @@ class WebKitTestRunner : public RenderViewObserver,
   ::WebTestRunner::WebTestProxyBase* proxy_;
 
   ::WebTestRunner::WebPreferences prefs_;
-
-#if defined(ENABLE_WEB_INTENTS)
-  WebKit::WebIntentRequest intent_request_;
-#endif
 
   bool dump_editing_callbacks_;
   bool dump_frame_load_callbacks_;

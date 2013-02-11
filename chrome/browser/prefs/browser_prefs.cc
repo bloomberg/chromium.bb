@@ -28,7 +28,6 @@
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
@@ -288,10 +287,6 @@ void RegisterUserPrefs(PrefService* user_prefs,
 
 #if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationService::RegisterUserPrefs(registry);
-#endif
-
-#if defined(ENABLE_WEB_INTENTS)
-  web_intents::RegisterUserPrefs(registry);
 #endif
 
 #if defined(TOOLKIT_VIEWS)

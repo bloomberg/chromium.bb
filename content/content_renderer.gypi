@@ -282,8 +282,6 @@
     'renderer/text_input_client_observer.h',
     'renderer/v8_value_converter_impl.cc',
     'renderer/v8_value_converter_impl.h',
-    'renderer/web_intents_host.cc',
-    'renderer/web_intents_host.h',
     'renderer/web_ui_extension.cc',
     'renderer/web_ui_extension.h',
     'renderer/web_ui_extension_data.cc',
@@ -328,12 +326,6 @@
     ['OS=="android"', {
       'dependencies': [
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
-      ],
-    }],
-    ['enable_web_intents==0', {
-      'sources!': [
-        'renderer/web_intents_host.cc',
-        'renderer/web_intents_host.h',
       ],
     }],
     # TODO(jrg): remove the OS=="android" section?

@@ -11,7 +11,6 @@
 #include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
-#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
@@ -48,7 +47,6 @@
 using base::Bind;
 using base::Time;
 using content::BrowserThread;
-using webkit_glue::WebIntentServiceData;
 
 namespace {
 
@@ -212,82 +210,6 @@ WebDataService::Handle WebDataService::GetWebAppImages(
   return ScheduleDBTaskWithResult(FROM_HERE,
       Bind(&WebDataService::GetWebAppImagesImpl, this, app_url), consumer);
 }
-
-#if (ENABLE_WEB_INTENTS)
-//////////////////////////////////////////////////////////////////////////////
-//
-// Web Intents.
-//
-//////////////////////////////////////////////////////////////////////////////
-
-void WebDataService::AddWebIntentService(const WebIntentServiceData& service) {
-  ScheduleDBTask(FROM_HERE,
-      Bind(&WebDataService::AddWebIntentServiceImpl, this, service));
-}
-
-void WebDataService::RemoveWebIntentService(
-    const WebIntentServiceData& service) {
-  ScheduleDBTask(FROM_HERE, Bind(&WebDataService::RemoveWebIntentServiceImpl,
-                                 this, service));
-}
-
-WebDataService::Handle WebDataService::GetWebIntentServicesForAction(
-    const string16& action,
-    WebDataServiceConsumer* consumer) {
-  return ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&WebDataService::GetWebIntentServicesImpl, this, action), consumer);
-}
-
-WebDataService::Handle WebDataService::GetWebIntentServicesForURL(
-    const string16& service_url,
-    WebDataServiceConsumer* consumer) {
-  return ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&WebDataService::GetWebIntentServicesForURLImpl, this, service_url),
-      consumer);
-}
-
-
-WebDataService::Handle WebDataService::GetAllWebIntentServices(
-    WebDataServiceConsumer* consumer) {
-  return ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&WebDataService::GetAllWebIntentServicesImpl, this), consumer);
-}
-
-void WebDataService::AddDefaultWebIntentService(
-    const DefaultWebIntentService& service) {
-  ScheduleDBTask(FROM_HERE,
-      Bind(&WebDataService::AddDefaultWebIntentServiceImpl, this, service));
-}
-
-void WebDataService::RemoveDefaultWebIntentService(
-    const DefaultWebIntentService& service) {
-  ScheduleDBTask(FROM_HERE,
-      Bind(&WebDataService::RemoveDefaultWebIntentServiceImpl, this, service));
-}
-
-void WebDataService::RemoveWebIntentServiceDefaults(
-    const GURL& service_url) {
-  ScheduleDBTask(FROM_HERE,
-      Bind(&WebDataService::RemoveWebIntentServiceDefaultsImpl, this,
-           service_url));
-}
-
-WebDataService::Handle WebDataService::GetDefaultWebIntentServicesForAction(
-    const string16& action,
-    WebDataServiceConsumer* consumer) {
-  return ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&WebDataService::GetDefaultWebIntentServicesForActionImpl, this,
-           action),
-      consumer);
-}
-
-WebDataService::Handle WebDataService::GetAllDefaultWebIntentServices(
-    WebDataServiceConsumer* consumer) {
-  return ScheduleDBTaskWithResult(FROM_HERE,
-      Bind(&WebDataService::GetAllDefaultWebIntentServicesImpl, this),
-      consumer);
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -663,89 +585,6 @@ scoped_ptr<WDTypedResult> WebDataService::GetWebAppImagesImpl(
   return scoped_ptr<WDTypedResult>(
       new WDResult<WDAppImagesResult>(WEB_APP_IMAGES, result));
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-////////////////////////////////////////////////////////////////////////////////
-//
-// Web Intents implementation.
-//
-////////////////////////////////////////////////////////////////////////////////
-
-void WebDataService::RemoveWebIntentServiceImpl(
-    const webkit_glue::WebIntentServiceData& service) {
-  db_->GetWebIntentsTable()->RemoveWebIntentService(service);
-  ScheduleCommit();
-}
-
-void WebDataService::AddWebIntentServiceImpl(
-    const webkit_glue::WebIntentServiceData& service) {
-  db_->GetWebIntentsTable()->SetWebIntentService(service);
-  ScheduleCommit();
-}
-
-
-scoped_ptr<WDTypedResult> WebDataService::GetWebIntentServicesImpl(
-    const string16& action) {
-  std::vector<WebIntentServiceData> result;
-  db_->GetWebIntentsTable()->GetWebIntentServicesForAction(action, &result);
-  return scoped_ptr<WDTypedResult>(
-      new WDResult<std::vector<WebIntentServiceData> >(
-          WEB_INTENTS_RESULT, result));
-}
-
-scoped_ptr<WDTypedResult> WebDataService::GetWebIntentServicesForURLImpl(
-    const string16& service_url) {
-  std::vector<WebIntentServiceData> result;
-  db_->GetWebIntentsTable()->GetWebIntentServicesForURL(service_url, &result);
-  return scoped_ptr<WDTypedResult>(
-      new WDResult<std::vector<WebIntentServiceData> >(
-          WEB_INTENTS_RESULT, result));
-}
-
-scoped_ptr<WDTypedResult> WebDataService::GetAllWebIntentServicesImpl() {
-  std::vector<WebIntentServiceData> result;
-  db_->GetWebIntentsTable()->GetAllWebIntentServices(&result);
-  return scoped_ptr<WDTypedResult>(
-      new WDResult<std::vector<WebIntentServiceData> >(
-          WEB_INTENTS_RESULT, result));
-}
-
-void WebDataService::AddDefaultWebIntentServiceImpl(
-    const DefaultWebIntentService& service) {
-  db_->GetWebIntentsTable()->SetDefaultService(service);
-  ScheduleCommit();
-}
-
-void WebDataService::RemoveDefaultWebIntentServiceImpl(
-    const DefaultWebIntentService& service) {
-  db_->GetWebIntentsTable()->RemoveDefaultService(service);
-  ScheduleCommit();
-}
-
-void WebDataService::RemoveWebIntentServiceDefaultsImpl(
-    const GURL& service_url) {
-  db_->GetWebIntentsTable()->RemoveServiceDefaults(service_url);
-  ScheduleCommit();
-}
-
-scoped_ptr<WDTypedResult>
-    WebDataService::GetDefaultWebIntentServicesForActionImpl(
-    const string16& action) {
-  std::vector<DefaultWebIntentService> result;
-  db_->GetWebIntentsTable()->GetDefaultServices(action, &result);
-  return scoped_ptr<WDTypedResult>(
-      new WDResult<std::vector<DefaultWebIntentService> >(
-          WEB_INTENTS_DEFAULTS_RESULT, result));
-}
-
-scoped_ptr<WDTypedResult> WebDataService::GetAllDefaultWebIntentServicesImpl() {
-  std::vector<DefaultWebIntentService> result;
-  db_->GetWebIntentsTable()->GetAllDefaultServices(&result);
-  return scoped_ptr<WDTypedResult>(
-      new WDResult<std::vector<DefaultWebIntentService> >(
-          WEB_INTENTS_DEFAULTS_RESULT, result));
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 //

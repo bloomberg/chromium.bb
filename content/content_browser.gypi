@@ -165,7 +165,6 @@
     'public/browser/web_contents_view.h',
     'public/browser/web_contents_view_delegate.h',
     'public/browser/web_drag_dest_delegate.h',
-    'public/browser/web_intents_dispatcher.h',
     'public/browser/web_ui.h',
     'public/browser/web_ui_controller.cc',
     'public/browser/web_ui_controller.h',
@@ -501,12 +500,6 @@
     'browser/in_process_webkit/indexed_db_quota_client.h',
     'browser/in_process_webkit/webkit_thread.cc',
     'browser/in_process_webkit/webkit_thread.h',
-    'browser/intents/intent_injector.cc',
-    'browser/intents/intent_injector.h',
-    'browser/intents/internal_web_intents_dispatcher.cc',
-    'browser/intents/internal_web_intents_dispatcher.h',
-    'browser/intents/web_intents_dispatcher_impl.cc',
-    'browser/intents/web_intents_dispatcher_impl.h',
     'browser/loader/async_resource_handler.cc',
     'browser/loader/async_resource_handler.h',
     'browser/loader/buffered_resource_handler.cc',
@@ -1021,11 +1014,6 @@
         'browser/renderer_host/p2p/socket_host_udp.h',
         'browser/renderer_host/p2p/socket_dispatcher_host.cc',
         'browser/renderer_host/p2p/socket_dispatcher_host.h',
-      ],
-    }],
-    ['enable_web_intents==0', {
-      'sources/': [
-        ['exclude', '^browser/intents/' ],
       ],
     }],
     ['OS=="win"', {

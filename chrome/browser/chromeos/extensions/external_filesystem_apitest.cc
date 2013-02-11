@@ -267,19 +267,6 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestLazy) {
       << message_;
 }
 
-#if defined(ENABLE_WEB_INTENTS)
-IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserWebIntentTest) {
-  // Create a test file inside the ScopedTempDir.
-  base::FilePath test_file = mount_point_dir_.AppendASCII("text_file.xul");
-  CreateFileWithContent(test_file, kTestFileContent);
-
-  ASSERT_TRUE(RunFileBrowserHandlerTest("intent.html#/tmp/text_file.xul",
-                                        "filebrowser_component",
-                                        "webintent_handler"))
-      << message_;
-}
-#endif
-
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestWrite) {
   ASSERT_TRUE(RunFileBrowserHandlerTest("write.html",
                                         "filebrowser_component",

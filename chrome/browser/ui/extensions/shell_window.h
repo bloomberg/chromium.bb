@@ -139,9 +139,6 @@ class ShellWindow : public content::NotificationObserver,
   // content::WebContentsDelegate implementation.
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
-  virtual void WebIntentDispatch(
-      content::WebContents* web_contents,
-      content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* tab,
       const content::FileChooserParams& params) OVERRIDE;

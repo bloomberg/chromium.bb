@@ -33,7 +33,6 @@ const char* kPrefToManageType[] = {
   prefs::kManagedDefaultPopupsSetting,
   prefs::kManagedDefaultGeolocationSetting,
   prefs::kManagedDefaultNotificationsSetting,
-  NULL,  // No policy for default value of content type intents
   NULL,  // No policy for default value of content type auto-select-certificate
   NULL,  // No policy for default value of fullscreen requests
   NULL,  // No policy for default value of mouse lock requests

@@ -86,7 +86,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
   {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
   {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
-  {CONTENT_SETTINGS_TYPE_INTENTS, "intents"},
   {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
   {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
   {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
@@ -666,10 +665,6 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       UpdateMediaExceptionsView();
       break;
-    case CONTENT_SETTINGS_TYPE_INTENTS:
-      // Don't update intents settings at this point.
-      // Turn on when enable_web_intents_tag is enabled.
-      break;
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
       // We don't yet support exceptions for mixed scripting.
       break;
@@ -696,7 +691,6 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_INTENTS:
     case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
     case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
 #if defined(OS_WIN)
@@ -1201,10 +1195,6 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       content::RecordAction(
           UserMetricsAction("Options_DefaultGeolocationSettingChanged"));
-      break;
-    case CONTENT_SETTINGS_TYPE_INTENTS:
-      content::RecordAction(
-          UserMetricsAction("Options_DefaultHandlersSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
       content::RecordAction(

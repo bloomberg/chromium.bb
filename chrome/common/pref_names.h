@@ -778,10 +778,6 @@ extern const char kFactoryResetRequested[];
 extern const char kRecoveryComponentVersion[];
 extern const char kComponentUpdaterState[];
 
-#if defined(ENABLE_WEB_INTENTS)
-extern const char kWebIntentsEnabled[];
-#endif
-
 extern const char kMediaGalleriesUniqueId[];
 extern const char kMediaGalleriesRememberedGalleries[];
 

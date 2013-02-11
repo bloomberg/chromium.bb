@@ -49,9 +49,6 @@ class WebDatabase {
   virtual LoginsTable* GetLoginsTable();
   virtual TokenServiceTable* GetTokenServiceTable();
   virtual WebAppsTable* GetWebAppsTable();
-#if defined(ENABLE_WEB_INTENTS)
-  virtual WebIntentsTable* GetWebIntentsTable();
-#endif
 
   // Exposed for testing only.
   sql::Connection* GetSQLConnection();
@@ -70,6 +67,7 @@ class WebDatabase {
   scoped_ptr<LoginsTable> logins_table_;
   scoped_ptr<TokenServiceTable> token_service_table_;
   scoped_ptr<WebAppsTable> web_apps_table_;
+  // TODO(thakis): Add a migration to delete this table, then remove this.
   scoped_ptr<WebIntentsTable> web_intents_table_;
 
   scoped_ptr<content::NotificationService> notification_service_;

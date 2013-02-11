@@ -9,8 +9,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/intents/web_intents_registry_factory.h"
-#include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -23,20 +21,10 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "grit/generated_resources.h"
-#include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
-
-#if defined(ENABLE_WEB_INTENTS)
-// This indicates we need to send UMA data about the number of
-// "Share with X" commands shown in the menu after user tried to
-// find share extensions from web store or the first use of action
-// box after browser starts.
-static bool send_uma_share_command_count = true;
-#endif
 
 // Share intents get command IDs that are beyond the maximal valid command ID
 // (0xDFFF) so that they are not confused with actual commands that appear in
@@ -50,9 +38,6 @@ enum ActionBoxLocalCommandIds {
       SHARE_COMMAND_FIRST + kMaxShareItemsToShow - 1,
   EXTENSION_COMMAND_FIRST
 };
-
-const char kShareIntentAction[] = "http://webintents.org/share";
-const char kShareIntentMimeType[] = "text/uri-list";
 
 }  // namespace
 
@@ -80,50 +65,6 @@ void ActionBoxButtonController::OnButtonClicked() {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser_->profile())->
           extension_service();
-
-#if defined(ENABLE_WEB_INTENTS)
-  // Add share intent triggers and a link to the web store.
-  // Web Intents are not currently supported in Incognito mode.
-  if (!browser_->profile()->IsOffTheRecord()) {
-    int next_share_intent_command_id = SHARE_COMMAND_FIRST;
-    share_intent_service_ids_.clear();
-    const ExtensionSet* extension_set = extension_service->extensions();
-    WebIntentsRegistry* intents_registry =
-        WebIntentsRegistryFactory::GetForProfile(browser_->profile());
-    for (ExtensionSet::const_iterator it = extension_set->begin();
-         it != extension_set->end(); ++it) {
-      const extensions::Extension* extension = *it;
-      WebIntentsRegistry::IntentServiceList services;
-      intents_registry->GetIntentServicesForExtensionFilter(
-          ASCIIToUTF16(kShareIntentAction),
-          ASCIIToUTF16(kShareIntentMimeType),
-          extension->id(),
-          &services);
-      if (!services.empty()) {
-        int command_id = next_share_intent_command_id++;
-        if (command_id > SHARE_COMMAND_LAST)
-          break;
-        // TODO(skare): If an intent supports multiple services, be able to
-        // disambiguate. Choosing the first matches the picker behavior; see
-        // TODO in WebIntentPickerController::DispatchToInstalledExtension.
-        share_intent_service_ids_[command_id] = services[0].service_url;
-        menu_model->AddItem(command_id, services[0].title);
-      }
-    }
-
-    // Add link to the Web Store to find additional share intents.
-    menu_model->AddItemWithStringId(CWS_FIND_SHARE_INTENTS_COMMAND,
-        IDS_FIND_SHARE_INTENTS);
-
-    content::RecordAction(UserMetricsAction("ActionBox.ClickButton"));
-    if (send_uma_share_command_count) {
-      UMA_HISTOGRAM_ENUMERATION("ActionBox.ShareCommandCount",
-          next_share_intent_command_id - SHARE_COMMAND_FIRST,
-          kMaxShareItemsToShow + 1);
-      send_uma_share_command_count = false;
-    }
-  }
-#endif
 
   // Add Extensions.
   next_extension_command_id_ = EXTENSION_COMMAND_FIRST;
@@ -154,20 +95,6 @@ bool ActionBoxButtonController::GetAcceleratorForCommandId(
 }
 
 void ActionBoxButtonController::ExecuteCommand(int command_id) {
-  // Handle explicit intent triggers for share intent commands.
-  if (share_intent_service_ids_.count(command_id) > 0) {
-    TriggerExplicitShareIntent(share_intent_service_ids_[command_id]);
-    return;
-  }
-
-#if defined(ENABLE_WEB_INTENTS)
-  // Handle link to the CWS web store.
-  if (command_id == CWS_FIND_SHARE_INTENTS_COMMAND) {
-    NavigateToWebStoreShareIntentsList();
-    return;
-  }
-#endif
-
   // Handle commands associated with extensions.
   // Note that the extension might have been uninstalled or disabled while the
   // menu was open (sync perhaps?) but that will just fall through safely.
@@ -228,34 +155,4 @@ void ActionBoxButtonController::Observe(
   // TODO(kalman): if there's a menu open, remove it from that too.
   // We may also want to listen to EXTENSION_LOADED to do the opposite.
   extension_command_ids_.erase(extension->id());
-}
-
-void ActionBoxButtonController::TriggerExplicitShareIntent(
-    const GURL& share_service_url) {
-#if defined(ENABLE_WEB_INTENTS)
-  const GURL& current_url =
-      browser_->tab_strip_model()->GetActiveWebContents()->GetURL();
-  webkit_glue::WebIntentData intent_data(
-      ASCIIToUTF16(kShareIntentAction),
-      ASCIIToUTF16(kShareIntentMimeType),
-      UTF8ToUTF16(current_url.spec()));
-  intent_data.service = share_service_url;
-  static_cast<content::WebContentsDelegate*>(browser_)->WebIntentDispatch(
-      NULL, content::WebIntentsDispatcher::Create(intent_data));
-#endif
-}
-
-void ActionBoxButtonController::NavigateToWebStoreShareIntentsList() {
-#if defined(ENABLE_WEB_INTENTS)
-  const GURL& query_url = extension_urls::GetWebstoreIntentQueryURL(
-      kShareIntentAction,
-      kShareIntentMimeType);
-  chrome::NavigateParams params(browser_->profile(), query_url,
-                                content::PAGE_TRANSITION_LINK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
-
-  content::RecordAction(UserMetricsAction("ActionBox.FindShareHandlers"));
-  send_uma_share_command_count = true;
-#endif
 }

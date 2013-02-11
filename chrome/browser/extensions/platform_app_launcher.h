@@ -16,7 +16,6 @@ class FilePath;
 
 namespace content {
 class WebContents;
-class WebIntentsDispatcher;
 }
 
 namespace extensions {
@@ -44,17 +43,6 @@ void LaunchPlatformAppWithFileHandler(Profile* profile,
                                       const Extension* extension,
                                       const std::string& handler_id,
                                       const base::FilePath& file_path);
-
-#if defined(ENABLE_WEB_INTENTS)
-// Launches the platform app |extension| with the supplied web intent. Creates
-// appropriate launch data for the |web_intent_data| field present. |extension|
-// and |profile| must not be NULL.
-void LaunchPlatformAppWithWebIntent(
-    Profile* profile,
-    const Extension* extension,
-    content::WebIntentsDispatcher* intents_dispatcher,
-    content::WebContents* source);
-#endif
 
 }  // namespace extensions
 

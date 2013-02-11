@@ -79,7 +79,6 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   SpecialCollection installed_apps_;
   SpecialCollection unlimited_extensions_;
   SpecialCollection file_handler_extensions_;
-  SpecialCollection web_intent_extensions_;
   scoped_refptr<CookieSettings> cookie_settings_;
 };
 

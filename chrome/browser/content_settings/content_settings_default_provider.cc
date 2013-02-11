@@ -40,7 +40,6 @@ const ContentSetting kDefaultSettings[] = {
   CONTENT_SETTING_BLOCK,    // CONTENT_SETTINGS_TYPE_POPUPS
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_GEOLOCATION
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_NOTIFICATIONS
-  CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_INTENTS
   CONTENT_SETTING_DEFAULT,  // CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_FULLSCREEN
   CONTENT_SETTING_ASK,      // CONTENT_SETTINGS_TYPE_MOUSELOCK
@@ -144,11 +143,6 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       "ContentSettings.DefaultNotificationsSetting",
       ValueToContentSetting(
           default_settings_[CONTENT_SETTINGS_TYPE_NOTIFICATIONS].get()),
-      CONTENT_SETTING_NUM_SETTINGS);
-  UMA_HISTOGRAM_ENUMERATION(
-      "ContentSettings.DefaultHandlersSetting",
-      ValueToContentSetting(
-          default_settings_[CONTENT_SETTINGS_TYPE_INTENTS].get()),
       CONTENT_SETTING_NUM_SETTINGS);
   UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.DefaultMouseCursorSetting",

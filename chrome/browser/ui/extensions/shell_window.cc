@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,7 +24,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
-#include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -46,7 +44,6 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/renderer_preferences.h"
 #include "skia/ext/image_operations.h"
@@ -130,9 +127,6 @@ void ShellWindow::Init(const GURL& url,
       profile(), SiteInstance::CreateForURL(profile(), url))));
   WebContentsModalDialogManager::CreateForWebContents(web_contents_.get());
   FaviconTabHelper::CreateForWebContents(web_contents_.get());
-#if defined(ENABLE_WEB_INTENTS)
-  WebIntentPickerController::CreateForWebContents(web_contents_.get());
-#endif
 
   content::WebContentsObserver::Observe(web_contents_.get());
   web_contents_->SetDelegate(this);
@@ -497,22 +491,6 @@ void ShellWindow::CloseContents(WebContents* contents) {
 
 bool ShellWindow::ShouldSuppressDialogs() {
   return true;
-}
-
-void ShellWindow::WebIntentDispatch(
-    content::WebContents* web_contents,
-    content::WebIntentsDispatcher* intents_dispatcher) {
-#if defined(ENABLE_WEB_INTENTS)
-  if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
-    return;
-
-  WebIntentPickerController* web_intent_picker_controller =
-      WebIntentPickerController::FromWebContents(web_contents_.get());
-  web_intent_picker_controller->SetIntentsDispatcher(intents_dispatcher);
-  web_intent_picker_controller->ShowDialog(
-      intents_dispatcher->GetIntent().action,
-      intents_dispatcher->GetIntent().type);
-#endif
 }
 
 void ShellWindow::RunFileChooser(WebContents* tab,

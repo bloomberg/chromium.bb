@@ -92,10 +92,6 @@ struct SelectedFileInfo;
 class WebDialogDelegate;
 }
 
-namespace webkit_glue {
-struct WebIntentServiceData;
-}
-
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public CoreTabHelperDelegate,
@@ -616,15 +612,6 @@ class Browser : public TabStripModelObserver,
                                        const GURL& url,
                                        const string16& title,
                                        bool user_gesture) OVERRIDE;
-#if defined(ENABLE_WEB_INTENTS)
-  virtual void RegisterIntentHandler(
-      content::WebContents* web_contents,
-      const webkit_glue::WebIntentServiceData& data,
-      bool user_gesture) OVERRIDE;
-  virtual void WebIntentDispatch(
-      content::WebContents* web_contents,
-      content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
-#endif
   virtual void UpdatePreferredSize(content::WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
   virtual void ResizeDueToAutoResize(content::WebContents* source,

@@ -199,13 +199,6 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
                          ListValue* result_list,
                          bool* default_already_set);
 
-#if defined(ENABLE_WEB_INTENTS)
-  // Find the list of Web Intent tasks that can be used with the given file
-  // types, appending them to the |result_list|.
-  bool FindWebIntentTasks(const std::vector<base::FilePath>& file_paths,
-                          ListValue* result_list);
-#endif
-
   // Find the list of app file handlers that can be used with the given file
   // types, appending them to the |result_list|.
   bool FindAppTasks(const std::vector<base::FilePath>& file_paths,

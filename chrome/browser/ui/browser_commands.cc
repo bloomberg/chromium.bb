@@ -65,14 +65,12 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/web_intent_data.h"
 #include "webkit/user_agent/user_agent_util.h"
 
 #if defined(OS_MACOSX)

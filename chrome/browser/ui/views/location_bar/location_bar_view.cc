@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/views/location_bar/script_bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/location_bar/web_intents_button_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
@@ -186,9 +185,6 @@ LocationBarView::LocationBarView(Browser* browser,
       open_pdf_in_reader_view_(NULL),
       script_bubble_icon_view_(NULL),
       star_view_(NULL),
-#if defined(ENABLE_WEB_INTENTS)
-      web_intents_button_view_(NULL),
-#endif
       action_box_button_view_(NULL),
       mode_(mode),
       show_focus_rect_(false),
@@ -287,13 +283,6 @@ void LocationBarView::Init() {
   zoom_view_ = new ZoomView(model_, delegate_);
   zoom_view_->set_id(VIEW_ID_ZOOM_BUTTON);
   AddChildView(zoom_view_);
-
-#if defined(ENABLE_WEB_INTENTS)
-  web_intents_button_view_ =
-      new WebIntentsButtonView(this, kWIBubbleBackgroundImages, font_,
-                               GetColor(ToolbarModel::NONE, TEXT));
-  AddChildView(web_intents_button_view_);
-#endif
 
   open_pdf_in_reader_view_ = new OpenPDFInReaderView(this);
   AddChildView(open_pdf_in_reader_view_);
@@ -422,9 +411,6 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   RefreshZoomView();
   RefreshPageActionViews();
   RefreshScriptBubble();
-#if defined(ENABLE_WEB_INTENTS)
-  web_intents_button_view_->Update(GetWebContents());
-#endif
   open_pdf_in_reader_view_->Update(
       model_->GetInputInProgress() ? NULL : GetWebContents());
 
@@ -500,15 +486,6 @@ void LocationBarView::InvalidatePageActions() {
         content::NotificationService::NoDetails());
   }
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-void LocationBarView::UpdateWebIntentsButton() {
-  web_intents_button_view_->Update(GetWebContents());
-
-  Layout();
-  SchedulePaint();
-}
-#endif
 
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {
   open_pdf_in_reader_view_->Update(
@@ -793,14 +770,6 @@ void LocationBarView::Layout() {
           (*i)->GetBuiltInHorizontalPadding(), (*i));
     }
   }
-#if defined(ENABLE_WEB_INTENTS)
-  if (web_intents_button_view_->visible()) {
-    right_decorations.AddDecoration(
-        kBubbleLocationY, 0, false, 0, GetEdgeItemPadding(), GetItemPadding(),
-        web_intents_button_view_->GetBuiltInHorizontalPadding(),
-        web_intents_button_view_);
-  }
-#endif
   if (show_keyword_hint) {
     right_decorations.AddDecoration(
         kVerticalEdgeThickness, 0, true, 0, GetEdgeItemPadding(),

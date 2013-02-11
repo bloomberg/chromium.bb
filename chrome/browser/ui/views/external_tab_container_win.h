@@ -34,10 +34,6 @@ class TabContentsContainer;
 class RenderViewContextMenuViews;
 struct NavigationInfo;
 
-namespace content {
-class WebIntentsDispatcher;
-}
-
 namespace ui {
 class ViewProp;
 }
@@ -161,15 +157,6 @@ class ExternalTabContainerWin : public ExternalTabContainer,
                                        const GURL& url,
                                        const string16& title,
                                        bool user_gesture) OVERRIDE;
-#if defined(ENABLE_WEB_INTENTS)
-  virtual void RegisterIntentHandler(
-      content::WebContents* tab,
-      const webkit_glue::WebIntentServiceData& data,
-      bool user_gesture) OVERRIDE;
-  virtual void WebIntentDispatch(
-      content::WebContents* tab,
-      content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
-#endif
   virtual void FindReply(content::WebContents* tab,
                          int request_id,
                          int number_of_matches,

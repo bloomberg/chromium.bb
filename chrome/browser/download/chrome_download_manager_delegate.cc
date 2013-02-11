@@ -32,7 +32,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -50,12 +49,9 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_intents_dispatcher.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/glue/web_intent_data.h"
-#include "webkit/glue/web_intent_reply_data.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
@@ -82,11 +78,6 @@ namespace {
 // String pointer used for identifying safebrowing data associated with
 // a download item.
 static const char safe_browsing_id[] = "Safe Browsing ID";
-
-// String pointer used to set the local file extension to be used when a
-// download is going to be dispatched with web intents.
-static const base::FilePath::CharType kWebIntentsFileExtension[] =
-    FILE_PATH_LITERAL(".webintents");
 
 // The state of a safebrowsing check.
 class SafeBrowsingState : public DownloadCompletionBlocker {
@@ -131,20 +122,6 @@ void GenerateFileNameFromRequest(const DownloadItem& download_item,
                                           download_item.GetSuggestedFilename(),
                                           download_item.GetMimeType(),
                                           default_file_name);
-}
-
-// Needed to give PostTask a void closure in OnWebIntentDispatchCompleted.
-void DeleteFile(const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  file_util::Delete(file_path, false);
-}
-
-// Called when the web intents dispatch has completed. Deletes the |file_path|.
-void OnWebIntentDispatchCompleted(
-    const base::FilePath& file_path,
-    webkit_glue::WebIntentReplyType intent_reply) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&DeleteFile, file_path));
 }
 
 typedef base::Callback<void(bool)> VisitedBeforeCallback;
@@ -392,106 +369,8 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
     return false;
   }
 
-#if defined(ENABLE_WEB_INTENTS)
-  if (ShouldOpenWithWebIntents(item)) {
-    OpenWithWebIntent(item);
-    callback.Run(true);
-    return false;
-  }
-#endif
-
   return true;
 }
-
-#if defined(ENABLE_WEB_INTENTS)
-bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
-    const DownloadItem* item) {
-  if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
-    return false;
-
-  if ((item->GetWebContents() && !item->GetWebContents()->GetDelegate()) &&
-      !web_intents::GetBrowserForBackgroundWebIntentDelivery(profile_)) {
-    return false;
-  }
-  if (!item->GetForcedFilePath().empty())
-    return false;
-  if (item->GetTargetDisposition() == DownloadItem::TARGET_DISPOSITION_PROMPT)
-    return false;
-
-#if !defined(OS_CHROMEOS)
-  std::string mime_type = item->GetMimeType();
-
-  // If QuickOffice extension is installed, and we're not on ChromeOS,use web
-  // intents to handle the downloaded file.
-  const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
-  const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";
-  ExtensionServiceInterface* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-
-  bool use_quickoffice = false;
-  if (extension_service &&
-      extension_service->GetInstalledExtension(kQuickOfficeExtensionId) &&
-      extension_service->IsExtensionEnabled(kQuickOfficeExtensionId))
-    use_quickoffice = true;
-
-  if (extension_service &&
-      extension_service->GetInstalledExtension(kQuickOfficeDevExtensionId) &&
-      extension_service->IsExtensionEnabled(kQuickOfficeDevExtensionId))
-    use_quickoffice = true;
-
-  if (use_quickoffice) {
-    if (mime_type == "application/msword" ||
-        mime_type == "application/vnd.ms-powerpoint" ||
-        mime_type == "application/vnd.ms-excel" ||
-        mime_type == "application/vnd.openxmlformats-officedocument."
-                     "wordprocessingml.document" ||
-        mime_type == "application/vnd.openxmlformats-officedocument."
-                     "presentationml.presentation" ||
-        mime_type == "application/vnd.openxmlformats-officedocument."
-                     "spreadsheetml.sheet") {
-      return true;
-    }
-  }
-#endif  // !defined(OS_CHROMEOS)
-
-  return false;
-}
-
-void ChromeDownloadManagerDelegate::OpenWithWebIntent(
-    const DownloadItem* item) {
-  webkit_glue::WebIntentData intent_data(
-      ASCIIToUTF16("http://webintents.org/view"),
-      ASCIIToUTF16(item->GetMimeType()),
-      item->GetFullPath(),
-      item->GetReceivedBytes());
-
-  // RCH specifies that the receiver gets the url, but with Web Intents
-  // it isn't really needed.
-  intent_data.extra_data.insert(make_pair(
-      ASCIIToUTF16("url"), ASCIIToUTF16(item->GetURL().spec())));
-
-  // Pass the downloaded filename to the service app as the name hint.
-  intent_data.extra_data.insert(
-      make_pair(ASCIIToUTF16("filename"),
-                item->GetFileNameToReportUser().LossyDisplayName()));
-
-  content::WebIntentsDispatcher* dispatcher =
-      content::WebIntentsDispatcher::Create(intent_data);
-  dispatcher->RegisterReplyNotification(
-      base::Bind(&OnWebIntentDispatchCompleted, item->GetFullPath()));
-
-  content::WebContentsDelegate* delegate = NULL;
-#if !defined(OS_ANDROID)
-  if (item->GetWebContents() && item->GetWebContents()->GetDelegate()) {
-    delegate = item->GetWebContents()->GetDelegate();
-  } else {
-    delegate = web_intents::GetBrowserForBackgroundWebIntentDelivery(profile_);
-  }
-#endif  // !defined(OS_ANDROID)
-  DCHECK(delegate);
-  delegate->WebIntentDispatch(NULL, dispatcher);
-}
-#endif
 
 bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 #if defined(FULL_SAFE_BROWSING)
@@ -787,16 +666,6 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     DCHECK(!should_prompt);
     suggested_path = download->GetForcedFilePath();
   }
-
-#if defined(ENABLE_WEB_INTENTS)
-  // If we will open the file with a web intents dispatch,
-  // give it a name that will not allow the OS to open it using usual
-  // associated apps.
-  if (ShouldOpenWithWebIntents(download)) {
-    download->SetDisplayName(suggested_path.BaseName());
-    suggested_path = suggested_path.AddExtension(kWebIntentsFileExtension);
-  }
-#endif
 
   // If the download hasn't already been marked dangerous (could be
   // DANGEROUS_URL), check if it is a dangerous file.

@@ -36,7 +36,6 @@ class JavaScriptDialogManager;
 class RenderViewHost;
 class WebContents;
 class WebContentsImpl;
-class WebIntentsDispatcher;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct NativeWebKeyboardEvent;
@@ -47,11 +46,6 @@ namespace gfx {
 class Point;
 class Rect;
 class Size;
-}
-
-namespace webkit_glue {
-struct WebIntentData;
-struct WebIntentServiceData;
 }
 
 namespace WebKit {
@@ -359,20 +353,6 @@ class CONTENT_EXPORT WebContentsDelegate {
                                        const GURL& url,
                                        const string16& title,
                                        bool user_gesture) {}
-
-  // Register a new Web Intents service.
-  // |user_gesture| is true if the registration is made in the context of a user
-  // gesture. |web_contents| is the context in which the registration was
-  // performed, and |data| is the service record being registered.
-  virtual void RegisterIntentHandler(
-      WebContents* web_contents,
-      const webkit_glue::WebIntentServiceData& data,
-      bool user_gesture) {}
-
-  // Web Intents notification handler. See WebIntentsDispatcher for
-  // documentation of callee responsibility for the dispatcher.
-  virtual void WebIntentDispatch(WebContents* web_contents,
-                                 WebIntentsDispatcher* intents_dispatcher);
 
   // Result of string search in the page. This includes the number of matches
   // found and the selection rect (in screen coordinates) for the string found.

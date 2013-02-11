@@ -12,7 +12,6 @@ class Profile;
 
 namespace content {
 class WebContents;
-class WebIntentsDispatcher;
 }
 
 namespace extensions {
@@ -28,11 +27,11 @@ class AppEventRouter {
   static void DispatchOnRestartedEvent(Profile* profile,
                                        const Extension* extension);
 
+  // TODO(benwells): Update this comment, it is out of date.
   // Dispatches the onLaunched event to the given app, providing launch data of
   // the form:
   // {
   //   "intent" : {
-  //     "action" : |action|,
   //     "type" : "chrome-extension://fileentry",
   //     "data" : a FileEntry,
   //     "postResults" : a null function,
@@ -46,30 +45,10 @@ class AppEventRouter {
   static void DispatchOnLaunchedEventWithFileEntry(
       Profile* profile,
       const Extension* extension,
-      const string16& action,
       const std::string& handler_id,
       const std::string& mime_type,
       const std::string& file_system_id,
       const std::string& base_name);
-
-  // Dispatches the onLaunched event to the app implemented by |extension|
-  // running in |profile|. The event parameter launchData will have a field
-  // called intent, populated by |web_intent_data|.
-  static void DispatchOnLaunchedEventWithWebIntent(
-      Profile* profile,
-      const Extension* extension,
-      content::WebIntentsDispatcher* intents_dispatcher,
-      content::WebContents* source);
-};
-
-class AppRuntimePostIntentResponseFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("app.runtime.postIntentResponse",
-                             APP_RUNTIME_POSTINTENTRESPONSE)
-
- protected:
-  virtual ~AppRuntimePostIntentResponseFunction() {}
-  virtual bool RunImpl() OVERRIDE;
 };
 
 }  // namespace extensions

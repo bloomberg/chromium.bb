@@ -81,12 +81,6 @@ WebAppsTable* WebDatabase::GetWebAppsTable() {
   return web_apps_table_.get();
 }
 
-#if defined(ENABLE_WEB_INTENTS)
-WebIntentsTable* WebDatabase::GetWebIntentsTable() {
-  return web_intents_table_.get();
-}
-#endif
-
 sql::Connection* WebDatabase::GetSQLConnection() {
   return &db_;
 }

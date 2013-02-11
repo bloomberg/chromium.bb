@@ -44,13 +44,11 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/manifest_url_parser.h"
 #include "chrome/browser/extensions/web_accessible_resources_parser.h"
-#include "chrome/browser/extensions/web_intents_parser.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
-#include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -296,9 +294,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::TabsWindowsAPI::GetFactoryInstance();
   extensions::TtsAPI::GetFactoryInstance();
   extensions::WebAccessibleResourcesParser::GetFactoryInstance();
-#if defined(ENABLE_WEB_INTENTS)
-  extensions::WebIntentsParser::GetFactoryInstance();
-#endif
   extensions::WebNavigationAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();
@@ -353,9 +348,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   TokenServiceFactory::GetInstance();
   UserStyleSheetWatcherFactory::GetInstance();
   WebDataServiceFactory::GetInstance();
-#if defined(ENABLE_WEB_INTENTS)
-  WebIntentsRegistryFactory::GetInstance();
-#endif
 
   built_factories_ = true;
 }
