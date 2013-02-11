@@ -207,10 +207,10 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
 
   // Create local video sources.
   RTCMediaConstraints native_video_constraints(video_constraints);
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_components;
-  description->videoSources(video_components);
-  for (size_t i = 0; i < video_components.size(); ++i) {
-    const WebKit::WebMediaStreamSource& source = video_components[i].source();
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+  description->videoSources(video_tracks);
+  for (size_t i = 0; i < video_tracks.size(); ++i) {
+    const WebKit::WebMediaStreamSource& source = video_tracks[i].source();
     MediaStreamSourceExtraData* source_data =
         static_cast<MediaStreamSourceExtraData*>(source.extraData());
     if (!source_data) {
@@ -230,10 +230,10 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
   // Do additional source initialization if the audio source is a valid
   // microphone or tab audio.
   RTCMediaConstraints native_audio_constraints(audio_constraints);
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_components;
-  description->audioSources(audio_components);
-  for (size_t i = 0; i < audio_components.size(); ++i) {
-    const WebKit::WebMediaStreamSource& source = audio_components[i].source();
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
+  description->audioSources(audio_tracks);
+  for (size_t i = 0; i < audio_tracks.size(); ++i) {
+    const WebKit::WebMediaStreamSource& source = audio_tracks[i].source();
     MediaStreamSourceExtraData* source_data =
         static_cast<MediaStreamSourceExtraData*>(source.extraData());
     if (!source_data) {
@@ -273,11 +273,11 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
       CreateLocalMediaStream(label);
 
   // Add audio tracks.
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_components;
-  description->audioSources(audio_components);
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
+  description->audioSources(audio_tracks);
 
-  for (size_t i = 0; i < audio_components.size(); ++i) {
-    WebKit::WebMediaStreamSource source = audio_components[i].source();
+  for (size_t i = 0; i < audio_tracks.size(); ++i) {
+    WebKit::WebMediaStreamSource source = audio_tracks[i].source();
 
     // See if we're adding a WebAudio MediaStream.
     if (source.requiresAudioConsumer()) {
@@ -289,10 +289,10 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
       // constraints are passed via LocalAudioSource.
       if (CreateWebAudioSource(&source)) {
         scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
-            CreateLocalAudioTrack(UTF16ToUTF8(audio_components[i].id()),
+            CreateLocalAudioTrack(UTF16ToUTF8(audio_tracks[i].id()),
                                   NULL));
         native_stream->AddTrack(audio_track);
-        audio_track->set_enabled(audio_components[i].isEnabled());
+        audio_track->set_enabled(audio_tracks[i].isEnabled());
       } else {
         DLOG(WARNING) << "Failed to create WebAudio source";
       }
@@ -308,18 +308,18 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
         }
 
         scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
-            CreateLocalAudioTrack(UTF16ToUTF8(source.id()),
+            CreateLocalAudioTrack(UTF16ToUTF8(audio_tracks[i].id()),
                                   source_data->local_audio_source()));
         native_stream->AddTrack(audio_track);
-        audio_track->set_enabled(audio_components[i].isEnabled());
+        audio_track->set_enabled(audio_tracks[i].isEnabled());
     }
   }
 
   // Add video tracks.
-  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_components;
-  description->videoSources(video_components);
-  for (size_t i = 0; i < video_components.size(); ++i) {
-    const WebKit::WebMediaStreamSource& source = video_components[i].source();
+  WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+  description->videoSources(video_tracks);
+  for (size_t i = 0; i < video_tracks.size(); ++i) {
+    const WebKit::WebMediaStreamSource& source = video_tracks[i].source();
     MediaStreamSourceExtraData* source_data =
         static_cast<MediaStreamSourceExtraData*>(source.extraData());
     if (!source_data || !source_data->video_source()) {
@@ -329,11 +329,11 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     }
 
     scoped_refptr<webrtc::VideoTrackInterface> video_track(
-        CreateLocalVideoTrack(UTF16ToUTF8(source.id()),
+        CreateLocalVideoTrack(UTF16ToUTF8(video_tracks[i].id()),
                               source_data->video_source()));
 
     native_stream->AddTrack(video_track);
-    video_track->set_enabled(video_components[i].isEnabled());
+    video_track->set_enabled(video_tracks[i].isEnabled());
   }
 
   MediaStreamExtraData* extra_data = new MediaStreamExtraData(native_stream);
@@ -468,16 +468,16 @@ bool MediaStreamDependencyFactory::CreateWebAudioSource(
 
 scoped_refptr<webrtc::VideoTrackInterface>
 MediaStreamDependencyFactory::CreateLocalVideoTrack(
-    const std::string& label,
+    const std::string& id,
     webrtc::VideoSourceInterface* source) {
-  return pc_factory_->CreateVideoTrack(label, source).get();
+  return pc_factory_->CreateVideoTrack(id, source).get();
 }
 
 scoped_refptr<webrtc::LocalAudioTrackInterface>
 MediaStreamDependencyFactory::CreateLocalAudioTrack(
-    const std::string& label,
+    const std::string& id,
     webrtc::AudioSourceInterface* source) {
-  return pc_factory_->CreateAudioTrack(label, source).get();
+  return pc_factory_->CreateAudioTrack(id, source).get();
 }
 
 webrtc::SessionDescriptionInterface*

@@ -213,17 +213,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     std::string video_track_label("video-label");
     std::string audio_track_label("audio-label");
 
-    scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream(
-        mock_dependency_factory_->CreateLocalMediaStream(stream_label));
-    scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
-        mock_dependency_factory_->CreateLocalAudioTrack(audio_track_label,
-                                                        NULL));
-    native_stream->AddTrack(audio_track);
-    scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
-        mock_dependency_factory_->CreateLocalVideoTrack(
-            video_track_label, 0));
-    native_stream->AddTrack(video_track);
-
     WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
         static_cast<size_t>(1));
     audio_sources[0].initialize(WebKit::WebString::fromUTF8(audio_track_label),
@@ -237,6 +226,24 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     WebKit::WebMediaStream local_stream;
     local_stream.initialize(UTF8ToUTF16(stream_label), audio_sources,
                             video_sources);
+
+    scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream(
+        mock_dependency_factory_->CreateLocalMediaStream(stream_label));
+    WebKit::WebVector<WebKit::WebMediaStreamTrack> audio_tracks;
+    local_stream.audioSources(audio_tracks);
+    const std::string audio_track_id = UTF16ToUTF8(audio_tracks[0].id());
+    scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+        mock_dependency_factory_->CreateLocalAudioTrack(audio_track_id,
+                                                        NULL));
+    native_stream->AddTrack(audio_track);
+    WebKit::WebVector<WebKit::WebMediaStreamTrack> video_tracks;
+    local_stream.audioSources(video_tracks);
+    const std::string video_track_id = UTF16ToUTF8(video_tracks[0].id());
+    scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
+        mock_dependency_factory_->CreateLocalVideoTrack(
+            video_track_id, 0));
+    native_stream->AddTrack(video_track);
+
     local_stream.setExtraData(new MediaStreamExtraData(native_stream));
     return local_stream;
   }

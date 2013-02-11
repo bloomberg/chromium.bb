@@ -27,10 +27,10 @@ static webrtc::LocalMediaStreamInterface* GetLocalNativeMediaStream(
 
 template <class TrackList>
 static webrtc::MediaStreamTrackInterface* GetLocalTrack(
-    const std::string& source_id,
+    const std::string& track_id,
     TrackList* tracks) {
   for (size_t i = 0; i < tracks->count(); ++i) {
-    if (tracks->at(i)->id() == source_id)
+    if (tracks->at(i)->id() == track_id)
       return tracks->at(i);
   }
   return NULL;
@@ -104,20 +104,20 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
 webrtc::MediaStreamTrackInterface*
 PeerConnectionHandlerBase::GetLocalNativeMediaStreamTrack(
       const WebKit::WebMediaStream& stream,
-      const WebKit::WebMediaStreamTrack& component) {
-  std::string source_id = UTF16ToUTF8(component.source().id());
+      const WebKit::WebMediaStreamTrack& track) {
+  std::string track_id = UTF16ToUTF8(track.id());
   webrtc::MediaStreamInterface* native_stream
       = GetLocalNativeMediaStream(stream);
   if (!native_stream) {
     return NULL;
   }
-  if (component.source().type() == WebKit::WebMediaStreamSource::TypeAudio) {
+  if (track.source().type() == WebKit::WebMediaStreamSource::TypeAudio) {
     return GetLocalTrack<webrtc::AudioTracks>(
-        source_id, native_stream->audio_tracks());
+        track_id, native_stream->audio_tracks());
   }
-  if (component.source().type() == WebKit::WebMediaStreamSource::TypeVideo) {
+  if (track.source().type() == WebKit::WebMediaStreamSource::TypeVideo) {
     return GetLocalTrack<webrtc::VideoTracks>(
-        source_id, native_stream->video_tracks());
+        track_id, native_stream->video_tracks());
   }
   NOTIMPLEMENTED();  // We have an unknown type of media stream track.
   return NULL;
