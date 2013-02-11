@@ -250,7 +250,7 @@ extern const char kDisableCarbonInterposing[];
 CONTENT_EXPORT extern const char kTestCompositor[];
 #endif
 
-CONTENT_EXPORT extern const char kDisableOverscrollHistoryNavigation[];
+CONTENT_EXPORT extern const char kEnableOverscrollHistoryNavigation[];
 
 }  // namespace switches
 
