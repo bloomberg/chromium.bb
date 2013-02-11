@@ -219,6 +219,15 @@ class TestAutoUpdateSdkTools(SdkToolsTestCase):
     self.assertTrue(stdout.find('Ignoring manual update request.') != -1)
     self.assertFalse(os.path.exists(sdk_tools_update_dir))
 
+  def testHelpCommand(self):
+    """Running naclsdk with -h should work.
+
+    This is a regression test for a bug where the auto-updater would remove the
+    sdk_tools directory when running "naclsdk -h".
+    """
+    self._WriteManifest()
+    self._Run(['-h'])
+
 
 class TestAutoUpdateSdkToolsDifferentFilesystem(TestAutoUpdateSdkTools):
   def setUp(self):

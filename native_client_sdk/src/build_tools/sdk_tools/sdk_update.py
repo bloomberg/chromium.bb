@@ -56,7 +56,7 @@ def UpdateSDKTools(args):
   process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
   stdout, _ = process.communicate()
   if process.returncode == 0:
-    return stdout.find('sdk_tools is already up-to-date.') == -1
+    return stdout.find('Updating bundle sdk_tools to version') != -1
   else:
     # Updating sdk_tools could fail for any number of reasons. Regardless, it
     # should be safe to try to run the user's command.
@@ -65,6 +65,10 @@ def UpdateSDKTools(args):
 
 def RenameSdkToolsDirectory():
   """Rename sdk_tools_update to sdk_tools."""
+  # If there is no update directory, bail.
+  if not os.path.isdir(SDK_TOOLS_UPDATE_DIR):
+    return False
+
   try:
     tempdir = tempfile.mkdtemp()
     temp_sdktools = os.path.join(tempdir, 'sdk_tools')
@@ -94,11 +98,12 @@ def RenameSdkToolsDirectory():
   finally:
     RemoveDir(tempdir)
 
+  return True
+
 
 def main():
   args = sys.argv[1:]
-  if UpdateSDKTools(args):
-    RenameSdkToolsDirectory()
+  if UpdateSDKTools(args) and RenameSdkToolsDirectory():
     # Call the shell script, just in case this script was updated in the next
     # version of sdk_tools
     return subprocess.call([NACLSDK_SHELL_SCRIPT] + args)
