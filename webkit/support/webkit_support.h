@@ -76,6 +76,7 @@ void SetUpTestEnvironment(WebKit::Platform* shadow_platform_delegate);
 void SetUpTestEnvironmentForUnitTests(
     WebKit::Platform* shadow_platform_delegate);
 void TearDownTestEnvironment();
+void ResetTestEnvironment();
 
 // Returns a pointer to a WebKitPlatformSupport implementation for
 // DumpRenderTree.  Needs to call SetUpTestEnvironment() before this.

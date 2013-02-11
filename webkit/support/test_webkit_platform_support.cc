@@ -341,6 +341,73 @@ TestWebKitPlatformSupport::createLocalStorageNamespace(
   return dom_storage_system_.CreateLocalStorageNamespace();
 }
 
+// Wrap a WebKit::WebIDBFactory to rewrite the data directory to
+// a scoped temp directory. In multiprocess Chromium this is rewritten
+// to a real profile directory during IPC.
+class TestWebIDBFactory : public WebKit::WebIDBFactory {
+ public:
+  TestWebIDBFactory() {
+    // Create a new temp directory for Indexed DB storage, specific to this
+    // factory. If this fails, WebKit uses in-memory storage.
+    if (!indexed_db_dir_.CreateUniqueTempDir()) {
+      LOG(WARNING) << "Failed to create a temp dir for Indexed DB, "
+          "using in-memory storage.";
+      DCHECK(indexed_db_dir_.path().empty());
+    }
+    data_dir_ = webkit_support::GetAbsoluteWebStringFromUTF8Path(
+      indexed_db_dir_.path().AsUTF8Unsafe());
+
+    // Lazily construct factory_ so that it gets allocated on the thread where
+    // it will be used.  TestWebIDBFactory gets allocated on the main thread.
+  }
+
+  virtual void getDatabaseNames(WebKit::WebIDBCallbacks* callbacks,
+                                const WebKit::WebSecurityOrigin& origin,
+                                WebKit::WebFrame* frame,
+                                const WebString& dataDir) {
+    EnsureFactory();
+    factory_->getDatabaseNames(callbacks, origin, frame,
+                               dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+
+  virtual void open(const WebString& name,
+                    long long version,
+                    long long transaction_id,
+                    WebKit::WebIDBCallbacks* callbacks,
+                    WebKit::WebIDBDatabaseCallbacks* databaseCallbacks,
+                    const WebKit::WebSecurityOrigin& origin,
+                    WebKit::WebFrame* frame,
+                    const WebString& dataDir) {
+    EnsureFactory();
+    factory_->open(name, version, transaction_id, callbacks,
+                   databaseCallbacks, origin, frame,
+                   dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+
+  virtual void deleteDatabase(const WebString& name,
+                              WebKit::WebIDBCallbacks* callbacks,
+                              const WebKit::WebSecurityOrigin& origin,
+                              WebKit::WebFrame* frame,
+                              const WebString& dataDir) {
+    EnsureFactory();
+    factory_->deleteDatabase(name, callbacks, origin, frame,
+                             dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+ private:
+  void EnsureFactory() {
+    if (!factory_)
+      factory_.reset(WebKit::WebIDBFactory::create());
+  }
+
+  scoped_ptr<WebIDBFactory> factory_;
+  base::ScopedTempDir indexed_db_dir_;
+  WebString data_dir_;
+};
+
+WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
+  return new TestWebIDBFactory();
+}
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void TestWebKitPlatformSupport::SetThemeEngine(WebKit::WebThemeEngine* engine) {
   active_theme_engine_ = engine ?
