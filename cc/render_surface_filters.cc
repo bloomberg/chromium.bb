@@ -360,6 +360,7 @@ WebKit::WebFilterOperations RenderSurfaceFilters::optimize(const WebKit::WebFilt
         case WebKit::WebFilterOperation::FilterTypeInvert:
         case WebKit::WebFilterOperation::FilterTypeOpacity:
         case WebKit::WebFilterOperation::FilterTypeColorMatrix:
+        default: // FIXME: temporary place holder to prevent build failures
             break;
         }
     }
