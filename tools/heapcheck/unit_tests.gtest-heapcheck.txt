@@ -31,6 +31,9 @@ AppNotificationManagerSyncTest.*
 # Timing out all over the place. Disabling for now. http://crbug.com/149715
 ExtensionWebRequestTest.*
 
+# Timing out. Disabling for now. http://crbug.com/175496
+AppsModelBuilderTest.OnExtensionMoved
+
 # Don't run FLAKY or FAILS tests under the heapchecker.
 # They may cause flaky leak reports and timeouts.
 *FLAKY_*
