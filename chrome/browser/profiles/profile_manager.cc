@@ -481,6 +481,11 @@ void ProfileManager::CreateDefaultProfileAsync(const CreateCallback& callback) {
   default_profile_dir = default_profile_dir.Append(
       profile_manager->GetInitialProfileDir());
 
+  // Chrome OS specific note: since we pass string16() here as the icon_url,
+  // profile cache information will not get updated with the is_managed value
+  // so we're fine with passing all default values here.
+  // On Chrome OS |is_managed| preference will get initialized in
+  // Profile::CREATE_STATUS_CREATED callback.
   profile_manager->CreateProfileAsync(
       default_profile_dir, callback, string16(), string16(), false);
 }

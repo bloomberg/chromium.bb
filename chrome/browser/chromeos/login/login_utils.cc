@@ -253,12 +253,19 @@ class LoginUtilsImpl
   // Check user's profile for kApplicationLocale setting.
   void RespectLocalePreference(Profile* pref);
 
-  // Initializes basic preferences for newly created profile.
+  // Callback for Profile::CREATE_STATUS_CREATED profile state.
+  // Initializes basic preferences for newly created profile. Any other
+  // early profile initialization that needs to happen before
+  // ProfileManager::DoFinalInit() gets called is done here.
   void InitProfilePreferences(Profile* user_profile);
 
   // Callback for asynchronous profile creation.
   void OnProfileCreated(Profile* profile,
                         Profile::CreateStatus status);
+
+  // Callback for Profile::CREATE_STATUS_INITIALIZED profile state.
+  // Profile is created, extensions and promo resources are initialized.
+  void UserProfileInitialized(Profile* user_profile);
 
   // Callback to resume profile creation after transferring auth data from
   // the authentication profile.
@@ -455,7 +462,9 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile) {
   if (UserManager::Get()->IsCurrentUserNew())
     SetFirstLoginPrefs(user_profile->GetPrefs());
 
-  if (!UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+  if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+    user_profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
+  } else {
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing
     // profiles that might not have it set yet).
@@ -492,17 +501,19 @@ void LoginUtilsImpl::OnProfileCreated(
 
   switch (status) {
     case Profile::CREATE_STATUS_INITIALIZED:
+      UserProfileInitialized(user_profile);
       break;
-    case Profile::CREATE_STATUS_CREATED: {
+    case Profile::CREATE_STATUS_CREATED:
       InitProfilePreferences(user_profile);
-      return;
-    }
+      break;
     case Profile::CREATE_STATUS_FAIL:
     default:
       NOTREACHED();
-      return;
+      break;
   }
+}
 
+void LoginUtilsImpl::UserProfileInitialized(Profile* user_profile) {
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
