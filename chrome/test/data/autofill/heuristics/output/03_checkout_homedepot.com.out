@@ -11,3 +11,4 @@ PHONE_HOME_NUMBER | fieldphone3_1 | *Phone Number on Record: |
 PHONE_HOME_CITY_CODE | altfieldphone1_1 | Alternate Phone: | 
 PHONE_HOME_NUMBER | altfieldphone2_1 | Alternate Phone: | 
 PHONE_HOME_NUMBER | altfieldphone3_1 | Alternate Phone: | 
+UNKNOWN_TYPE | isBillingAddress_1 | Alternate Phone: | on

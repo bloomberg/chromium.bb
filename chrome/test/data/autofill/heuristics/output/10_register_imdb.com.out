@@ -1,5 +1,7 @@
 EMAIL_ADDRESS | email1 | E-mail: | 
 EMAIL_ADDRESS | email2 | Confirm E-mail: | 
+UNKNOWN_TYPE | gender | Sex: | M
+UNKNOWN_TYPE | gender | Male | F
 UNKNOWN_TYPE | year | Year of Birth: | 
 ADDRESS_HOME_ZIP | postal | ZIP/Postal Code: | 
 ADDRESS_HOME_COUNTRY | country | Country: | US

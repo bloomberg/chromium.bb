@@ -9,3 +9,5 @@ UNKNOWN_TYPE | altBillState | • Other State/Province: |
 ADDRESS_BILLING_ZIP | billZip | • Zip/Postal Code: | 
 PHONE_HOME_WHOLE_NUMBER | billPhone | • Telephone: | 
 EMAIL_ADDRESS | guestEmail | • Email Address: | 
+UNKNOWN_TYPE | shipOptions | Enter Addresses | useShip
+UNKNOWN_TYPE | shipOptions | Ship to the above billing address Ship to a different address | provideNew
