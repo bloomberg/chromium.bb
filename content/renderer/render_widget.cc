@@ -1103,8 +1103,18 @@ void RenderWidget::DoDeferredUpdate() {
     pending_update_params_->scale_factor = dib_scale_factor;
   } else if (!is_accelerated_compositing_active_) {
     // Compute a buffer for painting and cache it.
-    gfx::Rect pixel_bounds = gfx::ToFlooredRectDeprecated(
+
+    bool fractional_scale = device_scale_factor_ -
+        static_cast<int>(device_scale_factor_) != 0;
+    if (fractional_scale) {
+      // Damage might not be DIP aligned. Inflate damage to compensate.
+      bounds.Inset(-1, -1);
+      bounds.Intersect(gfx::Rect(size_));
+    }
+
+    gfx::Rect pixel_bounds = gfx::ToEnclosingRect(
         gfx::ScaleRect(bounds, device_scale_factor_));
+
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
                                                    pixel_bounds));
@@ -1133,8 +1143,14 @@ void RenderWidget::DoDeferredUpdate() {
     if (!scroll_damage.IsEmpty())
       copy_rects.push_back(scroll_damage);
 
-    for (size_t i = 0; i < copy_rects.size(); ++i)
-      PaintRect(copy_rects[i], pixel_bounds.origin(), canvas.get());
+    for (size_t i = 0; i < copy_rects.size(); ++i) {
+      gfx::Rect rect = copy_rects[i];
+      if (fractional_scale) {
+        // Damage might not be DPI aligned.  Inflate rect to compensate.
+        rect.Inset(-1, -1);
+      }
+      PaintRect(rect, pixel_bounds.origin(), canvas.get());
+    }
 
     // Software FPS tick for performance tests. The accelerated path traces the
     // frame events in didCommitAndDrawCompositorFrame. See throughput_tests.cc.

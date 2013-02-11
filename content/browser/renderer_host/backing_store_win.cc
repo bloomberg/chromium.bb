@@ -9,8 +9,10 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/base/win/dpi.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {
@@ -112,7 +114,9 @@ bool BackingStoreWin::ColorManagementEnabled() {
 }
 
 size_t BackingStoreWin::MemorySize() {
-  return size().GetArea() * (color_depth_ / 8);
+  gfx::Size size_in_pixels = gfx::ToCeiledSize(gfx::ScaleSize(size(),
+      ui::win::GetDeviceScaleFactor()));
+  return size_in_pixels.GetArea() * (color_depth_ / 8);
 }
 
 void BackingStoreWin::PaintToBackingStore(
@@ -124,9 +128,13 @@ void BackingStoreWin::PaintToBackingStore(
     const base::Closure& completion_callback,
     bool* scheduled_completion_callback) {
   *scheduled_completion_callback = false;
+  gfx::Size size_in_pixels = gfx::ToCeiledSize(gfx::ScaleSize(
+    size(), scale_factor));
   if (!backing_store_dib_) {
-    backing_store_dib_ = CreateDIB(hdc_, size().width(),
-                                   size().height(), color_depth_);
+    backing_store_dib_ = CreateDIB(hdc_,
+                                   size_in_pixels.width(),
+                                   size_in_pixels.height(),
+                                   color_depth_);
     if (!backing_store_dib_) {
       NOTREACHED();
       return;
@@ -138,24 +146,25 @@ void BackingStoreWin::PaintToBackingStore(
   if (!dib)
     return;
 
-  gfx::Rect pixel_bitmap_rect = gfx::ToEnclosedRect(
+  gfx::Rect pixel_bitmap_rect = gfx::ToEnclosingRect(
       gfx::ScaleRect(bitmap_rect, scale_factor));
 
   BITMAPINFOHEADER hdr;
   gfx::CreateBitmapHeader(pixel_bitmap_rect.width(),
                           pixel_bitmap_rect.height(), &hdr);
-  // Account for a bitmap_rect that exceeds the bounds of our view
+  // Account for a bitmap_rect that exceeds the bounds of our view.
   gfx::Rect view_rect(size());
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     gfx::Rect paint_rect = gfx::IntersectRects(view_rect, copy_rects[i]);
-    gfx::Rect pixel_copy_rect = gfx::ToEnclosedRect(
+    gfx::Rect pixel_copy_rect = gfx::ToEnclosingRect(
         gfx::ScaleRect(paint_rect, scale_factor));
+    gfx::Rect target_rect = pixel_copy_rect;
     CallStretchDIBits(hdc_,
-                      paint_rect.x(),
-                      paint_rect.y(),
-                      paint_rect.width(),
-                      paint_rect.height(),
+                      target_rect.x(),
+                      target_rect.y(),
+                      target_rect.width(),
+                      target_rect.height(),
                       pixel_copy_rect.x() - pixel_bitmap_rect.x(),
                       pixel_copy_rect.y() - pixel_bitmap_rect.y(),
                       pixel_copy_rect.width(),
@@ -167,6 +176,7 @@ void BackingStoreWin::PaintToBackingStore(
 
 bool BackingStoreWin::CopyFromBackingStore(const gfx::Rect& rect,
                                            skia::PlatformBitmap* output) {
+  // TODO(kevers): Make sure this works with HiDPI backing stores.
   if (!output->Allocate(rect.width(), rect.height(), true))
     return false;
 

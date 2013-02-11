@@ -69,6 +69,7 @@
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
@@ -726,8 +727,13 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
   // refreshes before we have a chance to paint the exposed area.  Somewhat
   // surprisingly, this ordering matters.
 
-  for (size_t i = 0; i < copy_rects.size(); ++i)
-    InvalidateRect(&copy_rects[i].ToRECT(), false);
+  for (size_t i = 0; i < copy_rects.size(); ++i) {
+    gfx::Rect pixel_rect = ui::win::DIPToScreenRect(copy_rects[i]);
+    // Damage might not be DIP aligned.
+    pixel_rect.Inset(-1, -1);
+    RECT bounds = pixel_rect.ToRECT();
+    InvalidateRect(&bounds, false);
+  }
 
   if (!scroll_rect.IsEmpty()) {
     RECT clip_rect = scroll_rect.ToRECT();
@@ -1235,7 +1241,8 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
     return;
 
   if (backing_store) {
-    gfx::Rect bitmap_rect(gfx::Point(), backing_store->size());
+    gfx::Rect bitmap_rect(gfx::Point(),
+                          ui::win::DIPToScreenSize(backing_store->size()));
 
     bool manage_colors = BackingStoreWin::ColorManagementEnabled();
     if (manage_colors)
@@ -2845,7 +2852,9 @@ void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
                                                       const gfx::Rect& pos,
                                                       DWORD ex_style) {
   Create(parent_hwnd, NULL, NULL, WS_POPUP, ex_style);
-  MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
+  gfx::Rect screen_rect = ui::win::DIPToScreenRect(pos);
+  MoveWindow(screen_rect.x(), screen_rect.y(), screen_rect.width(),
+      screen_rect.height(), TRUE);
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
 
   if (is_fullscreen_ && win8::IsSingleWindowMetroMode()) {
