@@ -61,29 +61,10 @@ WEBKIT_GLUE_EXPORT bool GetAllSavableResourceLinksForCurrentPage(
     const GURL& page_url, SavableResourcesResult* savable_resources_result,
     const char** savable_schemes);
 
-// Invokes pauseAnimationAtTime on the AnimationController associated with the
-// |view|s main frame.
-// This is used by test shell.
-bool PauseAnimationAtTimeOnElementWithId(WebKit::WebView* view,
-                                         const std::string& animation_name,
-                                         double time,
-                                         const std::string& element_id);
-
-// Invokes pauseTransitionAtTime on the AnimationController associated with the
-// |view|s main frame.
-// This is used by test shell.
-bool PauseTransitionAtTimeOnElementWithId(WebKit::WebView* view,
-                                          const std::string& property_name,
-                                          double time,
-                                          const std::string& element_id);
-
 // Returns true if the element with |element_id| as its id has autocomplete
 // on.
 bool ElementDoesAutoCompleteForElementWithId(WebKit::WebView* view,
                                              const std::string& element_id);
-
-// Returns the number of animations currently running.
-int NumberOfActiveAnimations(WebKit::WebView* view);
 
 // Returns the value in an elements resource url attribute. For IMG, SCRIPT or
 // INPUT TYPE=image, returns the value in "src". For LINK TYPE=text/css, returns

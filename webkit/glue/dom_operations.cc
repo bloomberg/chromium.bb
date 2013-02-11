@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAnimationController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -21,7 +20,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
-using WebKit::WebAnimationController;
 using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;
@@ -239,48 +237,6 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
   return true;
 }
 
-bool PauseAnimationAtTimeOnElementWithId(WebView* view,
-                                         const std::string& animation_name,
-                                         double time,
-                                         const std::string& element_id) {
-  WebFrame* web_frame = view->mainFrame();
-  if (!web_frame)
-    return false;
-
-  WebAnimationController* controller = web_frame->animationController();
-  if (!controller)
-    return false;
-
-  WebElement element =
-    web_frame->document().getElementById(WebString::fromUTF8(element_id));
-  if (element.isNull())
-    return false;
-  return controller->pauseAnimationAtTime(element,
-                                          WebString::fromUTF8(animation_name),
-                                          time);
-}
-
-bool PauseTransitionAtTimeOnElementWithId(WebView* view,
-                                          const std::string& property_name,
-                                          double time,
-                                          const std::string& element_id) {
-  WebFrame* web_frame = view->mainFrame();
-  if (!web_frame)
-    return false;
-
-  WebAnimationController* controller = web_frame->animationController();
-  if (!controller)
-    return false;
-
-  WebElement element =
-      web_frame->document().getElementById(WebString::fromUTF8(element_id));
-  if (element.isNull())
-    return false;
-  return controller->pauseTransitionAtTime(element,
-                                           WebString::fromUTF8(property_name),
-                                           time);
-}
-
 bool ElementDoesAutoCompleteForElementWithId(WebView* view,
                                              const std::string& element_id) {
   WebFrame* web_frame = view->mainFrame();
@@ -294,18 +250,6 @@ bool ElementDoesAutoCompleteForElementWithId(WebView* view,
 
   WebInputElement input_element = element.to<WebInputElement>();
   return input_element.autoComplete();
-}
-
-int NumberOfActiveAnimations(WebView* view) {
-  WebFrame* web_frame = view->mainFrame();
-  if (!web_frame)
-    return -1;
-
-  WebAnimationController* controller = web_frame->animationController();
-  if (!controller)
-    return -1;
-
-  return controller->numberOfActiveAnimations();
 }
 
 void GetMetaElementsWithAttribute(WebDocument* document,
