@@ -11,7 +11,7 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
-#include "third_party/libjingle/source/talk/app/webrtc/jsep.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
 namespace WebKit {
 class WebFrame;
@@ -66,7 +66,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // page in which the PeerConnection is created.
   void RegisterPeerConnection(
       RTCPeerConnectionHandler* pc_handler,
-      const std::vector<webrtc::JsepInterface::IceServer>& servers,
+      const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers,
       const RTCMediaConstraints& constraints,
       const WebKit::WebFrame* frame);
 
@@ -89,7 +89,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // Sends an update when Ice candidates are updated.
   virtual void TrackUpdateIce(
       RTCPeerConnectionHandler* pc_handler,
-      const std::vector<webrtc::JsepInterface::IceServer>& servers,
+      const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers,
       const RTCMediaConstraints& options);
 
   // Sends an update when an Ice candidate is added.

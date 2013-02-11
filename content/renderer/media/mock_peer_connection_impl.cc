@@ -288,7 +288,8 @@ void MockPeerConnectionImpl::CreateOffer(
     const MediaConstraintsInterface* constraints) {
   DCHECK(observer);
   created_sessiondescription_.reset(
-      dependency_factory_->CreateSessionDescription("unknown", kDummyOffer));
+      dependency_factory_->CreateSessionDescription("unknown", kDummyOffer,
+                                                    NULL));
 }
 
 void MockPeerConnectionImpl::CreateAnswer(
@@ -296,7 +297,8 @@ void MockPeerConnectionImpl::CreateAnswer(
     const MediaConstraintsInterface* constraints) {
   DCHECK(observer);
   created_sessiondescription_.reset(
-      dependency_factory_->CreateSessionDescription("unknown", kDummyAnswer));
+      dependency_factory_->CreateSessionDescription("unknown", kDummyAnswer,
+                                                    NULL));
 }
 
 void MockPeerConnectionImpl::SetLocalDescriptionWorker(
@@ -328,6 +330,18 @@ bool MockPeerConnectionImpl::AddIceCandidate(
 
 PeerConnectionInterface::IceState MockPeerConnectionImpl::ice_state() {
   return ice_state_;
+}
+
+PeerConnectionInterface::IceConnectionState
+    MockPeerConnectionImpl::ice_connection_state() {
+  NOTIMPLEMENTED();
+  return PeerConnectionInterface::kIceConnectionNew;
+}
+
+PeerConnectionInterface::IceGatheringState
+    MockPeerConnectionImpl::ice_gathering_state() {
+  NOTIMPLEMENTED();
+  return PeerConnectionInterface::kIceGatheringNew;
 }
 
 }  // namespace content

@@ -70,6 +70,8 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   virtual bool AddIceCandidate(
       const webrtc::IceCandidateInterface* candidate) OVERRIDE;
   virtual IceState ice_state() OVERRIDE;
+  virtual IceConnectionState ice_connection_state() OVERRIDE;
+  virtual IceGatheringState ice_gathering_state() OVERRIDE;
 
   void AddRemoteStream(webrtc::MediaStreamInterface* stream);
   void SetSignalingState(SignalingState state) { signaling_state_ = state; }

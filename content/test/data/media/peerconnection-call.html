@@ -14,8 +14,8 @@
   var gNumberOfExpectedEvents = 0;
   
   // Number of events that currently have occured.  
-  var gNumberOfEvents = 0;  
-        
+  var gNumberOfEvents = 0;
+
   // Test that we can setup call with an audio and video track.
   function call(constraints) {
     createConnections(null);
@@ -143,6 +143,7 @@
   
   function callUsingStream(localStream) {    
     gFirstConnection.addStream(localStream);
+    gSecondConnection.addStream(localStream);
     gFirstConnection.createOffer(onOfferCreated);
   }
   

@@ -23,6 +23,7 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   virtual cricket::VideoCapturer* GetVideoCapturer() OVERRIDE;
   virtual void AddSink(cricket::VideoRenderer* output) OVERRIDE;
   virtual void RemoveSink(cricket::VideoRenderer* output) OVERRIDE;
+  virtual const cricket::VideoOptions* options() const OVERRIDE;
 
   // Changes the state of the source to live and notifies the observer.
   void SetLive();
@@ -154,7 +155,8 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
                             webrtc::AudioSourceInterface* source) OVERRIDE;
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& type,
-      const std::string& sdp) OVERRIDE;
+      const std::string& sdp,
+      webrtc::SdpParseError* error) OVERRIDE;
   virtual webrtc::IceCandidateInterface* CreateIceCandidate(
       const std::string& sdp_mid,
       int sdp_mline_index,

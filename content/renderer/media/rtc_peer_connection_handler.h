@@ -155,7 +155,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   PeerConnectionTracker* peer_connection_tracker();
  private:
   webrtc::SessionDescriptionInterface* CreateNativeSessionDescription(
-      const WebKit::WebRTCSessionDescription& description);
+      const WebKit::WebRTCSessionDescription& description,
+      webrtc::SdpParseError* error);
 
   // |client_| is a weak pointer, and is valid until stop() has returned.
   WebKit::WebRTCPeerConnectionHandlerClient* client_;

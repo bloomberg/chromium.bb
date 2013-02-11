@@ -93,16 +93,18 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // PeerConnection object.
   // The PeerConnection object is owned by PeerConnectionHandler.
   virtual scoped_refptr<webrtc::PeerConnectionInterface>
-      CreatePeerConnection(const webrtc::JsepInterface::IceServers& ice_servers,
-                           const webrtc::MediaConstraintsInterface* constraints,
-                           WebKit::WebFrame* web_frame,
-                           webrtc::PeerConnectionObserver* observer);
+      CreatePeerConnection(
+          const webrtc::PeerConnectionInterface::IceServers& ice_servers,
+          const webrtc::MediaConstraintsInterface* constraints,
+          WebKit::WebFrame* web_frame,
+          webrtc::PeerConnectionObserver* observer);
 
   // Creates a libjingle representation of a Session description. Used by a
   // RTCPeerConnectionHandler instance.
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& type,
-      const std::string& sdp);
+      const std::string& sdp,
+      webrtc::SdpParseError* error);
 
   // Creates a libjingle representation of an ice candidate.
   virtual webrtc::IceCandidateInterface* CreateIceCandidate(

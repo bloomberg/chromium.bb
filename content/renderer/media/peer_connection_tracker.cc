@@ -23,7 +23,7 @@ using WebKit::WebRTCPeerConnectionHandlerClient;
 namespace content {
 
 static string SerializeServers(
-    const std::vector<webrtc::JsepInterface::IceServer>& servers) {
+    const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers) {
   string result = "[";
   for (size_t i = 0; i < servers.size(); ++i) {
     result += servers[i].uri;
@@ -241,7 +241,7 @@ void PeerConnectionTracker::OnGetAllStats() {
 
 void PeerConnectionTracker::RegisterPeerConnection(
     RTCPeerConnectionHandler* pc_handler,
-    const std::vector<webrtc::JsepInterface::IceServer>& servers,
+    const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers,
     const RTCMediaConstraints& constraints,
     const WebKit::WebFrame* frame) {
   DVLOG(1) << "PeerConnectionTracker::RegisterPeerConnection()";
@@ -310,7 +310,7 @@ void PeerConnectionTracker::TrackSetSessionDescription(
 
 void PeerConnectionTracker::TrackUpdateIce(
       RTCPeerConnectionHandler* pc_handler,
-      const std::vector<webrtc::JsepInterface::IceServer>& servers,
+      const std::vector<webrtc::PeerConnectionInterface::IceServer>& servers,
       const RTCMediaConstraints& options) {
   string servers_string = "servers: " + SerializeServers(servers);
   string constraints =

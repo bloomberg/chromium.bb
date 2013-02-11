@@ -106,11 +106,11 @@ CreateWebKitSessionDescription(
 
 static void GetNativeIceServers(
     const WebKit::WebRTCConfiguration& server_configuration,
-    webrtc::JsepInterface::IceServers* servers) {
+    webrtc::PeerConnectionInterface::IceServers* servers) {
   if (server_configuration.isNull() || !servers)
     return;
   for (size_t i = 0; i < server_configuration.numberOfServers(); ++i) {
-    webrtc::JsepInterface::IceServer server;
+    webrtc::PeerConnectionInterface::IceServer server;
     const WebKit::WebRTCICEServer& webkit_server =
         server_configuration.server(i);
     server.password = UTF16ToUTF8(webkit_server.credential());
@@ -335,7 +335,7 @@ bool RTCPeerConnectionHandler::initialize(
   peer_connection_tracker_ =
       RenderThreadImpl::current()->peer_connection_tracker();
 
-  webrtc::JsepInterface::IceServers servers;
+  webrtc::PeerConnectionInterface::IceServers servers;
   GetNativeIceServers(server_configuration, &servers);
 
   RTCMediaConstraints constraints(options);
@@ -357,7 +357,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
     const WebKit::WebRTCConfiguration& server_configuration,
     const WebKit::WebMediaConstraints& options,
     PeerConnectionTracker* peer_connection_tracker) {
-  webrtc::JsepInterface::IceServers servers;
+  webrtc::PeerConnectionInterface::IceServers servers;
   GetNativeIceServers(server_configuration, &servers);
 
   RTCMediaConstraints constraints(options);
@@ -401,13 +401,16 @@ void RTCPeerConnectionHandler::createAnswer(
 void RTCPeerConnectionHandler::setLocalDescription(
     const WebKit::WebRTCVoidRequest& request,
     const WebKit::WebRTCSessionDescription& description) {
+  webrtc::SdpParseError error;
   webrtc::SessionDescriptionInterface* native_desc =
-      CreateNativeSessionDescription(description);
+      CreateNativeSessionDescription(description, &error);
   if (!native_desc) {
-    const char kReason[] = "Failed to parse SessionDescription.";
-    LOG(ERROR) << kReason;
-    WebKit::WebString reason(kReason);
-    request.requestFailed(reason);
+    std::string reason_str = "Failed to parse SessionDescription. ";
+    reason_str.append(error.line);
+    reason_str.append(" ");
+    reason_str.append(error.description);
+    LOG(ERROR) << reason_str;
+    request.requestFailed(WebKit::WebString::fromUTF8(reason_str));
     return;
   }
   if (peer_connection_tracker_)
@@ -423,13 +426,16 @@ void RTCPeerConnectionHandler::setLocalDescription(
 void RTCPeerConnectionHandler::setRemoteDescription(
     const WebKit::WebRTCVoidRequest& request,
     const WebKit::WebRTCSessionDescription& description) {
+  webrtc::SdpParseError error;
   webrtc::SessionDescriptionInterface* native_desc =
-      CreateNativeSessionDescription(description);
+      CreateNativeSessionDescription(description, &error);
   if (!native_desc) {
-    const char kReason[] = "Failed to parse SessionDescription.";
-    LOG(ERROR) << kReason;
-    WebKit::WebString reason(kReason);
-    request.requestFailed(reason);
+    std::string reason_str = "Failed to parse SessionDescription. ";
+    reason_str.append(error.line);
+    reason_str.append(" ");
+    reason_str.append(error.description);
+    LOG(ERROR) << reason_str;
+    request.requestFailed(WebKit::WebString::fromUTF8(reason_str));
     return;
   }
   if (peer_connection_tracker_)
@@ -463,7 +469,7 @@ RTCPeerConnectionHandler::remoteDescription() {
 bool RTCPeerConnectionHandler::updateICE(
     const WebKit::WebRTCConfiguration& server_configuration,
     const WebKit::WebMediaConstraints& options) {
-  webrtc::JsepInterface::IceServers servers;
+  webrtc::PeerConnectionInterface::IceServers servers;
   GetNativeIceServers(server_configuration, &servers);
   RTCMediaConstraints constraints(options);
 
@@ -728,11 +734,12 @@ PeerConnectionTracker* RTCPeerConnectionHandler::peer_connection_tracker() {
 
 webrtc::SessionDescriptionInterface*
 RTCPeerConnectionHandler::CreateNativeSessionDescription(
-    const WebKit::WebRTCSessionDescription& description) {
+    const WebKit::WebRTCSessionDescription& description,
+    webrtc::SdpParseError* error) {
   std::string sdp = UTF16ToUTF8(description.sdp());
   std::string type = UTF16ToUTF8(description.type());
   webrtc::SessionDescriptionInterface* native_desc =
-      dependency_factory_->CreateSessionDescription(type, sdp);
+      dependency_factory_->CreateSessionDescription(type, sdp, error);
 
   LOG_IF(ERROR, !native_desc) << "Failed to create native session description."
                               << " Type: " << type << " SDP: " << sdp;

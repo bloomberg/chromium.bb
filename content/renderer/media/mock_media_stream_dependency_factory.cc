@@ -207,6 +207,11 @@ webrtc::MediaSourceInterface::SourceState MockVideoSource::state() const {
   return state_;
 }
 
+const cricket::VideoOptions* MockVideoSource::options() const {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 MockLocalVideoTrack::MockLocalVideoTrack(std::string id,
                                          webrtc::VideoSourceInterface* source)
     : enabled_(false),
@@ -470,8 +475,9 @@ MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
 
 SessionDescriptionInterface*
 MockMediaStreamDependencyFactory::CreateSessionDescription(
-      const std::string& type,
-      const std::string& sdp) {
+    const std::string& type,
+    const std::string& sdp,
+    webrtc::SdpParseError* error) {
   return new MockSessionDescription(type, sdp);
 }
 

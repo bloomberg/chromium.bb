@@ -373,7 +373,7 @@ bool MediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
 
 scoped_refptr<webrtc::PeerConnectionInterface>
 MediaStreamDependencyFactory::CreatePeerConnection(
-    const webrtc::JsepInterface::IceServers& ice_servers,
+    const webrtc::PeerConnectionInterface::IceServers& ice_servers,
     const webrtc::MediaConstraintsInterface* constraints,
     WebKit::WebFrame* web_frame,
     webrtc::PeerConnectionObserver* observer) {
@@ -481,9 +481,11 @@ MediaStreamDependencyFactory::CreateLocalAudioTrack(
 }
 
 webrtc::SessionDescriptionInterface*
-MediaStreamDependencyFactory::CreateSessionDescription(const std::string& type,
-                                                       const std::string& sdp) {
-  return webrtc::CreateSessionDescription(type, sdp);
+MediaStreamDependencyFactory::CreateSessionDescription(
+    const std::string& type,
+    const std::string& sdp,
+    webrtc::SdpParseError* error) {
+  return webrtc::CreateSessionDescription(type, sdp, error);
 }
 
 webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(
