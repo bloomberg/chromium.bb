@@ -43,7 +43,9 @@ class AndroidURLsMigrationTest : public HistoryUnitTestBase {
   scoped_ptr<TestingProfile> profile_;
 };
 
-TEST_F(AndroidURLsMigrationTest, MigrateToVersion22) {
+// Disabled as this does not correctly set up all the tables so that migration
+// fails. See http://crbug.com/175460 .
+TEST_F(AndroidURLsMigrationTest, DISABLED_MigrateToVersion22) {
   HistoryDatabase db;
   ASSERT_EQ(sql::INIT_OK, db.Init(history_db_name_, NULL));
   // Migration has done.
