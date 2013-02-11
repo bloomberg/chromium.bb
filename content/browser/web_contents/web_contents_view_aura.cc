@@ -65,8 +65,17 @@ WebContentsView* CreateWebContentsView(
 
 namespace {
 
-const float kBrightnessMin = -.5f;
-const float kBrightnessMax = -.01f;
+bool ShouldNavigateForward(const NavigationController& controller,
+                           OverscrollMode mode) {
+  return mode == (base::i18n::IsRTL() ? OVERSCROLL_EAST : OVERSCROLL_WEST) &&
+         controller.CanGoForward();
+}
+
+bool ShouldNavigateBack(const NavigationController& controller,
+                        OverscrollMode mode) {
+  return mode == (base::i18n::IsRTL() ? OVERSCROLL_WEST : OVERSCROLL_EAST) &&
+         controller.CanGoBack();
+}
 
 // The window delegate for the overscroll window. This redirects trackpad events
 // to the web-contents window. The delegate destroys itself when the window is
@@ -78,10 +87,10 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
       : web_contents_(web_contents) {
     const NavigationControllerImpl& controller = web_contents->GetController();
     const NavigationEntryImpl* entry = NULL;
-    if (overscroll_mode == OVERSCROLL_WEST && controller.CanGoForward()) {
+    if (ShouldNavigateForward(controller, overscroll_mode)) {
       entry = NavigationEntryImpl::FromNavigationEntry(
           controller.GetEntryAtOffset(1));
-    } else if (overscroll_mode == OVERSCROLL_EAST && controller.CanGoBack()) {
+    } else if (ShouldNavigateBack(controller, overscroll_mode)) {
       entry = NavigationEntryImpl::FromNavigationEntry(
           controller.GetEntryAtOffset(-1));
     }
@@ -628,11 +637,12 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
   window_->AddChild(overscroll_window_.get());
 
   gfx::Rect bounds = gfx::Rect(window_->bounds().size());
-  if (current_overscroll_gesture_ == OVERSCROLL_WEST &&
-      web_contents_->GetController().CanGoForward()) {
-    // The overlay will be sliding in from the right edge towards the left.
-    // So position the overlay window on the right of the window.
-    bounds.Offset(bounds.width(), 0);
+  if (ShouldNavigateForward(web_contents_->GetController(),
+                            current_overscroll_gesture_)) {
+    // The overlay will be sliding in from the right edge towards the left in
+    // non-RTL, or sliding in from the left edge towards the right in RTL.
+    // So position the overlay window accordingly.
+    bounds.Offset(base::i18n::IsRTL() ? -bounds.width() : bounds.width(), 0);
   }
 
   if (GetWindowToAnimateForOverscroll() == overscroll_window_.get())
@@ -709,11 +719,9 @@ aura::Window* WebContentsViewAura::GetWindowToAnimateForOverscroll() {
   if (current_overscroll_gesture_ == OVERSCROLL_NONE)
     return NULL;
 
-  if (current_overscroll_gesture_ == OVERSCROLL_WEST &&
-      web_contents_->GetController().CanGoForward()) {
-    return overscroll_window_.get();
-  }
-  return GetContentNativeView();
+  return ShouldNavigateForward(web_contents_->GetController(),
+                               current_overscroll_gesture_) ?
+      overscroll_window_.get() : GetContentNativeView();
 }
 
 gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
@@ -728,13 +736,10 @@ gfx::Vector2d WebContentsViewAura::GetTranslationForOverscroll(int delta_x,
   // resistive scroll otherwise.
   const NavigationControllerImpl& controller = web_contents_->GetController();
   const gfx::Rect& bounds = GetViewBounds();
-  if (current_overscroll_gesture_ == OVERSCROLL_WEST) {
-    if (controller.CanGoForward())
-      return gfx::Vector2d(std::max(-bounds.width(), delta_x), 0);
-  } else if (current_overscroll_gesture_ == OVERSCROLL_EAST) {
-    if (controller.CanGoBack())
-      return gfx::Vector2d(std::min(bounds.width(), delta_x), 0);
-  }
+  if (ShouldNavigateForward(controller, current_overscroll_gesture_))
+    return gfx::Vector2d(std::max(-bounds.width(), delta_x), 0);
+  else if (ShouldNavigateBack(controller, current_overscroll_gesture_))
+    return gfx::Vector2d(std::min(bounds.width(), delta_x), 0);
 
   const float threshold = GetOverscrollConfig(
       OVERSCROLL_CONFIG_HORIZ_RESIST_AFTER);
@@ -753,7 +758,13 @@ void WebContentsViewAura::UpdateOverscrollWindowBrightness(float delta_x) {
   if (!overscroll_change_brightness_)
     return;
 
+  const float kBrightnessMin = -.5f;
+  const float kBrightnessMax = -.01f;
+
   float ratio = fabs(delta_x) / GetViewBounds().width();
+  ratio = std::min(1.f, ratio);
+  if (base::i18n::IsRTL())
+    ratio = 1.f - ratio;
   float brightness = current_overscroll_gesture_ == OVERSCROLL_WEST ?
       kBrightnessMin + ratio * (kBrightnessMax - kBrightnessMin) :
       kBrightnessMax - ratio * (kBrightnessMax - kBrightnessMin);
@@ -1040,18 +1051,11 @@ void WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
 }
 
 void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
-  if (mode == OVERSCROLL_WEST) {
-    NavigationControllerImpl& controller = web_contents_->GetController();
-    if (controller.CanGoForward()) {
-      CompleteOverscrollNavigation(mode);
-      return;
-    }
-  } else if (mode == OVERSCROLL_EAST) {
-    NavigationControllerImpl& controller = web_contents_->GetController();
-    if (controller.CanGoBack()) {
-      CompleteOverscrollNavigation(mode);
-      return;
-    }
+  NavigationControllerImpl& controller = web_contents_->GetController();
+  if (ShouldNavigateForward(controller, mode) ||
+      ShouldNavigateBack(controller, mode)) {
+    CompleteOverscrollNavigation(mode);
+    return;
   }
 
   ResetOverscrollTransform();
@@ -1079,10 +1083,12 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
 // WebContentsViewAura, ui::ImplicitAnimationObserver implementation:
 
 void WebContentsViewAura::OnImplicitAnimationsCompleted() {
-  if (completed_overscroll_gesture_ == OVERSCROLL_WEST) {
+  if (ShouldNavigateForward(web_contents_->GetController(),
+                            completed_overscroll_gesture_)) {
     PrepareOverscrollNavigationOverlay();
     web_contents_->GetController().GoForward();
-  } else if (completed_overscroll_gesture_ == OVERSCROLL_EAST) {
+  } else if (ShouldNavigateBack(web_contents_->GetController(),
+                                completed_overscroll_gesture_)) {
     PrepareOverscrollNavigationOverlay();
     web_contents_->GetController().GoBack();
   }
