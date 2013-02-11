@@ -211,7 +211,6 @@ CONTENT_EXPORT extern const char kUtilityProcess[];
 extern const char kUtilityProcessAllowedDir[];
 CONTENT_EXPORT extern const char kWaitForDebuggerChildren[];
 extern const char kWebCoreLogChannels[];
-CONTENT_EXPORT extern const char kWebIntentsInvocationEnabled[];
 CONTENT_EXPORT extern const char kWorkerProcess[];
 CONTENT_EXPORT extern const char kZygoteCmdPrefix[];
 CONTENT_EXPORT extern const char kZygoteProcess[];

@@ -723,9 +723,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     WebRuntimeFeatures::enableDialogElement(true);
   }
 
-  WebRuntimeFeatures::enableWebIntents(
-      command_line.HasSwitch(switches::kWebIntentsInvocationEnabled));
-
   WebRuntimeFeatures::enableSeamlessIFrames(
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
 
