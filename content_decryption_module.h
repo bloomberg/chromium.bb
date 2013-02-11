@@ -14,14 +14,6 @@ typedef __int64 int64_t;
 #include <stdint.h>
 #endif
 
-// The version number must be rolled when this file is updated!
-// If the CDM and the adapter use different versions of this file, the adapter
-// will fail to load or crash!
-#define INITIALIZE_CDM_MODULE InitializeCdmModule_4
-
-#define CDM_HOST_INTERFACE_1 "CDM_Host;1"
-#define CDM_HOST_INTERFACE CDM_HOST_INTERFACE_1
-
 // Define CDM_EXPORT so that functionality implemented by the CDM module
 // can be exported to consumers.
 #if defined(WIN32)
@@ -42,31 +34,40 @@ typedef __int64 int64_t;
 
 #endif  // defined(WIN32)
 
-
-namespace cdm {
-class Allocator;
-class ContentDecryptionModule;
-class HostFactory;
-}
+// The version number must be rolled when the exported functions are updated!
+// If the CDM and the adapter use different versions of these functions, the
+// adapter will fail to load or crash!
+#define INITIALIZE_CDM_MODULE InitializeCdmModule_4
 
 extern "C" {
 CDM_EXPORT void INITIALIZE_CDM_MODULE();
+
 CDM_EXPORT void DeinitializeCdmModule();
-// Caller retains ownership of arguments, which must outlive the call to
-// DestroyCdmInstance below.
-CDM_EXPORT cdm::ContentDecryptionModule* CreateCdmInstance(
-    const char* key_system,
-    int key_system_size,
-    cdm::Allocator* allocator,
-    cdm::HostFactory* host_factory);
-CDM_EXPORT void DestroyCdmInstance(cdm::ContentDecryptionModule* instance);
+
+// Returns a pointer to the requested CDM Host interface upon success.
+// Returns NULL if the requested CDM Host interface is not supported.
+// The caller should cast the returned pointer to the type matching
+// |host_interface_version|.
+typedef void* (*GetCdmHostFunc)(int host_interface_version, void* user_data);
+
+// Returns a pointer to the requested CDM upon success.
+// Returns NULL if an error occurs or the requested |cdm_interface_version| or
+// |key_system| is not supported or another error occurs.
+// The caller should cast the returned pointer to the type matching
+// |cdm_interface_version|.
+// Caller retains ownership of arguments and must call Destroy() on the returned
+// object.
+CDM_EXPORT void* CreateCdmInstance(
+    int cdm_interface_version,
+    const char* key_system, int key_system_size,
+    GetCdmHostFunc get_cdm_host_func, void* user_data);
+
 CDM_EXPORT const char* GetCdmVersion();
 }
 
 namespace cdm {
 
 class AudioFrames;
-class Buffer;
 class DecryptedBlock;
 class VideoFrame;
 
@@ -239,11 +240,12 @@ enum StreamType {
 };
 
 // ContentDecryptionModule interface that all CDMs need to implement.
+// The interface is versioned for backward compatibility.
 // Note: ContentDecryptionModule implementations must use the allocator
 // provided in CreateCdmInstance() to allocate any Buffer that needs to
 // be passed back to the caller. Implementations must call Buffer::Destroy()
 // when a Buffer is created that will never be returned to the caller.
-class ContentDecryptionModule {
+class ContentDecryptionModule_1 {
  public:
   // Generates a |key_request| given |type| and |init_data|.
   //
@@ -251,8 +253,6 @@ class ContentDecryptionModule {
   // case the CDM must send the key message by calling Host::SendKeyMessage().
   // Returns kSessionError if any error happened, in which case the CDM must
   // send a key error by calling Host::SendKeyError().
-  // TODO(xhwang): A CDM may support multiple key systems. Pass in key system
-  // in this and other calls to support that.
   virtual Status GenerateKeyRequest(
       const char* type, int type_size,
       const uint8_t* init_data, int init_data_size) = 0;
@@ -363,8 +363,18 @@ class ContentDecryptionModule {
   virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
                                          AudioFrames* audio_frames) = 0;
 
-  virtual ~ContentDecryptionModule() {}
+  // Destroys the object in the same context as it was created.
+  virtual void Destroy() = 0;
+
+ protected:
+  ContentDecryptionModule_1() {}
+  virtual ~ContentDecryptionModule_1() {}
 };
+
+const int kCdmInterfaceVersion_1 = 1;
+
+typedef ContentDecryptionModule_1 ContentDecryptionModule;
+const int kCdmInterfaceVersion = kCdmInterfaceVersion_1;
 
 // Represents a buffer created by Allocator implementations.
 class Buffer {
@@ -386,27 +396,16 @@ class Buffer {
   void operator=(const Buffer&);
 };
 
-// Interface class that hides cross object memory allocation details from CDMs.
-class Allocator {
+// Host interface that the CDM can call into to access browser side services.
+// Host interfaces are versioned for backward compatibility. CDM should use
+// HostFactory object to request a Host interface of a particular version.
+class Host_1 {
  public:
   // Returns a Buffer* containing non-zero members upon success, or NULL on
   // failure. The caller owns the Buffer* after this call. The buffer is not
   // guaranteed to be zero initialized. The capacity of the allocated Buffer
   // is guaranteed to be not less than |capacity|.
   virtual Buffer* Allocate(int32_t capacity) = 0;
-
- protected:
-  Allocator() {}
-  virtual ~Allocator() {}
-};
-
-// Host interface that the CDM can call into to access browser side services.
-// Host interfaces are versioned for backward compatibility. CDM should use
-// HostFactory object to request a Host interface of a particular version.
-class Host_1 {
- public:
-  Host_1() {}
-  virtual ~Host_1() {}
 
   // Requests the host to call ContentDecryptionModule::TimerFired() |delay_ms|
   // from now with |context|.
@@ -433,19 +432,16 @@ class Host_1 {
   typedef const void* (*GetPrivateInterface)(const char* interface_name);
   virtual void GetPrivateData(int32_t* instance,
                               GetPrivateInterface* get_interface) = 0;
+
+ protected:
+  Host_1() {}
+  virtual ~Host_1() {}
 };
+
+const int kHostInterfaceVersion_1 = 1;
 
 typedef Host_1 Host;
-
-// Interface to request a CDM Host of a particular version.
-class HostFactory {
- public:
-  // Returns a pointer to the requested CDM Host interface upon success.
-  // Returns NULL if the requested CDM Host interface is not supported.
-  // The callee should cast the returned pointer to the type matching
-  // |host_version|.
-  virtual void* GetCdmHost(const char* host_version) = 0;
-};
+const int kHostInterfaceVersion = kHostInterfaceVersion_1;
 
 // Represents a decrypted block that has not been decoded.
 class DecryptedBlock {
