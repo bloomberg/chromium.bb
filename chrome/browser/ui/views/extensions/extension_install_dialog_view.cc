@@ -28,7 +28,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -40,11 +39,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/extensions/app_host_installer_win.h"
-#include "chrome/installer/launcher_support/chrome_launcher_support.h"
-#endif
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -92,8 +86,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
  public:
   ExtensionInstallDialogView(content::PageNavigator* navigator,
                              ExtensionInstallPrompt::Delegate* delegate,
-                             const ExtensionInstallPrompt::Prompt& prompt,
-                             bool show_launcher_opt_in);
+                             const ExtensionInstallPrompt::Prompt& prompt);
   virtual ~ExtensionInstallDialogView();
 
   // Changes the size of the containing widget to match the preferred size
@@ -130,11 +123,6 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   content::PageNavigator* navigator_;
   ExtensionInstallPrompt::Delegate* delegate_;
   ExtensionInstallPrompt::Prompt prompt_;
-  bool show_launcher_opt_in_;
-
-  // The lifetime of |app_launcher_opt_in_checkbox_| is managed by the views
-  // system.
-  views::Checkbox* app_launcher_opt_in_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };
@@ -192,52 +180,14 @@ class IssueAdviceView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(IssueAdviceView);
 };
 
-void DoShowDialog(const ExtensionInstallPrompt::ShowParams& show_params,
-                  ExtensionInstallPrompt::Delegate* delegate,
-                  const ExtensionInstallPrompt::Prompt& prompt,
-                  bool show_launcher_opt_in) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  views::Widget::CreateWindowWithParent(
-      new ExtensionInstallDialogView(show_params.navigator, delegate, prompt,
-                                     show_launcher_opt_in),
-      show_params.parent_window)->Show();
-}
-
-// Runs on the FILE thread. Check if the launcher is present and then show
-// the install dialog with an appropriate |show_launcher_opt_in|.
-void CheckLauncherAndShowDialog(
-    const ExtensionInstallPrompt::ShowParams& show_params,
-    ExtensionInstallPrompt::Delegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-#if defined(OS_WIN)
-  bool present = chrome_launcher_support::IsAppLauncherPresent();
-#else
-  NOTREACHED();
-  bool present = false;
-#endif
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&DoShowDialog, show_params, delegate, prompt, !present));
-}
-
 void ShowExtensionInstallDialogImpl(
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-#if defined(OS_WIN)
-  if (BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
-      prompt.extension() && prompt.extension()->is_platform_app()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&CheckLauncherAndShowDialog, show_params, delegate, prompt));
-    return;
-  }
-#endif
-  DoShowDialog(show_params, delegate, prompt, false);
+  views::Widget::CreateWindowWithParent(
+      new ExtensionInstallDialogView(show_params.navigator, delegate, prompt),
+      show_params.parent_window)->Show();
 }
 
 }  // namespace
@@ -245,13 +195,10 @@ void ShowExtensionInstallDialogImpl(
 ExtensionInstallDialogView::ExtensionInstallDialogView(
     content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate* delegate,
-    const ExtensionInstallPrompt::Prompt& prompt,
-    bool show_launcher_opt_in)
+    const ExtensionInstallPrompt::Prompt& prompt)
     : navigator_(navigator),
       delegate_(delegate),
-      prompt_(prompt),
-      show_launcher_opt_in_(show_launcher_opt_in),
-      app_launcher_opt_in_checkbox_(NULL) {
+      prompt_(prompt) {
   // Possible grid layouts:
   // Inline install
   //      w/ permissions                 no permissions
@@ -300,18 +247,6 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   // | oauth issue 1             |
   // +---------------------------+
   // | oauth issue 2             |
-  // +---------------------------+
-  //
-  // w/ launcher opt in
-  // +--------------------+------+
-  // | heading            | icon |
-  // +--------------------|      |
-  // | permissions_header |      |
-  // |                           |
-  // | ......................... |
-  // |                           |
-  // +--------------------+------+
-  // | launcher opt in           |
   // +---------------------------+
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
@@ -501,26 +436,6 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       layout->AddView(issue_advice_view);
     }
   }
-
-  if (show_launcher_opt_in) {
-    // Put the launcher opt-in prompt at the bottom. It should always stretch
-    // to take up the whole width of the dialog.
-    column_set = layout->AddColumnSet(++column_set_id);
-    column_set->AddColumn(views::GridLayout::FILL,
-                          views::GridLayout::FILL,
-                          1,
-                          views::GridLayout::USE_PREF,
-                          0,  // no fixed width
-                          left_column_width + kIconSize);
-    layout->StartRowWithPadding(0, column_set_id,
-                                0, views::kRelatedControlVerticalSpacing);
-    app_launcher_opt_in_checkbox_ = new views::Checkbox(
-        l10n_util::GetStringUTF16(IDS_APP_LIST_OPT_IN_TEXT));
-    app_launcher_opt_in_checkbox_->SetFont(
-        rb.GetFont(ui::ResourceBundle::BoldFont));
-    app_launcher_opt_in_checkbox_->SetChecked(true);
-    layout->AddView(app_launcher_opt_in_checkbox_);
-  }
 }
 
 ExtensionInstallDialogView::~ExtensionInstallDialogView() {}
@@ -562,11 +477,6 @@ bool ExtensionInstallDialogView::Cancel() {
 }
 
 bool ExtensionInstallDialogView::Accept() {
-#if defined(OS_WIN)
-  extensions::AppHostInstaller::SetInstallWithLauncher(
-      app_launcher_opt_in_checkbox_ &&
-      app_launcher_opt_in_checkbox_->checked());
-#endif
   delegate_->InstallUIProceed();
   return true;
 }
