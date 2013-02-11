@@ -69,6 +69,7 @@ CP:=python $(NACL_SDK_ROOT)/tools/oshelpers.py cp
 MKDIR:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mkdir
 MV:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mv
 RM:=python $(NACL_SDK_ROOT)/tools/oshelpers.py rm
+WHICH:=python $(NACL_SDK_ROOT)/tools/oshelpers.py which
 
 
 #
@@ -107,7 +108,14 @@ endef
 # The target for all versions
 #
 USABLE_TOOLCHAINS=$(filter $(OSNAME) newlib glibc pnacl,$(VALID_TOOLCHAINS))
+
+ifeq (1,$(NO_HOST_BUILDS))
+USABLE_TOOLCHAINS:=$(filter-out $(OSNAME),$(USABLE_TOOLCHAINS))
+endif
+
 $(foreach tool,$(USABLE_TOOLCHAINS),$(eval $(call TOOLCHAIN_RULE,$(tool),$(dep))))
+
+.PHONY: all_versions
 all_versions: $(TOOLCHAIN_LIST)
 
 #

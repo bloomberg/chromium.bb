@@ -20,6 +20,12 @@ HOST_CXX?=cl.exe /nologo /EHsc
 HOST_LINK?=link.exe /nologo
 HOST_LIB?=lib.exe /nologo
 
+ifeq (,$(findstring cl.exe,$(shell $(WHICH) cl.exe)))
+$(warning To skip the host build use:)
+$(warning "make NO_HOST_BUILDS=1")
+$(error Unable to find cl.exe in PATH while building Windows host build)
+endif
+
 
 ifeq ('Debug','$(CONFIG)')
 WIN_OPT_FLAGS?=/Od /MTd /Z7

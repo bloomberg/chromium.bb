@@ -469,12 +469,50 @@ def Zip(args):
   return 0
 
 
+def Which(args):
+  """A Unix style which.
+
+  Looks for all arguments in the PATH environment variable, and prints their
+  path if they are executable files.
+
+  Note: If you pass an argument with a path to which, it will just test if it
+  is executable, not if it is in the path.
+  """
+  parser = optparse.OptionParser(usage='usage: which args...')
+  _, files = parser.parse_args(args)
+  if not files:
+    return 0
+
+  env_path = os.environ.get('PATH', '')
+  paths = env_path.split(os.pathsep)
+
+  def IsExecutableFile(path):
+    return os.path.isfile(path) and os.access(path, os.X_OK)
+
+  retval = 0
+  for filename in files:
+    if os.path.sep in filename:
+      if IsExecutableFile(filename):
+        print filename
+        continue
+
+    for path in paths:
+      filepath = os.path.join(path, filename)
+      if IsExecutableFile(filepath):
+        print os.path.abspath(os.path.join(path, filename))
+        break
+    else:
+      retval = 1
+  return retval
+
+
 FuncMap = {
   'cp': Copy,
   'mkdir': Mkdir,
   'mv': Move,
   'rm': Remove,
   'zip': Zip,
+  'which': Which,
 }
 
 

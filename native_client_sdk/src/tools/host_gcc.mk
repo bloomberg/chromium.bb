@@ -20,6 +20,12 @@ HOST_CXX?=g++
 HOST_LINK?=g++
 HOST_LIB?=ar r
 
+ifeq (,$(findstring gcc,$(shell $(WHICH) gcc)))
+$(warning To skip the host build use:)
+$(warning "make all_versions NO_HOST_BUILDS=1")
+$(error Unable to find gcc in PATH while building Host build)
+endif
+
 
 LINUX_WARNINGS?=-Wno-long-long
 LINUX_CCFLAGS=-fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
