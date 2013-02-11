@@ -23,12 +23,12 @@ class SkBitmap;
 /////////////////////////////////////////////////////////////////////////////
 class PageUsageData {
  public:
-  explicit PageUsageData(history::URLID id);
+  explicit PageUsageData(history::SegmentID id);
 
   virtual ~PageUsageData();
 
   // Return the url ID
-  history::URLID GetID() const {
+  history::SegmentID GetID() const {
     return id_;
   }
 
@@ -57,11 +57,10 @@ class PageUsageData {
   }
 
   // Sort predicate to sort instances by score (high to low)
-  static bool Predicate(const PageUsageData* dud1,
-                        const PageUsageData* dud2);
+  static bool Predicate(const PageUsageData* dud1, const PageUsageData* dud2);
 
  private:
-  history::URLID id_;
+  history::SegmentID id_;
   GURL url_;
   string16 title_;
 

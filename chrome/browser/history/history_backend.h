@@ -320,7 +320,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                          const base::Time from_time,
                          int max_result_count);
   void DeleteOldSegmentData();
-  void SetSegmentPresentationIndex(SegmentID segment_id, int index);
 
   // Keyword search terms ------------------------------------------------------
 

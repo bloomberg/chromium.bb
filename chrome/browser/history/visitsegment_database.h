@@ -79,6 +79,10 @@ class VisitSegmentDatabase {
   // Deletes all the segment tables, returning true on success.
   bool DropSegmentTables();
 
+  // Removes the 'pres_index' column from the segments table and the
+  // presentation table is removed entirely.
+  bool MigratePresentationIndex();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VisitSegmentDatabase);
 };

@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "sql/statement.h"
+#include "sql/transaction.h"
 
 // The following tables are used to store url segment information.
 //
@@ -23,7 +24,6 @@
 //   id                 Primary key
 //   name               A unique string to represent that segment. (URL derived)
 //   url_id             ID of the url currently used to represent this segment.
-//   pres_index         index used to store a fixed presentation position.
 //
 // segment_usage
 //   id                 Primary key
@@ -46,8 +46,7 @@ bool VisitSegmentDatabase::InitSegmentTables() {
     if (!GetDB().Execute("CREATE TABLE segments ("
         "id INTEGER PRIMARY KEY,"
         "name VARCHAR,"
-        "url_id INTEGER NON NULL,"
-        "pres_index INTEGER DEFAULT -1 NOT NULL)")) {
+        "url_id INTEGER NON NULL)")) {
       return false;
     }
 
@@ -84,19 +83,6 @@ bool VisitSegmentDatabase::InitSegmentTables() {
                        "ON segment_usage(segment_id)"))
     return false;
 
-  // Presentation index table.
-  //
-  // Important note:
-  // Right now, this table is only used to store the presentation index.
-  // If you need to add more columns, keep in mind that rows are currently
-  // deleted when the presentation index is changed to -1.
-  // See SetPagePresentationIndex() in this file
-  if (!GetDB().DoesTableExist("presentation")) {
-    if (!GetDB().Execute("CREATE TABLE presentation("
-        "url_id INTEGER PRIMARY KEY,"
-        "pres_index INTEGER NOT NULL)"))
-      return false;
-  }
   return true;
 }
 
@@ -221,9 +207,6 @@ void VisitSegmentDatabase::QuerySegmentUsage(
   // The first gathers scores for all segments.
   // The second gathers segment data (url, title, etc.) for the highest-ranked
   // segments.
-  // TODO(evanm): this disregards the "presentation index", which was what was
-  // used to lock results into position.  But the rest of our code currently
-  // does as well.
 
   // Gather all the segment scores.
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -310,18 +293,6 @@ bool VisitSegmentDatabase::DeleteSegmentData(base::Time older_than) {
   return statement.Run();
 }
 
-bool VisitSegmentDatabase::SetSegmentPresentationIndex(SegmentID segment_id,
-                                                       int index) {
-  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "UPDATE segments SET pres_index = ? WHERE id = ?"));
-  statement.BindInt(0, index);
-  statement.BindInt64(1, segment_id);
-
-  bool success = statement.Run();
-  DCHECK_EQ(1, GetDB().GetLastChangeCount());
-  return success;
-}
-
 bool VisitSegmentDatabase::DeleteSegmentForURL(URLID url_id) {
   sql::Statement delete_usage(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM segment_usage WHERE segment_id IN "
@@ -336,6 +307,21 @@ bool VisitSegmentDatabase::DeleteSegmentForURL(URLID url_id) {
   delete_seg.BindInt64(0, url_id);
 
   return delete_seg.Run();
+}
+
+bool VisitSegmentDatabase::MigratePresentationIndex() {
+  sql::Transaction transaction(&GetDB());
+  return transaction.Begin() &&
+      GetDB().Execute("DROP TABLE presentation") &&
+      GetDB().Execute("CREATE TABLE segments_tmp ("
+                      "id INTEGER PRIMARY KEY,"
+                      "name VARCHAR,"
+                      "url_id INTEGER NON NULL)") &&
+      GetDB().Execute("INSERT INTO segments_tmp SELECT "
+                      "id, name, url_id FROM segments") &&
+      GetDB().Execute("DROP TABLE segments") &&
+      GetDB().Execute("ALTER TABLE segments_tmp RENAME TO segments") &&
+      transaction.Commit();
 }
 
 }  // namespace history

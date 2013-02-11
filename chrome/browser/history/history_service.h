@@ -479,9 +479,6 @@ class HistoryService : public CancelableRequestProvider,
                                 int max_result_count,
                                 const SegmentQueryCallback& callback);
 
-  // Set the presentation index for the segment identified by |segment_id|.
-  void SetSegmentPresentationIndex(int64 segment_id, int index);
-
   // Keyword search terms -----------------------------------------------------
 
   // Sets the search terms for the specified url and keyword. url_id gives the

@@ -1173,12 +1173,6 @@ void HistoryBackend::DeleteOldSegmentData() {
                            TimeDelta::FromDays(kSegmentDataRetention));
 }
 
-void HistoryBackend::SetSegmentPresentationIndex(SegmentID segment_id,
-                                                 int index) {
-  if (db_.get())
-    db_->SetSegmentPresentationIndex(segment_id, index);
-}
-
 void HistoryBackend::QuerySegmentUsage(
     scoped_refptr<QuerySegmentUsageRequest> request,
     const Time from_time,

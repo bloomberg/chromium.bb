@@ -390,13 +390,6 @@ void HistoryService::Shutdown() {
   Cleanup();
 }
 
-void HistoryService::SetSegmentPresentationIndex(int64 segment_id, int index) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_UI,
-                    &HistoryBackend::SetSegmentPresentationIndex,
-                    segment_id, index);
-}
-
 void HistoryService::SetKeywordSearchTermsForURL(const GURL& url,
                                                  TemplateURLID keyword_id,
                                                  const string16& term) {

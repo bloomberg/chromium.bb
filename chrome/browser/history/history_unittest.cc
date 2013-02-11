@@ -1445,6 +1445,77 @@ TEST_F(HistoryTest, ProcessLocalDeleteDirectiveSyncOnline) {
   EXPECT_EQ(1u, change_processor.GetChanges().size());
 }
 
+TEST_F(HistoryBackendDBTest, MigratePresentations) {
+  Time now(base::Time::Now());
+
+  // Create the db we want. Use 22 since segments didn't change in that time
+  // frame.
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(22));
+
+  const SegmentID segment_id = 2;
+  const URLID url_id = 3;
+  const GURL url("http://www.foo.com");
+  const std::string url_name(VisitSegmentDatabase::ComputeSegmentName(url));
+  const string16 title(ASCIIToUTF16("Title1"));
+  const Time segment_time(Time::Now());
+
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+
+    // Add an entry to urls.
+    {
+      sql::Statement s(db.GetUniqueStatement(
+                           "INSERT INTO urls "
+                           "(id, url, title, last_visit_time) VALUES "
+                           "(?, ?, ?, ?)"));
+      s.BindInt64(0, url_id);
+      s.BindString(1, url.spec());
+      s.BindString16(2, title);
+      s.BindInt64(3, segment_time.ToInternalValue());
+      ASSERT_TRUE(s.Run());
+    }
+
+    // Add an entry to segments.
+    {
+      sql::Statement s(db.GetUniqueStatement(
+                           "INSERT INTO segments "
+                           "(id, name, url_id, pres_index) VALUES "
+                           "(?, ?, ?, ?)"));
+      s.BindInt64(0, segment_id);
+      s.BindString(1, url_name);
+      s.BindInt64(2, url_id);
+      s.BindInt(3, 4);  // pres_index
+      ASSERT_TRUE(s.Run());
+    }
+
+    // And one to segment_usage.
+    {
+      sql::Statement s(db.GetUniqueStatement(
+                           "INSERT INTO segment_usage "
+                           "(id, segment_id, time_slot, visit_count) VALUES "
+                           "(?, ?, ?, ?)"));
+      s.BindInt64(0, 4);  // id.
+      s.BindInt64(1, segment_id);
+      s.BindInt64(2, segment_time.ToInternalValue());
+      s.BindInt(3, 5);  // visit count.
+      ASSERT_TRUE(s.Run());
+    }
+  }
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  std::vector<PageUsageData*> results;
+  db_->QuerySegmentUsage(segment_time, 10, &results);
+  ASSERT_EQ(1u, results.size());
+  EXPECT_EQ(url, results[0]->GetURL());
+  EXPECT_EQ(segment_id, results[0]->GetID());
+  EXPECT_EQ(title, results[0]->GetTitle());
+  STLDeleteElements(&results);
+}
+
 }  // namespace
 
 }  // namespace history

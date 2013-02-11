@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-PageUsageData::PageUsageData(history::URLID id)
+PageUsageData::PageUsageData(history::SegmentID id)
     : id_(id),
       score_(0.0) {
 }
