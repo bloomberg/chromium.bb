@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "base/win/scoped_handle.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
@@ -78,6 +79,8 @@ class PCMWaveInAudioInputStream : public AudioInputStream {
   // Converts the stored device id string into an unsigned integer which
   // can be used by waveInOpen() to open the specified capture device.
   bool GetDeviceId(UINT* device_index);
+
+  base::ThreadChecker thread_checker_;
 
   // Reader beware. Visual C has stronger guarantees on volatile vars than
   // most people expect. In fact, it has release semantics on write and

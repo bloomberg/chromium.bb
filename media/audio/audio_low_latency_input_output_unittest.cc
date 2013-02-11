@@ -24,7 +24,6 @@
 #elif defined(OS_MACOSX)
 #include "media/audio/mac/audio_manager_mac.h"
 #elif defined(OS_WIN)
-#include "base/win/scoped_com_initializer.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/core_audio_util_win.h"
 #elif defined(OS_ANDROID)
@@ -331,9 +330,6 @@ class StreamWrapper {
 
   explicit StreamWrapper(AudioManager* audio_manager)
       :
-#if defined(OS_WIN)
-        com_init_(base::win::ScopedCOMInitializer::kMTA),
-#endif
         audio_manager_(audio_manager),
         format_(AudioParameters::AUDIO_PCM_LOW_LATENCY),
 #if defined(OS_ANDROID)
@@ -373,10 +369,6 @@ class StreamWrapper {
     EXPECT_TRUE(stream);
     return stream;
   }
-
-#if defined(OS_WIN)
-  base::win::ScopedCOMInitializer com_init_;
-#endif
 
   AudioManager* audio_manager_;
   AudioParameters::Format format_;
