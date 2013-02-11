@@ -1423,6 +1423,7 @@ uses(Instruction inst) const {
 //   {Cond: Cond(31:28),
 //    Lr: 14,
 //    Pc: 15,
+//    actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: BranchImmediate24,
 //    constraints: ,
 //    defs: {Pc, Lr},
@@ -1432,7 +1433,7 @@ uses(Instruction inst) const {
 //    imm32: SignExtend(imm24:'00'(1:0), 32),
 //    pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
 //    relative: true,
-//    relative_offset: imm32,
+//    relative_offset: imm32 + 8,
 //    rule: BL_BLX_immediate,
 //    safety: [true => MAY_BE_SAFE],
 //    true: true,
@@ -1456,10 +1457,10 @@ is_relative_branch(Instruction inst) const {
 int32_t BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0::
 branch_target_offset(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // relative_offset: "SignExtend(inst(23:0):'00'(1:0), 32)"
+  // relative_offset: "SignExtend(inst(23:0):'00'(1:0), 32) + 8"
   return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
        ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
-       : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));
+       : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) + 8;
 }
 
 SafetyLevel BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0::
@@ -1486,6 +1487,7 @@ uses(Instruction inst) const {
 //
 //   {Cond: Cond(31:28),
 //    Pc: 15,
+//    actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: BranchImmediate24,
 //    constraints: ,
 //    defs: {Pc},
@@ -1495,7 +1497,7 @@ uses(Instruction inst) const {
 //    imm32: SignExtend(imm24:'00'(1:0), 32),
 //    pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
 //    relative: true,
-//    relative_offset: imm32,
+//    relative_offset: imm32 + 8,
 //    rule: B,
 //    safety: [true => MAY_BE_SAFE],
 //    true: true,
@@ -1518,10 +1520,10 @@ is_relative_branch(Instruction inst) const {
 int32_t B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0::
 branch_target_offset(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // relative_offset: "SignExtend(inst(23:0):'00'(1:0), 32)"
+  // relative_offset: "SignExtend(inst(23:0):'00'(1:0), 32) + 8"
   return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
        ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
-       : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));
+       : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) + 8;
 }
 
 SafetyLevel B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0::
@@ -2689,6 +2691,7 @@ uses(Instruction inst) const {
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: LoadRegisterList,
 //    cond: cond(31:28),
@@ -2709,8 +2712,7 @@ uses(Instruction inst) const {
 //      wback &&
 //         Contains(registers, Rn) => UNKNOWN,
 //      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: {Rn},
 //    wback: W(21)=1}
 Register LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -2764,8 +2766,9 @@ bool LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0::
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'true'
-  return true;
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
 }
 
 RegisterList LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -2782,6 +2785,7 @@ uses(Instruction inst) const {
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: LoadRegisterList,
 //    cond: cond(31:28),
@@ -2802,8 +2806,7 @@ uses(Instruction inst) const {
 //      wback &&
 //         Contains(registers, Rn) => UNKNOWN,
 //      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: {Rn},
 //    wback: W(21)=1}
 Register LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -2857,8 +2860,9 @@ bool LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0::
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'true'
-  return true;
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
 }
 
 RegisterList LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -2875,6 +2879,7 @@ uses(Instruction inst) const {
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: LoadRegisterList,
 //    cond: cond(31:28),
@@ -2895,8 +2900,7 @@ uses(Instruction inst) const {
 //      wback &&
 //         Contains(registers, Rn) => UNKNOWN,
 //      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: {Rn},
 //    wback: W(21)=1}
 Register LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -2950,8 +2954,9 @@ bool LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0::
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'true'
-  return true;
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
 }
 
 RegisterList LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -2968,6 +2973,7 @@ uses(Instruction inst) const {
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: LoadRegisterList,
 //    cond: cond(31:28),
@@ -2988,8 +2994,7 @@ uses(Instruction inst) const {
 //      wback &&
 //         Contains(registers, Rn) => UNKNOWN,
 //      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: {Rn},
 //    wback: W(21)=1}
 Register LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -3043,8 +3048,9 @@ bool LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0::
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'true'
-  return true;
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
 }
 
 RegisterList LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0::

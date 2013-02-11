@@ -910,6 +910,7 @@ uses(Instruction inst) const {
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: StoreRegisterList,
 //    cond: cond(31:28),
@@ -931,8 +932,7 @@ uses(Instruction inst) const {
 //         Contains(registers, Rn) &&
 //         Rn  !=
 //            SmallestGPR(registers) => UNKNOWN],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: Union({Rn}, registers),
 //    wback: W(21)=1}
 Register STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -985,8 +985,9 @@ bool STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0::
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'true'
-  return true;
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
 }
 
 RegisterList STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -1003,6 +1004,7 @@ uses(Instruction inst) const {
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: StoreRegisterList,
 //    cond: cond(31:28),
@@ -1024,8 +1026,7 @@ uses(Instruction inst) const {
 //         Contains(registers, Rn) &&
 //         Rn  !=
 //            SmallestGPR(registers) => UNKNOWN],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: Union({Rn}, registers),
 //    wback: W(21)=1}
 Register STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -1078,8 +1079,9 @@ bool STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0::
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'true'
-  return true;
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
 }
 
 RegisterList STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -1096,6 +1098,7 @@ uses(Instruction inst) const {
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: StoreRegisterList,
 //    cond: cond(31:28),
@@ -1117,8 +1120,7 @@ uses(Instruction inst) const {
 //         Contains(registers, Rn) &&
 //         Rn  !=
 //            SmallestGPR(registers) => UNKNOWN],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: Union({Rn}, registers),
 //    wback: W(21)=1}
 Register STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -1171,8 +1173,9 @@ bool STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0::
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'true'
-  return true;
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
 }
 
 RegisterList STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -1189,6 +1192,7 @@ uses(Instruction inst) const {
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: StoreRegisterList,
 //    cond: cond(31:28),
@@ -1210,8 +1214,7 @@ uses(Instruction inst) const {
 //         Contains(registers, Rn) &&
 //         Rn  !=
 //            SmallestGPR(registers) => UNKNOWN],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: Union({Rn}, registers),
 //    wback: W(21)=1}
 Register STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0::
@@ -1264,8 +1267,9 @@ bool STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0::
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'true'
-  return true;
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
 }
 
 RegisterList STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0::

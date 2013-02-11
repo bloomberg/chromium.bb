@@ -1781,7 +1781,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   { cond(31:28), W(21), Rn(19:16), register_list(15:0) }
   registers := RegisterList(register_list); wback := W=1;
   base := Rn;
-  small_imm_base_wb := true;
+  small_imm_base_wb := wback;
   safety := Rn == Pc | NumGPRs(registers) < 1 => UNPREDICTABLE;
 *LdRnRegs *RnRegs
   baseline := LoadRegisterList;
@@ -1804,7 +1804,9 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   defs := {Pc};
   uses := {Pc};
   relative := true;
-  relative_offset := imm32;
+  # The ARM manual states that "PC reads as the address of the current
+  # instruction plus 8.
+  relative_offset := imm32 + 8;
   safety := true => MAY_BE_SAFE;
 *BranchLink *Branch
   defs := {Pc, Lr};

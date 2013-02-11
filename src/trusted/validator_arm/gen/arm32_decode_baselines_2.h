@@ -545,6 +545,7 @@ class STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: StoreRegisterList,
 //    cond: cond(31:28),
@@ -566,8 +567,7 @@ class STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0
 //         Contains(registers, Rn) &&
 //         Rn  !=
 //            SmallestGPR(registers) => UNKNOWN],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: Union({Rn}, registers),
 //    wback: W(21)=1}
 class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0
@@ -592,6 +592,7 @@ class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: StoreRegisterList,
 //    cond: cond(31:28),
@@ -613,8 +614,7 @@ class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0
 //         Contains(registers, Rn) &&
 //         Rn  !=
 //            SmallestGPR(registers) => UNKNOWN],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: Union({Rn}, registers),
 //    wback: W(21)=1}
 class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0
@@ -639,6 +639,7 @@ class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: StoreRegisterList,
 //    cond: cond(31:28),
@@ -660,8 +661,7 @@ class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0
 //         Contains(registers, Rn) &&
 //         Rn  !=
 //            SmallestGPR(registers) => UNKNOWN],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: Union({Rn}, registers),
 //    wback: W(21)=1}
 class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0
@@ -686,6 +686,7 @@ class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: StoreRegisterList,
 //    cond: cond(31:28),
@@ -707,8 +708,7 @@ class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0
 //         Contains(registers, Rn) &&
 //         Rn  !=
 //            SmallestGPR(registers) => UNKNOWN],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: Union({Rn}, registers),
 //    wback: W(21)=1}
 class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0

@@ -104,6 +104,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "parallel_addition_and_subtraction_unsigned",
                      "packing_unpacking_saturation_and_reversal",
                      "signed_multiply_signed_and_unsigned_divide",
+                     "branch_branch_with_link_and_block_data_transfer",
                      ]
 
 # The list of tables in armv7.table that should test the automatically

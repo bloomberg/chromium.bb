@@ -839,6 +839,7 @@ class BLX_register_cccc000100101111111111110011mmmm_case_0
 //   {Cond: Cond(31:28),
 //    Lr: 14,
 //    Pc: 15,
+//    actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: BranchImmediate24,
 //    constraints: ,
 //    defs: {Pc, Lr},
@@ -848,7 +849,7 @@ class BLX_register_cccc000100101111111111110011mmmm_case_0
 //    imm32: SignExtend(imm24:'00'(1:0), 32),
 //    pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
 //    relative: true,
-//    relative_offset: imm32,
+//    relative_offset: imm32 + 8,
 //    rule: BL_BLX_immediate,
 //    safety: [true => MAY_BE_SAFE],
 //    true: true,
@@ -872,6 +873,7 @@ class BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0
 //
 //   {Cond: Cond(31:28),
 //    Pc: 15,
+//    actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    baseline: BranchImmediate24,
 //    constraints: ,
 //    defs: {Pc},
@@ -881,7 +883,7 @@ class BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0
 //    imm32: SignExtend(imm24:'00'(1:0), 32),
 //    pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
 //    relative: true,
-//    relative_offset: imm32,
+//    relative_offset: imm32 + 8,
 //    rule: B,
 //    safety: [true => MAY_BE_SAFE],
 //    true: true,
@@ -1627,6 +1629,7 @@ class LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: LoadRegisterList,
 //    cond: cond(31:28),
@@ -1647,8 +1650,7 @@ class LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0
 //      wback &&
 //         Contains(registers, Rn) => UNKNOWN,
 //      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: {Rn},
 //    wback: W(21)=1}
 class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0
@@ -1673,6 +1675,7 @@ class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: LoadRegisterList,
 //    cond: cond(31:28),
@@ -1693,8 +1696,7 @@ class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0
 //      wback &&
 //         Contains(registers, Rn) => UNKNOWN,
 //      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: {Rn},
 //    wback: W(21)=1}
 class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0
@@ -1719,6 +1721,7 @@ class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: LoadRegisterList,
 //    cond: cond(31:28),
@@ -1739,8 +1742,7 @@ class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0
 //      wback &&
 //         Contains(registers, Rn) => UNKNOWN,
 //      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: {Rn},
 //    wback: W(21)=1}
 class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0
@@ -1765,6 +1767,7 @@ class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0
 //    Pc: 15,
 //    Rn: Rn(19:16),
 //    W: W(21),
+//    actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
 //    baseline: LoadRegisterList,
 //    cond: cond(31:28),
@@ -1785,8 +1788,7 @@ class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0
 //      wback &&
 //         Contains(registers, Rn) => UNKNOWN,
 //      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//    small_imm_base_wb: true,
-//    true: true,
+//    small_imm_base_wb: wback,
 //    uses: {Rn},
 //    wback: W(21)=1}
 class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0

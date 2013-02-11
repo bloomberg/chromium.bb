@@ -39,7 +39,7 @@ namespace nacl_arm_test {
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -60,8 +60,7 @@ namespace nacl_arm_test {
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTesterCase0
@@ -133,7 +132,7 @@ bool StoreRegisterListTesterCase0
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -153,8 +152,7 @@ bool StoreRegisterListTesterCase0
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTesterCase1
@@ -226,7 +224,7 @@ bool LoadRegisterListTesterCase1
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -247,8 +245,7 @@ bool LoadRegisterListTesterCase1
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTesterCase2
@@ -320,7 +317,7 @@ bool StoreRegisterListTesterCase2
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -340,8 +337,7 @@ bool StoreRegisterListTesterCase2
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTesterCase3
@@ -413,7 +409,7 @@ bool LoadRegisterListTesterCase3
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -434,8 +430,7 @@ bool LoadRegisterListTesterCase3
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTesterCase4
@@ -507,7 +502,7 @@ bool StoreRegisterListTesterCase4
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -527,8 +522,7 @@ bool StoreRegisterListTesterCase4
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTesterCase5
@@ -600,7 +594,7 @@ bool LoadRegisterListTesterCase5
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -621,8 +615,7 @@ bool LoadRegisterListTesterCase5
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTesterCase6
@@ -694,7 +687,7 @@ bool StoreRegisterListTesterCase6
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -714,8 +707,7 @@ bool StoreRegisterListTesterCase6
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTesterCase7
@@ -898,7 +890,7 @@ bool ForbiddenCondDecoderTesterCase10
 
 // op(25:20)=10xxxx
 //    = {Pc: 15,
-//       actual: BranchImmediate24,
+//       actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc},
@@ -908,7 +900,7 @@ bool ForbiddenCondDecoderTesterCase10
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
-//       relative_offset: imm32,
+//       relative_offset: imm32 + 8,
 //       rule: B,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
@@ -962,7 +954,7 @@ bool BranchImmediate24TesterCase11
 // op(25:20)=11xxxx
 //    = {Lr: 14,
 //       Pc: 15,
-//       actual: BranchImmediate24,
+//       actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc, Lr},
@@ -972,7 +964,7 @@ bool BranchImmediate24TesterCase11
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
-//       relative_offset: imm32,
+//       relative_offset: imm32 + 8,
 //       rule: BL_BLX_immediate,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
@@ -1034,7 +1026,7 @@ bool BranchImmediate24TesterCase12
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -1055,8 +1047,7 @@ bool BranchImmediate24TesterCase12
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case0
@@ -1073,7 +1064,7 @@ class StoreRegisterListTester_Case0
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -1093,8 +1084,7 @@ class StoreRegisterListTester_Case0
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case1
@@ -1111,7 +1101,7 @@ class LoadRegisterListTester_Case1
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -1132,8 +1122,7 @@ class LoadRegisterListTester_Case1
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case2
@@ -1150,7 +1139,7 @@ class StoreRegisterListTester_Case2
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -1170,8 +1159,7 @@ class StoreRegisterListTester_Case2
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case3
@@ -1188,7 +1176,7 @@ class LoadRegisterListTester_Case3
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -1209,8 +1197,7 @@ class LoadRegisterListTester_Case3
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case4
@@ -1227,7 +1214,7 @@ class StoreRegisterListTester_Case4
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -1247,8 +1234,7 @@ class StoreRegisterListTester_Case4
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case5
@@ -1265,7 +1251,7 @@ class LoadRegisterListTester_Case5
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -1286,8 +1272,7 @@ class LoadRegisterListTester_Case5
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 class StoreRegisterListTester_Case6
@@ -1304,7 +1289,7 @@ class StoreRegisterListTester_Case6
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -1324,8 +1309,7 @@ class StoreRegisterListTester_Case6
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 class LoadRegisterListTester_Case7
@@ -1384,7 +1368,7 @@ class ForbiddenCondDecoderTester_Case10
 
 // op(25:20)=10xxxx
 //    = {Pc: 15,
-//       actual: BranchImmediate24,
+//       actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc},
@@ -1394,7 +1378,7 @@ class ForbiddenCondDecoderTester_Case10
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
-//       relative_offset: imm32,
+//       relative_offset: imm32 + 8,
 //       rule: B,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
@@ -1411,7 +1395,7 @@ class BranchImmediate24Tester_Case11
 // op(25:20)=11xxxx
 //    = {Lr: 14,
 //       Pc: 15,
-//       actual: BranchImmediate24,
+//       actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc, Lr},
@@ -1421,7 +1405,7 @@ class BranchImmediate24Tester_Case11
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
-//       relative_offset: imm32,
+//       relative_offset: imm32 + 8,
 //       rule: BL_BLX_immediate,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
@@ -1449,7 +1433,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -1470,14 +1454,15 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case0_TestCase0) {
-  StoreRegisterListTester_Case0 tester;
-  tester.Test("cccc100000w0nnnnrrrrrrrrrrrrrrrr");
+  StoreRegisterListTester_Case0 baseline_tester;
+  NamedActual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_STMDA_STMED actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc100000w0nnnnrrrrrrrrrrrrrrrr");
 }
 
 // op(25:20)=0000x1
@@ -1485,7 +1470,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -1505,14 +1490,15 @@ TEST_F(Arm32DecoderStateTests,
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case1_TestCase1) {
-  LoadRegisterListTester_Case1 tester;
-  tester.Test("cccc100000w1nnnnrrrrrrrrrrrrrrrr");
+  LoadRegisterListTester_Case1 baseline_tester;
+  NamedActual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_LDMDA_LDMFA actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc100000w1nnnnrrrrrrrrrrrrrrrr");
 }
 
 // op(25:20)=0010x0
@@ -1520,7 +1506,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -1541,14 +1527,15 @@ TEST_F(Arm32DecoderStateTests,
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case2_TestCase2) {
-  StoreRegisterListTester_Case2 tester;
-  tester.Test("cccc100010w0nnnnrrrrrrrrrrrrrrrr");
+  StoreRegisterListTester_Case2 baseline_tester;
+  NamedActual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_STM_STMIA_STMEA actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc100010w0nnnnrrrrrrrrrrrrrrrr");
 }
 
 // op(25:20)=0010x1
@@ -1556,7 +1543,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -1576,14 +1563,15 @@ TEST_F(Arm32DecoderStateTests,
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case3_TestCase3) {
-  LoadRegisterListTester_Case3 tester;
-  tester.Test("cccc100010w1nnnnrrrrrrrrrrrrrrrr");
+  LoadRegisterListTester_Case3 baseline_tester;
+  NamedActual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_LDM_LDMIA_LDMFD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc100010w1nnnnrrrrrrrrrrrrrrrr");
 }
 
 // op(25:20)=0100x0
@@ -1591,7 +1579,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -1612,14 +1600,15 @@ TEST_F(Arm32DecoderStateTests,
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case4_TestCase4) {
-  StoreRegisterListTester_Case4 tester;
-  tester.Test("cccc100100w0nnnnrrrrrrrrrrrrrrrr");
+  StoreRegisterListTester_Case4 baseline_tester;
+  NamedActual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_STMDB_STMFD actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc100100w0nnnnrrrrrrrrrrrrrrrr");
 }
 
 // op(25:20)=0100x1
@@ -1627,7 +1616,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -1647,14 +1636,15 @@ TEST_F(Arm32DecoderStateTests,
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case5_TestCase5) {
-  LoadRegisterListTester_Case5 tester;
-  tester.Test("cccc100100w1nnnnrrrrrrrrrrrrrrrr");
+  LoadRegisterListTester_Case5 baseline_tester;
+  NamedActual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_LDMDB_LDMEA actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc100100w1nnnnrrrrrrrrrrrrrrrr");
 }
 
 // op(25:20)=0110x0
@@ -1662,7 +1652,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: StoreRegisterList,
+//       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: StoreRegisterList,
 //       constraints: ,
@@ -1683,14 +1673,15 @@ TEST_F(Arm32DecoderStateTests,
 //            Contains(registers, Rn) &&
 //            Rn  !=
 //               SmallestGPR(registers) => UNKNOWN],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_Case6_TestCase6) {
-  StoreRegisterListTester_Case6 tester;
-  tester.Test("cccc100110w0nnnnrrrrrrrrrrrrrrrr");
+  StoreRegisterListTester_Case6 baseline_tester;
+  NamedActual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_STMIB_STMFA actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc100110w0nnnnrrrrrrrrrrrrrrrr");
 }
 
 // op(25:20)=0110x1
@@ -1698,7 +1689,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Pc: 15,
 //       Rn: Rn(19:16),
 //       W: W(21),
-//       actual: LoadRegisterList,
+//       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
 //       baseline: LoadRegisterList,
 //       constraints: ,
@@ -1718,14 +1709,15 @@ TEST_F(Arm32DecoderStateTests,
 //         wback &&
 //            Contains(registers, Rn) => UNKNOWN,
 //         Contains(registers, Pc) => FORBIDDEN_OPERANDS],
-//       small_imm_base_wb: true,
-//       true: true,
+//       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterListTester_Case7_TestCase7) {
-  LoadRegisterListTester_Case7 tester;
-  tester.Test("cccc100110w1nnnnrrrrrrrrrrrrrrrr");
+  LoadRegisterListTester_Case7 baseline_tester;
+  NamedActual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_LDMIB_LDMED actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc100110w1nnnnrrrrrrrrrrrrrrrr");
 }
 
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
@@ -1766,7 +1758,7 @@ TEST_F(Arm32DecoderStateTests,
 
 // op(25:20)=10xxxx
 //    = {Pc: 15,
-//       actual: BranchImmediate24,
+//       actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc},
@@ -1776,21 +1768,23 @@ TEST_F(Arm32DecoderStateTests,
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
-//       relative_offset: imm32,
+//       relative_offset: imm32 + 8,
 //       rule: B,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
 //       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        BranchImmediate24Tester_Case11_TestCase11) {
-  BranchImmediate24Tester_Case11 tester;
-  tester.Test("cccc1010iiiiiiiiiiiiiiiiiiiiiiii");
+  BranchImmediate24Tester_Case11 baseline_tester;
+  NamedActual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1_B actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1010iiiiiiiiiiiiiiiiiiiiiiii");
 }
 
 // op(25:20)=11xxxx
 //    = {Lr: 14,
 //       Pc: 15,
-//       actual: BranchImmediate24,
+//       actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //       baseline: BranchImmediate24,
 //       constraints: ,
 //       defs: {Pc, Lr},
@@ -1800,15 +1794,17 @@ TEST_F(Arm32DecoderStateTests,
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
 //       relative: true,
-//       relative_offset: imm32,
+//       relative_offset: imm32 + 8,
 //       rule: BL_BLX_immediate,
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
 //       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
        BranchImmediate24Tester_Case12_TestCase12) {
-  BranchImmediate24Tester_Case12 tester;
-  tester.Test("cccc1011iiiiiiiiiiiiiiiiiiiiiiii");
+  BranchImmediate24Tester_Case12 baseline_tester;
+  NamedActual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1_BL_BLX_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1011iiiiiiiiiiiiiiiiiiiiiiii");
 }
 
 }  // namespace nacl_arm_test

@@ -26,11 +26,14 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1_instance_()
   , Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_()
   , Actual_BLX_register_cccc000100101111111111110011mmmm_case_1_instance_()
+  , Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_()
+  , Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_()
   , Actual_Bx_cccc000100101111111111110001mmmm_case_1_instance_()
   , Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1_instance_()
   , Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1_instance_()
   , Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_1_instance_()
+  , Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_instance_()
   , Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1_instance_()
   , Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1_instance_()
   , Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1_instance_()
@@ -65,6 +68,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_1_instance_()
   , Actual_SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_1_instance_()
   , Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1_instance_()
+  , Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_instance_()
   , Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1_instance_()
   , Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1_instance_()
   , Actual_STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_1_instance_()
@@ -78,7 +82,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_Unnamed_case_1_instance_()
-  , BranchImmediate24_instance_()
   , CondVfpOp_instance_()
   , DataBarrier_instance_()
   , Deprecated_instance_()
@@ -86,7 +89,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Forbidden_instance_()
   , ForbiddenCondDecoder_instance_()
   , InstructionBarrier_instance_()
-  , LoadRegisterList_instance_()
   , LoadVectorRegister_instance_()
   , LoadVectorRegisterList_instance_()
   , MoveDoubleVfpRegisterOp_instance_()
@@ -95,7 +97,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , PermanentlyUndefined_instance_()
   , PreloadRegisterImm12Op_instance_()
   , PreloadRegisterPairOp_instance_()
-  , StoreRegisterList_instance_()
   , StoreVectorRegister_instance_()
   , StoreVectorRegisterList_instance_()
   , Undefined_instance_()
@@ -496,12 +497,12 @@ const ClassDecoder& Arm32DecoderState::decode_branch_branch_with_link_and_block_
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x02500000)  ==
           0x00000000 /* op(25:20)=0xx0x0 */) {
-    return StoreRegisterList_instance_;
+    return Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x02500000)  ==
           0x00100000 /* op(25:20)=0xx0x1 */) {
-    return LoadRegisterList_instance_;
+    return Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x02500000)  ==
@@ -527,9 +528,14 @@ const ClassDecoder& Arm32DecoderState::decode_branch_branch_with_link_and_block_
     return ForbiddenCondDecoder_instance_;
   }
 
-  if ((inst.Bits() & 0x02000000)  ==
-          0x02000000 /* op(25:20)=1xxxxx */) {
-    return BranchImmediate24_instance_;
+  if ((inst.Bits() & 0x03000000)  ==
+          0x02000000 /* op(25:20)=10xxxx */) {
+    return Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x03000000)  ==
+          0x03000000 /* op(25:20)=11xxxx */) {
+    return Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
