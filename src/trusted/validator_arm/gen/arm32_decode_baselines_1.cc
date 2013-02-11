@@ -3062,6 +3062,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load2RegisterImm12Op,
@@ -3182,6 +3183,7 @@ uses(Instruction inst) const {
 //   {Pc: 15,
 //    Rt: Rt(15:12),
 //    U: U(23),
+//    actual: Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: Load2RegisterImm12Op,
@@ -3252,6 +3254,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterImm5Op,
@@ -5075,6 +5078,7 @@ uses(Instruction inst) const {
 //    Tp: 9,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: LdrImmediateOp,
@@ -5227,6 +5231,7 @@ uses(Instruction inst) const {
 //   {Pc: 15,
 //    Rt: Rt(15:12),
 //    U: U(23),
+//    actual: Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: Load2RegisterImm12Op,
@@ -5240,6 +5245,8 @@ uses(Instruction inst) const {
 //    is_literal_load: true,
 //    pattern: cccc0101u0011111ttttiiiiiiiiiiii,
 //    rule: LDR_literal,
+//    safety: [Rt  ==
+//            Pc => FORBIDDEN_OPERANDS],
 //    true: true,
 //    uses: {Pc}}
 Register LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0::
@@ -5268,6 +5275,11 @@ SafetyLevel LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
+  // 15  ==
+  //          inst(15:12) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return FORBIDDEN_OPERANDS;
+
   return MAY_BE_SAFE;
 }
 
@@ -5290,6 +5302,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterImm5Op,

@@ -98,6 +98,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "synchronization_primitives",
                      "msr_immediate_and_hints",
                      "miscellaneous_instructions",
+                     "load_store_word_and_unsigned_byte",
                      ]
 
 # The list of tables in armv7.table that should test the automatically

@@ -1206,6 +1206,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   defs := {Rt};
   uses := {Pc};
   is_literal_load := true;
+  safety := Rt == Pc => FORBIDDEN_OPERANDS;
 *LdRtPcImmB *LdRtPcImm
   safety := Rt == Pc => UNPREDICTABLE;
 
@@ -1320,7 +1321,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
         = *StRtRnImmB pattern := cccc010pu1w0nnnnttttiiiiiiiiiiii;
           rule := STRB_immediate;
 | 1     xx1x0      0    -          ~0x110
-        = *StRtRnRmSh pattern := cccc011pu1w0nnnnttttiiiiitt0mmmm;
+        = *StRtRnRmShB pattern := cccc011pu1w0nnnnttttiiiiitt0mmmm;
           rule := STRB_register;
 | 0     0x110      -    -          -
         = baseline := ForbiddenCondDecoder;

@@ -2314,6 +2314,8 @@ uses(Instruction inst) const {
 //   {base: 15,
 //    defs: {inst(15:12)},
 //    is_literal_load: true,
+//    safety: [15  ==
+//            inst(15:12) => FORBIDDEN_OPERANDS],
 //    uses: {15}}
 
 Register Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1::
@@ -2341,6 +2343,11 @@ is_literal_load(Instruction inst) const {
 SafetyLevel Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return FORBIDDEN_OPERANDS;
 
   return MAY_BE_SAFE;
 }
@@ -4098,7 +4105,9 @@ uses(Instruction inst) const {
 //         inst(21)=1
 //         else 32},
 //    safety: [15  ==
-//            inst(3:0) => UNPREDICTABLE,
+//            inst(3:0) ||
+//         15  ==
+//            inst(15:12) => UNPREDICTABLE,
 //      ArchVersion()  <
 //            6 &&
 //         inst(24)=0 ||
@@ -4152,8 +4161,11 @@ safety(Instruction inst) const {
     return DECODER_ERROR;
 
   // 15  ==
-  //          inst(3:0) => UNPREDICTABLE
-  if ((((inst.Bits() & 0x0000000F)) == (15)))
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if ((((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))))
     return UNPREDICTABLE;
 
   // inst(24)=0 ||
@@ -4903,6 +4915,120 @@ uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{inst(19:16), inst(15:12)}'
   return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(24)=0 ||
+//         inst(21)=1
+//         else 32},
+//    safety: [15  ==
+//            inst(3:0) => UNPREDICTABLE,
+//      ArchVersion()  <
+//            6 &&
+//         inst(24)=0 ||
+//         inst(21)=1 &&
+//         inst(19:16)  ==
+//            inst(3:0) => UNPREDICTABLE,
+//      inst(24)=0 &&
+//         inst(21)=1 => DECODER_ERROR,
+//      inst(24)=0 ||
+//         inst(21)=1 &&
+//         (15  ==
+//            inst(19:16) ||
+//         inst(15:12)  ==
+//            inst(19:16)) => UNPREDICTABLE,
+//      inst(24)=1 => FORBIDDEN],
+//    uses: {inst(3:0), inst(19:16), inst(15:12)}}
+
+Register Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)
+  //       if inst(24)=0 ||
+  //       inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((inst.Bits() & 0x0000000F)) == (15)))
+    return UNPREDICTABLE;
+
+  // inst(24)=0 ||
+  //       inst(21)=1 &&
+  //       (15  ==
+  //          inst(19:16) ||
+  //       inst(15:12)  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if ((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)) &&
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+    return UNPREDICTABLE;
+
+  // ArchVersion()  <
+  //          6 &&
+  //       inst(24)=0 ||
+  //       inst(21)=1 &&
+  //       inst(19:16)  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       (((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  // inst(24)=1 => FORBIDDEN
+  if ((inst.Bits() & 0x01000000)  ==
+          0x01000000)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(19:16), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
    Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }

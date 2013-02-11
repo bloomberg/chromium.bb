@@ -2960,6 +2960,7 @@ class Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load2RegisterImm12Op,
@@ -3024,6 +3025,7 @@ class Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1
 //   {Pc: 15,
 //    Rt: Rt(15:12),
 //    U: U(23),
+//    actual: Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: Load2RegisterImm12Op,
@@ -3094,6 +3096,7 @@ class Actual_LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_1
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterImm5Op,
@@ -4106,6 +4109,7 @@ class Actual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1
 //    Tp: 9,
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: LdrImmediateOp,
@@ -4169,12 +4173,15 @@ class Actual_LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_1
 //   {base: 15,
 //    defs: {inst(15:12)},
 //    is_literal_load: true,
+//    safety: [15  ==
+//            inst(15:12) => FORBIDDEN_OPERANDS],
 //    uses: {15}}
 //
 // Baseline:
 //   {Pc: 15,
 //    Rt: Rt(15:12),
 //    U: U(23),
+//    actual: Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Pc,
 //    baseline: Load2RegisterImm12Op,
@@ -4188,6 +4195,8 @@ class Actual_LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_1
 //    is_literal_load: true,
 //    pattern: cccc0101u0011111ttttiiiiiiiiiiii,
 //    rule: LDR_literal,
+//    safety: [Rt  ==
+//            Pc => FORBIDDEN_OPERANDS],
 //    true: true,
 //    uses: {Pc}}
 class Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1
@@ -4243,6 +4252,7 @@ class Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Load3RegisterImm5Op,
@@ -7037,6 +7047,7 @@ class Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store2RegisterImm12Op,
@@ -7096,7 +7107,9 @@ class Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1
 //         inst(21)=1
 //         else 32},
 //    safety: [15  ==
-//            inst(3:0) => UNPREDICTABLE,
+//            inst(3:0) ||
+//         15  ==
+//            inst(15:12) => UNPREDICTABLE,
 //      ArchVersion()  <
 //            6 &&
 //         inst(24)=0 ||
@@ -7123,6 +7136,7 @@ class Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store3RegisterImm5Op,
@@ -7147,60 +7161,7 @@ class Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1
 //    rule: STRB_register,
 //    safety: [P(24)=0 &&
 //         W(21)=1 => DECODER_ERROR,
-//      Rm  ==
-//            Pc => UNPREDICTABLE,
-//      wback &&
-//         (Rn  ==
-//            Pc ||
-//         Rn  ==
-//            Rt) => UNPREDICTABLE,
-//      ArchVersion()  <
-//            6 &&
-//         wback &&
-//         Rn  ==
-//            Rm => UNPREDICTABLE,
-//      index => FORBIDDEN],
-//    shift: DecodeImmShift(type, imm5),
-//    type: type(6:5),
-//    uses: {Rm, Rn, Rt},
-//    wback: P(24)=0 ||
-//         W(21)=1}
-//
-// Baseline:
-//   {None: 32,
-//    P: P(24),
-//    Pc: 15,
-//    Rm: Rm(3:0),
-//    Rn: Rn(19:16),
-//    Rt: Rt(15:12),
-//    U: U(23),
-//    W: W(21),
-//    add: U(23)=1,
-//    base: Rn,
-//    baseline: Store3RegisterImm5Op,
-//    cond: cond(31:28),
-//    constraints: ,
-//    defs: {base
-//         if wback
-//         else None},
-//    fields: [cond(31:28),
-//      P(24),
-//      U(23),
-//      W(21),
-//      Rn(19:16),
-//      Rt(15:12),
-//      imm5(11:7),
-//      type(6:5),
-//      Rm(3:0)],
-//    generated_baseline: STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0,
-//    imm5: imm5(11:7),
-//    index: P(24)=1,
-//    pattern: cccc011pd0w0nnnnttttiiiiitt0mmmm,
-//    rule: STR_register,
-//    safety: [P(24)=0 &&
-//         W(21)=1 => DECODER_ERROR,
-//      Rm  ==
-//            Pc => UNPREDICTABLE,
+//      Pc in {Rm, Rt} => UNPREDICTABLE,
 //      wback &&
 //         (Rn  ==
 //            Pc ||
@@ -7786,6 +7747,7 @@ class Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store2RegisterImm12Op,
@@ -7832,6 +7794,99 @@ class Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1);
+};
+
+// Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(24)=0 ||
+//         inst(21)=1
+//         else 32},
+//    safety: [15  ==
+//            inst(3:0) => UNPREDICTABLE,
+//      ArchVersion()  <
+//            6 &&
+//         inst(24)=0 ||
+//         inst(21)=1 &&
+//         inst(19:16)  ==
+//            inst(3:0) => UNPREDICTABLE,
+//      inst(24)=0 &&
+//         inst(21)=1 => DECODER_ERROR,
+//      inst(24)=0 ||
+//         inst(21)=1 &&
+//         (15  ==
+//            inst(19:16) ||
+//         inst(15:12)  ==
+//            inst(19:16)) => UNPREDICTABLE,
+//      inst(24)=1 => FORBIDDEN],
+//    uses: {inst(3:0), inst(19:16), inst(15:12)}}
+//
+// Baseline:
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    actual: Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1,
+//    add: U(23)=1,
+//    base: Rn,
+//    baseline: Store3RegisterImm5Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    generated_baseline: STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0,
+//    imm5: imm5(11:7),
+//    index: P(24)=1,
+//    pattern: cccc011pd0w0nnnnttttiiiiitt0mmmm,
+//    rule: STR_register,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Rm  ==
+//            Pc => UNPREDICTABLE,
+//      wback &&
+//         (Rn  ==
+//            Pc ||
+//         Rn  ==
+//            Rt) => UNPREDICTABLE,
+//      ArchVersion()  <
+//            6 &&
+//         wback &&
+//         Rn  ==
+//            Rm => UNPREDICTABLE,
+//      index => FORBIDDEN],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rm, Rn, Rt},
+//    wback: P(24)=0 ||
+//         W(21)=1}
+class Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1
+     : public ClassDecoder {
+ public:
+  Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1);
 };
 
 // Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1

@@ -726,6 +726,7 @@ class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store2RegisterImm12Op,
@@ -786,6 +787,7 @@ class STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store3RegisterImm5Op,
@@ -810,8 +812,7 @@ class STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0
 //    rule: STRB_register,
 //    safety: [P(24)=0 &&
 //         W(21)=1 => DECODER_ERROR,
-//      Rm  ==
-//            Pc => UNPREDICTABLE,
+//      Pc in {Rm, Rt} => UNPREDICTABLE,
 //      wback &&
 //         (Rn  ==
 //            Pc ||
@@ -1300,6 +1301,7 @@ class STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store2RegisterImm12Op,
@@ -1358,6 +1360,7 @@ class STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    W: W(21),
+//    actual: Actual_STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
 //    baseline: Store3RegisterImm5Op,
