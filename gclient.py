@@ -1719,6 +1719,10 @@ def Main(argv):
         '\nYour python version %s is unsupported, please upgrade.\n' %
         sys.version.split(' ', 1)[0])
     return 2
+  if not sys.executable:
+    print >> sys.stderr, (
+        '\nPython cannot find the location of it\'s own executable.\n')
+    return 2
   colorama.init()
   try:
     # Make stdout auto-flush so buildbot doesn't kill us during lengthy
