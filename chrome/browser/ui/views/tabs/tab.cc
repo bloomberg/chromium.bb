@@ -243,6 +243,25 @@ const double kProjectingFaviconResizeScale = 0.75;
 // Scale to resize the projection sheet glow by.
 const double kProjectingGlowResizeScale = 2.0;
 
+void DrawIconAtLocation(gfx::Canvas* canvas,
+                        const gfx::ImageSkia& image,
+                        int image_offset,
+                        int dst_x,
+                        int dst_y,
+                        int icon_width,
+                        int icon_height,
+                        bool filter,
+                        const SkPaint& paint) {
+  // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
+  canvas->Save();
+  canvas->ClipRect(gfx::Rect(dst_x, dst_y, icon_width, icon_height));
+  canvas->DrawImageInt(image,
+                       image_offset, 0, icon_width, icon_height,
+                       dst_x, dst_y, icon_width, icon_height,
+                       filter, paint);
+  canvas->Restore();
+}
+
 // Draws the icon image at the center of |bounds|.
 void DrawIconCenter(gfx::Canvas* canvas,
                     const gfx::ImageSkia& image,
@@ -255,14 +274,23 @@ void DrawIconCenter(gfx::Canvas* canvas,
   // Center the image within bounds.
   int dst_x = bounds.x() - (icon_width - bounds.width()) / 2;
   int dst_y = bounds.y() - (icon_height - bounds.height()) / 2;
-  // NOTE: the clipping is a work around for 69528, it shouldn't be necessary.
-  canvas->Save();
-  canvas->ClipRect(gfx::Rect(dst_x, dst_y, icon_width, icon_height));
-  canvas->DrawImageInt(image,
-                       image_offset, 0, icon_width, icon_height,
-                       dst_x, dst_y, icon_width, icon_height,
-                       filter, paint);
-  canvas->Restore();
+  DrawIconAtLocation(canvas, image, image_offset, dst_x, dst_y, icon_width,
+                     icon_height, filter, paint);
+}
+
+// Draws the icon image at the bottom right corner of |bounds|.
+void DrawIconBottomRight(gfx::Canvas* canvas,
+                         const gfx::ImageSkia& image,
+                         int image_offset,
+                         int icon_width,
+                         int icon_height,
+                         const gfx::Rect& bounds,
+                         bool filter,
+                         const SkPaint& paint) {
+  int dst_x = bounds.x() + bounds.width() - icon_width;
+  int dst_y = bounds.y() + bounds.height() - icon_height;
+  DrawIconAtLocation(canvas, image, image_offset, dst_x, dst_y, icon_width,
+                     icon_height, filter, paint);
 }
 
 chrome::HostDesktopType GetHostDesktopType(views::View* view) {
@@ -1409,9 +1437,9 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
                 TabRendererData::CAPTURE_STATE_RECORDING) {
       // If recording, fade the recording icon on top of the favicon.
       gfx::ImageSkia recording_dot(*tp->GetImageSkiaNamed(IDR_TAB_RECORDING));
-      DrawIconCenter(canvas, recording_dot, 0,
-                      recording_dot.width(), recording_dot.height(),
-                      bounds, false, paint);
+      DrawIconBottomRight(canvas, recording_dot, 0,
+                          recording_dot.width(), recording_dot.height(),
+                          bounds, false, paint);
     } else {
       NOTREACHED();
     }
