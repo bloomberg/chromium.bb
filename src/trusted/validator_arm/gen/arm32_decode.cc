@@ -2133,7 +2133,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
           0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_instance_;
+    return Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2142,7 +2142,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
           0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_instance_;
+    return Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2151,7 +2151,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
           0x00000000 /* op2(7:5)=0xx */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_instance_;
+    return Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -2160,7 +2160,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
           0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_instance_;
+    return Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -2169,7 +2169,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
           0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_instance_;
+    return Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -2178,7 +2178,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
           0x00000000 /* op2(7:5)=0xx */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_instance_;
+    return Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1_instance_;
   }
 
   if (true) {
