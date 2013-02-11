@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -23,11 +24,13 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     const std::string& session_index,
     const std::string& email,
     const std::string& password,
-    StartSyncMode start_mode)
+    StartSyncMode start_mode,
+    bool force_same_tab_navigation)
     : profile_(profile),
       browser_(browser),
       signin_tracker_(profile_, this),
-      start_mode_(start_mode) {
+      start_mode_(start_mode),
+      force_same_tab_navigation_(force_same_tab_navigation) {
   DCHECK(profile_);
 
   // Let the sync service know that setup is in progress so it doesn't start
@@ -83,7 +86,11 @@ void OneClickSigninSyncStarter::SigninSuccess() {
       } else if (browser_) {
         if (profile_sync_service) {
           // Need to navigate to the settings page and display the sync UI.
-          chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+          if (force_same_tab_navigation_) {
+            ShowSyncSettingsPageOnSameTab();
+          } else {
+            chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+          }
         } else {
           // Sync is disabled - just display the settings page.
           chrome::ShowSettings(browser_);
@@ -103,4 +110,14 @@ ProfileSyncService* OneClickSigninSyncStarter::GetProfileSyncService() {
   if (profile_->IsSyncAccessible())
     service = ProfileSyncServiceFactory::GetForProfile(profile_);
   return service;
+}
+
+void OneClickSigninSyncStarter::ShowSyncSettingsPageOnSameTab() {
+  std::string url = std::string(chrome::kChromeUISettingsURL) +
+      chrome::kSyncSetupSubPage;
+  chrome::NavigateParams params(
+      browser_, GURL(url), content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  params.disposition = CURRENT_TAB;
+  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  chrome::Navigate(&params);
 }

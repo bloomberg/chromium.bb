@@ -98,13 +98,15 @@ struct StartSyncArgs {
                 OneClickSigninHelper::AutoAccept auto_accept,
                 const std::string& session_index,
                 const std::string& email,
-                const std::string& password)
+                const std::string& password,
+                bool last_minute_source_change)
       : profile(profile),
         browser(browser),
         auto_accept(auto_accept),
         session_index(session_index),
         email(email),
-        password(password) {
+        password(password),
+        last_minute_source_change(last_minute_source_change) {
   }
 
   Profile* profile;
@@ -113,6 +115,7 @@ struct StartSyncArgs {
   std::string session_index;
   std::string email;
   std::string password;
+  bool last_minute_source_change;
 };
 
 // Start syncing with the given user information.
@@ -126,7 +129,9 @@ void StartSync(const StartSyncArgs& args,
   }
   // The starter deletes itself once its done.
   new OneClickSigninSyncStarter(args.profile, args.browser, args.session_index,
-                                args.email, args.password, start_mode);
+                                args.email, args.password, start_mode,
+                                /* force_same_tab_navigation */
+                                args.last_minute_source_change);
 
   int action = one_click_signin::HISTOGRAM_MAX;
   switch (args.auto_accept) {
@@ -159,7 +164,6 @@ void StartSync(const StartSyncArgs& args,
 }
 
 void StartExplicitSync(const StartSyncArgs& args,
-                       bool last_minute_source_change,
                        content::WebContents* contents,
                        OneClickSigninSyncStarter::StartSyncMode start_mode,
                        int button) {
@@ -170,17 +174,6 @@ void StartExplicitSync(const StartSyncArgs& args,
     chrome::ShowSettings(args.browser);
   } else {
     StartSync(args, start_mode);
-
-    // If this was a last minute switch to the settings page, this means the
-    // user started with first-run/NTP/wrench menu, and checked the "configure
-    // first" checkbox.  Replace the default blank continue page with an
-    // about:blank page, so that when the settings page is displayed, it
-    // reuses the tab.
-    if (last_minute_source_change) {
-      contents->GetController().LoadURL(
-          GURL("about:blank"), content::Referrer(),
-          content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-    }
   }
 }
 
@@ -458,7 +451,8 @@ bool OneClickInfoBarDelegateImpl::Accept() {
           base::Bind(&StartSync,
                      StartSyncArgs(profile, browser,
                                    OneClickSigninHelper::AUTO_ACCEPT_NONE,
-                                   session_index_, email_, password_)));
+                                   session_index_, email_, password_,
+                                   false /* last_minute_source_change */)));
   button_pressed_ = true;
   return true;
 }
@@ -1047,16 +1041,22 @@ void OneClickSigninHelper::DidStopLoading(
           bubble_type,
           base::Bind(&StartSync,
                      StartSyncArgs(profile, browser, auto_accept_,
-                                   session_index_, email_, password_)));
+                                   session_index_, email_, password_,
+                                   false /* last_minute_source_change */)));
       break;
     case AUTO_ACCEPT_CONFIGURE:
       SigninManager::DisableOneClickSignIn(profile);
       StartSync(
           StartSyncArgs(profile, browser, auto_accept_, session_index_, email_,
-                        password_),
+                        password_, false /* last_minute_source_change */),
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       break;
     case AUTO_ACCEPT_EXPLICIT: {
+      OneClickSigninSyncStarter::StartSyncMode start_mode =
+          source_ == SyncPromoUI::SOURCE_SETTINGS ?
+              OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
+              OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
+
       // If the new email address is different from the email address that
       // just signed in, show a confirmation dialog.
       std::string last_email =
@@ -1069,25 +1069,21 @@ void OneClickSigninHelper::DidStopLoading(
             base::Bind(
                 &StartExplicitSync,
                 StartSyncArgs(profile, browser, auto_accept_,
-                              session_index_, email_, password_),
-                last_minute_source_change,
+                              session_index_, email_, password_,
+                              last_minute_source_change),
                 contents,
-                source_ == SyncPromoUI::SOURCE_SETTINGS ?
-                    OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
-                    OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS));
+                start_mode));
       } else {
         StartExplicitSync(
             StartSyncArgs(profile, browser, auto_accept_, session_index_,
-                          email_, password_),
-            last_minute_source_change,
+                          email_, password_, last_minute_source_change),
             contents,
-            source_ == SyncPromoUI::SOURCE_SETTINGS ?
-                OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
-                OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
+            start_mode,
             IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
       }
 
-      if (SyncPromoUI::GetSourceForSyncPromoURL(continue_url_) ==
+      if (last_minute_source_change &&
+          SyncPromoUI::GetSourceForSyncPromoURL(continue_url_) ==
           SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
         redirect_url_ = continue_url_;
         ProfileSyncService* sync_service =

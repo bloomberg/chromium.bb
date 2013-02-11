@@ -647,8 +647,6 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
   NavigateAndCommit(GURL("https://chrome.google.com/webstore?source=3"));
   helper->DidStopLoading(rvh());
 
-  EXPECT_EQ(GURL(chrome::kAboutBlankURL), contents->GetURL());
-
   helper->OnStateChanged();
   EXPECT_EQ(GURL(continueUrl), contents->GetURL());
   EXPECT_EQ("user@gmail.com", signin_manager_->GetAuthenticatedUsername());

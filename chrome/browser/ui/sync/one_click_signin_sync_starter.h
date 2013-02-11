@@ -38,7 +38,8 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
                             const std::string& session_index,
                             const std::string& email,
                             const std::string& password,
-                            StartSyncMode start_mode);
+                            StartSyncMode start_mode,
+                            bool force_same_tab_navigation);
 
  private:
   virtual ~OneClickSigninSyncStarter();
@@ -50,10 +51,13 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer {
 
   ProfileSyncService* GetProfileSyncService();
 
+  void ShowSyncSettingsPageOnSameTab();
+
   Profile* profile_;
   Browser* browser_;
   SigninTracker signin_tracker_;
   StartSyncMode start_mode_;
+  bool force_same_tab_navigation_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninSyncStarter);
 };
