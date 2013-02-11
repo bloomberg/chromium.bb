@@ -14,8 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -328,10 +326,10 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
   entry->GetSSL().cert_id = cert_id;
   entry->GetSSL().cert_status = ssl_info_.cert_status;
   entry->GetSSL().security_bits = ssl_info_.security_bits;
-#if !defined(OS_ANDROID)
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  browser->VisibleSSLStateChanged(web_contents_);
-#endif  // !defined(OS_ANDROID)
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
+      content::Source<NavigationController>(&web_contents_->GetController()),
+      content::NotificationService::NoDetails());
 }
 
 // Matches events defined in ssl_error.html and ssl_roadblock.html.

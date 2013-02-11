@@ -25,7 +25,6 @@ class SSLInfo;
 }
 
 namespace content {
-class BrowserContext;
 class NavigationEntryImpl;
 class NavigationControllerImpl;
 class SSLPolicy;
@@ -59,8 +58,10 @@ class SSLManager : public NotificationObserver {
       const net::SSLInfo& ssl_info,
       bool fatal);
 
-  // Called when SSL state for a host or tab changes.
-  static void NotifySSLInternalStateChanged(BrowserContext* context);
+  // Called when SSL state for a host or tab changes.  Broadcasts the
+  // SSL_INTERNAL_STATE_CHANGED notification.
+  static void NotifySSLInternalStateChanged(
+      NavigationControllerImpl* controller);
 
   // Construct an SSLManager for the specified tab.
   // If |delegate| is NULL, SSLPolicy::GetDefaultPolicy() is used.
@@ -80,7 +81,6 @@ class SSLManager : public NotificationObserver {
   void DidCommitProvisionalLoad(const NotificationDetails& details);
 
   // Insecure content entry point.
-  void DidDisplayInsecureContent();
   void DidRunInsecureContent(const std::string& security_origin);
 
   // Entry point for navigation.  This function begins the process of updating
@@ -99,6 +99,7 @@ class SSLManager : public NotificationObserver {
   void DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details);
   void DidStartResourceResponse(ResourceRequestDetails* details);
   void DidReceiveResourceRedirect(ResourceRedirectDetails* details);
+  void DidChangeSSLInternalState();
 
   // Update the NavigationEntry with our current state.
   void UpdateEntry(NavigationEntryImpl* entry);

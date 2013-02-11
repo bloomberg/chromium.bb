@@ -249,9 +249,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void DidShowFullscreenWidget(int routing_id) {}
   virtual void DidDestroyFullscreenWidget(int routing_id) {}
 
-  // Invoked when visible SSL state (as defined by SSLStatus) changes.
-  virtual void DidChangeVisibleSSLState() {}
-
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

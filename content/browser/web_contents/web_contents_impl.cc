@@ -2204,8 +2204,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
 void WebContentsImpl::OnDidDisplayInsecureContent() {
   RecordAction(UserMetricsAction("SSL.DisplayedInsecureContent"));
   displayed_insecure_content_ = true;
-  SSLManager::NotifySSLInternalStateChanged(
-      GetController().GetBrowserContext());
+  SSLManager::NotifySSLInternalStateChanged(&GetController());
 }
 
 void WebContentsImpl::OnDidRunInsecureContent(
@@ -2217,8 +2216,7 @@ void WebContentsImpl::OnDidRunInsecureContent(
     RecordAction(UserMetricsAction("SSL.RanInsecureContentGoogle"));
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);
   displayed_insecure_content_ = true;
-  SSLManager::NotifySSLInternalStateChanged(
-      GetController().GetBrowserContext());
+  SSLManager::NotifySSLInternalStateChanged(&GetController());
 }
 
 void WebContentsImpl::OnDocumentLoadedInFrame(int64 frame_id) {
@@ -2493,11 +2491,6 @@ void WebContentsImpl::DidBlock3DAPIs(const GURL& url,
                                      ThreeDAPIType requester) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidBlock3DAPIs(url, requester));
-}
-
-void WebContentsImpl::DidChangeVisibleSSLState() {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidChangeVisibleSSLState());
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

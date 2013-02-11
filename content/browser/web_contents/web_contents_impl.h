@@ -178,9 +178,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   void DidBlock3DAPIs(const GURL& url, ThreeDAPIType requester);
 
-  // Invoked when visible SSL state (as defined by SSLStatus) changes.
-  void DidChangeVisibleSSLState();
-
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(WebContentsDelegate* delegate) OVERRIDE;
