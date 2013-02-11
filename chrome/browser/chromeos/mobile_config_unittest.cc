@@ -32,7 +32,7 @@ const char kGoodMobileConfig[] =
     "        {\n"
     "          \"deal_id\" : \"0\",\n"
     "          \"locales\" : [ \"en-US\", ],\n"
-    "          \"expire_date\" : \"31/12/12 0:0\",\n"
+    "          \"expire_date\" : \"31/12/2099 0:0\",\n"
     "          \"notification_count\" : 1,\n"
     "          \"localized_content\" : {\n"
     "            \"en-US\" : {\n"
@@ -98,7 +98,7 @@ const char kLocalMobileConfig[] =
     "        {\n"
     "          \"deal_id\" : \"1\",\n"
     "          \"locales\" : [ \"en-GB\", ],\n"
-    "          \"expire_date\" : \"31/12/13 0:0\",\n"
+    "          \"expire_date\" : \"31/12/2099 0:0\",\n"
     "          \"notification_count\" : 2,\n"
     "          \"localized_content\" : {\n"
     "            \"en-GB\" : {\n"
@@ -123,8 +123,7 @@ const char kLocalMobileConfig[] =
 
 namespace chromeos {
 
-// This test crashes consistently with no obvious cause; see crbug.com/167926
-TEST(MobileConfigTest, DISABLED_Basic) {
+TEST(MobileConfigTest, Basic) {
   MobileConfig config(kGoodMobileConfig, "en-US");
   EXPECT_TRUE(config.IsReady());
 
@@ -148,7 +147,7 @@ TEST(MobileConfigTest, DISABLED_Basic) {
             deal->GetLocalizedString("en", "notification_text"));
 
   base::Time reference_time;
-  base::Time::FromString("31/12/12 0:00", &reference_time);
+  base::Time::FromString("31/12/2099 0:00", &reference_time);
   EXPECT_EQ(reference_time, deal->expire_date());
 
   const MobileConfig::LocaleConfig* locale_config;
@@ -233,7 +232,7 @@ TEST(MobileConfigTest, LocalConfig) {
   EXPECT_EQ("default_text from local.",
             deal->GetLocalizedString("en", "notification_text"));
   base::Time reference_time;
-  base::Time::FromString("31/12/13 0:00", &reference_time);
+  base::Time::FromString("31/12/2099 0:00", &reference_time);
   EXPECT_EQ(reference_time, deal->expire_date());
 
   // Now reload same global/local config files but with proper initial locale.
