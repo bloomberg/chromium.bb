@@ -966,6 +966,8 @@ willPositionSheet:(NSWindow*)sheet
   }
 
   if (floatingBarBackingView_) {
+    if ([floatingBarBackingView_ cr_isBelowView:[self tabContentArea]])
+      [floatingBarBackingView_ removeFromSuperview];
     if ([self placeBookmarkBarBelowInfoBar]) {
       [contentView cr_ensureSubview:floatingBarBackingView_
                        isPositioned:NSWindowAbove

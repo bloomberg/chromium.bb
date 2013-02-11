@@ -321,6 +321,30 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   VerifyZOrder(view_list);
 }
 
+// Verify that if the fullscreen floating bar view is below the tab content area
+// then calling |updateSubviewZOrder:| will correctly move back above.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       FloatingBarBelowContentView) {
+  chrome::ToggleFullscreenMode(browser());
+
+  NSView* fullscreen_floating_bar =
+      GetViewWithID(VIEW_ID_FULLSCREEN_FLOATING_BAR);
+  [fullscreen_floating_bar removeFromSuperview];
+  [[[controller() window] contentView] addSubview:fullscreen_floating_bar
+                                       positioned:NSWindowBelow
+                                       relativeTo:nil];
+  [controller() updateSubviewZOrder:[controller() inPresentationMode]];
+
+  std::vector<ViewID> view_list;
+  view_list.push_back(VIEW_ID_INFO_BAR);
+  view_list.push_back(VIEW_ID_TAB_CONTENT_AREA);
+  view_list.push_back(VIEW_ID_FULLSCREEN_FLOATING_BAR);
+  view_list.push_back(VIEW_ID_BOOKMARK_BAR);
+  view_list.push_back(VIEW_ID_TOOLBAR);
+  view_list.push_back(VIEW_ID_DOWNLOAD_SHELF);
+  VerifyZOrder(view_list);
+}
+
 // Verify that in non-instant presentation mode the content area is beneath
 // the bookmark bar and info bar.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, ContentOffset) {
