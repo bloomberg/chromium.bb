@@ -22,7 +22,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -88,9 +89,13 @@ void GoBackToSafety(content::WebContents* web_contents) {
   }
 
   // If we can't go back (because we opened a new tab), try to close the tab.
-  // If this is the last tab, open a new window.
-  if (BrowserList::size() == 1) {
-    Browser* browser = *(BrowserList::begin());
+  // If this is the last tab on this desktop, open a new window.
+  chrome::HostDesktopType host_desktop_type =
+      chrome::GetHostDesktopTypeForNativeView(web_contents->GetNativeView());
+  const chrome::BrowserListImpl* browser_list =
+      chrome::BrowserListImpl::GetInstance(host_desktop_type);
+  if (browser_list->size() == 1) {
+    Browser* browser = browser_list->get(0);
     DCHECK(browser == chrome::FindBrowserWithWebContents(web_contents));
     if (browser->tab_strip_model()->count() == 1)
       chrome::NewEmptyWindow(browser->profile());
