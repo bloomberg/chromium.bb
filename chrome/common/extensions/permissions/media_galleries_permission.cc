@@ -19,6 +19,7 @@ namespace extensions {
 const char MediaGalleriesPermission::kAllAutoDetectedPermission[] =
     "allAutoDetected";
 const char MediaGalleriesPermission::kReadPermission[] = "read";
+const char MediaGalleriesPermission::kWritePermission[] = "write";
 
 MediaGalleriesPermission::MediaGalleriesPermission(
     const APIPermissionInfo* info)
@@ -35,10 +36,14 @@ bool MediaGalleriesPermission::FromValue(const base::Value* value) {
     return false;
   }
 
+  bool has_read = false;
+  bool has_write = false;
   for (std::set<MediaGalleriesPermissionData>::const_iterator it =
       data_set_.begin(); it != data_set_.end(); ++it) {
     if (it->permission() == kReadPermission) {
-      continue;
+      has_read = true;
+    } else if (it->permission() == kWritePermission) {
+      has_write = true;
     } else if (it->permission() == kAllAutoDetectedPermission) {
       continue;
     } else {
@@ -50,7 +55,8 @@ bool MediaGalleriesPermission::FromValue(const base::Value* value) {
     }
   }
 
-  return true;
+  // Read and write permissions are mutually exclusive.
+  return (!has_read || !has_write);
 }
 
 PermissionMessages MediaGalleriesPermission::GetMessages() const {
@@ -59,6 +65,7 @@ PermissionMessages MediaGalleriesPermission::GetMessages() const {
 
   bool has_all_auto_detected = false;
   bool has_read = false;
+  bool has_write = false;
 
   for (std::set<MediaGalleriesPermissionData>::const_iterator it =
       data_set_.begin(); it != data_set_.end(); ++it) {
@@ -66,16 +73,24 @@ PermissionMessages MediaGalleriesPermission::GetMessages() const {
       has_all_auto_detected = true;
     else if (it->permission() == kReadPermission)
       has_read = true;
+    else if (it->permission() == kWritePermission)
+      has_write = true;
   }
+  // FromValue() should never allow this.
+  DCHECK(!has_read || !has_write);
 
   // If |has_all_auto_detected| is false, then Chrome will prompt the user at
   // runtime when the extension call the getMediaGalleries API.
-  if (!has_all_auto_detected || !has_read)
+  if (!has_all_auto_detected || !(has_read || has_write))
     return result;
 
-  PermissionMessage::ID permission_id =
+  // Separate PermissionMessage IDs for read and write. Otherwise an extension
+  // can silently gain new access capabilities.
+  PermissionMessage::ID permission_id = has_write ?
+      PermissionMessage::kMediaGalleriesAllGalleriesWrite :
       PermissionMessage::kMediaGalleriesAllGalleriesRead;
-  int message_id =
+  int message_id = has_write ?
+      IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE_ALL_GALLERIES :
       IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_ALL_GALLERIES;
   result.push_back(
       PermissionMessage(permission_id, l10n_util::GetStringUTF16(message_id)));

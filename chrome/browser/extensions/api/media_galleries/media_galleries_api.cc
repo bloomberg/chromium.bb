@@ -143,6 +143,10 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
       MediaGalleriesPermission::kReadPermission);
   bool has_read_permission = GetExtension()->CheckAPIPermissionWithParam(
       APIPermission::kMediaGalleries, &read_param);
+  MediaGalleriesPermission::CheckParam write_param(
+      MediaGalleriesPermission::kWritePermission);
+  bool has_write_permission = GetExtension()->CheckAPIPermissionWithParam(
+      APIPermission::kMediaGalleries, &write_param);
 
   const int child_id = rvh->GetProcess()->GetID();
   std::set<std::string> file_system_names;
@@ -181,12 +185,16 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     if (filesystems[i].path.empty())
       continue;
 
-    if (has_read_permission) {
+    if (has_read_permission || has_write_permission) {
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
       if (!policy->CanReadFile(child_id, filesystems[i].path))
         policy->GrantReadFile(child_id, filesystems[i].path);
       policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
+      if (has_write_permission) {
+        policy->GrantWriteFileSystem(child_id, filesystems[i].fsid);
+        policy->GrantCreateFileForFileSystem(child_id, filesystems[i].fsid);
+      }
     }
   }
 
