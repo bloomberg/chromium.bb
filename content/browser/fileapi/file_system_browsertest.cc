@@ -87,7 +87,7 @@ class FileSystemLayoutTest : public InProcessBrowserLayoutTest {
       InProcessBrowserLayoutTest(
           base::FilePath(),
           base::FilePath(
-              FILE_PATH_LITERAL("fast/filesystem_temp")
+              FILE_PATH_LITERAL("fast/filesystem")
                   ).NormalizePathSeparators()) {
   }
 };

@@ -232,7 +232,7 @@ deps = {
   "src/content/test/data/layout_tests/LayoutTests/fast/files":
     Var("webkit_trunk") + "/LayoutTests/fast/files@" +
     Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/fast/filesystem_temp":
+  "src/content/test/data/layout_tests/LayoutTests/fast/filesystem":
     Var("webkit_trunk") + "/LayoutTests/fast/filesystem@" +
     Var("webkit_revision"),
   "src/content/test/data/layout_tests/LayoutTests/media":
