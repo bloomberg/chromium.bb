@@ -60,6 +60,7 @@ const char* const kPaths[] = {
   chrome::kChromeUIPluginsHost,
   chrome::kChromeUISettingsHost,
   chrome::kChromeUITracingHost,
+  chrome::kChromeUIWebRTCInternalsHost,
 #endif
 #if defined(OS_WIN)
   chrome::kChromeUIConflictsHost,
