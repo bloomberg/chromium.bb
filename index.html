@@ -220,36 +220,6 @@ enable the existing justification logic in elements that have
 modification to the justification logic itself to match how Microsoft Word
 software works.</p>
 
-<h3><a name="bugfix-listMarkerAlignment">bugfix/listMarkerAlignment</a> (Shezan Baig; D37088493; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)</h3>
-<p>Open <a href="repros/listMarkerAlignment.html">this link</a> in Chrome.  The
-list markers are all left-aligned, even though the second and third
-<code>li</code> elements are not.</p>
-
-<h3><a name="bugfix-listMarkerFont">bugfix/listMarkerFont</a> (Shezan Baig; D32534047)</h3>
-<p>Note: This branch has been miscategorized as a bugfix, it is actually a feature
-that we wanted specifically for our product, so it is unlikely that we will
-send this upstream.</p>
-<p>This branch makes it so that the font used for the list marker will be the same
-as the first character in the list item.</p>
-<p>Open <a href="repros/listMarkerFont.html">this link</a> in Chrome.  The list
-item will be selected.  When you click <code>BIGGER</code> or
-<code>SMALLER</code> to change the font size, the list marker's font does not
-change with it.  In our product, we wanted the list marker's font to match the
-first character in the list item.</p>
-
-<h3><a name="bugfix-listMarkerSelection">bugfix/listMarkerSelection</a> (Shezan Baig; D32422051)</h3>
-<p>Note: This branch has been miscategorized as a bugfix, it is actually a feature
-that we wanted specifically for our product, so it is unlikely that we will
-send this upstream.</p>
-<p>This branch makes it so that list markers are not highlighted when the list
-item is selected.  This matches the behavior in Firefox and Microsoft Word
-software.</p>
-<p>Open <a href="repros/listMarkerSelection.html">this link</a> in Chrome.
-Notice that the list markers are highlighted.  Additionally, notice that the
-list marker highlight does not honor the <code>::selection</code> background
-color specified in the stylesheet.  In our product, we didn't want the list
-markers to be highlighted when selected.</p>
-
 <h3><a name="bugfix-listifySpans">bugfix/listifySpans</a> (Shezan Baig; D37507315)</h3>
 <p>Open <a href="repros/listifySpans.html">this link</a> in Chrome.  The second
 and third list items will be selected.  Click on the <code>OL</code> button to
@@ -469,6 +439,47 @@ assuption that there is a character after the end of paragraph, which is an
 invalid assumption now.  This leads to an invalid memory access and sometimes
 causes some nodes to disappear.</p>
 
+<h3><a name="feature-listMarkerEnhancements">feature/listMarkerEnhancements</a> (Shezan Baig; D37088493; D32534047; D32422051; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)</h3>
+<p>This branch makes a bunch of enhancements to list markers that were needed
+in our product, so it is unlikely that many of them will be sent upstream.</p>
+<p>The following changes are included in this branch:
+<ul>
+    <li><b>Fixed alignment for list markers</b><br/>
+    Open <a href="repros/listMarkerAlignment.html">this link</a> in Chrome.
+    The  list markers are all left-aligned, even though the second and third
+    <code>li</code> elements are not.  This particular change may be able to
+    upstream because there is already a WebKit bug report for it.
+    </li>
+    <li><b>The font used for the list marker will be the same as the first
+        character in the list item.</b><br/>
+    Open <a href="repros/listMarkerFont.html">this link</a> in Chrome.  The
+    list item will be selected.  When you click <code>BIGGER</code> or
+    <code>SMALLER</code> to change the font size, the list marker's font does
+    not change with it.  In our product, we wanted the list marker's font to
+    match the first character in the list item.
+    </li>
+    <li><b>The list markers are not highlighted when the list item is
+        selected</b><br/>
+    This matches the behavior in Firefox and Microsoft Word software.<br/>
+    Open <a href="repros/listMarkerSelection.html">this link</a> in Chrome.
+    Notice that the list markers are highlighted.  Additionally, notice that
+    the list marker highlight does not honor the <code>::selection</code>
+    background color specified in the stylesheet.  In our product, we didn't
+    want the list markers to be highlighted when selected.
+    </li>
+    <li><b>Change layout of list items and list markers</b><br/>
+    The way list elements and list items are laid out has been changed so that,
+    instead of <code>OL</code>/<code>UL</code> elements having 40px padding,
+    the <code>LI</code> elements will receive an additional (intrinsic) margin
+    equivalent to the width of the list marker.  This matches more closely what
+    other software like Microsoft Word does, and also prevents issues like
+    <a href="repros/listMarkerEnhancements1.html">this link</a> where the list
+    marker gets pushed outside the page.
+    </li>
+</ul>
+</p>
+<p>
+
 <h3><a name="feature-nColumnSpan">feature/nColumnSpan</a> (Shezan Baig; D33399541, D36821222)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
@@ -578,6 +589,18 @@ implementation no longer reproduces the issue.</p>
 <h3><a name="bugfix-indentLink">bugfix/indentLink</a> (Shezan Baig; D32418391; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=87428">87428</a>)</h3>
 <p>Retired as of the <code>21.0.1180.60</code> snapshot because the fix is
 available upstream.</p>
+
+<h3><a name="bugfix-listMarkerAlignment">bugfix/listMarkerAlignment</a> (Shezan Baig; D37088493; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-listMarkerEnhancements">feature/listMarkerEnhancements</a></code></p>
+
+<h3><a name="bugfix-listMarkerFont">bugfix/listMarkerFont</a> (Shezan Baig; D32534047)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-listMarkerEnhancements">feature/listMarkerEnhancements</a></code></p>
+
+<h3><a name="bugfix-listMarkerSelection">bugfix/listMarkerSelection</a> (Shezan Baig; D32422051)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-listMarkerEnhancements">feature/listMarkerEnhancements</a></code></p>
 
 <h3><a name="bugfix-offsetleft">bugfix/offsetleft</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=34875">34875</a>)</h3>
 <p>Retired as of the <code>21.0.1180.60</code> snapshot because the fix is
