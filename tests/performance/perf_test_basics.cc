@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <setjmp.h>
 // We need <sys/types.h> first to work around a nacl-newlib bug.
 // See https://code.google.com/p/nativeclient/issues/detail?id=677
 #include <sys/types.h>
@@ -46,6 +47,21 @@ class TestHostSyscall : public PerfTest {
 };
 PERF_TEST_DECLARE(TestHostSyscall)
 #endif
+
+// Measure the speed of saving and restoring all callee-saved
+// registers, assuming the compiler does not optimize the setjmp() and
+// longjmp() calls away.  This is likely to be slower than TestNull
+// but faster than TestNaClSyscall.
+class TestSetjmpLongjmp : public PerfTest {
+ public:
+  virtual void run() {
+    jmp_buf buf;
+    if (!setjmp(buf)) {
+      longjmp(buf, 1);
+    }
+  }
+};
+PERF_TEST_DECLARE(TestSetjmpLongjmp)
 
 // Measure the overhead of the clock_gettime() call that the test
 // framework uses.  This is also an example of a not-quite-trivial

@@ -111,6 +111,7 @@ int main(int argc, char **argv) {
 #if NACL_LINUX
   RUN_TEST(TestHostSyscall);
 #endif
+  RUN_TEST(TestSetjmpLongjmp);
   RUN_TEST(TestClockGetTime);
   RUN_TEST(TestTlsVariable);
   RUN_TEST(TestMmapAnonymous);
