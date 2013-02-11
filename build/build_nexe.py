@@ -434,6 +434,7 @@ class Builder(object):
     self.Log('\nTranslate %s' % out)
     bin_name = self.GetBinName('translate')
     cmd_line = [bin_name, '-arch', self.arch, src, '-o', out]
+    cmd_line += self.link_options
 
     err = self.Run(cmd_line, out)
     if err:
