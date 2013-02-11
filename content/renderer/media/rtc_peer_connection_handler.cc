@@ -33,30 +33,46 @@
 
 namespace content {
 
-// Converter functions from  libjingle types to WebKit types.
-
-static WebKit::WebRTCPeerConnectionHandlerClient::ICEState
-GetWebKitIceState(webrtc::PeerConnectionInterface::IceState ice_state) {
-  switch (ice_state) {
-    case webrtc::PeerConnectionInterface::kIceNew:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ICEStateNew;
-    case webrtc::PeerConnectionInterface::kIceGathering:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ICEStateGathering;
-    case webrtc::PeerConnectionInterface::kIceWaiting:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ICEStateWaiting;
-    case webrtc::PeerConnectionInterface::kIceChecking:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ICEStateChecking;
-    case webrtc::PeerConnectionInterface::kIceConnected:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ICEStateConnected;
-    case webrtc::PeerConnectionInterface::kIceCompleted:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ICEStateCompleted;
-    case webrtc::PeerConnectionInterface::kIceFailed:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ICEStateFailed;
-    case webrtc::PeerConnectionInterface::kIceClosed:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ICEStateClosed;
+// Converter functions from libjingle types to WebKit types.
+WebKit::WebRTCPeerConnectionHandlerClient::ICEGatheringState
+GetWebKitIceGatheringState(
+    webrtc::PeerConnectionInterface::IceGatheringState state) {
+  using WebKit::WebRTCPeerConnectionHandlerClient;
+  switch (state) {
+    case webrtc::PeerConnectionInterface::kIceGatheringNew:
+      return WebRTCPeerConnectionHandlerClient::ICEGatheringStateNew;
+    case webrtc::PeerConnectionInterface::kIceGatheringGathering:
+      return WebRTCPeerConnectionHandlerClient::ICEGatheringStateGathering;
+    case webrtc::PeerConnectionInterface::kIceGatheringComplete:
+      return WebRTCPeerConnectionHandlerClient::ICEGatheringStateComplete;
     default:
       NOTREACHED();
-      return WebKit::WebRTCPeerConnectionHandlerClient::ICEStateClosed;
+      return WebRTCPeerConnectionHandlerClient::ICEGatheringStateNew;
+  }
+}
+
+static WebKit::WebRTCPeerConnectionHandlerClient::ICEConnectionState
+GetWebKitIceConnectionState(
+    webrtc::PeerConnectionInterface::IceConnectionState ice_state) {
+  using WebKit::WebRTCPeerConnectionHandlerClient;
+  switch (ice_state) {
+    case webrtc::PeerConnectionInterface::kIceConnectionNew:
+      return WebRTCPeerConnectionHandlerClient::ICEConnectionStateStarting;
+    case webrtc::PeerConnectionInterface::kIceConnectionChecking:
+      return WebRTCPeerConnectionHandlerClient::ICEConnectionStateChecking;
+    case webrtc::PeerConnectionInterface::kIceConnectionConnected:
+      return WebRTCPeerConnectionHandlerClient::ICEConnectionStateConnected;
+    case webrtc::PeerConnectionInterface::kIceConnectionCompleted:
+      return WebRTCPeerConnectionHandlerClient::ICEConnectionStateCompleted;
+    case webrtc::PeerConnectionInterface::kIceConnectionFailed:
+      return WebRTCPeerConnectionHandlerClient::ICEConnectionStateFailed;
+    case webrtc::PeerConnectionInterface::kIceConnectionDisconnected:
+      return WebRTCPeerConnectionHandlerClient::ICEConnectionStateDisconnected;
+    case webrtc::PeerConnectionInterface::kIceConnectionClosed:
+      return WebRTCPeerConnectionHandlerClient::ICEConnectionStateClosed;
+    default:
+      NOTREACHED();
+      return WebRTCPeerConnectionHandlerClient::ICEConnectionStateClosed;
   }
 }
 
@@ -624,30 +640,31 @@ void RTCPeerConnectionHandler::OnError() {
   NOTIMPLEMENTED();
 }
 
-void RTCPeerConnectionHandler::OnStateChange(StateType state_changed) {
-  switch (state_changed) {
-    case kSignalingState: {
-      WebKit::WebRTCPeerConnectionHandlerClient::SignalingState state =
-          GetWebKitSignalingState(native_peer_connection_->signaling_state());
-      if (peer_connection_tracker_)
-        peer_connection_tracker_->TrackSignalingStateChange(this, state);
+void RTCPeerConnectionHandler::OnSignalingChange(
+    webrtc::PeerConnectionInterface::SignalingState new_state) {
+  WebKit::WebRTCPeerConnectionHandlerClient::SignalingState state =
+      GetWebKitSignalingState(new_state);
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackSignalingStateChange(this, state);
+  client_->didChangeSignalingState(state);
+}
 
-      client_->didChangeSignalingState(state);
-      break;
-    }
-    case kIceState: {
-      WebKit::WebRTCPeerConnectionHandlerClient::ICEState state =
-          GetWebKitIceState(native_peer_connection_->ice_state());
-      if (peer_connection_tracker_)
-        peer_connection_tracker_->TrackIceStateChange(this, state);
+// Called any time the IceConnectionState changes
+void RTCPeerConnectionHandler::OnIceConnectionChange(
+    webrtc::PeerConnectionInterface::IceConnectionState new_state) {
+  WebKit::WebRTCPeerConnectionHandlerClient::ICEConnectionState state =
+      GetWebKitIceConnectionState(new_state);
+  // TODO(perkj): Add new ice connection state to the tracker.
+  client_->didChangeICEConnectionState(state);
+}
 
-      client_->didChangeICEState(state);
-      break;
-    }
-    default:
-      NOTREACHED();
-      break;
-  }
+// Called any time the IceGatheringState changes
+void RTCPeerConnectionHandler::OnIceGatheringChange(
+    webrtc::PeerConnectionInterface::IceGatheringState new_state) {
+  WebKit::WebRTCPeerConnectionHandlerClient::ICEGatheringState state =
+      GetWebKitIceGatheringState(new_state);
+  // TODO(perkj): Add new ice gathering state to the tracker.
+  client_->didChangeICEGatheringState(state);
 }
 
 void RTCPeerConnectionHandler::OnAddStream(
@@ -702,14 +719,6 @@ void RTCPeerConnectionHandler::OnIceCandidate(
     peer_connection_tracker_->TrackAddIceCandidate(
         this, web_candidate, PeerConnectionTracker::SOURCE_LOCAL);
 
-  client_->didGenerateICECandidate(web_candidate);
-}
-
-void RTCPeerConnectionHandler::OnIceComplete() {
-  if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackOnIceComplete(this);
-  // Generates a NULL ice candidate object.
-  WebKit::WebRTCICECandidate web_candidate;
   client_->didGenerateICECandidate(web_candidate);
 }
 

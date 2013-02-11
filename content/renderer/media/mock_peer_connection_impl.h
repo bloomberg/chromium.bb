@@ -40,8 +40,26 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
 
   virtual bool GetStats(webrtc::StatsObserver* observer,
                         webrtc::MediaStreamTrackInterface* track) OVERRIDE;
-  virtual ReadyState ready_state() OVERRIDE;
-  virtual SignalingState signaling_state() OVERRIDE;
+  virtual ReadyState ready_state() OVERRIDE {
+    NOTIMPLEMENTED();
+    return PeerConnectionInterface::kStable;
+  }
+  virtual SignalingState signaling_state() OVERRIDE {
+    NOTIMPLEMENTED();
+    return PeerConnectionInterface::kStable;
+  }
+  virtual IceState ice_state() OVERRIDE {
+    NOTIMPLEMENTED();
+    return PeerConnectionInterface::kIceNew;
+  }
+  virtual IceConnectionState ice_connection_state() OVERRIDE {
+    NOTIMPLEMENTED();
+    return PeerConnectionInterface::kIceConnectionNew;
+  }
+  virtual IceGatheringState ice_gathering_state() OVERRIDE {
+    NOTIMPLEMENTED();
+    return PeerConnectionInterface::kIceGatheringNew;
+  }
 
   virtual const webrtc::SessionDescriptionInterface* local_description()
       const OVERRIDE;
@@ -69,13 +87,8 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
       const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual bool AddIceCandidate(
       const webrtc::IceCandidateInterface* candidate) OVERRIDE;
-  virtual IceState ice_state() OVERRIDE;
-  virtual IceConnectionState ice_connection_state() OVERRIDE;
-  virtual IceGatheringState ice_gathering_state() OVERRIDE;
 
   void AddRemoteStream(webrtc::MediaStreamInterface* stream);
-  void SetSignalingState(SignalingState state) { signaling_state_ = state; }
-  void SetIceState(IceState state) { ice_state_ = state; }
 
   const std::string& stream_label() const { return stream_label_; }
   bool hint_audio() const { return hint_audio_; }
@@ -109,8 +122,6 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   std::string sdp_mid_;
   int sdp_mline_index_;
   std::string ice_sdp_;
-  SignalingState signaling_state_;
-  IceState ice_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);
 };

@@ -134,12 +134,18 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   // webrtc::PeerConnectionObserver implementation
   virtual void OnError() OVERRIDE;
-  virtual void OnStateChange(StateType state_changed) OVERRIDE;
+  // Triggered when the SignalingState changed.
+  virtual void OnSignalingChange(
+      webrtc::PeerConnectionInterface::SignalingState new_state) OVERRIDE;
   virtual void OnAddStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
   virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
   virtual void OnIceCandidate(
       const webrtc::IceCandidateInterface* candidate) OVERRIDE;
-  virtual void OnIceComplete() OVERRIDE;
+  virtual void OnIceConnectionChange(
+      webrtc::PeerConnectionInterface::IceConnectionState new_state) OVERRIDE;
+  virtual void OnIceGatheringChange(
+      webrtc::PeerConnectionInterface::IceGatheringState new_state) OVERRIDE;
+
   virtual void OnDataChannel(
       webrtc::DataChannelInterface* data_channel) OVERRIDE;
   virtual void OnRenegotiationNeeded() OVERRIDE;
@@ -153,6 +159,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                 webrtc::MediaStreamTrackInterface* track);
 
   PeerConnectionTracker* peer_connection_tracker();
+
  private:
   webrtc::SessionDescriptionInterface* CreateNativeSessionDescription(
       const WebKit::WebRTCSessionDescription& description,

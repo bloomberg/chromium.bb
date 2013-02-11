@@ -25,8 +25,9 @@ class MockWebRTCPeerConnectionHandlerClient
   virtual void negotiationNeeded() OVERRIDE;
   virtual void didGenerateICECandidate(
       const WebKit::WebRTCICECandidate& candidate) OVERRIDE;
-  virtual void didChangeSignalingState(SignalingState) OVERRIDE;
-  virtual void didChangeICEState(ICEState) OVERRIDE;
+  virtual void didChangeSignalingState(SignalingState state) OVERRIDE;
+  virtual void didChangeICEGatheringState(ICEGatheringState state) OVERRIDE;
+  virtual void didChangeICEConnectionState(ICEConnectionState state) OVERRIDE;
   virtual void didAddRemoteStream(
       const WebKit::WebMediaStream& stream_descriptor) OVERRIDE;
   virtual void didRemoveRemoteStream(
@@ -40,14 +41,20 @@ class MockWebRTCPeerConnectionHandlerClient
   }
   const std::string& candidate_mid() const { return candidate_mid_ ; }
   SignalingState signaling_state() const { return signaling_state_; }
-  ICEState ice_state() const { return ice_state_; }
+  ICEConnectionState ice_connection_state() const {
+    return ice_connection_state_;
+  }
+  ICEGatheringState ice_gathering_state() const {
+    return ice_gathering_state_;
+  }
   const std::string& stream_label() const { return stream_label_; }
 
  private:
   bool renegotiate_;
   std::string stream_label_;
   SignalingState signaling_state_;
-  ICEState ice_state_;
+  ICEConnectionState ice_connection_state_;
+  ICEGatheringState ice_gathering_state_;
   std::string candidate_sdp_;
   int candidate_mline_index_;
   std::string candidate_mid_;

@@ -184,9 +184,7 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
       remote_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
       hint_audio_(false),
       hint_video_(false),
-      sdp_mline_index_(-1),
-      signaling_state_(kStable),
-      ice_state_(kIceNew) {
+      sdp_mline_index_(-1) {
 }
 
 MockPeerConnectionImpl::~MockPeerConnectionImpl() {}
@@ -261,14 +259,6 @@ bool MockPeerConnectionImpl::GetStats(
   return true;
 }
 
-MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::ready_state() {
-  return signaling_state_;
-}
-
-MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::signaling_state() {
-  return signaling_state_;
-}
-
 const webrtc::SessionDescriptionInterface*
 MockPeerConnectionImpl::local_description() const {
   return local_desc_.get();
@@ -326,22 +316,6 @@ bool MockPeerConnectionImpl::AddIceCandidate(
   sdp_mid_ = candidate->sdp_mid();
   sdp_mline_index_ = candidate->sdp_mline_index();
   return candidate->ToString(&ice_sdp_);
-}
-
-PeerConnectionInterface::IceState MockPeerConnectionImpl::ice_state() {
-  return ice_state_;
-}
-
-PeerConnectionInterface::IceConnectionState
-    MockPeerConnectionImpl::ice_connection_state() {
-  NOTIMPLEMENTED();
-  return PeerConnectionInterface::kIceConnectionNew;
-}
-
-PeerConnectionInterface::IceGatheringState
-    MockPeerConnectionImpl::ice_gathering_state() {
-  NOTIMPLEMENTED();
-  return PeerConnectionInterface::kIceGatheringNew;
 }
 
 }  // namespace content

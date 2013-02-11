@@ -14,7 +14,8 @@ MockWebRTCPeerConnectionHandlerClient::
 MockWebRTCPeerConnectionHandlerClient()
     : renegotiate_(false),
       signaling_state_(SignalingStateStable),
-      ice_state_(ICEStateNew),
+      ice_connection_state_(ICEConnectionStateStarting),
+      ice_gathering_state_(ICEGatheringStateNew),
       candidate_mline_index_(-1) {
 }
 
@@ -43,8 +44,15 @@ void MockWebRTCPeerConnectionHandlerClient::didChangeSignalingState(
   signaling_state_ = state;
 }
 
-void MockWebRTCPeerConnectionHandlerClient::didChangeICEState(ICEState state) {
-  ice_state_ = state;
+
+void MockWebRTCPeerConnectionHandlerClient::didChangeICEConnectionState(
+    ICEConnectionState state) {
+  ice_connection_state_ = state;
+}
+
+void MockWebRTCPeerConnectionHandlerClient::didChangeICEGatheringState(
+    ICEGatheringState state) {
+  ice_gathering_state_ = state;
 }
 
 void MockWebRTCPeerConnectionHandlerClient::didAddRemoteStream(
