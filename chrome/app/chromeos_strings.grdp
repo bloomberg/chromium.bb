@@ -3594,10 +3594,10 @@ Battery full
     This device is owned by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
-    This device is owned by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph> and will be used by others after you.
+    This device is owned by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>.
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
-    Please remember to sign out when you're done.
+    Your information will be removed when you sign out.
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_ENTER" desc="Label text for the sign-in button in the public account user pod.">
     Enter
