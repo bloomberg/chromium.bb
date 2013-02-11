@@ -102,6 +102,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "media_instructions",
                      "parallel_addition_and_subtraction_signed",
                      "parallel_addition_and_subtraction_unsigned",
+                     "packing_unpacking_saturation_and_reversal",
                      ]
 
 # The list of tables in armv7.table that should test the automatically
