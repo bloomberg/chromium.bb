@@ -1268,12 +1268,18 @@ void PrintWebViewHelper::PrintPages() {
 #if !defined(OS_CHROMEOS)
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
+
   // TODO(vitalybuka): should be page_count or valid pages from params.pages.
   // See http://crbug.com/161576
   Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
                                                 print_params.document_cookie,
                                                 page_count));
-#endif
+  if (print_params.preview_ui_id < 0) {
+    // Printing for system dialog.
+    int printed_count = params.pages.empty() ? page_count : params.pages.size();
+    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", printed_count);
+  }
+#endif  // !defined(OS_CHROMEOS)
 
   if (!PrintPagesNative(prep_frame_view->frame(), prep_frame_view->node(),
                         page_count, prep_frame_view->GetPrintCanvasSize())) {
@@ -1444,14 +1450,18 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     return false;
   }
 
+  if (!job_settings->GetInteger(kPreviewUIID, &settings.params.preview_ui_id)) {
+    NOTREACHED();
+    print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
+    return false;
+  }
+
   if (!print_for_preview_) {
     // Validate expected print preview settings.
-    if (!job_settings->GetInteger(kPreviewUIID,
-                                  &(settings.params.preview_ui_id)) ||
-        !job_settings->GetInteger(kPreviewRequestID,
-                                  &(settings.params.preview_request_id)) ||
+    if (!job_settings->GetInteger(kPreviewRequestID,
+                                  &settings.params.preview_request_id) ||
         !job_settings->GetBoolean(kIsFirstRequest,
-                                  &(settings.params.is_first_request))) {
+                                  &settings.params.is_first_request)) {
       NOTREACHED();
       print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
       return false;
@@ -1514,7 +1524,7 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
 }
 
 bool PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
-    const WebKit::WebNode& node) {
+                                             const WebKit::WebNode& node) {
   if (prep_frame_view_)
     return false;
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;

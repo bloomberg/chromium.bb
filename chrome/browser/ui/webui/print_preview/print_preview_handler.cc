@@ -492,6 +492,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
+    // Set ID to know whether printing is for preview.
+    settings->SetInteger(printing::kPreviewUIID,
+                         print_preview_ui->GetIDForPrintPreviewUI());
     RenderViewHost* rvh = preview_web_contents()->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->GetRoutingID(),
                                                 *settings));
