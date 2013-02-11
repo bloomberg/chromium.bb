@@ -1777,6 +1777,12 @@
    fun:OneClickSigninHelperTest_SigninFromWebstoreWithConfigSyncfirst_Test::TestBody
 }
 {
+  bug_175428:
+  Heapcheck:Leak
+  fun:AutocompleteController::AutocompleteController
+  fun:AutocompleteProviderTest::ResetControllerWithTestProviders
+}
+{
    bug_175435:
    Heapcheck:Leak
    ...

@@ -6533,3 +6533,10 @@
    fun:_ZN20OneClickSigninHelper14DidStopLoadingEPN7content14RenderViewHostE
    fun:_ZN67OneClickSigninHelperTest_SigninFromWebstoreWithConfigSyncfirst_Test8TestBodyEv
 }
+{
+   bug_175428:
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN22AutocompleteControllerC1EP7ProfileP30AutocompleteControllerDelegatei
+   fun:_ZN24AutocompleteProviderTest32ResetControllerWithTestProvidersEbPP12TestProviderS2_
+}
