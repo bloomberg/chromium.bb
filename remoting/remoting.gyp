@@ -673,6 +673,8 @@
                   'action_name': 'build_linux_installer_zip',
                   'inputs': [
                     '<(deb_filename)',
+                    '<(PRODUCT_DIR)/remoting_me2me_host.debug',
+                    '<(PRODUCT_DIR)/remoting_start_host.debug',
                   ],
                   'outputs': [
                     '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
@@ -705,6 +707,8 @@
                   ],
                   'outputs': [
                     '<(deb_filename)',
+                    '<(PRODUCT_DIR)/remoting_me2me_host.debug',
+                    '<(PRODUCT_DIR)/remoting_start_host.debug',
                   ],
                   'action': [ '<(deb_cmd)', '-s', '<(DEPTH)' ],
                 },

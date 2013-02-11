@@ -104,11 +104,6 @@ if [[ -n "$revision" ]]; then
   revision_text="(r$revision)"
 fi
 
-# Don't strip binaries unless build options are already specified. This doesn't
-# have much effect on package size (13MB versus 14MB), so it's worth keeping
-# the symbols for now.
-export DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-nostrip}"
-
 echo "Building version $version_full $revision_text"
 
 # Create a fresh debian/changelog.
