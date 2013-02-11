@@ -29,10 +29,6 @@ namespace base {
 class Value;
 }
 
-namespace chrome {
-class BrowserListImpl;
-}
-
 namespace content {
 class DevToolsAgentHost;
 class DevToolsClientHost;
@@ -124,10 +120,6 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void CreateDevToolsBrowser();
   bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
-  bool FindInspectedBrowserAndTabIndexFromBrowserList(
-    chrome::BrowserListImpl* browser_list,
-    Browser** browser,
-    int* tab);
   BrowserWindow* GetInspectedBrowserWindow();
   bool IsInspectedBrowserPopupOrPanel();
   void UpdateFrontendDockSide();

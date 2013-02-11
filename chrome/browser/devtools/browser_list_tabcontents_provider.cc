@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/web_contents.h"
@@ -87,8 +89,12 @@ RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
   if (BrowserList::empty())
     return NULL;
 
+  // TODO(gab): Do not hardcode HOST_DESKTOP_TYPE_NATIVE below once
+  // chrome::NewEmptyWindow() above has been made multi-desktop friendly.
+  const chrome::BrowserListImpl* browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
   content::WebContents* web_contents = chrome::AddSelectedTabWithURL(
-      *BrowserList::begin(),
+      browser_list->get(0),
       GURL(chrome::kAboutBlankURL),
       content::PAGE_TRANSITION_LINK);
   return web_contents->GetRenderViewHost();
