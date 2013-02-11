@@ -396,3 +396,14 @@ WARNING
 name=Security test (calloc overflow)
 *!`anonymous namespace'::SecurityTest_CallocOverflow_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>
+
+GDI USAGE ERROR
+name=crbug.com/175512
+...
+USER32.dll!UnregisterClassA
+USER32.dll!UnregisterClassA
+USER32.dll!UnregisterClassA
+USER32.dll!LoadBitmapW
+media.dll!media::*::ScreenCapturerWin::CaptureCursor
+media.dll!media::*::ScreenCapturerWin::CaptureFrame
+media.dll!media::ScreenCaptureDevice::Core::DoCapture
