@@ -10340,7 +10340,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Take a tour
         </message>
         <message name="IDS_FIRSTRUN_SIGNED_IN" desc="Message informing the user that they are now signed in and sync is turned on.">
-          You are now signed in to Chrome. Your open tabs, bookmarks and omnibox data are being synced with your Google Account.
+          You are now signed in to Chrome. Your open tabs, bookmarks, omnibox data, and more are being synced with your Google Account.
         </message>
         <message name="IDS_FIRSTRUN_SETTINGS_LINK" desc="Link to take user to Chrome's settings menu.">
           Settings
