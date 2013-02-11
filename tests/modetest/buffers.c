@@ -999,8 +999,8 @@ fill_pattern(unsigned int format, enum fill_pattern pattern, void *planes[3],
  */
 
 static struct kms_bo *
-allocate_buffer(struct kms_driver *kms,
-		int width, int height, int *stride)
+allocate_buffer(struct kms_driver *kms, unsigned int width, unsigned int height,
+		unsigned int *stride)
 {
 	struct kms_bo *bo;
 	unsigned bo_attribs[] = {
@@ -1034,13 +1034,14 @@ allocate_buffer(struct kms_driver *kms,
 
 struct kms_bo *
 create_test_buffer(struct kms_driver *kms, unsigned int format,
-		   int width, int height, int handles[4],
-		   int pitches[4], int offsets[4], enum fill_pattern pattern)
+		   unsigned int width, unsigned int height,
+		   unsigned int handles[4], unsigned int pitches[4],
+		   unsigned int offsets[4], enum fill_pattern pattern)
 {
 	struct kms_bo *bo;
-	int ret, stride;
-	void *planes[3];
+	void *planes[3] = { 0, };
 	void *virtual;
+	int ret;
 
 	bo = allocate_buffer(kms, width, height, &pitches[0]);
 	if (!bo)

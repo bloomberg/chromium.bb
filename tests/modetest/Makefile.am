@@ -1,4 +1,6 @@
-AM_CFLAGS = \
+AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS))
+
+AM_CFLAGS += \
 	-I$(top_srcdir)/include/drm \
 	-I$(top_srcdir)/libkms/ \
 	-I$(top_srcdir)

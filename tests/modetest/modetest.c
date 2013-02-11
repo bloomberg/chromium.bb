@@ -64,11 +64,11 @@ int fd, modes;
 
 struct type_name {
 	int type;
-	char *name;
+	const char *name;
 };
 
 #define type_name_fn(res) \
-char * res##_str(int type) {			\
+const char * res##_str(int type) {			\
 	unsigned int i;					\
 	for (i = 0; i < ARRAY_SIZE(res##_names); i++) { \
 		if (res##_names[i].type == type)	\
@@ -85,7 +85,7 @@ struct type_name encoder_type_names[] = {
 	{ DRM_MODE_ENCODER_TVDAC, "TVDAC" },
 };
 
-type_name_fn(encoder_type)
+static type_name_fn(encoder_type)
 
 struct type_name connector_status_names[] = {
 	{ DRM_MODE_CONNECTED, "connected" },
@@ -93,7 +93,7 @@ struct type_name connector_status_names[] = {
 	{ DRM_MODE_UNKNOWNCONNECTION, "unknown" },
 };
 
-type_name_fn(connector_status)
+static type_name_fn(connector_status)
 
 struct type_name connector_type_names[] = {
 	{ DRM_MODE_CONNECTOR_Unknown, "unknown" },
@@ -113,11 +113,11 @@ struct type_name connector_type_names[] = {
 	{ DRM_MODE_CONNECTOR_eDP, "eDP" },
 };
 
-type_name_fn(connector_type)
+static type_name_fn(connector_type)
 
 #define bit_name_fn(res)					\
-char * res##_str(int type) {					\
-	int i;							\
+const char * res##_str(int type) {				\
+	unsigned int i;						\
 	const char *sep = "";					\
 	for (i = 0; i < ARRAY_SIZE(res##_names); i++) {		\
 		if (type & (1 << i)) {				\
@@ -138,7 +138,7 @@ static const char *mode_type_names[] = {
 	"driver",
 };
 
-bit_name_fn(mode_type)
+static bit_name_fn(mode_type)
 
 static const char *mode_flag_names[] = {
 	"phsync",
@@ -157,9 +157,9 @@ static const char *mode_flag_names[] = {
 	"clkdiv2"
 };
 
-bit_name_fn(mode_flag)
+static bit_name_fn(mode_flag)
 
-void dump_encoders(void)
+static void dump_encoders(void)
 {
 	drmModeEncoder *encoder;
 	int i;
@@ -185,7 +185,7 @@ void dump_encoders(void)
 	printf("\n");
 }
 
-void dump_mode(drmModeModeInfo *mode)
+static void dump_mode(drmModeModeInfo *mode)
 {
 	printf("  %s %d %d %d %d %d %d %d %d %d",
 	       mode->name,
@@ -301,7 +301,7 @@ dump_prop(uint32_t prop_id, uint64_t value)
 	drmModeFreeProperty(prop);
 }
 
-void dump_connectors(void)
+static void dump_connectors(void)
 {
 	drmModeConnector *connector;
 	int i, j;
@@ -347,7 +347,7 @@ void dump_connectors(void)
 	printf("\n");
 }
 
-void dump_crtcs(void)
+static void dump_crtcs(void)
 {
 	drmModeCrtc *crtc;
 	drmModeObjectPropertiesPtr props;
@@ -389,7 +389,7 @@ void dump_crtcs(void)
 	printf("\n");
 }
 
-void dump_framebuffers(void)
+static void dump_framebuffers(void)
 {
 	drmModeFB *fb;
 	int i;
@@ -574,7 +574,7 @@ connector_find_mode(struct connector *c)
 
 	/* and figure out which crtc index it is: */
 	for (i = 0; i < resources->count_crtcs; i++) {
-		if (c->crtc == resources->crtcs[i]) {
+		if (c->crtc == (int)resources->crtcs[i]) {
 			c->pipe = i;
 			break;
 		}
@@ -584,7 +584,7 @@ connector_find_mode(struct connector *c)
 
 /* -------------------------------------------------------------------------- */
 
-void
+static void
 page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
@@ -622,7 +622,7 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 	uint32_t plane_id = 0;
 	struct kms_bo *plane_bo;
 	uint32_t plane_flags = 0;
-	int ret, crtc_x, crtc_y, crtc_w, crtc_h;
+	int crtc_x, crtc_y, crtc_w, crtc_h;
 	unsigned int i;
 
 	/* find an unused plane which can be connected to our crtc */
@@ -861,7 +861,7 @@ static int parse_connector(struct connector *c, const char *arg)
 	arg = endp + 1;
 
 	p = strchrnul(arg, '@');
-	len = min(sizeof c->mode_str - 1, p - arg);
+	len = min(sizeof c->mode_str - 1, (unsigned int)(p - arg));
 	strncpy(c->mode_str, arg, len);
 	c->mode_str[len] = '\0';
 
@@ -883,7 +883,7 @@ static int parse_plane(struct plane *p, const char *arg)
 {
 	strcpy(p->format_str, "XR24");
 
-	if (sscanf(arg, "%d:%dx%d@%4s", &p->con_id, &p->w, &p->h, &p->format_str) != 4 &&
+	if (sscanf(arg, "%d:%dx%d@%4s", &p->con_id, &p->w, &p->h, p->format_str) != 4 &&
 	    sscanf(arg, "%d:%dx%d", &p->con_id, &p->w, &p->h) != 3)
 		return -1;
 
@@ -896,7 +896,7 @@ static int parse_plane(struct plane *p, const char *arg)
 	return 0;
 }
 
-void usage(char *name)
+static void usage(char *name)
 {
 	fprintf(stderr, "usage: %s [-ecpmf]\n", name);
 	fprintf(stderr, "\t-e\tlist encoders\n");
@@ -939,11 +939,11 @@ int main(int argc, char **argv)
 	int c;
 	int encoders = 0, connectors = 0, crtcs = 0, planes = 0, framebuffers = 0;
 	int test_vsync = 0;
-	char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos", "tilcdc" };
+	const char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos", "tilcdc" };
 	unsigned int i;
 	int count = 0, plane_count = 0;
 	struct connector con_args[2];
-	struct plane plane_args[2] = {0};
+	struct plane plane_args[2] = { { 0, }, };
 	
 	opterr = 0;
 	while ((c = getopt(argc, argv, optstr)) != -1) {
