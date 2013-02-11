@@ -194,11 +194,11 @@ function toggleRemoteStream(selectAudioOrVideoTrack, typeToToggle) {
   if (gPeerConnection == null)
     throw failTest('Tried to toggle remote stream, ' +
                    'but have no peer connection.');
-  if (gPeerConnection.remoteStreams.length == 0)
+  if (gPeerConnection.getRemoteStreams().length == 0)
     throw failTest('Tried to toggle remote stream, ' +
                    'but not receiving any stream.');
 
-  var track = selectAudioOrVideoTrack(gPeerConnection.remoteStreams[0]);
+  var track = selectAudioOrVideoTrack(gPeerConnection.getRemoteStreams()[0]);
   toggle_(track, 'remote', typeToToggle);
 }
 
@@ -210,11 +210,11 @@ function toggleLocalStream(selectAudioOrVideoTrack, typeToToggle) {
   if (gPeerConnection == null)
     throw failTest('Tried to toggle local stream, ' +
                    'but have no peer connection.');
-  if (gPeerConnection.localStreams.length == 0)
+  if (gPeerConnection.getLocalStreams().length == 0)
     throw failTest('Tried to toggle local stream, but there is no local ' +
                    'stream in the call.');
 
-  var track = selectAudioOrVideoTrack(gPeerConnection.localStreams[0]);
+  var track = selectAudioOrVideoTrack(gPeerConnection.getLocalStreams()[0]);
   toggle_(track, 'local', typeToToggle);
 }
 
