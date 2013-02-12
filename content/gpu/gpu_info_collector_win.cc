@@ -204,6 +204,11 @@ void CollectD3D11Support() {
   if (base::win::GetVersion() <= base::win::VERSION_XP)
     return;
 
+  // Creating a D3D11 device when DisplayLink is installed causes D3D11 to
+  // crash.
+  if (GetModuleHandle(L"dlumd32.dll"))
+    return;
+
   FeatureLevel feature_level = FEATURE_LEVEL_UNKNOWN;
   UINT bgra_support = 0;
 
