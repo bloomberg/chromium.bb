@@ -22,6 +22,7 @@ void ParamTraits<WebKit::WebFilterOperation>::Write(
     case WebKit::WebFilterOperation::FilterTypeHueRotate:
     case WebKit::WebFilterOperation::FilterTypeInvert:
     case WebKit::WebFilterOperation::FilterTypeBrightness:
+    case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
     case WebKit::WebFilterOperation::FilterTypeContrast:
     case WebKit::WebFilterOperation::FilterTypeOpacity:
     case WebKit::WebFilterOperation::FilterTypeBlur:
@@ -39,11 +40,6 @@ void ParamTraits<WebKit::WebFilterOperation>::Write(
     case WebKit::WebFilterOperation::FilterTypeZoom:
       WriteParam(m, p.zoomRect());
       WriteParam(m, p.amount());
-      break;
-    default:
-      // FIXME: temporary place holder to prevent build failures
-      // (pending a new FilterType).
-      NOTREACHED();
       break;
   }
 }
@@ -69,6 +65,7 @@ bool ParamTraits<WebKit::WebFilterOperation>::Read(
     case WebKit::WebFilterOperation::FilterTypeHueRotate:
     case WebKit::WebFilterOperation::FilterTypeInvert:
     case WebKit::WebFilterOperation::FilterTypeBrightness:
+    case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
     case WebKit::WebFilterOperation::FilterTypeContrast:
     case WebKit::WebFilterOperation::FilterTypeOpacity:
     case WebKit::WebFilterOperation::FilterTypeBlur:
@@ -107,11 +104,6 @@ bool ParamTraits<WebKit::WebFilterOperation>::Read(
         success = true;
       }
       break;
-    default:
-      // FIXME: temporary place holder to prevent build failures
-      // (pending a new FilterType).
-      NOTREACHED();
-      break;
   }
   return success;
 }
@@ -129,6 +121,7 @@ void ParamTraits<WebKit::WebFilterOperation>::Log(
     case WebKit::WebFilterOperation::FilterTypeHueRotate:
     case WebKit::WebFilterOperation::FilterTypeInvert:
     case WebKit::WebFilterOperation::FilterTypeBrightness:
+    case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
     case WebKit::WebFilterOperation::FilterTypeContrast:
     case WebKit::WebFilterOperation::FilterTypeOpacity:
     case WebKit::WebFilterOperation::FilterTypeBlur:
@@ -152,11 +145,6 @@ void ParamTraits<WebKit::WebFilterOperation>::Log(
       LogParam(p.zoomRect(), l);
       l->append(", ");
       LogParam(p.amount(), l);
-      break;
-    default:
-      // FIXME: temporary place holder to prevent build failures
-      // (pending a new FilterType).
-      NOTREACHED();
       break;
   }
   l->append(")");

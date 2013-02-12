@@ -23,15 +23,19 @@ namespace {
 
 void getBrightnessMatrix(float amount, SkScalar matrix[20])
 {
+    // Spec implementation
+    // (http://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#brightnessEquivalent)
+    // <feFunc[R|G|B] type="linear" slope="[amount]">
     memset(matrix, 0, 20 * sizeof(SkScalar));
-    //    Old implementation, a la the draft spec, a straight-up scale,
-    //    representing <feFunc[R|G|B] type="linear" slope="[amount]">
-    //    (See http://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#brightnessEquivalent)
-    // matrix[0] = matrix[6] = matrix[12] = amount;
-    // matrix[18] = 1;
-    //    New implementation, a translation in color space, representing
-    //    <feFunc[R|G|B] type="linear" intercept="[amount]"/>
-    //    (See https://www.w3.org/Bugs/Public/show_bug.cgi?id=15647)
+    matrix[0] = matrix[6] = matrix[12] = amount;
+    matrix[18] = 1;
+}
+
+void getSaturatingBrightnessMatrix(float amount, SkScalar matrix[20])
+{
+    // Legacy implementation used by internal clients.
+    // <feFunc[R|G|B] type="linear" intercept="[amount]"/>
+    memset(matrix, 0, 20 * sizeof(SkScalar));
     matrix[0] = matrix[6] = matrix[12] = matrix[18] = 1;
     matrix[4] = matrix[9] = matrix[14] = amount * 255;
 }
@@ -198,6 +202,10 @@ bool getColorMatrix(const WebKit::WebFilterOperation& op, SkScalar matrix[20])
         getBrightnessMatrix(op.amount(), matrix);
         return true;
     }
+    case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness: {
+        getSaturatingBrightnessMatrix(op.amount(), matrix);
+        return true;
+    }
     case WebKit::WebFilterOperation::FilterTypeContrast: {
         getContrastMatrix(op.amount(), matrix);
         return true;
@@ -352,6 +360,7 @@ WebKit::WebFilterOperations RenderSurfaceFilters::optimize(const WebKit::WebFilt
             newList.append(op);
             break;
         case WebKit::WebFilterOperation::FilterTypeBrightness:
+        case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
         case WebKit::WebFilterOperation::FilterTypeContrast:
         case WebKit::WebFilterOperation::FilterTypeGrayscale:
         case WebKit::WebFilterOperation::FilterTypeSepia:
@@ -360,7 +369,6 @@ WebKit::WebFilterOperations RenderSurfaceFilters::optimize(const WebKit::WebFilt
         case WebKit::WebFilterOperation::FilterTypeInvert:
         case WebKit::WebFilterOperation::FilterTypeOpacity:
         case WebKit::WebFilterOperation::FilterTypeColorMatrix:
-        default: // FIXME: temporary place holder to prevent build failures
             break;
         }
     }
@@ -427,6 +435,7 @@ SkBitmap RenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filters,
             break;
         }
         case WebKit::WebFilterOperation::FilterTypeBrightness:
+        case WebKit::WebFilterOperation::FilterTypeSaturatingBrightness:
         case WebKit::WebFilterOperation::FilterTypeContrast:
         case WebKit::WebFilterOperation::FilterTypeGrayscale:
         case WebKit::WebFilterOperation::FilterTypeSepia:
@@ -434,7 +443,6 @@ SkBitmap RenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filters,
         case WebKit::WebFilterOperation::FilterTypeHueRotate:
         case WebKit::WebFilterOperation::FilterTypeInvert:
         case WebKit::WebFilterOperation::FilterTypeOpacity:
-        default: // FIXME: temporary place holder to prevent build failures
             NOTREACHED();
             break;
         }

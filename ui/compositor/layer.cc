@@ -326,7 +326,7 @@ void Layer::SetLayerFilters() {
   // cause further color matrix filters to be applied separately. In this order,
   // they all can be combined in a single pass.
   if (layer_brightness_) {
-    filters.append(WebKit::WebFilterOperation::createBrightnessFilter(
+    filters.append(WebKit::WebFilterOperation::createSaturatingBrightnessFilter(
         layer_brightness_));
   }
 
