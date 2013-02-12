@@ -102,10 +102,7 @@ void WorkspaceCycler::OnEvent(ui::Event* event) {
 }
 
 void WorkspaceCycler::OnScrollEvent(ui::ScrollEvent* event) {
-  // End cycling when the user taps after having cycled through workspaces.
-  // TODO(pkotwicz): Use ui::ET_SCROLL_FLING_START instead to end cycling once
-  // it works for three fingers. (http://crbug.com/170484)
-  if (state_ != NOT_CYCLING && event->type() == ui::ET_SCROLL_FLING_CANCEL) {
+  if (state_ != NOT_CYCLING && event->type() == ui::ET_SCROLL_FLING_START) {
     SetState(STOPPING_CYCLING);
     event->StopPropagation();
     return;
