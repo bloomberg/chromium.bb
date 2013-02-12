@@ -4,6 +4,7 @@
 
 #include "chrome/browser/history/in_memory_url_index.h"
 
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/bookmarks/bookmark_service.h"
@@ -226,6 +227,7 @@ void InMemoryURLIndex::OnURLsDeleted(const URLsDeletedDetails* details) {
 
 void InMemoryURLIndex::PostRestoreFromCacheFileTask() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  TRACE_EVENT0("browser", "InMemoryURLIndex::PostRestoreFromCacheFileTask");
 
   base::FilePath path;
   if (!GetCacheFilePath(&path) || shutdown_) {
