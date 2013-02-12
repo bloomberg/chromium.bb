@@ -75,6 +75,7 @@ TEST(ManagedUserServiceTest, ExtensionManagementPolicyProvider) {
     ManagedModeURLFilterObserver observer(
         managed_user_service.GetURLFilterForUIThread());
     EXPECT_TRUE(managed_user_service.ProfileIsManaged());
+    managed_user_service.Init();
 
     string16 error_1;
     EXPECT_FALSE(managed_user_service.UserMayLoad(NULL, &error_1));
@@ -111,6 +112,7 @@ class ManagedUserServiceExtensionTest : public ExtensionServiceTestBase {
 
 TEST_F(ManagedUserServiceExtensionTest, NoContentPacks) {
   ManagedUserService managed_user_service(profile_.get());
+  managed_user_service.Init();
   ManagedModeURLFilter* url_filter =
       managed_user_service.GetURLFilterForUIThread();
 
@@ -125,6 +127,7 @@ TEST_F(ManagedUserServiceExtensionTest, NoContentPacks) {
 TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   profile_->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
   ManagedUserService managed_user_service(profile_.get());
+  managed_user_service.Init();
   managed_user_service.SetElevatedForTesting(true);
   ManagedModeURLFilter* url_filter =
       managed_user_service.GetURLFilterForUIThread();

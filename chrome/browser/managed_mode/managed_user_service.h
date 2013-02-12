@@ -79,12 +79,10 @@ class ManagedUserService : public ProfileKeyedService,
   void SetElevatedForTesting(bool is_elevated);
 
   // Initializes this object. This method does nothing if the profile is not
-  // managed. This method only needs to be called if the profile is set to be
-  // managed after the ManagedUserService has been created (which happens when
-  // creating a new profile).
+  // managed.
   void Init();
 
-  // ExtensionManagementPolicy::Provider implementation:
+  // extensions::ManagementPolicy::Provider implementation:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
   virtual bool UserMayLoad(const extensions::Extension* extension,
                            string16* error) const OVERRIDE;

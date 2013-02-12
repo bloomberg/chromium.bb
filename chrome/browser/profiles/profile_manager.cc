@@ -728,8 +728,8 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
-  DoFinalInitForServices(profile, go_off_the_record);
   InitProfileUserPrefs(profile);
+  DoFinalInitForServices(profile, go_off_the_record);
   AddProfileToCache(profile);
   DoFinalInitLogging(profile);
 
@@ -755,6 +755,12 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
           extensions::ExtensionSystem::Get(profile)->extension_service());
     }
   }
+#endif
+#if defined(ENABLE_MANAGED_USERS)
+  // Initialization needs to happen after extension system initialization (for
+  // extension::ManagementPolicy) and InitProfileUserPrefs (for setting the
+  // initializing the managed flag if necessary).
+  ManagedUserServiceFactory::GetForProfile(profile)->Init();
 #endif
 }
 
@@ -964,14 +970,8 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileName))
     profile->GetPrefs()->SetString(prefs::kProfileName, profile_name);
 
-  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileIsManaged)) {
+  if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileIsManaged))
     profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, is_managed);
-#if defined(ENABLE_MANAGED_USERS)
-    ManagedUserServiceFactory::GetForProfile(profile)->Init();
-#else
-    DCHECK(!is_managed);
-#endif
-  }
 }
 
 bool ProfileManager::ShouldGoOffTheRecord() {

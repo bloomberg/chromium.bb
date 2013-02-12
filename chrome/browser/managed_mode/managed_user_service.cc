@@ -88,7 +88,6 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
 ManagedUserService::ManagedUserService(Profile* profile)
     : profile_(profile),
       is_elevated_(false) {
-  Init();
 }
 
 ManagedUserService::~ManagedUserService() {
