@@ -860,7 +860,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
 
       <!-- Enterprise sign-in profile linking -->
       <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_DIALOG_TITLE" desc="The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
-	Link your Chromium profile
+        Important information regarding your Chromium data
       </message>
       <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_MESSAGE" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
 	You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.
