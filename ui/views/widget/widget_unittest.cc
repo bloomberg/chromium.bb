@@ -1452,5 +1452,45 @@ TEST_F(WidgetTest, SingleWindowClosing) {
   EXPECT_EQ(1, delegate->count());
 }
 
+// Used by SetTopLevelCorrectly to track calls to OnBeforeWidgetInit().
+class VerifyTopLevelDelegate : public TestViewsDelegate {
+ public:
+  VerifyTopLevelDelegate()
+      : on_before_init_called_(false),
+        is_top_level_(false) {
+  }
+
+  bool on_before_init_called() const { return on_before_init_called_; }
+  bool is_top_level() const { return is_top_level_; }
+
+  virtual void OnBeforeWidgetInit(
+      Widget::InitParams* params,
+      internal::NativeWidgetDelegate* delegate) OVERRIDE {
+    on_before_init_called_ = true;
+    is_top_level_ = params->top_level;
+  }
+
+ private:
+  bool on_before_init_called_;
+  bool is_top_level_;
+
+  DISALLOW_COPY_AND_ASSIGN(VerifyTopLevelDelegate);
+};
+
+// Verifies |top_level| is correctly passed to
+// ViewsDelegate::OnBeforeWidgetInit().
+TEST_F(WidgetTest, SetTopLevelCorrectly) {
+  set_views_delegate(NULL);
+  VerifyTopLevelDelegate* delegate = new VerifyTopLevelDelegate;
+  set_views_delegate(delegate);  // ViewsTestBase takes ownership.
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_POPUP);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+  EXPECT_TRUE(delegate->on_before_init_called());
+  EXPECT_TRUE(delegate->is_top_level());
+}
+
 }  // namespace
 }  // namespace views

@@ -338,13 +338,16 @@ bool Widget::RequiresNonClientView(InitParams::Type type) {
 
 void Widget::Init(const InitParams& in_params) {
   InitParams params = in_params;
-  if (ViewsDelegate::views_delegate)
-    ViewsDelegate::views_delegate->OnBeforeWidgetInit(&params, this);
 
   is_top_level_ = params.top_level ||
       (!params.child &&
        params.type != InitParams::TYPE_CONTROL &&
        params.type != InitParams::TYPE_TOOLTIP);
+  params.top_level = is_top_level_;
+
+  if (ViewsDelegate::views_delegate)
+    ViewsDelegate::views_delegate->OnBeforeWidgetInit(&params, this);
+
   widget_delegate_ = params.delegate ?
       params.delegate : new DefaultWidgetDelegate(this, params);
   ownership_ = params.ownership;
