@@ -924,6 +924,7 @@ TEST_F(GpuMemoryManagerTestNonuniform, BackgroundMru) {
   EXPECT_GE(stub3.BytesWhenVisible(), 23u);
   EXPECT_LT(stub1.BytesWhenVisible(), 32u);
   EXPECT_LT(stub2.BytesWhenVisible(), 32u);
+  EXPECT_LT(stub3.BytesWhenVisible(), 32u);
   EXPECT_GE(stub1.BytesWhenNotVisible(), 6u);
   EXPECT_GE(stub2.BytesWhenNotVisible(), 6u);
   EXPECT_GE(stub3.BytesWhenNotVisible(), 6u);
@@ -1040,10 +1041,10 @@ TEST_F(GpuMemoryManagerTestNonuniform, DefaultAllocation) {
 
   FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true);
 
-  // Expect that a client which has not sent stats receive at
-  // least the default allocation.
+  // Expect that a client which has not sent stats receive the
+  // default allocation.
   Manage();
-  EXPECT_GE(stub1.BytesWhenVisible(),
+  EXPECT_EQ(stub1.BytesWhenVisible(),
             memmgr_.GetDefaultClientAllocation());
   EXPECT_EQ(stub1.BytesWhenNotVisible(), 0u);
 }

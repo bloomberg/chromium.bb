@@ -124,7 +124,6 @@ class CONTENT_EXPORT GpuMemoryManager :
   // Compute the allocation for clients when visible and not visible.
   void ComputeVisibleSurfacesAllocationsNonuniform();
   void ComputeNonvisibleSurfacesAllocationsNonuniform();
-  void DistributeRemainingMemoryToVisibleSurfaces();
 
   // Compute the budget for a client. Allow at most bytes_above_required_cap
   // bytes above client_state's required level. Allow at most
