@@ -1482,7 +1482,11 @@
     "os": ["chromeos"],
     "test_policy": { "DriveDisabled": true },
     "pref_mappings": [
-      { "pref": "gdata.disabled" }
+      { "pref": "gdata.disabled",
+        "indicator_tests": [
+          { "policy": { "DriveDisabled": true } }
+        ]
+      }
     ]
   },
 

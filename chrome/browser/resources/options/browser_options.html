@@ -531,12 +531,16 @@
       </div>
 <if expr="pp_ifdef('chromeos')">
       <div class="checkbox" guest-visibility="disabled">
-        <label>
-          <input type="checkbox"
+        <span class="controlled-setting-with-label">
+          <input id="drive-disabled" type="checkbox"
               pref="gdata.disabled"
               metric="Options_DisableGData">
-          <span i18n-content="disableGData"></span>
-        </label>
+          <span>
+            <label for="drive-disabled" i18n-content="disableGData"></label>
+            <span class="controlled-setting-indicator" pref="gdata.disabled">
+            </span>
+          </span>
+        </span>
       </div>
 </if>
 <if expr="not pp_ifdef('chromeos')">
