@@ -18,6 +18,7 @@
         '../content/content.gyp:page_transition_types_java',
         '../net/net.gyp:certificate_mime_types_java',
         '../net/net.gyp:net_errors_java',
+        '../net/net.gyp:private_key_types_java',
       ],
     }, # target_name: All
   ],  # targets
