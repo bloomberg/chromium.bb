@@ -55,7 +55,9 @@ ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
 }
 
 // Check that the bubble doesn't crash or leak for any settings type
-TEST_F(ContentSettingBubbleControllerTest, Init) {
+// Disabled: started failing after CONTENT_SETTINGS_TYPE_INTENTS was removed.
+// https://code.google.com/p/chromium/issues/detail?id=175629
+TEST_F(ContentSettingBubbleControllerTest, DISABLED_Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
         i == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
