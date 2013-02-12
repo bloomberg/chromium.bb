@@ -57,10 +57,71 @@ static int GetBufferSizeForSampleRate(int sample_rate) {
   return buffer_size;
 }
 
+// This is a temporary audio buffer with parameters used to send data to
+// callbacks.
+class WebRtcAudioCapturer::ConfiguredBuffer :
+    public base::RefCounted<WebRtcAudioCapturer::ConfiguredBuffer> {
+ public:
+  ConfiguredBuffer() {}
+
+  bool Initialize(int sample_rate,
+                  media::AudioParameters::Format format,
+                  media::ChannelLayout channel_layout) {
+    int buffer_size = GetBufferSizeForSampleRate(sample_rate);
+    if (!buffer_size) {
+      DLOG(ERROR) << "Unsupported sample-rate: " << sample_rate;
+      return false;
+    }
+
+    // bits_per_sample is always 16 for now.
+    int bits_per_sample = 16;
+
+    params_.Reset(format, channel_layout, 0, sample_rate, bits_per_sample,
+                  buffer_size);
+    buffer_.reset(new int16[params_.frames_per_buffer() * params_.channels()]);
+
+    return true;
+  }
+
+  int16* buffer() const { return buffer_.get(); }
+  const media::AudioParameters& params() const { return params_; }
+
+ private:
+  ~ConfiguredBuffer() {}
+  friend class base::RefCounted<WebRtcAudioCapturer::ConfiguredBuffer>;
+
+  scoped_ptr<int16[]> buffer_;
+
+  // Cached values of utilized audio parameters.
+  media::AudioParameters params_;
+};
+
 // static
 scoped_refptr<WebRtcAudioCapturer> WebRtcAudioCapturer::CreateCapturer() {
   scoped_refptr<WebRtcAudioCapturer> capturer = new  WebRtcAudioCapturer();
   return capturer;
+}
+
+bool WebRtcAudioCapturer::Reconfigure(int sample_rate,
+                                      media::AudioParameters::Format format,
+                                      media::ChannelLayout channel_layout) {
+  scoped_refptr<ConfiguredBuffer> new_buffer(new ConfiguredBuffer());
+  if (!new_buffer->Initialize(sample_rate, format, channel_layout))
+    return false;
+
+  SinkList sinks;
+  {
+    base::AutoLock auto_lock(lock_);
+
+    buffer_ = new_buffer;
+    sinks = sinks_;
+  }
+
+  // Tell all sinks which format we use.
+  for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it)
+    (*it)->SetCaptureFormat(new_buffer->params());
+
+  return true;
 }
 
 bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
@@ -98,18 +159,8 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
     return false;
   }
 
-  int buffer_size = GetBufferSizeForSampleRate(sample_rate);
-
-  // Configure audio parameters for the default source.
-  params_.Reset(format, channel_layout, 0, sample_rate, 16, buffer_size);
-
-  // Tell all sinks which format we use.
-  for (SinkList::const_iterator it = sinks_.begin();
-    it != sinks_.end(); ++it) {
-      (*it)->SetCaptureFormat(params_);
-  }
-
-  buffer_.reset(new int16[params_.frames_per_buffer() * params_.channels()]);
+  if (!Reconfigure(sample_rate, format, channel_layout))
+    return false;
 
   // Create and configure the default audio capturing source. The |source_|
   // will be overwritten if an external client later calls SetCapturerSource()
@@ -162,6 +213,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
   DVLOG(1) << "SetCapturerSource(channel_layout=" << channel_layout << ","
            << "sample_rate=" << sample_rate << ")";
   scoped_refptr<media::AudioCapturerSource> old_source;
+  scoped_refptr<ConfiguredBuffer> current_buffer;
   {
     base::AutoLock auto_lock(lock_);
     if (source_ == source)
@@ -169,9 +221,10 @@ void WebRtcAudioCapturer::SetCapturerSource(
 
     source_.swap(old_source);
     source_ = source;
+    current_buffer = buffer_;
   }
 
-  const bool no_default_audio_source_exists = !buffer_.get();
+  const bool no_default_audio_source_exists = !current_buffer->buffer();
 
   // Detach the old source from normal recording or perform first-time
   // initialization if Initialize() has never been called. For the second
@@ -185,30 +238,20 @@ void WebRtcAudioCapturer::SetCapturerSource(
     // Dispatch the new parameters both to the sink(s) and to the new source.
     // The idea is to get rid of any dependency of the microphone parameters
     // which would normally be used by default.
-
-    int buffer_size = GetBufferSizeForSampleRate(sample_rate);
-    if (!buffer_size) {
-      DLOG(ERROR) << "Unsupported sample-rate: " << sample_rate;
+    if (!Reconfigure(sample_rate, current_buffer->params().format(),
+                     channel_layout)) {
       return;
-    }
-
-    params_.Reset(params_.format(),
-                  channel_layout,
-                  0,
-                  sample_rate,
-                  16,  // ignored since the audio stack uses float32.
-                  buffer_size);
-
-    buffer_.reset(new int16[params_.frames_per_buffer() * params_.channels()]);
-
-    for (SinkList::const_iterator it = sinks_.begin();
-         it != sinks_.end(); ++it) {
-      (*it)->SetCaptureFormat(params_);
+    } else {
+      // The buffer has been reconfigured.  Update |current_buffer|.
+      base::AutoLock auto_lock(lock_);
+      current_buffer = buffer_;
     }
   }
 
-  if (source)
-    source->Initialize(params_, this, this);
+  if (source) {
+    // Make sure to grab the new parameters in case they were reconfigured.
+    source->Initialize(current_buffer->params(), this, this);
+  }
 }
 
 void WebRtcAudioCapturer::SetStopCallback(
@@ -233,8 +276,9 @@ void WebRtcAudioCapturer::PrepareLoopback() {
   // in case since these tests were performed on a 16 core, 64GB Win 7
   // machine. We could also add some sort of error notifier in this area if
   // the FIFO overflows.
-  loopback_fifo_.reset(new media::AudioFifo(params_.channels(),
-                       10 * params_.frames_per_buffer()));
+  loopback_fifo_.reset(new media::AudioFifo(
+      buffer_->params().channels(),
+      10 * buffer_->params().frames_per_buffer()));
   buffering_ = true;
 }
 
@@ -359,12 +403,16 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
   // |source_| is AudioInputDevice, otherwise it is driven by client's
   // CaptureCallback.
   SinkList sinks;
+  scoped_refptr<ConfiguredBuffer> buffer_ref_while_calling;
   {
     base::AutoLock auto_lock(lock_);
     if (!running_)
       return;
 
-    // Copy the sink list to a local variable.
+    // Copy the stuff we will need to local variables. In particular, we grab
+    // a reference to the buffer so we can ensure it stays alive even if the
+    // buffer is reconfigured while we are calling back.
+    buffer_ref_while_calling = buffer_;
     sinks = sinks_;
 
     // Push captured audio to FIFO so it can be read by a local sink.
@@ -379,17 +427,19 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
     }
   }
 
+  int bytes_per_sample =
+      buffer_ref_while_calling->params().bits_per_sample() / 8;
+
   // Interleave, scale, and clip input to int and store result in
   // a local byte buffer.
-  audio_source->ToInterleaved(audio_source->frames(),
-                              params_.bits_per_sample() / 8,
-                              buffer_.get());
+  audio_source->ToInterleaved(audio_source->frames(), bytes_per_sample,
+                              buffer_ref_while_calling->buffer());
 
   // Feed the data to the sinks.
   for (SinkList::const_iterator it = sinks.begin();
        it != sinks.end();
        ++it) {
-    (*it)->CaptureData(reinterpret_cast<const int16*>(buffer_.get()),
+    (*it)->CaptureData(buffer_ref_while_calling->buffer(),
                        audio_source->channels(), audio_source->frames(),
                        audio_delay_milliseconds, volume);
   }
@@ -422,6 +472,11 @@ void WebRtcAudioCapturer::OnDeviceStopped() {
   // usage of BindToLoop() when the callback was initialized.
   if (!on_device_stopped_cb_.is_null())
     on_device_stopped_cb_.Run();
+}
+
+media::AudioParameters WebRtcAudioCapturer::audio_parameters() const {
+  base::AutoLock auto_lock(lock_);
+  return buffer_->params();
 }
 
 }  // namespace content
