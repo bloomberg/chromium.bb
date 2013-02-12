@@ -1376,7 +1376,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
   EXPECT_EQ(url, enumerator2.urls()[0]);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
+// Flaky on win7: crbug.com/175439.
+#if defined(OS_WIN)
+#define MAYBE_TranslateEnabled DISABLED_TranslateEnabled
+#else
+#define MAYBE_TranslateEnabled TranslateEnabled
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_TranslateEnabled) {
   // Verifies that translate can be forced enabled or disabled by policy.
 
   // Get the InfoBarService, and verify that there are no infobars on startup.
