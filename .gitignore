@@ -28,6 +28,11 @@ hg/
 toolchain/hg-build/
 toolchain/hg-log/
 
+# toolchain_build/toolchain_build.py creates these.
+toolchain_build/cache/
+toolchain_build/out/
+toolchain_build/src/
+
 # Ignore these absolute directories (relative to native_client directory)
 /build/Debug/
 /build/Release/
