@@ -2360,6 +2360,8 @@ uses(Instruction inst) const {
 //    defs: {inst(19:16)
 //         if inst(21)=1
 //         else 32},
+//    is_literal_load: 15  ==
+//            inst(19:16),
 //    safety: [0  ==
 //            inst(7:0) ||
 //         32  <=
@@ -2401,6 +2403,14 @@ defs(Instruction inst) const {
           0x00200000
        ? ((inst.Bits() & 0x000F0000) >> 16)
        : 32)));
+}
+
+bool Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: '15  ==
+  //          inst(19:16)'
+  return ((((inst.Bits() & 0x000F0000) >> 16)) == (15));
 }
 
 SafetyLevel Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1::
@@ -2492,12 +2502,16 @@ uses(Instruction inst) const {
 //    defs: {inst(19:16)
 //         if inst(21)=1
 //         else 32},
+//    is_literal_load: 15  ==
+//            inst(19:16),
 //    safety: [0  ==
 //            inst(7:0) / 2 ||
 //         16  <=
 //            inst(7:0) / 2 ||
 //         32  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      1  ==
+//            inst(7:0)(0) => DEPRECATED,
 //      15  ==
 //            inst(19:16) &&
 //         inst(21)=1 => UNPREDICTABLE,
@@ -2538,6 +2552,14 @@ defs(Instruction inst) const {
           0x00200000
        ? ((inst.Bits() & 0x000F0000) >> 16)
        : 32)));
+}
+
+bool Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: '15  ==
+  //          inst(19:16)'
+  return ((((inst.Bits() & 0x000F0000) >> 16)) == (15));
 }
 
 SafetyLevel Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1::
@@ -2610,6 +2632,11 @@ safety(Instruction inst) const {
   if ((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16))))
     return UNPREDICTABLE;
+
+  // 1  ==
+  //          inst(7:0)(0) => DEPRECATED
+  if (((((inst.Bits() & 0x000000FF) & 0x00000001)) == (1)))
+    return DEPRECATED;
 
   return MAY_BE_SAFE;
 }
@@ -3540,6 +3567,8 @@ uses(Instruction inst) const {
 //            inst(7:0) / 2 ||
 //         32  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      1  ==
+//            inst(7:0)(0) => DEPRECATED,
 //      VFPSmallRegisterBank() &&
 //         16  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE],
@@ -3582,6 +3611,11 @@ safety(Instruction inst) const {
   if ((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16))))
     return UNPREDICTABLE;
+
+  // 1  ==
+  //          inst(7:0)(0) => DEPRECATED
+  if (((((inst.Bits() & 0x000000FF) & 0x00000001)) == (1)))
+    return DEPRECATED;
 
   return MAY_BE_SAFE;
 }
@@ -4068,6 +4102,8 @@ uses(Instruction inst) const {
 //      15  ==
 //            inst(19:16) &&
 //         inst(21)=1 => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) => FORBIDDEN_OPERANDS,
 //      inst(23)  ==
 //            inst(24) &&
 //         inst(21)=1 => UNDEFINED,
@@ -4157,6 +4193,11 @@ safety(Instruction inst) const {
        (((((inst.Bits() & 0x000F0000) >> 16)) == (13))))
     return DECODER_ERROR;
 
+  // 15  ==
+  //          inst(19:16) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x000F0000) >> 16)) == (15)))
+    return FORBIDDEN_OPERANDS;
+
   // 0  ==
   //          inst(7:0) ||
   //       32  <=
@@ -4199,9 +4240,13 @@ uses(Instruction inst) const {
 //            inst(7:0) / 2 ||
 //         32  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      1  ==
+//            inst(7:0)(0) => DEPRECATED,
 //      15  ==
 //            inst(19:16) &&
 //         inst(21)=1 => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) => FORBIDDEN_OPERANDS,
 //      VFPSmallRegisterBank() &&
 //         16  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
@@ -4294,6 +4339,11 @@ safety(Instruction inst) const {
        (((((inst.Bits() & 0x000F0000) >> 16)) == (13))))
     return DECODER_ERROR;
 
+  // 15  ==
+  //          inst(19:16) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x000F0000) >> 16)) == (15)))
+    return FORBIDDEN_OPERANDS;
+
   // 0  ==
   //          inst(7:0) / 2 ||
   //       16  <=
@@ -4311,6 +4361,11 @@ safety(Instruction inst) const {
   if ((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16))))
     return UNPREDICTABLE;
+
+  // 1  ==
+  //          inst(7:0)(0) => DEPRECATED
+  if (((((inst.Bits() & 0x000000FF) & 0x00000001)) == (1)))
+    return DEPRECATED;
 
   return MAY_BE_SAFE;
 }
@@ -4336,10 +4391,18 @@ uses(Instruction inst) const {
 // Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1
 //
 // Actual:
-//   {defs: {},
+//   {base: inst(19:16),
+//    defs: {},
 //    safety: [15  ==
 //            inst(19:16) => FORBIDDEN_OPERANDS],
 //    uses: {inst(19:16)}}
+
+Register Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
 
 RegisterList Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1::
 defs(Instruction inst) const {

@@ -86,22 +86,26 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_()
   , Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1_instance_()
   , Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1_instance_()
+  , Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_instance_()
+  , Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_instance_()
+  , Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_instance_()
+  , Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_instance_()
+  , Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1_instance_()
+  , Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_instance_()
+  , Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_instance_()
+  , Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1_instance_()
   , DataBarrier_instance_()
   , Deprecated_instance_()
   , DuplicateToAdvSIMDRegisters_instance_()
   , Forbidden_instance_()
   , ForbiddenCondDecoder_instance_()
   , InstructionBarrier_instance_()
-  , LoadVectorRegister_instance_()
-  , LoadVectorRegisterList_instance_()
   , MoveDoubleVfpRegisterOp_instance_()
   , MoveVfpRegisterOp_instance_()
   , MoveVfpRegisterOpWithTypeSel_instance_()
   , PermanentlyUndefined_instance_()
   , PreloadRegisterImm12Op_instance_()
   , PreloadRegisterPairOp_instance_()
-  , StoreVectorRegister_instance_()
-  , StoreVectorRegisterList_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
   , Vector1RegisterImmediate_BIT_instance_()
@@ -981,13 +985,103 @@ const ClassDecoder& Arm32DecoderState::decode_extension_register_load_store_inst
      const Instruction inst) const
 {
   if ((inst.Bits() & 0x01B00000)  ==
-          0x01200000 /* opcode(24:20)=10x10 */) {
-    return StoreVectorRegisterList_instance_;
+          0x00900000 /* opcode(24:20)=01x01 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
-          0x01300000 /* opcode(24:20)=10x11 */) {
-    return LoadVectorRegisterList_instance_;
+          0x00900000 /* opcode(24:20)=01x01 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x00B00000 /* opcode(24:20)=01x11 */ &&
+      (inst.Bits() & 0x000F0000)  !=
+          0x000D0000 /* Rn(19:16)=~1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x00B00000 /* opcode(24:20)=01x11 */ &&
+      (inst.Bits() & 0x000F0000)  !=
+          0x000D0000 /* Rn(19:16)=~1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x00B00000 /* opcode(24:20)=01x11 */ &&
+      (inst.Bits() & 0x000F0000)  ==
+          0x000D0000 /* Rn(19:16)=1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x00B00000 /* opcode(24:20)=01x11 */ &&
+      (inst.Bits() & 0x000F0000)  ==
+          0x000D0000 /* Rn(19:16)=1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x01200000 /* opcode(24:20)=10x10 */ &&
+      (inst.Bits() & 0x000F0000)  !=
+          0x000D0000 /* Rn(19:16)=~1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x01200000 /* opcode(24:20)=10x10 */ &&
+      (inst.Bits() & 0x000F0000)  !=
+          0x000D0000 /* Rn(19:16)=~1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x01200000 /* opcode(24:20)=10x10 */ &&
+      (inst.Bits() & 0x000F0000)  ==
+          0x000D0000 /* Rn(19:16)=1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x01200000 /* opcode(24:20)=10x10 */ &&
+      (inst.Bits() & 0x000F0000)  ==
+          0x000D0000 /* Rn(19:16)=1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x01300000 /* opcode(24:20)=10x11 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x01300000 /* opcode(24:20)=10x11 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -997,22 +1091,26 @@ const ClassDecoder& Arm32DecoderState::decode_extension_register_load_store_inst
 
   if ((inst.Bits() & 0x01300000)  ==
           0x01000000 /* opcode(24:20)=1xx00 */) {
-    return StoreVectorRegister_instance_;
+    return Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01300000)  ==
           0x01100000 /* opcode(24:20)=1xx01 */) {
-    return LoadVectorRegister_instance_;
+    return Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01900000)  ==
-          0x00800000 /* opcode(24:20)=01xx0 */) {
-    return StoreVectorRegisterList_instance_;
+          0x00800000 /* opcode(24:20)=01xx0 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01900000)  ==
-          0x00900000 /* opcode(24:20)=01xx1 */) {
-    return LoadVectorRegisterList_instance_;
+          0x00800000 /* opcode(24:20)=01xx0 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

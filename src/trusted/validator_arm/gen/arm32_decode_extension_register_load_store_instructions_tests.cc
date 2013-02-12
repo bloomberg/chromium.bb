@@ -44,7 +44,7 @@ namespace nacl_arm_test {
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -81,6 +81,8 @@ namespace nacl_arm_test {
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            d + regs  >
@@ -171,6 +173,10 @@ bool StoreVectorRegisterListTesterCase0
           0x00200000) &&
        (((((inst.Bits() & 0x000F0000) >> 16)) == (13)))));
 
+  // safety: Rn  ==
+  //          Pc => FORBIDDEN_OPERANDS
+  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
+
   // safety: regs  ==
   //          0 ||
   //       d + regs  >
@@ -200,7 +206,7 @@ bool StoreVectorRegisterListTesterCase0
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -237,6 +243,8 @@ bool StoreVectorRegisterListTesterCase0
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            regs  >
@@ -245,7 +253,9 @@ bool StoreVectorRegisterListTesterCase0
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -332,6 +342,10 @@ bool StoreVectorRegisterListTesterCase1
           0x00200000) &&
        (((((inst.Bits() & 0x000F0000) >> 16)) == (13)))));
 
+  // safety: Rn  ==
+  //          Pc => FORBIDDEN_OPERANDS
+  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
+
   // safety: regs  ==
   //          0 ||
   //       regs  >
@@ -347,6 +361,10 @@ bool StoreVectorRegisterListTesterCase1
   //          16 => UNPREDICTABLE
   EXPECT_TRUE(!((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16)))));
+
+  // safety: imm8(0)  ==
+  //          1 => DEPRECATED
+  EXPECT_TRUE(((((inst.Bits() & 0x000000FF) & 0x00000001)) != (1)));
 
   // defs: {Rn
   //       if wback
@@ -370,7 +388,7 @@ bool StoreVectorRegisterListTesterCase1
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -387,7 +405,8 @@ bool StoreVectorRegisterListTesterCase1
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
@@ -526,7 +545,7 @@ bool LoadVectorRegisterListTesterCase2
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -543,7 +562,8 @@ bool LoadVectorRegisterListTesterCase2
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
@@ -571,7 +591,9 @@ bool LoadVectorRegisterListTesterCase2
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -674,6 +696,10 @@ bool LoadVectorRegisterListTesterCase3
   EXPECT_TRUE(!((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16)))));
 
+  // safety: imm8(0)  ==
+  //          1 => DEPRECATED
+  EXPECT_TRUE(((((inst.Bits() & 0x000000FF) & 0x00000001)) != (1)));
+
   // defs: {Rn
   //       if wback
   //       else None};
@@ -696,7 +722,7 @@ bool LoadVectorRegisterListTesterCase3
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -733,6 +759,8 @@ bool LoadVectorRegisterListTesterCase3
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            d + regs  >
@@ -823,6 +851,10 @@ bool StoreVectorRegisterListTesterCase4
           0x00200000) &&
        (((((inst.Bits() & 0x000F0000) >> 16)) == (13)))));
 
+  // safety: Rn  ==
+  //          Pc => FORBIDDEN_OPERANDS
+  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
+
   // safety: regs  ==
   //          0 ||
   //       d + regs  >
@@ -852,7 +884,7 @@ bool StoreVectorRegisterListTesterCase4
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -889,6 +921,8 @@ bool StoreVectorRegisterListTesterCase4
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            regs  >
@@ -897,7 +931,9 @@ bool StoreVectorRegisterListTesterCase4
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -984,6 +1020,10 @@ bool StoreVectorRegisterListTesterCase5
           0x00200000) &&
        (((((inst.Bits() & 0x000F0000) >> 16)) == (13)))));
 
+  // safety: Rn  ==
+  //          Pc => FORBIDDEN_OPERANDS
+  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
+
   // safety: regs  ==
   //          0 ||
   //       regs  >
@@ -999,6 +1039,10 @@ bool StoreVectorRegisterListTesterCase5
   //          16 => UNPREDICTABLE
   EXPECT_TRUE(!((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16)))));
+
+  // safety: imm8(0)  ==
+  //          1 => DEPRECATED
+  EXPECT_TRUE(((((inst.Bits() & 0x000000FF) & 0x00000001)) != (1)));
 
   // defs: {Rn
   //       if wback
@@ -1022,7 +1066,7 @@ bool StoreVectorRegisterListTesterCase5
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -1039,7 +1083,8 @@ bool StoreVectorRegisterListTesterCase5
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
@@ -1181,7 +1226,7 @@ bool LoadVectorRegisterListTesterCase6
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -1198,7 +1243,8 @@ bool LoadVectorRegisterListTesterCase6
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
@@ -1226,7 +1272,9 @@ bool LoadVectorRegisterListTesterCase6
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -1332,6 +1380,10 @@ bool LoadVectorRegisterListTesterCase7
   EXPECT_TRUE(!((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16)))));
 
+  // safety: imm8(0)  ==
+  //          1 => DEPRECATED
+  EXPECT_TRUE(((((inst.Bits() & 0x000000FF) & 0x00000001)) != (1)));
+
   // defs: {Rn
   //       if wback
   //       else None};
@@ -1348,7 +1400,7 @@ bool LoadVectorRegisterListTesterCase7
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -1427,7 +1479,7 @@ bool LoadVectorRegisterListTesterCase8
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -1447,7 +1499,9 @@ bool LoadVectorRegisterListTesterCase8
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
@@ -1509,6 +1563,10 @@ bool LoadVectorRegisterListTesterCase9
   EXPECT_TRUE(!((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16)))));
 
+  // safety: imm8(0)  ==
+  //          1 => DEPRECATED
+  EXPECT_TRUE(((((inst.Bits() & 0x000000FF) & 0x00000001)) != (1)));
+
   // defs: {Sp};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
    Add(Register(13))));
@@ -1526,7 +1584,7 @@ bool LoadVectorRegisterListTesterCase9
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -1563,6 +1621,8 @@ bool LoadVectorRegisterListTesterCase9
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            d + regs  >
@@ -1656,6 +1716,10 @@ bool StoreVectorRegisterListTesterCase10
           0x00200000) &&
        (((((inst.Bits() & 0x000F0000) >> 16)) == (13)))));
 
+  // safety: Rn  ==
+  //          Pc => FORBIDDEN_OPERANDS
+  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
+
   // safety: regs  ==
   //          0 ||
   //       d + regs  >
@@ -1685,7 +1749,7 @@ bool StoreVectorRegisterListTesterCase10
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -1722,6 +1786,8 @@ bool StoreVectorRegisterListTesterCase10
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            regs  >
@@ -1730,7 +1796,9 @@ bool StoreVectorRegisterListTesterCase10
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -1820,6 +1888,10 @@ bool StoreVectorRegisterListTesterCase11
           0x00200000) &&
        (((((inst.Bits() & 0x000F0000) >> 16)) == (13)))));
 
+  // safety: Rn  ==
+  //          Pc => FORBIDDEN_OPERANDS
+  EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (15)));
+
   // safety: regs  ==
   //          0 ||
   //       regs  >
@@ -1835,6 +1907,10 @@ bool StoreVectorRegisterListTesterCase11
   //          16 => UNPREDICTABLE
   EXPECT_TRUE(!((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16)))));
+
+  // safety: imm8(0)  ==
+  //          1 => DEPRECATED
+  EXPECT_TRUE(((((inst.Bits() & 0x000000FF) & 0x00000001)) != (1)));
 
   // defs: {Rn
   //       if wback
@@ -1852,7 +1928,7 @@ bool StoreVectorRegisterListTesterCase11
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -1931,7 +2007,7 @@ bool StoreVectorRegisterListTesterCase12
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -1951,7 +2027,9 @@ bool StoreVectorRegisterListTesterCase12
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
@@ -2013,6 +2091,10 @@ bool StoreVectorRegisterListTesterCase13
   EXPECT_TRUE(!((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16)))));
 
+  // safety: imm8(0)  ==
+  //          1 => DEPRECATED
+  EXPECT_TRUE(((((inst.Bits() & 0x000000FF) & 0x00000001)) != (1)));
+
   // defs: {Sp};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
    Add(Register(13))));
@@ -2030,7 +2112,7 @@ bool StoreVectorRegisterListTesterCase13
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -2047,7 +2129,8 @@ bool StoreVectorRegisterListTesterCase13
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
@@ -2186,7 +2269,7 @@ bool LoadVectorRegisterListTesterCase14
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -2203,7 +2286,8 @@ bool LoadVectorRegisterListTesterCase14
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
@@ -2231,7 +2315,9 @@ bool LoadVectorRegisterListTesterCase14
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -2334,6 +2420,10 @@ bool LoadVectorRegisterListTesterCase15
   EXPECT_TRUE(!((nacl_arm_dec::VFPSmallRegisterBank()) &&
        ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16)))));
 
+  // safety: imm8(0)  ==
+  //          1 => DEPRECATED
+  EXPECT_TRUE(((((inst.Bits() & 0x000000FF) & 0x00000001)) != (1)));
+
   // defs: {Rn
   //       if wback
   //       else None};
@@ -2349,7 +2439,8 @@ bool LoadVectorRegisterListTesterCase15
 // opcode(24:20)=1xx00 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: StoreVectorRegister,
+//       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
+//       base: Rn,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
@@ -2413,7 +2504,8 @@ bool StoreVectorRegisterTesterCase16
 // opcode(24:20)=1xx00 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: StoreVectorRegister,
+//       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
+//       base: Rn,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
@@ -2477,7 +2569,7 @@ bool StoreVectorRegisterTesterCase17
 // opcode(24:20)=1xx01 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: LoadVectorRegister,
+//       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegister,
 //       constraints: ,
@@ -2537,7 +2629,7 @@ bool LoadVectorRegisterTesterCase18
 // opcode(24:20)=1xx01 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: LoadVectorRegister,
+//       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegister,
 //       constraints: ,
@@ -2609,7 +2701,7 @@ bool LoadVectorRegisterTesterCase19
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -2646,6 +2738,8 @@ bool LoadVectorRegisterTesterCase19
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            d + regs  >
@@ -2672,7 +2766,7 @@ class StoreVectorRegisterListTester_Case0
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -2709,6 +2803,8 @@ class StoreVectorRegisterListTester_Case0
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            regs  >
@@ -2717,7 +2813,9 @@ class StoreVectorRegisterListTester_Case0
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -2740,7 +2838,7 @@ class StoreVectorRegisterListTester_Case1
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -2757,7 +2855,8 @@ class StoreVectorRegisterListTester_Case1
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
@@ -2803,7 +2902,7 @@ class LoadVectorRegisterListTester_Case2
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -2820,7 +2919,8 @@ class LoadVectorRegisterListTester_Case2
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
@@ -2848,7 +2948,9 @@ class LoadVectorRegisterListTester_Case2
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -2871,7 +2973,7 @@ class LoadVectorRegisterListTester_Case3
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -2908,6 +3010,8 @@ class LoadVectorRegisterListTester_Case3
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            d + regs  >
@@ -2934,7 +3038,7 @@ class StoreVectorRegisterListTester_Case4
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -2971,6 +3075,8 @@ class StoreVectorRegisterListTester_Case4
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            regs  >
@@ -2979,7 +3085,9 @@ class StoreVectorRegisterListTester_Case4
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -3002,7 +3110,7 @@ class StoreVectorRegisterListTester_Case5
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -3019,7 +3127,8 @@ class StoreVectorRegisterListTester_Case5
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
@@ -3065,7 +3174,7 @@ class LoadVectorRegisterListTester_Case6
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -3082,7 +3191,8 @@ class LoadVectorRegisterListTester_Case6
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
@@ -3110,7 +3220,9 @@ class LoadVectorRegisterListTester_Case6
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -3127,7 +3239,7 @@ class LoadVectorRegisterListTester_Case7
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -3159,7 +3271,7 @@ class LoadVectorRegisterListTester_Case8
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -3179,7 +3291,9 @@ class LoadVectorRegisterListTester_Case8
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
@@ -3202,7 +3316,7 @@ class LoadVectorRegisterListTester_Case9
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -3239,6 +3353,8 @@ class LoadVectorRegisterListTester_Case9
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            d + regs  >
@@ -3265,7 +3381,7 @@ class StoreVectorRegisterListTester_Case10
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -3302,6 +3418,8 @@ class StoreVectorRegisterListTester_Case10
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            regs  >
@@ -3310,7 +3428,9 @@ class StoreVectorRegisterListTester_Case10
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -3327,7 +3447,7 @@ class StoreVectorRegisterListTester_Case11
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -3359,7 +3479,7 @@ class StoreVectorRegisterListTester_Case12
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -3379,7 +3499,9 @@ class StoreVectorRegisterListTester_Case12
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
@@ -3402,7 +3524,7 @@ class StoreVectorRegisterListTester_Case13
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -3419,7 +3541,8 @@ class StoreVectorRegisterListTester_Case13
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
@@ -3465,7 +3588,7 @@ class LoadVectorRegisterListTester_Case14
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -3482,7 +3605,8 @@ class LoadVectorRegisterListTester_Case14
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
@@ -3510,7 +3634,9 @@ class LoadVectorRegisterListTester_Case14
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
@@ -3526,7 +3652,8 @@ class LoadVectorRegisterListTester_Case15
 // opcode(24:20)=1xx00 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: StoreVectorRegister,
+//       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
+//       base: Rn,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
@@ -3550,7 +3677,8 @@ class StoreVectorRegisterTester_Case16
 // opcode(24:20)=1xx00 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: StoreVectorRegister,
+//       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
+//       base: Rn,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
@@ -3574,7 +3702,7 @@ class StoreVectorRegisterTester_Case17
 // opcode(24:20)=1xx01 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: LoadVectorRegister,
+//       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegister,
 //       constraints: ,
@@ -3598,7 +3726,7 @@ class LoadVectorRegisterTester_Case18
 // opcode(24:20)=1xx01 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: LoadVectorRegister,
+//       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegister,
 //       constraints: ,
@@ -3638,7 +3766,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -3675,6 +3803,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            d + regs  >
@@ -3684,8 +3814,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case0_TestCase0) {
-  StoreVectorRegisterListTester_Case0 tester;
-  tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
+  StoreVectorRegisterListTester_Case0 baseline_tester;
+  NamedActual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_VSTM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
 }
 
 // opcode(24:20)=01x00 & S(8)=1
@@ -3698,7 +3830,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -3735,6 +3867,8 @@ TEST_F(Arm32DecoderStateTests,
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            regs  >
@@ -3743,14 +3877,18 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case1_TestCase1) {
-  StoreVectorRegisterListTester_Case1 tester;
-  tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
+  StoreVectorRegisterListTester_Case1 baseline_tester;
+  NamedActual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_VSTM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
 }
 
 // opcode(24:20)=01x01 & S(8)=0
@@ -3763,7 +3901,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -3780,7 +3918,8 @@ TEST_F(Arm32DecoderStateTests,
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
@@ -3809,8 +3948,10 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case2_TestCase2) {
-  LoadVectorRegisterListTester_Case2 tester;
-  tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
+  LoadVectorRegisterListTester_Case2 baseline_tester;
+  NamedActual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_VLDM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
 }
 
 // opcode(24:20)=01x01 & S(8)=1
@@ -3823,7 +3964,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -3840,7 +3981,8 @@ TEST_F(Arm32DecoderStateTests,
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
@@ -3868,14 +4010,18 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case3_TestCase3) {
-  LoadVectorRegisterListTester_Case3 tester;
-  tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
+  LoadVectorRegisterListTester_Case3 baseline_tester;
+  NamedActual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_VLDM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
 }
 
 // opcode(24:20)=01x10 & S(8)=0
@@ -3888,7 +4034,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -3925,6 +4071,8 @@ TEST_F(Arm32DecoderStateTests,
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            d + regs  >
@@ -3934,8 +4082,10 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case4_TestCase4) {
-  StoreVectorRegisterListTester_Case4 tester;
-  tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
+  StoreVectorRegisterListTester_Case4 baseline_tester;
+  NamedActual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_VSTM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
 }
 
 // opcode(24:20)=01x10 & S(8)=1
@@ -3948,7 +4098,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -3985,6 +4135,8 @@ TEST_F(Arm32DecoderStateTests,
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            regs  >
@@ -3993,14 +4145,18 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case5_TestCase5) {
-  StoreVectorRegisterListTester_Case5 tester;
-  tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
+  StoreVectorRegisterListTester_Case5 baseline_tester;
+  NamedActual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_VSTM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
 }
 
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=0
@@ -4013,7 +4169,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -4030,7 +4186,8 @@ TEST_F(Arm32DecoderStateTests,
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
@@ -4059,8 +4216,10 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case6_TestCase6) {
-  LoadVectorRegisterListTester_Case6 tester;
-  tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
+  LoadVectorRegisterListTester_Case6 baseline_tester;
+  NamedActual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_VLDM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
 }
 
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=1
@@ -4073,7 +4232,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -4090,7 +4249,8 @@ TEST_F(Arm32DecoderStateTests,
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
@@ -4118,21 +4278,25 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case7_TestCase7) {
-  LoadVectorRegisterListTester_Case7 tester;
-  tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
+  LoadVectorRegisterListTester_Case7 baseline_tester;
+  NamedActual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_VLDM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
 }
 
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -4153,15 +4317,17 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case8_TestCase8) {
-  LoadVectorRegisterListTester_Case8 tester;
-  tester.Test("cccc11001d111101dddd1010iiiiiiii");
+  LoadVectorRegisterListTester_Case8 baseline_tester;
+  NamedActual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_VPOP actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11001d111101dddd1010iiiiiiii");
 }
 
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -4181,14 +4347,18 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case9_TestCase9) {
-  LoadVectorRegisterListTester_Case9 tester;
-  tester.Test("cccc11001d111101dddd1011iiiiiiii");
+  LoadVectorRegisterListTester_Case9 baseline_tester;
+  NamedActual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1_VPOP actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11001d111101dddd1011iiiiiiii");
 }
 
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=0
@@ -4201,7 +4371,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -4238,6 +4408,8 @@ TEST_F(Arm32DecoderStateTests,
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            d + regs  >
@@ -4247,8 +4419,10 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case10_TestCase10) {
-  StoreVectorRegisterListTester_Case10 tester;
-  tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
+  StoreVectorRegisterListTester_Case10 baseline_tester;
+  NamedActual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_VSTM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
 }
 
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=1
@@ -4261,7 +4435,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -4298,6 +4472,8 @@ TEST_F(Arm32DecoderStateTests,
 //            W(21)=1 &&
 //            Rn  ==
 //               Sp => DECODER_ERROR,
+//         Rn  ==
+//               Pc => FORBIDDEN_OPERANDS,
 //         regs  ==
 //               0 ||
 //            regs  >
@@ -4306,21 +4482,25 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case11_TestCase11) {
-  StoreVectorRegisterListTester_Case11 tester;
-  tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
+  StoreVectorRegisterListTester_Case11 baseline_tester;
+  NamedActual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_VSTM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
 }
 
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -4341,15 +4521,17 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case12_TestCase12) {
-  StoreVectorRegisterListTester_Case12 tester;
-  tester.Test("cccc11010d101101dddd1010iiiiiiii");
+  StoreVectorRegisterListTester_Case12 baseline_tester;
+  NamedActual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_VPUSH actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11010d101101dddd1010iiiiiiii");
 }
 
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
 //       Vd: Vd(15:12),
-//       actual: StoreVectorRegisterList,
+//       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
 //       baseline: StoreVectorRegisterList,
 //       constraints: ,
@@ -4369,14 +4551,18 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterListTester_Case13_TestCase13) {
-  StoreVectorRegisterListTester_Case13 tester;
-  tester.Test("cccc11010d101101dddd1011iiiiiiii");
+  StoreVectorRegisterListTester_Case13 baseline_tester;
+  NamedActual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1_VPUSH actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11010d101101dddd1011iiiiiiii");
 }
 
 // opcode(24:20)=10x11 & S(8)=0
@@ -4389,7 +4575,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -4406,7 +4592,8 @@ TEST_F(Arm32DecoderStateTests,
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //       regs: imm8,
 //       rule: VLDM,
@@ -4435,8 +4622,10 @@ TEST_F(Arm32DecoderStateTests,
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case14_TestCase14) {
-  LoadVectorRegisterListTester_Case14 tester;
-  tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
+  LoadVectorRegisterListTester_Case14 baseline_tester;
+  NamedActual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_VLDM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
 }
 
 // opcode(24:20)=10x11 & S(8)=1
@@ -4449,7 +4638,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(23),
 //       Vd: Vd(15:12),
 //       W: W(21),
-//       actual: LoadVectorRegisterList,
+//       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegisterList,
 //       constraints: ,
@@ -4466,7 +4655,8 @@ TEST_F(Arm32DecoderStateTests,
 //         imm8(7:0)],
 //       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
-//       n: Rn,
+//       is_literal_load: Rn  ==
+//               Pc,
 //       pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //       regs: imm8 / 2,
 //       rule: VLDM,
@@ -4494,20 +4684,25 @@ TEST_F(Arm32DecoderStateTests,
 //               32 => UNPREDICTABLE,
 //         VFPSmallRegisterBank() &&
 //            d + regs  >
-//               16 => UNPREDICTABLE],
+//               16 => UNPREDICTABLE,
+//         imm8(0)  ==
+//               1 => DEPRECATED],
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterListTester_Case15_TestCase15) {
-  LoadVectorRegisterListTester_Case15 tester;
-  tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
+  LoadVectorRegisterListTester_Case15 baseline_tester;
+  NamedActual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_VLDM actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
 }
 
 // opcode(24:20)=1xx00 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: StoreVectorRegister,
+//       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
+//       base: Rn,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
@@ -4521,14 +4716,17 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterTester_Case16_TestCase16) {
-  StoreVectorRegisterTester_Case16 tester;
-  tester.Test("cccc1101ud00nnnndddd1010iiiiiiii");
+  StoreVectorRegisterTester_Case16 baseline_tester;
+  NamedActual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1_VSTR actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1101ud00nnnndddd1010iiiiiiii");
 }
 
 // opcode(24:20)=1xx00 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: StoreVectorRegister,
+//       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
+//       base: Rn,
 //       baseline: StoreVectorRegister,
 //       constraints: ,
 //       defs: {},
@@ -4542,14 +4740,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        StoreVectorRegisterTester_Case17_TestCase17) {
-  StoreVectorRegisterTester_Case17 tester;
-  tester.Test("cccc1101ud00nnnndddd1011iiiiiiii");
+  StoreVectorRegisterTester_Case17 baseline_tester;
+  NamedActual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1_VSTR actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1101ud00nnnndddd1011iiiiiiii");
 }
 
 // opcode(24:20)=1xx01 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: LoadVectorRegister,
+//       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegister,
 //       constraints: ,
@@ -4563,14 +4763,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterTester_Case18_TestCase18) {
-  LoadVectorRegisterTester_Case18 tester;
-  tester.Test("cccc1101ud01nnnndddd1010iiiiiiii");
+  LoadVectorRegisterTester_Case18 baseline_tester;
+  NamedActual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_VLDR actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1101ud01nnnndddd1010iiiiiiii");
 }
 
 // opcode(24:20)=1xx01 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
-//       actual: LoadVectorRegister,
+//       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
 //       baseline: LoadVectorRegister,
 //       constraints: ,
@@ -4584,8 +4786,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
        LoadVectorRegisterTester_Case19_TestCase19) {
-  LoadVectorRegisterTester_Case19 tester;
-  tester.Test("cccc1101ud01nnnndddd1011iiiiiiii");
+  LoadVectorRegisterTester_Case19 baseline_tester;
+  NamedActual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_VLDR actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1101ud01nnnndddd1011iiiiiiii");
 }
 
 }  // namespace nacl_arm_test

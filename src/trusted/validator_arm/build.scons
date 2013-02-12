@@ -108,6 +108,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "coprocessor_instructions_and_supervisor_call",
                      "floating_point_data_processing_instructions",
                      "other_floating_point_data_processing_instructions",
+                     "extension_register_load_store_instructions",
                      ]
 
 # The list of tables in armv7.table that should test the automatically

@@ -2139,12 +2139,12 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   { cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0) }
   add := U=1;
   n := Rn;
+  base := Rn;
   defs := {};
   uses := {Rn};
 *Vldr *VdRnImm
   baseline := LoadVectorRegister;
   # TODO(karl): Add vector defs/uses etc.
-  base := Rn;
   is_literal_load := Rn == Pc;
 *Vldr32 *Vldr
   single_reg := true;
@@ -2183,11 +2183,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   single_regs := false; d := D:Vd;
   regs := imm8 / 2;
   safety := regs == 0 | regs > 16 | d + regs > 32 => UNPREDICTABLE &
-            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE
-            # & imm8(0) == 1 => DEPRECATED
-            # Note: The above safety condition is commented out because the
-            # test "regs == 0" already covers this case.
-            ;
+            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE &
+            imm8(0) == 1 => DEPRECATED;
   arch := (VFPv2, AdvSIMD);
 *Vpush *Vstackop
   baseline := StoreVectorRegisterList;
@@ -2200,11 +2197,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   single_regs := false; d := D:Vd;
   regs := imm8 / 2;
   safety := regs == 0 | regs > 16 | d + regs > 32 => UNPREDICTABLE &
-            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE
-            # & imm8(0) == 1 => DEPRECATED
-            # Note: The above safety condition is commented out because the
-            # test "regs == 0" already covers this case.
-            ;
+            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE &
+            imm8(0) == 1 => DEPRECATED;
   arch := (VFPv2, AdvSIMD);
 *VdRnRegs *VdRegs
   { cond(31:28), P(24), U(23), D(22), W(21), Rn(19:16),
@@ -2225,6 +2219,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *Vldm *VdRnRegs
   baseline := LoadVectorRegisterList;
   # TODO(karl): Add vector defs/uses etc.
+  is_literal_load := Rn == Pc;
   safety := super.safety &
             P=0 & U=1 & W=1 & Rn == Sp => DECODER_ERROR;  # VPOP
 *Vldm32 *Vldm
@@ -2238,17 +2233,15 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   d := D:Vd;  regs := imm8 / 2;
   safety := super.safety &
             regs == 0 | regs > 16 | d + regs > 32 => UNPREDICTABLE &
-            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE
-            # & imm8(0) == 1 => DEPRECATED
-            # Note: The above safety condition is commented out because the
-            # test "regs == 0" already covers this case.
-            ;
+            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE &
+            imm8(0) == 1 => DEPRECATED;
   arch := (VFPv2, AdvSIMD);
 *Vstm *VdRnRegs
   baseline := StoreVectorRegisterList;
   # TODO(karl): Add vector defs/uses etc.
   safety := super.safety &
-            P=1 & U=0 & W=1 & Rn == Sp => DECODER_ERROR;  # VPUSH
+            P=1 & U=0 & W=1 & Rn == Sp => DECODER_ERROR &  # VPUSH
+            Rn == Pc => FORBIDDEN_OPERANDS;
 *Vstm32 *Vstm
   single_regs := true;
   d := Vd:D;  regs := imm8;
@@ -2260,16 +2253,10 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   d := D:Vd;  regs := imm8 / 2;
   safety := super.safety &
             regs == 0 | regs > 16 | d + regs > 32 => UNPREDICTABLE &
-            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE
-            # & imm8(0) == 1 => DEPRECATED
-            # Note: The above safety condition is commented out because the
-            # test "regs == 0" already covers this case.
-            ;
+            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE &
+            imm8(0) == 1 => DEPRECATED;
   arch := (VFPv2, AdvSIMD);
 +--
-#
-# TODO(karl): Decide if baseline classes should also be actual classes, once
-#             we finish fixing all uses of StoreCoprocessor and LoadCoprocessor.
 # TODO(jfb) The architecture for these instructions only includes Advanced SIMD
 #           for the 64-bit variants (coproc==0b1011).
 #

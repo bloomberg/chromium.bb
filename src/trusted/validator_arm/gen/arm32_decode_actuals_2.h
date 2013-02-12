@@ -5828,6 +5828,8 @@ class Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss1
 //    defs: {inst(19:16)
 //         if inst(21)=1
 //         else 32},
+//    is_literal_load: 15  ==
+//            inst(19:16),
 //    safety: [0  ==
 //            inst(7:0) ||
 //         32  <=
@@ -5861,6 +5863,7 @@ class Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss1
 //    U: U(23),
 //    Vd: Vd(15:12),
 //    W: W(21),
+//    actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: VFPv2,
 //    base: Rn,
@@ -5882,6 +5885,8 @@ class Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss1
 //    generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
+//    is_literal_load: Rn  ==
+//            Pc,
 //    n: Rn,
 //    pattern: cccc110pudw1nnnndddd1010iiiiiiii,
 //    regs: imm8,
@@ -5918,6 +5923,7 @@ class Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1
      : ClassDecoder() {}
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
@@ -5934,12 +5940,16 @@ class Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1
 //    defs: {inst(19:16)
 //         if inst(21)=1
 //         else 32},
+//    is_literal_load: 15  ==
+//            inst(19:16),
 //    safety: [0  ==
 //            inst(7:0) / 2 ||
 //         16  <=
 //            inst(7:0) / 2 ||
 //         32  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      1  ==
+//            inst(7:0)(0) => DEPRECATED,
 //      15  ==
 //            inst(19:16) &&
 //         inst(21)=1 => UNPREDICTABLE,
@@ -5972,6 +5982,7 @@ class Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1
 //    U: U(23),
 //    Vd: Vd(15:12),
 //    W: W(21),
+//    actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    base: Rn,
@@ -5994,6 +6005,8 @@ class Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1
 //    generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //    imm32: ZeroExtend(imm8:'00'(1:0), 32),
 //    imm8: imm8(7:0),
+//    is_literal_load: Rn  ==
+//            Pc,
 //    n: Rn,
 //    pattern: cccc110pudw1nnnndddd1011iiiiiiii,
 //    regs: imm8 / 2,
@@ -6022,7 +6035,9 @@ class Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1
 //            32 => UNPREDICTABLE,
 //      VFPSmallRegisterBank() &&
 //         d + regs  >
-//            16 => UNPREDICTABLE],
+//            16 => UNPREDICTABLE,
+//      imm8(0)  ==
+//            1 => DEPRECATED],
 //    single_regs: false,
 //    small_imm_base_wb: wback,
 //    uses: {Rn},
@@ -6034,6 +6049,7 @@ class Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1
      : ClassDecoder() {}
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
@@ -6058,6 +6074,7 @@ class Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1
 //    Rn: Rn(19:16),
 //    U: U(23),
 //    Vd: Vd(15:12),
+//    actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: VFPv2,
 //    base: Rn,
@@ -6085,6 +6102,7 @@ class Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1
 //    Rn: Rn(19:16),
 //    U: U(23),
 //    Vd: Vd(15:12),
+//    actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    base: Rn,
@@ -7761,6 +7779,7 @@ class Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1
 //   {D: D(22),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //    arch: VFPv2,
 //    base: Sp,
 //    baseline: LoadVectorRegisterList,
@@ -7788,6 +7807,7 @@ class Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1
 //   {D: D(22),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //    arch: VFPv2,
 //    base: Sp,
 //    baseline: StoreVectorRegisterList,
@@ -7837,6 +7857,8 @@ class Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1
 //            inst(7:0) / 2 ||
 //         32  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      1  ==
+//            inst(7:0)(0) => DEPRECATED,
 //      VFPSmallRegisterBank() &&
 //         16  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE],
@@ -7847,6 +7869,7 @@ class Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1
 //   {D: D(22),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    base: Sp,
 //    baseline: LoadVectorRegisterList,
@@ -7870,7 +7893,9 @@ class Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1
 //            32 => UNPREDICTABLE,
 //      VFPSmallRegisterBank() &&
 //         d + regs  >
-//            16 => UNPREDICTABLE],
+//            16 => UNPREDICTABLE,
+//      imm8(0)  ==
+//            1 => DEPRECATED],
 //    single_regs: false,
 //    small_imm_base_wb: true,
 //    true: true,
@@ -7880,6 +7905,7 @@ class Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1
 //   {D: D(22),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    base: Sp,
 //    baseline: StoreVectorRegisterList,
@@ -7903,7 +7929,9 @@ class Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1
 //            32 => UNPREDICTABLE,
 //      VFPSmallRegisterBank() &&
 //         d + regs  >
-//            16 => UNPREDICTABLE],
+//            16 => UNPREDICTABLE,
+//      imm8(0)  ==
+//            1 => DEPRECATED],
 //    single_regs: false,
 //    small_imm_base_wb: true,
 //    true: true,
@@ -9494,6 +9522,8 @@ class Actual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1
 //      15  ==
 //            inst(19:16) &&
 //         inst(21)=1 => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) => FORBIDDEN_OPERANDS,
 //      inst(23)  ==
 //            inst(24) &&
 //         inst(21)=1 => UNDEFINED,
@@ -9520,6 +9550,7 @@ class Actual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1
 //    U: U(23),
 //    Vd: Vd(15:12),
 //    W: W(21),
+//    actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: VFPv2,
 //    base: Rn,
@@ -9561,6 +9592,8 @@ class Actual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1
 //         W(21)=1 &&
 //         Rn  ==
 //            Sp => DECODER_ERROR,
+//      Rn  ==
+//            Pc => FORBIDDEN_OPERANDS,
 //      regs  ==
 //            0 ||
 //         d + regs  >
@@ -9599,9 +9632,13 @@ class Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1
 //            inst(7:0) / 2 ||
 //         32  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      1  ==
+//            inst(7:0)(0) => DEPRECATED,
 //      15  ==
 //            inst(19:16) &&
 //         inst(21)=1 => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) => FORBIDDEN_OPERANDS,
 //      VFPSmallRegisterBank() &&
 //         16  <=
 //            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
@@ -9631,6 +9668,7 @@ class Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1
 //    U: U(23),
 //    Vd: Vd(15:12),
 //    W: W(21),
+//    actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    base: Rn,
@@ -9673,6 +9711,8 @@ class Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1
 //         W(21)=1 &&
 //         Rn  ==
 //            Sp => DECODER_ERROR,
+//      Rn  ==
+//            Pc => FORBIDDEN_OPERANDS,
 //      regs  ==
 //            0 ||
 //         regs  >
@@ -9681,7 +9721,9 @@ class Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1
 //            32 => UNPREDICTABLE,
 //      VFPSmallRegisterBank() &&
 //         d + regs  >
-//            16 => UNPREDICTABLE],
+//            16 => UNPREDICTABLE,
+//      imm8(0)  ==
+//            1 => DEPRECATED],
 //    single_regs: false,
 //    small_imm_base_wb: wback,
 //    uses: {Rn},
@@ -9705,7 +9747,8 @@ class Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1
 // Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1
 //
 // Actual:
-//   {defs: {},
+//   {base: inst(19:16),
+//    defs: {},
 //    safety: [15  ==
 //            inst(19:16) => FORBIDDEN_OPERANDS],
 //    uses: {inst(19:16)}}
@@ -9716,8 +9759,10 @@ class Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1
 //    Rn: Rn(19:16),
 //    U: U(23),
 //    Vd: Vd(15:12),
+//    actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: VFPv2,
+//    base: Rn,
 //    baseline: StoreVectorRegister,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -9742,8 +9787,10 @@ class Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1
 //    Rn: Rn(19:16),
 //    U: U(23),
 //    Vd: Vd(15:12),
+//    actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: ['VFPv2', 'AdvSIMD'],
+//    base: Rn,
 //    baseline: StoreVectorRegister,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -9766,6 +9813,7 @@ class Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1
  public:
   Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1()
      : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
