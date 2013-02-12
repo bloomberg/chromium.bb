@@ -31,7 +31,7 @@ class FakeCdmVideoDecoder : public CdmVideoDecoder {
   bool is_initialized_;
   cdm::Size video_size_;
 
-  cdm::Allocator* const allocator_;
+  cdm::Host* const host_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCdmVideoDecoder);
 };

@@ -128,11 +128,11 @@ static void CopyPlane(const uint8_t* source,
   }
 }
 
-FFmpegCdmVideoDecoder::FFmpegCdmVideoDecoder(cdm::Allocator* allocator)
+FFmpegCdmVideoDecoder::FFmpegCdmVideoDecoder(cdm::Host* host)
     : codec_context_(NULL),
       av_frame_(NULL),
       is_initialized_(false),
-      allocator_(allocator) {
+      host_(host) {
 }
 
 FFmpegCdmVideoDecoder::~FFmpegCdmVideoDecoder() {
@@ -275,9 +275,9 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
   const int space_required = y_size + (uv_size * 2);
 
   DCHECK(!cdm_video_frame->FrameBuffer());
-  cdm_video_frame->SetFrameBuffer(allocator_->Allocate(space_required));
+  cdm_video_frame->SetFrameBuffer(host_->Allocate(space_required));
   if (!cdm_video_frame->FrameBuffer()) {
-    LOG(ERROR) << "CopyAvFrameTo() cdm::Allocator::Allocate failed.";
+    LOG(ERROR) << "CopyAvFrameTo() cdm::Host::Allocate failed.";
     return false;
   }
   cdm_video_frame->FrameBuffer()->SetSize(space_required);

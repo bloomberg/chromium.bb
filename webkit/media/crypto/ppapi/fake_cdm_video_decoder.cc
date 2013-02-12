@@ -9,9 +9,9 @@
 
 namespace webkit_media {
 
-FakeCdmVideoDecoder::FakeCdmVideoDecoder(cdm::Allocator* allocator)
+FakeCdmVideoDecoder::FakeCdmVideoDecoder(cdm::Host* host)
     : is_initialized_(false),
-      allocator_(allocator) {
+      host_(host) {
 }
 
 FakeCdmVideoDecoder::~FakeCdmVideoDecoder() {
@@ -67,7 +67,7 @@ cdm::Status FakeCdmVideoDecoder::DecodeFrame(const uint8_t* compressed_frame,
   int u_offset = v_offset + uv_stride * uv_rows + kPlanePadding;
   int frame_size = u_offset + uv_stride * uv_rows + kPlanePadding;
 
-  decoded_frame->SetFrameBuffer(allocator_->Allocate(frame_size));
+  decoded_frame->SetFrameBuffer(host_->Allocate(frame_size));
   decoded_frame->FrameBuffer()->SetSize(frame_size);
 
   decoded_frame->SetFormat(cdm::kYv12);

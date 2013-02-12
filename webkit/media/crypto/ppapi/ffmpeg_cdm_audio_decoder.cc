@@ -80,9 +80,9 @@ static void CdmAudioDecoderConfigToAVCodecContext(
   }
 }
 
-FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(cdm::Allocator* allocator)
+FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(cdm::Host* host)
     : is_initialized_(false),
-      allocator_(allocator),
+      host_(host),
       codec_context_(NULL),
       av_frame_(NULL),
       bits_per_channel_(0),
@@ -351,9 +351,9 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
 
   if (!serialized_audio_frames_.empty()) {
     decoded_frames->SetFrameBuffer(
-        allocator_->Allocate(serialized_audio_frames_.size()));
+        host_->Allocate(serialized_audio_frames_.size()));
     if (!decoded_frames->FrameBuffer()) {
-      LOG(ERROR) << "DecodeBuffer() cdm::Allocator::Allocate failed.";
+      LOG(ERROR) << "DecodeBuffer() cdm::Host::Allocate failed.";
       return cdm::kDecodeError;
     }
     memcpy(decoded_frames->FrameBuffer()->Data(),

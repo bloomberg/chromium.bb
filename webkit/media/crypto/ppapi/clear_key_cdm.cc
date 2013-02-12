@@ -125,18 +125,22 @@ void INITIALIZE_CDM_MODULE() {
 void DeinitializeCdmModule() {
 }
 
-cdm::ContentDecryptionModule* CreateCdmInstance(const char* key_system_arg,
-                                                int key_system_size,
-                                                cdm::Allocator* allocator,
-                                                cdm::Host* host) {
+void* CreateCdmInstance(
+    int cdm_interface_version,
+    const char* key_system, int key_system_size,
+    GetCdmHostFunc get_cdm_host_func, void* user_data) {
   DVLOG(1) << "CreateCdmInstance()";
-  DCHECK_EQ(std::string(key_system_arg, key_system_size), kExternalClearKey);
-  return new webkit_media::ClearKeyCdm(allocator, host);
-}
 
-void DestroyCdmInstance(cdm::ContentDecryptionModule* instance) {
-  DVLOG(1) << "DestroyCdmInstance()";
-  delete instance;
+  if (cdm_interface_version != cdm::kCdmInterfaceVersion)
+    return NULL;
+
+  cdm::Host* host = static_cast<cdm::Host*>(
+      get_cdm_host_func(cdm::kHostInterfaceVersion, user_data));
+  if (!host)
+    return NULL;
+
+  return static_cast<cdm::ContentDecryptionModule*>(
+      new webkit_media::ClearKeyCdm(host));
 }
 
 const char* GetCdmVersion() {
@@ -191,16 +195,14 @@ void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
   NOTREACHED();
 }
 
-ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator, cdm::Host* host)
+ClearKeyCdm::ClearKeyCdm(cdm::Host* host)
     : decryptor_(base::Bind(&Client::KeyAdded, base::Unretained(&client_)),
                  base::Bind(&Client::KeyError, base::Unretained(&client_)),
                  base::Bind(&Client::KeyMessage, base::Unretained(&client_)),
                  base::Bind(&Client::NeedKey, base::Unretained(&client_))),
-      allocator_(allocator),
       host_(host),
       timer_delay_ms_(kInitialTimerDelayMs),
       timer_set_(false) {
-  DCHECK(allocator_);
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   channel_count_ = 0;
   bits_per_channel_ = 0;
@@ -314,7 +316,7 @@ cdm::Status ClearKeyCdm::Decrypt(
 
   DCHECK(buffer->GetData());
   decrypted_block->SetDecryptedBuffer(
-      allocator_->Allocate(buffer->GetDataSize()));
+      host_->Allocate(buffer->GetDataSize()));
   memcpy(reinterpret_cast<void*>(decrypted_block->DecryptedBuffer()->Data()),
          buffer->GetData(),
          buffer->GetDataSize());
@@ -328,7 +330,7 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig& audio_decoder_config) {
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (!audio_decoder_)
-    audio_decoder_.reset(new webkit_media::FFmpegCdmAudioDecoder(allocator_));
+    audio_decoder_.reset(new webkit_media::FFmpegCdmAudioDecoder(host_));
 
   if (!audio_decoder_->Initialize(audio_decoder_config))
     return cdm::kSessionError;
@@ -353,7 +355,7 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
   }
 
   // Any uninitialized decoder will be replaced.
-  video_decoder_ = CreateVideoDecoder(allocator_, video_decoder_config);
+  video_decoder_ = CreateVideoDecoder(host_, video_decoder_config);
   if (!video_decoder_)
     return cdm::kSessionError;
 
@@ -458,6 +460,11 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 }
 
+void ClearKeyCdm::Destroy() {
+  DVLOG(1) << "Destroy()";
+  delete this;
+}
+
 void ClearKeyCdm::ScheduleNextHeartBeat() {
   // Prepare the next heartbeat message and set timer.
   std::ostringstream msg_stream;
@@ -526,7 +533,7 @@ int ClearKeyCdm::GenerateFakeAudioFramesFromDuration(
   int64 timestamp = CurrentTimeStampInMicroseconds();
 
   const int kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
-  audio_frames->SetFrameBuffer(allocator_->Allocate(kHeaderSize + frame_size));
+  audio_frames->SetFrameBuffer(host_->Allocate(kHeaderSize + frame_size));
   uint8_t* data = audio_frames->FrameBuffer()->Data();
 
   memcpy(data, &timestamp, sizeof(timestamp));

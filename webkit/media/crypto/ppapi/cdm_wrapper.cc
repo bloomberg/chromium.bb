@@ -255,15 +255,14 @@ class PpbBuffer : public cdm::Buffer {
   DISALLOW_COPY_AND_ASSIGN(PpbBuffer);
 };
 
-class PpbBufferAllocator : public cdm::Allocator {
+class PpbBufferAllocator {
  public:
   explicit PpbBufferAllocator(pp::Instance* instance)
       : instance_(instance),
         next_buffer_id_(1) {}
-  virtual ~PpbBufferAllocator() {}
+  ~PpbBufferAllocator() {}
 
-  // cdm::Allocator implementation.
-  virtual cdm::Buffer* Allocate(int32_t capacity) OVERRIDE;
+  cdm::Buffer* Allocate(int32_t capacity);
 
   // Releases the buffer with |buffer_id|. A buffer can be recycled after
   // it is released.
@@ -474,6 +473,9 @@ class AudioFramesImpl : public cdm::AudioFrames {
   DISALLOW_COPY_AND_ASSIGN(AudioFramesImpl);
 };
 
+// GetCdmHostFunc implementation.
+void* GetCdmHost(int host_interface_version, void* user_data);
+
 // A wrapper class for abstracting away PPAPI interaction and threading for a
 // Content Decryption Module (CDM).
 class CdmWrapper : public pp::Instance,
@@ -517,6 +519,7 @@ class CdmWrapper : public pp::Instance,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
 
   // cdm::Host implementation.
+  virtual cdm::Buffer* Allocate(int32_t capacity) OVERRIDE;
   virtual void SetTimer(int64_t delay_ms, void* context) OVERRIDE;
   virtual double GetCurrentWallTimeInSeconds() OVERRIDE;
   virtual void SendKeyMessage(
@@ -527,6 +530,8 @@ class CdmWrapper : public pp::Instance,
                             int32_t session_id_length,
                             cdm::MediaKeyError error_code,
                             uint32_t system_code) OVERRIDE;
+  virtual void GetPrivateData(int32_t* instance,
+                              GetPrivateInterface* get_interface) OVERRIDE;
 
  private:
   struct SessionInfo {
@@ -541,6 +546,8 @@ class CdmWrapper : public pp::Instance,
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
   typedef linked_ptr<VideoFrameImpl> LinkedVideoFrame;
   typedef linked_ptr<AudioFramesImpl> LinkedAudioFrames;
+
+  bool CreateCdmInstance(const std::string& key_system);
 
   void SendUnknownKeyError(const std::string& key_system,
                            const std::string& session_id);
@@ -611,7 +618,17 @@ CdmWrapper::CdmWrapper(PP_Instance instance, pp::Module* module)
 
 CdmWrapper::~CdmWrapper() {
   if (cdm_)
-    DestroyCdmInstance(cdm_);
+    cdm_->Destroy();
+}
+
+bool CdmWrapper::CreateCdmInstance(const std::string& key_system) {
+  PP_DCHECK(!cdm_);
+  cdm_ = static_cast<cdm::ContentDecryptionModule*>(
+      ::CreateCdmInstance(cdm::kCdmInterfaceVersion,
+                          key_system.data(), key_system.size(),
+                          GetCdmHost, this));
+
+  return (cdm_ != NULL);
 }
 
 void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
@@ -621,18 +638,17 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
   PP_DCHECK(key_system_.empty() || key_system_ == key_system);
 
   if (!cdm_) {
-    cdm_ = CreateCdmInstance(key_system.data(), key_system.size(),
-                             &allocator_, this);
-    PP_DCHECK(cdm_);
-    if (!cdm_) {
+    if (!CreateCdmInstance(key_system)) {
       SendUnknownKeyError(key_system, "");
       return;
     }
   }
+  PP_DCHECK(cdm_);
 
   // Must be set here in case the CDM synchronously calls a cdm::Host method.
   // Clear below on error.
-  // TODO(ddorwin): Remove this when key_system is added to cdm::Host methods.
+  // TODO(ddorwin): Set/clear key_system_ & cdm_ at same time; clear both on
+  // error below.
   key_system_ = key_system;
   cdm::Status status = cdm_->GenerateKeyRequest(
       type.data(), type.size(),
@@ -860,6 +876,10 @@ void CdmWrapper::DecryptAndDecode(
   }
 }
 
+cdm::Buffer* CdmWrapper::Allocate(int32_t capacity) {
+  return allocator_.Allocate(capacity);
+}
+
 void CdmWrapper::SetTimer(int64_t delay_ms, void* context) {
   // NOTE: doesn't really need to run on the main thread; could just as well run
   // on a helper thread if |cdm_| were thread-friendly and care was taken.  We
@@ -902,11 +922,16 @@ void CdmWrapper::SendKeyError(const char* session_id,
                        system_code);
 }
 
+void CdmWrapper::GetPrivateData(int32_t* instance,
+                                cdm::Host::GetPrivateInterface* get_interface) {
+  *instance = pp_instance();
+  *get_interface = pp::Module::Get()->get_browser_interface();
+}
+
 void CdmWrapper::SendUnknownKeyError(const std::string& key_system,
                                      const std::string& session_id) {
   SendKeyErrorInternal(key_system, session_id, cdm::kUnknownError, 0);
 }
-
 
 void CdmWrapper::SendKeyAdded(const std::string& key_system,
                               const std::string& session_id) {
@@ -1115,6 +1140,17 @@ bool CdmWrapper::IsValidVideoFrame(const LinkedVideoFrame& video_frame) {
   }
 
   return true;
+}
+
+void* GetCdmHost(int host_interface_version, void* user_data) {
+  if (!host_interface_version || !user_data)
+    return NULL;
+
+  if (host_interface_version != cdm::kHostInterfaceVersion)
+    return NULL;
+
+  CdmWrapper* cdm_wrapper = static_cast<CdmWrapper*>(user_data);
+  return static_cast<cdm::Host*>(cdm_wrapper);
 }
 
 // This object is the global object representing this plugin library as long

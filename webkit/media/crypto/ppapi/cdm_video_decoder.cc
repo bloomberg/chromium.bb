@@ -22,11 +22,10 @@
 namespace webkit_media {
 
 scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
-    cdm::Allocator* allocator,
-    const cdm::VideoDecoderConfig& config) {
+    cdm::Host* host, const cdm::VideoDecoderConfig& config) {
   scoped_ptr<CdmVideoDecoder> video_decoder;
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-  video_decoder.reset(new FakeCdmVideoDecoder(allocator));
+  video_decoder.reset(new FakeCdmVideoDecoder(host));
 
   if (!video_decoder->Initialize(config))
     video_decoder.reset();
@@ -34,7 +33,7 @@ scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
 
 #if defined(CLEAR_KEY_CDM_USE_LIBVPX_DECODER)
   if (config.codec == cdm::VideoDecoderConfig::kCodecVp8) {
-    video_decoder.reset(new LibvpxCdmVideoDecoder(allocator));
+    video_decoder.reset(new LibvpxCdmVideoDecoder(host));
 
     if (!video_decoder->Initialize(config))
       video_decoder.reset();
@@ -44,7 +43,7 @@ scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
 #endif
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-  video_decoder.reset(new FFmpegCdmVideoDecoder(allocator));
+  video_decoder.reset(new FFmpegCdmVideoDecoder(host));
 
   if (!video_decoder->Initialize(config))
     video_decoder.reset();

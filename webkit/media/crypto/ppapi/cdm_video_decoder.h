@@ -36,8 +36,7 @@ class CdmVideoDecoder {
 // |config.codec|. Returns a scoped_ptr containing a non-null initialized
 // CdmVideoDecoder* upon success.
 scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
-    cdm::Allocator* allocator,
-    const cdm::VideoDecoderConfig& config);
+    cdm::Host* host, const cdm::VideoDecoderConfig& config);
 
 }  // namespace webkit_media
 

@@ -29,7 +29,7 @@ namespace webkit_media {
 // solution for this. See http://crbug.com/169203
 class FFmpegCdmAudioDecoder {
  public:
-  explicit FFmpegCdmAudioDecoder(cdm::Allocator* allocator);
+  explicit FFmpegCdmAudioDecoder(cdm::Host* host);
   ~FFmpegCdmAudioDecoder();
   bool Initialize(const cdm::AudioDecoderConfig& config);
   void Deinitialize();
@@ -60,7 +60,7 @@ class FFmpegCdmAudioDecoder {
 
   bool is_initialized_;
 
-  cdm::Allocator* const allocator_;
+  cdm::Host* const host_;
 
   // FFmpeg structures owned by this object.
   AVCodecContext* codec_context_;

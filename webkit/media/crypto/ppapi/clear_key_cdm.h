@@ -33,7 +33,7 @@ class FFmpegCdmAudioDecoder;
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public cdm::ContentDecryptionModule {
  public:
-  ClearKeyCdm(cdm::Allocator* allocator, cdm::Host* host);
+  explicit ClearKeyCdm(cdm::Host* host);
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
@@ -60,6 +60,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   virtual cdm::Status DecryptAndDecodeSamples(
       const cdm::InputBuffer& encrypted_buffer,
       cdm::AudioFrames* audio_frames) OVERRIDE;
+  virtual void Destroy() OVERRIDE;
 
  private:
   // TODO(xhwang): After we removed DecryptorClient. We probably can also remove
@@ -141,7 +142,6 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   // simultaneously.
   base::Lock client_lock_;
 
-  cdm::Allocator* const allocator_;
   cdm::Host* host_;
 
   std::string heartbeat_session_id_;
