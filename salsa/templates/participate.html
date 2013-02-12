@@ -91,6 +91,21 @@
       // Preform cleanup and cosmetic changes
       removeExtraRanks(container);
       adjustSizes(container);
+      removeUnneededStartingBox();
+    }
+
+    function removeUnneededStartingBox() {
+        // Check if there are any rankable objects remaining in the starting box
+        // If they've all been moved elsewhere, get rid of the arrow and box
+        var box = document.getElementById("starting_box");
+        if (box) {
+            var num_remaining = box.innerHTML.search("rankable");
+            if (num_remaining <= 0) {
+                box.parentNode.removeChild(box);
+                var arrow = document.getElementById("arrow");
+                arrow.parentNode.removeChild(arrow);
+            }
+        }
     }
 
     function removeExtraRanks(container) {
@@ -212,8 +227,8 @@
   </div>
 
   <p>
-    Drag the following blocks around to sort the treatments you just
-    experienced from best to worst.
+    Drag the following blocks into the gray rectangle to sort the treatments
+    you just experienced from best to worst.
   </p>
   <p>
     The better a treatment is, the higher it should be placed.  If two
@@ -222,9 +237,10 @@
     information as well.
   </p>
 
+  <center>
   <table><tr>
     <td>
-      <table>
+      <table id="starting_box">
       {% for treatment in treatments %}
         <tr><td>
         <div class="rankable" id="test{{ loop.index0 }}" draggable="true"
@@ -235,7 +251,10 @@
       {% endfor %}
       </table>
     </td>
-
+    <td id="arrow">
+       <div class="arrowbody"></div>
+       <div class="arrowhead"></div>
+    </td>
     <td>
       <table>
         <tr><th>&uarr; Better &uarr;</th></tr>
@@ -250,6 +269,7 @@
       </table>
     </td>
   </tr></table>
+  </center>
 
   <p>
     (Optional) If you have any comments you would like to include you may do

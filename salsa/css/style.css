@@ -232,3 +232,23 @@ h2 {
 .giant {
     font-size: 20px;
 }
+
+.arrowbody {
+    background: #ccc;
+    margin-top: 6px;
+    margin-left: 12px;
+    width: 10px;
+    height: 12px;
+    float: left;
+}
+
+.arrowhead {
+    border-left: 12px solid #ccc;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-right: 12px solid transparent;
+    font-size: 0;
+    line-height: 0;
+    width: 0;
+    float: right;
+}
