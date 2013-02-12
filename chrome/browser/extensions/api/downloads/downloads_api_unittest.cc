@@ -1727,9 +1727,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Valid file URLs are valid URLs.
+#if defined(OS_WIN) && defined(USE_AURA)
 // Disabled due to crbug.com/175711
+#define MAYBE_DownloadExtensionTest_Download_File \
+        DISABLED_DownloadExtensionTest_Download_File
+#else
+#define MAYBE_DownloadExtensionTest_Download_File \
+        DownloadExtensionTest_Download_File
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DISABLED_DownloadExtensionTest_Download_File) {
+                       MAYBE_DownloadExtensionTest_Download_File) {
   GoOnTheRecord();
   CHECK(StartTestServer());
   LoadExtension("downloads_split");

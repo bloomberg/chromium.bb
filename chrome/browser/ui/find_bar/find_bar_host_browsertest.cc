@@ -281,9 +281,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
 
 // Verify search for text within special URLs such as chrome:history,
 // chrome://downloads, data directory
+#if defined(OS_WIN) && defined(USE_AURA)
 // Disabled due to crbug.com/175711
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       DISABLED_SearchWithinSpecialURL) {
+#define MAYBE_SearchWithinSpecialURL \
+        DISABLED_SearchWithinSpecialURL
+#else
+#define MAYBE_SearchWithinSpecialURL \
+        SearchWithinSpecialURL
+#endif
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_SearchWithinSpecialURL) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
