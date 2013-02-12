@@ -133,6 +133,26 @@ _PREDEFINED_CONSTS = {
     'VFPNegMul_VNMLA': dgen_core.Literal(1),
     'VFPNegMul_VNMLS': dgen_core.Literal(2),
     'VFPNegMul_VNMUL': dgen_core.Literal(3),
+    # conditions for conditional instructions (see enum Condition in model.h).
+    # Possible values for the condition field, from the ARM ARM section A8.3.
+    'cond_EQ': dgen_core.Literal(0x0),
+    'cond_NE': dgen_core.Literal(0x1),
+    'cond_CS': dgen_core.Literal(0x2),
+    'cond_CC': dgen_core.Literal(0x3),
+    'cond_MI': dgen_core.Literal(0x4),
+    'cond_PL': dgen_core.Literal(0x5),
+    'cond_VS': dgen_core.Literal(0x6),
+    'cond_VC': dgen_core.Literal(0x7),
+    'cond_HI': dgen_core.Literal(0x8),
+    'cond_LS': dgen_core.Literal(0x9),
+    'cond_GE': dgen_core.Literal(0xA),
+    'cond_LT': dgen_core.Literal(0xB),
+    'cond_GT': dgen_core.Literal(0xC),
+    'cond_LE': dgen_core.Literal(0xD),
+    'cond_AL': dgen_core.Literal(0xE),
+    'cond_unconditional': dgen_core.Literal(0xF),
+    'cond_HS': dgen_core.Literal(0x2),
+    'cond_LO': dgen_core.Literal(0x3),
     }
 
 # Predefined regular expressions.

@@ -38,7 +38,7 @@ namespace nacl_arm_test {
 //    = {None: 32,
 //       Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: MoveVfpRegisterOp,
+//       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: MoveVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt
@@ -120,7 +120,7 @@ bool MoveVfpRegisterOpTesterCase0
 // L(20)=0 & C(8)=0 & A(23:21)=111 & $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: VfpUsesRegOp,
+//       actual: Actual_VMSR_cccc111011100001tttt101000010000_case_1,
 //       baseline: VfpUsesRegOp,
 //       constraints: ,
 //       defs: {},
@@ -190,7 +190,7 @@ bool VfpUsesRegOpTesterCase1
 // L(20)=0 & C(8)=1 & A(23:21)=0xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: MoveVfpRegisterOpWithTypeSel,
+//       actual: Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1,
 //       baseline: MoveVfpRegisterOpWithTypeSel,
 //       constraints: ,
 //       defs: {},
@@ -271,15 +271,19 @@ bool MoveVfpRegisterOpWithTypeSelTesterCase2
 //       Q: Q(21),
 //       Rt: Rt(15:12),
 //       Vd: Vd(19:16),
-//       actual: DuplicateToAdvSIMDRegisters,
+//       actual: Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1,
 //       baseline: DuplicateToAdvSIMDRegisters,
+//       cond: cond(31:28),
+//       cond_AL: 14,
 //       constraints: ,
 //       defs: {},
-//       fields: [B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
-//       generated_baseline: VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
+//       fields: [cond(31:28), B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
+//       generated_baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //       pattern: cccc11101bq0ddddtttt1011d0e10000,
-//       rule: VDUP_arm_core_register,
-//       safety: [Q(21)=1 &&
+//       rule: VDUP_ARM_core_register,
+//       safety: [cond  !=
+//               cond_AL => DEPRECATED,
+//         Q(21)=1 &&
 //            Vd(0)=1 => UNDEFINED,
 //         B:E(1:0)=11 => UNDEFINED,
 //         t  ==
@@ -334,6 +338,10 @@ bool DuplicateToAdvSIMDRegistersTesterCase3
   NC_PRECOND(DuplicateToAdvSIMDRegistersTester::
                ApplySanityChecks(inst, decoder));
 
+  // safety: cond  !=
+  //          cond_AL => DEPRECATED
+  EXPECT_TRUE(((((inst.Bits() & 0xF0000000) >> 28)) == (14)));
+
   // safety: Q(21)=1 &&
   //       Vd(0)=1 => UNDEFINED
   EXPECT_TRUE(!(((inst.Bits() & 0x00200000)  ==
@@ -359,7 +367,7 @@ bool DuplicateToAdvSIMDRegistersTesterCase3
 //    = {None: 32,
 //       Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: MoveVfpRegisterOp,
+//       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: MoveVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt
@@ -442,7 +450,7 @@ bool MoveVfpRegisterOpTesterCase4
 //    = {NZCV: 16,
 //       Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: VfpMrsOp,
+//       actual: Actual_VMRS_cccc111011110001tttt101000010000_case_1,
 //       baseline: VfpMrsOp,
 //       constraints: ,
 //       defs: {NZCV
@@ -515,7 +523,7 @@ bool VfpMrsOpTesterCase5
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       U: U(23),
-//       actual: MoveVfpRegisterOpWithTypeSel,
+//       actual: Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1,
 //       baseline: MoveVfpRegisterOpWithTypeSel,
 //       constraints: ,
 //       defs: {Rt},
@@ -598,7 +606,7 @@ bool MoveVfpRegisterOpWithTypeSelTesterCase6
 //    = {None: 32,
 //       Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: MoveVfpRegisterOp,
+//       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: MoveVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt
@@ -628,7 +636,7 @@ class MoveVfpRegisterOpTester_Case0
 // L(20)=0 & C(8)=0 & A(23:21)=111 & $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: VfpUsesRegOp,
+//       actual: Actual_VMSR_cccc111011100001tttt101000010000_case_1,
 //       baseline: VfpUsesRegOp,
 //       constraints: ,
 //       defs: {},
@@ -652,7 +660,7 @@ class VfpUsesRegOpTester_Case1
 // L(20)=0 & C(8)=1 & A(23:21)=0xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: MoveVfpRegisterOpWithTypeSel,
+//       actual: Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1,
 //       baseline: MoveVfpRegisterOpWithTypeSel,
 //       constraints: ,
 //       defs: {},
@@ -683,15 +691,19 @@ class MoveVfpRegisterOpWithTypeSelTester_Case2
 //       Q: Q(21),
 //       Rt: Rt(15:12),
 //       Vd: Vd(19:16),
-//       actual: DuplicateToAdvSIMDRegisters,
+//       actual: Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1,
 //       baseline: DuplicateToAdvSIMDRegisters,
+//       cond: cond(31:28),
+//       cond_AL: 14,
 //       constraints: ,
 //       defs: {},
-//       fields: [B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
-//       generated_baseline: VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
+//       fields: [cond(31:28), B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
+//       generated_baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //       pattern: cccc11101bq0ddddtttt1011d0e10000,
-//       rule: VDUP_arm_core_register,
-//       safety: [Q(21)=1 &&
+//       rule: VDUP_ARM_core_register,
+//       safety: [cond  !=
+//               cond_AL => DEPRECATED,
+//         Q(21)=1 &&
 //            Vd(0)=1 => UNDEFINED,
 //         B:E(1:0)=11 => UNDEFINED,
 //         t  ==
@@ -703,7 +715,7 @@ class DuplicateToAdvSIMDRegistersTester_Case3
  public:
   DuplicateToAdvSIMDRegistersTester_Case3()
     : DuplicateToAdvSIMDRegistersTesterCase3(
-      state_.DuplicateToAdvSIMDRegisters_VDUP_arm_core_register_instance_)
+      state_.DuplicateToAdvSIMDRegisters_VDUP_ARM_core_register_instance_)
   {}
 };
 
@@ -711,7 +723,7 @@ class DuplicateToAdvSIMDRegistersTester_Case3
 //    = {None: 32,
 //       Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: MoveVfpRegisterOp,
+//       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: MoveVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt
@@ -742,7 +754,7 @@ class MoveVfpRegisterOpTester_Case4
 //    = {NZCV: 16,
 //       Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: VfpMrsOp,
+//       actual: Actual_VMRS_cccc111011110001tttt101000010000_case_1,
 //       baseline: VfpMrsOp,
 //       constraints: ,
 //       defs: {NZCV
@@ -767,7 +779,7 @@ class VfpMrsOpTester_Case5
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       U: U(23),
-//       actual: MoveVfpRegisterOpWithTypeSel,
+//       actual: Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1,
 //       baseline: MoveVfpRegisterOpWithTypeSel,
 //       constraints: ,
 //       defs: {Rt},
@@ -804,7 +816,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //    = {None: 32,
 //       Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: MoveVfpRegisterOp,
+//       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: MoveVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt
@@ -824,14 +836,16 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            else None}}
 TEST_F(Arm32DecoderStateTests,
        MoveVfpRegisterOpTester_Case0_TestCase0) {
-  MoveVfpRegisterOpTester_Case0 tester;
-  tester.Test("cccc1110000onnnntttt1010n0010000");
+  MoveVfpRegisterOpTester_Case0 baseline_tester;
+  NamedActual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1_VMOV_between_ARM_core_register_and_single_precision_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1110000onnnntttt1010n0010000");
 }
 
 // L(20)=0 & C(8)=0 & A(23:21)=111 & $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: VfpUsesRegOp,
+//       actual: Actual_VMSR_cccc111011100001tttt101000010000_case_1,
 //       baseline: VfpUsesRegOp,
 //       constraints: ,
 //       defs: {},
@@ -845,14 +859,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rt}}
 TEST_F(Arm32DecoderStateTests,
        VfpUsesRegOpTester_Case1_TestCase1) {
-  VfpUsesRegOpTester_Case1 tester;
-  tester.Test("cccc111011100001tttt101000010000");
+  VfpUsesRegOpTester_Case1 baseline_tester;
+  NamedActual_VMSR_cccc111011100001tttt101000010000_case_1_VMSR actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc111011100001tttt101000010000");
 }
 
 // L(20)=0 & C(8)=1 & A(23:21)=0xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: MoveVfpRegisterOpWithTypeSel,
+//       actual: Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1,
 //       baseline: MoveVfpRegisterOpWithTypeSel,
 //       constraints: ,
 //       defs: {},
@@ -869,8 +885,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rt}}
 TEST_F(Arm32DecoderStateTests,
        MoveVfpRegisterOpWithTypeSelTester_Case2_TestCase2) {
-  MoveVfpRegisterOpWithTypeSelTester_Case2 tester;
-  tester.Test("cccc11100ii0ddddtttt1011dii10000");
+  MoveVfpRegisterOpWithTypeSelTester_Case2 baseline_tester;
+  NamedActual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1_VMOV_ARM_core_register_to_scalar actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11100ii0ddddtttt1011dii10000");
 }
 
 // L(20)=0 & C(8)=1 & A(23:21)=1xx & B(6:5)=0x & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
@@ -880,15 +898,19 @@ TEST_F(Arm32DecoderStateTests,
 //       Q: Q(21),
 //       Rt: Rt(15:12),
 //       Vd: Vd(19:16),
-//       actual: DuplicateToAdvSIMDRegisters,
+//       actual: Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1,
 //       baseline: DuplicateToAdvSIMDRegisters,
+//       cond: cond(31:28),
+//       cond_AL: 14,
 //       constraints: ,
 //       defs: {},
-//       fields: [B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
-//       generated_baseline: VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
+//       fields: [cond(31:28), B(22), Q(21), Vd(19:16), Rt(15:12), E(5)],
+//       generated_baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //       pattern: cccc11101bq0ddddtttt1011d0e10000,
-//       rule: VDUP_arm_core_register,
-//       safety: [Q(21)=1 &&
+//       rule: VDUP_ARM_core_register,
+//       safety: [cond  !=
+//               cond_AL => DEPRECATED,
+//         Q(21)=1 &&
 //            Vd(0)=1 => UNDEFINED,
 //         B:E(1:0)=11 => UNDEFINED,
 //         t  ==
@@ -897,15 +919,17 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rt}}
 TEST_F(Arm32DecoderStateTests,
        DuplicateToAdvSIMDRegistersTester_Case3_TestCase3) {
-  DuplicateToAdvSIMDRegistersTester_Case3 tester;
-  tester.Test("cccc11101bq0ddddtttt1011d0e10000");
+  DuplicateToAdvSIMDRegistersTester_Case3 baseline_tester;
+  NamedActual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1_VDUP_ARM_core_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101bq0ddddtttt1011d0e10000");
 }
 
 // L(20)=1 & C(8)=0 & A(23:21)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx00x0000
 //    = {None: 32,
 //       Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: MoveVfpRegisterOp,
+//       actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //       baseline: MoveVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt
@@ -925,15 +949,17 @@ TEST_F(Arm32DecoderStateTests,
 //            else None}}
 TEST_F(Arm32DecoderStateTests,
        MoveVfpRegisterOpTester_Case4_TestCase4) {
-  MoveVfpRegisterOpTester_Case4 tester;
-  tester.Test("cccc1110000xnnnntttt1010n0010000");
+  MoveVfpRegisterOpTester_Case4 baseline_tester;
+  NamedActual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1_VMOV_between_ARM_core_register_and_single_precision_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1110000xnnnntttt1010n0010000");
 }
 
 // L(20)=1 & C(8)=0 & A(23:21)=111 & $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000
 //    = {NZCV: 16,
 //       Pc: 15,
 //       Rt: Rt(15:12),
-//       actual: VfpMrsOp,
+//       actual: Actual_VMRS_cccc111011110001tttt101000010000_case_1,
 //       baseline: VfpMrsOp,
 //       constraints: ,
 //       defs: {NZCV
@@ -947,15 +973,17 @@ TEST_F(Arm32DecoderStateTests,
 //       t: Rt}
 TEST_F(Arm32DecoderStateTests,
        VfpMrsOpTester_Case5_TestCase5) {
-  VfpMrsOpTester_Case5 tester;
-  tester.Test("cccc111011110001tttt101000010000");
+  VfpMrsOpTester_Case5 baseline_tester;
+  NamedActual_VMRS_cccc111011110001tttt101000010000_case_1_VMRS actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc111011110001tttt101000010000");
 }
 
 // L(20)=1 & C(8)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       U: U(23),
-//       actual: MoveVfpRegisterOpWithTypeSel,
+//       actual: Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1,
 //       baseline: MoveVfpRegisterOpWithTypeSel,
 //       constraints: ,
 //       defs: {Rt},
@@ -972,8 +1000,10 @@ TEST_F(Arm32DecoderStateTests,
 //       t: Rt}
 TEST_F(Arm32DecoderStateTests,
        MoveVfpRegisterOpWithTypeSelTester_Case6_TestCase6) {
-  MoveVfpRegisterOpWithTypeSelTester_Case6 tester;
-  tester.Test("cccc1110iii1nnnntttt1011nii10000");
+  MoveVfpRegisterOpWithTypeSelTester_Case6 baseline_tester;
+  NamedActual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1_MOVE_scalar_to_ARM_core_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1110iii1nnnntttt1011nii10000");
 }
 
 }  // namespace nacl_arm_test

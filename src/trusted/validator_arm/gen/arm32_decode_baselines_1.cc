@@ -6036,6 +6036,7 @@ uses(Instruction inst) const {
 //    Rt: Rt(15:12),
 //    U: U(23),
 //    Vn: Vn(19:16),
+//    actual: Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1,
 //    advsimd: sel in bitset {'x1xxx', 'x0xx1'},
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    baseline: MoveVfpRegisterOpWithTypeSel,

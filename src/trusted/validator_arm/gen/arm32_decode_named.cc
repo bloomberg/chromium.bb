@@ -4651,7 +4651,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
           0x00000000 /* B(6:5)=0x */ &&
       (inst.Bits() & 0x0000000F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000 */) {
-    return DuplicateToAdvSIMDRegisters_VDUP_arm_core_register_instance_;
+    return DuplicateToAdvSIMDRegisters_VDUP_ARM_core_register_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==

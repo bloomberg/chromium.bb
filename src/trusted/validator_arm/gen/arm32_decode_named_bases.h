@@ -3229,16 +3229,16 @@ class NamedVDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0);
 };
 
-class NamedVDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0
+class NamedVDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0
     : public NamedClassDecoder {
  public:
-  NamedVDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0()
-    : NamedClassDecoder(decoder_, "VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0")
+  NamedVDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0()
+    : NamedClassDecoder(decoder_, "VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0")
   {}
 
  private:
-  nacl_arm_dec::VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0);
+  nacl_arm_dec::VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0);
 };
 
 class NamedVDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0

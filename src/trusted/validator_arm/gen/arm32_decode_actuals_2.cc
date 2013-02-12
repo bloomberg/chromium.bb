@@ -594,27 +594,34 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
-// Actual_VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1
+// Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1
 //
 // Actual:
 //   {defs: {},
-//    safety: [15  ==
+//    safety: [14  !=
+//            inst(31:28) => DEPRECATED,
+//      15  ==
 //            inst(15:12) => UNPREDICTABLE,
 //      inst(21)=1 &&
 //         inst(19:16)(0)=1 => UNDEFINED,
 //      inst(22):inst(5)(1:0)=11 => UNDEFINED],
 //    uses: {inst(15:12)}}
 
-RegisterList Actual_VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1::
+RegisterList Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel Actual_VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1::
+SafetyLevel Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 14  !=
+  //          inst(31:28) => DEPRECATED
+  if (((((inst.Bits() & 0xF0000000) >> 28)) != (14)))
+    return DEPRECATED;
 
   // inst(21)=1 &&
   //       inst(19:16)(0)=1 => UNDEFINED
@@ -638,7 +645,7 @@ safety(Instruction inst) const {
 }
 
 
-RegisterList Actual_VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1::
+RegisterList Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{inst(15:12)}'

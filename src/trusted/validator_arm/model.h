@@ -379,7 +379,6 @@ class Instruction {
     }
   }
 
-  // Possible values for the condition field, from the ARM ARM section A8.3.
   // Conditional execution is determined by the APSR's condition flags: NZCV.
   enum Condition {
     EQ = 0x0,  // Equal                         |  Z == 1

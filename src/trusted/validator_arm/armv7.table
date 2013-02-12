@@ -2356,10 +2356,11 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   elements := 2  if sel=00 else
               4  if sel=01 else
               8  if sel=10 else
-              0; # i.e. undeifned.
+              0; # i.e. undefined.
   defs := {};
   uses := {Rt};
-  safety := Q=1 & Vd(0)=1 => UNDEFINED &
+  safety := cond != cond_AL => DEPRECATED &
+            Q=1 & Vd(0)=1 => UNDEFINED &
             sel=11 => UNDEFINED &
             t == Pc => UNPREDICTABLE;
   # TODO(karl): Add vector defs/uses etc.
@@ -2420,7 +2421,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
         rule := VMOV_ARM_core_register_to_scalar;  arch := (VFPv2, AdvSIMD);
 | "     "    1xx      0x     = 
         *Vdup  pattern := cccc11101bq0ddddtttt1011d0e10000;
-        rule := VDUP_arm_core_register;  arch := AdvSIMD;
+        rule := VDUP_ARM_core_register;  arch := AdvSIMD;
 | 1     0    000      -      =
         *VmovSnRt  pattern := cccc1110000xnnnntttt1010n0010000;
         rule := VMOV_between_ARM_core_register_and_single_precision_register;

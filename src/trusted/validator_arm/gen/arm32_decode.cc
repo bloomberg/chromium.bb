@@ -51,6 +51,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_instance_()
   , Actual_MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_1_instance_()
   , Actual_MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_1_instance_()
+  , Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1_instance_()
   , Actual_MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_1_instance_()
   , Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1_instance_()
   , Actual_MRS_cccc00010r001111dddd000000000000_case_1_instance_()
@@ -86,9 +87,14 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_()
   , Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1_instance_()
   , Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1_instance_()
+  , Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1_instance_()
   , Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_instance_()
   , Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_instance_()
   , Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_instance_()
+  , Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1_instance_()
+  , Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1_instance_()
+  , Actual_VMRS_cccc111011110001tttt101000010000_case_1_instance_()
+  , Actual_VMSR_cccc111011100001tttt101000010000_case_1_instance_()
   , Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_instance_()
   , Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1_instance_()
   , Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_instance_()
@@ -96,13 +102,10 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1_instance_()
   , DataBarrier_instance_()
   , Deprecated_instance_()
-  , DuplicateToAdvSIMDRegisters_instance_()
   , Forbidden_instance_()
   , ForbiddenCondDecoder_instance_()
   , InstructionBarrier_instance_()
   , MoveDoubleVfpRegisterOp_instance_()
-  , MoveVfpRegisterOp_instance_()
-  , MoveVfpRegisterOpWithTypeSel_instance_()
   , PermanentlyUndefined_instance_()
   , PreloadRegisterImm12Op_instance_()
   , PreloadRegisterPairOp_instance_()
@@ -159,8 +162,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , VectorLoadStoreSingle3_instance_()
   , VectorLoadStoreSingle4_instance_()
   , VectorUnary2RegisterDup_instance_()
-  , VfpMrsOp_instance_()
-  , VfpUsesRegOp_instance_()
   , not_implemented_()
 {}
 
@@ -3171,7 +3172,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
           0x00000000 /* A(23:21)=000 */ &&
       (inst.Bits() & 0x0000006F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx00x0000 */) {
-    return MoveVfpRegisterOp_instance_;
+    return Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -3182,7 +3183,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
           0x00E00000 /* A(23:21)=111 */ &&
       (inst.Bits() & 0x000F00EF)  ==
           0x00010000 /* $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000 */) {
-    return VfpUsesRegOp_instance_;
+    return Actual_VMSR_cccc111011100001tttt101000010000_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -3193,7 +3194,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
           0x00000000 /* A(23:21)=0xx */ &&
       (inst.Bits() & 0x0000000F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000 */) {
-    return MoveVfpRegisterOpWithTypeSel_instance_;
+    return Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -3206,7 +3207,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
           0x00000000 /* B(6:5)=0x */ &&
       (inst.Bits() & 0x0000000F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000 */) {
-    return DuplicateToAdvSIMDRegisters_instance_;
+    return Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -3217,7 +3218,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
           0x00E00000 /* A(23:21)=111 */ &&
       (inst.Bits() & 0x000F00EF)  ==
           0x00010000 /* $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000 */) {
-    return VfpMrsOp_instance_;
+    return Actual_VMRS_cccc111011110001tttt101000010000_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00100000)  ==
@@ -3226,7 +3227,7 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
           0x00000100 /* C(8)=1 */ &&
       (inst.Bits() & 0x0000000F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000 */) {
-    return MoveVfpRegisterOpWithTypeSel_instance_;
+    return Actual_MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_1_instance_;
   }
 
   if (true) {

@@ -5980,7 +5980,7 @@ class VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0
       VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0);
 };
 
-// VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0:
+// VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0:
 //
 //   {B: B(22),
 //    D: D(7),
@@ -5989,9 +5989,11 @@ class VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0
 //    Q: Q(21),
 //    Rt: Rt(15:12),
 //    Vd: Vd(19:16),
+//    actual: Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1,
 //    arch: AdvSIMD,
 //    baseline: DuplicateToAdvSIMDRegisters,
 //    cond: cond(31:28),
+//    cond_AL: 14,
 //    constraints: ,
 //    d: D:Vd,
 //    defs: {},
@@ -6016,13 +6018,15 @@ class VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0
 //      Rt(15:12),
 //      D(7),
 //      E(5)],
-//    generated_baseline: VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
+//    generated_baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //    pattern: cccc11101bq0ddddtttt1011d0e10000,
 //    regs: 1
 //         if Q(21)=0
 //         else 2,
-//    rule: VDUP_arm_core_register,
-//    safety: [Q(21)=1 &&
+//    rule: VDUP_ARM_core_register,
+//    safety: [cond  !=
+//            cond_AL => DEPRECATED,
+//      Q(21)=1 &&
 //         Vd(0)=1 => UNDEFINED,
 //      B:E(1:0)=11 => UNDEFINED,
 //      t  ==
@@ -6030,17 +6034,17 @@ class VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0
 //    sel: B:E,
 //    t: Rt,
 //    uses: {Rt}}
-class VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0
+class VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0
      : public ClassDecoder {
  public:
-  VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0()
+  VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0()
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
-      VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0);
+      VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0);
 };
 
 // VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0:

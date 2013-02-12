@@ -3662,11 +3662,13 @@ class Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc1110
       Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1);
 };
 
-// Actual_VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1
+// Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1
 //
 // Actual:
 //   {defs: {},
-//    safety: [15  ==
+//    safety: [14  !=
+//            inst(31:28) => DEPRECATED,
+//      15  ==
 //            inst(15:12) => UNPREDICTABLE,
 //      inst(21)=1 &&
 //         inst(19:16)(0)=1 => UNDEFINED,
@@ -3681,9 +3683,11 @@ class Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc1110
 //    Q: Q(21),
 //    Rt: Rt(15:12),
 //    Vd: Vd(19:16),
+//    actual: Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1,
 //    arch: AdvSIMD,
 //    baseline: DuplicateToAdvSIMDRegisters,
 //    cond: cond(31:28),
+//    cond_AL: 14,
 //    constraints: ,
 //    d: D:Vd,
 //    defs: {},
@@ -3708,13 +3712,15 @@ class Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc1110
 //      Rt(15:12),
 //      D(7),
 //      E(5)],
-//    generated_baseline: VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
+//    generated_baseline: VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0,
 //    pattern: cccc11101bq0ddddtttt1011d0e10000,
 //    regs: 1
 //         if Q(21)=0
 //         else 2,
-//    rule: VDUP_arm_core_register,
-//    safety: [Q(21)=1 &&
+//    rule: VDUP_ARM_core_register,
+//    safety: [cond  !=
+//            cond_AL => DEPRECATED,
+//      Q(21)=1 &&
 //         Vd(0)=1 => UNDEFINED,
 //      B:E(1:0)=11 => UNDEFINED,
 //      t  ==
@@ -3722,17 +3728,17 @@ class Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc1110
 //    sel: B:E,
 //    t: Rt,
 //    uses: {Rt}}
-class Actual_VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1
+class Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1
      : public ClassDecoder {
  public:
-  Actual_VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1()
+  Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1()
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
-      Actual_VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1);
+      Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1);
 };
 
 // Actual_VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_1
@@ -6919,6 +6925,7 @@ class Actual_VMOVN_111100111d11ss10dddd001000m0mmmm_case_1
 //    Pc: 15,
 //    Rt: Rt(15:12),
 //    Vd: Vd(19:16),
+//    actual: Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1,
 //    advsimd: sel in bitset {'1xxx', '0xx1'},
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    baseline: MoveVfpRegisterOpWithTypeSel,
@@ -6988,6 +6995,7 @@ class Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_c
 //    Pc: 15,
 //    Rt: Rt(15:12),
 //    Vn: Vn(19:16),
+//    actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //    arch: VFPv2,
 //    baseline: MoveVfpRegisterOp,
 //    cond: cond(31:28),
@@ -7015,6 +7023,7 @@ class Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_c
 //    Pc: 15,
 //    Rt: Rt(15:12),
 //    Vn: Vn(19:16),
+//    actual: Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1,
 //    arch: VFPv2,
 //    baseline: MoveVfpRegisterOp,
 //    cond: cond(31:28),
@@ -7247,6 +7256,7 @@ class Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1
 //   {NZCV: 16,
 //    Pc: 15,
 //    Rt: Rt(15:12),
+//    actual: Actual_VMRS_cccc111011110001tttt101000010000_case_1,
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    baseline: VfpMrsOp,
 //    cond: cond(31:28),
@@ -7283,6 +7293,7 @@ class Actual_VMRS_cccc111011110001tttt101000010000_case_1
 // Baseline:
 //   {Pc: 15,
 //    Rt: Rt(15:12),
+//    actual: Actual_VMSR_cccc111011100001tttt101000010000_case_1,
 //    arch: ['VFPv2', 'AdvSIMD'],
 //    baseline: VfpUsesRegOp,
 //    cond: cond(31:28),
