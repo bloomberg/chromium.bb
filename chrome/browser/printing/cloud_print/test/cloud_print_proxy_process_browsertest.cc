@@ -27,7 +27,7 @@
 #include "chrome/service/service_process.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chrome/test/base/ui_test_utils.h"

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

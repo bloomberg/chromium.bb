@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/ssl_config_service.h"

@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

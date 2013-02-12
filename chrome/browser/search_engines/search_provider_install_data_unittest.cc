@@ -16,7 +16,7 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

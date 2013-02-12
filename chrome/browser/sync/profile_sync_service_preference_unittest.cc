@@ -27,7 +27,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/api/sync_data.h"

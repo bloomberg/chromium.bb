@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/test_browser_thread.h"

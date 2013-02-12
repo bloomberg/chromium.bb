@@ -10,7 +10,6 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_value_store.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

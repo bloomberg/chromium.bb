@@ -15,7 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;

@@ -5,7 +5,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class IncognitoModePrefsTest : public testing::Test {

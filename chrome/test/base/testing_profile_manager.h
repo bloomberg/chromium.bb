@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/string16.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 
 class ProfileInfoCache;
 class ProfileManager;

@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "crypto/sha2.h"

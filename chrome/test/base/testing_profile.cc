@@ -53,7 +53,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/bookmark_load_observer.h"
 #include "chrome/test/base/history_index_restore_observer.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"

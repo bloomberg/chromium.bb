@@ -10,22 +10,17 @@
 #include "base/prefs/pref_registry.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_store.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 
-class PrefModelAssociator;
 class PrefNotifierImpl;
 class PrefRegistrySimple;
-class PrefRegistrySyncable;
-class TestingBrowserProcess;
 class TestingPrefStore;
 
 // A PrefService subclass for testing. It operates totally in memory and
 // provides additional API for manipulating preferences at the different levels
 // (managed, extension, user) conveniently.
 //
-// Use this via its specializations, TestingPrefServiceSimple and
-// TestingPrefServiceSyncable.
-template <class SuperPrefService>
+// Use this via its specializations, e.g. TestingPrefServiceSimple.
+template <class SuperPrefService, class ConstructionPrefRegistry>
 class TestingPrefServiceBase : public SuperPrefService {
  public:
   virtual ~TestingPrefServiceBase();
@@ -52,12 +47,15 @@ class TestingPrefServiceBase : public SuperPrefService {
   void SetRecommendedPref(const char* path, Value* value);
   void RemoveRecommendedPref(const char* path);
 
+  // Do-nothing implementation for TestingPrefService.
+  static void HandleReadError(PersistentPrefStore::PrefReadError error) {}
+
  protected:
   TestingPrefServiceBase(
       TestingPrefStore* managed_prefs,
       TestingPrefStore* user_prefs,
       TestingPrefStore* recommended_prefs,
-      PrefRegistry* pref_registry,
+      ConstructionPrefRegistry* pref_registry,
       PrefNotifierImpl* pref_notifier);
 
  private:
@@ -81,7 +79,7 @@ class TestingPrefServiceBase : public SuperPrefService {
 
 // Test version of PrefService.
 class TestingPrefServiceSimple
-    : public TestingPrefServiceBase<PrefService> {
+    : public TestingPrefServiceBase<PrefService, PrefRegistry> {
  public:
   TestingPrefServiceSimple();
   virtual ~TestingPrefServiceSimple();
@@ -97,131 +95,101 @@ class TestingPrefServiceSimple
   DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceSimple);
 };
 
-// Test version of PrefServiceSyncable.
-class TestingPrefServiceSyncable
-    : public TestingPrefServiceBase<PrefServiceSyncable> {
- public:
-  TestingPrefServiceSyncable();
-  virtual ~TestingPrefServiceSyncable();
-
-  // This is provided as a convenience; on a production PrefService
-  // you would do all registrations before constructing it, passing it
-  // a PrefRegistry via its constructor (or via
-  // e.g. PrefServiceBuilder).
-  PrefRegistrySyncable* registry();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestingPrefServiceSyncable);
-};
-
-// Helper class to temporarily set up a |local_state| in the global
-// TestingBrowserProcess (for most unit tests it's NULL).
-class ScopedTestingLocalState {
- public:
-  explicit ScopedTestingLocalState(TestingBrowserProcess* browser_process);
-  ~ScopedTestingLocalState();
-
-  TestingPrefServiceSimple* Get() {
-    return &local_state_;
-  }
-
- private:
-  TestingBrowserProcess* browser_process_;
-  TestingPrefServiceSimple local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestingLocalState);
-};
-
 template<>
-TestingPrefServiceBase<PrefService>::TestingPrefServiceBase(
+TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
     TestingPrefStore* managed_prefs,
     TestingPrefStore* user_prefs,
     TestingPrefStore* recommended_prefs,
     PrefRegistry* pref_registry,
     PrefNotifierImpl* pref_notifier);
 
-template<>
-TestingPrefServiceBase<PrefServiceSyncable>::TestingPrefServiceBase(
-    TestingPrefStore* managed_prefs,
-    TestingPrefStore* user_prefs,
-    TestingPrefStore* recommended_prefs,
-    PrefRegistry* pref_registry,
-    PrefNotifierImpl* pref_notifier);
-
-template<class SuperPrefService>
-TestingPrefServiceBase<SuperPrefService>::~TestingPrefServiceBase() {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::~TestingPrefServiceBase() {
 }
 
-template<class SuperPrefService>
-const Value* TestingPrefServiceBase<SuperPrefService>::GetManagedPref(
-    const char* path) const {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+const Value* TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::GetManagedPref(
+        const char* path) const {
   return GetPref(managed_prefs_, path);
 }
 
-template<class SuperPrefService>
-void TestingPrefServiceBase<SuperPrefService>::SetManagedPref(
-    const char* path, Value* value) {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::SetManagedPref(
+        const char* path, Value* value) {
   SetPref(managed_prefs_, path, value);
 }
 
-template<class SuperPrefService>
-void TestingPrefServiceBase<SuperPrefService>::RemoveManagedPref(
-    const char* path) {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::RemoveManagedPref(
+        const char* path) {
   RemovePref(managed_prefs_, path);
 }
 
-template<class SuperPrefService>
-const Value* TestingPrefServiceBase<SuperPrefService>::GetUserPref(
-    const char* path) const {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+const Value* TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::GetUserPref(
+        const char* path) const {
   return GetPref(user_prefs_, path);
 }
 
-template<class SuperPrefService>
-void TestingPrefServiceBase<SuperPrefService>::SetUserPref(
-    const char* path, Value* value) {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::SetUserPref(
+        const char* path, Value* value) {
   SetPref(user_prefs_, path, value);
 }
 
-template<class SuperPrefService>
-void TestingPrefServiceBase<SuperPrefService>::RemoveUserPref(
-    const char* path) {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::RemoveUserPref(
+        const char* path) {
   RemovePref(user_prefs_, path);
 }
 
-template<class SuperPrefService>
-const Value* TestingPrefServiceBase<SuperPrefService>::GetRecommendedPref(
-    const char* path) const {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+const Value* TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::GetRecommendedPref(
+        const char* path) const {
   return GetPref(recommended_prefs_, path);
 }
 
-template<class SuperPrefService>
-void TestingPrefServiceBase<SuperPrefService>::SetRecommendedPref(
-    const char* path, Value* value) {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::SetRecommendedPref(
+        const char* path, Value* value) {
   SetPref(recommended_prefs_, path, value);
 }
 
-template<class SuperPrefService>
-void TestingPrefServiceBase<SuperPrefService>::RemoveRecommendedPref(
-    const char* path) {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::RemoveRecommendedPref(
+        const char* path) {
   RemovePref(recommended_prefs_, path);
 }
 
-template<class SuperPrefService>
-const Value* TestingPrefServiceBase<SuperPrefService>::GetPref(
-    TestingPrefStore* pref_store, const char* path) const {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+const Value* TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::GetPref(
+        TestingPrefStore* pref_store, const char* path) const {
   const Value* res;
   return pref_store->GetValue(path, &res) ? res : NULL;
 }
 
-template<class SuperPrefService>
-void TestingPrefServiceBase<SuperPrefService>::SetPref(
-    TestingPrefStore* pref_store, const char* path, Value* value) {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::SetPref(
+        TestingPrefStore* pref_store, const char* path, Value* value) {
   pref_store->SetValue(path, value);
 }
 
-template<class SuperPrefService>
-void TestingPrefServiceBase<SuperPrefService>::RemovePref(
-    TestingPrefStore* pref_store, const char* path) {
+template<class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<
+    SuperPrefService, ConstructionPrefRegistry>::RemovePref(
+        TestingPrefStore* pref_store, const char* path) {
   pref_store->RemoveValue(path);
 }
 

@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "sync/internal_api/public/base/invalidation_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

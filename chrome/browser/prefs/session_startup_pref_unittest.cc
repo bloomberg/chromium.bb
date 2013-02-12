@@ -5,7 +5,7 @@
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
