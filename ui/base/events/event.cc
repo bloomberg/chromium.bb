@@ -625,13 +625,16 @@ DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
 ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
     : MouseEvent(native_event) {
   if (type() == ET_SCROLL) {
-    GetScrollOffsets(native_event, &x_offset_, &y_offset_, &finger_count_);
-    double start, end;
-    GetGestureTimes(native_event, &start, &end);
+    GetScrollOffsets(native_event,
+                     &x_offset_, &y_offset_,
+                     &x_offset_ordinal_, &y_offset_ordinal_,
+                     &finger_count_);
   } else if (type() == ET_SCROLL_FLING_START ||
              type() == ET_SCROLL_FLING_CANCEL) {
-    bool is_cancel;
-    GetFlingData(native_event, &x_offset_, &y_offset_, &is_cancel);
+    GetFlingData(native_event,
+                 &x_offset_, &y_offset_,
+                 &x_offset_ordinal_, &y_offset_ordinal_,
+                 NULL);
   } else {
     NOTREACHED() << "Unexpected event type " << type()
         << " when constructing a ScrollEvent.";
@@ -644,10 +647,14 @@ ScrollEvent::ScrollEvent(EventType type,
                          int flags,
                          float x_offset,
                          float y_offset,
+                         float x_offset_ordinal,
+                         float y_offset_ordinal,
                          int finger_count)
     : MouseEvent(type, location, location, flags),
       x_offset_(x_offset),
       y_offset_(y_offset),
+      x_offset_ordinal_(x_offset_ordinal),
+      y_offset_ordinal_(y_offset_ordinal),
       finger_count_(finger_count) {
   set_time_stamp(time_stamp);
   CHECK(IsScrollEvent());
@@ -656,6 +663,8 @@ ScrollEvent::ScrollEvent(EventType type,
 void ScrollEvent::Scale(const float factor) {
   x_offset_ *= factor;
   y_offset_ *= factor;
+  x_offset_ordinal_ *= factor;
+  y_offset_ordinal_ *= factor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

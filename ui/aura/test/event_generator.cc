@@ -312,8 +312,8 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
                                start,
                                timestamp,
                                0,
-                               0,
-                               0,
+                               0, 0,
+                               0, 0,
                                num_fingers);
   Dispatch(&fling_cancel);
 
@@ -325,8 +325,8 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
                          start,
                          timestamp,
                          0,
-                         dx,
-                         dy,
+                         dx, dy,
+                         dx, dy,
                          num_fingers);
     Dispatch(&move);
   }
@@ -335,8 +335,8 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
                               start,
                               timestamp,
                               0,
-                              x_offset,
-                              y_offset,
+                              x_offset, y_offset,
+                              x_offset, y_offset,
                               num_fingers);
   Dispatch(&fling_start);
 }
@@ -351,8 +351,8 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
                                start,
                                timestamp,
                                0,
-                               0,
-                               0,
+                               0, 0,
+                               0, 0,
                                num_fingers);
   Dispatch(&fling_cancel);
 
@@ -362,8 +362,8 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
                            start,
                            timestamp,
                            0,
-                           offsets[i].x(),
-                           offsets[i].y(),
+                           offsets[i].x(), offsets[i].y(),
+                           offsets[i].x(), offsets[i].y(),
                            num_fingers);
     Dispatch(&scroll);
   }
@@ -372,8 +372,8 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
                               start,
                               timestamp,
                               0,
-                              offsets[steps - 1].x(),
-                              offsets[steps - 1].y(),
+                              offsets[steps - 1].x(), offsets[steps - 1].y(),
+                              offsets[steps - 1].x(), offsets[steps - 1].y(),
                               num_fingers);
   Dispatch(&fling_start);
 }

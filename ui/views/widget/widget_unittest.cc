@@ -1317,8 +1317,8 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
                          gfx::Point(65, 5),
                          ui::EventTimeForNow(),
                          0,
-                         0,
-                         20,
+                         0, 20,
+                         0, 20,
                          2);
   widget->OnScrollEvent(&scroll);
 
@@ -1335,8 +1335,8 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
                           gfx::Point(5, 5),
                           ui::EventTimeForNow(),
                           0,
-                          0,
-                          20,
+                          0, 20,
+                          0, 20,
                           2);
   widget->OnScrollEvent(&scroll2);
   EXPECT_EQ(1, focused_view->GetEventCount(ui::ET_SCROLL));
