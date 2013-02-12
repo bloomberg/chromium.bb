@@ -77,8 +77,11 @@ bool SupportsResourceIdentifier(ContentSettingsType content_type) {
 
 HostContentSettingsMap::HostContentSettingsMap(
     PrefService* prefs,
-    bool incognito)
-    : prefs_(prefs),
+    bool incognito) :
+#ifndef NDEBUG
+      used_content_settings_providers_(false),
+#endif
+      prefs_(prefs),
       is_off_the_record_(incognito) {
   content_settings::ObservableProvider* policy_provider =
       new content_settings::PolicyProvider(prefs_);
@@ -105,6 +108,9 @@ HostContentSettingsMap::HostContentSettingsMap(
 void HostContentSettingsMap::RegisterExtensionService(
     ExtensionService* extension_service) {
   DCHECK(extension_service);
+#ifndef NDEBUG
+  DCHECK(!used_content_settings_providers_);
+#endif
   DCHECK(!content_settings_providers_[INTERNAL_EXTENSION_PROVIDER]);
   DCHECK(!content_settings_providers_[CUSTOM_EXTENSION_PROVIDER]);
 
@@ -167,6 +173,8 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSettingFromProvider(
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
     ContentSettingsType content_type,
     std::string* provider_id) const {
+  UsedContentSettingsProviders();
+
   // Iterate through the list of providers and return the first non-NULL value
   // that matches |primary_url| and |secondary_url|.
   for (ConstProviderIterator provider = content_settings_providers_.begin();
@@ -208,6 +216,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
   DCHECK(settings);
+  UsedContentSettingsProviders();
 
   settings->clear();
   for (ConstProviderIterator provider = content_settings_providers_.begin();
@@ -257,6 +266,8 @@ void HostContentSettingsMap::SetWebsiteSetting(
   DCHECK(IsValueAllowedForType(prefs_, value, content_type));
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
+  UsedContentSettingsProviders();
+
   for (ProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {
@@ -316,6 +327,7 @@ void HostContentSettingsMap::AddExceptionForURL(
 
 void HostContentSettingsMap::ClearSettingsForOneType(
     ContentSettingsType content_type) {
+  UsedContentSettingsProviders();
   for (ProviderIterator provider = content_settings_providers_.begin();
        provider != content_settings_providers_.end();
        ++provider) {
@@ -495,6 +507,12 @@ void HostContentSettingsMap::AddSettingsForOneType(
         kProviderNames[provider_type],
         incognito));
   }
+}
+
+void HostContentSettingsMap::UsedContentSettingsProviders() const {
+#ifndef NDEBUG
+  used_content_settings_providers_ = true;
+#endif
 }
 
 bool HostContentSettingsMap::ShouldAllowAllContent(

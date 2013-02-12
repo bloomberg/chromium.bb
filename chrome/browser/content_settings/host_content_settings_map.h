@@ -15,7 +15,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
-#include "base/synchronization/lock.h"
 #include "base/tuple.h"
 #include "chrome/browser/content_settings/content_settings_observer.h"
 #include "chrome/common/content_settings.h"
@@ -230,17 +229,26 @@ class HostContentSettingsMap
       ContentSettingsForOneType* settings,
       bool incognito) const;
 
+  // Call UsedContentSettingsProviders() whenever you access
+  // content_settings_providers_ (apart from initialization and
+  // teardown), so that we can DCHECK in RegisterExtensionService that
+  // it is not being called too late.
+  void UsedContentSettingsProviders() const;
+
+#ifndef NDEBUG
+  mutable bool used_content_settings_providers_;
+#endif
+
   // Weak; owned by the Profile.
   PrefService* prefs_;
 
   // Whether this settings map is for an OTR session.
   bool is_off_the_record_;
 
-  // Content setting providers.
+  // Content setting providers. This is only modified at construction
+  // time and by RegisterExtensionService, both of which should happen
+  // before any other uses of it.
   ProviderMap content_settings_providers_;
-
-  // Used around accesses to the following objects to guarantee thread safety.
-  mutable base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };
