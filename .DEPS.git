@@ -140,7 +140,7 @@ deps = {
     'src/v8':
         Var('git_url') + '/external/v8.git@ac36071c9ef7e9284b15e25826dd7efb34157234',
     'src/webkit/media/crypto/ppapi/cdm':
-        Var('git_url') + '/chromium/cdm.git@c5062e0e6fc7cf180edea8d74442b72a05427cd8',
+        Var('git_url') + '/chromium/cdm.git@c2b192a02546916d28233cfd8b7717ffcdcc8347',
 }
 
 deps_os = {
