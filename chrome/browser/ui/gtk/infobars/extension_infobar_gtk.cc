@@ -33,6 +33,8 @@ ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarService* owner,
       delegate_(delegate),
       view_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  delegate->set_observer(this);
+
   // Always render the close button as if we were doing chrome style widget
   // rendering. For extension infobars, we force chrome style rendering because
   // extension authors are going to expect to match the declared gradient in
@@ -46,7 +48,10 @@ ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarService* owner,
   BuildWidgets();
 }
 
-ExtensionInfoBarGtk::~ExtensionInfoBarGtk() {}
+ExtensionInfoBarGtk::~ExtensionInfoBarGtk() {
+  if (delegate_)
+    delegate_->set_observer(NULL);
+}
 
 void ExtensionInfoBarGtk::PlatformSpecificHide(bool animate) {
   // This view is not owned by us; we can't unparent it because we aren't the
@@ -146,6 +151,10 @@ void ExtensionInfoBarGtk::BuildWidgets() {
 
 void ExtensionInfoBarGtk::StoppedShowing() {
   gtk_chrome_button_unset_paint_state(GTK_CHROME_BUTTON(button_));
+}
+
+void ExtensionInfoBarGtk::OnDelegateDeleted() {
+  delegate_ = NULL;
 }
 
 Browser* ExtensionInfoBarGtk::GetBrowser() {

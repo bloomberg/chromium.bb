@@ -18,7 +18,8 @@ class ExtensionViewGtk;
 class MenuGtk;
 
 class ExtensionInfoBarGtk : public InfoBarGtk,
-                            public MenuGtk::Delegate {
+                            public MenuGtk::Delegate,
+                            public ExtensionInfoBarDelegate::DelegateObserver {
  public:
   ExtensionInfoBarGtk(InfoBarService* owner,
                       ExtensionInfoBarDelegate* delegate);
@@ -35,6 +36,9 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
 
   // Overridden from MenuGtk::Delegate:
   virtual void StoppedShowing() OVERRIDE;
+
+  // Overridden from ExtensionInfoBarDelegate::DelegateObserver:
+  virtual void OnDelegateDeleted() OVERRIDE;
 
  private:
   // Build the widgets of the Infobar.
