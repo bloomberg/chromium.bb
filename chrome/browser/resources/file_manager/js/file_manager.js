@@ -536,10 +536,6 @@ DialogType.isModal = function(type) {
         this.dialogDom_.querySelector('#roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
 
-    this.downloadsRootContextMenu_ =
-        this.dialogDom_.querySelector('#downloads-root-context-menu');
-    cr.ui.Menu.decorate(this.downloadsRootContextMenu_);
-
     this.textContextMenu_ =
         this.dialogDom_.querySelector('#text-context-menu');
     cr.ui.Menu.decorate(this.textContextMenu_);
@@ -606,9 +602,6 @@ DialogType.isModal = function(type) {
 
     CommandUtil.registerCommand(doc, 'drive-go-to-drive',
         Commands.driveGoToDriveCommand, this);
-
-    CommandUtil.registerCommand(doc, 'files-app-help',
-        Commands.filesAppHelpCommand, this);
 
     CommandUtil.registerCommand(doc, 'paste',
         Commands.pasteFileCommand, doc, this.fileTransferController_);
@@ -1447,47 +1440,8 @@ DialogType.isModal = function(type) {
       li.appendChild(eject);
     }
 
-    // Add a context menu for the root. "Downloads" has a menu item showing the
-    // remaining space information.
-    if (rootType == RootType.DOWNLOADS) {
-      cr.ui.contextMenuHandler.setContextMenu(li,
-                                              this.downloadsRootContextMenu_);
-
-      var downloadsRootContextMenu = this.downloadsRootContextMenu_;
-      var downloadsSpaceInfoLabel =
-          this.dialogDom_.querySelector('#downloads-space-info-label');
-
-      var downloadsSpaceInnerBar =
-          this.dialogDom_.querySelector('#downloads-space-info-bar');
-      var downloadsSpaceOuterBar =
-          this.dialogDom_.querySelector('#downloads-space-info-bar').
-              parentNode;
-
-      if (this.downloadsRootContextMenuListener_) {
-        cr.ui.contextMenuHandler.removeEventListener(
-            'show', this.downloadsRootContextMenuListener_);
-      }
-      this.downloadsRootContextMenuListener_ = function(ev) {
-        // Check available space on opening the context menu for Downloads.
-        if (ev.element != li || ev.menu != downloadsRootContextMenu)
-          return;
-
-        downloadsSpaceInnerBar.setAttribute('pending', '');
-        spaceInfoLabel.textContent = strf('SPACE_AVAILABLE', sizeStr);
-
-        chrome.fileBrowserPrivate.getSizeStats(
-            util.makeFilesystemUrl(path),
-            function(sizeStats) {
-              updateSpaceInfo(sizeStats, downloadsSpaceInnerBar,
-                              downloadsSpaceInfoLabel, downloadsSpaceOuterBar);
-            });
-      };
-
-      cr.ui.contextMenuHandler.addEventListener(
-        'show', this.downloadsRootContextMenuListener_);
-    } else if (rootType != RootType.DRIVE) {
+    if (rootType != RootType.DRIVE && rootType != RootType.DOWNLOADS)
       cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
-    }
 
     cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
     cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);

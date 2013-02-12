@@ -404,15 +404,3 @@ Commands.zipSelectionCommand = {
         selection && selection.totalCount > 0;
   }
 };
-
-/**
- * Opens Files App help.
- */
-Commands.filesAppHelpCommand = {
-  execute: function() {
-    window.open(FileManager.FILES_APP_HELP, 'help');
-  },
-  canExecute: function(event, fileManager) {
-    event.canExecute = true;
-  }
-};
