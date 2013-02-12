@@ -29,6 +29,9 @@
 #include "base/message_loop.h"
 #endif
 
+namespace base {
+namespace nix {
+
 namespace {
 
 class IconTheme;
@@ -582,9 +585,6 @@ MimeUtilConstants::~MimeUtilConstants() {
 }
 
 }  // namespace
-
-namespace base {
-namespace nix {
 
 std::string GetFileMimeType(const FilePath& filepath) {
   if (filepath.empty())

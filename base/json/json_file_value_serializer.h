@@ -18,7 +18,7 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   // deserialization or the destination of the serialization.
   // When deserializing, the file should exist, but when serializing, the
   // serializer will attempt to create the file at the specified location.
-  explicit JSONFileValueSerializer(const FilePath& json_file_path)
+  explicit JSONFileValueSerializer(const base::FilePath& json_file_path)
     : json_file_path_(json_file_path),
       allow_trailing_comma_(false) {}
 
@@ -74,7 +74,7 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
  private:
   bool SerializeInternal(const Value& root, bool omit_binary_values);
 
-  FilePath json_file_path_;
+  base::FilePath json_file_path_;
   bool allow_trailing_comma_;
 
   // A wrapper for file_util::ReadFileToString which returns a non-zero

@@ -29,6 +29,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+namespace base {
+
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
 const FilePath::CharType FilePath::kSeparators[] = FILE_PATH_LITERAL("\\/");
 #else  // FILE_PATH_USES_WIN_SEPARATORS
@@ -1254,3 +1256,5 @@ FilePath FilePath::NormalizePathSeparators() const {
 void PrintTo(const FilePath& path, std::ostream* out) {
   *out << path.value();
 }
+
+}  // namespace base
