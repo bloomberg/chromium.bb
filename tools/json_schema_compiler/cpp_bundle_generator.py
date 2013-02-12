@@ -42,11 +42,12 @@ class CppBundleGenerator(object):
     self._cpp_type_generator = cpp_type_generator
     self._cpp_namespace = cpp_namespace
 
+    self.api_cc_generator = _APICCGenerator(self)
     self.api_h_generator = _APIHGenerator(self)
     self.schemas_cc_generator = _SchemasCCGenerator(self)
     self.schemas_h_generator = _SchemasHGenerator(self)
 
-  def GenerateHeader(self, file_base, body_code):
+  def _GenerateHeader(self, file_base, body_code):
     """Generates a code.Code object for a header file
 
     Parameters:
@@ -88,11 +89,11 @@ class CppBundleGenerator(object):
         functions += list(type_.functions.values())
     return functions
 
-  def GenerateFunctionRegistry(self):
+  def _GenerateFunctionRegistryRegisterAll(self):
     c = code.Code()
-    c.Sblock("class GeneratedFunctionRegistry {")
-    c.Append(" public:")
-    c.Sblock("static void RegisterAll(ExtensionFunctionRegistry* registry) {")
+    c.Append('// static')
+    c.Sblock('void GeneratedFunctionRegistry::RegisterAll('
+                 'ExtensionFunctionRegistry* registry) {')
     for namespace in self._model.namespaces.values():
       namespace_ifdefs = self._GetPlatformIfdefs(namespace)
       if namespace_ifdefs is not None:
@@ -117,8 +118,6 @@ class CppBundleGenerator(object):
       if namespace_ifdefs is not None:
         c.Append("#endif  // %s" % namespace_ifdefs, indent_level=0)
     c.Eblock("}")
-    c.Eblock("};")
-    c.Append()
     return c
 
 class _APIHGenerator(object):
@@ -132,7 +131,33 @@ class _APIHGenerator(object):
     c.Append('#include <string>')
     c.Append()
     c.Append('#include "base/basictypes.h"')
+    c.Append()
+    c.Append("class ExtensionFunctionRegistry;")
+    c.Append()
+    c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
+    c.Append()
+    c.Append('class GeneratedFunctionRegistry {')
+    c.Sblock(' public:')
+    c.Append('static void RegisterAll('
+                 'ExtensionFunctionRegistry* registry);')
+    c.Eblock('};');
+    c.Append()
+    c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
+    return self._bundle._GenerateHeader('generated_api', c)
 
+class _APICCGenerator(object):
+  """Generates a code.Code object for the generated API .cc file"""
+
+  def __init__(self, cpp_bundle):
+    self._bundle = cpp_bundle
+
+  def Generate(self, namespace):
+    c = code.Code()
+    c.Append(cpp_util.CHROMIUM_LICENSE)
+    c.Append()
+    c.Append('#include "%s"' % (os.path.join(SOURCE_BASE_PATH,
+                                             'generated_api.h')))
+    c.Append()
     for namespace in self._bundle._model.namespaces.values():
       namespace_name = namespace.unix_name.replace("experimental_", "")
       implementation_header = namespace.compiler_options.get(
@@ -155,19 +180,17 @@ class _APIHGenerator(object):
 
       if ifdefs is not None:
         c.Append("#endif  // %s" % ifdefs, indent_level=0)
-
     c.Append()
-    c.Append("class ExtensionFunctionRegistry;")
+    c.Append('#include '
+                 '"chrome/browser/extensions/extension_function_registry.h"')
     c.Append()
-
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
-    for namespace in self._bundle._model.namespaces.values():
-      c.Append("// TODO(miket): emit code for %s" % (namespace.unix_name))
     c.Append()
-    c.Concat(self._bundle.GenerateFunctionRegistry())
+    c.Concat(self._bundle._GenerateFunctionRegistryRegisterAll())
+    c.Append()
     c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
     c.Append()
-    return self._bundle.GenerateHeader('generated_api', c)
+    return c
 
 class _SchemasHGenerator(object):
   """Generates a code.Code object for the generated schemas .h file"""
@@ -183,16 +206,15 @@ class _SchemasHGenerator(object):
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
     c.Append()
-    c.Sblock('class GeneratedSchemas {')
-    c.Append(' public:')
+    c.Append('class GeneratedSchemas {')
+    c.Sblock(' public:')
     c.Append('// Puts all API schemas in |schemas|.')
     c.Append('static void Get('
                  'std::map<std::string, base::StringPiece>* schemas);')
     c.Eblock('};');
     c.Append()
     c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
-    c.Append()
-    return self._bundle.GenerateHeader('generated_schemas', c)
+    return self._bundle._GenerateHeader('generated_schemas', c)
 
 class _SchemasCCGenerator(object):
   """Generates a code.Code object for the generated schemas .cc file"""

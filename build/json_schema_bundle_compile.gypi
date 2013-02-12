@@ -31,6 +31,7 @@
       ],
       'outputs': [
         '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/generated_api.h',
+        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/generated_api.cc',
         '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/generated_schemas.h',
         '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/generated_schemas.cc',
       ],

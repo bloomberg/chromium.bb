@@ -157,6 +157,7 @@ if __name__ == '__main__':
                                               type_generator,
                                               opts.namespace)
     generators = [
+      ('generated_api.cc', cpp_bundle_generator.api_cc_generator),
       ('generated_api.h', cpp_bundle_generator.api_h_generator),
       ('generated_schemas.cc', cpp_bundle_generator.schemas_cc_generator),
       ('generated_schemas.h', cpp_bundle_generator.schemas_h_generator)

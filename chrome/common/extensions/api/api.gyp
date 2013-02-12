@@ -78,6 +78,10 @@
         'cc_dir': 'chrome/common/extensions/api',
         'root_namespace': 'extensions::api',
       },
+      'dependencies': [
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/sync/sync.gyp:sync',
+      ],
       'conditions': [
         ['OS=="android"', {
           'schema_files!': [
