@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if !defined(OS_WIN)
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -17,9 +16,6 @@
 #include "content/test/gpu/gpu_test_config.h"
 #include "content/test/gpu/gpu_test_expectations_parser.h"
 #include "net/base/net_util.h"
-#else
-#include "content/test/content_browser_test.h"
-#endif
 
 namespace content {
 
@@ -27,7 +23,6 @@ class WebGLConformanceTest : public ContentBrowserTest {
  public:
   WebGLConformanceTest() {}
 
-#if !defined(OS_WIN)
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Allow privileged WebGL extensions.
     command_line->AppendSwitch(switches::kEnablePrivilegedWebGLExtensions);
@@ -55,10 +50,8 @@ class WebGLConformanceTest : public ContentBrowserTest {
     ASSERT_TRUE(test_expectations_.LoadTestExpectations(
         GPUTestExpectationsParser::kWebGLConformanceTest));
   }
-#endif
 
   void RunTest(std::string url, std::string test_name) {
-#if !defined(OS_WIN)
     int32 expectation =
         test_expectations_.GetTestExpectation(test_name, bot_config_);
     if (expectation != GPUTestExpectationsParser::kGpuTestPass) {
@@ -74,15 +67,12 @@ class WebGLConformanceTest : public ContentBrowserTest {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
 
     EXPECT_STREQ("\"SUCCESS\"", message.c_str()) << message;
-#endif
   }
 
-#if !defined(OS_WIN)
  private:
   base::FilePath test_path_;
   GPUTestBotConfig bot_config_;
   GPUTestExpectationsParser test_expectations_;
-#endif
 };
 
 #define CONFORMANCE_TEST(name, url) \
