@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
@@ -18,19 +19,30 @@ namespace network_icon {
 
 class AnimationObserver;
 
-// Color theme based on icon background.
-enum ResourceColorTheme {
-  COLOR_DARK,
-  COLOR_LIGHT,
+// Type of icon which dictates color theme and VPN badging
+enum IconType {
+  ICON_TYPE_TRAY,  // light icons with VPN badges
+  ICON_TYPE_DEFAULT_VIEW,  // dark icons with VPN badges
+  ICON_TYPE_LIST,  // dark icons without VPN badges
 };
 
-// Get the image for the network associated with |service_path|.
-// |color| determines the color theme. If the icon is animating (i.e the
-// network is connecting) and |observer| is provided, it will be notified
-// when the icon changes.
+// Gets the image for the network associated with |service_path|. |network| must
+// not be NULL. |icon_type| determines the color theme and whether or not to
+// show the VPN badge. This caches badged icons per network per |icon_type|.
 gfx::ImageSkia GetImageForNetwork(const chromeos::NetworkState* network,
-                                  ResourceColorTheme color,
-                                  AnimationObserver* observer);
+                                  IconType icon_type);
+
+// Gets the image for a connecting network type.
+gfx::ImageSkia GetImageForConnectingNetwork(IconType icon_type,
+                                            const std::string& network_type);
+
+// Gets the image for a disconnected network type.
+gfx::ImageSkia GetImageForDisconnectedNetwork(IconType icon_type,
+                                              const std::string& network_type);
+
+// Returns the label for |network| based on |icon_type|. |network| can be NULL.
+string16 GetLabelForNetwork(const chromeos::NetworkState* network,
+                            IconType icon_type);
 
 }  // namespace network_icon
 }  // namespace ash

@@ -5,9 +5,17 @@
 #ifndef ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_H
 #define ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_H
 
+#include <set>
+
+#include "ash/system/chromeos/network/network_icon.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
+
+namespace chromeos {
+class NetworkState;
+}
 
 namespace ash {
 namespace internal {
@@ -57,7 +65,28 @@ class TrayNetwork : public SystemTrayItem,
   virtual void ClearNetworkMessage(MessageType message_type) OVERRIDE;
   virtual void OnWillToggleWifi() OVERRIDE;
 
- private:
+  // Called when the network for the tray icon may have been updated.
+  void TrayNetworkUpdated();
+
+  // Called when the properties for |network| may have been updated.
+  void NetworkServiceChanged(const chromeos::NetworkState* network);
+
+  // Request a network connection (called from detailed view).
+  void ConnectToNetwork(const std::string& service_path);
+
+  // Returns true if a user initiated connection to |network| occured.
+  bool HasConnectingNetwork(const std::string& service_path);
+
+  // Gets the correct icon and label for |icon_type|.
+  void GetNetworkStateHandlerImageAndLabel(network_icon::IconType icon_type,
+                                           gfx::ImageSkia* image,
+                                           string16* label);
+
+  // Updates and returns the appropriate message id if a network technology
+  // (i.e. cellular) is uninitialized.
+  int GetUninitializedMsg();
+
+private:
   friend class tray::NetworkMessageView;
   friend class tray::NetworkNotificationView;
 
@@ -72,6 +101,9 @@ class TrayNetwork : public SystemTrayItem,
   scoped_ptr<tray::NetworkMessages> messages_;
   bool request_wifi_view_;
   scoped_ptr<TrayNetworkStateObserver> network_state_observer_;
+  std::set<std::string> connecting_networks_;
+  base::Time uninitialized_state_time_;
+  int uninitialized_msg_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);
 };

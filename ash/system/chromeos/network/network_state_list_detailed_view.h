@@ -27,6 +27,9 @@ class BubbleDelegateView;
 
 namespace ash {
 namespace internal {
+
+class TrayNetwork;
+
 namespace tray {
 
 struct NetworkInfo;
@@ -36,7 +39,8 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
                                      public ViewClickListener,
                                      public network_icon::AnimationObserver {
  public:
-  NetworkStateListDetailedView(SystemTrayItem* owner, user::LoginStatus login);
+  NetworkStateListDetailedView(TrayNetwork* tray_network,
+                               user::LoginStatus login);
   virtual ~NetworkStateListDetailedView();
 
   // Overridden from NetworkDetailedView:
@@ -59,6 +63,9 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   virtual void ClickedOn(views::View* sender) OVERRIDE;
 
  private:
+  typedef std::map<views::View*, std::string> NetworkMap;
+  typedef std::map<std::string, HoverHighlightView*> ServicePathMap;
+
   // Create UI components.
   void CreateHeaderEntry();
   void CreateHeaderButtons();
@@ -67,11 +74,16 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
 
   // Update UI components.
   void UpdateHeaderButtons();
-  void RefreshNetworkList();
   void UpdateNetworks(const NetworkStateList& networks);
+  void UpdateNetworkState();
+  void RefreshNetworkList();
+  bool CreateOrUpdateInfoLabel(
+      int index, const string16& text, views::Label** label);
+  bool UpdateNetworkChild(int index, const NetworkInfo* info);
+  bool OrderChild(views::View* view, int index);
+  bool UpdateNetworkListEntries(std::set<std::string>* new_service_paths);
   void UpdateNetworkEntries();
   void UpdateNetworkExtra();
-  void UpdateNetworkIcons();
 
   // Adds a settings entry when logged in, and an entry for changing proxy
   // settings otherwise.
@@ -82,14 +94,17 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   bool ResetInfoBubble();
   views::View* CreateNetworkInfoView();
 
+  // Typed pointer to the owning tray item.
+  TrayNetwork* tray_network_;
+
   // Track login state.
   user::LoginStatus login_;
 
   // A map of child views to their network service path.
-  std::map<views::View*, std::string> network_map_;
+  NetworkMap network_map_;
 
   // A map of network service paths to their view.
-  std::map<std::string, HoverHighlightView*> service_path_map_;
+  ServicePathMap service_path_map_;
 
   // An owned list of network info.
   ScopedVector<NetworkInfo> network_list_;
@@ -111,6 +126,8 @@ class NetworkStateListDetailedView : public NetworkDetailedView,
   TrayPopupLabelButton* settings_;
   TrayPopupLabelButton* proxy_settings_;
   views::Label* scanning_view_;
+  views::Label* no_wifi_networks_view_;
+  views::Label* no_cellular_networks_view_;
 
   // A small bubble for displaying network info.
   views::BubbleDelegateView* info_bubble_;
