@@ -9,6 +9,8 @@
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
 CLANG_REVISION=170392
+# ASan Mac builders are pinned to this revision, see http://crbug.com/170629.
+CLANG_ASAN_MAC_REVISION=170392
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -33,6 +35,7 @@ mac_only=
 run_tests=
 bootstrap=
 with_android=yes
+is_asan_mac_builder=
 if [[ "${OS}" = "Darwin" ]]; then
   with_android=
 fi
@@ -54,6 +57,9 @@ while [[ $# > 0 ]]; do
     --without-android)
       with_android=
       ;;
+    --is-asan-mac-builder)
+      is_asan_mac_builder=yes
+      ;;
     --help)
       echo "usage: $0 [--force-local-build] [--mac-only] [--run-tests] "
       echo "--bootstrap: First build clang with CC, then with itself."
@@ -61,11 +67,32 @@ while [[ $# > 0 ]]; do
       echo "--mac-only: Do initial download only on Mac systems."
       echo "--run-tests: Run tests after building. Only for local builds."
       echo "--without-android: Don't build ASan Android runtime library."
+      echo "--is-asan-mac-builder: Use older Clang to build ASan on Mac."
       exit 1
       ;;
   esac
   shift
 done
+
+# Are we on a Chrome buildbot running ASan?
+function on_asan_mac_host {
+  HOST="$(uname -n)"
+  if [[ "${HOST}" == "vm633-m1.golo.chromium.org" ]]; then
+    return 0
+  fi
+  for num in $(seq 600 655)
+  do
+    if [[ "${HOST}" == "vm${num}-m4.golo.chromium.org" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Use older Clang for ASan Mac builds. See http://crbug.com/170629.
+if [[ -n is_asan_mac_builder ]] || on_asan_mac_host; then
+  CLANG_REVISION=${CLANG_ASAN_MAC_REVISION}
+fi
 
 # --mac-only prevents the initial download on non-mac systems, but if clang has
 # already been downloaded in the past, this script keeps it up to date even if
