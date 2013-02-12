@@ -16,12 +16,9 @@ namespace prefs {
 // Profile prefs. Please add Local State prefs below instead.
 extern const char kDefaultApps[];
 extern const char kDefaultAppsInstalled[];
-extern const char kDisableScreenshots[];
 extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];
 extern const char kHomePageChanged[];
-extern const char kManagedModeLocalPassphrase[];
-extern const char kManagedModeLocalSalt[];
 extern const char kManagedModeManualHosts[];
 extern const char kManagedModeManualURLs[];
 extern const char kSessionExitedCleanly[];
@@ -29,6 +26,7 @@ extern const char kSessionExitType[];
 extern const char kRestoreOnStartup[];
 extern const char kURLsToRestoreOnStartup[];
 extern const char kRestoreOnStartupMigrated[];
+extern const char kDisableScreenshots[];
 
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state
 // and user's profile.  Global property determines locale of login screen,

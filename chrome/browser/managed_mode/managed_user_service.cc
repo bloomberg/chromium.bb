@@ -107,12 +107,6 @@ void ManagedUserService::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kDefaultManagedModeFilteringBehavior,
                                 ManagedModeURLFilter::BLOCK,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kManagedModeLocalPassphrase,
-                               "",
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kManagedModeLocalSalt,
-                               "",
-                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 scoped_refptr<const ManagedModeURLFilter>

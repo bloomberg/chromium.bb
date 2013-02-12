@@ -8247,26 +8247,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_USE_PASSPHRASE_LABEL" desc="A checkbox in the Managed User Settings dialog to set whether to ask for a passphrase to access other profiles.">
         Use a passphrase to leave managed mode
       </message>
-      <message name="IDS_SET_PASSPHRASE_BUTTON" desc="A button in the Managed User Settings dialog to set the passphrase to access other profiles.">
+      <message name="IDS_SET_PASSPHRASE_BUTTON" desc="A button in the Managed User Settings dialog to set the passphrase to access other profiles">
         Set passphrase
-      </message>
-      <message name="IDS_SET_PASSPHRASE_TITLE" desc="A title for the Managed User Set Passphrase dialog.">
-        Set a passphrase
-      </message>
-      <message name="IDS_SET_PASSPHRASE_INSTRUCTIONS" desc="XXX">
-        Set a passphrase to access managed user settings and other profiles.
-      </message>
-      <message name="IDS_ENTER_PASSPHRASE_LABEL" desc="A label for entering a passphrase to save.">
-        Enter a passphrase:
-      </message>
-       <message name="IDS_CONFIRM_PASSPHRASE_LABEL" desc="A label for re-entering a passphrase to save.">
-        Confirm the passphrase:
-      </message>
-      <message name="IDS_PASSPHRASE_MISMATCH" desc="A warning message which is displayed when the passphrase entered as confirmation does not match the passphrase.">
-        The passphrases do not match.
-      </message>
-      <message name="IDS_SAVE_PASSPHRASE_BUTTON" desc="A button label for saving the passhrase to lock a managed mode user.">
-        Save
       </message>
 
       <!-- Managed Mode Block Interstitial data -->
