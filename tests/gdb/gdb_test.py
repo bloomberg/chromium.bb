@@ -226,6 +226,10 @@ class Gdb(object):
     AssertEquals(status, '^done')
     return items
 
+  def ExpectToFailCommand(self, command):
+    status, items = self._GetResultRecord(self._SendRequest(command))
+    AssertEquals(status, '^error')
+
   def ResumeCommand(self, command):
     status, items = self._GetResultRecord(self._SendRequest(command))
     AssertEquals(status, '^running')

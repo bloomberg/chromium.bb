@@ -60,6 +60,15 @@ env.AddNodeToTestSuite(node, test_suites, 'run_gdb_stepi_after_break_test')
 env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
+    'gdb_invalid_memory.out',
+    extra_deps=extra_deps,
+    command=['${PYTHON}', env.File('invalid_memory.py'),
+             '--nexe', gdb_test_guest] + test_args)
+
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_invalid_memory_test')
+env.TestBindsFixedTcpPort(node)
+
+node = env.CommandTest(
     'gdb_print_symbol.out',
     extra_deps=extra_deps,
     command=['${PYTHON}', env.File('print_symbol.py'),

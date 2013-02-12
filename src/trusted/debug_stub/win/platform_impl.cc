@@ -22,8 +22,33 @@
 
 static DWORD Reprotect(void *ptr, uint32_t len, DWORD newflags) {
   DWORD oldflags;
+  MEMORY_BASIC_INFORMATION memory_info;
+  SIZE_T offset;
+  SIZE_T max_step;
+  char *current_pointer = reinterpret_cast<char*>(ptr);
+  SIZE_T current_len = len;
+
+  // Check that all memory is accessible.
+  while (current_len > 0) {
+    if (!VirtualQuery(current_pointer, &memory_info, sizeof(memory_info))) {
+      NaClLog(LOG_ERROR, "Reprotect: VirtualQuery failed with %d\n",
+              GetLastError());
+      return -1;
+    }
+    if (memory_info.Protect == PAGE_NOACCESS) {
+      return -1;
+    }
+    offset = current_pointer - reinterpret_cast<char*>(memory_info.BaseAddress);
+    max_step = memory_info.RegionSize - offset;
+    if (current_len <= max_step) {
+      break;
+    }
+    current_len -= max_step;
+    current_pointer = current_pointer + max_step;
+  }
   if (!VirtualProtect(ptr, len, newflags, &oldflags)) {
-    printf("Failed with %d\n", GetLastError());
+    NaClLog(LOG_ERROR, "Reprotect: VirtualProtect failed with %d\n",
+            GetLastError());
     return -1;
   }
 

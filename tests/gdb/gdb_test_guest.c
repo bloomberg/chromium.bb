@@ -96,5 +96,8 @@ int main(int argc, char **argv) {
     test_change_variable(1);
     return 0;
   }
+  if (strcmp(argv[1], "dummy") == 0) {
+    return 0;
+  }
   return 1;
 }
