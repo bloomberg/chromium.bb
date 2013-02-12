@@ -17,6 +17,7 @@ LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
 LLVM_BUILD_DIR="${LLVM_DIR}/../llvm-build"
 LLVM_BOOTSTRAP_DIR="${LLVM_DIR}/../llvm-bootstrap"
 CLANG_DIR="${LLVM_DIR}/tools/clang"
+CLANG_TOOLS_EXTRA_DIR="${CLANG_DIR}/tools/extra"
 COMPILER_RT_DIR="${LLVM_DIR}/projects/compiler-rt"
 ANDROID_NDK_DIR="${LLVM_DIR}/../android_tools/ndk"
 STAMP_FILE="${LLVM_BUILD_DIR}/cr_build_revision"
@@ -36,6 +37,7 @@ run_tests=
 bootstrap=
 with_android=yes
 is_asan_mac_builder=
+with_tools_extra=
 if [[ "${OS}" = "Darwin" ]]; then
   with_android=
 fi
@@ -60,6 +62,9 @@ while [[ $# > 0 ]]; do
     --is-asan-mac-builder)
       is_asan_mac_builder=yes
       ;;
+    --with-tools-extra)
+      with_tools_extra=yes
+      ;;
     --help)
       echo "usage: $0 [--force-local-build] [--mac-only] [--run-tests] "
       echo "--bootstrap: First build clang with CC, then with itself."
@@ -68,6 +73,7 @@ while [[ $# > 0 ]]; do
       echo "--run-tests: Run tests after building. Only for local builds."
       echo "--without-android: Don't build ASan Android runtime library."
       echo "--is-asan-mac-builder: Use older Clang to build ASan on Mac."
+      echo "--with-tools-extra: Also build the clang-tools-extra repository."
       exit 1
       ;;
   esac
@@ -268,6 +274,15 @@ svn co --force "${LLVM_REPO_URL}/cfe/trunk@${CLANG_REVISION}" "${CLANG_DIR}"
 echo Getting compiler-rt r"${CLANG_REVISION}" in "${COMPILER_RT_DIR}"
 svn co --force "${LLVM_REPO_URL}/compiler-rt/trunk@${CLANG_REVISION}" \
                "${COMPILER_RT_DIR}"
+
+if [[ -n "${with_tools_extra}" ]]; then
+  echo Getting clang-tools-extra r"${CLANG_REVISION}" in \
+       "${CLANG_TOOLS_EXTRA_DIR}"
+  svn co --force "${LLVM_REPO_URL}/clang-tools-extra/trunk@${CLANG_REVISION}" \
+                 "${CLANG_TOOLS_EXTRA_DIR}"
+else
+  rm -rf "${CLANG_TOOLS_EXTRA_DIR}"
+fi
 
 # Echo all commands.
 set -x
