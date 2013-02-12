@@ -55,7 +55,6 @@ ContentSettingBubbleControllerTest::~ContentSettingBubbleControllerTest() {
 }
 
 // Check that the bubble doesn't crash or leak for any settings type
-// Disabled: started failing after CONTENT_SETTINGS_TYPE_INTENTS was removed.
 TEST_F(ContentSettingBubbleControllerTest, Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
