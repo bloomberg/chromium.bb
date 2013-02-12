@@ -6530,3 +6530,22 @@
    fun:_ZN22AutocompleteControllerC1EP7ProfileP30AutocompleteControllerDelegatei
    fun:_ZN24AutocompleteProviderTest32ResetControllerWithTestProvidersEbPP12TestProviderS2_
 }
+{
+   bug_175644_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5views12_GLOBAL__N_132TabbedPaneTest_AddAndSelect_Test8TestBodyEv
+}
+{
+   bug_175644_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5views18FocusTraversalTest15InitContentViewEv
+   fun:_ZN5views16FocusManagerTest5SetUpEv
+}
+{
+   bug_175644_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5views12_GLOBAL__N_133TabbedPaneTest_SizeAndLayout_Test8TestBodyEv
+}
