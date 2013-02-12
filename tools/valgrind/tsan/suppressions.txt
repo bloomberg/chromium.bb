@@ -968,3 +968,46 @@
   fun:components::VisitedLinkEventsTest::SetUp
   fun:testing::internal::HandleExceptionsInMethodIfSupported
 }
+{
+  bug_66835a
+  ThreadSanitizer:Race
+  fun:getenv
+  fun:::EnvironmentImpl::GetVarImpl
+  fun:::EnvironmentImpl::GetVar
+  fun:ShellIntegrationLinux::GetDesktopName
+  fun:::GetIsDefaultWebClient
+  fun:ShellIntegration::GetDefaultBrowser
+  fun:::RecordDefaultBrowserUMAStat
+  fun:base::internal::RunnableAdapter::Run
+}
+{
+  bug_66835b
+  ThreadSanitizer:Race
+  fun:__add_to_environ
+  fun:g_setenv
+  ...
+  fun:giop_init
+  fun:CORBA_ORB_init
+  fun:gconf_orb_get
+  ...
+  fun:gconf_activate_server
+  ...
+  fun:gconf_engine_get_fuller
+  fun:gconf_engine_get_entry
+  ...
+  fun:GConfTitlebarListener::GConfTitlebarListener
+  fun:DefaultSingletonTraits::New
+  fun:Singleton::get
+  fun:GConfTitlebarListener::GetInstance
+  fun:BrowserTitlebar::Init
+  fun:BrowserWindowGtk::InitWidgets
+  fun:BrowserWindowGtk::Init
+  fun:BrowserWindow::CreateBrowserWindow
+  fun:::CreateBrowserWindow
+  fun:Browser::Browser
+  fun:StartupBrowserCreatorImpl::OpenTabsInBrowser
+  fun:StartupBrowserCreatorImpl::ProcessSpecifiedURLs
+  fun:StartupBrowserCreatorImpl::ProcessStartupURLs
+  fun:StartupBrowserCreatorImpl::ProcessLaunchURLs
+  fun:StartupBrowserCreatorImpl::Launch
+}
