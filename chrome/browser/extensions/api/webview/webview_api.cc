@@ -6,6 +6,7 @@
 
 #include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/render_view_host.h"
+#include "ui/gfx/image/image_skia.h"
 
 using namespace extensions::api::webview;
 

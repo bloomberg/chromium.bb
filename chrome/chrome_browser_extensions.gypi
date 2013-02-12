@@ -621,8 +621,6 @@
         'browser/extensions/image_loader.h',
         'browser/extensions/image_loader_factory.cc',
         'browser/extensions/image_loader_factory.h',
-        'browser/extensions/image_loading_tracker.cc',
-        'browser/extensions/image_loading_tracker.h',
         'browser/extensions/installed_loader.cc',
         'browser/extensions/installed_loader.h',
         'browser/extensions/key_identifier_conversion_views.cc',

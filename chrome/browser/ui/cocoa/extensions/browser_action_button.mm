@@ -59,7 +59,7 @@ class ExtensionActionIconFactoryBridge
 
   virtual ~ExtensionActionIconFactoryBridge() {}
 
-  // ImageLoadingTracker::Observer implementation.
+  // ExtensionActionIconFactory::Observer implementation.
   void OnIconUpdated() OVERRIDE {
     [owner_ updateState];
   }

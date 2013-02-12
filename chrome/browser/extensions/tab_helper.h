@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -27,6 +26,10 @@ struct WebApplicationInfo;
 
 namespace content {
 struct LoadCommittedDetails;
+}
+
+namespace gfx {
+class Image;
 }
 
 namespace extensions {
@@ -199,8 +202,8 @@ class TabHelper : public content::WebContentsObserver,
 
   // App extensions related methods:
 
-  // Resets app_icon_ and if |extension| is non-null creates a new
-  // ImageLoadingTracker to load the extension's image.
+  // Resets app_icon_ and if |extension| is non-null uses ImageLoader to load
+  // the extension's image asynchronously.
   void UpdateExtensionAppIcon(const Extension* extension);
 
   const Extension* GetExtension(const std::string& extension_app_id);

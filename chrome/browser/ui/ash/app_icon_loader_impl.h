@@ -20,7 +20,7 @@ class Extension;
 namespace ash {
 
 // Default implementation of ash::AppIconLoader that interacts with the
-// ExtensionService and ImageLoadingTracker to load images.
+// ExtensionService and ImageLoader to load images.
 class AppIconLoaderImpl : public AppIconLoader,
                           public extensions::IconImage::Observer {
  public:

@@ -27,22 +27,15 @@
 //   the image representation, the default icon's representation for the
 //   requested scale factor is returned by ImageSkiaSource.
 // - If the extension has the resource, IconImage tries to load it using
-//   ImageLoadingTracker.
-// - |ImageLoadingTracker| may return both synchronously and asynchronously.
-// 1. |ImageLoadingTracker| is synchronous.
-//  - If image representation resource is successfully loaded, the
-//    representation returned by ImageSkiaSource is created from the loaded
-//    bitmap.
-//  - If resource loading fails, ImageSkiaSource returns default icon's
-//    representation.
-// 2. |ImageLoadingTracker| is asynchronous.
+//   ImageLoader.
+// - |ImageLoader| is asynchronous.
 //  - ImageSkiaSource will initially return transparent image resource of the
 //    desired size.
 //  - The image will be updated with an appropriate image representation when
-//    the |ImageLoadingTracker| finishes. The image representation is chosen
-//    the same way as in the synchronous case. The observer is notified of the
-//    image change, unless the added image representation is transparent (in
-//    which case the image had already contained the appropriate image
+//    the |ImageLoader| finishes. The image representation is chosen the same
+//    way as in the synchronous case. The observer is notified of the image
+//    change, unless the added image representation is transparent (in which
+//    case the image had already contained the appropriate image
 //    representation).
 
 namespace {

@@ -294,7 +294,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Given an extension, icon size, and match type, read a valid icon if present
   // and decode it into result. In the browser process, this will DCHECK if not
   // called on the file thread. To easily load extension images on the UI
-  // thread, see ImageLoadingTracker.
+  // thread, see ImageLoader.
   static void DecodeIcon(const Extension* extension,
                          int icon_size,
                          ExtensionIconSet::MatchType match_type,
@@ -303,7 +303,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Given an extension and icon size, read it if present and decode it into
   // result. In the browser process, this will DCHECK if not called on the
   // file thread. To easily load extension images on the UI thread, see
-  // ImageLoadingTracker.
+  // ImageLoader.
   static void DecodeIcon(const Extension* extension,
                          int icon_size,
                          scoped_ptr<SkBitmap>* result);
@@ -311,7 +311,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Given an icon_path and icon size, read it if present and decode it into
   // result. In the browser process, this will DCHECK if not called on the
   // file thread. To easily load extension images on the UI thread, see
-  // ImageLoadingTracker.
+  // ImageLoader.
   static void DecodeIconFromPath(const base::FilePath& icon_path,
                                  int icon_size,
                                  scoped_ptr<SkBitmap>* result);
@@ -401,18 +401,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
-
-  // Image cache related methods. These are only valid on the UI thread and
-  // not maintained by this class. See ImageLoadingTracker for usage. The
-  // |original_size| parameter should be the size of the image at |source|
-  // before any scaling may have been done to produce the pixels in |image|.
-  void SetCachedImage(const ExtensionResource& source,
-                      const SkBitmap& image,
-                      const gfx::Size& original_size) const;
-  bool HasCachedImage(const ExtensionResource& source,
-                      const gfx::Size& max_size) const;
-  SkBitmap GetCachedImage(const ExtensionResource& source,
-                          const gfx::Size& max_size) const;
 
   // Returns true if this extension can execute script on a page. If a
   // UserScript object is passed, permission to run that specific script is
@@ -599,12 +587,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
  private:
   friend class base::RefCountedThreadSafe<Extension>;
 
-  // We keep a cache of images loaded from extension resources based on their
-  // path and a string representation of a size that may have been used to
-  // scale it (or the empty string if the image is at its original size).
-  typedef std::pair<base::FilePath, std::string> ImageCacheKey;
-  typedef std::map<ImageCacheKey, SkBitmap> ImageCache;
-
   class RuntimeData {
    public:
     RuntimeData();
@@ -718,12 +700,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
       const base::DictionaryValue* content_pack_value,
       string16* error);
 
-  // Helper function for implementing HasCachedImage/GetCachedImage. A return
-  // value of NULL means there is no matching image cached (we allow caching an
-  // empty SkBitmap).
-  SkBitmap* GetCachedImageImpl(const ExtensionResource& source,
-                               const gfx::Size& max_size) const;
-
   // Helper method that loads a UserScript object from a
   // dictionary in the content_script list of the manifest.
   bool LoadUserScriptHelper(const base::DictionaryValue* content_script,
@@ -764,10 +740,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Check that features don't conflict. Called after InitFromValue.
   bool CheckConflictingFeatures(std::string* utf8_error) const;
-
-  // Cached images for this extension. This should only be touched on the UI
-  // thread.
-  mutable ImageCache image_cache_;
 
   // The extension's human-readable name. Name is used for display purpose. It
   // might be wrapped with unicode bidi control characters so that it is

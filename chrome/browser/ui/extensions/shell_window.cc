@@ -48,6 +48,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if defined(USE_ASH)
 #include "ash/launcher/launcher_types.h"

@@ -37,13 +37,13 @@ class ExtensionResource {
 
   // Returns actual path to the resource (default or locale specific). In the
   // browser process, this will DCHECK if not called on the file thread. To
-  // easily load extension images on the UI thread, see ImageLoadingTracker.
+  // easily load extension images on the UI thread, see ImageLoader.
   const base::FilePath& GetFilePath() const;
 
   // Gets the physical file path for the extension resource, taking into account
   // localization. In the browser process, this will DCHECK if not called on the
   // file thread. To easily load extension images on the UI thread, see
-  // ImageLoadingTracker.
+  // ImageLoader.
   //
   // The relative path must not resolve to a location outside of
   // |extension_root|. Iff |file_can_symlink_outside_root| is true, then the

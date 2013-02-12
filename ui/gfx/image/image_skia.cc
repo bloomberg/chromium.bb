@@ -256,7 +256,7 @@ void ImageSkia::AddRepresentation(const ImageSkiaRep& image_rep) {
   // and replace the existing rep if there is already one with the
   // same scale factor so that we can guarantee that a ImageSkia
   // instance contians only one image rep per scale factor. This is
-  // not possible now as ImageLoadingTracker currently stores need
+  // not possible now as ImageLoader currently stores need
   // this feature, but this needs to be fixed.
   if (isNull()) {
     Init(image_rep);

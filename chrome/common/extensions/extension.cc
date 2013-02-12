@@ -189,11 +189,6 @@ bool ReadLaunchDimension(const extensions::Manifest* manifest,
   return true;
 }
 
-std::string SizeToString(const gfx::Size& max_size) {
-  return base::IntToString(max_size.width()) + "x" +
-         base::IntToString(max_size.height());
-}
-
 bool ContainsManifestForbiddenPermission(const APIPermissionSet& apis,
                                          string16* error) {
   CHECK(error);
@@ -869,34 +864,6 @@ GURL Extension::GetIconURL(int size,
 GURL Extension::GetFullLaunchURL() const {
   return launch_local_path().empty() ? GURL(launch_web_url()) :
                                        url().Resolve(launch_local_path());
-}
-
-void Extension::SetCachedImage(const ExtensionResource& source,
-                               const SkBitmap& image,
-                               const gfx::Size& original_size) const {
-  DCHECK(source.extension_root() == path());  // The resource must come from
-                                              // this extension.
-  const base::FilePath& path = source.relative_path();
-  gfx::Size actual_size(image.width(), image.height());
-  std::string location;
-  if (actual_size != original_size)
-    location = SizeToString(actual_size);
-  image_cache_[ImageCacheKey(path, location)] = image;
-}
-
-bool Extension::HasCachedImage(const ExtensionResource& source,
-                               const gfx::Size& max_size) const {
-  DCHECK(source.extension_root() == path());  // The resource must come from
-                                              // this extension.
-  return GetCachedImageImpl(source, max_size) != NULL;
-}
-
-SkBitmap Extension::GetCachedImage(const ExtensionResource& source,
-                                   const gfx::Size& max_size) const {
-  DCHECK(source.extension_root() == path());  // The resource must come from
-                                              // this extension.
-  SkBitmap* image = GetCachedImageImpl(source, max_size);
-  return image ? *image : SkBitmap();
 }
 
 bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
@@ -2452,30 +2419,6 @@ bool Extension::LoadContentSecurityPolicy(string16* error) {
     CHECK(ContentSecurityPolicyIsSecure(content_security_policy_, GetType()));
   }
   return true;
-}
-
-SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
-                                        const gfx::Size& max_size) const {
-  const base::FilePath& path = source.relative_path();
-
-  // Look for exact size match.
-  ImageCache::iterator i = image_cache_.find(
-      ImageCacheKey(path, SizeToString(max_size)));
-  if (i != image_cache_.end())
-    return &(i->second);
-
-  // If we have the original size version cached, return that if it's small
-  // enough.
-  i = image_cache_.find(ImageCacheKey(path, std::string()));
-  if (i != image_cache_.end()) {
-    const SkBitmap& image = i->second;
-    if (image.width() <= max_size.width() &&
-        image.height() <= max_size.height()) {
-      return &(i->second);
-    }
-  }
-
-  return NULL;
 }
 
 // Helper method that loads a UserScript object from a dictionary in the

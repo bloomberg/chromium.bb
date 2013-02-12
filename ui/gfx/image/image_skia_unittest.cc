@@ -172,7 +172,7 @@ TEST(ImageSkiaTest, DynamicSource) {
 
 // Tests that image_reps returns all of the representations in the
 // image when there are multiple representations for a scale factor.
-// This currently is the case with ImageLoadingTracker::LoadImages.
+// This currently is the case with ImageLoader::LoadImages.
 TEST(ImageSkiaTest, ManyRepsPerScaleFactor) {
   const int kSmallIcon1x = 16;
   const int kSmallIcon2x = 32;

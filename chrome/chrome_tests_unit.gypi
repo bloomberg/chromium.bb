@@ -769,7 +769,6 @@
         'browser/extensions/permissions_updater_unittest.cc',
         'browser/extensions/file_reader_unittest.cc',
         'browser/extensions/image_loader_unittest.cc',
-        'browser/extensions/image_loading_tracker_unittest.cc',
         'browser/extensions/key_identifier_conversion_views_unittest.cc',
         'browser/extensions/management_policy_unittest.cc',
         'browser/extensions/process_map_unittest.cc',
