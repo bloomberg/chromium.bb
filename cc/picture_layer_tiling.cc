@@ -92,6 +92,8 @@ void PictureLayerTiling::SetLayerBounds(gfx::Size layer_bounds) {
   if (tile_size != tiling_data_.max_texture_size()) {
     tiling_data_.SetMaxTextureSize(tile_size);
     tiles_.clear();
+    CreateTilesFromLayerRect(gfx::Rect(layer_bounds_));
+    return;
   }
 
   // Any tiles outside our new bounds are invalid and should be dropped.
