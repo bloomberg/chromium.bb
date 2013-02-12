@@ -2562,7 +2562,7 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     // that opened the window, as long as both renderers have the same
     // privileges.
     if (delegate_ && opener_web_ui_type_ == GetWebUITypeForCurrentState()) {
-      WebUIImpl* web_ui = static_cast<WebUIImpl*>(CreateWebUI(GetURL()));
+      WebUIImpl* web_ui = CreateWebUIForRenderManager(GetURL());
       // web_ui might be NULL if the URL refers to a non-existent extension.
       if (web_ui) {
         render_manager_.SetWebUIPostCommit(web_ui);
