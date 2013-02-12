@@ -132,6 +132,10 @@ void PageClickTracker::handleEvent(const WebDOMEvent& event) {
   // We'll get a notification once the mouse event has been processed
   // (DidHandleMouseEvent), we'll notify the listener at that point.
   WebNode node = mouse_event.target();
+  if (node.isNull())
+    // Node may be null if the target was an SVG instance element from a <use>
+    // tree and the tree has been rebuilt due to an earlier event.
+    return;
 
   HandleTextFieldMaybeLosingFocus(node);
 
