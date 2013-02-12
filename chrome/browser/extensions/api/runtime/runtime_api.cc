@@ -132,17 +132,16 @@ void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
 }
 
 bool RuntimeGetBackgroundPageFunction::RunImpl() {
-  ExtensionHost* host =
-      ExtensionSystem::Get(profile())->process_manager()->
-          GetBackgroundHostForExtension(extension_id());
-  if (host) {
+  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionHost* host = system->process_manager()->
+      GetBackgroundHostForExtension(extension_id());
+  if (system->lazy_background_task_queue()->ShouldEnqueueTask(
+          profile(), GetExtension())) {
+    system->lazy_background_task_queue()->AddPendingTask(
+       profile(), extension_id(),
+       base::Bind(&RuntimeGetBackgroundPageFunction::OnPageLoaded, this));
+  } else if (host) {
     OnPageLoaded(host);
-  } else if (GetExtension()->has_lazy_background_page()) {
-    ExtensionSystem::Get(profile())->lazy_background_task_queue()->
-        AddPendingTask(
-           profile(), extension_id(),
-           base::Bind(&RuntimeGetBackgroundPageFunction::OnPageLoaded,
-                      this));
   } else {
     error_ = kNoBackgroundPageError;
     return false;
