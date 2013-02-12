@@ -61,7 +61,6 @@ class BrowserEventRouter;
 class ComponentLoader;
 class ContentSettingsStore;
 class CrxInstaller;
-class Extension;
 class ExtensionActionStorageManager;
 class ExtensionSyncData;
 class ExtensionSystem;
@@ -428,9 +427,8 @@ class ExtensionService
   // Called when the initial extensions load has completed.
   virtual void OnLoadedInstalledExtensions();
 
-  // Adds |extension| to this ExtensionService and notifies observers than an
-  // extension has been loaded.  Called by the backend after an extension has
-  // been loaded from a file and installed.
+  // Adds |extension| to this ExtensionService and notifies observers that the
+  // extensions have been loaded.
   virtual void AddExtension(const extensions::Extension* extension) OVERRIDE;
 
   // Check if we have preferences for the component extension and, if not or if
@@ -439,7 +437,10 @@ class ExtensionService
   virtual void AddComponentExtension(const extensions::Extension* extension)
       OVERRIDE;
 
-  // Called by the backend when an extension has been installed.
+  // Informs the service that an extension's files are in place for loading.
+  //
+  // Please make sure the Blacklist is checked some time before calling this
+  // method.
   void OnExtensionInstalled(
       const extensions::Extension* extension,
       const syncer::StringOrdinal& page_ordinal,

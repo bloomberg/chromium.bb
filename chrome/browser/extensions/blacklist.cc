@@ -112,6 +112,11 @@ class SafeBrowsingClientImpl
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingClientImpl);
 };
 
+void IsNotEmpty(const Blacklist::IsBlacklistedCallback& callback,
+                const std::set<std::string>& set) {
+  callback.Run(!set.empty());
+}
+
 }  // namespace
 
 Blacklist::Observer::Observer(Blacklist* blacklist) : blacklist_(blacklist) {
@@ -157,6 +162,13 @@ void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
                                   const GetBlacklistedIDsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (ids.empty()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, std::set<std::string>()));
+    return;
+  }
+
   // The blacklisted IDs are the union of those blacklisted in prefs and
   // those blacklisted from safe browsing.
   std::set<std::string> pref_blacklisted_ids;
@@ -180,6 +192,13 @@ void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
       base::Bind(&Blacklist::OnSafeBrowsingResponse, AsWeakPtr(),
                  pref_blacklisted_ids,
                  callback));
+}
+
+void Blacklist::IsBlacklisted(const std::string& extension_id,
+                              const IsBlacklistedCallback& callback) {
+  std::set<std::string> check;
+  check.insert(extension_id);
+  GetBlacklistedIDs(check, base::Bind(&IsNotEmpty, callback));
 }
 
 void Blacklist::SetFromUpdater(const std::vector<std::string>& ids,

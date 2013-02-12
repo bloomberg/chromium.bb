@@ -3059,7 +3059,7 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
 
   // We can not install good_crx.
   base::FilePath path = data_dir_.AppendASCII("good.crx");
-  InstallCRX(path, INSTALL_WITHOUT_LOAD);
+  InstallCRX(path, INSTALL_FAILED);
   EXPECT_EQ(0u, service_->extensions()->size());
   ValidateBooleanPref(good_crx, "blacklist", true);
 }

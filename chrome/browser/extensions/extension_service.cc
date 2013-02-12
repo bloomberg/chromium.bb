@@ -2038,6 +2038,8 @@ void ExtensionService::OnLoadedInstalledExtensions() {
   if (updater_.get())
     updater_->Start();
 
+  OnBlacklistUpdated();
+
   ready_ = true;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSIONS_READY,
@@ -2076,16 +2078,12 @@ void ExtensionService::AddExtension(const Extension* extension) {
   // wipeout before, we might disable this extension here.
   MaybeWipeout(extension);
 
-  // Communicated to the Blacklist.
-  std::set<std::string> already_in_blacklist;
-
   if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
     // Don't check the Blacklist yet because it's asynchronous (we do it at
     // the end). This pre-emptive check is because we will always store the
     // blacklisted state of *installed* extensions in prefs, and it's important
     // not to re-enable blacklisted extensions.
     blacklisted_extensions_.Insert(extension);
-    already_in_blacklist.insert(extension->id());
   } else if (extension_prefs_->IsExtensionDisabled(extension->id())) {
     disabled_extensions_.Insert(extension);
     SyncExtensionChangeIfNeeded(*extension);
@@ -2113,16 +2111,6 @@ void ExtensionService::AddExtension(const Extension* extension) {
     NotifyExtensionLoaded(extension);
     DoPostLoadTasks(extension);
   }
-
-  // Lastly, begin the process for checking the blacklist status of extensions.
-  // This may need to go to other threads so is asynchronous.
-  std::set<std::string> id_set;
-  id_set.insert(extension->id());
-  blacklist_->GetBlacklistedIDs(
-      id_set,
-      base::Bind(&ExtensionService::ManageBlacklist,
-                 AsWeakPtr(),
-                 already_in_blacklist));
 }
 
 void ExtensionService::AddComponentExtension(const Extension* extension) {
@@ -2481,8 +2469,8 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
   AddExtension(extension);
 
 #if defined(ENABLE_THEMES)
-  // We do this here since AddExtension() is always called on browser
-  // startup, and we only really care about the last theme installed.
+  // We do this here since AddExtension() is always called on browser startup,
+  // and we only really care about the last theme installed.
   // If that ever changes and we have to move this code somewhere
   // else, it should be somewhere that's not in the startup path.
   if (extension->is_theme() && extensions_.GetByID(extension->id())) {

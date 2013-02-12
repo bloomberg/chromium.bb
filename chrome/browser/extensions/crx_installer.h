@@ -130,6 +130,10 @@ class CrxInstaller
   bool allow_silent_install() const { return allow_silent_install_; }
   void set_allow_silent_install(bool val) { allow_silent_install_ = val; }
 
+  void set_bypass_blacklist_for_test(bool val) {
+    bypass_blacklist_for_test_ = val;
+  }
+
   bool is_gallery_install() const {
     return (creation_flags_ & Extension::FROM_WEBSTORE) > 0;
   }
@@ -217,10 +221,6 @@ class CrxInstaller
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension) OVERRIDE;
 
-  // Returns true if we can skip confirmation because the install was
-  // whitelisted.
-  bool CanSkipConfirmation();
-
   // Called on the UI thread to start the requirements check on the extension.
   void CheckRequirements();
 
@@ -240,7 +240,9 @@ class CrxInstaller
   void ReportFailureFromUIThread(const CrxInstallerError& error);
   void ReportSuccessFromFileThread();
   void ReportSuccessFromUIThread();
-  void NotifyCrxInstallComplete(const Extension* extension);
+  void HandleIsBlacklistedResponse(const base::Closure& on_success,
+                                   bool success);
+  void NotifyCrxInstallComplete(bool success);
 
   // Deletes temporary directory and crx file if needed.
   void CleanupTempFiles();
@@ -343,10 +345,11 @@ class CrxInstaller
 
   // Allows for the possibility of a normal install (one in which a |client|
   // is provided in the ctor) to procede without showing the permissions prompt
-  // dialog. Note that this will only take place if |allow_silent_install_|
-  // is true AND the unpacked id of the extension is whitelisted with
-  // SetWhitelistedInstallId().
+  // dialog.
   bool allow_silent_install_;
+
+  // Allows for bypassing the blacklist check. Only use for tests.
+  bool bypass_blacklist_for_test_;
 
   // The value of the content type header sent with the CRX.
   // Ignorred unless |require_extension_mime_type_| is true.

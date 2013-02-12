@@ -941,7 +941,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };
 
-typedef std::vector< scoped_refptr<const Extension> > ExtensionList;
+typedef std::vector<scoped_refptr<const Extension> > ExtensionList;
 typedef std::set<std::string> ExtensionIdSet;
 typedef std::vector<std::string> ExtensionIdList;
 

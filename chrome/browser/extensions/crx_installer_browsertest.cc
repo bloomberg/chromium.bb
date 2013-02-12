@@ -108,6 +108,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
                              approval.get()       /* keep ownership */));
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);
+    installer->set_bypass_blacklist_for_test(true);
     installer->InstallCrx(PackExtension(ext_path));
     content::RunMessageLoop();
 

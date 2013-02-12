@@ -16,9 +16,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -99,6 +99,7 @@ CrxInstaller::CrxInstaller(
       client_(client),
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false),
+      bypass_blacklist_for_test_(false),
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
       creation_flags_(Extension::NO_FLAGS),
       off_store_install_allow_reason_(OffStoreInstallDisallowed),
@@ -486,7 +487,7 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
                   content::Source<CrxInstaller>(this),
                   content::NotificationService::NoDetails());
 
-  NotifyCrxInstallComplete(NULL);
+  NotifyCrxInstallComplete(false);
 
   Release();  // balanced in ConfirmInstall().
 
@@ -547,7 +548,7 @@ void CrxInstaller::CompleteInstall() {
   if (extension_) {
     ReportSuccessFromFileThread();
   } else {
-    LOG(ERROR) << error << " " << extension_id << " " << download_url_.spec();
+    LOG(ERROR) << error << " " << extension_id << " " << download_url_;
     ReportFailureFromFileThread(CrxInstallerError(UTF8ToUTF16(error)));
   }
 
@@ -582,7 +583,7 @@ void CrxInstaller::ReportFailureFromUIThread(const CrxInstallerError& error) {
   if (client_)
     client_->OnInstallFailure(error);
 
-  NotifyCrxInstallComplete(NULL);
+  NotifyCrxInstallComplete(false);
 
   // Delete temporary files.
   CleanupTempFiles();
@@ -626,22 +627,43 @@ void CrxInstaller::ReportSuccessFromUIThread() {
     perms_updater.GrantActivePermissions(extension_, record_oauth2_grant_);
   }
 
-  // Tell the frontend about the installation and hand off ownership of
-  // extension_ to it.
-  frontend_weak_->OnExtensionInstalled(extension_,
-                                       page_ordinal_,
-                                       has_requirement_errors_,
-                                       install_wait_for_idle_);
-
-  NotifyCrxInstallComplete(extension_.get());
-
-  extension_ = NULL;
-
-  // We're done. We don't post any more tasks to ourselves so we are deleted
-  // soon.
+  // Install the extension if it's not blacklisted, but notify either way.
+  base::Closure on_success =
+      base::Bind(&ExtensionService::OnExtensionInstalled,
+                 frontend_weak_,
+                 extension_,
+                 page_ordinal_,
+                 has_requirement_errors_,
+                 install_wait_for_idle_);
+  if (bypass_blacklist_for_test_) {
+    HandleIsBlacklistedResponse(on_success, false);
+  } else {
+    ExtensionSystem::Get(profile_)->blacklist()->IsBlacklisted(
+        extension_->id(),
+        base::Bind(&CrxInstaller::HandleIsBlacklistedResponse,
+                   this,
+                   on_success));
+  }
 }
 
-void CrxInstaller::NotifyCrxInstallComplete(const Extension* extension) {
+void CrxInstaller::HandleIsBlacklistedResponse(
+    const base::Closure& on_success,
+    bool is_blacklisted) {
+  if (is_blacklisted) {
+    string16 error =
+        l10n_util::GetStringFUTF16(IDS_EXTENSION_IS_BLACKLISTED,
+                                   UTF8ToUTF16(extension_->name()));
+    make_scoped_ptr(ExtensionInstallUI::Create(profile()))->OnInstallFailure(
+        extensions::CrxInstallerError(error));
+    // Show error via reporter to make tests happy.
+    ExtensionErrorReporter::GetInstance()->ReportError(error, false);  // quiet
+  } else {
+    on_success.Run();
+  }
+  NotifyCrxInstallComplete(!is_blacklisted);
+}
+
+void CrxInstaller::NotifyCrxInstallComplete(bool success) {
   // Some users (such as the download shelf) need to know when a
   // CRXInstaller is done.  Listening for the EXTENSION_* events
   // is problematic because they don't know anything about the
@@ -650,7 +672,11 @@ void CrxInstaller::NotifyCrxInstallComplete(const Extension* extension) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       content::Source<CrxInstaller>(this),
-      content::Details<const Extension>(extension));
+      content::Details<const Extension>(success ? extension_.get() : NULL));
+
+  // We're done. We don't post any more tasks to ourselves so we are deleted
+  // soon.
+  extension_ = NULL;
 }
 
 void CrxInstaller::CleanupTempFiles() {

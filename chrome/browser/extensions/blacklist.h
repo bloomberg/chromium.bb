@@ -55,6 +55,8 @@ class Blacklist : public content::NotificationObserver,
   typedef base::Callback<void(const std::set<std::string>&)>
       GetBlacklistedIDsCallback;
 
+  typedef base::Callback<void(bool)> IsBlacklistedCallback;
+
   // |prefs_| must outlive this.
   explicit Blacklist(ExtensionPrefs* prefs);
 
@@ -68,6 +70,10 @@ class Blacklist : public content::NotificationObserver,
   // see ExtensionPrefs::IsExtensionBlacklisted.
   void GetBlacklistedIDs(const std::set<std::string>& ids,
                          const GetBlacklistedIDsCallback& callback);
+
+  // More convenient form of GetBlacklistedIDs for checking a single extension.
+  void IsBlacklisted(const std::string& extension_id,
+                     const IsBlacklistedCallback& callback);
 
   // Sets the blacklist from the updater to contain the extension IDs in |ids|
   void SetFromUpdater(const std::vector<std::string>& ids,
