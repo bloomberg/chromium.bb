@@ -82,8 +82,10 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1_instance_()
   , Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_instance_()
   , Actual_Unnamed_case_1_instance_()
+  , Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_instance_()
   , Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_()
-  , CondVfpOp_instance_()
+  , Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1_instance_()
+  , Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1_instance_()
   , DataBarrier_instance_()
   , Deprecated_instance_()
   , DuplicateToAdvSIMDRegisters_instance_()
@@ -102,7 +104,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreVectorRegisterList_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
-  , VcvtPtAndFixedPoint_FloatingPoint_instance_()
   , Vector1RegisterImmediate_BIT_instance_()
   , Vector1RegisterImmediate_MOV_instance_()
   , Vector1RegisterImmediate_MVN_instance_()
@@ -1959,7 +1960,7 @@ const ClassDecoder& Arm32DecoderState::decode_other_floating_point_data_processi
           0x00010000 /* opc2(19:16)=0001 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_instance_;
+    return Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
@@ -1968,28 +1969,28 @@ const ClassDecoder& Arm32DecoderState::decode_other_floating_point_data_processi
           0x00000040 /* opc3(7:6)=x1 */ &&
       (inst.Bits() & 0x0000002F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000 */) {
-    return CondVfpOp_instance_;
+    return Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00070000 /* opc2(19:16)=0111 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x000000C0 /* opc3(7:6)=11 */) {
-    return CondVfpOp_instance_;
+    return Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00080000 /* opc2(19:16)=1000 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_instance_;
+    return Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x000B0000)  ==
           0x00000000 /* opc2(19:16)=0x00 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_instance_;
+    return Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x000E0000)  ==
@@ -1998,28 +1999,28 @@ const ClassDecoder& Arm32DecoderState::decode_other_floating_point_data_processi
           0x00000040 /* opc3(7:6)=x1 */ &&
       (inst.Bits() & 0x00000100)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx */) {
-    return CondVfpOp_instance_;
+    return Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x000E0000)  ==
           0x000C0000 /* opc2(19:16)=110x */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_instance_;
+    return Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x000A0000)  ==
           0x000A0000 /* opc2(19:16)=1x1x */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return VcvtPtAndFixedPoint_FloatingPoint_instance_;
+    return Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */ &&
       (inst.Bits() & 0x000000A0)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx */) {
-    return CondVfpOp_instance_;
+    return Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

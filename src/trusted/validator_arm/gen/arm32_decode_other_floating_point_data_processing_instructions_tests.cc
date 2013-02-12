@@ -35,7 +35,7 @@ namespace nacl_arm_test {
 
 
 // opc2(19:16)=0000 & opc3(7:6)=01
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -94,7 +94,7 @@ bool CondVfpOpTesterCase0
 }
 
 // opc2(19:16)=0000 & opc3(7:6)=11
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -153,7 +153,7 @@ bool CondVfpOpTesterCase1
 }
 
 // opc2(19:16)=0001 & opc3(7:6)=01
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -212,7 +212,7 @@ bool CondVfpOpTesterCase2
 }
 
 // opc2(19:16)=0001 & opc3(7:6)=11
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -271,7 +271,7 @@ bool CondVfpOpTesterCase3
 }
 
 // opc2(19:16)=0100 & opc3(7:6)=x1
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -330,7 +330,7 @@ bool CondVfpOpTesterCase4
 }
 
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -392,7 +392,7 @@ bool CondVfpOpTesterCase5
 }
 
 // opc2(19:16)=0111 & opc3(7:6)=11
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -451,7 +451,7 @@ bool CondVfpOpTesterCase6
 }
 
 // opc2(19:16)=1000 & opc3(7:6)=x1
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -516,7 +516,7 @@ bool CondVfpOpTesterCase7
 }
 
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -578,7 +578,7 @@ bool CondVfpOpTesterCase8
 }
 
 // opc2(19:16)=101x & opc3(7:6)=x1
-//    = {actual: VcvtPtAndFixedPoint_FloatingPoint,
+//    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VcvtPtAndFixedPoint_FloatingPoint,
 //       constraints: ,
 //       defs: {},
@@ -649,7 +649,7 @@ bool VcvtPtAndFixedPoint_FloatingPointTesterCase9
 }
 
 // opc2(19:16)=110x & opc3(7:6)=x1
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -714,7 +714,7 @@ bool CondVfpOpTesterCase10
 }
 
 // opc2(19:16)=111x & opc3(7:6)=x1
-//    = {actual: VcvtPtAndFixedPoint_FloatingPoint,
+//    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VcvtPtAndFixedPoint_FloatingPoint,
 //       constraints: ,
 //       defs: {},
@@ -785,7 +785,7 @@ bool VcvtPtAndFixedPoint_FloatingPointTesterCase11
 }
 
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -849,7 +849,7 @@ bool CondVfpOpTesterCase12
 // to the corresponding instance in the generated DecoderState.
 
 // opc2(19:16)=0000 & opc3(7:6)=01
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -869,7 +869,7 @@ class CondVfpOpTester_Case0
 };
 
 // opc2(19:16)=0000 & opc3(7:6)=11
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -889,7 +889,7 @@ class CondVfpOpTester_Case1
 };
 
 // opc2(19:16)=0001 & opc3(7:6)=01
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -909,7 +909,7 @@ class CondVfpOpTester_Case2
 };
 
 // opc2(19:16)=0001 & opc3(7:6)=11
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -929,7 +929,7 @@ class CondVfpOpTester_Case3
 };
 
 // opc2(19:16)=0100 & opc3(7:6)=x1
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -949,7 +949,7 @@ class CondVfpOpTester_Case4
 };
 
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -969,7 +969,7 @@ class CondVfpOpTester_Case5
 };
 
 // opc2(19:16)=0111 & opc3(7:6)=11
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -989,7 +989,7 @@ class CondVfpOpTester_Case6
 };
 
 // opc2(19:16)=1000 & opc3(7:6)=x1
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1011,7 +1011,7 @@ class CondVfpOpTester_Case7
 };
 
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1031,7 +1031,7 @@ class CondVfpOpTester_Case8
 };
 
 // opc2(19:16)=101x & opc3(7:6)=x1
-//    = {actual: VcvtPtAndFixedPoint_FloatingPoint,
+//    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VcvtPtAndFixedPoint_FloatingPoint,
 //       constraints: ,
 //       defs: {},
@@ -1059,7 +1059,7 @@ class VcvtPtAndFixedPoint_FloatingPointTester_Case9
 };
 
 // opc2(19:16)=110x & opc3(7:6)=x1
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1081,7 +1081,7 @@ class CondVfpOpTester_Case10
 };
 
 // opc2(19:16)=111x & opc3(7:6)=x1
-//    = {actual: VcvtPtAndFixedPoint_FloatingPoint,
+//    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VcvtPtAndFixedPoint_FloatingPoint,
 //       constraints: ,
 //       defs: {},
@@ -1109,7 +1109,7 @@ class VcvtPtAndFixedPoint_FloatingPointTester_Case11
 };
 
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1138,7 +1138,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // decoder tables.
 
 // opc2(19:16)=0000 & opc3(7:6)=01
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1150,12 +1150,14 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case0_TestCase0) {
-  CondVfpOpTester_Case0 tester;
-  tester.Test("cccc11101d110000dddd101s01m0mmmm");
+  CondVfpOpTester_Case0 baseline_tester;
+  NamedActual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_VMOV_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d110000dddd101s01m0mmmm");
 }
 
 // opc2(19:16)=0000 & opc3(7:6)=11
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1167,12 +1169,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case1_TestCase1) {
-  CondVfpOpTester_Case1 tester;
-  tester.Test("cccc11101d110000dddd101s11m0mmmm");
+  CondVfpOpTester_Case1 baseline_tester;
+  NamedActual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_VABS actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d110000dddd101s11m0mmmm");
 }
 
 // opc2(19:16)=0001 & opc3(7:6)=01
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1184,12 +1188,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case2_TestCase2) {
-  CondVfpOpTester_Case2 tester;
-  tester.Test("cccc11101d110001dddd101s01m0mmmm");
+  CondVfpOpTester_Case2 baseline_tester;
+  NamedActual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_VNEG actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d110001dddd101s01m0mmmm");
 }
 
 // opc2(19:16)=0001 & opc3(7:6)=11
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1201,12 +1207,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case3_TestCase3) {
-  CondVfpOpTester_Case3 tester;
-  tester.Test("cccc11101d110001dddd101s11m0mmmm");
+  CondVfpOpTester_Case3 baseline_tester;
+  NamedActual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_VSQRT actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d110001dddd101s11m0mmmm");
 }
 
 // opc2(19:16)=0100 & opc3(7:6)=x1
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1218,12 +1226,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case4_TestCase4) {
-  CondVfpOpTester_Case4 tester;
-  tester.Test("cccc11101d110100dddd101se1m0mmmm");
+  CondVfpOpTester_Case4 baseline_tester;
+  NamedActual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_VCMP_VCMPE actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d110100dddd101se1m0mmmm");
 }
 
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1235,12 +1245,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case5_TestCase5) {
-  CondVfpOpTester_Case5 tester;
-  tester.Test("cccc11101d110101dddd101se1000000");
+  CondVfpOpTester_Case5 baseline_tester;
+  NamedActual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_VCMP_VCMPE actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d110101dddd101se1000000");
 }
 
 // opc2(19:16)=0111 & opc3(7:6)=11
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1252,12 +1264,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case6_TestCase6) {
-  CondVfpOpTester_Case6 tester;
-  tester.Test("cccc11101d110111dddd101s11m0mmmm");
+  CondVfpOpTester_Case6 baseline_tester;
+  NamedActual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_VCVT_between_double_precision_and_single_precision actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d110111dddd101s11m0mmmm");
 }
 
 // opc2(19:16)=1000 & opc3(7:6)=x1
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1271,12 +1285,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case7_TestCase7) {
-  CondVfpOpTester_Case7 tester;
-  tester.Test("cccc11101d111ooodddd101sp1m0mmmm");
+  CondVfpOpTester_Case7 baseline_tester;
+  NamedActual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1_VCVT_VCVTR_between_floating_point_and_integer_Floating_point actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d111ooodddd101sp1m0mmmm");
 }
 
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1288,12 +1304,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case8_TestCase8) {
-  CondVfpOpTester_Case8 tester;
-  tester.Test("cccc11101d11001odddd1010t1m0mmmm");
+  CondVfpOpTester_Case8 baseline_tester;
+  NamedActual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_VCVTB_VCVTT actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d11001odddd1010t1m0mmmm");
 }
 
 // opc2(19:16)=101x & opc3(7:6)=x1
-//    = {actual: VcvtPtAndFixedPoint_FloatingPoint,
+//    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VcvtPtAndFixedPoint_FloatingPoint,
 //       constraints: ,
 //       defs: {},
@@ -1313,12 +1331,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VcvtPtAndFixedPoint_FloatingPointTester_Case9_TestCase9) {
-  VcvtPtAndFixedPoint_FloatingPointTester_Case9 tester;
-  tester.Test("cccc11101d111o1udddd101fx1i0iiii");
+  VcvtPtAndFixedPoint_FloatingPointTester_Case9 baseline_tester;
+  NamedActual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1_VCVT_between_floating_point_and_fixed_point_Floating_point actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d111o1udddd101fx1i0iiii");
 }
 
 // opc2(19:16)=110x & opc3(7:6)=x1
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1332,12 +1352,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case10_TestCase10) {
-  CondVfpOpTester_Case10 tester;
-  tester.Test("cccc11101d111ooodddd101sp1m0mmmm");
+  CondVfpOpTester_Case10 baseline_tester;
+  NamedActual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1_VCVT_VCVTR_between_floating_point_and_integer_Floating_point actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d111ooodddd101sp1m0mmmm");
 }
 
 // opc2(19:16)=111x & opc3(7:6)=x1
-//    = {actual: VcvtPtAndFixedPoint_FloatingPoint,
+//    = {actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //       baseline: VcvtPtAndFixedPoint_FloatingPoint,
 //       constraints: ,
 //       defs: {},
@@ -1357,12 +1379,14 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VcvtPtAndFixedPoint_FloatingPointTester_Case11_TestCase11) {
-  VcvtPtAndFixedPoint_FloatingPointTester_Case11 tester;
-  tester.Test("cccc11101d111o1udddd101fx1i0iiii");
+  VcvtPtAndFixedPoint_FloatingPointTester_Case11 baseline_tester;
+  NamedActual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1_VCVT_between_floating_point_and_fixed_point_Floating_point actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d111o1udddd101fx1i0iiii");
 }
 
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
-//    = {actual: CondVfpOp,
+//    = {actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //       baseline: CondVfpOp,
 //       constraints: ,
 //       defs: {},
@@ -1374,8 +1398,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        CondVfpOpTester_Case12_TestCase12) {
-  CondVfpOpTester_Case12 tester;
-  tester.Test("cccc11101d11iiiidddd101s0000iiii");
+  CondVfpOpTester_Case12 baseline_tester;
+  NamedActual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1_VMOV_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d11iiiidddd101s0000iiii");
 }
 
 }  // namespace nacl_arm_test
