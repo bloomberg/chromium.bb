@@ -24,6 +24,14 @@ class AutocompleteFieldTrial {
   // This method, unlike ActivateStaticTrials(), may be called multiple times.
   static void ActivateDynamicTrials();
 
+  // Returns a bitmap containing AutocompleteProvider::Type values
+  // that should be disabled in AutocompleteController.
+  // This method simply goes over all autocomplete dynamic field trial groups
+  // and looks for group names like "ProvidersDisabled_NNN" where NNN is
+  // an integer corresponding to a bitmap mask.  All extracted bitmaps
+  // are OR-ed together and returned as the final result.
+  static int GetDisabledProviderTypes();
+
   // ---------------------------------------------------------
   // For the inline History Quick Provider field trial.
 

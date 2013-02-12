@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/bookmark_provider.h"
 #include "chrome/browser/autocomplete/builtin_provider.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
@@ -94,6 +95,8 @@ AutocompleteController::AutocompleteController(
       in_start_(false),
       in_zero_suggest_(false),
       profile_(profile) {
+  // AND with the disabled providers, if any.
+  provider_types &= ~AutocompleteFieldTrial::GetDisabledProviderTypes();
   bool use_hqp = !!(provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK);
   // TODO(mrossetti): Permanently modify the HistoryURLProvider to not search
   // titles once HQP is turned on permanently.

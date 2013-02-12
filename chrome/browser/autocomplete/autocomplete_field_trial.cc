@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/metrics/metrics_util.h"
@@ -105,10 +106,10 @@ const base::FieldTrial::Probability
 
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
-// Activate() below.
+// ActivateStaticTrials() below.
 
 // Whether the static field trials have been initialized by
-// ActivateStaticTrials method.
+// ActivateStaticTrials() method.
 bool static_field_trials_initialized = false;
 
 // Field trial ID for the disallow-inline History Quick Provider
@@ -137,7 +138,13 @@ int hqp_only_count_matches_at_word_boundaries_experiment_group = 0;
 // experiment group.
 int hqp_use_cursor_position_experiment_group = 0;
 
+// Concatenates the autocomplete dynamic field trial prefix with a field trial
+// ID to form a complete autocomplete field trial name.
+std::string DynamicFieldTrialName(int id) {
+  return base::StringPrintf("%s%d", kAutocompleteDynamicFieldTrialPrefix, id);
 }
+
+}  // namespace
 
 
 void AutocompleteFieldTrial::ActivateStaticTrials() {
@@ -261,11 +268,38 @@ void AutocompleteFieldTrial::ActivateStaticTrials() {
 }
 
 void AutocompleteFieldTrial::ActivateDynamicTrials() {
-  // Initialize all autocomplete dynamic field trials.
+  // Initialize all autocomplete dynamic field trials.  This method may be
+  // called multiple times.
+  for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i)
+    base::FieldTrialList::FindValue(DynamicFieldTrialName(i));
+}
+
+int AutocompleteFieldTrial::GetDisabledProviderTypes() {
+  // Make sure that Autocomplete dynamic field trials are activated.  It's OK to
+  // call this method multiple times.
+  ActivateDynamicTrials();
+
+  // Look for group names in form of "DisabledProviders_<mask>" where "mask"
+  // is a bitmap of disabled provider types (AutocompleteProvider::Type).
+  int provider_types = 0;
   for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i) {
-    base::FieldTrialList::FindValue(
-        base::StringPrintf("%s%d", kAutocompleteDynamicFieldTrialPrefix, i));
+    std::string group_name = base::FieldTrialList::FindFullName(
+        DynamicFieldTrialName(i));
+    const char kDisabledProviders[] = "DisabledProviders_";
+    if (!StartsWithASCII(group_name, kDisabledProviders, true))
+      continue;
+    int types = 0;
+    if (!base::StringToInt(base::StringPiece(
+            group_name.substr(strlen(kDisabledProviders))), &types)) {
+      LOG(WARNING) << "Malformed DisabledProviders string: " << group_name;
+      continue;
+    }
+    if (types == 0)
+      LOG(WARNING) << "Expecting a non-zero bitmap; group = " << group_name;
+    else
+      provider_types |= types;
   }
+  return provider_types;
 }
 
 bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrial() {
