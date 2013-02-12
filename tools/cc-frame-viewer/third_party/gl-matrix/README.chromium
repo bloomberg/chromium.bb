@@ -1,0 +1,15 @@
+Name: gl-matrix
+Short Name: gl-matrix
+URL: https://github.com/toji/gl-matrix
+Version: 0
+Revision: fb436a8f6b82d200d0069790635810778712dd44
+Date: Mon Feb 4 16:54:37 2013 -0500 
+License: BSD
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+Matrix math in javascript
+
+Local Modifications:
+None.
