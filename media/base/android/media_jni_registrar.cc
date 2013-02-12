@@ -10,6 +10,7 @@
 
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_listener.h"
+#include "media/video/capture/android/video_capture_device_android.h"
 
 namespace media {
 
@@ -18,6 +19,8 @@ static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
     MediaPlayerBridge::RegisterMediaPlayerBridge },
   { "MediaPlayerListener",
     MediaPlayerListener::RegisterMediaPlayerListener },
+  { "VideoCaptureDevice",
+    VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice },
 };
 
 bool RegisterJni(JNIEnv* env) {

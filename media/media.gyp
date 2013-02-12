@@ -322,6 +322,8 @@
         'filters/video_renderer_base.h',
         'filters/vpx_video_decoder.cc',
         'filters/vpx_video_decoder.h',
+        'video/capture/android/video_capture_device_android.cc',
+        'video/capture/android/video_capture_device_android.h',
         'video/capture/fake_video_capture_device.cc',
         'video/capture/fake_video_capture_device.h',
         'video/capture/linux/video_capture_device_linux.cc',
@@ -514,6 +516,12 @@
               '-lOpenSLES',
             ],
           },
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/media',
+          ],
+          'dependencies': [
+            'video_capture_android_jni_headers',
+          ],
         }],
         # A simple WebM encoder for animated avatars on ChromeOS.
         ['chromeos==1', {
@@ -611,9 +619,6 @@
               ],
             }],
           ],
-        }],
-        ['os_posix == 1 and OS != "android"', {
-          # Video capture isn't supported in Android yet.
           'sources!': [
             'video/capture/video_capture_device_dummy.cc',
             'video/capture/video_capture_device_dummy.h',
@@ -1291,6 +1296,30 @@
           'sources': [
             'base/android/java/src/org/chromium/media/MediaPlayerBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerListener.java',
+          ],
+          'variables': {
+            'jni_gen_dir': 'media',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'camera_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_dir': 'media',
+            'input_java_class': 'android/hardware/Camera.class',
+            'input_jar_file': '<(android_sdk)/android.jar',
+          },
+          'includes': [ '../build/jar_file_jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'video_capture_android_jni_headers',
+          'type': 'none',
+          'dependencies': [
+            'camera_jni_headers',
+          ],
+          'sources': [
+            'base/android/java/src/org/chromium/media/VideoCapture.java',
           ],
           'variables': {
             'jni_gen_dir': 'media',
