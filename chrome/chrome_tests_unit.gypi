@@ -908,6 +908,8 @@
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
+        'browser/notifications/sync_notifier/chrome_notifier_service_unittest.cc',
+        'browser/notifications/sync_notifier/synced_notification_unittest.cc',
         'browser/page_cycler/page_cycler_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/encryptor_password_mac_unittest.cc',

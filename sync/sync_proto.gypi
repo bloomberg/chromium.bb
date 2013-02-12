@@ -33,6 +33,8 @@
     'protocol/session_specifics.proto',
     'protocol/sync.proto',
     'protocol/sync_enums.proto',
+    'protocol/synced_notification_data.proto',
+    'protocol/synced_notification_render.proto',
     'protocol/synced_notification_specifics.proto',
     'protocol/test.proto',
     'protocol/theme_specifics.proto',

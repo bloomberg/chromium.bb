@@ -14,7 +14,11 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
+import "synced_notification_data.proto";
+import "synced_notification_render.proto";
+
 // Properties of SyncedNotificationSpecifics objects.
 message SyncedNotificationSpecifics {
-  // TODO(petewil): this is placeholder data, make a real one
+  // The notification from the server.
+  optional CoalescedSyncedNotification coalesced_notification = 1;
 }

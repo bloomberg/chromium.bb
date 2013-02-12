@@ -1,0 +1,66 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for push notifications..
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+import "synced_notification_render.proto";
+
+// This message allows clients to identify a notification they have created.
+message SyncedNotificationIdentifier {
+  // The application that the notification is a part of.
+  optional string app_id = 1;
+
+  // Notifications with the same coalescing key (isolated to the same app_id)
+  // will be grouped together when fetched.
+  optional string coalescing_key = 2;
+}
+
+message SyncedNotification {
+  // The unique identifier of the notification.
+  optional SyncedNotificationIdentifier id = 1;
+
+  // A secondary type that is isolated within the same app_id.
+  //
+  // NOTE: For ASBE support purposes this must be in the format [A-Za-z_]+.
+  optional string type = 2;
+
+  // Whatever string the client entered during creation.  If no external_id is
+  // specified, the notification can no longer be identified individually for
+  // fetching/deleting, etc...
+  optional string external_id = 3;
+}
+
+message CoalescedSyncedNotification {
+  // The identifier used to identify individual coalesced notifications.
+  optional SyncedNotificationIdentifier id = 1;
+
+  // All the notifications that are grouped together.
+  repeated SyncedNotification notification = 2;
+
+  // Data that is used directly by endpoints to render notifications in the case
+  // where no "native" app can handle the notification.
+  optional SyncedNotificationRenderInfo render_info = 3;
+
+  // Read state will be per coalesced notification.
+  enum ReadState {
+    UNREAD = 1;
+    READ = 2;
+    DISMISSED = 3;
+  }
+  optional ReadState read_state = 4;
+
+  // The time when the LATEST notification of the coalesced notification is
+  // created (in milliseconds since the linux epoch).
+  optional uint64 creation_time_msec = 5;
+}

@@ -1,0 +1,83 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+// Data that is used directly by endpoints to render notifications in the case
+// where no "native" app can handle the notification.
+message SyncedNotificationRenderInfo {
+  message Layout {
+    enum LayoutType {
+      TITLE_AND_SUBTEXT = 1;
+      TITLE_AND_IMAGE = 2;
+    }
+    optional LayoutType layout_type = 1;
+
+    message TitleAndSubtextData {
+      optional string title = 1;
+      // The icon to show on the left of the notification.
+      optional SyncedNotificationIcon icon = 2;
+      // Multiple lines of the sub-text.
+      repeated string subtext = 3;
+    }
+    optional TitleAndSubtextData title_and_subtext_data = 3;
+
+    message TitleAndImageData {
+      optional string title = 1;
+      optional SyncedNotificationImage image = 2;
+    }
+    optional TitleAndImageData title_and_image_data = 4;
+  }
+  optional Layout layout = 1;
+
+  // An Action encapsulates an UI component that trigger certain programmable
+  // actions.  Depending on the endpoint, this may show up as a html button,
+  // "quick actions" in the Android notification drawer, a link, or even the
+  // notification card itself (the "default" action case).
+  message Action {
+    // The description for the Action.
+    optional string text = 1;
+
+    // The icon to use for the Action.
+    optional SyncedNotificationIcon icon = 2;
+
+    // Specify whether the action should be a background action or
+    // should open up a web page with the specified URL.
+    optional bool is_background = 3;
+
+    // The url to send users to when they trigger the action.
+    optional string action_url = 4;
+
+    // If post_data is populated, this indicates that action_url should be
+    // contacted via a POST rather than a GET.
+    optional string post_data = 5;
+  }
+  // All the actions that can be triggered from this (coalesced) notification.
+  // This is sorted by importance so depending on the end point, the first N
+  // actions should be used (and the first action is the "default" action).
+  // For default actions, the icon and text params are ignored.
+  repeated Action action = 2;
+}
+
+message SyncedNotificationImage {
+  optional string url = 1;
+  // This is somewhat made up - not sure what else apart from url do we need
+  // about an image.
+  optional string alt_text = 2;
+  optional int32 preferred_width = 3;
+  optional int32 preferred_height = 4;
+}
+
+message SyncedNotificationIcon {
+  optional string url = 1;
+}

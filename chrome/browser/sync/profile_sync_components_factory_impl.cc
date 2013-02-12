@@ -12,6 +12,10 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#if !defined(OS_ANDROID)
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
+#endif
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
@@ -237,6 +241,16 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             syncer::HISTORY_DELETE_DIRECTIVES, this, profile_, pss));
   }
 
+  // Synced Notifications sync is disabled by default.
+  // TODO(petewil): Switch to enabled by default once datatype support is done.
+  if (command_line_->HasSwitch(switches::kEnableSyncSyncedNotifications)) {
+#if !defined(OS_ANDROID)
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(
+            syncer::SYNCED_NOTIFICATIONS, this, profile_, pss));
+#endif
+  }
+
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
   // Dictionary sync is enabled by default.
   if (!command_line_->HasSwitch(switches::kDisableSyncDictionary)) {
@@ -244,6 +258,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
         new UIDataTypeController(syncer::DICTIONARY, this, profile_, pss));
   }
 #endif
+
 }
 
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
@@ -321,9 +336,21 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
               profile_, Profile::EXPLICIT_ACCESS);
       return history ? history->AsWeakPtr() : base::WeakPtr<HistoryService>();
     }
+
+#if !defined(OS_ANDROID)
+    case syncer::SYNCED_NOTIFICATIONS: {
+      notifier::ChromeNotifierService* notifier_service =
+          notifier::ChromeNotifierServiceFactory::GetForProfile(
+              profile_, Profile::EXPLICIT_ACCESS);
+      return notifier_service ? notifier_service->AsWeakPtr()
+          : base::WeakPtr<syncer::SyncableService>();
+    }
+#endif
+
     case syncer::DICTIONARY:
       return SpellcheckServiceFactory::GetForProfile(profile_)->
           GetCustomDictionary()->AsWeakPtr();
+
     default:
       // The following datatypes still need to be transitioned to the
       // syncer::SyncableService API:
