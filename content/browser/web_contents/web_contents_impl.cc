@@ -1034,6 +1034,7 @@ bool WebContentsImpl::DisplayedInsecureContent() const {
 }
 
 void WebContentsImpl::IncrementCapturerCount() {
+  DCHECK(!is_being_destroyed_);
   ++capturer_count_;
   DVLOG(1) << "There are now " << capturer_count_
            << " capturing(s) of WebContentsImpl@" << this;
@@ -1043,7 +1044,8 @@ void WebContentsImpl::IncrementCapturerCount() {
   if (capturer_count_ == 1) {
     // Force a WebkitPreferences reload to disable compositing for snapshots.
     RenderViewHost* rvh = GetRenderViewHost();
-    rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
+    if (rvh)
+      rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
   }
 #endif
 }
@@ -1054,12 +1056,16 @@ void WebContentsImpl::DecrementCapturerCount() {
            << " capturing(s) of WebContentsImpl@" << this;
   DCHECK_LE(0, capturer_count_);
 
+  if (is_being_destroyed_)
+    return;
+
 #if defined(OS_LINUX) && !defined(USE_AURA)
   // Temporary fix for Linux non-Aura capturing. http://crbug.com/174957
   if (capturer_count_ == 0) {
     // Force a WebkitPreferences reload to re-enable compositing.
     RenderViewHost* rvh = GetRenderViewHost();
-    rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
+    if (rvh)
+      rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
   }
 #endif
 

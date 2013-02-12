@@ -208,7 +208,7 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary(
   // Destroying a WebContents may trigger it to be hidden, prompting a snapshot
   // which would be unwise to attempt <http://crbug.com/130097>. If the
   // WebContents is in the middle of destruction, do not risk it.
-  if (web_contents->IsBeingDestroyed())
+  if (!web_contents || web_contents->IsBeingDestroyed())
     return;
   // Skip if a pending entry exists. WidgetHidden can be called while navigating
   // pages and this is not a time when thumbnails should be generated.
