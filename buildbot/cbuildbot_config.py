@@ -63,8 +63,8 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
 
     # Most users don't have access to the pdf repository so disable pdf.
     useflags = my_config['useflags']
-    if not remote_trybot and useflags and 'chrome_pdf' in useflags:
-      useflags.remove('chrome_pdf')
+    if not remote_trybot and useflags and constants.USE_CHROME_PDF in useflags:
+      useflags.remove(constants.USE_CHROME_PDF)
 
     my_config['upload_symbols'] = False
     my_config['push_image'] = False
@@ -611,7 +611,8 @@ internal = _config(
 # This adds Chrome branding, and removes highdpi resources by default to save
 # space on the image.
 official = _config(
-  useflags=['chrome_internal', 'chrome_pdf', '-highdpi'],
+  useflags=[constants.USE_CHROME_INTERNAL, constants.USE_CHROME_PDF,
+            '-highdpi'],
   chromeos_official=True,
   prebuilts=False,
 )
@@ -1054,7 +1055,7 @@ internal_incremental.add_config('mario-incremental',
 _toolchain_major.add_config('internal-toolchain-major', internal, official,
   boards=('x86-alex', 'stumpy', 'daisy'),
   use_lkgm=True,
-  useflags=['chrome_internal'],
+  useflags=[constants.USE_CHROME_INTERNAL],
   build_tests=True,
   description=_toolchain_major['description'] + ' (internal)',
 )
@@ -1062,7 +1063,7 @@ _toolchain_major.add_config('internal-toolchain-major', internal, official,
 _toolchain_minor.add_config('internal-toolchain-minor', internal, official,
   boards=('x86-alex', 'stumpy', 'daisy'),
   use_lkgm=True,
-  useflags=['chrome_internal'],
+  useflags=[constants.USE_CHROME_INTERNAL],
   build_tests=True,
   description=_toolchain_minor['description'] + ' (internal)',
 )

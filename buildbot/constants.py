@@ -84,6 +84,10 @@ CREATED_BRANCHES = [
 CHROME_PN = 'chromeos-chrome'
 CHROME_CP = 'chromeos-base/%s' % CHROME_PN
 
+# Chrome use flags
+USE_CHROME_INTERNAL = 'chrome_internal'
+USE_CHROME_PDF = 'chrome_pdf'
+
 # Builds and validates _alpha ebuilds.  These builds sync to the latest
 # revsion of the Chromium src tree and build with that checkout.
 CHROME_REV_TOT = 'tot'
