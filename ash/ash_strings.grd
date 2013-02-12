@@ -354,9 +354,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup.">
         Bluetooth
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTED" desc="The label used in the tray popup for the bluetooth entry.">
-        Bluetooth connected
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED" desc="The label used in the tray popup to notify that bluetooth is enabled.">
         Bluetooth enabled
       </message>
@@ -383,9 +380,6 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_TURNED_OFF" desc="The label used in the tray popup to show bluetooth is turned off.">
         Bluetooth is turned off.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_NO_DEVICE" desc="The label used in the tray popup to show bluetooth is turned off.">
-        No bluetooth devices available
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING" desc="The label used in the tray popup to show bluetooth is discovering devices.">
         Scanning for devices...
