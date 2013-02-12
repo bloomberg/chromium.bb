@@ -796,7 +796,8 @@ def SplitPV(pv):
   """Takes a PV value and splits it into individual components.
 
   Returns:
-    Package, Version
+    A collection with named members:
+      pv, package, version, version_no_rev, rev
   """
   m = _pvr_re.match(pv)
   if m is None:
@@ -808,7 +809,8 @@ def SplitCPV(cpv):
   """Splits a CPV value into components.
 
   Returns:
-    Category, Package, Version
+    A collection with named members:
+      category, pv, package, version, version_no_rev, rev
   """
   (category, pv) = cpv.split('/', 1)
   m = SplitPV(pv)

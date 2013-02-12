@@ -18,6 +18,7 @@ import tempfile
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient
 from chromite.lib import git
@@ -708,16 +709,19 @@ def AddPackagesForPrebuilt(filename):
   """
   try:
     cmd = []
-    package_file = open(filename, 'r')
-    # Get only the package name and category. For example, given
-    # "app-arch/xz-utils-4.999.9_beta" get "app-arch/xz-utils".
-    reg_ex = re.compile('[\w-]+/[\w-]+[a-zA-Z]+[0-9]*')
-    for line in package_file:
-      match = reg_ex.match(line)
-      if match is not None:
-        package_name = match.group()
-        cmd.extend(['--packages=' + package_name])
-    package_file.close()
+    with open(filename) as f:
+      # Get only the package name and category as that is what upload_prebuilts
+      # matches on.
+      for line in f:
+        atom = line.split('#', 1)[0].strip()
+        try:
+          cpv = portage_utilities.SplitCPV(atom)
+        except ValueError:
+          cros_build_lib.Warning('Could not split atom %r (line: %r)',
+                                 atom, line)
+          continue
+        if cpv:
+          cmd.extend(['--packages=%s/%s' % (cpv.category, cpv.package)])
     return cmd
   except IOError as e:
     cros_build_lib.Warning('Problem with package file %s' % filename)

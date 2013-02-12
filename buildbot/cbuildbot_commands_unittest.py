@@ -209,6 +209,25 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
                                            board=self._board)
     self.assertCommandContains([constants.CANARY_TYPE] + args[2:] + args[0:2])
 
+  def testAddPackagesForPrebuilt(self):
+    """Test AddPackagesForPrebuilt."""
+    self.assertEqual(commands.AddPackagesForPrebuilt('/'), None)
+
+    data = """# comment!
+cat/pkg-0
+ca-t2/pkg2-123
+ca-t3/pk-g4-4.0.1-r333
+"""
+    pkgs = [
+        'cat/pkg',
+        'ca-t2/pkg2',
+        'ca-t3/pk-g4',
+    ]
+    cmds = ['--packages=' + x for x in pkgs]
+    f = os.path.join(self.tempdir, 'package.provided')
+    osutils.WriteFile(f, data)
+    self.assertEqual(commands.AddPackagesForPrebuilt(f), cmds)
+
   def testMissingDevInstallerFile(self):
     """Test that we raise an exception when the installer file is missing."""
     self.assertRaises(commands.PackageFileMissing,
