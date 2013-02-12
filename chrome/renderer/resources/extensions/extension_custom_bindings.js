@@ -79,13 +79,12 @@ chromeHidden.registerCustomHook('extension',
     'onConnect', 'onConnectExternal', 'onMessage', 'onMessageExternal'
   ];
   mayNeedAlias.forEach(function(alias) {
-    try {
-      // Deliberately accessing runtime[alias] rather than testing its
-      // existence, since accessing may throw an exception if this context
-      // doesn't have access.
-      if (chrome.runtime[alias])
-        chrome.extension[alias] = chrome.runtime[alias];
-    } catch(e) {}
+    // Checking existence isn't enough since some functions are disabled via
+    // getters that throw exceptions. Assume that any getter is such a function.
+    if (chrome.runtime.hasOwnProperty(alias) &&
+        chrome.runtime.__lookupGetter__(alias) === undefined) {
+      chrome.extension[alias] = chrome.runtime[alias];
+    }
   });
 
   apiFunctions.setUpdateArgumentsPreValidate('sendRequest',
