@@ -69,6 +69,7 @@ void DoTest(InputEventWithExpectations* events, size_t events_len, bool t5r2) {
   SplitCorrectingFilterInterpreterTestInterpreter* base_interpreter
       = new SplitCorrectingFilterInterpreterTestInterpreter;
   SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter, NULL);
+  interpreter.Enable();
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -163,6 +164,7 @@ TEST(SplitCorrectingFilterInterpreterTest, FalseMergeTest) {
   SplitCorrectingFilterInterpreterTestInterpreter* base_interpreter
       = new SplitCorrectingFilterInterpreterTestInterpreter;
   SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter, NULL);
+  interpreter.Enable();
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -311,6 +313,7 @@ TEST(SplitCorrectingFilterInterpreterTest, LumpyThumbSplitTest) {
   SplitCorrectingFilterInterpreterTestInterpreter* base_interpreter
       = new SplitCorrectingFilterInterpreterTestInterpreter;
   SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter, NULL);
+  interpreter.Enable();
 
   base_interpreter->expected_ids_.insert(2);
   base_interpreter->expect_finger_ids_ = true;
@@ -373,22 +376,6 @@ TEST(SplitCorrectingFilterInterpreterTest, LumpyThumbSplitTest) {
     interpreter.SyncInterpret(&hs, &timeout);
   }
   EXPECT_EQ(arraysize(inputs), base_interpreter->iteration_);
-}
-
-// Test that this doesn't do anything on T5R2 pads
-TEST(SplitCorrectingFilterInterpreterTest, T5R2Test) {
-  InputEventWithExpectations events[] = {
-    {{{ 0, 0, 0, 0, 112.380295, 0, 94.333336, 23.600000, 3087, 0 },
-      { 0, 0, 0, 0, 0, 0, 0, 0, -1, 0 },
-      { 0, 0, 0, 0, 0, 0, 0, 0, -1, 0 }},
-     { 3087, -1 }},
-    {{{ 0, 0, 0, 0, 114.320663, 0, 93.750000, 26.600000, 3087, 0 },
-      { 0, 0, 0, 0, 102.678452, 0, 92.833336, 17.100000, 3088, 0 },
-      { 0, 0, 0, 0, 0, 0, 0, 0, -1, 0 }},
-     { 3087, 3088, -1 }},
-  };
-
-  DoTest(events, arraysize(events), true);
 }
 
 // Tests that close fingers that are scrolling don't get incorrectly merged.

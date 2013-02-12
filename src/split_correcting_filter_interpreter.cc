@@ -15,7 +15,7 @@ namespace gestures {
 SplitCorrectingFilterInterpreter::SplitCorrectingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
     : FilterInterpreter(NULL, next, tracer, false),
-      enabled_(true),
+      enabled_(prop_reg, "Split Corrector Enabled", 0),
       merge_max_separation_(prop_reg, "Split Merge Max Separation", 17.0),
       merge_max_movement_(prop_reg, "Split Merge Max Movement", 3.0),
       merge_max_ratio_(prop_reg, "Merge Max Ratio", sinf(DegToRad(19.0))) {
@@ -26,7 +26,7 @@ Gesture* SplitCorrectingFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate,
     stime_t* timeout) {
   // Update internal state
-  if (enabled_) {
+  if (enabled_.val_) {
     RemoveMissingUnmergedContacts(*hwstate);
     MergeFingers(*hwstate);
     UnmergeFingers(*hwstate);
@@ -41,7 +41,6 @@ Gesture* SplitCorrectingFilterInterpreter::SyncInterpretImpl(
 
 void SplitCorrectingFilterInterpreter::SetHardwarePropertiesImpl(
     const HardwareProperties& hwprops) {
-  enabled_ = !hwprops.supports_t5r2 && !hwprops.support_semi_mt;
   next_->SetHardwareProperties(hwprops);
 }
 

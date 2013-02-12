@@ -53,6 +53,8 @@ class SplitCorrectingFilterInterpreter : public FilterInterpreter {
                                    Tracer* tracer);
   virtual ~SplitCorrectingFilterInterpreter() {}
 
+  void Enable() { enabled_.val_ = 1; }
+
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                      stime_t* timeout);
@@ -103,7 +105,7 @@ class SplitCorrectingFilterInterpreter : public FilterInterpreter {
   void Dump(const HardwareState& hwstate) const;
 
   // We only enable on non-T5R2 pads
-  bool enabled_;
+  BoolProperty enabled_;
 
   set<short, kMaxFingers> last_tracking_ids_;
   UnmergedContact unmerged_[kMaxFingers];
