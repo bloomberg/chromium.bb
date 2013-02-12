@@ -36,6 +36,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 using content::BrowserThread;
 
@@ -83,33 +85,46 @@ std::string CreateShortcutIcon(
 
   base::FilePath temp_file_path = temp_dir.path().Append(
       shortcut_filename.ReplaceExtension("png"));
-
-  std::vector<unsigned char> png_data;
-  const SkBitmap* bitmap = shortcut_info.favicon.ToSkBitmap();
-  gfx::PNGCodec::EncodeBGRASkBitmap(*bitmap, false, &png_data);
-  int bytes_written = file_util::WriteFile(temp_file_path,
-      reinterpret_cast<char*>(png_data.data()), png_data.size());
-
-  if (bytes_written != static_cast<int>(png_data.size()))
-    return std::string();
-
-  std::vector<std::string> argv;
-  argv.push_back("xdg-icon-resource");
-  argv.push_back("install");
-
-  // Always install in user mode, even if someone runs the browser as root
-  // (people do that).
-  argv.push_back("--mode");
-  argv.push_back("user");
-
-  argv.push_back("--size");
-  argv.push_back(base::IntToString(bitmap->width()));
-
-  argv.push_back(temp_file_path.value());
   std::string icon_name = temp_file_path.BaseName().RemoveExtension().value();
-  argv.push_back(icon_name);
-  int exit_code;
-  LaunchXdgUtility(argv, &exit_code);
+
+  std::vector<gfx::ImageSkiaRep> image_reps =
+      shortcut_info.favicon.ToImageSkia()->image_reps();
+  for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
+       it != image_reps.end(); ++it) {
+    std::vector<unsigned char> png_data;
+    const SkBitmap& bitmap = it->sk_bitmap();
+    if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_data)) {
+      // If the bitmap could not be encoded to PNG format, skip it.
+      LOG(WARNING) << "Could not encode icon " << icon_name << ".png at size "
+                   << bitmap.width() << ".";
+      continue;
+    }
+    int bytes_written = file_util::WriteFile(temp_file_path,
+        reinterpret_cast<char*>(png_data.data()), png_data.size());
+
+    if (bytes_written != static_cast<int>(png_data.size()))
+      return std::string();
+
+    std::vector<std::string> argv;
+    argv.push_back("xdg-icon-resource");
+    argv.push_back("install");
+
+    // Always install in user mode, even if someone runs the browser as root
+    // (people do that).
+    argv.push_back("--mode");
+    argv.push_back("user");
+
+    argv.push_back("--size");
+    argv.push_back(base::IntToString(bitmap.width()));
+
+    argv.push_back(temp_file_path.value());
+    argv.push_back(icon_name);
+    int exit_code;
+    if (!LaunchXdgUtility(argv, &exit_code) || exit_code) {
+      LOG(WARNING) << "Could not install icon " << icon_name << ".png at size "
+                   << bitmap.width() << ".";
+    }
+  }
   return icon_name;
 }
 

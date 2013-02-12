@@ -46,6 +46,10 @@ namespace {
 
 #if defined(OS_MACOSX)
 const int kDesiredSizes[] = {16, 32, 128, 256, 512};
+#elif defined(OS_LINUX)
+// Linux supports icons of any size. FreeDesktop Icon Theme Specification states
+// that "Minimally you should install a 48x48 icon in the hicolor theme."
+const int kDesiredSizes[] = {16, 32, 48, 128, 256, 512};
 #else
 const int kDesiredSizes[] = {32};
 #endif
