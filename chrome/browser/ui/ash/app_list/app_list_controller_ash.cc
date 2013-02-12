@@ -65,6 +65,7 @@ void AppListControllerDelegateAsh::LaunchApp(
   DismissView();
 }
 
+#if !defined(OS_WIN)
 namespace chrome {
 
 // In the win_aura build these are defined in app_list_controller_win.cc.
@@ -103,3 +104,4 @@ void NotifyAppListOfExtensionInstallFailure(
 }
 
 }  // namespace chrome
+#endif

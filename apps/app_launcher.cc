@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -29,7 +30,7 @@ enum AppLauncherState {
 };
 
 AppLauncherState SynchronousAppLauncherChecks() {
-#if defined(USE_ASH)
+#if defined(USE_ASH) && !defined(OS_WIN)
   return APP_LAUNCHER_ENABLED;
 #elif !defined(OS_WIN)
   return APP_LAUNCHER_DISABLED;
@@ -38,6 +39,11 @@ AppLauncherState SynchronousAppLauncherChecks() {
           switches::kShowAppListShortcut)) {
     return APP_LAUNCHER_ENABLED;
   }
+
+#if defined(USE_ASH)
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    return APP_LAUNCHER_ENABLED;
+#endif
 
   if (!BrowserDistribution::GetDistribution()->AppHostIsSupported())
     return APP_LAUNCHER_DISABLED;

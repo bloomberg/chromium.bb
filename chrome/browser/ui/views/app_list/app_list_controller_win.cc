@@ -49,6 +49,12 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
+
 namespace {
 
 // Offset from the cursor to the point of the bubble arrow. It looks weird
@@ -156,11 +162,11 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
 class AppListController : public ProfileInfoCacheObserver {
  public:
   AppListController();
+  virtual ~AppListController();
 
   void set_can_close(bool can_close) { can_close_app_list_ = can_close; }
   bool can_close() { return can_close_app_list_; }
   Profile* profile() const { return profile_; }
-  bool app_list_is_showing() const { return app_list_is_showing_; }
 
   // Creates the app list view and populates it from |profile|, but doesn't
   // show it.  Does nothing if the view already exists.
@@ -168,13 +174,26 @@ class AppListController : public ProfileInfoCacheObserver {
 
   // Activates the app list at the current mouse cursor location, creating the
   // app list if necessary.
-  void ShowAppList(Profile* profile);
+  virtual void ShowAppList(Profile* profile);
+
+  // Hides the app list.
+  virtual void DismissAppList();
+
+  virtual void OnBeginExtensionInstall(Profile* profile,
+                                       const std::string& extension_id,
+                                       const std::string& extension_name,
+                                       const gfx::ImageSkia& installing_icon);
+  virtual void OnDownloadProgress(Profile* profile,
+                                  const std::string& extension_id,
+                                  int percent_downloaded);
+  virtual bool IsAppListVisible() const;
+  virtual void OnInstallFailure(Profile* profile,
+                                const std::string& extension_id);
 
   // Update the profile path stored in local prefs, load it (if not already
   // loaded), and show the app list.
   void SetProfilePath(const base::FilePath& profile_file_path);
 
-  void DismissAppList();
   void AppListClosing();
   void AppListActivationChanged(bool active);
   app_list::AppListView* GetView() { return current_view_; }
@@ -190,15 +209,6 @@ class AppListController : public ProfileInfoCacheObserver {
   void OnProfileNameChanged(const base::FilePath& profile_path,
                             const string16& profile_name) OVERRIDE {}
   void OnProfileAvatarChanged(const base::FilePath& profile_path) OVERRIDE {}
-
-  void OnBeginExtensionInstall(Profile* profile,
-                               const std::string& extension_id,
-                               const std::string& extension_name,
-                               const gfx::ImageSkia& installing_icon);
-  void OnDownloadProgress(Profile* profile,
-                          const std::string& extension_id,
-                          int percent_downloaded);
-  void OnInstallFailure(Profile* profile, const std::string& extension_id);
 
  private:
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.
@@ -235,6 +245,9 @@ class AppListController : public ProfileInfoCacheObserver {
   // pinned but will hide it if it otherwise loses focus. This is checked
   // periodically whenever the app list does not have focus.
   void CheckTaskbarOrViewHasFocus();
+
+  // Returns the underlying HWND for the AppList.
+  HWND GetAppListHWND() const;
 
   // Weak pointer. The view manages its own lifetime.
   app_list::AppListView* current_view_;
@@ -381,6 +394,9 @@ AppListController::AppListController()
   profile_manager->GetProfileInfoCache().AddObserver(this);
 }
 
+AppListController::~AppListController() {
+}
+
 void AppListController::OnProfileWillBeRemoved(
     const base::FilePath& profile_path) {
   // If the profile the app list uses just got deleted, reset it to the last
@@ -499,24 +515,28 @@ void AppListController::InitView(Profile* profile) {
 }
 
 void AppListController::PopulateViewFromProfile(Profile* profile) {
-#if !defined(USE_AURA)
   if (profile == profile_)
     return;
   profile_ = profile;
+
+  gfx::NativeWindow parent = NULL;
+
+#if !defined(USE_AURA)
+  parent = ::GetDesktopWindow();
+#endif
   // The controller will be owned by the view delegate, and the delegate is
   // owned by the app list view. The app list view manages it's own lifetime.
   view_delegate_ = new AppListViewDelegate(new AppListControllerDelegateWin(),
                                            profile_);
   current_view_ = new app_list::AppListView(view_delegate_);
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-  current_view_->InitAsBubble(GetDesktopWindow(),
+  current_view_->InitAsBubble(parent,
                               &pagination_model_,
                               NULL,
                               cursor,
                               views::BubbleBorder::BOTTOM_LEFT);
+  HWND hwnd = GetAppListHWND();
 
-  HWND hwnd =
-      current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
   ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
   CommandLine relaunch = GetAppListCommandLine();
   string16 app_name(l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME));
@@ -525,7 +545,6 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
   ::SetWindowText(hwnd, app_name.c_str());
   string16 icon_path = GetAppListIconPath();
   ui::win::SetAppIconForWindow(icon_path, hwnd);
-#endif
 }
 
 void AppListController::DismissAppList() {
@@ -535,24 +554,6 @@ void AppListController::DismissAppList() {
     chrome::EndKeepAlive();
     app_list_is_showing_ = false;
   }
-}
-
-void AppListController::AppListClosing() {
-  current_view_ = NULL;
-  view_delegate_ = NULL;
-  timer_.Stop();
-}
-
-void AppListController::AppListActivationChanged(bool active) {
-  const int kFocusCheckIntervalMS = 250;
-  if (active) {
-    timer_.Stop();
-    return;
-  }
-
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMilliseconds(kFocusCheckIntervalMS), this,
-               &AppListController::CheckTaskbarOrViewHasFocus);
 }
 
 void AppListController::OnBeginExtensionInstall(
@@ -577,6 +578,10 @@ void AppListController::OnDownloadProgress(Profile* profile,
   view_delegate_->OnDownloadProgress(extension_id, percent_downloaded);
 }
 
+bool AppListController::IsAppListVisible() const {
+  return app_list_is_showing_;
+}
+
 void AppListController::OnInstallFailure(Profile* profile,
                                          const std::string& extension_id) {
   // We only have a model for the current profile, so ignore events about
@@ -589,12 +594,29 @@ void AppListController::OnInstallFailure(Profile* profile,
   view_delegate_->OnInstallFailure(extension_id);
 }
 
+void AppListController::AppListClosing() {
+  current_view_ = NULL;
+  view_delegate_ = NULL;
+  timer_.Stop();
+}
+
+void AppListController::AppListActivationChanged(bool active) {
+  const int kFocusCheckIntervalMS = 250;
+  if (active) {
+    timer_.Stop();
+    return;
+  }
+
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromMilliseconds(kFocusCheckIntervalMS), this,
+               &AppListController::CheckTaskbarOrViewHasFocus);
+}
+
 // Attempts to find the bounds of the Windows taskbar. Returns true on success.
 // |rect| is in screen coordinates. If the taskbar is in autohide mode and is
 // not visible, |rect| will be outside the current monitor's bounds, except for
 // one pixel of overlap where the edge of the taskbar is shown.
 bool GetTaskbarRect(gfx::Rect* rect) {
-#if !defined(USE_AURA)
   HWND taskbar_hwnd = FindWindow(kTrayClassName, NULL);
   if (!taskbar_hwnd)
     return false;
@@ -605,9 +627,6 @@ bool GetTaskbarRect(gfx::Rect* rect) {
 
   *rect = gfx::Rect(win_rect);
   return true;
-#else
-  return false;
-#endif
 }
 
 // Used to position the view in a corner, which requires |anchor| to be in
@@ -750,7 +769,6 @@ string16 AppListController::GetAppListIconPath() {
 }
 
 void AppListController::CheckTaskbarOrViewHasFocus() {
-#if !defined(USE_AURA)
   // Don't bother checking if the view has been closed.
   if (!current_view_)
     return;
@@ -759,8 +777,8 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
   // context menu which the taskbar uses).
   HWND jump_list_hwnd = FindWindow(L"DV2ControlHost", NULL);
   HWND taskbar_hwnd = FindWindow(kTrayClassName, NULL);
-  HWND app_list_hwnd =
-      current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+
+  HWND app_list_hwnd = GetAppListHWND();
 
   // Get the focused window, and check if it is one of these windows. Keep
   // checking it's parent until either we find one of these windows, or there
@@ -778,6 +796,15 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
   // If we get here, the focused window is not the taskbar, it's context menu,
   // or the app list, so close the app list.
   DismissAppList();
+}
+
+HWND AppListController::GetAppListHWND() const {
+#if defined(USE_AURA)
+  gfx::NativeWindow window =
+      current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+  return window->GetRootWindow()->GetAcceleratedWidget();
+#else
+  return current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
 #endif
 }
 
@@ -839,6 +866,72 @@ void InitView(Profile* profile) {
   g_app_list_controller.Get().InitView(profile);
 }
 
+#if defined(USE_ASH)
+// The AppListControllerAsh class provides the functionality for
+// displaying/hiding the App list for Windows 8 Chrome ASH.
+class AppListControllerAsh : public AppListController {
+ public:
+  AppListControllerAsh() {}
+  virtual ~AppListControllerAsh() {}
+
+  // AppListController overrides.
+  virtual void ShowAppList(Profile* profile) OVERRIDE;
+
+  virtual void DismissAppList() OVERRIDE;
+
+  // The OnBeginExtensionInstall/OnDownloadProgress/OnInstallFalure overrides
+  // are not necessary for ASH as these are handled by the ash Shell.
+  virtual void OnBeginExtensionInstall(Profile* profile,
+                                       const std::string& extension_id,
+                                       const std::string& extension_name,
+                                       const gfx::ImageSkia& installing_icon)
+      OVERRIDE {}
+
+  virtual void OnDownloadProgress(Profile* profile,
+                                  const std::string& extension_id,
+                                  int percent_downloaded) OVERRIDE {}
+
+  virtual bool IsAppListVisible() const OVERRIDE;
+
+  virtual void OnInstallFailure(
+      Profile* profile,
+      const std::string& extension_id) OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerAsh);
+};
+
+base::LazyInstance<AppListControllerAsh>::Leaky g_app_list_controller_ash =
+    LAZY_INSTANCE_INITIALIZER;
+
+void AppListControllerAsh::ShowAppList(Profile* profile) {
+  // This may not work correctly if the profile passed in is different from the
+  // one the ash Shell is currently using.
+  // TODO(ananta): Handle profile changes correctly.
+  if (!IsAppListVisible())
+    ash::Shell::GetInstance()->ToggleAppList(NULL);
+}
+
+void AppListControllerAsh::DismissAppList() {
+  if (AppListControllerAsh::IsAppListVisible())
+    ash::Shell::GetInstance()->ToggleAppList(NULL);
+}
+
+bool AppListControllerAsh::IsAppListVisible() const {
+  return ash::Shell::GetInstance()->GetAppListWindow() != NULL;
+}
+
+#endif
+
+// Returns the AppListController instance for the current environment.
+AppListController* GetCurrentAppListController() {
+#if defined(USE_ASH)
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    return &g_app_list_controller_ash.Get();
+#endif
+  return &g_app_list_controller.Get();
+}
+
 }  // namespace
 
 namespace chrome {
@@ -872,25 +965,24 @@ void InitAppList(Profile* profile) {
       base::TimeDelta::FromSeconds(kInitWindowDelay));
 }
 
-#if !defined(USE_ASH)
 void ShowAppList(Profile* profile) {
-  g_app_list_controller.Get().ShowAppList(profile);
+  GetCurrentAppListController()->ShowAppList(profile);
 }
 
 void SetAppListProfile(const base::FilePath& profile_file_path) {
-  g_app_list_controller.Get().SetProfilePath(profile_file_path);
+  GetCurrentAppListController()->SetProfilePath(profile_file_path);
 }
 
 void DismissAppList() {
-  g_app_list_controller.Get().DismissAppList();
+  GetCurrentAppListController()->DismissAppList();
 }
 
 Profile* GetCurrentAppListProfile() {
-  return g_app_list_controller.Get().profile();
+  return GetCurrentAppListController()->profile();
 }
 
 bool IsAppListVisible() {
-  return g_app_list_controller.Get().app_list_is_showing();
+  return GetCurrentAppListController()->IsAppListVisible();
 }
 
 void NotifyAppListOfBeginExtensionInstall(
@@ -898,26 +990,24 @@ void NotifyAppListOfBeginExtensionInstall(
     const std::string& extension_id,
     const std::string& extension_name,
     const gfx::ImageSkia& installing_icon) {
-  g_app_list_controller.Get().OnBeginExtensionInstall(profile,
-                                                      extension_id,
-                                                      extension_name,
-                                                      installing_icon);
+  GetCurrentAppListController()->OnBeginExtensionInstall(profile,
+                                                         extension_id,
+                                                         extension_name,
+                                                         installing_icon);
 }
 
 void NotifyAppListOfDownloadProgress(
     Profile* profile,
     const std::string& extension_id,
     int percent_downloaded) {
-  g_app_list_controller.Get().OnDownloadProgress(profile, extension_id,
-                                                 percent_downloaded);
+  GetCurrentAppListController()->OnDownloadProgress(profile, extension_id,
+                                                    percent_downloaded);
 }
 
 void NotifyAppListOfExtensionInstallFailure(
     Profile* profile,
     const std::string& extension_id) {
-  g_app_list_controller.Get().OnInstallFailure(profile, extension_id);
+  GetCurrentAppListController()->OnInstallFailure(profile, extension_id);
 }
-
-#endif  // !defined(USE_ASH)
 
 }  // namespace chrome
