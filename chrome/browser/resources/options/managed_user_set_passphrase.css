@@ -1,0 +1,23 @@
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#managed-user-set-passphrase-page {
+  background-color: white;
+  min-width: 400px;
+}
+
+#passphrase-missmatch,
+#save-passphrase,
+.managed-user-passphrase-container {
+  margin-top: 15px;
+}
+
+#save-passphrase {
+  margin-bottom: 11px;
+}
+
+#managed-user-passphrase:invalid,
+#passphrase-confirm:invalid {
+  background-color: pink;
+}

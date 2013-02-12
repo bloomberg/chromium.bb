@@ -5,6 +5,7 @@
 if (loadTimeData.getBoolean('managedUsersEnabled')) {
 
 cr.define('options', function() {
+  /** @const */ var OptionsPage = options.OptionsPage;
   /** @const */ var SettingsDialog = options.SettingsDialog;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -44,7 +45,7 @@ cr.define('options', function() {
       };
 
       $('set-passphrase').onclick = function() {
-        // TODO(bauerb): Set passphrase
+        OptionsPage.navigateToPage('setPassphrase');
       };
 
     },
@@ -55,9 +56,16 @@ cr.define('options', function() {
     },
   };
 
+  var ManagedUserSettingsForTesting = {
+    getSetPassphraseButton: function() {
+      return $('set-passphrase');
+    }
+  };
+
    // Export
   return {
-    ManagedUserSettings: ManagedUserSettings
+    ManagedUserSettings: ManagedUserSettings,
+    ManagedUserSettingsForTesting: ManagedUserSettingsForTesting
   };
 });
 

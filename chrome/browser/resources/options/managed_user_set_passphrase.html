@@ -1,0 +1,24 @@
+<!-- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<div id="managed-user-set-passphrase-overlay" class="page" hidden>
+  <div class="close-button"></div>
+  <h1 i18n-content="setPassphraseTitle"></h1>
+  <div class="content-area">
+    <div i18n-content="setPassphraseInstructions"></div>
+    <div class="managed-user-passphrase-container">
+      <input id="managed-user-passphrase" type="password" align="center"
+          i18n-values=".placeholder:enterPassphrase" required>
+    </div>
+    <div class="managed-user-passphrase-container">
+      <input id="passphrase-confirm" class="equal_passphrases" type="password"
+          i18n-values=".placeholder:confirmPassphrase" required>
+    </div>
+    <div id="passphrase-mismatch" i18n-content="passphraseMismatch" hidden>
+    </div>
+    <div>
+      <button id="save-passphrase" i18n-content="savePassphrase" disabled>
+      </button>
+    </div>
+  </div>
+</div>

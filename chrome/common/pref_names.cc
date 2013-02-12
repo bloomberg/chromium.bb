@@ -21,6 +21,11 @@ const char kDefaultApps[] = "default_apps";
 // Whether we have installed default apps yet in this profile.
 const char kDefaultAppsInstalled[] = "default_apps_installed";
 
+// Disables screenshot accelerators and extension APIs.
+// This setting resides both in profile prefs and local state. Accelerator
+// handling code reads local state, while extension APIs use profile pref.
+const char kDisableScreenshots[] = "disable_screenshots";
+
 // A boolean specifying whether the New Tab page is the home page or not.
 const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 
@@ -29,6 +34,13 @@ const char kHomePage[] = "homepage";
 
 // Did the user change the home page after install?
 const char kHomePageChanged[] = "homepage_changed";
+
+// This preference is used to store the hash of a password of the custodian of
+// a managed user. It allows to unlock options which should be not available to
+// the managed user. The salt preference is used to derive the hash from the
+// password.
+const char kManagedModeLocalPassphrase[] = "managed_mode.passphrase";
+const char kManagedModeLocalSalt[] = "managed_mode.salt";
 
 // Maps host names to whether the host is manually allowed or blocked.
 const char kManagedModeManualHosts[] = "profile.managed.manual_hosts";
@@ -67,11 +79,6 @@ const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
 // We only need to do this check once, on upgrade from m18 or lower to m19 or
 // higher.
 const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
-
-// Disables screenshot accelerators and extension APIs.
-// This setting resides both in profile prefs and local state. Accelerator
-// handling code reads local state, while extension APIs use profile pref.
-const char kDisableScreenshots[] = "disable_screenshots";
 
 // The application locale.
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state
