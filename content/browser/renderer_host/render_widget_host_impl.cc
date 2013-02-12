@@ -2127,6 +2127,10 @@ void RenderWidgetHostImpl::Replace(const string16& word) {
   Send(new ViewMsg_Replace(routing_id_, word));
 }
 
+void RenderWidgetHostImpl::ReplaceMisspelling(const string16& word) {
+  Send(new ViewMsg_ReplaceMisspelling(routing_id_, word));
+}
+
 void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
   ignore_input_events_ = ignore_input_events;
 }

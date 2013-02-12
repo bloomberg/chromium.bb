@@ -930,6 +930,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_PasteAndMatchStyle)
 // specified string.
 IPC_MESSAGE_ROUTED1(ViewMsg_Replace,
                     string16)
+// Replaces the misspelling in the selected region with the specified string.
+IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceMisspelling,
+                    string16)
 IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
 

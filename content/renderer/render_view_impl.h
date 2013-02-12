@@ -975,6 +975,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnReleaseDisambiguationPopupDIB(TransportDIB::Handle dib_handle);
   void OnReloadFrame();
   void OnReplace(const string16& text);
+  void OnReplaceMisspelling(const string16& text);
   void OnResetPageEncodingToDefault();
   void OnScriptEvalRequest(const string16& frame_xpath,
                            const string16& jscript,

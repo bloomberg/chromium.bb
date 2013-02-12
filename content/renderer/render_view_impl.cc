@@ -983,6 +983,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Paste, OnPaste)
     IPC_MESSAGE_HANDLER(ViewMsg_PasteAndMatchStyle, OnPasteAndMatchStyle)
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
+    IPC_MESSAGE_HANDLER(ViewMsg_ReplaceMisspelling, OnReplaceMisspelling)
     IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
@@ -1404,7 +1405,19 @@ void RenderViewImpl::OnReplace(const string16& text) {
   WebFrame* frame = webview()->focusedFrame();
   if (!frame->hasSelection())
     frame->selectWordAroundCaret();
+
   frame->replaceSelection(text);
+}
+
+void RenderViewImpl::OnReplaceMisspelling(const string16& text) {
+  if (!webview())
+    return;
+
+  WebFrame* frame = webview()->focusedFrame();
+  if (!frame->hasSelection())
+    return;
+
+  frame->replaceMisspelledRange(text);
 }
 
 void RenderViewImpl::OnDelete() {
