@@ -41,9 +41,11 @@ class ExtensionUninstallDialogDelegateView;
 // there is no browser window.
 gfx::NativeWindow GetParent(Browser* browser) {
 #if defined(USE_ASH)
-  gfx::NativeWindow app_list = ash::Shell::GetInstance()->GetAppListWindow();
-  if (app_list)
-    return app_list;
+  if (ash::Shell::HasInstance()) {
+    gfx::NativeWindow app_list = ash::Shell::GetInstance()->GetAppListWindow();
+    if (app_list)
+      return app_list;
+  }
 #endif
 
   if (browser && browser->window())
