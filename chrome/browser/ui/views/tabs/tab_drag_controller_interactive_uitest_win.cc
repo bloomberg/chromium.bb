@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -129,8 +129,8 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DetachToOwnWindow) {
   ASSERT_FALSE(TabDragController::IsActive());
 
   // There should now be another browser.
-  ASSERT_EQ(2u, BrowserList::size());
-  Browser* new_browser = *(++BrowserList::begin());
+  ASSERT_EQ(2u, native_browser_list->size());
+  Browser* new_browser = native_browser_list->get(1);
   ASSERT_TRUE(new_browser->window()->IsActive());
   TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
@@ -247,8 +247,8 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteSourceDetached) {
 
   // Releasing the mouse should destroy the existing browser and create a new
   // one.
-  ASSERT_EQ(1u, BrowserList::size());
-  Browser* new_browser = *BrowserList::begin();
+  ASSERT_EQ(1u, native_browser_list->size());
+  Browser* new_browser = native_browser_list->get(0);
   EXPECT_NE(new_browser, browser());
 
   ASSERT_FALSE(GetTabStripForBrowser(new_browser)->IsDragSessionActive());
@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragAllToSeparateWindow) {
   ASSERT_TRUE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
-  ASSERT_EQ(2u, BrowserList::size());
+  ASSERT_EQ(2u, native_browser_list->size());
 
   // Drag to tab_strip2.
   gfx::Point target_point(tab_strip2->width() - 1,
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
   ASSERT_TRUE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
-  ASSERT_EQ(2u, BrowserList::size());
+  ASSERT_EQ(2u, native_browser_list->size());
 
   // Drag to tab_strip2.
   gfx::Point target_point(tab_strip2->width() - 1,
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
 
   ASSERT_TRUE(tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
-  ASSERT_EQ(2u, BrowserList::size());
+  ASSERT_EQ(2u, native_browser_list->size());
 
   // Cancel the drag.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
-  ASSERT_EQ(2u, BrowserList::size());
+  ASSERT_EQ(2u, native_browser_list->size());
   EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
   EXPECT_EQ("100", IDString(browser2->tab_strip_model()));
 }

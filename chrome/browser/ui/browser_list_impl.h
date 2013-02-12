@@ -40,7 +40,7 @@ class BrowserListImpl {
   // allows us to determine what the last active Browser was.
   void SetLastActive(Browser* browser);
 
-  Browser* GetLastActive();
+  Browser* GetLastActive() const;
 
   // Browsers are added to the list before they have constructed windows,
   // so the |window()| member function may return NULL.
@@ -56,18 +56,18 @@ class BrowserListImpl {
   // they were last active. The underlying data structure is a vector
   // and we push_back on recent access so a reverse iterator gives the
   // latest accessed browser first.
-  const_reverse_iterator begin_last_active() {
+  const_reverse_iterator begin_last_active() const {
     return last_active_browsers_.rbegin();
   }
-  const_reverse_iterator end_last_active() {
+  const_reverse_iterator end_last_active() const {
     return last_active_browsers_.rend();
   }
 
   // Returns true if at least one incognito window is open.
-  bool IsIncognitoWindowOpen();
+  bool IsIncognitoWindowOpen() const;
 
   // Returns true if at least one incognito window is open for |profile|.
-  bool IsIncognitoWindowOpenForProfile(Profile* profile);
+  bool IsIncognitoWindowOpenForProfile(Profile* profile) const;
 
  private:
   BrowserListImpl();

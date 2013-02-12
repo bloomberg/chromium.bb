@@ -13,6 +13,10 @@ class Browser;
 class TabStrip;
 class TabStripModel;
 
+namespace chrome {
+class BrowserListImpl;
+}
+
 namespace content {
 class WebContents;
 }
@@ -42,6 +46,10 @@ class TabDragControllerTest : public InProcessBrowserTest {
   // Creates a new Browser and resizes |browser()| and the new browser to be
   // side by side.
   Browser* CreateAnotherWindowBrowserAndRelayout();
+
+  // The tab drag controller interactive ui tests only use the native desktop
+  // for now.
+  const chrome::BrowserListImpl* native_browser_list;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabDragControllerTest);

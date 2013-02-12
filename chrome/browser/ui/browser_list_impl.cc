@@ -111,13 +111,13 @@ void BrowserListImpl::SetLastActive(Browser* browser) {
                     OnBrowserSetLastActive(browser));
 }
 
-Browser* BrowserListImpl::GetLastActive() {
+Browser* BrowserListImpl::GetLastActive() const {
   if (!last_active_browsers_.empty())
     return *(last_active_browsers_.rbegin());
   return NULL;
 }
 
-bool BrowserListImpl::IsIncognitoWindowOpen() {
+bool BrowserListImpl::IsIncognitoWindowOpen() const {
   for (BrowserListImpl::const_iterator i = BrowserListImpl::begin();
        i != BrowserListImpl::end(); ++i) {
     if ((*i)->profile()->IsOffTheRecord())
@@ -126,7 +126,7 @@ bool BrowserListImpl::IsIncognitoWindowOpen() {
   return false;
 }
 
-bool BrowserListImpl::IsIncognitoWindowOpenForProfile(Profile* profile) {
+bool BrowserListImpl::IsIncognitoWindowOpenForProfile(Profile* profile) const {
 #if defined(OS_CHROMEOS)
   // In ChromeOS, we assume that the default profile is always valid, so if
   // we are in guest mode, keep the OTR profile active so it won't be deleted.
