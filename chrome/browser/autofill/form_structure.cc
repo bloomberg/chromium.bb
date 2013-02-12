@@ -41,7 +41,9 @@ const char kAttributeClientVersion[] = "clientversion";
 const char kAttributeDataPresent[] = "datapresent";
 const char kAttributeFormSignature[] = "formsignature";
 const char kAttributeSignature[] = "signature";
-const char kAcceptedFeatures[] = "e"; // e=experiments
+const char kAttributeUrlprefixSignature[] = "urlprefixsignature";
+const char kAcceptedFeaturesExperiment[] = "e"; // e=experiments
+const char kAcceptedFeaturesAutocheckoutExperiment[] = "a,e"; // a=autocheckout
 const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 const char kXMLDeclaration[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 const char kXMLElementAutofillQuery[] = "autofillquery";
@@ -375,8 +377,16 @@ bool FormStructure::EncodeQueryRequest(
       (buzz::QName(kXMLElementAutofillQuery)));
   autofill_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
                                kClientVersion);
-  autofill_request_xml.SetAttr(buzz::QName(kAttributeAcceptedFeatures),
-                               kAcceptedFeatures);
+
+  // autocheckout_url_prefix tells the Autofill server where the forms in the
+  // request came from, and the the Autofill server checks internal status and
+  // decide to enable autocheckout or not and may return autocheckout related
+  // data in the response accordingly.
+  // There is no page/frame level object associated with FormStructure that
+  // we could extract URL prefix from. But, all the forms should come from the
+  // same frame, so they should have the same autocheckout URL prefix. Thus we
+  // use URL prefix from the first form with autocheckout enabled.
+  std::string autocheckout_url_prefix;
 
   // Some badly formatted web sites repeat forms - detect that and encode only
   // one form as returned data would be the same for all the repeated forms.
@@ -397,12 +407,31 @@ bool FormStructure::EncodeQueryRequest(
                                   encompassing_xml_element.get()))
       continue;  // Malformed form, skip it.
 
+    if ((*it)->IsAutocheckoutEnabled()) {
+      if (autocheckout_url_prefix.empty()) {
+        autocheckout_url_prefix = (*it)->autocheckout_url_prefix_;
+      } else {
+        // Making sure all the forms in the request has the same url_prefix.
+        DCHECK_EQ(autocheckout_url_prefix, (*it)->autocheckout_url_prefix_);
+      }
+    }
+
     autofill_request_xml.AddElement(encompassing_xml_element.release());
     encoded_signatures->push_back(signature);
   }
 
   if (!encoded_signatures->size())
     return false;
+
+  if (autocheckout_url_prefix.empty()) {
+    autofill_request_xml.SetAttr(buzz::QName(kAttributeAcceptedFeatures),
+                                 kAcceptedFeaturesExperiment);
+  } else {
+    autofill_request_xml.SetAttr(buzz::QName(kAttributeAcceptedFeatures),
+                                 kAcceptedFeaturesAutocheckoutExperiment);
+    autofill_request_xml.SetAttr(buzz::QName(kAttributeUrlprefixSignature),
+                                 Hash64Bit(autocheckout_url_prefix));
+  }
 
   // Obtain the XML structure as a string.
   *encoded_xml = kXMLDeclaration;

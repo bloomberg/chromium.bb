@@ -1532,11 +1532,10 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   EXPECT_EQ(0U, encoded_signatures.size());
   EXPECT_EQ("", encoded_xml);
 
-  // Check the behaviour with kEnableExperimentalFormFilling switch on.
-  // Add the previous form but with flag set.
+  // Check the behaviour with autocheckout enabled.
   ScopedVector<FormStructure> checkable_forms;
   checkable_forms.push_back(
-      new FormStructure(form, "https://www.abc.com/checkout"));
+      new FormStructure(form, "https://www.sample1.com/query/path"));
 
   ASSERT_TRUE(FormStructure::EncodeQueryRequest(checkable_forms.get(),
                                                 &encoded_signatures,
@@ -1544,8 +1543,10 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   const char * const kSignature3 = "7747357776717901584";
   const char * const kResponse3 =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?><autofillquery "
-      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"e\">"
-      "<form signature=\"7747357776717901584\"><field signature=\"412125936\"/>"
+      "clientversion=\"6.1.1715.1442/en (GGLL)\" accepts=\"a,e\" "
+      "urlprefixsignature=\"7648393911063090788\">"
+      "<form signature=\"7747357776717901584\">"
+      "<field signature=\"412125936\"/>"
       "<field signature=\"1917667676\"/><field signature=\"2226358947\"/><field"
       " signature=\"747221617\"/><field signature=\"4108155786\"/><field "
       "signature=\"3410250678\"/><field signature=\"509334676\"/><field "
