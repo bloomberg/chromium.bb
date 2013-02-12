@@ -48,13 +48,7 @@ TEST_F(ScreenCapturerTest, StartCapturer) {
   capturer_->Stop();
 }
 
-#if defined(THREAD_SANITIZER)
-// ThreadSanitizer v2 reports a use-after-free, see http://crbug.com/163641.
-#define MAYBE_Capture DISABLED_Capture
-#else
-#define MAYBE_Capture Capture
-#endif
-TEST_F(ScreenCapturerTest, MAYBE_Capture) {
+TEST_F(ScreenCapturerTest, Capture) {
   // Assume that Start() treats the screen as invalid initially.
   EXPECT_CALL(delegate_,
               OnCaptureCompleted(DirtyRegionIsNonEmptyRect()));
