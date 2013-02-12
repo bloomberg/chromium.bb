@@ -114,7 +114,13 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataAndMedia) {
 
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and later add an audio and video track.
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallWithDataAndLaterAddMedia) {
+#if defined(OS_LINUX)
+// Flaky on Linux. http://crbug.com/175683
+#define MAYBE_CallWithDataAndLaterAddMedia DISABLED_CallWithDataAndLaterAddMedia
+#else
+#define MAYBE_CallWithDataAndLaterAddMedia CallWithDataAndLaterAddMedia
+#endif
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithDataAndLaterAddMedia) {
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
