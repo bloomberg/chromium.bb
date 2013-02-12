@@ -672,14 +672,6 @@ def _CheckChromeRevOption(_option, _opt_str, value, parser):
   parser.values.chrome_rev = value
 
 
-def _CheckGerritChromeOption(_option, _opt_str, _value, parser):
-  """Validate the chrome_rev option."""
-  if parser.values.chrome_rev is None:
-    parser.values.chrome_rev = constants.CHROME_REV_TOT
-
-  parser.values.gerrit_chrome = True
-
-
 def FindCacheDir(parser, options):
   if constants.SHARED_CACHE_ENVVAR in os.environ:
     return commandline.OptionParser.FindCacheDir(parser, options)
@@ -895,11 +887,6 @@ def _CreateParser():
   # direcly to the bootstrap re-execution.
   parser.add_remote_option('--bootstrap-args', action='append',
                           default=[], help=optparse.SUPPRESS_HELP)
-  # Specify to use Gerrit Source for building Chrome.  Implies
-  # --chrome_rev=CHROME_REV_TOT.
-  parser.add_option('--gerrit-chrome', action='callback', default=False,
-                    callback=_CheckGerritChromeOption, dest='gerrit_chrome',
-                    help=optparse.SUPPRESS_HELP)
   parser.add_option('--pass-through', dest='pass_through_args', action='append',
                    type='string', default=[], help=optparse.SUPPRESS_HELP)
   # Used for handling forwards/backwards compatibility for --resume and
@@ -981,13 +968,6 @@ def _FinishParsing(options, args):
       cros_build_lib.Die(
           'Chrome rev must not be %s if chrome_version is not set.'
           % constants.CHROME_REV_SPEC)
-
-  if options.gerrit_chrome:
-    if options.remote_trybot or options.remote:
-      cros_build_lib.Die('Cannot use --gerrit-chrome with remote trybots!')
-    elif options.chrome_rev != constants.CHROME_REV_TOT:
-      cros_build_lib.Die('Chrome rev must be %s if chrome_root is set.' %
-                          constants.CHROME_REV_TOT)
 
   patches = bool(options.gerrit_patches or options.local_patches)
   if options.remote:

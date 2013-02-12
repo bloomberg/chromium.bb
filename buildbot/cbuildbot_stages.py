@@ -1040,8 +1040,6 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
     if self._options.chrome_root:
       self._env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
-    elif self._options.gerrit_chrome:
-      self._env['CHROME_ORIGIN'] = 'GERRIT_SOURCE'
 
     if self._options.clobber:
       self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
