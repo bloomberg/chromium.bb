@@ -44,6 +44,10 @@ class TestSpdyVisitor;
 
 }  // namespace test
 
+// A datastructure for holding a set of headers from either a
+// SYN_STREAM or SYN_REPLY frame.
+typedef std::map<std::string, std::string> SpdyHeaderBlock;
+
 // A datastructure for holding the ID and flag fields for SETTINGS.
 // Conveniently handles converstion to/from wire format.
 class NET_EXPORT_PRIVATE SettingsFlagsAndId {
@@ -72,6 +76,7 @@ typedef std::pair<SpdySettingsFlags, uint32> SettingsFlagsAndValue;
 typedef std::map<SpdySettingsIds, SettingsFlagsAndValue> SettingsMap;
 
 // A datastrcture for holding the contents of a CREDENTIAL frame.
+// TODO(hkhalil): Remove, use SpdyCredentialIR instead.
 struct NET_EXPORT_PRIVATE SpdyCredential {
   SpdyCredential();
   ~SpdyCredential();
@@ -299,6 +304,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                const SpdyHeaderBlock* headers);
 
   // Retrieve serialized length of SpdyHeaderBlock.
+  // TODO(hkhalil): Change to const reference instead of const pointer.
   static size_t GetSerializedLength(const int spdy_version,
                                     const SpdyHeaderBlock* headers);
 
@@ -360,6 +366,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                              SpdyControlFlags flags,
                                              bool compressed,
                                              const SpdyHeaderBlock* headers);
+  SpdySerializedFrame* SerializeSynStream(const SpdySynStreamIR& syn_stream);
 
   // Create a SpdySynReplyControlFrame.
   // |stream_id| is the stream for this frame.
@@ -371,17 +378,22 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                            SpdyControlFlags flags,
                                            bool compressed,
                                            const SpdyHeaderBlock* headers);
+  SpdySerializedFrame* SerializeSynReply(const SpdySynReplyIR& syn_reply);
 
   SpdyRstStreamControlFrame* CreateRstStream(SpdyStreamId stream_id,
                                              SpdyRstStreamStatus status) const;
+  SpdySerializedFrame* SerializeRstStream(
+      const SpdyRstStreamIR& rst_stream) const;
 
   // Creates an instance of SpdySettingsControlFrame. The SETTINGS frame is
   // used to communicate name/value pairs relevant to the communication channel.
   SpdySettingsControlFrame* CreateSettings(const SettingsMap& values) const;
+  SpdySerializedFrame* SerializeSettings(const SpdySettingsIR& settings) const;
 
   // Creates an instance of SpdyPingControlFrame. The unique_id is used to
   // identify the ping request/response.
   SpdyPingControlFrame* CreatePingFrame(uint32 unique_id) const;
+  SpdySerializedFrame* SerializePing(const SpdyPingIR& ping) const;
 
   // Creates an instance of SpdyGoAwayControlFrame. The GOAWAY frame is used
   // prior to the shutting down of the TCP connection, and includes the
@@ -389,6 +401,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // to completion.
   SpdyGoAwayControlFrame* CreateGoAway(SpdyStreamId last_accepted_stream_id,
                                        SpdyGoAwayStatus status) const;
+  SpdySerializedFrame* SerializeGoAway(const SpdyGoAwayIR& goaway) const;
 
   // Creates an instance of SpdyHeadersControlFrame. The HEADERS frame is used
   // for sending additional headers outside of a SYN_STREAM/SYN_REPLY. The
@@ -397,18 +410,23 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                          SpdyControlFlags flags,
                                          bool compressed,
                                          const SpdyHeaderBlock* headers);
+  SpdySerializedFrame* SerializeHeaders(const SpdyHeadersIR& headers);
 
   // Creates an instance of SpdyWindowUpdateControlFrame. The WINDOW_UPDATE
   // frame is used to implement per stream flow control in SPDY.
   SpdyWindowUpdateControlFrame* CreateWindowUpdate(
       SpdyStreamId stream_id,
       uint32 delta_window_size) const;
+  SpdySerializedFrame* SerializeWindowUpdate(
+      const SpdyWindowUpdateIR& window_update) const;
 
   // Creates an instance of SpdyCredentialControlFrame.  The CREDENTIAL
   // frame is used to send a client certificate to the server when
   // request more than one origin are sent over the same SPDY session.
   SpdyCredentialControlFrame* CreateCredentialFrame(
       const SpdyCredential& credential) const;
+  SpdySerializedFrame* SerializeCredential(
+      const SpdyCredentialIR& credential) const;
 
   // Given a SpdySettingsControlFrame, extract the settings.
   // Returns true on successful parse, false otherwise.
@@ -430,6 +448,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   //    To mark this frame as the last data frame, enable DATA_FLAG_FIN.
   SpdyDataFrame* CreateDataFrame(SpdyStreamId stream_id, const char* data,
                                  uint32 len, SpdyDataFlags flags) const;
+  SpdySerializedFrame* SerializeData(const SpdyDataIR& data) const;
 
   // NOTES about frame compression.
   // We want spdy to compress headers across the entire session.  As long as
@@ -467,7 +486,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
       const SpdyControlFrame* control_frame);
 
   // For ease of testing and experimentation we can tweak compression on/off.
-  void set_enable_compression(bool value);
+  void set_enable_compression(bool value) {
+    enable_compression_ = value;
+  }
 
   // Used only in log messages.
   void set_display_protocol(const std::string& protocol) {
@@ -559,6 +580,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   void WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
                            z_stream* out) const;
+
+  void SerializeNameValueBlock(
+      SpdyFrameBuilder* builder,
+      const SpdyFrameWithNameValueBlockIR& frame) const;
 
   // Set the error code and moves the framer into the error state.
   void set_error(SpdyError error);

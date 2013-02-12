@@ -12,7 +12,7 @@ namespace net {
 namespace {
 
 // Creates a FlagsAndLength.
-FlagsAndLength CreateFlagsAndLength(SpdyControlFlags flags, size_t length) {
+FlagsAndLength CreateFlagsAndLength(uint8 flags, size_t length) {
   DCHECK_EQ(0u, length & ~static_cast<size_t>(kLengthMask));
   FlagsAndLength flags_length;
   flags_length.length_ = htonl(static_cast<uint32>(length));
@@ -30,7 +30,7 @@ SpdyFrameBuilder::SpdyFrameBuilder(size_t size)
 }
 
 SpdyFrameBuilder::SpdyFrameBuilder(SpdyControlType type,
-                                   SpdyControlFlags flags,
+                                   uint8 flags,
                                    int spdy_version,
                                    size_t size)
     : buffer_(new char[size]),

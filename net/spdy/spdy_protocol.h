@@ -8,9 +8,12 @@
 #define NET_SPDY_SPDY_PROTOCOL_H_
 
 #include <limits>
+#include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/string_piece.h"
 #include "base/sys_byteorder.h"
 #include "net/spdy/spdy_bitmasks.h"
 
@@ -355,6 +358,7 @@ const int kV3DictionarySize = arraysize(kV3Dictionary);
 // Note: all protocol data structures are on-the-wire format.  That means that
 //       data is stored in network-normalized order.  Readers must use the
 //       accessors provided or call ntohX() functions.
+// TODO(hkhalil): remove above note.
 
 // Types of Spdy Control Frames.
 enum SpdyControlType {
@@ -445,6 +449,12 @@ typedef uint32 SpdyStreamId;
 // number between 0 and 3.
 typedef uint8 SpdyPriority;
 
+typedef uint8 SpdyCredentialSlot;
+
+typedef std::map<std::string, std::string> SpdyNameValueBlock;
+
+typedef uint32 SpdyPingId;
+
 // -------------------------------------------------------------------------
 // These structures mirror the protocol structure definitions.
 
@@ -531,6 +541,298 @@ struct SpdyWindowUpdateControlFrameBlock : SpdyFrameBlock {
 };
 
 #pragma pack(pop)
+
+class SpdyFrame;
+typedef SpdyFrame SpdySerializedFrame;
+
+class SpdyFramer;
+class SpdyFrameBuilder;
+
+// Intermediate representation for SPDY frames.
+// TODO(hkhalil): Rename this class to SpdyFrame when the existing SpdyFrame is
+// gone.
+class SpdyFrameIR {
+ public:
+  virtual ~SpdyFrameIR() {}
+
+ protected:
+  SpdyFrameIR() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpdyFrameIR);
+};
+
+// Abstract class intended to be inherited by IRs that have a stream associated
+// to them.
+class SpdyFrameWithStreamIdIR : public SpdyFrameIR {
+ public:
+  virtual ~SpdyFrameWithStreamIdIR() {}
+  SpdyStreamId stream_id() const { return stream_id_; }
+  void set_stream_id(SpdyStreamId stream_id) {
+    // TODO(hkhalil): DCHECK_LT(0u, stream_id);
+    DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
+    stream_id_ = stream_id;
+  }
+
+ protected:
+  explicit SpdyFrameWithStreamIdIR(SpdyStreamId stream_id) {
+    set_stream_id(stream_id);
+  }
+
+ private:
+  SpdyStreamId stream_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyFrameWithStreamIdIR);
+};
+
+// Abstract class intended to be inherited by IRs that have the option of a FIN
+// flag. Implies SpdyFrameWithStreamIdIR.
+class SpdyFrameWithFinIR : public SpdyFrameWithStreamIdIR {
+ public:
+  virtual ~SpdyFrameWithFinIR() {}
+  bool fin() const { return fin_; }
+  void set_fin(bool fin) { fin_ = fin; }
+
+ protected:
+  explicit SpdyFrameWithFinIR(SpdyStreamId stream_id)
+      : SpdyFrameWithStreamIdIR(stream_id),
+        fin_(false) {}
+
+ private:
+  bool fin_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyFrameWithFinIR);
+};
+
+// Abstract class intended to be inherited by IRs that contain a name-value
+// block. Implies SpdyFrameWithFinIR.
+class SpdyFrameWithNameValueBlockIR : public SpdyFrameWithFinIR {
+ public:
+  const SpdyNameValueBlock& name_value_block() const {
+    return name_value_block_;
+  }
+  SpdyNameValueBlock* GetMutableNameValueBlock() { return &name_value_block_; }
+
+ protected:
+  explicit SpdyFrameWithNameValueBlockIR(SpdyStreamId stream_id);
+  virtual ~SpdyFrameWithNameValueBlockIR();
+
+ private:
+  SpdyNameValueBlock name_value_block_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyFrameWithNameValueBlockIR);
+};
+
+class SpdyDataIR : public SpdyFrameWithFinIR {
+ public:
+  SpdyDataIR(SpdyStreamId stream_id, const base::StringPiece& data)
+      : SpdyFrameWithFinIR(stream_id) {
+    set_data(data);
+  }
+  base::StringPiece data() const { return data_; }
+  void set_data(const base::StringPiece& data) { data.CopyToString(&data_); }
+
+ private:
+  std::string data_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyDataIR);
+};
+
+class SpdySynStreamIR : public SpdyFrameWithNameValueBlockIR {
+ public:
+  explicit SpdySynStreamIR(SpdyStreamId stream_id)
+      : SpdyFrameWithNameValueBlockIR(stream_id),
+        associated_to_stream_id_(0),
+        priority_(0),
+        slot_(0),
+        unidirectional_(false) {}
+  SpdyStreamId associated_to_stream_id() const {
+    return associated_to_stream_id_;
+  }
+  void set_associated_to_stream_id(SpdyStreamId stream_id) {
+    associated_to_stream_id_ = stream_id;
+  }
+  SpdyPriority priority() const { return priority_; }
+  void set_priority(SpdyPriority priority) { priority_ = priority; }
+  SpdyCredentialSlot slot() const { return slot_; }
+  void set_slot(SpdyCredentialSlot slot) { slot_ = slot; }
+  bool unidirectional() const { return unidirectional_; }
+  void set_unidirectional(bool unidirectional) {
+    unidirectional_ = unidirectional;
+  }
+
+ private:
+  SpdyStreamId associated_to_stream_id_;
+  SpdyPriority priority_;
+  SpdyCredentialSlot slot_;
+  bool unidirectional_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdySynStreamIR);
+};
+
+class SpdySynReplyIR : public SpdyFrameWithNameValueBlockIR {
+ public:
+  explicit SpdySynReplyIR(SpdyStreamId stream_id)
+      : SpdyFrameWithNameValueBlockIR(stream_id) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpdySynReplyIR);
+};
+
+class SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
+ public:
+  SpdyRstStreamIR(SpdyStreamId stream_id, SpdyRstStreamStatus status)
+      : SpdyFrameWithStreamIdIR(stream_id) {
+    set_status(status);
+  }
+  SpdyRstStreamStatus status() const {
+    return status_;
+  }
+  void set_status(SpdyRstStreamStatus status) {
+    DCHECK_NE(status, RST_STREAM_INVALID);
+    DCHECK_LT(status, RST_STREAM_NUM_STATUS_CODES);
+    status_ = status;
+  }
+
+ private:
+  SpdyRstStreamStatus status_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyRstStreamIR);
+};
+
+class SpdySettingsIR : public SpdyFrameIR {
+ public:
+  // Associates flags with a value.
+  struct Value {
+    Value() : persist_value(false),
+              persisted(false),
+              value(0) {}
+    bool persist_value;
+    bool persisted;
+    int32 value;
+  };
+  typedef std::map<SpdySettingsIds, Value> ValueMap;
+
+  SpdySettingsIR();
+
+  virtual ~SpdySettingsIR();
+
+  // Overwrites as appropriate.
+  const ValueMap& values() const { return values_; }
+  void AddSetting(SpdySettingsIds id,
+                  bool persist_value,
+                  bool persisted,
+                  int32 value) {
+    // TODO(hkhalil): DCHECK_LE(SETTINGS_UPLOAD_BANDWIDTH, id);
+    // TODO(hkhalil): DCHECK_GE(SETTINGS_INITIAL_WINDOW_SIZE, id);
+    values_[id].persist_value = persist_value;
+    values_[id].persisted = persisted;
+    values_[id].value = value;
+  }
+  bool clear_settings() const { return clear_settings_; }
+  void set_clear_settings(bool clear_settings) {
+    clear_settings_ = clear_settings;
+  }
+
+ private:
+  ValueMap values_;
+  bool clear_settings_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdySettingsIR);
+};
+
+class SpdyPingIR : public SpdyFrameIR {
+ public:
+  explicit SpdyPingIR(SpdyPingId id) : id_(id) {}
+  SpdyPingId id() const { return id_; }
+
+ private:
+  SpdyPingId id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyPingIR);
+};
+
+class SpdyGoAwayIR : public SpdyFrameIR {
+ public:
+  SpdyGoAwayIR(SpdyStreamId last_good_stream_id, SpdyGoAwayStatus status) {
+    set_last_good_stream_id(last_good_stream_id);
+    set_status(status);
+  }
+  SpdyStreamId last_good_stream_id() const { return last_good_stream_id_; }
+  void set_last_good_stream_id(SpdyStreamId last_good_stream_id) {
+    DCHECK_LE(0u, last_good_stream_id);
+    DCHECK_EQ(0u, last_good_stream_id & ~kStreamIdMask);
+    last_good_stream_id_ = last_good_stream_id;
+  }
+  SpdyGoAwayStatus status() const { return status_; }
+  void set_status(SpdyGoAwayStatus status) {
+    // TODO(hkhalil): Check valid ranges of status?
+    status_ = status;
+  }
+
+ private:
+  SpdyStreamId last_good_stream_id_;
+  SpdyGoAwayStatus status_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyGoAwayIR);
+};
+
+class SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
+ public:
+  explicit SpdyHeadersIR(SpdyStreamId stream_id)
+      : SpdyFrameWithNameValueBlockIR(stream_id) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpdyHeadersIR);
+};
+
+class SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
+ public:
+  SpdyWindowUpdateIR(SpdyStreamId stream_id, int32 delta)
+      : SpdyFrameWithStreamIdIR(stream_id) {
+    set_delta(delta);
+  }
+  int32 delta() const { return delta_; }
+  void set_delta(int32 delta) {
+    DCHECK_LT(0, delta);
+    DCHECK_LE(delta, kSpdyStreamMaximumWindowSize);
+    delta_ = delta;
+  }
+
+ private:
+  int32 delta_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyWindowUpdateIR);
+};
+
+class SpdyCredentialIR : public SpdyFrameIR {
+ public:
+  typedef std::vector<std::string> CertificateList;
+
+  explicit SpdyCredentialIR(int16 slot);
+  virtual ~SpdyCredentialIR();
+
+  int16 slot() const { return slot_; }
+  void set_slot(int16 slot) {
+    // TODO(hkhalil): Verify valid slot range?
+    slot_ = slot;
+  }
+  base::StringPiece proof() const { return proof_; }
+  void set_proof(const base::StringPiece& proof) {
+    proof.CopyToString(&proof_);
+  }
+  const CertificateList* certificates() const { return &certificates_; }
+  void AddCertificate(const base::StringPiece& certificate) {
+    certificates_.push_back(certificate.as_string());
+  }
+
+ private:
+  int16 slot_;
+  std::string proof_;
+  CertificateList certificates_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyCredentialIR);
+};
 
 // -------------------------------------------------------------------------
 // Wrapper classes for various SPDY frames.
@@ -731,7 +1033,7 @@ class SpdySynStreamControlFrame : public SpdyControlFrame {
   }
 
   void set_credential_slot(uint8 credential_slot) {
-    DCHECK(version() >= 3);
+    DCHECK_LE(3, version());
     mutable_block()->credential_slot_ = credential_slot;
   }
 

@@ -46,6 +46,9 @@ struct DictionaryIds {
 // initialized lazily to avoid static initializers.
 base::LazyInstance<DictionaryIds>::Leaky g_dictionary_ids;
 
+// Used to indicate no flags in a SPDY flags field.
+const uint8 kNoFlags = 0;
+
 }  // namespace
 
 const int SpdyFramer::kMinSpdyVersion = 2;
@@ -677,15 +680,13 @@ void SpdyFramer::WriteHeaderBlock(SpdyFrameBuilder* frame,
   }
   SpdyHeaderBlock::const_iterator it;
   for (it = headers->begin(); it != headers->end(); ++it) {
-    bool wrote_header;
     if (spdy_version < 3) {
-      wrote_header = frame->WriteString(it->first);
-      wrote_header &= frame->WriteString(it->second);
+      frame->WriteString(it->first);
+      frame->WriteString(it->second);
     } else {
-      wrote_header = frame->WriteStringPiece32(it->first);
-      wrote_header &= frame->WriteStringPiece32(it->second);
+      frame->WriteStringPiece32(it->first);
+      frame->WriteStringPiece32(it->second);
     }
-    DCHECK(wrote_header);
   }
 }
 
@@ -1291,29 +1292,20 @@ SpdySynStreamControlFrame* SpdyFramer::CreateSynStream(
     SpdyControlFlags flags,
     bool compressed,
     const SpdyHeaderBlock* headers) {
-  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  DCHECK_EQ(0u, associated_stream_id & ~kStreamIdMask);
+  DCHECK_EQ(0, flags & ~CONTROL_FLAG_FIN & ~CONTROL_FLAG_UNIDIRECTIONAL);
 
-  // Find our length.
-  size_t frame_size = SpdySynStreamControlFrame::size() +
-                      GetSerializedLength(spdy_version_, headers);
-
-  SpdyFrameBuilder frame(SYN_STREAM, flags, spdy_version_, frame_size);
-  frame.WriteUInt32(stream_id);
-  frame.WriteUInt32(associated_stream_id);
-  // Cap as appropriate.
-  if (priority > GetLowestPriority()) {
-    DLOG(DFATAL) << "Priority out-of-bounds.";
-    priority = GetLowestPriority();
-  }
-  // Priority is 2 bits for <spdy3, 3 bits otherwise.
-  frame.WriteUInt8(priority << ((spdy_version_ < 3) ? 6 : 5));
-  frame.WriteUInt8((spdy_version_ < 3) ? 0 : credential_slot);
-  WriteHeaderBlock(&frame, spdy_version_, headers);
-  DCHECK_EQ(frame.length(), frame_size);
+  SpdySynStreamIR syn_stream(stream_id);
+  syn_stream.set_associated_to_stream_id(associated_stream_id);
+  syn_stream.set_priority(priority);
+  syn_stream.set_slot(credential_slot);
+  syn_stream.set_fin((flags & CONTROL_FLAG_FIN) != 0);
+  syn_stream.set_unidirectional((flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
+  // TODO(hkhalil): Avoid copy here.
+  *(syn_stream.GetMutableNameValueBlock()) = *headers;
 
   scoped_ptr<SpdySynStreamControlFrame> syn_frame(
-      reinterpret_cast<SpdySynStreamControlFrame*>(frame.take()));
+      reinterpret_cast<SpdySynStreamControlFrame*>(
+          SerializeSynStream(syn_stream)));
   if (compressed) {
     return reinterpret_cast<SpdySynStreamControlFrame*>(
         CompressControlFrame(*syn_frame.get(), headers));
@@ -1321,32 +1313,57 @@ SpdySynStreamControlFrame* SpdyFramer::CreateSynStream(
   return syn_frame.release();
 }
 
+SpdySerializedFrame* SpdyFramer::SerializeSynStream(
+    const SpdySynStreamIR& syn_stream) {
+  uint8 flags = 0;
+  if (syn_stream.fin()) {
+    flags |= CONTROL_FLAG_FIN;
+  }
+  if (syn_stream.unidirectional()) {
+    flags |= CONTROL_FLAG_UNIDIRECTIONAL;
+  }
+
+  // The size, in bytes, of this frame not including the variable-length
+  // name-value block. Calculated as:
+  // 8 (control frame header) + 2 * 4 (stream IDs) + 1 (priority) + 1 (slot)
+  const size_t kSynStreamSizeBeforeNameValueBlock = 18;
+
+  // The size of this frame, including variable-length name-value block.
+  const size_t size = kSynStreamSizeBeforeNameValueBlock
+      + GetSerializedLength(protocol_version(),
+                            &(syn_stream.name_value_block()));
+
+  SpdyFrameBuilder builder(SYN_STREAM, flags, protocol_version(), size);
+  builder.WriteUInt32(syn_stream.stream_id());
+  builder.WriteUInt32(syn_stream.associated_to_stream_id());
+  uint8 priority = syn_stream.priority();
+  if (priority > GetLowestPriority()) {
+    DLOG(DFATAL) << "Priority out-of-bounds.";
+    priority = GetLowestPriority();
+  }
+  builder.WriteUInt8(priority << ((spdy_version_ < 3) ? 6 : 5));
+  builder.WriteUInt8(syn_stream.slot());
+  DCHECK_EQ(kSynStreamSizeBeforeNameValueBlock, builder.length());
+  SerializeNameValueBlock(&builder, syn_stream);
+
+  return builder.take();
+}
+
 SpdySynReplyControlFrame* SpdyFramer::CreateSynReply(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
     bool compressed,
     const SpdyHeaderBlock* headers) {
-  DCHECK_GT(stream_id, 0u);
-  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
+  DCHECK_EQ(0, flags & ~CONTROL_FLAG_FIN);
 
-  // Find our length.
-  size_t frame_size = SpdySynReplyControlFrame::size() +
-                      GetSerializedLength(spdy_version_, headers);
-  // In SPDY 2, there were 2 unused bytes before payload.
-  if (spdy_version_ < 3) {
-    frame_size += 2;
-  }
-
-  SpdyFrameBuilder frame(SYN_REPLY, flags, spdy_version_, frame_size);
-  frame.WriteUInt32(stream_id);
-  if (spdy_version_ < 3) {
-    frame.WriteUInt16(0);  // Unused
-  }
-  WriteHeaderBlock(&frame, spdy_version_, headers);
-  DCHECK_EQ(frame.length(), frame_size);
+  SpdySynReplyIR syn_reply(stream_id);
+  syn_reply.set_fin(flags & CONTROL_FLAG_FIN);
+  // TODO(hkhalil): Avoid copy here.
+  *(syn_reply.GetMutableNameValueBlock()) = *headers;
 
   scoped_ptr<SpdySynReplyControlFrame> reply_frame(
-      reinterpret_cast<SpdySynReplyControlFrame*>(frame.take()));
+      reinterpret_cast<SpdySynReplyControlFrame*>(SerializeSynReply(
+          syn_reply)));
   if (compressed) {
     return reinterpret_cast<SpdySynReplyControlFrame*>(
         CompressControlFrame(*reply_frame.get(), headers));
@@ -1354,159 +1371,298 @@ SpdySynReplyControlFrame* SpdyFramer::CreateSynReply(
   return reply_frame.release();
 }
 
+SpdySerializedFrame* SpdyFramer::SerializeSynReply(
+    const SpdySynReplyIR& syn_reply) {
+  uint8 flags = 0;
+  if (syn_reply.fin()) {
+    flags |= CONTROL_FLAG_FIN;
+  }
+
+  // The size, in bytes, of this frame not including the variable-length
+  // name-value block. Calculated as:
+  // 8 (control frame header) + 4 (stream ID)
+  size_t syn_reply_size_before_name_value_block = 12;
+  // In SPDY 2, there were 2 unused bytes before payload.
+  if (protocol_version() < 3) {
+    syn_reply_size_before_name_value_block += 2;
+  }
+
+  // The size of this frame, including variable-length name-value block.
+  size_t size = syn_reply_size_before_name_value_block
+      + GetSerializedLength(protocol_version(),
+                            &(syn_reply.name_value_block()));
+
+  SpdyFrameBuilder builder(SYN_REPLY, flags, protocol_version(), size);
+  builder.WriteUInt32(syn_reply.stream_id());
+  if (protocol_version() < 3) {
+    builder.WriteUInt16(0);  // Unused.
+  }
+  DCHECK_EQ(syn_reply_size_before_name_value_block, builder.length());
+  SerializeNameValueBlock(&builder, syn_reply);
+
+  return builder.take();
+}
+
 SpdyRstStreamControlFrame* SpdyFramer::CreateRstStream(
     SpdyStreamId stream_id,
     SpdyRstStreamStatus status) const {
-  DCHECK_GT(stream_id, 0u);
-  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  DCHECK_NE(status, RST_STREAM_INVALID);
-  DCHECK_LT(status, RST_STREAM_NUM_STATUS_CODES);
+  SpdyRstStreamIR rst_stream(stream_id, status);
+  return reinterpret_cast<SpdyRstStreamControlFrame*>(
+      SerializeRstStream(rst_stream));
+}
 
-  size_t frame_size = SpdyRstStreamControlFrame::size();
-  SpdyFrameBuilder frame(RST_STREAM, CONTROL_FLAG_NONE, spdy_version_,
-                         frame_size);
-  frame.WriteUInt32(stream_id);
-  frame.WriteUInt32(status);
-  DCHECK_EQ(frame.length(), frame_size);
-  return reinterpret_cast<SpdyRstStreamControlFrame*>(frame.take());
+SpdySerializedFrame* SpdyFramer::SerializeRstStream(
+    const SpdyRstStreamIR& rst_stream) const {
+  // Size of our RST_STREAM frame. Calculated as:
+  // 8 (control frame header) + 4 (stream id) + 4 (status code)
+  const size_t kRstStreamFrameSize = 16;
+
+  SpdyFrameBuilder builder(RST_STREAM,
+                           kNoFlags,
+                           protocol_version(),
+                           kRstStreamFrameSize);
+  builder.WriteUInt32(rst_stream.stream_id());
+  builder.WriteUInt32(rst_stream.status());
+  DCHECK_EQ(kRstStreamFrameSize, builder.length());
+  return builder.take();
 }
 
 SpdySettingsControlFrame* SpdyFramer::CreateSettings(
     const SettingsMap& values) const {
-  size_t frame_size = SpdySettingsControlFrame::size() + 8 * values.size();
-  SpdyFrameBuilder frame(SETTINGS, CONTROL_FLAG_NONE, spdy_version_,
-                         frame_size);
-  frame.WriteUInt32(values.size());
+  SpdySettingsIR settings;
   for (SettingsMap::const_iterator it = values.begin();
        it != values.end();
-       it++) {
-    SettingsFlagsAndId flags_and_id(it->second.first, it->first);
-    uint32 id_and_flags_wire = flags_and_id.GetWireFormat(spdy_version_);
-    frame.WriteBytes(&id_and_flags_wire, 4);
-    frame.WriteUInt32(it->second.second);
+       ++it) {
+    settings.AddSetting(it->first,
+                        (it->second.first & SETTINGS_FLAG_PLEASE_PERSIST) != 0,
+                        (it->second.first & SETTINGS_FLAG_PERSISTED) != 0,
+                        it->second.second);
   }
-  DCHECK_EQ(frame.length(), frame_size);
-  return reinterpret_cast<SpdySettingsControlFrame*>(frame.take());
+  return reinterpret_cast<SpdySettingsControlFrame*>(
+      SerializeSettings(settings));
+}
+
+SpdySerializedFrame* SpdyFramer::SerializeSettings(
+    const SpdySettingsIR& settings) const {
+  uint8 flags = 0;
+  if (settings.clear_settings()) {
+    flags |= SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
+  }
+  const SpdySettingsIR::ValueMap* values = &(settings.values());
+
+  // Size, in bytes, of this SETTINGS frame not including the IDs and values
+  // from the variable-length value block. Calculated as:
+  // 8 (control frame header) + 4 (number of ID/value pairs)
+  const size_t kSettingsSizeWithoutValues = 12;
+  // Size, in bytes, of this SETTINGS frame.
+  const size_t size = kSettingsSizeWithoutValues + (values->size() * 8);
+
+  SpdyFrameBuilder builder(SETTINGS, flags, protocol_version(), size);
+  builder.WriteUInt32(values->size());
+  DCHECK_EQ(kSettingsSizeWithoutValues, builder.length());
+  for (SpdySettingsIR::ValueMap::const_iterator it = values->begin();
+       it != values->end();
+       ++it) {
+    uint8 setting_flags = 0;
+    if (it->second.persist_value) {
+      setting_flags |= SETTINGS_FLAG_PLEASE_PERSIST;
+    }
+    if (it->second.persisted) {
+      setting_flags |= SETTINGS_FLAG_PERSISTED;
+    }
+    SettingsFlagsAndId flags_and_id(setting_flags, it->first);
+    uint32 id_and_flags_wire = flags_and_id.GetWireFormat(protocol_version());
+    builder.WriteBytes(&id_and_flags_wire, 4);
+    builder.WriteUInt32(it->second.value);
+  }
+  DCHECK_EQ(size, builder.length());
+  return builder.take();
 }
 
 SpdyPingControlFrame* SpdyFramer::CreatePingFrame(uint32 unique_id) const {
-  size_t frame_size = SpdyPingControlFrame::size();
-  SpdyFrameBuilder frame(PING, CONTROL_FLAG_NONE, spdy_version_, frame_size);
-  frame.WriteUInt32(unique_id);
-  DCHECK_EQ(frame.length(), frame_size);
-  return reinterpret_cast<SpdyPingControlFrame*>(frame.take());
+  SpdyPingIR ping(unique_id);
+  return reinterpret_cast<SpdyPingControlFrame*>(SerializePing(ping));
+}
+
+SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
+  // Size, in bytes, of this PING frame. Calculated as:
+  // 8 (control frame header) + 4 (id)
+  const size_t kPingSize = 12;
+  SpdyFrameBuilder builder(PING, 0, protocol_version(), kPingSize);
+  builder.WriteUInt32(ping.id());
+  DCHECK_EQ(kPingSize, builder.length());
+  return builder.take();
 }
 
 SpdyGoAwayControlFrame* SpdyFramer::CreateGoAway(
     SpdyStreamId last_accepted_stream_id,
     SpdyGoAwayStatus status) const {
-  DCHECK_EQ(0u, last_accepted_stream_id & ~kStreamIdMask);
+  SpdyGoAwayIR goaway(last_accepted_stream_id, status);
+  return reinterpret_cast<SpdyGoAwayControlFrame*>(SerializeGoAway(goaway));
+}
 
-  // SPDY 2 GOAWAY frames are 4 bytes smaller than in SPDY 3. We account for
-  // this difference via a separate offset variable, since
-  // SpdyGoAwayControlFrame::size() returns the SPDY 3 size.
-  const size_t goaway_offset = (protocol_version() < 3) ? 4 : 0;
-  size_t frame_size = SpdyGoAwayControlFrame::size() - goaway_offset;
-  SpdyFrameBuilder frame(GOAWAY, CONTROL_FLAG_NONE, spdy_version_, frame_size);
-  frame.WriteUInt32(last_accepted_stream_id);
+SpdySerializedFrame* SpdyFramer::SerializeGoAway(
+    const SpdyGoAwayIR& goaway) const {
+  // Size, in bytes, of this GOAWAY frame. Calculated as:
+  // 8 (control frame header) + 4 (last good stream id)
+  size_t size = 12;
+  // SPDY 3+ GOAWAY frames also contain a status.
   if (protocol_version() >= 3) {
-    frame.WriteUInt32(status);
+    size += 4;
   }
-  DCHECK_EQ(frame.length(), frame_size);
-  return reinterpret_cast<SpdyGoAwayControlFrame*>(frame.take());
+  SpdyFrameBuilder builder(GOAWAY, 0, protocol_version(), size);
+  builder.WriteUInt32(goaway.last_good_stream_id());
+  if (protocol_version() >= 3) {
+    builder.WriteUInt32(goaway.status());
+  }
+  DCHECK_EQ(size, builder.length());
+  return builder.take();
 }
 
 SpdyHeadersControlFrame* SpdyFramer::CreateHeaders(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
     bool compressed,
-    const SpdyHeaderBlock* headers) {
+    const SpdyHeaderBlock* header_block) {
   // Basically the same as CreateSynReply().
-  DCHECK_GT(stream_id, 0u);
-  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
+  DCHECK_EQ(0, flags & (!CONTROL_FLAG_FIN));
 
-  // Find our length.
-  size_t frame_size = SpdyHeadersControlFrame::size() +
-                      GetSerializedLength(spdy_version_, headers);
-  // In SPDY 2, there were 2 unused bytes before payload.
-  if (spdy_version_ < 3) {
-    frame_size += 2;
-  }
-
-  SpdyFrameBuilder frame(HEADERS, flags, spdy_version_, frame_size);
-  frame.WriteUInt32(stream_id);
-  if (spdy_version_ < 3) {
-    frame.WriteUInt16(0);  // Unused
-  }
-  WriteHeaderBlock(&frame, spdy_version_, headers);
-  DCHECK_EQ(frame.length(), frame_size);
+  SpdyHeadersIR headers(stream_id);
+  headers.set_fin(flags & CONTROL_FLAG_FIN);
+  // TODO(hkhalil): Avoid copy here.
+  *(headers.GetMutableNameValueBlock()) = *header_block;
 
   scoped_ptr<SpdyHeadersControlFrame> headers_frame(
-      reinterpret_cast<SpdyHeadersControlFrame*>(frame.take()));
+      reinterpret_cast<SpdyHeadersControlFrame*>(SerializeHeaders(headers)));
   if (compressed) {
     return reinterpret_cast<SpdyHeadersControlFrame*>(
-        CompressControlFrame(*headers_frame.get(), headers));
+        CompressControlFrame(*headers_frame.get(),
+                             headers.GetMutableNameValueBlock()));
   }
   return headers_frame.release();
+}
+
+SpdySerializedFrame* SpdyFramer::SerializeHeaders(
+    const SpdyHeadersIR& headers) {
+  uint8 flags = 0;
+  if (headers.fin()) {
+    flags |= CONTROL_FLAG_FIN;
+  }
+
+  // The size, in bytes, of this frame not including the variable-length
+  // name-value block. Calculated as:
+  // 8 (control frame header) + 4 (stream ID)
+  size_t headers_size_before_name_value_block = 12;
+  // In SPDY 2, there were 2 unused bytes before payload.
+  if (protocol_version() < 3) {
+    headers_size_before_name_value_block += 2;
+  }
+
+  // The size of this frame, including variable-length name-value block.
+  size_t size = headers_size_before_name_value_block
+      + GetSerializedLength(protocol_version(),
+                            &(headers.name_value_block()));
+
+  SpdyFrameBuilder builder(HEADERS, flags, protocol_version(), size);
+  builder.WriteUInt32(headers.stream_id());
+  if (protocol_version() < 3) {
+    builder.WriteUInt16(0);  // Unused.
+  }
+  DCHECK_EQ(headers_size_before_name_value_block, builder.length());
+
+  SerializeNameValueBlock(&builder, headers);
+  DCHECK_EQ(size, builder.length());
+
+  return builder.take();
 }
 
 SpdyWindowUpdateControlFrame* SpdyFramer::CreateWindowUpdate(
     SpdyStreamId stream_id,
     uint32 delta_window_size) const {
-  DCHECK_GT(stream_id, 0u);
-  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  DCHECK_GT(delta_window_size, 0u);
-  DCHECK_LE(delta_window_size,
-            static_cast<uint32>(kSpdyStreamMaximumWindowSize));
-
-  size_t frame_size = SpdyWindowUpdateControlFrame::size();
-  SpdyFrameBuilder frame(WINDOW_UPDATE, CONTROL_FLAG_NONE, spdy_version_,
-                         frame_size);
-  frame.WriteUInt32(stream_id);
-  frame.WriteUInt32(delta_window_size);
-  DCHECK_EQ(frame.length(), frame_size);
-  return reinterpret_cast<SpdyWindowUpdateControlFrame*>(frame.take());
+  SpdyWindowUpdateIR window_update(stream_id, delta_window_size);
+  return reinterpret_cast<SpdyWindowUpdateControlFrame*>(
+      SerializeWindowUpdate(window_update));
 }
 
+SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(
+    const SpdyWindowUpdateIR& window_update) const {
+  // Size, in bytes, of this WINDOW_UPDATE frame. Calculated as:
+  // 8 (control frame header) + 4 (stream id) + 4 (delta)
+  const size_t kWindowUpdateSize = 16;
+
+  SpdyFrameBuilder builder(WINDOW_UPDATE,
+                           kNoFlags,
+                           protocol_version(),
+                           kWindowUpdateSize);
+  builder.WriteUInt32(window_update.stream_id());
+  builder.WriteUInt32(window_update.delta());
+  DCHECK_EQ(kWindowUpdateSize, builder.length());
+  return builder.take();
+}
+
+// TODO(hkhalil): Gut with SpdyCredential removal.
 SpdyCredentialControlFrame* SpdyFramer::CreateCredentialFrame(
     const SpdyCredential& credential) const {
-  // Calculate the size of the frame by adding the size of the
-  // variable length data to the size of the fixed length data.
-  size_t frame_size =  SpdyCredentialControlFrame::size() +
-      credential.proof.length();
-  DCHECK_EQ(SpdyCredentialControlFrame::size(), 14u);
+  SpdyCredentialIR credential_ir(credential.slot);
+  credential_ir.set_proof(credential.proof);
   for (std::vector<std::string>::const_iterator cert = credential.certs.begin();
        cert != credential.certs.end();
        ++cert) {
-    frame_size += sizeof(uint32);  // size of the cert_length field
-    frame_size += cert->length();     // size of the cert_data field
+    credential_ir.AddCertificate(*cert);
+  }
+  return reinterpret_cast<SpdyCredentialControlFrame*>(
+      SerializeCredential(credential_ir));
+}
+
+SpdySerializedFrame* SpdyFramer::SerializeCredential(
+    const SpdyCredentialIR& credential) const {
+  size_t size = 8;  // Room for frame header.
+  size += 2;  // Room for slot.
+  size += 4 + credential.proof().length();  // Room for proof.
+  for (SpdyCredentialIR::CertificateList::const_iterator it =
+       credential.certificates()->begin();
+       it != credential.certificates()->end();
+       ++it) {
+    size += 4 + it->length();  // Room for certificate.
   }
 
-  SpdyFrameBuilder frame(CREDENTIAL, CONTROL_FLAG_NONE, spdy_version_,
-                         frame_size);
-  frame.WriteUInt16(credential.slot);
-  frame.WriteUInt32(credential.proof.size());
-  frame.WriteBytes(credential.proof.c_str(), credential.proof.size());
-  for (std::vector<std::string>::const_iterator cert = credential.certs.begin();
-       cert != credential.certs.end();
-       ++cert) {
-    frame.WriteUInt32(cert->length());
-    frame.WriteBytes(cert->c_str(), cert->length());
+  SpdyFrameBuilder builder(CREDENTIAL, 0, protocol_version(), size);
+  builder.WriteUInt16(credential.slot());
+  builder.WriteStringPiece32(credential.proof());
+  for (SpdyCredentialIR::CertificateList::const_iterator it =
+       credential.certificates()->begin();
+       it != credential.certificates()->end();
+       ++it) {
+    builder.WriteStringPiece32(*it);
   }
-  DCHECK_EQ(frame.length(), frame_size);
-  return reinterpret_cast<SpdyCredentialControlFrame*>(frame.take());
+  DCHECK_EQ(size, builder.length());
+  return builder.take();
 }
 
 SpdyDataFrame* SpdyFramer::CreateDataFrame(
-    SpdyStreamId stream_id,
-                                           const char* data,
+    SpdyStreamId stream_id, const char* data,
     uint32 len, SpdyDataFlags flags) const {
-  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  size_t frame_size = SpdyDataFrame::size() + len;
-  SpdyFrameBuilder frame(stream_id, flags, frame_size);
-  frame.WriteBytes(data, len);
-  DCHECK_EQ(frame.length(), frame_size);
-  return reinterpret_cast<SpdyDataFrame*>(frame.take());
+  DCHECK_EQ(0, flags & (!DATA_FLAG_FIN));
+
+  SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
+  data_ir.set_fin(flags & DATA_FLAG_FIN);
+  return reinterpret_cast<SpdyDataFrame*>(SerializeData(data_ir));
+}
+
+SpdySerializedFrame* SpdyFramer::SerializeData(const SpdyDataIR& data) const {
+  // Size, in bytes, of this DATA frame. Calculated as:
+  // 4 (stream id) + 1 (flags) + 3 (length) + payload length
+  const size_t size = 8 + data.data().length();
+
+  SpdyDataFlags flags = DATA_FLAG_NONE;
+  if (data.fin()) {
+    flags = DATA_FLAG_FIN;
+  }
+
+  SpdyFrameBuilder builder(data.stream_id(), flags, size);
+  builder.WriteBytes(data.data().data(), data.data().length());
+  DCHECK_EQ(size, builder.length());
+  return builder.take();
 }
 
 // The following compression setting are based on Brian Olson's analysis. See
@@ -1912,8 +2068,30 @@ SpdyStreamId SpdyFramer::GetControlFrameStreamId(
   return stream_id;
 }
 
-void SpdyFramer::set_enable_compression(bool value) {
-  enable_compression_ = value;
+void SpdyFramer::SerializeNameValueBlock(
+    SpdyFrameBuilder* builder,
+    const SpdyFrameWithNameValueBlockIR& frame) const {
+  const SpdyNameValueBlock* name_value_block = &(frame.name_value_block());
+
+  // Serialize number of headers.
+  if (protocol_version() < 3) {
+    builder->WriteUInt16(name_value_block->size());
+  } else {
+    builder->WriteUInt32(name_value_block->size());
+  }
+
+  // Serialize each header.
+  for (SpdyHeaderBlock::const_iterator it = name_value_block->begin();
+       it != name_value_block->end();
+       ++it) {
+    if (protocol_version() < 3) {
+      builder->WriteString(it->first);
+      builder->WriteString(it->second);
+    } else {
+      builder->WriteStringPiece32(it->first);
+      builder->WriteStringPiece32(it->second);
+    }
+  }
 }
 
 }  // namespace net

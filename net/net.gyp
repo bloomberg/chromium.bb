@@ -826,6 +826,7 @@
         'spdy/spdy_http_utils.h',
         'spdy/spdy_io_buffer.cc',
         'spdy/spdy_io_buffer.h',
+        'spdy/spdy_protocol.cc',
         'spdy/spdy_protocol.h',
         'spdy/spdy_proxy_client_socket.cc',
         'spdy/spdy_proxy_client_socket.h',

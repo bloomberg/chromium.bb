@@ -31,7 +31,9 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // Initializes a SpdyFrameBuilder with a buffer of given size,
   // populate with a SPDY control frame header based on
   // |type|, |flags|, and |spdy_version|.
-  SpdyFrameBuilder(SpdyControlType type, SpdyControlFlags flags,
+  //
+  // TODO(akalin): Add a typedef for this uint8.
+  SpdyFrameBuilder(SpdyControlType type, uint8 flags,
                    int spdy_version, size_t size);
 
   // Initiailizes a SpdyFrameBuilder with a buffer of given size,
