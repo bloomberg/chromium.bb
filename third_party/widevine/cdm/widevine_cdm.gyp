@@ -72,7 +72,7 @@
                 '<(PRODUCT_DIR)/libwidevinecdm.so',
               ],
             }],
-            [ 'OS == "linux" and target_arch == "x64"', {
+            [ 'chromeos == 0 and OS == "linux" and target_arch == "x64"', {
               'libraries': [
                 # Copied by widevine_cdm_binaries.
                 '<(PRODUCT_DIR)/libwidevinecdm.so',
