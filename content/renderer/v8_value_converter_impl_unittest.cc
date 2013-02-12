@@ -32,7 +32,7 @@ class V8ValueConverterImplTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    context_.Dispose();
+    context_.Dispose(context_->GetIsolate());
   }
 
   std::string GetString(DictionaryValue* value, const std::string& key) {

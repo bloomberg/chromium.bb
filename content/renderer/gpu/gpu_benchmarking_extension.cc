@@ -247,8 +247,9 @@ class GpuBenchmarkingWrapper : public v8::Extension {
                                               0,
                                               NULL);
     }
-    callback.Dispose();
-    context.Dispose();
+    v8::Isolate* isolate = context->GetIsolate();
+    callback.Dispose(isolate);
+    context.Dispose(isolate);
   }
 
   static v8::Handle<v8::Value> BeginSmoothScroll(const v8::Arguments& args) {
@@ -275,10 +276,12 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     bool scroll_down = args[0]->BooleanValue();
     v8::Local<v8::Function> callback_local =
         v8::Local<v8::Function>(v8::Function::Cast(*args[1]));
+    v8::Isolate* isolate = args.GetIsolate();
     v8::Persistent<v8::Function> callback =
-        v8::Persistent<v8::Function>::New(callback_local);
+        v8::Persistent<v8::Function>::New(isolate, callback_local);
     v8::Persistent<v8::Context> context =
-        v8::Persistent<v8::Context>::New(web_frame->mainWorldScriptContext());
+        v8::Persistent<v8::Context>::New(isolate,
+                                         web_frame->mainWorldScriptContext());
 
     int pixels_to_scroll = args[2]->IntegerValue();
 
@@ -410,8 +413,9 @@ class GpuBenchmarkingWrapper : public v8::Extension {
                                               1,
                                               argv);
     }
-    callback.Dispose();
-    context.Dispose();
+    v8::Isolate* isolate = context->GetIsolate();
+    callback.Dispose(isolate);
+    context.Dispose(isolate);
   }
 
   static v8::Handle<v8::Value> BeginWindowSnapshotPNG(
@@ -433,10 +437,12 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     v8::Local<v8::Function> callback_local =
         v8::Local<v8::Function>(v8::Function::Cast(*args[0]));
+    v8::Isolate* isolate = args.GetIsolate();
     v8::Persistent<v8::Function> callback =
-        v8::Persistent<v8::Function>::New(callback_local);
+        v8::Persistent<v8::Function>::New(isolate, callback_local);
     v8::Persistent<v8::Context> context =
-        v8::Persistent<v8::Context>::New(web_frame->mainWorldScriptContext());
+        v8::Persistent<v8::Context>::New(isolate,
+                                         web_frame->mainWorldScriptContext());
 
     render_view_impl->GetWindowSnapshot(
         base::Bind(&OnSnapshotCompleted, callback, context));
