@@ -590,12 +590,6 @@ cr.define('options', function() {
       display.div.style.height = newHeight + 'px';
       display.nameContainer.style.marginTop =
             (newHeight - display.nameContainer.offsetHeight) / 2 + 'px';
-      if (display.isPrimary) {
-        var launcher = display.div.firstChild;
-        if (launcher && launcher.id == 'display-launcher') {
-          launcher.style.width = display.div.style.width;
-        }
-      }
     },
 
     /**
@@ -697,11 +691,6 @@ cr.define('options', function() {
           div.classList.add('displays-focused');
 
         if (display.isPrimary) {
-          // Put a grey rectangle to the primary display to denote launcher
-          // below.
-          var launcher = document.createElement('div');
-          launcher.id = 'display-launcher';
-          div.appendChild(launcher);
           this.primaryDisplay_ = display;
         } else {
           this.secondaryDisplay_ = display;

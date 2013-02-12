@@ -69,13 +69,6 @@ html[dir=rtl] #selected-display-data-container {
   font-weight: bold;
 }
 
-#display-launcher {
-  background-color: lightgrey;
-  bottom: 0;
-  height: 10px;
-  position: absolute;
-}
-
 .displays-display {
   -webkit-user-select: none;
   background: rgb(240, 240, 240);
