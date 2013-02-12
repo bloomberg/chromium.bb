@@ -104,6 +104,15 @@ elif [[ -n "$CHROME_ANDROID_BUILD_WEBVIEW" ]]; then
   webview_build_init
 fi
 
+java -version 2>&1 | grep -qs "Java HotSpot"
+if [ $? -ne 0 ]; then
+  echo "Please check and make sure you are using the Oracle Java SDK, and it"
+  echo "appears before other Java SDKs in your path."
+  echo "Refer to the \"Install prerequisites\" section here:"
+  echo "https://code.google.com/p/chromium/wiki/AndroidBuildInstructions"
+  return 1
+fi
+
 # Workaround for valgrind build
 if [[ -n "$CHROME_ANDROID_VALGRIND_BUILD" ]]; then
 # arm_thumb=0 is a workaround for https://bugs.kde.org/show_bug.cgi?id=270709
