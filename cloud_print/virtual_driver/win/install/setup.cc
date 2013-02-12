@@ -41,7 +41,7 @@ const wchar_t kUninstallRegistry[] =
 const wchar_t kInstallerName[] = L"virtual_driver_setup.exe";
 const wchar_t kGcpUrl[] = L"http://www.google.com/cloudprint";
 
-const char kDoUninstallSwitch[] = "douninstall";
+const char kDelete[] = "delete";
 const char kInstallSwitch[] = "install";
 const char kRegisterSwitch[] = "register";
 const char kUninstallSwitch[] = "uninstall";
@@ -516,13 +516,13 @@ HRESULT UnregisterVirtualDriver() {
   return hr;
 }
 
-HRESULT DoLaunchUninstall(const FilePath& installer_source, bool wait) {
+HRESULT DeleteProgramDir(const FilePath& installer_source, bool wait) {
   FilePath temp_path;
   if (file_util::CreateTemporaryFile(&temp_path)) {
     file_util::CopyFile(installer_source, temp_path);
     file_util::DeleteAfterReboot(temp_path);
     CommandLine command_line(temp_path);
-    command_line.AppendArg(kDoUninstallSwitch);
+    command_line.AppendSwitchPath(kDelete, installer_source.DirName());
     base::LaunchOptions options;
     options.wait = wait;
     base::ProcessHandle process_handle;
@@ -545,11 +545,15 @@ HRESULT DoLaunchUninstall(const FilePath& installer_source, bool wait) {
   return S_OK;
 }
 
-HRESULT LaunchChildForUninstall() {
+HRESULT DoUninstall() {
+  DeleteGoogleUpdateKeys();
+  HRESULT result = UnregisterVirtualDriver();
+  if (FAILED(result))
+    return result;
+  CleanupUninstall();
   FilePath installer_source;
-  if (PathService::Get(base::FILE_EXE, &installer_source)) {
-    return DoLaunchUninstall(installer_source, false);
-  }
+  if (PathService::Get(base::FILE_EXE, &installer_source))
+    return DeleteProgramDir(installer_source, false);
   return S_OK;
 }
 
@@ -564,20 +568,13 @@ HRESULT DoRegister(const FilePath& install_path) {
   return RegisterVirtualDriver(install_path);
 }
 
-HRESULT DoUninstall() {
-  FilePath install_path;
-  GetCurrentInstallPath(&install_path);
-  if (install_path.value().empty()) {
+HRESULT DoDelete(const FilePath& install_path) {
+  if (install_path.value().empty())
+    return E_INVALIDARG;
+  if (!file_util::DirectoryExists(install_path))
     return S_FALSE;
-  }
-  HRESULT result = UnregisterVirtualDriver();
-  if (FAILED(result))
-    return result;
-  DeleteGoogleUpdateKeys();
-  if (file_util::DirectoryExists(install_path))
-    file_util::Delete(install_path, true);
-  CleanupUninstall();
-  return result;
+  Sleep(5000);  // Give parent some time to exit.
+  return file_util::Delete(install_path, true) ? S_OK : E_FAIL;
 }
 
 HRESULT DoInstall(const FilePath& install_path) {
@@ -610,10 +607,10 @@ HRESULT ExecuteCommands() {
     return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
   }
 
-  if (command_line.HasSwitch(kDoUninstallSwitch)) {
-    return DoUninstall();
+  if (command_line.HasSwitch(kDelete)) {
+    return DoDelete(command_line.GetSwitchValuePath(kDelete));
   } else if (command_line.HasSwitch(kUninstallSwitch)) {
-    return LaunchChildForUninstall();
+    return DoUninstall();
   } else if (command_line.HasSwitch(kInstallSwitch)) {
     return DoInstall(exe_path);
   } else if (command_line.HasSwitch(kUnregisterSwitch)) {
