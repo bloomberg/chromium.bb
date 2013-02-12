@@ -72,6 +72,12 @@
                 '<(PRODUCT_DIR)/libwidevinecdm.so',
               ],
             }],
+            [ 'OS == "linux" and target_arch == "x64"', {
+              'libraries': [
+                # Copied by widevine_cdm_binaries.
+                '<(PRODUCT_DIR)/libwidevinecdm.so',
+              ],
+            }],
             [ 'OS == "win" and 0', {
               'type': 'shared_library',
             }],
