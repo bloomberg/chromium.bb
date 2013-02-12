@@ -19,9 +19,6 @@
 #if defined(USE_AURA)
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
-#else
-#include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
-#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #endif
 
 namespace views {
@@ -175,63 +172,14 @@ class TestTextfield : public Textfield {
   }
 };
 
-class TestTabbedPane : public TabbedPane {
- public:
-  TestTabbedPane() {}
-  virtual gfx::NativeView TestGetNativeControlView() {
-    return native_tabbed_pane_->GetTestingHandle();
-  }
-};
-
 // Tests that NativeControls do set the focused View appropriately on the
 // FocusManager.
 TEST_F(FocusManagerTest, DISABLED_FocusNativeControls) {
   TestTextfield* textfield = new TestTextfield();
-  TestTabbedPane* tabbed_pane = new TestTabbedPane();
-  tabbed_pane->set_use_native_win_control(true);
-  TestTextfield* textfield2 = new TestTextfield();
-
   GetContentsView()->AddChildView(textfield);
-  GetContentsView()->AddChildView(tabbed_pane);
-
-  tabbed_pane->AddTab(ASCIIToUTF16("Awesome textfield"), textfield2);
-
   // Simulate the native view getting the native focus (such as by user click).
   FocusNativeView(textfield->TestGetNativeControlView());
   EXPECT_EQ(textfield, GetFocusManager()->GetFocusedView());
-
-  FocusNativeView(tabbed_pane->TestGetNativeControlView());
-  EXPECT_EQ(tabbed_pane, GetFocusManager()->GetFocusedView());
-
-  FocusNativeView(textfield2->TestGetNativeControlView());
-  EXPECT_EQ(textfield2, GetFocusManager()->GetFocusedView());
-}
-#endif
-
-// There is no tabbed pane in Aura.
-#if !defined(USE_AURA)
-TEST_F(FocusManagerTest, ContainsView) {
-  View* view = new View();
-  scoped_ptr<View> detached_view(new View());
-  TabbedPane* tabbed_pane = new TabbedPane();
-  tabbed_pane->set_use_native_win_control(true);
-  TabbedPane* nested_tabbed_pane = new TabbedPane();
-  nested_tabbed_pane->set_use_native_win_control(true);
-  NativeTextButton* tab_button = new NativeTextButton(
-      NULL, ASCIIToUTF16("tab button"));
-
-  GetContentsView()->AddChildView(view);
-  GetContentsView()->AddChildView(tabbed_pane);
-  // Adding a View inside a TabbedPane to test the case of nested root view.
-
-  tabbed_pane->AddTab(ASCIIToUTF16("Awesome tab"), nested_tabbed_pane);
-  nested_tabbed_pane->AddTab(ASCIIToUTF16("Awesomer tab"), tab_button);
-
-  EXPECT_TRUE(GetFocusManager()->ContainsView(view));
-  EXPECT_TRUE(GetFocusManager()->ContainsView(tabbed_pane));
-  EXPECT_TRUE(GetFocusManager()->ContainsView(nested_tabbed_pane));
-  EXPECT_TRUE(GetFocusManager()->ContainsView(tab_button));
-  EXPECT_FALSE(GetFocusManager()->ContainsView(detached_view.get()));
 }
 #endif
 
@@ -639,13 +587,9 @@ class FocusManagerDtorTest : public FocusManagerTest {
 #if !defined(USE_AURA)
 TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   // Setup views hierarchy.
-  TabbedPane* tabbed_pane = new TabbedPane();
-  tabbed_pane->set_use_native_win_control(true);
-  GetContentsView()->AddChildView(tabbed_pane);
-
-  NativeButtonDtorTracked* button = new NativeButtonDtorTracked(
-      ASCIIToUTF16("button"), &dtor_tracker_);
-  tabbed_pane->AddTab(ASCIIToUTF16("Awesome tab"), button);
+  GetContentsView()->AddChildView(new TestTextfield());
+  GetContentsView()->AddChildView(new NativeButtonDtorTracked(
+      ASCIIToUTF16("button"), &dtor_tracker_));
 
   // Close the window.
   GetWidget()->Close();

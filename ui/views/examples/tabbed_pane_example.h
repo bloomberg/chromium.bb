@@ -18,7 +18,7 @@ class TabbedPane;
 
 namespace examples {
 
-// A TabbedPane example tests adding/removing/selecting tabs.
+// A TabbedPane example tests adding and selecting tabs.
 class TabbedPaneExample : public ExampleBase,
                           public ButtonListener,
                           public TabbedPaneListener {
@@ -44,10 +44,9 @@ class TabbedPaneExample : public ExampleBase,
   // The tabbed pane to be tested.
   TabbedPane* tabbed_pane_;
 
-  // Control buttons to add, remove or select tabs.
+  // Control buttons to add and select tabs.
   Button* add_;
   Button* add_at_;
-  Button* remove_at_;
   Button* select_at_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedPaneExample);

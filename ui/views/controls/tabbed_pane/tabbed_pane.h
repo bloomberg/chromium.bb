@@ -12,8 +12,9 @@
 
 namespace views {
 
-class NativeTabbedPaneWrapper;
+class Tab;
 class TabbedPaneListener;
+class TabStrip;
 
 // TabbedPane is a view that shows tabs. When the user clicks on a tab, the
 // associated view is displayed.
@@ -24,20 +25,13 @@ class VIEWS_EXPORT TabbedPane : public View {
 
   TabbedPaneListener* listener() const { return listener_; }
   void set_listener(TabbedPaneListener* listener) { listener_ = listener; }
-#if defined(OS_WIN) && !defined(USE_AURA)
-  bool use_native_win_control() { return use_native_win_control_; }
-  void set_use_native_win_control(bool use_native_win_control) {
-    use_native_win_control_ = use_native_win_control;
-  }
-#endif
+
+  int selected_tab_index() const { return selected_tab_index_; }
 
   // Returns the number of tabs.
   int GetTabCount();
 
-  // Returns the index of the selected tab.
-  int GetSelectedTabIndex();
-
-  // Returns the contents of the selected tab.
+  // Returns the contents of the selected tab or NULL if there is none.
   View* GetSelectedTab();
 
   // Adds a new tab at the end of this TabbedPane with the specified |title|.
@@ -45,62 +39,44 @@ class VIEWS_EXPORT TabbedPane : public View {
   // the TabbedPane.
   void AddTab(const string16& title, View* contents);
 
-  // Adds a new tab at |index| with |title|.
-  // |contents| is the view displayed when the tab is selected and is owned by
-  // the TabbedPane. If |select_if_first_tab| is true and the tabbed pane is
-  // currently empty, the new tab is selected. If you pass in false for
-  // |select_if_first_tab| you need to explicitly invoke SelectTabAt, otherwise
-  // the tabbed pane will not have a valid selection.
-  void AddTabAtIndex(int index,
-                     const string16& title,
-                     View* contents,
-                     bool select_if_first_tab);
-
-  // Removes the tab at |index| and returns the associated content view.
-  // The caller becomes the owner of the returned view.
-  View* RemoveTabAtIndex(int index);
+  // Adds a new tab at |index| with |title|. |contents| is the view displayed
+  // when the tab is selected and is owned by the TabbedPane. If the tabbed pane
+  // is currently empty, the new tab is selected.
+  void AddTabAtIndex(int index, const string16& title, View* contents);
 
   // Selects the tab at |index|, which must be valid.
   void SelectTabAt(int index);
 
-  void SetAccessibleName(const string16& name);
+  // Selects |tab| (the tabstrip view, not its content) if it is valid.
+  void SelectTab(Tab* tab);
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
- protected:
-  // The object that actually implements the tabbed-pane.
-  // Protected for tests access.
-  NativeTabbedPaneWrapper* native_tabbed_pane_;
-
  private:
-  // The tabbed-pane's class name.
-  static const char kViewClassName[];
-
-  // We support Ctrl+Tab and Ctrl+Shift+Tab to navigate tabbed option pages.
-  void LoadAccelerators();
+   // Get the Tab (the tabstrip view, not its content) at the valid |index|.
+   Tab* GetTabAt(int index);
 
   // Overridden from View:
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     View* parent,
                                     View* child) OVERRIDE;
-  // Handles Ctrl+Tab and Ctrl+Shift+Tab navigation of pages.
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void OnFocus() OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  bool use_native_win_control_;
-#endif
-
-  // Our listener. Not owned. Notified when tab selection changes.
+  // A listener notified when tab selection changes. Weak, not owned.
   TabbedPaneListener* listener_;
 
-  // The accessible name of this tabbed pane.
-  string16 accessible_name_;
+  // The tab strip and contents container. The child indices of these members
+  // correspond to match each Tab with its respective content View.
+  TabStrip* tab_strip_;
+  View* contents_;
+
+  // The selected tab index or -1 if invalid.
+  int selected_tab_index_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedPane);
 };
