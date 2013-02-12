@@ -511,11 +511,6 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 // Enables Google Now integration.
 const char kEnableGoogleNowIntegration[] = "enable-google-now-integration";
 
-// Enable HTTP pipelining. Attempt to pipeline HTTP connections. Heuristics will
-// try to figure out if pipelining can be used for a given host and request.
-// Without this flag, pipelining will never be used.
-const char kEnableHttpPipelining[]          = "enable-http-pipelining";
-
 // Enable Instant extended API.
 const char kEnableInstantExtendedAPI[]      = "enable-instant-extended-api";
 

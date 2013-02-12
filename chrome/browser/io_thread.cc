@@ -517,8 +517,6 @@ void IOThread::Init() {
   }
   if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     globals_->ignore_certificate_errors = true;
-  if (command_line.HasSwitch(switches::kEnableHttpPipelining))
-    globals_->http_pipelining_enabled = true;
   if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
     globals_->testing_fixed_http_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);

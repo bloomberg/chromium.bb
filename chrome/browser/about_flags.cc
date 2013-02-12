@@ -673,13 +673,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAutologin)
   },
   {
-    "enable-http-pipelining",
-    IDS_FLAGS_ENABLE_HTTP_PIPELINING_NAME,
-    IDS_FLAGS_ENABLE_HTTP_PIPELINING_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableHttpPipelining)
-  },
-  {
     "enable-spdy3",
     IDS_FLAGS_ENABLE_SPDY3_NAME,
     IDS_FLAGS_ENABLE_SPDY3_DESCRIPTION,
