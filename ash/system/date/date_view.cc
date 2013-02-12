@@ -136,6 +136,11 @@ void DateView::SetActionable(bool actionable) {
 }
 
 void DateView::UpdateTextInternal(const base::Time& now) {
+  SetAccessibleName(
+      base::TimeFormatFriendlyDate(now) +
+      ASCIIToUTF16(",") +
+      base::TimeFormatTimeOfDayWithHourClockType(
+          now, base::k12HourClock, base:: kKeepAmPm));
   date_label_->SetText(
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));
