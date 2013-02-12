@@ -48,17 +48,6 @@ void NetworkIconAnimation::RemoveObserver(AnimationObserver* observer) {
     animation_.Stop();
 }
 
-void NetworkIconAnimation::AddNetwork(const std::string& network_id) {
-  networks_.insert(network_id);
-  // Animation will start (if stopped) when GetAnimation is called.
-}
-
-void NetworkIconAnimation::RemoveNetwork(const std::string& network_id) {
-  networks_.erase(network_id);
-  if (networks_.empty())
-    animation_.Reset();
-}
-
 // static
 NetworkIconAnimation* NetworkIconAnimation::GetInstance() {
   static NetworkIconAnimation* s_icon_animation =

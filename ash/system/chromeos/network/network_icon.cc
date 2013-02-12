@@ -7,14 +7,11 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_icon_animation.h"
 #include "ash/system/chromeos/network/network_icon_animation_observer.h"
-#include "base/utf_string_conversions.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
-#include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -32,25 +29,11 @@ namespace network_icon {
 namespace {
 
 //------------------------------------------------------------------------------
-// Struct to pass icon badges to NetworkIconImageSource.
-struct Badges {
-  Badges()
-      : top_left(NULL),
-        top_right(NULL),
-        bottom_left(NULL),
-        bottom_right(NULL) {
-  }
-  const gfx::ImageSkia* top_left;
-  const gfx::ImageSkia* top_right;
-  const gfx::ImageSkia* bottom_left;
-  const gfx::ImageSkia* bottom_right;
-};
+// NetworkIconImpl class used for maintaining a map of network state and images.
 
-//------------------------------------------------------------------------------
-// class used for maintaining a map of network state and images.
 class NetworkIconImpl {
  public:
-  explicit NetworkIconImpl(IconType icon_type);
+  NetworkIconImpl(const std::string& service_path, ResourceColorTheme color);
 
   // Determines whether or not the associated network might be dirty and if so
   // updates and generates the icon. Does nothing if network no longer exists.
@@ -65,17 +48,14 @@ class NetworkIconImpl {
   // Updates the local state for cellular networks. Returns true if changed.
   bool UpdateCellularState(const chromeos::NetworkState* network);
 
-  // Updates the VPN badge. Returns true if changed.
-  bool UpdateVPNBadge();
-
-  // Gets |badges| based on |network| and the current state.
-  void GetBadges(const NetworkState* network, Badges* badges);
-
   // Gets the appropriate icon and badges and composites the image.
   void GenerateImage(const chromeos::NetworkState* network);
 
-  // Defines color theme and VPN badging
-  const IconType icon_type_;
+  // Service path for the network this icon is associated with.
+  std::string service_path_;
+
+  // Color theme for the icon.
+  ResourceColorTheme color_;
 
   // Cached state of the network when the icon was last generated.
   std::string state_;
@@ -85,9 +65,6 @@ class NetworkIconImpl {
 
   // Cached technology badge for the network when the icon was last generated.
   const gfx::ImageSkia* technology_badge_;
-
-  // Cached vpn badge for the network when the icon was last generated.
-  const gfx::ImageSkia* vpn_badge_;
 
   // Cached roaming state of the network when the icon was last generated.
   std::string roaming_state_;
@@ -105,25 +82,39 @@ class NetworkIconImpl {
 
 typedef std::map<std::string, NetworkIconImpl*> NetworkIconMap;
 
-NetworkIconMap* GetIconMap(IconType icon_type) {
-  typedef std::map<IconType, NetworkIconMap*> IconTypeMap;
-  static IconTypeMap* s_icon_map = NULL;
-  if (s_icon_map == NULL)
-    s_icon_map = new IconTypeMap;
-  if (s_icon_map->count(icon_type) == 0)
-    (*s_icon_map)[icon_type] = new NetworkIconMap;
-  return (*s_icon_map)[icon_type];
+NetworkIconMap* GetIconMap(ResourceColorTheme color) {
+  if (color == COLOR_DARK) {
+    static NetworkIconMap* s_icon_map_dark = NULL;
+    if (s_icon_map_dark == NULL)
+      s_icon_map_dark = new NetworkIconMap;
+    return s_icon_map_dark;
+  } else {
+    static NetworkIconMap* s_icon_map_light = NULL;
+    if (s_icon_map_light == NULL)
+      s_icon_map_light = new NetworkIconMap;
+    return s_icon_map_light;
+  }
 }
 
 //------------------------------------------------------------------------------
 // Utilities for generating icon images.
 
-// 'NONE' will default to ARCS behavior where appropriate (e.g. no network or
-// if a new type gets added).
 enum ImageType {
-  ARCS,
-  BARS,
-  NONE
+  ARCS = 0,
+  BARS
+};
+
+struct Badges {
+  Badges()
+      : top_left(NULL),
+        top_right(NULL),
+        bottom_left(NULL),
+        bottom_right(NULL) {
+  }
+  const gfx::ImageSkia* top_left;
+  const gfx::ImageSkia* top_right;
+  const gfx::ImageSkia* bottom_left;
+  const gfx::ImageSkia* bottom_right;
 };
 
 // Amount to fade icons while connecting.
@@ -224,72 +215,55 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
 //------------------------------------------------------------------------------
 // Utilities for extracting icon images.
 
-bool IconTypeIsDark(IconType icon_type) {
-  return (icon_type != ICON_TYPE_TRAY);
-}
-
-bool IconTypeHasVPNBadge(IconType icon_type) {
-  return (icon_type != ICON_TYPE_LIST);
-}
-
 int NumImagesForType(ImageType type) {
-  return (type == BARS) ? kNumBarsImages : kNumArcsImages;
+  return (type == ARCS) ? kNumArcsImages : kNumBarsImages;
 }
 
-gfx::ImageSkia** ImageListForType(ImageType image_type, IconType icon_type) {
+gfx::ImageSkia** ImageListForType(ImageType type,
+                                  ResourceColorTheme color) {
   gfx::ImageSkia** images;
-  if (image_type == BARS) {
-    images = IconTypeIsDark(icon_type) ?
-        kBarsImagesAnimatingDark : kBarsImagesAnimatingLight;
-  } else {
-    images = IconTypeIsDark(icon_type) ?
+  if (type == ARCS) {
+    images = (color == COLOR_DARK) ?
         kArcsImagesAnimatingDark : kArcsImagesAnimatingLight;
+  } else {
+    images = (color == COLOR_DARK) ?
+        kBarsImagesAnimatingDark : kBarsImagesAnimatingLight;
   }
   return images;
 }
 
-gfx::ImageSkia* BaseImageForType(ImageType image_type, IconType icon_type) {
+gfx::ImageSkia* BaseImageForType(ImageType type,
+                                 ResourceColorTheme color) {
   gfx::ImageSkia* image;
-  if (image_type == BARS) {
+  if (type == ARCS) {
     image =  ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IconTypeIsDark(icon_type) ?
-        IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_BARS_LIGHT);
-  } else {
-    image =  ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IconTypeIsDark(icon_type) ?
+        color == COLOR_DARK ?
         IDR_AURA_UBER_TRAY_NETWORK_ARCS_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_ARCS_LIGHT);
+  } else {
+    image =  ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        color == COLOR_DARK ?
+        IDR_AURA_UBER_TRAY_NETWORK_BARS_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_BARS_LIGHT);
   }
   return image;
 }
 
-ImageType ImageTypeForNetworkType(const std::string& type) {
-  if (type == flimflam::kTypeWifi || type == flimflam::kTypeWimax)
-    return ARCS;
-  else if (type == flimflam::kTypeCellular)
-    return BARS;
-  return NONE;
-}
-
-gfx::ImageSkia GetImageForIndex(ImageType image_type,
-                                IconType icon_type,
+gfx::ImageSkia GetImageForIndex(ImageType type,
+                                ResourceColorTheme color,
                                 int index) {
-  int num_images = NumImagesForType(image_type);
+  int num_images = NumImagesForType(type);
   if (index < 0 || index >= num_images)
     return gfx::ImageSkia();
-  gfx::ImageSkia* images = BaseImageForType(image_type, icon_type);
+  gfx::ImageSkia* images = BaseImageForType(type, color);
   int width = images->width();
   int height = images->height() / num_images;
   return gfx::ImageSkiaOperations::ExtractSubset(*images,
       gfx::Rect(0, index * height, width, height));
 }
 
-const gfx::ImageSkia GetDisconnectedImage(const std::string& type,
-                                          IconType icon_type) {
-  ImageType image_type = ImageTypeForNetworkType(type);
-  const int disconnected_index = 0;
-  return GetImageForIndex(image_type, icon_type, disconnected_index);
+const gfx::ImageSkia GetDisconnectedImage(ResourceColorTheme color) {
+  return GetImageForIndex(ARCS, color, 0);
 }
 
 int StrengthIndex(int strength, int count) {
@@ -302,54 +276,56 @@ int StrengthIndex(int strength, int count) {
 }
 
 int GetStrengthIndex(const NetworkState* network) {
-  ImageType image_type = ImageTypeForNetworkType(network->type());
-  if (image_type == ARCS)
+  if (network->type() == flimflam::kTypeWifi) {
     return StrengthIndex(network->signal_strength(), kNumArcsImages);
-  else if (image_type == BARS)
+  } else if (network->type() == flimflam::kTypeWimax) {
     return StrengthIndex(network->signal_strength(), kNumBarsImages);
+  } else if (network->type() == flimflam::kTypeCellular) {
+    return StrengthIndex(network->signal_strength(), kNumBarsImages);
+  }
   return 0;
 }
 
 const gfx::ImageSkia* BadgeForNetworkTechnology(const NetworkState* network,
-                                                IconType icon_type) {
+                                                ResourceColorTheme color) {
   const int kUnknownBadgeType = -1;
   int id = kUnknownBadgeType;
   if (network->technology() == flimflam::kNetworkTechnologyEvdo) {
-    id = IconTypeIsDark(icon_type) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnology1Xrtt) {
     id = IDR_AURA_UBER_TRAY_NETWORK_1X;
   } else if (network->technology() == flimflam::kNetworkTechnologyGprs) {
-    id = IconTypeIsDark(icon_type) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyEdge) {
-    id = IconTypeIsDark(icon_type) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_EDGE_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyUmts) {
-    id = IconTypeIsDark(icon_type) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyHspa) {
-    id = IconTypeIsDark(icon_type) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_HSPA_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_HSPA_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyHspaPlus) {
-    id = IconTypeIsDark(icon_type) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyLte) {
-    id = IconTypeIsDark(icon_type) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_LTE_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_LTE_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyLteAdvanced) {
-    id = IconTypeIsDark(icon_type) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyGsm) {
-    id = IconTypeIsDark(icon_type) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
   }
@@ -359,24 +335,22 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(const NetworkState* network,
     return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
-const gfx::ImageSkia* BadgeForVPN(IconType icon_type) {
-  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
-}
-
 gfx::ImageSkia GetIcon(const NetworkState* network,
-                       IconType icon_type,
+                       ResourceColorTheme color,
                        int strength_index) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const std::string& type = network->type();
   if (type == flimflam::kTypeEthernet) {
     return *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);
-  } else if (type == flimflam::kTypeWifi ||
-             type == flimflam::kTypeWimax ||
-             type == flimflam::kTypeCellular) {
+  } else if (type == flimflam::kTypeWifi) {
     DCHECK(strength_index > 0);
-    return GetImageForIndex(
-        ImageTypeForNetworkType(type), icon_type, strength_index);
+    return GetImageForIndex(ARCS, color, strength_index);
+  } else if (type == flimflam::kTypeWimax) {
+    DCHECK(strength_index > 0);
+    return GetImageForIndex(BARS, color, strength_index);
+  } else if (type == flimflam::kTypeCellular) {
+    DCHECK(strength_index > 0);
+    return GetImageForIndex(BARS, color, strength_index);
   } else if (type == flimflam::kTypeVPN) {
     return *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_VPN);
   } else {
@@ -385,20 +359,57 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
   }
 }
 
+void GetBadges(const NetworkState* network,
+               ResourceColorTheme color,
+               Badges* badges) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
+
+  bool use_dark_icons = color == COLOR_DARK;
+  const std::string& type = network->type();
+  if (type == flimflam::kTypeWifi) {
+    if (network->security() != flimflam::kSecurityNone && use_dark_icons) {
+      badges->bottom_right = rb.GetImageSkiaNamed(
+          IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK);
+    }
+  } else if (type == flimflam::kTypeWimax) {
+    badges->top_left = rb.GetImageSkiaNamed(
+        use_dark_icons ?
+        IDR_AURA_UBER_TRAY_NETWORK_4G_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_4G_LIGHT);
+  } else if (type == flimflam::kTypeCellular) {
+    if (network->roaming() == flimflam::kRoamingStateRoaming) {
+      // For networks that are always in roaming don't show roaming badge.
+      const DeviceState* device =
+          handler->GetDeviceState(network->device_path());
+      if (!device->provider_requires_roaming()) {
+        badges->bottom_right = rb.GetImageSkiaNamed(
+            use_dark_icons ?
+            IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK :
+            IDR_AURA_UBER_TRAY_NETWORK_ROAMING_LIGHT);
+      }
+    }
+    if (!network->IsConnectingState()) {
+      badges->top_left = BadgeForNetworkTechnology(network, color);
+    }
+  }
+}
+
 //------------------------------------------------------------------------------
 // Get connecting images
 
-gfx::ImageSkia GetConnectingImage(const std::string& type, IconType icon_type) {
-  ImageType image_type = ImageTypeForNetworkType(type);
+gfx::ImageSkia GetConnectingImage(const std::string& type,
+                                  ResourceColorTheme color) {
+  ImageType image_type = (type == flimflam::kTypeWifi) ? ARCS : BARS;
   int image_count = NumImagesForType(image_type) - 1;
-  gfx::ImageSkia** images = ImageListForType(image_type, icon_type);
+  gfx::ImageSkia** images = ImageListForType(image_type, color);
   double animation = NetworkIconAnimation::GetInstance()->GetAnimation();
   int index = animation * nextafter(static_cast<float>(image_count), 0);
   index = std::max(std::min(index, image_count - 1), 0);
 
   // Lazily cache images.
   if (!images[index]) {
-    gfx::ImageSkia source = GetImageForIndex(image_type, icon_type, index + 1);
+    gfx::ImageSkia source = GetImageForIndex(image_type, color, index + 1);
     images[index] = new gfx::ImageSkia(
         gfx::ImageSkiaOperations::CreateBlendedImage(
             gfx::ImageSkia(new EmptyImageSource(source.size()), source.size()),
@@ -415,17 +426,17 @@ gfx::ImageSkia GetConnectingImage(const std::string& type, IconType icon_type) {
 //------------------------------------------------------------------------------
 // NetworkIconImpl
 
-NetworkIconImpl::NetworkIconImpl(IconType icon_type)
-    : icon_type_(icon_type),
+NetworkIconImpl::NetworkIconImpl(const std::string& service_path,
+                                 ResourceColorTheme color)
+    : service_path_(service_path),
+      color_(color),
       strength_index_(-1),
-      technology_badge_(NULL),
-      vpn_badge_(NULL) {
+      technology_badge_(NULL) {
   // Default image
-  image_ = GetDisconnectedImage(flimflam::kTypeWifi, icon_type);
+  image_ = GetDisconnectedImage(color);
 }
 
 void NetworkIconImpl::Update(const NetworkState* network) {
-  DCHECK(network);
   // Determine whether or not we need to update the icon.
   bool dirty = image_.isNull();
 
@@ -441,9 +452,6 @@ void NetworkIconImpl::Update(const NetworkState* network) {
 
   if (type == flimflam::kTypeCellular)
     dirty |= UpdateCellularState(network);
-
-  if (IconTypeHasVPNBadge(icon_type_) && type != flimflam::kTypeVPN)
-    dirty |= UpdateVPNBadge();
 
   if (dirty) {
     // Set the icon and badges based on the network and generate the image.
@@ -463,7 +471,7 @@ bool NetworkIconImpl::UpdateWirelessStrengthIndex(const NetworkState* network) {
 bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
   bool dirty = false;
   const gfx::ImageSkia* technology_badge =
-      BadgeForNetworkTechnology(network, icon_type_);
+      BadgeForNetworkTechnology(network, color_);
   if (technology_badge != technology_badge_) {
     technology_badge_ = technology_badge;
     dirty = true;
@@ -476,62 +484,10 @@ bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
   return dirty;
 }
 
-bool NetworkIconImpl::UpdateVPNBadge() {
-  const NetworkState* vpn =
-      chromeos::NetworkStateHandler::Get()->ConnectedNetworkByType(
-          flimflam::kTypeVPN);
-  if (vpn && vpn_badge_ == NULL) {
-    vpn_badge_ = BadgeForVPN(icon_type_);
-    return true;
-  } else if (!vpn && vpn_badge_ != NULL) {
-    vpn_badge_ = NULL;
-    return true;
-  }
-  return false;
-}
-
-void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
-  DCHECK(network);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  chromeos::NetworkStateHandler* handler = chromeos::NetworkStateHandler::Get();
-
-  const std::string& type = network->type();
-  if (type == flimflam::kTypeWifi) {
-    if (network->security() != flimflam::kSecurityNone &&
-        IconTypeIsDark(icon_type_)) {
-      badges->bottom_right = rb.GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK);
-    }
-  } else if (type == flimflam::kTypeWimax) {
-    badges->top_left = rb.GetImageSkiaNamed(
-        IconTypeIsDark(icon_type_) ?
-        IDR_AURA_UBER_TRAY_NETWORK_4G_DARK :
-        IDR_AURA_UBER_TRAY_NETWORK_4G_LIGHT);
-  } else if (type == flimflam::kTypeCellular) {
-    if (network->roaming() == flimflam::kRoamingStateRoaming) {
-      // For networks that are always in roaming don't show roaming badge.
-      const DeviceState* device =
-          handler->GetDeviceState(network->device_path());
-      DCHECK(device);
-      if (!device->provider_requires_roaming()) {
-        badges->bottom_right = rb.GetImageSkiaNamed(
-            IconTypeIsDark(icon_type_) ?
-            IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK :
-            IDR_AURA_UBER_TRAY_NETWORK_ROAMING_LIGHT);
-      }
-    }
-  }
-  if (!network->IsConnectingState()) {
-    badges->top_left = technology_badge_;
-    badges->bottom_left = vpn_badge_;
-  }
-}
-
 void NetworkIconImpl::GenerateImage(const NetworkState* network) {
-  DCHECK(network);
-  gfx::ImageSkia icon = GetIcon(network, icon_type_, strength_index_);
+  gfx::ImageSkia icon = GetIcon(network, color_, strength_index_);
   Badges badges;
-  GetBadges(network, &badges);
+  GetBadges(network, color_, &badges);
   image_ = gfx::ImageSkia(
       new NetworkIconImageSource(icon, badges), icon.size());
 }
@@ -540,21 +496,24 @@ void NetworkIconImpl::GenerateImage(const NetworkState* network) {
 // Public interface
 
 gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
-                                  IconType icon_type) {
-  DCHECK(network);
-  // Handle connecting icons.
+                                  ResourceColorTheme color,
+                                  AnimationObserver* observer) {
   if (network->IsConnectingState()) {
-    NetworkIconAnimation::GetInstance()->AddNetwork(network->path());
-    return GetConnectingImage(network->type(), icon_type);
+    if (observer)
+      NetworkIconAnimation::GetInstance()->AddObserver(observer);
+    return GetConnectingImage(network->type(), color);
   }
-  NetworkIconAnimation::GetInstance()->RemoveNetwork(network->path());
+  // Not connecting, remove observer.
+  if (observer)
+    NetworkIconAnimation::GetInstance()->RemoveObserver(observer);
+
+  NetworkIconMap* icon_map = GetIconMap(color);
 
   // Find or add the icon.
-  NetworkIconMap* icon_map = GetIconMap(icon_type);
   NetworkIconImpl* icon;
   NetworkIconMap::iterator iter = icon_map->find(network->path());
   if (iter == icon_map->end()) {
-    icon = new NetworkIconImpl(icon_type);
+    icon = new NetworkIconImpl(network->path(), color);
     icon_map->insert(std::make_pair(network->path(), icon));
   } else {
     icon = iter->second;
@@ -563,38 +522,6 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
   // Update and return the icon's image.
   icon->Update(network);
   return icon->image();
-}
-
-gfx::ImageSkia GetImageForConnectingNetwork(IconType icon_type,
-                                            const std::string& network_type) {
-  return GetConnectingImage(network_type, icon_type);
-}
-
-gfx::ImageSkia GetImageForDisconnectedNetwork(IconType icon_type,
-                                              const std::string& network_type) {
-  return GetDisconnectedImage(network_type, icon_type);
-}
-
-string16 GetLabelForNetwork(const chromeos::NetworkState* network,
-                            IconType icon_type) {
-  DCHECK(network);
-  if (icon_type == ICON_TYPE_LIST) {
-    if (network->IsConnectingState()) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING,
-          UTF8ToUTF16(network->name()));
-    }
-  } else {
-    if (network->IsConnectedState()) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED, UTF8ToUTF16(network->name()));
-    }
-    if (network->IsConnectingState()) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING, UTF8ToUTF16(network->name()));
-    }
-  }
-  return UTF8ToUTF16(network->name());
 }
 
 }  // namespace network_icon
