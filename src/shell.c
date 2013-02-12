@@ -1672,6 +1672,13 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 			center_on_output(surface, shsurf->fullscreen_output);
 		break;
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE:
+		/* 1:1 mapping between surface and output dimensions */
+		if (output->width == surface->geometry.width &&
+		    output->height == surface->geometry.height) {
+			weston_surface_set_position(surface, output->x, output->y);
+			break;
+		}
+
 		matrix = &shsurf->fullscreen.transform.matrix;
 		weston_matrix_init(matrix);
 
