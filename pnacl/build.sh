@@ -256,7 +256,7 @@ SBTC_ARCHES_LLVM=$(get-sbtc-llvm-arches)
 
 # Current milestones in each repo
 readonly BINUTILS_REV=95a4e0cd6450
-readonly GOLD_REV=f2ca0db273bb
+readonly GOLD_REV=cd15b5f3d124
 
 # Repositories
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
