@@ -18,8 +18,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 
-using base::FilePath;
-
 namespace {
 
 const FilePath::CharType kExtensionSeparator = FILE_PATH_LITERAL('.');

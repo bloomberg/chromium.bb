@@ -11,7 +11,7 @@
 
 namespace file_util {
 
-bool GetFileSystemType(const base::FilePath& path, FileSystemType* type) {
+bool GetFileSystemType(const FilePath& path, FileSystemType* type) {
   struct statfs statfs_buf;
   if (statfs(path.value().c_str(), &statfs_buf) < 0) {
     if (errno == ENOENT)
