@@ -28,28 +28,21 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
-void NaCl_page_free(void     *p,
-                    size_t   size) {
+void NaClPageFree(void *p, size_t size) {
   if (p == 0 || size == 0)
     return;
   if (munmap(p, size) != 0) {
-    NaClLog(LOG_FATAL, "NaCl_page_free: munmap() failed");
+    NaClLog(LOG_FATAL, "NaClPageFree: munmap() failed");
   }
 }
 
-/*
- * NaCl_page_alloc_intern_flags
- */
-static
-int NaCl_page_alloc_intern_flags(void   **p,
-                                 size_t size,
-                                 int    map_flags) {
+static int NaClPageAllocInternalFlags(void **p, size_t size, int map_flags) {
   void *addr;
 
   map_flags |= MAP_PRIVATE | MAP_ANONYMOUS;
 
   NaClLog(4,
-          "sel_memory: NaCl_page_alloc_intern:"
+          "NaClPageAllocInternalFlags:"
           " mmap(%p, %"NACL_PRIxS", %#x, %#x, %d, %"NACL_PRIdNACL_OFF64")\n",
           *p, size, PROT_NONE, map_flags, -1,
           (nacl_abi_off64_t) 0);
@@ -64,15 +57,13 @@ int NaCl_page_alloc_intern_flags(void   **p,
 }
 
 /*
- * Note that NaCl_page_alloc does not allocate pages that satisify
+ * Note that NaClPageAlloc does not allocate pages that satisify
  * NaClIsAllocPageMultiple.  On linux/osx, the system does not impose
  * any such restrictions, and we only need to enforce the restriction
  * on NaCl app code to ensure that the app code is portable across all
  * host OSes.
  */
-static
-int NaCl_page_alloc_intern(void   **p,
-                           size_t size) {
+static int NaClPageAllocInternal(void **p, size_t size) {
   int map_flags = 0;
 
   if (NULL != *p) {
@@ -96,14 +87,13 @@ int NaCl_page_alloc_intern(void   **p,
 #else
 # error This file should be included only by Linux and (surprisingly) OS X.
 #endif
-  return NaCl_page_alloc_intern_flags(p, size, map_flags);
+  return NaClPageAllocInternalFlags(p, size, map_flags);
 }
 
 /*
  * Pick a "hint" address that is random.
  */
-int NaCl_page_alloc_randomized(void   **p,
-                               size_t size) {
+int NaClPageAllocRandomized(void **p, size_t size) {
   uintptr_t       addr;
   int             neg_errno = -ENOMEM;  /* in case we change kNumTries to 0 */
   int             tries;
@@ -115,13 +105,13 @@ int NaCl_page_alloc_randomized(void   **p,
   for (tries = 0; tries < kNumTries; ++tries) {
 #if NACL_HOST_WORDSIZE == 32
     addr = NaClGlobalSecureRngUint32();
-    NaClLog(2, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n", addr);
+    NaClLog(2, "NaClPageAllocRandomized: 0x%"NACL_PRIxPTR"\n", addr);
     /* linux permits 3-4 GB of user address space */
     *p = (void *) (addr & ~((uintptr_t) NACL_MAP_PAGESIZE - 1)
                    & ((~(uintptr_t) 0) >> 1));
 #elif NACL_HOST_WORDSIZE == 64
     addr = NaClGlobalSecureRngUint32();
-    NaClLog(2, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n", addr);
+    NaClLog(2, "NaClPageAllocRandomized: 0x%"NACL_PRIxPTR"\n", addr);
     /*
      * linux permits 128 TB of user address space, and we keep the low
      * 16 bits free (64K alignment to match Windows), so we have
@@ -133,38 +123,36 @@ int NaCl_page_alloc_randomized(void   **p,
 # error "where am i?"
 #endif
 
-    NaClLog(2, "NaCl_page_alloc_randomized: hint 0x%"NACL_PRIxPTR"\n",
+    NaClLog(2, "NaClPageAllocRandomized: hint 0x%"NACL_PRIxPTR"\n",
             (uintptr_t) *p);
-    neg_errno = NaCl_page_alloc_intern_flags(p, size, 0);
+    neg_errno = NaClPageAllocInternalFlags(p, size, 0);
     if (0 == neg_errno) {
       break;
     }
   }
   if (0 != neg_errno) {
     NaClLog(LOG_INFO,
-            "NaCl_page_alloc_randomized: failed (%d), dropping hints\n",
+            "NaClPageAllocRandomized: failed (%d), dropping hints\n",
             -neg_errno);
     *p = 0;
-    neg_errno = NaCl_page_alloc_intern_flags(p, size, 0);
+    neg_errno = NaClPageAllocInternalFlags(p, size, 0);
   }
   return neg_errno;
 }
 
-int NaCl_page_alloc(void   **p,
-                    size_t size) {
+int NaClPageAlloc(void **p, size_t size) {
   void *addr = NULL;
   int rv;
 
-  if (0 == (rv = NaCl_page_alloc_intern(&addr, size))) {
+  if (0 == (rv = NaClPageAllocInternal(&addr, size))) {
     *p = addr;
   }
 
   return rv;
 }
 
-int NaCl_page_alloc_at_addr(void   **p,
-                            size_t size) {
-  return NaCl_page_alloc_intern(p, size);
+int NaClPageAllocAtAddr(void **p, size_t size) {
+  return NaClPageAllocInternal(p, size);
 }
 
 /*
@@ -172,18 +160,14 @@ int NaCl_page_alloc_at_addr(void   **p,
 * region read/write but no exec.  Of course, some kernels do not
 * respect the lack of PROT_EXEC.
 */
-int NaCl_mprotect(void          *addr,
-                  size_t        len,
-                  int           prot) {
+int NaClMprotect(void *addr, size_t len, int prot) {
   int  ret = mprotect(addr, len, prot);
 
   return ret == -1 ? -errno : ret;
 }
 
 
-int NaCl_madvise(void           *start,
-                 size_t         length,
-                 int            advice) {
+int NaClMadvise(void *start, size_t length, int advice) {
   int ret = madvise(start, length, advice);
 
   /*

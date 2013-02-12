@@ -121,8 +121,8 @@ static Bool SerializeAllProcessors(void) {
 
   int size = NACL_MAP_PAGESIZE;
   if (NULL == g_squashybuffer) {
-    if ((0 != NaCl_page_alloc(&g_squashybuffer, size)) ||
-        (0 != NaCl_mprotect(g_squashybuffer, size, PROT_READ|PROT_WRITE))) {
+    if ((0 != NaClPageAlloc(&g_squashybuffer, size)) ||
+        (0 != NaClMprotect(g_squashybuffer, size, PROT_READ|PROT_WRITE))) {
       NaClLog(0,
               ("SerializeAllProcessors: initial squashybuffer allocation"
                " failed\n"));
@@ -134,7 +134,7 @@ static Bool SerializeAllProcessors(void) {
     NaClLog(0, "SerializeAllProcessors: g_firstbyte is %d\n", g_firstbyte);
   }
 
-  if ((0 != NaCl_mprotect(g_squashybuffer, size, PROT_READ|PROT_EXEC))) {
+  if ((0 != NaClMprotect(g_squashybuffer, size, PROT_READ|PROT_EXEC))) {
     NaClLog(0,
             ("SerializeAllProcessors: interprocessor interrupt"
              " generation failed: could not reverse shield polarity (1)\n"));
@@ -155,10 +155,10 @@ static Bool SerializeAllProcessors(void) {
   }
   /*
    * We would like to set the protection to PROT_NONE, but on Windows
-   * there's an ugly hack in NaCl_mprotect where PROT_NONE can result
+   * there's an ugly hack in NaClMprotect where PROT_NONE can result
    * in MEM_DECOMMIT, causing the contents of the page(s) to be lost!
    */
-  if (0 != NaCl_mprotect(g_squashybuffer, size, PROT_READ)) {
+  if (0 != NaClMprotect(g_squashybuffer, size, PROT_READ)) {
     NaClLog(0,
             ("SerializeAllProcessors: interprocessor interrupt"
              " generation failed: could not reverse shield polarity (3)\n"));

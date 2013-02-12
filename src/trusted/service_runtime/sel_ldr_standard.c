@@ -310,9 +310,9 @@ NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
    * to write them.
    */
   NaClLog(2, "Loading into memory\n");
-  ret = NaCl_mprotect((void *) (nap->mem_start + NACL_TRAMPOLINE_START),
-                      NaClRoundAllocPage(nap->data_end) - NACL_TRAMPOLINE_START,
-                      PROT_READ | PROT_WRITE);
+  ret = NaClMprotect((void *) (nap->mem_start + NACL_TRAMPOLINE_START),
+                     NaClRoundAllocPage(nap->data_end) - NACL_TRAMPOLINE_START,
+                     PROT_READ | PROT_WRITE);
   if (0 != ret) {
     NaClLog(LOG_FATAL,
             "NaClAppLoadFile: Failed to make image pages writable. "

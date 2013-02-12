@@ -32,10 +32,9 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
   size_t                thunk_size = ((uintptr_t) &NaClPcrelThunk_end
                                       - (uintptr_t) &NaClPcrelThunk);
 
-  if (0 != (error = NaCl_page_alloc_randomized(&thunk_addr,
-                                               NACL_MAP_PAGESIZE))) {
+  if (0 != (error = NaClPageAllocRandomized(&thunk_addr, NACL_MAP_PAGESIZE))) {
     NaClLog(LOG_INFO,
-            "NaClMakePcrelThunk::NaCl_page_alloc failed, errno %d\n",
+            "NaClMakePcrelThunk::NaClPageAlloc failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
@@ -43,11 +42,11 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
   NaClLog(2, "NaClMakePcrelThunk: got addr 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) thunk_addr);
 
-  if (0 != (error = NaCl_mprotect(thunk_addr,
-                                  NACL_MAP_PAGESIZE,
-                                  PROT_READ | PROT_WRITE))) {
+  if (0 != (error = NaClMprotect(thunk_addr,
+                                 NACL_MAP_PAGESIZE,
+                                 PROT_READ | PROT_WRITE))) {
     NaClLog(LOG_INFO,
-            "NaClMakePcrelThunk::NaCl_mprotect failed, errno %d\n",
+            "NaClMakePcrelThunk::NaClMprotect failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
@@ -76,11 +75,11 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
 
   NaClApplyPatchToMemory(&patch_info);
 
-  if (0 != (error = NaCl_mprotect(thunk_addr,
-                                  NACL_MAP_PAGESIZE,
-                                  PROT_EXEC|PROT_READ))) {
+  if (0 != (error = NaClMprotect(thunk_addr,
+                                 NACL_MAP_PAGESIZE,
+                                 PROT_EXEC|PROT_READ))) {
     NaClLog(LOG_INFO,
-            "NaClMakePcrelThunk::NaCl_mprotect failed, errno %d\n",
+            "NaClMakePcrelThunk::NaClMprotect failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
@@ -89,7 +88,7 @@ int NaClMakePcrelThunk(struct NaClApp *nap) {
 cleanup:
   if (0 == retval) {
     if (NULL != thunk_addr) {
-      NaCl_page_free(thunk_addr, NACL_MAP_PAGESIZE);
+      NaClPageFree(thunk_addr, NACL_MAP_PAGESIZE);
       thunk_addr = NULL;
     }
   } else {

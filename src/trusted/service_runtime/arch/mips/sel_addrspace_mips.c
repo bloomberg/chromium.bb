@@ -56,11 +56,11 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
    */
   CHECK(*mem == NULL);
   addrsp_size -= NACL_TRAMPOLINE_START;
-  result = NaCl_page_alloc_at_addr(&tmp_mem, addrsp_size);
+  result = NaClPageAllocAtAddr(&tmp_mem, addrsp_size);
 
   if (0 != result) {
     NaClLog(2,
-            "NaClAllocateSpace: NaCl_page_alloc_at_addr 0x%08"NACL_PRIxPTR
+            "NaClAllocateSpace: NaClPageAllocAtAddr 0x%08"NACL_PRIxPTR
             " failed\n",
             (uintptr_t) tmp_mem);
     return LOAD_NO_MEMORY;

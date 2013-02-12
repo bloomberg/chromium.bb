@@ -17,13 +17,13 @@ void run_check(void) {
   int error;
   void* page;
   int size = NACL_MAP_PAGESIZE;
-  if (0 != (error = NaCl_page_alloc(&page, size))) {
+  if (0 != (error = NaClPageAlloc(&page, size))) {
     errno = -error;
-    perror("NaCl_page_alloc");
+    perror("NaClPageAlloc");
     abort();
   }
 
-  NaCl_page_free(page, size);
+  NaClPageFree(page, size);
 }
 
 int main(int argc, char* argv[]) {

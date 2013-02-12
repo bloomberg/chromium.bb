@@ -163,10 +163,10 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
       void *tmp_mem = (void *) NACL_TRAMPOLINE_START;
       CHECK(*mem == 0);
       mem_sz -= NACL_TRAMPOLINE_START;
-      result = NaCl_page_alloc_at_addr(&tmp_mem, mem_sz);
+      result = NaClPageAllocAtAddr(&tmp_mem, mem_sz);
       if (0 != result) {
         NaClLog(2,
-                "NaClAllocateSpace: NaCl_page_alloc 0x%08"NACL_PRIxPTR
+                "NaClAllocateSpace: NaClPageAlloc 0x%08"NACL_PRIxPTR
                 " failed\n",
                 (uintptr_t) *mem);
         return LOAD_NO_MEMORY;

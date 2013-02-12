@@ -21,8 +21,8 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
                                     enum NaClAslrMode aslr_mode) {
   int result;
   int (*allocator)(void **, size_t) = ((NACL_ENABLE_ASLR == aslr_mode) ?
-                                       NaCl_page_alloc_randomized :
-                                       NaCl_page_alloc);
+                                       NaClPageAllocRandomized :
+                                       NaClPageAlloc);
 
   CHECK(NULL != mem);
 
@@ -40,7 +40,7 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
     void *tmp_mem = (void *) NACL_TRAMPOLINE_START;
     CHECK(*mem == 0);
     addrsp_size -= NACL_TRAMPOLINE_START;
-    result = NaCl_page_alloc_at_addr(&tmp_mem, addrsp_size);
+    result = NaClPageAllocAtAddr(&tmp_mem, addrsp_size);
   } else {
     /* Zero-based sandbox not prereserved. Attempt to allocate anyway. */
     result = (*allocator)(mem, addrsp_size);
@@ -53,7 +53,7 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
    * allocation function.
    */
   if (0 == NaClFindPrereservedSandboxMemory(mem, addrsp_size)) {
-    result = NaCl_page_alloc_at_addr(mem, addrsp_size);
+    result = NaClPageAllocAtAddr(mem, addrsp_size);
   } else {
     result = (*allocator)(mem, addrsp_size);
   }
@@ -63,7 +63,7 @@ NaClErrorCode NaClAllocateSpaceAslr(void **mem, size_t addrsp_size,
 
   if (0 != result) {
     NaClLog(2,
-        "NaClAllocateSpace: NaCl_page_alloc 0x%08"NACL_PRIxPTR
+        "NaClAllocateSpace: NaClPageAlloc 0x%08"NACL_PRIxPTR
         " failed\n",
         (uintptr_t) *mem);
     return LOAD_NO_MEMORY;

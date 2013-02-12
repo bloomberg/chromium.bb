@@ -30,18 +30,18 @@
 void TestDEPCheckFailurePath(void) {
   size_t size = NACL_PAGESIZE;
   void *page;
-  CHECK(NaCl_page_alloc(&page, size) == 0);
+  CHECK(NaClPageAlloc(&page, size) == 0);
 
-  CHECK(NaCl_mprotect(page, size, PROT_READ | PROT_WRITE | PROT_EXEC) == 0);
+  CHECK(NaClMprotect(page, size, PROT_READ | PROT_WRITE | PROT_EXEC) == 0);
   CHECK(!NaClAttemptToExecuteDataAtAddr(page, size));
 
   /* DEP is not guaranteed to work on x86-32. */
   if (!(NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32)) {
-    CHECK(NaCl_mprotect(page, size, PROT_READ | PROT_WRITE) == 0);
+    CHECK(NaClMprotect(page, size, PROT_READ | PROT_WRITE) == 0);
     CHECK(NaClAttemptToExecuteDataAtAddr(page, size));
   }
 
-  NaCl_page_free(page, size);
+  NaClPageFree(page, size);
 }
 
 int main(void) {

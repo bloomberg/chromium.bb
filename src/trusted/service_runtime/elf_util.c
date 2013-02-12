@@ -722,7 +722,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
 
       if (0 == (php->p_flags & PF_W)) {
         /* Handle read-only data segment. */
-        int rc = NaCl_mprotect(paddr, mapping_size, NACL_ABI_PROT_READ);
+        int rc = NaClMprotect(paddr, mapping_size, NACL_ABI_PROT_READ);
         if (0 != rc) {
           NaClLog(LOG_ERROR, "NaClElfImageLoadDynamically: "
                   "failed to mprotect read-only data segment\n");

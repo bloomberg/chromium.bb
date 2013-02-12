@@ -24,12 +24,11 @@
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
 /*
- * NaCl_page_free: free pages allocated with NaCl_page_alloc.
+ * NaClPageFree: free pages allocated with NaClPageAlloc.
  * Must start at allocation granularity (NACL_MAP_PAGESIZE) and
  * number of bytes must be a multiple of allocation granularity.
  */
-void  NaCl_page_free(void     *p,
-                     size_t   num_bytes) {
+void NaClPageFree(void *p, size_t num_bytes) {
   void  *end_addr;
 
   end_addr = (void *) (((char *) p) + num_bytes);
@@ -37,7 +36,7 @@ void  NaCl_page_free(void     *p,
     if (!VirtualFree(p, 0, MEM_RELEASE)) {
       DWORD err = GetLastError();
       NaClLog(LOG_FATAL,
-              "NaCl_page_free: VirtualFree(0x%016"NACL_PRIxPTR
+              "NaClPageFree: VirtualFree(0x%016"NACL_PRIxPTR
               ", 0, MEM_RELEASE) failed "
               "with error 0x%X\n",
               (uintptr_t) p, err);
@@ -47,8 +46,7 @@ void  NaCl_page_free(void     *p,
 }
 
 
-int   NaCl_page_alloc_at_addr(void    **p,
-                              size_t  num_bytes) {
+int NaClPageAllocAtAddr(void **p, size_t num_bytes) {
   SYSTEM_INFO sys_info;
 
   int         attempt_count;
@@ -80,7 +78,7 @@ int   NaCl_page_alloc_at_addr(void    **p,
    * these smaller allocations fail, we roll back and try again.
    */
 
-  NaClLog(3, "NaCl_page_alloc(*, 0x%"NACL_PRIxS")\n", num_bytes);
+  NaClLog(3, "NaClPageAlloc(*, 0x%"NACL_PRIxS")\n", num_bytes);
   GetSystemInfo(&sys_info);
   if (NACL_PAGESIZE != sys_info.dwPageSize) {
     NaClLog(2, "page size is 0x%x; expected 0x%x\n",
@@ -95,7 +93,7 @@ int   NaCl_page_alloc_at_addr(void    **p,
 
   /*
    * Round allocation request up to next NACL_MAP_PAGESIZE.  This is
-   * assumed to have taken place in NaCl_page_free.
+   * assumed to have taken place in NaClPageFree.
    */
   num_bytes = NaClRoundAllocPage(num_bytes);
 
@@ -106,12 +104,12 @@ int   NaCl_page_alloc_at_addr(void    **p,
     addr = VirtualAlloc(hint, num_bytes, MEM_RESERVE, PAGE_NOACCESS);
     if (addr == NULL) {
       NaClLog(LOG_ERROR,
-              "NaCl_page_alloc: VirtualAlloc(*,0x%"NACL_PRIxS") failed\n",
+              "NaClPageAlloc: VirtualAlloc(*,0x%"NACL_PRIxS") failed\n",
               num_bytes);
       return -ENOMEM;
     }
     NaClLog(3,
-            ("NaCl_page_alloc:"
+            ("NaClPageAlloc:"
              "  VirtualAlloc(*,0x%"NACL_PRIxS")"
              " succeeded, 0x%016"NACL_PRIxPTR","
              " releasing and re-allocating in 64K chunks....\n"),
@@ -130,7 +128,7 @@ int   NaCl_page_alloc_at_addr(void    **p,
                                MEM_RESERVE,
                                PAGE_NOACCESS)) {
         NaClLog(LOG_ERROR,
-                ("NaCl_page_alloc: re-allocation failed at "
+                ("NaClPageAlloc: re-allocation failed at "
                  "0x%016"NACL_PRIxPTR","
                  " error %d\n"),
                 (uintptr_t) chunk, GetLastError());
@@ -144,30 +142,28 @@ int   NaCl_page_alloc_at_addr(void    **p,
       }
     }
     NaClLog(2,
-            ("NaCl_page_alloc: *p = 0x%016"NACL_PRIxPTR","
+            ("NaClPageAlloc: *p = 0x%016"NACL_PRIxPTR","
              " returning success.\n"),
             (uintptr_t) addr);
     *p = addr;
     return 0;
  retry:
-    NaClLog(2, "NaCl_page_alloc_at_addr: retrying w/o hint\n");
+    NaClLog(2, "NaClPageAllocAtAddr: retrying w/o hint\n");
     hint = NULL;
   }
 
   return -ENOMEM;
 }
 
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes) {
+int NaClPageAlloc(void **p, size_t num_bytes) {
   *p = NULL;
-  return NaCl_page_alloc_at_addr(p, num_bytes);
+  return NaClPageAllocAtAddr(p, num_bytes);
 }
 
 /*
  * Pick a "hint" address that is random.
  */
-int NaCl_page_alloc_randomized(void   **p,
-                               size_t num_bytes) {
+int NaClPageAllocRandomized(void **p, size_t num_bytes) {
   uintptr_t addr;
   int       neg_errno = -ENOMEM;  /* in case we change kNumTries to 0 */
   int       tries;
@@ -176,7 +172,7 @@ int NaCl_page_alloc_randomized(void   **p,
   for (tries = 0; tries < kNumTries; ++tries) {
 #if NACL_HOST_WORDSIZE == 32
     addr = NaClGlobalSecureRngUint32();
-    NaClLog(2, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n", addr);
+    NaClLog(2, "NaClPageAllocRandomized: 0x%"NACL_PRIxPTR"\n", addr);
     /*
      * Windows permits 2-3 GB of user address space, depending on
      * 4-gigabyte tuning (4GT) parameter.  We ask for somewhere in the
@@ -186,7 +182,7 @@ int NaCl_page_alloc_randomized(void   **p,
                    & ((~(uintptr_t) 0) >> 1));
 #elif NACL_HOST_WORDSIZE == 64
     addr = NaClGlobalSecureRngUint32();
-    NaClLog(2, "NaCl_page_alloc_randomized: 0x%"NACL_PRIxPTR"\n", addr);
+    NaClLog(2, "NaClPageAllocRandomized: 0x%"NACL_PRIxPTR"\n", addr);
     /*
      * 64-bit windows permits 8 TB of user address space, and we keep
      * the low 16 bits free (64K alignment), so we just have 43-16=27
@@ -198,19 +194,19 @@ int NaCl_page_alloc_randomized(void   **p,
 # error "where am i?"
 #endif
 
-    NaClLog(2, "NaCl_page_alloc_randomized: hint 0x%"NACL_PRIxPTR"\n",
+    NaClLog(2, "NaClPageAllocRandomized: hint 0x%"NACL_PRIxPTR"\n",
             (uintptr_t) *p);
-    neg_errno = NaCl_page_alloc_at_addr(p, num_bytes);
+    neg_errno = NaClPageAllocAtAddr(p, num_bytes);
     if (0 == neg_errno) {
       break;
     }
   }
   if (0 != neg_errno) {
     NaClLog(LOG_INFO,
-            "NaCl_page_alloc_randomized: failed (%d), dropping hints\n",
+            "NaClPageAllocRandomized: failed (%d), dropping hints\n",
             -neg_errno);
     *p = 0;
-    neg_errno = NaCl_page_alloc_at_addr(p, num_bytes);
+    neg_errno = NaClPageAllocAtAddr(p, num_bytes);
   }
   return neg_errno;
 }
@@ -232,9 +228,7 @@ uintptr_t NaClProtectChunkSize(uintptr_t start,
  * region read/write but no exec.  Of course, some kernels do not
  * respect the lack of PROT_EXEC.
  */
-int   NaCl_mprotect(void          *addr,
-                    size_t        len,
-                    int           prot) {
+int NaClMprotect(void *addr, size_t len, int prot) {
   uintptr_t start_addr;
   uintptr_t end_addr;
   uintptr_t cur_addr;
@@ -243,7 +237,7 @@ int   NaCl_mprotect(void          *addr,
   BOOL      res;
   int       xlated_res;
 
-  NaClLog(2, "NaCl_mprotect(0x%016"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
+  NaClLog(2, "NaClMprotect(0x%016"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
           (uintptr_t) addr, len, prot);
 
   if (len == 0) {
@@ -252,11 +246,11 @@ int   NaCl_mprotect(void          *addr,
 
   start_addr = (uintptr_t) addr;
   if (!NaClIsPageMultiple(start_addr)) {
-    NaClLog(2, "NaCl_mprotect: start address not a multiple of page size\n");
+    NaClLog(2, "NaClMprotect: start address not a multiple of page size\n");
     return -EINVAL;
   }
   if (!NaClIsPageMultiple(len)) {
-    NaClLog(2, "NaCl_mprotect: length not a multiple of page size\n");
+    NaClLog(2, "NaClMprotect: length not a multiple of page size\n");
     return -EINVAL;
   }
   end_addr = start_addr + len;
@@ -287,11 +281,11 @@ int   NaCl_mprotect(void          *addr,
       break;
     }
     default: {
-      NaClLog(2, "NaCl_mprotect: invalid protection mode\n");
+      NaClLog(2, "NaClMprotect: invalid protection mode\n");
       return -EINVAL;
     }
   }
-  NaClLog(2, "NaCl_mprotect: newProtection = 0x%x\n", newProtection);
+  NaClLog(2, "NaClMprotect: newProtection = 0x%x\n", newProtection);
   /*
    * VirtualProtect region cannot span allocations: all addresses from
    * [lpAddress, lpAddress+dwSize) must be in one region of memory
@@ -303,7 +297,7 @@ int   NaCl_mprotect(void          *addr,
        cur_addr += cur_chunk_size,
            cur_chunk_size = NaClProtectChunkSize(cur_addr, end_addr)) {
     NaClLog(5,
-            "NaCl_mprotect: VirtualProtect(0x%016"NACL_PRIxPTR","
+            "NaClMprotect: VirtualProtect(0x%016"NACL_PRIxPTR","
             " 0x%"NACL_PRIxPTR", 0x%x, *)\n",
             cur_addr, cur_chunk_size, newProtection);
 
@@ -314,13 +308,13 @@ int   NaCl_mprotect(void          *addr,
                            &oldProtection);
       if (!res) {
         void *p;
-        NaClLog(5, "NaCl_mprotect: ... failed; trying VirtualAlloc instead\n");
+        NaClLog(5, "NaClMprotect: ... failed; trying VirtualAlloc instead\n");
         p = VirtualAlloc((void*) cur_addr,
                          cur_chunk_size,
                          MEM_COMMIT,
                          newProtection);
         if (p != (void*) cur_addr) {
-          NaClLog(2, "NaCl_mprotect: ... failed\n");
+          NaClLog(2, "NaClMprotect: ... failed\n");
           return -NaClXlateSystemError(GetLastError());
         }
       }
@@ -332,19 +326,17 @@ int   NaCl_mprotect(void          *addr,
        */
       if (!VirtualFree((void *) cur_addr, cur_chunk_size, MEM_DECOMMIT)) {
         xlated_res = NaClXlateSystemError(GetLastError());
-        NaClLog(2, "NaCl_mprotect: VirtualFree failed: 0x%x\n", xlated_res);
+        NaClLog(2, "NaClMprotect: VirtualFree failed: 0x%x\n", xlated_res);
         return -xlated_res;
       }
     }
   }
-  NaClLog(2, "NaCl_mprotect: done\n");
+  NaClLog(2, "NaClMprotect: done\n");
   return 0;
 }
 
 
-int   NaCl_madvise(void           *start,
-                   size_t         length,
-                   int            advice) {
+int NaClMadvise(void *start, size_t length, int advice) {
   int       err;
   uintptr_t start_addr;
   uintptr_t end_addr;
@@ -354,18 +346,18 @@ int   NaCl_madvise(void           *start,
   /*
    * MADV_DONTNEED and MADV_NORMAL are needed
    */
-  NaClLog(5, "NaCl_madvise(0x%016"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
+  NaClLog(5, "NaClMadvise(0x%016"NACL_PRIxPTR", 0x%"NACL_PRIxS", 0x%x)\n",
           (uintptr_t) start, length, advice);
   switch (advice) {
     case MADV_DONTNEED:
       start_addr = (uintptr_t) start;
       if (!NaClIsPageMultiple(start_addr)) {
         NaClLog(2,
-                "NaCl_madvise: start address not a multiple of page size\n");
+                "NaClMadvise: start address not a multiple of page size\n");
         return -EINVAL;
       }
       if (!NaClIsPageMultiple(length)) {
-        NaClLog(2, "NaCl_madvise: length not a multiple of page size\n");
+        NaClLog(2, "NaClMadvise: length not a multiple of page size\n");
         return -EINVAL;
       }
       end_addr = start_addr + length;
@@ -375,7 +367,7 @@ int   NaCl_madvise(void           *start,
            cur_addr += cur_chunk_size,
                cur_chunk_size = NaClProtectChunkSize(cur_addr, end_addr)) {
         NaClLog(5,
-                ("NaCl_madvise: MADV_DONTNEED"
+                ("NaClMadvise: MADV_DONTNEED"
                  " -> VirtualAlloc(0x%016"NACL_PRIxPTR","
                  " 0x%"NACL_PRIxPTR", MEM_RESET, PAGE_NOACCESS)\n"),
                 cur_addr, cur_chunk_size);
@@ -389,7 +381,7 @@ int   NaCl_madvise(void           *start,
         if (NULL == VirtualAlloc((void *) cur_addr,
                                  cur_chunk_size, MEM_RESET, PAGE_READONLY)) {
           err = NaClXlateSystemError(GetLastError());
-          NaClLog(2, "NaCl_madvise: VirtualFree failed: 0x%x\n", err);
+          NaClLog(2, "NaClMadvise: VirtualFree failed: 0x%x\n", err);
           return -err;
         }
       }
@@ -400,6 +392,6 @@ int   NaCl_madvise(void           *start,
     default:
       return -EINVAL;
   }
-  NaClLog(5, "NaCl_madvise: done\n");
+  NaClLog(5, "NaClMadvise: done\n");
   return 0;
 }

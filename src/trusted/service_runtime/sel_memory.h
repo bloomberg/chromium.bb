@@ -17,25 +17,17 @@
 extern "C" {
 #endif /* __cplusplus */
 
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes) NACL_WUR;
+int NaClPageAlloc(void **p, size_t num_bytes) NACL_WUR;
 
-int   NaCl_page_alloc_randomized(void   **p,
-                                 size_t num_bytes) NACL_WUR;
+int NaClPageAllocRandomized(void **p, size_t num_bytes) NACL_WUR;
 
-int   NaCl_page_alloc_at_addr(void    **p,
-                              size_t  num_bytes) NACL_WUR;
+int NaClPageAllocAtAddr(void **p, size_t num_bytes) NACL_WUR;
 
-void  NaCl_page_free(void     *p,
-                     size_t   num_bytes);
+void NaClPageFree(void *p, size_t num_bytes);
 
-int   NaCl_mprotect(void          *addr,
-                    size_t        len,
-                    int           prot) NACL_WUR;
+int NaClMprotect(void *addr, size_t len, int prot) NACL_WUR;
 
-int   NaCl_madvise(void           *start,
-                   size_t         length,
-                   int            advice) NACL_WUR;
+int NaClMadvise(void *start, size_t length, int advice) NACL_WUR;
 
 #ifdef __cplusplus
 }

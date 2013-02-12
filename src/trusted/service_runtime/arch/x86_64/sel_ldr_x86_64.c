@@ -54,10 +54,9 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
     return 1;
   }
 
-  if (0 != (error = NaCl_page_alloc_randomized(&thunk_addr,
-                                               NACL_MAP_PAGESIZE))) {
+  if (0 != (error = NaClPageAllocRandomized(&thunk_addr, NACL_MAP_PAGESIZE))) {
     NaClLog(LOG_INFO,
-            "NaClMakeDispatchThunk::NaCl_page_alloc failed, errno %d\n",
+            "NaClMakeDispatchThunk::NaClPageAlloc failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
@@ -65,11 +64,11 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
   NaClLog(2, "NaClMakeDispatchThunk: got addr 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) thunk_addr);
 
-  if (0 != (error = NaCl_mprotect(thunk_addr,
-                                  NACL_MAP_PAGESIZE,
-                                  PROT_READ | PROT_WRITE))) {
+  if (0 != (error = NaClMprotect(thunk_addr,
+                                 NACL_MAP_PAGESIZE,
+                                 PROT_READ | PROT_WRITE))) {
     NaClLog(LOG_INFO,
-            "NaClMakeDispatchThunk::NaCl_mprotect r/w failed, errno %d\n",
+            "NaClMakeDispatchThunk::NaClMprotect r/w failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
@@ -84,11 +83,11 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
   get_tls_fast_path2 =
       AddDispatchThunk(&next_addr, (uintptr_t) &NaClGetTlsFastPath2);
 
-  if (0 != (error = NaCl_mprotect(thunk_addr,
-                                  NACL_MAP_PAGESIZE,
-                                  PROT_EXEC|PROT_READ))) {
+  if (0 != (error = NaClMprotect(thunk_addr,
+                                 NACL_MAP_PAGESIZE,
+                                 PROT_EXEC|PROT_READ))) {
     NaClLog(LOG_INFO,
-            "NaClMakeDispatchThunk::NaCl_mprotect r/x failed, errno %d\n",
+            "NaClMakeDispatchThunk::NaClMprotect r/x failed, errno %d\n",
             -error);
     retval = 0;
     goto cleanup;
@@ -97,7 +96,7 @@ int NaClMakeDispatchThunk(struct NaClApp *nap) {
  cleanup:
   if (0 == retval) {
     if (NULL != thunk_addr) {
-      NaCl_page_free(thunk_addr, NACL_MAP_PAGESIZE);
+      NaClPageFree(thunk_addr, NACL_MAP_PAGESIZE);
       thunk_addr = NULL;
     }
   } else {

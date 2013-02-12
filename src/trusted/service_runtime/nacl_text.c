@@ -127,7 +127,7 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   text_sysaddr = NaClUserToSys(nap, shm_vaddr_base);
 
   /* Existing memory is anonymous paging file backed. */
-  NaCl_page_free((void *) text_sysaddr, dynamic_text_size);
+  NaClPageFree((void *) text_sysaddr, dynamic_text_size);
 
   /*
    * Unix allows us to map pages with PROT_NONE initially and later
@@ -467,8 +467,8 @@ static void MakeDynamicCodePagesVisible(struct NaClApp *nap,
 
   NaClFillMemoryRegionWithHalt(writable_addr, size);
 
-  if (NaCl_mprotect(user_addr, size, PROT_READ | PROT_EXEC) != 0) {
-    NaClLog(LOG_FATAL, "MakeDynamicCodePageVisible: NaCl_mprotect() failed\n");
+  if (NaClMprotect(user_addr, size, PROT_READ | PROT_EXEC) != 0) {
+    NaClLog(LOG_FATAL, "MakeDynamicCodePageVisible: NaClMprotect() failed\n");
   }
 }
 

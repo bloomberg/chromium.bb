@@ -42,12 +42,12 @@ typedef union {
  */
 static void *Alloc1Page(int flags) {
   void *page;
-  if (NaCl_page_alloc(&page, NACL_PAGESIZE)) {
+  if (NaClPageAlloc(&page, NACL_PAGESIZE)) {
     printf("Failed to allocate page.\n");
     exit(-1);
   }
 
-  if (NaCl_mprotect(page, NACL_PAGESIZE, flags)) {
+  if (NaClMprotect(page, NACL_PAGESIZE, flags)) {
     printf("Failed to set page protection to %d.\n", flags);
     exit(-1);
   }
@@ -56,7 +56,7 @@ static void *Alloc1Page(int flags) {
 }
 
 static void Free1Page(void *page) {
-    NaCl_page_free(page, NACL_PAGESIZE);
+  NaClPageFree(page, NACL_PAGESIZE);
 }
 
 /* Execute a non execute page. */

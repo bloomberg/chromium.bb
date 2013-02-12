@@ -218,9 +218,9 @@ int32_t NaClSysBrk(struct NaClAppThread *natp,
       ent->npages = (last_internal_page - ent->page_num + 1);
       region_size = (((last_internal_page + 1) << NACL_PAGESHIFT)
                      - start_new_region);
-      if (0 != NaCl_mprotect((void *) NaClUserToSys(nap, start_new_region),
-                             region_size,
-                             PROT_READ | PROT_WRITE)) {
+      if (0 != NaClMprotect((void *) NaClUserToSys(nap, start_new_region),
+                            region_size,
+                            PROT_READ | PROT_WRITE)) {
         NaClLog(LOG_FATAL,
                 ("Could not mprotect(0x%08"NACL_PRIxPTR", "
                  "0x%08"NACL_PRIxPTR", "
