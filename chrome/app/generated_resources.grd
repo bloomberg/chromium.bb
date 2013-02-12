@@ -10976,6 +10976,13 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="Title for imperative autofill dialog which asks user to input address + payment info.">
         Submit Payment Details
       </message>
+      <!-- TODO(dbeam): should Google Wallet be wrapped with ph/ex? -->
+      <message name="IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET" desc="This text is shown in a payment method chooser when a user is forced to pay without Google Wallet because the service is unavailable.">
+        Pay without Google Wallet
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET" desc="An error notification shown to users when Google Wallet is found to be unavailable.">
+        <ph name="WALLET_ERROR">$1<ex>Oops, Google Wallet is unavailable at this time.</ex></ph> You can complete this transaction without Google Wallet.
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_EDIT" desc="Text of link in imperative autofill dialog which allows user to edit address + payment info.">
         Edit
       </message>

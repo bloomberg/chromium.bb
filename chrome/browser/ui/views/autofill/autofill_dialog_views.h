@@ -34,6 +34,7 @@ class FocusManager;
 class ImageButton;
 class ImageView;
 class Label;
+class Link;
 class MenuRunner;
 class TextButton;
 class Textfield;
@@ -75,7 +76,6 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual const content::NavigationController& ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
-  virtual void ModelChanged() OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -141,11 +141,15 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(DecoratedTextfield);
   };
 
-  // An area for notifications. Some types of notifications point at stuff.
+  // An area for notifications. Some notifications point at the account chooser.
   class NotificationArea : public views::View {
    public:
     NotificationArea();
     virtual ~NotificationArea();
+
+    void set_arrow_centering_anchor(views::View* arrow_centering_anchor) {
+      arrow_centering_anchor_ = arrow_centering_anchor;
+    }
 
     void SetNotification(const DialogNotification& notification);
 
@@ -155,6 +159,10 @@ class AutofillDialogViews : public AutofillDialogView,
 
    private:
     views::Label* label_;
+
+    // If |notification_.HasArrow()| is true, the arrow should point at this.
+    views::View* arrow_centering_anchor_;  // weak.
+
     DialogNotification notification_;
 
     DISALLOW_COPY_AND_ASSIGN(NotificationArea);
@@ -341,8 +349,8 @@ class AutofillDialogViews : public AutofillDialogView,
   // Runs the suggestion menu (triggered by each section's |suggested_button|.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
-  // The link that initiates the sign in flow.
-  views::Link* sign_in_link_;
+  // A link to allow choosing different accounts to pay with.
+  views::Link* account_chooser_link_;
 
   // View to host the signin dialog and related controls.
   views::View* sign_in_container_;

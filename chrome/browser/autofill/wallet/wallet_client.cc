@@ -264,11 +264,15 @@ void WalletClient::UpdateInstrument(const std::string& instrument_id,
   MakeWalletRequest(GetSaveToWalletUrl(), post_body, observer, kJsonMimeType);
 }
 
+bool WalletClient::HasRequestInProgress() const {
+  return request_.get() != NULL;
+}
+
 void WalletClient::MakeWalletRequest(const GURL& url,
                                      const std::string& post_body,
                                      WalletClientObserver* observer,
                                      const std::string& content_type) {
-  DCHECK(!request_.get()) << "Tried to fetch two things at once!";
+  DCHECK(!HasRequestInProgress());
   DCHECK(observer);
 
   observer_ = observer;

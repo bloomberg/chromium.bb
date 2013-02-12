@@ -806,5 +806,23 @@ TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
+TEST_F(WalletClientTest, HasRequestInProgress) {
+  MockWalletClientObserver observer;
+  net::TestURLFetcherFactory factory;
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  EXPECT_FALSE(wallet_client.HasRequestInProgress());
+
+  wallet_client.GetWalletItems(&observer);
+  EXPECT_TRUE(wallet_client.HasRequestInProgress());
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(kGetWalletItemsValidResponse);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_FALSE(wallet_client.HasRequestInProgress());
+}
+
 }  // namespace wallet
 

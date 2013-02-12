@@ -38,12 +38,12 @@ class AutofillDialogController {
   // Strings -------------------------------------------------------------------
 
   virtual string16 DialogTitle() const = 0;
+  virtual string16 AccountChooserText() const = 0;
   virtual string16 EditSuggestionText() const = 0;
   virtual string16 UseBillingForShippingText() const = 0;
   virtual string16 WalletOptionText() const = 0;
   virtual string16 CancelButtonText() const = 0;
   virtual string16 ConfirmButtonText() const = 0;
-  virtual string16 SignInText() const = 0;
   virtual string16 CancelSignInText() const = 0;
   virtual string16 SaveLocallyText() const = 0;
   virtual string16 ProgressBarText() const = 0;
@@ -52,6 +52,13 @@ class AutofillDialogController {
 
   // Whether the user is known to be signed in.
   virtual DialogSignedInState SignedInState() const = 0;
+
+  // Whether or not Wallet can be used for this transaction. Returns false if
+  // any network/Wallet errors occur while running this dialog.
+  virtual bool CanPayWithWallet() const = 0;
+
+  // Whether the account chooser is enabled (clickable).
+  virtual bool AccountChooserEnabled() const = 0;
 
   // Detail inputs -------------------------------------------------------------
 

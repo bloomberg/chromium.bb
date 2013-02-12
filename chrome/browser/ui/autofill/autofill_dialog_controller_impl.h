@@ -14,7 +14,6 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/autofill/wallet/required_action.h"
 #include "chrome/browser/autofill/wallet/wallet_client.h"
 #include "chrome/browser/autofill/wallet/wallet_client_observer.h"
@@ -47,8 +46,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                      public AutofillPopupDelegate,
                                      public content::NotificationObserver,
                                      public SuggestionsMenuModelDelegate,
-                                     public wallet::WalletClientObserver,
-                                     public PersonalDataManagerObserver {
+                                     public wallet::WalletClientObserver {
  public:
   AutofillDialogControllerImpl(
       content::WebContents* contents,
@@ -61,22 +59,20 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void Show();
   void Hide();
 
-  // Updates the progress bar based on the Autocheckout progress. |value| should
-  // be in [0.0, 1.0].
-  void UpdateProgressBar(double value);
-
   // AutofillDialogController implementation.
   virtual string16 DialogTitle() const OVERRIDE;
+  virtual string16 AccountChooserText() const OVERRIDE;
   virtual string16 EditSuggestionText() const OVERRIDE;
   virtual string16 UseBillingForShippingText() const OVERRIDE;
   virtual string16 WalletOptionText() const OVERRIDE;
   virtual string16 CancelButtonText() const OVERRIDE;
   virtual string16 ConfirmButtonText() const OVERRIDE;
-  virtual string16 SignInText() const OVERRIDE;
   virtual string16 SaveLocallyText() const OVERRIDE;
   virtual string16 CancelSignInText() const OVERRIDE;
   virtual string16 ProgressBarText() const OVERRIDE;
   virtual DialogSignedInState SignedInState() const OVERRIDE;
+  virtual bool CanPayWithWallet() const OVERRIDE;
+  virtual bool AccountChooserEnabled() const OVERRIDE;
   virtual const DetailInputs& RequestedFieldsForSection(DialogSection section)
       const OVERRIDE;
   virtual ui::ComboboxModel* ComboboxModelForAutofillType(
@@ -114,7 +110,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                 int identifier) OVERRIDE;
   virtual void ClearPreviewedForm() OVERRIDE;
 
-  // content::NotificationObserver implementation.
+  // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -144,13 +140,23 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void OnMalformedResponse() OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;
 
-  // PersonalDataManagerObserver implementation.
-  virtual void OnPersonalDataChanged() OVERRIDE;
+  // Updates the progress bar based on the Autocheckout progress. |value| should
+  // be in [0.0, 1.0].
+  void UpdateProgressBar(double value);
 
  private:
   // Determines whether |input| and |field| match.
   typedef base::Callback<bool(const DetailInput& input,
                               const AutofillField& field)> InputFieldComparator;
+
+  // Refresh wallet items immediately if there's no refresh currently in
+  // progress, otherwise wait until the current refresh completes.
+  void ScheduleRefreshWalletItems();
+
+  // Called when any type of request to Online Wallet completes. |success| is
+  // true when there was no network error, the response wasn't malformed, and no
+  // Wallet error occurred.
+  void WalletRequestCompleted(bool success);
 
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;
@@ -238,6 +244,13 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // A client to talk to the Online Wallet API.
   wallet::WalletClient wallet_client_;
+
+  // Whether another refresh for WalletItems should be started when the current
+  // one is done.
+  bool refresh_wallet_items_queued_;
+
+  // Whether there has been a Wallet error while this dialog has been open.
+  bool had_wallet_error_;
 
   // The most recently received WalletItems retrieved via |wallet_client_|.
   scoped_ptr<wallet::WalletItems> wallet_items_;

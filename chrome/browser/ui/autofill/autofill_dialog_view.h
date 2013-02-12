@@ -60,9 +60,6 @@ class AutofillDialogView {
   // be in [0.0, 1.0].
   virtual void UpdateProgressBar(double value) = 0;
 
-  // Called when the active suggestions data model changed.
-  virtual void ModelChanged() = 0;
-
   // Factory function to create the dialog (implemented once per view
   // implementation). |controller| will own the created dialog.
   static AutofillDialogView* Create(AutofillDialogController* controller);

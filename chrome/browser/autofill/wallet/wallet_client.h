@@ -113,6 +113,9 @@ class WalletClient : public net::URLFetcherDelegate {
                         const Address& billing_address,
                         WalletClientObserver* observer);
 
+  // Whether there is a currently running request (i.e. |request_| != NULL).
+  bool HasRequestInProgress() const;
+
  private:
   // TODO(ahutter): Implement this.
   std::string GetRiskParams() { return ""; }

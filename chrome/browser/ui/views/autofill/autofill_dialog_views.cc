@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,7 +49,6 @@ const size_t kAutocheckoutProgressBarHeight = 11;
 
 const size_t kArrowHeight = 7;
 const size_t kArrowWidth = 2 * kArrowHeight;
-const int kArrowEndOffset = 83;
 
 const char kDecoratedTextfieldClassName[] = "autofill/DecoratedTextfield";
 const char kNotificationAreaClassName[] = "autofill/NotificationArea";
@@ -171,14 +169,16 @@ void AutofillDialogViews::NotificationArea::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
   if (notification_.HasArrow()) {
-    // Not using GetMirroredXWithWidthInView() here because the code would still
-    // need to subtract the width of the arrow from the result in RTL.
-    const int start_x = base::i18n::IsRTL() ? kArrowEndOffset :
-        width() - kArrowEndOffset - kArrowWidth;
+    const int arrow_half_width = kArrowWidth / 2.0f;
+    const int anchor_half_width = arrow_centering_anchor_ ?
+        arrow_centering_anchor_->width() / 2.0f : 0;
+    const int arrow_middle =
+        GetMirroredXInView(width() - anchor_half_width - arrow_half_width);
+
     SkPath arrow;
-    arrow.moveTo(start_x, kArrowHeight);
-    arrow.lineTo(start_x + kArrowWidth, kArrowHeight);
-    arrow.lineTo(start_x + kArrowWidth / 2.0f, 0);
+    arrow.moveTo(arrow_middle - arrow_half_width, kArrowHeight);
+    arrow.lineTo(arrow_middle + arrow_half_width, kArrowHeight);
+    arrow.lineTo(arrow_middle, 0);
     arrow.close();
     canvas->ClipPath(arrow);
     canvas->DrawColor(notification_.GetBackgroundColor());
@@ -356,7 +356,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       contents_(NULL),
       notification_area_(NULL),
       use_billing_for_shipping_(NULL),
-      sign_in_link_(NULL),
+      account_chooser_link_(NULL),
       sign_in_container_(NULL),
       cancel_sign_in_(NULL),
       sign_in_webview_(NULL),
@@ -379,6 +379,10 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
 
 AutofillDialogViews::~AutofillDialogViews() {
   DCHECK(!window_);
+
+  // |notification_area_| could be NULL if |Show()| was never called.
+  if (notification_area_)
+    notification_area_->set_arrow_centering_anchor(NULL);
 }
 
 void AutofillDialogViews::Show() {
@@ -400,9 +404,10 @@ void AutofillDialogViews::Hide() {
 }
 
 void AutofillDialogViews::UpdateAccountChooser() {
-  DialogSignedInState state = controller_->SignedInState();
-  sign_in_link_->SetEnabled(state != REQUIRES_RESPONSE);
-  sign_in_link_->SetVisible(state != SIGNED_IN);
+  // TODO(dbeam): show/hide account chooser combobox when it exists?
+  // TODO(dbeam): show/hide fancy Google Wallet logo when it exists.
+  account_chooser_link_->SetText(controller_->AccountChooserText());
+  account_chooser_link_->SetEnabled(controller_->AccountChooserEnabled());
 }
 
 void AutofillDialogViews::UpdateNotificationArea() {
@@ -477,15 +482,6 @@ void AutofillDialogViews::HideSignIn() {
 
 void AutofillDialogViews::UpdateProgressBar(double value) {
   autocheckout_progress_bar_->SetValue(value);
-}
-
-void AutofillDialogViews::ModelChanged() {
-  menu_runner_.reset();
-
-  for (DetailGroupMap::iterator iter = detail_groups_.begin();
-       iter != detail_groups_.end(); ++iter) {
-    UpdateDetailsGroupState(iter->second);
-  }
 }
 
 string16 AutofillDialogViews::GetWindowTitle() const {
@@ -612,8 +608,12 @@ void AutofillDialogViews::OnDidChangeFocus(
 
 void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
   // Sign in link.
-  if (source == sign_in_link_) {
-    controller_->StartSignInFlow();
+  if (source == account_chooser_link_) {
+    if (controller_->SignedInState() != SIGNED_IN) {
+      DCHECK(controller_->CanPayWithWallet());
+      controller_->StartSignInFlow();
+    }
+    // TODO(dbeam): handle other clicks on the account chooser (i.e. combobox).
     return;
   }
 
@@ -688,13 +688,15 @@ views::View* AutofillDialogViews::CreateMainContainer() {
   layout->StartRow(0, single_column_set);
   // TODO(abodenha) Create a chooser control to allow account selection.
   // See http://crbug.com/169858
-  sign_in_link_ = new views::Link(controller_->SignInText());
-  sign_in_link_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  sign_in_link_->set_listener(this);
-  layout->AddView(sign_in_link_);
+  account_chooser_link_ = new views::Link();
+  account_chooser_link_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  account_chooser_link_->set_listener(this);
+  layout->AddView(account_chooser_link_);
 
-  layout->StartRow(0, single_column_set);
+  layout->StartRowWithPadding(0, single_column_set,
+                              0, views::kRelatedControlVerticalSpacing);
   notification_area_ = new NotificationArea();
+  notification_area_->set_arrow_centering_anchor(account_chooser_link_);
   layout->AddView(notification_area_);
 
   layout->StartRowWithPadding(0, single_column_set,
