@@ -10,9 +10,10 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -39,13 +40,16 @@ bool IsValidBrowser(Browser* browser, const gfx::Rect& bounds_in_screen) {
 // on the screen defined by |bounds_in_screen| and visible.
 bool IsValidToplevelWindow(aura::Window* window,
                            const gfx::Rect& bounds_in_screen) {
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end();
+  const chrome::BrowserListImpl* ash_browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (chrome::BrowserListImpl::const_iterator iter = ash_browser_list->begin();
+       iter != ash_browser_list->end();
        ++iter) {
     Browser* browser = *iter;
     if (browser && browser->window() &&
-        browser->window()->GetNativeWindow() == window)
+        browser->window()->GetNativeWindow() == window) {
       return IsValidBrowser(browser, bounds_in_screen);
+    }
   }
   // A window which has no browser associated with it is probably not a window
   // of which we want to copy the size from.
@@ -58,8 +62,9 @@ aura::Window* GetTopWindow(const gfx::Rect& bounds_in_screen) {
   // Get the active window.
   aura::Window* window = ash::wm::GetActiveWindow();
   if (window && window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-      window->IsVisible() && IsValidToplevelWindow(window, bounds_in_screen))
+      window->IsVisible() && IsValidToplevelWindow(window, bounds_in_screen)) {
     return window;
+  }
 
   // Get a list of all windows.
   const std::vector<aura::Window*> windows =
@@ -83,8 +88,10 @@ aura::Window* GetTopWindow(const gfx::Rect& bounds_in_screen) {
     aura::Window* window = windows[i % windows.size()];
     if (window && window->type() == aura::client::WINDOW_TYPE_NORMAL &&
         bounds_in_screen.Intersects(window->GetBoundsInScreen()) &&
-        window->IsVisible() && IsValidToplevelWindow(window, bounds_in_screen))
+        window->IsVisible()
+        && IsValidToplevelWindow(window, bounds_in_screen)) {
       return window;
+    }
   }
   return NULL;
 }
@@ -93,8 +100,10 @@ aura::Window* GetTopWindow(const gfx::Rect& bounds_in_screen) {
 // the |bounds_in_screen| rectangle.
 int GetNumberOfValidTopLevelBrowserWindows(const gfx::Rect& bounds_in_screen) {
   int count = 0;
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end();
+  const chrome::BrowserListImpl* ash_browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (chrome::BrowserListImpl::const_iterator iter = ash_browser_list->begin();
+       iter != ash_browser_list->end();
        ++iter) {
     if (IsValidBrowser(*iter, bounds_in_screen))
       count++;
@@ -128,6 +137,11 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
                                        ui::WindowShowState* show_state) const {
   DCHECK(show_state);
   DCHECK(bounds_in_screen);
+
+  if (browser_ &&
+      browser_->host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH) {
+    return false;
+  }
   bounds_in_screen->SetRect(0, 0, 0, 0);
 
   ui::WindowShowState passed_show_state = *show_state;
