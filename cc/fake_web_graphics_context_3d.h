@@ -1,31 +1,22 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
-#define CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#ifndef CC_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#define CC_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
 
-#include <vector>
-
-#include "base/hash_tables.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/stl_util.h"
+#include "base/compiler_specific.h"
+#include "cc/cc_export.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
-// WebGraphicsContext3D base class for use in WebKit unit tests.
+// WebGraphicsContext3D base class for use in unit tests.
 // All operations are no-ops (returning 0 if necessary).
-class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
+class CC_EXPORT FakeWebGraphicsContext3D :
+    public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
  public:
-  static scoped_ptr<FakeWebGraphicsContext3D> Create() {
-    return make_scoped_ptr(new FakeWebGraphicsContext3D());
-  }
-  static scoped_ptr<FakeWebGraphicsContext3D> Create(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-    return make_scoped_ptr(new FakeWebGraphicsContext3D(attributes));
-  }
+  FakeWebGraphicsContext3D();
   virtual ~FakeWebGraphicsContext3D();
 
   virtual bool makeContextCurrent();
@@ -591,58 +582,8 @@ class FakeWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
 
   virtual void loseContextCHROMIUM(WebKit::WGC3Denum current,
                                    WebKit::WGC3Denum other);
-
-  // When set, MakeCurrent() will fail after this many times.
-  void set_times_make_current_succeeds(int times) {
-    times_make_current_succeeds_ = times;
-  }
-  void set_times_bind_texture_succeeds(int times) {
-    times_bind_texture_succeeds_ = times;
-  }
-  void set_times_end_query_succeeds(int times) {
-    times_end_query_succeeds_ = times;
-  }
-
-  size_t NumTextures() const { return textures_.size(); }
-  WebKit::WebGLId TextureAt(int i) const { return textures_[i]; }
-
-  size_t NumUsedTextures() const { return used_textures_.size(); }
-  bool UsedTexture(int texture) const {
-    return ContainsKey(used_textures_, texture);
-  }
-  void ResetUsedTextures() { used_textures_.clear(); }
-
-  void set_have_extension_io_surface(bool have) {
-    have_extension_io_surface_ = have;
-  }
-  void set_have_extension_egl_image(bool have) {
-    have_extension_egl_image_ = have;
-  }
-
-  static const WebKit::WebGLId kExternalTextureId;
-  virtual WebKit::WebGLId NextTextureId();
-
- protected:
-  FakeWebGraphicsContext3D();
-  FakeWebGraphicsContext3D(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
-
-  unsigned context_id_;
-  unsigned next_texture_id_;
-  Attributes attributes_;
-  bool have_extension_io_surface_;
-  bool have_extension_egl_image_;
-  int times_make_current_succeeds_;
-  int times_bind_texture_succeeds_;
-  int times_end_query_succeeds_;
-  bool context_lost_;
-  WebGraphicsContextLostCallback* context_lost_callback_;
-  std::vector<WebKit::WebGLId> textures_;
-  base::hash_set<WebKit::WebGLId> used_textures_;
-  int width_;
-  int height_;
 };
 
 }  // namespace cc
 
-#endif  // CC_TEST_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_
+#endif  // CC_FAKE_WEB_GRAPHICS_CONTEXT_3D_H_

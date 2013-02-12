@@ -17,11 +17,11 @@
 #include "cc/test/fake_layer_tree_host_impl_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 

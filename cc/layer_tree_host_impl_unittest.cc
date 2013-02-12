@@ -28,11 +28,11 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_video_frame_provider.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/render_pass_test_common.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/texture_layer_impl.h"
 #include "cc/tile_draw_quad.h"
@@ -232,7 +232,7 @@ protected:
     bool m_reduceMemoryResult;
 };
 
-class FakeWebGraphicsContext3DMakeCurrentFails : public FakeWebGraphicsContext3D {
+class TestWebGraphicsContext3DMakeCurrentFails : public TestWebGraphicsContext3D {
 public:
     virtual bool makeContextCurrent() { return false; }
 };
@@ -387,7 +387,7 @@ TEST_P(LayerTreeHostImplTest, scrollWithoutRenderer)
     m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
 
     // Initialization will fail here.
-    m_hostImpl->initializeRenderer(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<OutputSurface>());
+    m_hostImpl->initializeRenderer(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new TestWebGraphicsContext3DMakeCurrentFails)).PassAs<OutputSurface>());
     m_hostImpl->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
 
     setupScrollAndContentsLayers(gfx::Size(100, 100));
@@ -1717,7 +1717,7 @@ TEST_P(LayerTreeHostImplTest, scrollScaledLayer)
     expectContains(*scrollInfo.get(), m_hostImpl->rootLayer()->id(), wheelScrollDelta);
 }
 
-class BlendStateTrackerContext: public FakeWebGraphicsContext3D {
+class BlendStateTrackerContext: public TestWebGraphicsContext3D {
 public:
     BlendStateTrackerContext() : m_blend(false) { }
 
@@ -2079,7 +2079,7 @@ TEST_P(LayerTreeHostImplTest, viewportCovered)
 }
 
 
-class ReshapeTrackerContext: public FakeWebGraphicsContext3D {
+class ReshapeTrackerContext: public TestWebGraphicsContext3D {
 public:
     ReshapeTrackerContext() : m_reshapeCalled(false) { }
 
@@ -2124,7 +2124,7 @@ TEST_P(LayerTreeHostImplTest, reshapeNotCalledUntilDraw)
     m_hostImpl->didDrawAllLayers(frame);
 }
 
-class PartialSwapTrackerContext : public FakeWebGraphicsContext3D {
+class PartialSwapTrackerContext : public TestWebGraphicsContext3D {
 public:
     virtual void postSubBufferCHROMIUM(int x, int y, int width, int height)
     {
@@ -2268,7 +2268,7 @@ private:
     }
 };
 
-class MockContext : public FakeWebGraphicsContext3D {
+class MockContext : public TestWebGraphicsContext3D {
 public:
     MOCK_METHOD1(useProgram, void(WebKit::WebGLId program));
     MOCK_METHOD5(uniform4f, void(WebKit::WGC3Dint location, WebKit::WGC3Dfloat x, WebKit::WGC3Dfloat y, WebKit::WGC3Dfloat z, WebKit::WGC3Dfloat w));
@@ -2426,7 +2426,7 @@ TEST_P(LayerTreeHostImplTest, partialSwap)
     Mock::VerifyAndClearExpectations(&mockContext);
 }
 
-class PartialSwapContext : public FakeWebGraphicsContext3D {
+class PartialSwapContext : public TestWebGraphicsContext3D {
 public:
     virtual WebKit::WebString getString(WebKit::WGC3Denum name)
     {
@@ -2557,16 +2557,16 @@ TEST_P(LayerTreeHostImplTest, contributingLayerEmptyScissorNoPartialSwap)
 }
 
 // Fake WebKit::WebGraphicsContext3D that tracks the number of textures in use.
-class TrackingWebGraphicsContext3D : public FakeWebGraphicsContext3D {
+class TrackingWebGraphicsContext3D : public TestWebGraphicsContext3D {
 public:
     TrackingWebGraphicsContext3D()
-        : FakeWebGraphicsContext3D()
+        : TestWebGraphicsContext3D()
         , m_numTextures(0)
     { }
 
     virtual WebKit::WebGLId createTexture() OVERRIDE
     {
-        WebKit::WebGLId id = FakeWebGraphicsContext3D::createTexture();
+        WebKit::WebGLId id = TestWebGraphicsContext3D::createTexture();
 
         m_textures[id] = true;
         ++m_numTextures;
@@ -2613,9 +2613,9 @@ static unsigned createTextureId(ResourceProvider* resourceProvider)
 
 TEST_P(LayerTreeHostImplTest, layersFreeTextures)
 {
-    scoped_ptr<FakeWebGraphicsContext3D> context =
-            FakeWebGraphicsContext3D::Create();
-    FakeWebGraphicsContext3D* context3d = context.get();
+    scoped_ptr<TestWebGraphicsContext3D> context =
+            TestWebGraphicsContext3D::Create();
+    TestWebGraphicsContext3D* context3d = context.get();
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(
         context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
     m_hostImpl->initializeRenderer(outputSurface.Pass());
@@ -2661,7 +2661,7 @@ TEST_P(LayerTreeHostImplTest, layersFreeTextures)
     EXPECT_EQ(0u, context3d->NumTextures());
 }
 
-class MockDrawQuadsToFillScreenContext : public FakeWebGraphicsContext3D {
+class MockDrawQuadsToFillScreenContext : public TestWebGraphicsContext3D {
 public:
     MOCK_METHOD1(useProgram, void(WebKit::WebGLId program));
     MOCK_METHOD4(drawElements, void(WebKit::WGC3Denum mode, WebKit::WGC3Dsizei count, WebKit::WGC3Denum type, WebKit::WGC3Dintptr offset));
@@ -4044,7 +4044,7 @@ protected:
     {
         // Creates an output surface with a parent to use a delegating renderer.
         WebKit::WebGraphicsContext3D::Attributes attrs;
-        return FakeOutputSurface::CreateDelegating3d(FakeWebGraphicsContext3D::Create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+        return FakeOutputSurface::CreateDelegating3d(TestWebGraphicsContext3D::Create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
     }
 
     void drawFrameAndTestDamage(const gfx::RectF& expectedDamage) {

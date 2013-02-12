@@ -10,7 +10,7 @@
 #include "cc/compositor_frame.h"
 #include "cc/output_surface.h"
 #include "cc/test/fake_software_output_device.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
 namespace cc {
@@ -26,7 +26,7 @@ class FakeOutputSurface : public OutputSurface {
 
   static inline scoped_ptr<FakeOutputSurface> Create3d() {
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d =
-        FakeWebGraphicsContext3D::Create(
+        TestWebGraphicsContext3D::Create(
             WebKit::WebGraphicsContext3D::Attributes())
         .PassAs<WebKit::WebGraphicsContext3D>();
     return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), false));
@@ -45,7 +45,7 @@ class FakeOutputSurface : public OutputSurface {
 
   static inline scoped_ptr<FakeOutputSurface> CreateDelegating3d() {
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d =
-        FakeWebGraphicsContext3D::Create(
+        TestWebGraphicsContext3D::Create(
             WebKit::WebGraphicsContext3D::Attributes())
         .PassAs<WebKit::WebGraphicsContext3D>();
     return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), true));
@@ -86,7 +86,7 @@ private:
 static inline scoped_ptr<cc::OutputSurface> createFakeOutputSurface()
 {
     return FakeOutputSurface::Create3d(
-        FakeWebGraphicsContext3D::Create(
+        TestWebGraphicsContext3D::Create(
             WebKit::WebGraphicsContext3D::Attributes())
         .PassAs<WebKit::WebGraphicsContext3D>())
         .PassAs<cc::OutputSurface>();

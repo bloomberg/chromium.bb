@@ -27,7 +27,8 @@
 class TestShellWebBlobRegistryImpl;
 
 namespace WebKit {
-  class WebAudioDevice;
+class WebAudioDevice;
+class WebLayerTreeView;
 }
 
 typedef struct _HyphenDict HyphenDict;
@@ -159,6 +160,10 @@ class TestWebKitPlatformSupport :
   virtual void unregisterAllMockedURLs();
   virtual void serveAsynchronousMockedRequests();
   virtual WebKit::WebString webKitRootDir();
+#if HAVE_CREATELAYERTREEVIEWFORTESTING
+  virtual WebKit::WebLayerTreeView* createLayerTreeViewForTesting(
+      TestViewType type);
+#endif
 
  private:
   TestShellWebMimeRegistryImpl mime_registry_;

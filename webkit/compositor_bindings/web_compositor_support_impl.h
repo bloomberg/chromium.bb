@@ -29,9 +29,6 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   virtual void initialize(WebKit::WebThread* implThread);
   virtual bool isThreadingEnabled();
   virtual void shutdown();
-  virtual WebKit::WebLayerTreeView* createLayerTreeView(
-      WebKit::WebLayerTreeViewClient* client, const WebKit::WebLayer& root,
-      const WebKit::WebLayerTreeView::Settings& settings);
   virtual WebKit::WebCompositorOutputSurface* createOutputSurfaceFor3D(
       WebKit::WebGraphicsContext3D* context);
   virtual WebKit::WebCompositorOutputSurface* createOutputSurfaceForSoftware();
@@ -62,6 +59,9 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   virtual WebKit::WebTransformOperations*
     createTransformOperations();
 
+  virtual WebKit::WebLayerTreeView* createLayerTreeView(
+      WebKit::WebLayerTreeViewClient* client, const WebKit::WebLayer& root,
+      const WebKit::WebLayerTreeView::Settings& settings);
  private:
   scoped_refptr<base::MessageLoopProxy> impl_thread_message_loop_proxy_;
   bool initialized_;

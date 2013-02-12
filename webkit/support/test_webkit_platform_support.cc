@@ -31,6 +31,7 @@
 #include "third_party/hyphen/hyphen.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/compositor_bindings/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/database/vfs_backend.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
@@ -647,4 +648,18 @@ void TestWebKitPlatformSupport::serveAsynchronousMockedRequests() {
 WebKit::WebString TestWebKitPlatformSupport::webKitRootDir() {
   return webkit_support::GetWebKitRootDir();
 }
+
+#if HAVE_CREATELAYERTREEVIEWFORTESTING
+WebKit::WebLayerTreeView*
+    TestWebKitPlatformSupport::createLayerTreeViewForTesting(
+        TestViewType type) {
+  // TODO(jamesr): Support TestViewTypeLayoutTest.
+  DCHECK_EQ(TestViewTypeUnitTest, type);
+  scoped_ptr<WebKit::WebLayerTreeViewImplForTesting> view(
+      new WebKit::WebLayerTreeViewImplForTesting);
+  if (!view->initialize())
+    return NULL;
+  return view.release();
+}
+#endif
 

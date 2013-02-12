@@ -5,7 +5,7 @@
 #include "cc/texture_uploader.h"
 
 #include "cc/prioritized_resource.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -21,9 +21,9 @@ unsigned int RoundUp(unsigned int n, unsigned int mul)
   return (((n - 1) / mul) * mul) + mul;
 }
 
-class FakeWebGraphicsContext3DTextureUpload : public FakeWebGraphicsContext3D {
+class TestWebGraphicsContext3DTextureUpload : public TestWebGraphicsContext3D {
 public:
-    FakeWebGraphicsContext3DTextureUpload()
+    TestWebGraphicsContext3DTextureUpload()
         : m_resultAvailable(0)
         , m_unpackAlignment(4)
     {
@@ -151,7 +151,7 @@ void uploadTexture(TextureUploader* uploader, WGC3Denum format, const gfx::Size&
 
 TEST(TextureUploaderTest, NumBlockingUploads)
 {
-    scoped_ptr<FakeWebGraphicsContext3DTextureUpload> fakeContext(new FakeWebGraphicsContext3DTextureUpload);
+    scoped_ptr<TestWebGraphicsContext3DTextureUpload> fakeContext(new TestWebGraphicsContext3DTextureUpload);
     scoped_ptr<TextureUploader> uploader = TextureUploader::create(fakeContext.get(), false, false);
 
     fakeContext->setResultAvailable(0);
@@ -172,7 +172,7 @@ TEST(TextureUploaderTest, NumBlockingUploads)
 
 TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking)
 {
-    scoped_ptr<FakeWebGraphicsContext3DTextureUpload> fakeContext(new FakeWebGraphicsContext3DTextureUpload);
+    scoped_ptr<TestWebGraphicsContext3DTextureUpload> fakeContext(new TestWebGraphicsContext3DTextureUpload);
     scoped_ptr<TextureUploader> uploader = TextureUploader::create(fakeContext.get(), false, false);
 
     fakeContext->setResultAvailable(0);
@@ -195,7 +195,7 @@ TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking)
 
 TEST(TextureUploaderTest, UploadContentsTest)
 {
-    scoped_ptr<FakeWebGraphicsContext3DTextureUpload> fakeContext(new FakeWebGraphicsContext3DTextureUpload);
+    scoped_ptr<TestWebGraphicsContext3DTextureUpload> fakeContext(new TestWebGraphicsContext3DTextureUpload);
     scoped_ptr<TextureUploader> uploader = TextureUploader::create(fakeContext.get(), false, false);
     uint8 buffer[256 * 256 * 4];
 

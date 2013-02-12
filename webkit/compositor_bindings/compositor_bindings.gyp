@@ -37,6 +37,8 @@
       'web_to_ccvideo_frame_provider.h',
       'web_layer_tree_view_impl.cc',
       'web_layer_tree_view_impl.h',
+      'web_layer_tree_view_impl_for_testing.cc',
+      'web_layer_tree_view_impl_for_testing.h',
       'web_scrollbar_layer_impl.cc',
       'web_scrollbar_layer_impl.h',
       'web_solid_color_layer_impl.cc',

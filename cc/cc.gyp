@@ -58,6 +58,8 @@
       'draw_properties.h',
       'draw_quad.cc',
       'draw_quad.h',
+      'fake_web_graphics_context_3d.cc',
+      'fake_web_graphics_context_3d.h',
       'font_atlas.cc',
       'font_atlas.h',
       'frame_rate_controller.cc',

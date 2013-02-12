@@ -80,22 +80,6 @@ void WebCompositorSupportImpl::shutdown() {
   impl_thread_message_loop_proxy_ = NULL;
 }
 
-WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(
-    WebLayerTreeViewClient* client, const WebLayer& root,
-    const WebLayerTreeView::Settings& settings) {
-  DCHECK(initialized_);
-  scoped_ptr<WebKit::WebLayerTreeViewImpl> layerTreeViewImpl(
-      new WebKit::WebLayerTreeViewImpl(client));
-  scoped_ptr<cc::Thread> impl_thread;
-  if (impl_thread_message_loop_proxy_)
-    impl_thread = cc::ThreadImpl::createForDifferentThread(
-        impl_thread_message_loop_proxy_);
-  if (!layerTreeViewImpl->initialize(settings, impl_thread.Pass()))
-    return NULL;
-  layerTreeViewImpl->setRootLayer(root);
-  return layerTreeViewImpl.release();
-}
-
 WebKit::WebCompositorOutputSurface*
     WebCompositorSupportImpl::createOutputSurfaceFor3D(
         WebKit::WebGraphicsContext3D* context) {
@@ -169,6 +153,22 @@ WebTransformAnimationCurve*
 
 WebTransformOperations* WebCompositorSupportImpl::createTransformOperations() {
   return new WebTransformOperationsImpl();
+}
+
+WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(
+    WebLayerTreeViewClient* client, const WebLayer& root,
+    const WebLayerTreeView::Settings& settings) {
+  DCHECK(initialized_);
+  scoped_ptr<WebKit::WebLayerTreeViewImpl> layerTreeViewImpl(
+      new WebKit::WebLayerTreeViewImpl(client));
+  scoped_ptr<cc::Thread> impl_thread;
+  if (impl_thread_message_loop_proxy_)
+    impl_thread = cc::ThreadImpl::createForDifferentThread(
+        impl_thread_message_loop_proxy_);
+  if (!layerTreeViewImpl->initialize(settings, impl_thread.Pass()))
+    return NULL;
+  layerTreeViewImpl->setRootLayer(root);
+  return layerTreeViewImpl.release();
 }
 
 }  // namespace webkit

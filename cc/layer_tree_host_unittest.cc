@@ -1040,7 +1040,7 @@ public:
     {
         ASSERT_EQ(0u, m_layerTreeHost->settings().maxPartialTextureUpdates);
 
-        FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
+        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
@@ -1082,7 +1082,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
+        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         // Number of textures used for draw should always be one for each layer.
         EXPECT_EQ(2, context->NumUsedTextures());
@@ -1172,7 +1172,7 @@ public:
     {
         ASSERT_EQ(1u, m_layerTreeHost->settings().maxPartialTextureUpdates);
 
-        FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
+        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         switch (impl->activeTree()->source_frame_number()) {
         case 0:
@@ -1257,7 +1257,7 @@ public:
 
     virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE
     {
-        FakeWebGraphicsContext3D* context = static_cast<FakeWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
+        TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(impl->outputSurface()->Context3D());
 
         // Number of textures used for drawing should one per layer except for
         // frame 3 where the viewport only contains one layer.

@@ -18,8 +18,8 @@ class DelegatingRendererTest : public ThreadedTest {
   virtual ~DelegatingRendererTest() {}
 
   virtual scoped_ptr<OutputSurface> createOutputSurface() OVERRIDE {
-    scoped_ptr<FakeWebGraphicsContext3D> context3d =
-        FakeWebGraphicsContext3D::Create(
+    scoped_ptr<TestWebGraphicsContext3D> context3d =
+        TestWebGraphicsContext3D::Create(
             WebKit::WebGraphicsContext3D::Attributes());
     context3d_ = context3d.get();
     scoped_ptr<FakeOutputSurface> output_surface =
@@ -30,7 +30,7 @@ class DelegatingRendererTest : public ThreadedTest {
   }
 
  protected:
-  FakeWebGraphicsContext3D* context3d_;
+  TestWebGraphicsContext3D* context3d_;
   FakeOutputSurface* output_surface_;
 };
 

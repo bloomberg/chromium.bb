@@ -23,11 +23,11 @@
 #include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/fake_scrollbar_theme_painter.h"
 #include "cc/test/fake_video_frame_provider.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_scrollbar.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "cc/test/render_pass_test_common.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/texture_layer.h"
 #include "cc/video_layer.h"
 #include "cc/video_layer_impl.h"
@@ -63,8 +63,8 @@ class LayerTreeHostContextTest : public ThreadedTest {
     context3d_ = NULL;
   }
 
-  virtual scoped_ptr<FakeWebGraphicsContext3D> CreateContext3d() {
-    return FakeWebGraphicsContext3D::Create();
+  virtual scoped_ptr<TestWebGraphicsContext3D> CreateContext3d() {
+    return TestWebGraphicsContext3D::Create();
   }
 
   virtual scoped_ptr<OutputSurface> createOutputSurface() OVERRIDE {
@@ -73,7 +73,7 @@ class LayerTreeHostContextTest : public ThreadedTest {
       return scoped_ptr<OutputSurface>();
     }
 
-    scoped_ptr<FakeWebGraphicsContext3D> context3d = CreateContext3d();
+    scoped_ptr<TestWebGraphicsContext3D> context3d = CreateContext3d();
     context3d_ = context3d.get();
 
     if (times_to_fail_initialize_) {
@@ -119,7 +119,7 @@ class LayerTreeHostContextTest : public ThreadedTest {
   }
 
  protected:
-  FakeWebGraphicsContext3D* context3d_;
+  TestWebGraphicsContext3D* context3d_;
   int times_to_fail_create_;
   int times_to_fail_initialize_;
   int times_to_lose_on_create_;
@@ -304,7 +304,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent :
     FakeContentLayerImpl* content_impl = static_cast<FakeContentLayerImpl*>(
         host_impl->rootLayer()->children()[0]);
     // Even though the context was lost, we should have a resource. The
-    // FakeWebGraphicsContext3D ensures that this resource is created with
+    // TestWebGraphicsContext3D ensures that this resource is created with
     // the active context.
     EXPECT_TRUE(content_impl->HaveResourceForTileAt(0, 0));
   }
@@ -549,8 +549,8 @@ class LayerTreeHostContextTestLostContextWhileUpdatingResources :
         times_to_lose_on_end_query_(3) {
   }
 
-  virtual scoped_ptr<FakeWebGraphicsContext3D> CreateContext3d() OVERRIDE {
-    scoped_ptr<FakeWebGraphicsContext3D> context =
+  virtual scoped_ptr<TestWebGraphicsContext3D> CreateContext3d() OVERRIDE {
+    scoped_ptr<TestWebGraphicsContext3D> context =
         LayerTreeHostContextTest::CreateContext3d();
     if (times_to_lose_on_end_query_) {
       --times_to_lose_on_end_query_;
@@ -710,7 +710,7 @@ class LayerTreeHostContextTestDontUseLostResources :
     scoped_refptr<TextureLayer> texture_ = TextureLayer::create(NULL);
     texture_->setBounds(gfx::Size(10, 10));
     texture_->setAnchorPoint(gfx::PointF());
-    texture_->setTextureId(FakeWebGraphicsContext3D::kExternalTextureId);
+    texture_->setTextureId(TestWebGraphicsContext3D::kExternalTextureId);
     texture_->setIsDrawable(true);
     root_->addChild(texture_);
 
@@ -915,8 +915,8 @@ class LayerTreeHostContextTestFailsImmediately :
   virtual void afterTest() OVERRIDE {
   }
 
-  virtual scoped_ptr<FakeWebGraphicsContext3D> CreateContext3d() OVERRIDE {
-    scoped_ptr<FakeWebGraphicsContext3D> context =
+  virtual scoped_ptr<TestWebGraphicsContext3D> CreateContext3d() OVERRIDE {
+    scoped_ptr<TestWebGraphicsContext3D> context =
         LayerTreeHostContextTest::CreateContext3d();
     context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                                  GL_INNOCENT_CONTEXT_RESET_ARB);

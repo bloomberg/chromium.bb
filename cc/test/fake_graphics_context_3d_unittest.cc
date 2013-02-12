@@ -4,14 +4,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
 
-class ContextThatCountsMakeCurrents : public WebKit::FakeWebGraphicsContext3D {
+class ContextThatCountsMakeCurrents : public TestWebGraphicsContext3D {
 public:
     ContextThatCountsMakeCurrents() : m_makeCurrentCount(0) { }
     virtual bool makeContextCurrent() OVERRIDE

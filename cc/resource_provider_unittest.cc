@@ -9,7 +9,7 @@
 #include "cc/scoped_ptr_deque.h"
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -101,7 +101,7 @@ private:
     base::hash_map<unsigned, unsigned> m_syncPointForMailbox;
 };
 
-class ResourceProviderContext : public FakeWebGraphicsContext3D {
+class ResourceProviderContext : public TestWebGraphicsContext3D {
 public:
     static scoped_ptr<ResourceProviderContext> create(ContextSharedData* sharedData) { return make_scoped_ptr(new ResourceProviderContext(Attributes(), sharedData)); }
 
@@ -130,7 +130,7 @@ public:
 
     virtual WebGLId createTexture()
     {
-        WebGLId id = FakeWebGraphicsContext3D::createTexture();
+        WebGLId id = TestWebGraphicsContext3D::createTexture();
         m_textures.add(id, scoped_ptr<Texture>());
         return id;
     }
@@ -228,7 +228,7 @@ public:
 
 protected:
     ResourceProviderContext(const Attributes& attrs, ContextSharedData* sharedData)
-        : FakeWebGraphicsContext3D(attrs)
+        : TestWebGraphicsContext3D(attrs)
         , m_sharedData(sharedData)
         , m_currentTexture(0)
         , m_lastWaitedSyncPoint(0)
@@ -564,7 +564,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources)
     EXPECT_EQ(0u, childResourceProvider->numResources());
 }
 
-class TextureStateTrackingContext : public FakeWebGraphicsContext3D {
+class TextureStateTrackingContext : public TestWebGraphicsContext3D {
 public:
     MOCK_METHOD2(bindTexture, void(WGC3Denum target, WebGLId texture));
     MOCK_METHOD3(texParameteri, void(WGC3Denum target, WGC3Denum pname, WGC3Dint param));
@@ -650,7 +650,7 @@ TEST_P(ResourceProviderTest, ManagedResource)
     Mock::VerifyAndClearExpectations(context);
 }
 
-class AllocationTrackingContext3D : public FakeWebGraphicsContext3D {
+class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
 public:
     MOCK_METHOD0(createTexture, WebGLId());
     MOCK_METHOD1(deleteTexture, void(WebGLId texture_id));

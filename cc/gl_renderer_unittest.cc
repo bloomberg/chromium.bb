@@ -11,9 +11,9 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
+#include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -31,7 +31,7 @@ using testing::Mock;
 namespace cc {
 namespace {
 
-class FrameCountingMemoryAllocationSettingContext : public FakeWebGraphicsContext3D {
+class FrameCountingMemoryAllocationSettingContext : public TestWebGraphicsContext3D {
 public:
     FrameCountingMemoryAllocationSettingContext() : m_frame(0) { }
 
@@ -238,7 +238,7 @@ TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible)
     EXPECT_EQ(2, m_mockClient.setFullRootLayerDamageCount());
 }
 
-class ForbidSynchronousCallContext : public FakeWebGraphicsContext3D {
+class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 public:
     ForbidSynchronousCallContext() { }
 
@@ -315,7 +315,7 @@ TEST(GLRendererTest2, initializationDoesNotMakeSynchronousCalls)
     EXPECT_TRUE(renderer.initialize());
 }
 
-class LoseContextOnFirstGetContext : public FakeWebGraphicsContext3D {
+class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
 public:
     LoseContextOnFirstGetContext()
         : m_contextLost(false)
@@ -358,7 +358,7 @@ TEST(GLRendererTest2, initializationWithQuicklyLostContextDoesNotAssert)
     renderer.initialize();
 }
 
-class ContextThatDoesNotSupportMemoryManagmentExtensions : public FakeWebGraphicsContext3D {
+class ContextThatDoesNotSupportMemoryManagmentExtensions : public TestWebGraphicsContext3D {
 public:
     ContextThatDoesNotSupportMemoryManagmentExtensions() { }
 
@@ -382,7 +382,7 @@ TEST(GLRendererTest2, initializationWithoutGpuMemoryManagerExtensionSupportShoul
     EXPECT_GT(mockClient.memoryAllocationLimitBytes(), 0ul);
 }
 
-class ClearCountingContext : public FakeWebGraphicsContext3D {
+class ClearCountingContext : public TestWebGraphicsContext3D {
 public:
     ClearCountingContext() : m_clear(0) { }
 
@@ -437,7 +437,7 @@ TEST(GLRendererTest2, transparentBackground)
     EXPECT_EQ(1, context->clearCount());
 }
 
-class VisibilityChangeIsLastCallTrackingContext : public FakeWebGraphicsContext3D {
+class VisibilityChangeIsLastCallTrackingContext : public TestWebGraphicsContext3D {
 public:
     VisibilityChangeIsLastCallTrackingContext()
         : m_lastCallWasSetVisibility(0)
@@ -494,7 +494,7 @@ TEST(GLRendererTest2, visibilityChangeIsLastCall)
     EXPECT_TRUE(lastCallWasSetVisiblity);
 }
 
-class TextureStateTrackingContext : public FakeWebGraphicsContext3D {
+class TextureStateTrackingContext : public TestWebGraphicsContext3D {
 public:
     TextureStateTrackingContext()
         : m_activeTexture(GL_INVALID_ENUM)
@@ -584,7 +584,7 @@ public:
     virtual bool shouldClearRootRenderPass() const OVERRIDE { return false; }
 };
 
-class NoClearRootRenderPassMockContext : public FakeWebGraphicsContext3D {
+class NoClearRootRenderPassMockContext : public TestWebGraphicsContext3D {
 public:
     MOCK_METHOD1(clear, void(WGC3Dbitfield mask));
     MOCK_METHOD4(drawElements, void(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset));
@@ -636,7 +636,7 @@ TEST(GLRendererTest2, shouldClearRootRenderPass)
     Mock::VerifyAndClearExpectations(&mockContext);
 }
 
-class ScissorTestOnClearCheckingContext : public FakeWebGraphicsContext3D {
+class ScissorTestOnClearCheckingContext : public TestWebGraphicsContext3D {
 public:
     ScissorTestOnClearCheckingContext() : m_scissorEnabled(false) { }
 
