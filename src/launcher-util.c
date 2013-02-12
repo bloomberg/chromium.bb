@@ -96,7 +96,7 @@ weston_launcher_open(struct weston_compositor *compositor,
 
 	data = (union cmsg_data *) CMSG_DATA(cmsg);
 	if (data->fd == -1) {
-		fprintf(stderr, "missing drm fd in socket request");
+		fprintf(stderr, "missing drm fd in socket request\n");
 		return -1;
 	}
 
