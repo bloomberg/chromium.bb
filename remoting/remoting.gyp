@@ -653,6 +653,12 @@
           'variables': {
             'deb_cmd': 'host/installer/linux/build-deb.sh',
             'deb_filename': 'host/installer/<!(["<(deb_cmd)", "-p", "-s", "<(DEPTH)"])',
+            'packaging_outputs': [
+              '<(deb_filename)',
+              '<!(echo <(deb_filename) | sed -e "s/.deb$/.changes/")',
+              '<(PRODUCT_DIR)/remoting_me2me_host.debug',
+              '<(PRODUCT_DIR)/remoting_start_host.debug',
+            ]
           },
           'targets': [
             {
@@ -672,9 +678,7 @@
                   #},
                   'action_name': 'build_linux_installer_zip',
                   'inputs': [
-                    '<(deb_filename)',
-                    '<(PRODUCT_DIR)/remoting_me2me_host.debug',
-                    '<(PRODUCT_DIR)/remoting_start_host.debug',
+                    '<@(packaging_outputs)',
                   ],
                   'outputs': [
                     '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
@@ -706,9 +710,7 @@
                     'host/installer/linux/debian/rules',
                   ],
                   'outputs': [
-                    '<(deb_filename)',
-                    '<(PRODUCT_DIR)/remoting_me2me_host.debug',
-                    '<(PRODUCT_DIR)/remoting_start_host.debug',
+                    '<@(packaging_outputs)',
                   ],
                   'action': [ '<(deb_cmd)', '-s', '<(DEPTH)' ],
                 },
