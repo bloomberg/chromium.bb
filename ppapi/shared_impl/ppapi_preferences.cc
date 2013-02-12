@@ -11,7 +11,8 @@ Preferences::Preferences()
       default_fixed_font_size(0),
       number_of_cpu_cores(0),
       is_3d_supported(true),
-      is_stage3d_supported(false) {
+      is_stage3d_supported(false),
+      is_stage3d_baseline_supported(false) {
 }
 
 Preferences::Preferences(const webkit_glue::WebPreferences& prefs)
@@ -24,6 +25,7 @@ Preferences::Preferences(const webkit_glue::WebPreferences& prefs)
       number_of_cpu_cores(prefs.number_of_cpu_cores),
       is_3d_supported(prefs.flash_3d_enabled),
       is_stage3d_supported(prefs.flash_stage3d_enabled),
+      is_stage3d_baseline_supported(prefs.flash_stage3d_baseline_enabled),
       // This determines both if webgl is supported (experimental_webgl_enabled)
       // and if it runs in hardware
       // (accelerated_compositing_for_plugins_enabled)

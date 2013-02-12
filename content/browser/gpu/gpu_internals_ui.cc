@@ -269,6 +269,15 @@ Value* GetFeatureStatus() {
           false
       },
       {
+          "flash_stage3d_baseline",
+          flags & (content::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE |
+                   content::GPU_FEATURE_TYPE_FLASH_STAGE3D),
+          command_line.HasSwitch(switches::kDisableFlashStage3d),
+          "Using Stage3d Baseline profile in Flash has been disabled, either"
+          " via about:flags or command line.",
+          false
+      },
+      {
           "texture_sharing",
           flags & GPU_FEATURE_TYPE_TEXTURE_SHARING,
           command_line.HasSwitch(switches::kDisableImageTransportSurface),

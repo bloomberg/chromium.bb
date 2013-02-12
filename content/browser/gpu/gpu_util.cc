@@ -24,6 +24,7 @@ const char kGpuFeatureNameWebgl[] = "webgl";
 const char kGpuFeatureNameMultisampling[] = "multisampling";
 const char kGpuFeatureNameFlash3d[] = "flash_3d";
 const char kGpuFeatureNameFlashStage3d[] = "flash_stage3d";
+const char kGpuFeatureNameFlashStage3dBaseline[] = "flash_stage3d_baseline";
 const char kGpuFeatureNameTextureSharing[] = "texture_sharing";
 const char kGpuFeatureNameAcceleratedVideoDecode[] = "accelerated_video_decode";
 const char kGpuFeatureName3dCss[] = "3d_css";
@@ -99,6 +100,8 @@ GpuFeatureType StringToGpuFeatureType(const std::string& feature_string) {
     return GPU_FEATURE_TYPE_FLASH3D;
   if (feature_string == kGpuFeatureNameFlashStage3d)
     return GPU_FEATURE_TYPE_FLASH_STAGE3D;
+  if (feature_string == kGpuFeatureNameFlashStage3dBaseline)
+    return GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE;
   if (feature_string == kGpuFeatureNameTextureSharing)
     return GPU_FEATURE_TYPE_TEXTURE_SHARING;
   if (feature_string == kGpuFeatureNameAcceleratedVideoDecode)
@@ -133,6 +136,8 @@ std::string GpuFeatureTypeToString(GpuFeatureType type) {
       matches.push_back(kGpuFeatureNameFlash3d);
     if (type & GPU_FEATURE_TYPE_FLASH_STAGE3D)
       matches.push_back(kGpuFeatureNameFlashStage3d);
+    if (type & GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE)
+      matches.push_back(kGpuFeatureNameFlashStage3dBaseline);
     if (type & GPU_FEATURE_TYPE_TEXTURE_SHARING)
       matches.push_back(kGpuFeatureNameTextureSharing);
     if (type & GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE)

@@ -29,6 +29,7 @@ struct PPAPI_SHARED_EXPORT Preferences {
   int number_of_cpu_cores;
   bool is_3d_supported;
   bool is_stage3d_supported;
+  bool is_stage3d_baseline_supported;
   bool is_webgl_supported;
 };
 

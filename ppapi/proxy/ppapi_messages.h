@@ -202,6 +202,7 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::Preferences)
   IPC_STRUCT_TRAITS_MEMBER(number_of_cpu_cores)
   IPC_STRUCT_TRAITS_MEMBER(is_3d_supported)
   IPC_STRUCT_TRAITS_MEMBER(is_stage3d_supported)
+  IPC_STRUCT_TRAITS_MEMBER(is_stage3d_baseline_supported)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::InputEventData)

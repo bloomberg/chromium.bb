@@ -151,6 +151,9 @@ PP_Var FlashResource::GetSetting(PP_Instance instance,
     case PP_FLASHSETTING_STAGE3DENABLED:
       return PP_MakeBool(PP_FromBool(
           plugin_dispatcher_->preferences().is_stage3d_supported));
+    case PP_FLASHSETTING_STAGE3DBASELINEENABLED:
+      return PP_MakeBool(PP_FromBool(
+          plugin_dispatcher_->preferences().is_stage3d_baseline_supported));
     case PP_FLASHSETTING_LANGUAGE:
       return StringVar::StringToPPVar(
           PluginGlobals::Get()->GetUILanguage());

@@ -23,6 +23,7 @@ enum GpuFeatureType {
   GPU_FEATURE_TYPE_ACCELERATED_VIDEO = 1 << 9,
   GPU_FEATURE_TYPE_PANEL_FITTING = 1 << 10,
   GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE = 1 << 11,
+  GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE = 1 << 12,
   GPU_FEATURE_TYPE_ALL = GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS |
                          GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
                          GPU_FEATURE_TYPE_WEBGL |
@@ -34,7 +35,8 @@ enum GpuFeatureType {
                          GPU_FEATURE_TYPE_3D_CSS |
                          GPU_FEATURE_TYPE_ACCELERATED_VIDEO |
                          GPU_FEATURE_TYPE_PANEL_FITTING |
-                         GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE,
+                         GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE |
+                         GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE,
   // All flags initialized to false, i.e., no feature is blacklisted.
   GPU_FEATURE_TYPE_UNKNOWN = 0
 };

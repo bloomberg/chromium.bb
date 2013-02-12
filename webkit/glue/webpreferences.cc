@@ -77,6 +77,7 @@ WebPreferences::WebPreferences()
       experimental_webgl_enabled(false),
       flash_3d_enabled(true),
       flash_stage3d_enabled(false),
+      flash_stage3d_baseline_enabled(false),
       gl_multisampling_enabled(true),
       privileged_webgl_extensions_enabled(false),
       webgl_errors_to_console_enabled(true),

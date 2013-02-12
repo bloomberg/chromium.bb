@@ -76,6 +76,7 @@ cr.define('gpu', function() {
         'multisampling': 'WebGL multisampling',
         'flash_3d': 'Flash 3D',
         'flash_stage3d': 'Flash Stage3D',
+        'flash_stage3d_baseline': 'Flash Stage3D Baseline profile',
         'texture_sharing': 'Texture Sharing',
         'video_decode': 'Video Decode',
         'video': 'Video',

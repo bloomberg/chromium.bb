@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Thu Dec 06 12:27:21 2012. */
+/* From private/ppb_flash.idl modified Thu Jan 31 16:23:42 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -100,7 +100,14 @@ typedef enum {
    * Specifies restrictions on how flash should handle LSOs. The result is an
    * int from <code>PP_FlashLSORestrictions</code>.
    */
-  PP_FLASHSETTING_LSORESTRICTIONS = 6
+  PP_FLASHSETTING_LSORESTRICTIONS = 6,
+  /**
+   * Specifies if the driver is reliable enough to use Shader Model 3 commands
+   * with it.
+   *
+   * This should only be enabled if PP_FLASHSETTING_STAGE3DENABLED is true.
+   */
+  PP_FLASHSETTING_STAGE3DBASELINEENABLED = 7
 } PP_FlashSetting;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
 
