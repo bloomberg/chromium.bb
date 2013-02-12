@@ -271,6 +271,12 @@ class ChromeLauncher(BrowserLauncher):
             # Windows (see http://crbug.com/169941).
             '--disable-web-resources',
             '--disable-preconnect',
+            # This is speculative, sync should not occur with a clean profile.
+            '--disable-sync',
+            # This prevents Chrome from making "hidden" network requests at
+            # startup.  These requests could be a source of non-determinism,
+            # and they also add noise to the netlogs.
+            '--dns-prefetch-disable',
             '--no-first-run',
             '--no-default-browser-check',
             '--log-level=1',
