@@ -6515,3 +6515,13 @@
    fun:_ZN20OneClickSigninHelper14DidStopLoadingEPN7content14RenderViewHostE
    fun:_ZN67OneClickSigninHelperTest_SigninFromWebstoreWithConfigSyncfirst_Test8TestBodyEv
 }
+{
+   bug_175815
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base5Value18CreateIntegerValueEi
+   fun:_ZNK4base16FundamentalValue8DeepCopyEv
+   fun:_ZN4base8internal12_GLOBAL__N_125DictionaryHiddenRootValue26RemoveWithoutPathExpansionERKSsPPNS_5ValueE
+   fun:_ZN4base15DictionaryValue6RemoveERKSsPPNS_5ValueE
+   fun:_ZN32PluginFinderTest_JsonSyntax_Test8TestBodyEv
+}
