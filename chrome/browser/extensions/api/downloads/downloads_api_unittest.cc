@@ -1727,8 +1727,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Valid file URLs are valid URLs.
+// Disabled due to crbug.com/175711
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_Download_File) {
+                       DISABLED_DownloadExtensionTest_Download_File) {
   GoOnTheRecord();
   CHECK(StartTestServer());
   LoadExtension("downloads_split");
