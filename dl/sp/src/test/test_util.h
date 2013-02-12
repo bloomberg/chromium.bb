@@ -152,6 +152,8 @@ int IsKnownFailure(int fft_order, int is_forward_fft, int signal_type,
  */
 void DumpArrayReal16(const char* array_name, int count, const OMX_S16* array);
 void DumpArrayReal32(const char* array_name, int count, const OMX_S32* array);
+void DumpArrayComplex16(const char* array_name, int count,
+                        const OMX_SC16* array);
 void DumpArrayComplex32(const char* array_name, int count,
                         const OMX_SC32* array);
 void DumpArrayFloat(const char* array_name, int count, const OMX_F32* array);

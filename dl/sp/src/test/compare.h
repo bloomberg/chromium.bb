@@ -32,6 +32,8 @@ struct SnrResult {
  */
 void CompareComplex32(struct SnrResult* snr, OMX_SC32* actual,
                       OMX_SC32* expected, int size);
+void CompareComplex16(struct SnrResult* snr, OMX_SC16* actual,
+                      OMX_SC16* expected, int size);
 void CompareReal32(struct SnrResult* snr, OMX_S32* actual,
                    OMX_S32* expected, int size);
 void CompareReal16(struct SnrResult* snr, OMX_S16* actual,

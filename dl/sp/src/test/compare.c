@@ -69,6 +69,45 @@ void CompareComplex32(struct SnrResult* snr, OMX_SC32* actual,
   snr->complex_snr_ = CalculateSNR(complex_signal_power, complex_noise_power);
 }
 
+void CompareComplex16(struct SnrResult* snr, OMX_SC16* actual,
+                      OMX_SC16* expected, int size) {
+    double realSignalPower = 0;
+    double imagSignalPower = 0;
+    double complexSignalPower = 0;
+    double realNoisePower = 0;
+    double imagNoisePower = 0;
+    double complexNoisePower = 0;
+    int k;
+    for (k = 0; k < size; ++k) {
+        double x2;
+        double y2;
+        double z2;
+
+        if (verbose > 255) {
+            printf("%4d: (%10d, %10d) (%10d, %10d)\n", k,
+                   actual[k].Re, actual[k].Im,
+                   expected[k].Re, expected[k].Im);
+        }
+
+        x2 = pow((double) expected[k].Re, 2);
+        y2 = pow((double) expected[k].Im, 2);
+        realSignalPower += x2;
+        imagSignalPower += y2;
+        complexSignalPower += x2 + y2;
+
+        x2 = pow((double) actual[k].Re - expected[k].Re, 2);
+        y2 = pow((double) actual[k].Im - expected[k].Im, 2);
+
+        realNoisePower += x2;
+        imagNoisePower += y2;
+        complexNoisePower += x2 + y2;
+    }
+
+    snr->real_snr_ = CalculateSNR(realSignalPower, realNoisePower);
+    snr->imag_snr_ = CalculateSNR(imagSignalPower, imagNoisePower);
+    snr->complex_snr_ = CalculateSNR(complexSignalPower, complexNoisePower);
+}
+
 /*
  * Compute the SNR of the actual real signal, returning the SNR.
  */

@@ -43,6 +43,14 @@
       ],
     },
     {
+      # Test complex fixed-point 16-bit FFT
+      'target_name': 'test_fft16',
+      'type': 'executable',
+      'sources': [
+        'test_fft16.c',
+      ],
+    },
+    {
       # Test complex fixed-point 32-bit FFT
       'target_name': 'test_fft32',
       'type': 'executable',
@@ -95,6 +103,7 @@
       'target_name': 'All',
       'type': 'none',
       'dependencies': [
+        'test_fft16',
         'test_fft32',
         'test_float_fft',
         'test_float_rfft',
