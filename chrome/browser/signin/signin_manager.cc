@@ -682,15 +682,15 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
   possibly_invalid_username_ = email_iter->second;
 
 #if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
-  // TODO(atwilson): Refactor this to expose an observer interface to allow
-  // UserPolicySigninService and OneClickSignin to display UI here, instead
-  // of having this logic in SigninManager.
-  // If we have an OAuth token, try loading policy for this user now, before
-  // any signed in services are initialized. If there's no oauth token (the
-  // user is using the old ClientLogin flow) then policy will get loaded once
-  // the TokenService finishes initializing (not ideal, but it's a reasonable
-  // fallback).
-  if (!temp_oauth_login_tokens_.refresh_token.empty()) {
+  // TODO(atwilson): Move this code out to OneClickSignin instead of having
+  // it embedded in SigninManager - we don't want UI logic in SigninManager.
+  // If this is a new signin (authenticated_username_ is not set) and we have
+  // an OAuth token, try loading policy for this user now, before any signed in
+  // services are initialized. If there's no oauth token (the user is using the
+  // old ClientLogin flow) then policy will get loaded once the TokenService
+  // finishes initializing (not ideal, but it's a reasonable fallback).
+  if (authenticated_username_.empty() &&
+      !temp_oauth_login_tokens_.refresh_token.empty()) {
     policy::UserPolicySigninService* policy_service =
         policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
     policy_service->RegisterPolicyClient(
