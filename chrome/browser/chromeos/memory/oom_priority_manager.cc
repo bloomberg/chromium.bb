@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/memory/low_memory_observer.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -265,9 +266,8 @@ bool OomPriorityManager::IsReloadableUI(const GURL& url) {
 }
 
 bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
-  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-       browser_iterator != BrowserList::end(); ++browser_iterator) {
-    Browser* browser = *browser_iterator;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     TabStripModel* model = browser->tab_strip_model();
     for (int idx = 0; idx < model->count(); idx++) {
       // Can't discard tabs that are already discarded or active.
@@ -362,11 +362,8 @@ void OomPriorityManager::PurgeBrowserMemory() {
 
 int OomPriorityManager::GetTabCount() const {
   int tab_count = 0;
-  for (BrowserList::const_iterator browser_it = BrowserList::begin();
-      browser_it != BrowserList::end(); ++browser_it) {
-    Browser* browser = *browser_it;
-    tab_count += browser->tab_strip_model()->count();
-  }
+  for (chrome::BrowserIterator it; !it.done(); it.Next())
+    tab_count += it->tab_strip_model()->count();
   return tab_count;
 }
 

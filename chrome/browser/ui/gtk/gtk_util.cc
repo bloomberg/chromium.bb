@@ -24,10 +24,12 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/theme_resources.h"
@@ -412,8 +414,7 @@ void MakeAppModalWindowGroup() {
   // we need to add current non-browser modal dialogs to the list. If
   // we have 2.14+ we can do things the correct way.
   GtkWindowGroup* window_group = gtk_window_group_new();
-  for (BrowserList::const_iterator it = BrowserList::begin();
-       it != BrowserList::end(); ++it) {
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     // List all windows in this current group
     GtkWindowGroup* old_group =
         gtk_window_get_group((*it)->window()->GetNativeWindow());
@@ -428,12 +429,15 @@ void MakeAppModalWindowGroup() {
 }
 
 void AppModalDismissedUngroupWindows() {
-  if (BrowserList::begin() != BrowserList::end()) {
+  // GTK only has the native desktop.
+  const chrome::BrowserListImpl* native_browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  if (!native_browser_list->empty()) {
     std::vector<GtkWindow*> transient_windows;
 
     // All windows should be part of one big modal group right now.
     GtkWindowGroup* window_group = gtk_window_get_group(
-        (*BrowserList::begin())->window()->GetNativeWindow());
+        native_browser_list->get(0)->window()->GetNativeWindow());
     GList* windows = gtk_window_group_list_windows(window_group);
 
     for (GList* item = windows; item; item = item->next) {

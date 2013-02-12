@@ -32,7 +32,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -310,9 +310,8 @@ bool FileManageTabExists(const base::FilePath& path, TAB_REUSE_MODE mode) {
   const GURL origin(chrome::kChromeUIFileManagerURL);
   const std::string ref = std::string("/") + path.value();
 
-  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-       browser_iterator != BrowserList::end(); ++browser_iterator) {
-    Browser* browser = *browser_iterator;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int idx = 0; idx < tab_strip->count(); idx++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(idx);
@@ -434,9 +433,8 @@ void OpenFileBrowser(const base::FilePath& path,
 }
 
 Browser* GetBrowserForUrl(GURL target_url) {
-  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-       browser_iterator != BrowserList::end(); ++browser_iterator) {
-    Browser* browser = *browser_iterator;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int idx = 0; idx < tab_strip->count(); idx++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(idx);

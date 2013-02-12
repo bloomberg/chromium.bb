@@ -11,6 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/applescript/bookmark_folder_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
@@ -24,8 +25,8 @@
       arrayWithCapacity:BrowserList::size()];
   // Iterate through all browsers and check if it closing,
   // if not add it to list.
-  for (BrowserList::const_iterator browserIterator = BrowserList::begin();
-       browserIterator != BrowserList::end(); ++browserIterator) {
+  for (chrome::BrowserIterator browserIterator; !browserIterator.done();
+       browserIterator.Next()) {
     if ((*browserIterator)->IsAttemptingToCloseBrowser())
       continue;
 

@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_mac.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -984,8 +985,7 @@ void RecordLastRunAppBundlePath() {
   // visible windows are panels or notifications, we still need to open a new
   // window.
   if (flag) {
-    for (BrowserList::const_iterator iter = BrowserList::begin();
-         iter != BrowserList::end(); ++iter) {
+    for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
       Browser* browser = *iter;
       if (browser->is_type_tabbed() || browser->is_type_popup())
         return YES;

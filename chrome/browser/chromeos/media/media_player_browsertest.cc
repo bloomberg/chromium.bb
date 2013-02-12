@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -24,9 +24,8 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
   bool IsBrowserVisible(Browser* browser) {
     if (browser == NULL)
       return false;
-    for (BrowserList::const_iterator it = BrowserList::begin();
-         it != BrowserList::end(); ++it) {
-      if ((*it)->is_type_popup() && (*it)->is_app() && (*it) == browser)
+    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+      if (it->is_type_popup() && it->is_app() && (*it) == browser)
         return true;
     }
     return false;

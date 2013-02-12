@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/chrome_gtk_frame.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
@@ -653,9 +653,8 @@ void GtkThemeService::NotifyThemeChanged() {
     gtk_util::SetLabelColor(it->first, color);
   }
 
-  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-       browser_iterator != BrowserList::end(); browser_iterator++) {
-    Browser* browser = (*browser_iterator);
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
     if (!browser->window())
       continue;
     GtkWindow* window = browser->window()->GetNativeWindow();
