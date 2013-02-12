@@ -371,8 +371,9 @@ void PanelLayoutManager::Relayout() {
     VisiblePanelPositionInfo position_info;
     position_info.min_x = std::max(panel_left_bounds, icon_origin.x() +
         icon_bounds.width() - panel->bounds().width());
-    position_info.max_x = std::min(icon_origin.x(), panel_right_bounds -
-                                   kPanelIdealSpacing);
+    position_info.max_x = std::min(icon_origin.x(),
+                                   panel_right_bounds - kPanelIdealSpacing -
+                                   panel->bounds().width());
     position_info.x = icon_origin.x() + icon_bounds.width() / 2 -
                       panel->bounds().width() / 2;
     position_info.width = panel->bounds().width();

@@ -9,6 +9,7 @@
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_view.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -77,6 +78,20 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     ASSERT_TRUE(manager);
     ASSERT_TRUE(manager->callout_widget());
     *widget = manager->callout_widget();
+  }
+
+  void PanelInScreen(aura::Window* panel) {
+    gfx::Rect panel_bounds = panel->GetBoundsInRootWindow();
+    gfx::Point root_point = gfx::Point(panel_bounds.x(), panel_bounds.y());
+    gfx::Display display = ScreenAsh::FindDisplayContainingPoint(root_point);
+
+    gfx::Rect panel_bounds_in_screen = panel->GetBoundsInScreen();
+    gfx::Point screen_bottom_right = gfx::Point(
+        panel_bounds_in_screen.right(),
+        panel_bounds_in_screen.bottom());
+    gfx::Rect display_bounds = display.bounds();
+    EXPECT_TRUE(screen_bottom_right.x() < display_bounds.width() &&
+                screen_bottom_right.y() < display_bounds.height());
   }
 
   void PanelsNotOverlapping(aura::Window* panel1, aura::Window* panel2) {
@@ -309,6 +324,15 @@ TEST_F(PanelLayoutManagerTest, SplitView) {
   scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
 
   EXPECT_NO_FATAL_FAILURE(PanelsNotOverlapping(w1.get(), w2.get()));
+}
+
+TEST_F(PanelLayoutManagerTest, SplitViewOverlapWhenLarge) {
+  gfx::Rect bounds(0, 0, 600, 201);
+  scoped_ptr<aura::Window> w1(CreatePanelWindow(bounds));
+  scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
+
+  EXPECT_NO_FATAL_FAILURE(PanelInScreen(w1.get()));
+  EXPECT_NO_FATAL_FAILURE(PanelInScreen(w2.get()));
 }
 
 TEST_F(PanelLayoutManagerTest, FanWindows) {
