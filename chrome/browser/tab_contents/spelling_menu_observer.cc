@@ -24,6 +24,8 @@
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -265,12 +267,16 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     if (!integrate_spelling_service_.GetValue()) {
       content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
-      chrome::ShowConfirmBubble(rvh->GetView()->GetNativeView(),
-                                gfx::Point(rect.CenterPoint().x(), rect.y()),
-                                new SpellingBubbleModel(
-                                    proxy_->GetProfile(),
-                                    proxy_->GetWebContents(),
-                                    false));
+      chrome::ShowConfirmBubble(
+#if defined(TOOLKIT_VIEWS)
+          proxy_->GetWebContents()->GetView()->GetTopLevelNativeWindow(),
+#else
+          rvh->GetView()->GetNativeView(),
+#endif
+          gfx::Point(rect.CenterPoint().x(), rect.y()),
+          new SpellingBubbleModel(proxy_->GetProfile(),
+                                  proxy_->GetWebContents(),
+                                  false));
     } else {
       Profile* profile = proxy_->GetProfile();
       if (profile)

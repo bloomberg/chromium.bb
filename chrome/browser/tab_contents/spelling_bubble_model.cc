@@ -51,14 +51,11 @@ string16 SpellingBubbleModel::GetButtonLabel(BubbleButton button) const {
 }
 
 void SpellingBubbleModel::Accept() {
-  PrefService* pref = profile_->GetPrefs();
-  DCHECK(pref);
-  pref->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
-  if (include_autocorrect_)
-    pref->SetBoolean(prefs::kEnableAutoSpellCorrect, true);
+  SetPref(true);
 }
 
 void SpellingBubbleModel::Cancel() {
+  SetPref(false);
 }
 
 string16 SpellingBubbleModel::GetLinkText() const {
@@ -70,4 +67,12 @@ void SpellingBubbleModel::LinkClicked() {
       GURL(chrome::kPrivacyLearnMoreURL), Referrer(), NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK, false);
   web_contents_->OpenURL(params);
+}
+
+void SpellingBubbleModel::SetPref(bool enabled) {
+  PrefService* pref = profile_->GetPrefs();
+  DCHECK(pref);
+  pref->SetBoolean(prefs::kSpellCheckUseSpellingService, enabled);
+  if (include_autocorrect_)
+    pref->SetBoolean(prefs::kEnableAutoSpellCorrect, enabled);
 }

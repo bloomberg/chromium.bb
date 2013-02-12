@@ -26,17 +26,9 @@ TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
   bool model_deleted = false;
   TestConfirmBubbleModel* model =
       new TestConfirmBubbleModel(&model_deleted, NULL, NULL, NULL);
-  ConfirmBubbleViews* bubble =
-      new ConfirmBubbleViews(parent_widget->GetNativeView(),
-                             gfx::Point(12, 34),
-                             model);
-  views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->Show();
-
-  // We're anchored to a point, not a specific view or widget.
-  EXPECT_EQ("12,34", bubble->anchor_point().ToString());
-  EXPECT_FALSE(bubble->anchor_view());
-  EXPECT_FALSE(bubble->anchor_widget());
+  ConfirmBubbleViews* bubble = new ConfirmBubbleViews(model);
+  gfx::NativeView parent = parent_widget->GetNativeView();
+  views::DialogDelegateView::CreateDialogWidget(bubble, NULL, parent)->Show();
 
   // Clean up.
   bubble->GetWidget()->CloseNow();

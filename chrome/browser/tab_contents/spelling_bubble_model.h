@@ -35,6 +35,9 @@ class SpellingBubbleModel : public ConfirmBubbleModel {
   virtual void LinkClicked() OVERRIDE;
 
  private:
+  // Set the profile preferences to enable or disable the feature.
+  void SetPref(bool enabled);
+
   Profile* profile_;
   content::WebContents* web_contents_;
   bool include_autocorrect_;
