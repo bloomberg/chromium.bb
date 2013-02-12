@@ -37,6 +37,7 @@ PRINTING_EXPORT extern const char kSettingMarginRight[];
 PRINTING_EXPORT extern const char kSettingMarginTop[];
 PRINTING_EXPORT extern const char kSettingMarginsCustom[];
 PRINTING_EXPORT extern const char kSettingMarginsType[];
+PRINTING_EXPORT extern const char kSettingPreviewPageCount[];
 PRINTING_EXPORT extern const char kSettingPageRange[];
 PRINTING_EXPORT extern const char kSettingPageRangeFrom[];
 PRINTING_EXPORT extern const char kSettingPageRangeTo[];

@@ -186,27 +186,10 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
   return settings.release();
 }
 
-void ReportPageCount(const DictionaryValue& settings,
-                     const std::string& printer_type) {
-  int count = 0;
-  const ListValue* page_range_array;
-  if (settings.GetList(printing::kSettingPageRange, &page_range_array)) {
-    for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
-      const DictionaryValue* dict;
-      if (!page_range_array->GetDictionary(index, &dict))
-        continue;
-
-      printing::PageRange range;
-      if (!dict->GetInteger(printing::kSettingPageRangeFrom, &range.from) ||
-          !dict->GetInteger(printing::kSettingPageRangeTo, &range.to)) {
-        continue;
-      }
-      count += (range.to - range.from) + 1;
-    }
-  }
+void ReportPageCount(int page_count, const std::string& printer_type) {
   UMA_HISTOGRAM_COUNTS(base::StringPrintf("PrintPreview.PageCount.%s",
                                           printer_type.c_str()),
-                       count);
+                       page_count);
 }
 
 // Track the popularity of print settings and report the stats.
@@ -454,8 +437,11 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     is_cloud_printer = settings->HasKey(printing::kSettingCloudPrintId);
   }
 
+  int page_count = 0;
+  settings->GetInteger(printing::kSettingPreviewPageCount, &page_count);
+
   if (print_to_pdf) {
-    ReportPageCount(*settings, "PrintToPDF");
+    ReportPageCount(page_count, "PrintToPDF");
     ReportUserActionHistogram(PRINT_TO_PDF);
     PrintToPdf();
     return;
@@ -469,14 +455,14 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   }
 
   if (is_cloud_printer) {
-    ReportPageCount(*settings, "PrintToCloudPrint");
+    ReportPageCount(page_count, "PrintToCloudPrint");
     ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
     SendCloudPrintJob(data);
   } else if (is_cloud_dialog) {
-    ReportPageCount(*settings, "PrintToCloudPrintWebDialog");
+    ReportPageCount(page_count, "PrintToCloudPrintWebDialog");
     PrintWithCloudPrintDialog(data, title);
   } else {
-    ReportPageCount(*settings, "PrintToPrinter");
+    ReportPageCount(page_count, "PrintToPrinter");
     ReportUserActionHistogram(PRINT_TO_PRINTER);
     ReportPrintSettingsStats(*settings);
 

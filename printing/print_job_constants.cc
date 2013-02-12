@@ -93,6 +93,9 @@ const char kSettingMarginsCustom[] = "marginsCustom";
 // MarginType enum.
 const char kSettingMarginsType[] = "marginsType";
 
+// Number of pages to print.
+const char kSettingPreviewPageCount[] = "pageCount";
+
 // A page range.
 const char kSettingPageRange[] = "pageRange";
 
