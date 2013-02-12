@@ -313,11 +313,9 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
     //         But then, the child also does not preserve3D. When it gives its hierarchy to the grandChild, it should be flattened to 2D.
     gfx::Transform parentSublayerMatrix;
     parentSublayerMatrix.Scale3d(10, 10, 3.3);
-    gfx::Transform parentTranslationToCenter;
-    parentTranslationToCenter.Translate(5, 6);
-    // Sublayer matrix is applied to the center of the parent layer.
+    // Sublayer matrix is applied to the anchor point of the parent layer.
     parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor)
-            * parentTranslationToCenter * parentSublayerMatrix * inverse(parentTranslationToCenter);
+            * parentTranslationToAnchor * parentSublayerMatrix * inverse(parentTranslationToAnchor);
     gfx::Transform flattenedCompositeTransform = parentCompositeTransform;
     flattenedCompositeTransform.FlattenTo2d();
     setLayerPropertiesForTesting(parent.get(), parentLayerTransform, parentSublayerMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 0), gfx::Size(10, 12), false);
@@ -366,10 +364,8 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
     gfx::Transform parentSublayerMatrix;
     parentSublayerMatrix.Scale3d(0.9, 1, 3.3);
 
-    gfx::Transform parentTranslationToCenter;
-    parentTranslationToCenter.Translate(50, 60);
     gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor)
-            * parentTranslationToCenter * parentSublayerMatrix * inverse(parentTranslationToCenter);
+            * parentTranslationToAnchor * parentSublayerMatrix * inverse(parentTranslationToAnchor);
     gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform, 1.0f);
     gfx::Transform surfaceSublayerTransform;
     surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
@@ -399,6 +395,35 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
     // The screen space is the same as the target since the child surface draws into the root.
     EXPECT_TRANSFORMATION_MATRIX_EQ(surfaceSublayerCompositeTransform, child->renderTarget()->renderSurface()->screenSpaceTransform());
 }
+
+TEST(LayerTreeHostCommonTest, verifySublayerTransformWithAnchorPoint)
+{
+    // crbug.com/157961 - we were always applying the sublayer transform about
+    // the center of the layer, rather than the anchor point.
+
+    scoped_refptr<Layer> root = Layer::create();
+    scoped_refptr<Layer> parent = Layer::create();
+    scoped_refptr<LayerWithForcedDrawsContent> child = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    root->addChild(parent);
+    parent->addChild(child);
+
+    gfx::Transform identityMatrix;
+    gfx::Transform parentSublayerMatrix;
+    parentSublayerMatrix.ApplyPerspectiveDepth(2.0);
+    gfx::PointF parentAnchorPoint(0.2f, 0.8f);
+
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(1, 2), false);
+    setLayerPropertiesForTesting(parent.get(), identityMatrix, parentSublayerMatrix, parentAnchorPoint, gfx::PointF(0, 0), gfx::Size(100, 100), false);
+    setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(10, 10), false);
+    executeCalculateDrawProperties(root.get());
+
+    gfx::Transform expectedChildDrawTransform;
+    expectedChildDrawTransform.Translate(20, 80);
+    expectedChildDrawTransform.ApplyPerspectiveDepth(2.0);
+    expectedChildDrawTransform.Translate(-20, -80);
+    EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildDrawTransform, child->drawTransform());
+}
+
 
 TEST(LayerTreeHostCommonTest, verifySeparateRenderTargetRequirementWithClipping)
 {
@@ -510,12 +535,8 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForReplica)
     parentTranslationToAnchor.Translate(2.5, 3);
     gfx::Transform parentSublayerMatrix;
     parentSublayerMatrix.Scale3d(10, 10, 3.3);
-    gfx::Transform parentTranslationToCenter;
-    parentTranslationToCenter.Translate(5, 6);
     gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor)
-            * parentTranslationToCenter * parentSublayerMatrix * inverse(parentTranslationToCenter);
-    gfx::Transform childTranslationToCenter;
-    childTranslationToCenter.Translate(8, 9);
+            * parentTranslationToAnchor * parentSublayerMatrix * inverse(parentTranslationToAnchor);
     gfx::Transform replicaLayerTransform;
     replicaLayerTransform.Scale3d(3, 3, 1);
     gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform, 1.f);
@@ -590,8 +611,6 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     // y component has a translation by 1 for every ancestor, which indicates the "depth" of the layer in the hierarchy.
     gfx::Transform translationToAnchor;
     translationToAnchor.Translate(2.5, 0);
-    gfx::Transform translationToCenter;
-    translationToCenter.Translate(5, 5);
     gfx::Transform layerTransform;
     layerTransform.Translate(1, 1);
     gfx::Transform sublayerTransform;
@@ -600,7 +619,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     replicaLayerTransform.Scale3d(-2, 5, 1);
 
     gfx::Transform A = translationToAnchor * layerTransform * inverse(translationToAnchor);
-    gfx::Transform B = translationToCenter * sublayerTransform * inverse(translationToCenter);
+    gfx::Transform B = translationToAnchor * sublayerTransform * inverse(translationToAnchor);
     gfx::Transform R = A * translationToAnchor * replicaLayerTransform * inverse(translationToAnchor);
 
     gfx::Vector2dF surface1ParentTransformScale = MathUtil::computeTransform2dScaleComponents(A * B, 1.f);
