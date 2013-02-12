@@ -347,6 +347,20 @@ void SingleThreadProxy::compositeImmediately()
     }
 }
 
+scoped_ptr<base::Value> SingleThreadProxy::asValue() const
+{
+    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+    {
+        // The following line casts away const modifiers because it is just
+        // setting debug state. We still want the asValue() function and its
+        // call chain to be const throughout.
+        DebugScopedSetImplThread impl(const_cast<SingleThreadProxy*>(this));
+
+        state->Set("layer_tree_host_impl", m_layerTreeHostImpl->asValue().release());
+    }
+    return state.PassAs<base::Value>();
+}
+
 void SingleThreadProxy::forceSerializeOnSwapBuffers()
 {
     {

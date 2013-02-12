@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/stringprintf.h"
 #include "cc/append_quads_data.h"
 #include "cc/compositor_frame_metadata.h"
 #include "cc/damage_tracker.h"
@@ -29,6 +30,7 @@
 #include "cc/overdraw_metrics.h"
 #include "cc/page_scale_animation.h"
 #include "cc/paint_time_counter.h"
+#include "cc/picture_layer_tiling.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/quad_culler.h"
 #include "cc/render_pass_draw_quad.h"
@@ -56,6 +58,13 @@ void didVisibilityChange(cc::LayerTreeHostImpl* id, bool visible)
     }
 
     TRACE_EVENT_ASYNC_END0("webkit", "LayerTreeHostImpl::setVisible", id);
+}
+
+std::string ValueToString(scoped_ptr<base::Value> value)
+{
+    std::string str;
+    base::JSONWriter::Write(value.get(), &str);
+    return str;
 }
 
 } // namespace
@@ -162,6 +171,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
 {
     DCHECK(m_proxy->isImplThread());
     didVisibilityChange(this, m_visible);
+
+    setDebugState(settings.initialDebugState);
 
     if (settings.calculateTopControlsPosition)
         m_topControlsManager = TopControlsManager::Create(this, settings.topControlsHeight);
@@ -801,6 +812,11 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
     if (m_debugState.showHudRects())
         m_debugRectHistory->saveDebugRectsForCurrentFrame(rootLayer(), *frame.renderSurfaceLayerList, frame.occludingScreenSpaceRects, frame.nonOccludingScreenSpaceRects, m_debugState);
 
+    if (m_debugState.traceAllRenderedFrames) {
+        TRACE_EVENT_INSTANT1("cc.debug", "Frame",
+                             "frame", ValueToString(frameStateAsValue()));
+    }
+
     // Because the contents of the HUD depend on everything else in the frame, the contents
     // of its texture are updated as the last thing before the frame is drawn.
     if (m_activeTree->hud_layer())
@@ -928,6 +944,8 @@ void LayerTreeHostImpl::createPendingTree()
     m_client->onCanDrawStateChanged(canDraw());
     m_client->onHasPendingTreeStateChanged(pendingTree());
     TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree", m_pendingTree.get());
+    TRACE_EVENT_ASYNC_STEP0("cc",
+                            "PendingTree", m_pendingTree.get(), "waiting");
 }
 
 void LayerTreeHostImpl::checkForCompletedTileUploads()
@@ -935,25 +953,6 @@ void LayerTreeHostImpl::checkForCompletedTileUploads()
     DCHECK(!m_client->isInsideDraw()) << "Checking for completed uploads within a draw may trigger spurious redraws.";
     if (m_tileManager)
         m_tileManager->CheckForCompletedTileUploads();
-}
-
-scoped_ptr<base::Value> LayerTreeHostImpl::activationStateAsValue() const
-{
-    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-    state->SetBoolean("visible_resources_ready", pendingTree()->AreVisibleResourcesReady());
-    state->Set("tile_manager", m_tileManager->AsValue().release());
-    return state.PassAs<base::Value>();
-}
-
-namespace {
-
-std::string ValueToString(scoped_ptr<base::Value> value)
-{
-    std::string str;
-    base::JSONWriter::Write(value.get(), &str);
-    return str;
-}
-
 }
 
 void LayerTreeHostImpl::activatePendingTreeIfNeeded()
@@ -974,8 +973,11 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
     // or tile manager has no work scheduled for pending tree.
     if (activeTree()->RootLayer() &&
         !pendingTree()->AreVisibleResourcesReady() &&
-        m_tileManager->HasPendingWorkScheduled(PENDING_TREE))
+        m_tileManager->HasPendingWorkScheduled(PENDING_TREE)) {
+        TRACE_EVENT_ASYNC_STEP0("cc",
+                                "PendingTree", m_pendingTree.get(), "waiting");
       return;
+    }
 
     activatePendingTree();
 }
@@ -1693,6 +1695,33 @@ base::TimeTicks LayerTreeHostImpl::currentFrameTime()
     if (m_currentFrameTime.is_null())
         m_currentFrameTime = base::TimeTicks::Now();
     return m_currentFrameTime;
+}
+
+scoped_ptr<base::Value> LayerTreeHostImpl::asValue() const
+{
+    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+    state->Set("activation_state", activationStateAsValue().release());
+    state->Set("frame_state", frameStateAsValue().release());
+    return state.PassAs<base::Value>();
+}
+
+scoped_ptr<base::Value> LayerTreeHostImpl::activationStateAsValue() const
+{
+    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+    state->SetString("lthi_id", StringPrintf("%p", this));
+    state->SetBoolean("visible_resources_ready", pendingTree()->AreVisibleResourcesReady());
+    state->Set("tile_manager", m_tileManager->BasicStateAsValue().release());
+    return state.PassAs<base::Value>();
+}
+
+scoped_ptr<base::Value> LayerTreeHostImpl::frameStateAsValue() const
+{
+    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+    state->SetString("lthi_id", StringPrintf("%p", this));
+    state->Set("device_viewport_size", MathUtil::asValue(m_deviceViewportSize).release());
+    if (m_tileManager)
+        state->Set("tiles", m_tileManager->AllTilesAsValue().release());
+    return state.PassAs<base::Value>();
 }
 
 // static

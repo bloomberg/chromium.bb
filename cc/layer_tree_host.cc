@@ -837,6 +837,13 @@ bool LayerTreeHost::blocksPendingCommit() const
     return m_rootLayer->blocksPendingCommitRecursive();
 }
 
+scoped_ptr<base::Value> LayerTreeHost::asValue() const
+{
+    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+    state->Set("proxy", m_proxy->asValue().release());
+    return state.PassAs<base::Value>();
+}
+
 void LayerTreeHost::animateLayers(base::TimeTicks time)
 {
     if (!m_settings.acceleratedAnimationEnabled || m_animationRegistrar->active_animation_controllers().empty())

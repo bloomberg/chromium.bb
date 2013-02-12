@@ -7,6 +7,7 @@
 #include <cmath>
 #include <limits>
 
+#include "base/values.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
@@ -383,6 +384,29 @@ gfx::Vector2dF MathUtil::projectVector(gfx::Vector2dF source, gfx::Vector2dF des
 {
     float projectedLength = gfx::DotProduct(source, destination) / destination.LengthSquared();
     return gfx::Vector2dF(projectedLength * destination.x(), projectedLength * destination.y());
+}
+
+scoped_ptr<base::Value> MathUtil::asValue(gfx::Size s) {
+  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+  res->SetDouble("width", s.width());
+  res->SetDouble("height", s.height());
+  return res.PassAs<base::Value>();
+}
+
+scoped_ptr<base::Value> MathUtil::asValue(gfx::PointF pt) {
+  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+  res->SetDouble("x", pt.x());
+  res->SetDouble("y", pt.y());
+  return res.PassAs<base::Value>();
+}
+
+scoped_ptr<base::Value> MathUtil::asValue(gfx::QuadF q) {
+  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+  res->Set("p1", asValue(q.p1()).release());
+  res->Set("p2", asValue(q.p2()).release());
+  res->Set("p3", asValue(q.p3()).release());
+  res->Set("p4", asValue(q.p4()).release());
+  return res.PassAs<base::Value>();
 }
 
 }  // namespace cc

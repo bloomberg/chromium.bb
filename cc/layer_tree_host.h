@@ -200,6 +200,9 @@ public:
 
     bool blocksPendingCommit() const;
 
+    // Obtains a thorough dump of the LayerTreeHost as a value.
+    scoped_ptr<base::Value> asValue() const;
+
 protected:
     LayerTreeHost(LayerTreeHostClient*, const LayerTreeSettings&);
     bool initialize(scoped_ptr<Thread> implThread);

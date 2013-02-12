@@ -95,6 +95,44 @@ scoped_ptr<base::Value> TileManagerBinAsValue(TileManagerBin bin) {
   }
 }
 
+scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
+    TileManagerBinPriority bin_priority) {
+  switch (bin_priority) {
+  case HIGH_PRIORITY_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "HIGH_PRIORITY_BIN"));
+  case LOW_PRIORITY_BIN:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "LOW_PRIORITY_BIN"));
+  default:
+      DCHECK(false) << "Unrecognized TileManagerBinPriority value";
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "<unknown TileManagerBinPriority value>"));
+  }
+}
+
+scoped_ptr<base::Value> TileRasterStateAsValue(
+    TileRasterState raster_state) {
+  switch (raster_state) {
+  case IDLE_STATE:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "IDLE_STATE"));
+  case WAITING_FOR_RASTER_STATE:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "WAITING_FOR_RASTER_STATE"));
+  case RASTER_STATE:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "RASTER_STATE"));
+  case SET_PIXELS_STATE:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "SET_PIXELS_STATE"));
+  default:
+      DCHECK(false) << "Unrecognized TileRasterState value";
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+          "<unknown TileRasterState value>"));
+  }
+}
+
 ManagedTileState::ManagedTileState()
     : can_use_gpu_memory(false),
       can_be_freed(true),
@@ -110,6 +148,21 @@ ManagedTileState::ManagedTileState()
 ManagedTileState::~ManagedTileState() {
   DCHECK(!resource);
   DCHECK(!resource_is_being_initialized);
+}
+
+scoped_ptr<base::Value> ManagedTileState::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  state->SetBoolean("can_use_gpu_memory", can_use_gpu_memory);
+  state->SetBoolean("can_be_freed", can_be_freed);
+  state->SetBoolean("has_resource", resource.get() != 0);
+  state->SetBoolean("resource_is_being_initialized", resource_is_being_initialized);
+  state->Set("raster_state", TileRasterStateAsValue(raster_state).release());
+  state->Set("bin.0", TileManagerBinAsValue(bin[0]).release());
+  state->Set("bin.1", TileManagerBinAsValue(bin[0]).release());
+  state->Set("gpu_memmgr_stats_bin", TileManagerBinAsValue(bin[0]).release());
+  state->Set("resolution", TileResolutionAsValue(resolution).release());
+  state->SetDouble("time_to_needed_in_seconds", time_to_needed_in_seconds);
+  return state.PassAs<base::Value>();
 }
 
 TileManager::TileManager(
@@ -338,7 +391,8 @@ void TileManager::ManageTiles() {
   // Assign gpu memory and determine what tiles need to be rasterized.
   AssignGpuMemoryToTiles();
 
-  TRACE_EVENT_INSTANT1("cc", "DidManage", "state", ValueToString(AsValue()));
+  TRACE_EVENT_INSTANT1("cc", "DidManage", "state",
+                       ValueToString(BasicStateAsValue()));
 
   // Finally, kick the rasterizer.
   DispatchMoreTasks();
@@ -415,13 +469,19 @@ void TileManager::GetMemoryStats(
   }
 }
 
-scoped_ptr<base::Value> TileManager::AsValue() const {
+scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {
     scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
     state->SetInteger("tile_count", tiles_.size());
 
     state->Set("global_state", global_state_.AsValue().release());
 
     state->Set("memory_requirements", GetMemoryRequirementsAsValue().release());
+    return state.PassAs<base::Value>();
+}
+scoped_ptr<base::Value> TileManager::AllTilesAsValue() const {
+    scoped_ptr<base::ListValue> state(new base::ListValue());
+    for (size_t i = 0; i < tiles_.size(); i++)
+        state->Append(tiles_[i]->AsValue().release());
     return state.PassAs<base::Value>();
 }
 

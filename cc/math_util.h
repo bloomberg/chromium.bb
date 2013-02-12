@@ -6,10 +6,16 @@
 #define CC_MATH_UTIL_H_
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/point3_f.h"
+#include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
+
+namespace base {
+class Value;
+}
 
 namespace gfx {
 class QuadF;
@@ -112,6 +118,11 @@ public:
 
     // Projects the |source| vector onto |destination|. Neither vector is assumed to be normalized.
     static gfx::Vector2dF projectVector(gfx::Vector2dF source, gfx::Vector2dF destination);
+
+    // Conversion to value.
+    static scoped_ptr<base::Value> asValue(gfx::Size s);
+    static scoped_ptr<base::Value> asValue(gfx::PointF q);
+    static scoped_ptr<base::Value> asValue(gfx::QuadF q);
 };
 
 } // namespace cc

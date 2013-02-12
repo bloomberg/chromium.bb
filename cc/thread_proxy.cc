@@ -1088,6 +1088,29 @@ ThreadProxy::BeginFrameAndCommitState::~BeginFrameAndCommitState()
 {
 }
 
+scoped_ptr<base::Value> ThreadProxy::asValue() const
+{
+    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+
+    CompletionEvent completion;
+    {
+        DebugScopedSetMainThreadBlocked mainThreadBlocked(
+            const_cast<ThreadProxy*>(this));
+        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::asValueOnImplThread,
+                                                 m_implThreadWeakPtr,
+                                                 &completion,
+                                                 state.get()));
+        completion.wait();
+    }
+    return state.PassAs<base::Value>();
+}
+
+void ThreadProxy::asValueOnImplThread(CompletionEvent* completion, base::DictionaryValue* state) const
+{
+    state->Set("layer_tree_host_impl", m_layerTreeHostImpl->asValue().release());
+    completion->signal();
+}
+
 bool ThreadProxy::commitPendingForTesting()
 {
     DCHECK(isMainThread());

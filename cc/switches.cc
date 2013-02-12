@@ -63,6 +63,9 @@ const char kShowNonOccludingRects[] = "show-nonoccluding-rects";
 // of pixels culled, and the number of pixels drawn, for each frame.
 const char kTraceOverdraw[] = "trace-overdraw";
 
+// Logs all rendered frames.
+const char kTraceAllRenderedFrames[]      = "trace-all-rendered-frames";
+
 // Re-rasters everything multiple times to simulate a much slower machine.
 // Give a scale factor to cause raster to take that many times longer to
 // complete, such as --slow-down-raster-scale-factor=25.

@@ -342,7 +342,8 @@ void PictureLayerTiling::UpdateTilePriorities(
     const gfx::Transform& last_screen_transform,
     const gfx::Transform& current_screen_transform,
     int current_source_frame_number,
-    double current_frame_time) {
+    double current_frame_time,
+    bool store_screen_space_quads_on_tiles) {
   TRACE_EVENT0("cc", "PictureLayerTiling::UpdateTilePriorities");
   if (ContentRect().IsEmpty())
     return;
@@ -445,11 +446,11 @@ void PictureLayerTiling::UpdateTilePriorities(
           resolution_,
           time_to_visible_in_seconds,
           distance_to_visible_in_pixels);
+      if (store_screen_space_quads_on_tiles)
+        priority.set_current_screen_quad(gfx::QuadF(current_screen_rect));
       tile->set_priority(tree, priority);
     }
-  }
-  else
-  {
+  } else {
     for (TilingData::Iterator iter(&tiling_data_, inflated_rect);
          iter; ++iter) {
       TileMap::iterator find = tiles_.find(iter.index());
@@ -483,6 +484,13 @@ void PictureLayerTiling::UpdateTilePriorities(
           resolution_,
           time_to_visible_in_seconds,
           distance_to_visible_in_pixels);
+      if (store_screen_space_quads_on_tiles) {
+          bool clipped;
+          priority.set_current_screen_quad(
+            MathUtil::mapQuad(current_screen_transform,
+                              gfx::QuadF(current_layer_content_rect),
+                              clipped));
+      }
       tile->set_priority(tree, priority);
     }
   }

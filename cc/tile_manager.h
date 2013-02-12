@@ -50,6 +50,8 @@ enum TileManagerBinPriority {
   LOW_PRIORITY_BIN = 1,
   NUM_BIN_PRIORITIES = 2
 };
+scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
+    TileManagerBinPriority bin);
 
 enum TileRasterState {
   IDLE_STATE = 0,
@@ -58,6 +60,8 @@ enum TileRasterState {
   SET_PIXELS_STATE = 3,
   NUM_STATES = 4
 };
+scoped_ptr<base::Value> TileRasterStateAsValue(
+    TileRasterState bin);
 
 // This is state that is specific to a tile that is
 // managed by the TileManager.
@@ -65,6 +69,7 @@ class CC_EXPORT ManagedTileState {
  public:
   ManagedTileState();
   ~ManagedTileState();
+  scoped_ptr<base::Value> AsValue() const;
 
   // Persisted state: valid all the time.
   bool can_use_gpu_memory;
@@ -107,7 +112,8 @@ class CC_EXPORT TileManager {
   void CheckForCompletedTileUploads();
   void AbortPendingTileUploads();
 
-  scoped_ptr<base::Value> AsValue() const;
+  scoped_ptr<base::Value> BasicStateAsValue() const;
+  scoped_ptr<base::Value> AllTilesAsValue() const;
   void GetMemoryStats(size_t* memoryRequiredBytes,
                       size_t* memoryNiceToHaveBytes,
                       size_t* memoryUsedBytes) const;

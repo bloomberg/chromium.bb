@@ -22,7 +22,8 @@ LayerTreeDebugState::LayerTreeDebugState()
   , showOccludingRects(false)
   , showNonOccludingRects(false)
   , slowDownRasterScaleFactor(0)
-  , m_recordRenderingStats(false) { }
+  , m_recordRenderingStats(false)
+  , traceAllRenderedFrames(false) { }
 
 LayerTreeDebugState::~LayerTreeDebugState() {
 }
@@ -60,7 +61,8 @@ bool LayerTreeDebugState::equal(const LayerTreeDebugState& a, const LayerTreeDeb
             a.showOccludingRects == b.showOccludingRects &&
             a.showNonOccludingRects == b.showNonOccludingRects &&
             a.slowDownRasterScaleFactor == b.slowDownRasterScaleFactor &&
-            a.m_recordRenderingStats == b.m_recordRenderingStats);
+            a.m_recordRenderingStats == b.m_recordRenderingStats &&
+            a.traceAllRenderedFrames == b.traceAllRenderedFrames);
 }
 
 LayerTreeDebugState LayerTreeDebugState::unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b) {
@@ -83,6 +85,7 @@ LayerTreeDebugState LayerTreeDebugState::unite(const LayerTreeDebugState& a, con
       r.slowDownRasterScaleFactor = b.slowDownRasterScaleFactor;
 
     r.m_recordRenderingStats |= b.m_recordRenderingStats;
+    r.traceAllRenderedFrames |= b.traceAllRenderedFrames;
 
     return r;
 }

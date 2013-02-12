@@ -173,7 +173,6 @@ public:
     const LayerTreeImpl* recycleTree() const { return m_recycleTree.get(); }
     void createPendingTree();
     void checkForCompletedTileUploads();
-    scoped_ptr<base::Value> activationStateAsValue() const;
     virtual void activatePendingTreeIfNeeded();
 
     // Shortcuts to layers on the active tree.
@@ -259,6 +258,10 @@ public:
 
     void beginNextFrame();
     base::TimeTicks currentFrameTime();
+
+    scoped_ptr<base::Value> asValue() const;
+    scoped_ptr<base::Value> activationStateAsValue() const;
+    scoped_ptr<base::Value> frameStateAsValue() const;
 
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);

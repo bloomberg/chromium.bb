@@ -5,6 +5,7 @@
 #include "cc/tile_priority.h"
 
 #include "base/values.h"
+#include "cc/math_util.h"
 
 namespace {
 
@@ -70,6 +71,31 @@ scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree) {
   }
 }
 
+scoped_ptr<base::Value> TileResolutionAsValue(
+    TileResolution resolution) {
+  switch (resolution) {
+  case LOW_RESOLUTION:
+    return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+        "LOW_RESOLUTION"));
+  case HIGH_RESOLUTION:
+    return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+        "HIGH_RESOLUTION"));
+  default:
+    DCHECK(false) << "Unrecognized TileResolution value";
+    return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+        "<unknown TileResolution value>"));
+  }
+}
+
+scoped_ptr<base::Value> TilePriority::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  state->SetBoolean("is_live", is_live);
+  state->Set("resolution", TileResolutionAsValue(resolution).release());
+  state->SetDouble("time_to_visible_in_seconds", time_to_visible_in_seconds);
+  state->SetDouble("distance_to_visible_in_pixels", distance_to_visible_in_pixels);
+  state->Set("current_screen_quad", MathUtil::asValue(current_screen_quad).release());
+  return state.PassAs<base::Value>();
+}
 
 float TilePriority::TimeForBoundsToIntersect(const gfx::RectF& previous_bounds,
                                              const gfx::RectF& current_bounds,

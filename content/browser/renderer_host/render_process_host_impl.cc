@@ -860,6 +860,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kShowReplicaScreenSpaceRects,
     cc::switches::kShowNonOccludingRects,
     cc::switches::kShowOccludingRects,
+    cc::switches::kTraceAllRenderedFrames,
     cc::switches::kTraceOverdraw,
     cc::switches::kTopControlsHeight,
     cc::switches::kSlowDownRasterScaleFactor,

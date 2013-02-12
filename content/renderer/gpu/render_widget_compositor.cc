@@ -106,6 +106,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kShowNonOccludingRects);
   settings.initialDebugState.setRecordRenderingStats(
       web_settings.recordRenderingStats);
+  settings.initialDebugState.traceAllRenderedFrames =
+      cmd->HasSwitch(cc::switches::kTraceAllRenderedFrames);
 
   if (cmd->HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
     std::string slow_down_scale_str =

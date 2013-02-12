@@ -47,6 +47,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
     priority_[tree] = priority;
   }
 
+  scoped_ptr<base::Value> AsValue() const;
+
   // Returns 0 if not drawable.
   ResourceProvider::ResourceId GetResourceId() const {
     if (!managed_state_.resource)

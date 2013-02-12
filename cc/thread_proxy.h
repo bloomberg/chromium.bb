@@ -53,8 +53,9 @@ public:
     virtual size_t maxPartialTextureUpdates() const OVERRIDE;
     virtual void acquireLayerTextures() OVERRIDE;
     virtual void forceSerializeOnSwapBuffers() OVERRIDE;
-    virtual bool commitPendingForTesting() OVERRIDE;
     virtual skia::RefPtr<SkPicture> capturePicture() OVERRIDE;
+    virtual scoped_ptr<base::Value> asValue() const OVERRIDE;
+    virtual bool commitPendingForTesting() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
     virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE;
@@ -144,6 +145,7 @@ private:
     void checkOutputSurfaceStatusOnImplThread();
     void commitPendingOnImplThreadForTesting(CommitPendingRequest* request);
     void capturePictureOnImplThread(CompletionEvent*, skia::RefPtr<SkPicture>*);
+    void asValueOnImplThread(CompletionEvent*, base::DictionaryValue*) const;
     void renewTreePriorityOnImplThread();
     void didSwapUseIncompleteTileOnImplThread();
 

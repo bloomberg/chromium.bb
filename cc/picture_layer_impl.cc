@@ -225,6 +225,8 @@ void PictureLayerImpl::updateTilePriorities() {
   }
 
   WhichTree tree = layerTreeImpl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+  bool store_screen_space_quads_on_tiles =
+      layerTreeImpl()->debug_state().traceAllRenderedFrames;
   tilings_->UpdateTilePriorities(
       tree,
       layerTreeImpl()->device_viewport_size(),
@@ -238,7 +240,8 @@ void PictureLayerImpl::updateTilePriorities() {
       last_screen_space_transform_,
       current_screen_space_transform,
       current_source_frame_number,
-      current_frame_time);
+      current_frame_time,
+      store_screen_space_quads_on_tiles);
 
   last_screen_space_transform_ = current_screen_space_transform;
   last_bounds_ = bounds();

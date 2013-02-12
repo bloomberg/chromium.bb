@@ -39,6 +39,7 @@ public:
     virtual void acquireLayerTextures() OVERRIDE { }
     virtual bool commitPendingForTesting() OVERRIDE;
     virtual skia::RefPtr<SkPicture> capturePicture() OVERRIDE;
+    virtual scoped_ptr<base::Value> asValue() const OVERRIDE;
 
     virtual RendererCapabilities& rendererCapabilities();
     void setMaxPartialTextureUpdates(size_t);

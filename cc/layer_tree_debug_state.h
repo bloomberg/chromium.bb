@@ -32,6 +32,8 @@ class CC_EXPORT LayerTreeDebugState {
   void setRecordRenderingStats(bool);
   bool recordRenderingStats() const;
 
+  bool traceAllRenderedFrames;
+
   bool showHudInfo() const;
   bool showHudRects() const;
   bool hudNeedsFont() const;

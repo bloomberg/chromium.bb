@@ -60,7 +60,8 @@ class CC_EXPORT PictureLayerTilingSet {
       const gfx::Transform& last_screen_transform,
       const gfx::Transform& current_screen_transform,
       int current_source_frame_number,
-      double current_frame_time);
+      double current_frame_time,
+      bool store_screen_space_quads_on_tiles);
 
   void DidBecomeActive();
 

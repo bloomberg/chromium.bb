@@ -4,6 +4,7 @@
 
 #include "cc/tile.h"
 
+#include "base/stringprintf.h"
 #include "cc/tile_manager.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -26,6 +27,18 @@ Tile::Tile(TileManager* tile_manager,
 
 Tile::~Tile() {
   tile_manager_->UnregisterTile(this);
+}
+
+scoped_ptr<base::Value> Tile::AsValue() const {
+  scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+  res->SetString("id", base::StringPrintf("%p", this));
+  res->SetString("picture_pile", base::StringPrintf("%p",
+                                                    picture_pile_.get()));
+  res->SetDouble("contents_scale", contents_scale_);
+  res->Set("priority.0", priority_[ACTIVE_TREE].AsValue().release());
+  res->Set("priority.1", priority_[PENDING_TREE].AsValue().release());
+  res->Set("managed_state", managed_state_.AsValue().release());
+  return res.PassAs<base::Value>();
 }
 
 }  // namespace cc

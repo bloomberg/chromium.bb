@@ -66,4 +66,10 @@ skia::RefPtr<SkPicture> FakeProxy::capturePicture()
     return skia::RefPtr<SkPicture>();
 }
 
+scoped_ptr<base::Value> FakeProxy::asValue() const {
+    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+    return state.PassAs<base::Value>();
+}
+
+
 }  // namespace cc
