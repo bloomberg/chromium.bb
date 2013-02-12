@@ -110,7 +110,9 @@ chrome.runtime = {
   lastError: {
     /** @type {string} */
     message: ''
-  }
+  },
+  /** @return {{version: string}} */
+  getManifest: function() {}
 };
 
 /** @type {Object} */

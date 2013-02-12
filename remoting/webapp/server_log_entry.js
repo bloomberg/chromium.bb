@@ -451,8 +451,10 @@ remoting.ServerLogEntry.extractChromeVersionFrom = function(s) {
  * Adds a field specifying the webapp version to this log entry.
  */
 remoting.ServerLogEntry.prototype.addWebappVersionField = function() {
-  this.set(remoting.ServerLogEntry.KEY_WEBAPP_VERSION_,
-      chrome.app.getDetails().version);
+  var manifest = chrome.runtime.getManifest();
+  if (manifest && manifest.version) {
+    this.set(remoting.ServerLogEntry.KEY_WEBAPP_VERSION_, manifest.version);
+  }
 };
 
 /**

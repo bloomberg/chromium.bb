@@ -49,7 +49,7 @@ remoting.init = function() {
   // (http://crbug.com/ 134213).
   remoting.initMockStorage();
 
-  remoting.logExtensionInfoAsync_();
+  remoting.logExtensionInfo_();
   l10n.localize();
   // Create global objects.
   remoting.settings = new remoting.Settings();
@@ -166,24 +166,16 @@ remoting.updateLocalHostState = function() {
 
 /**
  * Log information about the current extension.
- * The extension manifest is loaded and parsed to extract this info.
+ * The extension manifest is parsed to extract this info.
  */
-remoting.logExtensionInfoAsync_ = function() {
-  /** @type {XMLHttpRequest} */
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'manifest.json');
-  xhr.onload = function(e) {
-    var manifest =
-        /** @type {{name: string, version: string, default_locale: string}} */
-        jsonParseSafe(xhr.responseText);
-    if (manifest) {
-      var name = chrome.i18n.getMessage('PRODUCT_NAME');
-      console.log(name + ' version: ' + manifest.version);
-    } else {
-      console.error('Failed to get product version. Corrupt manifest?');
-    }
+remoting.logExtensionInfo_ = function() {
+  var manifest = chrome.runtime.getManifest();
+  if (manifest && manifest.version) {
+    var name = chrome.i18n.getMessage('PRODUCT_NAME');
+    console.log(name + ' version: ' + manifest.version);
+  } else {
+    console.error('Failed to get product version. Corrupt manifest?');
   }
-  xhr.send(null);
 };
 
 /**
