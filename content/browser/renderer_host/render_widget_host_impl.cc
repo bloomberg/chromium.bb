@@ -305,6 +305,10 @@ void RenderWidgetHostImpl::SetOverscrollControllerEnabled(bool enabled) {
     overscroll_controller_.reset(new OverscrollController(this));
 }
 
+void RenderWidgetHostImpl::SuppressNextCharEvents() {
+  suppress_next_char_events_ = true;
+}
+
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->HasConnection());
 

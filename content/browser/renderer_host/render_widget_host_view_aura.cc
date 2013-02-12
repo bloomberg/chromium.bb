@@ -1763,6 +1763,11 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
       // object.
       input_method->SetFocusedTextInputClient(this);
       host_->SetInputMethodActive(input_method->IsActive());
+
+      // Often the application can set focus to the view in response to a key
+      // down. However the following char event shouldn't be sent to the web
+      // page.
+      host_->SuppressNextCharEvents();
     } else {
       host_->SetInputMethodActive(false);
     }
