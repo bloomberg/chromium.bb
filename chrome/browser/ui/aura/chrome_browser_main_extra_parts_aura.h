@@ -18,7 +18,7 @@ class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
   virtual ~ChromeBrowserMainExtraPartsAura();
 
   // Overridden from ChromeBrowserMainExtraParts:
-  virtual void PreProfileInit() OVERRIDE;
+  virtual void ToolkitInitialized() OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:

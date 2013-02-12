@@ -28,7 +28,7 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura() {
 ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 }
 
-void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
+void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
 #if !defined(OS_CHROMEOS)
 #if defined(USE_ASH)
   active_desktop_monitor_.reset(new ActiveDesktopMonitor);
