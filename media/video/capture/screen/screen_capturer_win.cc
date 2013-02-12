@@ -132,6 +132,9 @@ class ScreenCapturerWin : public ScreenCapturer {
   base::ScopedNativeLibrary dwmapi_library_;
   DwmEnableCompositionFunc composition_func_;
 
+  // Used to suppress duplicate logging of SetThreadExecutionState errors.
+  bool set_thread_execution_state_failed_;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenCapturerWin);
 };
 
@@ -203,7 +206,8 @@ void ScreenCaptureFrameWin::AllocateBitmap(HDC desktop_dc,
 ScreenCapturerWin::ScreenCapturerWin()
     : delegate_(NULL),
       desktop_dc_rect_(SkIRect::MakeEmpty()),
-      composition_func_(NULL) {
+      composition_func_(NULL),
+      set_thread_execution_state_failed_(false) {
 }
 
 ScreenCapturerWin::~ScreenCapturerWin() {
@@ -216,8 +220,14 @@ void ScreenCapturerWin::InvalidateRegion(const SkRegion& invalid_region) {
 void ScreenCapturerWin::CaptureFrame() {
   base::Time capture_start_time = base::Time::Now();
 
-  // Force the system to power-up display hardware, if it has been suspended.
-  SetThreadExecutionState(ES_DISPLAY_REQUIRED);
+  // Request that the system not power-down the system, or the display hardware.
+  if (!SetThreadExecutionState(ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED)) {
+    if (!set_thread_execution_state_failed_) {
+      set_thread_execution_state_failed_ = true;
+      LOG_GETLASTERROR(WARNING)
+          << "Failed to make system & display power assertion";
+    }
+  }
 
   // Make sure the GDI capture resources are up-to-date.
   PrepareCaptureResources();
