@@ -285,20 +285,6 @@ void MockPluginDelegate::TCPServerSocketStopListening(
     uint32 socket_id) {
 }
 
-void MockPluginDelegate::RegisterHostResolver(
-    ::ppapi::PPB_HostResolver_Shared* host_resolver,
-    uint32 host_resolver_id) {
-}
-
-void MockPluginDelegate::HostResolverResolve(
-    uint32 host_resolver_id,
-    const ::ppapi::HostPortPair& host_port,
-    const PP_HostResolver_Private_Hint* hint) {
-}
-
-void MockPluginDelegate::UnregisterHostResolver(uint32 host_resolver_id) {
-}
-
 bool MockPluginDelegate::AddNetworkListObserver(
     webkit_glue::NetworkListObserver* observer) {
   return false;

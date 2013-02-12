@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,7 +28,6 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
 
 namespace base {
@@ -35,13 +35,11 @@ class ListValue;
 }
 
 namespace net {
-class AddressList;
 class CertVerifier;
 class HostResolver;
 }
 
 namespace ppapi {
-struct HostPortPair;
 class PPB_X509Certificate_Fields;
 }
 
@@ -116,12 +114,6 @@ class PepperMessageFilter
     int request_id;
   };
 
-  struct OnHostResolverResolveBoundInfo {
-    int32 routing_id;
-    uint32 plugin_dispatcher_id;
-    uint32 host_resolver_id;
-  };
-
   // Containers for sockets keyed by socked_id.
   typedef std::map<uint32, linked_ptr<PepperTCPSocket> > TCPSocketMap;
   typedef std::map<uint32,
@@ -160,20 +152,6 @@ class PepperMessageFilter
   void OnTCPServerAccept(int32 tcp_client_socket_routing_id,
                          uint32 server_socket_id);
 
-  void OnHostResolverResolve(int32 routing_id,
-                             uint32 plugin_dispatcher_id,
-                             uint32 host_resolver_id,
-                             const ppapi::HostPortPair& host_port,
-                             const PP_HostResolver_Private_Hint& hint);
-  // Continuation of |OnHostResolverResolve()|.
-  void OnHostResolverResolveLookupFinished(
-      int result,
-      const net::AddressList& addresses,
-      const OnHostResolverResolveBoundInfo& bound_info);
-  bool SendHostResolverResolveACKError(int32 routing_id,
-                                       uint32 plugin_dispatcher_id,
-                                       uint32 host_resolver_id);
-
   void OnNetworkMonitorStart(uint32 plugin_dispatcher_id);
   void OnNetworkMonitorStop(uint32 plugin_dispatcher_id);
 
@@ -192,12 +170,6 @@ class PepperMessageFilter
                          PP_Resource socket_resource,
                          const PP_NetAddress_Private& addr,
                          int32_t backlog);
-  void DoHostResolverResolve(int32 routing_id,
-                             uint32 plugin_dispatcher_id,
-                             uint32 host_resolver_id,
-                             const ppapi::HostPortPair& host_port,
-                             const PP_HostResolver_Private_Hint& hint);
-
   void OnX509CertificateParseDER(const std::vector<char>& der,
                                  bool* succeeded,
                                  ppapi::PPB_X509Certificate_Fields* result);

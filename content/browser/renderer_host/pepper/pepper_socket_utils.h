@@ -10,8 +10,6 @@
 #include "base/tracked_objects.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "ppapi/c/pp_instance.h"

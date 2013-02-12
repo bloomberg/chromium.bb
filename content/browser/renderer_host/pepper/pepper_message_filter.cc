@@ -17,7 +17,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/pepper/pepper_lookup_request.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/browser/renderer_host/pepper/pepper_tcp_server_socket.h"
 #include "content/browser/renderer_host/pepper/pepper_tcp_socket.h"
@@ -35,12 +34,10 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/sys_addrinfo.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
-#include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 
 using ppapi::NetAddressPrivateImpl;
 
@@ -49,21 +46,6 @@ namespace {
 
 const size_t kMaxSocketsAllowed = 1024;
 const uint32 kInvalidSocketID = 0;
-
-void CreateNetAddressListFromAddressList(
-    const net::AddressList& list,
-    std::vector<PP_NetAddress_Private>* net_address_list) {
-  PP_NetAddress_Private address;
-  for (size_t i = 0; i < list.size(); ++i) {
-    if (!NetAddressPrivateImpl::IPEndPointToNetAddress(list[i].address(),
-                                                       list[i].port(),
-                                                       &address)) {
-      net_address_list->clear();
-      return;
-    }
-    net_address_list->push_back(address);
-  }
-}
 
 }  // namespace
 
@@ -123,8 +105,7 @@ void PepperMessageFilter::OverrideThreadForMessage(
     BrowserThread::ID* thread) {
   if (message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID ||
       message.type() == PpapiHostMsg_PPBTCPSocket_Connect::ID ||
-      message.type() == PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress::ID ||
-      message.type() == PpapiHostMsg_PPBHostResolver_Resolve::ID) {
+      message.type() == PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress::ID) {
     *thread = BrowserThread::UI;
   }
 }
@@ -151,10 +132,6 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                         OnTCPServerAccept)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Destroy,
                         RemoveTCPServerSocket)
-
-    // HostResolver messages.
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBHostResolver_Resolve,
-                        OnHostResolverResolve)
 
     // NetworkMonitor messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBNetworkMonitor_Start,
@@ -414,127 +391,12 @@ void PepperMessageFilter::OnTCPServerAccept(int32 tcp_client_socket_routing_id,
   iter->second->Accept(tcp_client_socket_routing_id);
 }
 
-void PepperMessageFilter::OnHostResolverResolve(
-    int32 routing_id,
-    uint32 plugin_dispatcher_id,
-    uint32 host_resolver_id,
-    const ppapi::HostPortPair& host_port,
-    const PP_HostResolver_Private_Hint& hint) {
-  // Allow all process types except NaCl, unless the plugin is whitelisted for
-  // using socket APIs.
-  // TODO(bbudge) use app permissions when they are ready.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  content::SocketPermissionRequest request(
-      content::SocketPermissionRequest::NONE, "", 0);
-  if (process_type_ == PROCESS_TYPE_NACL_LOADER &&
-      !CanUseSocketAPIs(routing_id, request)) {
-    return;
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&PepperMessageFilter::DoHostResolverResolve,
-                 this,
-                 routing_id,
-                 plugin_dispatcher_id,
-                 host_resolver_id,
-                 host_port,
-                 hint));
-}
-
-void PepperMessageFilter::DoHostResolverResolve(
-    int32 routing_id,
-    uint32 plugin_dispatcher_id,
-    uint32 host_resolver_id,
-    const ppapi::HostPortPair& host_port,
-    const PP_HostResolver_Private_Hint& hint) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::HostResolver::RequestInfo request_info(
-      net::HostPortPair(host_port.host, host_port.port));
-
-  net::AddressFamily address_family;
-  switch (hint.family) {
-    case PP_NETADDRESSFAMILY_IPV4:
-      address_family = net::ADDRESS_FAMILY_IPV4;
-      break;
-    case PP_NETADDRESSFAMILY_IPV6:
-      address_family = net::ADDRESS_FAMILY_IPV6;
-      break;
-    default:
-      address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
-  }
-  request_info.set_address_family(address_family);
-
-  net::HostResolverFlags host_resolver_flags = 0;
-  if (hint.flags & PP_HOST_RESOLVER_FLAGS_CANONNAME)
-    host_resolver_flags |= net::HOST_RESOLVER_CANONNAME;
-  if (hint.flags & PP_HOST_RESOLVER_FLAGS_LOOPBACK_ONLY)
-    host_resolver_flags |= net::HOST_RESOLVER_LOOPBACK_ONLY;
-  request_info.set_host_resolver_flags(host_resolver_flags);
-
-  scoped_ptr<OnHostResolverResolveBoundInfo> bound_info(
-      new OnHostResolverResolveBoundInfo);
-  bound_info->routing_id = routing_id;
-  bound_info->plugin_dispatcher_id = plugin_dispatcher_id;
-  bound_info->host_resolver_id = host_resolver_id;
-
-  // The lookup request will delete itself on completion.
-  PepperLookupRequest<OnHostResolverResolveBoundInfo>* lookup_request =
-      new PepperLookupRequest<OnHostResolverResolveBoundInfo>(
-          GetHostResolver(),
-          request_info,
-          bound_info.release(),
-          base::Bind(&PepperMessageFilter::OnHostResolverResolveLookupFinished,
-                     this));
-  lookup_request->Start();
-}
-
-void PepperMessageFilter::OnHostResolverResolveLookupFinished(
-    int result,
-    const net::AddressList& addresses,
-    const OnHostResolverResolveBoundInfo& bound_info) {
-  if (result != net::OK) {
-    SendHostResolverResolveACKError(bound_info.routing_id,
-                                    bound_info.plugin_dispatcher_id,
-                                    bound_info.host_resolver_id);
-  } else {
-    const std::string& canonical_name = addresses.canonical_name();
-    std::vector<PP_NetAddress_Private> net_address_list;
-    CreateNetAddressListFromAddressList(addresses, &net_address_list);
-    if (net_address_list.size() == 0) {
-      SendHostResolverResolveACKError(bound_info.routing_id,
-                                      bound_info.plugin_dispatcher_id,
-                                      bound_info.host_resolver_id);
-    } else {
-      Send(new PpapiMsg_PPBHostResolver_ResolveACK(
-          bound_info.routing_id,
-          bound_info.plugin_dispatcher_id,
-          bound_info.host_resolver_id,
-          true,
-          canonical_name,
-          net_address_list));
-    }
-  }
-}
-
-bool PepperMessageFilter::SendHostResolverResolveACKError(
-    int32 routing_id,
-    uint32 plugin_dispatcher_id,
-    uint32 host_resolver_id) {
-  return Send(new PpapiMsg_PPBHostResolver_ResolveACK(
-      routing_id,
-      plugin_dispatcher_id,
-      host_resolver_id,
-      false,
-      "",
-      std::vector<PP_NetAddress_Private>()));
-}
-
 void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
   // Support all in-process plugins, and ones with "private" permissions.
   if (process_type_ != PROCESS_TYPE_RENDERER &&
-      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
+      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE)) {
     return;
+  }
 
   if (network_monitor_ids_.empty())
     net::NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -546,8 +408,9 @@ void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
 void PepperMessageFilter::OnNetworkMonitorStop(uint32 plugin_dispatcher_id) {
   // Support all in-process plugins, and ones with "private" permissions.
   if (process_type_ != PROCESS_TYPE_RENDERER &&
-      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE))
+      !permissions_.HasPermission(ppapi::PERMISSION_PRIVATE)) {
     return;
+  }
 
   network_monitor_ids_.erase(plugin_dispatcher_id);
   if (network_monitor_ids_.empty())

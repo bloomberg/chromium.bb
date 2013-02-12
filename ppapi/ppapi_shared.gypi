@@ -117,8 +117,6 @@
 
           'shared_impl/private/ppb_char_set_shared.cc',
           'shared_impl/private/ppb_char_set_shared.h',
-          'shared_impl/private/ppb_host_resolver_shared.cc',
-          'shared_impl/private/ppb_host_resolver_shared.h',
           'shared_impl/private/ppb_tcp_server_socket_shared.cc',
           'shared_impl/private/ppb_tcp_server_socket_shared.h',
           'shared_impl/private/ppb_x509_certificate_private_shared.cc',

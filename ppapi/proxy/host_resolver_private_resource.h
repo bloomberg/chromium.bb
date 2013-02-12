@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_SHARED_IMPL_PRIVATE_PPB_HOST_RESOLVER_SHARED_H_
-#define PPAPI_SHARED_IMPL_PRIVATE_PPB_HOST_RESOLVER_SHARED_H_
+#ifndef PPAPI_PROXY_HOST_RESOLVER_PRIVATE_RESOURCE_H_
+#define PPAPI_PROXY_HOST_RESOLVER_PRIVATE_RESOURCE_H_
 
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "ppapi/shared_impl/resource.h"
+#include "ppapi/proxy/plugin_resource.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_host_resolver_private_api.h"
 
@@ -21,20 +23,18 @@ struct HostPortPair {
   uint16_t port;
 };
 
-class PPAPI_SHARED_EXPORT PPB_HostResolver_Shared
-    : public thunk::PPB_HostResolver_Private_API,
-      public Resource {
+namespace proxy {
+
+class PPAPI_PROXY_EXPORT HostResolverPrivateResource
+    : public PluginResource,
+      public thunk::PPB_HostResolver_Private_API {
  public:
-  // C-tor used in Impl case.
-  explicit PPB_HostResolver_Shared(PP_Instance instance);
+  HostResolverPrivateResource(Connection connection,
+                              PP_Instance instance);
+  virtual ~HostResolverPrivateResource();
 
-  // C-tor used in Proxy case.
-  explicit PPB_HostResolver_Shared(const HostResource& resource);
-
-  virtual ~PPB_HostResolver_Shared();
-
-  // Resource overrides.
-  virtual PPB_HostResolver_Private_API*
+  // PluginResource overrides.
+  virtual thunk::PPB_HostResolver_Private_API*
       AsPPB_HostResolver_Private_API() OVERRIDE;
 
   // PPB_HostResolver_Private_API implementation.
@@ -47,30 +47,27 @@ class PPAPI_SHARED_EXPORT PPB_HostResolver_Shared
   virtual bool GetNetAddress(uint32_t index,
                              PP_NetAddress_Private* address) OVERRIDE;
 
-  void OnResolveCompleted(
-      bool succeeded,
+ private:
+  // IPC message handlers.
+  void OnPluginMsgResolveReply(
+      const ResourceMessageReplyParams& params,
       const std::string& canonical_name,
       const std::vector<PP_NetAddress_Private>& net_address_list);
 
-  // Send functions that need to be implemented differently for the
-  // proxied and non-proxied derived classes.
-  virtual void SendResolve(const HostPortPair& host_port,
-                           const PP_HostResolver_Private_Hint* hint) = 0;
+  void SendResolve(const HostPortPair& host_port,
+                   const PP_HostResolver_Private_Hint* hint);
 
- protected:
-  static uint32 GenerateHostResolverID();
   bool ResolveInProgress() const;
-
-  const uint32 host_resolver_id_;
 
   scoped_refptr<TrackedCallback> resolve_callback_;
 
   std::string canonical_name_;
   std::vector<PP_NetAddress_Private> net_address_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(PPB_HostResolver_Shared);
+  DISALLOW_COPY_AND_ASSIGN(HostResolverPrivateResource);
 };
 
+}  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_SHARED_IMPL_PRIVATE_PPB_HOST_RESOLVER_SHARED_H_
+#endif  // PPAPI_PROXY_HOST_RESOLVER_PRIVATE_RESOURCE_H_

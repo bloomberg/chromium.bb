@@ -56,7 +56,6 @@ class PepperInProcessResourceCreation
       PP_Bool is_always_opaque) OVERRIDE;
   virtual PP_Resource CreatePrinting(
       PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLRequestInfo(
       PP_Instance instance,
       const ::ppapi::URLRequestInfoData& data) OVERRIDE;

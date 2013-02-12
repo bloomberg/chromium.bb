@@ -41,6 +41,7 @@
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
+#include "ppapi/proxy/host_resolver_private_resource.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/resource_message_params.h"
@@ -56,7 +57,6 @@
 #include "ppapi/shared_impl/ppb_network_list_private_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
-#include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
@@ -700,14 +700,6 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPServerSocket_AcceptACK,
                     PP_NetAddress_Private /* local_addr */,
                     PP_NetAddress_Private /* remote_addr */)
 
-// PPB_HostResolver_Private.
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBHostResolver_ResolveACK,
-                    uint32 /* plugin_dispatcher_id */,
-                    uint32 /* host_resolver_id */,
-                    bool /* succeeded */,
-                    std::string /* canonical_name */,
-                    std::vector<PP_NetAddress_Private> /* net_address_list */)
-
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 // PPP_Instance_Private.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPInstancePrivate_GetInstanceObject,
@@ -1112,14 +1104,6 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Start,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Stop,
                      uint32 /* plugin_dispatcher_id */)
 
-// PPB_HostResolver_Private.
-IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBHostResolver_Resolve,
-                     int32 /* routing_id */,
-                     uint32 /* plugin_dispatcher_id */,
-                     uint32 /* host_resolver_id */,
-                     ppapi::HostPortPair /* host_port */,
-                     PP_HostResolver_Private_Hint /* hint */)
-
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 // PPB_PDF
 IPC_SYNC_MESSAGE_ROUTED3_1(
@@ -1412,6 +1396,14 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,
                      PP_Point /* top_left */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_ReadImageDataAck)
 
+// HostResolverPrivate, plugin -> host -> plugin
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_HostResolverPrivate_Create)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_HostResolverPrivate_Resolve,
+                     ppapi::HostPortPair /* host_port */,
+                     PP_HostResolver_Private_Hint /* hint */)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_HostResolverPrivate_ResolveReply,
+                     std::string /* canonical_name */,
+                     std::vector<PP_NetAddress_Private> /* net_address_list */)
 
 // Printing.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_Create)

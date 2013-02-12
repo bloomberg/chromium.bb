@@ -132,14 +132,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void TCPServerSocketAccept(uint32 server_socket_id);
   virtual void TCPServerSocketStopListening(PP_Resource socket_resource,
                                             uint32 socket_id);
-  virtual void RegisterHostResolver(
-      ::ppapi::PPB_HostResolver_Shared* host_resolver,
-      uint32 host_resolver_id);
-  virtual void HostResolverResolve(
-      uint32 host_resolver_id,
-      const ::ppapi::HostPortPair& host_port,
-      const PP_HostResolver_Private_Hint* hint);
-  virtual void UnregisterHostResolver(uint32 host_resolver_id);
   // Add/remove a network list observer.
   virtual bool AddNetworkListObserver(
       webkit_glue::NetworkListObserver* observer) OVERRIDE;

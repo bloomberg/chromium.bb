@@ -93,12 +93,6 @@ PP_Resource PepperInProcessResourceCreation::CreatePrinting(
       instance))->GetReference();
 }
 
-PP_Resource PepperInProcessResourceCreation::CreateUDPSocketPrivate(
-    PP_Instance instance) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 PP_Resource PepperInProcessResourceCreation::CreateURLRequestInfo(
     PP_Instance instance,
     const ::ppapi::URLRequestInfoData& data) {

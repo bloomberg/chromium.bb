@@ -38,7 +38,6 @@ class GURL;
 class SkBitmap;
 class SkCanvas;
 class TransportDIB;
-struct PP_HostResolver_Private_Hint;
 struct PP_NetAddress_Private;
 
 namespace WebKit {
@@ -64,7 +63,6 @@ class CommandBuffer;
 
 namespace ppapi {
 class PepperFilePath;
-class PPB_HostResolver_Shared;
 class PPB_X509Certificate_Fields;
 struct DeviceRefData;
 struct HostPortPair;
@@ -555,16 +553,6 @@ class PluginDelegate {
   virtual void TCPServerSocketStopListening(
       PP_Resource socket_resource,
       uint32 socket_id) = 0;
-
-  // For PPB_HostResolver_Private.
-  virtual void RegisterHostResolver(
-      ::ppapi::PPB_HostResolver_Shared* host_resolver,
-      uint32 host_resolver_id) = 0;
-  virtual void HostResolverResolve(
-      uint32 host_resolver_id,
-      const ::ppapi::HostPortPair& host_port,
-      const PP_HostResolver_Private_Hint* hint) = 0;
-  virtual void UnregisterHostResolver(uint32 host_resolver_id) = 0;
 
   // Add/remove a network list observer.
   virtual bool AddNetworkListObserver(

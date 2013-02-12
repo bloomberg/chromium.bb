@@ -364,6 +364,8 @@
       'tests/test_graphics_3d.h',
       'tests/test_host_resolver_private.cc',
       'tests/test_host_resolver_private.h',
+      'tests/test_host_resolver_private_disallowed.cc',
+      'tests/test_host_resolver_private_disallowed.h',
       'tests/test_image_data.cc',
       'tests/test_image_data.h',
       'tests/test_ime_input_event.cc',

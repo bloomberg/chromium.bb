@@ -9,13 +9,12 @@
 
 // These interfaces don't require private permissions. However, they only work
 // for whitelisted origins.
-PROXIED_API(PPB_HostResolver_Private)
 PROXIED_API(PPB_TCPServerSocket_Private)
 PROXIED_API(PPB_TCPSocket_Private)
 UNPROXIED_API(PPB_NetworkList_Private)
 PROXIED_API(PPB_NetworkMonitor_Private)
 
-PROXIED_IFACE(PPB_HostResolver_Private, PPB_HOSTRESOLVER_PRIVATE_INTERFACE_0_1,
+PROXIED_IFACE(NoAPIName, PPB_HOSTRESOLVER_PRIVATE_INTERFACE_0_1,
               PPB_HostResolver_Private_0_1)
 PROXIED_IFACE(PPB_TCPServerSocket_Private,
               PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE_0_1,

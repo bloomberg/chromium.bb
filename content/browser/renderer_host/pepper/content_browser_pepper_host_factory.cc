@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/pepper/pepper_browser_font_singleton_host.h"
 #include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
+#include "content/browser/renderer_host/pepper/pepper_host_resolver_private_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
 #include "content/browser/renderer_host/pepper/pepper_udp_socket_private_host.h"
@@ -71,14 +72,18 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
     }
   }
 
-  // UDPSocketPrivate interface.
-  //
-  // Permissions for UDPSocketPrivate interface will be checked at the
-  // time of the instance's methods calls (because permission check
-  // for UDPSocketPrivate can be performed only on the UI
-  // thread). Currently this interface is available only for
+  // Permissions for the following interfaces will be checked at the
+  // time of the corresponding instance's methods calls (because
+  // permission check can be performed only on the UI
+  // thread). Currently thise interfaces are available only for
   // whitelisted apps which may not have access to the other private
   // interfaces.
+  if (message.type() == PpapiHostMsg_HostResolverPrivate_Create::ID) {
+    scoped_refptr<ResourceMessageFilter> host_resolver(
+        new PepperHostResolverPrivateMessageFilter(host_, instance));
+    return scoped_ptr<ResourceHost>(new MessageFilterHost(
+        host_->GetPpapiHost(), instance, params.pp_resource(), host_resolver));
+  }
   if (message.type() == PpapiHostMsg_UDPSocketPrivate_Create::ID) {
     return scoped_ptr<ResourceHost>(new PepperUDPSocketPrivateHost(
         host_, instance, params.pp_resource()));

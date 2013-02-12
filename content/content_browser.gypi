@@ -708,6 +708,8 @@
     'browser/renderer_host/pepper/pepper_flash_file_message_filter.h',
     'browser/renderer_host/pepper/pepper_gamepad_host.cc',
     'browser/renderer_host/pepper/pepper_gamepad_host.h',
+    'browser/renderer_host/pepper/pepper_host_resolver_private_message_filter.cc',
+    'browser/renderer_host/pepper/pepper_host_resolver_private_message_filter.h',
     'browser/renderer_host/pepper/pepper_lookup_request.h',
     'browser/renderer_host/pepper/pepper_message_filter.cc',
     'browser/renderer_host/pepper/pepper_message_filter.h',

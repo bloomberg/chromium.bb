@@ -105,6 +105,7 @@ class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
   virtual PP_Resource CreateTCPServerSocketPrivate(
       PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoDecoder(
