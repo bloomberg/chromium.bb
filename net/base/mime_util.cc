@@ -129,7 +129,7 @@ static const MimeInfo primary_mappings[] = {
   { "audio/x-m4a", "m4a" },
   { "audio/mp3", "mp3" },
   { "video/ogg", "ogv,ogm" },
-  { "audio/ogg", "ogg,oga" },
+  { "audio/ogg", "ogg,oga,opus" },
   { "video/webm", "webm" },
   { "audio/webm", "webm" },
   { "audio/wav", "wav" },
