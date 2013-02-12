@@ -249,14 +249,14 @@ div.sidebar-splitter {
 
 li.root-item > .root-label {
   -webkit-box-flex: 1;
-  margin-right: 5px;
+  margin: 0 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .volume-icon {
-  background-position: center center;
+  background-position: center 2px;
   background-repeat: no-repeat;
   height: 24px;
   width: 24px;
