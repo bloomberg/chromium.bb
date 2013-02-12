@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 class DevToolsControllerTest : public InProcessBrowserTest {
@@ -84,4 +85,26 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, ViewSize) {
 
   SetDockSide(DEVTOOLS_DOCK_SIDE_RIGHT);
   EXPECT_EQ(height - offset, NSHeight([dev_tools_view bounds]));
+}
+
+// Verify that the dev tool's web view is layed out correctly when docked to the
+// right.
+IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, WebViewLayout) {
+  CGFloat offset = 50;
+  [controller() setTopContentOffset:offset];
+
+  SetDockSide(DEVTOOLS_DOCK_SIDE_RIGHT);
+  AddTabAtIndex(0,
+                GURL(chrome::kAboutBlankURL),
+                content::PAGE_TRANSITION_TYPED);
+  DevToolsWindow::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_SHOW);
+
+  NSView* container_view = [[[controller() splitView] subviews] lastObject];
+  NSView* dev_tools_view = [[container_view subviews] lastObject];
+  NSView* web_view = [[dev_tools_view subviews] lastObject];
+
+  CGFloat height = NSHeight([[controller() splitView] bounds]);
+
+  EXPECT_EQ(height - offset, NSHeight([web_view bounds]));
+  EXPECT_EQ(0, NSMinY([web_view bounds]));
 }

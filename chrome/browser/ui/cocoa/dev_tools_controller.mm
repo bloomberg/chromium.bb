@@ -55,27 +55,6 @@ using content::WebContents;
 
 @end
 
-// Superview for the dev tools contents view. This class ensures that dev tools
-// view doesn't overlap the toolbar when split vertically.
-@interface DevToolsContainerView : NSView
-@end
-
-@implementation DevToolsContainerView
-
-- (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
-  NSRect subviewFrame = [self bounds];
-  GraySplitView* splitView =
-      base::mac::ObjCCastStrict<GraySplitView>([self superview]);
-  if ([splitView isVertical])
-    subviewFrame.size.height -= [splitView topContentOffset];
-
-  DCHECK_EQ(1u, [[self subviews] count]);
-  [[[self subviews] lastObject] setFrame:subviewFrame];
-}
-
-@end
-
-
 @interface DevToolsController (Private)
 - (void)showDevToolsContainer;
 - (void)hideDevToolsContainer;
@@ -163,8 +142,17 @@ using content::WebContents;
   NSView* devToolsView = devToolsContents->GetNativeView();
   view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
 
-  scoped_nsobject<DevToolsContainerView> devToolsContainerView(
-      [[DevToolsContainerView alloc] initWithFrame:[devToolsView bounds]]);
+  NSRect containerRect = NSMakeRect(0, 0, 100, 100);
+  scoped_nsobject<NSView> devToolsContainerView(
+      [[NSView alloc] initWithFrame:containerRect]);
+
+  NSRect devToolsRect = containerRect;
+  if (devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
+    devToolsRect.size.height -= [splitView_ topContentOffset];
+  }
+  [devToolsView setFrame:devToolsRect];
+  [devToolsView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
   [devToolsContainerView addSubview:devToolsView];
   [splitView_ addSubview:devToolsContainerView];
 
