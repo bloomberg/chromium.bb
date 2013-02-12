@@ -106,21 +106,8 @@ class ProtocolHandlerRegistry : public ProfileKeyedService {
     void Chain(scoped_ptr<net::URLRequestJobFactory> job_factory);
 
     // URLRequestJobFactory implementation.
-    virtual bool SetProtocolHandler(const std::string& scheme,
-                                    ProtocolHandler* protocol_handler) OVERRIDE;
-    virtual void AddInterceptor(Interceptor* interceptor) OVERRIDE;
-    virtual net::URLRequestJob* MaybeCreateJobWithInterceptor(
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const OVERRIDE;
     virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
         const std::string& scheme,
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const OVERRIDE;
-    virtual net::URLRequestJob* MaybeInterceptRedirect(
-        const GURL& location,
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const OVERRIDE;
-    virtual net::URLRequestJob* MaybeInterceptResponse(
         net::URLRequest* request,
         net::NetworkDelegate* network_delegate) const OVERRIDE;
     virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE;

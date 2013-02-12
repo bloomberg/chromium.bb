@@ -175,22 +175,6 @@ void ProtocolHandlerRegistry::JobInterceptorFactory::Chain(
   job_factory_ = job_factory.Pass();
 }
 
-bool ProtocolHandlerRegistry::JobInterceptorFactory::SetProtocolHandler(
-    const std::string& scheme, ProtocolHandler* protocol_handler) {
-  return job_factory_->SetProtocolHandler(scheme, protocol_handler);
-}
-
-void ProtocolHandlerRegistry::JobInterceptorFactory::AddInterceptor(
-    Interceptor* interceptor) {
-  return job_factory_->AddInterceptor(interceptor);
-}
-
-net::URLRequestJob*
-ProtocolHandlerRegistry::JobInterceptorFactory::MaybeCreateJobWithInterceptor(
-    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  return job_factory_->MaybeCreateJobWithInterceptor(request, network_delegate);
-}
-
 net::URLRequestJob*
 ProtocolHandlerRegistry::JobInterceptorFactory::
 MaybeCreateJobWithProtocolHandler(
@@ -204,21 +188,6 @@ MaybeCreateJobWithProtocolHandler(
     return job;
   return job_factory_->MaybeCreateJobWithProtocolHandler(
       scheme, request, network_delegate);
-}
-
-net::URLRequestJob*
-ProtocolHandlerRegistry::JobInterceptorFactory::MaybeInterceptRedirect(
-    const GURL& location,
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return job_factory_->MaybeInterceptRedirect(
-      location, request, network_delegate);
-}
-
-net::URLRequestJob*
-ProtocolHandlerRegistry::JobInterceptorFactory::MaybeInterceptResponse(
-    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  return job_factory_->MaybeInterceptResponse(request, network_delegate);
 }
 
 bool ProtocolHandlerRegistry::JobInterceptorFactory::IsHandledProtocol(

@@ -60,30 +60,8 @@ void AssertIntercepted(
 // ProtocolHandlerRegistry properly handled a job creation request.
 class FakeURLRequestJobFactory : public net::URLRequestJobFactory {
   // net::URLRequestJobFactory implementation:
-  virtual bool SetProtocolHandler(const std::string& scheme,
-                                  ProtocolHandler* protocol_handler) OVERRIDE {
-    return false;
-  }
-  virtual void AddInterceptor(Interceptor* interceptor) OVERRIDE {
-  }
-  virtual net::URLRequestJob* MaybeCreateJobWithInterceptor(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return NULL;
-  }
   virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return NULL;
-  }
-  virtual net::URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return NULL;
-  }
-  virtual net::URLRequestJob* MaybeInterceptResponse(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     return NULL;

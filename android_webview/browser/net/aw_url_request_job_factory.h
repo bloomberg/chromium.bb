@@ -8,6 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_job_factory.h"
 
+namespace net {
+class URLRequestJobFactoryImpl;
+}  // namespace net
+
 namespace android_webview {
 
 // android_webview uses a custom URLRequestJobFactoryImpl to support
@@ -21,21 +25,12 @@ class AwURLRequestJobFactory : public net::URLRequestJobFactory {
   AwURLRequestJobFactory();
   virtual ~AwURLRequestJobFactory();
 
-  virtual bool SetProtocolHandler(const std::string& scheme,
-                          ProtocolHandler* protocol_handler) OVERRIDE;
-  virtual void AddInterceptor(Interceptor* interceptor) OVERRIDE;
-  virtual net::URLRequestJob* MaybeCreateJobWithInterceptor(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
+  bool SetProtocolHandler(const std::string& scheme,
+                          ProtocolHandler* protocol_handler);
+
+  // net::URLRequestJobFactory implementation.
   virtual net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual net::URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location,
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual net::URLRequestJob* MaybeInterceptResponse(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE;
   virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE;
@@ -44,7 +39,7 @@ class AwURLRequestJobFactory : public net::URLRequestJobFactory {
  private:
   // By default calls are forwarded to this factory, to avoid having to
   // subclass an existing implementation class.
-  scoped_ptr<URLRequestJobFactory> next_factory_;
+  scoped_ptr<net::URLRequestJobFactoryImpl> next_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwURLRequestJobFactory);
 };

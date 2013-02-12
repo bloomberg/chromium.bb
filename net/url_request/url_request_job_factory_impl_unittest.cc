@@ -57,44 +57,6 @@ class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
   }
 };
 
-class DummyInterceptor : public URLRequestJobFactory::Interceptor {
- public:
-  DummyInterceptor()
-      : did_intercept_(false),
-        handle_all_protocols_(false) {
-  }
-
-  virtual URLRequestJob* MaybeIntercept(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
-    did_intercept_ = true;
-    return new MockURLRequestJob(
-        request,
-        network_delegate,
-        URLRequestStatus(URLRequestStatus::FAILED, ERR_FAILED));
-  }
-
-  virtual URLRequestJob* MaybeInterceptRedirect(
-      const GURL&                       /* location */,
-      URLRequest*                       /* request */,
-      NetworkDelegate* network_delegate /* network delegate */) const OVERRIDE {
-    return NULL;
-  }
-
-  virtual URLRequestJob* MaybeInterceptResponse(
-      URLRequest*                       /* request */,
-      NetworkDelegate* network_delegate /* network delegate */) const OVERRIDE {
-    return NULL;
-  }
-
-  virtual bool WillHandleProtocol(
-      const std::string& /* protocol */) const OVERRIDE {
-    return handle_all_protocols_;
-  }
-
-  mutable bool did_intercept_;
-  mutable bool handle_all_protocols_;
-};
-
 TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
   TestDelegate delegate;
   TestURLRequestContext request_context;
@@ -126,91 +88,6 @@ TEST(URLRequestJobFactoryTest, DeleteProtocolHandler) {
   request_context.set_job_factory(&job_factory);
   job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
   job_factory.SetProtocolHandler("foo", NULL);
-}
-
-TEST(URLRequestJobFactoryTest, BasicInterceptor) {
-  TestDelegate delegate;
-  URLRequestJobFactoryImpl job_factory;
-  TestURLRequestContext request_context;
-  request_context.set_job_factory(&job_factory);
-  job_factory.AddInterceptor(new DummyInterceptor);
-  TestURLRequest request(GURL("http://bar"), &delegate, &request_context);
-  request.Start();
-
-  MessageLoop::current()->Run();
-  EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_FAILED, request.status().error());
-}
-
-TEST(URLRequestJobFactoryTest, InterceptorNeedsValidSchemeStill) {
-  TestDelegate delegate;
-  URLRequestJobFactoryImpl job_factory;
-  TestURLRequestContext request_context;
-  request_context.set_job_factory(&job_factory);
-  job_factory.AddInterceptor(new DummyInterceptor);
-  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context);
-  request.Start();
-
-  MessageLoop::current()->Run();
-  EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_UNKNOWN_URL_SCHEME, request.status().error());
-}
-
-TEST(URLRequestJobFactoryTest, InterceptorOverridesProtocolHandler) {
-  TestDelegate delegate;
-  URLRequestJobFactoryImpl job_factory;
-  TestURLRequestContext request_context;
-  request_context.set_job_factory(&job_factory);
-  job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
-  job_factory.AddInterceptor(new DummyInterceptor);
-  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context);
-  request.Start();
-
-  MessageLoop::current()->Run();
-  EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_FAILED, request.status().error());
-}
-
-TEST(URLRequestJobFactoryTest, InterceptorDoesntInterceptUnknownProtocols) {
-  TestDelegate delegate;
-  URLRequestJobFactoryImpl job_factory;
-  TestURLRequestContext request_context;
-  request_context.set_job_factory(&job_factory);
-  DummyInterceptor* interceptor = new DummyInterceptor;
-  job_factory.AddInterceptor(interceptor);
-  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context);
-  request.Start();
-
-  MessageLoop::current()->Run();
-  EXPECT_FALSE(interceptor->did_intercept_);
-}
-
-TEST(URLRequestJobFactoryTest, InterceptorInterceptsHandledUnknownProtocols) {
-  TestDelegate delegate;
-  URLRequestJobFactoryImpl job_factory;
-  TestURLRequestContext request_context;
-  request_context.set_job_factory(&job_factory);
-  DummyInterceptor* interceptor = new DummyInterceptor;
-  interceptor->handle_all_protocols_ = true;
-  job_factory.AddInterceptor(interceptor);
-  TestURLRequest request(GURL("foo://bar"), &delegate, &request_context);
-  request.Start();
-
-  MessageLoop::current()->Run();
-  EXPECT_TRUE(interceptor->did_intercept_);
-  EXPECT_EQ(URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(ERR_FAILED, request.status().error());
-}
-
-TEST(URLRequestJobFactoryTest, InterceptorAffectsIsHandledProtocol) {
-  DummyInterceptor* interceptor = new DummyInterceptor;
-  URLRequestJobFactoryImpl job_factory;
-  job_factory.AddInterceptor(interceptor);
-  EXPECT_FALSE(interceptor->WillHandleProtocol("anything"));
-  EXPECT_FALSE(job_factory.IsHandledProtocol("anything"));
-  interceptor->handle_all_protocols_ = true;
-  EXPECT_TRUE(interceptor->WillHandleProtocol("anything"));
-  EXPECT_TRUE(job_factory.IsHandledProtocol("anything"));
 }
 
 }  // namespace

@@ -33,7 +33,6 @@
 // Temporary layering violation to allow existing users of a deprecated
 // interface.
 class ChildProcessSecurityPolicyTest;
-class ComponentUpdateInterceptor;
 class TestAutomationProvider;
 class URLRequestAutomationJob;
 
@@ -59,23 +58,10 @@ class ResourceDispatcherHostTest;
 
 // Temporary layering violation to allow existing users of a deprecated
 // interface.
-namespace extensions {
-class AutoUpdateInterceptor;
-class UserScriptListenerTest;
-}
-
-// Temporary layering violation to allow existing users of a deprecated
-// interface.
 namespace fileapi {
 class FileSystemDirURLRequestJobTest;
 class FileSystemURLRequestJobTest;
 class FileWriterDelegateTest;
-}
-
-// Temporary layering violation to allow existing users of a deprecated
-// interface.
-namespace policy {
-class CannedResponseInterceptor;
 }
 
 // Temporary layering violation to allow existing users of a deprecated
@@ -206,7 +192,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     static ProtocolFactory* RegisterProtocolFactory(const std::string& scheme,
                                                     ProtocolFactory* factory);
 
-    // Use URLRequestJobFactory::Interceptor instead.
+    // TODO(pauljensen): Remove this when AppCacheInterceptor is a
+    // ProtocolHandler, see crbug.com/161547.
     static void RegisterRequestInterceptor(Interceptor* interceptor);
     static void UnregisterRequestInterceptor(Interceptor* interceptor);
 

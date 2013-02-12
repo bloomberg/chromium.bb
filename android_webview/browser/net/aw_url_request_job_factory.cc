@@ -63,28 +63,4 @@ bool AwURLRequestJobFactory::SetProtocolHandler(
   return next_factory_->SetProtocolHandler(scheme, protocol_handler);
 }
 
-void AwURLRequestJobFactory::AddInterceptor(Interceptor* interceptor) {
-  next_factory_->AddInterceptor(interceptor);
-}
-
-URLRequestJob* AwURLRequestJobFactory::MaybeCreateJobWithInterceptor(
-    URLRequest* request, NetworkDelegate* network_delegate) const {
-  return next_factory_->MaybeCreateJobWithInterceptor(
-      request, network_delegate);
-}
-
-URLRequestJob* AwURLRequestJobFactory::MaybeInterceptRedirect(
-    const GURL& location,
-    URLRequest* request,
-    NetworkDelegate* network_delegate) const {
-  return next_factory_->MaybeInterceptRedirect(
-      location, request, network_delegate);
-}
-
-URLRequestJob* AwURLRequestJobFactory::MaybeInterceptResponse(
-    URLRequest* request,
-    NetworkDelegate* network_delegate) const {
-  return next_factory_->MaybeInterceptResponse(request, network_delegate);
-}
-
 } // namespace android_webview

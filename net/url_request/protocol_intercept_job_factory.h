@@ -29,21 +29,10 @@ class NET_EXPORT ProtocolInterceptJobFactory : public URLRequestJobFactory {
   virtual ~ProtocolInterceptJobFactory();
 
   // URLRequestJobFactory implementation
-  virtual bool SetProtocolHandler(const std::string& scheme,
-                                  ProtocolHandler* protocol_handler) OVERRIDE;
-  virtual void AddInterceptor(Interceptor* interceptor) OVERRIDE;
-  virtual URLRequestJob* MaybeCreateJobWithInterceptor(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
   virtual URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       URLRequest* request,
       NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location,
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual URLRequestJob* MaybeInterceptResponse(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
   virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE;
   virtual bool IsHandledURL(const GURL& url) const OVERRIDE;
 

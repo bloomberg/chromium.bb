@@ -69,6 +69,7 @@
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
+#include "net/url_request/protocol_intercept_job_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -189,12 +190,13 @@ bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
   return true;
 }
 
-class DebugDevToolsInterceptor : public net::URLRequestJobFactory::Interceptor {
+class DebugDevToolsInterceptor
+    : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   DebugDevToolsInterceptor() {}
   virtual ~DebugDevToolsInterceptor() {}
 
-  virtual net::URLRequestJob* MaybeIntercept(
+  virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     base::FilePath path;
@@ -202,23 +204,6 @@ class DebugDevToolsInterceptor : public net::URLRequestJobFactory::Interceptor {
       return new net::URLRequestFileJob(request, network_delegate, path);
 
     return NULL;
-  }
-
-  virtual net::URLRequestJob* MaybeInterceptRedirect(
-        const GURL& location,
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return NULL;
-  }
-
-  virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return NULL;
-  }
-
-  virtual bool WillHandleProtocol(const std::string& protocol) const {
-    return protocol == chrome::kChromeDevToolsScheme;
   }
 };
 #endif  // defined(DEBUG_DEVTOOLS)
@@ -766,16 +751,20 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
                                   ftp_auth_cache));
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
+  scoped_ptr<net::URLRequestJobFactory> top_job_factory =
+      job_factory.PassAs<net::URLRequestJobFactory>();
 #if defined(DEBUG_DEVTOOLS)
-  job_factory->AddInterceptor(new DebugDevToolsInterceptor());
+  top_job_factory.reset(new net::ProtocolInterceptJobFactory(
+      top_job_factory.Pass(),
+      scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+          new DebugDevToolsInterceptor)));
 #endif
 
   if (protocol_handler_interceptor) {
-    protocol_handler_interceptor->Chain(
-        job_factory.PassAs<net::URLRequestJobFactory>());
+    protocol_handler_interceptor->Chain(top_job_factory.Pass());
     return protocol_handler_interceptor.PassAs<net::URLRequestJobFactory>();
   } else {
-    return job_factory.PassAs<net::URLRequestJobFactory>();
+    return top_job_factory.Pass();
   }
 }
 

@@ -4,12 +4,7 @@
 
 #include "net/url_request/protocol_intercept_job_factory.h"
 
-#include "base/stl_util.h"
-#include "googleurl/src/gurl.h"
-#include "net/base/load_flags.h"
-#include "net/url_request/url_request_job_manager.h"
-
-class GURL;
+#include "base/logging.h"
 
 namespace net {
 
@@ -22,20 +17,6 @@ ProtocolInterceptJobFactory::ProtocolInterceptJobFactory(
 
 ProtocolInterceptJobFactory::~ProtocolInterceptJobFactory() {}
 
-bool ProtocolInterceptJobFactory::SetProtocolHandler(
-    const std::string& scheme, ProtocolHandler* protocol_handler) {
-  return job_factory_->SetProtocolHandler(scheme, protocol_handler);
-}
-
-void ProtocolInterceptJobFactory::AddInterceptor(Interceptor* interceptor) {
-  return job_factory_->AddInterceptor(interceptor);
-}
-
-URLRequestJob* ProtocolInterceptJobFactory::MaybeCreateJobWithInterceptor(
-    URLRequest* request, NetworkDelegate* network_delegate) const {
-  return job_factory_->MaybeCreateJobWithInterceptor(request, network_delegate);
-}
-
 URLRequestJob* ProtocolInterceptJobFactory::MaybeCreateJobWithProtocolHandler(
     const std::string& scheme,
     URLRequest* request,
@@ -47,19 +28,6 @@ URLRequestJob* ProtocolInterceptJobFactory::MaybeCreateJobWithProtocolHandler(
     return job;
   return job_factory_->MaybeCreateJobWithProtocolHandler(
       scheme, request, network_delegate);
-}
-
-URLRequestJob* ProtocolInterceptJobFactory::MaybeInterceptRedirect(
-    const GURL& location,
-    URLRequest* request,
-    NetworkDelegate* network_delegate) const {
-  return job_factory_->MaybeInterceptRedirect(
-      location, request, network_delegate);
-}
-
-URLRequestJob* ProtocolInterceptJobFactory::MaybeInterceptResponse(
-    URLRequest* request, NetworkDelegate* network_delegate) const {
-  return job_factory_->MaybeInterceptResponse(request, network_delegate);
 }
 
 bool ProtocolInterceptJobFactory::IsHandledProtocol(

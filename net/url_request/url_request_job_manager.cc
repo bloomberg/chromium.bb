@@ -79,14 +79,8 @@ URLRequestJob* URLRequestJobManager::CreateJob(
   // See if the request should be intercepted.
   //
 
-  if (job_factory) {
-    URLRequestJob* job = job_factory->MaybeCreateJobWithInterceptor(
-        request, network_delegate);
-    if (job)
-      return job;
-  }
-
-  // TODO(willchan): Remove this in favor of URLRequestJobFactory::Interceptor.
+  // TODO(pauljensen): Remove this when AppCacheInterceptor is a
+  // ProtocolHandler, see crbug.com/161547.
   if (!(request->load_flags() & LOAD_DISABLE_INTERCEPT)) {
     InterceptorList::const_iterator i;
     for (i = interceptors_.begin(); i != interceptors_.end(); ++i) {
@@ -155,16 +149,11 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptRedirect(
     return NULL;
   }
 
-  URLRequestJob* job = NULL;
-  if (job_factory)
-    job = job_factory->MaybeInterceptRedirect(
-        location, request, network_delegate);
-  if (job)
-    return job;
-
   InterceptorList::const_iterator i;
   for (i = interceptors_.begin(); i != interceptors_.end(); ++i) {
-    job = (*i)->MaybeInterceptRedirect(request, network_delegate, location);
+    URLRequestJob* job = (*i)->MaybeInterceptRedirect(request,
+                                                      network_delegate,
+                                                      location);
     if (job)
       return job;
   }
@@ -192,15 +181,10 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
     return NULL;
   }
 
-  URLRequestJob* job = NULL;
-  if (job_factory)
-    job = job_factory->MaybeInterceptResponse(request, network_delegate);
-  if (job)
-    return job;
-
   InterceptorList::const_iterator i;
   for (i = interceptors_.begin(); i != interceptors_.end(); ++i) {
-    job = (*i)->MaybeInterceptResponse(request, network_delegate);
+    URLRequestJob* job = (*i)->MaybeInterceptResponse(request,
+                                                      network_delegate);
     if (job)
       return job;
   }

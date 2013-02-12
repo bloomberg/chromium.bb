@@ -7,7 +7,9 @@
 
 #include <map>
 #include <vector>
+
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "net/base/net_export.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -18,31 +20,24 @@ class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
   URLRequestJobFactoryImpl();
   virtual ~URLRequestJobFactoryImpl();
 
+  // Sets the ProtocolHandler for a scheme. Returns true on success, false on
+  // failure (a ProtocolHandler already exists for |scheme|). On success,
+  // URLRequestJobFactory takes ownership of |protocol_handler|.
+  bool SetProtocolHandler(const std::string& scheme,
+                          ProtocolHandler* protocol_handler);
+
   // URLRequestJobFactory implementation
-  virtual bool SetProtocolHandler(const std::string& scheme,
-                          ProtocolHandler* protocol_handler) OVERRIDE;
-  virtual void AddInterceptor(Interceptor* interceptor) OVERRIDE;
-  virtual URLRequestJob* MaybeCreateJobWithInterceptor(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
   virtual URLRequestJob* MaybeCreateJobWithProtocolHandler(
       const std::string& scheme,
       URLRequest* request,
       NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location,
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const OVERRIDE;
-  virtual URLRequestJob* MaybeInterceptResponse(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
   virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE;
   virtual bool IsHandledURL(const GURL& url) const OVERRIDE;
 
  private:
   typedef std::map<std::string, ProtocolHandler*> ProtocolHandlerMap;
-  typedef std::vector<Interceptor*> InterceptorList;
 
   ProtocolHandlerMap protocol_handler_map_;
-  InterceptorList interceptors_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestJobFactoryImpl);
 };
