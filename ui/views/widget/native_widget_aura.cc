@@ -859,8 +859,9 @@ void NativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
       DCHECK_EQ(ownership_, Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
     }
 
-    delegate_->OnNativeBlur(
-        aura::client::GetFocusClient(window_)->GetFocusedWindow());
+    aura::client::FocusClient* client = aura::client::GetFocusClient(window_);
+    if (client)  // NULL during destruction of aura::Window.
+      delegate_->OnNativeBlur(client->GetFocusedWindow());
   }
 }
 
