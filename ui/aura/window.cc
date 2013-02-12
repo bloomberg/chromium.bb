@@ -144,14 +144,22 @@ ui::Layer* Window::RecreateLayer() {
     return NULL;
 
   old_layer->set_delegate(NULL);
-  if (delegate_ && old_layer->external_texture())
+  scoped_refptr<ui::Texture> old_texture = old_layer->external_texture();
+  if (delegate_ && old_texture)
     old_layer->SetExternalTexture(delegate_->CopyTexture());
+
   layer_ = new ui::Layer(old_layer->type());
   layer_owner_.reset(layer_);
   layer_->SetVisible(old_layer->visible());
   layer_->set_scale_content(old_layer->scale_content());
   layer_->set_delegate(this);
   layer_->SetMasksToBounds(old_layer->GetMasksToBounds());
+  // Move the original texture to the new layer if the old layer has a
+  // texture and we could copy it into the old layer,
+  // crbug.com/175211.
+  if (delegate_ && old_texture)
+    layer_->SetExternalTexture(old_texture);
+
   UpdateLayerName(name_);
   layer_->SetFillsBoundsOpaquely(!transparent_);
   // Install new layer as a sibling of the old layer, stacked on top of it.
