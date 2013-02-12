@@ -18,6 +18,7 @@
       'app/nibs/ChromeToMobileBubble.xib',
       'app/nibs/CollectedCookies.xib',
       'app/nibs/ContentBlockedCookies.xib',
+      'app/nibs/ContentBlockedMedia.xib',
       'app/nibs/ContentBlockedMixedScript.xib',
       'app/nibs/ContentBlockedPlugins.xib',
       'app/nibs/ContentBlockedPopups.xib',
