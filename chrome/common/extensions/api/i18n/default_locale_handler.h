@@ -28,6 +28,7 @@ class DefaultLocaleHandler : public ManifestHandler {
 
   virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DefaultLocaleHandler);
 };
 

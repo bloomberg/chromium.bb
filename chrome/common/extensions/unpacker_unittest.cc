@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -37,6 +38,9 @@ public:
     extensions::ManifestHandler::Register(
         keys::kDefaultLocale,
         make_linked_ptr(new extensions::DefaultLocaleHandler));
+    extensions::ManifestHandler::Register(
+        keys::kTheme,
+        make_linked_ptr(new extensions::ThemeHandler));
   }
 
   void SetupUnpacker(const std::string& crx_name) {

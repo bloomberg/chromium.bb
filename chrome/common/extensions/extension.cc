@@ -27,6 +27,7 @@
 // TODO(rdevlin.cronin): Remove this once PageAction, BrowserAction, and
 // SystemIndicator have been moved out of Extension.
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -819,7 +820,7 @@ std::set<base::FilePath> Extension::GetBrowserImages() const {
   }
 
   // Theme images.
-  DictionaryValue* theme_images = GetThemeImages();
+  DictionaryValue* theme_images = ThemeInfo::GetThemeImages(this);
   if (theme_images) {
     for (DictionaryValue::Iterator it(*theme_images); !it.IsAtEnd();
          it.Advance()) {
@@ -1485,9 +1486,6 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
 
   if (!LoadExtensionFeatures(&api_permissions, error))
-    return false;
-
-  if (!LoadThemeFeatures(error))
     return false;
 
   if (!LoadManagedModeFeatures(error))
@@ -2456,109 +2454,6 @@ bool Extension::LoadContentSecurityPolicy(string16* error) {
   return true;
 }
 
-bool Extension::LoadThemeFeatures(string16* error) {
-  if (!manifest_->HasKey(keys::kTheme))
-    return true;
-  DictionaryValue* theme_value = NULL;
-  if (!manifest_->GetDictionary(keys::kTheme, &theme_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidTheme);
-    return false;
-  }
-  if (!LoadThemeImages(theme_value, error))
-    return false;
-  if (!LoadThemeColors(theme_value, error))
-    return false;
-  if (!LoadThemeTints(theme_value, error))
-    return false;
-  if (!LoadThemeDisplayProperties(theme_value, error))
-    return false;
-
-  return true;
-}
-
-bool Extension::LoadThemeImages(const DictionaryValue* theme_value,
-                                string16* error) {
-  const DictionaryValue* images_value = NULL;
-  if (theme_value->GetDictionary(keys::kThemeImages, &images_value)) {
-    // Validate that the images are all strings
-    for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
-         iter.Advance()) {
-      std::string val;
-      if (!iter.value().GetAsString(&val)) {
-        *error = ASCIIToUTF16(errors::kInvalidThemeImages);
-        return false;
-      }
-    }
-    theme_images_.reset(images_value->DeepCopy());
-  }
-  return true;
-}
-
-bool Extension::LoadThemeColors(const DictionaryValue* theme_value,
-                                string16* error) {
-  const DictionaryValue* colors_value = NULL;
-  if (theme_value->GetDictionary(keys::kThemeColors, &colors_value)) {
-    // Validate that the colors are RGB or RGBA lists
-    for (DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
-         iter.Advance()) {
-      const ListValue* color_list = NULL;
-      double alpha = 0.0;
-      int color = 0;
-      // The color must be a list
-      if (!iter.value().GetAsList(&color_list) ||
-          // And either 3 items (RGB) or 4 (RGBA)
-          ((color_list->GetSize() != 3) &&
-           ((color_list->GetSize() != 4) ||
-            // For RGBA, the fourth item must be a real or int alpha value.
-            // Note that GetDouble() can get an integer value.
-            !color_list->GetDouble(3, &alpha))) ||
-          // For both RGB and RGBA, the first three items must be ints (R,G,B)
-          !color_list->GetInteger(0, &color) ||
-          !color_list->GetInteger(1, &color) ||
-          !color_list->GetInteger(2, &color)) {
-        *error = ASCIIToUTF16(errors::kInvalidThemeColors);
-        return false;
-      }
-    }
-    theme_colors_.reset(colors_value->DeepCopy());
-  }
-  return true;
-}
-
-bool Extension::LoadThemeTints(const DictionaryValue* theme_value,
-                               string16* error) {
-  const DictionaryValue* tints_value = NULL;
-  if (!theme_value->GetDictionary(keys::kThemeTints, &tints_value))
-    return true;
-
-  // Validate that the tints are all reals.
-  for (DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
-       iter.Advance()) {
-    const ListValue* tint_list = NULL;
-    double v = 0.0;
-    if (!iter.value().GetAsList(&tint_list) ||
-        tint_list->GetSize() != 3 ||
-        !tint_list->GetDouble(0, &v) ||
-        !tint_list->GetDouble(1, &v) ||
-        !tint_list->GetDouble(2, &v)) {
-      *error = ASCIIToUTF16(errors::kInvalidThemeTints);
-      return false;
-    }
-  }
-  theme_tints_.reset(tints_value->DeepCopy());
-  return true;
-}
-
-bool Extension::LoadThemeDisplayProperties(const DictionaryValue* theme_value,
-                                           string16* error) {
-  const DictionaryValue* display_properties_value = NULL;
-  if (theme_value->GetDictionary(keys::kThemeDisplayProperties,
-                                 &display_properties_value)) {
-    theme_display_properties_.reset(
-        display_properties_value->DeepCopy());
-  }
-  return true;
-}
 SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
                                         const gfx::Size& max_size) const {
   const base::FilePath& path = source.relative_path();

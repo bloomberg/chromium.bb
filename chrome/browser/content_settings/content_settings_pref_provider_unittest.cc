@@ -149,12 +149,16 @@ TEST_F(PrefProviderTest, Incognito) {
   Profile::RegisterUserPrefs(otr_registry);
   chrome::RegisterUserPrefs(otr_prefs, otr_registry);
 
-  TestingProfile profile;
-  TestingProfile* otr_profile = new TestingProfile;
-  profile.SetOffTheRecordProfile(otr_profile);
-  profile.SetPrefService(regular_prefs);
+  TestingProfile::Builder profile_builder;
+  profile_builder.SetPrefService(make_scoped_ptr(regular_prefs));
+  scoped_ptr<TestingProfile> profile = profile_builder.Build();
+
+  TestingProfile::Builder otr_profile_builder;
+  otr_profile_builder.SetPrefService(make_scoped_ptr(otr_prefs));
+  TestingProfile* otr_profile = otr_profile_builder.Build().release();
+
   otr_profile->set_incognito(true);
-  otr_profile->SetPrefService(otr_prefs);
+  profile->SetOffTheRecordProfile(otr_profile);
 
   PrefProvider pref_content_settings_provider(regular_prefs, false);
   PrefProvider pref_content_settings_provider_incognito(otr_prefs, true);

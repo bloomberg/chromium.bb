@@ -170,6 +170,8 @@
         'common/extensions/api/omnibox/omnibox_handler.h',
         'common/extensions/api/speech/tts_engine_manifest_handler.cc',
         'common/extensions/api/speech/tts_engine_manifest_handler.h',
+        'common/extensions/api/themes/theme_handler.cc',
+        'common/extensions/api/themes/theme_handler.h',
         'common/extensions/command.cc',
         'common/extensions/command.h',
         'common/extensions/csp_validator.cc',
@@ -491,6 +493,8 @@
             ['include', 'common/extensions/api/i18n/default_locale_handler.h'],
             ['include', 'common/extensions/api/identity/oauth2_manifest_handler.cc'],
             ['include', 'common/extensions/api/identity/oauth2_manifest_handler.h'],
+            ['include', 'common/extensions/api/themes/theme_handler.cc'],
+            ['include', 'common/extensions/api/themes/theme_handler.h'],
           ],
         }],
         ['remoting==1', {

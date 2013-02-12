@@ -584,12 +584,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Theme-related.
   bool is_theme() const;
-  base::DictionaryValue* GetThemeImages() const { return theme_images_.get(); }
-  base::DictionaryValue* GetThemeColors() const {return theme_colors_.get(); }
-  base::DictionaryValue* GetThemeTints() const { return theme_tints_.get(); }
-  base::DictionaryValue* GetThemeDisplayProperties() const {
-    return theme_display_properties_.get();
-  }
 
   // Content Security Policy!
   const std::string& content_security_policy() const {
@@ -716,17 +710,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadTextToSpeechVoices(string16* error);
   bool LoadIncognitoMode(string16* error);
   bool LoadContentSecurityPolicy(string16* error);
-
-  bool LoadThemeFeatures(string16* error);
-  bool LoadThemeImages(const base::DictionaryValue* theme_value,
-                       string16* error);
-  bool LoadThemeColors(const base::DictionaryValue* theme_value,
-                       string16* error);
-  bool LoadThemeTints(const base::DictionaryValue* theme_value,
-                      string16* error);
-  bool LoadThemeDisplayProperties(const base::DictionaryValue* theme_value,
-                                  string16* error);
-
   bool LoadManagedModeFeatures(string16* error);
   bool LoadManagedModeSites(
       const base::DictionaryValue* content_pack_value,
@@ -893,18 +876,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The public key used to sign the contents of the crx package.
   std::string public_key_;
-
-  // A map of resource id's to relative file paths.
-  scoped_ptr<base::DictionaryValue> theme_images_;
-
-  // A map of color names to colors.
-  scoped_ptr<base::DictionaryValue> theme_colors_;
-
-  // A map of color names to colors.
-  scoped_ptr<base::DictionaryValue> theme_tints_;
-
-  // A map of display properties.
-  scoped_ptr<base::DictionaryValue> theme_display_properties_;
 
   // A file containing a list of sites for Managed Mode.
   base::FilePath content_pack_site_list_;

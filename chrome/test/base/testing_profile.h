@@ -84,9 +84,6 @@ class TestingProfile : public Profile {
     // Sets the PrefService to be used by this profile.
     void SetPrefService(scoped_ptr<PrefServiceSyncable> prefs);
 
-    // Sets the TestingProfile to be off-the-record by default.
-    void SetOffTheRecord();
-
     // Creates the TestingProfile using previously-set settings.
     scoped_ptr<TestingProfile> Build();
 
@@ -99,7 +96,6 @@ class TestingProfile : public Profile {
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
     base::FilePath path_;
     Delegate* delegate_;
-    bool off_the_record_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
@@ -122,8 +118,7 @@ class TestingProfile : public Profile {
   TestingProfile(const base::FilePath& path,
                  Delegate* delegate,
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
-                 scoped_ptr<PrefServiceSyncable> prefs,
-                 bool off_the_record);
+                 scoped_ptr<PrefServiceSyncable> prefs);
 
   virtual ~TestingProfile();
 
@@ -232,12 +227,9 @@ class TestingProfile : public Profile {
   virtual policy::ManagedModePolicyProvider*
       GetManagedModePolicyProvider() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
-  // Sets the profile's PrefService. If a pref service hasn't been explicitly
-  // set GetPrefs creates one, so normally you need not invoke this. If you need
-  // to set a pref service you must invoke this before GetPrefs.
-  // TestingPrefService takes ownership of |prefs|.
-  void SetPrefService(PrefServiceSyncable* prefs);
+
   virtual PrefService* GetPrefs() OVERRIDE;
+
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
 

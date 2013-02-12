@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -454,15 +455,17 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromExtension(
 
   scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
   pack->BuildHeader(extension);
-  pack->BuildTintsFromJSON(extension->GetThemeTints());
-  pack->BuildColorsFromJSON(extension->GetThemeColors());
-  pack->BuildDisplayPropertiesFromJSON(extension->GetThemeDisplayProperties());
+  pack->BuildTintsFromJSON(extensions::ThemeInfo::GetThemeTints(extension));
+  pack->BuildColorsFromJSON(extensions::ThemeInfo::GetThemeColors(extension));
+  pack->BuildDisplayPropertiesFromJSON(
+      extensions::ThemeInfo::GetThemeDisplayProperties(extension));
 
   // Builds the images. (Image building is dependent on tints).
   FilePathMap file_paths;
-  pack->ParseImageNamesFromJSON(extension->GetThemeImages(),
-                                extension->path(),
-                                &file_paths);
+  pack->ParseImageNamesFromJSON(
+      extensions::ThemeInfo::GetThemeImages(extension),
+      extension->path(),
+      &file_paths);
   pack->BuildSourceImagesArray(file_paths);
 
   if (!pack->LoadRawBitmapsTo(file_paths, &pack->images_on_ui_thread_))

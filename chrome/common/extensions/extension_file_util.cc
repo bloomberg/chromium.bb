@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -270,7 +271,8 @@ bool ValidateExtension(const Extension* extension,
 
   // Theme resource validation.
   if (extension->is_theme()) {
-    DictionaryValue* images_value = extension->GetThemeImages();
+    DictionaryValue* images_value =
+        extensions::ThemeInfo::GetThemeImages(extension);
     if (images_value) {
       for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
            iter.Advance()) {

@@ -771,8 +771,9 @@ class IncognitoAutofillManagerTest : public AutofillManagerTest {
   virtual TestingProfile* CreateProfile() OVERRIDE {
     // Create an incognito profile.
     TestingProfile::Builder builder;
-    builder.SetOffTheRecord();
-    return builder.Build().release();
+    scoped_ptr<TestingProfile> profile = builder.Build();
+    profile->set_incognito(true);
+    return profile.release();
   }
 };
 
