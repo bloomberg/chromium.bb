@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class ActionBoxMenuModel;
 class Browser;
 
 namespace extensions {
@@ -35,7 +35,7 @@ class ActionBoxButtonController : public ui::SimpleMenuModel::Delegate,
   class Delegate {
    public:
     // Shows the menu with the given |menu_model|.
-    virtual void ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model) {}
+    virtual void ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model);
 
    protected:
     virtual ~Delegate() {}
@@ -60,8 +60,8 @@ class ActionBoxButtonController : public ui::SimpleMenuModel::Delegate,
   // Gets the command ID for an extension, creating a new one if necessary.
   int GetCommandIdForExtension(const extensions::Extension& extension);
 
-  // Gets the extension for a command ID, or NULL if there isn't one.
-  const extensions::Extension* GetExtensionForCommandId(int command_id);
+  // Returns the next command ID to be used.
+  int GetNextCommandId();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -72,12 +72,11 @@ class ActionBoxButtonController : public ui::SimpleMenuModel::Delegate,
 
   Delegate* delegate_;
 
-  // The command ID to assign to the next extension that needs one.
-  int next_extension_command_id_;
-
-  // The extension IDs that have commands associated with them.
-  typedef std::map<std::string, int> ExtensionIdCommandMap;
+  typedef std::map<int, std::string> ExtensionIdCommandMap;
   ExtensionIdCommandMap extension_command_ids_;
+
+  // The command ID to assign to the next dynamic entry that needs one.
+  int next_command_id_;
 
   content::NotificationRegistrar registrar_;
 

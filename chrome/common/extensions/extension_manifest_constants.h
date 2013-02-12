@@ -99,6 +99,7 @@ namespace extension_manifest_keys {
   extern const char kPageActionPopup[];
   extern const char kPageActionPopupPath[];
   extern const char kPageActions[];
+  extern const char kPageLauncher[];
   extern const char kPermissions[];
   extern const char kPlatformAppBackground[];
   extern const char kPlatformAppBackgroundPage[];
@@ -294,6 +295,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidPageActionsList[];
   extern const char kInvalidPageActionsListSize[];
   extern const char kInvalidPageActionTypeValue[];
+  extern const char kInvalidPageLauncher[];
   extern const char kInvalidPermission[];
   extern const char kInvalidPermissions[];
   extern const char kInvalidPermissionScheme[];

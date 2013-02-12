@@ -56,6 +56,7 @@
           'media_galleries_private.idl',
           'networking_private.json',
           'page_capture.json',
+          'page_launcher.idl',
           'permissions.json',
           'push_messaging.idl',
           'rtc_private.idl',

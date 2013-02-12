@@ -18,10 +18,13 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using extensions::ActionInfo;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ActionBoxMenuModel
@@ -56,7 +59,9 @@ void ActionBoxMenuModel::AddExtension(const extensions::Extension& extension,
   if (extension_ids_.empty())
     AddSeparator(ui::NORMAL_SEPARATOR);
   extension_ids_.push_back(extension.id());
-  AddItem(command_id, UTF8ToUTF16(extension.name()));
+  const ActionInfo* page_launcher_info =
+      ActionInfo::GetPageLauncherInfo(&extension);
+  AddItem(command_id, UTF8ToUTF16(page_launcher_info->default_title));
 }
 
 bool ActionBoxMenuModel::IsItemExtension(int index) {

@@ -1,0 +1,27 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This module allows platform apps an additional way of launching themselves
+// from the browser. To use this api, an app needs to specify the page_launcher
+// manifest property, then register to listen to pageLauncher.onClicked events.
+namespace pageLauncher {
+  // Information about the page the user was on when the event was fired.
+  dictionary PageData {
+    // The url of the page.
+    DOMString url;
+    // The mimetype of the page.
+    DOMString mimetype;
+    // The title of the page, if it has one.
+    DOMString? title;
+    // The text that was selected on the page, if any.
+    DOMString? selectionText;
+  };
+
+  interface Events {
+    // Fired when the user clicks the page launcher entry in the action box.
+    // |pageData| : The details of the page the user was on when the button
+    // was clicked.
+    static void onClicked(PageData pageData);
+  };
+};

@@ -168,6 +168,8 @@
         'common/extensions/api/file_handlers/file_handlers_parser.h',
         'common/extensions/api/omnibox/omnibox_handler.cc',
         'common/extensions/api/omnibox/omnibox_handler.h',
+        'common/extensions/api/page_launcher/page_launcher_handler.cc',
+        'common/extensions/api/page_launcher/page_launcher_handler.h',
         'common/extensions/api/speech/tts_engine_manifest_handler.cc',
         'common/extensions/api/speech/tts_engine_manifest_handler.h',
         'common/extensions/api/themes/theme_handler.cc',

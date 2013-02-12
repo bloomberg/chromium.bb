@@ -4,22 +4,51 @@
 
 #include "chrome/browser/ui/views/action_box_menu.h"
 
+#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
-#include "chrome/browser/ui/views/browser_action_view.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/views/bubble/bubble_border.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
 
+using extensions::ActionInfo;
+using extensions::Extension;
+using extensions::IconImage;
+
+namespace {
+class ExtensionImageView : public views::ImageView, public IconImage::Observer {
+ public:
+  ExtensionImageView(Profile* profile, const Extension* extension) {
+    const ActionInfo* page_launcher_info =
+        ActionInfo::GetPageLauncherInfo(extension);
+    icon_.reset(new IconImage(profile,
+                              extension,
+                              page_launcher_info->default_icon,
+                              extension_misc::EXTENSION_ICON_ACTION,
+                              Extension::GetDefaultIcon(true),
+                              this));
+    SetImage(icon_->image_skia());
+  }
+
+ private:
+  virtual void OnExtensionIconImageChanged(extensions::IconImage* image) {
+    SetImage(icon_->image_skia());
+  }
+
+  scoped_ptr<extensions::IconImage> icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionImageView);
+};
+}  // namespace
+
 // static
 scoped_ptr<ActionBoxMenu> ActionBoxMenu::Create(
-    Browser* browser,
+    Profile* profile,
     scoped_ptr<ActionBoxMenuModel> model) {
-  scoped_ptr<ActionBoxMenu> menu(new ActionBoxMenu(browser, model.Pass()));
+  scoped_ptr<ActionBoxMenu> menu(new ActionBoxMenu(profile, model.Pass()));
   menu->PopulateMenu();
   return menu.Pass();
 }
@@ -40,9 +69,9 @@ void ActionBoxMenu::RunMenu(views::MenuButton* menu_button,
                               views::MenuRunner::HAS_MNEMONICS));
 }
 
-ActionBoxMenu::ActionBoxMenu(Browser* browser,
+ActionBoxMenu::ActionBoxMenu(Profile* profile,
                              scoped_ptr<ActionBoxMenuModel> model)
-    : browser_(browser),
+    : profile_(profile),
       model_(model.Pass()) {
   views::MenuItemView* menu = new views::MenuItemView(this);
   menu->set_has_icons(true);
@@ -54,47 +83,6 @@ void ActionBoxMenu::ExecuteCommand(int id) {
   model_->ExecuteCommand(id);
 }
 
-void ActionBoxMenu::InspectPopup(ExtensionAction* action) {
-}
-
-int ActionBoxMenu::GetCurrentTabId() const {
-  return 0;
-}
-
-void ActionBoxMenu::OnBrowserActionExecuted(BrowserActionButton* button) {
-}
-
-void ActionBoxMenu::OnBrowserActionVisibilityChanged() {
-}
-
-gfx::Point ActionBoxMenu::GetViewContentOffset() const {
-  return gfx::Point(0, 0);
-}
-
-bool ActionBoxMenu::NeedToShowMultipleIconStates() const {
-  return false;
-}
-
-bool ActionBoxMenu::NeedToShowTooltip() const {
-  return false;
-}
-
-void ActionBoxMenu::WriteDragDataForView(views::View* sender,
-                                         const gfx::Point& press_pt,
-                                         ui::OSExchangeData* data) {
-}
-
-int ActionBoxMenu::GetDragOperationsForView(views::View* sender,
-                                            const gfx::Point& p) {
-  return 0;
-}
-
-bool ActionBoxMenu::CanStartDragForView(views::View* sender,
-                                        const gfx::Point& press_pt,
-                                        const gfx::Point& p) {
-  return false;
-}
-
 void ActionBoxMenu::PopulateMenu() {
   for (int model_index = 0; model_index < model_->GetItemCount();
        ++model_index) {
@@ -103,11 +91,8 @@ void ActionBoxMenu::PopulateMenu() {
             model_.get(), model_index, model_->GetCommandIdAt(model_index));
     if (model_->GetTypeAt(model_index) == ui::MenuModel::TYPE_COMMAND) {
       if (model_->IsItemExtension(model_index)) {
-        menu_item->SetMargins(0, 0);
-        const extensions::Extension* extension =
-            model_->GetExtensionAt(model_index);
-        BrowserActionView* view = new BrowserActionView(extension,
-            browser_, this);
+        const Extension* extension = model_->GetExtensionAt(model_index);
+        ExtensionImageView* view = new ExtensionImageView(profile_, extension);
         // |menu_item| will own the |view| from now on.
         menu_item->SetIconView(view);
       }

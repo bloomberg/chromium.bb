@@ -55,6 +55,11 @@ const ActionInfo* ActionInfo::GetScriptBadgeInfo(const Extension* extension) {
 }
 
 // static
+const ActionInfo* ActionInfo::GetPageLauncherInfo(const Extension* extension) {
+  return GetActionInfo(extension, extension_manifest_keys::kPageLauncher);
+}
+
+// static
 void ActionInfo::SetBrowserActionInfo(Extension* extension, ActionInfo* info) {
   extension->SetManifestData(extension_manifest_keys::kBrowserAction,
                              new ActionInfoData(info));
@@ -63,6 +68,12 @@ void ActionInfo::SetBrowserActionInfo(Extension* extension, ActionInfo* info) {
 // static
 void ActionInfo::SetScriptBadgeInfo(Extension* extension, ActionInfo* info) {
   extension->SetManifestData(extension_manifest_keys::kScriptBadge,
+                             new ActionInfoData(info));
+}
+
+// static
+void ActionInfo::SetPageLauncherInfo(Extension* extension, ActionInfo* info) {
+  extension->SetManifestData(extension_manifest_keys::kPageLauncher,
                              new ActionInfoData(info));
 }
 

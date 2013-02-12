@@ -33,11 +33,17 @@ struct ActionInfo {
   // Returns the extension's script badge.
   static const ActionInfo* GetScriptBadgeInfo(const Extension* etxension);
 
+  // Returns the extension's page launcher.
+  static const ActionInfo* GetPageLauncherInfo(const Extension* extension);
+
   // Sets the extension's browser action. |extension| takes ownership of |info|.
   static void SetBrowserActionInfo(Extension* extension, ActionInfo* info);
 
   // Sets the extension's script badge. |extension| takes ownership of |info|.
   static void SetScriptBadgeInfo(Extension* etxension, ActionInfo* info);
+
+  // Sets the extension's page launcher. |extension| takes ownership of |info|.
+  static void SetPageLauncherInfo(Extension* extension, ActionInfo* info);
 
   // Empty implies the key wasn't present.
   ExtensionIconSet default_icon;
