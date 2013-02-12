@@ -20,7 +20,7 @@ cr.define('print_preview', function() {
      * Number of pages in the document to print.
      * @type {number}
      */
-    this.pageCount = 1;
+    this.pageCount = 0;
 
     /**
      * Size of the pages of the document in points.

@@ -77,11 +77,11 @@ cr.define('print_preview', function() {
     this.isFitToPageEnabled_ = false;
 
     /**
-     * Page number set used to generate the last preview.
-     * @type {print_preview.PageNumberSet}
+     * Page ranges setting used used to generate the last preview.
+     * @type {!Array.<object.<{from: number, to: number}>>}
      * @private
      */
-    this.pageNumberSet_ = null;
+    this.pageRanges_ = null;
 
     /**
      * Margins type used to generate the last preview.
@@ -158,7 +158,7 @@ cr.define('print_preview', function() {
           this.printTicketStore_.isHeaderFooterEnabled();
       this.isColorEnabled_ = this.printTicketStore_.isColorEnabled();
       this.isFitToPageEnabled_ = this.printTicketStore_.isFitToPageEnabled();
-      this.pageNumberSet_ = this.printTicketStore_.getPageNumberSet();
+      this.pageRanges_ = this.printTicketStore_.getPageRanges();
       this.marginsType_ = this.printTicketStore_.getMarginsType();
       this.isCssBackgroundEnabled_ =
           this.printTicketStore_.isCssBackgroundEnabled();
@@ -259,7 +259,8 @@ cr.define('print_preview', function() {
           ticketStore.isHeaderFooterEnabled() != this.isHeaderFooterEnabled_ ||
           ticketStore.isColorEnabled() != this.isColorEnabled_ ||
           ticketStore.isFitToPageEnabled() != this.isFitToPageEnabled_ ||
-          !ticketStore.getPageNumberSet().equals(this.pageNumberSet_) ||
+          this.pageRanges_ == null ||
+          !areRangesEqual(ticketStore.getPageRanges(), this.pageRanges_) ||
           (ticketStore.getMarginsType() != this.marginsType_ &&
               ticketStore.getMarginsType() !=
                   print_preview.ticket_items.MarginsType.Value.CUSTOM) ||
@@ -323,7 +324,7 @@ cr.define('print_preview', function() {
         return; // Ignore old response.
       }
       this.printTicketStore_.updatePageCount(event.pageCount);
-      this.pageNumberSet_ = this.printTicketStore_.getPageNumberSet();
+      this.pageRanges_ = this.printTicketStore_.getPageRanges();
     },
 
     /**

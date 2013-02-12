@@ -15,7 +15,6 @@ function isInteger(toTest) {
 /**
  * Returns true if |value| is a valid non zero positive integer.
  * @param {string} value The string to be tested.
- *
  * @return {boolean} true if the |value| is valid non zero positive integer.
  */
 function isPositiveInteger(value) {
@@ -24,9 +23,8 @@ function isPositiveInteger(value) {
 
 /**
  * Returns true if the contents of the two arrays are equal.
- * @param {Array} array1 The first array.
- * @param {Array} array2 The second array.
- *
+ * @param {Array.<{from: number, to: number}>} array1 The first array.
+ * @param {Array.<{from: number, to: number}>} array2 The second array.
  * @return {boolean} true if the arrays are equal.
  */
 function areArraysEqual(array1, array2) {
@@ -35,6 +33,23 @@ function areArraysEqual(array1, array2) {
   for (var i = 0; i < array1.length; i++)
     if (array1[i] !== array2[i])
       return false;
+  return true;
+}
+
+/**
+ * Returns true if the contents of the two page ranges are equal.
+ * @param {Array} array1 The first array.
+ * @param {Array} array2 The second array.
+ * @return {boolean} true if the arrays are equal.
+ */
+function areRangesEqual(array1, array2) {
+  if (array1.length != array2.length)
+    return false;
+  for (var i = 0; i < array1.length; i++)
+    if (array1[i].from != array2[i].from ||
+        array1[i].to != array2[i].to) {
+    return false;
+  }
   return true;
 }
 
@@ -58,93 +73,85 @@ function removeDuplicates(inArray) {
 }
 
 /**
- * Checks if |pageRangeText| represents a valid page selection.
+ * Returns a list of ranges in |pageRangeText|. The ranges are
+ * listed in the order they appear in |pageRangeText| and duplicates are not
+ * eliminated. If |pageRangeText| is not valid null is returned.
  * A valid selection has a parsable format and every page identifier is
- * <= |totalPageCount| unless wildcards are used (see examples).
+ * greater the 0 and less or equal to |totalPageCount| unless wildcards are
+ * used(see examples).
+ * If |totalPageCount| is 0 or undefined function uses impossibly large number
+ * instead.
+ * Wildcard the first number must be larger then 0 and less or equal then
+ * |totalPageCount|. If it's missed then 1 is used as the first number.
+ * Wildcard the second number must be larger then the first number. If it's
+ * missed then |totalPageCount| is used as the second number.
  * Example: "1-4, 9, 3-6, 10, 11" is valid, assuming |totalPageCount| >= 11.
- * Example: "1-4, 6-6" is valid, assuming |totalPageCount| >= 6.
+ * Example: "1-4, -6" is valid, assuming |totalPageCount| >= 6.
  * Example: "2-" is valid, assuming |totalPageCount| >= 2, means from 2 to the
- * end.
- * Example: "1-10000" is valid, regardless of |totalPageCount|, means from 1 to
- * the end if |totalPageCount| < 10000.
+ *          end.
+ * Example: "4-2, 11, -6" is invalid.
+ * Example: "-" is valid, assuming |totalPageCount| >= 1.
  * Example: "1-4dsf, 11" is invalid regardless of |totalPageCount|.
- * Example: "4-2, 11, -6" is invalid regardless of |totalPageCount|.
- *
- * Note: If |totalPageCount| is undefined the validation does not take
- * |totalPageCount| into account.
- * Example: "34853253" is valid.
- * Example: "1-4, 9, 3-6, 10, 11" is valid.
- *
  * @param {string} pageRangeText The text to be checked.
  * @param {number} totalPageCount The total number of pages.
- * @return {boolean} true if the |pageRangeText| is valid.
+ * @return {Array.<{from: number, to: number}>} An array of page range objects.
  */
-function isPageRangeTextValid(pageRangeText, totalPageCount) {
-  var regex = /^\s*([0-9]+)\s*-\s*([0-9]*)\s*$/;
-  var successfullyParsed = 0;
+function pageRangeTextToPageRanges(pageRangeText, totalPageCount) {
+  var MAX_PAGE_NUMBER = 1000000000;
+  totalPageCount = totalPageCount ? totalPageCount : MAX_PAGE_NUMBER;
 
-  // Splitting around commas.
+  var regex = /^\s*([0-9]*)\s*-\s*([0-9]*)\s*$/;
   var parts = pageRangeText.split(/,/);
 
+  var pageRanges = [];
   for (var i = 0; i < parts.length; ++i) {
-    // Removing whitespace.
-    parts[i] = parts[i].replace(/\s*/g, '');
     var match = parts[i].match(regex);
-    if (parts[i].length == 0)
-      continue;
-
-    if (match && match[1] && isPositiveInteger(match[1])) {
-      var from = parseInt(match[1], 10);
-      var to = isPositiveInteger(match[2]) ? parseInt(match[2], 10) :
-          totalPageCount;
+    if (match) {
+      if (!isPositiveInteger(match[1]) && match[1] !== '')
+        return null;
+      if (!isPositiveInteger(match[2]) && match[2] !== '')
+        return null;
+      var from = match[1] ? parseInt(match[1], 10) : 1;
+      var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
       if (from > to || from > totalPageCount)
-        return false;
-    } else if (!isPositiveInteger(parts[i]) || (totalPageCount != -1 &&
-          parseInt(parts[i], 10) > totalPageCount)) {
-      return false;
+        return null;
+      pageRanges.push({'from': from, 'to': to});
+    } else {
+      if (!isPositiveInteger(parts[i]))
+        return null;
+      var singlePageNumber = parseInt(parts[i], 10);
+      if (singlePageNumber > totalPageCount)
+        return null;
+      pageRanges.push({'from': singlePageNumber, 'to': singlePageNumber});
     }
-    successfullyParsed++;
   }
-  return successfullyParsed > 0;
+  return pageRanges;
 }
 
 /**
- * Returns a list of all pages specified in |pagesRangeText|. The pages are
+ * Returns a list of pages defined by |pagesRangeText|. The pages are
  * listed in the order they appear in |pageRangeText| and duplicates are not
- * eliminated. If |pageRangeText| is not valid according to
- * isPageRangeTextValid(), or |totalPageCount| is undefined an empty list is
- * returned.
+ * eliminated. If |pageRangeText| is not valid according or
+ * |totalPageCount| undefined [1,2,...,totalPageCount] is returned.
+ * See pageRangeTextToPageRanges for details.
  * @param {string} pageRangeText The text to be checked.
  * @param {number} totalPageCount The total number of pages.
  * @return {Array.<number>} A list of all pages.
  */
 function pageRangeTextToPageList(pageRangeText, totalPageCount) {
-  var pageList = [];
-  if ((totalPageCount &&
-       !isPageRangeTextValid(pageRangeText, totalPageCount)) ||
-      !totalPageCount) {
-    return pageList;
-  }
-
-  var regex = /^\s*([0-9]+)\s*-\s*([0-9]*)\s*$/;
-  var parts = pageRangeText.split(/,/);
-
-  for (var i = 0; i < parts.length; ++i) {
-    var match = parts[i].match(regex);
-
-    if (match && match[1]) {
-      var from = parseInt(match[1], 10);
-      var to = match[2] ? parseInt(match[2], 10) : totalPageCount;
-
-      for (var j = from; j <= Math.min(to, totalPageCount); ++j)
+  var pageRanges = pageRangeTextToPageRanges(pageRangeText, totalPageCount);
+  pageList = [];
+  if (pageRanges) {
+    for (var i = 0; i < pageRanges.length; ++i) {
+      for (var j = pageRanges[i].from; j <= Math.min(pageRanges[i].to,
+                                                     totalPageCount); ++j) {
         pageList.push(j);
-    } else {
-      var singlePageNumber = parseInt(parts[i], 10);
-      if (isPositiveInteger(singlePageNumber.toString()) &&
-          singlePageNumber <= totalPageCount) {
-        pageList.push(singlePageNumber);
       }
     }
+  }
+  if (pageList.length == 0) {
+    for (var j = 1; j <= totalPageCount; ++j)
+      pageList.push(j);
   }
   return pageList;
 }
@@ -164,26 +171,6 @@ function pageListToPageSet(pageList) {
   });
   pageSet = removeDuplicates(pageSet);
   return pageSet;
-}
-
-/**
- * Converts |pageSet| to page ranges. It squashes whenever possible.
- * Example: '1-2,3,5-7' becomes 1-3,5-7.
- *
- * @param {Array.<number>} pageSet The set of pages to be processed. Callers
- *     should ensure that no duplicates exist.
- * @return {Array.<{from: number, to: number}>} An array of page range objects.
- */
-function pageSetToPageRanges(pageSet) {
-  var pageRanges = [];
-  for (var i = 0; i < pageSet.length; ++i) {
-    var tempFrom = pageSet[i];
-    while (i + 1 < pageSet.length && pageSet[i + 1] == pageSet[i] + 1)
-      ++i;
-    var tempTo = pageSet[i];
-    pageRanges.push({'from': tempFrom, 'to': tempTo});
-  }
-  return pageRanges;
 }
 
 /**

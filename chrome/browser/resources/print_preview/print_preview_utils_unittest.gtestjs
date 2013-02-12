@@ -53,65 +53,69 @@ TEST_F('PrintPreviewUtilsUnitTest', 'RemoveDuplicates', function() {
   assertTrue(areArraysEqual(removeDuplicates(array1), [1,2,3,6,7,9,10]));
 });
 
-TEST_F('PrintPreviewUtilsUnitTest', 'IsPageRangeTextValid1', function() {
-  var totalPageCount;
-  assertTrue(isPageRangeTextValid("1,2,  3,56,1000000", totalPageCount));
-  assertTrue(isPageRangeTextValid(", ,1,2,3,,1,, 56 ,", totalPageCount));
-  assertTrue(isPageRangeTextValid(",1-3,,6-9,6-10,", totalPageCount));
-  assertTrue(isPageRangeTextValid("10-", totalPageCount));
-  assertTrue(isPageRangeTextValid("10-10", totalPageCount));
-  assertTrue(isPageRangeTextValid(" 10-100000", totalPageCount));
-
-  assertFalse(isPageRangeTextValid("1,2,0,56,1000000", totalPageCount));
-  assertFalse(isPageRangeTextValid("-1,1,2,,56", totalPageCount));
-  assertFalse(isPageRangeTextValid("1,2,56-40", totalPageCount));
+TEST_F('PrintPreviewUtilsUnitTest', 'PageRanges', function() {
+  function assertRangesEqual(simpleRange1, range2) {
+    var range1 = []
+    for (var i = 0; i < simpleRange1.length; i++) {
+      var from;
+      var to;
+      if (Array.isArray(simpleRange1[i])) {
+        from = simpleRange1[i][0];
+        to = simpleRange1[i][1];
+      } else {
+        from = simpleRange1[i];
+        to = simpleRange1[i];
+      }
+      range1.push({'from': from, 'to': to});
+    }
+    assertTrue(areRangesEqual(range1, range2));
+  };
+  assertRangesEqual([1, 2, 3, 1, 56],
+                    pageRangeTextToPageRanges("1,2,3,1,56", 100));
+  assertRangesEqual([[1, 3],[6, 9], [6, 10]],
+                    pageRangeTextToPageRanges("1-3, 6-9,6-10 ", 100));
+  assertRangesEqual([[10, 100]],
+                    pageRangeTextToPageRanges("10-", 100));
+  assertRangesEqual([[10, 100000]],
+                    pageRangeTextToPageRanges("10-100000", 100));
+  assertRangesEqual([[1, 100]],
+                    pageRangeTextToPageRanges("-", 100));
+  assertRangesEqual([1, 2],
+                    pageRangeTextToPageRanges("1,2", undefined));
+  assertRangesEqual([[1, 1000000000]],
+                    pageRangeTextToPageRanges("-", null));
+  assertRangesEqual([[1, 1000000000]],
+                    pageRangeTextToPageRanges("-", 0));
 });
 
-TEST_F('PrintPreviewUtilsUnitTest', 'IsPageRangeTextValid2', function() {
-  var totalPageCount = 100;
-  assertTrue(isPageRangeTextValid(",,1,2,3,,1,,56,", totalPageCount));
-  assertTrue(isPageRangeTextValid(",1-3,,6-9,6-10,", totalPageCount));
-  assertTrue(isPageRangeTextValid("10-", totalPageCount));
-  assertTrue(isPageRangeTextValid("10-100000", totalPageCount));
-
-  assertFalse(isPageRangeTextValid("1,2,3,56,1000000", totalPageCount));
-  assertFalse(isPageRangeTextValid("1,2,0,56", totalPageCount));
-  assertFalse(isPageRangeTextValid("-1,1,2,,56", totalPageCount));
-  assertFalse(isPageRangeTextValid("1,2,56-40", totalPageCount));
-  assertFalse(isPageRangeTextValid("101-110", totalPageCount));
+TEST_F('PrintPreviewUtilsUnitTest', 'InvalidPageRanges', function() {
+  assertTrue(pageRangeTextToPageRanges("1,100000", 100) == null);
+  assertTrue(pageRangeTextToPageRanges("1,2,0,56", 100) == null);
+  assertTrue(pageRangeTextToPageRanges("-1,1,2,,56", 100) == null);
+  assertTrue(pageRangeTextToPageRanges("1,2,56-40", 100) == null);
+  assertTrue(pageRangeTextToPageRanges("101-110", 100) == null);
 });
 
 TEST_F('PrintPreviewUtilsUnitTest', 'PageRangeTextToPageList', function() {
-  var totalPageCount = 10;
   assertTrue(areArraysEqual([1],
-                            pageRangeTextToPageList("1", totalPageCount)));
+                            pageRangeTextToPageList("1", 10)));
   assertTrue(areArraysEqual([1,2,3,4],
-                            pageRangeTextToPageList("1-4", totalPageCount)));
+                            pageRangeTextToPageList("1-4", 10)));
   assertTrue(areArraysEqual([1,2,3,4,2,3,4],
-                            pageRangeTextToPageList("1-4, 2-4", totalPageCount)));
+                            pageRangeTextToPageList("1-4, 2-4", 10)));
   assertTrue(areArraysEqual([1,2,5,7,8,9,10,2,2,3],
                             pageRangeTextToPageList("1-2, 5, 7-10, 2, 2, 3",
-                                                    totalPageCount)));
+                                                    10)));
   assertTrue(areArraysEqual([5,6,7,8,9,10],
-                            pageRangeTextToPageList("5-", totalPageCount)));
-  assertTrue(areArraysEqual([], pageRangeTextToPageList("1-4", undefined)));
+                            pageRangeTextToPageList("5-", 10)));
   assertTrue(areArraysEqual([],
-                            pageRangeTextToPageList("1-abcd", totalPageCount)));
+                            pageRangeTextToPageList("1-4", undefined)));
+  assertTrue(areArraysEqual([1,2,3,4,5,6,7,8,9,10],
+                            pageRangeTextToPageList("1-abcd", 10)));
 });
 
 TEST_F('PrintPreviewUtilsUnitTest', 'PageListToPageSet', function() {
   assertTrue(areArraysEqual([1,2,3,4], pageListToPageSet([4,3,2,1,1,1])));
   assertTrue(areArraysEqual([1,2,3,4], pageListToPageSet([1,2,2,3,4,1,1,1])));
   assertTrue(areArraysEqual([], pageListToPageSet([])));
-});
-
-TEST_F('PrintPreviewUtilsUnitTest', 'PageSetToPageRanges', function() {
-  var pageRanges = pageSetToPageRanges([1,2,3,7,8,9,11]);
-  assertEquals(pageRanges.length, 3);
-  assertEquals(pageRanges[0].from, 1);
-  assertEquals(pageRanges[0].to, 3);
-  assertEquals(pageRanges[1].from, 7);
-  assertEquals(pageRanges[1].to, 9);
-  assertEquals(pageRanges[2].from, 11);
-  assertEquals(pageRanges[2].to, 11);
 });

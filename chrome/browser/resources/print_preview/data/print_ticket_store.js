@@ -51,7 +51,7 @@ cr.define('print_preview', function() {
      */
     this.documentInfo_ = new print_preview.DocumentInfo();
     this.documentInfo_.isModifiable = true;
-    this.documentInfo_.pageCount = 1;
+    this.documentInfo_.pageCount = 0;
     this.documentInfo_.pageSize = initialPageSize;
     this.documentInfo_.printableArea = new print_preview.PrintableArea(
         new print_preview.Coordinate2d(0, 0), initialPageSize);
@@ -590,6 +590,23 @@ cr.define('print_preview', function() {
     /** @return {string} String representation of the page range. */
     getPageRangeStr: function() {
       return this.pageRange_.getValue();
+    },
+
+    /**
+     * @return {!Array.<object.<{from: number, to: number}>>} Page ranges
+     *     represented by of the page range string.
+     */
+    getPageRanges: function() {
+      return this.pageRange_.getPageRanges();
+    },
+
+    /**
+     * @return {!Array.<object.<{from: number, to: number}>>} Page ranges
+     *     represented by of the page range string and constraied by ducument
+     *     page count.
+     */
+    getDocumentPageRanges: function() {
+      return this.pageRange_.getDocumentPageRanges();
     },
 
     /**

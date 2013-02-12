@@ -140,12 +140,8 @@ cr.define('print_preview', function() {
       assert(printTicketStore.isTicketValidForPreview(),
              'Trying to generate preview when ticket is not valid');
 
-      var pageRanges =
-          (requestId > 0 && printTicketStore.hasPageRangeCapability()) ?
-          printTicketStore.getPageNumberSet().getPageRanges() : [];
-
       var ticket = {
-        'pageRange': pageRanges,
+        'pageRange': printTicketStore.getDocumentPageRanges(),
         'landscape': printTicketStore.isLandscapeEnabled(),
         'color': printTicketStore.isColorEnabled() ?
             NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,
@@ -215,8 +211,7 @@ cr.define('print_preview', function() {
              'Trying to print when ticket is not valid');
 
       var ticket = {
-        'pageRange': printTicketStore.hasPageRangeCapability() ?
-            printTicketStore.getPageNumberSet().getPageRanges() : [],
+        'pageRange': printTicketStore.getDocumentPageRanges(),
         'pageCount': printTicketStore.getPageNumberSet().size,
         'landscape': printTicketStore.isLandscapeEnabled(),
         'color': printTicketStore.isColorEnabled() ?
