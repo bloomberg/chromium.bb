@@ -15,6 +15,3 @@ ADDRESS_HOME_CITY | HT_Ship_City | City |
 ADDRESS_HOME_STATE | HT_Ship_State | State/Province | 
 ADDRESS_HOME_ZIP | HT_Ship_Zip | Zip/Postal Code | 
 ADDRESS_HOME_COUNTRY | HT_Ship_Country | Country | 
-UNKNOWN_TYPE | HT_OK_to_email | Would it be OK if occasionally we notified you of special sales via email? | -1
-UNKNOWN_TYPE | HT_OK_to_email | Yes | 0
-UNKNOWN_TYPE | HT_PrefersHTML | Would it be OK if occasionally we notified you of special sales via email? | on

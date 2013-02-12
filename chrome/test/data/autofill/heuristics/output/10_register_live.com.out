@@ -9,7 +9,4 @@ UNKNOWN_TYPE | iSQ | Question: | 0
 UNKNOWN_TYPE | iSA | Secret answer: | 
 NAME_FIRST | iFirstName | First name: | 
 NAME_LAST | iLastName | Last name: | 
-UNKNOWN_TYPE | profile_gender |  | m
-UNKNOWN_TYPE | profile_gender |  | f
 UNKNOWN_TYPE | iBirthYear | Birth year: | Example: 1990
-UNKNOWN_TYPE | iOptinEmail | Send me email with promotional offers and survey invitations from Windows Live, Bing, and MSN. (You can unsubscribe at any time.) | on

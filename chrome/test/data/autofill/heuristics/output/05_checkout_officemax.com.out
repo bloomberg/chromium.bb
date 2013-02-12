@@ -9,6 +9,5 @@ ADDRESS_HOME_ZIP | zip | *Zip Code: |
 PHONE_HOME_WHOLE_NUMBER | phone | *Phone number: | 
 EMAIL_ADDRESS | /atg/commerce/order/purchase/ShippingGroupFormHandler.emailAddress | *Email Address: | 
 EMAIL_ADDRESS | /atg/commerce/order/purchase/ShippingGroupFormHandler.confirmEmailAddress | *Confirm Email Address: | 
-UNKNOWN_TYPE | emailOptIn | Yes! Send me exclusive coupons and special online savings via OfficeMax email.OfficeMax is committed to safeguarding your privacy. Our Privacy Policy outlines how OfficeMax handles your information. | https://www.officemax.com:443/
 UNKNOWN_TYPE | /atg/commerce/order/purchase/ShippingGroupFormHandler.maxPerksNumber | MaxPerks® ID: < What is this? | 
 UNKNOWN_TYPE | TaxExemptID | Tax Exempt ID: < What is this? | 

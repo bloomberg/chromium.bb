@@ -10,6 +10,3 @@ ADDRESS_HOME_STATE | LOYALTY_ADDRESS<>state_cd | State/Province* |
 ADDRESS_HOME_ZIP | LOYALTY_ADDRESS<>postal | Zip/Postal Code*! | 
 PHONE_HOME_WHOLE_NUMBER | LOYALTY_ADDRESS<>phone | Daytime Phone* | 
 UNKNOWN_TYPE | LOYALTY_ACCOUNT<>ATR_USER_Password_Hint | Password Hint* | 
-UNKNOWN_TYPE | LOYALTY_ADDRESS<>ATR_indBillAsRewards | Password Hint*! | true
-UNKNOWN_TYPE | LOYALTY_ACCOUNT<>sendEmail | Save the address above as my default billing address. I would like to receive promotions and special offers from Gymboree. | true
-UNKNOWN_TYPE | accept | I have read and accept the terms and conditions of Gymboree Rewards. (Rewards information and offers will be emailed to you.) | on

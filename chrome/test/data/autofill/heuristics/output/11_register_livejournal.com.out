@@ -4,4 +4,3 @@ UNKNOWN_TYPE | Widget[CreateAccount]_gender | Gender: |
 UNKNOWN_TYPE | Widget[CreateAccount]_bday_mm | Birthdate: | 1
 UNKNOWN_TYPE | Widget[CreateAccount]_bday_dd | Birthdate: | 
 UNKNOWN_TYPE | Widget[CreateAccount]_bday_yyyy | Birthdate: | 
-UNKNOWN_TYPE | Widget[CreateAccount]_news | Yes, send me LiveJournal announcements via email. | 1

@@ -10,19 +10,10 @@ ADDRESS_HOME_COUNTRY | CC_COUNTRY | Country | United States
 PHONE_HOME_WHOLE_NUMBER | dphone | Telephone | 
 EMAIL_ADDRESS | demail | Email * | 
 UNKNOWN_TYPE | amt | $ | 
-UNKNOWN_TYPE | tributeSelect | Name * | on
-UNKNOWN_TYPE | DonationType | Name * | OneTime
-UNKNOWN_TYPE | DonationType | This is a one time donation | Recurs
 UNKNOWN_TYPE | ccrecurring | I would like to make this a recurring donation deducted | Monthly
 UNKNOWN_TYPE | remLen | ( You may enter up to 500 characters. ) | 500
-UNKNOWN_TYPE | tribute |  | IHO
-UNKNOWN_TYPE | tribute | In Honor Of | IMO
 NAME_FULL | Tribute_Name | Name: | 
 UNKNOWN_TYPE | Tribute_occasion | Occasion: | 
-UNKNOWN_TYPE | Tribute_Disclosure | Occasion: | on
-UNKNOWN_TYPE | Tribute_Notification | I wish to remain anonymous | on
-UNKNOWN_TYPE | Tribute_IncludeAmount |  | 1
-UNKNOWN_TYPE | Tribute_IncludeAmount | Include the amount | 0
 NAME_FULL | Tribute_NotifyName | Name: | 
 EMAIL_ADDRESS | Tribute_Email | Email: | 
 ADDRESS_HOME_LINE1 | Tribute_NotifyAddr | Street: | 
@@ -34,7 +25,6 @@ CREDIT_CARD_NUMBER | ccard | Credit Card Number * |
 CREDIT_CARD_VERIFICATION_CODE | csc | CSC Number * What Is This? | 
 CREDIT_CARD_EXP_MONTH | ExpMon | Month | 1
 CREDIT_CARD_EXP_4_DIGIT_YEAR | ExpYear | Year | 11
-UNKNOWN_TYPE | SameAddress | Billing Address - | checkbox
 ADDRESS_HOME_LINE1 | CC_Addr | Address 1 * | 
 ADDRESS_HOME_LINE2 | CC_Addr2 | Address 2 | 
 ADDRESS_HOME_CITY | CC_City | City / State / Zip * | 
