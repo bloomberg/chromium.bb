@@ -30,6 +30,10 @@ class MockOmniboxEditModel : public OmniboxEditModel {
 
   int up_or_down_count() const { return up_or_down_count_; }
 
+  void set_up_or_down_count(int count) {
+    up_or_down_count_ = count;
+  }
+
  private:
   int up_or_down_count_;
 
@@ -166,4 +170,34 @@ TEST_F(OmniboxViewMacTest, SetInstantSuggestion) {
   view.SetUserText(string16());
   EXPECT_EQ(string16(), view.GetText());
   EXPECT_EQ(string16(), view.GetInstantSuggestion());
+}
+
+TEST_F(OmniboxViewMacTest, UpDownArrow) {
+  OmniboxViewMac view(NULL, NULL, profile(), NULL, NULL);
+
+  // This is deleted by the omnibox view.
+  MockOmniboxEditModel* model =
+      new MockOmniboxEditModel(&view, NULL, profile());
+  SetModel(&view, model);
+
+  MockOmniboxPopupView popup_view;
+  OmniboxPopupModel popup_model(&popup_view, model);
+
+  // With popup closed verify that pressing up and down arrow works.
+  popup_view.set_is_open(false);
+  model->set_up_or_down_count(0);
+  view.OnDoCommandBySelector(@selector(moveDown:));
+  EXPECT_EQ(1, model->up_or_down_count());
+  model->set_up_or_down_count(0);
+  view.OnDoCommandBySelector(@selector(moveUp:));
+  EXPECT_EQ(-1, model->up_or_down_count());
+
+  // With popup open verify that pressing up and down arrow works.
+  popup_view.set_is_open(true);
+  model->set_up_or_down_count(0);
+  view.OnDoCommandBySelector(@selector(moveDown:));
+  EXPECT_EQ(1, model->up_or_down_count());
+  model->set_up_or_down_count(0);
+  view.OnDoCommandBySelector(@selector(moveUp:));
+  EXPECT_EQ(-1, model->up_or_down_count());
 }
