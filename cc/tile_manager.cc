@@ -49,9 +49,6 @@ inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
       TilePriority::kMaxDistanceInContentSpace)
     return NEVER_BIN;
 
-  if (prio.time_to_visible_in_seconds == std::numeric_limits<float>::infinity())
-    return NEVER_BIN;
-
   if (prio.time_to_visible_in_seconds == 0 ||
       prio.distance_to_visible_in_pixels < backfling_guard_distance_pixels)
     return NOW_BIN;
