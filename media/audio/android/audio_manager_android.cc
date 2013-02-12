@@ -8,6 +8,7 @@
 #include "media/audio/android/opensles_input.h"
 #include "media/audio/android/opensles_output.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_util.h"
 #include "media/audio/fake_audio_input_stream.h"
 
 namespace media {
@@ -32,7 +33,34 @@ bool AudioManagerAndroid::HasAudioOutputDevices() {
 }
 
 bool AudioManagerAndroid::HasAudioInputDevices() {
+  return true;
+}
+
+bool AudioManagerAndroid::CanShowAudioInputSettings() {
   return false;
+}
+
+void AudioManagerAndroid::GetAudioInputDeviceNames(
+    media::AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
+  device_names->push_front(
+      media::AudioDeviceName(kDefaultDeviceName, kDefaultDeviceId));
+}
+
+AudioParameters
+AudioManagerAndroid::GetPreferredLowLatencyOutputStreamParameters(
+    const AudioParameters& input_params) {
+  // TODO(leozwang): Android defines the minimal buffer size requirment
+  // we should follow it. From Android 4.1, a new audio low latency api
+  // set was introduced and is under development, we want to take advantage
+  // of it.
+  int buffer_size = GetAudioHardwareBufferSize();
+  if (input_params.frames_per_buffer() < buffer_size)
+    buffer_size = input_params.frames_per_buffer();
+
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, input_params.channel_layout(),
+      input_params.sample_rate(), 16, buffer_size);
 }
 
 AudioOutputStream* AudioManagerAndroid::MakeLinearOutputStream(

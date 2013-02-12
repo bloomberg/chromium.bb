@@ -52,6 +52,9 @@ static int GetBufferSizeForSampleRate(int sample_rate) {
   // TODO(henrika): It might be possible to reduce the input buffer
   // size and reduce the delay even more.
   buffer_size = 2 * sample_rate / 100;
+#elif defined(OS_ANDROID)
+  // TODO(leozwang): Tune and adjust buffer size on Android.
+  buffer_size = 2 * sample_rate / 100;
 #endif
 
   return buffer_size;

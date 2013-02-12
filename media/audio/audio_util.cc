@@ -135,6 +135,7 @@ int GetAudioHardwareSampleRate() {
   // Use the default device (same as for Wave) for now to be compatible.
   return WASAPIAudioOutputStream::HardwareSampleRate();
 #elif defined(OS_ANDROID)
+  // TODO(leozwang): return native sampling rate on Android.
   return 16000;
 #else
   // Hardware for Linux is nearly always 48KHz.

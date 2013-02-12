@@ -34,7 +34,9 @@ const int kValidOutputRates[] = {96000, 48000, 44100, 32000, 16000};
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
 const int kValidOutputRates[] = {48000, 44100};
 #elif defined(OS_ANDROID)
-// On Android, the most popular sampling rate is 16000.
+// TODO(leozwang): We want to use native sampling rate on Android to achieve
+// low latency, currently 16000 is used to work around audio problem on some
+// Android devices.
 const int kValidOutputRates[] = {48000, 44100, 16000};
 #else
 const int kValidOutputRates[] = {44100};

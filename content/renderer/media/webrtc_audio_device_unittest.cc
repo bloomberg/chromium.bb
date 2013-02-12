@@ -322,7 +322,15 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_StartPlayout) {
 // to send encoded packets to the network. Our main interest here is to ensure
 // that the audio capturing starts as it should.
 // Disabled when running headless since the bots don't have the required config.
-TEST_F(WebRTCAudioDeviceTest, StartRecording) {
+
+// TODO(leozwang): Because ExternalMediaProcessing is disabled in webrtc,
+// disable this unit test on Android for now.
+#if defined(OS_ANDROID)
+#define MAYBE_StartRecording DISABLED_StartRecording
+#else
+#define MAYBE_StartRecording StartRecording
+#endif
+TEST_F(WebRTCAudioDeviceTest, MAYBE_StartRecording) {
   if (!has_input_devices_ || !has_output_devices_) {
     LOG(WARNING) << "Missing audio devices.";
     return;
@@ -466,7 +474,13 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
 // Disabled when running headless since the bots don't have the required config.
 // TODO(henrika): improve quality by using a wideband codec, enabling noise-
 // suppressions etc.
-TEST_F(WebRTCAudioDeviceTest, FullDuplexAudioWithAGC) {
+// FullDuplexAudioWithAGC is flaky on Android, disable it for now.
+#if defined(OS_ANDROID)
+#define MAYBE_FullDuplexAudioWithAGC DISABLED_FullDuplexAudioWithAGC
+#else
+#define MAYBE_FullDuplexAudioWithAGC FullDuplexAudioWithAGC
+#endif
+TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   if (!has_output_devices_ || !has_input_devices_) {
     LOG(WARNING) << "Missing audio devices.";
     return;
@@ -505,11 +519,19 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudioWithAGC) {
 
   ScopedWebRTCPtr<webrtc::VoEAudioProcessing> audio_processing(engine.get());
   ASSERT_TRUE(audio_processing.valid());
+#if defined(OS_ANDROID)
+  // On Android, by default AGC is off.
+  bool enabled = true;
+  webrtc::AgcModes agc_mode = webrtc::kAgcDefault;
+  EXPECT_EQ(0, audio_processing->GetAgcStatus(enabled, agc_mode));
+  EXPECT_FALSE(enabled);
+#else
   bool enabled = false;
-  webrtc::AgcModes agc_mode =  webrtc::kAgcDefault;
+  webrtc::AgcModes agc_mode = webrtc::kAgcDefault;
   EXPECT_EQ(0, audio_processing->GetAgcStatus(enabled, agc_mode));
   EXPECT_TRUE(enabled);
   EXPECT_EQ(agc_mode, webrtc::kAgcAdaptiveAnalog);
+#endif
 
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
