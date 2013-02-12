@@ -1770,3 +1770,18 @@
    fun:::StartExplicitSync
    fun:OneClickSigninHelper::DidStopLoading
 }
+{
+   bug_175744
+   Heapcheck:Leak
+   ...
+   fun:GtkThemeService::GtkThemeService
+   fun:ThemeServiceFactory::BuildServiceInstanceFor
+   fun:ProfileKeyedServiceFactory::GetServiceForProfile
+   fun:ProfileKeyedServiceFactory::CreateServiceNow
+   fun:ProfileDependencyManager::CreateProfileServices
+   fun:TestingProfile::Init
+   fun:TestingProfile::TestingProfile
+   fun:OAuth2RevocationFetcherTest::OAuth2RevocationFetcherTest
+   fun:OAuth2RevocationFetcherTest_RequestFailure_Test::OAuth2RevocationFetcherTest_RequestFailure_Test
+   fun:testing::internal::TestFactoryImpl::CreateTest
+}
