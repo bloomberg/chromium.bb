@@ -32,6 +32,8 @@ static void Absinfo_Print(EvdevPtr device, struct input_absinfo*);
 static const char* Event_Property_To_String(int type);
 static EvdevClass EvdevProbeClass(EvdevInfoPtr info);
 static const char* EvdevClassToString(EvdevClass cls);
+static int EvdevWriteBitmask(FILE* fp, const char* name,
+                              unsigned long* bitmask, size_t num_bytes);
 
 int EvdevOpen(EvdevPtr evdev, const char* device) {
   evdev->fd = open(device, O_RDWR | O_NONBLOCK, 0);
@@ -262,6 +264,79 @@ int EvdevEnableMonotonic(EvdevPtr device) {
   return (ioctl(device->fd, EVIOCSCLOCKID, &clk) == 0) ? Success : !Success;
 }
 
+int EvdevWriteInfoToFile(FILE* fp, const EvdevInfoPtr info) {
+  int ret;
+
+  ret = fprintf(fp, "# device: %s\n", info->name);
+  if (ret <= 0)
+    return ret;
+
+  for (int i = ABS_X; i <= ABS_MAX; i++) {
+    if (TestBit(i, info->abs_bitmask)) {
+      struct input_absinfo* abs = &info->absinfo[i];
+      ret = fprintf(fp, "# absinfo: %d %d %d %d %d %d\n",
+                    i, abs->minimum, abs->maximum,
+                    abs->fuzz, abs->flat, abs->resolution);
+      if (ret <= 0)
+        return ret;
+    }
+  }
+
+  ret = EvdevWriteBitmask(fp, "bit", info->bitmask, sizeof(info->bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevWriteBitmask(fp, "key", info->key_bitmask,
+                          sizeof(info->key_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevWriteBitmask(fp, "rel", info->rel_bitmask,
+                          sizeof(info->rel_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevWriteBitmask(fp, "abs", info->abs_bitmask,
+                          sizeof(info->abs_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevWriteBitmask(fp, "led", info->led_bitmask,
+                          sizeof(info->led_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevWriteBitmask(fp, "prp", info->prop_bitmask,
+                          sizeof(info->prop_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  return 1;
+}
+
+int EvdevWriteEventToFile(FILE* fp, const struct input_event* ev) {
+  return fprintf(fp, "E: %lu.%06u %04x %04x %d\n",
+                 ev->time.tv_sec, (unsigned)ev->time.tv_usec,
+                 ev->type, ev->code, ev->value);
+}
+
+static int EvdevWriteBitmask(FILE* fp, const char* name,
+                              unsigned long* bitmask, size_t num_bytes) {
+  int ret;
+
+  unsigned char* bytes = (unsigned char*)bitmask;
+  ret = fprintf(fp, "# %s:", name);
+  if (ret <= 0)
+    return ret;
+
+  for (int i = 0; i < num_bytes; ++i) {
+    ret = fprintf(fp, " %02X", bytes[i]);
+    if (ret <= 0)
+      return ret;
+  }
+  ret = fprintf(fp, "\n");
+  return ret;
+}
 
 static const char*
 Event_Property_To_String(int type) {

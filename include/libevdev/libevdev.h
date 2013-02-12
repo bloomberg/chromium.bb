@@ -77,4 +77,7 @@ int EvdevProbeKeyState(EvdevPtr device);
 int EvdevEnableMonotonic(EvdevPtr device);
 int EvdevIsSinglePressureDevice(EvdevPtr device);
 
+int EvdevWriteInfoToFile(FILE* file, const EvdevInfoPtr info);
+int EvdevWriteEventToFile(FILE* file, const struct input_event* event);
+
 #endif

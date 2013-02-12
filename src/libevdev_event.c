@@ -484,6 +484,7 @@ Event_Dump_Debug_Log(void* vinfo)
 {
     EvdevPtr device = (EvdevPtr) vinfo;
     size_t i;
+    int ret;
     EventStatePtr evstate = device->evstate;
 
     FILE* fp = fopen("/var/log/cmt_input_events.dat", "wb");
@@ -491,20 +492,20 @@ Event_Dump_Debug_Log(void* vinfo)
         LOG_ERROR(device, "fopen() failed for debug log");
         return;
     }
+
+    ret = EvdevWriteInfoToFile(fp, &device->info);
+    if (ret <= 0) {
+        LOG_ERROR(device, "EvdevWriteInfoToFile failed. Log without info.");
+    }
+
     for (i = 0; i < DEBUG_BUF_SIZE; i++) {
-        size_t rc;
         struct input_event *ev =
             &evstate->debug_buf[(evstate->debug_buf_tail + i) % DEBUG_BUF_SIZE];
         if (ev->time.tv_sec == 0 && ev->time.tv_usec == 0)
             continue;
-        rc = fprintf(fp, "E: %ld.%06ld %04x %04x %d\n",
-                            (long)ev->time.tv_sec,
-                            (long)ev->time.tv_usec,
-                            ev->type,
-                            ev->code,
-                            ev->value);
-        if (rc == 0) {
-            LOG_ERROR(device, "fprintf() failed for debug log. Log is short");
+        ret = EvdevWriteEventToFile(fp, ev);
+        if (ret <= 0) {
+            LOG_ERROR(device, "EvdevWriteEventToFile failed. Log is short.");
             break;
         }
     }
