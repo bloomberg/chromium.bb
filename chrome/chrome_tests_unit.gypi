@@ -426,6 +426,7 @@
         },
       },
       'sources': [
+        '../extensions/common/event_filter_unittest.cc',
         '../extensions/common/matcher/regex_set_matcher_unittest.cc',
         '../extensions/common/matcher/string_pattern_unittest.cc',
         '../extensions/common/matcher/substring_set_matcher_unittest.cc',
@@ -1491,7 +1492,6 @@
         'common/extensions/api/identity/extension_manifests_auth_unittest.cc',
         'common/extensions/command_unittest.cc',
         'common/extensions/csp_validator_unittest.cc',
-        'common/extensions/event_filter_unittest.cc',
         'common/extensions/extension_constants_unittest.cc',
         'common/extensions/extension_file_util_unittest.cc',
         'common/extensions/extension_icon_set_unittest.cc',

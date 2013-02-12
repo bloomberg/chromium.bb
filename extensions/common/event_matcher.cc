@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/event_matcher.h"
-#include "chrome/common/extensions/event_filtering_info.h"
+#include "extensions/common/event_matcher.h"
+
+#include "extensions/common/event_filtering_info.h"
 
 namespace {
 const char kUrlFiltersKey[] = "url";

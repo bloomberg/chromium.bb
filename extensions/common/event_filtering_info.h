@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EVENT_FILTERING_INFO_H_
-#define CHROME_COMMON_EXTENSIONS_EVENT_FILTERING_INFO_H_
+#ifndef EXTENSIONS_COMMON_EVENT_FILTERING_INFO_H_
+#define EXTENSIONS_COMMON_EVENT_FILTERING_INFO_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
-#include "v8/include/v8.h"
 
 namespace base {
 class Value;
@@ -45,4 +44,4 @@ class EventFilteringInfo {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_EVENT_FILTERING_INFO_H_
+#endif  // EXTENSIONS_COMMON_EVENT_FILTERING_INFO_H_

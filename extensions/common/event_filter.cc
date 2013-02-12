@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/event_filter.h"
+#include "extensions/common/event_filter.h"
 
 #include "extensions/common/matcher/url_matcher_factory.h"
 

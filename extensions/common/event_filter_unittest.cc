@@ -4,9 +4,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/extensions/event_filter.h"
-#include "chrome/common/extensions/event_filtering_info.h"
-#include "chrome/common/extensions/event_matcher.h"
+#include "extensions/common/event_filter.h"
+#include "extensions/common/event_filtering_info.h"
+#include "extensions/common/event_matcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

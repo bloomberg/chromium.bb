@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EVENT_FILTER_H_
-#define CHROME_COMMON_EXTENSIONS_EVENT_FILTER_H_
+#ifndef EXTENSIONS_COMMON_EVENT_FILTER_H_
+#define EXTENSIONS_COMMON_EVENT_FILTER_H_
 
 #include <map>
 #include <set>
 
 #include "base/memory/linked_ptr.h"
-#include "chrome/common/extensions/event_filtering_info.h"
-#include "chrome/common/extensions/event_matcher.h"
+#include "extensions/common/event_filtering_info.h"
+#include "extensions/common/event_matcher.h"
 #include "extensions/common/matcher/url_matcher.h"
 
 namespace extensions {
@@ -123,4 +123,4 @@ class EventFilter {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_EVENT_FILTER_H_
+#endif  // EXTENSIONS_COMMON_EVENT_FILTER_H_

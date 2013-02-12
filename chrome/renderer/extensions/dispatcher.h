@@ -12,13 +12,13 @@
 #include "base/shared_memory.h"
 #include "base/timer.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "chrome/common/extensions/event_filter.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/v8_schema_registry.h"
 #include "chrome/renderer/resource_bundle_source_map.h"
+#include "extensions/common/event_filter.h"
 #include "v8/include/v8.h"
 
 class GURL;

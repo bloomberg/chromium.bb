@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EVENT_LISTENER_MAP_H_
 #define CHROME_BROWSER_EXTENSIONS_EVENT_LISTENER_MAP_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "chrome/common/extensions/event_filter.h"
-
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
+
+#include "base/memory/scoped_ptr.h"
+#include "extensions/common/event_filter.h"
 
 namespace base {
 class DictionaryValue;
