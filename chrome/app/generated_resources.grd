@@ -13316,8 +13316,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="MARKUP_7">&lt;p&gt;&lt;strong&gt;<ex>&lt;strong&gt;</ex></ph>Share, create and collaborate<ph name="MARKUP_8">&lt;/strong&gt;<ex>&lt;/strong&gt;</ex></ph>
         on files with others all in one place.<ph name="MARKUP_9">&lt;/p&gt;<ex>&lt;/p&gt;</ex></ph>
       </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_GET_STARTED" desc="In the Welcome to Google Drive banner, a text on the button to get started.">
-        Get started
+      <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_CHECK_ELIGIBILITY" desc="In the Welcome to Google Drive banner, a text on the button to check promo eligibility.">
+        Check eligibility
       </message>
       <message name="IDS_FILE_BROWSER_DRIVE_WELCOME_DISMISS" desc="In the Welcome to Google Drive banner, a text on the button to dismiss the banner.">
         Dismiss

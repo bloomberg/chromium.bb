@@ -169,7 +169,7 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
     title.textContent = str('DRIVE_WELCOME_TITLE_ALTERNATIVE');
     more = util.createChild(links,
         'drive-welcome-button drive-welcome-start', 'a');
-    more.textContent = str('DRIVE_WELCOME_GET_STARTED');
+    more.textContent = str('DRIVE_WELCOME_CHECK_ELIGIBILITY');
     more.href = GOOGLE_DRIVE_REDEEM;
   } else {
     title.textContent = str('DRIVE_WELCOME_TITLE');

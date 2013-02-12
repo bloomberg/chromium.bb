@@ -620,7 +620,7 @@ chrome.fileBrowserPrivate = {
           'safely stored in Google Drive .</p>' +
           '<p><strong>Share, create and collaborate</strong> ' +
           'on files with others all in one place .</p>',
-      DRIVE_WELCOME_GET_STARTED: 'Get started',
+      DRIVE_WELCOME_CHECK_ELIGIBILITY: 'Check eligibility',
       DRIVE_WELCOME_DISMISS: 'Dismiss',
       DRIVE_LOADING_PROGRESS: '$1 files fetched',
 
