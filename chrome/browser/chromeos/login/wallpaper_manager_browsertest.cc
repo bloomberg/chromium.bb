@@ -137,10 +137,8 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
 // The large resolution wallpaper should be loaded when a large external screen
 // is hooked up. If the external screen is smaller than small wallpaper
 // resolution, do not load large resolution wallpaper.
-//
-// Temporarily disabled due to metacity switch: http://crbug.com/167114
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
-                       DISABLED_LoadLargeWallpaperForLargeExternalScreen) {
+                       LoadLargeWallpaperForLargeExternalScreen) {
   LogIn(kTestUser1);
   WaitAsyncWallpaperLoad();
   gfx::ImageSkia wallpaper = controller_->GetWallpaper();
@@ -183,10 +181,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
 // This test is similar to LoadLargeWallpaperForExternalScreen test. Instead of
 // testing default wallpaper, it tests custom wallpaper.
-//
-// Temporarily disabled due to metacity switch: http://crbug.com/167114
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
-                       DISABLED_LoadCustomLargeWallpaperForLargeExternalScreen) {
+                       LoadCustomLargeWallpaperForLargeExternalScreen) {
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
   LogIn(kTestUser1);
   // Wait for default wallpaper loaded.
