@@ -1317,13 +1317,12 @@ void GpuBlacklist::GetBlacklistReasons(base::ListValue* problem_list) const {
 
     base::ListValue* cr_bugs = new base::ListValue();
     for (size_t j = 0; j < entry->cr_bugs().size(); ++j)
-      cr_bugs->Append(base::Value::CreateIntegerValue(entry->cr_bugs()[j]));
+      cr_bugs->Append(new base::FundamentalValue(entry->cr_bugs()[j]));
     problem->Set("crBugs", cr_bugs);
 
     base::ListValue* webkit_bugs = new base::ListValue();
     for (size_t j = 0; j < entry->webkit_bugs().size(); ++j) {
-      webkit_bugs->Append(base::Value::CreateIntegerValue(
-          entry->webkit_bugs()[j]));
+      webkit_bugs->Append(new base::FundamentalValue(entry->webkit_bugs()[j]));
     }
     problem->Set("webkitBugs", webkit_bugs);
 

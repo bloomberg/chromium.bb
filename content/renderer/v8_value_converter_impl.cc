@@ -13,12 +13,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBufferView.h"
 #include "v8/include/v8.h"
 
-using base::BinaryValue;
-using base::DictionaryValue;
-using base::ListValue;
-using base::StringValue;
-using base::Value;
-
 namespace content {
 
 V8ValueConverter* V8ValueConverter::create() {
@@ -49,7 +43,7 @@ void V8ValueConverterImpl::SetStripNullFromObjects(bool val) {
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Value(
-    const Value* value, v8::Handle<v8::Context> context) const {
+    const base::Value* value, v8::Handle<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
   return handle_scope.Close(ToV8ValueImpl(value));
@@ -65,44 +59,44 @@ Value* V8ValueConverterImpl::FromV8Value(
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
-     const Value* value) const {
+     const base::Value* value) const {
   CHECK(value);
   switch (value->GetType()) {
-    case Value::TYPE_NULL:
+    case base::Value::TYPE_NULL:
       return v8::Null();
 
-    case Value::TYPE_BOOLEAN: {
+    case base::Value::TYPE_BOOLEAN: {
       bool val = false;
       CHECK(value->GetAsBoolean(&val));
       return v8::Boolean::New(val);
     }
 
-    case Value::TYPE_INTEGER: {
+    case base::Value::TYPE_INTEGER: {
       int val = 0;
       CHECK(value->GetAsInteger(&val));
       return v8::Integer::New(val);
     }
 
-    case Value::TYPE_DOUBLE: {
+    case base::Value::TYPE_DOUBLE: {
       double val = 0.0;
       CHECK(value->GetAsDouble(&val));
       return v8::Number::New(val);
     }
 
-    case Value::TYPE_STRING: {
+    case base::Value::TYPE_STRING: {
       std::string val;
       CHECK(value->GetAsString(&val));
       return v8::String::New(val.c_str(), val.length());
     }
 
-    case Value::TYPE_LIST:
-      return ToV8Array(static_cast<const ListValue*>(value));
+    case base::Value::TYPE_LIST:
+      return ToV8Array(static_cast<const base::ListValue*>(value));
 
-    case Value::TYPE_DICTIONARY:
-      return ToV8Object(static_cast<const DictionaryValue*>(value));
+    case base::Value::TYPE_DICTIONARY:
+      return ToV8Object(static_cast<const base::DictionaryValue*>(value));
 
-    case Value::TYPE_BINARY:
-      return ToArrayBuffer(static_cast<const BinaryValue*>(value));
+    case base::Value::TYPE_BINARY:
+      return ToArrayBuffer(static_cast<const base::BinaryValue*>(value));
 
     default:
       LOG(ERROR) << "Unexpected value type: " << value->GetType();
@@ -111,11 +105,11 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(
-    const ListValue* val) const {
+    const base::ListValue* val) const {
   v8::Handle<v8::Array> result(v8::Array::New(val->GetSize()));
 
   for (size_t i = 0; i < val->GetSize(); ++i) {
-    const Value* child = NULL;
+    const base::Value* child = NULL;
     CHECK(val->Get(i, &child));
 
     v8::Handle<v8::Value> child_v8 = ToV8ValueImpl(child);
@@ -131,10 +125,11 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
-    const DictionaryValue* val) const {
+    const base::DictionaryValue* val) const {
   v8::Handle<v8::Object> result(v8::Object::New());
 
-  for (DictionaryValue::Iterator iter(*val); !iter.IsAtEnd(); iter.Advance()) {
+  for (base::DictionaryValue::Iterator iter(*val);
+       !iter.IsAtEnd(); iter.Advance()) {
     const std::string& key = iter.key();
     v8::Handle<v8::Value> child_v8 = ToV8ValueImpl(&iter.value());
     CHECK(!child_v8.IsEmpty());
@@ -151,7 +146,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
-    const BinaryValue* value) const {
+    const base::BinaryValue* value) const {
   WebKit::WebArrayBuffer buffer =
       WebKit::WebArrayBuffer::create(value->GetSize(), 1);
   memcpy(buffer.data(), value->GetBuffer(), value->GetSize());
@@ -163,20 +158,20 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
   CHECK(!val.IsEmpty());
 
   if (val->IsNull())
-    return Value::CreateNullValue();
+    return base::Value::CreateNullValue();
 
   if (val->IsBoolean())
-    return Value::CreateBooleanValue(val->ToBoolean()->Value());
+    return new base::FundamentalValue(val->ToBoolean()->Value());
 
   if (val->IsInt32())
-    return Value::CreateIntegerValue(val->ToInt32()->Value());
+    return new base::FundamentalValue(val->ToInt32()->Value());
 
   if (val->IsNumber())
-    return Value::CreateDoubleValue(val->ToNumber()->Value());
+    return new base::FundamentalValue(val->ToNumber()->Value());
 
   if (val->IsString()) {
     v8::String::Utf8Value utf8(val->ToString());
-    return Value::CreateStringValue(std::string(*utf8, utf8.length()));
+    return new base::StringValue(std::string(*utf8, utf8.length()));
   }
 
   if (val->IsUndefined())
@@ -189,14 +184,14 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
       // consistent within this class.
       return FromV8Object(val->ToObject(), unique_set);
     v8::Date* date = v8::Date::Cast(*val);
-    return Value::CreateDoubleValue(date->NumberValue() / 1000.0);
+    return new base::FundamentalValue(date->NumberValue() / 1000.0);
   }
 
   if (val->IsRegExp()) {
     if (!reg_exp_allowed_)
       // JSON.stringify converts to an object.
       return FromV8Object(val->ToObject(), unique_set);
-    return Value::CreateStringValue(*v8::String::Utf8Value(val->ToString()));
+    return new base::StringValue(*v8::String::Utf8Value(val->ToString()));
   }
 
   // v8::Value doesn't have a ToArray() method for some reason.
@@ -211,7 +206,7 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
   }
 
   if (val->IsObject()) {
-    BinaryValue* binary_value = FromV8Buffer(val);
+    base::BinaryValue* binary_value = FromV8Buffer(val);
     if (binary_value) {
       return binary_value;
     } else {
@@ -226,7 +221,7 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val,
 Value* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val,
     std::set<int>* unique_set) const {
   if (unique_set && unique_set->count(val->GetIdentityHash()))
-    return Value::CreateNullValue();
+    return base::Value::CreateNullValue();
 
   scoped_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
@@ -235,7 +230,7 @@ Value* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val,
       val->CreationContext() != v8::Context::GetCurrent())
     scope.reset(new v8::Context::Scope(val->CreationContext()));
 
-  ListValue* result = new ListValue();
+  base::ListValue* result = new base::ListValue();
 
   if (unique_set)
     unique_set->insert(val->GetIdentityHash());
@@ -251,13 +246,13 @@ Value* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val,
     if (!val->HasRealIndexedProperty(i))
       continue;
 
-    Value* child = FromV8ValueImpl(child_v8, unique_set);
+    base::Value* child = FromV8ValueImpl(child_v8, unique_set);
     if (child)
       result->Append(child);
     else
       // JSON.stringify puts null in places where values don't serialize, for
       // example undefined and functions. Emulate that behavior.
-      result->Append(Value::CreateNullValue());
+      result->Append(base::Value::CreateNullValue());
   }
   return result;
 }
@@ -291,7 +286,7 @@ Value* V8ValueConverterImpl::FromV8Object(
     v8::Handle<v8::Object> val,
     std::set<int>* unique_set) const {
   if (unique_set && unique_set->count(val->GetIdentityHash()))
-    return Value::CreateNullValue();
+    return base::Value::CreateNullValue();
   scoped_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
   // that context, but change back after val is converted.
@@ -299,7 +294,7 @@ Value* V8ValueConverterImpl::FromV8Object(
       val->CreationContext() != v8::Context::GetCurrent())
     scope.reset(new v8::Context::Scope(val->CreationContext()));
 
-  scoped_ptr<DictionaryValue> result(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   v8::Handle<v8::Array> property_names(val->GetOwnPropertyNames());
 
   if (unique_set)
@@ -331,7 +326,7 @@ Value* V8ValueConverterImpl::FromV8Object(
       child_v8 = v8::Null();
     }
 
-    scoped_ptr<Value> child(FromV8ValueImpl(child_v8, unique_set));
+    scoped_ptr<base::Value> child(FromV8ValueImpl(child_v8, unique_set));
     if (!child.get())
       // JSON.stringify skips properties whose values don't serialize, for
       // example undefined and functions. Emulate that behavior.

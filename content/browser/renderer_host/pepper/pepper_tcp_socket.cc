@@ -252,9 +252,9 @@ bool PepperTCPSocket::GetCertificateFields(
       base::BinaryValue::CreateWithCopiedBuffer(serial_number.data(),
                                                 serial_number.length()));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_BEFORE,
-      base::Value::CreateDoubleValue(cert.valid_start().ToDoubleT()));
+      new base::FundamentalValue(cert.valid_start().ToDoubleT()));
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_VALIDITY_NOT_AFTER,
-      base::Value::CreateDoubleValue(cert.valid_expiry().ToDoubleT()));
+      new base::FundamentalValue(cert.valid_expiry().ToDoubleT()));
   std::string der;
   net::X509Certificate::GetDEREncoded(cert.os_cert_handle(), &der);
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_RAW,

@@ -77,12 +77,12 @@ class TracingMessageHandler
   virtual void OnTraceBufferPercentFullReply(float percent_full) OVERRIDE;
 
   // Messages.
-  void OnTracingControllerInitialized(const ListValue* list);
-  void OnBeginTracing(const ListValue* list);
-  void OnEndTracingAsync(const ListValue* list);
-  void OnBeginRequestBufferPercentFull(const ListValue* list);
-  void OnLoadTraceFile(const ListValue* list);
-  void OnSaveTraceFile(const ListValue* list);
+  void OnTracingControllerInitialized(const base::ListValue* list);
+  void OnBeginTracing(const base::ListValue* list);
+  void OnEndTracingAsync(const base::ListValue* list);
+  void OnBeginRequestBufferPercentFull(const base::ListValue* list);
+  void OnLoadTraceFile(const base::ListValue* list);
+  void OnSaveTraceFile(const base::ListValue* list);
 
   // Callbacks.
   void LoadTraceFileComplete(string16* file_contents);
@@ -191,12 +191,12 @@ void TracingMessageHandler::RegisterMessages() {
 }
 
 void TracingMessageHandler::OnTracingControllerInitialized(
-    const ListValue* args) {
+    const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Send the client info to the tracingController
   {
-    scoped_ptr<DictionaryValue> dict(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("version", GetContentClient()->GetProduct());
 
     dict->SetString("command_line",
@@ -208,7 +208,7 @@ void TracingMessageHandler::OnTracingControllerInitialized(
 }
 
 void TracingMessageHandler::OnBeginRequestBufferPercentFull(
-    const ListValue* list) {
+    const base::ListValue* list) {
   TraceController::GetInstance()->GetTraceBufferPercentFullAsync(this);
 }
 
@@ -298,7 +298,7 @@ void TracingMessageHandler::FileSelectionCanceled(void* params) {
   }
 }
 
-void TracingMessageHandler::OnLoadTraceFile(const ListValue* list) {
+void TracingMessageHandler::OnLoadTraceFile(const base::ListValue* list) {
   // Only allow a single dialog at a time.
   if (select_trace_file_dialog_.get())
     return;
@@ -340,7 +340,7 @@ void TracingMessageHandler::LoadTraceFileComplete(string16* contents) {
       "delete window.traceData;"));
 }
 
-void TracingMessageHandler::OnSaveTraceFile(const ListValue* list) {
+void TracingMessageHandler::OnSaveTraceFile(const base::ListValue* list) {
   // Only allow a single dialog at a time.
   if (select_trace_file_dialog_.get())
     return;
@@ -370,7 +370,7 @@ void TracingMessageHandler::SaveTraceFileComplete() {
   web_ui()->CallJavascriptFunction("tracingController.onSaveTraceFileComplete");
 }
 
-void TracingMessageHandler::OnBeginTracing(const ListValue* args) {
+void TracingMessageHandler::OnBeginTracing(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(args->GetSize(), (size_t) 2);
 
@@ -400,7 +400,7 @@ void TracingMessageHandler::OnBeginTracing(const ListValue* args) {
   }
 }
 
-void TracingMessageHandler::OnEndTracingAsync(const ListValue* list) {
+void TracingMessageHandler::OnEndTracingAsync(const base::ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(nduca): fix javascript code to make sure trace_enabled_ is always true
@@ -442,7 +442,7 @@ void TracingMessageHandler::OnEndSystemTracingAck(
 
   web_ui()->CallJavascriptFunction(
       "tracingController.onSystemTraceDataCollected",
-      *scoped_ptr<Value>(Value::CreateStringValue(events_str_ptr->data())));
+      *scoped_ptr<base::Value>(new base::StringValue(events_str_ptr->data())));
   DCHECK(!system_trace_in_progress_);
 
   OnEndTracingComplete();
@@ -469,7 +469,7 @@ void TracingMessageHandler::OnTraceBufferPercentFullReply(float percent_full) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   web_ui()->CallJavascriptFunction(
       "tracingController.onRequestBufferPercentFullComplete",
-      *scoped_ptr<Value>(Value::CreateDoubleValue(percent_full)));
+      *scoped_ptr<base::Value>(new base::FundamentalValue(percent_full)));
 }
 
 }  // namespace

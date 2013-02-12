@@ -512,7 +512,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   }
 
   if (command == "version") {
-    DictionaryValue version;
+    base::DictionaryValue version;
     version.SetString("Protocol-Version",
                       WebKit::WebDevToolsAgent::inspectorProtocolVersion());
     version.SetString("WebKit-Version",
@@ -527,7 +527,7 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
 
   if (command == "list") {
     PageList page_list = GeneratePageList();
-    ListValue json_pages_list;
+    base::ListValue json_pages_list;
     std::string host = info.headers["Host"];
     for (PageList::iterator i = page_list.begin(); i != page_list.end(); ++i)
       json_pages_list.Append(SerializePageInfo(*i, host));
@@ -545,11 +545,11 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
                jsonp);
       return;
     }
-    PageInfo page_info = CreatePageInfo(
-        rvh,
-        DevToolsHttpHandlerDelegate::kTargetTypeTab);
+    PageInfo page_info =
+        CreatePageInfo(rvh, DevToolsHttpHandlerDelegate::kTargetTypeTab);
     std::string host = info.headers["Host"];
-    scoped_ptr<DictionaryValue> dictionary(SerializePageInfo(page_info, host));
+    scoped_ptr<base::DictionaryValue> dictionary(
+        SerializePageInfo(page_info, host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), "", jsonp);
     return;
   }
@@ -748,7 +748,7 @@ void DevToolsHttpHandlerImpl::StopHandlerThread() {
 
 void DevToolsHttpHandlerImpl::SendJson(int connection_id,
                                        net::HttpStatusCode status_code,
-                                       Value* value,
+                                       base::Value* value,
                                        const std::string& message,
                                        const std::string& jsonp) {
   if (!thread_.get())
@@ -762,7 +762,7 @@ void DevToolsHttpHandlerImpl::SendJson(int connection_id,
                                        &json_value);
   }
   std::string json_message;
-  scoped_ptr<Value> message_object(Value::CreateStringValue(message));
+  scoped_ptr<base::Value> message_object(new base::StringValue(message));
   base::JSONWriter::Write(message_object.get(), &json_message);
 
   std::string response;
@@ -872,10 +872,10 @@ DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh,
   return page_info;
 }
 
-DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
+base::DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
     const PageInfo& page_info,
     const std::string& host) {
-  DictionaryValue* dictionary = new DictionaryValue;
+  base::DictionaryValue* dictionary = new base::DictionaryValue;
   dictionary->SetString("title", page_info.title);
   dictionary->SetString("url", page_info.url);
   dictionary->SetString("type", page_info.type);

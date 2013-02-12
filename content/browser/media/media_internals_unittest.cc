@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "content/browser/media/media_internals.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +31,7 @@ class MockMediaInternalsObserver : public MockObserverBaseClass {
 class MediaInternalsTest : public testing::Test {
  public:
   MediaInternalsTest() : io_thread_(BrowserThread::IO, &loop_) {}
-  DictionaryValue* data() {
+  base::DictionaryValue* data() {
     return &internals_->data_;
   }
 
@@ -41,11 +40,11 @@ class MediaInternalsTest : public testing::Test {
   }
 
   void UpdateItem(const std::string& item, const std::string& property,
-                  Value* value) {
+                  base::Value* value) {
     internals_->UpdateItem("", item, property, value);
   }
 
-  void SendUpdate(const std::string& function, Value* value) {
+  void SendUpdate(const std::string& function, base::Value* value) {
     internals_->SendUpdate(function, value);
   }
 
@@ -60,7 +59,7 @@ class MediaInternalsTest : public testing::Test {
 };
 
 TEST_F(MediaInternalsTest, UpdateAddsNewItem) {
-  UpdateItem("some.item", "testing", Value::CreateBooleanValue(true));
+  UpdateItem("some.item", "testing", new base::FundamentalValue(true));
   bool testing = false;
   std::string id;
 
@@ -72,9 +71,9 @@ TEST_F(MediaInternalsTest, UpdateAddsNewItem) {
 }
 
 TEST_F(MediaInternalsTest, UpdateModifiesExistingItem) {
-  UpdateItem("some.item", "testing", Value::CreateBooleanValue(true));
-  UpdateItem("some.item", "value", Value::CreateIntegerValue(5));
-  UpdateItem("some.item", "testing", Value::CreateBooleanValue(false));
+  UpdateItem("some.item", "testing", new base::FundamentalValue(true));
+  UpdateItem("some.item", "value", new base::FundamentalValue(5));
+  UpdateItem("some.item", "testing", new base::FundamentalValue(false));
   bool testing = true;
   int value = 0;
   std::string id;
@@ -117,9 +116,9 @@ TEST_F(MediaInternalsTest, RemovedObserversReceiveNoNotifications) {
 }
 
 TEST_F(MediaInternalsTest, DeleteRemovesItem) {
-  Value* out;
+  base::Value* out;
 
-  UpdateItem("some.item", "testing", Value::CreateNullValue());
+  UpdateItem("some.item", "testing", base::Value::CreateNullValue());
   EXPECT_TRUE(data()->Get("some.item", &out));
   EXPECT_TRUE(data()->Get("some", &out));
 

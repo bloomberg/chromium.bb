@@ -29,7 +29,7 @@ static int CALLBACK EnumFontFamExProc(ENUMLOGFONTEXW* logical_font,
   return 1;
 }
 
-scoped_ptr<ListValue> GetFontList_SlowBlocking() {
+scoped_ptr<base::ListValue> GetFontList_SlowBlocking() {
   std::set<string16> font_names;
 
   LOGFONTW logfont;
@@ -41,12 +41,12 @@ scoped_ptr<ListValue> GetFontList_SlowBlocking() {
                         (LPARAM)&font_names, 0);
   ::ReleaseDC(NULL, hdc);
 
-  scoped_ptr<ListValue> font_list(new ListValue);
+  scoped_ptr<base::ListValue> font_list(new base::ListValue);
   std::set<string16>::iterator iter;
-  for (iter = font_names.begin(); iter != font_names.end(); iter++) {
-    ListValue* font_item = new ListValue();
-    font_item->Append(Value::CreateStringValue(*iter));
-    font_item->Append(Value::CreateStringValue(*iter));
+  for (iter = font_names.begin(); iter != font_names.end(); ++iter) {
+    base::ListValue* font_item = new base::ListValue();
+    font_item->Append(new base::StringValue(*iter));
+    font_item->Append(new base::StringValue(*iter));
     font_list->Append(font_item);
   }
   return font_list.Pass();

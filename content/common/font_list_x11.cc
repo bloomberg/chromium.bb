@@ -14,8 +14,8 @@
 
 namespace content {
 
-scoped_ptr<ListValue> GetFontList_SlowBlocking() {
-  scoped_ptr<ListValue> font_list(new ListValue);
+scoped_ptr<base::ListValue> GetFontList_SlowBlocking() {
+  scoped_ptr<base::ListValue> font_list(new base::ListValue);
 
   PangoFontMap* font_map = ::pango_cairo_font_map_get_default();
   PangoFontFamily** families = NULL;
@@ -30,9 +30,9 @@ scoped_ptr<ListValue> GetFontList_SlowBlocking() {
 
   for (std::set<std::string>::const_iterator iter = sorted_families.begin();
        iter != sorted_families.end(); ++iter) {
-    ListValue* font_item = new ListValue();
-    font_item->Append(Value::CreateStringValue(*iter));
-    font_item->Append(Value::CreateStringValue(*iter));  // localized name.
+    base::ListValue* font_item = new base::ListValue();
+    font_item->Append(new base::StringValue(*iter));
+    font_item->Append(new base::StringValue(*iter));  // localized name.
     // TODO(yusukes): Support localized family names.
     font_list->Append(font_item);
   }

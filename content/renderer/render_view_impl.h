@@ -804,7 +804,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool CanComposeInline() OVERRIDE;
 
  protected:
-  RenderViewImpl(RenderViewImplParams* params);
+  explicit RenderViewImpl(RenderViewImplParams* params);
 
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderViewImpl();
@@ -1080,7 +1080,8 @@ class CONTENT_EXPORT RenderViewImpl
   // |frame_tree|. For each node, the frame is navigated to the swapped out URL,
   // the name (if present) is set on it, and all the subframes are created
   // and added to the DOM.
-  void CreateFrameTree(WebKit::WebFrame* frame, DictionaryValue* frame_tree);
+  void CreateFrameTree(WebKit::WebFrame* frame,
+                       base::DictionaryValue* frame_tree);
 
   // If this is a swapped out RenderView, which maintains a copy of the frame
   // tree of an active RenderView, we keep a map from frame ids in this view to

@@ -35,7 +35,7 @@ class V8ValueConverterImplTest : public testing::Test {
     context_.Dispose(context_->GetIsolate());
   }
 
-  std::string GetString(DictionaryValue* value, const std::string& key) {
+  std::string GetString(base::DictionaryValue* value, const std::string& key) {
     std::string temp;
     if (!value->GetString(key, &temp)) {
       ADD_FAILURE();
@@ -55,7 +55,7 @@ class V8ValueConverterImplTest : public testing::Test {
     return std::string(*utf8, utf8.length());
   }
 
-  std::string GetString(ListValue* value, uint32 index) {
+  std::string GetString(base::ListValue* value, uint32 index) {
     std::string temp;
     if (!value->GetString(static_cast<size_t>(index), &temp)) {
       ADD_FAILURE();
@@ -74,13 +74,13 @@ class V8ValueConverterImplTest : public testing::Test {
     return std::string(*utf8, utf8.length());
   }
 
-  bool IsNull(DictionaryValue* value, const std::string& key) {
-    Value* child = NULL;
+  bool IsNull(base::DictionaryValue* value, const std::string& key) {
+    base::Value* child = NULL;
     if (!value->Get(key, &child)) {
       ADD_FAILURE();
       return false;
     }
-    return child->GetType() == Value::TYPE_NULL;
+    return child->GetType() == base::Value::TYPE_NULL;
   }
 
   bool IsNull(v8::Handle<v8::Object> value, const std::string& key) {
@@ -92,13 +92,13 @@ class V8ValueConverterImplTest : public testing::Test {
     return child->IsNull();
   }
 
-  bool IsNull(ListValue* value, uint32 index) {
-    Value* child = NULL;
+  bool IsNull(base::ListValue* value, uint32 index) {
+    base::Value* child = NULL;
     if (!value->Get(static_cast<size_t>(index), &child)) {
       ADD_FAILURE();
       return false;
     }
-    return child->GetType() == Value::TYPE_NULL;
+    return child->GetType() == base::Value::TYPE_NULL;
   }
 
   bool IsNull(v8::Handle<v8::Array> value, uint32 index) {
@@ -113,8 +113,8 @@ class V8ValueConverterImplTest : public testing::Test {
   void TestWeirdType(const V8ValueConverterImpl& converter,
                      v8::Handle<v8::Value> val,
                      base::Value::Type expected_type,
-                     scoped_ptr<Value> expected_value) {
-    scoped_ptr<Value> raw(converter.FromV8Value(val, context_));
+                     scoped_ptr<base::Value> expected_value) {
+    scoped_ptr<base::Value> raw(converter.FromV8Value(val, context_));
 
     if (expected_value.get()) {
       ASSERT_TRUE(raw.get());
@@ -126,13 +126,13 @@ class V8ValueConverterImplTest : public testing::Test {
 
     v8::Handle<v8::Object> object(v8::Object::New());
     object->Set(v8::String::New("test"), val);
-    scoped_ptr<DictionaryValue> dictionary(
-        static_cast<DictionaryValue*>(
+    scoped_ptr<base::DictionaryValue> dictionary(
+        static_cast<base::DictionaryValue*>(
             converter.FromV8Value(object, context_)));
     ASSERT_TRUE(dictionary.get());
 
     if (expected_value.get()) {
-      Value* temp = NULL;
+      base::Value* temp = NULL;
       ASSERT_TRUE(dictionary->Get("test", &temp));
       EXPECT_EQ(expected_type, temp->GetType());
       EXPECT_TRUE(expected_value->Equals(temp));
@@ -142,21 +142,20 @@ class V8ValueConverterImplTest : public testing::Test {
 
     v8::Handle<v8::Array> array(v8::Array::New());
     array->Set(0, val);
-    scoped_ptr<ListValue> list(
-        static_cast<ListValue*>(
-            converter.FromV8Value(array, context_)));
+    scoped_ptr<base::ListValue> list(
+        static_cast<base::ListValue*>(converter.FromV8Value(array, context_)));
     ASSERT_TRUE(list.get());
     if (expected_value.get()) {
-      Value* temp = NULL;
+      base::Value* temp = NULL;
       ASSERT_TRUE(list->Get(0, &temp));
       EXPECT_EQ(expected_type, temp->GetType());
       EXPECT_TRUE(expected_value->Equals(temp));
     } else {
       // Arrays should preserve their length, and convert unconvertible
       // types into null.
-      Value* temp = NULL;
+      base::Value* temp = NULL;
       ASSERT_TRUE(list->Get(0, &temp));
-      EXPECT_EQ(Value::TYPE_NULL, temp->GetType());
+      EXPECT_EQ(base::Value::TYPE_NULL, temp->GetType());
     }
   }
 
@@ -165,7 +164,7 @@ class V8ValueConverterImplTest : public testing::Test {
 };
 
 TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
-  scoped_ptr<Value> original_root = base::test::ParseJson(
+  scoped_ptr<base::Value> original_root = base::test::ParseJson(
       "{ \n"
       "  \"null\": null, \n"
       "  \"true\": true, \n"
@@ -174,7 +173,7 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
       "  \"negative-int\": -42, \n"
       "  \"zero\": 0, \n"
       "  \"double\": 88.8, \n"
-      "  \"big-integral-double\": 9007199254740992.0, \n" // 2.0^53
+      "  \"big-integral-double\": 9007199254740992.0, \n"  // 2.0^53
       "  \"string\": \"foobar\", \n"
       "  \"empty-string\": \"\", \n"
       "  \"dictionary\": { \n"
@@ -194,7 +193,7 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
       converter.ToV8Value(original_root.get(), context_).As<v8::Object>();
   ASSERT_FALSE(v8_object.IsEmpty());
 
-  EXPECT_EQ(static_cast<const DictionaryValue&>(*original_root).size(),
+  EXPECT_EQ(static_cast<const base::DictionaryValue&>(*original_root).size(),
             v8_object->GetPropertyNames()->Length());
   EXPECT_TRUE(v8_object->Get(v8::String::New("null"))->IsNull());
   EXPECT_TRUE(v8_object->Get(v8::String::New("true"))->IsTrue());
@@ -212,20 +211,20 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
   EXPECT_TRUE(v8_object->Get(v8::String::New("list"))->IsArray());
   EXPECT_TRUE(v8_object->Get(v8::String::New("empty-list"))->IsArray());
 
-  scoped_ptr<Value> new_root(converter.FromV8Value(v8_object, context_));
+  scoped_ptr<base::Value> new_root(converter.FromV8Value(v8_object, context_));
   EXPECT_NE(original_root.get(), new_root.get());
   EXPECT_TRUE(original_root->Equals(new_root.get()));
 }
 
 TEST_F(V8ValueConverterImplTest, KeysWithDots) {
-  scoped_ptr<Value> original =
+  scoped_ptr<base::Value> original =
       base::test::ParseJson("{ \"foo.bar\": \"baz\" }");
 
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
 
   V8ValueConverterImpl converter;
-  scoped_ptr<Value> copy(
+  scoped_ptr<base::Value> copy(
       converter.FromV8Value(
           converter.ToV8Value(original.get(), context_), context_));
 
@@ -251,8 +250,9 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
 
   // Converting from v8 value should replace the foo property with null.
   V8ValueConverterImpl converter;
-  scoped_ptr<DictionaryValue> converted(static_cast<DictionaryValue*>(
-      converter.FromV8Value(object, context_)));
+  scoped_ptr<base::DictionaryValue> converted(
+      static_cast<base::DictionaryValue*>(
+          converter.FromV8Value(object, context_)));
   EXPECT_TRUE(converted.get());
   // http://code.google.com/p/v8/issues/detail?id=1342
   // EXPECT_EQ(2u, converted->size());
@@ -289,7 +289,7 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
 
   // Converting from v8 value should replace the first item with null.
   V8ValueConverterImpl converter;
-  scoped_ptr<ListValue> converted(static_cast<ListValue*>(
+  scoped_ptr<base::ListValue> converted(static_cast<base::ListValue*>(
       converter.FromV8Value(array, context_)));
   ASSERT_TRUE(converted.get());
   // http://code.google.com/p/v8/issues/detail?id=1342
@@ -297,7 +297,7 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
   EXPECT_TRUE(IsNull(converted.get(), 0));
 
   // Converting to v8 value should drop the first item and leave a hole.
-  converted.reset(static_cast<ListValue*>(
+  converted.reset(static_cast<base::ListValue*>(
       base::test::ParseJson("[ \"foo\", \"bar\" ]").release()));
   v8::Handle<v8::Array> copy =
       converter.ToV8Value(converted.get(), context_).As<v8::Array>();
@@ -316,28 +316,28 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
   V8ValueConverterImpl converter;
   TestWeirdType(converter,
                 v8::Undefined(),
-                Value::TYPE_NULL,  // Arbitrary type, result is NULL.
-                scoped_ptr<Value>(NULL));
+                base::Value::TYPE_NULL,  // Arbitrary type, result is NULL.
+                scoped_ptr<base::Value>(NULL));
   TestWeirdType(converter,
                 v8::Date::New(1000),
-                Value::TYPE_DICTIONARY,
-                scoped_ptr<Value>(new DictionaryValue()));
+                base::Value::TYPE_DICTIONARY,
+                scoped_ptr<base::Value>(new base::DictionaryValue()));
   TestWeirdType(converter,
                 regex,
-                Value::TYPE_DICTIONARY,
-                scoped_ptr<Value>(new DictionaryValue()));
+                base::Value::TYPE_DICTIONARY,
+                scoped_ptr<base::Value>(new base::DictionaryValue()));
 
   converter.SetDateAllowed(true);
   TestWeirdType(converter,
                 v8::Date::New(1000),
-                Value::TYPE_DOUBLE,
-                scoped_ptr<Value>(Value::CreateDoubleValue(1)));
+                base::Value::TYPE_DOUBLE,
+                scoped_ptr<base::Value>(new base::FundamentalValue(1.0)));
 
   converter.SetRegExpAllowed(true);
   TestWeirdType(converter,
                 regex,
-                Value::TYPE_STRING,
-                scoped_ptr<Value>(Value::CreateStringValue("/./")));
+                base::Value::TYPE_STRING,
+                scoped_ptr<base::Value>(new base::StringValue("/./")));
 }
 
 TEST_F(V8ValueConverterImplTest, Prototype) {
@@ -354,8 +354,9 @@ TEST_F(V8ValueConverterImplTest, Prototype) {
   ASSERT_FALSE(object.IsEmpty());
 
   V8ValueConverterImpl converter;
-  scoped_ptr<DictionaryValue> result(
-      static_cast<DictionaryValue*>(converter.FromV8Value(object, context_)));
+  scoped_ptr<base::DictionaryValue> result(
+      static_cast<base::DictionaryValue*>(
+          converter.FromV8Value(object, context_)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(0u, result->size());
 }
@@ -375,8 +376,9 @@ TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
   V8ValueConverterImpl converter;
   converter.SetStripNullFromObjects(true);
 
-  scoped_ptr<DictionaryValue> result(
-      static_cast<DictionaryValue*>(converter.FromV8Value(object, context_)));
+  scoped_ptr<base::DictionaryValue> result(
+      static_cast<base::DictionaryValue*>(
+          converter.FromV8Value(object, context_)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(0u, result->size());
 }
@@ -392,8 +394,9 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   object->Set(v8::String::New("foo"), v8::String::New("bar"));
   object->Set(v8::String::New("obj"), object);
 
-  scoped_ptr<DictionaryValue> object_result(
-      static_cast<DictionaryValue*>(converter.FromV8Value(object, context_)));
+  scoped_ptr<base::DictionaryValue> object_result(
+      static_cast<base::DictionaryValue*>(
+          converter.FromV8Value(object, context_)));
   ASSERT_TRUE(object_result.get());
   EXPECT_EQ(2u, object_result->size());
   EXPECT_TRUE(IsNull(object_result.get(), "obj"));
@@ -403,8 +406,8 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   array->Set(0, v8::String::New("1"));
   array->Set(1, array);
 
-  scoped_ptr<ListValue> list_result(
-      static_cast<ListValue*>(converter.FromV8Value(array, context_)));
+  scoped_ptr<base::ListValue> list_result(
+      static_cast<base::ListValue*>(converter.FromV8Value(array, context_)));
   ASSERT_TRUE(list_result.get());
   EXPECT_EQ(2u, list_result->GetSize());
   EXPECT_TRUE(IsNull(list_result.get(), 1));
@@ -426,8 +429,9 @@ TEST_F(V8ValueConverterImplTest, ObjectGetters) {
   ASSERT_FALSE(object.IsEmpty());
 
   V8ValueConverterImpl converter;
-  scoped_ptr<DictionaryValue> result(
-      static_cast<DictionaryValue*>(converter.FromV8Value(object, context_)));
+  scoped_ptr<base::DictionaryValue> result(
+      static_cast<base::DictionaryValue*>(
+          converter.FromV8Value(object, context_)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(0u, result->size());
 }
@@ -445,8 +449,9 @@ TEST_F(V8ValueConverterImplTest, ObjectWithInternalFieldsGetters) {
   object->Set(v8::String::New("a"), v8::String::New("b"));
 
   V8ValueConverterImpl converter;
-  scoped_ptr<DictionaryValue> result(
-      static_cast<DictionaryValue*>(converter.FromV8Value(object, context_)));
+  scoped_ptr<base::DictionaryValue> result(
+      static_cast<base::DictionaryValue*>(
+          converter.FromV8Value(object, context_)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(1u, result->size());
 }
@@ -471,9 +476,9 @@ TEST_F(V8ValueConverterImplTest, WeirdProperties) {
   ASSERT_FALSE(object.IsEmpty());
 
   V8ValueConverterImpl converter;
-  scoped_ptr<Value> actual(converter.FromV8Value(object, context_));
+  scoped_ptr<base::Value> actual(converter.FromV8Value(object, context_));
 
-  scoped_ptr<Value> expected = base::test::ParseJson(
+  scoped_ptr<base::Value> expected = base::test::ParseJson(
       "{ \n"
       "  \"1\": \"foo\", \n"
       "  \"2\": \"bar\", \n"
@@ -501,8 +506,8 @@ TEST_F(V8ValueConverterImplTest, ArrayGetters) {
   ASSERT_FALSE(array.IsEmpty());
 
   V8ValueConverterImpl converter;
-  scoped_ptr<ListValue> result(
-      static_cast<ListValue*>(converter.FromV8Value(array, context_)));
+  scoped_ptr<base::ListValue> result(
+      static_cast<base::ListValue*>(converter.FromV8Value(array, context_)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(2u, result->GetSize());
 }
@@ -533,14 +538,15 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
 
   V8ValueConverterImpl converter;
 
-  scoped_ptr<Value> actual_object(converter.FromV8Value(object, context_));
-  EXPECT_TRUE(Value::Equals(base::test::ParseJson("{ \"bar\": null }").get(),
-                            actual_object.get()));
+  scoped_ptr<base::Value> actual_object(
+      converter.FromV8Value(object, context_));
+  EXPECT_TRUE(base::Value::Equals(
+      base::test::ParseJson("{ \"bar\": null }").get(), actual_object.get()));
 
   // Everything is null because JSON stringification preserves array length.
   scoped_ptr<Value> actual_array(converter.FromV8Value(array, context_));
-  EXPECT_TRUE(Value::Equals(base::test::ParseJson("[ null, null, null ]").get(),
-                            actual_array.get()));
+  EXPECT_TRUE(base::Value::Equals(
+      base::test::ParseJson("[ null, null, null ]").get(), actual_array.get()));
 }
 
 }  // namespace content

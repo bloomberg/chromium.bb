@@ -50,24 +50,24 @@ WebUIDataSource* CreateGpuHTMLSource() {
   return source;
 }
 
-DictionaryValue* NewDescriptionValuePair(const std::string& desc,
+base::DictionaryValue* NewDescriptionValuePair(const std::string& desc,
     const std::string& value) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("description", desc);
   dict->SetString("value", value);
   return dict;
 }
 
-DictionaryValue* NewDescriptionValuePair(const std::string& desc,
+base::DictionaryValue* NewDescriptionValuePair(const std::string& desc,
     Value* value) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("description", desc);
   dict->Set("value", value);
   return dict;
 }
 
-Value* NewStatusValue(const char* name, const char* status) {
-  DictionaryValue* value = new DictionaryValue();
+base::Value* NewStatusValue(const char* name, const char* status) {
+  base::DictionaryValue* value = new base::DictionaryValue();
   value->SetString("name", name);
   value->SetString("status", status);
   return value;
@@ -75,8 +75,8 @@ Value* NewStatusValue(const char* name, const char* status) {
 
 #if defined(OS_WIN)
 // Output DxDiagNode tree as nested array of {description,value} pairs
-ListValue* DxDiagNodeToList(const DxDiagNode& node) {
-  ListValue* list = new ListValue();
+base::ListValue* DxDiagNodeToList(const DxDiagNode& node) {
+  base::ListValue* list = new ListValue();
   for (std::map<std::string, std::string>::const_iterator it =
       node.values.begin();
       it != node.values.end();
@@ -88,7 +88,7 @@ ListValue* DxDiagNodeToList(const DxDiagNode& node) {
       node.children.begin();
       it != node.children.end();
       ++it) {
-    ListValue* sublist = DxDiagNodeToList(it->second);
+    base::ListValue* sublist = DxDiagNodeToList(it->second);
     list->Append(NewDescriptionValuePair(it->first, sublist));
   }
   return list;
@@ -106,15 +106,14 @@ std::string GPUDeviceToString(const GPUInfo::GPUDevice& gpu) {
       "VENDOR = %s, DEVICE= %s", vendor.c_str(), device.c_str());
 }
 
-DictionaryValue* GpuInfoAsDictionaryValue() {
+base::DictionaryValue* GpuInfoAsDictionaryValue() {
   GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
-  ListValue* basic_info = new ListValue();
+  base::ListValue* basic_info = new base::ListValue();
   basic_info->Append(NewDescriptionValuePair(
       "Initialization time",
       base::Int64ToString(gpu_info.initialization_time.InMilliseconds())));
   basic_info->Append(NewDescriptionValuePair(
-      "Sandboxed",
-      Value::CreateBooleanValue(gpu_info.sandboxed)));
+      "Sandboxed", new base::FundamentalValue(gpu_info.sandboxed)));
   basic_info->Append(NewDescriptionValuePair(
       "GPU0", GPUDeviceToString(gpu_info.gpu)));
   for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
@@ -123,9 +122,9 @@ DictionaryValue* GpuInfoAsDictionaryValue() {
         GPUDeviceToString(gpu_info.secondary_gpus[i])));
   }
   basic_info->Append(NewDescriptionValuePair(
-      "Optimus", Value::CreateBooleanValue(gpu_info.optimus)));
+      "Optimus", new base::FundamentalValue(gpu_info.optimus)));
   basic_info->Append(NewDescriptionValuePair(
-      "AMD switchable", Value::CreateBooleanValue(gpu_info.amd_switchable)));
+      "AMD switchable", new base::FundamentalValue(gpu_info.amd_switchable)));
   basic_info->Append(NewDescriptionValuePair("Driver vendor",
                                              gpu_info.driver_vendor));
   basic_info->Append(NewDescriptionValuePair("Driver version",
@@ -149,11 +148,11 @@ DictionaryValue* GpuInfoAsDictionaryValue() {
   basic_info->Append(NewDescriptionValuePair("GL_EXTENSIONS",
                                              gpu_info.gl_extensions));
 
-  DictionaryValue* info = new DictionaryValue();
+  base::DictionaryValue* info = new base::DictionaryValue();
   info->Set("basic_info", basic_info);
 
 #if defined(OS_WIN)
-  ListValue* perf_info = new ListValue();
+  base::ListValue* perf_info = new base::ListValue();
   perf_info->Append(NewDescriptionValuePair(
       "Graphics",
       base::StringPrintf("%.1f", gpu_info.performance_stats.graphics)));
@@ -165,11 +164,9 @@ DictionaryValue* GpuInfoAsDictionaryValue() {
       base::StringPrintf("%.1f", gpu_info.performance_stats.overall)));
   info->Set("performance_info", perf_info);
 
-  Value* dx_info;
-  if (gpu_info.dx_diagnostics.children.size())
-    dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
-  else
-    dx_info = Value::CreateNullValue();
+  base::Value* dx_info = gpu_info.dx_diagnostics.children.size() ?
+    DxDiagNodeToList(gpu_info.dx_diagnostics) :
+    base::Value::CreateNullValue();
   info->Set("diagnostics", dx_info);
 #endif
 
@@ -188,13 +185,13 @@ bool SupportsAccelerated2dCanvas() {
 #endif
 }
 
-Value* GetFeatureStatus() {
+base::Value* GetFeatureStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool gpu_access_blocked =
       !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed();
 
   uint32 flags = GpuDataManagerImpl::GetInstance()->GetBlacklistedFeatures();
-  DictionaryValue* status = new DictionaryValue();
+  base::DictionaryValue* status = new base::DictionaryValue();
 
   const GpuFeatureInfo kGpuFeatureInfo[] = {
       {
@@ -329,7 +326,7 @@ Value* GetFeatureStatus() {
 
   // Build the feature_status field.
   {
-    ListValue* feature_status_list = new ListValue();
+    base::ListValue* feature_status_list = new base::ListValue();
 
     for (size_t i = 0; i < kNumFeatures; ++i) {
       // force_compositing_mode status is part of the compositing status.
@@ -406,25 +403,25 @@ Value* GetFeatureStatus() {
 
   // Build the problems list.
   {
-    ListValue* problem_list =
+    base::ListValue* problem_list =
         GpuDataManagerImpl::GetInstance()->GetBlacklistReasons();
 
     if (gpu_access_blocked) {
-      DictionaryValue* problem = new DictionaryValue();
+      base::DictionaryValue* problem = new base::DictionaryValue();
       problem->SetString("description",
           "GPU process was unable to boot. Access to GPU disallowed.");
-      problem->Set("crBugs", new ListValue());
-      problem->Set("webkitBugs", new ListValue());
+      problem->Set("crBugs", new base::ListValue());
+      problem->Set("webkitBugs", new base::ListValue());
       problem_list->Append(problem);
     }
 
     for (size_t i = 0; i < kNumFeatures; ++i) {
       if (kGpuFeatureInfo[i].disabled) {
-        DictionaryValue* problem = new DictionaryValue();
+        base::DictionaryValue* problem = new base::DictionaryValue();
         problem->SetString(
             "description", kGpuFeatureInfo[i].disabled_description);
-        problem->Set("crBugs", new ListValue());
-        problem->Set("webkitBugs", new ListValue());
+        problem->Set("crBugs", new base::ListValue());
+        problem->Set("webkitBugs", new base::ListValue());
         problem_list->Append(problem);
       }
     }
@@ -455,12 +452,12 @@ class GpuMessageHandler
       const GPUVideoMemoryUsageStats& video_memory_usage_stats) OVERRIDE {}
 
   // Messages
-  void OnBrowserBridgeInitialized(const ListValue* list);
-  void OnCallAsync(const ListValue* list);
+  void OnBrowserBridgeInitialized(const base::ListValue* list);
+  void OnCallAsync(const base::ListValue* list);
 
   // Submessages dispatched from OnCallAsync
-  Value* OnRequestClientInfo(const ListValue* list);
-  Value* OnRequestLogMessages(const ListValue* list);
+  base::Value* OnRequestClientInfo(const base::ListValue* list);
+  base::Value* OnRequestLogMessages(const base::ListValue* list);
 
  private:
   // True if observing the GpuDataManager (re-attaching as observer would
@@ -496,11 +493,11 @@ void GpuMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void GpuMessageHandler::OnCallAsync(const ListValue* args) {
+void GpuMessageHandler::OnCallAsync(const base::ListValue* args) {
   DCHECK_GE(args->GetSize(), static_cast<size_t>(2));
   // unpack args into requestId, submessage and submessageArgs
   bool ok;
-  const Value* requestId;
+  const base::Value* requestId;
   ok = args->Get(0, &requestId);
   DCHECK(ok);
 
@@ -508,18 +505,18 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
   ok = args->GetString(1, &submessage);
   DCHECK(ok);
 
-  ListValue* submessageArgs = new ListValue();
+  base::ListValue* submessageArgs = new base::ListValue();
   for (size_t i = 2; i < args->GetSize(); ++i) {
-    const Value* arg;
+    const base::Value* arg;
     ok = args->Get(i, &arg);
     DCHECK(ok);
 
-    Value* argCopy = arg->DeepCopy();
+    base::Value* argCopy = arg->DeepCopy();
     submessageArgs->Append(argCopy);
   }
 
   // call the submessage handler
-  Value* ret = NULL;
+  base::Value* ret = NULL;
   if (submessage == "requestClientInfo") {
     ret = OnRequestClientInfo(submessageArgs);
   } else if (submessage == "requestLogMessages") {
@@ -543,7 +540,8 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
   }
 }
 
-void GpuMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
+void GpuMessageHandler::OnBrowserBridgeInitialized(
+    const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Watch for changes in GPUInfo
@@ -560,10 +558,11 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
   OnGpuInfoUpdate();
 }
 
-Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
+base::Value* GpuMessageHandler::OnRequestClientInfo(
+    const base::ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("version", GetContentClient()->GetProduct());
   dict->SetString("command_line",
@@ -583,7 +582,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
   return dict;
 }
 
-Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
+base::Value* GpuMessageHandler::OnRequestLogMessages(const base::ListValue*) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return GpuDataManagerImpl::GetInstance()->GetLogMessages();
@@ -591,11 +590,10 @@ Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
 
 void GpuMessageHandler::OnGpuInfoUpdate() {
   // Get GPU Info.
-  scoped_ptr<base::DictionaryValue> gpu_info_val(
-      GpuInfoAsDictionaryValue());
+  scoped_ptr<base::DictionaryValue> gpu_info_val(GpuInfoAsDictionaryValue());
 
   // Add in blacklisting features
-  Value* feature_status = GetFeatureStatus();
+  base::Value* feature_status = GetFeatureStatus();
   if (feature_status)
     gpu_info_val->Set("featureStatus", feature_status);
 

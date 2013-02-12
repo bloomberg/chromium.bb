@@ -339,13 +339,13 @@ void BrowserPlugin::SizeChangedDueToAutoSize(const gfx::Size& old_view_size) {
 
   std::map<std::string, base::Value*> props;
   props[browser_plugin::kOldHeight] =
-      base::Value::CreateIntegerValue(old_view_size.height());
+      new base::FundamentalValue(old_view_size.height());
   props[browser_plugin::kOldWidth] =
-      base::Value::CreateIntegerValue(old_view_size.width());
+      new base::FundamentalValue(old_view_size.width());
   props[browser_plugin::kNewHeight] =
-      base::Value::CreateIntegerValue(last_view_size_.height());
+      new base::FundamentalValue(last_view_size_.height());
   props[browser_plugin::kNewWidth] =
-      base::Value::CreateIntegerValue(last_view_size_.width());
+      new base::FundamentalValue(last_view_size_.width());
   TriggerEvent(browser_plugin::kEventSizeChanged, &props);
 }
 
@@ -418,10 +418,8 @@ void BrowserPlugin::OnGuestGone(int instance_id, int process_id, int status) {
   std::string termination_status = TerminationStatusToString(
       static_cast<base::TerminationStatus>(status));
   std::map<std::string, base::Value*> props;
-  props[browser_plugin::kProcessId] =
-      base::Value::CreateIntegerValue(process_id);
-  props[browser_plugin::kReason] =
-      base::Value::CreateStringValue(termination_status);
+  props[browser_plugin::kProcessId] = new base::FundamentalValue(process_id);
+  props[browser_plugin::kReason] = new base::StringValue(termination_status);
 
   // Event listeners may remove the BrowserPlugin from the document. If that
   // happens, the BrowserPlugin will be scheduled for later deletion (see
@@ -443,15 +441,13 @@ void BrowserPlugin::OnGuestGone(int instance_id, int process_id, int status) {
 
 void BrowserPlugin::OnGuestResponsive(int instance_id, int process_id) {
   std::map<std::string, base::Value*> props;
-  props[browser_plugin::kProcessId] =
-      base::Value::CreateIntegerValue(process_id);
+  props[browser_plugin::kProcessId] = new base::FundamentalValue(process_id);
   TriggerEvent(browser_plugin::kEventResponsive, &props);
 }
 
 void BrowserPlugin::OnGuestUnresponsive(int instance_id, int process_id) {
   std::map<std::string, base::Value*> props;
-  props[browser_plugin::kProcessId] =
-      base::Value::CreateIntegerValue(process_id);
+  props[browser_plugin::kProcessId] = new base::FundamentalValue(process_id);
   TriggerEvent(browser_plugin::kEventUnresponsive, &props);
 }
 
@@ -460,10 +456,9 @@ void BrowserPlugin::OnLoadAbort(int instance_id,
                                 bool is_top_level,
                                 const std::string& type) {
   std::map<std::string, base::Value*> props;
-  props[browser_plugin::kURL] = base::Value::CreateStringValue(url.spec());
-  props[browser_plugin::kIsTopLevel] =
-      base::Value::CreateBooleanValue(is_top_level);
-  props[browser_plugin::kReason] = base::Value::CreateStringValue(type);
+  props[browser_plugin::kURL] = new base::StringValue(url.spec());
+  props[browser_plugin::kIsTopLevel] = new base::FundamentalValue(is_top_level);
+  props[browser_plugin::kReason] = new base::StringValue(type);
   TriggerEvent(browser_plugin::kEventLoadAbort, &props);
 }
 
@@ -482,10 +477,9 @@ void BrowserPlugin::OnLoadCommit(
   nav_entry_count_ = params.entry_count;
 
   std::map<std::string, base::Value*> props;
-  props[browser_plugin::kURL] =
-      base::Value::CreateStringValue(params.url.spec());
+  props[browser_plugin::kURL] = new base::StringValue(params.url.spec());
   props[browser_plugin::kIsTopLevel] =
-      base::Value::CreateBooleanValue(params.is_top_level);
+      new base::FundamentalValue(params.is_top_level);
   TriggerEvent(browser_plugin::kEventLoadCommit, &props);
 }
 
@@ -494,12 +488,9 @@ void BrowserPlugin::OnLoadRedirect(int instance_id,
                                    const GURL& new_url,
                                    bool is_top_level) {
   std::map<std::string, base::Value*> props;
-  props[browser_plugin::kOldURL] =
-      base::Value::CreateStringValue(old_url.spec());
-  props[browser_plugin::kNewURL] =
-      base::Value::CreateStringValue(new_url.spec());
-  props[browser_plugin::kIsTopLevel] =
-      base::Value::CreateBooleanValue(is_top_level);
+  props[browser_plugin::kOldURL] = new base::StringValue(old_url.spec());
+  props[browser_plugin::kNewURL] = new base::StringValue(new_url.spec());
+  props[browser_plugin::kIsTopLevel] = new base::FundamentalValue(is_top_level);
   TriggerEvent(browser_plugin::kEventLoadRedirect, &props);
 }
 
@@ -507,10 +498,8 @@ void BrowserPlugin::OnLoadStart(int instance_id,
                                 const GURL& url,
                                 bool is_top_level) {
   std::map<std::string, base::Value*> props;
-  props[browser_plugin::kURL] =
-      base::Value::CreateStringValue(url.spec());
-  props[browser_plugin::kIsTopLevel] =
-      base::Value::CreateBooleanValue(is_top_level);
+  props[browser_plugin::kURL] = new base::StringValue(url.spec());
+  props[browser_plugin::kIsTopLevel] = new base::FundamentalValue(is_top_level);
 
   TriggerEvent(browser_plugin::kEventLoadStart, &props);
 }

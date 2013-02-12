@@ -2581,7 +2581,7 @@ bool RenderViewImpl::isPointerLocked() {
 }
 
 void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
-#if !defined(OS_MACOSX) // many events are unhandled - http://crbug.com/138003
+#if !defined(OS_MACOSX)  // many events are unhandled - http://crbug.com/138003
 #if !defined(OS_WIN)  // http://crbug.com/160122
   CompositorThread* compositor_thread =
       RenderThreadImpl::current()->compositor_thread();
@@ -4050,7 +4050,7 @@ BrowserPluginManager* RenderViewImpl::browser_plugin_manager() {
 }
 
 void RenderViewImpl::CreateFrameTree(WebKit::WebFrame* frame,
-                                     DictionaryValue* frame_tree) {
+                                     base::DictionaryValue* frame_tree) {
   // TODO(nasko): Remove once http://crbug.com/153701 is fixed.
   DCHECK(false);
   NavigateToSwappedOutURL(frame);
@@ -4064,7 +4064,7 @@ void RenderViewImpl::CreateFrameTree(WebKit::WebFrame* frame,
     active_frame_id_map_.insert(std::pair<int, int>(frame->identifier(),
                                                     remote_id));
 
-  ListValue* children;
+  base::ListValue* children;
   if (!frame_tree->GetList(kFrameTreeNodeSubtreeKey, &children))
     return;
 
@@ -4544,7 +4544,7 @@ void RenderViewImpl::EvaluateScript(const string16& frame_xpath,
   if (web_frame)
     result = web_frame->executeScriptAndReturnValue(WebScriptSource(jscript));
   if (notify_result) {
-    ListValue list;
+    base::ListValue list;
     if (!result.IsEmpty() && web_frame) {
       v8::HandleScope handle_scope;
       v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
@@ -4553,10 +4553,9 @@ void RenderViewImpl::EvaluateScript(const string16& frame_xpath,
       converter.SetDateAllowed(true);
       converter.SetRegExpAllowed(true);
       base::Value* result_value = converter.FromV8Value(result, context);
-      list.Set(0, result_value ? result_value :
-                                 base::Value::CreateNullValue());
+      list.Set(0, result_value ? result_value : base::Value::CreateNullValue());
     } else {
-      list.Set(0, Value::CreateNullValue());
+      list.Set(0, base::Value::CreateNullValue());
     }
     Send(new ViewHostMsg_ScriptEvalResponse(routing_id_, id, list));
   }

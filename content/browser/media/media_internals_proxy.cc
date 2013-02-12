@@ -37,7 +37,7 @@ void MediaInternalsProxy::Observe(int type,
   DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
   RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
   CallJavaScriptFunctionOnUIThread("media.onRendererTerminated",
-      base::Value::CreateIntegerValue(process->GetID()));
+      new base::FundamentalValue(process->GetID()));
 }
 
 void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {
@@ -96,8 +96,8 @@ void MediaInternalsProxy::OnAddEntry(const net::NetLog::Entry& entry) {
 
 MediaInternalsProxy::~MediaInternalsProxy() {}
 
-Value* MediaInternalsProxy::GetConstants() {
-  DictionaryValue* event_phases = new DictionaryValue();
+base::Value* MediaInternalsProxy::GetConstants() {
+  base::DictionaryValue* event_phases = new base::DictionaryValue();
   event_phases->SetInteger(
       net::NetLog::EventPhaseToString(net::NetLog::PHASE_NONE),
       net::NetLog::PHASE_NONE);
@@ -108,7 +108,7 @@ Value* MediaInternalsProxy::GetConstants() {
       net::NetLog::EventPhaseToString(net::NetLog::PHASE_END),
       net::NetLog::PHASE_END);
 
-  DictionaryValue* constants = new DictionaryValue();
+  base::DictionaryValue* constants = new base::DictionaryValue();
   constants->Set("eventTypes", net::NetLog::GetEventTypesAsValue());
   constants->Set("eventPhases", event_phases);
 
@@ -147,13 +147,13 @@ void MediaInternalsProxy::UpdateUIOnUIThread(const string16& update) {
     handler_->OnUpdate(update);
 }
 
-void MediaInternalsProxy::AddNetEventOnUIThread(Value* entry) {
+void MediaInternalsProxy::AddNetEventOnUIThread(base::Value* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Send the updates to the page in kMediaInternalsProxyEventDelayMilliseconds
   // if an update is not already pending.
   if (!pending_net_updates_.get()) {
-    pending_net_updates_.reset(new ListValue());
+    pending_net_updates_.reset(new base::ListValue());
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(
@@ -171,10 +171,10 @@ void MediaInternalsProxy::SendNetEventsOnUIThread() {
 }
 
 void MediaInternalsProxy::CallJavaScriptFunctionOnUIThread(
-    const std::string& function, Value* args) {
+    const std::string& function, base::Value* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<Value> args_value(args);
-  std::vector<const Value*> args_vector;
+  scoped_ptr<base::Value> args_value(args);
+  std::vector<const base::Value*> args_vector;
   args_vector.push_back(args_value.get());
   string16 update = WebUI::GetJavascriptCall(function, args_vector);
   UpdateUIOnUIThread(update);
