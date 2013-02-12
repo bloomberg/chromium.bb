@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/error_screen_actor.h"
+#include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -1267,6 +1268,13 @@ void SigninScreenHandler::SendUserList(bool animated) {
 void SigninScreenHandler::HandleAccountPickerReady(
     const base::ListValue* args) {
   LOG(INFO) << "Login WebUI >> AccountPickerReady";
+
+  if (delegate_ && !ScreenLocker::default_screen_locker() &&
+      !chromeos::IsMachineHWIDCorrect() &&
+      !oobe_ui_) {
+    delegate_->ShowWrongHWIDScreen();
+    return;
+  }
 
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {

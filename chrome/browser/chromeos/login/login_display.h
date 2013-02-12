@@ -76,6 +76,9 @@ class LoginDisplay : public RemoveUserDelegate {
     // Called when the user requests device reset.
     virtual void OnStartDeviceReset() = 0;
 
+    // Shows wrong HWID screen.
+    virtual void ShowWrongHWIDScreen() = 0;
+
     // Ignore password change, remove existing cryptohome and
     // force full sync of user data.
     virtual void ResyncUserData() = 0;

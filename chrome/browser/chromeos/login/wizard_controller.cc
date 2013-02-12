@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/html_page_screen.h"
+#include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/profiles/profile.h"
@@ -119,6 +121,7 @@ const char WizardController::kHTMLPageScreenName[] = "html";
 const char WizardController::kEnterpriseEnrollmentScreenName[] = "enroll";
 const char WizardController::kResetScreenName[] = "reset";
 const char WizardController::kTermsOfServiceScreenName[] = "tos";
+const char WizardController::kWrongHWIDScreenName[] = "wrong-hwid";
 
 // Passing this parameter as a "first screen" initiates full OOBE flow.
 const char WizardController::kOutOfBoxScreenName[] = "oobe";
@@ -182,6 +185,9 @@ void WizardController::Init(const std::string& first_screen_name,
       chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
+  if (!IsMachineHWIDCorrect() && !IsDeviceRegistered() &&
+      first_screen_name.empty())
+    ShowWrongHWIDScreen();
 }
 
 chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
@@ -269,6 +275,15 @@ chromeos::TermsOfServiceScreen* WizardController::GetTermsOfServiceScreen() {
             this, oobe_display_->GetTermsOfServiceScreenActor()));
   }
   return terms_of_service_screen_.get();
+}
+
+chromeos::WrongHWIDScreen* WizardController::GetWrongHWIDScreen() {
+  if (!wrong_hwid_screen_.get()) {
+    wrong_hwid_screen_.reset(
+        new chromeos::WrongHWIDScreen(
+            this, oobe_display_->GetWrongHWIDScreenActor()));
+  }
+  return wrong_hwid_screen_.get();
 }
 
 void WizardController::ShowNetworkScreen() {
@@ -381,6 +396,12 @@ void WizardController::ShowTermsOfServiceScreen() {
   VLOG(1) << "Showing Terms of Service screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetTermsOfServiceScreen());
+}
+
+void WizardController::ShowWrongHWIDScreen() {
+  VLOG(1) << "Showing wrong HWID screen.";
+  SetStatusAreaVisible(false);
+  SetCurrentScreen(GetWrongHWIDScreen());
 }
 
 void WizardController::SkipToLoginForTesting() {
@@ -560,6 +581,13 @@ void WizardController::OnResetCanceled() {
     ShowLoginScreen();
 }
 
+void WizardController::OnWrongHWIDWarningSkipped() {
+  if (previous_screen_)
+    SetCurrentScreen(previous_screen_);
+  else
+    ShowLoginScreen();
+}
+
 void WizardController::OnEnterpriseAutoEnrollmentDone() {
   VLOG(1) << "Automagic enrollment done, resuming previous signin";
   ResumeLoginScreen();
@@ -673,6 +701,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowEnterpriseEnrollmentScreen();
   } else if (screen_name == kTermsOfServiceScreenName) {
     ShowTermsOfServiceScreen();
+  } else if (screen_name == kWrongHWIDScreenName) {
+    ShowWrongHWIDScreen();
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();
@@ -840,6 +870,8 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case TERMS_OF_SERVICE_ACCEPTED:
       OnTermsOfServiceAccepted();
+    case WRONG_HWID_WARNING_SKIPPED:
+      OnWrongHWIDWarningSkipped();
       break;
     default:
       NOTREACHED();

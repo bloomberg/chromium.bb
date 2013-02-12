@@ -277,6 +277,11 @@ void WebUILoginDisplay::ShowResetScreen() {
     delegate_->OnStartDeviceReset();
 }
 
+void WebUILoginDisplay::ShowWrongHWIDScreen() {
+  if (delegate_)
+    delegate_->ShowWrongHWIDScreen();
+}
+
 void WebUILoginDisplay::SetWebUIHandler(
     LoginDisplayWebUIHandler* webui_handler) {
   webui_handler_ = webui_handler;

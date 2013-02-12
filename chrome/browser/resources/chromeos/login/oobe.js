@@ -66,6 +66,7 @@ cr.define('cr.ui', function() {
    */
   Oobe.initialize = function() {
     DisplayManager.initialize();
+    oobe.WrongHWIDScreen.register();
     oobe.NetworkScreen.register();
     oobe.EulaScreen.register();
     oobe.UpdateScreen.register();

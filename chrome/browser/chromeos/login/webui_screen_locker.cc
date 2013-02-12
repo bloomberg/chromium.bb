@@ -238,6 +238,10 @@ void WebUIScreenLocker::OnStartDeviceReset() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::ShowWrongHWIDScreen() {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::ResyncUserData() {
   NOTREACHED();
 }

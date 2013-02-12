@@ -117,6 +117,9 @@ class SigninScreenHandlerDelegate {
   // Shows Reset screen.
   virtual void ShowResetScreen() = 0;
 
+  // Show wrong hwid screen.
+  virtual void ShowWrongHWIDScreen() = 0;
+
   // Let the delegate know about the handler it is supposed to be using.
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
 

@@ -565,6 +565,11 @@ void ExistingUserController::SetDisplayEmail(const std::string& email) {
   display_email_ = email;
 }
 
+void ExistingUserController::ShowWrongHWIDScreen() {
+  host_->StartWizard(WizardController::kWrongHWIDScreenName, NULL);
+  login_display_->OnFadeOut();
+}
+
 void ExistingUserController::Signout() {
   NOTREACHED();
 }

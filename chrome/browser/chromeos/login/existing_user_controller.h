@@ -82,6 +82,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void OnStartDeviceReset() OVERRIDE;
   virtual void ResyncUserData() OVERRIDE;
   virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
+  virtual void ShowWrongHWIDScreen() OVERRIDE;
   virtual void Signout() OVERRIDE;
 
   // content::NotificationObserver implementation.

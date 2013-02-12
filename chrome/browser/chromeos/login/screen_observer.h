@@ -37,6 +37,7 @@ class ScreenObserver {
     RESET_CANCELED,
     TERMS_OF_SERVICE_DECLINED,
     TERMS_OF_SERVICE_ACCEPTED,
+    WRONG_HWID_WARNING_SKIPPED,
     EXIT_CODES_COUNT  // not a real code, must be the last
   };
 

@@ -38,6 +38,7 @@ class TermsOfServiceScreen;
 class UpdateScreen;
 class UserImageScreen;
 class WizardScreen;
+class WrongHWIDScreen;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
@@ -141,6 +142,7 @@ class WizardController : public ScreenObserver {
   EnterpriseEnrollmentScreen* GetEnterpriseEnrollmentScreen();
   ResetScreen* GetResetScreen();
   TermsOfServiceScreen* GetTermsOfServiceScreen();
+  WrongHWIDScreen* GetWrongHWIDScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -161,6 +163,7 @@ class WizardController : public ScreenObserver {
   static const char kEnterpriseEnrollmentScreenName[];
   static const char kResetScreenName[];
   static const char kTermsOfServiceScreenName[];
+  static const char kWrongHWIDScreenName[];
 
  private:
   // Show specific screen.
@@ -173,6 +176,7 @@ class WizardController : public ScreenObserver {
   void ShowEnterpriseEnrollmentScreen();
   void ShowResetScreen();
   void ShowTermsOfServiceScreen();
+  void ShowWrongHWIDScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -195,6 +199,7 @@ class WizardController : public ScreenObserver {
   void OnEnterpriseEnrollmentDone();
   void OnEnterpriseAutoEnrollmentDone();
   void OnResetCanceled();
+  void OnWrongHWIDWarningSkipped();
   void OnOOBECompleted();
   void OnTermsOfServiceDeclined();
   void OnTermsOfServiceAccepted();
@@ -253,6 +258,7 @@ class WizardController : public ScreenObserver {
   scoped_ptr<EnterpriseEnrollmentScreen>
       enterprise_enrollment_screen_;
   scoped_ptr<TermsOfServiceScreen> terms_of_service_screen_;
+  scoped_ptr<WrongHWIDScreen> wrong_hwid_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;

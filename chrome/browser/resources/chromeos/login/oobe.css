@@ -128,7 +128,8 @@ html[oobe=new] #oobe.user-image #inner-container,
 html[oobe=new] #oobe.managed-user-creation #inner-container,
 html[oobe=new] #oobe.tpm-error-message #inner-container,
 html[oobe=new] #oobe.password-changed #inner-container,
-html[oobe=new] #oobe.terms-of-service #inner-container {
+html[oobe=new] #oobe.terms-of-service #inner-container,
+html[oobe=new] #oobe.wrong-hwid #inner-container {
   background: -webkit-linear-gradient(rgba(255,255,255,0.99),
                                       rgba(255,255,255,0.95));
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
@@ -877,7 +878,8 @@ html[oobe=old] .step-controls {
 #tpm-error-message-dot,
 #password-changed-dot,
 #managed-user-creation-dot,
-#terms-of-service-dot {
+#terms-of-service-dot,
+#wrong-hwid-dot {
   display: none;
 }
 
@@ -1453,3 +1455,4 @@ span.bold {
 .background-final {
   opacity: 1;
 }
+

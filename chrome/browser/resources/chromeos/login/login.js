@@ -33,6 +33,7 @@ cr.define('cr.ui', function() {
    */
   Oobe.initialize = function() {
     DisplayManager.initialize();
+    oobe.WrongHWIDScreen.register();
     login.AccountPickerScreen.register();
     login.GaiaSigninScreen.register();
     oobe.OAuthEnrollmentScreen.register();
