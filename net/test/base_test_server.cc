@@ -42,13 +42,13 @@ std::string GetHostname(BaseTestServer::Type type,
 
 void GetCiphersList(int cipher, base::ListValue* values) {
   if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_RC4)
-    values->Append(base::Value::CreateStringValue("rc4"));
+    values->Append(new base::StringValue("rc4"));
   if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_AES128)
-    values->Append(base::Value::CreateStringValue("aes128"));
+    values->Append(new base::StringValue("aes128"));
   if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_AES256)
-    values->Append(base::Value::CreateStringValue("aes256"));
+    values->Append(new base::StringValue("aes256"));
   if (cipher & BaseTestServer::SSLOptions::BULK_CIPHER_3DES)
-    values->Append(base::Value::CreateStringValue("3des"));
+    values->Append(new base::StringValue("3des"));
 }
 
 }  // namespace
@@ -136,7 +136,7 @@ const HostPortPair& BaseTestServer::host_port_pair() const {
   return host_port_pair_;
 }
 
-const DictionaryValue& BaseTestServer::server_data() const {
+const base::DictionaryValue& BaseTestServer::server_data() const {
   DCHECK(started_);
   DCHECK(server_data_.get());
   return *server_data_;
@@ -259,14 +259,14 @@ void BaseTestServer::SetResourcePath(const base::FilePath& document_root,
 bool BaseTestServer::ParseServerData(const std::string& server_data) {
   VLOG(1) << "Server data: " << server_data;
   base::JSONReader json_reader;
-  scoped_ptr<Value> value(json_reader.ReadToValue(server_data));
-  if (!value.get() || !value->IsType(Value::TYPE_DICTIONARY)) {
+  scoped_ptr<base::Value> value(json_reader.ReadToValue(server_data));
+  if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Could not parse server data: "
                << json_reader.GetErrorMessage();
     return false;
   }
 
-  server_data_.reset(static_cast<DictionaryValue*>(value.release()));
+  server_data_.reset(static_cast<base::DictionaryValue*>(value.release()));
   int port = 0;
   if (!server_data_->GetInteger("port", &port)) {
     LOG(ERROR) << "Could not find port value";
@@ -361,7 +361,7 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
                    << " doesn't exist. Can't launch https server.";
         return false;
       }
-      ssl_client_certs->Append(base::Value::CreateStringValue(it->value()));
+      ssl_client_certs->Append(new base::StringValue(it->value()));
     }
 
     if (ssl_client_certs->GetSize())
@@ -384,7 +384,7 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->Set("https-record-resume", base::Value::CreateNullValue());
     if (ssl_options_.tls_intolerant != SSLOptions::TLS_INTOLERANT_NONE) {
       arguments->Set("tls-intolerant",
-          base::Value::CreateIntegerValue(ssl_options_.tls_intolerant));
+                     new base::FundamentalValue(ssl_options_.tls_intolerant));
     }
   }
 

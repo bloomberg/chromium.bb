@@ -14,12 +14,12 @@ namespace net {
 
 base::Value* NetLogX509CertificateCallback(const X509Certificate* certificate,
                                            NetLog::LogLevel log_level) {
-  DictionaryValue* dict = new DictionaryValue();
-  ListValue* certs = new ListValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  base::ListValue* certs = new base::ListValue();
   std::vector<std::string> encoded_chain;
   certificate->GetPEMEncodedChain(&encoded_chain);
   for (size_t i = 0; i < encoded_chain.size(); ++i)
-    certs->Append(base::Value::CreateStringValue(encoded_chain[i]));
+    certs->Append(new base::StringValue(encoded_chain[i]));
   dict->Set("certificates", certs);
   return dict;
 }

@@ -113,7 +113,7 @@ void ConnectJob::set_socket(StreamSocket* socket) {
 
 void ConnectJob::NotifyDelegateOfCompletion(int rv) {
   // The delegate will delete |this|.
-  Delegate *delegate = delegate_;
+  Delegate* delegate = delegate_;
   delegate_ = NULL;
 
   LogConnectCompletion(rv);
@@ -589,9 +589,9 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
   return LOAD_STATE_IDLE;
 }
 
-DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
+base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
     const std::string& name, const std::string& type) const {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("name", name);
   dict->SetString("type", type);
   dict->SetInteger("handed_out_socket_count", handed_out_socket_count_);
@@ -604,11 +604,11 @@ DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
   if (group_map_.empty())
     return dict;
 
-  DictionaryValue* all_groups_dict = new DictionaryValue();
+  base::DictionaryValue* all_groups_dict = new base::DictionaryValue();
   for (GroupMap::const_iterator it = group_map_.begin();
        it != group_map_.end(); it++) {
     const Group* group = it->second;
-    DictionaryValue* group_dict = new DictionaryValue();
+    base::DictionaryValue* group_dict = new base::DictionaryValue();
 
     group_dict->SetInteger("pending_request_count",
                            group->pending_requests().size());
@@ -619,21 +619,21 @@ DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
 
     group_dict->SetInteger("active_socket_count", group->active_socket_count());
 
-    ListValue* idle_socket_list = new ListValue();
+    base::ListValue* idle_socket_list = new base::ListValue();
     std::list<IdleSocket>::const_iterator idle_socket;
     for (idle_socket = group->idle_sockets().begin();
          idle_socket != group->idle_sockets().end();
          idle_socket++) {
       int source_id = idle_socket->socket->NetLog().source().id;
-      idle_socket_list->Append(Value::CreateIntegerValue(source_id));
+      idle_socket_list->Append(new base::FundamentalValue(source_id));
     }
     group_dict->Set("idle_sockets", idle_socket_list);
 
-    ListValue* connect_jobs_list = new ListValue();
+    base::ListValue* connect_jobs_list = new base::ListValue();
     std::set<ConnectJob*>::const_iterator job = group->jobs().begin();
     for (job = group->jobs().begin(); job != group->jobs().end(); job++) {
       int source_id = (*job)->net_log().source().id;
-      connect_jobs_list->Append(Value::CreateIntegerValue(source_id));
+      connect_jobs_list->Append(new base::FundamentalValue(source_id));
     }
     group_dict->Set("connect_jobs", connect_jobs_list);
 

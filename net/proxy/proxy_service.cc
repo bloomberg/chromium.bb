@@ -209,7 +209,7 @@ class ProxyResolverNull : public ProxyResolver {
 // |pac_string| for every single URL.
 class ProxyResolverFromPacString : public ProxyResolver {
  public:
-  ProxyResolverFromPacString(const std::string& pac_string)
+  explicit ProxyResolverFromPacString(const std::string& pac_string)
       : ProxyResolver(false /*expects_pac_bytes*/),
         pac_string_(pac_string) {}
 
@@ -273,10 +273,11 @@ class ProxyResolverFactoryForSystem : public ProxyResolverFactory {
 };
 
 // Returns NetLog parameters describing a proxy configuration change.
-Value* NetLogProxyConfigChangedCallback(const ProxyConfig* old_config,
-                                        const ProxyConfig* new_config,
-                                        NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogProxyConfigChangedCallback(
+    const ProxyConfig* old_config,
+    const ProxyConfig* new_config,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   // The "old_config" is optional -- the first notification will not have
   // any "previous" configuration.
   if (old_config->is_valid())
@@ -285,23 +286,24 @@ Value* NetLogProxyConfigChangedCallback(const ProxyConfig* old_config,
   return dict;
 }
 
-Value* NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
-                                  NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
-  ListValue* list = new ListValue();
+base::Value* NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
+                                        NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  base::ListValue* list = new base::ListValue();
 
   for (ProxyRetryInfoMap::const_iterator iter = retry_info->begin();
        iter != retry_info->end(); ++iter) {
-    list->Append(Value::CreateStringValue(iter->first));
+    list->Append(new base::StringValue(iter->first));
   }
   dict->Set("bad_proxy_list", list);
   return dict;
 }
 
 // Returns NetLog parameters on a successfuly proxy resolution.
-Value* NetLogFinishedResolvingProxyCallback(ProxyInfo* result,
-                                            NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogFinishedResolvingProxyCallback(
+    ProxyInfo* result,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("pac_string", result->ToPacString());
   return dict;
 }
@@ -835,7 +837,7 @@ class ProxyService::PacRequest
 
     // Remove this completed PacRequest from the service's pending list.
     /// (which will probably cause deletion of |this|).
-    if (!user_callback_.is_null()){
+    if (!user_callback_.is_null()) {
       net::CompletionCallback callback = user_callback_;
       service_->RemovePendingRequest(this);
       callback.Run(result_code);

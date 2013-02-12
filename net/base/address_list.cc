@@ -16,12 +16,12 @@ namespace {
 
 base::Value* NetLogAddressListCallback(const AddressList* address_list,
                                        NetLog::LogLevel log_level) {
-  DictionaryValue* dict = new DictionaryValue();
-  ListValue* list = new ListValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  base::ListValue* list = new base::ListValue();
 
   for (AddressList::const_iterator it = address_list->begin();
        it != address_list->end(); ++it) {
-    list->Append(Value::CreateStringValue(it->ToString()));
+    list->Append(new base::StringValue(it->ToString()));
   }
 
   dict->Set("address_list", list);

@@ -51,16 +51,16 @@ void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
 }
 
 base::Value* DnsConfig::ToValue() const {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
 
-  ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < nameservers.size(); ++i)
-    list->Append(Value::CreateStringValue(nameservers[i].ToString()));
+    list->Append(new base::StringValue(nameservers[i].ToString()));
   dict->Set("nameservers", list);
 
-  list = new ListValue();
+  list = new base::ListValue();
   for (size_t i = 0; i < search.size(); ++i)
-    list->Append(Value::CreateStringValue(search[i]));
+    list->Append(new base::StringValue(search[i]));
   dict->Set("search", list);
 
   dict->SetBoolean("append_to_multi_label_name", append_to_multi_label_name);
