@@ -89,6 +89,12 @@ Mosaic.prototype.__proto__ = HTMLDivElement.prototype;
 Mosaic.LAYOUT_DELAY = 200;
 
 /**
+ * Smooth scroll animation duration when scrolling using keyboard or
+ * clicking on a partly visible tile. In ms.
+ */
+Mosaic.ANIMATED_SCROLL_DURATION = 500;
+
+/**
  * Decorate a Mosaic instance.
  *
  * @param {Mosaic} self Self pointer.
@@ -167,6 +173,66 @@ Mosaic.prototype.initListeners_ = function() {
 
   this.dataModel_.addEventListener('splice', this.onSplice_.bind(this));
   this.dataModel_.addEventListener('content', this.onContentChange_.bind(this));
+};
+
+/**
+ * Smoothly scrolls the container to the specified position using
+ * f(x) = sqrt(x) speed function normalized to animation duration.
+ * @param {number} targetPosition Horizontal scroll position in pixels.
+ */
+Mosaic.prototype.animatedScrollTo = function(targetPosition) {
+  if (this.scrollAnimation_) {
+    webkitCancelAnimationFrame(this.scrollAnimation_);
+    this.scrollAnimation_ = null;
+  }
+
+  // Mouse move events are fired without touching the mouse because of scrolling
+  // the container. Therefore, these events have to be suppressed.
+  this.suppressHovering_ = true;
+
+  // Calculates integral area from t1 to t2 of f(x) = sqrt(x) dx.
+  var integral = function(t1, t2) {
+    return 2.0 / 3.0 * Math.pow(t2, 3.0 / 2.0) -
+           2.0 / 3.0 * Math.pow(t1, 3.0 / 2.0);
+  };
+
+  var delta = targetPosition - this.scrollLeft;
+  var factor = delta / integral(0, Mosaic.ANIMATED_SCROLL_DURATION);
+  var startTime = Date.now();
+  var lastPosition = 0;
+  var scrollOffset = this.scrollLeft;
+
+  var animationFrame = function() {
+    var position = Date.now() - startTime;
+    var step = factor *
+        integral(Math.max(0, Mosaic.ANIMATED_SCROLL_DURATION - position),
+                 Math.max(0, Mosaic.ANIMATED_SCROLL_DURATION - lastPosition));
+    scrollOffset += step;
+
+    var oldScrollLeft = this.scrollLeft;
+    var newScrollLeft = Math.round(scrollOffset);
+
+    if (oldScrollLeft != newScrollLeft)
+      this.scrollLeft = newScrollLeft;
+
+    if (step == 0 || this.scrollLeft != newScrollLeft) {
+      this.scrollAnimation_ = null;
+      // Release the hovering lock after a safe delay to avoid hovering
+      // a tile because of altering |this.scrollLeft|.
+      setTimeout(function() {
+        if (!this.scrollAnimation_)
+          this.suppressHovering_ = false;
+      }.bind(this), 100);
+    } else {
+      // Continue the animation.
+      this.scrollAnimation_ = requestAnimationFrame(animationFrame);
+    }
+
+    lastPosition = position;
+  }.bind(this);
+
+  // Start the animation.
+  this.scrollAnimation_ = requestAnimationFrame(animationFrame);
 };
 
 /**
@@ -312,7 +378,8 @@ Mosaic.prototype.onResize_ = function() {
  */
 Mosaic.prototype.onMouseEvent_ = function(event) {
   // Navigating with mouse, enable hover state.
-  this.classList.add('hover-visible');
+  if (!this.suppressHovering_)
+    this.classList.add('hover-visible');
 
   if (event.type == 'mousemove')
     return;
@@ -567,6 +634,12 @@ Mosaic.Layout.PADDING_BOTTOM = 50;
  * with the style of .mosaic-item in gallery.css (= 2 * ( 4 + 1))
  */
 Mosaic.Layout.SPACING = 10;
+
+/**
+ * Margin for scrolling using keyboard. Distance between a selected tile
+ * and window border.
+ */
+Mosaic.Layout.SCROLL_MARGIN = 30;
 
 /**
  * Layout mode: commit to DOM immediately.
@@ -1603,7 +1676,7 @@ Mosaic.Tile.prototype.layout = function(left, top, width, height) {
     this.wrapper_ = util.createChild(border, 'img-wrapper');
   }
   if (this.hasAttribute('selected'))
-    this.scrollIntoView();
+    this.scrollIntoView(false);
 
   this.thumbnailLoader_.attachImage(this.wrapper_,
                                     ThumbnailLoader.FillMode.FILL);
@@ -1611,18 +1684,29 @@ Mosaic.Tile.prototype.layout = function(left, top, width, height) {
 
 /**
  * If the tile is not fully visible scroll the parent to make it fully visible.
+ * @param {boolean} opt_animated True, if scroll should be animated,
+ *     default: true.
  */
-Mosaic.Tile.prototype.scrollIntoView = function() {
+Mosaic.Tile.prototype.scrollIntoView = function(opt_animated) {
   if (this.left_ == null)  // Not laid out.
     return;
 
-  if (this.left_ < this.container_.scrollLeft) {
-    this.container_.scrollLeft = this.left_;
+  var targetPosition;
+  var tileLeft = this.left_ - Mosaic.Layout.SCROLL_MARGIN;
+  if (tileLeft < this.container_.scrollLeft) {
+    targetPosition = tileLeft;
   } else {
-    var tileRight = this.left_ + this.width_;
+    var tileRight = this.left_ + this.width_ + Mosaic.Layout.SCROLL_MARGIN;
     var scrollRight = this.container_.scrollLeft + this.container_.clientWidth;
     if (tileRight > scrollRight)
-      this.container_.scrollLeft = tileRight - this.container_.clientWidth;
+      targetPosition = tileRight - this.container_.clientWidth;
+  }
+
+  if (targetPosition) {
+    if (opt_animated === false)
+      this.container_.scrollLeft = targetPosition;
+    else
+      this.container_.animatedScrollTo(targetPosition);
   }
 };
 
