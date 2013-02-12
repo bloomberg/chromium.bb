@@ -38,7 +38,7 @@ void CloudPrintWipeout::UnregisterNextPrinter() {
   GURL url = GetUrlForPrinterDelete(cloud_print_server_url_,
                                     printer_id,
                                     "connector_disabled");
-  request_ = new CloudPrintURLFetcher;
+  request_ = CloudPrintURLFetcher::Create();
   request_->StartGetRequest(url, this, kMaxWipeoutAttempts, std::string());
 }
 

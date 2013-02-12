@@ -70,7 +70,7 @@ void CloudPrintAuth::AuthenticateWithToken(
   GURL get_authcode_url = GetUrlForGetAuthCode(cloud_print_server_url_,
                                                oauth_client_info_.client_id,
                                                proxy_id_);
-  request_ = new CloudPrintURLFetcher;
+  request_ = CloudPrintURLFetcher::Create();
   request_->StartGetRequest(get_authcode_url,
                             this,
                             kCloudPrintAuthMaxRetryCount,

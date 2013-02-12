@@ -25,6 +25,13 @@ class URLRequestStatus;
 
 namespace cloud_print {
 
+// Factory for creating CloudPrintURLFetchers.
+class CloudPrintURLFetcher;
+class CloudPrintURLFetcherFactory {
+ public:
+  virtual CloudPrintURLFetcher* CreateCloudPrintURLFetcher() = 0;
+};
+
 // A wrapper around URLFetcher for CloudPrint. URLFetcher applies retry logic
 // only on HTTP response codes >= 500. In the cloud print case, we want to
 // retry on all network errors. In addition, we want to treat non-JSON responses
@@ -92,7 +99,9 @@ class CloudPrintURLFetcher
    protected:
     virtual ~Delegate() {}
   };
-  CloudPrintURLFetcher();
+
+  static CloudPrintURLFetcher* Create();
+  static void set_factory(CloudPrintURLFetcherFactory* factory);
 
   bool IsSameRequest(const net::URLFetcher* source);
 
@@ -111,6 +120,7 @@ class CloudPrintURLFetcher
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:
+  CloudPrintURLFetcher();
   friend class base::RefCountedThreadSafe<CloudPrintURLFetcher>;
   virtual ~CloudPrintURLFetcher();
 
@@ -126,6 +136,7 @@ class CloudPrintURLFetcher
                           const std::string& post_data,
                           const std::string& additional_headers);
   void SetupRequestHeaders();
+  static CloudPrintURLFetcherFactory* factory();
 
   scoped_ptr<net::URLFetcher> request_;
   Delegate* delegate_;

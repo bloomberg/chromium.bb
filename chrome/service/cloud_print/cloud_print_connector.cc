@@ -289,7 +289,7 @@ void CloudPrintConnector::StartGetRequest(const GURL& url,
                                           int max_retries,
                                           ResponseHandler handler) {
   next_response_handler_ = handler;
-  request_ = new CloudPrintURLFetcher;
+  request_ = CloudPrintURLFetcher::Create();
   request_->StartGetRequest(url, this, max_retries, std::string());
 }
 
@@ -299,7 +299,7 @@ void CloudPrintConnector::StartPostRequest(const GURL& url,
                                            const std::string& post_data,
                                            ResponseHandler handler) {
   next_response_handler_ = handler;
-  request_ = new CloudPrintURLFetcher;
+  request_ = CloudPrintURLFetcher::Create();
   request_->StartPostRequest(
       url, this, max_retries, mime_type, post_data, std::string());
 }
@@ -318,7 +318,7 @@ void CloudPrintConnector::ReportUserMessage(const std::string& message_id,
   post_data.append("--" + mime_boundary + "--\r\n");
   std::string mime_type("multipart/form-data; boundary=");
   mime_type += mime_boundary;
-  user_message_request_ = new CloudPrintURLFetcher;
+  user_message_request_ = CloudPrintURLFetcher::Create();
   user_message_request_->StartPostRequest(url, this, 1, mime_type, post_data,
                                           std::string());
 }

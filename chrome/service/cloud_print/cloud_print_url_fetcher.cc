@@ -20,6 +20,25 @@
 
 namespace cloud_print {
 
+static CloudPrintURLFetcherFactory* g_factory = NULL;
+
+// static
+CloudPrintURLFetcher* CloudPrintURLFetcher::Create() {
+  CloudPrintURLFetcherFactory* factory = CloudPrintURLFetcher::factory();
+  return factory ? factory->CreateCloudPrintURLFetcher() :
+      new CloudPrintURLFetcher;
+}
+
+// static
+CloudPrintURLFetcherFactory* CloudPrintURLFetcher::factory() {
+  return g_factory;
+}
+
+// static
+void CloudPrintURLFetcher::set_factory(CloudPrintURLFetcherFactory* factory) {
+  g_factory = factory;
+}
+
 CloudPrintURLFetcher::ResponseAction
 CloudPrintURLFetcher::Delegate::HandleRawResponse(
     const net::URLFetcher* source,

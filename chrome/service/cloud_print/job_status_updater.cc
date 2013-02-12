@@ -58,7 +58,7 @@ void JobStatusUpdater::UpdateStatus() {
       }
     }
     if (need_update) {
-      request_ = new CloudPrintURLFetcher;
+      request_ = CloudPrintURLFetcher::Create();
       request_->StartGetRequest(
           GetUrlForJobStatusUpdate(
               cloud_print_server_url_, job_id_, last_job_details_),

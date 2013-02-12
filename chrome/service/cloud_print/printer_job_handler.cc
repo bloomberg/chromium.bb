@@ -281,7 +281,7 @@ PrinterJobHandler::HandleJobMetadataResponse(
           }
         }
         SetNextDataHandler(&PrinterJobHandler::HandlePrintTicketResponse);
-        request_ = new CloudPrintURLFetcher;
+        request_ = CloudPrintURLFetcher::Create();
         request_->StartGetRequest(GURL(print_ticket_url.c_str()),
                                   this,
                                   kCloudPrintAPIMaxRetryCount,
@@ -308,7 +308,7 @@ PrinterJobHandler::HandlePrintTicketResponse(const net::URLFetcher* source,
   if (print_system_->ValidatePrintTicket(printer_info_.printer_name, data)) {
     job_details_.print_ticket_ = data;
     SetNextDataHandler(&PrinterJobHandler::HandlePrintDataResponse);
-    request_ = new CloudPrintURLFetcher;
+    request_ = CloudPrintURLFetcher::Create();
     std::string accept_headers = "Accept: ";
     accept_headers += print_system_->GetSupportedMimeTypes();
     request_->StartGetRequest(GURL(print_data_url_.c_str()),
@@ -422,7 +422,7 @@ void PrinterJobHandler::Start() {
         job_check_pending_ = false;
         // We need to fetch any pending jobs for this printer
         SetNextJSONHandler(&PrinterJobHandler::HandleJobMetadataResponse);
-        request_ = new CloudPrintURLFetcher;
+        request_ = CloudPrintURLFetcher::Create();
         request_->StartGetRequest(
             GetUrlForJobFetch(
                 cloud_print_server_url_, printer_info_cloud_.printer_id,
@@ -504,7 +504,7 @@ void PrinterJobHandler::UpdateJobStatus(PrintJobStatus status,
     SetNextJSONHandler(
         &PrinterJobHandler::HandleFailureStatusUpdateResponse);
   }
-  request_ = new CloudPrintURLFetcher;
+  request_ = CloudPrintURLFetcher::Create();
   request_->StartGetRequest(GetUrlForJobStatusUpdate(cloud_print_server_url_,
                                                      job_details_.job_id_,
                                                      status),
@@ -652,7 +652,7 @@ void PrinterJobHandler::OnReceivePrinterCaps(
     std::string mime_type("multipart/form-data; boundary=");
     mime_type += mime_boundary;
     SetNextJSONHandler(&PrinterJobHandler::HandlePrinterUpdateResponse);
-    request_ = new CloudPrintURLFetcher;
+    request_ = CloudPrintURLFetcher::Create();
     request_->StartPostRequest(
         GetUrlForPrinterUpdate(
             cloud_print_server_url_, printer_info_cloud_.printer_id),
