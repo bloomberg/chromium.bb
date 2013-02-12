@@ -3551,9 +3551,6 @@ Battery full
   <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE" desc="An error message shown when we suggest that user may be behind the captive portal but Guest mode is disabled.">
     Your password cannot be verified on this current network. Please select another network.
   </message>
-  <message name="IDS_LOGIN_TIMEOUT_TITLE" desc="An offline message title shown when Gaia frame loading is timed out.">
-    Gaia loading timeout
-  </message>
   <message name="IDS_NOTIFICATION_PANEL_TITLE" desc="Text for the title of the notification panel.">
     Notifications
   </message>
