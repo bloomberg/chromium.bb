@@ -313,21 +313,26 @@ if [[ -n "${with_android}" ]]; then
   cd -
 fi
 
-# Build plugin.
-# Copy it into the clang tree and use clang's build system to compile the
-# plugin.
-PLUGIN_SRC_DIR="${THIS_DIR}/../plugins"
-PLUGIN_DST_DIR="${LLVM_DIR}/tools/clang/tools/chrome-plugin"
-PLUGIN_BUILD_DIR="${LLVM_BUILD_DIR}/tools/clang/tools/chrome-plugin"
-rm -rf "${PLUGIN_DST_DIR}"
-cp -R "${PLUGIN_SRC_DIR}" "${PLUGIN_DST_DIR}"
-rm -rf "${PLUGIN_BUILD_DIR}"
-mkdir -p "${PLUGIN_BUILD_DIR}"
-cp "${PLUGIN_SRC_DIR}/Makefile" "${PLUGIN_BUILD_DIR}"
-MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}" -C "${PLUGIN_BUILD_DIR}"
+# Build Chrome-specific clang tools. Paths in this list should be relative to
+# tools/clang.
+CHROME_TOOL_DIRS="plugins"
+# For each tool directory, copy it into the clang tree and use clang's build
+# system to compile it.
+for CHROME_TOOL_DIR in ${CHROME_TOOL_DIRS}; do
+  TOOL_SRC_DIR="${THIS_DIR}/../${CHROME_TOOL_DIR}"
+  TOOL_DST_DIR="${LLVM_DIR}/tools/clang/tools/chrome-${CHROME_TOOL_DIR}"
+  TOOL_BUILD_DIR="${LLVM_BUILD_DIR}/tools/clang/tools/chrome-${CHROME_TOOL_DIR}"
+  rm -rf "${TOOL_DST_DIR}"
+  cp -R "${TOOL_SRC_DIR}" "${TOOL_DST_DIR}"
+  rm -rf "${TOOL_BUILD_DIR}"
+  mkdir -p "${TOOL_BUILD_DIR}"
+  cp "${TOOL_SRC_DIR}/Makefile" "${TOOL_BUILD_DIR}"
+  MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}" -C "${TOOL_BUILD_DIR}"
+done
 
 if [[ -n "$run_tests" ]]; then
   # Run a few tests.
+  PLUGIN_SRC_DIR="${THIS_DIR}/../plugins"
   "${PLUGIN_SRC_DIR}/tests/test.sh" "${LLVM_BUILD_DIR}/Release+Asserts"
   cd "${LLVM_BUILD_DIR}"
   make check-all
