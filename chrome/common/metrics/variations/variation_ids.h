@@ -168,10 +168,15 @@ enum VariationID {
   AUTOCOMPLETE_DYNAMIC_FIELD_TRIAL_ID_MIN = 3310086,
   AUTOCOMPLETE_DYANMIC_FIELD_TRIAL_ID_MAX = 3310185,
 
+  // BookmarkPrompt field trial.
+  BOOKMARK_PROMPT_TRIAL_DEFAULT = 3310186,
+  BOOKMARK_PROMPT_TRIAL_CONTROL = 3310187,
+  BOOKMARK_PROMPT_TRIAL_EXPERIMENT = 3310188,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3310186,
+  NEXT_ID = 3310189,
 
   // USABLE IDs END HERE.
   //

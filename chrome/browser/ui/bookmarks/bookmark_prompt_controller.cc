@@ -21,6 +21,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/metrics/variations/variation_ids.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -29,6 +31,11 @@
 using content::WebContents;
 
 namespace {
+
+const char kBookmarkPromptTrialName[] = "BookmarkPrompt";
+const char kBookmarkPromptDefaultGroup[] = "Disabled";
+const char kBookmarkPromptControlGroup[] = "Control";
+const char kBookmarkPromptExperimentGroup[] = "Experiment";
 
 // This enum is used for the BookmarkPrompt.DisabledReason histogram.
 enum PromptDisabledReason {
@@ -211,7 +218,7 @@ bool BookmarkPromptController::IsEnabled() {
   const std::string manual_group_name = base::FieldTrialList::FindFullName(
       "BookmarkPrompt");
   if (!manual_group_name.empty())
-    return manual_group_name == "Experiment";
+    return manual_group_name == kBookmarkPromptExperimentGroup;
 
   const ExperimentDateRange* date_range = GetExperimentDateRange();
   if (!date_range)
@@ -219,13 +226,26 @@ bool BookmarkPromptController::IsEnabled() {
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-          "BookmarkPrompt", 100, "Disabled",
+          kBookmarkPromptTrialName, 100, kBookmarkPromptDefaultGroup,
           date_range->expiration_date.year,
           date_range->expiration_date.month,
           date_range->expiration_date.day_of_month, NULL));
   trial->UseOneTimeRandomization();
-  trial->AppendGroup("Control", 99);
-  trial->AppendGroup("Experiment", 1);
+  trial->AppendGroup(kBookmarkPromptControlGroup, 99);
+  trial->AppendGroup(kBookmarkPromptExperimentGroup, 1);
+
+  chrome_variations::AssociateGoogleVariationID(
+      chrome_variations::GOOGLE_UPDATE_SERVICE,
+      kBookmarkPromptTrialName, kBookmarkPromptDefaultGroup,
+      chrome_variations::BOOKMARK_PROMPT_TRIAL_DEFAULT);
+  chrome_variations::AssociateGoogleVariationID(
+      chrome_variations::GOOGLE_UPDATE_SERVICE,
+      kBookmarkPromptTrialName, kBookmarkPromptControlGroup,
+      chrome_variations::BOOKMARK_PROMPT_TRIAL_CONTROL);
+  chrome_variations::AssociateGoogleVariationID(
+      chrome_variations::GOOGLE_UPDATE_SERVICE,
+      kBookmarkPromptTrialName, kBookmarkPromptExperimentGroup,
+      chrome_variations::BOOKMARK_PROMPT_TRIAL_EXPERIMENT);
 
   const base::Time start_date = base::Time::FromLocalExploded(
       date_range->install_date);
@@ -239,7 +259,7 @@ bool BookmarkPromptController::IsEnabled() {
     trial->Disable();
     return false;
   }
-  return trial->group_name() == "Experiment";
+  return trial->group_name() == kBookmarkPromptExperimentGroup;
 }
 
 void BookmarkPromptController::ActiveTabChanged(WebContents* old_contents,
