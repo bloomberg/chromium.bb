@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.15",
+  "version": "4.16",
   "entries": [
     {
       "id": 1,
@@ -299,7 +299,7 @@
     {
       "id": 17,
       "description": "Intel mesa drivers are crash-prone.",
-      "cr_bugs": [76703],
+      "cr_bugs": [76703, 164555],
       "os": {
         "type": "linux"
       },
@@ -313,7 +313,7 @@
           }
         },
         {
-          "device_id": ["0xa001", "0xa002", "0xa011", "0xa012", "0x29a2", "0x2992", "0x2982", "0x2972", "0x2a02", "0x2a12", "0x2a42", "0x2e02", "0x2e12", "0x2e22", "0x2e32", "0x2e42", "0x2e92"],
+          "device_id": ["0xa001", "0xa002", "0xa011", "0xa012", "0x29a2", "0x2992", "0x2982", "0x2972", "0x2a12", "0x2a42", "0x2e02", "0x2e12", "0x2e22", "0x2e32", "0x2e42", "0x2e92"],
           "driver_version": {
             "op": ">",
             "number": "8.0.2"
@@ -324,6 +324,13 @@
           "driver_version": {
             "op": ">=",
             "number": "8.0.2"
+          }
+        },
+        {
+          "device_id": ["0x2a02"],
+          "driver_version": {
+            "op": ">=",
+            "number": "9.1"
           }
         }
       ],
