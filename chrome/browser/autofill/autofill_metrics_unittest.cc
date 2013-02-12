@@ -148,7 +148,8 @@ class TestPersonalDataManager : public PersonalDataManager {
 
 class TestFormStructure : public FormStructure {
  public:
-  explicit TestFormStructure(const FormData& form) : FormStructure(form) {}
+  explicit TestFormStructure(const FormData& form)
+      : FormStructure(form, std::string()) {}
   virtual ~TestFormStructure() {}
 
   void SetFieldTypes(const std::vector<AutofillFieldType>& heuristic_types,
@@ -300,6 +301,7 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
 
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
 
   scoped_refptr<TestAutofillManager> autofill_manager_;
   TestAutocheckoutManager autocheckout_manager_;
@@ -315,6 +317,7 @@ AutofillMetricsTest::AutofillMetricsTest()
   : ChromeRenderViewHostTestHarness(),
     ui_thread_(BrowserThread::UI, &message_loop_),
     file_thread_(BrowserThread::FILE),
+    io_thread_(BrowserThread::IO),
     autocheckout_manager_(NULL) {
 }
 
@@ -325,11 +328,13 @@ AutofillMetricsTest::~AutofillMetricsTest() {
 }
 
 void AutofillMetricsTest::SetUp() {
-  Profile* profile = new TestingProfile();
+  TestingProfile* profile = new TestingProfile();
+  profile->CreateRequestContext();
   browser_context_.reset(profile);
   PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile, NULL);
 
   ChromeRenderViewHostTestHarness::SetUp();
+  io_thread_.StartIOThread();
   TabAutofillManagerDelegate::CreateForWebContents(web_contents());
   personal_data_.SetBrowserContext(profile);
   autofill_manager_ = new TestAutofillManager(
@@ -358,8 +363,10 @@ void AutofillMetricsTest::TearDown() {
   // AutofillManager is tied to the lifetime of the WebContents, so it must
   // be destroyed at the destruction of the WebContents.
   autofill_manager_ = NULL;
+  profile()->ResetRequestContext();
   file_thread_.Stop();
   ChromeRenderViewHostTestHarness::TearDown();
+  io_thread_.Stop();
 }
 
 scoped_ptr<ConfirmInfoBarDelegate> AutofillMetricsTest::CreateDelegate(

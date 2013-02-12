@@ -179,7 +179,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  FormStructure *form_structure = new FormStructure(form);
+  FormStructure *form_structure = new FormStructure(form, std::string());
   ScopedVector<FormStructure> form_structures;
   form_structures.push_back(form_structure);
 
@@ -205,7 +205,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structure = new FormStructure(form);
+  form_structure = new FormStructure(form, std::string());
   form_structures.push_back(form_structure);
 
   // Request with id 0.
@@ -298,7 +298,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   field.name = ASCIIToUTF16("address2");
   field.form_control_type = "text";
   form.fields.push_back(field);
-  form_structure = new FormStructure(form);
+  form_structure = new FormStructure(form, std::string());
   form_structures.push_back(form_structure);
 
   // Request with id 3.
@@ -370,7 +370,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   field.name = ASCIIToUTF16("lastname");
   form.fields.push_back(field);
 
-  FormStructure *form_structure = new FormStructure(form);
+  FormStructure *form_structure = new FormStructure(form, std::string());
   ScopedVector<FormStructure> form_structures0;
   form_structures0.push_back(form_structure);
 
@@ -378,7 +378,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   field.label = ASCIIToUTF16("email");
   field.name = ASCIIToUTF16("email");
   form.fields.push_back(field);
-  form_structure = new FormStructure(form);
+  form_structure = new FormStructure(form, std::string());
   ScopedVector<FormStructure> form_structures1;
   form_structures1.push_back(form_structure);
 
@@ -387,7 +387,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   field.label = ASCIIToUTF16("email2");
   field.name = ASCIIToUTF16("email2");
   form.fields.push_back(field);
-  form_structure = new FormStructure(form);
+  form_structure = new FormStructure(form, std::string());
   ScopedVector<FormStructure> form_structures2;
   form_structures2.push_back(form_structure);
 

@@ -24,6 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/sync/profile_sync_service_base.h"
+#include "chrome/browser/autofill/autocheckout/whitelist_manager.h"
 #include "chrome/browser/autofill/autocheckout_infobar_delegate.h"
 #include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
@@ -395,7 +396,8 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
     return false;
 
   // Grab a copy of the form data.
-  scoped_ptr<FormStructure> submitted_form(new FormStructure(form));
+  scoped_ptr<FormStructure> submitted_form(
+      new FormStructure(form, GetAutocheckoutURLPrefix()));
 
   // Disregard forms that we wouldn't ever autofill in the first place.
   if (!submitted_form->ShouldBeParsed(true))
@@ -889,6 +891,16 @@ void AutofillManager::OnClickFailed(autofill::AutocheckoutStatus status) {
   // TODO(ahutter): Plug into WalletClient.
 }
 
+std::string AutofillManager::GetAutocheckoutURLPrefix() const {
+  if (!web_contents())
+    return std::string();
+
+  autofill::autocheckout::WhitelistManager* whitelist_manager =
+      autofill::autocheckout::WhitelistManager::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
+  return whitelist_manager->GetMatchedURLPrefix(web_contents()->GetURL());
+}
+
 bool AutofillManager::IsAutofillEnabled() const {
   return manager_delegate_->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
@@ -1089,7 +1101,7 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
   // If we do not have this form in our cache but it is parseable, we'll add it
   // in the call to |UpdateCachedForm()|.
   if (!FindCachedForm(form, form_structure) &&
-      !FormStructure(form).ShouldBeParsed(false)) {
+      !FormStructure(form, GetAutocheckoutURLPrefix()).ShouldBeParsed(false)) {
     return false;
   }
 
@@ -1136,7 +1148,8 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
     return false;
 
   // Add the new or updated form to our cache.
-  form_structures_.push_back(new FormStructure(live_form));
+  form_structures_.push_back(
+      new FormStructure(live_form, GetAutocheckoutURLPrefix()));
   *updated_form = *form_structures_.rbegin();
   (*updated_form)->DetermineHeuristicTypes(*metric_logger_);
 
@@ -1212,9 +1225,11 @@ void AutofillManager::GetCreditCardSuggestions(
 
 void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   std::vector<FormStructure*> non_queryable_forms;
+  std::string autocheckout_url_prefix = GetAutocheckoutURLPrefix();
   for (std::vector<FormData>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
-    scoped_ptr<FormStructure> form_structure(new FormStructure(*iter));
+    scoped_ptr<FormStructure> form_structure(
+        new FormStructure(*iter, autocheckout_url_prefix));
     if (!form_structure->ShouldBeParsed(false))
       continue;
 

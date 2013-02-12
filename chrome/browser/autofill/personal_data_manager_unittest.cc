@@ -518,7 +518,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   autofill_test::CreateTestFormField(
       "Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
-  FormStructure form_structure(form);
+  FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
@@ -563,7 +563,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
   autofill_test::CreateTestFormField(
       "Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
-  FormStructure form_structure(form);
+  FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure,
@@ -586,7 +586,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
   autofill_test::CreateTestFormField(
       "Card number:", "card_number", "4111 1111 1111 1111", "text", &field);
   form.fields.push_back(field);
-  FormStructure form_structure(form);
+  FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure,
@@ -632,7 +632,7 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   autofill_test::CreateTestFormField(
       "Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
-  FormStructure form_structure(form);
+  FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
@@ -715,7 +715,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
       "Zip:", "zip", "94102", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -759,7 +759,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
       "Zip:", "zip", "94102", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));
@@ -806,7 +806,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
       "Zip:", "zip", "94102", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -850,7 +850,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
       "Zip:", "zip", "94102", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));
@@ -907,7 +907,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
       "Phone:", "phone", "6505556666", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -963,7 +963,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
       "Phone:", "phone", "6502231234", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));
@@ -1008,7 +1008,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
       "Zip:", "zipcode", "19106", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -1052,7 +1052,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
       "Zip:", "zipcode", "19106", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));
@@ -1101,7 +1101,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
       "Zip:", "zipcode", "19106", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -1146,7 +1146,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
       "Zip:", "zipcode", "19106", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));
@@ -1186,7 +1186,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
       "City:", "city", "Philadelphia", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure1,
@@ -1242,7 +1242,7 @@ TEST_F(PersonalDataManagerTest, AggregateExistingAuxiliaryProfile) {
       "Phone:", "phone", "4158889999", "text", &field);
   form.fields.push_back(field);
 
-  FormStructure form_structure(form);
+  FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
@@ -1277,7 +1277,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
       "Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -1313,7 +1313,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
       "Exp Year:", "exp_year", "2012", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));
@@ -1353,7 +1353,7 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
       "Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -1389,7 +1389,7 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
       "Exp Year:", "exp_year", "2012", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure2,
                                               &imported_credit_card));
@@ -1420,7 +1420,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
       "Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -1457,7 +1457,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
       "Exp Year:", "exp_year", "2012", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));
@@ -1496,7 +1496,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
       "Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -1529,7 +1529,7 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
       "Exp Year:", "exp_year", "2012", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure2,
                                               &imported_credit_card));
@@ -1564,7 +1564,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
       "Exp Year:", "exp_year", "2011", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -1599,7 +1599,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
       "Exp Year:", "exp_year", "2011", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));
@@ -1628,7 +1628,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
   form3.fields.push_back(field);
   // Note missing expiration month and year..
 
-  FormStructure form_structure3(form3);
+  FormStructure form_structure3(form3, std::string());
   form_structure3.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure3,
                                               &imported_credit_card));
@@ -1680,7 +1680,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
       "Exp Year:", "exp_year", "2012", "text", &field);
   form.fields.push_back(field);
 
-  FormStructure form_structure(form);
+  FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
@@ -1737,7 +1737,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
       "Exp Year:", "exp_year", "2011", "text", &field);
   form.fields.push_back(field);
 
-  FormStructure form_structure(form);
+  FormStructure form_structure(form, std::string());
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
@@ -1903,7 +1903,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
       "Phone number:", "phone_number", "817-555-6789", "text", &field);
   form1.fields.push_back(field);
 
-  FormStructure form_structure1(form1);
+  FormStructure form_structure1(form1, std::string());
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
   const CreditCard* imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
@@ -1950,7 +1950,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
       "Phone number:", "phone_number", "214-555-1234", "text", &field);
   form2.fields.push_back(field);
 
-  FormStructure form_structure2(form2);
+  FormStructure form_structure2(form2, std::string());
   form_structure2.DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure2,
                                              &imported_credit_card));

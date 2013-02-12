@@ -129,7 +129,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     const base::Callback<void(const FormStructure*)>& callback)
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
-      form_structure_(form),
+      form_structure_(form, std::string()),
       source_url_(source_url),
       ssl_status_(ssl_status),
       callback_(callback),

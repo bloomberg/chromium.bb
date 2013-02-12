@@ -49,7 +49,7 @@ class XmlElement;
 // in the fields along with additional information needed by Autofill.
 class FormStructure {
  public:
-  explicit FormStructure(const FormData& form);
+  FormStructure(const FormData& form, std::string autocheckout_url_prefix);
   virtual ~FormStructure();
 
   // Runs several heuristics against the form fields to determine their possible
@@ -164,6 +164,7 @@ class FormStructure {
  private:
   friend class FormStructureTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
+
   // 64-bit hash of the string - used in FormSignature and unit-tests.
   static std::string Hash64Bit(const std::string& str);
 
@@ -185,6 +186,11 @@ class FormStructure {
   // If |has_author_specified_sections| is true, only the second pass --
   // distinguishing credit card sections from non-credit card ones -- is made.
   void IdentifySections(bool has_author_specified_sections);
+
+  bool IsAutocheckoutEnabled() const;
+
+  // Returns the minimal number of fillable fields required to start autofill.
+  size_t RequiredFillableFields() const;
 
   // The name of the form.
   string16 form_name_;
@@ -224,8 +230,9 @@ class FormStructure {
   // author, via the |autocompletetype| attribute.
   bool has_author_specified_types_;
 
-  // State of the kEnableExperimentalFormFilling flag.
-  bool experimental_form_filling_enabled_;
+  // The URL prefix matched in autocheckout whitelist. An empty string implies
+  // autocheckout is not enabled for this form.
+  std::string autocheckout_url_prefix_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

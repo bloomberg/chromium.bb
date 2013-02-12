@@ -274,6 +274,9 @@ class AutofillManager : public content::WebContentsObserver,
   // Autocheckout flow.
   void OnClickFailed(autofill::AutocheckoutStatus status);
 
+  // Returns the matched whitelist URL prefix for the current tab's url.
+  std::string GetAutocheckoutURLPrefix() const;
+
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
   bool GetHost(content::RenderViewHost** host) const WARN_UNUSED_RESULT;

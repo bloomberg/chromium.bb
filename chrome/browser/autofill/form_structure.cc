@@ -223,7 +223,8 @@ AutofillFieldType FieldTypeFromAutocompleteType(
 
 }  // namespace
 
-FormStructure::FormStructure(const FormData& form)
+FormStructure::FormStructure(const FormData& form,
+                             std::string autocheckout_url_prefix)
     : form_name_(form.name),
       source_url_(form.origin),
       target_url_(form.action),
@@ -232,18 +233,16 @@ FormStructure::FormStructure(const FormData& form)
       upload_required_(USE_UPLOAD_RATES),
       server_experiment_id_("no server response"),
       has_author_specified_types_(false),
-      experimental_form_filling_enabled_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalFormFilling)) {
+      autocheckout_url_prefix_(autocheckout_url_prefix) {
   // Copy the form fields.
   std::map<string16, size_t> unique_names;
   for (std::vector<FormFieldData>::const_iterator field =
            form.fields.begin();
        field != form.fields.end(); field++) {
-    // Skipping checkable elements when flag is not set, else these fields will
-    // interfere with existing field signatures with Autofill servers.
-    // TODO(ramankk): Add checkable elements only on whitelisted pages
-    if (!field->is_checkable || experimental_form_filling_enabled_) {
+    // Skipping checkable elements when autocheckout is not enabled, else
+    // these fields will interfere with existing field signatures with Autofill
+    // servers.
+    if (!field->is_checkable || IsAutocheckoutEnabled()) {
       // Add all supported form fields (including with empty names) to the
       // signature.  This is a requirement for Autofill servers.
       form_signature_field_names_.append("&");
@@ -551,13 +550,16 @@ std::string FormStructure::FormSignature() const {
   return Hash64Bit(form_string);
 }
 
-bool FormStructure::IsAutofillable(bool require_method_post) const {
-  // TODO(ramankk): Remove this check once we have better way of identifying the
-  // cases to trigger experimental form filling.
-  if (experimental_form_filling_enabled_)
-    return true;
+bool FormStructure::IsAutocheckoutEnabled() const {
+  return !autocheckout_url_prefix_.empty();
+}
 
-  if (autofill_count() < kRequiredFillableFields)
+size_t FormStructure::RequiredFillableFields() const {
+  return IsAutocheckoutEnabled()? 0 : kRequiredFillableFields;
+}
+
+bool FormStructure::IsAutofillable(bool require_method_post) const {
+  if (autofill_count() < RequiredFillableFields())
     return false;
 
   return ShouldBeParsed(require_method_post);
@@ -574,15 +576,10 @@ void FormStructure::UpdateAutofillCount() {
 }
 
 bool FormStructure::ShouldBeParsed(bool require_method_post) const {
-  // TODO(ramankk): Remove this check once we have better way of identifying the
-  // cases to trigger experimental form filling.
-  if (experimental_form_filling_enabled_)
-    return true;
-
   // Ignore counting checkable elements towards minimum number of elements
   // required to parse. This avoids trying to crowdsource forms with few text
   // or select elements.
-  if ((field_count() - checkable_field_count()) < kRequiredFillableFields)
+  if ((field_count() - checkable_field_count()) < RequiredFillableFields())
     return false;
 
   // Rule out http(s)://*/search?...
@@ -780,7 +777,7 @@ void FormStructure::LogQualityMetrics(
     }
   }
 
-  if (num_detected_field_types < kRequiredFillableFields) {
+  if (num_detected_field_types < RequiredFillableFields()) {
     metric_logger.LogUserHappinessMetric(
         AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM);
   } else {
@@ -937,8 +934,9 @@ bool FormStructure::EncodeFormRequest(
         encompassing_xml_element->AddElement(field_element);
       }
     } else {
-      // Skip putting checkable fields in the request if the flag is not set.
-      if (field->is_checkable && !experimental_form_filling_enabled_)
+      // Skip putting checkable fields in the request if autocheckout is not
+      // enabled.
+      if (field->is_checkable && !IsAutocheckoutEnabled())
         continue;
 
       buzz::XmlElement *field_element = new buzz::XmlElement(

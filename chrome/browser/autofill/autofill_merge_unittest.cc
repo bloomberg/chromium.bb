@@ -187,7 +187,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
     // followed by an explicit separator.
     if ((i > 0 && line == kProfileSeparator) || i == lines.size() - 1) {
       // Reached the end of a profile.  Try to import it.
-      FormStructure form_structure(form);
+      FormStructure form_structure(form, std::string());
       for (size_t i = 0; i < form_structure.field_count(); ++i) {
         // Set the heuristic type for each field, which is currently serialized
         // into the field's name.

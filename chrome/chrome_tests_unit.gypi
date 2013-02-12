@@ -455,6 +455,7 @@
         'browser/autocomplete/shortcuts_provider_unittest.cc',
         'browser/autofill/address_field_unittest.cc',
         'browser/autofill/address_unittest.cc',
+        'browser/autofill/autocheckout/whitelist_manager_unittest.cc',
         'browser/autofill/autocheckout_manager_unittest.cc',
         'browser/autofill/autocheckout_page_meta_data_unittest.cc',
         'browser/autofill/autocomplete_history_manager_unittest.cc',

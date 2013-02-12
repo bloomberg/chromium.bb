@@ -617,19 +617,22 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
   AutofillManagerTest()
       : ChromeRenderViewHostTestHarness(),
         ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE) {
+        file_thread_(BrowserThread::FILE),
+        io_thread_(BrowserThread::IO) {
   }
 
   virtual ~AutofillManagerTest() {
   }
 
   virtual void SetUp() OVERRIDE {
-    Profile* profile = CreateProfile();
+    TestingProfile* profile = CreateProfile();
+    profile->CreateRequestContext();
     browser_context_.reset(profile);
     PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
         profile, TestPersonalDataManager::Build);
 
     ChromeRenderViewHostTestHarness::SetUp();
+    io_thread_.StartIOThread();
     TabAutofillManagerDelegate::CreateForWebContents(web_contents());
     personal_data_.SetBrowserContext(profile);
     autofill_manager_ = new TestAutofillManager(
@@ -648,6 +651,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     autofill_manager_ = NULL;
     file_thread_.Stop();
     ChromeRenderViewHostTestHarness::TearDown();
+    io_thread_.Stop();
   }
 
   virtual TestingProfile* CreateProfile() {
@@ -746,6 +750,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
 
   scoped_refptr<TestAutofillManager> autofill_manager_;
   TestPersonalDataManager personal_data_;
@@ -773,7 +778,8 @@ class IncognitoAutofillManagerTest : public AutofillManagerTest {
 
 class TestFormStructure : public FormStructure {
  public:
-  explicit TestFormStructure(const FormData& form) : FormStructure(form) {}
+  explicit TestFormStructure(const FormData& form)
+      : FormStructure(form, std::string()) {}
   virtual ~TestFormStructure() {}
 
   void SetFieldTypes(const std::vector<AutofillFieldType>& heuristic_types,
@@ -2638,7 +2644,7 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDifferentFields) {
   FormsSeen(forms);
 
   // Cache the expected form signature.
-  std::string signature = FormStructure(form).FormSignature();
+  std::string signature = FormStructure(form, std::string()).FormSignature();
 
   // Change the structure of the form prior to submission.
   // Websites would typically invoke JavaScript either on page load or on form

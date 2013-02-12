@@ -57,7 +57,8 @@ scoped_ptr<FormStructure> CreateTestFormStructure(
   for (size_t i = 0; i < autofill_types.size(); ++i)
     form.fields.push_back(BuildField("SomeField"));
 
-  scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+  scoped_ptr<FormStructure> form_structure(
+      new FormStructure(form, std::string()));
 
   // Set mocked Autofill server field types.
   for (size_t i = 0; i < autofill_types.size(); ++i)
@@ -106,7 +107,8 @@ scoped_ptr<FormStructure> CreateTestFormStructureWithDefaultValues() {
   female.is_checkable = true;
   form.fields.push_back(female);
 
-  scoped_ptr<FormStructure> form_structure(new FormStructure(form));
+  scoped_ptr<FormStructure> form_structure(
+      new FormStructure(form, std::string()));
 
   // Fake server response. Set all fields as fields with default value.
   form_structure->field(0)->set_server_type(FIELD_WITH_DEFAULT_VALUE);
@@ -149,7 +151,7 @@ scoped_ptr<FormStructure> FakeUserSubmittedFormStructure() {
                           kTestFields[i].field_value));
   }
   scoped_ptr<FormStructure> form_structure;
-  form_structure.reset(new FormStructure(formdata));
+  form_structure.reset(new FormStructure(formdata, std::string()));
   for (size_t i = 0; i < arraysize(kTestFields); ++i)
     form_structure->field(i)->set_server_type(kTestFields[i].autofill_type);
 

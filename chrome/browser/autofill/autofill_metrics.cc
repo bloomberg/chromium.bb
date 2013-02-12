@@ -206,7 +206,7 @@ void LogServerExperimentId(const std::string& histogram_name,
   ServerExperiment metric = UNKNOWN_EXPERIMENT;
 
   const std::string default_experiment_name =
-      FormStructure(FormData()).server_experiment_id();
+      FormStructure(FormData(), std::string()).server_experiment_id();
   if (experiment_id.empty())
     metric = NO_EXPERIMENT;
   else if (experiment_id == "ar06")
