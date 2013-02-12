@@ -475,6 +475,12 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebIDBKey>(parent_, params.ipc_thread_id,
                                         params.ipc_response_id));
+  if (params.index_ids.size() != params.index_keys.size()) {
+    callbacks->onError(WebIDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionUnknownError,
+        "Malformed IPC message: index_ids.size() != index_keys.size()"));
+    return;
+  }
 
   WebVector<unsigned char> value(params.value);
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
@@ -499,7 +505,15 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
   if (!database)
     return;
 
-  database->setIndexKeys(parent_->HostTransactionId(params.transaction_id),
+  int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
+  if (params.index_ids.size() != params.index_keys.size()) {
+    database->abort(host_transaction_id, WebIDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionUnknownError,
+        "Malformed IPC message: index_ids.size() != index_keys.size()"));
+    return;
+  }
+
+  database->setIndexKeys(host_transaction_id,
                          params.object_store_id,
                          params.primary_key, params.index_ids,
                          params.index_keys);
