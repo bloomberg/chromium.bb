@@ -17,6 +17,7 @@ var CookiesView = options.CookiesView;
 var CreateProfileOverlay = options.CreateProfileOverlay;
 var EditDictionaryOverlay = cr.IsMac ? null : options.EditDictionaryOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
+var ManagedUserSetPassphraseOverlay = options.ManagedUserSetPassphraseOverlay;
 var ManagedUserSettings = options.ManagedUserSettings;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
@@ -144,9 +145,12 @@ function load() {
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
   if (loadTimeData.getBoolean('managedUsersEnabled')) {
+    OptionsPage.registerOverlay(ManagedUserSetPassphraseOverlay.getInstance(),
+                                ManagedUserSettings.getInstance(),
+                                [$('set-passphrase')]);
     OptionsPage.registerOverlay(ManagedUserSettings.getInstance(),
                                 BrowserOptions.getInstance(),
-                                []);
+                                [$('managed-user-settings-button')]);
   }
   OptionsPage.registerOverlay(MediaGalleriesManager.getInstance(),
                               ContentSettings.getInstance(),
