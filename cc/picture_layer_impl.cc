@@ -570,7 +570,7 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
     raster_source_scale_was_animating_ = animating_transform_to_screen;
   }
 
-  if (is_active_layer && is_pinching) {
+  if (is_active_layer && is_pinching && raster_page_scale_) {
     // If the page scale diverges too far during pinch, change raster target to
     // the current page scale.
     float ratio = PositiveRatio(ideal_page_scale_, raster_page_scale_);
