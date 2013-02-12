@@ -69,6 +69,10 @@ void AppListViewDelegate::OnDownloadProgress(
   apps_builder_->OnDownloadProgress(extension_id, percent_downloaded);
 }
 
+void AppListViewDelegate::OnInstallFailure(const std::string& extension_id) {
+  apps_builder_->OnInstallFailure(extension_id);
+}
+
 void AppListViewDelegate::ActivateAppListItem(
     app_list::AppListItemModel* item,
     int event_flags) {

@@ -93,4 +93,9 @@ void NotifyAppListOfDownloadProgress(
     int percent_downloaded) {
 }
 
+void NotifyAppListOfExtensionInstallFailure(
+    Profile* profile,
+    const std::string& extension_id) {
+}
+
 }  // namespace chrome

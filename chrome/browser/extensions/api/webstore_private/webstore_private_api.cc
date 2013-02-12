@@ -503,6 +503,9 @@ void CompleteInstallFunction::OnExtensionInstallFailure(
     const std::string& id,
     const std::string& error,
     WebstoreInstaller::FailureReason reason) {
+#if defined(ENABLE_APP_LIST)
+  chrome::NotifyAppListOfExtensionInstallFailure(profile(), id);
+#endif
   if (test_webstore_installer_delegate) {
     test_webstore_installer_delegate->OnExtensionInstallFailure(
         id, error, reason);

@@ -198,6 +198,7 @@ class AppListController : public ProfileInfoCacheObserver {
   void OnDownloadProgress(Profile* profile,
                           const std::string& extension_id,
                           int percent_downloaded);
+  void OnInstallFailure(Profile* profile, const std::string& extension_id);
 
  private:
   // Loads a profile asynchronously and calls OnProfileLoaded() when done.
@@ -576,6 +577,18 @@ void AppListController::OnDownloadProgress(Profile* profile,
   view_delegate_->OnDownloadProgress(extension_id, percent_downloaded);
 }
 
+void AppListController::OnInstallFailure(Profile* profile,
+                                         const std::string& extension_id) {
+  // We only have a model for the current profile, so ignore events about
+  // others.
+  // TODO(koz): We should keep a model for each profile so we can record
+  // information like this.
+  if (profile != profile_)
+    return;
+
+  view_delegate_->OnInstallFailure(extension_id);
+}
+
 // Attempts to find the bounds of the Windows taskbar. Returns true on success.
 // |rect| is in screen coordinates. If the taskbar is in autohide mode and is
 // not visible, |rect| will be outside the current monitor's bounds, except for
@@ -897,6 +910,12 @@ void NotifyAppListOfDownloadProgress(
     int percent_downloaded) {
   g_app_list_controller.Get().OnDownloadProgress(profile, extension_id,
                                                  percent_downloaded);
+}
+
+void NotifyAppListOfExtensionInstallFailure(
+    Profile* profile,
+    const std::string& extension_id) {
+  g_app_list_controller.Get().OnInstallFailure(profile, extension_id);
 }
 
 #endif  // !defined(USE_ASH)

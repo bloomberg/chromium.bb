@@ -96,6 +96,13 @@ void AppsModelBuilder::OnDownloadProgress(const std::string& extension_id,
   GetAppAt(i)->SetPercentDownloaded(percent_downloaded);
 }
 
+void AppsModelBuilder::OnInstallFailure(const std::string& extension_id) {
+  int i = FindApp(extension_id);
+  if (i == -1)
+    return;
+  model_->DeleteAt(i);
+}
+
 void AppsModelBuilder::AddApps(const ExtensionSet* extensions, Apps* apps) {
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {

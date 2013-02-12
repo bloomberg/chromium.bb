@@ -39,6 +39,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   // Called when the download of an extension makes progress.
   void OnDownloadProgress(const std::string& extension_id,
                           int percent_downloaded);
+  void OnInstallFailure(const std::string& extension_id);
 
  private:
   // Overridden from app_list::AppListViewDelegate:

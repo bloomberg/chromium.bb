@@ -44,6 +44,9 @@ class AppsModelBuilder : public content::NotificationObserver,
   void OnDownloadProgress(const std::string& extension_id,
                           int percent_downloaded);
 
+  // Called when an extension fails to install.
+  void OnInstallFailure(const std::string& extension_id);
+
  private:
   typedef std::vector<ExtensionAppItem*> Apps;
 
