@@ -9,13 +9,6 @@
 #include "sandbox/win/src/broker_services.h"
 #include "sandbox/win/src/target_services.h"
 
-#if defined(_WIN64) && !defined(NACL_WIN64)
-// We allow building this code for Win64 as part of NaCl to enable development
-#pragma message("Sandbox code was not fully tested on 64-bit Windows.\
- crbug.com/168414 ")
-#endif
-
-
 namespace sandbox {
 // The section for IPC and policy.
 SANDBOX_INTERCEPT HANDLE  g_shared_section = NULL;
