@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.16",
+  "version": "4.17",
   "entries": [
     {
       "id": 1,
@@ -1011,6 +1011,21 @@
       },
       "blacklist": [
         "force_compositing_mode"
+      ]
+    },
+    {
+      "id": 67,
+      "description": "Accelerated 2D Canvas is not supported on WinXP.",
+      "cr_bugs": [175149],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "number": "5"
+        }
+      },
+      "blacklist": [
+        "accelerated_2d_canvas"
       ]
     }
   ]
