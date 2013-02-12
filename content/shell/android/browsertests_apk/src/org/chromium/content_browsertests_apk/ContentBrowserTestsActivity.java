@@ -11,12 +11,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.util.Log;
 
+import org.chromium.base.JNINamespace;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.ui.gfx.ActivityNativeWindow;
 import org.chromium.content_shell.ShellManager;
 
+@JNINamespace("content")
 public class ContentBrowserTestsActivity extends Activity {
     private static final String TAG = "ChromeBrowserTestsActivity";
 
@@ -32,7 +34,7 @@ public class ContentBrowserTestsActivity extends Activity {
         } catch (ProcessInitException e) {
             Log.i(TAG, "Cannot load content_browsertests:" +  e);
         }
-        AndroidBrowserProcess.initChromiumBrowserProcessForTests();
+        AndroidBrowserProcess.initChromiumBrowserProcessForTests(getApplicationContext());
 
         LayoutInflater inflater =
                 (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -41,6 +43,7 @@ public class ContentBrowserTestsActivity extends Activity {
         mActivityNativeWindow = new ActivityNativeWindow(this);
         mShellManager.setWindow(mActivityNativeWindow);
 
+        Log.i(TAG, "Running tests");
         runTests();
         Log.i(TAG, "Tests finished.");
         finish();

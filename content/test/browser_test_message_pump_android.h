@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_BROWSER_TEST_MESSAGE_PUMP_ANDROID_
 #define CONTENT_TEST_BROWSER_TEST_MESSAGE_PUMP_ANDROID_
 
+#include "base/android/jni_android.h"
 #include "base/compiler_specific.h"
 #include "base/message_pump_android.h"
 
@@ -12,9 +13,6 @@ namespace content {
 
 // MessgePump to be used for content browsertests on Android.
 // This overrides the default ui message pump to allow nested loops.
-// Currently only native side messages are processed when running in nested
-// mode.
-// TODO(nileshagrawal): Add processing of messages on the Java side.
 class BrowserTestMessagePumpAndroid : public base::MessagePumpForUI {
  public:
   BrowserTestMessagePumpAndroid();
@@ -24,6 +22,9 @@ class BrowserTestMessagePumpAndroid : public base::MessagePumpForUI {
   virtual void ScheduleWork() OVERRIDE;
   virtual void ScheduleDelayedWork(
       const base::TimeTicks& delayed_work_time) OVERRIDE;
+  virtual void Start(Delegate* delegate) OVERRIDE;
+
+  static bool RegisterJni(JNIEnv* env);
 
  protected:
   virtual ~BrowserTestMessagePumpAndroid();

@@ -20,7 +20,10 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_tokenizer.h"
 #include "content/public/app/android_library_loader_hooks.h"
+#include "content/public/app/content_main.h"
 #include "content/shell/android/shell_jni_registrar.h"
+#include "content/shell/shell_main_delegate.h"
+#include "content/test/browser_test_message_pump_android.h"
 #include "jni/ContentBrowserTestsActivity_jni.h"
 #include "testing/android/native_test_util.h"
 
@@ -41,6 +44,8 @@ static const char kCommandLineFilePath[] =
     "/data/local/tmp/content-browser-tests-command-line";
 
 }  // namespace
+
+namespace content {
 
 static void RunTests(JNIEnv* env,
                      jobject obj,
@@ -77,6 +82,7 @@ static void RunTests(JNIEnv* env,
   ScopedMainEntryLogger scoped_main_entry_logger;
   main(argc, &argv[0]);
 }
+}  // namespace content
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
@@ -89,8 +95,12 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   if (!content::android::RegisterShellJni(env))
     return -1;
 
-  if (!RegisterNativesImpl(env))
+  if (!content::BrowserTestMessagePumpAndroid::RegisterJni(env))
     return -1;
 
+  if (!content::RegisterNativesImpl(env))
+    return -1;
+
+  content::SetContentMainDelegate(new content::ShellMainDelegate());
   return JNI_VERSION_1_4;
 }
