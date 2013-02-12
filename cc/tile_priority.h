@@ -40,8 +40,8 @@ struct CC_EXPORT TilePriority {
   TilePriority()
      : is_live(false),
        resolution(NON_IDEAL_RESOLUTION),
-       time_to_visible_in_seconds(std::numeric_limits<float>::max()),
-       distance_to_visible_in_pixels(std::numeric_limits<float>::max()) {}
+       time_to_visible_in_seconds(std::numeric_limits<float>::infinity()),
+       distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()) {}
 
   TilePriority(
     TileResolution resolution,
