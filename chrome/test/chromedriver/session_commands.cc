@@ -11,11 +11,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/status.h"
 #include "chrome/test/chromedriver/web_view.h"
+
+namespace {
+
+const char kWindowHandlePrefix[] = "CDwindow-";
+
+}  // namespace
 
 Status ExecuteSessionCommand(
     SessionMap* session_map,
@@ -51,7 +58,7 @@ Status ExecuteGetCurrentWindowHandle(
     scoped_ptr<base::Value>* value) {
   if (session->window.empty())
     return Status(kNoSuchWindow);
-  value->reset(new StringValue(session->window));
+  value->reset(new StringValue(kWindowHandlePrefix + session->window));
   return Status(kOk);
 }
 
@@ -66,9 +73,61 @@ Status ExecuteGetWindowHandles(
   base::ListValue window_ids;
   for (std::list<WebView*>::const_iterator it = web_views.begin();
        it != web_views.end(); ++it) {
-    window_ids.AppendString((*it)->GetId());
+    window_ids.AppendString(kWindowHandlePrefix + (*it)->GetId());
   }
   value->reset(window_ids.DeepCopy());
+  return Status(kOk);
+}
+
+Status ExecuteSwitchToWindow(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string name;
+  if (!params.GetString("name", &name) || name.empty())
+    return Status(kUnknownError, "'name' must be a nonempty string");
+
+  std::list<WebView*> web_views;
+  Status status = session->chrome->GetWebViews(&web_views);
+  if (status.IsError())
+    return status;
+
+  WebView* web_view = NULL;
+  if (name.find(kWindowHandlePrefix) == 0u) {
+    std::string handle = name.substr(std::string(kWindowHandlePrefix).length());
+    // Check if any window handle matches |handle|.
+    for (std::list<WebView*>::const_iterator it = web_views.begin();
+         it != web_views.end(); ++it) {
+      if ((*it)->GetId() == handle) {
+        web_view = *it;
+        break;
+      }
+    }
+  } else {
+    // Check if any of the tab window names match |name|.
+    const char* kGetWindowNameScript = "function() { return window.name; }";
+    base::ListValue args;
+    for (std::list<WebView*>::const_iterator it = web_views.begin();
+         it != web_views.end(); ++it) {
+      scoped_ptr<base::Value> result;
+      status = (*it)->CallFunction("", kGetWindowNameScript, args, &result);
+      if (status.IsError())
+        return status;
+      std::string window_name;
+      if (!result->GetAsString(&window_name))
+        return Status(kUnknownError, "failed to get window name");
+      if (window_name == name) {
+        web_view = *it;
+        break;
+      }
+    }
+  }
+
+  if (!web_view)
+    return Status(kNoSuchWindow);
+  session->window = web_view->GetId();
+  session->frame = "";
+  session->mouse_position = WebPoint(0, 0);
   return Status(kOk);
 }
 

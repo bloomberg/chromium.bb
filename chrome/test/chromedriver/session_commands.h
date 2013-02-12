@@ -54,6 +54,13 @@ Status ExecuteGetWindowHandles(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Change target window to another. The window to target at may be specified by
+// its server assigned window handle, or by the value of its name attribute.
+Status ExecuteSwitchToWindow(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 // Configure the amount of time that a particular type of operation can execute
 // for before they are aborted and a timeout error is returned to the client.
 Status ExecuteSetTimeout(

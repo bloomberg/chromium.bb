@@ -19,6 +19,8 @@ class UnknownError(ChromeDriverException):
   pass
 class XPathLookupError(ChromeDriverException):
   pass
+class NoSuchWindow(ChromeDriverException):
+  pass
 class InvalidSelector(ChromeDriverException):
   pass
 class SessionNotCreatedException(ChromeDriverException):
@@ -33,6 +35,7 @@ def _ExceptionForResponse(response):
     10: StaleElementReference,
     13: UnknownError,
     19: XPathLookupError,
+    23: NoSuchWindow,
     32: InvalidSelector,
     33: SessionNotCreatedException,
     100: NoSuchSession
@@ -125,6 +128,9 @@ class ChromeDriver(object):
 
   def GetWindowHandles(self):
     return self.ExecuteSessionCommand('getWindowHandles')
+
+  def SwitchToWindow(self, handle_or_name):
+    self.ExecuteSessionCommand('switchToWindow', {'name': handle_or_name})
 
   def GetCurrentWindowHandle(self):
     return self.ExecuteSessionCommand('getCurrentWindowHandle')

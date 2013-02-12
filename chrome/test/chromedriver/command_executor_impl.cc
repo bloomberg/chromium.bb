@@ -108,6 +108,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteGetCurrentWindowHandle);
   session_command_map[CommandNames::kGetWindowHandles] =
       base::Bind(&ExecuteGetWindowHandles);
+  session_command_map[CommandNames::kSwitchToWindow] =
+      base::Bind(&ExecuteSwitchToWindow);
   session_command_map[CommandNames::kSetTimeout] =
       base::Bind(&ExecuteSetTimeout);
 

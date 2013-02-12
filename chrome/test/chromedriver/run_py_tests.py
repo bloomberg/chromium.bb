@@ -67,6 +67,28 @@ class ChromeDriverTest(unittest.TestCase):
       time.sleep(0.01)
     self.assertTrue(False)
 
+  def testSwitchToWindow(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    self.assertEquals(
+        1, self._driver.ExecuteScript('window.name = "oldWindow"; return 1;'))
+    window1_handle = self._driver.GetCurrentWindowHandle()
+    window_count = len(self._driver.GetWindowHandles())
+    self._driver.FindElement('id', 'link').Click()
+    timeout = time.time() + 20
+    while time.time() < timeout:
+      all_handles = self._driver.GetWindowHandles()
+      if (len(all_handles) > window_count):
+        break
+      time.sleep(0.01)
+    self.assertTrue(window1_handle in all_handles)
+    all_handles.remove(window1_handle)
+    self._driver.SwitchToWindow(all_handles[0])
+    self.assertEquals(all_handles[0], self._driver.GetCurrentWindowHandle())
+    self.assertRaises(chromedriver.NoSuchElement,
+                      self._driver.FindElement, 'id', 'link')
+    self._driver.SwitchToWindow('oldWindow')
+    self.assertEquals(window1_handle, self._driver.GetCurrentWindowHandle())
+
   def testEvaluateScript(self):
     self.assertEquals(1, self._driver.ExecuteScript('return 1'))
     self.assertEquals(None, self._driver.ExecuteScript(''))
