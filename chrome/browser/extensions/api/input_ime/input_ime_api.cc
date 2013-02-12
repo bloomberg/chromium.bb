@@ -246,6 +246,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     dict->SetString("type", event.type);
     dict->SetString("requestId", request_id);
     dict->SetString("key", event.key);
+    dict->SetString("code", event.code);
     dict->SetBoolean("altKey", event.alt_key);
     dict->SetBoolean("ctrlKey", event.ctrl_key);
     dict->SetBoolean("shiftKey", event.shift_key);
