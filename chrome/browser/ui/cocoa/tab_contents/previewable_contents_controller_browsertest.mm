@@ -129,3 +129,14 @@ IN_PROC_BROWSER_TEST_F(PreviewableContentsControllerTest, NoShadowNTP) {
   EXPECT_EQ([PreviewDropShadowView preferredHeight],
             NSHeight(dropShadowFrame));
 }
+
+// Verify that the shadow is hidden when hiding the preview.
+IN_PROC_BROWSER_TEST_F(PreviewableContentsControllerTest, HideShadow) {
+  chrome::search::Mode mode;
+  mode.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
+  instant_model_.SetPreviewState(mode, 10, INSTANT_SIZE_PERCENT);
+  EXPECT_TRUE([controller_ dropShadowView]);
+
+  [controller_ onActivateTabWithContents:web_contents_.get()];
+  EXPECT_FALSE([controller_ dropShadowView]);
+}

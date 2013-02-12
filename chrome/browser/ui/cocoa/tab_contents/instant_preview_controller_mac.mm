@@ -29,12 +29,15 @@ void InstantPreviewControllerMac::PreviewStateChanged(
     BOOL drawDropShadow = !model.mode().is_ntp() &&
         !(model.height() == 100 &&
           model.height_units() == INSTANT_SIZE_PERCENT);
-    [preview_ showPreview:model.GetPreviewContents()
-                   height:model.height()
-              heightUnits:model.height_units()
-           drawDropShadow:drawDropShadow];
+    [preview_ setPreview:model.GetPreviewContents()
+                  height:model.height()
+             heightUnits:model.height_units()
+          drawDropShadow:drawDropShadow];
   } else {
-    [preview_ hidePreview];
+    [preview_ setPreview:NULL
+                  height:0
+             heightUnits:INSTANT_SIZE_PIXELS
+          drawDropShadow:NO];
   }
   browser_->MaybeUpdateBookmarkBarStateForInstantPreview(model.mode());
   [window_ updateBookmarkBarStateForInstantPreview];

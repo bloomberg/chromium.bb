@@ -50,12 +50,10 @@
   [super dealloc];
 }
 
-- (void)showPreview:(content::WebContents*)preview
-             height:(CGFloat)height
-        heightUnits:(InstantSizeUnits)heightUnits
-     drawDropShadow:(BOOL)drawDropShadow {
-  DCHECK(preview);
-
+- (void)setPreview:(content::WebContents*)preview
+            height:(CGFloat)height
+       heightUnits:(InstantSizeUnits)heightUnits
+    drawDropShadow:(BOOL)drawDropShadow {
   // If drawing drop shadow, clip the bottom 1-px-thick separator out of
   // preview.
   // TODO(sail): remove this when GWS gives chrome the height without the
@@ -71,8 +69,10 @@
   }
 
   // Remove any old preview contents before showing the new one.
-  if (previewContents_)
+  if (previewContents_) {
     [previewContents_->GetNativeView() removeFromSuperview];
+    previewContents_->WasHidden();
+  }
 
   previewContents_ = preview;
   previewHeight_ = height;
@@ -80,9 +80,11 @@
   drawDropShadow_ = drawDropShadow;
 
   // Add the preview contents.
-  [[[self view] window] disableScreenUpdatesUntilFlush];
-  previewContents_->GetView()->SetAllowOverlappingViews(true);
-  [[self view] addSubview:previewContents_->GetNativeView()];
+  if (previewContents_) {
+    [[[self view] window] disableScreenUpdatesUntilFlush];
+    previewContents_->GetView()->SetAllowOverlappingViews(true);
+    [[self view] addSubview:previewContents_->GetNativeView()];
+  }
 
   if (drawDropShadow_) {
     if (!dropShadowView_) {
@@ -97,28 +99,20 @@
 
   [self layoutViews];
 
-  previewContents_->WasShown();
-}
-
-- (void)hidePreview {
-  // There may be no previewContents_ in the prerender case.
-  if (!previewContents_)
-    return;
-
-  // Remove the preview contents.
-  [previewContents_->GetNativeView() removeFromSuperview];
-  previewContents_->WasHidden();
-  previewContents_ = nil;
-
-  drawDropShadow_ = false;
-  [dropShadowView_ removeFromSuperview];
-  dropShadowView_.reset();
+  if (previewContents_)
+    previewContents_->WasShown();
 }
 
 - (void)onActivateTabWithContents:(content::WebContents*)contents {
   if (previewContents_ == contents) {
-    [previewContents_->GetNativeView() removeFromSuperview];
-    previewContents_ = nil;
+    if (previewContents_) {
+      [previewContents_->GetNativeView() removeFromSuperview];
+      previewContents_ = NULL;
+    }
+    [self setPreview:NULL
+              height:0
+         heightUnits:INSTANT_SIZE_PIXELS
+      drawDropShadow:NO];
   }
 }
 

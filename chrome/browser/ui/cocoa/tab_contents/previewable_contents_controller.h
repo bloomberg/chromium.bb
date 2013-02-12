@@ -71,14 +71,12 @@ class WebContents;
      windowController:(BrowserWindowController*)windowController;
 
 // Sets the current preview and installs its WebContentsView into the view
-// hierarchy.  Hides the active view.  |preview| must not be NULL.
-- (void)showPreview:(content::WebContents*)preview
-             height:(CGFloat)height
-        heightUnits:(InstantSizeUnits)heightUnits
-     drawDropShadow:(BOOL)drawDropShadow;
-
-// Closes the current preview and shows the active view.
-- (void)hidePreview;
+// hierarchy. Hides the active view. If |preview| is NULL then closes the
+// current preview and shows the active view.
+- (void)setPreview:(content::WebContents*)preview
+            height:(CGFloat)height
+       heightUnits:(InstantSizeUnits)heightUnits
+    drawDropShadow:(BOOL)drawDropShadow;
 
 // Called when a tab with |contents| is activated, so that we can check to see
 // if it's the preview being activated (and adjust internal state accordingly).
