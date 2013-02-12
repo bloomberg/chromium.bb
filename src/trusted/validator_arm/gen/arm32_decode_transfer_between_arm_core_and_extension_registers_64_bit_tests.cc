@@ -40,7 +40,7 @@ namespace nacl_arm_test {
 //       Rt: Rt(15:12),
 //       Rt2: Rt2(19:16),
 //       Vm: Vm(3:0),
-//       actual: MoveDoubleVfpRegisterOp,
+//       actual: Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1,
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt, Rt2}
@@ -134,7 +134,7 @@ bool MoveDoubleVfpRegisterOpTesterCase0
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       Rt2: Rt2(19:16),
-//       actual: MoveDoubleVfpRegisterOp,
+//       actual: Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1,
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt, Rt2}
@@ -229,7 +229,7 @@ bool MoveDoubleVfpRegisterOpTesterCase1
 //       Rt: Rt(15:12),
 //       Rt2: Rt2(19:16),
 //       Vm: Vm(3:0),
-//       actual: MoveDoubleVfpRegisterOp,
+//       actual: Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1,
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt, Rt2}
@@ -266,7 +266,7 @@ class MoveDoubleVfpRegisterOpTester_Case0
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       Rt2: Rt2(19:16),
-//       actual: MoveDoubleVfpRegisterOp,
+//       actual: Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1,
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt, Rt2}
@@ -311,7 +311,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Rt: Rt(15:12),
 //       Rt2: Rt2(19:16),
 //       Vm: Vm(3:0),
-//       actual: MoveDoubleVfpRegisterOp,
+//       actual: Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1,
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt, Rt2}
@@ -337,15 +337,17 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            else {Rt, Rt2}}
 TEST_F(Arm32DecoderStateTests,
        MoveDoubleVfpRegisterOpTester_Case0_TestCase0) {
-  MoveDoubleVfpRegisterOpTester_Case0 tester;
-  tester.Test("cccc1100010otttttttt101000m1mmmm");
+  MoveDoubleVfpRegisterOpTester_Case0 baseline_tester;
+  NamedActual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1100010otttttttt101000m1mmmm");
 }
 
 // C(8)=1 & op(7:4)=00x1
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
 //       Rt2: Rt2(19:16),
-//       actual: MoveDoubleVfpRegisterOp,
+//       actual: Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1,
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
 //       defs: {Rt, Rt2}
@@ -368,8 +370,10 @@ TEST_F(Arm32DecoderStateTests,
 //            else {Rt, Rt2}}
 TEST_F(Arm32DecoderStateTests,
        MoveDoubleVfpRegisterOpTester_Case1_TestCase1) {
-  MoveDoubleVfpRegisterOpTester_Case1 tester;
-  tester.Test("cccc1100010otttttttt101100m1mmmm");
+  MoveDoubleVfpRegisterOpTester_Case1 baseline_tester;
+  NamedActual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1100010otttttttt101100m1mmmm");
 }
 
 }  // namespace nacl_arm_test

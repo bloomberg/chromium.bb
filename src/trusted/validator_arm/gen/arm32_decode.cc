@@ -93,6 +93,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_instance_()
   , Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1_instance_()
   , Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1_instance_()
+  , Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1_instance_()
+  , Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1_instance_()
   , Actual_VMRS_cccc111011110001tttt101000010000_case_1_instance_()
   , Actual_VMSR_cccc111011100001tttt101000010000_case_1_instance_()
   , Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_instance_()
@@ -105,7 +107,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Forbidden_instance_()
   , ForbiddenCondDecoder_instance_()
   , InstructionBarrier_instance_()
-  , MoveDoubleVfpRegisterOp_instance_()
   , PermanentlyUndefined_instance_()
   , PreloadRegisterImm12Op_instance_()
   , PreloadRegisterPairOp_instance_()
@@ -3244,9 +3245,18 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
      const Instruction inst) const
 {
   UNREFERENCED_PARAMETER(inst);
-  if ((inst.Bits() & 0x000000D0)  ==
+  if ((inst.Bits() & 0x00000100)  ==
+          0x00000000 /* C(8)=0 */ &&
+      (inst.Bits() & 0x000000D0)  ==
           0x00000010 /* op(7:4)=00x1 */) {
-    return MoveDoubleVfpRegisterOp_instance_;
+    return Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000100)  ==
+          0x00000100 /* C(8)=1 */ &&
+      (inst.Bits() & 0x000000D0)  ==
+          0x00000010 /* op(7:4)=00x1 */) {
+    return Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1_instance_;
   }
 
   if (true) {
