@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -211,20 +211,19 @@ class BrowserCloseTest : public InProcessBrowserTest {
 
   int TotalUnclosedBrowsers() {
     int count = 0;
-    for (BrowserList::const_iterator iter = BrowserList::begin();
-         iter != BrowserList::end(); ++iter)
-      if (!(*iter)->IsAttemptingToCloseBrowser()) {
+    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+      if (!it->IsAttemptingToCloseBrowser())
         count++;
-      }
+    }
     return count;
   }
 
   // Note that this is invalid to call if TotalUnclosedBrowsers() == 0.
   Browser* FirstUnclosedBrowser() {
-    for (BrowserList::const_iterator iter = BrowserList::begin();
-         iter != BrowserList::end(); ++iter)
-      if (!(*iter)->IsAttemptingToCloseBrowser())
-        return (*iter);
+    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+      if (!it->IsAttemptingToCloseBrowser())
+        return *it;
+    }
     return NULL;
   }
 
@@ -360,13 +359,13 @@ class BrowserCloseTest : public InProcessBrowserTest {
 
     // Create a new main window and kill everything else.
     entry_browser = CreateBrowserOnProfile(first_profile_);
-    for (BrowserList::const_iterator bit = BrowserList::begin();
-         bit != BrowserList::end(); ++bit) {
-      if ((*bit) != entry_browser) {
-        EXPECT_TRUE((*bit)->window());
-        if (!(*bit)->window())
+    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+      if ((*it) != entry_browser) {
+        if (!it->window()) {
+          ADD_FAILURE();
           return false;
-        (*bit)->window()->Close();
+        }
+        it->window()->Close();
       }
     }
     content::RunAllPendingInMessageLoop();

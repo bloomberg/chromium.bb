@@ -18,6 +18,7 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -88,10 +89,9 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
 
     // Find the new browser.
     Browser* other_browser = NULL;
-    for (BrowserList::const_iterator i = BrowserList::begin();
-         i != BrowserList::end() && !other_browser; ++i) {
-      if (*i != browser())
-        other_browser = *i;
+  for (chrome::BrowserIterator it; !it.done() && !other_browser; it.Next()) {
+      if (*it != browser())
+        other_browser = *it;
     }
     ASSERT_TRUE(other_browser);
     ASSERT_TRUE(other_browser != browser());
@@ -100,10 +100,9 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
 
   Browser* FindOneOtherBrowserForProfile(Profile* profile,
                                          Browser* not_this_browser) {
-    for (BrowserList::const_iterator i = BrowserList::begin();
-         i != BrowserList::end(); ++i) {
-      if (*i != not_this_browser && (*i)->profile() == profile)
-        return *i;
+    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+      if (*it != not_this_browser && it->profile() == profile)
+        return *it;
     }
     return NULL;
   }

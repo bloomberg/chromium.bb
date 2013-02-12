@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -801,10 +802,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
 
   // Find the new browser.
   Browser* app_browser = NULL;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end() && !app_browser; ++i) {
-    if (*i != browser())
-      app_browser = *i;
+  for (chrome::BrowserIterator it; !it.done() && !app_browser; it.Next()) {
+    if (*it != browser())
+      app_browser = *it;
   }
   ASSERT_TRUE(app_browser);
 
@@ -937,10 +937,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
 
   // Find the new browser.
   Browser* new_browser = NULL;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end() && !new_browser; ++i) {
-    if (*i != browser())
-      new_browser = *i;
+  for (chrome::BrowserIterator it; !it.done() && !new_browser; it.Next()) {
+    if (*it != browser())
+      new_browser = *it;
   }
   ASSERT_TRUE(new_browser);
   ASSERT_TRUE(new_browser != browser());
@@ -1045,10 +1044,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
   // Find the new browser.
   Browser* new_browser = NULL;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end() && !new_browser; ++i) {
-    if (*i != browser())
-      new_browser = *i;
+  for (chrome::BrowserIterator it; !it.done() && !new_browser; it.Next()) {
+    if (*it != browser())
+      new_browser = *it;
   }
   ASSERT_TRUE(new_browser);
   ASSERT_TRUE(new_browser != browser());
@@ -1114,10 +1112,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 
   // Find the new browser.
   Browser* new_browser = NULL;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end() && !new_browser; ++i) {
-    if (*i != browser())
-      new_browser = *i;
+  for (chrome::BrowserIterator it; !it.done() && !new_browser; it.Next()) {
+    if (*it != browser())
+      new_browser = *it;
   }
   ASSERT_TRUE(new_browser);
   ASSERT_TRUE(new_browser != browser());

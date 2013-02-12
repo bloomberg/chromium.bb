@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -23,8 +23,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/test/browser_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/base/mock_host_resolver.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -68,8 +68,7 @@ void WaitForTabsAndPopups(Browser* browser,
   EXPECT_EQ(num_panels, PanelManager::GetInstance()->num_panels());
 
   int num_popups_seen = 0;
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end(); ++iter) {
+  for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
     if (*iter == browser)
       continue;
 
@@ -83,7 +82,6 @@ void WaitForTabsAndPopups(Browser* browser,
     EXPECT_TRUE((*iter)->is_type_popup());
 #endif
     ++num_popups_seen;
-
   }
   EXPECT_EQ(num_popups, num_popups_seen);
 }
@@ -96,12 +94,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserIsApp) {
 
   WaitForTabsAndPopups(browser(), 0, 2, 0);
 
-  for (BrowserList::const_iterator iter = BrowserList::begin();
-       iter != BrowserList::end(); ++iter) {
+  for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
     if (*iter == browser())
-      ASSERT_FALSE((*iter)->is_app());
+      ASSERT_FALSE(iter->is_app());
     else
-      ASSERT_TRUE((*iter)->is_app());
+      ASSERT_TRUE(iter->is_app());
   }
 }
 

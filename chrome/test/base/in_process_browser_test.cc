@@ -22,9 +22,11 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -326,8 +328,11 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   autorelease_pool_->Recycle();
 #endif
 
-  if (!BrowserList::empty()) {
-    browser_ = *BrowserList::begin();
+  // Browser tests do not support multi-desktop for now.
+  const chrome::BrowserListImpl* native_browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  if (!native_browser_list->empty()) {
+    browser_ = native_browser_list->get(0);
 #if defined(USE_ASH)
     // There are cases where windows get created maximized by default.
     if (browser_->window()->IsMaximized())

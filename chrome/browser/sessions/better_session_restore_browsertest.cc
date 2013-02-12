@@ -22,7 +22,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -46,10 +46,9 @@ namespace {
 
 Browser* FindOneOtherBrowserForProfile(Profile* profile,
                                        Browser* not_this_browser) {
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    if (*i != not_this_browser && (*i)->profile() == profile)
-      return *i;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (*it != not_this_browser && it->profile() == profile)
+      return *it;
   }
   return NULL;
 }
@@ -369,9 +368,8 @@ class RestartTest : public BetterSessionRestoreTest {
  protected:
   void Restart() {
     // Simluate restarting the browser, but let the test exit peacefully.
-    BrowserList::const_iterator it;
-    for (it = BrowserList::begin(); it != BrowserList::end(); ++it)
-      content::BrowserContext::SaveSessionState((*it)->profile());
+    for (chrome::BrowserIterator it; !it.done(); it.Next())
+      content::BrowserContext::SaveSessionState(it->profile());
     PrefService* pref_service = g_browser_process->local_state();
     pref_service->SetBoolean(prefs::kWasRestarted, true);
 #if defined(OS_WIN)
