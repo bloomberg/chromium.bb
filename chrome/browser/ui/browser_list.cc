@@ -6,8 +6,10 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/browser_window.h"
 
 using content::WebContents;
 
@@ -42,7 +44,16 @@ void BrowserList::RemoveObserver(chrome::BrowserListObserver* observer) {
 }
 
 void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
-  GetNativeList()->CloseAllBrowsersWithProfile(profile);
+  BrowserVector browsers_to_close;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->profile()->GetOriginalProfile() == profile->GetOriginalProfile())
+      browsers_to_close.push_back(*it);
+  }
+
+  for (BrowserVector::const_iterator it = browsers_to_close.begin();
+       it != browsers_to_close.end(); ++it) {
+    (*it)->window()->Close();
+  }
 }
 
 // static

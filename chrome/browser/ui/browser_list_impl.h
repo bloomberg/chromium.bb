@@ -42,9 +42,6 @@ class BrowserListImpl {
 
   Browser* GetLastActive();
 
-  // Closes all browsers for |profile|.
-  void CloseAllBrowsersWithProfile(Profile* profile);
-
   // Browsers are added to the list before they have constructed windows,
   // so the |window()| member function may return NULL.
   const_iterator begin() const { return browsers_.begin(); }
