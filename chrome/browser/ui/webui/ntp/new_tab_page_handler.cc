@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 
+#include "apps/app_launcher.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/app_launcher.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -173,7 +173,7 @@ void NewTabPageHandler::HandleLogTimeToClick(const ListValue* args) {
 }
 
 void NewTabPageHandler::HandleGetShouldShowApps(const ListValue* args) {
-  extensions::UpdateIsAppLauncherEnabled(
+  apps::GetIsAppLauncherEnabled(
       base::Bind(&NewTabPageHandler::GotIsAppLauncherEnabled,
                  AsWeakPtr()));
 }

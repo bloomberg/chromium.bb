@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 
+#include "apps/app_launcher.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -14,7 +15,6 @@
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/app_launcher.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -458,7 +458,7 @@ bool CompleteInstallFunction::RunImpl() {
 }
 
 void CompleteInstallFunction::AfterMaybeInstallAppLauncher(bool ok) {
-  UpdateIsAppLauncherEnabled(base::Bind(
+  apps::GetIsAppLauncherEnabled(base::Bind(
       &CompleteInstallFunction::OnGetAppLauncherEnabled, this,
       approval_->extension_id));
 }
@@ -580,7 +580,7 @@ void GetWebGLStatusFunction::OnFeatureCheck(bool feature_allowed) {
 }
 
 bool GetIsLauncherEnabledFunction::RunImpl() {
-  UpdateIsAppLauncherEnabled(base::Bind(
+  apps::GetIsAppLauncherEnabled(base::Bind(
       &GetIsLauncherEnabledFunction::OnIsLauncherCheckCompleted, this));
   return true;
 }

@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "apps/app_launcher.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -20,7 +21,6 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/app_launcher.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -300,7 +300,9 @@ bool NewTabUI::ShouldShowApps() {
   // Android does not have apps.
   return false;
 #else
-  return !extensions::IsAppLauncherEnabled();
+  // This needs to be synchronous, so we use the value the last time it
+  // was checked.
+  return !apps::WasAppLauncherEnabled();
 #endif
 }
 

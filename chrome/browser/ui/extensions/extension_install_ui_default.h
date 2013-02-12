@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_DEFAULT_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_DEFAULT_H_
+#ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_INSTALL_UI_DEFAULT_H_
+#define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_INSTALL_UI_DEFAULT_H_
 
 #include "chrome/browser/extensions/extension_install_ui.h"
 
@@ -42,4 +42,4 @@ class ExtensionInstallUIDefault : public ExtensionInstallUI {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ExtensionInstallUIDefault);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_DEFAULT_H_
+#endif  // CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_INSTALL_UI_DEFAULT_H_

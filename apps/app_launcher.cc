@@ -1,16 +1,16 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/app_launcher.h"
+#include "apps/app_launcher.h"
 
+#include "apps/pref_names.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
@@ -18,29 +18,9 @@
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 
-namespace extensions {
+namespace apps {
 
 namespace {
-
-#if defined(OS_WIN)
-void UpdatePrefAndCallCallbackOnUI(
-    bool result,
-    const OnAppLauncherEnabledCompleted& completion_callback) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kAppLauncherIsEnabled, result);
-  completion_callback.Run(result);
-}
-
-void IsAppLauncherInstalledOnBlockingPool(
-    const OnAppLauncherEnabledCompleted& completion_callback) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  bool result = chrome_launcher_support::IsAppLauncherPresent();
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(UpdatePrefAndCallCallbackOnUI, result, completion_callback));
-}
-#endif
-
-}  // namespace
 
 enum AppLauncherState {
   APP_LAUNCHER_UNKNOWN,
@@ -66,7 +46,31 @@ AppLauncherState SynchronousAppLauncherChecks() {
 #endif
 }
 
-void UpdateIsAppLauncherEnabled(
+#if defined(OS_WIN)
+void UpdatePrefAndCallCallbackOnUI(
+    bool result,
+    const OnAppLauncherEnabledCompleted& completion_callback) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kAppLauncherIsEnabled, result);
+  completion_callback.Run(result);
+}
+
+void IsAppLauncherInstalledOnBlockingPool(
+    const OnAppLauncherEnabledCompleted& completion_callback) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  bool result = chrome_launcher_support::IsAppLauncherPresent();
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(UpdatePrefAndCallCallbackOnUI, result, completion_callback));
+}
+#endif
+
+}  // namespace
+
+bool MaybeIsAppLauncherEnabled() {
+  return SynchronousAppLauncherChecks() == APP_LAUNCHER_ENABLED;
+}
+
+void GetIsAppLauncherEnabled(
     const OnAppLauncherEnabledCompleted& completion_callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -92,30 +96,12 @@ void UpdateIsAppLauncherEnabled(
 #endif
 }
 
-bool IsAppLauncherEnabled() {
+bool WasAppLauncherEnabled() {
   PrefService* prefs = g_browser_process->local_state();
-  // In some tests, the prefs aren't initialised, but the NTP still needs to
-  // work.
+  // In some tests, the prefs aren't initialised.
   if (!prefs)
     return SynchronousAppLauncherChecks() == APP_LAUNCHER_ENABLED;
   return prefs->GetBoolean(prefs::kAppLauncherIsEnabled);
 }
 
-namespace app_launcher {
-
-void RegisterPrefs(PrefRegistrySimple* registry) {
-  // If it is impossible to synchronously determine whether the app launcher is
-  // enabled, assume it is disabled. Anything that needs to know the absolute
-  // truth should call UpdateIsAppLauncherEnabled().
-  //
-  // This pref is just a cache of the value from the registry from last time
-  // Chrome ran. To avoid having the NTP block on a registry check, it guesses
-  // that the value hasn't changed since last time it was checked, using this
-  // preference.
-  bool is_enabled = SynchronousAppLauncherChecks() == APP_LAUNCHER_ENABLED;
-  registry->RegisterBooleanPref(prefs::kAppLauncherIsEnabled, is_enabled);
-}
-
-}  // namespace app_launcher
-
-}  // namespace extensions
+}  // namespace apps

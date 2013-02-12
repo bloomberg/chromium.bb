@@ -1,34 +1,38 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_APP_LAUNCHER_H_
-#define CHROME_BROWSER_EXTENSIONS_APP_LAUNCHER_H_
+#ifndef CHROME_APPS_APP_LAUNCHER_H_
+#define CHROME_APPS_APP_LAUNCHER_H_
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 
 class PrefRegistrySimple;
 
-namespace extensions {
+namespace apps {
 
 // Called on the UI thread after determining if the launcher is enabled. A
 // boolean flag is passed, which is true if the app launcher is enabled.
 typedef base::Callback<void(bool)> OnAppLauncherEnabledCompleted;
 
+// A synchronous check to determine if the app launcher is enabled. If the
+// registry needs to be determined to find an accurate answer, this function
+// will NOT do so; instead if will default to false (the app launcher is not
+// enabled).
+// This function does not use the cached preference of whether the launcher
+// was enabled or not.
+bool MaybeIsAppLauncherEnabled();
+
 // Determine whether the app launcher is enabled or not. This may involve a trip
 // to a blocking thread. |completion_callback| is called when an answer is
 // ready. This needs to be called on the UI thread.
-void UpdateIsAppLauncherEnabled(
+void GetIsAppLauncherEnabled(
     const OnAppLauncherEnabledCompleted& completion_callback);
 
-// returns value of pref. 'was app launcher enabled last time i checked'.
-bool IsAppLauncherEnabled();
-
-namespace app_launcher {
-void RegisterPrefs(PrefRegistrySimple* registry);
-}
+// Returns whether the app launcher was enabled the last time it was checked.
+bool WasAppLauncherEnabled();
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_APP_LAUNCHER_H_
+#endif  // CHROME_APPS_APP_LAUNCHER_H_

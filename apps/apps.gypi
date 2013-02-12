@@ -22,10 +22,16 @@
         '<(INTERMEDIATE_DIR)',
       ],
       'sources': [
+        'app_launcher.cc',
+        'app_launcher.h',
         'app_restore_service.cc',
         'app_restore_service.h',
         'app_restore_service_factory.cc',
         'app_restore_service_factory.h',
+        'pref_names.cc',
+        'pref_names.h',
+        'prefs.cc',
+        'prefs.h',
       ],
       'conditions': [
         ['enable_extensions==0', {

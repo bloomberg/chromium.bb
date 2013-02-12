@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "apps/app_launcher.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -17,7 +18,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/app_launcher.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -194,7 +194,7 @@ bool NTPResourceCache::NewTabCacheNeedsRefresh() {
     return true;
   }
 #endif
-  bool should_show_apps_page = !extensions::IsAppLauncherEnabled();
+  bool should_show_apps_page = !apps::WasAppLauncherEnabled();
   if (should_show_apps_page != should_show_apps_page_) {
     should_show_apps_page_ = should_show_apps_page;
     return true;

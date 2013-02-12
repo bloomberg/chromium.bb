@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_install_ui_default.h"
+#include "chrome/browser/ui/extensions/extension_install_ui_default.h"
 
+#include "apps/app_launcher.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/extensions/app_launcher.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -188,7 +188,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
                   cmdline->HasSwitch(switches::kAppsNewInstallBubble));
 #endif
 
-    extensions::UpdateIsAppLauncherEnabled(
+    apps::GetIsAppLauncherEnabled(
         base::Bind(&OnAppLauncherEnabledCompleted, extension, browser, icon,
                    use_bubble));
     return;

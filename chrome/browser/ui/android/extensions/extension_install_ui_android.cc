@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_install_ui_android.h"
+#include "chrome/browser/ui/android/extensions/extension_install_ui_android.h"
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
