@@ -694,8 +694,8 @@ class AndroidCommands(object):
 
   def GetFileContents(self, filename, log_result=False):
     """Gets contents from the file specified by |filename|."""
-    return self.RunShellCommand('if [ -f "' + filename + '" ]; then cat "' +
-                                filename + '"; fi', log_result=log_result)
+    return self.RunShellCommand('cat "%s" 2>/dev/null' % filename,
+                                log_result=log_result)
 
   def SetFileContents(self, filename, contents):
     """Writes |contents| to the file specified by |filename|."""
@@ -713,6 +713,23 @@ class AndroidCommands(object):
         self.GetExternalStorage() + '/' + base_name % i):
       i += 1
     return self.GetExternalStorage() + '/' + base_name % i
+
+  def CanAccessProtectedFileContents(self):
+    """Returns True if Get/SetProtectedFileContents would work via "su".
+
+    Devices running user builds don't have adb root, but may provide "su" which
+    can be used for accessing protected files.
+    """
+    return self.RunShellCommand('su -c echo') == ['']
+
+  def GetProtectedFileContents(self, filename, log_result=False):
+    """Gets contents from the protected file specified by |filename|.
+
+    This is less efficient than GetFileContents, but will work for protected
+    files and device files.
+    """
+    # Run the script as root
+    return self.RunShellCommand('su -c cat "%s" 2> /dev/null' % filename)
 
   def SetProtectedFileContents(self, filename, contents):
     """Writes |contents| to the protected file specified by |filename|.
