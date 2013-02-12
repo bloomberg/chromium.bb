@@ -215,6 +215,15 @@ class AndroidCommands(object):
     """Returns our AdbInterface to avoid us wrapping all its methods."""
     return self._adb
 
+  def IsOnline(self):
+    """Checks whether the device is online.
+
+    Returns:
+      True if device is in 'device' mode, False otherwise.
+    """
+    out = self._adb.SendCommand('get-state')
+    return out.strip() == 'device'
+
   def IsRootEnabled(self):
     """Checks if root is enabled on the device."""
     root_test_output = self.RunShellCommand('ls /root') or ['']

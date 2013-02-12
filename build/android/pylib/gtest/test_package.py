@@ -157,7 +157,13 @@ class TestPackage(object):
             failed_tests += [BaseTestResult(full_test_name, p.before)]
     except pexpect.EOF:
       logging.error('Test terminated - EOF')
-      raise errors.DeviceUnresponsiveError('Device may be offline')
+      # We're here because either the device went offline, or the test harness
+      # crashed without outputting the CRASHED marker (crbug.com/175538).
+      if not self.adb.IsOnline():
+        raise errors.DeviceUnresponsiveError('Device %s went offline.' %
+                                             self.device)
+      elif full_test_name:
+        crashed_tests += [BaseTestResult(full_test_name, p.before)]
     except pexpect.TIMEOUT:
       logging.error('Test terminated after %d second timeout.',
                     self.timeout)
