@@ -289,15 +289,15 @@ html[dir='rtl'] #extension-settings .trash {
 
 /* Managed mode */
 
-.page:not(.managed-mode) .managed-mode-banner {
+.page:not(.profile-is-managed) .profile-is-managed-banner {
   display: none;
 }
 
-.managed-mode-banner .page-banner-text {
+.profile-is-managed-banner .page-banner-text {
   background-image: url('chrome://theme/IDR_WARNING');
 }
 
-.managed-mode .more-extensions-link {
+.profile-is-managed .more-extensions-link {
   display: none;
 }
 

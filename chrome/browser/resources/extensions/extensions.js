@@ -244,14 +244,14 @@ cr.define('extensions', function() {
 
     var pageDiv = $('extension-settings');
     var marginTop = 0;
-    if (extensionsData.managedMode) {
+    if (extensionsData.profileIsManaged) {
       pageDiv.classList.add('showing-banner');
-      pageDiv.classList.add('managed-mode');
+      pageDiv.classList.add('profile-is-managed');
       $('toggle-dev-on').disabled = true;
       marginTop += 45;
     } else {
       pageDiv.classList.remove('showing-banner');
-      pageDiv.classList.remove('managed-mode');
+      pageDiv.classList.remove('profile-is-managed');
       $('toggle-dev-on').disabled = false;
     }
 
@@ -262,7 +262,7 @@ cr.define('extensions', function() {
     }
     pageDiv.style.marginTop = marginTop + 'px';
 
-    if (extensionsData.developerMode && !extensionsData.managedMode) {
+    if (extensionsData.developerMode && !extensionsData.profileIsManaged) {
       pageDiv.classList.add('dev-mode');
       $('toggle-dev-on').checked = true;
       $('dev-controls').hidden = false;

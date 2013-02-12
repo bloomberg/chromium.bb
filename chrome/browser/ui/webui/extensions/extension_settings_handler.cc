@@ -32,7 +32,6 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -69,6 +68,11 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
+#endif
 
 using content::RenderViewHost;
 using content::WebContents;
@@ -578,16 +582,13 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   }
   results.Set("extensions", extensions_list);
 
-  if (ManagedMode::IsInManagedMode()) {
-    results.SetBoolean("managedMode", true);
-    results.SetBoolean("developerMode", false);
-  } else {
-    results.SetBoolean("managedMode", false);
-
-    bool developer_mode =
-        profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-    results.SetBoolean("developerMode", developer_mode);
-  }
+  bool is_managed =
+      ManagedUserServiceFactory::GetForProfile(profile)->ProfileIsManaged();
+  bool developer_mode =
+      !is_managed &&
+      profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  results.SetBoolean("profileIsManaged", is_managed);
+  results.SetBoolean("developerMode", developer_mode);
 
   // Check to see if we have any wiped out extensions.
   ExtensionService* extension_service =
@@ -608,11 +609,11 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 }
 
 void ExtensionSettingsHandler::HandleToggleDeveloperMode(
-      const ListValue* args) {
-  if (ManagedMode::IsInManagedMode())
+    const ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (ManagedUserServiceFactory::GetForProfile(profile)->ProfileIsManaged())
     return;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
   bool developer_mode =
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   profile->GetPrefs()->SetBoolean(
@@ -920,8 +921,6 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
 
   pref_registrar_.Init(profile->GetPrefs());
   pref_registrar_.Add(prefs::kExtensionInstallDenyList, callback);
-  local_state_pref_registrar_.Init(g_browser_process->local_state());
-  local_state_pref_registrar_.Add(prefs::kInManagedMode, callback);
 }
 
 std::vector<ExtensionPage>

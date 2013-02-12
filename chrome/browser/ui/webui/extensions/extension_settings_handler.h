@@ -247,7 +247,6 @@ class ExtensionSettingsHandler
   content::NotificationRegistrar registrar_;
 
   PrefChangeRegistrar pref_registrar_;
-  PrefChangeRegistrar local_state_pref_registrar_;
 
   // This will not be empty when a requirements check is in progress. Doing
   // another Check() before the previous one is complete will cause the first
