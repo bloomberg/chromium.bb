@@ -947,6 +947,7 @@ void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
   bounds_params.anchor_rect = bounds_params.focus_rect = caret_rect;
   bounds_params.anchor_dir = bounds_params.focus_dir =
       WebKit::WebTextDirectionLeftToRight;
+  bounds_params.is_anchor_first = true;
   render_view_->Send(new ViewHostMsg_SelectionBoundsChanged(
       render_view_->routing_id(),
       bounds_params));

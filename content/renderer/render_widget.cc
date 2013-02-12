@@ -1909,6 +1909,7 @@ void RenderWidget::UpdateSelectionBounds() {
     selection_anchor_rect_ = params.anchor_rect;
     selection_focus_rect_ = params.focus_rect;
     webwidget_->selectionTextDirection(params.focus_dir, params.anchor_dir);
+    params.is_anchor_first = webwidget_->isSelectionAnchorFirst();
     Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_, params));
   }
 

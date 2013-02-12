@@ -544,7 +544,8 @@ void ContentViewCoreImpl::OnSelectionBoundsChanged(
                                                 anchor_rect.obj(),
                                                 params.anchor_dir,
                                                 focus_rect.obj(),
-                                                params.focus_dir);
+                                                params.focus_dir,
+                                                params.is_anchor_first);
 }
 
 void ContentViewCoreImpl::ShowPastePopup(int x, int y) {

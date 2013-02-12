@@ -1947,21 +1947,27 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onSelectionBoundsChanged(Rect startRect, int dir1, Rect endRect, int dir2) {
-        int x1 = startRect.left;
-        int y1 = startRect.bottom;
-        int x2 = endRect.left;
-        int y2 = endRect.bottom;
+    private void onSelectionBoundsChanged(Rect anchorRect, int anchorDir, Rect focusRect,
+            int focusDir, boolean isAnchorFirst) {
+        int x1 = anchorRect.left;
+        int y1 = anchorRect.bottom;
+        int x2 = focusRect.left;
+        int y2 = focusRect.bottom;
 
         if (x1 != x2 || y1 != y2 ||
                 (mSelectionHandleController != null && mSelectionHandleController.isDragging())) {
             if (mInsertionHandleController != null) {
                 mInsertionHandleController.hide();
             }
-            mStartHandlePoint.setWindow(x1, y1);
-            mEndHandlePoint.setWindow(x2, y2);
+            if (isAnchorFirst) {
+                mStartHandlePoint.setWindow(x1, y1);
+                mEndHandlePoint.setWindow(x2, y2);
+            } else {
+                mStartHandlePoint.setWindow(x2, y2);
+                mEndHandlePoint.setWindow(x1, y1);
+            }
 
-            getSelectionHandleController().onSelectionChanged(dir1, dir2);
+            getSelectionHandleController().onSelectionChanged(anchorDir, focusDir);
             updateHandleScreenPositions();
             mHasSelection = true;
         } else {
