@@ -74,10 +74,12 @@ namespace {
 
 static const char kOESDerivativeExtension[] = "GL_OES_standard_derivatives";
 
+#if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
 khronos_uint64_t CityHashForAngle(const char* name, unsigned int len) {
   return static_cast<khronos_uint64_t>(
       CityHash64(name, static_cast<size_t>(len)));
 }
+#endif
 
 }  // namespace
 
@@ -2500,7 +2502,11 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ||
       force_webgl_glsl_validation_ ? SH_WEBGL_SPEC : SH_GLES2_SPEC;
   if (shader_spec == SH_WEBGL_SPEC && features().enable_shader_name_hashing)
+#if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
     resources.HashFunction = &CityHashForAngle;
+#else
+    resources.HashFunction = &CityHash64;
+#endif
   else
     resources.HashFunction = NULL;
   ShaderTranslatorInterface::GlslImplementationType implementation_type =

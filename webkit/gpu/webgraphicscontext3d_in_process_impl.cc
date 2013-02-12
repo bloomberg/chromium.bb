@@ -1797,7 +1797,11 @@ bool WebGraphicsContext3DInProcessImpl::AngleValidateShaderSource(
 
   char* source = entry->source.get();
   if (!ShCompile(compiler, &source, 1, SH_OBJECT_CODE)) {
+#if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
     int logSize = 0;
+#else
+    size_t logSize = 0;
+#endif
     ShGetInfo(compiler, SH_INFO_LOG_LENGTH, &logSize);
     if (logSize > 1) {
       entry->log.reset(new char[logSize]);
@@ -1806,7 +1810,11 @@ bool WebGraphicsContext3DInProcessImpl::AngleValidateShaderSource(
     return false;
   }
 
+#if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
   int length = 0;
+#else
+  size_t length = 0;
+#endif
   ShGetInfo(compiler, SH_OBJECT_CODE_LENGTH, &length);
   if (length > 1) {
     entry->translated_source.reset(new char[length]);

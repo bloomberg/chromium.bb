@@ -27,9 +27,15 @@ bool InitializeShaderTranslator() {
   return initialized;
 }
 
+#if !defined(ANGLE_SH_VERSION) || ANGLE_SH_VERSION < 108
+typedef int ANGLEGetInfoType;
+#else
+typedef size_t ANGLEGetInfoType;
+#endif
+
 void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
                      ShaderTranslator::VariableMap* var_map) {
-  int name_len = 0, mapped_name_len = 0;
+  ANGLEGetInfoType name_len = 0, mapped_name_len = 0;
   switch (var_type) {
     case SH_ACTIVE_ATTRIBUTES:
       ShGetInfo(compiler, SH_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_len);
@@ -44,10 +50,10 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
   scoped_array<char> name(new char[name_len]);
   scoped_array<char> mapped_name(new char[mapped_name_len]);
 
-  int num_vars = 0;
+  ANGLEGetInfoType num_vars = 0;
   ShGetInfo(compiler, var_type, &num_vars);
-  for (int i = 0; i < num_vars; ++i) {
-    int len = 0;
+  for (ANGLEGetInfoType i = 0; i < num_vars; ++i) {
+    ANGLEGetInfoType len = 0;
     int size = 0;
     ShDataType type = SH_NONE;
 
@@ -77,19 +83,19 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
 
 void GetNameHashingInfo(
     ShHandle compiler, ShaderTranslator::NameMap* name_map) {
-  int hashed_names_count = 0;
+  ANGLEGetInfoType hashed_names_count = 0;
   ShGetInfo(compiler, SH_HASHED_NAMES_COUNT, &hashed_names_count);
   if (hashed_names_count == 0)
     return;
 
-  int name_max_len = 0, hashed_name_max_len = 0;
+  ANGLEGetInfoType name_max_len = 0, hashed_name_max_len = 0;
   ShGetInfo(compiler, SH_NAME_MAX_LENGTH, &name_max_len);
   ShGetInfo(compiler, SH_HASHED_NAME_MAX_LENGTH, &hashed_name_max_len);
 
   scoped_array<char> name(new char[name_max_len]);
   scoped_array<char> hashed_name(new char[hashed_name_max_len]);
 
-  for (int i = 0; i < hashed_names_count; ++i) {
+  for (ANGLEGetInfoType i = 0; i < hashed_names_count; ++i) {
     ShGetNameHashingEntry(compiler, i, name.get(), hashed_name.get());
     (*name_map)[hashed_name.get()] = name.get();
   }
@@ -157,7 +163,7 @@ bool ShaderTranslator::Translate(const char* shader) {
   if (ShCompile(compiler_, &shader, 1, compile_options)) {
     success = true;
     // Get translated shader.
-    int obj_code_len = 0;
+    ANGLEGetInfoType obj_code_len = 0;
     ShGetInfo(compiler_, SH_OBJECT_CODE_LENGTH, &obj_code_len);
     if (obj_code_len > 1) {
       translated_shader_.reset(new char[obj_code_len]);
@@ -171,7 +177,7 @@ bool ShaderTranslator::Translate(const char* shader) {
   }
 
   // Get info log.
-  int info_log_len = 0;
+  ANGLEGetInfoType info_log_len = 0;
   ShGetInfo(compiler_, SH_INFO_LOG_LENGTH, &info_log_len);
   if (info_log_len > 1) {
     info_log_.reset(new char[info_log_len]);
