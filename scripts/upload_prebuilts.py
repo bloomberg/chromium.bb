@@ -341,6 +341,7 @@ class PrebuiltUploader(object):
     self._pkg_indexes = pkg_indexes
     self._build_path = build_path
     self._packages = set(packages)
+    self._found_packages = set()
     self._skip_upload = skip_upload
     self._binhost_conf_dir = binhost_conf_dir
     self._debug = debug
@@ -355,6 +356,7 @@ class PrebuiltUploader(object):
     import portage.versions
     cat, pkgname = portage.versions.catpkgsplit(pkg['CPV'])[0:2]
     cp = '%s/%s' % (cat, pkgname)
+    self._found_packages.add(cp)
     return pkgname not in self._packages and cp not in self._packages
 
   def _UploadPrebuilt(self, package_path, url_suffix):
@@ -371,6 +373,9 @@ class PrebuiltUploader(object):
     pkg_index.SetUploadLocation(self._binhost_base_url, url_suffix)
     pkg_index.RemoveFilteredPackages(self._ShouldFilterPackage)
     uploads = pkg_index.ResolveDuplicateUploads(self._pkg_indexes)
+    unmatched_pkgs = self._packages - self._found_packages
+    if unmatched_pkgs:
+      cros_build_lib.Warning('unable to match packages: %r' % unmatched_pkgs)
 
     # Write Packages file.
     tmp_packages_file = pkg_index.WriteToNamedTemporaryFile()
