@@ -106,14 +106,14 @@ class NET_EXPORT Backend {
   // either direction by using null Time values for either argument. The return
   // value is a net error code. If this method returns ERR_IO_PENDING, the
   // |callback| will be invoked when the operation completes.
-  virtual int DoomEntriesBetween(const base::Time initial_time,
-                                 const base::Time end_time,
+  virtual int DoomEntriesBetween(base::Time initial_time,
+                                 base::Time end_time,
                                  const CompletionCallback& callback) = 0;
 
   // Marks all entries accessed since |initial_time| for deletion. The return
   // value is a net error code. If this method returns ERR_IO_PENDING, the
   // |callback| will be invoked when the operation completes.
-  virtual int DoomEntriesSince(const base::Time initial_time,
+  virtual int DoomEntriesSince(base::Time initial_time,
                                const CompletionCallback& callback) = 0;
 
   // Enumerates the cache. Initialize |iter| to NULL before calling this method

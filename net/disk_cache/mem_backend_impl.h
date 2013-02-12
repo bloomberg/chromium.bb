@@ -71,10 +71,10 @@ class NET_EXPORT_PRIVATE MemBackendImpl : public Backend {
   virtual int DoomEntry(const std::string& key,
                         const CompletionCallback& callback) OVERRIDE;
   virtual int DoomAllEntries(const CompletionCallback& callback) OVERRIDE;
-  virtual int DoomEntriesBetween(const base::Time initial_time,
-                                 const base::Time end_time,
+  virtual int DoomEntriesBetween(base::Time initial_time,
+                                 base::Time end_time,
                                  const CompletionCallback& callback) OVERRIDE;
-  virtual int DoomEntriesSince(const base::Time initial_time,
+  virtual int DoomEntriesSince(base::Time initial_time,
                                const CompletionCallback& callback) OVERRIDE;
   virtual int OpenNextEntry(void** iter, Entry** next_entry,
                             const CompletionCallback& callback) OVERRIDE;

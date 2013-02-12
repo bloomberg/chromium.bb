@@ -73,9 +73,9 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   int SyncCreateEntry(const std::string& key, Entry** entry);
   int SyncDoomEntry(const std::string& key);
   int SyncDoomAllEntries();
-  int SyncDoomEntriesBetween(const base::Time initial_time,
-                             const base::Time end_time);
-  int SyncDoomEntriesSince(const base::Time initial_time);
+  int SyncDoomEntriesBetween(base::Time initial_time,
+                             base::Time end_time);
+  int SyncDoomEntriesSince(base::Time initial_time);
   int SyncOpenNextEntry(void** iter, Entry** next_entry);
   int SyncOpenPrevEntry(void** iter, Entry** prev_entry);
   void SyncEndEnumeration(void* iter);
@@ -269,10 +269,10 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   virtual int DoomEntry(const std::string& key,
                         const CompletionCallback& callback) OVERRIDE;
   virtual int DoomAllEntries(const CompletionCallback& callback) OVERRIDE;
-  virtual int DoomEntriesBetween(const base::Time initial_time,
-                                 const base::Time end_time,
+  virtual int DoomEntriesBetween(base::Time initial_time,
+                                 base::Time end_time,
                                  const CompletionCallback& callback) OVERRIDE;
-  virtual int DoomEntriesSince(const base::Time initial_time,
+  virtual int DoomEntriesSince(base::Time initial_time,
                                const CompletionCallback& callback) OVERRIDE;
   virtual int OpenNextEntry(void** iter, Entry** next_entry,
                             const CompletionCallback& callback) OVERRIDE;
