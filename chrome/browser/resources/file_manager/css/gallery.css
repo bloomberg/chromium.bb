@@ -666,11 +666,25 @@ body {
     url('../images/gallery/2x/icon_undo.png') 2x);
 }
 
+.gallery > .toolbar button.undo:active,
+.gallery > .toolbar button.undo[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_undo_selected.png') 1x,
+    url('../images/gallery/2x/icon_undo_selected.png') 2x);
+}
+
 .gallery > .toolbar button.redo {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_redo.png') 1x,
     url('../images/gallery/2x/icon_redo.png') 2x);
   position: absolute;  /* Exclude from center-packing*/
+}
+
+.gallery > .toolbar button.redo:active,
+.gallery > .toolbar button.redo[pressed] {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_redo_selected.png') 1x,
+    url('../images/gallery/2x/icon_redo_selected.png') 2x);
 }
 
 .gallery > .toolbar button[disabled] {
