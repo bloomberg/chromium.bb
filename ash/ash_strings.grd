@@ -338,6 +338,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
 	Initializing cellular modem...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_CELLULAR_SCANNING" desc="Message when scanning for cellular networks">
+	Searching for cellular networks...
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_SMS" desc="The label used in the status tray for SMS.">
         SMS
       </message>

@@ -5,6 +5,9 @@
 #ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_H_
 #define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_ICON_ANIMATION_H_
 
+#include <set>
+#include <string>
+
 #include "ash/ash_export.h"
 #include "base/observer_list.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -26,6 +29,8 @@ class ASH_EXPORT NetworkIconAnimation : public ui::AnimationDelegate {
 
   void AddObserver(AnimationObserver* observer);
   void RemoveObserver(AnimationObserver* observer);
+  void AddNetwork(const std::string& network_id);
+  void RemoveNetwork(const std::string& network_id);
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -35,6 +40,7 @@ class ASH_EXPORT NetworkIconAnimation : public ui::AnimationDelegate {
  private:
   ui::ThrobAnimation animation_;
   ObserverList<AnimationObserver> observers_;
+  std::set<std::string> networks_;
 };
 
 }  // namespace network_icon
