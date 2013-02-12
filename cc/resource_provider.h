@@ -244,6 +244,7 @@ public:
     // Asynchronously update pixels from acquired pixel buffer.
     void beginSetPixels(ResourceId id);
     bool didSetPixelsComplete(ResourceId id);
+    void abortSetPixels(ResourceId id);
 
     // For tests only! This prevents detecting uninitialized reads.
     // Use setPixels or lockForWrite to allocate implicitly.

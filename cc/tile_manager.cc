@@ -142,7 +142,7 @@ TileManager::~TileManager() {
   // This should finish all pending tasks and release any uninitialized
   // resources.
   raster_worker_pool_.reset();
-  CheckForCompletedTileUploads();
+  AbortPendingTileUploads();
   DCHECK(tiles_with_pending_set_pixels_.size() == 0);
   DCHECK(tiles_.size() == 0);
 }
@@ -371,6 +371,28 @@ void TileManager::CheckForCompletedTileUploads() {
   }
 
   DispatchMoreTasks();
+}
+
+void TileManager::AbortPendingTileUploads() {
+  while (!tiles_with_pending_set_pixels_.empty()) {
+    Tile* tile = tiles_with_pending_set_pixels_.front();
+    ManagedTileState& managed_tile_state = tile->managed_state();
+    DCHECK(managed_tile_state.resource);
+
+    resource_pool_->resource_provider()->abortSetPixels(
+        managed_tile_state.resource->id());
+    resource_pool_->resource_provider()->releasePixelBuffer(
+        managed_tile_state.resource->id());
+
+    managed_tile_state.resource_is_being_initialized = false;
+    managed_tile_state.can_be_freed = true;
+    managed_tile_state.can_use_gpu_memory = false;
+    FreeResourcesForTile(tile);
+
+    bytes_pending_set_pixels_ -= tile->bytes_consumed_if_allocated();
+    DidTileRasterStateChange(tile, IDLE_STATE);
+    tiles_with_pending_set_pixels_.pop();
+  }
 }
 
 void TileManager::GetMemoryStats(

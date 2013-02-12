@@ -48,6 +48,18 @@ static bool isTextureFormatSupportedForStorage(GLenum format)
     return (format == GL_RGBA || format == GL_BGRA_EXT);
 }
 
+static unsigned createTextureId(WebGraphicsContext3D* context3d)
+{
+  unsigned textureId = 0;
+  GLC(context3d, textureId = context3d->createTexture());
+  GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, textureId));
+  GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+  GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+  GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+  GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+  return textureId;
+}
+
 ResourceProvider::Resource::Resource()
     : glId(0)
     , glPixelBufferId(0)
@@ -192,17 +204,11 @@ ResourceProvider::ResourceId ResourceProvider::createGLTexture(const gfx::Size& 
     DCHECK_LE(size.height(), m_maxTextureSize);
 
     DCHECK(m_threadChecker.CalledOnValidThread());
-    unsigned textureId = 0;
     WebGraphicsContext3D* context3d = m_outputSurface->Context3D();
     DCHECK(context3d);
-    GLC(context3d, textureId = context3d->createTexture());
-    GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, textureId));
 
-    // Set texture properties. Allocation is delayed until needed.
-    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    // Create and set texture properties. Allocation is delayed until needed.
+    unsigned textureId = createTextureId(context3d);
     GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_POOL_CHROMIUM, texturePool));
     if (m_useTextureUsageHint && hint == TextureUsageFramebuffer)
         GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE));
@@ -1049,6 +1055,32 @@ bool ResourceProvider::didSetPixelsComplete(ResourceId id) {
     unlockForWrite(id);
 
     return true;
+}
+
+void ResourceProvider::abortSetPixels(ResourceId id) {
+    DCHECK(m_threadChecker.CalledOnValidThread());
+    ResourceMap::iterator it = m_resources.find(id);
+    CHECK(it != m_resources.end());
+    Resource* resource = &it->second;
+    DCHECK(resource->lockedForWrite);
+    DCHECK(resource->pendingSetPixels);
+
+    if (resource->glId) {
+        WebGraphicsContext3D* context3d = m_outputSurface->Context3D();
+        DCHECK(context3d);
+        DCHECK(resource->glUploadQueryId);
+        // CHROMIUM_async_pixel_transfers currently doesn't have a way to
+        // abort an upload. The best we can do is delete the query and
+        // the texture.
+        context3d->deleteQueryEXT(resource->glUploadQueryId);
+        resource->glUploadQueryId = 0;
+        context3d->deleteTexture(resource->glId);
+        resource->glId = createTextureId(context3d);
+        resource->allocated = false;
+    }
+
+    resource->pendingSetPixels = false;
+    unlockForWrite(id);
 }
 
 void ResourceProvider::allocateForTesting(ResourceId id) {

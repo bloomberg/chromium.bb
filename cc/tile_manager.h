@@ -105,6 +105,7 @@ class CC_EXPORT TileManager {
 
   void ManageTiles();
   void CheckForCompletedTileUploads();
+  void AbortPendingTileUploads();
 
   scoped_ptr<base::Value> AsValue() const;
   void GetMemoryStats(size_t* memoryRequiredBytes,
