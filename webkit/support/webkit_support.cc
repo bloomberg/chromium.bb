@@ -749,8 +749,9 @@ ScopedTempDirectory* CreateScopedTempDirectory() {
 }
 
 int64 GetCurrentTimeInMillisecond() {
-  return base::TimeTicks::Now().ToInternalValue()
-      / base::Time::kMicrosecondsPerMillisecond;
+  return base::TimeDelta(base::Time::Now() -
+                         base::Time::UnixEpoch()).ToInternalValue() /
+         base::Time::kMicrosecondsPerMillisecond;
 }
 
 std::string EscapePath(const std::string& path) {
