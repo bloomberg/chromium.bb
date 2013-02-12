@@ -45,7 +45,8 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
 class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
  public:
   virtual void OnError() OVERRIDE {}
-  void OnFrameInfo(const media::VideoCaptureCapability& info) {}
+  virtual void OnFrameInfo(
+      const media::VideoCaptureCapability& info) OVERRIDE {}
   virtual void OnIncomingCapturedFrame(const uint8* data,
                                        int length,
                                        base::Time timestamp) OVERRIDE {}

@@ -129,7 +129,7 @@ class SourceStateObserver : public webrtc::ObserverInterface,
     CheckIfSourcesAreLive();
   }
 
-  virtual void OnChanged() {
+  virtual void OnChanged() OVERRIDE {
     DCHECK(CalledOnValidThread());
     CheckIfSourcesAreLive();
   }

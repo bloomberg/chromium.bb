@@ -86,7 +86,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
       position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     }
   }
-  virtual bool StartProvider(bool high_accuracy) {
+  virtual bool StartProvider(bool high_accuracy) OVERRIDE {
     MockLocationProvider::StartProvider(high_accuracy);
     if (!requires_permission_to_start_) {
       UpdateListenersIfNeeded();
@@ -94,7 +94,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
     return true;
   }
 
-  void OnPermissionGranted() {
+  virtual void OnPermissionGranted() OVERRIDE {
     MockLocationProvider::OnPermissionGranted();
     if (requires_permission_to_start_) {
       UpdateListenersIfNeeded();

@@ -14,7 +14,7 @@ class RenderThreadImplUnittest : public testing::Test {
   RenderThreadImplUnittest()
       : kCustomizableHistogram_("Histogram1"),
         kNormalHistogram_("Histogram2") {}
-  ~RenderThreadImplUnittest() {}
+  virtual ~RenderThreadImplUnittest() {}
  protected:
   virtual void SetUp() OVERRIDE {
     histogram_customizer_.custom_histograms_.clear();

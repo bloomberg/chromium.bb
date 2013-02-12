@@ -112,10 +112,10 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
         detach_reason_("target_closed") {
   }
 
-  ~DevToolsClientHostImpl() {}
+  virtual ~DevToolsClientHostImpl() {}
 
   // DevToolsClientHost interface
-  virtual void InspectedContentsClosing() {
+  virtual void InspectedContentsClosing() OVERRIDE {
     if (is_closed_)
       return;
     is_closed_ = true;
@@ -135,7 +135,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
         base::Bind(&net::HttpServer::Close, server_, connection_id_));
   }
 
-  virtual void DispatchOnInspectorFrontend(const std::string& data) {
+  virtual void DispatchOnInspectorFrontend(const std::string& data) OVERRIDE {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::SendOverWebSocket,
@@ -144,7 +144,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
                    data));
   }
 
-  virtual void ReplacedWithAnotherClient() {
+  virtual void ReplacedWithAnotherClient() OVERRIDE {
     detach_reason_ = "replaced_with_devtools";
   }
 

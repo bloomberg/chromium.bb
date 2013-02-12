@@ -73,13 +73,13 @@ class GpuMemoryTest : public content::ContentBrowserTest {
   virtual ~GpuMemoryTest() {
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     base::FilePath test_dir;
     ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &test_dir));
     gpu_test_dir_ = test_dir.AppendASCII("gpu");
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kEnableLogging);
     command_line->AppendSwitch(switches::kForceCompositingMode);
     command_line->AppendSwitchASCII(switches::kForceGpuMemAvailableMb,

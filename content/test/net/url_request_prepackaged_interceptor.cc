@@ -25,7 +25,7 @@ class URLRequestPrepackagedJob : public net::URLRequestFileJob {
                            const base::FilePath& file_path)
       : net::URLRequestFileJob(request, network_delegate, file_path) {}
 
-  virtual int GetResponseCode() const { return 200; }
+  virtual int GetResponseCode() const OVERRIDE { return 200; }
 
  private:
   virtual ~URLRequestPrepackagedJob() {}

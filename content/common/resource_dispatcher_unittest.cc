@@ -72,7 +72,7 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
       int error_code,
       bool was_ignored_by_handler,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) {
+      const base::TimeTicks& completion_time) OVERRIDE {
     EXPECT_FALSE(complete_);
     complete_ = true;
   }
@@ -99,7 +99,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
  public:
   // Emulates IPC send operations (IPC::Sender) by adding
   // pending messages to the queue.
-  virtual bool Send(IPC::Message* msg) {
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
     message_queue_.push_back(IPC::Message(*msg));
     delete msg;
     return true;
@@ -298,7 +298,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
       int error_code,
       bool was_ignored_by_handler,
       const std::string& security_info,
-      const base::TimeTicks& completion_time) {
+      const base::TimeTicks& completion_time) OVERRIDE {
   }
 
  protected:
@@ -365,7 +365,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
       const GURL& new_url,
       const ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies) {
+      GURL* new_first_party_for_cookies) OVERRIDE {
     return true;
   }
 

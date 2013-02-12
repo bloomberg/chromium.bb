@@ -133,13 +133,13 @@ class DownloadItemTest : public testing::Test {
       if (item_) item_->RemoveObserver(this);
     }
 
-    virtual void OnDownloadRemoved(DownloadItem* download) {
+    virtual void OnDownloadRemoved(DownloadItem* download) OVERRIDE {
       DVLOG(20) << " " << __FUNCTION__
                 << " download = " << download->DebugString(false);
       removed_ = true;
     }
 
-    virtual void OnDownloadUpdated(DownloadItem* download) {
+    virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE {
       DVLOG(20) << " " << __FUNCTION__
                 << " download = " << download->DebugString(false);
       updated_ = true;
@@ -155,12 +155,12 @@ class DownloadItemTest : public testing::Test {
       last_state_ = new_state;
     }
 
-    virtual void OnDownloadOpened(DownloadItem* download) {
+    virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE {
       DVLOG(20) << " " << __FUNCTION__
                 << " download = " << download->DebugString(false);
     }
 
-    virtual void OnDownloadDestroyed(DownloadItem* download) {
+    virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE {
       DVLOG(20) << " " << __FUNCTION__
                 << " download = " << download->DebugString(false);
       destroyed_ = true;

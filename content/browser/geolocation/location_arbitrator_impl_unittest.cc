@@ -24,7 +24,7 @@ class MockLocationObserver : public GeolocationObserver {
     ASSERT_FALSE(last_position_.Validate());
   }
   // Delegate
-  virtual void OnLocationUpdate(const Geoposition& position) {
+  virtual void OnLocationUpdate(const Geoposition& position) OVERRIDE {
     last_position_ = position;
   }
 

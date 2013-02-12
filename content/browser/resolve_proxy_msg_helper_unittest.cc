@@ -18,9 +18,10 @@ namespace content {
 // This ProxyConfigService always returns "http://pac" as the PAC url to use.
 class MockProxyConfigService : public net::ProxyConfigService {
  public:
-  virtual void AddObserver(Observer* observer) {}
-  virtual void RemoveObserver(Observer* observer) {}
-  virtual ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* results) {
+  virtual void AddObserver(Observer* observer) OVERRIDE {}
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual ConfigAvailability GetLatestProxyConfig(
+      net::ProxyConfig* results) OVERRIDE {
     *results = net::ProxyConfig::CreateFromCustomPacURL(GURL("http://pac"));
     return CONFIG_VALID;
   }
@@ -69,7 +70,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
   scoped_ptr<PendingResult> pending_result_;
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& msg) {
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
     TupleTypes<ViewHostMsg_ResolveProxy::ReplyParam>::ValueTuple reply_data;
     EXPECT_TRUE(ViewHostMsg_ResolveProxy::ReadReplyParam(&msg, &reply_data));
     DCHECK(!pending_result_.get());

@@ -68,7 +68,7 @@ class DependentIOBuffer : public net::WrappedIOBuffer {
   }
 
  private:
-  ~DependentIOBuffer() {}
+  virtual ~DependentIOBuffer() {}
 
   scoped_refptr<net::IOBuffer> buf_;
 };

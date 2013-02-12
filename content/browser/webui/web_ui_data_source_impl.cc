@@ -31,7 +31,7 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   InternalDataSource(WebUIDataSourceImpl* parent) : parent_(parent) {
   }
 
-  ~InternalDataSource() {
+  virtual ~InternalDataSource() {
   }
 
   // URLDataSource implementation.

@@ -62,19 +62,19 @@ class TracingMessageHandler
   virtual ~TracingMessageHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // SelectFileDialog::Listener implementation
   virtual void FileSelected(const base::FilePath& path,
                             int index,
-                            void* params);
-  virtual void FileSelectionCanceled(void* params);
+                            void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   // TraceSubscriber implementation.
-  virtual void OnEndTracingComplete();
+  virtual void OnEndTracingComplete() OVERRIDE;
   virtual void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& trace_fragment);
-  virtual void OnTraceBufferPercentFullReply(float percent_full);
+      const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE;
+  virtual void OnTraceBufferPercentFullReply(float percent_full) OVERRIDE;
 
   // Messages.
   void OnTracingControllerInitialized(const ListValue* list);

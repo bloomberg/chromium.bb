@@ -37,7 +37,7 @@ class DownloadIdTest : public testing::Test {
     }
   }
 
-  ~DownloadIdTest() {
+  virtual ~DownloadIdTest() {
     for (size_t i = 0; i < num_managers_; ++i)
       download_managers_[i] = NULL;  // Releases & deletes.
   }

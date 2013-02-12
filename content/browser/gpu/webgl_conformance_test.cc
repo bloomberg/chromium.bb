@@ -28,12 +28,12 @@ class WebGLConformanceTest : public ContentBrowserTest {
   WebGLConformanceTest() {}
 
 #if !defined(OS_WIN)
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // Allow privileged WebGL extensions.
     command_line->AppendSwitch(switches::kEnablePrivilegedWebGLExtensions);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     base::FilePath webgl_conformance_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &webgl_conformance_path);
     webgl_conformance_path = webgl_conformance_path.Append(

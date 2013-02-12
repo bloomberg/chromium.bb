@@ -108,7 +108,7 @@ class MockLocalMediaStream : public webrtc::LocalMediaStreamInterface {
   virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE {
     NOTIMPLEMENTED();
   }
-  virtual void UnregisterObserver(ObserverInterface* observer) {
+  virtual void UnregisterObserver(ObserverInterface* observer) OVERRIDE {
     NOTIMPLEMENTED();
   }
 

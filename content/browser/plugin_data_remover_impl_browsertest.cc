@@ -28,7 +28,7 @@ class PluginDataRemoverTest : public ContentBrowserTest {
     MessageLoop::current()->Quit();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
 #ifdef OS_MACOSX
     base::FilePath browser_directory;
     PathService::Get(base::DIR_MODULE, &browser_directory);

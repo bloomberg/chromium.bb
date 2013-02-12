@@ -146,7 +146,7 @@ class RenderViewZoomer : public RenderViewVisitor {
       : host_(host), zoom_level_(zoom_level) {
   }
 
-  virtual bool Visit(RenderView* render_view) {
+  virtual bool Visit(RenderView* render_view) OVERRIDE {
     WebView* webview = render_view->GetWebView();
     WebDocument document = webview->mainFrame()->document();
 

@@ -25,27 +25,27 @@ class WebFileWriterImpl::CallbackDispatcher
   }
 
   virtual void DidReadMetadata(const base::PlatformFileInfo&,
-                               const base::FilePath&) {
+                               const base::FilePath&) OVERRIDE {
     NOTREACHED();
   }
   virtual void DidReadDirectory(
       const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool has_more) {
+      bool has_more) OVERRIDE {
     NOTREACHED();
   }
   virtual void DidOpenFileSystem(const std::string& name,
-                                 const GURL& root) {
+                                 const GURL& root) OVERRIDE {
     NOTREACHED();
   }
-  virtual void DidSucceed() {
+  virtual void DidSucceed() OVERRIDE {
     if (writer_)
       writer_->DidSucceed();
   }
-  virtual void DidFail(base::PlatformFileError error_code) {
+  virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
     if (writer_)
       writer_->DidFail(error_code);
   }
-  virtual void DidWrite(int64 bytes, bool complete) {
+  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
     if (writer_)
       writer_->DidWrite(bytes, complete);
   }

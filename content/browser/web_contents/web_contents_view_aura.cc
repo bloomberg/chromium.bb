@@ -525,7 +525,7 @@ class WebContentsViewAura::WindowObserver
 
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) {
+                                     const gfx::Rect& new_bounds) OVERRIDE {
     SendScreenRects();
   }
 

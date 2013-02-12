@@ -81,10 +81,10 @@ class GpuDataManagerImplTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(ScopedGpuDataManagerImpl);
   };
 
-  void SetUp() {
+  virtual void SetUp() {
   }
 
-  void TearDown() {
+  virtual void TearDown() {
   }
 
   base::Time JustBeforeExpiration(GpuDataManagerImpl* manager);

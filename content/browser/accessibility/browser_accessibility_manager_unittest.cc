@@ -45,7 +45,7 @@ class CountedBrowserAccessibilityFactory
     : public BrowserAccessibilityFactory {
  public:
   virtual ~CountedBrowserAccessibilityFactory() {}
-  virtual BrowserAccessibility* Create() {
+  virtual BrowserAccessibility* Create() OVERRIDE {
     return new CountedBrowserAccessibility();
   }
 };

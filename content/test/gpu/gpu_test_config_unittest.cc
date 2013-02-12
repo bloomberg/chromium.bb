@@ -13,9 +13,9 @@ class GPUTestConfigTest : public testing::Test {
   virtual ~GPUTestConfigTest() { }
 
  protected:
-  void SetUp() { }
+  virtual void SetUp() { }
 
-  void TearDown() { }
+  virtual void TearDown() { }
 };
 
 TEST_F(GPUTestConfigTest, EmptyValues) {

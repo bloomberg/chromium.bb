@@ -38,15 +38,16 @@ class TestDevToolsClientHost : public DevToolsClientHost {
     manager->ClientHostClosing(this);
     closed_ = true;
   }
-  virtual void InspectedContentsClosing() {
+  virtual void InspectedContentsClosing() OVERRIDE {
     FAIL();
   }
 
-  virtual void DispatchOnInspectorFrontend(const std::string& message) {
+  virtual void DispatchOnInspectorFrontend(
+      const std::string& message) OVERRIDE {
     last_sent_message = &message;
   }
 
-  virtual void ReplacedWithAnotherClient() {
+  virtual void ReplacedWithAnotherClient() OVERRIDE {
   }
 
   static void ResetCounters() {
@@ -71,7 +72,7 @@ class TestWebContentsDelegate : public WebContentsDelegate {
   TestWebContentsDelegate() : renderer_unresponsive_received_(false) {}
 
   // Notification that the contents is hung.
-  virtual void RendererUnresponsive(WebContents* source) {
+  virtual void RendererUnresponsive(WebContents* source) OVERRIDE {
     renderer_unresponsive_received_ = true;
   }
 

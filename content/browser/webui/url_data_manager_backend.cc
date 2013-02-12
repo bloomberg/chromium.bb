@@ -336,7 +336,7 @@ class ChromeProtocolHandler
   // |is_incognito| should be set for incognito profiles.
   explicit ChromeProtocolHandler(content::ResourceContext* resource_context,
                                  bool is_incognito);
-  ~ChromeProtocolHandler();
+  virtual ~ChromeProtocolHandler();
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,

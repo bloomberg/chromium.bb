@@ -23,7 +23,7 @@ static const string kUrl = "u";
 
 class MockWebRTCInternalsProxy : public WebRTCInternalsUIObserver {
  public:
-  void OnUpdate(const string& command, const Value* value) OVERRIDE {
+  virtual void OnUpdate(const string& command, const Value* value) OVERRIDE {
     command_ = command;
     value_.reset(value->DeepCopy());
   }

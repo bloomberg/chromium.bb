@@ -17,7 +17,7 @@ class GPUTestExpectationsParserTest : public testing::Test {
   }
 
  protected:
-  void SetUp() {
+  virtual void SetUp() {
     bot_config_.set_os(GPUTestConfig::kOsWin7);
     bot_config_.set_build_type(GPUTestConfig::kBuildTypeRelease);
     bot_config_.AddGPUVendor(0x10de);
@@ -25,7 +25,7 @@ class GPUTestExpectationsParserTest : public testing::Test {
     ASSERT_TRUE(bot_config_.IsValid());
   }
 
-  void TearDown() { }
+  virtual void TearDown() { }
 
  private:
   GPUTestBotConfig bot_config_;

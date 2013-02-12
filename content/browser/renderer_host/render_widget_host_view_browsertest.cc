@@ -25,11 +25,11 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
  public:
   RenderWidgetHostViewBrowserTest() : finish_called_(false), size_(400, 300) {}
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_dir_));
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ui::DisableTestCompositor();
   }
 

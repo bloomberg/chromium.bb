@@ -479,7 +479,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif
   }
 
-  ~ContentMainRunnerImpl() {
+  virtual ~ContentMainRunnerImpl() {
     if (is_initialized_ && !is_shutdown_)
       Shutdown();
   }

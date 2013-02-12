@@ -154,7 +154,7 @@ class OpenChannelToPpapiPluginCallback
     return filter()->OffTheRecord();
   }
 
-  virtual ResourceContext* GetResourceContext() {
+  virtual ResourceContext* GetResourceContext() OVERRIDE {
     return context_;
   }
 

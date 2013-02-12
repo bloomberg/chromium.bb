@@ -62,7 +62,7 @@ class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
 
-  ~SiteInstanceTestBrowserClient() {
+  virtual ~SiteInstanceTestBrowserClient() {
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
   }
 

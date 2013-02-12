@@ -122,7 +122,7 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   }
 
  protected:
-  ~MockDataChannel() {}
+  virtual ~MockDataChannel() {}
 
  private:
   std::string label_;

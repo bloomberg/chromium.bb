@@ -85,7 +85,7 @@ class ViewHttpCacheJob : public net::URLRequestJob {
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
-  ~ViewHttpCacheJob() {}
+  virtual ~ViewHttpCacheJob() {}
 
   void StartAsync();
   void OnStartCompleted();

@@ -434,7 +434,7 @@ class DownloadManagerTest : public testing::Test {
   }
 
   // We tear down everything in TearDown().
-  ~DownloadManagerTest() {}
+  virtual ~DownloadManagerTest() {}
 
   // Create a MockDownloadItemFactory and MockDownloadManagerDelegate,
   // then create a DownloadManager that points

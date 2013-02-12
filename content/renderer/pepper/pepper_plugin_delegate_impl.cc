@@ -266,36 +266,36 @@ class AsyncOpenFileSystemURLCallbackTranslator
 
   virtual ~AsyncOpenFileSystemURLCallbackTranslator() {}
 
-  virtual void DidSucceed() {
+  virtual void DidSucceed() OVERRIDE {
     NOTREACHED();
   }
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path) {
+      const FilePath& platform_path) OVERRIDE {
     NOTREACHED();
   }
   virtual void DidReadDirectory(
       const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool has_more) {
+      bool has_more) OVERRIDE {
     NOTREACHED();
   }
   virtual void DidOpenFileSystem(const std::string& name,
-                                 const GURL& root) {
+                                 const GURL& root) OVERRIDE {
     NOTREACHED();
   }
 
-  virtual void DidFail(base::PlatformFileError error_code) {
+  virtual void DidFail(base::PlatformFileError error_code) OVERRIDE {
     base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
     callback_.Run(error_code,
                   base::PassPlatformFile(&invalid_file),
                   webkit::ppapi::PluginDelegate::NotifyCloseFileCallback());
   }
 
-  virtual void DidWrite(int64 bytes, bool complete) {
+  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE {
     NOTREACHED();
   }
 
-  virtual void DidOpenFile(base::PlatformFile file) {
+  virtual void DidOpenFile(base::PlatformFile file) OVERRIDE {
     callback_.Run(base::PLATFORM_FILE_OK,
                   base::PassPlatformFile(&file),
                   close_file_callback_);

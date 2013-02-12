@@ -125,7 +125,7 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
                        WebRtc_Word16 audio_10ms[],
                        const int length,
                        const int sampling_freq,
-                       const bool is_stereo) {
+                       const bool is_stereo) OVERRIDE {
     base::AutoLock auto_lock(lock_);
     channel_id_ = channel;
     type_ = type;

@@ -26,8 +26,8 @@ class RendererClipboardWriteContext :
   virtual ~RendererClipboardWriteContext();
   virtual void WriteBitmapFromPixels(ui::Clipboard::ObjectMap* objects,
                                      const void* pixels,
-                                     const gfx::Size& size);
-  virtual void Flush(const ui::Clipboard::ObjectMap& objects);
+                                     const gfx::Size& size) OVERRIDE;
+  virtual void Flush(const ui::Clipboard::ObjectMap& objects) OVERRIDE;
 
  private:
   scoped_ptr<base::SharedMemory> shared_buf_;

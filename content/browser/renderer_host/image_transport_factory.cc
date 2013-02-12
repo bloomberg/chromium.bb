@@ -208,7 +208,7 @@ class CompositorSwapClient
         factory_(factory) {
   }
 
-  ~CompositorSwapClient() {
+  virtual ~CompositorSwapClient() {
   }
 
   virtual void OnViewContextSwapBuffersPosted() OVERRIDE {
@@ -434,7 +434,7 @@ class GpuProcessTransportFactory
   }
 
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
-      float device_scale_factor) {
+      float device_scale_factor) OVERRIDE {
     if (!shared_context_.get())
         return NULL;
     scoped_refptr<ImageTransportClientTexture> image(
@@ -455,7 +455,7 @@ class GpuProcessTransportFactory
     return image;
   }
 
-  virtual GLHelper* GetGLHelper() {
+  virtual GLHelper* GetGLHelper() OVERRIDE {
     if (!gl_helper_.get()) {
       CreateSharedContextLazy();
       WebKit::WebGraphicsContext3D* context_for_thread =
@@ -474,11 +474,12 @@ class GpuProcessTransportFactory
     return shared_context_->insertSyncPoint();
   }
 
-  virtual void AddObserver(ImageTransportFactoryObserver* observer) {
+  virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE {
     observer_list_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(ImageTransportFactoryObserver* observer) {
+  virtual void RemoveObserver(
+      ImageTransportFactoryObserver* observer) OVERRIDE {
     observer_list_.RemoveObserver(observer);
   }
 

@@ -31,23 +31,23 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
             const talk_base::SocketAddress& remote_address);
 
   // talk_base::AsyncPacketSocket interface.
-  virtual talk_base::SocketAddress GetLocalAddress() const;
-  virtual talk_base::SocketAddress GetRemoteAddress() const;
-  virtual int Send(const void *pv, size_t cb);
+  virtual talk_base::SocketAddress GetLocalAddress() const OVERRIDE;
+  virtual talk_base::SocketAddress GetRemoteAddress() const OVERRIDE;
+  virtual int Send(const void *pv, size_t cb) OVERRIDE;
   virtual int SendTo(const void *pv, size_t cb,
-                     const talk_base::SocketAddress& addr);
-  virtual int Close();
-  virtual State GetState() const;
-  virtual int GetOption(talk_base::Socket::Option opt, int* value);
-  virtual int SetOption(talk_base::Socket::Option opt, int value);
-  virtual int GetError() const;
-  virtual void SetError(int error);
+                     const talk_base::SocketAddress& addr) OVERRIDE;
+  virtual int Close() OVERRIDE;
+  virtual State GetState() const OVERRIDE;
+  virtual int GetOption(talk_base::Socket::Option opt, int* value) OVERRIDE;
+  virtual int SetOption(talk_base::Socket::Option opt, int value) OVERRIDE;
+  virtual int GetError() const OVERRIDE;
+  virtual void SetError(int error) OVERRIDE;
 
   // P2PSocketClient::Delegate implementation.
   virtual void OnOpen(const net::IPEndPoint& address) OVERRIDE;
   virtual void OnIncomingTcpConnection(const net::IPEndPoint& address,
                                        P2PSocketClient* client) OVERRIDE;
-  virtual void OnError();
+  virtual void OnError() OVERRIDE;
   virtual void OnDataReceived(const net::IPEndPoint& address,
                               const std::vector<char>& data) OVERRIDE;
 

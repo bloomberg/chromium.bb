@@ -57,9 +57,11 @@ class IsListeningFilter : public IPC::ChannelProxy::MessageFilter {
   IsListeningFilter() : channel_(NULL) {}
 
   // MessageFilter overrides
-  virtual void OnFilterRemoved() {}
-  virtual void OnFilterAdded(IPC::Channel* channel) { channel_ = channel;  }
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void OnFilterRemoved() OVERRIDE {}
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
+    channel_ = channel;
+  }
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   static bool is_listening_;
 

@@ -23,7 +23,7 @@ class SessionHistoryTest : public ContentBrowserTest {
  protected:
   SessionHistoryTest() {}
 
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(test_server()->Start());
     NavigateToURL(shell(), GURL(chrome::kAboutBlankURL));
   }

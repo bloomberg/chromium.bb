@@ -45,7 +45,7 @@ class MediaSourceCreatedObserver {
 
 class MediaStreamDependencyFactoryTest : public ::testing::Test {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     dependency_factory_.reset(new MockMediaStreamDependencyFactory());
   }
 

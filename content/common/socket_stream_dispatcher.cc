@@ -39,9 +39,9 @@ class IPCWebSocketStreamHandleBridge
   static IPCWebSocketStreamHandleBridge* FromSocketId(int id);
 
   // webkit_glue::WebSocketStreamHandleBridge methods.
-  virtual void Connect(const GURL& url);
-  virtual bool Send(const std::vector<char>& data);
-  virtual void Close();
+  virtual void Connect(const GURL& url) OVERRIDE;
+  virtual bool Send(const std::vector<char>& data) OVERRIDE;
+  virtual void Close() OVERRIDE;
 
   // Called by SocketStreamDispatcher.
   void OnConnected(int max_amount_send_allowed);

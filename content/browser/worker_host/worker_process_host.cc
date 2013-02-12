@@ -69,7 +69,7 @@ class URLRequestContextSelector
   virtual ~URLRequestContextSelector() {}
 
   virtual net::URLRequestContext* GetRequestContext(
-      ResourceType::Type resource_type) {
+      ResourceType::Type resource_type) OVERRIDE {
     if (resource_type == ResourceType::MEDIA)
       return media_url_request_context_->GetURLRequestContext();
     return url_request_context_->GetURLRequestContext();

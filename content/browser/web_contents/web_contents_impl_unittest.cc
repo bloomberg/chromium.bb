@@ -216,12 +216,13 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
     DCHECK(interstitial_page_);
     interstitial_page_->set_delegate(this);
   }
-  ~TestInterstitialPageStateGuard() {
+  virtual ~TestInterstitialPageStateGuard() {
     if (interstitial_page_)
       interstitial_page_->ClearStates();
   }
 
-  virtual void TestInterstitialPageDeleted(TestInterstitialPage* interstitial) {
+  virtual void TestInterstitialPageDeleted(
+      TestInterstitialPage* interstitial) OVERRIDE {
     DCHECK(interstitial_page_ == interstitial);
     interstitial_page_ = NULL;
   }

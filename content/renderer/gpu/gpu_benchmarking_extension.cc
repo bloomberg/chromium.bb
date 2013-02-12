@@ -87,20 +87,20 @@ class RenderingStatsEnumerator : public cc::RenderingStats::Enumerator {
   RenderingStatsEnumerator(v8::Handle<v8::Object> stats_object)
       : stats_object(stats_object) { }
 
-  virtual void AddInt64(const char* name, int64 value) {
+  virtual void AddInt64(const char* name, int64 value) OVERRIDE {
     stats_object->Set(v8::String::New(name), v8::Number::New(value));
   }
 
-  virtual void AddDouble(const char* name, double value) {
+  virtual void AddDouble(const char* name, double value) OVERRIDE {
     stats_object->Set(v8::String::New(name), v8::Number::New(value));
   }
 
-  virtual void AddInt(const char* name, int value) {
+  virtual void AddInt(const char* name, int value) OVERRIDE {
     stats_object->Set(v8::String::New(name), v8::Integer::New(value));
   }
 
   virtual void AddTimeDeltaInSecondsF(const char* name,
-                                      const base::TimeDelta& value) {
+                                      const base::TimeDelta& value) OVERRIDE {
     stats_object->Set(v8::String::New(name),
                       v8::Number::New(value.InSecondsF()));
   }
@@ -157,7 +157,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "};") {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name) {
+      v8::Handle<v8::String> name) OVERRIDE {
     if (name->Equals(v8::String::New("GetRenderingStats")))
       return v8::FunctionTemplate::New(GetRenderingStats);
     if (name->Equals(v8::String::New("PrintToSkPicture")))

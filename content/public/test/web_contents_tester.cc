@@ -38,7 +38,9 @@ class TestWebContentsCountSetFocusToLocationBar : public TestWebContents {
       : TestWebContents(browser_context), focus_called_(0) {
   }
 
-  virtual void SetFocusToLocationBar(bool select_all) { ++focus_called_; }
+  virtual void SetFocusToLocationBar(bool select_all) OVERRIDE {
+    ++focus_called_;
+  }
   virtual int GetNumberOfFocusCalls() OVERRIDE {
     return focus_called_;
   }

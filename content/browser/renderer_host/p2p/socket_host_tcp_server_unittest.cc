@@ -46,7 +46,7 @@ class FakeServerSocket : public net::ServerSocket {
   }
 
   // net::ServerSocket implementation.
-  virtual void AllowAddressReuse() {
+  virtual void AllowAddressReuse() OVERRIDE {
   }
 
   virtual int Listen(const net::IPEndPoint& address, int backlog) OVERRIDE {

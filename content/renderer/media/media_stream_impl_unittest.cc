@@ -76,7 +76,7 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
 
 class MediaStreamImplTest : public ::testing::Test {
  public:
-  void SetUp() {
+  virtual void SetUp() {
     // Create our test object.
     ms_dispatcher_.reset(new MockMediaStreamDispatcher());
     scoped_refptr<VideoCaptureImplManager> vc_manager(

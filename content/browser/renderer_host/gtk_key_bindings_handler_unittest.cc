@@ -44,7 +44,7 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
     gtk_widget_show(fixed);
     gtk_widget_show(window_);
   }
-  ~GtkKeyBindingsHandlerTest() {
+  virtual ~GtkKeyBindingsHandlerTest() {
     gtk_widget_destroy(window_);
     delete handler_;
   }

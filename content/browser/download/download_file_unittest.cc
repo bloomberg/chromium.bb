@@ -85,7 +85,7 @@ class DownloadFileTest : public testing::Test {
       file_thread_(BrowserThread::FILE, &loop_) {
   }
 
-  ~DownloadFileTest() {
+  virtual ~DownloadFileTest() {
   }
 
   void SetUpdateDownloadInfo(int64 bytes, int64 bytes_per_sec,

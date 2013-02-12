@@ -20,31 +20,32 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   }
 
   virtual void OnBufferCreated(base::SharedMemoryHandle handle,
-                               int length, int buffer_id) {
+                               int length, int buffer_id) OVERRIDE {
     buffer_created_ = true;
     handle_ = handle;
   }
 
   // Called when a video frame buffer is received from the browser process.
-  virtual void OnBufferReceived(int buffer_id, base::Time timestamp) {
+  virtual void OnBufferReceived(int buffer_id, base::Time timestamp) OVERRIDE {
     buffer_received_ = true;
     buffer_id_ = buffer_id;
     timestamp_ = timestamp;
   }
 
-  virtual void OnStateChanged(VideoCaptureState state) {
+  virtual void OnStateChanged(VideoCaptureState state) OVERRIDE {
     state_changed_received_ = true;
     state_ = state;
   }
 
-  virtual void OnDeviceInfoReceived(const media::VideoCaptureParams& params) {
+  virtual void OnDeviceInfoReceived(
+      const media::VideoCaptureParams& params) OVERRIDE {
     device_info_received_ = true;
     params_.width = params.width;
     params_.height = params.height;
     params_.frame_per_second = params.frame_per_second;
   }
 
-  virtual void OnDelegateAdded(int32 device_id) {
+  virtual void OnDelegateAdded(int32 device_id) OVERRIDE {
     device_id_received_ = true;
     device_id_ = device_id;
   }

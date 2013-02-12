@@ -138,7 +138,7 @@ class MockWebIDBDatabase : public WebKit::WebIDBDatabase
       : expect_force_close_(expect_force_close),
         force_close_called_(false) {}
 
-  ~MockWebIDBDatabase()
+  virtual ~MockWebIDBDatabase()
   {
     EXPECT_TRUE(force_close_called_ == expect_force_close_);
   }

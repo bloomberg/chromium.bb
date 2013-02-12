@@ -28,7 +28,7 @@ class PepperGamepadHostTest
  public:
   PepperGamepadHostTest() {
   }
-  ~PepperGamepadHostTest() {
+  virtual ~PepperGamepadHostTest() {
   }
 
   void ConstructService(const WebKit::WebGamepads& test_data) {

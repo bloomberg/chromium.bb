@@ -46,7 +46,7 @@ class TestWindowObserver : public aura::WindowObserver {
   bool destroyed() const { return destroyed_; }
 
   // aura::WindowObserver overrides:
-  virtual void OnWindowDestroyed(aura::Window* window) {
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
     CHECK_EQ(window, window_);
     destroyed_ = true;
     window_ = NULL;

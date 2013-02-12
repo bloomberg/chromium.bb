@@ -42,7 +42,7 @@ class DownloadFileWithErrors: public DownloadFileImpl {
       const ConstructionCallback& ctor_callback,
       const DestructionCallback& dtor_callback);
 
-  ~DownloadFileWithErrors();
+  virtual ~DownloadFileWithErrors();
 
   virtual void Initialize(const InitializeCallback& callback) OVERRIDE;
 

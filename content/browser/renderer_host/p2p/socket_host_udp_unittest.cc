@@ -104,7 +104,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     }
   }
 
-  virtual const net::BoundNetLog& NetLog() const {
+  virtual const net::BoundNetLog& NetLog() const OVERRIDE {
     return net_log_;
   }
 

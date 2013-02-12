@@ -50,7 +50,7 @@ class PepperPrintingHostTest
   PepperPrintingHostTest() {
   }
 
-  ~PepperPrintingHostTest() {
+  virtual ~PepperPrintingHostTest() {
   }
 
   DISALLOW_COPY_AND_ASSIGN(PepperPrintingHostTest);

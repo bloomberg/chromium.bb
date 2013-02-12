@@ -14,7 +14,7 @@ class NullWifiDataListenerInterface
  public:
   // ListenerInterface
   virtual void DeviceDataUpdateAvailable(
-      DeviceDataProvider<WifiData>* provider) {}
+      DeviceDataProvider<WifiData>* provider) OVERRIDE {}
 };
 
 TEST(GeolocationDeviceDataProviderWifiData, CreateDestroy) {

@@ -49,7 +49,7 @@ class WebUIExtensionWrapper : public v8::Extension {
   virtual ~WebUIExtensionWrapper();
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name);
+      v8::Handle<v8::String> name) OVERRIDE;
   static v8::Handle<v8::Value> Send(const v8::Arguments& args);
   static v8::Handle<v8::Value> GetVariableValue(const v8::Arguments& args);
 

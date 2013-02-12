@@ -38,7 +38,7 @@ class PpapiPluginProcessHost::PluginNetworkObserver
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   }
 
-  ~PluginNetworkObserver() {
+  virtual ~PluginNetworkObserver() {
     net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   }
@@ -56,7 +56,7 @@ class PpapiPluginProcessHost::PluginNetworkObserver
 
   // ConnectionTypeObserver implementation.
   virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) {
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE {
     process_host_->Send(new PpapiMsg_SetNetworkState(
         type != net::NetworkChangeNotifier::CONNECTION_NONE));
   }

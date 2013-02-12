@@ -191,7 +191,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   RTCPeerConnectionHandlerTest() : mock_peer_connection_(NULL) {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     mock_client_.reset(new MockWebRTCPeerConnectionHandlerClient());
     mock_dependency_factory_.reset(new MockMediaStreamDependencyFactory());
     mock_dependency_factory_->EnsurePeerConnectionFactory();

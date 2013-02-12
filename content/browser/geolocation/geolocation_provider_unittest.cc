@@ -53,7 +53,7 @@ GeolocationArbitrator* LocationProviderForTestArbitrator::CreateArbitrator() {
 class NullGeolocationObserver : public GeolocationObserver {
  public:
   // GeolocationObserver
-  virtual void OnLocationUpdate(const Geoposition& position) {}
+  virtual void OnLocationUpdate(const Geoposition& position) OVERRIDE {}
 };
 
 class MockGeolocationObserver : public GeolocationObserver {
@@ -65,7 +65,7 @@ class MockGeolocationObserver : public GeolocationObserver {
 class AsyncMockGeolocationObserver : public MockGeolocationObserver {
  public:
   // GeolocationObserver
-  virtual void OnLocationUpdate(const Geoposition& position) {
+  virtual void OnLocationUpdate(const Geoposition& position) OVERRIDE {
     MockGeolocationObserver::OnLocationUpdate(position);
     MessageLoop::current()->Quit();
   }
@@ -122,7 +122,7 @@ class GeolocationProviderTest : public testing::Test {
         provider_(new LocationProviderForTestArbitrator) {
   }
 
-  ~GeolocationProviderTest() {}
+  virtual ~GeolocationProviderTest() {}
 
   LocationProviderForTestArbitrator* provider() { return provider_.get(); }
 

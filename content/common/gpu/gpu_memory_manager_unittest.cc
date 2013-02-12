@@ -26,13 +26,13 @@ class FakeMemoryTracker : public gpu::gles2::MemoryTracker {
   virtual void TrackMemoryAllocatedChange(
       size_t /* old_size */,
       size_t /* new_size */,
-      gpu::gles2::MemoryTracker::Pool /* pool */) {
+      gpu::gles2::MemoryTracker::Pool /* pool */) OVERRIDE {
   }
-  virtual bool EnsureGPUMemoryAvailable(size_t /* size_needed */) {
+  virtual bool EnsureGPUMemoryAvailable(size_t /* size_needed */) OVERRIDE {
     return true;
   }
  private:
-  ~FakeMemoryTracker() {
+  virtual ~FakeMemoryTracker() {
   }
 };
 
@@ -109,18 +109,18 @@ class FakeClient : public GpuMemoryManagerClient {
         this, surface_id != 0, visible));
   }
 
-  ~FakeClient() {
+  virtual ~FakeClient() {
     client_state_.reset();
     tracking_group_.reset();
     memory_tracker_ = NULL;
   }
 
-  void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
+  virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) OVERRIDE {
     allocation_ = alloc;
     ClientAssignmentCollector::AddClientStat(this, alloc);
   }
 
-  bool GetTotalGpuMemory(uint64* bytes) {
+  virtual bool GetTotalGpuMemory(uint64* bytes) OVERRIDE {
     if (total_gpu_memory_) {
       *bytes = total_gpu_memory_;
       return true;
@@ -129,13 +129,13 @@ class FakeClient : public GpuMemoryManagerClient {
   }
   void SetTotalGpuMemory(uint64 bytes) { total_gpu_memory_ = bytes; }
 
-  gpu::gles2::MemoryTracker* GetMemoryTracker() const OVERRIDE {
+  virtual gpu::gles2::MemoryTracker* GetMemoryTracker() const OVERRIDE {
     if (share_group_)
       return share_group_->GetMemoryTracker();
     return memory_tracker_.get();
   }
 
-  gfx::Size GetSurfaceSize() const {
+  virtual gfx::Size GetSurfaceSize() const OVERRIDE {
     return surface_size_;
   }
   void SetSurfaceSize(gfx::Size size) { surface_size_ = size; }

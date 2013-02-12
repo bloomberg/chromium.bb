@@ -154,7 +154,7 @@ class RendererMainThread : public base::Thread {
     new RenderThreadImpl(channel_id_);
   }
 
-  virtual void CleanUp() {
+  virtual void CleanUp() OVERRIDE {
     render_process_.reset();
 
     // It's a little lame to manually set this flag.  But the single process
@@ -193,7 +193,7 @@ class RendererURLRequestContextSelector
   }
 
   virtual net::URLRequestContext* GetRequestContext(
-      ResourceType::Type resource_type) {
+      ResourceType::Type resource_type) OVERRIDE {
     net::URLRequestContextGetter* request_context = request_context_;
     // If the request has resource type of ResourceType::MEDIA, we use a request
     // context specific to media for handling it because these resources have

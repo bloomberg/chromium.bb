@@ -34,7 +34,7 @@ class AutoStopTraceSubscriberStdio : public TraceSubscriberStdio {
     // else, the tracing will end asynchronously in OnEndTracingComplete().
   }
 
-  virtual void OnEndTracingComplete() {
+  virtual void OnEndTracingComplete() OVERRIDE {
     TraceSubscriberStdio::OnEndTracingComplete();
     delete this;
     // TODO(joth): this would be the time to automatically open up

@@ -227,7 +227,8 @@ class StatsResponse : public webrtc::StatsObserver {
       : request_(request),
         response_(request_->createResponse()) {}
 
-  virtual void OnComplete(const std::vector<webrtc::StatsReport>& reports) {
+  virtual void OnComplete(
+      const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
     for (std::vector<webrtc::StatsReport>::const_iterator it = reports.begin();
          it != reports.end(); ++it) {
       int idx = response_->addReport();

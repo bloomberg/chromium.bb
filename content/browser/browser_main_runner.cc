@@ -36,7 +36,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
         created_threads_(false) {
   }
 
-  ~BrowserMainRunnerImpl() {
+  virtual ~BrowserMainRunnerImpl() {
     if (is_initialized_ && !is_shutdown_)
       Shutdown();
   }

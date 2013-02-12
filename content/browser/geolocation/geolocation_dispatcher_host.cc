@@ -51,10 +51,11 @@ class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost,
       GeolocationPermissionContext* geolocation_permission_context);
 
   // GeolocationDispatcherHost
-  virtual bool OnMessageReceived(const IPC::Message& msg, bool* msg_was_ok);
+  virtual bool OnMessageReceived(const IPC::Message& msg,
+                                 bool* msg_was_ok) OVERRIDE;
 
   // GeolocationObserver
-  virtual void OnLocationUpdate(const Geoposition& position);
+  virtual void OnLocationUpdate(const Geoposition& position) OVERRIDE;
 
  private:
   virtual ~GeolocationDispatcherHostImpl();

@@ -272,7 +272,7 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
         update_msg_should_reply_(false),
         update_msg_reply_flags_(0) {
   }
-  ~RenderWidgetHostProcess() {
+  virtual ~RenderWidgetHostProcess() {
     delete current_update_buf_;
   }
 
@@ -286,12 +286,12 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
   // Fills the given update parameters with resonable default values.
   void InitUpdateRectParams(ViewHostMsg_UpdateRect_Params* params);
 
-  virtual bool HasConnection() const { return true; }
+  virtual bool HasConnection() const OVERRIDE { return true; }
 
  protected:
   virtual bool WaitForBackingStoreMsg(int render_widget_id,
                                       const base::TimeDelta& max_delay,
-                                      IPC::Message* msg);
+                                      IPC::Message* msg) OVERRIDE;
 
   TransportDIB* current_update_buf_;
 
@@ -451,9 +451,9 @@ class MockPaintingObserver : public NotificationObserver {
     size_ = size;
   }
 
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE {
     if (type == NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK) {
       std::pair<int, gfx::Size>* size_ack_details =
           Details<std::pair<int, gfx::Size> >(details).ptr();
@@ -481,12 +481,12 @@ class RenderWidgetHostTest : public testing::Test {
  public:
   RenderWidgetHostTest() : process_(NULL) {
   }
-  ~RenderWidgetHostTest() {
+  virtual ~RenderWidgetHostTest() {
   }
 
  protected:
   // testing::Test
-  void SetUp() {
+  virtual void SetUp() {
     browser_context_.reset(new TestBrowserContext());
     delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
@@ -500,7 +500,7 @@ class RenderWidgetHostTest : public testing::Test {
     host_->SetView(view_.get());
     host_->Init();
   }
-  void TearDown() {
+  virtual void TearDown() {
     view_.reset();
     host_.reset();
     delegate_.reset();

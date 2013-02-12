@@ -68,7 +68,7 @@ class VideoCaptureImplTest : public ::testing::Test {
     virtual ~MockVideoCaptureImpl() {}
 
     // Override Send() to mimic device to send events.
-    void Send(IPC::Message* message) {
+    virtual void Send(IPC::Message* message) OVERRIDE {
       CHECK(message);
 
       // In this method, messages are sent to the according handlers as if

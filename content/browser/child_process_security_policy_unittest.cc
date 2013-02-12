@@ -31,7 +31,7 @@ class ChildProcessSecurityPolicyTestBrowserClient
  public:
   ChildProcessSecurityPolicyTestBrowserClient() {}
 
-  virtual bool IsHandledURL(const GURL& url) {
+  virtual bool IsHandledURL(const GURL& url) OVERRIDE {
     return schemes_.find(url.scheme()) != schemes_.end();
   }
 

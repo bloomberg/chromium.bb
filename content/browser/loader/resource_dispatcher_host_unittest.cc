@@ -166,7 +166,7 @@ class MockURLRequestContextSelector
       : request_context_(request_context) {}
 
   virtual net::URLRequestContext* GetRequestContext(
-      ResourceType::Type request_type) {
+      ResourceType::Type request_type) OVERRIDE {
     return request_context_;
   }
 
@@ -193,7 +193,7 @@ class ForwardingFilter : public ResourceMessageFilter {
   }
 
   // ResourceMessageFilter override
-  virtual bool Send(IPC::Message* msg) {
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
     if (!dest_)
       return false;
     return dest_->Send(msg);
@@ -237,7 +237,7 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
   }
 
   // Do nothing until you're told to.
-  virtual void Start() {}
+  virtual void Start() OVERRIDE {}
 
   // Finish starting a URL request whose job is an instance of
   // URLRequestTestDelayedStartJob.  It is illegal to call this routine
@@ -315,7 +315,7 @@ class URLRequestTestDelayedCompletionJob : public net::URLRequestTestJob {
                                auto_advance) {}
 
  protected:
-  ~URLRequestTestDelayedCompletionJob() {}
+  virtual ~URLRequestTestDelayedCompletionJob() {}
 
  private:
   virtual bool NextReadAsync() OVERRIDE { return true; }
@@ -370,7 +370,7 @@ class TestUserData : public base::SupportsUserData::Data {
       : was_deleted_(was_deleted) {
   }
 
-  ~TestUserData() {
+  virtual ~TestUserData() {
     *was_deleted_ = true;
   }
 
@@ -383,7 +383,7 @@ class TransfersAllNavigationsContentBrowserClient
  public:
   virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
                                               const GURL& current_url,
-                                              const GURL& new_url) {
+                                              const GURL& new_url) OVERRIDE {
     return true;
   }
 };
@@ -535,7 +535,7 @@ class ResourceDispatcherHostTest : public testing::Test,
         this, browser_context_->GetResourceContext());
   }
   // IPC::Sender implementation
-  virtual bool Send(IPC::Message* msg) {
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
     accum_.AddMessage(*msg);
 
     if (send_data_received_acks_ &&

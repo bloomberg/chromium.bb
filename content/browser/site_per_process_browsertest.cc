@@ -157,7 +157,7 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
     return result;
   }
 
-  void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kSitePerProcess);
   }
 };

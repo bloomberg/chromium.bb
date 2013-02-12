@@ -37,7 +37,8 @@ class MessageLoopQuitListener
     CHECK(client_message_loop_);
   }
   // ListenerInterface
-  virtual void LocationUpdateAvailable(LocationProviderBase* provider) {
+  virtual void LocationUpdateAvailable(
+      LocationProviderBase* provider) OVERRIDE {
     EXPECT_EQ(client_message_loop_, MessageLoop::current());
     updated_provider_ = provider;
     client_message_loop_->Quit();

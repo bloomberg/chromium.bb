@@ -61,7 +61,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     idb_context()->set_data_path_for_testing(indexeddb_dir);
   }
 
-  ~IndexedDBQuotaClientTest() {
+  virtual ~IndexedDBQuotaClientTest() {
     // IndexedDBContext needs to be destructed on
     // BrowserThread::WEBKIT_DEPRECATED, which is also a member variable of this
     // class.  Cause IndexedDBContext's destruction now to ensure that it

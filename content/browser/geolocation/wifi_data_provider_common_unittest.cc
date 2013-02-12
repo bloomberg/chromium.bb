@@ -67,7 +67,7 @@ class MessageLoopQuitListener
   }
   // ListenerInterface
   virtual void DeviceDataUpdateAvailable(
-      DeviceDataProvider<WifiData>* provider) {
+      DeviceDataProvider<WifiData>* provider) OVERRIDE {
     // Provider should call back on client's thread.
     EXPECT_EQ(MessageLoop::current(), message_loop_to_quit_);
     provider_ = provider;
@@ -85,11 +85,11 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
         new_polling_policy_(new MockPollingPolicy) {}
 
   // WifiDataProviderCommon
-  virtual WlanApiInterface* NewWlanApi() {
+  virtual WlanApiInterface* NewWlanApi() OVERRIDE {
     CHECK(new_wlan_api_ != NULL);
     return new_wlan_api_.release();
   }
-  virtual PollingPolicyInterface* NewPollingPolicy() {
+  virtual PollingPolicyInterface* NewPollingPolicy() OVERRIDE {
     CHECK(new_polling_policy_ != NULL);
     return new_polling_policy_.release();
   }

@@ -106,7 +106,7 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
       multibyte_response_expected_(false) {
   }
 
-  ~ResourceClientProxy() {
+  virtual ~ResourceClientProxy() {
   }
 
   void Initialize(unsigned long resource_id, const GURL& url, int notify_id) {
@@ -124,17 +124,17 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
   }
 
   // PluginResourceClient implementation:
-  void WillSendRequest(const GURL& url, int http_status_code) {
+  virtual void WillSendRequest(const GURL& url, int http_status_code) OVERRIDE {
     DCHECK(channel_ != NULL);
     channel_->Send(new PluginMsg_WillSendRequest(instance_id_, resource_id_,
                                                  url, http_status_code));
   }
 
-  void DidReceiveResponse(const std::string& mime_type,
-                          const std::string& headers,
-                          uint32 expected_length,
-                          uint32 last_modified,
-                          bool request_is_seekable) {
+  virtual void DidReceiveResponse(const std::string& mime_type,
+                                  const std::string& headers,
+                                  uint32 expected_length,
+                                  uint32 last_modified,
+                                  bool request_is_seekable) OVERRIDE {
     DCHECK(channel_ != NULL);
     PluginMsg_DidReceiveResponseParams params;
     params.id = resource_id_;
@@ -149,7 +149,9 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
     channel_->Send(new PluginMsg_DidReceiveResponse(instance_id_, params));
   }
 
-  void DidReceiveData(const char* buffer, int length, int data_offset) {
+  virtual void DidReceiveData(const char* buffer,
+                              int length,
+                              int data_offset) OVERRIDE {
     DCHECK(channel_ != NULL);
     DCHECK_GT(length, 0);
     std::vector<char> data;
@@ -162,25 +164,25 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
                                                 data, data_offset));
   }
 
-  void DidFinishLoading() {
+  virtual void DidFinishLoading() OVERRIDE {
     DCHECK(channel_ != NULL);
     channel_->Send(new PluginMsg_DidFinishLoading(instance_id_, resource_id_));
     channel_ = NULL;
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
-  void DidFail() {
+  virtual void DidFail() OVERRIDE {
     DCHECK(channel_ != NULL);
     channel_->Send(new PluginMsg_DidFail(instance_id_, resource_id_));
     channel_ = NULL;
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
-  bool IsMultiByteResponseExpected() {
+  virtual bool IsMultiByteResponseExpected() OVERRIDE {
     return multibyte_response_expected_;
   }
 
-  int ResourceId() {
+  virtual int ResourceId() OVERRIDE {
     return resource_id_;
   }
 

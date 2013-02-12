@@ -58,17 +58,17 @@ class MailboxMessageFilter : public IPC::ChannelProxy::MessageFilter {
     DCHECK(success);
   }
 
-  virtual void OnFilterAdded(IPC::Channel* channel) {
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
     DCHECK(!channel_);
     channel_ = channel;
   }
 
-  virtual void OnFilterRemoved() {
+  virtual void OnFilterRemoved() OVERRIDE {
     DCHECK(channel_);
     channel_ = NULL;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     DCHECK(channel_);
 
     bool handled = true;
@@ -88,7 +88,7 @@ class MailboxMessageFilter : public IPC::ChannelProxy::MessageFilter {
   }
 
  private:
-  ~MailboxMessageFilter() {
+  virtual ~MailboxMessageFilter() {
   }
 
   // Message handlers.
@@ -144,17 +144,17 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
         unprocessed_messages_(unprocessed_messages) {
   }
 
-  virtual void OnFilterAdded(IPC::Channel* channel) {
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
     DCHECK(!channel_);
     channel_ = channel;
   }
 
-  virtual void OnFilterRemoved() {
+  virtual void OnFilterRemoved() OVERRIDE {
     DCHECK(channel_);
     channel_ = NULL;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     DCHECK(channel_);
     base::AtomicRefCountInc(unprocessed_messages_.get());
     if (!timer_.IsRunning())

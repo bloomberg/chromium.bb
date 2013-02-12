@@ -13,9 +13,9 @@ namespace content {
 class MockLibGps : public LibGps {
  public:
   MockLibGps();
-  ~MockLibGps();
+  virtual ~MockLibGps();
 
-  virtual bool GetPositionIfFixed(Geoposition* position) {
+  virtual bool GetPositionIfFixed(Geoposition* position) OVERRIDE {
     CHECK(position);
     ++get_position_calls_;
     *position = get_position_;
@@ -51,7 +51,8 @@ class MockLibGps : public LibGps {
 class LocaionProviderListenerLoopQuitter
     : public LocationProviderBase::ListenerInterface {
   // LocationProviderBase::ListenerInterface
-  virtual void LocationUpdateAvailable(LocationProviderBase* provider) {
+  virtual void LocationUpdateAvailable(
+      LocationProviderBase* provider) OVERRIDE {
     MessageLoop::current()->Quit();
   }
 };
@@ -59,7 +60,7 @@ class LocaionProviderListenerLoopQuitter
 class GeolocationGpsProviderLinuxTests : public testing::Test {
  public:
   GeolocationGpsProviderLinuxTests();
-  ~GeolocationGpsProviderLinuxTests();
+  virtual ~GeolocationGpsProviderLinuxTests();
 
   static LibGps* NewMockLibGps() {
     return new MockLibGps();

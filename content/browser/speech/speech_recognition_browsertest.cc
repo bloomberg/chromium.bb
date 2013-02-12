@@ -30,7 +30,7 @@ namespace content {
 class SpeechRecognitionBrowserTest : public ContentBrowserTest {
  public:
   // ContentBrowserTest methods
-  virtual void SetUpCommandLine(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     EXPECT_TRUE(!command_line->HasSwitch(switches::kDisableSpeechInput));
   }
 
@@ -75,7 +75,7 @@ class SpeechRecognitionBrowserTest : public ContentBrowserTest {
   }
 
   // ContentBrowserTest methods.
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     fake_speech_recognition_manager_.set_should_send_fake_response(true);
     speech_recognition_manager_ = &fake_speech_recognition_manager_;
 
@@ -84,7 +84,7 @@ class SpeechRecognitionBrowserTest : public ContentBrowserTest {
     SpeechRecognitionManager::SetManagerForTests(speech_recognition_manager_);
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() {
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     speech_recognition_manager_ = NULL;
   }
 

@@ -49,19 +49,20 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
           CreateTrackingGroup(channel->renderer_pid(), this)) {
   }
 
-  void TrackMemoryAllocatedChange(size_t old_size,
-                                  size_t new_size,
-                                  gpu::gles2::MemoryTracker::Pool pool) {
+  virtual void TrackMemoryAllocatedChange(
+      size_t old_size,
+      size_t new_size,
+      gpu::gles2::MemoryTracker::Pool pool) OVERRIDE {
     tracking_group_->TrackMemoryAllocatedChange(
         old_size, new_size, pool);
   }
 
-  virtual bool EnsureGPUMemoryAvailable(size_t size_needed) {
+  virtual bool EnsureGPUMemoryAvailable(size_t size_needed) OVERRIDE {
     return tracking_group_->EnsureGPUMemoryAvailable(size_needed);
   };
 
  private:
-  ~GpuCommandBufferMemoryTracker() {
+  virtual ~GpuCommandBufferMemoryTracker() {
   }
   scoped_ptr<GpuMemoryTrackingGroup> tracking_group_;
 

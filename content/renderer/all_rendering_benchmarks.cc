@@ -173,7 +173,7 @@ class TiledReplayBenchmark
     }
   }
 
-  virtual double Run(WebViewBenchmarkSupport* support) {
+  virtual double Run(WebViewBenchmarkSupport* support) OVERRIDE {
     paint_time_total_ = TimeDelta();
     support->paint(this, paint_mode_);
     return paint_time_total_.InMillisecondsF();

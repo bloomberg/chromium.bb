@@ -218,15 +218,15 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   // The heart of the Client.
   virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
                                      const gfx::Size& dimensions,
-                                     uint32 texture_target);
-  virtual void DismissPictureBuffer(int32 picture_buffer_id);
-  virtual void PictureReady(const media::Picture& picture);
+                                     uint32 texture_target) OVERRIDE;
+  virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
+  virtual void PictureReady(const media::Picture& picture) OVERRIDE;
   // Simple state changes.
-  virtual void NotifyInitializeDone();
-  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id);
-  virtual void NotifyFlushDone();
-  virtual void NotifyResetDone();
-  virtual void NotifyError(VideoDecodeAccelerator::Error error);
+  virtual void NotifyInitializeDone() OVERRIDE;
+  virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
+  virtual void NotifyFlushDone() OVERRIDE;
+  virtual void NotifyResetDone() OVERRIDE;
+  virtual void NotifyError(VideoDecodeAccelerator::Error error) OVERRIDE;
 
   // Simple getters for inspecting the state of the Client.
   int num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
