@@ -43,7 +43,9 @@ FFmpegAudioDecoder::FFmpegAudioDecoder(
       codec_context_(NULL),
       bits_per_channel_(0),
       channel_layout_(CHANNEL_LAYOUT_NONE),
+      channels_(0),
       samples_per_second_(0),
+      av_sample_format_(0),
       bytes_per_frame_(0),
       last_input_timestamp_(kNoTimestamp()),
       output_bytes_to_drop_(0),
@@ -303,6 +305,11 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
   output_timestamp_helper_.reset(new AudioTimestampHelper(
       config.bytes_per_frame(), config.samples_per_second()));
   bytes_per_frame_ = config.bytes_per_frame();
+
+  // Store initial values to guard against midstream configuration changes.
+  channels_ = codec_context_->channels;
+  av_sample_format_ = codec_context_->sample_fmt;
+
   return true;
 }
 
@@ -387,10 +394,16 @@ void FFmpegAudioDecoder::RunDecodeLoop(
 
     int decoded_audio_size = 0;
     if (frame_decoded) {
-      int output_sample_rate = av_frame_->sample_rate;
-      if (output_sample_rate != samples_per_second_) {
-        DLOG(ERROR) << "Output sample rate (" << output_sample_rate
-                    << ") doesn't match expected rate " << samples_per_second_;
+      if (av_frame_->sample_rate != samples_per_second_ ||
+          av_frame_->channels != channels_ ||
+          av_frame_->format != av_sample_format_) {
+        DLOG(ERROR) << "Unsupported midstream configuration change!"
+                    << " Sample Rate: " << av_frame_->sample_rate << " vs "
+                    << samples_per_second_
+                    << ", Channels: " << av_frame_->channels << " vs "
+                    << channels_
+                    << ", Sample Format: " << av_frame_->format << " vs "
+                    << av_sample_format_;
 
         // This is an unrecoverable error, so bail out.
         QueuedAudioBuffer queue_entry = { kDecodeError, NULL };

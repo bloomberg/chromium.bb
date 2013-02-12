@@ -15,19 +15,14 @@ namespace media {
 AudioFileReader::AudioFileReader(FFmpegURLProtocol* protocol)
     : codec_context_(NULL),
       stream_index_(0),
-      protocol_(protocol) {
+      protocol_(protocol),
+      channels_(0),
+      sample_rate_(0),
+      av_sample_format_(0) {
 }
 
 AudioFileReader::~AudioFileReader() {
   Close();
-}
-
-int AudioFileReader::channels() const {
-  return codec_context_->channels;
-}
-
-int AudioFileReader::sample_rate() const {
-  return codec_context_->sample_rate;
 }
 
 base::TimeDelta AudioFileReader::duration() const {
@@ -110,6 +105,11 @@ bool AudioFileReader::Open() {
     return false;
   }
 
+  // Store initial values to guard against midstream configuration changes.
+  channels_ = codec_context_->channels;
+  sample_rate_ = codec_context_->sample_rate;
+  av_sample_format_ = codec_context_->sample_fmt;
+
   return true;
 }
 
@@ -175,6 +175,22 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
       // Determine the number of sample-frames we just decoded.  Check overflow.
       int frames_read = av_frame->nb_samples;
       if (frames_read < 0) {
+        continue_decoding = false;
+        break;
+      }
+
+      if (av_frame->sample_rate != sample_rate_ ||
+          av_frame->channels != channels_ ||
+          av_frame->format != av_sample_format_) {
+        DLOG(ERROR) << "Unsupported midstream configuration change!"
+                    << " Sample Rate: " << av_frame->sample_rate << " vs "
+                    << sample_rate_
+                    << ", Channels: " << av_frame->channels << " vs "
+                    << channels_
+                    << ", Sample Format: " << av_frame->format << " vs "
+                    << av_sample_format_;
+
+        // This is an unrecoverable error, so bail out.
         continue_decoding = false;
         break;
       }

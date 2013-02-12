@@ -43,8 +43,8 @@ class MEDIA_EXPORT AudioFileReader {
   int Read(AudioBus* audio_bus);
 
   // These methods can be called once Open() has been called.
-  int channels() const;
-  int sample_rate() const;
+  int channels() const { return channels_; }
+  int sample_rate() const { return sample_rate_; }
 
   // Please note that duration() and number_of_frames() attempt to be accurate,
   // but are only estimates.  For some encoded formats, the actual duration
@@ -58,6 +58,11 @@ class MEDIA_EXPORT AudioFileReader {
   AVCodecContext* codec_context_;
   int stream_index_;
   FFmpegURLProtocol* protocol_;
+  int channels_;
+  int sample_rate_;
+
+  // AVSampleFormat initially requested; not Chrome's SampleFormat.
+  int av_sample_format_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFileReader);
 };

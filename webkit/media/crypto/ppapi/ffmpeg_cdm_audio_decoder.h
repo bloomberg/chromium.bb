@@ -69,6 +69,10 @@ class FFmpegCdmAudioDecoder {
   // Audio format.
   int bits_per_channel_;
   int samples_per_second_;
+  int channels_;
+
+  // AVSampleFormat initially requested; not Chrome's SampleFormat.
+  int av_sample_format_;
 
   // Used for computing output timestamps.
   scoped_ptr<media::AudioTimestampHelper> output_timestamp_helper_;

@@ -65,7 +65,11 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   // Decoded audio format.
   int bits_per_channel_;
   ChannelLayout channel_layout_;
+  int channels_;
   int samples_per_second_;
+
+  // AVSampleFormat initially requested; not Chrome's SampleFormat.
+  int av_sample_format_;
 
   // Used for computing output timestamps.
   scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;

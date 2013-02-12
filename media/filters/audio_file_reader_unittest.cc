@@ -73,9 +73,17 @@ class AudioFileReaderTest : public testing::Test {
     ReadAndVerify(hash, trimmed_frames);
   }
 
-  void RunFailingTest(const char* fn) {
+  void RunTestFailingDemux(const char* fn) {
     Initialize(fn);
     EXPECT_FALSE(reader_->Open());
+  }
+
+  void RunTestFailingDecode(const char* fn) {
+    Initialize(fn);
+    EXPECT_TRUE(reader_->Open());
+    scoped_ptr<AudioBus> decoded_audio_data = AudioBus::Create(
+        reader_->channels(), reader_->number_of_frames());
+    EXPECT_EQ(reader_->Read(decoded_audio_data.get()), 0);
   }
 
  protected:
@@ -91,7 +99,7 @@ TEST_F(AudioFileReaderTest, WithoutOpen) {
 }
 
 TEST_F(AudioFileReaderTest, InvalidFile) {
-  RunFailingTest("ten_byte_file");
+  RunTestFailingDemux("ten_byte_file");
 }
 
 TEST_F(AudioFileReaderTest, WithVideo) {
@@ -134,10 +142,14 @@ TEST_F(AudioFileReaderTest, AAC) {
   RunTest("sfx.m4a", NULL, 1, 44100,
           base::TimeDelta::FromMicroseconds(312001), 13759, 13312);
 }
+
+TEST_F(AudioFileReaderTest, MidStreamConfigChangesFail) {
+  RunTestFailingDecode("midstream_config_change.mp3");
+}
 #endif
 
 TEST_F(AudioFileReaderTest, VorbisInvalidChannelLayout) {
-  RunFailingTest("9ch.ogg");
+  RunTestFailingDemux("9ch.ogg");
 }
 
 TEST_F(AudioFileReaderTest, WaveValidFourChannelLayout) {

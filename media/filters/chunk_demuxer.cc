@@ -218,7 +218,7 @@ class ChunkDemuxerStream : public DemuxerStream {
   // Append() belong to a media segment that starts at |start_timestamp|.
   void OnNewMediaSegment(TimeDelta start_timestamp);
 
-  // Called when mid-stream config updates occur.
+  // Called when midstream config updates occur.
   // Returns true if the new config is accepted.
   // Returns false if the new config should trigger an error.
   bool UpdateAudioConfig(const AudioDecoderConfig& config);
