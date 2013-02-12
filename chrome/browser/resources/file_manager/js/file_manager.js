@@ -1949,7 +1949,7 @@ DialogType.isModal = function(type) {
       this.refreshRemainingSpace_(true);  // Show loading caption.
 
     this.previousRootUrl_ = this.directoryModel_.getCurrentRootUrl();
-  },
+  };
 
   /**
    * Refreshes space info of the current volume.
@@ -1980,7 +1980,7 @@ DialogType.isModal = function(type) {
                           volumeSpaceInfoLabel,
                           volumeSpaceOuterBar);
         }.bind(this));
-  }
+  };
 
   /**
    * Update the UI when the current directory changes.

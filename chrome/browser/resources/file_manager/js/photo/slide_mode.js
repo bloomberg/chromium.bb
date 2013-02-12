@@ -645,7 +645,9 @@ SlideMode.prototype.loadItem_ = function(
     } else {
       ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('View'));
 
-      function toMillions(number) { return Math.round(number / (1000 * 1000)) }
+      var toMillions = function(number) {
+        return Math.round(number / (1000 * 1000));
+      };
 
       ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
           toMillions(metadata.filesystem.size));

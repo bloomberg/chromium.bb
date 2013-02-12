@@ -295,7 +295,7 @@ DraggableRect.prototype.getDragHandler = function(x, y, touch) {
       self.bounds_.bottom = self.bounds_.top + fixedHeight;
     };
   } else {
-    function checkNewCrop() {
+    var checkNewCrop = function() {
       if (self.dragMode_.newcrop) {
         self.dragMode_.newcrop = false;
         self.bounds_.left = self.bounds_.right = x;
@@ -303,15 +303,15 @@ DraggableRect.prototype.getDragHandler = function(x, y, touch) {
         mouseBiasX = 0;
         mouseBiasY = 0;
       }
-    }
+    };
 
-    function flipSide(side) {
+    var flipSide = function(side) {
       var opposite = self.oppositeSide_[side];
       var temp = self.bounds_[side];
       self.bounds_[side] = self.bounds_[opposite];
       self.bounds_[opposite] = temp;
       return opposite;
-    }
+    };
 
     if (this.dragMode_.xSide != DraggableRect.NONE) {
       mouseBiasX = self.bounds_[this.dragMode_.xSide] - x;
@@ -321,7 +321,7 @@ DraggableRect.prototype.getDragHandler = function(x, y, touch) {
         if (self.bounds_.left > self.bounds_.right) {
           self.dragMode_.xSide = flipSide(self.dragMode_.xSide);
         }
-      }
+      };
     }
     if (this.dragMode_.ySide != DraggableRect.NONE) {
       mouseBiasY = self.bounds_[this.dragMode_.ySide] - y;
@@ -331,7 +331,7 @@ DraggableRect.prototype.getDragHandler = function(x, y, touch) {
         if (self.bounds_.top > self.bounds_.bottom) {
           self.dragMode_.ySide = flipSide(self.dragMode_.ySide);
         }
-      }
+      };
     }
   }
 

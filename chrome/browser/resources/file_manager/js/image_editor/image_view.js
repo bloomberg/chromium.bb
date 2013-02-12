@@ -328,12 +328,12 @@ ImageView.prototype.load = function(url, metadata, effect,
       if (displayCallback) displayCallback();
     }
 
-    function onVideoLoad(error) {
+    var onVideoLoad = function(error) {
       video.removeEventListener('loadedmetadata', onVideoLoadSuccess);
       video.removeEventListener('error', onVideoLoadError);
       displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, videoPreview, video,
           error);
-    }
+    };
     var onVideoLoadError = onVideoLoad.bind(this, 'VIDEO_ERROR');
     var onVideoLoadSuccess = onVideoLoad.bind(this, null);
 

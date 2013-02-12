@@ -64,10 +64,10 @@ ExifParser.prototype.parseSlice = function(
     }
 
     var self = this;
-    function reread(opt_offset, opt_bytes) {
+    var reread = function(opt_offset, opt_bytes) {
       self.requestSlice(file, callback, errorCallback, metadata,
           filePos + br.tell() + (opt_offset || 0), opt_bytes);
-    }
+    };
 
     while (true) {
       if (!br.canRead(4)) {

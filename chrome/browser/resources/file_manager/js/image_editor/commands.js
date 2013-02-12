@@ -184,13 +184,13 @@ CommandQueue.prototype.undo = function() {
   } else {
     this.currentImage_ = this.baselineImage_;
 
-    function replay(index) {
+    var replay = function(index) {
       if (index < self.undo_.length)
         self.doExecute_(self.undo_[index], {}, replay.bind(null, index + 1));
       else {
         complete();
       }
-    }
+    };
 
     replay(0);
   }

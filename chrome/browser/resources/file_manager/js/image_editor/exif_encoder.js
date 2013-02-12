@@ -366,14 +366,14 @@ ExifEncoder.writeValue = function(bw, tag) {
   } else {  // Scalar or rational
     var width = ExifEncoder.getComponentWidth(tag);
 
-    function writeComponent(value, signed) {
+    var writeComponent = function(value, signed) {
       if (width == 8) {
         bw.writeScalar(value[0], 4, signed);
         bw.writeScalar(value[1], 4, signed);
       } else {
         bw.writeScalar(value, width, signed);
       }
-    }
+    };
 
     var signed = (tag.format == 9 || tag.format == 10);
     if (tag.componentCount == 1) {

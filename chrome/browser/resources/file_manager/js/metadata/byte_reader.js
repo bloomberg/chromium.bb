@@ -181,7 +181,7 @@ ByteReader.readImage = function(dataView, pos, size, opt_end) {
  */
 ByteReader.prototype.canRead = function(size) {
    return this.pos_ + size <= this.view_.byteLength;
-},
+};
 
 /**
  * Return true if the current position is past the end of the buffer.
@@ -254,7 +254,7 @@ ByteReader.prototype.readScalar = function(width, opt_signed, opt_end) {
   var rv = this.view_[method](this.pos_, this.littleEndian_);
   this.pos_ += width;
   return rv;
-}
+};
 
 /**
  * Read as a sequence of characters, returning them as a single string.
