@@ -12,28 +12,20 @@
 
 #define IPC_MESSAGE_START ShellMsgStart
 
-// Sets the current working directory to use for layout tests.
-IPC_MESSAGE_ROUTED1(ShellViewMsg_SetCurrentWorkingDirectory,
-                    base::FilePath /* current_working_directory */)
-
-// Tells the render view to capture a text dump of the page. The render view
-// responds with a ShellViewHostMsg_TextDump.
-IPC_MESSAGE_ROUTED3(ShellViewMsg_CaptureTextDump,
-                    bool /* as_text */,
-                    bool /* printing */,
-                    bool /* recursive */)
-
-// Tells the render view to capture an image of the page. The render view
-// responds with a ShellViewHostMsg_ImageDump.
-IPC_MESSAGE_ROUTED1(ShellViewMsg_CaptureImageDump,
-                    std::string /* expected pixel hash */)
-
 // Tells the renderer to reset all test runners.
 IPC_MESSAGE_CONTROL0(ShellViewMsg_ResetAll)
 
 // Sets the path to the WebKit checkout.
 IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
                      base::FilePath /* webkit source dir */)
+
+// Sets the initial configuration to use for layout tests.
+IPC_MESSAGE_ROUTED5(ShellViewMsg_SetTestConfiguration,
+                    base::FilePath /* current_working_directory */,
+                    bool /* enable_pixel_dumping */,
+                    int /* layout_test_timeout */,
+                    bool /* allow_external_pages */,
+                    std::string /* expected pixel hash */)
 
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
@@ -44,28 +36,20 @@ IPC_MESSAGE_ROUTED2(ShellViewHostMsg_ImageDump,
                     std::string /* actual pixel hash */,
                     SkBitmap /* image */)
 
-// The main frame of the render view finished loading.
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DidFinishLoad)
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TestFinished,
+                    bool /* did_timeout */)
 
-// Print a message from a layout test runner.
-IPC_MESSAGE_ROUTED1(ShellViewHostMsg_PrintMessage,
-                    std::string /* message */)
-
-// Read a file and returns its contents.
-IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_ReadFileToString,
-                           base::FilePath /* local path */,
-                           std::string /* contents */)
-
-// The following messages correspond to methods of the testRunner.
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_NotifyDone)
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpAsText)
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpChildFramesAsText)
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_WaitUntilDone)
+// WebTestDelegate related.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_OverridePreferences,
                     webkit_glue::WebPreferences /* preferences */)
 IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_RegisterIsolatedFileSystem,
                            std::vector<base::FilePath> /* absolute_filenames */,
                            std::string /* filesystem_id */)
+IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_ReadFileToString,
+                           base::FilePath /* local path */,
+                           std::string /* contents */)
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_PrintMessage,
+                    std::string /* message */)
 
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_NotImplemented,
                     std::string /* object_name */,

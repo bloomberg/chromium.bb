@@ -176,14 +176,20 @@ bool WebKitTestController::PrepareForLayoutTest(
       initial_size);
   WebContentsObserver::Observe(main_window_->web_contents());
   main_window_->LoadURL(test_url);
-  if (test_url.spec().find("/dumpAsText/") != std::string::npos) {
-    dump_as_text_ = true;
+  if (test_url.spec().find("/dumpAsText/") != std::string::npos)
     enable_pixel_dumping_ = false;
-  }
   if (test_url.spec().find("/inspector/") != std::string::npos)
     main_window_->ShowDevTools();
   main_window_->web_contents()->GetRenderViewHost()->Focus();
   main_window_->web_contents()->GetRenderViewHost()->SetActive(true);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
+    watchdog_.Reset(base::Bind(&WebKitTestController::TimeoutHandler,
+                               base::Unretained(this)));
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        watchdog_.callback(),
+        base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds + 1000));
+  }
   return true;
 }
 
@@ -194,11 +200,6 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   is_compositing_test_ = false;
   enable_pixel_dumping_ = false;
   expected_pixel_hash_.clear();
-  captured_dump_ = false;
-  dump_as_text_ = false;
-  dump_child_frames_as_text_ = false;
-  wait_until_done_ = false;
-  did_finish_load_ = false;
   prefs_ = webkit_glue::WebPreferences();
   should_override_prefs_ = false;
   watchdog_.Cancel();
@@ -239,17 +240,12 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebKitTestController, message)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
                         OnOverridePreferences)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotifyDone, OnNotifyDone)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpAsText, OnDumpAsText)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_DumpChildFramesAsText,
-                        OnDumpChildFramesAsText)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_WaitUntilDone, OnWaitUntilDone)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinished, OnTestFinished)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -270,8 +266,14 @@ void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
   // later when the RenderProcessHost was created.
   if (render_view_host->GetProcess()->GetHandle() != base::kNullProcessHandle)
     current_pid_ = base::GetProcId(render_view_host->GetProcess()->GetHandle());
-  render_view_host->Send(new ShellViewMsg_SetCurrentWorkingDirectory(
-      render_view_host->GetRoutingID(), current_working_directory_));
+  render_view_host->Send(new ShellViewMsg_SetTestConfiguration(
+      render_view_host->GetRoutingID(),
+      current_working_directory_,
+      enable_pixel_dumping_,
+      kTestTimeoutMilliseconds,
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowExternalPages),
+      expected_pixel_hash_));
 }
 
 void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
@@ -314,42 +316,17 @@ void WebKitTestController::Observe(int type,
   }
 }
 
-void WebKitTestController::CaptureDump() {
-  if (captured_dump_ || !main_window_ || !printer_->in_text_block())
-    return;
-  captured_dump_ = true;
-
-  if (main_window_->web_contents()->GetContentsMimeType() == "text/plain") {
-    dump_as_text_ = true;
-    enable_pixel_dumping_ = false;
-  }
-
-  RenderViewHost* render_view_host =
-      main_window_->web_contents()->GetRenderViewHost();
-
-  render_view_host->Send(new ShellViewMsg_CaptureTextDump(
-      render_view_host->GetRoutingID(),
-      dump_as_text_,
-      false,
-      dump_child_frames_as_text_));
-  if (!dump_as_text_ && enable_pixel_dumping_) {
-    render_view_host->Send(new ShellViewMsg_CaptureImageDump(
-        render_view_host->GetRoutingID(),
-        expected_pixel_hash_));
-  }
-}
-
 void WebKitTestController::TimeoutHandler() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage(
       "FAIL: Timed out waiting for notifyDone to be called");
 }
 
-void WebKitTestController::OnDidFinishLoad() {
-  did_finish_load_ = true;
-  if (wait_until_done_)
-    return;
-  CaptureDump();
+void WebKitTestController::OnTestFinished(bool did_timeout) {
+  watchdog_.Cancel();
+  if (!printer_->output_finished())
+    printer_->PrintImageFooter();
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void WebKitTestController::OnImageDump(
@@ -395,16 +372,11 @@ void WebKitTestController::OnImageDump(
       printer_->PrintImageBlock(png);
   }
   printer_->PrintImageFooter();
-  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void WebKitTestController::OnTextDump(const std::string& dump) {
   printer_->PrintTextBlock(dump);
   printer_->PrintTextFooter();
-  if (dump_as_text_ || !enable_pixel_dumping_) {
-    printer_->PrintImageFooter();
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  }
 }
 
 void WebKitTestController::OnPrintMessage(const std::string& message) {
@@ -415,39 +387,6 @@ void WebKitTestController::OnOverridePreferences(
     const webkit_glue::WebPreferences& prefs) {
   should_override_prefs_ = true;
   prefs_ = prefs;
-}
-
-void WebKitTestController::OnNotifyDone() {
-  if (!wait_until_done_)
-    return;
-  watchdog_.Cancel();
-  if (!did_finish_load_) {
-    wait_until_done_ = false;
-    return;
-  }
-  CaptureDump();
-}
-
-void WebKitTestController::OnDumpAsText() {
-  dump_as_text_ = true;
-}
-
-void WebKitTestController::OnDumpChildFramesAsText() {
-  dump_as_text_ = true;
-}
-
-void WebKitTestController::OnWaitUntilDone() {
-  if (wait_until_done_)
-    return;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
-    watchdog_.Reset(base::Bind(&WebKitTestController::TimeoutHandler,
-                               base::Unretained(this)));
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        watchdog_.callback(),
-        base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds));
-  }
-  wait_until_done_ = true;
 }
 
 void WebKitTestController::OnNotImplemented(

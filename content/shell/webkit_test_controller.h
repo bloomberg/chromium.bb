@@ -32,7 +32,7 @@ class WebKitTestResultPrinter {
   void reset() {
     state_ = BEFORE_TEST;
   }
-  bool in_text_block() const { return state_ == IN_TEXT_BLOCK; }
+  bool output_finished() const { return state_ == AFTER_TEST; }
   void set_capture_text_only(bool capture_text_only) {
     capture_text_only_ = capture_text_only;
   }
@@ -107,19 +107,14 @@ class WebKitTestController : public base::NonThreadSafe,
  private:
   static WebKitTestController* instance_;
 
-  void CaptureDump();
   void TimeoutHandler();
 
   // Message handlers.
-  void OnDidFinishLoad();
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const webkit_glue::WebPreferences& prefs);
-  void OnNotifyDone();
-  void OnDumpAsText();
-  void OnDumpChildFramesAsText();
-  void OnWaitUntilDone();
+  void OnTestFinished(bool did_timeout);
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);
@@ -136,13 +131,6 @@ class WebKitTestController : public base::NonThreadSafe,
 
   bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
-
-  bool captured_dump_;
-
-  bool dump_as_text_;
-  bool dump_child_frames_as_text_;
-  bool wait_until_done_;
-  bool did_finish_load_;
 
   webkit_glue::WebPreferences prefs_;
   bool should_override_prefs_;

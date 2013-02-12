@@ -77,11 +77,16 @@ class WebKitTestRunner : public RenderViewObserver,
 
  private:
   // Message handlers.
-  void OnCaptureTextDump(bool as_text, bool printing, bool recursive);
-  void OnCaptureImageDump(const std::string& expected_pixel_hash);
-  void OnSetCurrentWorkingDirectory(
-      const base::FilePath& current_working_directory);
+  void OnSetTestConfiguration(
+      const base::FilePath& current_working_directory,
+      bool enable_pixel_dumping,
+      int layout_test_timeout,
+      bool allow_external_pages,
+      const std::string& expected_pixel_hash);
 
+  void CaptureDump();
+  void CaptureTextDump();
+  void CaptureImageDump();
   SkCanvas* GetCanvas();
   void PaintRect(const WebKit::WebRect& rect);
   void PaintInvalidatedRegion();
@@ -95,20 +100,17 @@ class WebKitTestRunner : public RenderViewObserver,
 
   ::WebTestRunner::WebPreferences prefs_;
 
-  bool dump_editing_callbacks_;
-  bool dump_frame_load_callbacks_;
-  bool dump_user_gesture_in_frame_load_callbacks_;
-  bool stop_provisional_frame_loads_;
-  bool dump_title_changes_;
-  bool dump_resource_load_callbacks_;
-  bool dump_resource_request_callbacks_;
-  bool dump_resource_response_mime_types_;
-  bool dump_create_view_;
-  bool can_open_windows_;
-
   bool test_is_running_;
   bool wait_until_done_;
   bool load_finished_;
+  bool dump_as_text_;
+  bool dump_child_frames_as_text_;
+  bool printing_;
+
+  bool enable_pixel_dumping_;
+  int layout_test_timeout_;
+  bool allow_external_pages_;
+  std::string expected_pixel_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };
