@@ -1,5 +1,10 @@
 <h1>Connect Apps with Web Intents</h1>
 
+<p class="warning">
+<b>Warning: </b>
+Deprecated in Chrome 24.
+Web intents are no longer supported.
+</p>
 
 <p>
 <a href="http://webintents.org/">Web Intents</a>
@@ -22,6 +27,12 @@ Check out the
 
 <h2 id="register">Register your app to handle an action</h2>
 
+<p class="warning">
+<b>Warning: </b>
+Deprecated in Chrome 24.
+Web intents are no longer supported.
+</p>
+
 <p>
 You must supply the intent in the manifest:
 </p>
@@ -43,6 +54,12 @@ launch - the <code>onLaunched</code> event.
 </p>
 
 <h2 id="content">Handling content types</h2>
+
+<p class="warning">
+<b>Warning: </b>
+Deprecated in Chrome 24.
+Web intents are no longer supported.
+</p>
 
 <p>
 Your application can be the user's preferred choice for handling a file type.
@@ -77,8 +94,14 @@ chrome.app.runtime.onLaunched(function(intent) {
 });
 </pre>
 
-
 <h2 id="launching">Launching an app with a file</h2>
+
+<p class="warning">
+<b>Warning: </b>
+Deprecated in Chrome 24.
+Web intents are no longer supported.
+</p>
+
 <p>
 If your app handles the <code>view</code> intent,
 it is possible to launch it from the command line with a file as a parameter.
@@ -99,6 +122,13 @@ chrome.app.runtime.onLaunched(function(intent) {
 </pre>
 
 <h2 id="launching">Manipulating the file</h2>
+
+<p class="warning">
+<b>Warning: </b>
+Deprecated in Chrome 24.
+Web intents are no longer supported.
+</p>
+
 <p>
   When your application is launched with a file as the parameter
   on the command-line,
@@ -131,6 +161,13 @@ chrome.app.runtime.onLaunched(function(intent) {
 </pre>
 
 <h2 id="return">Returning data to calling application</h2>
+
+<p class="warning">
+<b>Warning: </b>
+Deprecated in Chrome 24.
+Web intents are no longer supported.
+</p>
+
 <p>
 Lots of applications want to cooperate
 with the app that invoked them.
@@ -152,6 +189,12 @@ chrome.app.runtime.onLaunched(function(intent) {
 
 <h2 id="localize">Localizing your app title</h2>
 
+<p class="warning">
+<b>Warning: </b>
+Deprecated in Chrome 24.
+Web intents are no longer supported.
+</p>
+
 <p>
 If your application or extension is localized
 as per the guidelines in
@@ -171,6 +214,13 @@ using the exact same infrastructure:
 </pre>
 
 <h2 id="invoke">Invoking an action</h2>
+
+<p class="warning">
+<b>Warning: </b>
+Deprecated in Chrome 24.
+Web intents are no longer supported.
+</p>
+
 <p>
 If your application needs to be able
 to use the functionality of another application,
@@ -188,6 +238,13 @@ window.navigator.webkitStartActivity(intent, function(data) {
 </pre>
 
 <h2 id="errors">Handling Errors and Exceptions</h2>
+
+<p class="warning">
+<b>Warning: </b>
+Deprecated in Chrome 24.
+Web intents are no longer supported.
+</p>
+
 <p>
    If your service application needs to signal to the client application
    that an unrecoverable error has occurred,
