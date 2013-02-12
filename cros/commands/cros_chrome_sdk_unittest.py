@@ -7,6 +7,7 @@
 """This module tests the cros image command."""
 
 import copy
+import mock
 import os
 import shutil
 import sys
@@ -33,15 +34,12 @@ class MockChromeSDKCommand(init_unittest.MockCommand):
 
 class ParserTest(cros_test_lib.MockTempDirTestCase):
   """Test the parser."""
-
-  BOARD = 'lumpy'
-
   def testNormal(self):
     """Tests that our example parser works normally."""
     with MockChromeSDKCommand(
-        ['--board', self.BOARD],
+        ['--board', ChromeSDKMock.BOARD],
         base_args=['--cache-dir', self.tempdir]) as bootstrap:
-      self.assertEquals(bootstrap.inst.options.board, self.BOARD)
+      self.assertEquals(bootstrap.inst.options.board, ChromeSDKMock.BOARD)
       self.assertEquals(bootstrap.inst.options.cache_dir, self.tempdir)
 
 
@@ -53,23 +51,40 @@ def _GSCopyMock(_self, path, dest):
     shutil.move(local_path, dest)
 
 
-class ChromeSDKTest(cros_test_lib.MockTempDirTestCase):
-  """Base class for SDK tests.  Contains shared functionality."""
-  BOARD = 'lumpy'
-  PARTIAL_VERSION = '3543.2.0'
-  VERSION = 'R25-%s' % PARTIAL_VERSION
+def _DependencyMockCtx(f):
+  """Attribute that ensures dependency PartialMocks are started.
 
-  def setUp(self):
-    self.gs_mock = gs_unittest.GSContextMock()
-    self.gs_mock.SetDefaultCmdResult()
-    self.StartPatcher(self.gs_mock)
+  Since PartialMock does not support nested mocking, we need to first call
+  stop() on the outer level PartialMock (which is passed in to us).  We then
+  re-start() the outer level upon exiting the context.
+  """
+  def new_f(self, *args, **kwargs):
+    if not self.entered:
+      try:
+        self.entered = True
+        # Temporarily disable outer GSContext mock before starting our mock.
+        # TODO(rcui): Generalize this attribute and include in partial_mock.py.
+        if self.ext_gs_mock:
+          self.ext_gs_mock.stop()
+
+        with self.gs_mock:
+          return f(self, *args, **kwargs)
+      finally:
+        self.entered = False
+        if self.ext_gs_mock:
+          self.ext_gs_mock.start()
+    else:
+      return f(self, *args, **kwargs)
+  return new_f
 
 
-class RunThroughTest(ChromeSDKTest):
-  """Run the script with most things mocked out."""
+class ChromeSDKMock(partial_mock.PartialMock):
+  """Provides mocking functionality for ChromeSDK."""
 
-  VERSION_KEY = (ChromeSDKTest.BOARD, ChromeSDKTest.VERSION,
-                 constants.CHROME_SYSROOT_TAR)
+  TARGET = 'chromite.cros.commands.cros_chrome_sdk.ChromeSDK'
+  ATTRS = ('__init__', '_GetChromeLKGM', '_GetNewestManifestVersion',
+           '_UpdateTarball', '_GetMetadata')
+
   FAKE_METADATA = """
 {
   "boards": ["x86-alex"],
@@ -82,6 +97,58 @@ class RunThroughTest(ChromeSDKTest):
   "sdk-version": "2013.01.23.003823"
 }"""
 
+  BOARD = 'x86-alex'
+  VERSION = 'R25-3543.2.0'
+
+  def __init__(self, gs_mock=None):
+    """Initializes the mock.
+
+    Arguments:
+      gs_mock: An already started GSContextMock instance.  stop() will be called
+        on this instance every time execution enters one our the mocked out
+        methods, and start() called on it once execution leaves the mocked out
+        method.
+    """
+    partial_mock.PartialMock.__init__(self)
+    self.ext_gs_mock = gs_mock
+    self.entered = False
+    self.gs_mock = gs_unittest.GSContextMock()
+    self.gs_mock.SetDefaultCmdResult()
+
+  @_DependencyMockCtx
+  def _target__init__(self, inst, *args, **kwargs):
+    return self.backup['__init__'](inst, *args, **kwargs)
+
+  @_DependencyMockCtx
+  def _GetChromeLKGM(self, _inst, *_args, **_kwargs):
+    return None
+
+  @_DependencyMockCtx
+  def _GetNewestManifestVersion(self, _inst, *_args, **_kwargs):
+    return self.VERSION
+
+  @_DependencyMockCtx
+  def _UpdateTarball(self, inst, *args, **kwargs):
+    with mock.patch.object(gs.GSContext, 'Copy', autospec=True,
+                           side_effect=_GSCopyMock):
+      with mock.patch.object(cache, 'Untar'):
+        return self.backup['_UpdateTarball'](inst, *args, **kwargs)
+
+  @_DependencyMockCtx
+  def _GetMetadata(self, inst, *args, **kwargs):
+    self.gs_mock.SetDefaultCmdResult()
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('cat .*/%s' % constants.METADATA_JSON),
+        output=self.FAKE_METADATA)
+    return self.backup['_GetMetadata'](inst, *args, **kwargs)
+
+
+class RunThroughTest(cros_test_lib.MockTempDirTestCase):
+  """Run the script with most things mocked out."""
+
+  VERSION_KEY = (ChromeSDKMock.BOARD, ChromeSDKMock.VERSION,
+                 constants.CHROME_SYSROOT_TAR)
+
   FAKE_ENV = {
       'GYP_DEFINES': "sysroot='/path/to/sysroot'",
       'CXX': 'x86_64-cros-linux-gnu-g++ -B /path/to/gold',
@@ -90,21 +157,13 @@ class RunThroughTest(ChromeSDKTest):
   }
 
   def setUp(self):
-    self.gs_mock.AddCmdResult(partial_mock.ListRegex('cat .*/LATEST.*'),
-                              output=self.VERSION)
-    self.gs_mock.AddCmdResult(
-        partial_mock.ListRegex('cat .*/%s' % constants.METADATA_JSON),
-        output=self.FAKE_METADATA)
-
+    self.sdk_mock = self.StartPatcher(ChromeSDKMock())
     self.cmd_mock = MockChromeSDKCommand(
-        ['--board', self.BOARD, 'true'],
+        ['--board', ChromeSDKMock.BOARD, 'true'],
         base_args=['--cache-dir', self.tempdir])
     self.StartPatcher(self.cmd_mock)
     self.cmd_mock.UnMockAttr('Run')
 
-    self.untar_mock = self.PatchObject(cache, 'Untar')
-    self.PatchObject(gs.GSContext, 'Copy',
-                     autospec=True, side_effect=_GSCopyMock)
     self.PatchObject(osutils, 'SourceEnvironment',
                      autospec=True, return_value=copy.copy(self.FAKE_ENV))
 
@@ -120,23 +179,26 @@ class RunThroughTest(ChromeSDKTest):
 
   def testSpecificComponent(self):
     """Tests that ChromeSDK.Prepare() handles |components| param properly."""
-    sdk = cros_chrome_sdk.ChromeSDK(os.path.join(self.tempdir), self.BOARD)
+    sdk = cros_chrome_sdk.ChromeSDK(os.path.join(self.tempdir),
+                                    ChromeSDKMock.BOARD)
     components = [constants.BASE_IMAGE_TAR, constants.CHROME_SYSROOT_TAR]
-    with sdk.Prepare(version=self.VERSION,
-                     components=components) as ctx:
+    with sdk.Prepare(components=components) as ctx:
       for c in components:
         self.assertTrue(os.path.exists(ctx.key_map[c].path))
       for c in [constants.IMAGE_SCRIPTS_TAR, constants.CHROME_ENV_TAR]:
         self.assertFalse(c in ctx.key_map)
 
 
-class VersionTest(ChromeSDKTest):
+class VersionTest(cros_test_lib.MockTempDirTestCase):
   """Tests the determination of which SDK version to use."""
 
-  ENV_VERSION = 'R26-1234.0.0'
+  PARTIAL_VERSION = '3543.2.0'
+  VERSION = 'RXX-%s' % PARTIAL_VERSION
+  ENV_VERSION = 'RYY-%s' % PARTIAL_VERSION
+  BOARD = 'lumpy'
 
   VERSION_BASE = ("gs://chromeos-image-archive/%s-release/%s"
-                  % (ChromeSDKTest.BOARD, ChromeSDKTest.VERSION))
+                  % (BOARD, VERSION))
   FAKE_LS = """\
 %(base)s/UPLOADED
 %(base)s/au-generator.zip
@@ -145,6 +207,11 @@ class VersionTest(ChromeSDKTest):
 """ % {'base': VERSION_BASE}
 
   def setUp(self):
+    self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
+    self.gs_mock.SetDefaultCmdResult()
+    self.sdk_mock = self.StartPatcher(ChromeSDKMock(gs_mock=self.gs_mock))
+    self.sdk_mock.UnMockAttr('_GetChromeLKGM')
+
     os.environ.pop(cros_chrome_sdk.SDK_VERSION_ENV, None)
     self.sdk = cros_chrome_sdk.ChromeSDK(
         os.path.join(self.tempdir, 'cache'), self.BOARD)
@@ -165,6 +232,8 @@ class VersionTest(ChromeSDKTest):
     self.sdk.UpdateDefaultVersion()
     self.assertEquals(self.sdk.GetDefaultVersion(),
                       self.VERSION)
+    # pylint: disable=E1101
+    self.assertTrue(gclient.FindGclientCheckoutRoot.called)
 
   def testDefaultEnv(self):
     """Test that we pick up the version from the environment."""
