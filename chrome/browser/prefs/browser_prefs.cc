@@ -134,7 +134,7 @@
 #endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/web_resource/plugins_resource_service.h"
+#include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
 namespace {

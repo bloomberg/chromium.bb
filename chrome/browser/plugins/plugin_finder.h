@@ -40,9 +40,9 @@ class PluginFinder {
   // It should be called on the UI thread.
   void Init();
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  void ReinitializePlugins(const base::DictionaryValue& json_metadata);
+  void ReinitializePlugins(const base::DictionaryValue* json_metadata);
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   // Finds a plug-in for the given MIME type and language (specified as an IETF
   // language tag, i.e. en-US). If found, sets |installer| to the
   // corresponding PluginInstaller and |plugin_metadata| to a copy of the
@@ -76,20 +76,20 @@ class PluginFinder {
   PluginFinder();
   ~PluginFinder();
 
-  static base::DictionaryValue* ComputePluginList();
-
   // Loads the plug-in information from the browser resources and parses it.
   // Returns NULL if the plug-in list couldn't be parsed.
-  static base::DictionaryValue* LoadPluginList();
+  static base::DictionaryValue* LoadBuiltInPluginList();
 
-  void InitInternal();
-
-  scoped_ptr<base::DictionaryValue> plugin_list_;
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   std::map<std::string, PluginInstaller*> installers_;
 #endif
 
   std::map<std::string, PluginMetadata*> identifier_plugin_;
+
+  // Version of the metadata information. We use this to consolidate multiple
+  // sources (baked into resource and fetched from a URL), making sure that we
+  // don't overwrite newer versions with older ones.
+  int version_;
 
   // Synchronization for the above member variables is
   // required since multiple threads can be accessing them concurrently.

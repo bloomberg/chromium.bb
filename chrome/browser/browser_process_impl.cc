@@ -120,7 +120,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/web_resource/plugins_resource_service.h"
+#include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -865,7 +865,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   DCHECK(!plugins_resource_service_.get());
   plugins_resource_service_ = new PluginsResourceService(local_state());
-  plugins_resource_service_->StartAfterDelay();
+  plugins_resource_service_->Init();
 #endif
 #endif  // defined(ENABLE_PLUGINS)
 

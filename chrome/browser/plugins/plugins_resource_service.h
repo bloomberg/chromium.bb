@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_RESOURCE_PLUGINS_RESOURCE_SERVICE_H_
-#define CHROME_BROWSER_WEB_RESOURCE_PLUGINS_RESOURCE_SERVICE_H_
+#ifndef CHROME_BROWSER_PLUGINS_PLUGINS_RESOURCE_SERVICE_H_
+#define CHROME_BROWSER_PLUGINS_PLUGINS_RESOURCE_SERVICE_H_
 
 #include "chrome/browser/web_resource/web_resource_service.h"
 
@@ -16,6 +16,8 @@ class PluginsResourceService : public WebResourceService {
  public:
   explicit PluginsResourceService(PrefService* local_state);
 
+  void Init();
+
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
@@ -27,4 +29,4 @@ class PluginsResourceService : public WebResourceService {
   DISALLOW_COPY_AND_ASSIGN(PluginsResourceService);
 };
 
-#endif  // CHROME_BROWSER_WEB_RESOURCE_PLUGINS_RESOURCE_SERVICE_H_
+#endif  // CHROME_BROWSER_PLUGINS_PLUGINS_RESOURCE_SERVICE_H_
