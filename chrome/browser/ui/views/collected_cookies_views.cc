@@ -293,7 +293,7 @@ void CollectedCookiesViews::Init() {
 
   layout->StartRow(0, single_column_layout_id);
   views::TabbedPane* tabbed_pane = new views::TabbedPane();
-  // This color matches native_tabbed_pane_views.cc's kTabBorderColor.
+  // This color matches tabbed_pane.cc's kTabBorderColor.
   const SkColor border_color = SkColorSetRGB(0xCC, 0xCC, 0xCC);
   // TODO(msw): Remove border and expand bounds in new dialog style.
   tabbed_pane->set_border(views::Border::CreateSolidBorder(1, border_color));
