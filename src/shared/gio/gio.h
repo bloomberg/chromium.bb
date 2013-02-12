@@ -166,7 +166,7 @@ struct GioMemoryFileSnapshot {
 };
 
 int GioMemoryFileSnapshotCtor(struct GioMemoryFileSnapshot  *self,
-                              char                          *fn);
+                              const char                    *filename);
 
 void  GioMemoryFileSnapshotDtor(struct Gio                    *vself);
 

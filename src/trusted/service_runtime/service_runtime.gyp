@@ -36,6 +36,7 @@
         'sources': [
           'dyn_array.c',
           'elf_util.c',
+          'load_file.c',
           'nacl_all_modules.c',
           'nacl_app_thread.c',
           'nacl_bootstrap_channel_error_reporter.c',

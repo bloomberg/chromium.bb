@@ -6,16 +6,15 @@
 
 #include <string.h>
 
-#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
+#include "native_client/src/trusted/service_runtime/load_file.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
-#include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/tests/minnacl/minimal_test_syscalls.h"
 
@@ -44,7 +43,6 @@ static int32_t MySyscallExit(struct NaClAppThread *natp) {
 int main(int argc, char **argv) {
   struct NaClApp app;
   struct NaClApp *nap = &app;
-  struct GioMemoryFileSnapshot gio_file;
   struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS] = {{0}};
   int index;
   int use_separate_thread = 0;
@@ -68,10 +66,8 @@ int main(int argc, char **argv) {
 
   NaClAllModulesInit();
 
-  NaClFileNameForValgrind(argv[1]);
-  CHECK(GioMemoryFileSnapshotCtor(&gio_file, argv[1]));
   CHECK(NaClAppWithSyscallTableCtor(&app, syscall_table));
-  CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app) == LOAD_OK);
+  CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
   /* These are examples of two different ways to run untrusted code. */

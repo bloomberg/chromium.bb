@@ -7,16 +7,15 @@
 #include <string.h>
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
+#include "native_client/src/trusted/service_runtime/load_file.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
-#include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 #if NACL_WINDOWS
@@ -252,7 +251,6 @@ int32_t JumpToZeroCrashSyscall(struct NaClAppThread *natp) {
 
 int main(int argc, char **argv) {
   struct NaClApp app;
-  struct GioMemoryFileSnapshot gio_file;
 
   NaClHandleBootstrapArgs(&argc, &argv);
 
@@ -269,10 +267,8 @@ int main(int argc, char **argv) {
 
   g_crash_type = argv[2];
 
-  NaClFileNameForValgrind(argv[1]);
-  CHECK(GioMemoryFileSnapshotCtor(&gio_file, argv[1]));
   CHECK(NaClAppCtor(&app));
-  CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app) == LOAD_OK);
+  CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
   NaClAppInitialDescriptorHookup(&app);
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 

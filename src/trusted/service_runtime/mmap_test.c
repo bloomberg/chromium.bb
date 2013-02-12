@@ -19,12 +19,11 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
 #include "native_client/src/include/nacl_assert.h"
-#include "native_client/src/shared/gio/gio.h"
+#include "native_client/src/trusted/service_runtime/load_file.h"
 #include "native_client/src/trusted/service_runtime/mmap_test_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
-#include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
@@ -69,7 +68,6 @@ void CheckForGuardRegion(uintptr_t addr, size_t expected_size) {
 
 int main(int argc, char **argv) {
   char *nacl_file;
-  struct GioMemoryFileSnapshot gf;
   struct NaClApp state;
   struct NaClApp *nap = &state;
   struct NaClAppThread nat, *natp = &nat;
@@ -93,14 +91,10 @@ int main(int argc, char **argv) {
                       ? 0
                       : strtol(nacl_verbosity, (char **) 0, 0));
 
-  NaClFileNameForValgrind(nacl_file);
-  errcode = GioMemoryFileSnapshotCtor(&gf, nacl_file);
-  ASSERT_NE(errcode, 0);
   errcode = NaClAppCtor(&state);
   ASSERT_NE(errcode, 0);
-  errcode = NaClAppLoadFile((struct Gio *) &gf,
-                            &state);
-  ASSERT_EQ(errcode, 0);
+  errcode = NaClAppLoadFileFromFilename(nap, nacl_file);
+  ASSERT_EQ(errcode, LOAD_OK);
 
   InitThread(&state, natp);
 

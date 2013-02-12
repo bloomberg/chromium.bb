@@ -26,13 +26,13 @@ struct GioVtbl const  kGioMemoryFileSnapshotVtbl = {
 
 
 int   GioMemoryFileSnapshotCtor(struct GioMemoryFileSnapshot  *self,
-                                char                          *fn) {
+                                const char                    *filename) {
   FILE            *iop;
   struct stat     stbuf;
   char            *buffer;
 
   ((struct Gio *) self)->vtbl = (struct GioVtbl *) NULL;
-  if (0 == (iop = fopen(fn, "rb"))) {
+  if (0 == (iop = fopen(filename, "rb"))) {
     return 0;
   }
   if (fstat(fileno(iop), &stbuf) == -1) {

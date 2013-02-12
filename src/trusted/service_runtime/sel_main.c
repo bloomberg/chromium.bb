@@ -36,6 +36,7 @@
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/load_file.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_bootstrap_channel_error_reporter.h"
@@ -552,20 +553,9 @@ int NaClSelLdrMain(int argc, char **argv) {
   NaClAppInitialDescriptorHookup(nap);
 
   if (!rpc_supplies_nexe) {
-    struct GioMemoryFileSnapshot main_file;
-
-    NaClFileNameForValgrind(nacl_file);
-    if (0 == GioMemoryFileSnapshotCtor(&main_file, nacl_file)) {
-      perror("sel_main");
-      fprintf(stderr, "Cannot open \"%s\".\n", nacl_file);
-      exit(1);
-    }
-    NaClPerfCounterMark(&time_all_main, "SnapshotNaclFile");
-    NaClPerfCounterIntervalLast(&time_all_main);
-
     if (LOAD_OK == errcode) {
       NaClLog(2, "Loading nacl file %s (non-RPC)\n", nacl_file);
-      errcode = NaClAppLoadFile((struct Gio *) &main_file, nap);
+      errcode = NaClAppLoadFileFromFilename(nap, nacl_file);
       if (LOAD_OK != errcode) {
         fprintf(stderr, "Error while loading \"%s\": %s\n",
                 nacl_file,
@@ -584,12 +574,6 @@ int NaClSelLdrMain(int argc, char **argv) {
       NaClXCondVarBroadcast(&nap->cv);
       NaClXMutexUnlock(&nap->mu);
     }
-
-    if (-1 == (*((struct Gio *) &main_file)->vtbl->Close)((struct Gio *)
-                                                          &main_file)) {
-      fprintf(stderr, "Error while closing \"%s\".\n", nacl_file);
-    }
-    (*((struct Gio *) &main_file)->vtbl->Dtor)((struct Gio *) &main_file);
 
     if (fuzzing_quit_after_load) {
       exit(0);

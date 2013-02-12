@@ -9,12 +9,11 @@
 #include <mach/task.h>
 #include <pthread.h>
 
-#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/load_file.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
-#include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
@@ -118,7 +117,6 @@ void RegisterExceptionHandler(void) {
 
 int main(int argc, char **argv) {
   struct NaClApp app;
-  struct GioMemoryFileSnapshot gio_file;
 
   if (argc == 2 && strcmp(argv[1], "early_trusted") == 0) {
     g_expect_untrusted = 0;
@@ -141,10 +139,8 @@ int main(int argc, char **argv) {
 
   NaClAllModulesInit();
 
-  NaClFileNameForValgrind(argv[1]);
-  CHECK(GioMemoryFileSnapshotCtor(&gio_file, argv[2]));
   CHECK(NaClAppCtor(&app));
-  CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app) == LOAD_OK);
+  CHECK(NaClAppLoadFileFromFilename(&app, argv[2]) == LOAD_OK);
   CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
   RegisterExceptionHandler();
