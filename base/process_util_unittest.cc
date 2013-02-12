@@ -947,6 +947,9 @@ TEST_F(ProcessUtilTest, ParseProcStatCPU) {
   EXPECT_EQ(0, base::ParseProcStatCPU(kSelfStat));
 }
 
+// Disable on Android because base_unittests runs inside a Dalvik VM that
+// starts and stop threads (crbug.com/175563).
+#if !defined(OS_ANDROID)
 TEST_F(ProcessUtilTest, GetNumberOfThreads) {
   const base::ProcessHandle current = base::GetCurrentProcessHandle();
   const int initial_threads = base::GetNumberOfThreads(current);
@@ -963,6 +966,7 @@ TEST_F(ProcessUtilTest, GetNumberOfThreads) {
   // The Thread destructor will stop them.
   ASSERT_EQ(initial_threads, base::GetNumberOfThreads(current));
 }
+#endif  // !defined(OS_ANDROID)
 
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
