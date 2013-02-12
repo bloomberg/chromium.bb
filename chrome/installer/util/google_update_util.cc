@@ -70,13 +70,15 @@ bool GetUserLevelGoogleUpdateInstallCommandLine(string16* cmd_string) {
       GetGoogleUpdateSetupExe(true));  // system-level.
   if (!google_update_setup.empty()) {
     CommandLine cmd(google_update_setup);
-    // Appends parameter "/install runtime=true&needsadmin=false /silent"
+    // Appends "/install runtime=true&needsadmin=false /silent /nomitag".
+    // NB: /nomitag needs to be at the end.
     // Constants are found in code.google.com/p/omaha/common/const_cmd_line.h.
     cmd.AppendArg("/install");
     // The "&" can be used in base::LaunchProcess() without quotation
     // (this is problematic only if run from command prompt).
     cmd.AppendArg("runtime=true&needsadmin=false");
     cmd.AppendArg("/silent");
+    cmd.AppendArg("/nomitag");
     *cmd_string = cmd.GetCommandLineString();
   }
   return !cmd_string->empty();
