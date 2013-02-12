@@ -70,6 +70,9 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       settings.topControlsHeight = controls_height;
   }
 
+  settings.compositorFrameMessage =
+      cmd->HasSwitch(cc::switches::kEnableCompositorFrameMessage);
+
   if (settings.calculateTopControlsPosition &&
       (settings.topControlsHeight <= 0 || !settings.compositorFrameMessage)) {
     DCHECK(false) << "Top controls repositioning enabled without valid height "
@@ -77,8 +80,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     settings.calculateTopControlsPosition = false;
   }
 
-  settings.compositorFrameMessage =
-      cmd->HasSwitch(cc::switches::kEnableCompositorFrameMessage);
   settings.partialSwapEnabled =
       cmd->HasSwitch(cc::switches::kEnablePartialSwap);
   settings.backgroundColorInsteadOfCheckerboard =
