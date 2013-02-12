@@ -28,13 +28,13 @@ PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-ar r
 define C_COMPILER_RULE
 -include $(OUTDIR)/$(basename $(1))_pnacl.d
 $(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
-	$(PNACL_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
+	$(call LOG,CC,$$@,$(PNACL_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS))
 endef
 
 define CXX_COMPILER_RULE
 -include $(OUTDIR)/$(basename $(1))_pnacl.d
 $(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
-	$(PNACL_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS)
+	$(call LOG,CXX,$$@,$(PNACL_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS))
 endef
 
 
@@ -77,7 +77,7 @@ $(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
 all: $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a
 $(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_pnacl.o)
 	$(MKDIR) -p $$(dir $$@)
-	$(PNACL_LIB) $$@ $$^ $(3)
+	$(call LOG,LIB,$$@,$(PNACL_LIB) $$@ $$^ $(3))
 endef
 
 
@@ -94,9 +94,8 @@ endef
 define LINKER_RULE
 all: $(1)
 $(1) : $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(PNACL_LINK) -o $(1) $(2) $(foreach path,$(5),-L$(path)/pnacl/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(6)
+	$(call LOG,LINK,$$@,$(PNACL_LINK) -o $(1) $(2) $(foreach path,$(5),-L$(path)/pnacl/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
-
 
 
 #
@@ -131,7 +130,7 @@ NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
 define NMF_RULE
 all:$(OUTDIR)/$(1).nmf
 $(OUTDIR)/$(1).nmf : $(OUTDIR)/$(1).pexe
-	$(NMF) -o $$@ $$^ -s $(OUTDIR) $(2)
+	$(call LOG,CREATE_NMF,$$@,$(NMF) -o $$@ $$^ -s $(OUTDIR) $(2))
 endef
 
 

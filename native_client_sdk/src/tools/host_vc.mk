@@ -45,13 +45,13 @@ WIN_FLAGS?=-D WIN32 -D _WIN32 -D PTW32_STATIC_LIB
 define C_COMPILER_RULE
 -include $(OUTDIR)/$(basename $(1)).d
 $(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
-	$(HOST_CC) /Fo$$@ /c $$< $(WIN_OPT_FLAGS) $(2) $(WIN_FLAGS)
+	$(call LOG,CC,$$@,$(HOST_CC) /Fo$$@ /c $$< $(WIN_OPT_FLAGS) $(2) $(WIN_FLAGS))
 endef
 
 define CXX_COMPILER_RULE
 -include $(OUTDIR)/$(basename $(1)).d
 $(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
-	$(HOST_CXX) /Fo$$@ -c $$< $(WIN_OPT_FLAGS) $(2) $(WIN_FLAGS)
+	$(call LOG,CXX,$$@,$(HOST_CXX) /Fo$$@ -c $$< $(WIN_OPT_FLAGS) $(2) $(WIN_FLAGS))
 endef
 
 
@@ -82,7 +82,7 @@ $(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(OSNAME)_x86_32_host/$(CONFIG)/$(
 all:$(NACL_SDK_ROOT)/lib/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
 $(NACL_SDK_ROOT)/lib/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
 	$(MKDIR) -p $$(dir $$@)
-	$(HOST_LIB) /OUT:$$@ $$^ $(WIN_LDFLAGS)
+	$(call LOG,LIB,$$@,$(HOST_LIB) /OUT:$$@ $$^ $(WIN_LDFLAGS))
 endef
 
 
@@ -99,7 +99,7 @@ endef
 define LINKER_RULE
 all: $(1)
 $(1) : $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(HOST_LINK) /DLL /OUT:$(1) /PDB:$(1).pdb $(2) /DEBUG $(foreach path,$(5),/LIBPATH:$(path)/$(OSNAME)_x86_32_host/$(CONFIG)) $(foreach lib,$(3),$(lib).lib) $(6)
+	$(call LOG,LINK,$$@,$(HOST_LINK) /DLL /OUT:$(1) /PDB:$(1).pdb $(2) /DEBUG $(foreach path,$(5),/LIBPATH:$(path)/$(OSNAME)_x86_32_host/$(CONFIG)) $(foreach lib,$(3),$(lib).lib) $(6))
 endef
 
 
@@ -117,25 +117,4 @@ define LINK_RULE
 $(call LINKER_RULE,$(OUTDIR)/$(1)$(HOST_EXT),$(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o),$(3),$(4),$(LIB_PATHS),$(6))
 endef
 
-
-#
-# NMF Manifiest generation
-#
-# Use the python script create_nmf to scan the binaries for dependencies using
-# objdump.  Pass in the (-L) paths to the default library toolchains so that we
-# can find those libraries and have it automatically copy the files (-s) to
-# the target directory for us.
-#
-# $1 = Target Name (the basename of the nmf
-# $2 = Additional create_nmf.py arguments
-#
-NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
-
-define NMF_RULE
-NMF_LIST+=$(OUTDIR)/$(1).nmf
-$(OUTDIR)/$(1).nmf : $(OUTDIR)/$(1)$(HOST_EXT)
-	@echo "Host Toolchain" > $$@
-endef
-
-all : $(LIB_LIST) $(DEPS_LIST) $(NMF_LIST)
-
+all : $(LIB_LIST) $(DEPS_LIST)

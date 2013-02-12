@@ -18,6 +18,7 @@ _EXCLUDED_PATHS = (
     r"^breakpad[\\\/].*",
     r"^native_client_sdk[\\\/]src[\\\/]build_tools[\\\/]make_rules.py",
     r"^native_client_sdk[\\\/]src[\\\/]build_tools[\\\/]make_simple.py",
+    r"^native_client_sdk[\\\/]src[\\\/]tools[\\\/].*.mk",
     r"^net[\\\/]tools[\\\/]spdyshark[\\\/].*",
     r"^skia[\\\/].*",
     r"^v8[\\\/].*",

@@ -65,12 +65,19 @@ export CYGWIN
 #
 # Alias for standard POSIX file system commands
 #
-CP:=python $(NACL_SDK_ROOT)/tools/oshelpers.py cp
-MKDIR:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mkdir
-MV:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mv
-RM:=python $(NACL_SDK_ROOT)/tools/oshelpers.py rm
-WHICH:=python $(NACL_SDK_ROOT)/tools/oshelpers.py which
-
+OSHELPERS=python $(NACL_SDK_ROOT)/tools/oshelpers.py
+WHICH:=$(OSHELPERS) which
+ifdef V
+RM:=$(OSHELPERS) rm
+CP:=$(OSHELPERS) cp
+MKDIR:=$(OSHELPERS) mkdir
+MV:=$(OSHELPERS) mv
+else
+RM:=@$(OSHELPERS) rm
+CP:=@$(OSHELPERS) cp
+MKDIR:=@$(OSHELPERS) mkdir
+MV:=@$(OSHELPERS) mv
+endif
 
 #
 # Compute path to requested NaCl Toolchain
@@ -123,7 +130,7 @@ all_versions: $(TOOLCHAIN_LIST)
 #
 .PHONY: clean
 clean:
-	$(RM) $(TARGET).nmf
+	$(RM) -f $(TARGET).nmf
 	$(RM) -fr $(TOOLCHAIN)
 
 
@@ -137,7 +144,7 @@ clean:
 #
 %dir.stamp :
 	$(MKDIR) -p $(dir $@)
-	echo "Directory Stamp" > $@
+	@echo "Directory Stamp" > $@
 
 OUTDIR:=$(TOOLCHAIN)/$(CONFIG)
 STAMPDIR?=$(OUTDIR)
@@ -191,6 +198,7 @@ endif
 
 NACL_CFLAGS?=-Wno-long-long -Werror
 NACL_CXXFLAGS?=-Wno-long-long -Werror
+NACL_LDFLAGS?=-Wl,-as-needed
 
 #
 # Default Paths
@@ -202,6 +210,27 @@ INC_PATHS?=$(NACL_SDK_ROOT)/include/$(OSNAME) $(NACL_SDK_ROOT)/include $(EXTRA_I
 endif
 
 LIB_PATHS?=$(NACL_SDK_ROOT)/lib $(EXTRA_LIB_PATHS)
+
+#
+# Define a LOG macro that allow a command to be run in quiet mode where
+# the command echoed is not the same as the actual command executed.
+# The primary use case for this is to avoid echoing the full compiler
+# and linker command in the default case.  Defining V=1 will restore
+# the verbose behavior
+#
+# $1 = The name of the tool being run
+# $2 = The target file being built
+# $3 = The full command to run
+#
+ifdef V
+define LOG
+$(3)
+endef
+else
+define LOG
+@echo "  $(1) $(2)" && $(3)
+endef
+endif
 
 
 #

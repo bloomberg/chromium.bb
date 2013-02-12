@@ -40,13 +40,13 @@ LINUX_CCFLAGS=-fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NA
 define C_COMPILER_RULE
 -include $(OUTDIR)/$(basename $(1)).d
 $(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) | $(dir $(OUTDIR)/$(basename $(1)))dir.stamp
-	$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS)
+	$(call LOG,CC,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
 endef
 
 define CXX_COMPILER_RULE
 -include $(OUTDIR)/$(basename $(1)).d
 $(OUTDIR)/$(basename $(1)).o : $(1) $(TOP_MAKE) |$(dir $(OUTDIR)/$(basename $(1)))dir.stamp
-	$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS)
+	$(call LOG,CXX,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
 endef
 
 
@@ -89,7 +89,7 @@ $(STAMPDIR)/$(1).stamp : $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 all:$(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/lib$(1).a : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
 	$(MKDIR) -p $$(dir $$@)
-	$(HOST_LIB) $$@ $$^
+	$(call LOG,LIB,$$@,$(HOST_LIB) $$@ $$^)
 endef
 
 
@@ -106,7 +106,7 @@ endef
 define LINKER_RULE
 all: $(1)
 $(1) : $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(HOST_LINK) -shared -o $(1) $(2) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6)
+	$(call LOG,LINK,$$@,$(HOST_LINK) -shared -o $(1) $(2) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
 
 
@@ -125,24 +125,4 @@ $(call LINKER_RULE,$(OUTDIR)/$(1)$(HOST_EXT),$(foreach src,$(2),$(OUTDIR)/$(base
 endef
 
 
-#
-# NMF Manifiest generation
-#
-# Use the python script create_nmf to scan the binaries for dependencies using
-# objdump.  Pass in the (-L) paths to the default library toolchains so that we
-# can find those libraries and have it automatically copy the files (-s) to
-# the target directory for us.
-#
-# $1 = Target Name (the basename of the nmf
-# $2 = Additional create_nmf.py arguments
-#
-NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
-
-define NMF_RULE
-NMF_LIST+=$(OUTDIR)/$(1).nmf
-$(OUTDIR)/$(1).nmf : $(OUTDIR)/$(1)$(HOST_EXT)
-	@echo "Host Toolchain" > $$@
-endef
-
-all : $(LIB_LIST) $(DEPS_LIST) $(NMF_LIST)
-
+all : $(LIB_LIST) $(DEPS_LIST)

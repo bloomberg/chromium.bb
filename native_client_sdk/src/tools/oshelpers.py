@@ -133,7 +133,7 @@ def Copy(args):
   src_list = []
   for src in srcs:
     files = glob.glob(src)
-    if len(files) == 0:
+    if not files:
       raise OSError('cp: no such file or directory: ' + src)
     if files:
       src_list.extend(files)
@@ -259,11 +259,10 @@ def Remove(args):
   try:
     for pattern in files:
       dst_files = glob.glob(pattern)
-      # Ignore non existing files when using force
-      if len(dst_files) == 0 and options.force:
-        print "rm: Skipping " + pattern
-        continue
-      elif len(dst_files) == 0:
+      if not dst_files:
+        # Ignore non existing files when using force
+        if options.force:
+          continue
         raise OSError('rm: no such file or directory: ' + pattern)
 
       for dst in dst_files:
@@ -363,7 +362,7 @@ def Zip(args):
   src_files = []
   for src_arg in src_args:
     globbed_src_args = glob.glob(src_arg)
-    if len(globbed_src_args) == 0:
+    if not globbed_src_args:
       if not options.quiet:
         print 'zip warning: name not matched: %s' % (src_arg,)
 
