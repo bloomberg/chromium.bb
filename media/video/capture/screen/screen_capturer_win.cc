@@ -306,6 +306,12 @@ void ScreenCapturerWin::PrepareCaptureResources() {
     // If SetThreadDesktop() fails, the thread is still assigned a desktop.
     // So we can continue capture screen bits, just from the wrong desktop.
     desktop_.SetThreadDesktop(input_desktop.Pass());
+
+    // Re-assert our vote to disable Aero.
+    // See crbug.com/124018 and crbug.com/129906.
+    if (composition_func_ != NULL) {
+      (*composition_func_)(DWM_EC_DISABLECOMPOSITION);
+    }
   }
 
   // If the display bounds have changed then recreate GDI resources.
