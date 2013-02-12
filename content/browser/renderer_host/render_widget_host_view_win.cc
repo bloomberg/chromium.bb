@@ -1902,25 +1902,7 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
         reinterpret_cast<LPARAM>(toplevel_hwnd));
   }
 
-  // This is a bit of a hack, but will work for now since we don't want to
-  // pollute this object with WebContentsImpl-specific functionality...
-  bool handled_by_WebContentsImpl = false;
-  if (!is_fullscreen_ && GetParent()) {
-    // Use a special reflected message to break recursion. If we send
-    // WM_MOUSEWHEEL, the focus manager subclass of web contents will
-    // route it back here.
-    MSG new_message = {0};
-    new_message.hwnd = m_hWnd;
-    new_message.message = message;
-    new_message.wParam = wparam;
-    new_message.lParam = lparam;
-
-    handled_by_WebContentsImpl =
-        !!::SendMessage(GetParent(), base::win::kReflectedMessage, 0,
-                        reinterpret_cast<LPARAM>(&new_message));
-  }
-
-  if (!handled_by_WebContentsImpl && render_widget_host_) {
+  if (render_widget_host_) {
     render_widget_host_->ForwardWheelEvent(
         WebInputEventFactory::mouseWheelEvent(m_hWnd, message, wparam,
                                               lparam));

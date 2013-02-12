@@ -43,7 +43,6 @@ class CONTENT_EXPORT WebContentsViewWin
     MESSAGE_HANDLER(WM_MBUTTONDOWN, OnMouseDown)
     MESSAGE_HANDLER(WM_RBUTTONDOWN, OnMouseDown)
     MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
-    MESSAGE_HANDLER(base::win::kReflectedMessage, OnReflectedMessage)
     // Hacks for old ThinkPad touchpads/scroll points.
     MESSAGE_HANDLER(WM_NCCALCSIZE, OnNCCalcSize)
     MESSAGE_HANDLER(WM_NCHITTEST, OnNCHitTest)

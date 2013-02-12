@@ -12,4 +12,9 @@ bool RenderWidgetHostDelegate::PreHandleKeyboardEvent(
   return false;
 }
 
+bool RenderWidgetHostDelegate::PreHandleWheelEvent(
+    const WebKit::WebMouseWheelEvent& event) {
+  return false;
+}
+
 }  // namespace content

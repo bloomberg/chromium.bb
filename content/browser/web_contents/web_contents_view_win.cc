@@ -385,22 +385,6 @@ LRESULT WebContentsViewWin::OnMouseMove(
   return 0;
 }
 
-LRESULT WebContentsViewWin::OnReflectedMessage(
-    UINT msg, WPARAM wparam, LPARAM lparam, BOOL& handled) {
-  MSG* message = reinterpret_cast<MSG*>(lparam);
-  switch (message->message) {
-    case WM_MOUSEWHEEL:
-      // This message is reflected from the view() to this window.
-      if (GET_KEYSTATE_WPARAM(message->wParam) & MK_CONTROL) {
-        web_contents_->GetDelegate()->ContentsZoomChange(
-            GET_WHEEL_DELTA_WPARAM(message->wParam) > 0);
-        return 1;
-      }
-    break;
-  }
-  return 0;
-}
-
 LRESULT WebContentsViewWin::OnNCCalcSize(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   // Hack for ThinkPad mouse wheel driver. We have set the fake scroll bars

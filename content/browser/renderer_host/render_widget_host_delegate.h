@@ -7,6 +7,10 @@
 
 #include "content/common/content_export.h"
 
+namespace WebKit {
+class WebMouseWheelEvent;
+}
+
 namespace content {
 
 class RenderWidgetHostImpl;
@@ -34,6 +38,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // specified events. This gives an opportunity to the browser to process the
   // event (used for keyboard shortcuts).
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
+
+  // Callback to give the browser a chance to handle the specified mouse wheel
+  // event before sending it to the renderer.
+  // Returns true if the |event| was handled.
+  virtual bool PreHandleWheelEvent(const WebKit::WebMouseWheelEvent& event);
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

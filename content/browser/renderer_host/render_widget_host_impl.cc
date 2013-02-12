@@ -951,6 +951,9 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
+  if (delegate_->PreHandleWheelEvent(wheel_event))
+    return;
+
   // If there's already a mouse wheel event waiting to be sent to the renderer,
   // add the new deltas to that event. Not doing so (e.g., by dropping the old
   // event, as for mouse moves) results in very slow scrolling on the Mac (on

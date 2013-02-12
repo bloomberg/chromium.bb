@@ -235,9 +235,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
 
-    // Reflected message handler
-    MESSAGE_HANDLER_EX(base::win::kReflectedMessage, OnReflectedMessage)
-
     // CustomFrameWindow hacks
     MESSAGE_HANDLER_EX(WM_NCUAHDRAWCAPTION, OnNCUAHDrawCaption)
     MESSAGE_HANDLER_EX(WM_NCUAHDRAWFRAME, OnNCUAHDrawFrame)
