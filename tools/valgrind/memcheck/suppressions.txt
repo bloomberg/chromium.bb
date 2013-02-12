@@ -6395,14 +6395,6 @@
    fun:_ZN7WebCore14SQLTransaction13runStatementsEv
 }
 {
-   bug_171567
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN17AutofillPopupView6CreateEP23AutofillPopupController
-   fun:_ZN27AutofillPopupControllerImpl4ShowERKSt6vectorISbItN4base20string16_char_traitsESaItEESaIS4_EES8_S8_RKS0_IiSaIiEE
-   fun:_ZN53AutofillPopupControllerUnitTest_GrowPopupInSpace_Test8TestBodyEv
-}
-{
    bug_171722
    Memcheck:Leak
    fun:_Znw*

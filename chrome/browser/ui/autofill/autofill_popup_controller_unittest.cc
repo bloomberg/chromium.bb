@@ -378,13 +378,18 @@ TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
           desired_width / 2, desired_height /2, desired_width, desired_height));
 
   for (size_t i = 0; i < element_bounds.size(); ++i) {
-    TestAutofillPopupController autofill_popup_controller(&external_delegate_,
-                                                          element_bounds[i]);
-    autofill_popup_controller.set_display(display);
-    autofill_popup_controller.Show(names, names, names, autofill_ids);
+    TestAutofillPopupController* autofill_popup_controller =
+        new TestAutofillPopupController(&external_delegate_,
+                                        element_bounds[i]);
+
+    autofill_popup_controller->set_display(display);
+    autofill_popup_controller->Show(names, names, names, autofill_ids);
 
     EXPECT_EQ(expected_popup_bounds[i].ToString(),
-              autofill_popup_controller.popup_bounds().ToString()) <<
+              autofill_popup_controller->popup_bounds().ToString()) <<
         "Popup bounds failed to match for test " << i;
+
+    // Hide the controller to delete it.
+    autofill_popup_controller->DoHide();
   }
 }
