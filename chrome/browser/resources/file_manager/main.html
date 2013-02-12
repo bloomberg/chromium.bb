@@ -123,10 +123,10 @@
       <command id="import-photos" i18n-values="label:PHOTO_IMPORT_TITLE"
           hidden></command>
 
+      <command id="volume-help" i18n-values="label:DRIVE_MENU_HELP"
+          ></command>
       <command id="drive-buy-more-space"
           i18n-values="label:DRIVE_BUY_MORE_SPACE"
-          ></command>
-      <command id="drive-help" i18n-values="label:DRIVE_MENU_HELP"
           ></command>
       <command id="drive-clear-local-cache"
           i18n-values="label:DRIVE_CLEAR_LOCAL_CACHE"></command>
@@ -174,27 +174,24 @@
       <menuitem command="#files-app-help"></menuitem>
     </menu>
 
-    <menu id="docs-settings" class="chrome-menu">
+    <menu id="gear-menu" class="chrome-menu">
       <menuitem id="drive-sync-settings"
           i18n-content=DRIVE_MOBILE_CONNECTION_OPTION></menuitem>
       <menuitem id="drive-hosted-settings"
           i18n-content=DRIVE_SHOW_HOSTED_FILES_OPTION></menuitem>
-      <hr required_attr="ctrl-pressing">
-      <menuitem required_attr="ctrl-pressing"
+      <hr required_attr="ctrl-pressing" required_drive>
+      <menuitem required_attr="ctrl-pressing" required_drive
           command="#drive-clear-local-cache"></menuitem>
-      <menuitem required_attr="ctrl-pressing"
+      <menuitem required_attr="ctrl-pressing" required_drive
           command="#drive-reload"></menuitem>
-      <hr>
-      <div id="drive-space-info" disabled>
-        <span id="drive-space-info-label"
-            i18n-content=WAITING_FOR_SPACE_INFO
-            ></span>
-        <div><div id="drive-space-info-bar" style="width:100%" pending></div
-            ></div>
+      <hr required_drive>
+      <div id="volume-space-info" disabled>
+        <span id="volume-space-info-label"></span>
+        <div><div id="volume-space-info-bar"></div></div>
       </div>
       <menuitem command="#drive-buy-more-space"></menuitem>
       <menuitem command="#drive-go-to-drive"></menuitem>
-      <menuitem command="#drive-help"></menuitem>
+      <menuitem command="#volume-help"></menuitem>
     </menu>
 
     <menu id="tasks-menu" class="chrome-menu">
@@ -246,8 +243,8 @@
               <div class="tooltip" i18n-content=THUMBNAIL_VIEW_TOOLTIP
                    >[THUMBNAIL VIEW]</div>
             </div>
-            <button class="menubutton" id="drive-settings" tabindex="12"
-                    menu="#docs-settings" visibleif="full-page">
+            <button class="menubutton" id="gear-button" tabindex="12"
+                    menu="#gear-menu" visibleif="full-page">
               <span class="disclosureindicator"></span>
             </button>
           </div>

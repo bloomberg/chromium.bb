@@ -35,8 +35,18 @@ CommandUtil.getCommandRootType = function(event, rootsList) {
  * @param {Event} event Command event to mark.
  * @param {FileManager} fileManager FileManager to use.
  */
-CommandUtil.canExecuteOnDriveOnly = function(event, fileManager) {
+CommandUtil.canExecuteEnabledOnDriveOnly = function(event, fileManager) {
   event.canExecute = fileManager.isOnDrive();
+};
+
+/**
+ * Checks if command should be visible on drive.
+ * @param {Event} event Command event to mark.
+ * @param {FileManager} fileManager FileManager to use.
+ */
+CommandUtil.canExecuteVisibleOnDriveOnly = function(event, fileManager) {
+  event.canExecute = fileManager.isOnDrive();
+  event.command.setHidden(!fileManager.isOnDrive());
 };
 
 /**
@@ -246,11 +256,16 @@ Commands.renameFileCommand = {
 /**
  * Opens drive help.
  */
-Commands.driveHelpCommand = {
+Commands.volumeHelpCommand = {
   execute: function() {
-    window.open(FileManager.GOOGLE_DRIVE_HELP, 'help');
+    if (fileManager.isOnDrive())
+      window.open(FileManager.GOOGLE_DRIVE_HELP, 'help');
+    else
+      window.open(FileManager.FILES_APP_HELP, 'help');
   },
-  canExecute: CommandUtil.canExecuteOnDriveOnly
+  canExecute: function(event, fileManager) {
+    event.canExecute = true;
+  }
 };
 
 /**
@@ -260,7 +275,7 @@ Commands.driveBuySpaceCommand = {
   execute: function() {
     window.open(FileManager.GOOGLE_DRIVE_BUY_STORAGE, 'buy-more-space');
   },
-  canExecute: CommandUtil.canExecuteOnDriveOnly
+  canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
 };
 
 /**
@@ -270,7 +285,7 @@ Commands.driveClearCacheCommand = {
   execute: function() {
     chrome.fileBrowserPrivate.clearDriveCache();
   },
-  canExecute: CommandUtil.canExecuteOnDriveOnly
+  canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
 };
 
 /**
@@ -280,7 +295,7 @@ Commands.driveReloadCommand = {
   execute: function() {
     chrome.fileBrowserPrivate.reloadDrive();
   },
-  canExecute: CommandUtil.canExecuteOnDriveOnly
+  canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
 };
 
 /**
@@ -290,7 +305,7 @@ Commands.driveGoToDriveCommand = {
   execute: function() {
     window.open(FileManager.GOOGLE_DRIVE_ROOT, 'drive-root');
   },
-  canExecute: CommandUtil.canExecuteOnDriveOnly
+  canExecute: CommandUtil.canExecuteVisibleOnDriveOnly
 };
 
 /**

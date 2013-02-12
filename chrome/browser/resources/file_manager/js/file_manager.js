@@ -544,11 +544,11 @@ DialogType.isModal = function(type) {
         this.dialogDom_.querySelector('#text-context-menu');
     cr.ui.Menu.decorate(this.textContextMenu_);
 
-    this.driveSettingsMenu_ = this.dialogDom_.querySelector('#drive-settings');
-    cr.ui.decorate(this.driveSettingsMenu_, cr.ui.MenuButton);
-
-    this.driveSettingsMenu_.addEventListener('menushow',
-        this.onDriveMenuShow_.bind(this));
+    this.gearButton_ = this.dialogDom_.querySelector('#gear-button');
+    this.gearButton_.addEventListener('menushow',
+        this.refreshRemainingSpace_.bind(this,
+                                         false /* Without loading caption. */));
+    cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
@@ -592,11 +592,11 @@ DialogType.isModal = function(type) {
     CommandUtil.registerCommand(doc, 'rename',
         Commands.renameFileCommand, this);
 
+    CommandUtil.registerCommand(doc, 'volume-help',
+        Commands.volumeHelpCommand, this);
+
     CommandUtil.registerCommand(doc, 'drive-buy-more-space',
         Commands.driveBuySpaceCommand, this);
-
-    CommandUtil.registerCommand(doc, 'drive-help',
-        Commands.driveHelpCommand, this);
 
     CommandUtil.registerCommand(doc, 'drive-clear-local-cache',
         Commands.driveClearCacheCommand, this);
@@ -778,6 +778,9 @@ DialogType.isModal = function(type) {
 
     this.openWithCommand_ =
         this.dialogDom_.querySelector('#open-with');
+
+    this.driveBuyMoreStorageCommand_ =
+        this.dialogDom_.querySelector('#drive-buy-more-space');
 
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
@@ -1470,6 +1473,8 @@ DialogType.isModal = function(type) {
           return;
 
         downloadsSpaceInnerBar.setAttribute('pending', '');
+        spaceInfoLabel.textContent = strf('SPACE_AVAILABLE', sizeStr);
+
         chrome.fileBrowserPrivate.getSizeStats(
             util.makeFilesystemUrl(path),
             function(sizeStats) {
@@ -1979,6 +1984,51 @@ DialogType.isModal = function(type) {
   },
 
   /**
+   * Update the gear menu.
+   */
+  FileManager.prototype.updateGearMenu_ = function() {
+    this.syncButton.hidden = !this.isOnDrive();
+    this.hostedButton.hidden = !this.isOnDrive();
+
+    // If volume has changed, then fetch remaining space data.
+    if (this.previousRootUrl_ != this.directoryModel_.getCurrentRootUrl())
+      this.refreshRemainingSpace_(true);  // Show loading caption.
+
+    this.previousRootUrl_ = this.directoryModel_.getCurrentRootUrl();
+  },
+
+  /**
+   * Refreshes space info of the current volume.
+   * @param {boolean} showLoadingCaption Whether show loading caption or not.
+   */
+   FileManager.prototype.refreshRemainingSpace_ = function(showLoadingCaption) {
+    var volumeSpaceInfoLabel =
+        this.dialogDom_.querySelector('#volume-space-info-label');
+    var volumeSpaceInnerBar =
+        this.dialogDom_.querySelector('#volume-space-info-bar');
+    var volumeSpaceOuterBar =
+        this.dialogDom_.querySelector('#volume-space-info-bar').parentNode;
+
+    volumeSpaceInnerBar.setAttribute('pending', '');
+
+    if (showLoadingCaption) {
+      volumeSpaceInfoLabel.innerText = str('WAITING_FOR_SPACE_INFO');
+      volumeSpaceInnerBar.style.width = '100%';
+    }
+
+    var currentRootUrl = this.directoryModel_.getCurrentRootUrl();
+    chrome.fileBrowserPrivate.getSizeStats(
+        this.directoryModel_.getCurrentRootUrl(), function(result) {
+          if (this.directoryModel_.getCurrentRootUrl() != currentRootUrl)
+            return;
+          updateSpaceInfo(result,
+                          volumeSpaceInnerBar,
+                          volumeSpaceInfoLabel,
+                          volumeSpaceOuterBar);
+        }.bind(this));
+  }
+
+  /**
    * Update the UI when the current directory changes.
    *
    * @param {cr.Event} event The directory-changed event.
@@ -1998,8 +2048,8 @@ DialogType.isModal = function(type) {
     }
 
     this.updateUnformattedDriveStatus_();
-
     this.updateTitle_();
+    this.updateGearMenu_();
   };
 
   FileManager.prototype.updateUnformattedDriveStatus_ = function() {
@@ -2007,7 +2057,7 @@ DialogType.isModal = function(type) {
         this.directoryModel_.getCurrentRootPath());
 
     if (volumeInfo.error) {
-      this.dialogContainer_.setAttribute('unformatted', '');
+      this.dialogDom_.setAttribute('unformatted', '');
 
       var errorNode = this.dialogDom_.querySelector('#format-panel > .error');
       if (volumeInfo.error == VolumeManager.Error.UNSUPPORTED_FILESYSTEM) {
@@ -2021,7 +2071,7 @@ DialogType.isModal = function(type) {
       var formatCommand = this.dialogDom_.querySelector('command#format');
       formatCommand.canExecuteChange(errorNode);
     } else {
-      this.dialogContainer_.removeAttribute('unformatted');
+      this.dialogDom_.removeAttribute('unformatted');
     }
   };
 
@@ -2864,28 +2914,6 @@ DialogType.isModal = function(type) {
     };
 
     customSplitter.decorate(splitterElement);
-  };
-
-  /**
-   * Listener invoked on drive menu show event, to update drive free/total
-   * space info in opened menu.
-   * @private
-   */
-  FileManager.prototype.onDriveMenuShow_ = function() {
-    var driveSpaceInfoLabel =
-        this.dialogDom_.querySelector('#drive-space-info-label');
-
-    var driveSpaceInnerBar =
-        this.dialogDom_.querySelector('#drive-space-info-bar');
-    var driveSpaceOuterBar =
-            this.dialogDom_.querySelector('#drive-space-info-bar').parentNode;
-
-    driveSpaceInnerBar.setAttribute('pending', '');
-    chrome.fileBrowserPrivate.getSizeStats(
-        this.directoryModel_.getCurrentRootUrl(), function(result) {
-          updateSpaceInfo(result, driveSpaceInnerBar, driveSpaceInfoLabel,
-                          driveSpaceOuterBar);
-        });
   };
 
   /**

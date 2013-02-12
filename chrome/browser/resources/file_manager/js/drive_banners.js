@@ -534,7 +534,7 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
  * @private
  */
 FileListBannerController.prototype.updateDriveUnmountedPanel_ = function() {
-  var node = this.document_.querySelector('.dialog-container');
+  var node = this.document_.body;
   if (this.isOnDrive()) {
     var status = this.volumeManager_.getDriveStatus();
     if (status == VolumeManager.DriveStatus.MOUNTING ||

@@ -625,7 +625,7 @@ button#detail-view:not([disabled]) {
 }
 
 /* Drive space warning banner. */
-.drive-space-warning {
+.volume-space-warning {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-transition: height 70ms linear;
@@ -641,12 +641,12 @@ button#detail-view:not([disabled]) {
   position: relative;
 }
 
-.drive-space-warning[hidden] {
+.volume-space-warning[hidden] {
   border-top-width: 0;
   height: 0;
 }
 
-.drive-space-warning .drive-icon {
+.volume-space-warning .drive-icon {
   background-image: -webkit-image-set(
     url('../images/files/ui/drive_logo.png') 1x,
     url('../images/files/ui/2x/drive_logo.png') 2x);
@@ -657,7 +657,7 @@ button#detail-view:not([disabled]) {
   width: 50px;
 }
 
-.drive-space-warning .drive-text {
+.volume-space-warning .drive-text {
   margin-right: 11px;
 }
 
@@ -1308,7 +1308,11 @@ menu.file-context-menu {
   z-index: 4;
 }
 
-menu.chrome-menu > hr {
+menu.chrome-menu {
+  min-width: 200px;
+}
+
+menu.chrome-menu hr {
   color: transparent;
   font-size: 0;
 }
@@ -1359,16 +1363,16 @@ div.shade[fadein] {
   top: 0;
 }
 
-.dialog-container[drive='mounting'] #unmounted-panel,
-.dialog-container[drive='error'] #unmounted-panel,
-.dialog-container[unformatted] #format-panel {
+body[drive='mounting'] .dialog-container #unmounted-panel,
+body[drive='error'] .dialog-container #unmounted-panel,
+body[unformatted] .dialog-container #format-panel {
   display: block;
 }
 
-.dialog-container[drive='unmounted'] .filelist-panel,
-.dialog-container[drive='mounting'] .filelist-panel,
-.dialog-container[drive='error'] .filelist-panel,
-.dialog-container[unformatted] .filelist-panel {
+body[drive='unmounted'] .dialog-container .filelist-panel,
+body[drive='mounting'] .dialog-container .filelist-panel,
+body[drive='error'] .dialog-container .filelist-panel,
+body[unformatted] .dialog-container .filelist-panel {
   /* Hide file list when Drive is not mounted.
      Use opacity to avoid manual resizing.*/
   opacity: 0;
@@ -1396,10 +1400,10 @@ div.shade[fadein] {
   width: 40px;
 }
 
-[unformatted] #format-panel > .error,
-[drive='mounting'] #unmounted-panel > .loading,
-[drive='mounting'] #unmounted-panel > .progress,
-[drive='error'] #unmounted-panel > .error,
+body[unformatted] #format-panel > .error,
+body[drive='mounting'] #unmounted-panel > .loading,
+body[drive='mounting'] #unmounted-panel > .progress,
+body[drive='error'] #unmounted-panel > .error,
 #format-panel > #format-button,
 #unmounted-panel.retry-enabled > .retry,
 #unmounted-panel.retry-enabled > .learn-more {
@@ -1437,7 +1441,11 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   display: none;
 }
 
-#drive-settings::before {
+body:not([drive]) [required_drive] {
+  display: none;
+}
+
+#gear-button::before {
   background-image: url('../images/files/ui/settings.svg');
   background-position: 20px center;
   background-repeat: no-repeat;
@@ -1450,36 +1458,20 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   top: 0;
 }
 
-#drive-settings:hover::before {
+#gear-button:hover::before {
   opacity: 1;
 }
 
 
-#drive-settings {
+#gear-button {
   overflow: hidden;
   text-align: left;
   width: 54px;
 }
 
-#drive-settings span.disclosureindicator {
+#gear-button span.disclosureindicator {
   float: none;
   margin-left: 42px;
-}
-
-/* To animate the #drive-settings element to invisibility we set every property
-  that affects its horizontal size to 0. */
-.dialog-container:not([drive]) #drive-settings {
-  border-color: transparent;  /* Changing only the color to preserve layout. */
-  border-left-width: 0;
-  border-right-width: 0;
-  margin: 0;
-  min-width: 0;
-  padding: 0;
-  width: 0;
-}
-
-.dialog-container:not([drive]) #drive-settings > * {
-  display: none;
 }
 
 .buttonbar > * {
@@ -1571,18 +1563,18 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   min-width: 250px;
 }
 
-#drive-space-info,
+#volume-space-info,
 #downloads-space-info {
   -webkit-box-pack: justify;
   display: -webkit-box;
 }
 
-#drive-space-info-label,
+#volume-space-info-label,
 #downloads-space-info-label {
   display: block;
 }
 
-#drive-space-info > div,
+#volume-space-info > div,
 #downloads-space-info > div {
   -webkit-box-flex: 1;
   border: 1px solid rgb(192, 192, 192);
@@ -1592,7 +1584,7 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   min-width: 30px;
 }
 
-#drive-space-info-bar[pending],
+#volume-space-info-bar[pending],
 #downloads-space-info-bar[pending] {
   -webkit-animation-duration: 800ms;
   -webkit-animation-iteration-count: infinite;
@@ -1607,7 +1599,7 @@ body:not([ctrl-pressing]) [required_attr='ctrl-pressing'] {
   background-size: 16px 8px;
 }
 
-#drive-space-info-bar,
+#volume-space-info-bar,
 #downloads-space-info-bar {
   background-color: rgb(192, 192, 192);
   border: 1px solid rgb(255, 255, 255);
