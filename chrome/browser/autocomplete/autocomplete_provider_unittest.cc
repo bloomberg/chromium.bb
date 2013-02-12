@@ -254,9 +254,10 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   providers.push_back(provider2);
 
   // Reset the controller to contain our new providers.
-  controller_.reset(
-      new AutocompleteController(&profile_, NULL,
-                                 AutocompleteProvider::TYPE_SEARCH));
+  controller_.reset(new AutocompleteController(&profile_, NULL, 0));
+  // We're going to swap the providers vector, but the old vector should be
+  // empty so no elements need to be freed at this point.
+  EXPECT_TRUE(controller_->providers_.empty());
   controller_->providers_.swap(providers);
   provider1->set_listener(controller_.get());
   provider2->set_listener(controller_.get());
@@ -559,7 +560,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
 }
 
 TEST_F(AutocompleteProviderTest, GetDestinationURL) {
-  ResetControllerWithTestProviders(false, NULL, NULL);
+  ResetControllerWithKeywordAndSearchProviders();
 
   // For the destination URL to have aqs parameters for query formulation time
   // and the field trial triggered bit, many conditions need to be satisfied.
@@ -597,6 +598,8 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
 
   // Test field trial triggered bit set.
   controller_->search_provider_->field_trial_triggered_in_session_ = true;
+  EXPECT_TRUE(
+      controller_->search_provider_->field_trial_triggered_in_session());
   url = controller_->GetDestinationURL(match,
                                        base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.57j58j5l2j0l3j59.2456j1&", url.path());
