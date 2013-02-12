@@ -109,14 +109,13 @@ void TestSyscall(uintptr_t syscall_addr) {
      */
     if (syscall_addr == (uintptr_t) NACL_SYSCALL(tls_get) ||
         syscall_addr == (uintptr_t) NACL_SYSCALL(second_tls_get)) {
+      /* Undo some effects of RegsUnsetNonCalleeSavedRegisters(). */
       g_expected_regs.rsi = call_regs.rsi;
       g_expected_regs.rdi = call_regs.rdi;
       g_expected_regs.r8 = call_regs.r8;
       g_expected_regs.r9 = call_regs.r9;
       g_expected_regs.r10 = call_regs.r10;
       g_expected_regs.r11 = call_regs.r11;
-      g_expected_regs.r12 = call_regs.r12;
-      g_expected_regs.r13 = call_regs.r13;
     }
 
     call_regs.rax = syscall_addr;
