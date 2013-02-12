@@ -341,6 +341,18 @@ class DriveFileSyncService
 
   base::FilePath temporary_file_dir_;
 
+  // May start batch sync or incremental sync.
+  // This immediately returns if:
+  // - Another task is running (i.e. task_ is null), or
+  // - The service state is DISABLED.
+  //
+  // This calls:
+  // - StartBatchSyncForOrigin() if it has any pending batch sync origins, or
+  // - FetchChangesForIncrementalSync() otherwise.
+  //
+  // These two methods are called only from this method.
+  void MaybeStartFetchChanges();
+
   void FetchChangesForIncrementalSync();
   void DidFetchChangesForIncrementalSync(
       scoped_ptr<TaskToken> token,
@@ -349,6 +361,7 @@ class DriveFileSyncService
       scoped_ptr<google_apis::ResourceList> changes);
   bool GetOriginForEntry(const google_apis::ResourceEntry& entry, GURL* origin);
   void SchedulePolling();
+  void OnPollingTimerFired();
   void UpdatePollingDelay(int64 new_delay_sec);
   void RegisterDriveNotifications();
   void SetPushNotificationEnabled(syncer::InvalidatorState state);
@@ -394,9 +407,18 @@ class DriveFileSyncService
   // If polling_delay_seconds_ is negative (<0) the timer won't start.
   int64 polling_delay_seconds_;
 
-  // Is set to true while the service is fetching changes for incremental
-  // sync. Polling will be disabled while this is true.
-  bool is_fetching_changes_;
+  // Is set to true when there's a fair possibility that we have some
+  // remote changes that haven't been fetched yet.
+  //
+  // This flag is set when:
+  // - This gets invalidation notification,
+  // - The service is authenticated or becomes online, and
+  // - The polling timer is fired.
+  //
+  // This flag is cleared when:
+  // - A batch or incremental sync has been started, and
+  // - When all pending batch sync tasks have been finished.
+  bool may_have_unfetched_changes_;
 
   ObserverList<Observer> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;

@@ -36,6 +36,7 @@
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
+using ::testing::Sequence;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -575,8 +576,11 @@ TEST_F(DriveFileSyncServiceTest, BatchSyncOnInitialization) {
   metadata_store()->AddBatchSyncOrigin(kOrigin2, kDirectoryResourceId2);
   metadata_store()->MoveBatchSyncOriginToIncremental(kOrigin2);
 
+  Sequence change_queue_seq;
+  EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(0))
+      .InSequence(change_queue_seq);
   EXPECT_CALL(*mock_remote_observer(), OnRemoteChangeQueueUpdated(3))
-      .Times(AnyNumber());
+      .InSequence(change_queue_seq);
 
   InSequence sequence;
 
