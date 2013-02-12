@@ -586,8 +586,7 @@ void ScreenCapturerMac::CgBlitPreLion(const ScreenCaptureFrame& buffer,
       continue;
 
     // Translate the region to be copied into display-relative coordinates.
-    copy_region.translate(-desktop_config_.pixel_bounds.left(),
-                          -desktop_config_.pixel_bounds.top());
+    copy_region.translate(-display_bounds.left(), -display_bounds.top());
 
     // Calculate where in the output buffer the display's origin is.
     uint8* out_ptr = buffer.pixels() +
@@ -607,7 +606,7 @@ void ScreenCapturerMac::CgBlitPreLion(const ScreenCaptureFrame& buffer,
 }
 
 void ScreenCapturerMac::CgBlitPostLion(const ScreenCaptureFrame& buffer,
-                                           const SkRegion& region) {
+                                       const SkRegion& region) {
   const int buffer_height = buffer.dimensions().height();
 
   // Copy the entire contents of the previous capture buffer, to capture over.
@@ -633,8 +632,7 @@ void ScreenCapturerMac::CgBlitPostLion(const ScreenCaptureFrame& buffer,
       continue;
 
     // Translate the region to be copied into display-relative coordinates.
-    copy_region.translate(-desktop_config_.pixel_bounds.left(),
-                          -desktop_config_.pixel_bounds.top());
+    copy_region.translate(-display_bounds.left(), -display_bounds.top());
 
     // Create an image containing a snapshot of the display.
     base::mac::ScopedCFTypeRef<CGImageRef> image(
@@ -678,7 +676,8 @@ void ScreenCapturerMac::ScreenConfigurationChanged() {
   helper_.ClearInvalidRegion();
 
   // Refresh the cached desktop configuration.
-  desktop_config_ = MacDesktopConfiguration::GetCurrent();
+  desktop_config_ = MacDesktopConfiguration::GetCurrent(
+      MacDesktopConfiguration::TopLeftOrigin);
 
   // Re-mark the entire desktop as dirty.
   helper_.InvalidateScreen(

@@ -21,20 +21,23 @@
 
 namespace media {
 
-MacDisplayConfiguration::MacDisplayConfiguration()
-  : id(0),
-    bounds(SkIRect::MakeEmpty()),
-    pixel_bounds(SkIRect::MakeEmpty()),
-    dip_to_pixel_scale(1.0f) {
-}
+namespace {
 
-static SkIRect NSRectToSkIRect(const NSRect& ns_rect) {
+SkIRect NSRectToSkIRect(const NSRect& ns_rect) {
   SkIRect result;
   gfx::CGRectToSkRect(NSRectToCGRect(ns_rect)).roundOut(&result);
   return result;
 }
 
-static MacDisplayConfiguration GetConfigurationForScreen(NSScreen* screen) {
+// Inverts the position of |rect| from bottom-up coordinates to top-down,
+// relative to |bounds|.
+void InvertRectYOrigin(const SkIRect& bounds, SkIRect* rect) {
+  DCHECK_EQ(0, bounds.top());
+  rect->setXYWH(rect->x(), bounds.bottom() - rect->bottom(),
+                rect->width(), rect->height());
+}
+
+MacDisplayConfiguration GetConfigurationForScreen(NSScreen* screen) {
   MacDisplayConfiguration display_config;
 
   // Fetch the NSScreenNumber, which is also the CGDirectDisplayID.
@@ -60,17 +63,26 @@ static MacDisplayConfiguration GetConfigurationForScreen(NSScreen* screen) {
   return display_config;
 }
 
+} // namespace
+
+MacDisplayConfiguration::MacDisplayConfiguration()
+    : id(0),
+      bounds(SkIRect::MakeEmpty()),
+      pixel_bounds(SkIRect::MakeEmpty()),
+      dip_to_pixel_scale(1.0f) {
+}
+
 MacDesktopConfiguration::MacDesktopConfiguration()
-  : bounds(SkIRect::MakeEmpty()),
-    pixel_bounds(SkIRect::MakeEmpty()),
-    dip_to_pixel_scale(1.0f) {
+    : bounds(SkIRect::MakeEmpty()),
+      pixel_bounds(SkIRect::MakeEmpty()),
+      dip_to_pixel_scale(1.0f) {
 }
 
 MacDesktopConfiguration::~MacDesktopConfiguration() {
 }
 
 // static
-MacDesktopConfiguration MacDesktopConfiguration::GetCurrent() {
+MacDesktopConfiguration MacDesktopConfiguration::GetCurrent(Origin origin) {
   MacDesktopConfiguration desktop_config;
 
   NSArray* screens = [NSScreen screens];
@@ -90,6 +102,16 @@ MacDesktopConfiguration MacDesktopConfiguration::GetCurrent() {
     } else if (desktop_config.dip_to_pixel_scale !=
                display_config.dip_to_pixel_scale) {
       continue;
+    }
+
+    // Cocoa uses bottom-up coordinates, so if the caller wants top-down then
+    // we need to invert the positions of secondary monitors relative to the
+    // primary one (the primary monitor's position is (0,0) in both systems).
+    if (i > 0 && origin == TopLeftOrigin) {
+      InvertRectYOrigin(desktop_config.displays[0].bounds,
+                        &display_config.bounds);
+      InvertRectYOrigin(desktop_config.displays[0].pixel_bounds,
+                        &display_config.pixel_bounds);
     }
 
     // Add the display to the configuration.

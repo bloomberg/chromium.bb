@@ -193,7 +193,8 @@ void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
     // could be augmented to include native cursor coordinates for use by
     // MouseClampingFilter, removing the need for translation here.
     media::MacDesktopConfiguration desktop_config =
-        media::MacDesktopConfiguration::GetCurrent();
+        media::MacDesktopConfiguration::GetCurrent(
+            media::MacDesktopConfiguration::TopLeftOrigin);
 
     // Translate the mouse position into desktop coordinates.
     mouse_pos_ += SkIPoint::Make(desktop_config.pixel_bounds.left(),

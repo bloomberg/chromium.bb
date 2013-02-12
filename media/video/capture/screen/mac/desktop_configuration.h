@@ -20,10 +20,6 @@ namespace media {
 struct MEDIA_EXPORT MacDisplayConfiguration {
   MacDisplayConfiguration();
 
-  // Returns the current configuration of the specified display.
-  MEDIA_EXPORT static MacDisplayConfiguration ForDisplay(
-      CGDirectDisplayID display_id);
-
   // Cocoa identifier for this display.
   CGDirectDisplayID id;
 
@@ -41,11 +37,16 @@ typedef std::vector<MacDisplayConfiguration> MacDisplayConfigurations;
 
 // Describes the configuration of the whole desktop.
 struct MEDIA_EXPORT MacDesktopConfiguration {
+  // Used to request bottom-up or top-down coordinates.
+  enum Origin { BottomLeftOrigin, TopLeftOrigin };
+
   MacDesktopConfiguration();
   ~MacDesktopConfiguration();
 
-  // Returns the current configuration of the desktop.
-  MEDIA_EXPORT static MacDesktopConfiguration GetCurrent();
+  // Returns the desktop & display configurations in Cocoa-style "bottom-up"
+  // (the origin is the bottom-left of the primary monitor, and coordinates
+  // increase as you move up the screen) or Carbon-style "top-down" coordinates.
+  MEDIA_EXPORT static MacDesktopConfiguration GetCurrent(Origin origin);
 
   // Bounds of the desktop in Density-Independent Pixels (DIPs).
   SkIRect bounds;
