@@ -27,12 +27,12 @@ struct MetadataSearchResult {
   DriveEntryProto entry_proto;
 
   // The base name to be displayed in the UI. The parts matched the search
-  // query are highlited with <b> tag. Meta characters are escaped like &lt;
+  // query are highlighted with <b> tag. Meta characters are escaped like &lt;
   //
   // Why HTML? we could instead provide matched ranges using pairs of
   // integers, but this is fragile as we'll eventually converting strings
   // from UTF-8 (StringValue in base/values.h uses std::string) to UTF-16
-  // when sending strings from C++ to JavaSCript.
+  // when sending strings from C++ to JavaScript.
   //
   // Why <b> instead of <strong>? Because <b> is shorter.
   std::string highlighted_base_name;

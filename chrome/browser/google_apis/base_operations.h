@@ -15,12 +15,9 @@
 #include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/operation_registry.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
-
-class OAuth2AccessTokenFetcher;
 
 namespace base {
 class Value;
@@ -32,7 +29,7 @@ class URLRequestContextGetter;
 
 namespace google_apis {
 
-// Callback used to pass parsed JSON from ParseJson(). If parsing error occures,
+// Callback used to pass parsed JSON from ParseJson(). If parsing error occurs,
 // then the passed argument is null.
 typedef base::Callback<void(scoped_ptr<base::Value> value)> ParseJsonCallback;
 

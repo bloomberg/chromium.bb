@@ -377,13 +377,12 @@ class DriveScheduler
 
   Profile* profile_;
 
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveScheduler> weak_ptr_factory_;
-
   // Whether this instance is initialized or not.
   bool initialized_;
 
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<DriveScheduler> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveScheduler);
 };
 

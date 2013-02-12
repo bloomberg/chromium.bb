@@ -9,7 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "googleurl/src/gurl.h"
+
+class GURL;
 
 namespace base {
 class FilePath;

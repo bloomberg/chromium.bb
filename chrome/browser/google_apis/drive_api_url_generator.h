@@ -45,7 +45,7 @@ class DriveApiUrlGenerator {
   GURL GetFilelistUrl(
       const GURL& override_url, const std::string& search_string) const;
 
-  // Returns a URL to fecth a file content.
+  // Returns a URL to fetch a file content.
   GURL GetFileUrl(const std::string& file_id) const;
 
   // Returns a URL to trash a resource with the given |resource_id|.

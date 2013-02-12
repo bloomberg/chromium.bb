@@ -61,8 +61,8 @@ DriveScheduler::DriveScheduler(
       drive_service_(drive_service),
       uploader_(uploader),
       profile_(profile),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      initialized_(false) {
+      initialized_(false),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (int i = 0; i < NUM_QUEUES; ++i) {
     job_loop_is_running_[i] = false;

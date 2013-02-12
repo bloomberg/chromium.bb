@@ -17,8 +17,6 @@
 #include "chrome/browser/google_apis/drive_entry_kinds.h"
 #include "googleurl/src/gurl.h"
 
-class Profile;
-
 namespace base {
 class FilePath;
 class DictionaryValue;

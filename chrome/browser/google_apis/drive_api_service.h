@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -144,7 +143,7 @@ class DriveAPIService : public DriveServiceInterface,
                    const std::string& search_query,
                    const GetResourceListCallback& callback);
 
-  // AuthService::Observer override.
+  // AuthServiceObserver override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   // DriveServiceObserver Overrides

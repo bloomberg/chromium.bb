@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_OBSERVER_H_
 
-#include <string>
-
 namespace base {
 class FilePath;
 }

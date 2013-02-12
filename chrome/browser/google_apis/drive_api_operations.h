@@ -279,7 +279,7 @@ class InsertResourceOperation : public EntryActionOperation {
 // This class performs the operation for removing a resource from a directory.
 // Note that we use "delete" for the name of this class, which comes from the
 // operation name of the Drive API v2, although we prefer "remove" for that
-// sence in "drive/google_api"
+// sense in "drive/google_api"
 // Also note that this is the operation of "Children: delete" of the Drive API
 // v2. https://developers.google.com/drive/v2/reference/children/delete
 class DeleteResourceOperation : public EntryActionOperation {

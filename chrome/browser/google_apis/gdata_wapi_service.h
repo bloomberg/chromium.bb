@@ -139,7 +139,7 @@ class GDataWapiService : public DriveServiceInterface,
   ObserverList<DriveServiceObserver> observers_;
   // Operation objects should hold a copy of this, rather than a const
   // reference, as they may outlive this object.
-  GDataWapiUrlGenerator url_generator_;
+  const GDataWapiUrlGenerator url_generator_;
   const std::string custom_user_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataWapiService);

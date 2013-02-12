@@ -6,13 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_UTIL_H_
 
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 

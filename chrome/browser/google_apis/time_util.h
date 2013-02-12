@@ -9,8 +9,6 @@
 
 #include "base/string_piece.h"
 
-class Profile;
-
 namespace base {
 class Time;
 }  // namespace base

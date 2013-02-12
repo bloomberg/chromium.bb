@@ -113,7 +113,7 @@ class SearchMetadataHelper {
       // Search is complete. Send the result to the callback.
       std::sort(results_->begin(), results_->end(), &CompareByTimestamp);
       if (results_->size() > static_cast<size_t>(at_most_num_matches_)) {
-        // Don't use resize() as it requres a default constructor.
+        // Don't use resize() as it requires a default constructor.
         results_->erase(results_->begin() + at_most_num_matches_,
                         results_->end());
       }

@@ -23,7 +23,7 @@ const char kGetResourceListURLForAllDocuments[] =
 const char kGetResourceListURLForDirectoryFormat[] =
     "/feeds/default/private/full/%s/contents/-/mine";
 
-// Content URL for modification in a particular directory specifyied by "%s"
+// Content URL for modification in a particular directory specified by "%s"
 // which will be replaced with its resource id.
 const char kContentURLFormat[] = "/feeds/default/private/full/%s/contents";
 

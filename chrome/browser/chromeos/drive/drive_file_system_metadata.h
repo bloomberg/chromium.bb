@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_METADATA_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_METADATA_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"

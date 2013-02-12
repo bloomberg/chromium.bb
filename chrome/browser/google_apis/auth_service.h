@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/google_apis/auth_service_interface.h"
-#include "chrome/browser/google_apis/base_operations.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -47,7 +46,7 @@ class AuthService : public AuthServiceInterface,
   virtual void RemoveObserver(AuthServiceObserver* observer) OVERRIDE;
   virtual void Initialize(Profile* profile) OVERRIDE;
   virtual void StartAuthentication(OperationRegistry* registry,
-                           const AuthStatusCallback& callback) OVERRIDE;
+                                   const AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual const std::string& access_token() const OVERRIDE;

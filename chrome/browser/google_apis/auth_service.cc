@@ -11,7 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
-#include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
