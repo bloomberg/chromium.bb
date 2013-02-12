@@ -1068,7 +1068,8 @@ class AndroidCommands(object):
     usage_dict = collections.defaultdict(int)
     smaps = collections.defaultdict(dict)
     current_smap = ''
-    for line in self.GetFileContents('/proc/%s/smaps' % pid, log_result=False):
+    for line in self.GetProtectedFileContents('/proc/%s/smaps' % pid,
+                                              log_result=False):
       items = line.split()
       # See man 5 proc for more details. The format is:
       # address perms offset dev inode pathname
@@ -1088,8 +1089,8 @@ class AndroidCommands(object):
       # Presumably the process died between ps and calling this method.
       logging.warning('Could not find memory usage for pid ' + str(pid))
 
-    for line in self.GetFileContents('/d/nvmap/generic-0/clients',
-                                     log_result=False):
+    for line in self.GetProtectedFileContents('/d/nvmap/generic-0/clients',
+                                              log_result=False):
       match = re.match(NVIDIA_MEMORY_INFO_RE, line)
       if match and match.group('pid') == pid:
         usage_bytes = int(match.group('usage_bytes'))

@@ -365,7 +365,7 @@ class TestRunner(BaseTestRunner):
 
       # Obtain the relevant perf data.  The data is dumped to a
       # JSON formatted file.
-      json_string = self.adb.GetFileContents(
+      json_string = self.adb.GetProtectedFileContents(
           '/data/data/com.google.android.apps.chrome/files/PerfTestData.txt')
 
       if json_string:
