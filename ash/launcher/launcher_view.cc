@@ -88,8 +88,8 @@ class ScopedAnimationSetter {
   ~ScopedAnimationSetter() {
     ui::LayerAnimator::set_slow_animation_mode(false);
   }
- private:
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ScopedAnimationSetter);
 };
 
@@ -129,7 +129,7 @@ const gfx::Font* LauncherMenuModelAdapter::GetLabelFont(
 bool LauncherMenuModelAdapter::GetBackgroundColor(
     int command_id,
     bool is_hovered,
-    SkColor *override_color) const {
+    SkColor* override_color) const {
   if (command_id != kCommandIdOfActiveName)
     return false;
 
@@ -1049,10 +1049,16 @@ void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
   bounds_animator_->SetAnimationDelegate(
       view, new FadeOutAnimationDelegate(this, view), true);
 
-  // If overflow bubble is visible, calculate bounds and update overflow range.
+  // If overflow bubble is visible, sanitize overflow range first and when the
+  // above animation finishes, CalculateIdealBounds will be called to get
+  // correct overflow range. CalculateIdealBounds could hide overflow bubble
+  // and triggers LauncherItemChanged. And since we are still in the middle
+  // of LauncherItemRemoved, LauncherView in overflow bubble is not synced
+  // with LauncherModel and will crash.
   if (overflow_bubble_ && overflow_bubble_->IsShowing()) {
-    IdealBounds ideal_bounds;
-    CalculateIdealBounds(&ideal_bounds);
+    last_hidden_index_ = std::min(last_hidden_index_,
+                                  view_model_->view_size() - 1);
+    UpdateOverflowRange(overflow_bubble_->launcher_view());
   }
 }
 

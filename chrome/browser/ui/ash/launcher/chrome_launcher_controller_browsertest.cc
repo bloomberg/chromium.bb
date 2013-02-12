@@ -8,9 +8,11 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
+#include "ash/test/launcher_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -134,6 +136,13 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
     ash::LauncherItem item = *model_->ItemByID(shortcut_id);
     EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
     return item.id;
+  }
+
+  ash::LauncherID PinFakeApp(const std::string& name) {
+    ChromeLauncherController* controller =
+        static_cast<ChromeLauncherController*>(launcher_->delegate());
+    return controller->CreateAppShortcutLauncherItem(
+        name, model_->item_count());
   }
 
   ash::Launcher* launcher_;
@@ -351,7 +360,6 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
   CloseShellWindow(window1);
   --item_count;
   ASSERT_EQ(item_count, launcher_model()->item_count());
-
 }
 
 // Test that we can launch a platform app panel and get a running item.
@@ -764,4 +772,32 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, RefocusFilterLaunch) {
   EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(shortcut_id)->status);
   EXPECT_NE(first_tab, second_tab);
   EXPECT_EQ(tab_strip->GetActiveWebContents(), second_tab);
+}
+
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, OverflowBubble) {
+  // Make sure to have a browser window
+  chrome::NewTab(browser());
+
+  // No overflow yet.
+  EXPECT_FALSE(launcher_->IsShowingOverflowBubble());
+
+  ash::test::LauncherViewTestAPI test(launcher_->GetLauncherViewForTest());
+
+  int items_added = 0;
+  while (!test.IsOverflowButtonVisible()) {
+    std::string fake_app_id = StringPrintf("fake_app_%d", items_added);
+    PinFakeApp(fake_app_id);
+
+    ++items_added;
+    ASSERT_LT(items_added, 10000);
+  }
+
+  // Now show overflow bubble.
+  test.ShowOverflowBubble();
+  EXPECT_TRUE(launcher_->IsShowingOverflowBubble());
+
+  // Unpin first pinned app and there should be no crash.
+  ChromeLauncherController* controller =
+      static_cast<ChromeLauncherController*>(launcher_->delegate());
+  controller->UnpinAppsWithID(std::string("fake_app_0"));
 }

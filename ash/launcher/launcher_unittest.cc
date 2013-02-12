@@ -114,10 +114,10 @@ TEST_F(LauncherTest, ShowOverflowBubble) {
 
   // Removes the first item in main launcher view.
   model->RemoveItemAt(model->ItemIndexByID(first_item_id));
-  EXPECT_FALSE(launcher->IsShowingOverflowBubble());
 
   // Waits for all transitions to finish and there should be no crash.
   test.RunMessageLoopUntilAnimationsDone();
+  EXPECT_FALSE(launcher->IsShowingOverflowBubble());
 }
 
 // Launcher can't be activated on mouse click, but it is activable from
