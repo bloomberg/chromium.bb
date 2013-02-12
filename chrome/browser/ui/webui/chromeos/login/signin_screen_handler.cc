@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -194,6 +195,69 @@ NetworkPortalDetector::CaptivePortalState GetCaptivePortalState(
   if (!detector || !network)
     return NetworkPortalDetector::CaptivePortalState();
   return detector->GetCaptivePortalState(network);
+}
+
+void RecordDiscrepancyWithShill(
+    const Network* network,
+    const NetworkPortalDetector::CaptivePortalStatus status) {
+  if (network->online()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "CaptivePortal.OOBE.DiscrepancyWithShill.Online",
+        status,
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  } else if (network->restricted_pool()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "CaptivePortal.OOBE.DiscrepancyWithShill.RestrictedPool",
+        status,
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "CaptivePortal.OOBE.DiscrepancyWithShill.Offline",
+        status,
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  }
+}
+
+// Record state and descripancies with shill (e.g. shill thinks that
+// network is online but NetworkPortalDetector claims that it's behind
+// portal) for the network identified by |service_path|.
+void RecordNetworkPortalDetectorStats(const std::string& service_path) {
+  const Network* network = FindNetworkByPath(service_path);
+  if (!network)
+    return;
+  NetworkPortalDetector::CaptivePortalState state =
+      GetCaptivePortalState(service_path);
+  if (state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION("CaptivePortal.OOBE.DetectionResult",
+                            state.status,
+                            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+
+  switch (state.status) {
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
+      NOTREACHED();
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
+      if (network->online() || network->restricted_pool())
+        RecordDiscrepancyWithShill(network, state.status);
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
+      if (!network->online())
+        RecordDiscrepancyWithShill(network, state.status);
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
+      if (!network->restricted_pool())
+        RecordDiscrepancyWithShill(network, state.status);
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
+      if (!network->online())
+        RecordDiscrepancyWithShill(network, state.status);
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace
@@ -553,6 +617,11 @@ void SigninScreenHandler::UpdateStateInternal(
                  << "network_id=" << network_id << ", "
                  << "reason=" << reason << ", "
                  << "is_under_captive_portal=" << is_under_captive_portal;
+
+    // Record portal detection stats only if we're going to show or
+    // change state of the error screen.
+    RecordNetworkPortalDetectorStats(service_path);
+
     if (is_proxy_error) {
       error_screen_actor_->ShowProxyError();
     } else if (is_under_captive_portal) {

@@ -44,7 +44,8 @@ class NetworkPortalDetector
     CAPTIVE_PORTAL_STATUS_OFFLINE  = 1,
     CAPTIVE_PORTAL_STATUS_ONLINE   = 2,
     CAPTIVE_PORTAL_STATUS_PORTAL   = 3,
-    CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED = 4
+    CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED = 4,
+    CAPTIVE_PORTAL_STATUS_COUNT
   };
 
   struct CaptivePortalState {
@@ -212,6 +213,9 @@ class NetworkPortalDetector
   // Minimum time between consecutive portal checks for the same
   // active network.
   base::TimeDelta min_time_between_attempts_;
+
+  // Start time of portal detection.
+  base::TimeTicks detection_start_time_;
 
   // Start time of portal detection attempt.
   base::TimeTicks attempt_start_time_;

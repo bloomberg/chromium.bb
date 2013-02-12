@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -55,6 +56,8 @@ std::string CaptivePortalStatusString(
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
       return l10n_util::GetStringUTF8(
           IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED);
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:
+      NOTREACHED();
   }
   return l10n_util::GetStringUTF8(
       IDS_CHROMEOS_CAPTIVE_PORTAL_STATUS_UNRECOGNIZED);
@@ -239,6 +242,8 @@ void NetworkPortalDetector::DetectCaptivePortal(const base::TimeDelta& delay) {
         min_time_between_attempts_ - elapsed_time > next_attempt_delay_) {
       next_attempt_delay_ = min_time_between_attempts_ - elapsed_time;
     }
+  } else {
+    detection_start_time_ = GetCurrentTimeTicks();
   }
   detection_task_.Reset(
       base::Bind(&NetworkPortalDetector::DetectCaptivePortalTask,
@@ -365,6 +370,11 @@ void NetworkPortalDetector::SetCaptivePortalState(
     const Network* network,
     const CaptivePortalState& state) {
   DCHECK(network);
+
+  if (!detection_start_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("CaptivePortal.OOBE.DetectionDuration",
+                        GetCurrentTimeTicks() - detection_start_time_);
+  }
 
   CaptivePortalStateMap::const_iterator it =
       portal_state_map_.find(network->service_path());
