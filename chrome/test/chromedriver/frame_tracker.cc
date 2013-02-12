@@ -38,7 +38,10 @@ Status FrameTracker::GetContextIdForFrame(
 Status FrameTracker::OnConnected() {
   // Enable runtime events to allow tracking execution context creation.
   base::DictionaryValue params;
-  return client_->SendCommand("Runtime.enable", params);
+  Status status = client_->SendCommand("Runtime.enable", params);
+  if (status.IsError())
+    return status;
+  return client_->SendCommand("DOM.getDocument", params);
 }
 
 void FrameTracker::OnEvent(const std::string& method,
