@@ -779,7 +779,8 @@ class BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0
 
 // BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_0:
 //
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -936,7 +937,8 @@ class Bx_cccc000100101111111111110001mmmm_case_0
 
 // CDP2_11111110iiiiiiiiiiiiiiiiiii0iiii_case_0:
 //
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1528,7 +1530,8 @@ class ISB_1111010101111111111100000110xxxx_case_0
 
 // LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0:
 //
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1553,7 +1556,8 @@ class LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0
 
 // LDC2_literal_1111110pudw11111iiiiiiiiiiiiiiii_case_0:
 //
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -3159,7 +3163,8 @@ class LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0
 
 // MCR2_11111110iii0iiiittttiiiiiii1iiii_case_0:
 //
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -3184,7 +3189,8 @@ class MCR2_11111110iii0iiiittttiiiiiii1iiii_case_0
 
 // MCRR2_111111000100ssssttttiiiiiiiiiiii_case_0:
 //
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -3545,7 +3551,8 @@ class MOV_register_cccc0001101s0000dddd00000000mmmm_case_0
 
 // MRC2_11111110iii1iiiittttiiiiiii1iiii_case_0:
 //
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -3595,7 +3602,8 @@ class MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0
 
 // MRRC2_111111000101ssssttttiiiiiiiiiiii_case_0:
 //
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -4832,7 +4840,8 @@ class REV_cccc011010111111dddd11110011mmmm_case_0
 
 // RFE_1111100pu0w1nnnn0000101000000000_case_0:
 //
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},

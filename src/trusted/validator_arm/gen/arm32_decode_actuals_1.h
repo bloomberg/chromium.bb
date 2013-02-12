@@ -1513,7 +1513,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1525,7 +1526,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1588,7 +1590,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1600,7 +1603,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1636,7 +1640,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1648,7 +1653,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1685,7 +1691,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1709,7 +1716,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1748,7 +1756,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1787,7 +1796,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1799,7 +1809,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v5,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v5,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -8280,6 +8291,16 @@ class Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1
 // Actual:
 //   {defs: {},
 //    safety: [true => UNDEFINED],
+//    uses: {}}
+//
+// Baseline:
+//   {actual: Actual_Unnamed_case_1,
+//    baseline: Undefined,
+//    constraints: ,
+//    defs: {},
+//    generated_baseline: Unnamed_case_1,
+//    safety: [true => UNDEFINED],
+//    true: true,
 //    uses: {}}
 //
 // Baseline:

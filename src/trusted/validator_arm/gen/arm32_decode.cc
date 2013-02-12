@@ -3274,45 +3274,45 @@ const ClassDecoder& Arm32DecoderState::decode_unconditional_instructions(
 {
   if ((inst.Bits() & 0x0FE00000)  ==
           0x0C400000 /* op1(27:20)=1100010x */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x0E500000)  ==
           0x08100000 /* op1(27:20)=100xx0x1 */ &&
       (inst.Bits() & 0x0000FFFF)  ==
           0x00000A00 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000101000000000 */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x0E500000)  ==
           0x08400000 /* op1(27:20)=100xx1x0 */ &&
       (inst.Bits() & 0x000FFFE0)  ==
           0x000D0500 /* $pattern(31:0)=xxxxxxxxxxxx110100000101000xxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x0E100000)  ==
           0x0C000000 /* op1(27:20)=110xxxx0 */ &&
       (inst.Bits() & 0x0FB00000)  !=
           0x0C000000 /* op1_repeated(27:20)=~11000x00 */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x0E100000)  ==
           0x0C100000 /* op1(27:20)=110xxxx1 */ &&
       (inst.Bits() & 0x0FB00000)  !=
           0x0C100000 /* op1_repeated(27:20)=~11000x01 */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x0F000000)  ==
           0x0E000000 /* op1(27:20)=1110xxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x0E000000)  ==
           0x0A000000 /* op1(27:20)=101xxxxx */) {
-    return Forbidden_instance_;
+    return Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x08000000)  ==
@@ -3321,7 +3321,7 @@ const ClassDecoder& Arm32DecoderState::decode_unconditional_instructions(
   }
 
   if (true) {
-    return Undefined_instance_;
+    return Actual_Unnamed_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...
