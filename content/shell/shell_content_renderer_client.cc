@@ -81,31 +81,4 @@ bool ShellContentRendererClient::OverrideCreatePlugin(
   return false;
 }
 
-bool ShellContentRendererClient::WillSendRequest(
-    WebFrame* frame,
-    PageTransition transition_type,
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    GURL* new_url) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDumpRenderTree))
-    return false;
-  ShellRenderProcessObserver* render_process_observer =
-      ShellRenderProcessObserver::GetInstance();
-  if (!command_line->HasSwitch(switches::kAllowExternalPages) &&
-      IsExternalPage(url) && !IsExternalPage(first_party_for_cookies)) {
-    if (render_process_observer->test_delegate()) {
-      render_process_observer->test_delegate()->printMessage(
-          std::string("Blocked access to external URL " + url.spec() + "\n"));
-    }
-    *new_url = GURL();
-    return true;
-  }
-  if (render_process_observer->test_delegate()) {
-    *new_url = render_process_observer->test_delegate()->rewriteLayoutTestsURL(
-        url.spec());
-  }
-  return true;
-}
-
 }  // namespace content

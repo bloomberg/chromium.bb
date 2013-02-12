@@ -15,13 +15,8 @@ class WebPlugin;
 struct WebPluginParams;
 }
 
-namespace WebTestRunner {
-class WebTestProxyBase;
-}
-
 namespace content {
 
-class RenderView;
 class ShellRenderProcessObserver;
 
 class ShellContentRendererClient : public ContentRendererClient {
@@ -35,11 +30,6 @@ class ShellContentRendererClient : public ContentRendererClient {
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       WebKit::WebPlugin** plugin) OVERRIDE;
-  virtual bool WillSendRequest(WebKit::WebFrame* frame,
-                               PageTransition transition_type,
-                               const GURL& url,
-                               const GURL& first_party_for_cookies,
-                               GURL* new_url) OVERRIDE;
 
  private:
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
