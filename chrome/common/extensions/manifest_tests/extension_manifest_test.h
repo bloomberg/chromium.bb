@@ -18,7 +18,7 @@ class ExtensionManifestTest : public testing::Test {
   ExtensionManifestTest();
 
  protected:
-  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   // If filename is a relative path, LoadManifestFile will treat it relative to
   // the appropriate test directory.

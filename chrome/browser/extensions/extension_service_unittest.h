@@ -48,6 +48,8 @@ class ExtensionServiceTestBase : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
 
+  virtual void TearDown() OVERRIDE;
+
   void set_extensions_enabled(bool enabled) {
     service_->set_extensions_enabled(enabled);
   }

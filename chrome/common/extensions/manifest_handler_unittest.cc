@@ -100,7 +100,7 @@ class ManifestHandlerTest : public testing::Test {
   };
 
  protected:
-  virtual void SetUp() OVERRIDE {
+  virtual void TearDown() OVERRIDE {
     ManifestHandler::ClearRegistryForTesting();
   }
 };

@@ -21,7 +21,7 @@ ExtensionManifestTest::ExtensionManifestTest()
       // UNKNOWN == trunk.
       current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
 
-void ExtensionManifestTest::SetUp() {
+void ExtensionManifestTest::TearDown() {
   extensions::ManifestHandler::ClearRegistryForTesting();
 }
 
