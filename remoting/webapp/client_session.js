@@ -64,7 +64,7 @@ remoting.ClientSession = function(hostJid, clientJid,
   this.onStateChange_ = null;
 
   /** @type {number?} @private */
-  this.notifyClientDimensionsTimer_ = null;
+  this.notifyClientResolutionTimer_ = null;
   /** @type {number?} @private */
   this.bumpScrollTimer_ = null;
 
@@ -504,7 +504,9 @@ remoting.ClientSession.prototype.setScreenMode_ =
     function(shrinkToFit, resizeToClient) {
 
   if (resizeToClient && !this.resizeToClient_) {
-    this.plugin.notifyClientDimensions(window.innerWidth, window.innerHeight);
+    this.plugin.notifyClientResolution(window.innerWidth,
+                                       window.innerHeight,
+                                       window.devicePixelRatio);
   }
 
   // If enabling shrink, reset bump-scroll offsets.
@@ -627,7 +629,9 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
   if (status == remoting.ClientSession.State.CONNECTED) {
     this.onDesktopSizeChanged_();
     if (this.resizeToClient_) {
-      this.plugin.notifyClientDimensions(window.innerWidth, window.innerHeight);
+      this.plugin.notifyClientResolution(window.innerWidth,
+                                         window.innerHeight,
+                                         window.devicePixelRatio);
     }
   } else if (status == remoting.ClientSession.State.FAILED) {
     this.error_ = /** @type {remoting.ClientSession.ConnectionError} */ (error);
@@ -688,18 +692,19 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
 remoting.ClientSession.prototype.onResize = function() {
   this.updateDimensions();
 
-  if (this.notifyClientDimensionsTimer_) {
-    window.clearTimeout(this.notifyClientDimensionsTimer_);
-    this.notifyClientDimensionsTimer_ = null;
+  if (this.notifyClientResolutionTimer_) {
+    window.clearTimeout(this.notifyClientResolutionTimer_);
+    this.notifyClientResolutionTimer_ = null;
   }
 
   // Defer notifying the host of the change until the window stops resizing, to
   // avoid overloading the control channel with notifications.
   if (this.resizeToClient_) {
-    this.notifyClientDimensionsTimer_ = window.setTimeout(
-        this.plugin.notifyClientDimensions.bind(this.plugin,
+    this.notifyClientResolutionTimer_ = window.setTimeout(
+        this.plugin.notifyClientResolution.bind(this.plugin,
                                                 window.innerWidth,
-                                                window.innerHeight),
+                                                window.innerHeight,
+                                                window.devicePixelRatio),
         1000);
   }
 

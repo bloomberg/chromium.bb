@@ -55,6 +55,7 @@ remoting.ClientPlugin.prototype.isSupportedVersion = function() {};
 remoting.ClientPlugin.Feature = {
   INJECT_KEY_EVENT: 'injectKeyEvent',
   NOTIFY_CLIENT_DIMENSIONS: 'notifyClientDimensions',
+  NOTIFY_CLIENT_RESOLUTION: 'notifyClientResolution',
   PAUSE_VIDEO: 'pauseVideo',
   PAUSE_AUDIO: 'pauseAudio',
   REMAP_KEY: 'remapKey',
@@ -147,13 +148,14 @@ remoting.ClientPlugin.prototype.getPerfStats = function() {};
 remoting.ClientPlugin.prototype.sendClipboardItem = function(mimeType, item) {};
 
 /**
- * Notifies the host that the client has the specified dimensions.
+ * Notifies the host that the client has the specified size and pixel density.
  *
- * @param {number} width The available client width.
- * @param {number} height The available client height.
+ * @param {number} width The available client width in DIPs.
+ * @param {number} height The available client height in DIPs.
+ * @param {number} device_scale The number of device pixels per DIP.
  */
-remoting.ClientPlugin.prototype.notifyClientDimensions =
-    function(width, height) {};
+remoting.ClientPlugin.prototype.notifyClientResolution =
+    function(width, height, device_scale) {};
 
 /**
  * Requests that the host pause or resume sending video updates.

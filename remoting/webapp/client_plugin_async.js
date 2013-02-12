@@ -385,18 +385,27 @@ remoting.ClientPluginAsync.prototype.sendClipboardItem =
 };
 
 /**
- * Notifies the host that the client has the specified dimensions.
+ * Notifies the host that the client has the specified size and pixel density.
  *
- * @param {number} width The available client width.
- * @param {number} height The available client height.
+ * @param {number} width The available client width in DIPs.
+ * @param {number} height The available client height in DIPs.
+ * @param {number} device_scale The number of device pixels per DIP.
  */
-remoting.ClientPluginAsync.prototype.notifyClientDimensions =
-    function(width, height) {
-  if (!this.hasFeature(remoting.ClientPlugin.Feature.NOTIFY_CLIENT_DIMENSIONS))
-    return;
-  this.plugin.postMessage(JSON.stringify(
-      { method: 'notifyClientDimensions',
-        data: { width: width, height: height }}));
+remoting.ClientPluginAsync.prototype.notifyClientResolution =
+    function(width, height, device_scale) {
+  if (this.hasFeature(remoting.ClientPlugin.Feature.NOTIFY_CLIENT_RESOLUTION)) {
+    var dpi = device_scale * 96;
+    this.plugin.postMessage(JSON.stringify(
+        { method: 'notifyClientResolution',
+          data: { width: width * device_scale,
+                  height: height * device_scale,
+                  x_dpi: dpi, y_dpi: dpi }}));
+  } else if (this.hasFeature(
+                 remoting.ClientPlugin.Feature.NOTIFY_CLIENT_DIMENSIONS)) {
+    this.plugin.postMessage(JSON.stringify(
+        { method: 'notifyClientDimensions',
+          data: { width: width, height: height }}));
+  }
 };
 
 /**
