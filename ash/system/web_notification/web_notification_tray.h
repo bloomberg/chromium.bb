@@ -63,6 +63,9 @@ class ASH_EXPORT WebNotificationTray
   // Returns true if the mouse is inside the notification bubble.
   bool IsMouseInNotificationBubble() const;
 
+  // Shows the message center bubble.
+  void ShowMessageCenterBubble();
+
   // Overridden from TrayBackgroundView.
   virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
   virtual void AnchorUpdated() OVERRIDE;
@@ -118,7 +121,6 @@ class ASH_EXPORT WebNotificationTray
 
   // Shows the quiet mode bubble.
   void ShowQuietModeBubble();
-
 
   internal::WebNotificationBubbleWrapper* message_center_bubble() const {
     return message_center_bubble_.get();

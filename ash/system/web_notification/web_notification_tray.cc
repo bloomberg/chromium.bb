@@ -249,6 +249,11 @@ bool WebNotificationTray::IsMouseInNotificationBubble() const {
       Shell::GetScreen()->GetCursorScreenPoint());
 }
 
+void WebNotificationTray::ShowMessageCenterBubble() {
+  if (!IsMessageCenterBubbleVisible())
+    message_center_tray_->ShowMessageCenterBubble();
+}
+
 void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
