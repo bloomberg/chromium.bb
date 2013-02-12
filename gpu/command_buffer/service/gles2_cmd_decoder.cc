@@ -2725,9 +2725,6 @@ bool GLES2DecoderImpl::MakeCurrent() {
     return false;
   }
 
-  if (query_manager_.get())
-    query_manager_->ProcessPendingTransferQueries();
-
   // TODO(epenner): Is there a better place to do this? Transfers
   // can complete any time we yield the main thread. So we *must*
   // process transfers after any such yield, before resuming.
@@ -9124,8 +9121,6 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(
   if (!query_manager_->EndQuery(state_.current_query, submit_count)) {
     return error::kOutOfBounds;
   }
-
-  query_manager_->ProcessPendingTransferQueries();
 
   state_.current_query = NULL;
   return error::kNoError;

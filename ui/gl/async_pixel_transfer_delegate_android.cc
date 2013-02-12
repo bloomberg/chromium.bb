@@ -159,7 +159,8 @@ base::MessageLoopProxy* transfer_message_loop_proxy() {
 // Class which holds async pixel transfers state (EGLImage).
 // The EGLImage is accessed by either thread, but everything
 // else accessed only on the main thread.
-class TransferStateInternal : public base::RefCounted<TransferStateInternal> {
+class TransferStateInternal
+    : public base::RefCountedThreadSafe<TransferStateInternal> {
  public:
   explicit TransferStateInternal(GLuint texture_id,
                                  bool wait_for_uploads,
@@ -250,7 +251,7 @@ class TransferStateInternal : public base::RefCounted<TransferStateInternal> {
   }
 
  protected:
-  friend class base::RefCounted<TransferStateInternal>;
+  friend class base::RefCountedThreadSafe<TransferStateInternal>;
   friend class AsyncPixelTransferDelegateAndroid;
 
   static void DeleteTexture(GLuint id) {
@@ -329,8 +330,7 @@ class AsyncPixelTransferDelegateAndroid
 
   // implement AsyncPixelTransferDelegate:
   virtual void AsyncNotifyCompletion(
-      const AsyncMemoryParams& mem_params,
-      const CompletionCallback& callback) OVERRIDE;
+      const base::Closure& task) OVERRIDE;
   virtual void AsyncTexImage2D(
       AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
@@ -360,12 +360,6 @@ class AsyncPixelTransferDelegateAndroid
       AsyncTexSubImage2DParams tex_params,
       base::SharedMemory* shared_memory,
       uint32 shared_memory_data_offset);
-  static void PerformNotifyCompletion(
-      base::SharedMemory* shared_memory,
-      uint32 shared_memory_size,
-      uint32 shared_memory_data_offset,
-      uint32 shared_memory_data_size,
-      const CompletionCallback& callback);
 
   // Returns true if a work-around was used.
   bool WorkAroundAsyncTexImage2D(
@@ -450,23 +444,19 @@ AsyncPixelTransferState*
                                     use_image_preserved));
 }
 
+namespace {
+// Dummy function to measure completion on
+// the upload thread.
+void NoOp() {}
+} // namespace
+
 void AsyncPixelTransferDelegateAndroid::AsyncNotifyCompletion(
-    const AsyncMemoryParams& mem_params,
-    const CompletionCallback& callback) {
-  DCHECK(mem_params.shared_memory);
-  DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
-            mem_params.shm_size);
-  // Post a PerformNotifyCompletion task to the upload thread. This task
-  // will run after all async transfers are complete.
-  transfer_message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&AsyncPixelTransferDelegateAndroid::PerformNotifyCompletion,
-                 base::Owned(DuplicateSharedMemory(mem_params.shared_memory,
-                                                   mem_params.shm_size)),
-                 mem_params.shm_size,
-                 mem_params.shm_data_offset,
-                 mem_params.shm_data_size,
-                 callback));
+      const base::Closure& task) {
+  // Post a no-op task to the upload thread followed
+  // by a reply to the callback. The reply will then occur after
+  // all async transfers are complete.
+  transfer_message_loop_proxy()->PostTaskAndReply(FROM_HERE,
+      base::Bind(&NoOp), task);
 }
 
 void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(
@@ -670,20 +660,6 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
   state->last_transfer_time_ = base::TimeTicks::HighResNow() - begin_time;
 }
 
-void AsyncPixelTransferDelegateAndroid::PerformNotifyCompletion(
-    base::SharedMemory* shared_memory,
-    uint32 shared_memory_size,
-    uint32 shared_memory_data_offset,
-    uint32 shared_memory_data_size,
-    const CompletionCallback& callback) {
-  TRACE_EVENT0("gpu", "PerformNotifyCompletion");
-  gfx::AsyncMemoryParams mem_params;
-  mem_params.shared_memory = shared_memory;
-  mem_params.shm_size = shared_memory_size;
-  mem_params.shm_data_offset = shared_memory_data_offset;
-  mem_params.shm_data_size = shared_memory_data_size;
-  callback.Run(mem_params);
-}
 
 namespace {
 bool IsPowerOfTwo (unsigned int x) {
