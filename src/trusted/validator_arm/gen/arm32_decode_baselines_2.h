@@ -6036,6 +6036,64 @@ class VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0
       VDUP_arm_core_register_cccc11101bq0ddddtttt1011d0e10000_case_0);
 };
 
+// VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    baseline: VectorUnary2RegisterDup,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 8
+//         if imm4(19:16)=xxx1
+//         else 4
+//         if imm4(19:16)=xx10
+//         else 2
+//         if imm4(19:16)=x100
+//         else 0,
+//    esize: 8
+//         if imm4(19:16)=xxx1
+//         else 16
+//         if imm4(19:16)=xx10
+//         else 32
+//         if imm4(19:16)=x100
+//         else 0,
+//    fields: [D(22), imm4(19:16), Vd(15:12), Q(6), M(5), Vm(3:0)],
+//    generated_baseline: VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0,
+//    imm4: imm4(19:16),
+//    index: imm4(3:1)
+//         if imm4(19:16)=xxx1
+//         else imm4(3:2)
+//         if imm4(19:16)=xx10
+//         else imm4(3)
+//         if imm4(19:16)=x100
+//         else 0,
+//    m: M:Vm,
+//    pattern: 111100111d11iiiidddd11000qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VDUP_scalar,
+//    safety: [imm4(19:16)=x000 => UNDEFINED,
+//      Q(6)=1 &&
+//         Vd(0)=1 => UNDEFINED],
+//    uses: {}}
+class VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0);
+};
+
 // VEOR_111100110d00nnnndddd0001nqm1mmmm_case_0:
 //
 //   {D: D(22),
@@ -6087,6 +6145,55 @@ class VEOR_111100110d00nnnndddd0001nqm1mmmm_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VEOR_111100110d00nnnndddd0001nqm1mmmm_case_0);
+};
+
+// VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    baseline: VectorBinary3RegisterImmOp,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    fields: [D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      imm4(11:8),
+//      N(7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0,
+//    imm4: imm4(11:8),
+//    m: M:Vm,
+//    n: N:Vn,
+//    pattern: 111100101d11nnnnddddiiiinqm0mmmm,
+//    position: 8 * imm4,
+//    quadword_operation: Q(6)=1,
+//    rule: VEXT,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vn(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      Q(6)=0 &&
+//         imm4(3)=1 => UNDEFINED],
+//    uses: {}}
+class VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0);
 };
 
 // VFMA_A1_111100100d00nnnndddd1100nqm1mmmm_case_0:

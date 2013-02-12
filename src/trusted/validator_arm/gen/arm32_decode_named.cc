@@ -164,7 +164,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
           0x00B00000 /* A(23:19)=1x11x */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* C(7:4)=xxx0 */) {
-    return VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598_instance_;
+    return VectorBinary3RegisterImmOp_VEXT_instance_;
   }
 
   if ((inst.Bits() & 0x01000000)  ==
@@ -175,7 +175,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
           0x00000C00 /* B(11:8)=1100 */ &&
       (inst.Bits() & 0x00000090)  ==
           0x00000000 /* C(7:4)=0xx0 */) {
-    return VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592_instance_;
+    return VectorUnary2RegisterDup_VDUP_scalar_instance_;
   }
 
   if ((inst.Bits() & 0x01000000)  ==
@@ -186,7 +186,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
           0x00000800 /* B(11:8)=10xx */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* C(7:4)=xxx0 */) {
-    return VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798_instance_;
+    return VectorBinary3RegisterLookupOp_VTBL_VTBX_instance_;
   }
 
   if ((inst.Bits() & 0x01000000)  ==

@@ -8297,6 +8297,51 @@ class VSWP_111100111d11ss10dddd00000qm0mmmm_case_0
       VSWP_111100111d11ss10dddd00000qm0mmmm_case_0);
 };
 
+// VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    baseline: VectorBinary3RegisterLookupOp,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    fields: [D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      len(9:8),
+//      N(7),
+//      op(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0,
+//    is_vtbl: op(6)=0,
+//    len: len(9:8),
+//    length: len + 1,
+//    m: M:Vm,
+//    n: N:Vn,
+//    op: op(6),
+//    pattern: 111100111d11nnnndddd10ccnpm0mmmm,
+//    rule: VTBL_VTBX,
+//    safety: [n + length  >
+//            32 => UNPREDICTABLE],
+//    uses: {}}
+class VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0);
+};
+
 // VTRN_111100111d11ss10dddd00001qm0mmmm_case_0:
 //
 //   {D: D(22),

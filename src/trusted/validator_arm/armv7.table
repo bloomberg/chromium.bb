@@ -2686,8 +2686,49 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                     = *Undefined   # See note on ARM table.
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- advanced_simd_data_processing_instructions (See Section A7.4)
+*VdVm
+   { D(22), Vd(15:12), M(5), Vm(3:0) }
+   d := D:Vd; m := M:Vm;
+   # TODO(karl): Add vector defs/uses etc.
+   defs := {};
+   uses := {};
+*VdVnVm *VdVm
+   { D(22), Vn(19:16), Vd(15:12), N(7), M(5), Vm(3:0) }
+   n := N:Vn;
+*Vext *VdVnVm
+   { D(22), Vn(19:16), Vd(15:12), imm4(11:8), N(7), Q(6), M(5), Vm(3:0) }
+   baseline := VectorBinary3RegisterImmOp;
+   quadword_operation := Q=1;
+   position := 8 * imm4;
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED &
+             Q=0 & imm4(3)=1 => UNDEFINED;
+*Vtbl *VdVnVm
+   { D(22), Vn(19:16), Vd(15:12), len(9:8), N(7), op(6), M(5), Vm(3:0) }
+   baseline := VectorBinary3RegisterLookupOp;
+   is_vtbl := op=0; length := len+1;
+   # TODO(karl): Add vector uses. Note: Uses quite different from othe
+   # instructions in this table because it changes with len.
+   safety := n+length > 32 => UNPREDICTABLE;
+*Vdup *VdVm
+   { D(22), imm4(19:16), Vd(15:12), Q(6), M(5), Vm(3:0) }
+   baseline := VectorUnary2RegisterDup;
+   esize :=       8 if imm4=xxx1
+            else 16 if imm4=xx10
+            else 32 if imm4=x100
+            else  0;   # i.e. not defined.
+   elements :=      8 if imm4=xxx1
+               else 4 if imm4=xx10
+               else 2 if imm4=x100
+               else 0;   # i.e. not defined.
+   index :=      imm4(3:1) if imm4=xxx1
+            else imm4(3:2) if imm4=xx10
+            else   imm4(3) if imm4=x100
+            else         0;   # i.e. not defined.
+   regs := 1 if Q=0 else 2;
+   safety := imm4=x000 => UNDEFINED &
+             Q=1 & Vd(0)=1 => UNDEFINED;
++--
 | U(24) A(23:19) B(11:8) C(7:4)
 | -     0xxxx    -       -      -> simd_dp_3same
 | "     1x000    -       0xx1   -> simd_dp_1imm
@@ -2699,17 +2740,17 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | "     1x10x    -       x0x0   "
 | "     1x0xx    -       x1x0   -> simd_dp_2scalar
 | "     1x10x    -       x1x0   "
-| 0     1x11x    -       xxx0   = VectorBinary3RegisterImmOp
-                                  Vext_Rule_305_A1_P598
-                                  111100101d11nnnnddddiiiinqm0mmmm
+| 0     1x11x    -       xxx0   = *Vext
+                                   pattern := 111100101d11nnnnddddiiiinqm0mmmm;
+                                   rule := VEXT;
 | 1     1x11x    0xxx    xxx0   -> simd_dp_2misc
-| "     "        10xx    xxx0   = VectorBinary3RegisterLookupOp
-                                  Vtbl_Vtbx_Rule_406_A1_P798
-                                  111100111d11nnnndddd10ccnpm0mmmm
-| "     "        1100    0xx0   = VectorUnary2RegisterDup
-                                  Vdup_Rule_302_A1_P592
-                                  111100111d11iiiidddd11000qm0mmmm
-| else:                         = Undefined  # Note on page A7-10
+| "     "        10xx    xxx0   = *Vtbl
+                                   pattern := 111100111d11nnnndddd10ccnpm0mmmm;
+                                   rule := VTBL_VTBX;
+| "     "        1100    0xx0   = *Vdup
+                                   pattern := 111100111d11iiiidddd11000qm0mmmm;
+                                   rule := VDUP_scalar;
+| else:                         = Undefined  # Note on table description.
 +--
 
 +-- simd_dp_3same (See Section A7.4.1)

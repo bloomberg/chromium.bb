@@ -646,6 +646,106 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
 
+// Actual_VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [inst(19:16)=x000 => UNDEFINED,
+//      inst(6)=1 &&
+//         inst(15:12)(0)=1 => UNDEFINED],
+//    uses: {}}
+
+RegisterList Actual_VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:16)=x000 => UNDEFINED
+  if ((inst.Bits() & 0x00070000)  ==
+          0x00000000)
+    return UNDEFINED;
+
+  // inst(6)=1 &&
+  //       inst(15:12)(0)=1 => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Actual_VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [inst(6)=0 &&
+//         inst(11:8)(3)=1 => UNDEFINED,
+//      inst(6)=1 &&
+//         (inst(15:12)(0)=1 ||
+//         inst(19:16)(0)=1 ||
+//         inst(3:0)(0)=1) => UNDEFINED],
+//    uses: {}}
+
+RegisterList Actual_VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(6)=1 &&
+  //       (inst(15:12)(0)=1 ||
+  //       inst(19:16)(0)=1 ||
+  //       inst(3:0)(0)=1) => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))))
+    return UNDEFINED;
+
+  // inst(6)=0 &&
+  //       inst(11:8)(3)=1 => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000000) &&
+       ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000008)  ==
+          0x00000008))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1
 //
 // Actual:
@@ -4318,6 +4418,41 @@ safety(Instruction inst) const {
 
 
 RegisterList Actual_VSWP_111100111d11ss10dddd00000qm0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [32  <=
+//            inst(7):inst(19:16) + inst(9:8) + 1 => UNPREDICTABLE],
+//    uses: {}}
+
+RegisterList Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 32  <=
+  //          inst(7):inst(19:16) + inst(9:8) + 1 => UNPREDICTABLE
+  if ((((((((inst.Bits() & 0x00000080) >> 7)) << 4) | ((inst.Bits() & 0x000F0000) >> 16)) + ((inst.Bits() & 0x00000300) >> 8) + 1) > (32)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

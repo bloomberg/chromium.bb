@@ -1542,11 +1542,11 @@ class VectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2
     : public VectorBinary3RegisterDifferentLength_P8 {
 };
 
-class VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598
+class VectorBinary3RegisterImmOp_VEXT
     : public VectorBinary3RegisterImmOp {
 };
 
-class VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798
+class VectorBinary3RegisterLookupOp_VTBL_VTBX
     : public VectorBinary3RegisterLookupOp {
 };
 
@@ -1854,7 +1854,7 @@ class VectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane
     : public VectorLoadStoreSingle4 {
 };
 
-class VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592
+class VectorUnary2RegisterDup_VDUP_scalar
     : public VectorUnary2RegisterDup {
 };
 
@@ -7373,28 +7373,28 @@ class NamedVectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2);
 };
 
-class NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598
+class NamedVectorBinary3RegisterImmOp_VEXT
     : public NamedClassDecoder {
  public:
-  NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598()
-    : NamedClassDecoder(decoder_, "VectorBinary3RegisterImmOp Vext_Rule_305_A1_P598")
+  NamedVectorBinary3RegisterImmOp_VEXT()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterImmOp VEXT")
   {}
 
  private:
-  nacl_arm_dec::VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598);
+  nacl_arm_dec::VectorBinary3RegisterImmOp_VEXT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterImmOp_VEXT);
 };
 
-class NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798
+class NamedVectorBinary3RegisterLookupOp_VTBL_VTBX
     : public NamedClassDecoder {
  public:
-  NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798()
-    : NamedClassDecoder(decoder_, "VectorBinary3RegisterLookupOp Vtbl_Vtbx_Rule_406_A1_P798")
+  NamedVectorBinary3RegisterLookupOp_VTBL_VTBX()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterLookupOp VTBL_VTBX")
   {}
 
  private:
-  nacl_arm_dec::VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798);
+  nacl_arm_dec::VectorBinary3RegisterLookupOp_VTBL_VTBX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterLookupOp_VTBL_VTBX);
 };
 
 class NamedVectorBinary3RegisterSameLength32P_VPADD_floating_point
@@ -8309,16 +8309,16 @@ class NamedVectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoadStoreSingle4_VST4_single_4_element_structure_form_one_lane);
 };
 
-class NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592
+class NamedVectorUnary2RegisterDup_VDUP_scalar
     : public NamedClassDecoder {
  public:
-  NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592()
-    : NamedClassDecoder(decoder_, "VectorUnary2RegisterDup Vdup_Rule_302_A1_P592")
+  NamedVectorUnary2RegisterDup_VDUP_scalar()
+    : NamedClassDecoder(decoder_, "VectorUnary2RegisterDup VDUP_scalar")
   {}
 
  private:
-  nacl_arm_dec::VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592);
+  nacl_arm_dec::VectorUnary2RegisterDup_VDUP_scalar decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorUnary2RegisterDup_VDUP_scalar);
 };
 
 class NamedVfpMrsOp_VMRS

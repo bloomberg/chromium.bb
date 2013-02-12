@@ -35,11 +35,26 @@ namespace nacl_arm_test {
 
 
 // U(24)=0 & A(23:19)=1x11x & C(7:4)=xxx0
-//    = {actual: VectorBinary3RegisterImmOp,
+//    = {Q: Q(6),
+//       Vd: Vd(15:12),
+//       Vm: Vm(3:0),
+//       Vn: Vn(19:16),
+//       actual: VectorBinary3RegisterImmOp,
 //       baseline: VectorBinary3RegisterImmOp,
 //       constraints: ,
+//       defs: {},
+//       fields: [Vn(19:16), Vd(15:12), imm4(11:8), Q(6), Vm(3:0)],
+//       generated_baseline: VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0,
+//       imm4: imm4(11:8),
 //       pattern: 111100101d11nnnnddddiiiinqm0mmmm,
-//       rule: Vext_Rule_305_A1_P598}
+//       rule: VEXT,
+//       safety: [Q(6)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1 ||
+//            Vm(0)=1) => UNDEFINED,
+//         Q(6)=0 &&
+//            imm4(3)=1 => UNDEFINED],
+//       uses: {}}
 class VectorBinary3RegisterImmOpTesterCase0
     : public VectorBinary3RegisterImmOpTester {
  public:
@@ -48,6 +63,8 @@ class VectorBinary3RegisterImmOpTesterCase0
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary3RegisterImmOpTesterCase0
@@ -71,12 +88,54 @@ bool VectorBinary3RegisterImmOpTesterCase0
       PassesParsePreconditions(inst, decoder);
 }
 
+bool VectorBinary3RegisterImmOpTesterCase0
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(VectorBinary3RegisterImmOpTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: Q(6)=1 &&
+  //       (Vd(0)=1 ||
+  //       Vn(0)=1 ||
+  //       Vm(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001)))));
+
+  // safety: Q(6)=0 &&
+  //       imm4(3)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
+          0x00000000) &&
+       ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000008)  ==
+          0x00000008)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
-//    = {actual: VectorUnary2RegisterDup,
+//    = {Q: Q(6),
+//       Vd: Vd(15:12),
+//       actual: VectorUnary2RegisterDup,
 //       baseline: VectorUnary2RegisterDup,
 //       constraints: ,
+//       defs: {},
+//       fields: [imm4(19:16), Vd(15:12), Q(6)],
+//       generated_baseline: VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0,
+//       imm4: imm4(19:16),
 //       pattern: 111100111d11iiiidddd11000qm0mmmm,
-//       rule: Vdup_Rule_302_A1_P592}
+//       rule: VDUP_scalar,
+//       safety: [imm4(19:16)=x000 => UNDEFINED,
+//         Q(6)=1 &&
+//            Vd(0)=1 => UNDEFINED],
+//       uses: {}}
 class VectorUnary2RegisterDupTesterCase1
     : public VectorUnary2RegisterDupTester {
  public:
@@ -85,6 +144,8 @@ class VectorUnary2RegisterDupTesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorUnary2RegisterDupTesterCase1
@@ -111,12 +172,46 @@ bool VectorUnary2RegisterDupTesterCase1
       PassesParsePreconditions(inst, decoder);
 }
 
+bool VectorUnary2RegisterDupTesterCase1
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(VectorUnary2RegisterDupTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: imm4(19:16)=x000 => UNDEFINED
+  EXPECT_TRUE((inst.Bits() & 0x00070000)  !=
+          0x00000000);
+
+  // safety: Q(6)=1 &&
+  //       Vd(0)=1 => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
-//    = {actual: VectorBinary3RegisterLookupOp,
+//    = {N: N(7),
+//       Vn: Vn(19:16),
+//       actual: VectorBinary3RegisterLookupOp,
 //       baseline: VectorBinary3RegisterLookupOp,
 //       constraints: ,
+//       defs: {},
+//       fields: [Vn(19:16), len(9:8), N(7)],
+//       generated_baseline: VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0,
+//       len: len(9:8),
+//       length: len + 1,
+//       n: N:Vn,
 //       pattern: 111100111d11nnnndddd10ccnpm0mmmm,
-//       rule: Vtbl_Vtbx_Rule_406_A1_P798}
+//       rule: VTBL_VTBX,
+//       safety: [n + length  >
+//               32 => UNPREDICTABLE],
+//       uses: {}}
 class VectorBinary3RegisterLookupOpTesterCase2
     : public VectorBinary3RegisterLookupOpTester {
  public:
@@ -125,6 +220,8 @@ class VectorBinary3RegisterLookupOpTesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool VectorBinary3RegisterLookupOpTesterCase2
@@ -151,53 +248,105 @@ bool VectorBinary3RegisterLookupOpTesterCase2
       PassesParsePreconditions(inst, decoder);
 }
 
+bool VectorBinary3RegisterLookupOpTesterCase2
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(VectorBinary3RegisterLookupOpTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: n + length  >
+  //          32 => UNPREDICTABLE
+  EXPECT_TRUE((((((((inst.Bits() & 0x00000080) >> 7)) << 4) | ((inst.Bits() & 0x000F0000) >> 16)) + ((inst.Bits() & 0x00000300) >> 8) + 1) <= (32)));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // The following are derived class decoder testers for decoder actions
 // associated with a pattern of an action. These derived classes introduce
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
 // U(24)=0 & A(23:19)=1x11x & C(7:4)=xxx0
-//    = {actual: VectorBinary3RegisterImmOp,
+//    = {Q: Q(6),
+//       Vd: Vd(15:12),
+//       Vm: Vm(3:0),
+//       Vn: Vn(19:16),
+//       actual: VectorBinary3RegisterImmOp,
 //       baseline: VectorBinary3RegisterImmOp,
 //       constraints: ,
+//       defs: {},
+//       fields: [Vn(19:16), Vd(15:12), imm4(11:8), Q(6), Vm(3:0)],
+//       generated_baseline: VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0,
+//       imm4: imm4(11:8),
 //       pattern: 111100101d11nnnnddddiiiinqm0mmmm,
-//       rule: Vext_Rule_305_A1_P598}
+//       rule: VEXT,
+//       safety: [Q(6)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1 ||
+//            Vm(0)=1) => UNDEFINED,
+//         Q(6)=0 &&
+//            imm4(3)=1 => UNDEFINED],
+//       uses: {}}
 class VectorBinary3RegisterImmOpTester_Case0
     : public VectorBinary3RegisterImmOpTesterCase0 {
  public:
   VectorBinary3RegisterImmOpTester_Case0()
     : VectorBinary3RegisterImmOpTesterCase0(
-      state_.VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598_instance_)
+      state_.VectorBinary3RegisterImmOp_VEXT_instance_)
   {}
 };
 
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
-//    = {actual: VectorUnary2RegisterDup,
+//    = {Q: Q(6),
+//       Vd: Vd(15:12),
+//       actual: VectorUnary2RegisterDup,
 //       baseline: VectorUnary2RegisterDup,
 //       constraints: ,
+//       defs: {},
+//       fields: [imm4(19:16), Vd(15:12), Q(6)],
+//       generated_baseline: VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0,
+//       imm4: imm4(19:16),
 //       pattern: 111100111d11iiiidddd11000qm0mmmm,
-//       rule: Vdup_Rule_302_A1_P592}
+//       rule: VDUP_scalar,
+//       safety: [imm4(19:16)=x000 => UNDEFINED,
+//         Q(6)=1 &&
+//            Vd(0)=1 => UNDEFINED],
+//       uses: {}}
 class VectorUnary2RegisterDupTester_Case1
     : public VectorUnary2RegisterDupTesterCase1 {
  public:
   VectorUnary2RegisterDupTester_Case1()
     : VectorUnary2RegisterDupTesterCase1(
-      state_.VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592_instance_)
+      state_.VectorUnary2RegisterDup_VDUP_scalar_instance_)
   {}
 };
 
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
-//    = {actual: VectorBinary3RegisterLookupOp,
+//    = {N: N(7),
+//       Vn: Vn(19:16),
+//       actual: VectorBinary3RegisterLookupOp,
 //       baseline: VectorBinary3RegisterLookupOp,
 //       constraints: ,
+//       defs: {},
+//       fields: [Vn(19:16), len(9:8), N(7)],
+//       generated_baseline: VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0,
+//       len: len(9:8),
+//       length: len + 1,
+//       n: N:Vn,
 //       pattern: 111100111d11nnnndddd10ccnpm0mmmm,
-//       rule: Vtbl_Vtbx_Rule_406_A1_P798}
+//       rule: VTBL_VTBX,
+//       safety: [n + length  >
+//               32 => UNPREDICTABLE],
+//       uses: {}}
 class VectorBinary3RegisterLookupOpTester_Case2
     : public VectorBinary3RegisterLookupOpTesterCase2 {
  public:
   VectorBinary3RegisterLookupOpTester_Case2()
     : VectorBinary3RegisterLookupOpTesterCase2(
-      state_.VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798_instance_)
+      state_.VectorBinary3RegisterLookupOp_VTBL_VTBX_instance_)
   {}
 };
 
@@ -211,11 +360,26 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // decoder tables.
 
 // U(24)=0 & A(23:19)=1x11x & C(7:4)=xxx0
-//    = {actual: VectorBinary3RegisterImmOp,
+//    = {Q: Q(6),
+//       Vd: Vd(15:12),
+//       Vm: Vm(3:0),
+//       Vn: Vn(19:16),
+//       actual: VectorBinary3RegisterImmOp,
 //       baseline: VectorBinary3RegisterImmOp,
 //       constraints: ,
+//       defs: {},
+//       fields: [Vn(19:16), Vd(15:12), imm4(11:8), Q(6), Vm(3:0)],
+//       generated_baseline: VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0,
+//       imm4: imm4(11:8),
 //       pattern: 111100101d11nnnnddddiiiinqm0mmmm,
-//       rule: Vext_Rule_305_A1_P598}
+//       rule: VEXT,
+//       safety: [Q(6)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1 ||
+//            Vm(0)=1) => UNDEFINED,
+//         Q(6)=0 &&
+//            imm4(3)=1 => UNDEFINED],
+//       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterImmOpTester_Case0_TestCase0) {
   VectorBinary3RegisterImmOpTester_Case0 tester;
@@ -223,11 +387,21 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
-//    = {actual: VectorUnary2RegisterDup,
+//    = {Q: Q(6),
+//       Vd: Vd(15:12),
+//       actual: VectorUnary2RegisterDup,
 //       baseline: VectorUnary2RegisterDup,
 //       constraints: ,
+//       defs: {},
+//       fields: [imm4(19:16), Vd(15:12), Q(6)],
+//       generated_baseline: VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0,
+//       imm4: imm4(19:16),
 //       pattern: 111100111d11iiiidddd11000qm0mmmm,
-//       rule: Vdup_Rule_302_A1_P592}
+//       rule: VDUP_scalar,
+//       safety: [imm4(19:16)=x000 => UNDEFINED,
+//         Q(6)=1 &&
+//            Vd(0)=1 => UNDEFINED],
+//       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorUnary2RegisterDupTester_Case1_TestCase1) {
   VectorUnary2RegisterDupTester_Case1 tester;
@@ -235,11 +409,22 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
-//    = {actual: VectorBinary3RegisterLookupOp,
+//    = {N: N(7),
+//       Vn: Vn(19:16),
+//       actual: VectorBinary3RegisterLookupOp,
 //       baseline: VectorBinary3RegisterLookupOp,
 //       constraints: ,
+//       defs: {},
+//       fields: [Vn(19:16), len(9:8), N(7)],
+//       generated_baseline: VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_0,
+//       len: len(9:8),
+//       length: len + 1,
+//       n: N:Vn,
 //       pattern: 111100111d11nnnndddd10ccnpm0mmmm,
-//       rule: Vtbl_Vtbx_Rule_406_A1_P798}
+//       rule: VTBL_VTBX,
+//       safety: [n + length  >
+//               32 => UNPREDICTABLE],
+//       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterLookupOpTester_Case2_TestCase2) {
   VectorBinary3RegisterLookupOpTester_Case2 tester;

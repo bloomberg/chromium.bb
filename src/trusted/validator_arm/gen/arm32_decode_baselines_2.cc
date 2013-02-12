@@ -9890,6 +9890,86 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
 
+// VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    baseline: VectorUnary2RegisterDup,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 8
+//         if imm4(19:16)=xxx1
+//         else 4
+//         if imm4(19:16)=xx10
+//         else 2
+//         if imm4(19:16)=x100
+//         else 0,
+//    esize: 8
+//         if imm4(19:16)=xxx1
+//         else 16
+//         if imm4(19:16)=xx10
+//         else 32
+//         if imm4(19:16)=x100
+//         else 0,
+//    fields: [D(22), imm4(19:16), Vd(15:12), Q(6), M(5), Vm(3:0)],
+//    generated_baseline: VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0,
+//    imm4: imm4(19:16),
+//    index: imm4(3:1)
+//         if imm4(19:16)=xxx1
+//         else imm4(3:2)
+//         if imm4(19:16)=xx10
+//         else imm4(3)
+//         if imm4(19:16)=x100
+//         else 0,
+//    m: M:Vm,
+//    pattern: 111100111d11iiiidddd11000qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VDUP_scalar,
+//    safety: [imm4(19:16)=x000 => UNDEFINED,
+//      Q(6)=1 &&
+//         Vd(0)=1 => UNDEFINED],
+//    uses: {}}
+RegisterList VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:16)=x000 => UNDEFINED
+  if ((inst.Bits() & 0x00070000)  ==
+          0x00000000)
+    return UNDEFINED;
+
+  // inst(6)=1 &&
+  //       inst(15:12)(0)=1 => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VEOR_111100110d00nnnndddd0001nqm1mmmm_case_0:
 //
 //   {D: D(22),
@@ -9960,6 +10040,86 @@ safety(Instruction inst) const {
 
 
 RegisterList VEOR_111100110d00nnnndddd0001nqm1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    N: N(7),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    Vn: Vn(19:16),
+//    baseline: VectorBinary3RegisterImmOp,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    fields: [D(22),
+//      Vn(19:16),
+//      Vd(15:12),
+//      imm4(11:8),
+//      N(7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0,
+//    imm4: imm4(11:8),
+//    m: M:Vm,
+//    n: N:Vn,
+//    pattern: 111100101d11nnnnddddiiiinqm0mmmm,
+//    position: 8 * imm4,
+//    quadword_operation: Q(6)=1,
+//    rule: VEXT,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vn(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      Q(6)=0 &&
+//         imm4(3)=1 => UNDEFINED],
+//    uses: {}}
+RegisterList VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(6)=1 &&
+  //       (inst(15:12)(0)=1 ||
+  //       inst(19:16)(0)=1 ||
+  //       inst(3:0)(0)=1) => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))))
+    return UNDEFINED;
+
+  // inst(6)=0 &&
+  //       inst(11:8)(3)=1 => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000000) &&
+       ((((inst.Bits() & 0x00000F00) >> 8) & 0x00000008)  ==
+          0x00000008))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'
