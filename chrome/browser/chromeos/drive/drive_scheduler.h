@@ -164,6 +164,12 @@ class DriveScheduler
  private:
   friend class DriveSchedulerTest;
 
+  enum QueueType {
+    METADATA_QUEUE,
+    FILE_QUEUE,
+    NUM_QUEUES
+  };
+
   // Represents a single entry in the job queue.
   struct QueueEntry {
     explicit QueueEntry(JobType in_job_type);
@@ -273,23 +279,24 @@ class DriveScheduler
   void QueueJob(scoped_ptr<QueueEntry> job);
 
   // Starts the job loop, if it is not already running.
-  void StartJobLoop();
+  void StartJobLoop(QueueType queue_type);
 
   // Determines the next job that should run, and starts it.
-  void DoJobLoop();
+  void DoJobLoop(QueueType queue_type);
 
   // Checks if operations should be suspended, such as if the network is
   // disconnected.
   //
   // Returns true when it should stop, and false if it should continue.
-  bool ShouldStopJobLoop();
+  bool ShouldStopJobLoop(QueueType queue_type,
+                         const  DriveClientContext& context);
 
   // Increases the throttle delay if it's below the maximum value, and posts a
   // task to continue the loop after the delay.
-  void ThrottleAndContinueJobLoop();
+  void ThrottleAndContinueJobLoop(QueueType queue_type);
 
   // Resets the throttle delay to the initial value, and continues the job loop.
-  void ResetThrottleAndContinueJobLoop();
+  void ResetThrottleAndContinueJobLoop(QueueType queue_type);
 
   // Retries the job if needed, otherwise cleans up the job, invokes the
   // callback, and continues the job loop.
@@ -341,12 +348,15 @@ class DriveScheduler
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
+  // Get the type of queue the specified job should be put in.
+  QueueType GetJobQueueType(JobType type);
+
   // For testing only.  Disables throttling so that testing is faster.
   void SetDisableThrottling(bool disable) { disable_throttling_ = disable; }
 
   // True when there is a job running.  Indicates that new jobs should wait to
   // be executed.
-  bool job_loop_is_running_;
+  bool job_loop_is_running_[NUM_QUEUES];
 
   // Next value that should be assigned as a job id.
   int next_job_id_;
@@ -359,8 +369,8 @@ class DriveScheduler
   // Disables throttling for testing.
   bool disable_throttling_;
 
-  // The queue of jobs.  Sorted by priority.
-  std::list<QueueEntry*> queue_;
+  // The queues of jobs.
+  std::list<QueueEntry*> queue_[NUM_QUEUES];
 
   google_apis::DriveServiceInterface* drive_service_;
   google_apis::DriveUploaderInterface* uploader_;

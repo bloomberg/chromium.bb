@@ -367,5 +367,241 @@ TEST_F(DriveSchedulerTest, GetResourceEntryPriority) {
   ASSERT_EQ(resource_ids[3], resource_3);
 }
 
+TEST_F(DriveSchedulerTest, GetResourceEntryNoConnection) {
+  ConnectToNone();
+
+  std::string resource("file:1_file_resource_id");
+  std::vector<std::string> resource_ids;
+
+  scheduler_->GetResourceEntry(
+      resource,  // resource ID
+      DriveClientContext(BACKGROUND),
+      base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
+                 &resource_ids,
+                 resource));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(resource_ids.size(), 0ul);
+
+  // Reconnect to the net.
+  ConnectToWifi();
+
+  google_apis::test_util::RunBlockingPoolTask();
+
+  ASSERT_EQ(resource_ids.size(), 1ul);
+  ASSERT_EQ(resource_ids[0], resource);
+}
+
+TEST_F(DriveSchedulerTest, DownloadFileCellularDisabled) {
+  ConnectToCellular();
+
+  // Disable fetching over cellular network.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, true);
+
+  // Try to get a file in the background
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const GURL kContentUrl("https://file_content_url/");
+  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
+  FilePath output_file_path;
+  scheduler_->DownloadFile(
+      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      kOutputFilePath,
+      kContentUrl,
+      DriveClientContext(BACKGROUND),
+      base::Bind(&google_apis::test_util::CopyResultsFromDownloadActionCallback,
+                 &download_error,
+                 &output_file_path),
+      google_apis::GetContentCallback());
+  // Metadata should still work
+  google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
+
+  // Try to get the metadata
+  scheduler_->GetAccountMetadata(
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
+          &metadata_error,
+          &account_metadata));
+
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Check the metadata
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
+  ASSERT_TRUE(account_metadata);
+
+  // Check the download
+  EXPECT_EQ(google_apis::GDATA_OTHER_ERROR, download_error);
+
+  // Switch to a Wifi connection
+  ConnectToWifi();
+
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Check the download again
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, download_error);
+  std::string content;
+  EXPECT_EQ(output_file_path, kOutputFilePath);
+  ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
+  // The content is "x"s of the file size specified in root_feed.json.
+  EXPECT_EQ("xxxxxxxxxx", content);
+}
+
+TEST_F(DriveSchedulerTest, DownloadFileWimaxDisabled) {
+  ConnectToWimax();
+
+  // Disable fetching over cellular network.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, true);
+
+  // Try to get a file in the background
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const GURL kContentUrl("https://file_content_url/");
+  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
+  FilePath output_file_path;
+  scheduler_->DownloadFile(
+      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      kOutputFilePath,
+      kContentUrl,
+      DriveClientContext(BACKGROUND),
+      base::Bind(&google_apis::test_util::CopyResultsFromDownloadActionCallback,
+                 &download_error,
+                 &output_file_path),
+      google_apis::GetContentCallback());
+  // Metadata should still work
+  google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
+
+  // Try to get the metadata
+  scheduler_->GetAccountMetadata(
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
+          &metadata_error,
+          &account_metadata));
+
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Check the metadata
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
+  ASSERT_TRUE(account_metadata);
+
+  // Check the download
+  EXPECT_EQ(google_apis::GDATA_OTHER_ERROR, download_error);
+
+  // Switch to a Wifi connection
+  ConnectToWifi();
+
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Check the download again
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, download_error);
+  std::string content;
+  EXPECT_EQ(output_file_path, kOutputFilePath);
+  ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
+  // The content is "x"s of the file size specified in root_feed.json.
+  EXPECT_EQ("xxxxxxxxxx", content);
+}
+
+TEST_F(DriveSchedulerTest, DownloadFileCellularEnabled) {
+  ConnectToCellular();
+
+  // Enable fetching over cellular network.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
+
+  // Try to get a file in the background
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const GURL kContentUrl("https://file_content_url/");
+  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
+  FilePath output_file_path;
+  scheduler_->DownloadFile(
+      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      kOutputFilePath,
+      kContentUrl,
+      DriveClientContext(BACKGROUND),
+      base::Bind(&google_apis::test_util::CopyResultsFromDownloadActionCallback,
+                 &download_error,
+                 &output_file_path),
+      google_apis::GetContentCallback());
+  // Metadata should still work
+  google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
+
+  // Try to get the metadata
+  scheduler_->GetAccountMetadata(
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
+          &metadata_error,
+          &account_metadata));
+
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Check the metadata
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
+  ASSERT_TRUE(account_metadata);
+
+  // Check the download
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, download_error);
+  std::string content;
+  EXPECT_EQ(output_file_path, kOutputFilePath);
+  ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
+  // The content is "x"s of the file size specified in root_feed.json.
+  EXPECT_EQ("xxxxxxxxxx", content);
+}
+
+TEST_F(DriveSchedulerTest, DownloadFileWimaxEnabled) {
+  ConnectToWimax();
+
+  // Enable fetching over cellular network.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
+
+  // Try to get a file in the background
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const GURL kContentUrl("https://file_content_url/");
+  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  google_apis::GDataErrorCode download_error = google_apis::GDATA_OTHER_ERROR;
+  FilePath output_file_path;
+  scheduler_->DownloadFile(
+      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      kOutputFilePath,
+      kContentUrl,
+      DriveClientContext(BACKGROUND),
+      base::Bind(&google_apis::test_util::CopyResultsFromDownloadActionCallback,
+                 &download_error,
+                 &output_file_path),
+      google_apis::GetContentCallback());
+  // Metadata should still work
+  google_apis::GDataErrorCode metadata_error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
+
+  // Try to get the metadata
+  scheduler_->GetAccountMetadata(
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetAccountMetadataCallback,
+          &metadata_error,
+          &account_metadata));
+
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Check the metadata
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
+  ASSERT_TRUE(account_metadata);
+
+  // Check the download
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, download_error);
+  std::string content;
+  EXPECT_EQ(output_file_path, kOutputFilePath);
+  ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
+  // The content is "x"s of the file size specified in root_feed.json.
+  EXPECT_EQ("xxxxxxxxxx", content);
+}
 
 }  // namespace drive

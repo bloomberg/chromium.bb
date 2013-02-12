@@ -55,8 +55,7 @@ DriveScheduler::DriveScheduler(
     Profile* profile,
     google_apis::DriveServiceInterface* drive_service,
     google_apis::DriveUploaderInterface* uploader)
-    : job_loop_is_running_(false),
-      next_job_id_(0),
+    : next_job_id_(0),
       throttle_count_(0),
       disable_throttling_(false),
       drive_service_(drive_service),
@@ -65,12 +64,17 @@ DriveScheduler::DriveScheduler(
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       initialized_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (int i = 0; i < NUM_QUEUES; ++i) {
+    job_loop_is_running_[i] = false;
+  }
 }
 
 DriveScheduler::~DriveScheduler() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(initialized_);
-  STLDeleteElements(&queue_);
+  for (int i = 0; i < NUM_QUEUES; ++i) {
+    STLDeleteElements(&queue_[i]);
+  }
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
@@ -96,7 +100,7 @@ void DriveScheduler::GetAccountMetadata(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_GET_ACCOUNT_METADATA));
 }
 
 void DriveScheduler::GetAppList(
@@ -109,7 +113,7 @@ void DriveScheduler::GetAppList(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_GET_APP_LIST));
 }
 
 void DriveScheduler::GetResourceList(
@@ -132,7 +136,7 @@ void DriveScheduler::GetResourceList(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_GET_RESOURCE_LIST));
 }
 
 void DriveScheduler::GetResourceEntry(
@@ -149,7 +153,7 @@ void DriveScheduler::GetResourceEntry(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_GET_RESOURCE_ENTRY));
 }
 
 void DriveScheduler::DeleteResource(
@@ -164,7 +168,7 @@ void DriveScheduler::DeleteResource(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_DELETE_RESOURCE));
 }
 
 
@@ -182,7 +186,7 @@ void DriveScheduler::CopyHostedDocument(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_COPY_HOSTED_DOCUMENT));
 }
 
 void DriveScheduler::RenameResource(
@@ -199,7 +203,7 @@ void DriveScheduler::RenameResource(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_RENAME_RESOURCE));
 }
 
 void DriveScheduler::AddResourceToDirectory(
@@ -217,7 +221,7 @@ void DriveScheduler::AddResourceToDirectory(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_ADD_RESOURCE_TO_DIRECTORY));
 }
 
 void DriveScheduler::RemoveResourceFromDirectory(
@@ -234,7 +238,7 @@ void DriveScheduler::RemoveResourceFromDirectory(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_REMOVE_RESOURCE_FROM_DIRECTORY));
 }
 
 void DriveScheduler::AddNewDirectory(
@@ -250,7 +254,7 @@ void DriveScheduler::AddNewDirectory(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_ADD_NEW_DIRECTORY));
 }
 
 void DriveScheduler::DownloadFile(
@@ -272,7 +276,7 @@ void DriveScheduler::DownloadFile(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_DOWNLOAD_FILE));
 }
 
 void DriveScheduler::UploadExistingFile(
@@ -296,36 +300,46 @@ void DriveScheduler::UploadExistingFile(
 
   QueueJob(new_job.Pass());
 
-  StartJobLoop();
+  StartJobLoop(GetJobQueueType(TYPE_UPLOAD_EXISTING_FILE));
 }
 
 void DriveScheduler::QueueJob(scoped_ptr<QueueEntry> job) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  queue_.push_back(job.release());
-  queue_.sort(&QueueEntry::Compare);
+  QueueType queue_type = GetJobQueueType(job->job_info.job_type);
+  std::list<QueueEntry*>& queue = queue_[queue_type];
+
+  queue.push_back(job.release());
+  queue.sort(&QueueEntry::Compare);
 }
 
-void DriveScheduler::StartJobLoop() {
+void DriveScheduler::StartJobLoop(QueueType queue_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!job_loop_is_running_)
-    DoJobLoop();
+  if (!job_loop_is_running_[queue_type])
+    DoJobLoop(queue_type);
 }
 
-void DriveScheduler::DoJobLoop() {
+void DriveScheduler::DoJobLoop(QueueType queue_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (queue_.empty() || ShouldStopJobLoop()) {
+  if (queue_[queue_type].empty()) {
     // Note that |queue_| is not cleared so the sync loop can resume.
-    job_loop_is_running_ = false;
+    job_loop_is_running_[queue_type] = false;
     return;
   }
-  job_loop_is_running_ = true;
+
+  // Check if we should defer based on the first item in the queue
+  if (ShouldStopJobLoop(queue_type, queue_[queue_type].front()->context)) {
+    job_loop_is_running_[queue_type] = false;
+    return;
+  }
+
+  job_loop_is_running_[queue_type] = true;
 
   // Should copy before calling queue_.pop_front().
-  scoped_ptr<QueueEntry> queue_entry(queue_.front());
-  queue_.pop_front();
+  scoped_ptr<QueueEntry> queue_entry(queue_[queue_type].front());
+  queue_[queue_type].pop_front();
 
   JobInfo& job_info = queue_entry->job_info;
   job_info.state = STATE_RUNNING;
@@ -464,7 +478,8 @@ void DriveScheduler::DoJobLoop() {
   }
 }
 
-bool DriveScheduler::ShouldStopJobLoop() {
+bool DriveScheduler::ShouldStopJobLoop(QueueType queue_type,
+                                       const DriveClientContext& context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Should stop if the gdata feature was disabled while running the fetch
@@ -476,20 +491,19 @@ bool DriveScheduler::ShouldStopJobLoop() {
   if (net::NetworkChangeNotifier::IsOffline())
     return true;
 
-  // TODO(zork): This is a temporary fix for crbug.com/172270.  It should be
-  // re-enabled once it's merged.
-  //
-  // Should stop if the current connection is on cellular network, and
-  // fetching is disabled over cellular.
-  // if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
-  //    net::NetworkChangeNotifier::IsConnectionCellular(
-  //        net::NetworkChangeNotifier::GetConnectionType()))
-  //  return true;
+  if (queue_type == FILE_QUEUE && context.type == BACKGROUND) {
+    // Should stop if the current connection is on cellular network, and
+    // fetching is disabled over cellular.
+    if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
+        net::NetworkChangeNotifier::IsConnectionCellular(
+            net::NetworkChangeNotifier::GetConnectionType()))
+      return true;
+  }
 
   return false;
 }
 
-void DriveScheduler::ThrottleAndContinueJobLoop() {
+void DriveScheduler::ThrottleAndContinueJobLoop(QueueType queue_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (throttle_count_ < kMaxThrottleCount)
@@ -508,12 +522,13 @@ void DriveScheduler::ThrottleAndContinueJobLoop() {
   const bool posted = base::MessageLoopProxy::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DriveScheduler::DoJobLoop,
-                 weak_ptr_factory_.GetWeakPtr()),
+                 weak_ptr_factory_.GetWeakPtr(),
+                 queue_type),
       delay);
   DCHECK(posted);
 }
 
-void DriveScheduler::ResetThrottleAndContinueJobLoop() {
+void DriveScheduler::ResetThrottleAndContinueJobLoop(QueueType queue_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Post a task to continue the job loop.  This allows us to finish handling
@@ -521,13 +536,16 @@ void DriveScheduler::ResetThrottleAndContinueJobLoop() {
   throttle_count_ = 0;
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(&DriveScheduler::DoJobLoop,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 queue_type));
 }
 
 scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
     scoped_ptr<DriveScheduler::QueueEntry> queue_entry,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  QueueType queue_type = GetJobQueueType(queue_entry->job_info.job_type);
 
   // Retry, depending on the error.
   if (error == DRIVE_FILE_ERROR_THROTTLED) {
@@ -536,11 +554,11 @@ scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
     // Requeue the job.
     QueueJob(queue_entry.Pass());
 
-    ThrottleAndContinueJobLoop();
+    ThrottleAndContinueJobLoop(queue_type);
 
     return scoped_ptr<DriveScheduler::QueueEntry>();
   } else {
-    ResetThrottleAndContinueJobLoop();
+    ResetThrottleAndContinueJobLoop(queue_type);
 
     // Send the entry back.
     return queue_entry.Pass();
@@ -680,8 +698,33 @@ void DriveScheduler::OnConnectionTypeChanged(
   // Resume the job loop if the network is back online. Note that we don't
   // need to check the type of the network as it will be checked in
   // ShouldStopJobLoop() as soon as the loop is resumed.
-  if (!net::NetworkChangeNotifier::IsOffline())
-    StartJobLoop();
+  if (!net::NetworkChangeNotifier::IsOffline()) {
+    for (int i = METADATA_QUEUE; i < NUM_QUEUES; ++i) {
+      StartJobLoop(static_cast<QueueType>(i));
+    }
+  }
+}
+
+DriveScheduler::QueueType DriveScheduler::GetJobQueueType(JobType type) {
+  switch (type) {
+    case TYPE_GET_ACCOUNT_METADATA:
+    case TYPE_GET_APP_LIST:
+    case TYPE_GET_RESOURCE_LIST:
+    case TYPE_GET_RESOURCE_ENTRY:
+    case TYPE_DELETE_RESOURCE:
+    case TYPE_COPY_HOSTED_DOCUMENT:
+    case TYPE_RENAME_RESOURCE:
+    case TYPE_ADD_RESOURCE_TO_DIRECTORY:
+    case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
+    case TYPE_ADD_NEW_DIRECTORY:
+      return METADATA_QUEUE;
+
+    case TYPE_DOWNLOAD_FILE:
+    case TYPE_UPLOAD_EXISTING_FILE:
+      return FILE_QUEUE;
+  }
+  NOTREACHED();
+  return FILE_QUEUE;
 }
 
 }  // namespace drive
