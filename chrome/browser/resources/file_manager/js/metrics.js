@@ -70,7 +70,7 @@ metrics.decorate = function(name) {
     if (metrics.log) {
       console.log('chrome.metricsPrivate.' + name, args);
     }
-  }
+  };
 };
 
 metrics.decorate('recordMediumCount');

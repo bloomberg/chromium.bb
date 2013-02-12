@@ -485,7 +485,7 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
                         onPathError);
     util.getFiles(self.root_, {create: false}, files, onEntryFound,
                   onPathError);
-  }
+  };
 
   if (clipboard.sourceDir) {
     this.root_.getDirectory(clipboard.sourceDir,
@@ -1061,7 +1061,7 @@ FileCopyManager.prototype.serviceZipTask_ = function(task, completeCallback,
     // creation if the target is not found, or raises an error if it does.
     util.resolvePath(task.targetDirEntry, destPath, onTargetExists,
                      onTargetNotResolved);
-  }
+  };
 
   tryZipSelection();
 };

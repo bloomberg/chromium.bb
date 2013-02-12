@@ -1926,7 +1926,7 @@ DialogType.isModal = function(type) {
     var rootPath = PathUtil.getRootPath(path);
     this.document_.title = PathUtil.getRootLabel(rootPath) +
                            path.substring(rootPath.length);
-  },
+  };
 
   /**
    * Updates search box value when directory gets changed.
@@ -1935,7 +1935,7 @@ DialogType.isModal = function(type) {
     var searchBox = this.dialogDom_.querySelector('#search-box');
     if (!searchBox.disabled)
       searchBox.value = '';
-  },
+  };
 
   /**
    * Update the gear menu.
@@ -2353,7 +2353,7 @@ DialogType.isModal = function(type) {
         this.dialogDom_.removeAttribute('ctrl-pressing');
         return;
     }
-  }
+  };
 
   /**
    * KeyDown event handler for the div#list-container element.
@@ -2505,7 +2505,7 @@ DialogType.isModal = function(type) {
     } else {
       callback(fileUrls);
     }
-  },
+  };
 
   /**
    * Closes this modal dialog with some files selected.

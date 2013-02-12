@@ -335,7 +335,7 @@ chrome.fileBrowserPrivate = {
         mountPath: mountPath,
         sourcePath: sourceUrl
       });
-    }
+    };
 
     window.webkitResolveLocalFileSystemURL(sourceUrl, function(entry) {
       util.removeFileOrDirectory(

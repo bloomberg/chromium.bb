@@ -41,7 +41,7 @@ cr.define('cr.filebrowser', function() {
     // closure here.
     this.list_.itemConstructor = function(item) {
       return self.renderItem(item);
-    }
+    };
   }
 
   DefaultActionDialog.prototype = {
@@ -123,7 +123,7 @@ cr.define('cr.filebrowser', function() {
     this.hide();
     if (this.onOk_)
       this.onOk_(this.dataModel_.item(index).task);
-  }
+  };
 
   /**
    * Closes dialog and invokes callback with currently-selected item.

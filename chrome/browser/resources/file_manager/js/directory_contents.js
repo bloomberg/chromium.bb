@@ -382,7 +382,7 @@ DirectoryContentsBasic.prototype.createDirectory = function(
     name, successCallback, errorCallback) {
   var onSuccess = function(newEntry) {
     this.prefetchMetadata([newEntry], function() {successCallback(newEntry);});
-  }
+  };
 
   this.entry_.getDirectory(name, {create: true, exclusive: true},
                            onSuccess.bind(this), errorCallback);

@@ -48,7 +48,7 @@ util.ferr = function(msg) {
 util.installFileErrorToString = function() {
   FileError.prototype.toString = function() {
     return '[object FileError: ' + util.getFileErrorMnemonic(this.code) + ']';
-  }
+  };
 };
 
 /**
