@@ -28,7 +28,6 @@ from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient
 from chromite.lib import git
-from chromite.lib.cros_build_lib import RunCommand
 from chromite.scripts import cros_mark_as_stable
 
 # Helper regex's for finding ebuilds.
@@ -52,25 +51,10 @@ _REV_TYPES_FOR_LINKS = [constants.CHROME_REV_LATEST,
 
 _CHROME_SVN_TAG = 'CROS_SVN_COMMIT'
 
+
 def _GetSvnUrl(base_url):
   """Returns the path to the svn url for the given chrome branch."""
   return os.path.join(base_url, 'trunk')
-
-
-def  _GetTipOfTrunkSvnRevision(base_url):
-  """Returns the current svn revision for the chrome tree."""
-  svn_url = _GetSvnUrl(base_url)
-  svn_info = RunCommand(['svn', 'info', svn_url], redirect_stdout=True).output
-
-  revision_re = re.compile('^Revision:\s+(\d+).*')
-  for line in svn_info.splitlines():
-    match = revision_re.search(line)
-    if match:
-      svn_revision = match.group(1)
-      cros_build_lib.Info('Found SVN Revision %s' % svn_revision)
-      return svn_revision
-
-  raise Exception('Could not find revision information from %s' % svn_url)
 
 
 def _GetVersionContents(chrome_version_info):
@@ -102,7 +86,7 @@ def _GetSpecificVersionUrl(base_url, revision, time_to_wait=600):
   # Use the fact we are SVN, hence ordered.
   # Dodge the fact it will silently ignore the revision if it is not
   # yet known.  (i.e. too high)
-  repo_version = _GetTipOfTrunkSvnRevision(base_url)
+  repo_version = gclient.GetTipOfTrunkSvnRevision(base_url)
   while revision > repo_version:
     if time.time() - start > time_to_wait:
       raise Exception('Timeout Exceeeded')
@@ -110,9 +94,9 @@ def _GetSpecificVersionUrl(base_url, revision, time_to_wait=600):
     msg = 'Repository only has version %s, looking for %s.  Sleeping...'
     cros_build_lib.Info(msg, repo_version, revision)
     time.sleep(30)
-    repo_version = _GetTipOfTrunkSvnRevision(base_url)
+    repo_version = gclient.GetTipOfTrunkSvnRevision(base_url)
 
-  chrome_version_info = RunCommand(
+  chrome_version_info = cros_build_lib.RunCommand(
       ['svn', 'cat', '-r', revision, svn_url],
       redirect_stdout=True,
       error_message='Could not read version file at %s revision %s.' %
@@ -128,12 +112,13 @@ def _GetTipOfTrunkVersionFile(root):
      root: path to the root of the chromium checkout.
   """
   version_file = os.path.join(root, 'src', 'chrome', 'VERSION')
-  chrome_version_info = RunCommand(
+  chrome_version_info = cros_build_lib.RunCommand(
       ['cat', version_file],
       redirect_stdout=True,
       error_message='Could not read version file at %s.' % version_file).output
 
   return _GetVersionContents(chrome_version_info)
+
 
 def _GetLatestRelease(base_url, branch=None):
   """Gets the latest release version from the buildspec_url for the branch.
@@ -145,10 +130,11 @@ def _GetLatestRelease(base_url, branch=None):
     Latest version string.
   """
   buildspec_url = os.path.join(base_url, 'releases')
-  svn_ls = RunCommand(['svn', 'ls', buildspec_url],
-                      redirect_stdout=True).output
-  sorted_ls = RunCommand(['sort', '--version-sort', '-r'], input=svn_ls,
-                         redirect_stdout=True).output
+  svn_ls = cros_build_lib.RunCommand(['svn', 'ls', buildspec_url],
+                                     redirect_stdout=True).output
+  sorted_ls = cros_build_lib.RunCommand(['sort', '--version-sort', '-r'],
+                                        input=svn_ls,
+                                        redirect_stdout=True).output
   if branch:
     chrome_version_re = re.compile('^%s\.\d+.*' % branch)
   else:
@@ -157,9 +143,9 @@ def _GetLatestRelease(base_url, branch=None):
   for chrome_version in sorted_ls.splitlines():
     if chrome_version_re.match(chrome_version):
       deps_url = os.path.join(buildspec_url, chrome_version, 'DEPS')
-      deps_check = RunCommand(['svn', 'ls', deps_url],
-                              error_code_ok=True,
-                              redirect_stdout=True).output
+      deps_check = cros_build_lib.RunCommand(['svn', 'ls', deps_url],
+                                             error_code_ok=True,
+                                             redirect_stdout=True).output
       if deps_check == 'DEPS\n':
         return chrome_version.rstrip('/')
 
@@ -396,9 +382,10 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                                                 new_ebuild,
                                                 chrome_rev))
 
-  RunCommand(['git', 'add', new_ebuild_path], cwd=overlay_dir)
+  cros_build_lib.RunCommand(['git', 'add', new_ebuild_path], cwd=overlay_dir)
   if stable_candidate and not stable_candidate.IsSticky():
-    RunCommand(['git', 'rm', stable_candidate.ebuild_path], cwd=overlay_dir)
+    cros_build_lib.RunCommand(['git', 'rm', stable_candidate.ebuild_path],
+                              cwd=overlay_dir)
 
   portage_utilities.EBuild.CommitChange(
       _GIT_COMMIT_MESSAGE % {'chrome_rev': chrome_rev,
@@ -461,7 +448,7 @@ def main(_argv):
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
                                               commit_to_use)
   elif chrome_rev == constants.CHROME_REV_TOT:
-    commit_to_use = _GetTipOfTrunkSvnRevision(options.chrome_url)
+    commit_to_use = gclient.GetTipOfTrunkSvnRevision(options.chrome_url)
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
                                               commit_to_use)
   elif chrome_rev == constants.CHROME_REV_LATEST:
@@ -489,7 +476,8 @@ def main(_argv):
   # In the case of uprevving overlays that have patches applied to them,
   # include the patched changes in the stabilizing branch.
   if existing_branch:
-    RunCommand(['git', 'rebase', existing_branch], cwd=overlay_dir)
+    cros_build_lib.RunCommand(['git', 'rebase', existing_branch],
+                              cwd=overlay_dir)
 
   chrome_version_atom = MarkChromeEBuildAsStable(
       stable_candidate, unstable_ebuild, chrome_rev, version_to_uprev,

@@ -6,6 +6,7 @@
 
 import os
 import pprint
+import re
 
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -56,6 +57,22 @@ def GetBaseURLs():
   pdf_url = 'svn://svn.chromium.org/pdf'
 
   return external_url, internal_url, pdf_url
+
+
+def GetTipOfTrunkSvnRevision(svn_url):
+  """Returns the current svn revision for the chrome tree."""
+  cmd = ['svn', 'info', svn_url]
+  svn_info = cros_build_lib.RunCommand(cmd, redirect_stdout=True).output
+
+  revision_re = re.compile('^Revision:\s+(\d+)')
+  for line in svn_info.splitlines():
+    match = revision_re.match(line)
+    if match:
+      svn_revision = match.group(1)
+      cros_build_lib.Info('Found SVN Revision %s' % svn_revision)
+      return svn_revision
+
+  raise Exception('Could not find revision information from %s' % svn_url)
 
 
 def _GetGclientURLs(internal, use_pdf, rev):

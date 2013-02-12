@@ -17,7 +17,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gclient
 from chromite.scripts import cros_mark_chrome_as_stable
 
 # pylint: disable=W0212,R0904
@@ -133,15 +135,15 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
   def testGetTipOfTrunkSvnRevision(self):
     """Tests if we can get the latest svn revision from TOT."""
     A_URL = 'dorf://mink/delaane/forkat/sertiunu.ortg./desk'
-    self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
-    cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'info', cros_mark_chrome_as_stable._GetSvnUrl(A_URL)],
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(
+        ['svn', 'info', A_URL],
         redirect_stdout=True).AndReturn(
           _StubCommandResult(
             'Some Junk 2134\nRevision: %s\nOtherInfo: test_data' %
             fake_svn_rev))
     self.mox.ReplayAll()
-    revision = cros_mark_chrome_as_stable._GetTipOfTrunkSvnRevision(A_URL)
+    revision = gclient.GetTipOfTrunkSvnRevision(A_URL)
     self.mox.VerifyAll()
     self.assertEquals(revision, fake_svn_rev)
 
@@ -150,14 +152,14 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
     ARBITRARY_URL = 'Pratooey'
     path = os.path.join(cros_mark_chrome_as_stable._GetSvnUrl(ARBITRARY_URL),
                         'src', 'chrome', 'VERSION')
-    self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
-    cros_mark_chrome_as_stable.RunCommand(
-        ['svn', 'info', cros_mark_chrome_as_stable._GetSvnUrl(ARBITRARY_URL)],
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(
+        ['svn', 'info', ARBITRARY_URL],
         redirect_stdout=True).AndReturn(
           _StubCommandResult(
             'Some Junk 2134\nRevision: %s\nOtherInfo: test_data' %
             fake_svn_rev))
-    cros_mark_chrome_as_stable.RunCommand(
+    cros_build_lib.RunCommand(
         ['svn', 'cat', '-r', fake_svn_rev, path], redirect_stdout=True,
         error_message=mox.IsA(str)).AndReturn(
           _StubCommandResult('A=8\nB=0\nC=256\nD=0'))
@@ -174,19 +176,19 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
     input_data = ['7.0.224.1/', '7.0.224.2/', '8.0.365.5/', 'LATEST.txt']
     test_data = '\n'.join(input_data)
     sorted_data = '\n'.join(reversed(input_data))
-    self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
-    cros_mark_chrome_as_stable.RunCommand(
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases'],
         redirect_stdout=True).AndReturn(_StubCommandResult(test_data))
-    cros_mark_chrome_as_stable.RunCommand(
+    cros_build_lib.RunCommand(
         ['sort', '--version-sort', '-r'], input=test_data,
         redirect_stdout=True).AndReturn(_StubCommandResult(sorted_data))
     # pretend this one is missing to test the skipping logic.
-    cros_mark_chrome_as_stable.RunCommand(
+    cros_build_lib.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases/8.0.365.5/DEPS'],
         error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('BAH BAH BAH'))
-    cros_mark_chrome_as_stable.RunCommand(
+    cros_build_lib.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases/7.0.224.2/DEPS'],
         error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('DEPS\n'))
@@ -202,14 +204,14 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
                            '8.0.224.2/',
                            '8.0.365.5/',
                            'LATEST.txt'])
-    self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
-    cros_mark_chrome_as_stable.RunCommand(
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases'],
         redirect_stdout=True).AndReturn(_StubCommandResult('some_data'))
-    cros_mark_chrome_as_stable.RunCommand(
+    cros_build_lib.RunCommand(
         ['sort', '--version-sort', '-r'], input='some_data',
         redirect_stdout=True).AndReturn(_StubCommandResult(test_data))
-    cros_mark_chrome_as_stable.RunCommand(
+    cros_build_lib.RunCommand(
         ['svn', 'ls', ARBITRARY_URL + '/releases/8.0.224.2/DEPS'],
         error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('DEPS\n'))
@@ -257,7 +259,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
       new_ebuild_path: path to the to be created path
       commit_string_indicator: a string that the commit message must contain
     """
-    self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'CommitChange')
     stable_candidate = cros_mark_chrome_as_stable.ChromeEBuild(old_ebuild_path)
     unstable_ebuild = cros_mark_chrome_as_stable.ChromeEBuild(self.unstable)
@@ -265,10 +267,8 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
     commit = None
     overlay_dir = self.mock_chrome_dir
 
-    cros_mark_chrome_as_stable.RunCommand(['git', 'add', new_ebuild_path],
-                                          cwd=overlay_dir)
-    cros_mark_chrome_as_stable.RunCommand(['git', 'rm', old_ebuild_path],
-                                          cwd=overlay_dir)
+    cros_build_lib.RunCommand(['git', 'add', new_ebuild_path], cwd=overlay_dir)
+    cros_build_lib.RunCommand(['git', 'rm', old_ebuild_path], cwd=overlay_dir)
     portage_utilities.EBuild.CommitChange(
         mox.StrContains(commit_string_indicator), overlay_dir)
 
