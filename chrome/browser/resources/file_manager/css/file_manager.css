@@ -300,8 +300,8 @@ div.root-eject:hover {
   margin: 7px 7px 7px 0;
 }
 
-[maximized] .dialog-header {
-  -webkit-padding-end: 70px;
+body[maximized][type='full-page'] .dialog-header {
+  -webkit-padding-end: 75px;
 }
 
 /* Container for the detail and thumbnail list views. */
@@ -1461,7 +1461,6 @@ body:not([drive]) [required_drive] {
 #gear-button:hover::before {
   opacity: 1;
 }
-
 
 #gear-button {
   overflow: hidden;
