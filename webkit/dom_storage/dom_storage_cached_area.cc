@@ -154,10 +154,34 @@ void DomStorageCachedArea::Prime(int connection_id) {
       connection_id, &values,
       base::Bind(&DomStorageCachedArea::OnLoadComplete,
                  weak_factory_.GetWeakPtr()));
+  base::TimeDelta time_to_prime = base::TimeTicks::Now() - before;
+  // Keeping this histogram named the same (without the ForRenderer suffix)
+  // to maintain histogram continuity.
   UMA_HISTOGRAM_TIMES("LocalStorage.TimeToPrimeLocalStorage",
-                      base::TimeTicks::Now() - before);
+                      time_to_prime);
   map_ = new DomStorageMap(dom_storage::kPerAreaQuota);
   map_->SwapValues(&values);
+
+  size_t local_storage_size_kb = map_->bytes_used() / 1024;
+  // Track localStorage size, from 0-6MB. Note that the maximum size should be
+  // 5MB, but we add some slop since we want to make sure the max size is always
+  // above what we see in practice, since histograms can't change.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("LocalStorage.RendererLocalStorageSizeInKB",
+                              local_storage_size_kb,
+                              0, 6 * 1024, 50);
+  if (local_storage_size_kb < 100) {
+    UMA_HISTOGRAM_TIMES(
+        "LocalStorage.RendererTimeToPrimeLocalStorageUnder100KB",
+        time_to_prime);
+  } else if (local_storage_size_kb < 1000) {
+    UMA_HISTOGRAM_TIMES(
+        "LocalStorage.RendererTimeToPrimeLocalStorage100KBTo1MB",
+        time_to_prime);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "LocalStorage.RendererTimeToPrimeLocalStorage1MBTo5MB",
+        time_to_prime);
+  }
 }
 
 void DomStorageCachedArea::Reset() {

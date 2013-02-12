@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "webkit/base/file_path_string_conversions.h"
@@ -277,10 +278,35 @@ void DomStorageArea::InitialImportIfNeeded() {
 
   DCHECK(backing_.get());
 
+  base::TimeTicks before = base::TimeTicks::Now();
   ValuesMap initial_values;
   backing_->ReadAllValues(&initial_values);
   map_->SwapValues(&initial_values);
   is_initial_import_done_ = true;
+  base::TimeDelta time_to_import = base::TimeTicks::Now() - before;
+  UMA_HISTOGRAM_TIMES("LocalStorage.BrowserTimeToPrimeLocalStorage",
+                      time_to_import);
+
+  size_t local_storage_size_kb = map_->bytes_used() / 1024;
+  // Track localStorage size, from 0-6MB. Note that the maximum size should be
+  // 5MB, but we add some slop since we want to make sure the max size is always
+  // above what we see in practice, since histograms can't change.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("LocalStorage.BrowserLocalStorageSizeInKB",
+                              local_storage_size_kb,
+                              0, 6 * 1024, 50);
+  if (local_storage_size_kb < 100) {
+    UMA_HISTOGRAM_TIMES(
+        "LocalStorage.BrowserTimeToPrimeLocalStorageUnder100KB",
+        time_to_import);
+  } else if (local_storage_size_kb < 1000) {
+    UMA_HISTOGRAM_TIMES(
+        "LocalStorage.BrowserTimeToPrimeLocalStorage100KBTo1MB",
+        time_to_import);
+  } else {
+    UMA_HISTOGRAM_TIMES(
+        "LocalStorage.BrowserTimeToPrimeLocalStorage1MBTo5MB",
+        time_to_import);
+  }
 }
 
 DomStorageArea::CommitBatch* DomStorageArea::CreateCommitBatchIfNeeded() {
