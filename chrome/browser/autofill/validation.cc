@@ -45,4 +45,17 @@ bool IsValidCreditCardNumber(const string16& text) {
   return (sum % 10) == 0;
 }
 
+bool IsValidCreditCardSecurityCode(const string16& text) {
+  if (text.size() < 3U || text.size() > 4U)
+    return false;
+
+  for (string16::const_iterator iter = text.begin();
+       iter != text.end();
+       ++iter) {
+    if (!IsAsciiDigit(*iter))
+      return false;
+  }
+  return true;
+}
+
 }  // namespace autofill

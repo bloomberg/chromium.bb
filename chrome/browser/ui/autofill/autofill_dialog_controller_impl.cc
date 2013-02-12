@@ -423,11 +423,33 @@ void AutofillDialogControllerImpl::EditClickedForSection(
 
 bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
                                                 const string16& value) {
-  // TODO(groby): Add the missing checks.
   switch (type) {
+    case EMAIL_ADDRESS:
+      // TODO(groby): Add the missing check.
+      break;
+
     case CREDIT_CARD_NUMBER:
       return autofill::IsValidCreditCardNumber(value);
+    case CREDIT_CARD_NAME:
+      break;
+    case CREDIT_CARD_EXP_MONTH:
+    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      NOTREACHED();  // Validation is not called for <select>
+      break;
+    case CREDIT_CARD_VERIFICATION_CODE:
+      return autofill::IsValidCreditCardSecurityCode(value);
+
+    case ADDRESS_HOME_LINE1:
+      break;
+    case ADDRESS_HOME_LINE2:
+      return true;  // Line 2 is optional - always valid.
+    case ADDRESS_HOME_CITY:
+    case ADDRESS_HOME_STATE:
+    case ADDRESS_HOME_ZIP:
+      break;
+
     default:
+      NOTREACHED();  // Trying to validate unknown field.
       break;
   }
 
