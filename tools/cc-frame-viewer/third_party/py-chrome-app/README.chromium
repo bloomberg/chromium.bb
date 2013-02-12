@@ -1,0 +1,15 @@
+Name: py-chrome-app
+Short Name: py-chrome-app
+URL: https://github.com/natduca/py-chrome-app
+Version: 0
+Revision: 1ebd8b14f869235b0b58db5de1ecce1430e7c7ea
+Date: Mon Feb 11 14:06:30 2013 -0800 
+License: BSD
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+UI for Python using Chrome as a WebView
+
+Local Modifications:
+None.

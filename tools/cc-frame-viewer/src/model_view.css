@@ -1,0 +1,55 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+x-model-view {
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+}
+
+x-model-view {
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+x-model-view > .lthi-picker {
+    padding: 2px 1px 2px 1px;
+    background-color: rgb(128, 128, 128);
+    border-bottom: 1px solid black;
+}
+
+x-model-view > .lthi-view {
+    -webkit-flex: 1;
+    display: -webkit-flex;
+    min-height: 0;
+}
+
+x-model-view > .lthi-view > .lthi-and-analysis-view {
+    -webkit-flex: 1;
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+}
+
+x-model-view > .lthi-view > .lthi-and-analysis-view > x-lthi-view {
+    min-height: 0;
+    min-width: 0;
+    overflow: auto;
+}
+
+x-model-view > .lthi-view > .lthi-and-analysis-view > x-analysis-view {
+    height: 200px;
+}
+
+x-model-view > .lthi-view > .lthi-list {
+    width: 200px;
+    border-right: 1px solid black;
+    overflow-y: auto;
+}
+
+
+x-model-view x-lthi-view,
+x-model-view x-analysis-view {
+    padding: 4px 0 4px 12px;
+}

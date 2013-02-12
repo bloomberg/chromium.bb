@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "cc-frame-viewer",
+  "version": "1",
+  "minimum_chrome_version": "23",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "http://localhost:*/",
+    "storage"
+  ]
+}

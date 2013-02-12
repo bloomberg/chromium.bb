@@ -1,0 +1,142 @@
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+"""
+This script runs tests to verify that the perf tools are working.
+"""
+import fnmatch
+import logging
+import optparse
+import os
+import sys
+import traceback
+import unittest
+
+def Discover(start_dir, pattern = 'test*.py', top_level_dir = None):
+  if hasattr(unittest.defaultTestLoader, 'discover'):
+    return unittest.defaultTestLoader.discover( # pylint: disable=E1101
+      start_dir,
+      pattern,
+      top_level_dir)
+
+  modules = []
+  for dirpath, _, filenames in os.walk(start_dir):
+    for filename in filenames:
+      if not filename.endswith('.py'):
+        continue
+
+      if not fnmatch.fnmatch(filename, pattern):
+        continue
+
+      if filename.startswith('.') or filename.startswith('_'):
+        continue
+      name, _ = os.path.splitext(filename)
+
+      relpath = os.path.relpath(dirpath, top_level_dir)
+      if relpath == '.':
+        fqn = name
+      else:
+        fqn = relpath.replace('/', '.') + '.' + name
+
+      # load the module
+      try:
+        module = __import__(fqn, fromlist=[True])
+      except Exception:
+        print 'While importing [%s]\n' % fqn
+        traceback.print_exc()
+        continue
+      modules.append(module)
+
+  loader = unittest.defaultTestLoader
+  subsuites = []
+  for module in modules:
+    if hasattr(module, 'suite'):
+      new_suite = module.suite()
+    else:
+      new_suite = loader.loadTestsFromModule(module)
+    if new_suite.countTestCases():
+      subsuites.append(new_suite)
+  return unittest.TestSuite(subsuites)
+
+def FilterSuite(suite, predicate):
+  new_suite = unittest.TestSuite()
+  for x in suite:
+    if isinstance(x, unittest.TestSuite):
+      subsuite = FilterSuite(x, predicate)
+      if subsuite.countTestCases() == 0:
+        continue
+
+      new_suite.addTest(subsuite)
+      continue
+
+    assert isinstance(x, unittest.TestCase)
+    if predicate(x):
+      new_suite.addTest(x)
+
+  return new_suite
+
+def DiscoverAndRunTests(dir_name, args, top_level_dir):
+  suite = Discover(dir_name, '*_unittest.py', top_level_dir)
+
+  def IsTestSelected(test):
+    if len(args) != 0:
+      found = False
+      for name in args:
+        if name in test.id():
+          found = True
+      if not found:
+        return False
+
+    if hasattr(test, '_testMethodName'):
+      method = getattr(test, test._testMethodName) # pylint: disable=W0212
+      # Test method filters go here.
+
+    return True
+
+  filtered_suite = FilterSuite(suite, IsTestSelected)
+  runner = unittest.TextTestRunner(verbosity = 2)
+  import chromeapp
+  chromeapp._unittests_running = True
+  try:
+    test_result = runner.run(filtered_suite)
+  finally:
+    chromeapp._unittests_running = False
+  return len(test_result.errors) + len(test_result.failures)
+
+def Main(args, start_dir, top_level_dir):
+  """Unit test suite that collects all test cases for telemetry."""
+  parser = optparse.OptionParser('run_tests [options] [test names]')
+  parser.add_option(
+      '-v', '--verbose', action='count', dest='verbosity',
+      help='Increase verbosity level (repeat as needed)')
+  parser.add_option('--repeat-count', dest='run_test_repeat_count',
+                    type='int', default=1,
+                    help='Repeats each a provided number of times.')
+
+  options, args = parser.parse_args(args)
+
+  if options.verbosity == 0:
+    logging.getLogger().setLevel(logging.ERROR)
+
+  olddir = os.getcwd()
+  num_errors = 0
+  try:
+    os.chdir(top_level_dir)
+    for _ in range(
+        options.run_test_repeat_count): # pylint: disable=E1101
+      num_errors += DiscoverAndRunTests(start_dir, args, top_level_dir)
+  finally:
+    os.chdir(olddir)
+
+  return min(num_errors, 255)
+
+
+if __name__ == '__main__':
+  top_level_dir = os.path.abspath(
+    os.path.dirname(__file__))
+  start_dir = os.path.abspath('.')
+  ret = Main(
+    sys.argv[1:], start_dir, top_level_dir)
+
+  sys.exit(ret)

@@ -1,0 +1,31 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+x-lthi-view {
+    display: block;
+    -webkit-flex-direction: column;
+}
+
+x-lthi-view > x-lthi-view-options {
+    display: inline-span;
+    margins: 0 auto 0 auto;
+}
+
+x-lthi-view > x-lthi-view-options > span:not(:nth-child(1)) {
+    margin-left: 16px;
+}
+
+x-lthi-view > x-lthi-view-options > span {
+    margin-right: 8px;
+}
+
+
+x-lthi-view > x-trees {
+    display: -webkit-flex;
+    -webkit-flex-direction: row;
+}
+
+x-lthi-view > x-trees > *:not(:first-child) {
+    margin-left: 16px;
+}

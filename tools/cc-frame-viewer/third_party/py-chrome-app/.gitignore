@@ -1,0 +1,7 @@
+*.pyc
+\#*#
+.#*
+*.swp
+*.trace
+build/*
+unittest_data/*/chromeapp.js

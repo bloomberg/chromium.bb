@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html>
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head i18n-values="dir:textdirection;">
+<title>Interactive Timeline Tests</title>
+<script src="base.js"></script>
+</head>
+<body>
+  <div class="timeline-test" src="../test_data/trivial_trace.json" create-detached=1>
+  </div>
+
+  <script>
+  function reqAsync(method, path, data, opt_response_cb, opt_err_cb) {
+    if (path[0] != '/')
+      throw new Error('Must start with /');
+    var req = new XMLHttpRequest();
+    req.open(method, BASE_URL + path, true);
+    req.addEventListener('load', function() {
+      if (req.status == 200) {
+        if (opt_response_cb)
+          opt_response_cb(JSON.parse(req.responseText));
+        return;
+      }
+      if (opt_err_cb)
+        opt_err_cb();
+      else
+        console.log('reqAsync ' + path, req);
+    });
+    req.addEventListener('error', function() {
+      if (opt_err_cb)
+        opt_err_cb();
+      else
+        console.log('reqAsync ' + path, req);
+    });
+    if (data)
+      req.send(JSON.stringify(data));
+    else
+      req.send(null);
+  }
+  </script>
+
+</body>
