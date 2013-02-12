@@ -26,6 +26,9 @@ namespace test {
 
 static const size_t kMaxDecompressedSize = 1024;
 
+// TODO(akalin): Make sure expectations on mocks are set before mock
+// functions are called, as interleaving expectations and calls is
+// undefined.
 class MockVisitor : public SpdyFramerVisitorInterface {
  public:
   MOCK_METHOD1(OnError, void(SpdyFramer* framer));
@@ -3079,6 +3082,9 @@ TEST_P(SpdyFramerTest, ErrorCodeToStringTest) {
   EXPECT_STREQ("SPDY_INVALID_DATA_FRAME_FLAGS",
                SpdyFramer::ErrorCodeToString(
                    SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS));
+  EXPECT_STREQ("SPDY_INVALID_CONTROL_FRAME_FLAGS",
+               SpdyFramer::ErrorCodeToString(
+                   SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS));
   EXPECT_STREQ("UNKNOWN_ERROR",
                SpdyFramer::ErrorCodeToString(SpdyFramer::LAST_ERROR));
 }
@@ -3176,24 +3182,22 @@ TEST_P(SpdyFramerTest, CatchProbableHttpResponse) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    // This won't cause an error at the framer level.  It will cause
-    // flag validation errors at the Visitor::OnDataFrameHeader level.
-    EXPECT_CALL(visitor, OnDataFrameHeader(_));
+    EXPECT_CALL(visitor, OnError(_));
     framer.ProcessInput("HTTP/1.1", 8);
     EXPECT_TRUE(framer.probable_http_response());
-    EXPECT_EQ(SpdyFramer::SPDY_FORWARD_STREAM_FRAME, framer.state());
+    EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+    EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS, framer.error_code());
   }
   {
     testing::StrictMock<test::MockVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    // This won't cause an error at the framer level.  It will cause
-    // flag validation errors at the Visitor::OnDataFrameHeader level.
-    EXPECT_CALL(visitor, OnDataFrameHeader(_));
+    EXPECT_CALL(visitor, OnError(_));
     framer.ProcessInput("HTTP/1.0", 8);
     EXPECT_TRUE(framer.probable_http_response());
-    EXPECT_EQ(SpdyFramer::SPDY_FORWARD_STREAM_FRAME, framer.state());
+    EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+    EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS, framer.error_code());
   }
 }
 
@@ -3209,18 +3213,333 @@ TEST_P(SpdyFramerTest, DataFrameFlags) {
         framer.CreateDataFrame(1, "hello", 5, DATA_FLAG_NONE));
     frame->set_flags(flags);
 
-    // Flags are just passed along since they need to be validated at
-    // a higher protocol layer.
-    EXPECT_CALL(visitor, OnDataFrameHeader(_));
-    EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, SpdyDataFlags()));
-    if (flags & DATA_FLAG_FIN) {
-      EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));
+    if (flags & ~DATA_FLAG_FIN) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnDataFrameHeader(_));
+      EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, SpdyDataFlags()));
+      if (flags & DATA_FLAG_FIN) {
+        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));
+      }
     }
 
     size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
     framer.ProcessInput(frame->data(), frame_size);
-    EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
-    EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    if (flags & ~DATA_FLAG_FIN) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    EXPECT_CALL(visitor, OnControlFrameCompressed(_, _));
+
+    SpdyHeaderBlock headers;
+    headers["foo"] = "bar";
+    scoped_ptr<SpdyFrame> frame(
+        framer.CreateSynStream(8, 3, 1, 0, CONTROL_FLAG_NONE, true, &headers));
+    frame->set_flags(flags);
+
+    if (flags & ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnSynStream(8, 3, 1, 0, flags & CONTROL_FLAG_FIN,
+                                       flags & CONTROL_FLAG_UNIDIRECTIONAL));
+      EXPECT_CALL(visitor, OnControlFrameHeaderData(8, _, _))
+          .WillRepeatedly(testing::Return(true));
+      if (flags & DATA_FLAG_FIN) {
+        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));
+      }
+    }
+
+    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
+    framer.ProcessInput(frame->data(), frame_size);
+    if (flags & ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    EXPECT_CALL(visitor, OnControlFrameCompressed(_, _));
+
+    SpdyHeaderBlock headers;
+    headers["foo"] = "bar";
+    scoped_ptr<SpdyFrame> frame(
+        framer.CreateSynReply(37, CONTROL_FLAG_NONE, true, &headers));
+    frame->set_flags(flags);
+
+    if (flags & ~CONTROL_FLAG_FIN) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnSynReply(37, flags & CONTROL_FLAG_FIN));
+      EXPECT_CALL(visitor, OnControlFrameHeaderData(37, _, _))
+          .WillRepeatedly(testing::Return(true));
+      if (flags & DATA_FLAG_FIN) {
+        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));
+      }
+    }
+
+    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
+    framer.ProcessInput(frame->data(), frame_size);
+    if (flags & ~CONTROL_FLAG_FIN) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    scoped_ptr<SpdyFrame> frame(framer.CreateRstStream(13, RST_STREAM_CANCEL));
+    frame->set_flags(flags);
+
+    if (flags != 0) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnRstStream(13, RST_STREAM_CANCEL));
+    }
+
+    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
+    framer.ProcessInput(frame->data(), frame_size);
+    if (flags != 0) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, SettingsFrameFlags) {
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    SettingsMap settings;
+    settings[SETTINGS_UPLOAD_BANDWIDTH] =
+        std::make_pair(SETTINGS_FLAG_NONE, 54321);
+    scoped_ptr<SpdyFrame> frame(framer.CreateSettings(settings));
+    frame->set_flags(flags);
+
+    if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnSetting(SETTINGS_UPLOAD_BANDWIDTH,
+                                     SETTINGS_FLAG_NONE, 54321));
+    }
+
+    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
+    framer.ProcessInput(frame->data(), frame_size);
+    if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, GoawayFrameFlags) {
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(97, GOAWAY_OK));
+    frame->set_flags(flags);
+
+    if (flags != 0) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnGoAway(97, GOAWAY_OK));
+    }
+
+    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
+    framer.ProcessInput(frame->data(), frame_size);
+    if (flags != 0) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, HeadersFrameFlags) {
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    EXPECT_CALL(visitor, OnControlFrameCompressed(_, _));
+
+    SpdyHeaderBlock headers;
+    headers["foo"] = "bar";
+    scoped_ptr<SpdyFrame> frame(
+        framer.CreateHeaders(57, CONTROL_FLAG_NONE, true, &headers));
+    frame->set_flags(flags);
+
+    if (flags & ~CONTROL_FLAG_FIN) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnHeaders(57, flags & CONTROL_FLAG_FIN));
+      EXPECT_CALL(visitor, OnControlFrameHeaderData(57, _, _))
+          .WillRepeatedly(testing::Return(true));
+      if (flags & DATA_FLAG_FIN) {
+        EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));
+      }
+    }
+
+    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
+    framer.ProcessInput(frame->data(), frame_size);
+    if (flags & ~CONTROL_FLAG_FIN) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, PingFrameFlags) {
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    scoped_ptr<SpdyFrame> frame(framer.CreatePingFrame(42));
+    frame->set_flags(flags);
+
+    if (flags != 0) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnPing(42));
+    }
+
+    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
+    framer.ProcessInput(frame->data(), frame_size);
+    if (flags != 0) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, WindowUpdateFrameFlags) {
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    scoped_ptr<SpdyFrame> frame(framer.CreateWindowUpdate(4, 1024));
+    frame->set_flags(flags);
+
+    if (flags != 0) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnWindowUpdate(4, 1024));
+    }
+
+    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
+    framer.ProcessInput(frame->data(), frame_size);
+    if (flags != 0) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, CredentialFrameFlags) {
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    SpdyCredential credential;
+    scoped_ptr<SpdyFrame> frame(framer.CreateCredentialFrame(credential));
+    frame->set_flags(flags);
+
+    if (flags != 0) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnCredentialFrameData(_, _))
+          .WillRepeatedly(testing::Return(true));
+    }
+
+    size_t frame_size = frame->length() + SpdyFrame::kHeaderSize;
+    framer.ProcessInput(frame->data(), frame_size);
+    if (flags != 0) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
   }
 }
 

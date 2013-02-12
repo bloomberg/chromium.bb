@@ -207,6 +207,8 @@ const char* SpdyFramer::ErrorCodeToString(int error_code) {
       return "COMPRESS_FAILURE";
     case SPDY_INVALID_DATA_FRAME_FLAGS:
       return "SPDY_INVALID_DATA_FRAME_FLAGS";
+    case SPDY_INVALID_CONTROL_FRAME_FLAGS:
+      return "SPDY_INVALID_CONTROL_FRAME_FLAGS";
   }
   return "UNKNOWN_ERROR";
 }
@@ -407,17 +409,21 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     // if we're here, then we have the common header all received.
     if (!current_frame.is_control_frame()) {
       SpdyDataFrame data_frame(current_frame_buffer_.get(), false);
-      visitor_->OnDataFrameHeader(&data_frame);
-
-      if (current_frame.length() > 0) {
-        CHANGE_STATE(SPDY_FORWARD_STREAM_FRAME);
+      if (data_frame.flags() & ~DATA_FLAG_FIN) {
+        set_error(SPDY_INVALID_DATA_FRAME_FLAGS);
       } else {
-        // Empty data frame.
-        if (current_frame.flags() & DATA_FLAG_FIN) {
-          visitor_->OnStreamFrameData(data_frame.stream_id(),
-                                      NULL, 0, DATA_FLAG_FIN);
+        visitor_->OnDataFrameHeader(&data_frame);
+
+        if (current_frame.length() > 0) {
+          CHANGE_STATE(SPDY_FORWARD_STREAM_FRAME);
+        } else {
+          // Empty data frame.
+          if (current_frame.flags() & DATA_FLAG_FIN) {
+            visitor_->OnStreamFrameData(data_frame.stream_id(),
+                                        NULL, 0, DATA_FLAG_FIN);
+          }
+          CHANGE_STATE(SPDY_AUTO_RESET);
         }
-        CHANGE_STATE(SPDY_AUTO_RESET);
       }
     } else {
       ProcessControlFrameHeader();
@@ -459,18 +465,28 @@ void SpdyFramer::ProcessControlFrameHeader() {
   switch (current_control_frame.type()) {
     case SYN_STREAM:
       if (current_control_frame.length() <
-          SpdySynStreamControlFrame::size() - SpdyControlFrame::kHeaderSize)
+          SpdySynStreamControlFrame::size() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else if (current_control_frame.flags() &
+                 ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      }
       break;
     case SYN_REPLY:
       if (current_control_frame.length() <
-          SpdySynReplyControlFrame::size() - SpdyControlFrame::kHeaderSize)
+          SpdySynReplyControlFrame::size() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else if (current_control_frame.flags() & ~CONTROL_FLAG_FIN) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      }
       break;
     case RST_STREAM:
       if (current_control_frame.length() !=
-          SpdyRstStreamControlFrame::size() - SpdyFrame::kHeaderSize)
+          SpdyRstStreamControlFrame::size() - SpdyFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else if (current_control_frame.flags() != 0) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      }
       break;
     case SETTINGS:
       // Make sure that we have an integral number of 8-byte key/value pairs,
@@ -481,6 +497,9 @@ void SpdyFramer::ProcessControlFrameHeader() {
         DLOG(WARNING) << "Invalid length for SETTINGS frame: "
                       << current_control_frame.length();
         set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else if (current_control_frame.flags() &
+                 ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
       break;
     case GOAWAY:
@@ -490,30 +509,45 @@ void SpdyFramer::ProcessControlFrameHeader() {
         // SpdyGoAwayControlFrame::size() returns the SPDY 3 size.
         const size_t goaway_offset = (protocol_version() < 3) ? 4 : 0;
         if (current_control_frame.length() + goaway_offset !=
-            SpdyGoAwayControlFrame::size() - SpdyFrame::kHeaderSize)
+            SpdyGoAwayControlFrame::size() - SpdyFrame::kHeaderSize) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
+        } else if (current_control_frame.flags() != 0) {
+          set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        }
         break;
       }
     case HEADERS:
       if (current_control_frame.length() <
-          SpdyHeadersControlFrame::size() - SpdyControlFrame::kHeaderSize)
+          SpdyHeadersControlFrame::size() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else if (current_control_frame.flags() & ~CONTROL_FLAG_FIN) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      }
       break;
     case WINDOW_UPDATE:
       if (current_control_frame.length() !=
           SpdyWindowUpdateControlFrame::size() -
-          SpdyControlFrame::kHeaderSize)
+          SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else if (current_control_frame.flags() != 0) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      }
       break;
     case PING:
       if (current_control_frame.length() !=
-          SpdyPingControlFrame::size() - SpdyControlFrame::kHeaderSize)
+          SpdyPingControlFrame::size() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else if (current_control_frame.flags() != 0) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      }
       break;
     case CREDENTIAL:
       if (current_control_frame.length() <
-          SpdyCredentialControlFrame::size() - SpdyControlFrame::kHeaderSize)
+          SpdyCredentialControlFrame::size() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else if (current_control_frame.flags() != 0) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      }
       break;
     default:
       LOG(WARNING) << "Valid " << display_protocol_

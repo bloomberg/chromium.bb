@@ -210,6 +210,8 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
 
   // Called after a control frame has been compressed to allow the visitor
   // to record compression statistics.
+  //
+  // TODO(akalin): Upstream this function.
   virtual void OnControlFrameCompressed(
       const SpdyControlFrame& uncompressed_frame,
       const SpdyControlFrame& compressed_frame) = 0;
@@ -264,14 +266,15 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // SPDY error codes.
   enum SpdyError {
     SPDY_NO_ERROR,
-    SPDY_INVALID_CONTROL_FRAME,      // Control frame is mal-formatted.
-    SPDY_CONTROL_PAYLOAD_TOO_LARGE,  // Control frame payload was too large.
-    SPDY_ZLIB_INIT_FAILURE,          // The Zlib library could not initialize.
-    SPDY_UNSUPPORTED_VERSION,        // Control frame has unsupported version.
-    SPDY_DECOMPRESS_FAILURE,         // There was an error decompressing.
-    SPDY_COMPRESS_FAILURE,           // There was an error compressing.
-    SPDY_CREDENTIAL_FRAME_CORRUPT,   // CREDENTIAL frame could not be parsed.
-    SPDY_INVALID_DATA_FRAME_FLAGS,   // Data frame has invalid flags.
+    SPDY_INVALID_CONTROL_FRAME,        // Control frame is mal-formatted.
+    SPDY_CONTROL_PAYLOAD_TOO_LARGE,    // Control frame payload was too large.
+    SPDY_ZLIB_INIT_FAILURE,            // The Zlib library could not initialize.
+    SPDY_UNSUPPORTED_VERSION,          // Control frame has unsupported version.
+    SPDY_DECOMPRESS_FAILURE,           // There was an error decompressing.
+    SPDY_COMPRESS_FAILURE,             // There was an error compressing.
+    SPDY_CREDENTIAL_FRAME_CORRUPT,     // CREDENTIAL frame could not be parsed.
+    SPDY_INVALID_DATA_FRAME_FLAGS,     // Data frame has invalid flags.
+    SPDY_INVALID_CONTROL_FRAME_FLAGS,  // Control frame has invalid flags.
 
     LAST_ERROR,  // Must be the last entry in the enum.
   };
