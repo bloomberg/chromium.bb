@@ -1410,5 +1410,47 @@ TEST_F(WidgetTest, GestureScrollEventDispatching) {
   widget->CloseNow();
 }
 
+// Used by SingleWindowClosing to count number of times WindowClosing() has
+// been invoked.
+class ClosingDelegate : public WidgetDelegate {
+ public:
+  ClosingDelegate() : count_(0), widget_(NULL) {}
+
+  int count() const { return count_; }
+
+  void set_widget(views::Widget* widget) { widget_ = widget; }
+
+  // WidgetDelegate overrides:
+  virtual Widget* GetWidget() OVERRIDE { return widget_; }
+  virtual const Widget* GetWidget() const OVERRIDE { return widget_; }
+  virtual void WindowClosing() OVERRIDE {
+    count_++;
+  }
+
+ private:
+  int count_;
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClosingDelegate);
+};
+
+// Verifies WindowClosing() is invoked correctly on the delegate when a Widget
+// is closed.
+TEST_F(WidgetTest, SingleWindowClosing) {
+  scoped_ptr<ClosingDelegate> delegate(new ClosingDelegate());
+  Widget* widget = new Widget();  // Destroyed by CloseNow() below.
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.bounds = gfx::Rect(0, 0, 200, 200);
+  init_params.delegate = delegate.get();
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  init_params.native_widget = new DesktopNativeWidgetAura(widget);
+#endif
+  widget->Init(init_params);
+  EXPECT_EQ(0, delegate->count());
+  widget->CloseNow();
+  EXPECT_EQ(1, delegate->count());
+}
+
 }  // namespace
 }  // namespace views

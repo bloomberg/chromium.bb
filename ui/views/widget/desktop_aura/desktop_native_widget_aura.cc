@@ -523,7 +523,7 @@ void DesktopNativeWidgetAura::OnDeviceScaleFactorChanged(
 }
 
 void DesktopNativeWidgetAura::OnWindowDestroying() {
-  native_widget_delegate_->OnNativeWidgetDestroying();
+  // The DesktopRootWindowHost implementation sends OnNativeWidgetDestroying().
 }
 
 void DesktopNativeWidgetAura::OnWindowDestroyed() {

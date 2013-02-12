@@ -337,6 +337,9 @@ void DesktopRootWindowHostLinux::Close() {
 void DesktopRootWindowHostLinux::CloseNow() {
   if (xwindow_ == None)
     return;
+
+  native_widget_delegate_->OnNativeWidgetDestroying();
+
   // Remove the event listeners we've installed. We need to remove these
   // because otherwise we get assert during ~RootWindow().
   desktop_native_widget_aura_->root_window_event_filter()->RemoveHandler(
