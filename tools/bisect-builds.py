@@ -587,11 +587,19 @@ def GetChromiumRevision(url):
 
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
-           'Perform binary search on the snapshot builds to find a minimal '
-           'range of revisions where a behavior change happened. The '
-           'behaviors are described as "good" and "bad". '
-           'It is NOT assumed that the behavior of the later revision is '
+           'Perform binary search on the snapshot builds to find a minimal\n'
+           'range of revisions where a behavior change happened. The\n'
+           'behaviors are described as "good" and "bad".\n'
+           'It is NOT assumed that the behavior of the later revision is\n'
            'the bad one.\n'
+           '\n'
+           'Revision numbers should use\n'
+           '  Official versions (e.g. 1.0.1000.0) for official builds. (-o)\n'
+           '  SVN revisions (e.g. 123456) for chromium builds, from trunk.\n'
+           '    Use base_trunk_revision from http://omahaproxy.appspot.com/\n'
+           '    for earlier revs.\n'
+           '    Chrome\'s about: build number and omahaproxy branch_revision\n'
+           '    are incorrect, they are from branches.\n'
            '\n'
            'Tip: add "-- --no-first-run" to bypass the first run prompts.')
   parser = optparse.OptionParser(usage=usage)
