@@ -301,8 +301,8 @@ FileTable.prototype.updateDate_ = function(div, filesystemProps) {
 /**
  * Updates the file metadata in the table item.
  *
- * @param {Element} item Table item,
- * @param {Entry} entry File entry,
+ * @param {Element} item Table item.
+ * @param {Entry} entry File entry.
  */
 FileTable.prototype.updateFileMetadata = function(item, entry) {
   var props = this.metadataCache_.getCached(entry, 'filesystem');

@@ -851,7 +851,7 @@ DirectoryModel.prototype.createDirectoryChangeTracker = function() {
  * Change the state of the model to reflect the specified path (either a
  * file or directory).
  *
- * @param {string} path The root path to use
+ * @param {string} path The root path to use.
  * @param {function=} opt_pathResolveCallback Invoked as soon as the path has
  *     been resolved, and called with the base and leaf portions of the path
  *     name, and a flag indicating if the entry exists. Will be called even
@@ -1168,7 +1168,7 @@ DirectoryModel.prototype.updateRootEntry_ = function(entry) {
 };
 
 /**
- * @param {string} path Path
+ * @param {string} path Path.
  * @return {boolean} If current directory is system.
  */
 DirectoryModel.isSystemDirectory = function(path) {
@@ -1205,7 +1205,7 @@ DirectoryModel.isMountableRoot = function(path) {
  *
  * @param {string} query Query that will be searched for.
  * @param {function} onSearchRescan Function that will be called when the search
- *     directory is rescanned (i.e. search results are displayed)
+ *     directory is rescanned (i.e. search results are displayed).
  * @param {function} onClearSearch Function to be called when search state gets
  *     cleared.
  * TODO(olege): Change callbacks to events.

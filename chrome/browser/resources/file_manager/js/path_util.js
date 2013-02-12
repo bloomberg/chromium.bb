@@ -37,7 +37,7 @@ PathUtil.getRootDirectory = function(path) {
 
 /**
  * @param {string} path Any unix-style path (may start or not start from root).
- * @return {Array.<string>} path components
+ * @return {Array.<string>} Path components.
  */
 PathUtil.split = function(path) {
   var fromRoot = false;

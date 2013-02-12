@@ -83,7 +83,7 @@ cr.define('cr.filebrowser', function() {
    *
    * @param {string} title Title in dialog caption.
    * @param {string} message Message in dialog caption.
-   * @param {Array} items Items to render in list
+   * @param {Array} items Items to render in list.
    * @param {int} defaultIndex Item to select by default.
    * @param {Function} onOk Callback function.
    * @param {Function} onCancel Callback function.

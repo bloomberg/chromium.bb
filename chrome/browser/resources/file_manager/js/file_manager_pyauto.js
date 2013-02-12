@@ -14,7 +14,7 @@
 var pyautoAPI = {
   /**
    * Add the item with given name to the current selection.
-   * @param {string} name Name of the item to add to selection
+   * @param {string} name Name of the item to add to selection.
    */
   addItemToSelection: function(name) {
     var entryExists = false;

@@ -1067,7 +1067,7 @@ util.AppCache.CAPACITY = 100;
 util.AppCache.LIFETIME = 30 * 24 * 60 * 60 * 1000;  // 30 days.
 
 /**
- * @param {string} key Key
+ * @param {string} key Key.
  * @param {function(number)} callback Callback accepting a value.
  */
 util.AppCache.getValue = function(key, callback) {
