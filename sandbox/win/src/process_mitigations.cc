@@ -191,6 +191,8 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
   if (version <= base::win::VERSION_VISTA)
     return;
 
+  // DEP and SEHOP are not valid for 64-bit Windows
+#if !defined(_WIN64)
   if (flags & MITIGATION_DEP) {
     *policy_flags |= PROCESS_CREATION_MITIGATION_POLICY_DEP_ENABLE;
     if (!(flags & MITIGATION_DEP_NO_ATL_THUNK))
@@ -199,6 +201,7 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 
   if (flags & MITIGATION_SEHOP)
     *policy_flags |= PROCESS_CREATION_MITIGATION_POLICY_SEHOP_ENABLE;
+#endif
 
   // Win 7
   if (version < base::win::VERSION_WIN8)
