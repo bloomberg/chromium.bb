@@ -112,6 +112,9 @@
       case net::APP_CACHE:\
         CACHE_HISTOGRAM_##type(my_name.data(), sample);\
         break;\
+      case net::SHADER_CACHE:\
+        CACHE_HISTOGRAM_##type(my_name.data(), sample);\
+        break;\
       default:\
         NOTREACHED();\
         break;\

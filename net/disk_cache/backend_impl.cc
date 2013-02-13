@@ -478,6 +478,8 @@ int BackendImpl::SyncInit() {
   if (cache_type() == net::APP_CACHE) {
     DCHECK(!new_eviction_);
     read_only_ = true;
+  } else if (cache_type() == net::SHADER_CACHE) {
+    DCHECK(!new_eviction_);
   }
 
   eviction_.Init(this);
@@ -670,7 +672,7 @@ void BackendImpl::SyncOnExternalCacheHit(const std::string& key) {
   EntryImpl* cache_entry = MatchEntry(key, hash, false, Addr(), &error);
   if (cache_entry) {
     if (ENTRY_NORMAL == cache_entry->entry()->Data()->state) {
-      UpdateRank(cache_entry, false);
+      UpdateRank(cache_entry, cache_type() == net::SHADER_CACHE);
     }
     cache_entry->Release();
   }
@@ -922,9 +924,9 @@ LruData* BackendImpl::GetLruData() {
 }
 
 void BackendImpl::UpdateRank(EntryImpl* entry, bool modified) {
-  if (!read_only_) {
-    eviction_.UpdateRank(entry, modified);
-  }
+  if (read_only_ || (!modified && cache_type() == net::SHADER_CACHE))
+    return;
+  eviction_.UpdateRank(entry, modified);
 }
 
 void BackendImpl::RecoveredEntry(CacheRankingsBlock* rankings) {
