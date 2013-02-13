@@ -2790,6 +2790,10 @@
               # Warns on switches on enums that cover all enum values but
               # also contain a default: branch. Chrome is full of that.
               '-Wno-covered-switch-default',
+
+              # TODO(thakis,hans): Remove once Clang doesn't warn about false
+              # positives in our code.
+              '-Wno-undefined-internal',
             ],
             'cflags!': [
               # Clang doesn't seem to know know this flag.
@@ -3374,6 +3378,10 @@
                 # Warns on switches on enums that cover all enum values but
                 # also contain a default: branch. Chrome is full of that.
                 '-Wno-covered-switch-default',
+
+                # TODO(thakis,hans): Remove once Clang doesn't warn about false
+                # positives in our code.
+                '-Wno-undefined-internal',
               ],
               'OTHER_CPLUSPLUSFLAGS': [
                 # gnu++11 instead of c++11 so that __ANSI_C__ doesn't get
