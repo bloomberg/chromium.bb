@@ -24,6 +24,14 @@
         "action": "wait_action",
         "duration": 5
       }
+    },
+    {
+      "url": "file:///tough_animation_cases/transform_transition_js_block.html",
+      "why": "JS execution blocks CSS transition unless initial transform is set",
+      "smoothness": {
+        "action": "wait_interaction",
+        "duration": 5
+      }
     }
   ]
 }
