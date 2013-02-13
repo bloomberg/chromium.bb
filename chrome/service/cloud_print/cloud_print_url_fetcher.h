@@ -30,6 +30,7 @@ class CloudPrintURLFetcher;
 class CloudPrintURLFetcherFactory {
  public:
   virtual CloudPrintURLFetcher* CreateCloudPrintURLFetcher() = 0;
+  virtual ~CloudPrintURLFetcherFactory();
 };
 
 // A wrapper around URLFetcher for CloudPrint. URLFetcher applies retry logic

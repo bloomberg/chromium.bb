@@ -22,6 +22,9 @@ namespace cloud_print {
 
 static CloudPrintURLFetcherFactory* g_factory = NULL;
 
+// virtual
+CloudPrintURLFetcherFactory::~CloudPrintURLFetcherFactory() {}
+
 // static
 CloudPrintURLFetcher* CloudPrintURLFetcher::Create() {
   CloudPrintURLFetcherFactory* factory = CloudPrintURLFetcher::factory();
