@@ -17,6 +17,10 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/round_rect_painter.h"
 
+#if defined(USE_AURA)
+#include "ui/native_theme/native_theme_aura.h"
+#endif
+
 using ui::NativeTheme;
 
 // Height of the scroll arrow.
@@ -270,14 +274,25 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
   const MenuConfig& menu_config =
       content_view_->GetMenuItem()->GetMenuConfig();
 
+  bool use_border = true;
   int padding = menu_config.corner_radius > 0 ?
         kBorderPaddingDueToRoundedCorners : 0;
+
+#if defined(USE_AURA)
+  if (menu_config.native_theme == ui::NativeThemeAura::instance()) {
+    // In case of NativeThemeAura the border gets drawn with the shadow.
+    // Furthermore no additional padding is wanted.
+    use_border = false;
+    padding = 0;
+  }
+#endif
+
   int top = menu_config.menu_vertical_border_size + padding;
   int left = menu_config.menu_horizontal_border_size + padding;
   int bottom = menu_config.menu_vertical_border_size + padding;
   int right = menu_config.menu_horizontal_border_size + padding;
 
-  if (NativeTheme::IsNewMenuStyleEnabled()) {
+  if (use_border && NativeTheme::IsNewMenuStyleEnabled()) {
     set_border(views::Border::CreateBorderPainter(
         new views::RoundRectPainter(menu_config.native_theme->GetSystemColor(
                 ui::NativeTheme::kColorId_MenuBorderColor),
