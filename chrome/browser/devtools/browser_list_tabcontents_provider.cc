@@ -83,16 +83,17 @@ std::string BrowserListTabContentsProvider::GetPageThumbnailData(
 }
 
 RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
-  if (BrowserList::empty())
-    chrome::NewEmptyWindow(profile_);
-
-  if (BrowserList::empty())
-    return NULL;
-
   // TODO(gab): Do not hardcode HOST_DESKTOP_TYPE_NATIVE below once
   // chrome::NewEmptyWindow() above has been made multi-desktop friendly.
   const chrome::BrowserListImpl* browser_list =
       chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+
+  if (browser_list->empty())
+    chrome::NewEmptyWindow(profile_);
+
+  if (browser_list->empty())
+    return NULL;
+
   content::WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser_list->get(0),
       GURL(chrome::kAboutBlankURL),

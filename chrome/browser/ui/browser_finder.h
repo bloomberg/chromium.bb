@@ -79,6 +79,9 @@ Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type);
 // WARNING #2: this will always be NULL in unit tests run on the bots.
 Browser* FindLastActiveWithHostDesktopType(HostDesktopType type);
 
+// Returns the number of browsers across all profiles and desktops.
+size_t GetTotalBrowserCount();
+
 // Returns the number of browsers with the Profile |profile|.
 size_t GetBrowserCount(Profile* profile);
 

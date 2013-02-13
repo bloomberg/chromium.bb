@@ -47,9 +47,10 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -1296,25 +1297,29 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   // Verifies that incognito windows can't be opened when disabled by policy.
 
+  // Only test this on the native desktop.
+  const chrome::BrowserListImpl* native_browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+
   // Disable incognito via policy and verify that incognito windows can't be
   // opened.
-  EXPECT_EQ(1u, BrowserList::size());
-  EXPECT_FALSE(BrowserList::IsOffTheRecordSessionActive());
+  EXPECT_EQ(1u, native_browser_list->size());
+  EXPECT_FALSE(native_browser_list->IsIncognitoWindowOpen());
   PolicyMap policies;
   policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
-  EXPECT_EQ(1u, BrowserList::size());
-  EXPECT_FALSE(BrowserList::IsOffTheRecordSessionActive());
+  EXPECT_EQ(1u, native_browser_list->size());
+  EXPECT_FALSE(native_browser_list->IsIncognitoWindowOpen());
 
   // Enable via policy and verify that incognito windows can be opened.
   policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
-  EXPECT_EQ(2u, BrowserList::size());
-  EXPECT_TRUE(BrowserList::IsOffTheRecordSessionActive());
+  EXPECT_EQ(2u, native_browser_list->size());
+  EXPECT_TRUE(native_browser_list->IsIncognitoWindowOpen());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {

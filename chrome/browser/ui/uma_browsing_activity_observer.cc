@@ -6,8 +6,8 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -25,7 +25,8 @@ UMABrowsingActivityObserver* g_instance = NULL;
 // static
 void UMABrowsingActivityObserver::Init() {
   DCHECK(!g_instance);
-  DCHECK(BrowserList::empty());  // Must be created before any Browsers are.
+  // Must be created before any Browsers are.
+  DCHECK_EQ(0U, chrome::GetTotalBrowserCount());
   g_instance = new UMABrowsingActivityObserver;
 }
 

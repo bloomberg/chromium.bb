@@ -17,7 +17,7 @@
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "content/public/browser/notification_observer.h"
@@ -418,7 +418,7 @@ class SessionService : public BaseSessionService,
     return !has_open_trackable_browsers_ &&
         (!browser_defaults::kBrowserAliveWithNoWindows ||
          force_browser_not_alive_with_no_windows_ ||
-         BrowserList::size() > 1);
+         chrome::GetTotalBrowserCount() > 1);
   }
 
   // Call when certain session relevant notifications

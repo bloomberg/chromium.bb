@@ -31,7 +31,7 @@
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -374,7 +374,7 @@ void SyncTest::CleanUpOnMainThread() {
 
   // All browsers should be closed at this point, or else we could see memory
   // corruption in QuitBrowser().
-  CHECK_EQ(0U, BrowserList::size());
+  CHECK_EQ(0U, chrome::GetTotalBrowserCount());
   clients_.clear();
 }
 

@@ -197,6 +197,15 @@ Browser* FindLastActiveWithHostDesktopType(HostDesktopType type) {
   return NULL;
 }
 
+size_t GetTotalBrowserCount() {
+  size_t count = 0;
+  for (HostDesktopType t = HOST_DESKTOP_TYPE_FIRST; t < HOST_DESKTOP_TYPE_COUNT;
+       t = static_cast<HostDesktopType>(t + 1)) {
+    count += BrowserListImpl::GetInstance(t)->size();
+  }
+  return count;
+}
+
 size_t GetBrowserCount(Profile* profile) {
   return GetBrowserCountImpl(profile, kDefaultHostDesktopType, kMatchAny);
 }

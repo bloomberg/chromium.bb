@@ -39,10 +39,12 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -1098,7 +1100,8 @@ void ChromeLauncherControllerPerApp::UpdateBrowserItemStatus() {
   aura::Window* window = ash::wm::GetActiveWindow();
   if (window && chrome::FindBrowserWithWindow(window)) {
     browser_status = ash::STATUS_ACTIVE;
-  } else if (!BrowserList::empty()) {
+  } else if (!chrome::BrowserListImpl::GetInstance(
+                 chrome::HOST_DESKTOP_TYPE_ASH)->empty()) {
     browser_status = ash::STATUS_RUNNING;
   } else {
     browser_status = ash::STATUS_CLOSED;

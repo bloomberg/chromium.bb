@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
@@ -317,7 +318,7 @@ void CheckMenuCreation(ChromeLauncherControllerPerApp* controller,
 
 // Check that browsers get reflected correctly in the launcher menu.
 TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
-  EXPECT_EQ(1U, BrowserList::size());
+  EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
   chrome::NewTab(browser());
 
   ChromeLauncherControllerPerApp launcher_controller(profile(), &model_);
@@ -363,7 +364,7 @@ TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
 // Note that the extension matching logic is tested by the extension system
 // and does not need a separate test here.
 TEST_F(ChromeLauncherControllerPerAppTest, V1AppMenuGeneration) {
-  EXPECT_EQ(1U, BrowserList::size());
+  EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   chrome::NewTab(browser());
   BrowserList::SetLastActive(browser());

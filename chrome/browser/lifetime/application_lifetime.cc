@@ -17,8 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -120,7 +120,7 @@ void CloseAllBrowsers() {
   // If there are no browsers, send the APP_TERMINATING action here. Otherwise,
   // it will be sent by RemoveBrowser() when the last browser has closed.
   if (browser_shutdown::ShuttingDownWithoutClosingBrowsers() ||
-      BrowserList::empty()) {
+      chrome::GetTotalBrowserCount() == 0) {
     chrome::NotifyAndTerminate(true);
     chrome::OnAppExiting();
     return;
@@ -321,9 +321,11 @@ void EndKeepAlive() {
     // If there are no browsers open and we aren't already shutting down,
     // initiate a shutdown. Also skips shutdown if this is a unit test
     // (MessageLoop::current() == null).
-    if (BrowserList::empty() && !browser_shutdown::IsTryingToQuit() &&
-        MessageLoop::current())
+    if (chrome::GetTotalBrowserCount() == 0 &&
+        !browser_shutdown::IsTryingToQuit() &&
+        MessageLoop::current()) {
       browser::CloseAllBrowsers();
+    }
   }
 }
 

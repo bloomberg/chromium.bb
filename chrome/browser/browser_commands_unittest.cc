@@ -7,7 +7,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -76,13 +76,13 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
   EXPECT_EQ(3, orig_controller.GetEntryCount());
   EXPECT_TRUE(orig_controller.GetPendingEntry());
 
-  size_t initial_window_count = BrowserList::size();
+  size_t initial_window_count = chrome::GetTotalBrowserCount();
 
   // Duplicate the tab.
   chrome::ExecuteCommand(browser(), IDC_DUPLICATE_TAB);
 
   // The duplicated tab should not end up in a new window.
-  size_t window_count = BrowserList::size();
+  size_t window_count = chrome::GetTotalBrowserCount();
   ASSERT_EQ(initial_window_count, window_count);
 
   // And we should have a newly duplicated tab.
@@ -113,13 +113,13 @@ TEST_F(BrowserCommandsTest, ViewSource) {
   EXPECT_EQ(1, orig_controller.GetEntryCount());
   EXPECT_TRUE(orig_controller.GetPendingEntry());
 
-  size_t initial_window_count = BrowserList::size();
+  size_t initial_window_count = chrome::GetTotalBrowserCount();
 
   // View Source.
   chrome::ExecuteCommand(browser(), IDC_VIEW_SOURCE);
 
   // The view source tab should not end up in a new window.
-  size_t window_count = BrowserList::size();
+  size_t window_count = chrome::GetTotalBrowserCount();
   ASSERT_EQ(initial_window_count, window_count);
 
   // And we should have a newly duplicated tab.

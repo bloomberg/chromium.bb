@@ -8,8 +8,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(FastShutdown, DISABLED_SlowTermination) {
   window_observer.Wait();
 
   // Close the new window, removing the one and only beforeunload handler.
-  ASSERT_EQ(2u, BrowserList::size());
+  ASSERT_EQ(2u, chrome::GetTotalBrowserCount());
   chrome::BrowserIterator it;
   it.Next();
   chrome::CloseWindow(*it);

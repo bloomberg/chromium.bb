@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_mac.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -303,7 +302,7 @@ void RecordLastRunAppBundlePath() {
       [self applicationShouldTerminate:app] != NSTerminateNow)
     return NO;
 
-  size_t num_browsers = BrowserList::size();
+  size_t num_browsers = chrome::GetTotalBrowserCount();
 
   // Initiate a shutdown (via browser::CloseAllBrowsers()) if we aren't
   // already shutting down.
@@ -352,7 +351,7 @@ void RecordLastRunAppBundlePath() {
 // Called when the app is shutting down. Clean-up as appropriate.
 - (void)applicationWillTerminate:(NSNotification*)aNotification {
   // There better be no browser windows left at this point.
-  CHECK_EQ(0u, BrowserList::size());
+  CHECK_EQ(0u, chrome::GetTotalBrowserCount());
 
   // Tell BrowserList not to keep the browser process alive. Once all the
   // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
@@ -486,7 +485,7 @@ void RecordLastRunAppBundlePath() {
     // If the profile is incognito, use the original profile.
     Profile* newProfile = [windowController profile]->GetOriginalProfile();
     [self windowChangedToProfile:newProfile];
-  } else if (BrowserList::empty()) {
+  } else if (chrome::GetTotalBrowserCount() == 0) {
     [self windowChangedToProfile:
         g_browser_process->profile_manager()->GetLastUsedProfile()];
   }

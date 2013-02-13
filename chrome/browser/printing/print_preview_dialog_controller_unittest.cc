@@ -6,7 +6,7 @@
 #include "chrome/browser/printing/print_preview_test.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "content/public/browser/navigation_details.h"
@@ -35,7 +35,7 @@ typedef PrintPreviewTest PrintPreviewDialogControllerUnitTest;
 // Create/Get a preview dialog for initiator tab.
 TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_GetOrCreatePreviewDialog) {
   // Lets start with one window with one tab.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   chrome::NewTab(browser());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -74,7 +74,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_GetOrCreatePreviewDialog) {
 // initiator tab, that initiator tab gets focused.
 TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
   // Lets start with one window and two tabs.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   ASSERT_TRUE(tab_strip_model);
 
@@ -138,7 +138,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
 // dialog allows the initiator tab to create another print preview dialog.
 TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
   // Lets start with one window with one tab.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   chrome::NewTab(browser());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());

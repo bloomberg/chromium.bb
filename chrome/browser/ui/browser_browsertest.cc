@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
@@ -465,7 +464,7 @@ class BeforeUnloadAtQuitWithTwoWindows : public InProcessBrowserTest {
     CycleRunLoops();
 
     // At this point, quit should be for real now.
-    ASSERT_EQ(0u, BrowserList::size());
+    ASSERT_EQ(0u, chrome::GetTotalBrowserCount());
   }
 
   // A helper function that cycles the MessageLoop, and on Mac, the Cocoa run
@@ -1714,19 +1713,19 @@ IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   // Close the browser window, then open a new one - the browser should keep
   // running.
   Profile* profile = browser()->profile();
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser()));
   chrome::CloseWindow(browser());
   observer.Wait();
-  EXPECT_EQ(0u, BrowserList::size());
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
   ui_test_utils::BrowserAddedObserver browser_added_observer;
   chrome::NewEmptyWindow(profile);
   browser_added_observer.WaitForSingleNewBrowser();
 
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
 // Tests to ensure that the browser continues running in the background after
@@ -1743,14 +1742,14 @@ class NoStartupWindowTest : public BrowserTest {
 
 IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
   // No browser window should be started by default.
-  EXPECT_EQ(0u, BrowserList::size());
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
   // Starting a browser window should work just fine.
   ui_test_utils::BrowserAddedObserver browser_added_observer;
   CreateBrowser(ProfileManager::GetDefaultProfile());
   browser_added_observer.WaitForSingleNewBrowser();
 
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
 // Chromeos needs to track app windows because it considers them to be part of

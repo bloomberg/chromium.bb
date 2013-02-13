@@ -10,7 +10,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -109,7 +109,7 @@ void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {
 
   // Nothing should have happened as a result of Navigate();
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(old_url,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
@@ -117,7 +117,7 @@ void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {
 void BrowserNavigatorTest::RunUseNonIncognitoWindowTest(const GURL& url) {
   Browser* incognito_browser = CreateIncognitoBrowser();
 
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, incognito_browser->tab_strip_model()->count());
 
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
   EXPECT_EQ(GetGoogleURL(),
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
   // We should have one window with one tab.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 }
 
@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
                                 content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
 
   unsigned int previous_tab_contents_count =
@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                 content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, 2nd selected.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   GURL singleton_url1("http://maps.google.com/");
 
   // We should have one browser with 1 tab.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 
   // Navigate to singleton_url1.
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   // We should be left with 2 windows, the popup with one tab and the browser()
   // provided by the framework with two.
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, popup->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // 1. the browser() provided by the framework (unchanged in this test)
   // 2. the incognito popup we created originally
   // 3. the new incognito tabbed browser that was created by Navigate().
-  EXPECT_EQ(3u, BrowserList::size());
+  EXPECT_EQ(3u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, popup->tab_strip_model()->count());
   EXPECT_EQ(1, p.browser->tab_strip_model()->count());
@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
 
   // We should have two windows, the browser() provided by the framework and the
   // new popup window.
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, p.browser->tab_strip_model()->count());
 }
@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup_ExtensionId) {
 
   // We should have two windows, the browser() provided by the framework and the
   // new popup window.
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, p.browser->tab_strip_model()->count());
 }
@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromPopup) {
 
   // We should have three windows, the browser() provided by the framework,
   // the first popup window, and the second popup window.
-  EXPECT_EQ(3u, BrowserList::size());
+  EXPECT_EQ(3u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, p1.browser->tab_strip_model()->count());
   EXPECT_EQ(1, p2.browser->tab_strip_model()->count());
@@ -492,7 +492,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   // We should now have three windows, the app window, the app popup it created,
   // and the original browser() provided by the framework.
-  EXPECT_EQ(3u, BrowserList::size());
+  EXPECT_EQ(3u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, app_browser->tab_strip_model()->count());
   EXPECT_EQ(1, p.browser->tab_strip_model()->count());
@@ -523,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
   // We should now have four windows, the app window, the first app popup,
   // the second app popup, and the original browser() provided by the framework.
-  EXPECT_EQ(4u, BrowserList::size());
+  EXPECT_EQ(4u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, app_browser->tab_strip_model()->count());
   EXPECT_EQ(1, p1.browser->tab_strip_model()->count());
@@ -569,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
 
   // We should now have two windows, the browser() provided by the framework and
   // the new normal window.
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, p.browser->tab_strip_model()->count());
 }
@@ -592,7 +592,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_Incognito) {
 
   // We should now have two windows, the browser() provided by the framework and
   // the new incognito window.
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, p.browser->tab_strip_model()->count());
 }
@@ -613,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IncognitoRefocus) {
 
   // We should now have two windows, the browser() provided by the framework and
   // the incognito window we opened earlier.
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, incognito_browser->tab_strip_model()->count());
 }
@@ -650,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
             p.target_contents);
 
   // We should have one window, with two tabs.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
@@ -687,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
 
   // We should have two windows, the new popup and the browser() provided by the
   // framework.
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, p.browser->tab_strip_model()->count());
 }
@@ -711,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
       static_cast<const WebContents*>(p.target_contents)));
 
   // We should have one window - the browser() provided by the framework.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
@@ -724,7 +724,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                 content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, the 2nd selected.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
@@ -758,7 +758,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                 content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
 
@@ -792,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                 content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
 
@@ -826,7 +826,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                 content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 3 tabs, the 3rd selected.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
 
@@ -857,7 +857,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                 content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, the 2nd selected.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
@@ -933,7 +933,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
 
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(GetSettingsURL(),
             ShortenUberURL(browser()->tab_strip_model()->
                 GetActiveWebContents()->GetURL()));
@@ -989,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
       browser(), singleton_url, content::PAGE_TRANSITION_LINK);
 
   // We should have one browser with 2 tabs, the 2nd selected.
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
@@ -1070,7 +1070,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   ui_test_utils::NavigateToURL(&p);
   EXPECT_EQ(GetGoogleURL(),
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   {
@@ -1231,7 +1231,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   chrome::NavigateParams params(browser()->profile(), GetGoogleURL(),
                                 content::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
   // Now navigate using the incognito profile and check that a new window
   // is created.
@@ -1239,7 +1239,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
       browser()->profile()->GetOffTheRecordProfile(),
       GetGoogleURL(), content::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params_incognito);
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 }
 
 } // namespace

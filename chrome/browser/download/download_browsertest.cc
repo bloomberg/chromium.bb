@@ -41,7 +41,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -326,7 +326,7 @@ class DownloadTest : public InProcessBrowserTest {
       return false;
 
     // Sanity check default values for window / tab count and shelf visibility.
-    int window_count = BrowserList::size();
+    int window_count = chrome::GetTotalBrowserCount();
     EXPECT_EQ(1, window_count);
     EXPECT_EQ(1, browser()->tab_strip_model()->count());
     EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
@@ -607,7 +607,7 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   static void ExpectWindowCountAfterDownload(size_t expected) {
-    EXPECT_EQ(expected, BrowserList::size());
+    EXPECT_EQ(expected, chrome::GetTotalBrowserCount());
   }
 
   void EnableFileChooser(bool enable) {
@@ -1170,7 +1170,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   // Open an Incognito window.
   Browser* incognito = CreateIncognitoBrowser();  // Waits.
   ASSERT_TRUE(incognito);
-  int window_count = BrowserList::size();
+  int window_count = chrome::GetTotalBrowserCount();
   EXPECT_EQ(2, window_count);
 
   // Download a file in the Incognito window and wait.

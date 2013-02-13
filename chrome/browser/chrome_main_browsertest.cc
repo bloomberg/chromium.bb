@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -87,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, MAYBE_SecondLaunchWithIncognitoUrl) {
   ui_test_utils::BrowserAddedObserver observer;
   Relaunch(new_command_line);
   observer.WaitForSingleNewBrowser();
-  ASSERT_EQ(2u, BrowserList::size());
+  ASSERT_EQ(2u, chrome::GetTotalBrowserCount());
 
   ASSERT_EQ(1u, chrome::GetTabbedBrowserCount(browser()->profile()));
 }
@@ -99,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   // Create an incognito window.
   chrome::NewIncognitoWindow(browser());
 
-  ASSERT_EQ(2u, BrowserList::size());
+  ASSERT_EQ(2u, chrome::GetTotalBrowserCount());
   ASSERT_EQ(1u, chrome::GetTabbedBrowserCount(browser()->profile()));
 
   // Close the first window.
@@ -111,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   observer.Wait();
 
   // There should only be the incognito window open now.
-  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_EQ(1u, chrome::GetTotalBrowserCount());
   ASSERT_EQ(0u, chrome::GetTabbedBrowserCount(profile));
 
   // Run with just an URL specified, no --incognito switch.
@@ -126,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   tab_observer.Wait();
 
   // There should be one normal and one incognito window now.
-  ASSERT_EQ(2u, BrowserList::size());
+  ASSERT_EQ(2u, chrome::GetTotalBrowserCount());
   ASSERT_EQ(1u, chrome::GetTabbedBrowserCount(profile));
 }
 
