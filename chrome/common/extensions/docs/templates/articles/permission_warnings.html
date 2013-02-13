@@ -404,10 +404,14 @@ The following permissions don't result in a warning:
   <li>"contextMenus"</li>
   <li>"cookies"</li>
   <li>"experimental"</li>
+{{?is_apps}}
   <li>"fullscreen"</li>
+{{/is_apps}}
   <li>"idle"</li>
   <li>"notifications"</li>
+{{?is_apps}}
   <li>"pointerLock"</li>
+{{/is_apps}}
   <li>"storage"</li>
   <li>"unlimitedStorage"</li>
   <li>"webRequest"</li>
