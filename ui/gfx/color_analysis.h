@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/matrix3_f.h"
 
 class SkBitmap;
 
@@ -97,6 +98,9 @@ UI_EXPORT SkColor CalculateKMeanColorOfPNG(
 // Computes a dominant color for an SkBitmap using the above algorithm and
 // reasonable defaults for |darkness_limit|, |brightness_limit| and |sampler|.
 UI_EXPORT SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap);
+
+// Compute color covariance matrix for the input bitmap.
+UI_EXPORT gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap);
 
 }  // namespace color_utils
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
@@ -397,6 +398,73 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
       kMaxBrightness,
       &sampler);
   return color;
+}
+
+gfx::Matrix3F ComputeColorCovariance(const SkBitmap& bitmap) {
+  // First need basic stats to normalize each channel separately.
+  SkAutoLockPixels bitmap_lock(bitmap);
+  gfx::Matrix3F covariance = gfx::Matrix3F::Zeros();
+  if (!bitmap.getPixels())
+    return covariance;
+
+  // Assume ARGB_8888 format.
+  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
+
+  int64_t r_sum = 0;
+  int64_t g_sum = 0;
+  int64_t b_sum = 0;
+  int64_t rr_sum = 0;
+  int64_t gg_sum = 0;
+  int64_t bb_sum = 0;
+  int64_t rg_sum = 0;
+  int64_t rb_sum = 0;
+  int64_t gb_sum = 0;
+
+  for (int y = 0; y < bitmap.height(); ++y) {
+    SkPMColor* current_color = static_cast<uint32_t*>(bitmap.getAddr32(0, y));
+    for (int x = 0; x < bitmap.width(); ++x, ++current_color) {
+      SkColor c = SkUnPreMultiply::PMColorToColor(*current_color);
+      SkColor r = SkColorGetR(c);
+      SkColor g = SkColorGetG(c);
+      SkColor b = SkColorGetB(c);
+
+      r_sum += r;
+      g_sum += g;
+      b_sum += b;
+      rr_sum += r * r;
+      gg_sum += g * g;
+      bb_sum += b * b;
+      rg_sum += r * g;
+      rb_sum += r * b;
+      gb_sum += g * b;
+    }
+  }
+
+  // Covariance (not normalized) is E(X*X.t) - m * m.t and this is how it
+  // is calculated below.
+  // Each row below represents a row of the matrix describing (co)variances
+  // of R, G and B channels with (R, G, B)
+  int pixel_n = bitmap.width() * bitmap.height();
+  covariance.set(
+      (static_cast<double>(rr_sum) / pixel_n -
+       static_cast<double>(r_sum * r_sum) / pixel_n / pixel_n),
+      (static_cast<double>(rg_sum) / pixel_n -
+       static_cast<double>(r_sum * g_sum) / pixel_n / pixel_n),
+      (static_cast<double>(rb_sum) / pixel_n -
+       static_cast<double>(r_sum * b_sum) / pixel_n / pixel_n),
+      (static_cast<double>(rg_sum) / pixel_n -
+       static_cast<double>(r_sum * g_sum) / pixel_n / pixel_n),
+      (static_cast<double>(gg_sum) / pixel_n -
+       static_cast<double>(g_sum * g_sum) / pixel_n / pixel_n),
+      (static_cast<double>(gb_sum) / pixel_n -
+       static_cast<double>(g_sum * b_sum) / pixel_n / pixel_n),
+      (static_cast<double>(rb_sum) / pixel_n -
+       static_cast<double>(r_sum * b_sum) / pixel_n / pixel_n),
+      (static_cast<double>(gb_sum) / pixel_n -
+       static_cast<double>(g_sum * b_sum) / pixel_n / pixel_n),
+      (static_cast<double>(bb_sum) / pixel_n -
+       static_cast<double>(b_sum * b_sum) / pixel_n / pixel_n));
+  return covariance;
 }
 
 }  // color_utils

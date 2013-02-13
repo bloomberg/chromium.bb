@@ -9,6 +9,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/rect.h"
 
 using color_utils::FindClosestColor;
 
@@ -256,4 +258,38 @@ TEST_F(ColorAnalysisTest, CalculateKMeanColorOfBitmap) {
   EXPECT_TRUE(ChannelApproximatelyEqual(100, SkColorGetR(color)));
   EXPECT_TRUE(ChannelApproximatelyEqual(150, SkColorGetG(color)));
   EXPECT_TRUE(ChannelApproximatelyEqual(200, SkColorGetB(color)));
+}
+
+TEST_F(ColorAnalysisTest, ComputeColorCovarianceTrivial) {
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 100, 200);
+
+  EXPECT_EQ(gfx::Matrix3F::Zeros(),
+            color_utils::ComputeColorCovariance(bitmap));
+  bitmap.allocPixels();
+  bitmap.eraseRGB(50, 150, 200);
+  gfx::Matrix3F covariance = color_utils::ComputeColorCovariance(bitmap);
+  // The answer should be all zeros.
+  EXPECT_TRUE(covariance == gfx::Matrix3F::Zeros());
+}
+
+TEST_F(ColorAnalysisTest, ComputeColorCovarianceWithCanvas) {
+  gfx::Canvas canvas(gfx::Size(250, 200), ui::SCALE_FACTOR_100P, true);
+  // The image consists of vertical stripes, with color bands set to 100
+  // in overlapping stripes 150 pixels wide.
+  canvas.FillRect(gfx::Rect(0, 0, 50, 200), SkColorSetRGB(100, 0, 0));
+  canvas.FillRect(gfx::Rect(50, 0, 50, 200), SkColorSetRGB(100, 100, 0));
+  canvas.FillRect(gfx::Rect(100, 0, 50, 200), SkColorSetRGB(100, 100, 100));
+  canvas.FillRect(gfx::Rect(150, 0, 50, 200), SkColorSetRGB(0, 100, 100));
+  canvas.FillRect(gfx::Rect(200, 0, 50, 200), SkColorSetRGB(0, 0, 100));
+
+  SkBitmap bitmap =
+      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  gfx::Matrix3F covariance = color_utils::ComputeColorCovariance(bitmap);
+
+  gfx::Matrix3F expected_covariance = gfx::Matrix3F::Zeros();
+  expected_covariance.set(2400, 400, -1600,
+                          400, 2400, 400,
+                          -1600, 400, 2400);
+  EXPECT_EQ(expected_covariance, covariance);
 }
