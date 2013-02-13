@@ -989,6 +989,7 @@
         'browser/predictors/resource_prefetch_predictor_unittest.cc',
         'browser/predictors/resource_prefetch_predictor_tables_unittest.cc',
         'browser/predictors/resource_prefetcher_unittest.cc',
+        'browser/prefs/chrome_pref_service_unittest.cc',
         'browser/prefs/command_line_pref_store_unittest.cc',
         'browser/prefs/incognito_mode_prefs_unittest.cc',
         'browser/prefs/pref_model_associator_unittest.cc',
