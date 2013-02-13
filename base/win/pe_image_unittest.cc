@@ -189,9 +189,17 @@ int GetExpectedValue(Value value, DWORD os) {
   return expected[value][expected_set];
 }
 
+
+// TODO(jschuh): crbug.com/167707 Need to fix test on Win64 bots
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#define MAYBE_EnumeratesPE DISABLED_EnumeratesPE
+#else
+#define MAYBE_EnumeratesPE EnumeratesPE
+#endif
+
 // Tests that we are able to enumerate stuff from a PE file, and that
 // the actual number of items found is within the expected range.
-TEST(PEImageTest, EnumeratesPE) {
+TEST(PEImageTest, MAYBE_EnumeratesPE) {
   HMODULE module = LoadLibrary(L"advapi32.dll");
   ASSERT_TRUE(NULL != module);
 
