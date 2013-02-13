@@ -10,9 +10,10 @@ import android.content.Intent;
 import android.security.KeyChain;
 import android.util.Log;
 
-import org.chromium.net.CertificateMimeType;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CalledByNativeUnchecked;
+import org.chromium.net.CertVerifyResultAndroid;
+import org.chromium.net.CertificateMimeType;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -66,7 +67,7 @@ class AndroidNetworkLibrary {
       * PKCS#12 keychain) through the system's CertInstaller activity.
       *
       * @param context: current application context.
-      * @param file_type: cryptographic file type. E.g. CertificateMimeType.X509_USER_CERT
+      * @param cert_type: cryptographic file type. E.g. CertificateMimeType.X509_USER_CERT
       * @param data: certificate/keychain data bytes.
       * @return true on success, false on failure.
       *
@@ -196,15 +197,17 @@ class AndroidNetworkLibrary {
      *
      * @param certChain The ASN.1 DER encoded bytes for certificates.
      * @param authType The key exchange algorithm name (e.g. RSA)
-     * @return true if the server is trusted
-     * @throws CertificateException,KeyStoreException,NoSuchAlgorithmException
-     *             on error initializing the TrustManager or reading the
-     *             certChain
+     * @return Android certificate verification result code.
      */
-    @CalledByNativeUnchecked
-    public static boolean verifyServerCertificates(byte[][] certChain, String authType)
-            throws CertificateException, KeyStoreException, NoSuchAlgorithmException {
-        return X509Util.verifyServerCertificates(certChain, authType);
+    @CalledByNative
+    public static int verifyServerCertificates(byte[][] certChain, String authType) {
+        try {
+            return X509Util.verifyServerCertificates(certChain, authType);
+        } catch (KeyStoreException e) {
+            return CertVerifyResultAndroid.VERIFY_FAILED;
+        } catch (NoSuchAlgorithmException e) {
+            return CertVerifyResultAndroid.VERIFY_FAILED;
+        }
     }
 
     /**

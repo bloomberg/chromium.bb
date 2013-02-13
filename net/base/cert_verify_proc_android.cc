@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "net/android/cert_verify_result_android.h"
 #include "net/android/network_library.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/cert_verify_result.h"
@@ -23,23 +24,29 @@ namespace {
 bool VerifyFromAndroidTrustManager(const std::vector<std::string>& cert_bytes,
                                    CertVerifyResult* verify_result) {
   // TODO(joth): Fetch the authentication type from SSL rather than hardcode.
-  bool verified = true;
-  android::VerifyResult result =
+  android::CertVerifyResultAndroid android_result =
       android::VerifyX509CertChain(cert_bytes, "RSA");
-  switch (result) {
+  switch (android_result) {
+    case android::VERIFY_FAILED:
+      return false;
     case android::VERIFY_OK:
       break;
     case android::VERIFY_NO_TRUSTED_ROOT:
       verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
       break;
-    case android::VERIFY_INVOCATION_ERROR:
-      verified = false;
+    case android::VERIFY_EXPIRED:
+    case android::VERIFY_NOT_YET_VALID:
+      verify_result->cert_status |= CERT_STATUS_DATE_INVALID;
+      break;
+    case android::VERIFY_UNABLE_TO_PARSE:
+      verify_result->cert_status |= CERT_STATUS_INVALID;
       break;
     default:
+      NOTREACHED();
       verify_result->cert_status |= CERT_STATUS_INVALID;
       break;
   }
-  return verified;
+  return true;
 }
 
 bool GetChainDEREncodedBytes(X509Certificate* cert,

@@ -23,8 +23,9 @@ using base::android::ToJavaByteArray;
 namespace net {
 namespace android {
 
-VerifyResult VerifyX509CertChain(const std::vector<std::string>& cert_chain,
-                                 const std::string& auth_type) {
+CertVerifyResultAndroid VerifyX509CertChain(
+    const std::vector<std::string>& cert_chain,
+    const std::string& auth_type) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobjectArray> chain_byte_array =
@@ -35,12 +36,10 @@ VerifyResult VerifyX509CertChain(const std::vector<std::string>& cert_chain,
       ConvertUTF8ToJavaString(env, auth_type);
   DCHECK(!auth_string.is_null());
 
-  jboolean trusted = Java_AndroidNetworkLibrary_verifyServerCertificates(
+  jint result = Java_AndroidNetworkLibrary_verifyServerCertificates(
       env, chain_byte_array.obj(), auth_string.obj());
-  if (ClearException(env))
-    return VERIFY_INVOCATION_ERROR;
 
-  return trusted ? VERIFY_OK : VERIFY_NO_TRUSTED_ROOT;
+  return static_cast<CertVerifyResultAndroid>(result);
 }
 
 void AddTestRootCertificate(const uint8* cert, size_t len) {

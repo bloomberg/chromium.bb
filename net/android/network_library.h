@@ -11,28 +11,19 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "net/android/cert_verify_result_android.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_export.h"
 
 namespace net {
 namespace android {
 
-enum VerifyResult {
-  // Certificate verification was successful.
-  VERIFY_OK,
-  // Certificate verification was failed. There is no detail error information
-  // given by Android API.
-  VERIFY_NO_TRUSTED_ROOT,
-  // Error occurs when invoke JNI methods.
-  VERIFY_INVOCATION_ERROR,
-};
-
 // |cert_chain| is DER encoded chain of certificates, with the server's own
 // certificate listed first.
 // |auth_type| is as per the Java X509Certificate.checkServerTrusted method.
-
-VerifyResult VerifyX509CertChain(const std::vector<std::string>& cert_chain,
-                                 const std::string& auth_type);
+CertVerifyResultAndroid VerifyX509CertChain(
+    const std::vector<std::string>& cert_chain,
+    const std::string& auth_type);
 
 // Adds a certificate as a root trust certificate to the trust manager.
 // |cert| is DER encoded certificate, |len| is its length in bytes.

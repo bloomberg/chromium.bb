@@ -1,6 +1,4 @@
 # List of suppressions.
-CertVerifyProcTest.ExtraneousMD5RootCert
-CertVerifyProcTest.IntermediateCARequireExplicitPolicy
 CertVerifyProcTest.PublicKeyHashes
 CertVerifyProcTest.RejectWeakKeys
 CertVerifyProcTest.VerifyReturnChainBasic
@@ -40,6 +38,7 @@ VerifyRoot/CertVerifyProcWeakDigestTest.Verify/2
 # Fail only on bots.
 CertVerifyProcTest.TestKnownRoot
 CertVerifyProcTest.WithoutRevocationChecking
+CertVerifyProcTest.InvalidKeyUsage
 HttpCache.RangeGET_Cancel
 HttpCache.RangeGET_Cancel2
 HttpCache.RangeGET_OK
