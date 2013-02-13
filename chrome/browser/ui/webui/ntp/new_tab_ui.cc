@@ -20,7 +20,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -222,17 +221,6 @@ void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
                &NewTabUI::PaintTimeout);
-}
-
-bool NewTabUI::CanShowBookmarkBar() const {
-  if (web_ui()->GetWebContents()->GetURL().SchemeIs(chrome::kViewSourceScheme))
-    return false;
-
-  PrefService* prefs = GetProfile()->GetPrefs();
-  bool disabled_by_policy =
-      prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
-      !prefs->GetBoolean(prefs::kShowBookmarkBar);
-  return browser_defaults::bookmarks_enabled && !disabled_by_policy;
 }
 
 void NewTabUI::RenderViewCreated(RenderViewHost* render_view_host) {

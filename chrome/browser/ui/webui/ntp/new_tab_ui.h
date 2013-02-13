@@ -60,10 +60,6 @@ class NewTabUI : public content::WebUIController,
   virtual void RenderViewReused(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  // Returns true if the bookmark bar can be displayed over this webui, detached
-  // from the location bar.
-  bool CanShowBookmarkBar() const;
-
   bool showing_sync_bubble() { return showing_sync_bubble_; }
   void set_showing_sync_bubble(bool showing) { showing_sync_bubble_ = showing; }
 
