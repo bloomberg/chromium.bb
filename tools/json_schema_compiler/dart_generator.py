@@ -12,8 +12,8 @@ from schema_util import *
 import os
 from datetime import datetime
 
-LICENSE = ("""
-// Copyright (c) %s, the Dart project authors.  Please see the AUTHORS file
+LICENSE = (
+"""// Copyright (c) %s, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.""" %
     datetime.now().year)
@@ -31,6 +31,9 @@ class _Generator(object):
 
   def __init__(self, namespace, dart_overrides_dir=None):
     self._namespace = namespace
+    # TODO(sashab): Once inline type definitions start being added to
+    # self._types, make a _FindType(self, type_) function that looks at
+    # self._namespace.types.
     self._types = namespace.types
 
     # Build a dictionary of Type Name --> Custom Dart code.
@@ -43,11 +46,17 @@ class _Generator(object):
             type_path = '.'.join(filename.split('.')[1:-1])
             self._type_overrides[type_path] = f.read()
 
+    # TODO(sashab): Add all inline type definitions to the global Types
+    # dictionary here, so they have proper names, and are implemented along with
+    # all other types. Also update the parameters/members with these types
+    # to reference these new types instead.
+
   def Generate(self):
     """Generates a Code object with the .dart for the entire namespace.
     """
     c = Code()
     (c.Append(LICENSE)
+      .Append()
       .Append('// Generated from namespace: %s' % self._namespace.name)
       .Append()
       .Append('part of chrome;'))
@@ -57,25 +66,28 @@ class _Generator(object):
         .Append('/**')
         .Append(' * Types')
         .Append(' */')
+        .Append()
       )
-    for type_name in self._types:
-      c.Concat(self._GenerateType(self._types[type_name]))
+    for type_ in self._types.values():
+      # Check for custom dart for this whole type.
+      override = self._GetOverride([type_.name], document_with=type_)
+      c.Cblock(override if override is not None else self._GenerateType(type_))
 
     if self._namespace.events:
-      (c.Append()
-        .Append('/**')
+      (c.Append('/**')
         .Append(' * Events')
         .Append(' */')
+        .Append()
       )
     for event_name in self._namespace.events:
-      c.Concat(self._GenerateEvent(self._namespace.events[event_name]))
+      c.Cblock(self._GenerateEvent(self._namespace.events[event_name]))
 
-    (c.Append()
-      .Append('/**')
+    (c.Append('/**')
       .Append(' * Functions')
       .Append(' */')
+      .Append()
     )
-    c.Concat(self._GenerateMainClass())
+    c.Cblock(self._GenerateMainClass())
 
     return c
 
@@ -89,8 +101,14 @@ class _Generator(object):
     setters that hide the JS() implementation.
     """
     c = Code()
-    (c.Append()
-      .Concat(self._GenerateDocumentation(type_))
+
+    # Since enums are just treated as strings for now, don't generate their
+    # type.
+    # TODO(sashab): Find a nice way to wrap enum objects.
+    if type_.property_type is PropertyType.ENUM:
+      return c
+
+    (c.Concat(self._GenerateDocumentation(type_))
       .Sblock('class %(type_name)s extends ChromeObject {')
     )
 
@@ -109,7 +127,10 @@ class _Generator(object):
       )
 
       for prop_name in type_.properties:
-        c.Append('this.%s = %s;' % (prop_name, prop_name))
+        (c.Sblock('if (?%s)' % prop_name)
+          .Append('this.%s = %s;' % (prop_name, prop_name))
+          .Eblock()
+        )
       (c.Eblock('}')
         .Append()
       )
@@ -130,59 +151,9 @@ class _Generator(object):
         .Append(' */')
       )
     for prop in properties:
-      type_name = self._GetDartType(prop.type_)
-
-      # Check for custom dart for this whole property.
-      c.Append()
-      if not self._ConcatOverride(c, type_, prop, add_doc=True):
-        # Add the getter.
-        if not self._ConcatOverride(c, type_, prop, key_suffix='.get',
-                                       add_doc=True):
-          # Add the documentation for this property.
-          c.Concat(self._GenerateDocumentation(prop))
-
-          if (self._IsBaseType(prop.type_)
-              or self._IsListOfBaseTypes(prop.type_)):
-            c.Append("%s get %s => JS('%s', '#.%s', this._jsObject);" %
-                (type_name, prop.name, type_name, prop.name))
-          elif self._IsSerializableObjectType(prop.type_):
-            c.Append("%s get %s => new %s._proxy(JS('', '#.%s', "
-                     "this._jsObject));"
-              % (type_name, prop.name, type_name, prop.name))
-          elif self._IsListOfSerializableObjects(prop.type_):
-            (c.Sblock('%s get %s {' % (type_name, prop.name))
-              .Append('%s __proxy_%s = new %s();' % (type_name, prop.name,
-                                                     type_name))
-              .Sblock("for (var o in JS('List', '#.%s', this._jsObject)) {" %
-                      prop.name)
-              .Append('__proxy_%s.add(new %s._proxy(o));' % (prop.name,
-                   self._GetDartType(prop.type_.item_type)))
-              .Eblock('}')
-              .Append('return __proxy_%s;' % prop.name)
-              .Eblock('}')
-            )
-          elif self._IsObjectType(prop.type_):
-            # TODO(sashab): Think of a way to serialize generic Dart objects.
-            c.Append("%s get %s => JS('%s', '#.%s', this._jsObject);" %
-                (type_name, prop.name, type_name, prop.name))
-          else:
-            raise Exception(
-                "Could not generate wrapper for %s.%s: unserializable type %s" %
-                (type_.name, prop.name, type_name)
-            )
-
-        # Add the setter.
-        c.Append()
-        if not self._ConcatOverride(c, type_, prop, key_suffix='.set'):
-          wrapped_name = prop.name
-          if not self._IsBaseType(prop.type_):
-            wrapped_name = 'convertArgument(%s)' % prop.name
-
-          (c.Sblock("void set %s(%s %s) {" % (prop.name, type_name, prop.name))
-            .Append("JS('void', '#.%s = #', this._jsObject, %s);" %
-              (prop.name, wrapped_name))
-            .Eblock("}")
-          )
+      override = self._GetOverride([type_.name, prop.name], document_with=prop)
+      c.Concat(override if override is not None
+               else self._GenerateGetterAndSetter(type_, prop))
 
     # Now add all the methods.
     methods = [t for t in type_.properties.values()
@@ -194,15 +165,89 @@ class _Generator(object):
         .Append(' */')
       )
     for prop in methods:
-      c.Concat(self._GenerateFunction(prop.type_.function))
+      # Check if there's an override for this method.
+      override = self._GetOverride([type_.name, prop.name], document_with=prop)
+      c.Cblock(override if override is not None
+               else self._GenerateFunction(prop.type_.function))
 
     (c.Eblock('}')
       .Substitute({
-        'type_name': type_.simple_name,
+        'type_name': self._AddPrefix(type_.simple_name),
         'constructor_fields': ', '.join(constructor_fields)
       })
     )
 
+    return c
+
+  def _GenerateGetterAndSetter(self, type_, prop):
+    """Given a Type and Property, returns the Code object for the getter and
+    setter for that property.
+    """
+    c = Code()
+    override = self._GetOverride([type_.name, prop.name, '.get'],
+                                 document_with=prop)
+    c.Cblock(override if override is not None
+             else self._GenerateGetter(type_, prop))
+    override = self._GetOverride([type_.name, prop.name, '.set'])
+    c.Cblock(override if override is not None
+             else self._GenerateSetter(type_, prop))
+    return c
+
+  def _GenerateGetter(self, type_, prop):
+    """Given a Type and Property, returns the Code object for the getter for
+    that property.
+
+    Also adds the documentation for this property before the method.
+    """
+    c = Code()
+    c.Concat(self._GenerateDocumentation(prop))
+
+    type_name = self._GetDartType(prop.type_)
+    if (self._IsBaseType(prop.type_)):
+      c.Append("%s get %s => JS('%s', '#.%s', this._jsObject);" %
+          (type_name, prop.name, type_name, prop.name))
+    elif self._IsSerializableObjectType(prop.type_):
+      c.Append("%s get %s => new %s._proxy(JS('', '#.%s', "
+               "this._jsObject));"
+        % (type_name, prop.name, type_name, prop.name))
+    elif self._IsListOfSerializableObjects(prop.type_):
+      (c.Sblock('%s get %s {' % (type_name, prop.name))
+        .Append('%s __proxy_%s = new %s();' % (type_name, prop.name,
+                                               type_name))
+        .Sblock("for (var o in JS('List', '#.%s', this._jsObject)) {" %
+                prop.name)
+        .Append('__proxy_%s.add(new %s._proxy(o));' % (prop.name,
+             self._GetDartType(prop.type_.item_type)))
+        .Eblock('}')
+        .Append('return __proxy_%s;' % prop.name)
+        .Eblock('}')
+      )
+    elif self._IsObjectType(prop.type_):
+      # TODO(sashab): Think of a way to serialize generic Dart objects.
+      c.Append("%s get %s => JS('%s', '#.%s', this._jsObject);" %
+          (type_name, prop.name, type_name, prop.name))
+    else:
+      raise Exception(
+          "Could not generate wrapper for %s.%s: unserializable type %s" %
+          (type_.name, prop.name, type_name)
+      )
+    return c
+
+  def _GenerateSetter(self, type_, prop):
+    """Given a Type and Property, returns the Code object for the setter for
+    that property.
+    """
+    c = Code()
+    type_name = self._GetDartType(prop.type_)
+    wrapped_name = prop.name
+    if not self._IsBaseType(prop.type_):
+      wrapped_name = 'convertArgument(%s)' % prop.name
+
+    (c.Sblock("void set %s(%s %s) {" % (prop.name, type_name, prop.name))
+      .Append("JS('void', '#.%s = #', this._jsObject, %s);" %
+        (prop.name, wrapped_name))
+      .Eblock("}")
+    )
     return c
 
   def _GenerateDocumentation(self, prop):
@@ -223,9 +268,7 @@ class _Generator(object):
     """Returns the Code object for the given function.
     """
     c = Code()
-    (c.Append()
-      .Concat(self._GenerateDocumentation(f))
-    )
+    c.Concat(self._GenerateDocumentation(f))
 
     if not self._NeedsProxiedCallback(f):
         c.Append("%s => %s;" % (self._GenerateFunctionSignature(f),
@@ -252,7 +295,7 @@ class _Generator(object):
     # their members (by copying out each member and proxying it).
     lists_to_proxy = []
     for p in f.params:
-      if self._IsBaseType(p.type_) or self._IsListOfBaseTypes(p.type_):
+      if self._IsBaseType(p.type_):
         proxied_params.append(p.name)
       elif self._IsSerializableObjectType(p.type_):
         proxied_params.append('new %s._proxy(%s)' % (
@@ -262,6 +305,11 @@ class _Generator(object):
         lists_to_proxy.append(p)
       elif self._IsObjectType(p.type_):
         # TODO(sashab): Find a way to build generic JS objects back in Dart.
+        proxied_params.append('%s' % p.name)
+      elif p.type_.property_type is PropertyType.ARRAY:
+        # TODO(sashab): This might be okay - what if this is a list of
+        # FileEntry elements? In this case, a basic list will proxy the objects
+        # fine.
         proxied_params.append('%s' % p.name)
       else:
         raise Exception(
@@ -353,8 +401,7 @@ class _Generator(object):
     c = Code()
 
     # Add documentation for this event.
-    (c.Append()
-      .Concat(self._GenerateDocumentation(event))
+    (c.Concat(self._GenerateDocumentation(event))
       .Sblock('class Event_%(event_name)s extends Event {')
     )
 
@@ -381,7 +428,7 @@ class _Generator(object):
 
     # Generate the constructor.
     (c.Append('Event_%(event_name)s(jsObject) : '
-              'super(jsObject, %(param_num)d);')
+              'super._(jsObject, %(param_num)d);')
       .Eblock('}')
       .Substitute({
         'event_name': self._namespace.unix_name + '_' + event.name,
@@ -398,8 +445,7 @@ class _Generator(object):
     Returns a code object.
     """
     c = Code()
-    (c.Append()
-      .Sblock('class API_%s {' % self._namespace.unix_name)
+    (c.Sblock('class API_%s {' % self._namespace.unix_name)
       .Append('/*')
       .Append(' * API connection')
       .Append(' */')
@@ -425,12 +471,13 @@ class _Generator(object):
         .Append(' */')
       )
     for function in self._namespace.functions.values():
-      c.Concat(self._GenerateFunction(function))
+      # Check for custom dart for this whole property.
+      override = self._GetOverride([function.name], document_with=function)
+      c.Cblock(override if override is not None
+               else self._GenerateFunction(function))
 
     # Add the constructor.
-    (c.Append()
-      .Sblock('API_%s(this._jsObject) {' % self._namespace.unix_name)
-    )
+    c.Sblock('API_%s(this._jsObject) {' % self._namespace.unix_name)
 
     # Add events to constructor.
     for event_name in self._namespace.events:
@@ -459,22 +506,17 @@ class _Generator(object):
                'name': prop.simple_name
            }
 
-  def _GenerateFunctionSignature(self, function):
+  def _GenerateFunctionSignature(self, function, convert_optional=False):
     """Given a function object, returns the signature for that function.
     Recursively generates the signature for callbacks.
     Returns a String for the given function.
 
-    If prepend_this is True, adds "this." to the function's name.
+    If convert_optional is True, changes optional parameters to be required.
 
     e.g.
       void onClosed()
       bool isOpen([String type])
       void doSomething(bool x, void callback([String x]))
-
-    e.g. If prepend_this is True:
-      void this.onClosed()
-      bool this.isOpen([String type])
-      void this.doSomething(bool x, void callback([String x]))
     """
     sig = '%(return_type)s %(name)s(%(params)s)'
 
@@ -487,7 +529,8 @@ class _Generator(object):
         'return_type': return_type,
         'name': function.simple_name,
         'params': self._GenerateParameterList(function.params,
-                                              function.callback)
+                                              function.callback,
+                                              convert_optional=convert_optional)
     }
 
   def _GenerateParameterList(self,
@@ -518,7 +561,7 @@ class _Generator(object):
 
     # Add the callback, if it exists.
     if callback:
-      c_sig = self._GenerateFunctionSignature(callback)
+      c_sig = self._GenerateFunctionSignature(callback, convert_optional=True)
       if callback.optional:
         params_opt.append(c_sig)
       else:
@@ -544,28 +587,35 @@ class _Generator(object):
     # prevents a leading comma, e.g. '(, [a, b])'.
     return ', '.join(p for p in param_sets if p)
 
-  def _ConcatOverride(self, c, type_, prop, key_suffix='', add_doc=False):
-    """Given a particular type and property to find in the custom dart
-    overrides, checks whether there is an override for that key.
-    If there is, appends the override code, and returns True.
-    If not, returns False.
+  def _GetOverride(self, key_chain, document_with=None):
+    """Given a list of keys, joins them with periods and searches for them in
+    the custom dart overrides.
+    If there is an override for that key, finds the override code and returns
+    the Code object. If not, returns None.
 
-    |key_suffix| will be added to the end of the key before searching, e.g.
-    '.set' or '.get' can be used for setters and getters respectively.
-
-    If add_doc is given, adds the documentation for this property before the
-    override code.
+    If document_with is not None, adds the documentation for this property
+    before the override code.
     """
-    contents = self._type_overrides.get('%s.%s%s' % (type_.name, prop.name,
-                                     key_suffix))
+    c = Code()
+    contents = self._type_overrides.get('.'.join(key_chain))
     if contents is None:
-      return False
+      return None
 
-    if prop is not None:
-      c.Concat(self._GenerateDocumentation(prop))
-    for line in contents.split('\n'):
+    if document_with is not None:
+      c.Concat(self._GenerateDocumentation(document_with))
+    for line in contents.strip('\n').split('\n'):
       c.Append(line)
-    return True
+    return c
+
+  def _AddPrefix(self, name):
+    """Given the name of a type, prefixes the namespace (as camelcase) and
+    return the new name.
+    """
+    # TODO(sashab): Split the dart library into multiple files, avoiding the
+    # need for this prefixing.
+    return ('%s%s' % (
+        ''.join(s.capitalize() for s in self._namespace.name.split('.')),
+        name))
 
   def _IsFunction(self, type_):
     """Given a model.Type, returns whether this type is a function.
@@ -575,10 +625,16 @@ class _Generator(object):
   def _IsSerializableObjectType(self, type_):
     """Given a model.Type, returns whether this type is a serializable object.
     Serializable objects are custom types defined in this namespace.
+
+    If this object is a reference to something not in this namespace, assumes
+    its a serializable object.
     """
-    if (type_.property_type == PropertyType.REF
-        and type_.ref_type in self._types):
-      return self._IsObjectType(self._types[type_.ref_type])
+    if type_.property_type is PropertyType.CHOICES:
+      return all(self._IsSerializableObjectType(c) for c in type_.choices)
+    if type_.property_type is PropertyType.REF:
+      if type_.ref_type in self._types:
+        return self._IsObjectType(self._types[type_.ref_type])
+      return True
     if (type_.property_type == PropertyType.OBJECT
         and type_.instance_of in self._types):
       return self._IsObjectType(self._types[type_.instance_of])
@@ -592,24 +648,46 @@ class _Generator(object):
 
   def _IsListOfSerializableObjects(self, type_):
     """Given a model.Type, returns whether this type is a list of serializable
-    objects (PropertyType.REF types).
+    objects (or regular objects, if this list is treated as a type - in this
+    case, the item type was defined inline).
+
+    If this type is a reference to something not in this namespace, assumes
+    it is not a list of serializable objects.
     """
+    if type_.property_type is PropertyType.CHOICES:
+      return all(self._IsListOfSerializableObjects(c) for c in type_.choices)
+    if type_.property_type is PropertyType.REF:
+      if type_.ref_type in self._types:
+        return self._IsListOfSerializableObjects(self._types[type_.ref_type])
+      return False
     return (type_.property_type is PropertyType.ARRAY and
-            type_.item_type.property_type is PropertyType.REF)
+        (self._IsSerializableObjectType(type_.item_type)))
 
   def _IsListOfBaseTypes(self, type_):
     """Given a model.Type, returns whether this type is a list of base type
     objects (PropertyType.REF types).
     """
+    if type_.property_type is PropertyType.CHOICES:
+      return all(self._IsListOfBaseTypes(c) for c in type_.choices)
     return (type_.property_type is PropertyType.ARRAY and
             self._IsBaseType(type_.item_type))
 
   def _IsBaseType(self, type_):
     """Given a model.type_, returns whether this type is a base type
-    (string, number or boolean).
+    (string, number, boolean, or a list of these).
+
+    If type_ is a Choices object, returns True if all possible choices are base
+    types.
     """
-    return (self._GetDartType(type_) in
-            ['bool', 'num', 'int', 'double', 'String'])
+    # TODO(sashab): Remove 'Choices' as a base type once they are wrapped in
+    # native Dart classes.
+    if type_.property_type is PropertyType.CHOICES:
+      return all(self._IsBaseType(c) for c in type_.choices)
+    return (
+        (self._GetDartType(type_) in ['bool', 'num', 'int', 'double', 'String'])
+        or (type_.property_type is PropertyType.ARRAY
+            and self._IsBaseType(type_.item_type))
+    )
 
   def _GetDartType(self, type_):
     """Given a model.Type object, returns its type as a Dart string.
@@ -619,6 +697,8 @@ class _Generator(object):
 
     prop_type = type_.property_type
     if prop_type is PropertyType.REF:
+      if type_.ref_type in self._types:
+        return self._GetDartType(self._types[type_.ref_type])
       # TODO(sashab): If the type is foreign, it might have to be imported.
       return StripNamespace(type_.ref_type)
     elif prop_type is PropertyType.BOOLEAN:
@@ -634,12 +714,20 @@ class _Generator(object):
     elif prop_type is PropertyType.ENUM:
       return 'String'
     elif prop_type is PropertyType.CHOICES:
-      # TODO: What is a Choices type? Is it closer to a Map Dart object?
+      # TODO(sashab): Think of a nice way to generate code for Choices objects
+      # in Dart.
       return 'Object'
     elif prop_type is PropertyType.ANY:
       return 'Object'
     elif prop_type is PropertyType.OBJECT:
-      return type_.instance_of or 'Object'
+      # TODO(sashab): type_.name is the name of the function's parameter for
+      # inline types defined in functions. Think of a way to generate names
+      # for this, or remove all inline type definitions at the start.
+      if type_.instance_of is not None:
+        return type_.instance_of
+      if not isinstance(type_.parent, Function):
+        return self._AddPrefix(type_.name)
+      return 'Object'
     elif prop_type is PropertyType.FUNCTION:
       return 'Function'
     elif prop_type is PropertyType.ARRAY:
