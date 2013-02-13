@@ -803,7 +803,7 @@ void MediaFileSystemRegistryTest::TearDown() {
   ChromeRenderViewHostTestHarness::TearDown();
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
-  EXPECT_EQ(0U, registry->GetExtensionHostCountForTests());
+  EXPECT_EQ(0U, registry->GetExtensionGalleriesHostCountForTests());
   BrowserThread::GetBlockingPool()->FlushForTesting();
   MessageLoop::current()->RunUntilIdle();
 }

@@ -545,6 +545,10 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   if (ContainsKey(extension_hosts_map_, profile))
     return preferences;
 
+  // Create an empty entry so the initialization code below only gets called
+  // once per profile.
+  extension_hosts_map_[profile] = ExtensionHostMap();
+
   // RemovableStorageNotifications may be NULL in unit tests.
   RemovableStorageNotifications* notifications =
       RemovableStorageNotifications::GetInstance();
@@ -625,8 +629,15 @@ void MediaFileSystemRegistry::OnRemovableStorageDetached(
   }
 }
 
-size_t MediaFileSystemRegistry::GetExtensionHostCountForTests() const {
-  return extension_hosts_map_.size();
+size_t MediaFileSystemRegistry::GetExtensionGalleriesHostCountForTests() const {
+  size_t extension_galleries_host_count = 0;
+  for (ExtensionGalleriesHostMap::const_iterator it =
+           extension_hosts_map_.begin();
+       it != extension_hosts_map_.end();
+       ++it) {
+    extension_galleries_host_count += it->second.size();
+  }
+  return extension_galleries_host_count;
 }
 
 /******************
@@ -799,8 +810,10 @@ void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(
       extension_hosts->second.erase(extension_id);
   DCHECK_EQ(1U, erase_count);
   if (extension_hosts->second.empty()) {
-    extension_hosts_map_.erase(extension_hosts);
-
+    // When a profile has no ExtensionGalleriesHosts left, remove the
+    // matching PrefChangeRegistrar since it is no longer needed. Leave the
+    // |extension_hosts| entry alone, since it indicates the profile has been
+    // previously used.
     PrefChangeRegistrarMap::iterator pref_it =
         pref_change_registrar_map_.find(profile);
     DCHECK(pref_it != pref_change_registrar_map_.end());

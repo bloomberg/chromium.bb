@@ -93,7 +93,7 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
   virtual void OnRemovableStorageDetached(
       const RemovableStorageNotifications::StorageInfo& info) OVERRIDE;
 
-  size_t GetExtensionHostCountForTests() const;
+  size_t GetExtensionGalleriesHostCountForTests() const;
 
   // See TransientDeviceIds::GetTransientIdForDeviceId().
   uint64 GetTransientIdForDeviceId(const std::string& device_id);
