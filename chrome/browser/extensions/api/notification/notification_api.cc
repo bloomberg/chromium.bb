@@ -11,6 +11,8 @@
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/extensions/extension.h"
@@ -194,6 +196,21 @@ void NotificationApiFunction::CreateNotification(
   g_browser_process->notification_ui_manager()->Add(notification, profile());
 }
 
+bool NotificationApiFunction::IsNotificationApiEnabled() {
+  DesktopNotificationService* service =
+      DesktopNotificationServiceFactory::GetForProfile(profile());
+  return service->IsExtensionEnabled(extension_->id());
+}
+
+bool NotificationApiFunction::RunImpl() {
+  if (!IsNotificationApiEnabled()) {
+    SendResponse(false);
+    return true;
+  }
+
+  return RunNotificationApi();
+}
+
 const char kNotificationPrefix[] = "extension.api.";
 
 static uint64 next_id_ = 0;
@@ -204,7 +221,7 @@ NotificationCreateFunction::NotificationCreateFunction() {
 NotificationCreateFunction::~NotificationCreateFunction() {
 }
 
-bool NotificationCreateFunction::RunImpl() {
+bool NotificationCreateFunction::RunNotificationApi() {
   params_ = api::experimental_notification::Create::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
@@ -235,7 +252,7 @@ NotificationUpdateFunction::NotificationUpdateFunction() {
 NotificationUpdateFunction::~NotificationUpdateFunction() {
 }
 
-bool NotificationUpdateFunction::RunImpl() {
+bool NotificationUpdateFunction::RunNotificationApi() {
   params_ = api::experimental_notification::Update::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
@@ -259,7 +276,7 @@ NotificationDeleteFunction::NotificationDeleteFunction() {
 NotificationDeleteFunction::~NotificationDeleteFunction() {
 }
 
-bool NotificationDeleteFunction::RunImpl() {
+bool NotificationDeleteFunction::RunNotificationApi() {
   params_ = api::experimental_notification::Delete::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 

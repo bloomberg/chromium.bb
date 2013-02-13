@@ -22,6 +22,14 @@ class NotificationApiFunction : public ApiFunction {
   void CreateNotification(
       const std::string& id,
       api::experimental_notification::NotificationOptions* options);
+
+  bool IsNotificationApiEnabled();
+
+  // Called inside of RunImpl.
+  virtual bool RunNotificationApi() = 0;
+
+  // UITHreadExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class NotificationCreateFunction : public NotificationApiFunction {
@@ -29,7 +37,7 @@ class NotificationCreateFunction : public NotificationApiFunction {
   NotificationCreateFunction();
 
   // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunNotificationApi() OVERRIDE;
 
  protected:
   virtual ~NotificationCreateFunction();
@@ -46,7 +54,7 @@ class NotificationUpdateFunction : public NotificationApiFunction {
   NotificationUpdateFunction();
 
   // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunNotificationApi() OVERRIDE;
 
  protected:
   virtual ~NotificationUpdateFunction();
@@ -63,7 +71,7 @@ class NotificationDeleteFunction : public NotificationApiFunction {
   NotificationDeleteFunction();
 
   // UIThreadExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
+  virtual bool RunNotificationApi() OVERRIDE;
 
  protected:
   virtual ~NotificationDeleteFunction();
