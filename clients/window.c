@@ -200,6 +200,8 @@ struct surface {
 
 	enum window_buffer_type buffer_type;
 	enum wl_output_transform buffer_transform;
+
+	cairo_surface_t *cairo_surface;
 };
 
 struct window {
@@ -219,8 +221,6 @@ struct window {
 	int type;
 	int transparent;
 	int focus_count;
-
-	cairo_surface_t *cairo_surface;
 
 	int resizing;
 	int fullscreen_method;
@@ -1143,8 +1143,11 @@ display_get_pointer_image(struct display *display, int pointer)
 }
 
 static void
-surface_attach_surface(struct surface *surface)
+surface_flush(struct surface *surface)
 {
+	if (!surface->cairo_surface)
+		return;
+
 	if (surface->opaque_region) {
 		wl_surface_set_opaque_region(surface->surface,
 					     surface->opaque_region);
@@ -1161,20 +1164,9 @@ surface_attach_surface(struct surface *surface)
 
 	surface->toysurface->swap(surface->toysurface,
 				  &surface->server_allocation);
-}
 
-static void
-window_attach_surface(struct window *window)
-{
-	struct display *display = window->display;
-
-	if (window->type == TYPE_NONE) {
-		window->type = TYPE_TOPLEVEL;
-		if (display->shell)
-			wl_shell_surface_set_toplevel(window->shell_surface);
-	}
-
-	surface_attach_surface(window->main_surface);
+	cairo_surface_destroy(surface->cairo_surface);
+	surface->cairo_surface = NULL;
 }
 
 int
@@ -1186,12 +1178,13 @@ window_has_focus(struct window *window)
 static void
 window_flush(struct window *window)
 {
-	if (!window->cairo_surface)
-		return;
+	if (window->type == TYPE_NONE) {
+		window->type = TYPE_TOPLEVEL;
+		if (window->shell_surface)
+			wl_shell_surface_set_toplevel(window->shell_surface);
+	}
 
-	window_attach_surface(window);
-	cairo_surface_destroy(window->cairo_surface);
-	window->cairo_surface = NULL;
+	surface_flush(window->main_surface);
 }
 
 struct display *
@@ -1200,7 +1193,7 @@ window_get_display(struct window *window)
 	return window->display;
 }
 
-static cairo_surface_t *
+static void
 surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
 {
 	struct display *display = surface->window->display;
@@ -1232,10 +1225,9 @@ surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
 							 surface->surface,
 							 flags, &allocation);
 
-	return surface->toysurface->prepare(surface->toysurface, dx, dy,
-					    allocation.width,
-					    allocation.height,
-					    flags);
+	surface->cairo_surface = surface->toysurface->prepare(
+		surface->toysurface, dx, dy,
+		allocation.width, allocation.height, flags);
 }
 
 static void
@@ -1262,8 +1254,7 @@ window_create_surface(struct window *window)
 
 	window->resize_edges = 0;
 
-	window->cairo_surface = surface_create_surface(window->main_surface,
-						       dx, dy, flags);
+	surface_create_surface(surface, dx, dy, flags);
 }
 
 int
@@ -1528,7 +1519,7 @@ widget_schedule_redraw(struct widget *widget)
 cairo_surface_t *
 window_get_surface(struct window *window)
 {
-	return cairo_surface_reference(window->cairo_surface);
+	return cairo_surface_reference(window->main_surface->cairo_surface);
 }
 
 struct wl_surface *
@@ -1550,15 +1541,15 @@ tooltip_redraw_handler(struct widget *widget, void *data)
 	const int32_t r = 3;
 	struct tooltip *tooltip = data;
 	int32_t width, height;
-	struct window *window = widget->window;
+	struct surface *surface = widget->surface;
 
-	cr = cairo_create(window->cairo_surface);
+	cr = cairo_create(surface->cairo_surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
 	cairo_paint(cr);
 
-	width = window->main_surface->allocation.width;
-	height = window->main_surface->allocation.height;
+	width = surface->allocation.width;
+	height = surface->allocation.height;
 	rounded_rect(cr, 0, 0, width, height, r);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -1951,7 +1942,6 @@ frame_button_redraw_handler(struct widget *widget, void *data)
 	struct frame_button *frame_button = data;
 	cairo_t *cr;
 	int width, height, x, y;
-	struct window *window = widget->window;
 
 	x = widget->allocation.x;
 	y = widget->allocation.y;
@@ -1965,7 +1955,7 @@ frame_button_redraw_handler(struct widget *widget, void *data)
 	if (widget->opaque)
 		return;
 
-	cr = cairo_create(window->cairo_surface);
+	cr = cairo_create(widget->surface->cairo_surface);
 
 	if (frame_button->decoration == FRAME_BUTTON_FANCY) {
 		cairo_set_line_width(cr, 1);
@@ -2047,7 +2037,7 @@ frame_redraw_handler(struct widget *widget, void *data)
 	if (window->type == TYPE_FULLSCREEN)
 		return;
 
-	cr = cairo_create(window->cairo_surface);
+	cr = cairo_create(widget->surface->cairo_surface);
 
 	if (window->focus_count)
 		flags |= THEME_FRAME_ACTIVE;
@@ -3772,15 +3762,15 @@ menu_redraw_handler(struct widget *widget, void *data)
 	const int32_t r = 3, margin = 3;
 	struct menu *menu = data;
 	int32_t width, height, i;
-	struct window *window = widget->window;
+	struct surface *surface = widget->surface;
 
-	cr = cairo_create(window->cairo_surface);
+	cr = cairo_create(surface->cairo_surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
 	cairo_paint(cr);
 
-	width = window->main_surface->allocation.width;
-	height = window->main_surface->allocation.height;
+	width = surface->allocation.width;
+	height = surface->allocation.height;
 	rounded_rect(cr, 0, 0, width, height, r);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
