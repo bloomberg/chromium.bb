@@ -86,6 +86,13 @@ class NetworkPortalDetector
   virtual void OnNetworkChanged(chromeos::NetworkLibrary* cros,
                                 const chromeos::Network* network) OVERRIDE;
 
+  // Enables lazy detection mode. In this mode portal detection after
+  // first 3 consecutive attemps will be performed once in 30 seconds.
+  void EnableLazyDetection();
+
+  // Dizables lazy detection mode.
+  void DisableLazyDetection();
+
   // Creates an instance of the NetworkPortalDetector.
   static NetworkPortalDetector* CreateInstance();
 
@@ -129,6 +136,10 @@ class NetworkPortalDetector
   void OnPortalDetectionCompleted(
       const captive_portal::CaptivePortalDetector::Results& results);
 
+  // Tries to perform portal detection in "lazy" mode. Does nothing in
+  // the case of already pending/processing detection request.
+  void TryLazyDetection();
+
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -161,6 +172,12 @@ class NetworkPortalDetector
   // network. Used by unit tests.
   void set_min_time_between_attempts_for_testing(const base::TimeDelta& delta) {
     min_time_between_attempts_ = delta;
+  }
+
+  // Sets default interval between consecutive portal checks for a
+  // network in portal state. Used by unit tests.
+  void set_lazy_check_interval_for_testing(const base::TimeDelta& delta) {
+    lazy_check_interval_ = delta;
   }
 
   // Sets portal detection timeout. Used by unit tests.
@@ -209,6 +226,13 @@ class NetworkPortalDetector
 
   // Number of portal detection attemps for an active network.
   int attempt_count_;
+
+  // True if lazy detection is enabled.
+  bool lazy_detection_enabled_;
+
+  // Time between consecutive portal checks for a network in lazy
+  // mode.
+  base::TimeDelta lazy_check_interval_;
 
   // Minimum time between consecutive portal checks for the same
   // active network.
