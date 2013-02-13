@@ -708,7 +708,47 @@ def SplitRM(instruction):
   if splitted:
     return [instr1, instr2]
   else:
-    return [instr1]
+    return [instruction]
+
+
+def SplitByteNonByte(instruction):
+  """Split instruction into versions with byte-sized operands and larger ones.
+
+  Args:
+    instruction: instruction.
+
+  Returns:
+    List of one or two instructions. If original instruction contains operands
+    with undetermined size, two more specific versions are produced, otherwise
+    original instruction is returned unchanged.
+  """
+
+  instr1 = copy.deepcopy(instruction)
+  instr2 = copy.deepcopy(instruction)
+
+  splitted = False
+  for i, operand in enumerate(instruction.operands):
+    if operand.size == '':
+      splitted = True
+      instr1.operands[i].size = 'b'
+      if operand.arg_type == def_format.OperandType.IMMEDIATE:
+        instr2.operands[i].size = 'z'  # word/dword
+      else:
+        instr2.operands[i].size = 'v'  # word/dword/qword
+
+  if not splitted:
+    return [instruction]
+
+  # Set the last bit of the main part of the opcode if instruction uses
+  # larger-than-byte operands.
+  main_opcode_part = instruction.GetMainOpcodePart()
+  last_byte = int(main_opcode_part[-1], 16)
+  assert last_byte % 2 == 0
+  instr2.opcodes[len(main_opcode_part) - 1] = hex(last_byte | 1)
+
+  # TODO(shcherbina): att-show-memory-suffix-b
+
+  return [instr1, instr2]
 
 
 def ParseDefFile(filename):

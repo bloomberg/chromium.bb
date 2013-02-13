@@ -321,6 +321,13 @@ class TestSplit(unittest.TestCase):
         map(str, gen_dfa.SplitRM(instr)),
         [str(instr)])
 
+  def test_split_byte(self):
+    instr = gen_dfa.Instruction.Parse('mov =I !E, 0xc6 /0')
+    self.assertEquals(
+        map(str, gen_dfa.SplitByteNonByte(instr)),
+        ['mov =Ib !Eb, 0xc6 /0',
+         'mov =Iz !Ev, 0xc7 /0'])
+
 
 class TestParser(unittest.TestCase):
 

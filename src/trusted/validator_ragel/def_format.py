@@ -376,6 +376,8 @@ class OperandType(object):
   ACCUMULATOR = 'a'
   COUNTER = 'c'
 
+  IMMEDIATE = 'I'
+
   CONTROL_REGISTER = 'C'  # in ModRM.reg
   DEBUG_REGISTER = 'D'  # in ModRM.reg
 
