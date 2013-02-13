@@ -11,8 +11,6 @@
       'web_animation_id_provider.h',
       'web_animation_impl.cc',
       'web_animation_impl.h',
-      'web_compositor_support_output_surface.cc',
-      'web_compositor_support_output_surface.h',
       'web_compositor_support_software_output_device.cc',
       'web_compositor_support_software_output_device.h',
       'web_content_layer_impl.cc',

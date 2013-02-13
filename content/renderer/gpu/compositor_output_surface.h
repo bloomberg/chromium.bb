@@ -13,7 +13,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "cc/output_surface.h"
-#include "cc/software_output_device.h"
 
 namespace base {
 class TaskRunner;
@@ -42,9 +41,6 @@ class CompositorOutputSurface
 
   // cc::OutputSurface implementation.
   virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
-  virtual const struct Capabilities& Capabilities() const OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE;
-  virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE;
   virtual void SendFrameToParentCompositor(cc::CompositorFrame*) OVERRIDE;
 
   // TODO(epenner): This seems out of place here and would be a better fit
@@ -78,12 +74,8 @@ class CompositorOutputSurface
   bool Send(IPC::Message* message);
 
   scoped_refptr<IPC::ForwardingMessageFilter> output_surface_filter_;
-  cc::OutputSurfaceClient* client_;
   scoped_refptr<CompositorOutputSurfaceProxy> output_surface_proxy_;
   int routing_id_;
-  struct Capabilities capabilities_;
-  scoped_ptr<WebKit::WebGraphicsContext3D> context3D_;
-  scoped_ptr<cc::SoftwareOutputDevice> software_device_;
   bool prefers_smoothness_;
   base::PlatformThreadId main_thread_id_;
 };

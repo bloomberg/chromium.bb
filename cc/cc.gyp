@@ -134,6 +134,7 @@
       'nine_patch_layer_impl.h',
       'occlusion_tracker.cc',
       'occlusion_tracker.h',
+      'output_surface.cc',
       'output_surface.h',
       'output_surface_client.h',
       'overdraw_metrics.cc',

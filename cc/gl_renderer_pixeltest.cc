@@ -11,11 +11,11 @@
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_provider.h"
 #include "cc/test/paths.h"
-#include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_implementation.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace cc {
 namespace {
@@ -53,7 +53,11 @@ class GLRendererPixelTest : public testing::Test {
 
   virtual void SetUp() {
     gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
-    output_surface_ = PixelTestOutputSurface::create();
+    scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
+        new webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl);
+    context3d->Initialize(WebKit::WebGraphicsContext3D::Attributes(), NULL);
+    output_surface_.reset(new OutputSurface(
+        context3d.PassAs<WebKit::WebGraphicsContext3D>()));
     resource_provider_ = ResourceProvider::create(output_surface_.get());
     renderer_ = GLRenderer::create(&fake_client_,
                                    output_surface_.get(),

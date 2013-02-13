@@ -10,6 +10,7 @@
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
+#include "cc/output_surface.h"
 #include "cc/switches.h"
 #include "cc/thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
@@ -19,7 +20,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
-#include "webkit/compositor_bindings/web_compositor_support_output_surface.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_rendering_stats_impl.h"
 #include "webkit/compositor_bindings/web_to_ccinput_handler_adapter.h"
@@ -158,8 +158,7 @@ scoped_ptr<cc::OutputSurface>
     WebLayerTreeViewImplForTesting::createOutputSurface() {
   scoped_ptr<WebGraphicsContext3D> context3d(
       new cc::FakeWebGraphicsContext3D);
-  return webkit::WebCompositorSupportOutputSurface::Create3d(
-      context3d.Pass()).PassAs<cc::OutputSurface>();
+  return make_scoped_ptr(new cc::OutputSurface(context3d.Pass()));
 }
 
 void WebLayerTreeViewImplForTesting::didRecreateOutputSurface(bool success) { }

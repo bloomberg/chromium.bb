@@ -296,9 +296,8 @@ class BrowserCompositorOutputSurface
       WebGraphicsContext3DCommandBufferImpl* context,
       int surface_id,
       BrowserCompositorOutputSurfaceProxy* output_surface_proxy)
-      : context3D_(context),
+      : OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D>(context)),
         surface_id_(surface_id),
-        client_(NULL),
         output_surface_proxy_(output_surface_proxy) {
     DetachFromThread();
   }
@@ -313,35 +312,12 @@ class BrowserCompositorOutputSurface
   virtual bool BindToClient(
       cc::OutputSurfaceClient* client) OVERRIDE {
     DCHECK(CalledOnValidThread());
-    DCHECK(client);
-    DCHECK(!client_);
-    if (context3D_.get()) {
-      if (!context3D_->makeContextCurrent())
-        return false;
-    }
 
-    client_ = client;
+    if (!OutputSurface::BindToClient(client))
+      return false;
+
     output_surface_proxy_->AddSurface(this, surface_id_);
     return true;
-  }
-
-  virtual const struct Capabilities& Capabilities() const OVERRIDE {
-    DCHECK(CalledOnValidThread());
-    return capabilities_;
-  }
-
-  virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE {
-    DCHECK(CalledOnValidThread());
-    return context3D_.get();
-  }
-
-  virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE {
-    DCHECK(CalledOnValidThread());
-    return NULL;
-  }
-
-  virtual void SendFrameToParentCompositor(
-      cc::CompositorFrame*) OVERRIDE {
   }
 
   void OnUpdateVSyncParameters(
@@ -352,10 +328,7 @@ class BrowserCompositorOutputSurface
   }
 
  private:
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3D_;
   int surface_id_;
-  struct Capabilities capabilities_;
-  cc::OutputSurfaceClient* client_;
   scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
 };
 

@@ -47,12 +47,11 @@ CompositorOutputSurface::CompositorOutputSurface(
     int32 routing_id,
     WebGraphicsContext3D* context3D,
     cc::SoftwareOutputDevice* software_device)
-    : output_surface_filter_(
+    : OutputSurface(make_scoped_ptr(context3D),
+                    make_scoped_ptr(software_device)),
+      output_surface_filter_(
           RenderThreadImpl::current()->compositor_output_surface_filter()),
-      client_(NULL),
       routing_id_(routing_id),
-      context3D_(context3D),
-      software_device_(software_device),
       prefers_smoothness_(false),
       main_thread_id_(base::PlatformThread::CurrentId()) {
   DCHECK(output_surface_filter_);
@@ -65,26 +64,17 @@ CompositorOutputSurface::~CompositorOutputSurface() {
   if (!client_)
     return;
   UpdateSmoothnessTakesPriority(false);
-  output_surface_proxy_->ClearOutputSurface();
+  if (output_surface_proxy_)
+    output_surface_proxy_->ClearOutputSurface();
   output_surface_filter_->RemoveRoute(routing_id_);
-}
-
-const struct cc::OutputSurface::Capabilities&
-    CompositorOutputSurface::Capabilities() const {
-  DCHECK(CalledOnValidThread());
-  return capabilities_;
 }
 
 bool CompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!client_);
-  if (context3D_.get()) {
-    if (!context3D_->makeContextCurrent())
-      return false;
-  }
 
-  client_ = client;
+  if (!cc::OutputSurface::BindToClient(client))
+    return false;
 
   output_surface_proxy_ = new CompositorOutputSurfaceProxy(this);
   output_surface_filter_->AddRoute(
@@ -93,15 +83,6 @@ bool CompositorOutputSurface::BindToClient(
                  output_surface_proxy_));
 
   return true;
-}
-
-WebGraphicsContext3D* CompositorOutputSurface::Context3D() const {
-  DCHECK(CalledOnValidThread());
-  return context3D_.get();
-}
-
-cc::SoftwareOutputDevice* CompositorOutputSurface::SoftwareDevice() const {
-  return software_device_.get();
 }
 
 void CompositorOutputSurface::SendFrameToParentCompositor(

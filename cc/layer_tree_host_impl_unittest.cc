@@ -2107,7 +2107,7 @@ protected:
 TEST_P(LayerTreeHostImplTest, reshapeNotCalledUntilDraw)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new ReshapeTrackerContext)).PassAs<OutputSurface>();
-    ReshapeTrackerContext* reshapeTracker = static_cast<ReshapeTrackerContext*>(outputSurface->Context3D());
+    ReshapeTrackerContext* reshapeTracker = static_cast<ReshapeTrackerContext*>(outputSurface->context3d());
     m_hostImpl->initializeRenderer(outputSurface.Pass());
 
     scoped_ptr<LayerImpl> root = FakeDrawableLayerImpl::create(m_hostImpl->activeTree(), 1);
@@ -2150,7 +2150,7 @@ private:
 TEST_P(LayerTreeHostImplTest, partialSwapReceivesDamageRect)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapTrackerContext)).PassAs<OutputSurface>();
-    PartialSwapTrackerContext* partialSwapTracker = static_cast<PartialSwapTrackerContext*>(outputSurface->Context3D());
+    PartialSwapTrackerContext* partialSwapTracker = static_cast<PartialSwapTrackerContext*>(outputSurface->context3d());
 
     // This test creates its own LayerTreeHostImpl, so
     // that we can force partial swap enabled.
@@ -2360,7 +2360,7 @@ public:
 TEST_P(LayerTreeHostImplTest, noPartialSwap)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockContext)).PassAs<OutputSurface>();
-    MockContext* mockContext = static_cast<MockContext*>(outputSurface->Context3D());
+    MockContext* mockContext = static_cast<MockContext*>(outputSurface->context3d());
     MockContextHarness harness(mockContext);
 
     // Run test case
@@ -2394,7 +2394,7 @@ TEST_P(LayerTreeHostImplTest, noPartialSwap)
 TEST_P(LayerTreeHostImplTest, partialSwap)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockContext)).PassAs<OutputSurface>();
-    MockContext* mockContext = static_cast<MockContext*>(outputSurface->Context3D());
+    MockContext* mockContext = static_cast<MockContext*>(outputSurface->context3d());
     MockContextHarness harness(mockContext);
 
     createLayerTreeHost(true, outputSurface.Pass());
@@ -2670,7 +2670,7 @@ public:
 TEST_P(LayerTreeHostImplTest, hasTransparentBackground)
 {
     scoped_ptr<OutputSurface> outputSurface = FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockDrawQuadsToFillScreenContext)).PassAs<OutputSurface>();
-    MockDrawQuadsToFillScreenContext* mockContext = static_cast<MockDrawQuadsToFillScreenContext*>(outputSurface->Context3D());
+    MockDrawQuadsToFillScreenContext* mockContext = static_cast<MockDrawQuadsToFillScreenContext*>(outputSurface->context3d());
 
     // Run test case
     createLayerTreeHost(false, outputSurface.Pass());
@@ -4031,7 +4031,7 @@ static void verifyRenderPassTestData(TestCase& testCase, RenderPassRemovalTestDa
 TEST_P(LayerTreeHostImplTest, testRemoveRenderPasses)
 {
     scoped_ptr<OutputSurface> outputSurface(createOutputSurface());
-    ASSERT_TRUE(outputSurface->Context3D());
+    ASSERT_TRUE(outputSurface->context3d());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
 
     scoped_ptr<TestRenderer> renderer(TestRenderer::create(resourceProvider.get(), outputSurface.get(), &m_proxy));

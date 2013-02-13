@@ -6,10 +6,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
+#include "cc/output_surface.h"
 #include "cc/thread_impl.h"
 #include "cc/transform_operations.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
-#include "webkit/compositor_bindings/web_compositor_support_output_surface.h"
 #include "webkit/compositor_bindings/web_compositor_support_software_output_device.h"
 #include "webkit/compositor_bindings/web_content_layer_impl.h"
 #include "webkit/compositor_bindings/web_external_texture_layer_impl.h"
@@ -84,16 +84,15 @@ WebKit::WebCompositorOutputSurface*
     WebCompositorSupportImpl::createOutputSurfaceFor3D(
         WebKit::WebGraphicsContext3D* context) {
   scoped_ptr<WebKit::WebGraphicsContext3D> context3d = make_scoped_ptr(context);
-  return WebCompositorSupportOutputSurface::Create3d(
-      context3d.Pass()).release();
+  return new cc::OutputSurface(context3d.Pass());
 }
 
 WebKit::WebCompositorOutputSurface*
     WebCompositorSupportImpl::createOutputSurfaceForSoftware() {
   scoped_ptr<WebCompositorSupportSoftwareOutputDevice> software_device =
       make_scoped_ptr(new WebCompositorSupportSoftwareOutputDevice);
-  return WebCompositorSupportOutputSurface::CreateSoftware(
-      software_device.PassAs<cc::SoftwareOutputDevice>()).release();
+  return new cc::OutputSurface(
+      software_device.PassAs<cc::SoftwareOutputDevice>());
 }
 
 WebLayer* WebCompositorSupportImpl::createLayer() {

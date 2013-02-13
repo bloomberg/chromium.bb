@@ -9,4 +9,6 @@ include_rules = [
   "+ui/gl",
   # TODO(danakj): Drop dependencies on WebKit Platform API from cc.
   "+third_party/WebKit/Source/Platform/chromium/public",
+# TODO(jamesr): Remove once cc depends on GLES2Interface instead of WGC3D
+  "+webkit/gpu",
 ]

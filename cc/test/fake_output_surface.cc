@@ -8,41 +8,27 @@ namespace cc {
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d, bool has_parent)
-    : num_sent_frames_(0) {
-  context3d_ = context3d.Pass();
+    : OutputSurface(context3d.Pass()),
+      num_sent_frames_(0) {
   capabilities_.has_parent_compositor = has_parent;
 }
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_ptr<SoftwareOutputDevice> software_device, bool has_parent)
-    : num_sent_frames_(0) {
-  software_device_ = software_device.Pass();
+    : OutputSurface(software_device.Pass()),
+      num_sent_frames_(0) {
   capabilities_.has_parent_compositor = has_parent;
 }
 
 FakeOutputSurface::~FakeOutputSurface() {}
 
-bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
+bool FakeOutputSurface::BindToClient(
+    cc::OutputSurfaceClient* client) {
+  DCHECK(client);
+  client_ = client;
   if (!context3d_)
     return true;
-  DCHECK(client);
-  if (!context3d_->makeContextCurrent())
-    return false;
-  client_ = client;
-  return true;
-}
-
-const struct OutputSurface::Capabilities& FakeOutputSurface::Capabilities()
-    const {
-  return capabilities_;
-}
-
-WebKit::WebGraphicsContext3D* FakeOutputSurface::Context3D() const {
-  return context3d_.get();
-}
-
-SoftwareOutputDevice* FakeOutputSurface::SoftwareDevice() const {
-  return software_device_.get();
+  return context3d_->makeContextCurrent();
 }
 
 void FakeOutputSurface::SendFrameToParentCompositor(

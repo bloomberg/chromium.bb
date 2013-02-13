@@ -119,8 +119,6 @@
       'test/occlusion_tracker_test_common.h',
       'test/paths.cc',
       'test/paths.h',
-      'test/pixel_test_output_surface.cc',
-      'test/pixel_test_output_surface.h',
       'test/render_pass_test_common.cc',
       'test/render_pass_test_common.h',
       'test/render_pass_test_utils.cc',

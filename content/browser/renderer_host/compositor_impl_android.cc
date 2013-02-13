@@ -41,45 +41,6 @@ static bool g_initialized = false;
 static webkit_glue::WebThreadImpl* g_impl_thread = NULL;
 static bool g_use_direct_gl = false;
 
-// Adapts a pure WebGraphicsContext3D into a cc::OutputSurface.
-class WebGraphicsContextToOutputSurfaceAdapter : public cc::OutputSurface {
- public:
-  explicit WebGraphicsContextToOutputSurfaceAdapter(
-      WebKit::WebGraphicsContext3D* context)
-      : context3d_(context),
-        client_(0) {
-  }
-
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE {
-    DCHECK(client);
-    if (!context3d_->makeContextCurrent())
-      return false;
-    client_ = client;
-    return true;
-  }
-
-  virtual const struct Capabilities& Capabilities() const OVERRIDE {
-    return capabilities_;
-  }
-
-  virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE {
-    return context3d_.get();
-  }
-
-  virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE {
-    return NULL;
-  }
-
-  virtual void SendFrameToParentCompositor(
-      cc::CompositorFrame*) OVERRIDE {
-  }
-
- private:
-  scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
-  struct Capabilities capabilities_;
-  cc::OutputSurfaceClient* client_;
-};
-
 } // anonymous namespace
 
 namespace content {
@@ -318,8 +279,8 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::createOutputSurface() {
             attrs,
             window_,
             NULL));
-    return scoped_ptr<cc::OutputSurface>(
-        new WebGraphicsContextToOutputSurfaceAdapter(context.release()));
+    return make_scoped_ptr(new cc::OutputSurface(
+        context.PassAs<WebKit::WebGraphicsContext3D>()));
   } else {
     DCHECK(window_ && surface_id_);
     WebKit::WebGraphicsContext3D::Attributes attrs;
@@ -339,8 +300,8 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::createOutputSurface() {
       LOG(ERROR) << "Failed to create 3D context for compositor.";
       return scoped_ptr<cc::OutputSurface>();
     }
-    return scoped_ptr<cc::OutputSurface>(
-        new WebGraphicsContextToOutputSurfaceAdapter(context.release()));
+    return make_scoped_ptr(new cc::OutputSurface(
+        context.PassAs<WebKit::WebGraphicsContext3D>()));
   }
 }
 

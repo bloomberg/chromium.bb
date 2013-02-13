@@ -93,7 +93,7 @@ GLRenderer::GLRenderer(RendererClient* client, OutputSurface* outputSurface, Res
     , m_offscreenFramebufferId(0)
     , m_sharedGeometryQuad(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f))
     , m_outputSurface(outputSurface)
-    , m_context(outputSurface->Context3D())
+    , m_context(outputSurface->context3d())
     , m_isViewportChanged(false)
     , m_isBackbufferDiscarded(false)
     , m_discardBackbufferWhenNotVisible(false)

@@ -1071,12 +1071,12 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
         m_tileManager->SetRecordRenderingStats(m_debugState.recordRenderingStats());
     }
 
-    if (outputSurface->Capabilities().has_parent_compositor)
+    if (outputSurface->capabilities().has_parent_compositor)
         m_renderer = DelegatingRenderer::Create(this, outputSurface.get(), resourceProvider.get());
-    else if (outputSurface->Context3D())
+    else if (outputSurface->context3d())
         m_renderer = GLRenderer::create(this, outputSurface.get(), resourceProvider.get());
-    else if (outputSurface->SoftwareDevice())
-        m_renderer = SoftwareRenderer::create(this, resourceProvider.get(), outputSurface->SoftwareDevice());
+    else if (outputSurface->software_device())
+        m_renderer = SoftwareRenderer::create(this, resourceProvider.get(), outputSurface->software_device());
     if (!m_renderer)
         return false;
 

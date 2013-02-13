@@ -52,46 +52,6 @@ ui::ContextFactory* g_context_factory = NULL;
 
 const int kCompositorLockTimeoutMs = 67;
 
-// Adapts a pure WebGraphicsContext3D into a cc::OutputSurface.
-class WebGraphicsContextToOutputSurfaceAdapter
-    : public cc::OutputSurface {
- public:
-  explicit WebGraphicsContextToOutputSurfaceAdapter(
-      WebKit::WebGraphicsContext3D* context)
-      : context3D_(context),
-        client_(NULL) {
-  }
-
-  virtual bool BindToClient(
-      cc::OutputSurfaceClient* client) OVERRIDE {
-    DCHECK(client);
-    if (!context3D_->makeContextCurrent())
-      return false;
-    client_ = client;
-    return true;
-  }
-
-  virtual const struct Capabilities& Capabilities() const OVERRIDE {
-    return capabilities_;
-  }
-
-  virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE {
-    return context3D_.get();
-  }
-
-  virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE {
-    return NULL;
-  }
-
-  virtual void SendFrameToParentCompositor(cc::CompositorFrame*) OVERRIDE {
-  }
-
- private:
-  scoped_ptr<WebKit::WebGraphicsContext3D> context3D_;
-  struct Capabilities capabilities_;
-  cc::OutputSurfaceClient* client_;
-};
-
 class PendingSwap {
  public:
   PendingSwap(SwapType type, ui::PostedSwapQueue* posted_swaps);
@@ -154,8 +114,8 @@ bool DefaultContextFactory::Initialize() {
 
 cc::OutputSurface* DefaultContextFactory::CreateOutputSurface(
     Compositor* compositor) {
-  return new WebGraphicsContextToOutputSurfaceAdapter(
-      CreateContextCommon(compositor, false));
+  return new cc::OutputSurface(
+      make_scoped_ptr(CreateContextCommon(compositor, false)));
 }
 
 WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext() {
@@ -506,13 +466,13 @@ void Compositor::applyScrollAndScale(gfx::Vector2d scrollDelta,
 
 scoped_ptr<cc::OutputSurface> Compositor::createOutputSurface() {
   if (g_test_compositor_enabled) {
-    ui::TestWebGraphicsContext3D* test_context =
-      new ui::TestWebGraphicsContext3D();
-    test_context->Initialize();
-    return scoped_ptr<cc::OutputSurface>(
-        new WebGraphicsContextToOutputSurfaceAdapter(test_context));
+    scoped_ptr<ui::TestWebGraphicsContext3D> context3d(
+        new ui::TestWebGraphicsContext3D);
+    context3d->Initialize();
+    return make_scoped_ptr(new cc::OutputSurface(
+        context3d.PassAs<WebKit::WebGraphicsContext3D>()));
   } else {
-    return scoped_ptr<cc::OutputSurface>(
+    return make_scoped_ptr(
         ContextFactory::GetInstance()->CreateOutputSurface(this));
   }
 }

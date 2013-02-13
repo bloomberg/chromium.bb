@@ -283,7 +283,7 @@ public:
         m_resourceProvider->setDefaultResourceType(GetParam());
     }
 
-    ResourceProviderContext* context() { return static_cast<ResourceProviderContext*>(m_outputSurface->Context3D()); }
+    ResourceProviderContext* context() { return static_cast<ResourceProviderContext*>(m_outputSurface->context3d()); }
 
     void getResourcePixels(ResourceProvider::ResourceId id, const gfx::Size& size, WGC3Denum format, uint8_t* pixels)
     {
@@ -476,7 +476,7 @@ TEST_P(ResourceProviderTest, TransferResources)
     EXPECT_FALSE(childResourceProvider->inUseByConsumer(id1));
     EXPECT_FALSE(childResourceProvider->inUseByConsumer(id2));
 
-    ResourceProviderContext* childContext3D = static_cast<ResourceProviderContext*>(childOutputSurface->Context3D());
+    ResourceProviderContext* childContext3D = static_cast<ResourceProviderContext*>(childOutputSurface->context3d());
     {
         ResourceProvider::ScopedReadLockGL lock(childResourceProvider.get(), id1);
         ASSERT_NE(0U, lock.textureId());
@@ -580,7 +580,7 @@ TEST_P(ResourceProviderTest, ScopedSampler)
         return;
 
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
-    TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->Context3D());
+    TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->context3d());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
 
     gfx::Size size(1, 1);
@@ -631,7 +631,7 @@ TEST_P(ResourceProviderTest, ManagedResource)
         return;
 
     scoped_ptr<OutputSurface> outputSurface(FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(new TextureStateTrackingContext)));
-    TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->Context3D());
+    TextureStateTrackingContext* context = static_cast<TextureStateTrackingContext*>(outputSurface->context3d());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
 
     gfx::Size size(1, 1);
@@ -686,7 +686,7 @@ TEST_P(ResourceProviderTest, TextureAllocation)
     uint8_t pixels[16] = {0};
     int textureId = 123;
 
-    AllocationTrackingContext3D* context = static_cast<AllocationTrackingContext3D*>(outputSurface->Context3D());
+    AllocationTrackingContext3D* context = static_cast<AllocationTrackingContext3D*>(outputSurface->context3d());
     scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
 
     // Lazy allocation. Don't allocate when creating the resource.

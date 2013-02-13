@@ -37,7 +37,7 @@ public:
         m_renderer = SoftwareRenderer::create(this, resourceProvider(), softwareDevice());
     }
 
-    SoftwareOutputDevice* softwareDevice() const { return m_outputSurface->SoftwareDevice(); }
+    SoftwareOutputDevice* softwareDevice() const { return m_outputSurface->software_device(); }
     FakeOutputSurface* outputSurface() const { return m_outputSurface.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
     SoftwareRenderer* renderer() const { return m_renderer.get(); }
