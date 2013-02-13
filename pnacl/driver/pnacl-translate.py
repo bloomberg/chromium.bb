@@ -181,7 +181,6 @@ EXTRA_ENV = {
                     '-metadata-text ${output}.meta',
   # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
   # for testing. Defaults to 1Gbps (effectively unlimited).
-  # If 0, use the non-streaming file-descriptor codepath.
   'BITCODE_STREAM_RATE' : '1000000000',
 }
 
@@ -554,25 +553,16 @@ def MakeSelUniversalScriptForLLC(infile, outfile, flags):
   script = []
   script.append('readwrite_file objfile %s' % outfile)
   stream_rate = int(env.getraw('BITCODE_STREAM_RATE'))
-  if stream_rate == 0:
-    script.append('readonly_file myfile %s' % infile)
-    if UseDefaultCommandlineLLC():
-      script.append('rpc RunWithDefaultCommandLine  h(myfile) h(objfile) *'
-                    ' i() s() s()')
-    else:
-      cmdline_len, cmdline_escaped = BuildLLCCommandLine(flags)
-      script.append('rpc Run h(myfile) h(objfile) C(%d,%s) * i() s() s()' %
-                    (cmdline_len, cmdline_escaped))
+  assert stream_rate != 0
+  if UseDefaultCommandlineLLC():
+    script.append('rpc StreamInit h(objfile) * s()')
   else:
-    if UseDefaultCommandlineLLC():
-      script.append('rpc StreamInit h(objfile) * s()')
-    else:
-      cmdline_len, cmdline_escaped = BuildLLCCommandLine(flags)
-      script.append('rpc StreamInitWithCommandLine h(objfile) C(%d,%s) * s()' %
-                    (cmdline_len, cmdline_escaped))
-    # specify filename, chunk size and rate in bits/s
-    script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))
-    script.append('rpc StreamEnd * i() s() s() s()')
+    cmdline_len, cmdline_escaped = BuildLLCCommandLine(flags)
+    script.append('rpc StreamInitWithCommandLine h(objfile) C(%d,%s) * s()' %
+                  (cmdline_len, cmdline_escaped))
+  # specify filename, chunk size and rate in bits/s
+  script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))
+  script.append('rpc StreamEnd * i() s() s() s()')
   script.append('echo "llc complete"')
   script.append('')
   return '\n'.join(script)
