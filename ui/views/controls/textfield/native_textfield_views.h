@@ -10,13 +10,13 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/font.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
 #include "ui/views/controls/textfield/textfield_views_model.h"
 #include "ui/views/drag_controller.h"
-#include "ui/views/touchui/touch_selection_controller.h"
 #include "ui/views/view.h"
 
 namespace base {
@@ -41,7 +41,8 @@ class MenuRunner;
 // * X selection (only if we want to support).
 // Once completed, this will replace Textfield, NativeTextfieldWin and
 // NativeTextfieldGtk.
-class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
+class VIEWS_EXPORT NativeTextfieldViews : public View,
+                                          public ui::TouchEditable,
                                           public ContextMenuController,
                                           public DragController,
                                           public NativeTextfieldWrapper,
@@ -76,9 +77,13 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual void OnBlur() OVERRIDE;
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
-  // TouchSelectionClientView overrides:
+  // ui::TouchEditable overrides:
   virtual void SelectRect(const gfx::Point& start,
                           const gfx::Point& end) OVERRIDE;
+  virtual const gfx::Rect& GetBounds() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual void ConvertPointToScreen(gfx::Point* point) OVERRIDE;
+  virtual void ConvertPointFromScreen(gfx::Point* point) OVERRIDE;
 
   // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,
@@ -300,7 +305,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   scoped_ptr<views::MenuModelAdapter> context_menu_delegate_;
   scoped_ptr<views::MenuRunner> context_menu_runner_;
 
-  scoped_ptr<TouchSelectionController> touch_selection_controller_;
+  scoped_ptr<ui::TouchSelectionController> touch_selection_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldViews);
 };

@@ -6,8 +6,8 @@
 #define UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
 
 #include "base/timer.h"
+#include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/point.h"
-#include "ui/views/touchui/touch_selection_controller.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
@@ -16,10 +16,11 @@ namespace views {
 // Touch specific implementation of TouchSelectionController. Responsible for
 // displaying selection handles and menu elements relevant in a touch interface.
 class VIEWS_EXPORT TouchSelectionControllerImpl
-    : public TouchSelectionController {
+    : public ui::TouchSelectionController {
  public:
   // Use TextSelectionController::create().
-  explicit TouchSelectionControllerImpl(TouchSelectionClientView* client_view);
+  explicit TouchSelectionControllerImpl(
+      ui::TouchEditable* client_view);
 
   virtual ~TouchSelectionControllerImpl();
 
@@ -63,7 +64,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   bool IsSelectionHandle1Visible();
   bool IsSelectionHandle2Visible();
 
-  TouchSelectionClientView* client_view_;
+  ui::TouchEditable* client_view_;
   scoped_ptr<SelectionHandleView> selection_handle_1_;
   scoped_ptr<SelectionHandleView> selection_handle_2_;
   scoped_ptr<TouchContextMenuView> context_menu_;

@@ -309,8 +309,6 @@
         'repeat_controller.h',
         'round_rect_painter.cc',
         'round_rect_painter.h',
-        'touchui/touch_selection_controller.cc',
-        'touchui/touch_selection_controller.h',
         'view.cc',
         'view.h',
         'view_constants.cc',

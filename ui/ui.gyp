@@ -267,6 +267,8 @@
         'base/touch/touch_device.h',
         'base/touch/touch_device_android.cc',
         'base/touch/touch_device_win.cc',
+        'base/touch/touch_editing_controller.cc',
+        'base/touch/touch_editing_controller.h',
         'base/touch/touch_factory.cc',
         'base/touch/touch_factory.h',
         'base/ui_base_exports.cc',

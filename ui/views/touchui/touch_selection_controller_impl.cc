@@ -323,7 +323,7 @@ class TouchSelectionControllerImpl::TouchContextMenuView
 };
 
 TouchSelectionControllerImpl::TouchSelectionControllerImpl(
-    TouchSelectionClientView* client_view)
+    ui::TouchEditable* client_view)
     : client_view_(client_view),
       selection_handle_1_(new SelectionHandleView(this)),
       selection_handle_2_(new SelectionHandleView(this)),
@@ -337,9 +337,9 @@ TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
 void TouchSelectionControllerImpl::SelectionChanged(const gfx::Point& p1,
                                                     const gfx::Point& p2) {
   gfx::Point screen_pos_1(p1);
-  View::ConvertPointToScreen(client_view_, &screen_pos_1);
+  client_view_->ConvertPointToScreen(&screen_pos_1);
   gfx::Point screen_pos_2(p2);
-  View::ConvertPointToScreen(client_view_, &screen_pos_2);
+  client_view_->ConvertPointToScreen(&screen_pos_2);
 
   if (dragging_handle_) {
     // We need to reposition only the selection handle that is being dragged.
@@ -357,14 +357,14 @@ void TouchSelectionControllerImpl::SelectionChanged(const gfx::Point& p1,
       return;
     }
 
-    if (client_view_->bounds().Contains(p1)) {
+    if (client_view_->GetBounds().Contains(p1)) {
       selection_handle_1_->SetScreenPosition(screen_pos_1);
       selection_handle_1_->SetVisible(true);
     } else {
       selection_handle_1_->SetVisible(false);
     }
 
-    if (client_view_->bounds().Contains(p2)) {
+    if (client_view_->GetBounds().Contains(p2)) {
       selection_handle_2_->SetScreenPosition(screen_pos_2);
       selection_handle_2_->SetVisible(true);
     } else {
@@ -389,33 +389,29 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
       this,
       &TouchSelectionControllerImpl::ContextMenuTimerFired);
 
-  if (client_view_->GetWidget()) {
-    DCHECK(dragging_handle_);
-    // Find the stationary selection handle.
-    SelectionHandleView* fixed_handle = selection_handle_1_.get();
-    if (fixed_handle == dragging_handle_)
-      fixed_handle = selection_handle_2_.get();
+  DCHECK(dragging_handle_);
+  // Find the stationary selection handle.
+  SelectionHandleView* fixed_handle = selection_handle_1_.get();
+  if (fixed_handle == dragging_handle_)
+    fixed_handle = selection_handle_2_.get();
 
-    // Find selection end points in client_view's coordinate system.
-    gfx::Point p1(drag_pos.x() + kSelectionHandleRadius, drag_pos.y());
-    ConvertPointToClientView(dragging_handle_, &p1);
+  // Find selection end points in client_view's coordinate system.
+  gfx::Point p1(drag_pos.x() + kSelectionHandleRadius, drag_pos.y());
+  ConvertPointToClientView(dragging_handle_, &p1);
 
-    gfx::Point p2(kSelectionHandleRadius, 0);
-    ConvertPointToClientView(fixed_handle, &p2);
+  gfx::Point p2(kSelectionHandleRadius, 0);
+  ConvertPointToClientView(fixed_handle, &p2);
 
-    // Instruct client_view to select the region between p1 and p2. The position
-    // of |fixed_handle| is the start and that of |dragging_handle| is the end
-    // of selection.
-    client_view_->SelectRect(p2, p1);
-  }
+  // Instruct client_view to select the region between p1 and p2. The position
+  // of |fixed_handle| is the start and that of |dragging_handle| is the end
+  // of selection.
+  client_view_->SelectRect(p2, p1);
 }
 
 void TouchSelectionControllerImpl::ConvertPointToClientView(
     SelectionHandleView* source, gfx::Point* point) {
   View::ConvertPointToScreen(source, point);
-  gfx::Rect r = client_view_->GetWidget()->GetClientAreaBoundsInScreen();
-  point->SetPoint(point->x() - r.x(), point->y() - r.y());
-  View::ConvertPointFromWidget(client_view_, point);
+  client_view_->ConvertPointFromScreen(point);
 }
 
 bool TouchSelectionControllerImpl::IsCommandIdEnabled(int command_id) const {
@@ -438,16 +434,16 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   // in the middle of the end points on the top. Else, we show the menu on the
   // top border of the view in the center.
   gfx::Point menu_pos;
-  if (client_view_->bounds().Contains(p1) &&
-      client_view_->bounds().Contains(p2)) {
+  gfx::Rect client_bounds = client_view_->GetBounds();
+  if (client_bounds.Contains(p1) && client_bounds.Contains(p2)) {
     menu_pos.set_x((p1.x() + p2.x()) / 2);
     menu_pos.set_y(std::min(p1.y(), p2.y()) - kContextMenuVerticalOffset);
   } else {
-    menu_pos.set_x(client_view_->x() + client_view_->width() / 2);
-    menu_pos.set_y(client_view_->y());
+    menu_pos.set_x(client_bounds.x() + client_bounds.width() / 2);
+    menu_pos.set_y(client_bounds.y());
   }
 
-  View::ConvertPointToScreen(client_view_, &menu_pos);
+  client_view_->ConvertPointToScreen(&menu_pos);
 
   context_menu_->SetScreenPosition(menu_pos);
   context_menu_->SetVisible(true);
@@ -489,9 +485,13 @@ bool TouchSelectionControllerImpl::IsSelectionHandle2Visible() {
   return selection_handle_2_->visible();
 }
 
+}  // namespace views
+
+namespace ui {
+
 TouchSelectionController* TouchSelectionController::create(
-    TouchSelectionClientView* client_view) {
-  return new TouchSelectionControllerImpl(client_view);
+    TouchEditable* client_view) {
+  return new views::TouchSelectionControllerImpl(client_view);
 }
 
-}  // namespace views
+}  // namespace ui

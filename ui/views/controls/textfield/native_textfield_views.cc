@@ -70,7 +70,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
       aggregated_clicks_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(touch_selection_controller_(
-          TouchSelectionController::create(this))) {
+          ui::TouchSelectionController::create(this))) {
   set_border(text_border_);
 
 #if defined(OS_CHROMEOS)
@@ -172,7 +172,7 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-  TouchSelectionClientView::OnGestureEvent(event);
+  View::OnGestureEvent(event);
 }
 
 bool NativeTextfieldViews::OnKeyPressed(const ui::KeyEvent& event) {
@@ -309,6 +309,22 @@ void NativeTextfieldViews::SelectRect(const gfx::Point& start,
   OnCaretBoundsChanged();
   SchedulePaint();
   OnAfterUserAction();
+}
+
+const gfx::Rect& NativeTextfieldViews::GetBounds() {
+  return bounds();
+}
+
+gfx::NativeView NativeTextfieldViews::GetNativeView() {
+  return GetWidget()->GetNativeView();
+}
+
+void NativeTextfieldViews::ConvertPointToScreen(gfx::Point* point) {
+  View::ConvertPointToScreen(this, point);
+}
+
+void NativeTextfieldViews::ConvertPointFromScreen(gfx::Point* point) {
+  View::ConvertPointFromScreen(this, point);
 }
 
 gfx::NativeCursor NativeTextfieldViews::GetCursor(const ui::MouseEvent& event) {
