@@ -478,6 +478,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   if (start_time_ == kNoTimestamp())
     start_time_ = base::TimeDelta();
 
+  // MPEG-4 B-frames cause grief for a simple container like AVI. Enable PTS
+  // generation so we always get timestamps, see http://crbug.com/169570
+  if (strcmp(format_context->iformat->name, "avi") == 0)
+    format_context->flags |= AVFMT_FLAG_GENPTS;
+
   // Good to go: set the duration and bitrate and notify we're done
   // initializing.
   host_->SetDuration(max_duration);
