@@ -7,10 +7,16 @@
  */
 function ImageEncoder() {}
 
-//TODO(JSDOC)
+/**
+ * @type {Array.<Object>}
+ */
 ImageEncoder.metadataEncoders = {};
 
-//TODO(JSDOC)
+/**
+ * @param {function(new:ImageEncoder.MetadataEncoder)} constructor
+ *     //TODO(JSDOC).
+ * @param {string} mimeType  //TODO(JSDOC).
+ */
 ImageEncoder.registerMetadataEncoder = function(constructor, mimeType) {
   ImageEncoder.metadataEncoders[mimeType] = constructor;
 };
@@ -141,6 +147,13 @@ ImageEncoder.createThumbnail = function(canvas, opt_shrinkage) {
   return thumbnailCanvas;
 };
 
+/**
+ * TODO(JSDOC)
+ * @param {string} string  //TODO(JSDOC).
+ * @param {number} from  //TODO(JSDOC).
+ * @param {number} to  //TODO(JSDOC).
+ * @return {ArrayBuffer}  //TODO(JSDOC).
+ */
 ImageEncoder.stringToArrayBuffer = function(string, from, to) {
   var size = to - from;
   var array = new Uint8Array(size);
@@ -168,6 +181,10 @@ ImageEncoder.MetadataEncoder = function(original_metadata) {
   }
 };
 
+/**
+ * TODO(JSDOC)
+ * @return {Object}   //TODO(JSDOC).
+ */
 ImageEncoder.MetadataEncoder.prototype.getMetadata = function() {
   return this.metadata_;
 };
