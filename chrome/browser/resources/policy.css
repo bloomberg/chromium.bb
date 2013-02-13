@@ -122,5 +122,6 @@ tbody:not(.show-overflowed-value) > tr.expanded-value-container {
 }
 
 td.expanded-value {
+  white-space: pre;
   word-wrap: break-word;
 }
