@@ -531,6 +531,9 @@ uint64 GpuMemoryManager::ComputeCap(
   size_t bytes_size = bytes.size();
   uint64 bytes_sum = 0;
 
+  if (bytes_size == 0)
+    return std::numeric_limits<uint64>::max();
+
   // Sort and add up all entries
   std::sort(bytes.begin(), bytes.end());
   for (size_t i = 0; i < bytes_size; ++i)
@@ -742,6 +745,11 @@ void GpuMemoryManager::ComputeNonvisibleSurfacesAllocationsNonuniform() {
         bytes_available_total - bytes_allocated_visible);
   }
 
+  // On Android, always discard everything that is nonvisible.
+#if defined(OS_ANDROID)
+  bytes_available_nonvisible = 0;
+#endif
+
   // Determine which now-visible clients should keep their contents when
   // they are made nonvisible.
   for (ClientStateList::const_iterator it = clients_visible_mru_.begin();
@@ -791,10 +799,57 @@ void GpuMemoryManager::ComputeNonvisibleSurfacesAllocationsNonuniform() {
   }
 }
 
+void GpuMemoryManager::DistributeRemainingMemoryToVisibleSurfaces() {
+  uint64 bytes_available_total = GetAvailableGpuMemory();
+  uint64 bytes_allocated_total = 0;
+
+  for (ClientStateList::const_iterator it = clients_visible_mru_.begin();
+       it != clients_visible_mru_.end();
+       ++it) {
+    GpuMemoryManagerClientState* client_state = *it;
+    bytes_allocated_total += client_state->bytes_allocation_when_visible_;
+  }
+  for (ClientStateList::const_iterator it = clients_nonvisible_mru_.begin();
+       it != clients_nonvisible_mru_.end();
+       ++it) {
+    GpuMemoryManagerClientState* client_state = *it;
+    bytes_allocated_total += client_state->bytes_allocation_when_nonvisible_;
+  }
+
+  if (bytes_allocated_total >= bytes_available_total)
+    return;
+
+  std::vector<uint64> bytes_extra_requests;
+  for (ClientStateList::const_iterator it = clients_visible_mru_.begin();
+       it != clients_visible_mru_.end();
+       ++it) {
+    GpuMemoryManagerClientState* client_state = *it;
+    CHECK(GetMaximumClientAllocation() >=
+          client_state->bytes_allocation_when_visible_);
+    uint64 bytes_extra = GetMaximumClientAllocation() -
+                         client_state->bytes_allocation_when_visible_;
+    bytes_extra_requests.push_back(bytes_extra);
+  }
+  uint64 bytes_extra_cap = ComputeCap(
+      bytes_extra_requests, bytes_available_total - bytes_allocated_total);
+  for (ClientStateList::const_iterator it = clients_visible_mru_.begin();
+       it != clients_visible_mru_.end();
+       ++it) {
+    GpuMemoryManagerClientState* client_state = *it;
+    uint64 bytes_extra = GetMaximumClientAllocation() -
+                         client_state->bytes_allocation_when_visible_;
+    client_state->bytes_allocation_when_visible_ += std::min(
+        bytes_extra, bytes_extra_cap);
+  }
+}
+
 void GpuMemoryManager::AssignSurfacesAllocationsNonuniform() {
   // Compute allocation when for all clients.
   ComputeVisibleSurfacesAllocationsNonuniform();
   ComputeNonvisibleSurfacesAllocationsNonuniform();
+
+  // Distribute the remaining memory to visible clients.
+  DistributeRemainingMemoryToVisibleSurfaces();
 
   // Send that allocation to the clients.
   ClientStateList clients = clients_visible_mru_;
@@ -822,7 +877,11 @@ void GpuMemoryManager::AssignSurfacesAllocationsNonuniform() {
     allocation.renderer_allocation.bytes_limit_when_visible =
         client_state->bytes_allocation_when_visible_;
     allocation.renderer_allocation.priority_cutoff_when_visible =
+#if defined(OS_MACOSX)
+        GpuMemoryAllocationForRenderer::kPriorityCutoffAllowNiceToHave;
+#else
         GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
+#endif
 
     allocation.renderer_allocation.bytes_limit_when_not_visible =
         client_state->bytes_allocation_when_nonvisible_;
