@@ -1679,7 +1679,8 @@ uses(Instruction inst) const {
 
 // CLREX_11110101011111111111000000011111_case_0:
 //
-//   {arch: V6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: V6K,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -2072,7 +2073,8 @@ uses(Instruction inst) const {
 
 // CPS_111100010000iii00000000iii0iiiii_case_0:
 //
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -2205,15 +2207,25 @@ uses(Instruction inst) const {
 
 // DMB_1111010101111111111100000101xxxx_case_0:
 //
-//   {arch: v7,
+//   {actual: Actual_DMB_1111010101111111111100000101xxxx_case_1,
+//    arch: v7,
 //    baseline: DataBarrier,
 //    constraints: ,
+//    defs: {},
 //    fields: [option(3:0)],
 //    generated_baseline: DMB_1111010101111111111100000101xxxx_case_0,
 //    option: option(3:0),
 //    pattern: 1111010101111111111100000101xxxx,
 //    rule: DMB,
-//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS],
+//    uses: {}}
+RegisterList DMB_1111010101111111111100000101xxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel DMB_1111010101111111111100000101xxxx_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -2248,17 +2260,34 @@ safety(Instruction inst) const {
 }
 
 
+RegisterList DMB_1111010101111111111100000101xxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // DSB_1111010101111111111100000100xxxx_case_0:
 //
-//   {arch: v6T2,
+//   {actual: Actual_DMB_1111010101111111111100000101xxxx_case_1,
+//    arch: v6T2,
 //    baseline: DataBarrier,
 //    constraints: ,
+//    defs: {},
 //    fields: [option(3:0)],
 //    generated_baseline: DSB_1111010101111111111100000100xxxx_case_0,
 //    option: option(3:0),
 //    pattern: 1111010101111111111100000100xxxx,
 //    rule: DSB,
-//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS],
+//    uses: {}}
+RegisterList DSB_1111010101111111111100000100xxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel DSB_1111010101111111111100000100xxxx_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -2292,6 +2321,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList DSB_1111010101111111111100000100xxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0:
 //
@@ -2516,15 +2552,25 @@ uses(Instruction inst) const {
 
 // ISB_1111010101111111111100000110xxxx_case_0:
 //
-//   {arch: v6T2,
+//   {actual: Actual_ISB_1111010101111111111100000110xxxx_case_1,
+//    arch: v6T2,
 //    baseline: InstructionBarrier,
 //    constraints: ,
+//    defs: {},
 //    fields: [option(3:0)],
 //    generated_baseline: ISB_1111010101111111111100000110xxxx_case_0,
 //    option: option(3:0),
 //    pattern: 1111010101111111111100000110xxxx,
 //    rule: ISB,
-//    safety: [option(3:0)=~1111 => FORBIDDEN_OPERANDS]}
+//    safety: [option(3:0)=~1111 => FORBIDDEN_OPERANDS],
+//    uses: {}}
+RegisterList ISB_1111010101111111111100000110xxxx_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel ISB_1111010101111111111100000110xxxx_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -2537,6 +2583,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList ISB_1111010101111111111100000110xxxx_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // LDC2_immediate_1111110pudw1nnnniiiiiiiiiiiiiiii_case_0:
 //
@@ -7385,6 +7438,7 @@ uses(Instruction inst) const {
 //    R: R(22),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
@@ -7395,6 +7449,8 @@ uses(Instruction inst) const {
 //    generated_baseline: PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0,
 //    imm12: imm12(11:0),
 //    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: base  ==
+//            Pc,
 //    is_pldw: R(22)=0,
 //    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //    rule: PLD_PLDW_immediate,
@@ -7413,6 +7469,14 @@ defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
+}
+
+bool PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: '15  ==
+  //          inst(19:16)'
+  return ((((inst.Bits() & 0x000F0000) >> 16)) == (15));
 }
 
 SafetyLevel PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0::
@@ -7442,6 +7506,7 @@ uses(Instruction inst) const {
 //    R: R(22),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
@@ -7452,6 +7517,8 @@ uses(Instruction inst) const {
 //    generated_baseline: PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
 //    imm12: imm12(11:0),
 //    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: base  ==
+//            Pc,
 //    is_pldw: R(22)=0,
 //    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //    rule: PLD_PLDW_immediate,
@@ -7470,6 +7537,14 @@ defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
+}
+
+bool PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: '15  ==
+  //          inst(19:16)'
+  return ((((inst.Bits() & 0x000F0000) >> 16)) == (15));
 }
 
 SafetyLevel PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1::
@@ -7500,6 +7575,7 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
@@ -7575,6 +7651,7 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
@@ -7647,6 +7724,7 @@ uses(Instruction inst) const {
 //
 //   {Pc: 15,
 //    U: U(23),
+//    actual: Actual_PLD_literal_11110101u10111111111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Pc,
@@ -7657,6 +7735,7 @@ uses(Instruction inst) const {
 //    generated_baseline: PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0,
 //    imm12: imm12(11:0),
 //    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: true,
 //    pattern: 11110101u10111111111iiiiiiiiiiii,
 //    rule: PLD_literal,
 //    safety: [true => MAY_BE_SAFE],
@@ -7674,6 +7753,13 @@ defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
+}
+
+bool PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: 'true'
+  return true;
 }
 
 SafetyLevel PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0::
@@ -7701,6 +7787,7 @@ uses(Instruction inst) const {
 //   {Pc: 15,
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
@@ -7766,6 +7853,7 @@ uses(Instruction inst) const {
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
@@ -9800,7 +9888,8 @@ uses(Instruction inst) const {
 
 // SETEND_1111000100000001000000i000000000_case_0:
 //
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},

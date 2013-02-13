@@ -5564,7 +5564,8 @@ uses(Instruction inst) const {
 
 // Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {arch: MPExt,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: MPExt,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -5601,7 +5602,8 @@ uses(Instruction inst) const {
 
 // Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -5637,7 +5639,8 @@ uses(Instruction inst) const {
 
 // Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -5673,7 +5676,8 @@ uses(Instruction inst) const {
 
 // Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0,
@@ -5709,7 +5713,8 @@ uses(Instruction inst) const {
 
 // Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0,
@@ -5745,7 +5750,8 @@ uses(Instruction inst) const {
 
 // Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0,
@@ -5781,7 +5787,8 @@ uses(Instruction inst) const {
 
 // Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0,
@@ -5817,7 +5824,8 @@ uses(Instruction inst) const {
 
 // Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -5853,7 +5861,8 @@ uses(Instruction inst) const {
 
 // Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -5889,7 +5898,8 @@ uses(Instruction inst) const {
 
 // Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0:
 //
-//   {arch: MPExt,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: MPExt,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -5926,7 +5936,8 @@ uses(Instruction inst) const {
 
 // Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0,
@@ -6028,41 +6039,6 @@ safety(Instruction inst) const {
 
 
 RegisterList Unnamed_case_1::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{}'
-  return RegisterList();
-}
-
-// Unnamed_case_2:
-//
-//   {baseline: Undefined,
-//    constraints: ,
-//    defs: {},
-//    generated_baseline: Unnamed_case_1,
-//    safety: [true => UNDEFINED],
-//    true: true,
-//    uses: {}}
-RegisterList Unnamed_case_2::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{}'
-  return RegisterList();
-}
-
-SafetyLevel Unnamed_case_2::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // true => UNDEFINED
-  if (true)
-    return UNDEFINED;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList Unnamed_case_2::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

@@ -988,7 +988,8 @@ class CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0
 
 // CLREX_11110101011111111111000000011111_case_0:
 //
-//   {arch: V6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: V6K,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1247,7 +1248,8 @@ class CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0
 
 // CPS_111100010000iii00000000iii0iiiii_case_0:
 //
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1336,21 +1338,26 @@ class DBG_cccc001100100000111100001111iiii_case_0
 
 // DMB_1111010101111111111100000101xxxx_case_0:
 //
-//   {arch: v7,
+//   {actual: Actual_DMB_1111010101111111111100000101xxxx_case_1,
+//    arch: v7,
 //    baseline: DataBarrier,
 //    constraints: ,
+//    defs: {},
 //    fields: [option(3:0)],
 //    generated_baseline: DMB_1111010101111111111100000101xxxx_case_0,
 //    option: option(3:0),
 //    pattern: 1111010101111111111100000101xxxx,
 //    rule: DMB,
-//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS],
+//    uses: {}}
 class DMB_1111010101111111111100000101xxxx_case_0
      : public ClassDecoder {
  public:
   DMB_1111010101111111111100000101xxxx_case_0()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       DMB_1111010101111111111100000101xxxx_case_0);
@@ -1358,21 +1365,26 @@ class DMB_1111010101111111111100000101xxxx_case_0
 
 // DSB_1111010101111111111100000100xxxx_case_0:
 //
-//   {arch: v6T2,
+//   {actual: Actual_DMB_1111010101111111111100000101xxxx_case_1,
+//    arch: v6T2,
 //    baseline: DataBarrier,
 //    constraints: ,
+//    defs: {},
 //    fields: [option(3:0)],
 //    generated_baseline: DSB_1111010101111111111100000100xxxx_case_0,
 //    option: option(3:0),
 //    pattern: 1111010101111111111100000100xxxx,
 //    rule: DSB,
-//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS],
+//    uses: {}}
 class DSB_1111010101111111111100000100xxxx_case_0
      : public ClassDecoder {
  public:
   DSB_1111010101111111111100000100xxxx_case_0()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       DSB_1111010101111111111100000100xxxx_case_0);
@@ -1508,21 +1520,26 @@ class EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0
 
 // ISB_1111010101111111111100000110xxxx_case_0:
 //
-//   {arch: v6T2,
+//   {actual: Actual_ISB_1111010101111111111100000110xxxx_case_1,
+//    arch: v6T2,
 //    baseline: InstructionBarrier,
 //    constraints: ,
+//    defs: {},
 //    fields: [option(3:0)],
 //    generated_baseline: ISB_1111010101111111111100000110xxxx_case_0,
 //    option: option(3:0),
 //    pattern: 1111010101111111111100000110xxxx,
 //    rule: ISB,
-//    safety: [option(3:0)=~1111 => FORBIDDEN_OPERANDS]}
+//    safety: [option(3:0)=~1111 => FORBIDDEN_OPERANDS],
+//    uses: {}}
 class ISB_1111010101111111111100000110xxxx_case_0
      : public ClassDecoder {
  public:
   ISB_1111010101111111111100000110xxxx_case_0()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       ISB_1111010101111111111100000110xxxx_case_0);
@@ -4148,6 +4165,7 @@ class PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0
 //    R: R(22),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
@@ -4158,6 +4176,8 @@ class PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0
 //    generated_baseline: PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0,
 //    imm12: imm12(11:0),
 //    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: base  ==
+//            Pc,
 //    is_pldw: R(22)=0,
 //    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //    rule: PLD_PLDW_immediate,
@@ -4171,6 +4191,7 @@ class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0
      : ClassDecoder() {}
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
@@ -4184,6 +4205,7 @@ class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0
 //    R: R(22),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
@@ -4194,6 +4216,8 @@ class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0
 //    generated_baseline: PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
 //    imm12: imm12(11:0),
 //    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: base  ==
+//            Pc,
 //    is_pldw: R(22)=0,
 //    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //    rule: PLD_PLDW_immediate,
@@ -4207,6 +4231,7 @@ class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1
      : ClassDecoder() {}
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
@@ -4221,6 +4246,7 @@ class PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
@@ -4264,6 +4290,7 @@ class PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_0
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
@@ -4304,6 +4331,7 @@ class PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0
 //
 //   {Pc: 15,
 //    U: U(23),
+//    actual: Actual_PLD_literal_11110101u10111111111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Pc,
@@ -4314,6 +4342,7 @@ class PLD_PLDW_register_11110111u101nnnn1111iiiiitt0mmmm_case_0
 //    generated_baseline: PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0,
 //    imm12: imm12(11:0),
 //    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: true,
 //    pattern: 11110101u10111111111iiiiiiiiiiii,
 //    rule: PLD_literal,
 //    safety: [true => MAY_BE_SAFE],
@@ -4326,6 +4355,7 @@ class PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0
      : ClassDecoder() {}
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
@@ -4338,6 +4368,7 @@ class PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0
 //   {Pc: 15,
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
@@ -4376,6 +4407,7 @@ class PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_0
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
@@ -5555,7 +5587,8 @@ class SEL_cccc01101000nnnndddd11111011mmmm_case_0
 
 // SETEND_1111000100000001000000i000000000_case_0:
 //
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},

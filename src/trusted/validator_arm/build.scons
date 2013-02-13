@@ -112,6 +112,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "transfer_between_arm_core_and_extension_register_8_16_and_32_bit",
                      "transfer_between_arm_core_and_extension_registers_64_bit",
                      "unconditional_instructions",
+                     "memory_hints_advanced_simd_instructions_and_miscellaneous_instructions",
                      ]
 
 # The list of tables in armv7.table that should test the automatically

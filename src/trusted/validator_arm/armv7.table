@@ -2531,14 +2531,16 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *Unpredictable *Nop
   baseline := Unpredictable;
   safety := true => UNPREDICTABLE;
-*DataBarrier
+*Barrier
   { option(3:0) }
+  defs := {};
+  uses := {};
+*DataBarrier *Barrier
   baseline := DataBarrier;
   safety := not option in
             {'1111', '1110', '1011', '1010',
              '0111', '0110', '0011', '0010'} => FORBIDDEN_OPERANDS;
-*InstructionBarrier
-  { option(3:0) }
+*InstructionBarrier *Barrier
   baseline := InstructionBarrier;
   safety := option=~1111 => FORBIDDEN_OPERANDS;
 *PreloadLit
@@ -2548,6 +2550,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   base := Pc;
   defs := {};
   uses := {Pc};
+  is_literal_load := true;
   safety := true => MAY_BE_SAFE;
 *PreloadData *PreloadLit
   { U(23), R(22), Rn(19:16), imm12(11:0) }
@@ -2555,6 +2558,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
   base := Rn;
   uses := {Rn};
   safety := Rn=1111 => DECODER_ERROR;
+  is_literal_load := base == Pc;
 *PreloadDataReg
   { U(23), R(22), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0) }
   baseline := PreloadRegisterPairOp;  

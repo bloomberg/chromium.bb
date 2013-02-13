@@ -1551,7 +1551,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: V6K,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: V6K,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1563,7 +1564,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1769,7 +1771,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: v6,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: v6,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1858,7 +1861,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: MPExt,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: MPExt,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -1869,7 +1873,8 @@ class Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {arch: MPExt,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: MPExt,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -2741,7 +2746,8 @@ class Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10ddd
 // Actual_DMB_1111010101111111111100000101xxxx_case_1
 //
 // Actual:
-//   {safety: [not '1111'(3:0)  ==
+//   {defs: {},
+//    safety: [not '1111'(3:0)  ==
 //            inst(3:0) ||
 //         '1110'(3:0)  ==
 //            inst(3:0) ||
@@ -2756,35 +2762,44 @@ class Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10ddd
 //         '0011'(3:0)  ==
 //            inst(3:0) ||
 //         '0010'(3:0)  ==
-//            inst(3:0) => FORBIDDEN_OPERANDS]}
+//            inst(3:0) => FORBIDDEN_OPERANDS],
+//    uses: {}}
 //
 // Baseline:
-//   {arch: v7,
+//   {actual: Actual_DMB_1111010101111111111100000101xxxx_case_1,
+//    arch: v7,
 //    baseline: DataBarrier,
 //    constraints: ,
+//    defs: {},
 //    fields: [option(3:0)],
 //    generated_baseline: DMB_1111010101111111111100000101xxxx_case_0,
 //    option: option(3:0),
 //    pattern: 1111010101111111111100000101xxxx,
 //    rule: DMB,
-//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS],
+//    uses: {}}
 //
 // Baseline:
-//   {arch: v6T2,
+//   {actual: Actual_DMB_1111010101111111111100000101xxxx_case_1,
+//    arch: v6T2,
 //    baseline: DataBarrier,
 //    constraints: ,
+//    defs: {},
 //    fields: [option(3:0)],
 //    generated_baseline: DSB_1111010101111111111100000100xxxx_case_0,
 //    option: option(3:0),
 //    pattern: 1111010101111111111100000100xxxx,
 //    rule: DSB,
-//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS]}
+//    safety: [not option in {'1111'(3:0), '1110'(3:0), '1011'(3:0), '1010'(3:0), '0111'(3:0), '0110'(3:0), '0011'(3:0), '0010'(3:0)} => FORBIDDEN_OPERANDS],
+//    uses: {}}
 class Actual_DMB_1111010101111111111100000101xxxx_case_1
      : public ClassDecoder {
  public:
   Actual_DMB_1111010101111111111100000101xxxx_case_1()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_DMB_1111010101111111111100000101xxxx_case_1);
@@ -2793,24 +2808,31 @@ class Actual_DMB_1111010101111111111100000101xxxx_case_1
 // Actual_ISB_1111010101111111111100000110xxxx_case_1
 //
 // Actual:
-//   {safety: [inst(3:0)=~1111 => FORBIDDEN_OPERANDS]}
+//   {defs: {},
+//    safety: [inst(3:0)=~1111 => FORBIDDEN_OPERANDS],
+//    uses: {}}
 //
 // Baseline:
-//   {arch: v6T2,
+//   {actual: Actual_ISB_1111010101111111111100000110xxxx_case_1,
+//    arch: v6T2,
 //    baseline: InstructionBarrier,
 //    constraints: ,
+//    defs: {},
 //    fields: [option(3:0)],
 //    generated_baseline: ISB_1111010101111111111100000110xxxx_case_0,
 //    option: option(3:0),
 //    pattern: 1111010101111111111100000110xxxx,
 //    rule: ISB,
-//    safety: [option(3:0)=~1111 => FORBIDDEN_OPERANDS]}
+//    safety: [option(3:0)=~1111 => FORBIDDEN_OPERANDS],
+//    uses: {}}
 class Actual_ISB_1111010101111111111100000110xxxx_case_1
      : public ClassDecoder {
  public:
   Actual_ISB_1111010101111111111100000110xxxx_case_1()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_ISB_1111010101111111111100000110xxxx_case_1);
@@ -5887,6 +5909,8 @@ class Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
 // Actual:
 //   {base: inst(19:16),
 //    defs: {},
+//    is_literal_load: 15  ==
+//            inst(19:16),
 //    safety: [inst(19:16)=1111 => DECODER_ERROR],
 //    uses: {inst(19:16)}}
 //
@@ -5895,6 +5919,7 @@ class Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
 //    R: R(22),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
@@ -5905,6 +5930,8 @@ class Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
 //    generated_baseline: PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_0,
 //    imm12: imm12(11:0),
 //    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: base  ==
+//            Pc,
 //    is_pldw: R(22)=0,
 //    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //    rule: PLD_PLDW_immediate,
@@ -5917,6 +5944,7 @@ class Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
 //    R: R(22),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
@@ -5927,6 +5955,8 @@ class Actual_PKH_cccc01101000nnnnddddiiiiit01mmmm_case_1
 //    generated_baseline: PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1,
 //    imm12: imm12(11:0),
 //    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: base  ==
+//            Pc,
 //    is_pldw: R(22)=0,
 //    pattern: 11110101ur01nnnn1111iiiiiiiiiiii,
 //    rule: PLD_PLDW_immediate,
@@ -5940,6 +5970,7 @@ class Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1
      : ClassDecoder() {}
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
@@ -5966,6 +5997,7 @@ class Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    arch: MPExt,
 //    base: Rn,
@@ -5995,6 +6027,7 @@ class Actual_PLD_PLDW_immediate_11110101ur01nnnn1111iiiiiiiiiiii_case_1
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Rn,
@@ -6036,12 +6069,14 @@ class Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1
 // Actual:
 //   {base: 15,
 //    defs: {},
+//    is_literal_load: true,
 //    safety: [true => MAY_BE_SAFE],
 //    uses: {15}}
 //
 // Baseline:
 //   {Pc: 15,
 //    U: U(23),
+//    actual: Actual_PLD_literal_11110101u10111111111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: v5TE,
 //    base: Pc,
@@ -6052,6 +6087,7 @@ class Actual_PLD_PLDW_register_11110111u001nnnn1111iiiiitt0mmmm_case_1
 //    generated_baseline: PLD_literal_11110101u10111111111iiiiiiiiiiii_case_0,
 //    imm12: imm12(11:0),
 //    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: true,
 //    pattern: 11110101u10111111111iiiiiiiiiiii,
 //    rule: PLD_literal,
 //    safety: [true => MAY_BE_SAFE],
@@ -6064,6 +6100,7 @@ class Actual_PLD_literal_11110101u10111111111iiiiiiiiiiii_case_1
      : ClassDecoder() {}
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
@@ -6085,6 +6122,7 @@ class Actual_PLD_literal_11110101u10111111111iiiiiiiiiiii_case_1
 //   {Pc: 15,
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_1,
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
@@ -6132,6 +6170,7 @@ class Actual_PLI_immediate_literal_11110100u101nnnn1111iiiiiiiiiiii_case_1
 //    Rm: Rm(3:0),
 //    Rn: Rn(19:16),
 //    U: U(23),
+//    actual: Actual_PLI_register_11110110u101nnnn1111iiiiitt0mmmm_case_1,
 //    add: U(23)=1,
 //    arch: v7,
 //    base: Rn,
@@ -8185,7 +8224,8 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -8195,7 +8235,8 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -8205,7 +8246,8 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0,
@@ -8215,7 +8257,8 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0,
@@ -8225,7 +8268,8 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0,
@@ -8235,7 +8279,8 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0,
@@ -8245,7 +8290,8 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -8255,7 +8301,8 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -8265,7 +8312,8 @@ class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
 //    uses: {}}
 //
 // Baseline:
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0,
@@ -8296,15 +8344,6 @@ class Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1
 // Baseline:
 //   {actual: Actual_Unnamed_case_1,
 //    baseline: Undefined,
-//    constraints: ,
-//    defs: {},
-//    generated_baseline: Unnamed_case_1,
-//    safety: [true => UNDEFINED],
-//    true: true,
-//    uses: {}}
-//
-// Baseline:
-//   {baseline: Undefined,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_case_1,

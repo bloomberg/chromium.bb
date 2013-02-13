@@ -3089,7 +3089,8 @@ class UXTH_cccc011011111111ddddrr000111mmmm_case_0
 
 // Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {arch: MPExt,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: MPExt,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -3113,7 +3114,8 @@ class Unnamed_11110100x001xxxxxxxxxxxxxxxxxxxx_case_0
 
 // Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -3136,7 +3138,8 @@ class Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_0
 
 // Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -3159,7 +3162,8 @@ class Unnamed_111101010011xxxxxxxxxxxxxxxxxxxx_case_0
 
 // Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0,
@@ -3182,7 +3186,8 @@ class Unnamed_111101010111xxxxxxxxxxxx0000xxxx_case_0
 
 // Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0,
@@ -3205,7 +3210,8 @@ class Unnamed_111101010111xxxxxxxxxxxx001xxxxx_case_0
 
 // Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0,
@@ -3228,7 +3234,8 @@ class Unnamed_111101010111xxxxxxxxxxxx0111xxxx_case_0
 
 // Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0,
@@ -3251,7 +3258,8 @@ class Unnamed_111101010111xxxxxxxxxxxx1xxxxxxx_case_0
 
 // Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -3274,7 +3282,8 @@ class Unnamed_111101011x11xxxxxxxxxxxxxxxxxxxx_case_0
 
 // Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0,
@@ -3297,7 +3306,8 @@ class Unnamed_11110101x001xxxxxxxxxxxxxxxxxxxx_case_0
 
 // Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0:
 //
-//   {arch: MPExt,
+//   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
+//    arch: MPExt,
 //    baseline: Forbidden,
 //    constraints: ,
 //    defs: {},
@@ -3321,7 +3331,8 @@ class Unnamed_11110110x001xxxxxxxxxxxxxxx0xxxx_case_0
 
 // Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0:
 //
-//   {baseline: Unpredictable,
+//   {actual: Actual_Unnamed_11110100xx11xxxxxxxxxxxxxxxxxxxx_case_1,
+//    baseline: Unpredictable,
 //    constraints: ,
 //    defs: {},
 //    generated_baseline: Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0,
@@ -3388,28 +3399,6 @@ class Unnamed_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Unnamed_case_1);
-};
-
-// Unnamed_case_2:
-//
-//   {baseline: Undefined,
-//    constraints: ,
-//    defs: {},
-//    generated_baseline: Unnamed_case_1,
-//    safety: [true => UNDEFINED],
-//    true: true,
-//    uses: {}}
-class Unnamed_case_2
-     : public ClassDecoder {
- public:
-  Unnamed_case_2()
-     : ClassDecoder() {}
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      Unnamed_case_2);
 };
 
 // Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0:
