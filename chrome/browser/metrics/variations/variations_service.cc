@@ -287,7 +287,9 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
           base::TimeDelta::FromMilliseconds(kServerTimeResolutionMs),
           latency);
     }
-  } else if (response_code != net::HTTP_OK) {
+  }
+
+  if (response_code != net::HTTP_OK) {
     DVLOG(1) << "Variations server request returned non-HTTP_OK response code: "
              << response_code;
     if (response_code == net::HTTP_NOT_MODIFIED)
@@ -321,6 +323,11 @@ void VariationsService::OnResourceRequestsAllowed() {
 bool VariationsService::StoreSeedData(const std::string& seed_data,
                                       const base::Time& seed_date,
                                       PrefService* local_prefs) {
+  if (seed_data.empty()) {
+    VLOG(1) << "Variations Seed data from server is empty, rejecting the seed.";
+    return false;
+  }
+
   // Only store the seed data if it parses correctly.
   TrialsSeed seed;
   if (!seed.ParseFromString(seed_data)) {
