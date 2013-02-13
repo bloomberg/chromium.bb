@@ -3111,11 +3111,18 @@ int32_t NaClSysTestInfoLeak(struct NaClAppThread *natp) {
  * syscalls, so there is no benefit to restricting this syscall.
  */
 int32_t NaClSysTestCrash(struct NaClAppThread *natp, int crash_type) {
+  /*
+   * Despite being volatile, the Apple system compiler, llvm-gcc, still
+   * optimizes the null pointer dereference into an illegal instruction when
+   * written as a one-liner. That interferes with tests that expect precisely
+   * a SIGSEGV, because they'll see a SIGILL instead.
+   */
+  volatile int *volatile p = 0;
   UNREFERENCED_PARAMETER(natp);
 
   switch (crash_type) {
     case NACL_TEST_CRASH_MEMORY:
-      *(volatile int *) 0 = 0;
+      *p = 0;
       break;
     case NACL_TEST_CRASH_LOG_FATAL:
       NaClLog(LOG_FATAL, "NaClSysTestCrash: This is a test error\n");

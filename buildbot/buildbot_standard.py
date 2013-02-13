@@ -347,6 +347,7 @@ def BuildScript(status, context):
                   'run_execute_data_test',
                   'run_nacl_signal_test',
                   'run_signal_frame_test',
+                  'run_signal_handler_test',
                   'run_trusted_mmap_test'])
 
   ### END tests ###

@@ -15,7 +15,7 @@ crash_test_nexe = env.ComponentProgram(
 
 crash_in_syscall_nexe = env.ComponentProgram(
     env.ProgramNameForNmf('crash_in_syscall'),
-    'crash_in_syscall.c', EXTRA_LIBS=['imc_syscalls', '${NONIRT_LIBS}'])
+    'crash_in_syscall.c', EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 nodes = []
 
