@@ -43,9 +43,9 @@ AppShortcutManager::~AppShortcutManager() {}
 void AppShortcutManager::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-#if !defined(OS_MACOSX)
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+#if !defined(OS_MACOSX)
       const Extension* extension = content::Details<const Extension>(
           details).ptr();
       if (extension->is_platform_app() &&
@@ -63,8 +63,9 @@ void AppShortcutManager::Observe(int type,
         }
 #else
         UpdateApplicationShortcuts(extension);
-#endif
+#endif  // defined(OS_WIN)
       }
+#endif  // !defined(OS_MACOSX)
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
@@ -76,7 +77,6 @@ void AppShortcutManager::Observe(int type,
     default:
       NOTREACHED();
   }
-#endif
 }
 
 #if defined(OS_WIN)

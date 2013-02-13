@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
+#include "base/sys_string_conversions.h"
 #import "chrome/common/cloud_print/cloud_print_class_mac.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -29,21 +30,20 @@
 - (void)submitPrint:(NSAppleEventDescriptor*)event {
   std::string silent = std::string("--") + switches::kNoStartupWindow;
   // Set up flag so that it can be passed along with the Apple Event.
-  CFStringRef silentLaunchFlag =
-      CFStringCreateWithCString(NULL, silent.c_str(), kCFStringEncodingUTF8);
+  base::mac::ScopedCFTypeRef<CFStringRef> silentLaunchFlag(
+      base::SysUTF8ToCFStringRef(silent));
   CFStringRef flags[] = { silentLaunchFlag };
   // Argv array that will be passed.
-  CFArrayRef passArgv =
-      CFArrayCreate(NULL, (const void**) flags, 1, &kCFTypeArrayCallBacks);
+  base::mac::ScopedCFTypeRef<CFArrayRef> passArgv(
+      CFArrayCreate(NULL, (const void**) flags, 1, &kCFTypeArrayCallBacks));
   FSRef ref;
-  CFURLRef* kDontWantURL = NULL;
   // Get Chrome's bundle ID.
-  std::string bundleID =  base::mac::BaseBundleID();
-  CFStringRef bundleIDCF =
-      CFStringCreateWithCString(NULL, bundleID.c_str(), kCFStringEncodingUTF8);
+  std::string bundleID = base::mac::BaseBundleID();
+  base::mac::ScopedCFTypeRef<CFStringRef> bundleIDCF(
+      base::SysUTF8ToCFStringRef(bundleID));
   // Use Launch Services to locate Chrome using its bundleID.
   OSStatus status = LSFindApplicationForInfo(kLSUnknownCreator, bundleIDCF,
-                                             NULL, &ref, kDontWantURL);
+                                             NULL, &ref, NULL);
 
   if (status != noErr) {
     OSSTATUS_LOG(ERROR, status) << "Failed to make path ref";
@@ -70,8 +70,8 @@
                                      NULL,
                                      passArgv,
                                      NULL };
-  AEDesc* initialEvent = const_cast<AEDesc*> ([sendEvent aeDesc]);
-  params.initialEvent = static_cast<AppleEvent*> (initialEvent);
+  AEDesc* initialEvent = const_cast<AEDesc*>([sendEvent aeDesc]);
+  params.initialEvent = static_cast<AppleEvent*>(initialEvent);
   // Send the Apple Event Using launch services, launching Chrome if necessary.
   status = LSOpenApplication(&params, NULL);
   if (status != noErr) {

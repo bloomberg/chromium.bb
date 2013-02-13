@@ -10,7 +10,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -256,6 +258,25 @@ namespace web_app {
 
 namespace internals {
 
+FilePath GetAppBundleByExtensionId(std::string extension_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  // This matches APP_MODE_APP_BUNDLE_ID in chrome/chrome.gyp.
+  std::string bundle_id =
+      base::mac::BaseBundleID() + std::string(".app.") + extension_id;
+  base::mac::ScopedCFTypeRef<CFStringRef> bundle_id_cf(
+      base::SysUTF8ToCFStringRef(bundle_id));
+  CFURLRef url_ref = NULL;
+  OSStatus status = LSFindApplicationForInfo(
+      kLSUnknownCreator, bundle_id_cf.get(), NULL, NULL, &url_ref);
+  base::mac::ScopedCFTypeRef<CFURLRef> url(url_ref);
+
+  if (status != noErr)
+    return FilePath();
+
+  NSString* path_string = [base::mac::CFToNSCast(url.get()) path];
+  return FilePath([path_string fileSystemRepresentation]);
+}
+
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
@@ -268,9 +289,11 @@ bool CreatePlatformShortcuts(
 
 void DeletePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
-  // TODO(benwells): Implement this when shortcuts / weblings are enabled on
-  // mac.
+    const ShellIntegration::ShortcutInfo& info) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
+  FilePath bundle_path = GetAppBundleByExtensionId(info.extension_id);
+  file_util::Delete(bundle_path, true);
 }
 
 void UpdatePlatformShortcuts(
