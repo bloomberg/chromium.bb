@@ -32,7 +32,6 @@ namespace file_handler_util {
 // action, or Web Intent action.
 extern const char kTaskFile[];
 extern const char kTaskDrive[];
-extern const char kTaskWebIntent[];
 extern const char kTaskApp[];
 
 void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id);
@@ -58,7 +57,7 @@ int GetReadWritePermissions();
 int GetReadOnlyPermissions();
 
 // Generates task id for the action specified by the extension. The |task_type|
-// must be one of kTaskFile, kTaskDrive, or kTaskWebIntent.
+// must be one of kTaskFile, kTaskDrive or kTaskApp.
 std::string MakeTaskID(const std::string& extension_id,
                        const std::string& task_type,
                        const std::string& action_id);
