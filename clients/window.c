@@ -1537,15 +1537,14 @@ tooltip_redraw_handler(struct widget *widget, void *data)
 	const int32_t r = 3;
 	struct tooltip *tooltip = data;
 	int32_t width, height;
-	struct surface *surface = widget->surface;
 
-	cr = cairo_create(surface->cairo_surface);
+	cr = cairo_create(widget->surface->cairo_surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
 	cairo_paint(cr);
 
-	width = surface->allocation.width;
-	height = surface->allocation.height;
+	width = widget->allocation.width;
+	height = widget->allocation.height;
 	rounded_rect(cr, 0, 0, width, height, r);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -3757,15 +3756,14 @@ menu_redraw_handler(struct widget *widget, void *data)
 	const int32_t r = 3, margin = 3;
 	struct menu *menu = data;
 	int32_t width, height, i;
-	struct surface *surface = widget->surface;
 
-	cr = cairo_create(surface->cairo_surface);
+	cr = cairo_create(widget->surface->cairo_surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
 	cairo_paint(cr);
 
-	width = surface->allocation.width;
-	height = surface->allocation.height;
+	width = widget->allocation.width;
+	height = widget->allocation.height;
 	rounded_rect(cr, 0, 0, width, height, r);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
