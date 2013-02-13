@@ -323,6 +323,8 @@
           'dependencies': [
             'command_buffer_client',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
         },
         {
           'target_name': 'command_buffer_client',
@@ -333,6 +335,8 @@
           'dependencies': [
             'command_buffer_common',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
         },
         {
           'target_name': 'command_buffer_service',
@@ -343,6 +347,8 @@
           'dependencies': [
             'command_buffer_common',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
         },
         {
           'target_name': 'gpu_ipc',
@@ -395,6 +401,8 @@
           'dependencies': [
             'gpu',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
         },
         {
           'target_name': 'command_buffer_client',
