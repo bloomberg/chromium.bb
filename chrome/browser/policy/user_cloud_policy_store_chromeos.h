@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_USER_CLOUD_POLICY_STORE_CHROMEOS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -14,8 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_validator.h"
 #include "chrome/browser/policy/user_cloud_policy_store_base.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace chromeos {
+class CryptohomeClient;
 class SessionManagerClient;
 }
 
@@ -33,8 +36,10 @@ class LegacyPolicyCacheLoader;
 class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
  public:
   UserCloudPolicyStoreChromeOS(
+      chromeos::CryptohomeClient* cryptohome_client,
       chromeos::SessionManagerClient* session_manager_client,
       const std::string& username,
+      const base::FilePath& user_policy_key_dir,
       const base::FilePath& legacy_token_cache_file,
       const base::FilePath& legacy_policy_cache_file);
   virtual ~UserCloudPolicyStoreChromeOS();
@@ -45,24 +50,27 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   virtual void Load() OVERRIDE;
 
  private:
-  // Called back from SessionManagerClient for policy load operations.
-  void OnPolicyRetrieved(const std::string& policy_blob);
+  // Starts validation of |policy| before storing it.
+  void ValidatePolicyForStore(
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy);
 
-  // Completion handler for policy validation on the Load() path. Installs the
-  // policy and publishes it if validation succeeded.
-  void OnRetrievedPolicyValidated(UserCloudPolicyValidator* validator);
-
-  // Completion handler for policy validation on the Load() path. Starts a store
-  // operation if the validation succeeded.
+  // Completion handler for policy validation on the Store() path.
+  // Starts a store operation if the validation succeeded.
   void OnPolicyToStoreValidated(UserCloudPolicyValidator* validator);
 
   // Called back from SessionManagerClient for policy store operations.
   void OnPolicyStored(bool);
 
-  // Starts policy blob validation.
-  void Validate(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
-      const UserCloudPolicyValidator::CompletionCallback& callback);
+  // Called back from SessionManagerClient for policy load operations.
+  void OnPolicyRetrieved(const std::string& policy_blob);
+
+  // Starts validation of the loaded |policy| before installing it.
+  void ValidateRetrievedPolicy(
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy);
+
+  // Completion handler for policy validation on the Load() path. Installs the
+  // policy and publishes it if validation succeeded.
+  void OnRetrievedPolicyValidated(UserCloudPolicyValidator* validator);
 
   // Callback for loading legacy caches.
   void OnLegacyLoadFinished(
@@ -83,8 +91,29 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   // Removes the passed-in legacy cache directory.
   static void RemoveLegacyCacheDir(const base::FilePath& dir);
 
+  // Invokes |callback| after reloading |policy_key_|.
+  void ReloadPolicyKey(const base::Closure& callback);
+
+  // Reads the contents of |path| into |key|.
+  static void LoadPolicyKey(const FilePath& path, std::vector<uint8>* key);
+
+  // Callback for the key reloading.
+  void OnPolicyKeyReloaded(std::vector<uint8>* key,
+                           const base::Closure& callback);
+
+  // Invokes |callback| after creating |policy_key_|, if it hasn't been created
+  // yet; otherwise invokes |callback| immediately.
+  void EnsurePolicyKeyLoaded(const base::Closure& callback);
+
+  // Callback for getting the sanitized username from |cryptohome_client_|.
+  void OnGetSanitizedUsername(const base::Closure& callback,
+                              chromeos::DBusMethodCallStatus call_status,
+                              const std::string& sanitized_username);
+
+  chromeos::CryptohomeClient* cryptohome_client_;
   chromeos::SessionManagerClient* session_manager_client_;
   const std::string username_;
+  base::FilePath user_policy_key_dir_;
 
   base::WeakPtrFactory<UserCloudPolicyStoreChromeOS> weak_factory_;
 
@@ -93,6 +122,10 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   base::FilePath legacy_cache_dir_;
   scoped_ptr<LegacyPolicyCacheLoader> legacy_loader_;
   bool legacy_caches_loaded_;
+
+  bool policy_key_loaded_;
+  FilePath policy_key_path_;
+  std::vector<uint8> policy_key_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreChromeOS);
 };

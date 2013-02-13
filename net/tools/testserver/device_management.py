@@ -45,7 +45,8 @@ Example:
   },
   "managed_users" : [
     "secret123456"
-  ]
+  ],
+  "current_key_index": 0
 }
 
 """
@@ -455,18 +456,17 @@ class RequestHandler(object):
         settings = dp.ChromeDeviceSettingsProto()
         self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
 
-    # Figure out the key we want to use. If multiple keys are configured, the
-    # server will rotate through them in a round-robin fashion.
+    # Sign with 'current_key_index', defaulting to key 0.
     signing_key = None
     req_key = None
-    key_version = 1
+    current_key_index = policy.get('current_key_index', 0)
     nkeys = len(self._server.keys)
-    if msg.signature_type == dm.PolicyFetchRequest.SHA1_RSA and nkeys > 0:
+    if (msg.signature_type == dm.PolicyFetchRequest.SHA1_RSA and
+        current_key_index in range(nkeys)):
+      signing_key = self._server.keys[current_key_index]
       if msg.public_key_version in range(1, nkeys + 1):
         # requested key exists, use for signing and rotate.
         req_key = self._server.keys[msg.public_key_version - 1]['private_key']
-        key_version = (msg.public_key_version % nkeys) + 1
-      signing_key = self._server.keys[key_version - 1]
 
     # Fill the policy data protobuf.
     policy_data = dm.PolicyData()
@@ -480,7 +480,7 @@ class RequestHandler(object):
     policy_data.settings_entity_id = msg.settings_entity_id
 
     if signing_key:
-      policy_data.public_key_version = key_version
+      policy_data.public_key_version = current_key_index + 1
     if msg.policy_type == 'google/chromeos/publicaccount':
       policy_data.username = msg.settings_entity_id
     else:
@@ -498,7 +498,7 @@ class RequestHandler(object):
     if signing_key:
       fetch_response.policy_data_signature = (
           signing_key['private_key'].hashAndSign(signed_data).tostring())
-      if msg.public_key_version != key_version:
+      if msg.public_key_version != current_key_index + 1:
         fetch_response.new_public_key = signing_key['public_key']
         if req_key:
           fetch_response.new_public_key_signature = (
@@ -572,12 +572,13 @@ class TestServer(object):
         assert key is not None
         self.keys.append({ 'private_key' : key })
     else:
-      # Generate a key if none were specified.
-      key = tlslite.api.generateRSAKey(1024)
-      assert key is not None
-      self.keys.append({ 'private_key' : key })
+      # Generate 2 private keys if none were passed from the command line.
+      for i in range(2):
+        key = tlslite.api.generateRSAKey(512)
+        assert key is not None
+        self.keys.append({ 'private_key' : key })
 
-    # Derive the public keys from the loaded private keys.
+    # Derive the public keys from the private keys.
     for entry in self.keys:
       key = entry['private_key']
 

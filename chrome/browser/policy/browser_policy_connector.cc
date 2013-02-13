@@ -256,6 +256,8 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   const base::FilePath policy_dir = profile_dir.Append(kPolicyDir);
   const base::FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
   const base::FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
+  FilePath policy_key_dir;
+  PathService::Get(chrome::DIR_USER_POLICY_KEYS, &policy_key_dir);
 
   if (wait_for_policy_fetch)
     device_management_service_->ScheduleInitialization(0);
@@ -270,8 +272,9 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   } else if (!IsNonEnterpriseUser(user_name)) {
     scoped_ptr<CloudPolicyStore> store(
         new UserCloudPolicyStoreChromeOS(
+            chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
             chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-            user_name, token_cache_file, policy_cache_file));
+            user_name, policy_key_dir, token_cache_file, policy_cache_file));
     user_cloud_policy_manager_.reset(
         new UserCloudPolicyManagerChromeOS(store.Pass(),
                                            wait_for_policy_fetch));

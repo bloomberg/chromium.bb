@@ -37,6 +37,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/common/chrome_paths.h"
+#include "chromeos/dbus/mock_cryptohome_client.h"
+#include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/mock_session_manager_client.h"
 #else
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/user_cloud_policy_manager_factory.h"
@@ -44,6 +48,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #endif
 
+using testing::AnyNumber;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::_;
@@ -64,6 +69,41 @@ class MockCloudPolicyClientObserver : public CloudPolicyClient::Observer {
   MOCK_METHOD1(OnClientError, void(CloudPolicyClient*));
 };
 
+#if defined(OS_CHROMEOS)
+
+const char kSanitizedUsername[] = "0123456789ABCDEF0123456789ABCDEF01234567";
+
+ACTION(GetSanitizedUsername) {
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(arg1, chromeos::DBUS_METHOD_CALL_SUCCESS, kSanitizedUsername));
+}
+
+ACTION_P(RetrieveUserPolicy, storage) {
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(arg0, *storage));
+}
+
+ACTION_P2(StoreUserPolicy, storage, user_policy_key_file) {
+  // The session_manager stores a copy of the policy key at
+  // /var/run/user_policy/$hash/policy.pub. Simulate that behavior here, so
+  // that the policy signature can be validated.
+  em::PolicyFetchResponse policy;
+  ASSERT_TRUE(policy.ParseFromString(arg0));
+  if (policy.has_new_public_key()) {
+    ASSERT_TRUE(file_util::CreateDirectory(user_policy_key_file.DirName()));
+    int result = file_util::WriteFile(
+        user_policy_key_file,
+        policy.new_public_key().data(),
+        policy.new_public_key().size());
+    ASSERT_EQ(static_cast<int>(policy.new_public_key().size()), result);
+  }
+
+  *storage = arg0;
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(arg1, true));
+}
+
+#endif
+
 const char* GetTestUser() {
 #if defined(OS_CHROMEOS)
   return chromeos::UserManager::kStubUser;
@@ -80,14 +120,15 @@ std::string GetEmptyPolicy() {
       "    \"recommended\": {}"
       "  },"
       "  \"managed_users\": [ \"*\" ],"
-      "  \"policy_user\": \"%s\""
+      "  \"policy_user\": \"%s\","
+      "  \"current_key_index\": 0"
       "}";
 
-  return base::StringPrintf(kEmptyPolicy, dm_protocol::kChromeUserPolicyType,
-                            GetTestUser());
+  return base::StringPrintf(
+      kEmptyPolicy, dm_protocol::kChromeUserPolicyType, GetTestUser());
 }
 
-std::string GetTestPolicy() {
+std::string GetTestPolicy(int key_version) {
   const char kTestPolicy[] =
       "{"
       "  \"%s\": {"
@@ -101,11 +142,30 @@ std::string GetTestPolicy() {
       "    }"
       "  },"
       "  \"managed_users\": [ \"*\" ],"
-      "  \"policy_user\": \"%s\""
+      "  \"policy_user\": \"%s\","
+      "  \"current_key_index\": %d"
       "}";
 
-  return base::StringPrintf(kTestPolicy, dm_protocol::kChromeUserPolicyType,
-                            GetTestUser());
+  return base::StringPrintf(kTestPolicy,
+                            dm_protocol::kChromeUserPolicyType,
+                            GetTestUser(),
+                            key_version);
+}
+
+void GetExpectedTestPolicy(PolicyMap* expected) {
+  expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                base::Value::CreateBooleanValue(true));
+  expected->Set(key::kMaxConnectionsPerProxy, POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER, base::Value::CreateIntegerValue(42));
+  base::ListValue list;
+  list.AppendString("dev.chromium.org");
+  list.AppendString("youtube.com");
+  expected->Set(
+      key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+      list.DeepCopy());
+  expected->Set(
+      key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
+      POLICY_SCOPE_USER, base::Value::CreateStringValue("google.com"));
 }
 
 }  // namespace
@@ -127,13 +187,31 @@ class CloudPolicyTest : public InProcessBrowserTest {
         new net::TestServer(
             net::TestServer::TYPE_HTTP,
             net::TestServer::kLocalhost,
-            temp_dir_.path().BaseName()));
+            testserver_relative_docroot()));
     ASSERT_TRUE(test_server_->Start());
 
     std::string url = test_server_->GetURL("device_management").spec();
 
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
+
+#if defined(OS_CHROMEOS)
+    PathService::Override(chrome::DIR_USER_POLICY_KEYS, user_policy_key_dir());
+
+    mock_dbus_thread_manager_ = new chromeos::MockDBusThreadManager();
+    chromeos::DBusThreadManager::InitializeForTesting(
+        mock_dbus_thread_manager_);
+    EXPECT_CALL(*mock_dbus_thread_manager_->mock_cryptohome_client(),
+                GetSanitizedUsername(_, _))
+        .WillRepeatedly(GetSanitizedUsername());
+    EXPECT_CALL(*mock_dbus_thread_manager_->mock_session_manager_client(),
+                StoreUserPolicy(_, _))
+        .WillRepeatedly(StoreUserPolicy(&session_manager_user_policy_,
+                                        user_policy_key_file()));
+    EXPECT_CALL(*mock_dbus_thread_manager_->mock_session_manager_client(),
+                RetrieveUserPolicy(_))
+        .WillRepeatedly(RetrieveUserPolicy(&session_manager_user_policy_));
+#endif
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -190,21 +268,48 @@ class CloudPolicyTest : public InProcessBrowserTest {
     policy_manager->core()->client()->RemoveObserver(&observer);
   }
 
+  FilePath testserver_relative_docroot() {
+    return temp_dir_.path().BaseName().AppendASCII("testserver");
+  }
+
+  FilePath testserver_device_management_file() {
+    return temp_dir_.path().AppendASCII("testserver")
+                           .AppendASCII("device_management");
+  }
+
+#if defined(OS_CHROMEOS)
+  FilePath user_policy_key_dir() {
+    return temp_dir_.path().AppendASCII("user_policy");
+  }
+
+  FilePath user_policy_key_file() {
+      return user_policy_key_dir().AppendASCII(kSanitizedUsername)
+                                  .AppendASCII("policy.pub");
+  }
+#endif
+
   void SetServerPolicy(const std::string& policy) {
+    ASSERT_TRUE(file_util::CreateDirectory(
+        testserver_device_management_file().DirName()));
     int result = file_util::WriteFile(
-        temp_dir_.path().AppendASCII("device_management"),
-        policy.data(), policy.size());
+        testserver_device_management_file(), policy.data(), policy.size());
     ASSERT_EQ(static_cast<int>(policy.size()), result);
   }
 
   base::ScopedTempDir temp_dir_;
   scoped_ptr<net::TestServer> test_server_;
+
+#if defined(OS_CHROMEOS)
+  std::string session_manager_user_policy_;
+  chromeos::MockDBusThreadManager* mock_dbus_thread_manager_;
+#endif
 };
 
 IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
   PolicyService* policy_service = browser()->profile()->GetPolicyService();
   {
     base::RunLoop run_loop;
+    // This does the initial fetch and stores the initial key.
     policy_service->RefreshPolicies(run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -213,21 +318,58 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
   EXPECT_TRUE(empty.Equals(policy_service->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
 
-  ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetTestPolicy()));
+  ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetTestPolicy(0)));
   PolicyMap expected;
-  expected.Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               base::Value::CreateBooleanValue(true));
-  expected.Set(key::kMaxConnectionsPerProxy, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateIntegerValue(42));
-  base::ListValue list;
-  list.AppendString("dev.chromium.org");
-  list.AppendString("youtube.com");
-  expected.Set(
-      key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      list.DeepCopy());
-  expected.Set(
-      key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
-      POLICY_SCOPE_USER, base::Value::CreateStringValue("google.com"));
+  GetExpectedTestPolicy(&expected);
+  {
+    base::RunLoop run_loop;
+    // This fetches the new policies, using the same key.
+    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+  EXPECT_TRUE(expected.Equals(policy_service->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
+}
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicyWithRotatedKey) {
+  PolicyService* policy_service = browser()->profile()->GetPolicyService();
+  {
+    base::RunLoop run_loop;
+    // This does the initial fetch and stores the initial key.
+    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Read the initial key.
+  std::string initial_key;
+  ASSERT_TRUE(
+      file_util::ReadFileToString(user_policy_key_file(), &initial_key));
+
+  PolicyMap empty;
+  EXPECT_TRUE(empty.Equals(policy_service->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
+
+  // Set the new policies and a new key at the server.
+  ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetTestPolicy(1)));
+  PolicyMap expected;
+  GetExpectedTestPolicy(&expected);
+  {
+    base::RunLoop run_loop;
+    // This fetches the new policies and does a key rotation.
+    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+  EXPECT_TRUE(expected.Equals(policy_service->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
+
+  // Verify that the key was rotated.
+  std::string rotated_key;
+  ASSERT_TRUE(
+      file_util::ReadFileToString(user_policy_key_file(), &rotated_key));
+  EXPECT_NE(rotated_key, initial_key);
+
+  // Another refresh using the same key won't rotate it again.
   {
     base::RunLoop run_loop;
     policy_service->RefreshPolicies(run_loop.QuitClosure());
@@ -235,7 +377,12 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
   }
   EXPECT_TRUE(expected.Equals(policy_service->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
+  std::string current_key;
+  ASSERT_TRUE(
+      file_util::ReadFileToString(user_policy_key_file(), &current_key));
+  EXPECT_EQ(rotated_key, current_key);
 }
+#endif
 
 TEST(CloudPolicyProtoTest, VerifyProtobufEquivalence) {
   // There are 2 protobufs that can be used for user cloud policy:

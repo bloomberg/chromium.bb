@@ -104,6 +104,8 @@ enum {
                                       // reside.
   FILE_DEFAULT_APP_ORDER,       // Full path to the json file that defines the
                                 // default app order.
+  DIR_USER_POLICY_KEYS,         // Directory where the session_manager stores
+                                // the user policy keys.
 #endif
 
   // Valid only in development environment; TODO(darin): move these
