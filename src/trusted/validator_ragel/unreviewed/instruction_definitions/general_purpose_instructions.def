@@ -544,14 +544,22 @@ nop, 0x48 0x90, amd64 norex spurious-rex.w
 #  nop 'Ev, 0x0f 0x1f /0, no_memory_access
 # For consistency with the production validators, drop support for the 16-bit
 #  version of “nop”.
-nop 'Ew, data16 0x0f 0x1f /0,
-  no_memory_access att-show-memory-suffix-w nacl-forbidden
-nop 'Ed, 0x0f 0x1f /0,
-  norexw att-show-memory-suffix-l no_memory_access
-nop 'Eq, rexw 0x0f 0x1f /0,
-  amd64 att-show-memory-suffix-q no_memory_access
-nop 'Eq, data16 rexw 0x0f 0x1f /0,
-  amd64 no_memory_access att-show-memory-suffix-q nacl-forbidden
+nop 'Rw, data16 0x0f 0x1f /0,
+  no_memory_access nacl-forbidden
+nop 'Mw, data16 0x0f 0x1f /0,
+  no_memory_access att-show-name-suffix-w nacl-forbidden
+nop 'Rd, 0x0f 0x1f /0,
+  norexw no_memory_access
+nop 'Md, 0x0f 0x1f /0,
+  norexw att-show-name-suffix-l no_memory_access
+nop 'Rq, rexw 0x0f 0x1f /0,
+  amd64 no_memory_access
+nop 'Mq, rexw 0x0f 0x1f /0,
+  amd64 att-show-name-suffix-q no_memory_access
+nop 'Rq, data16 rexw 0x0f 0x1f /0,
+  amd64 no_memory_access nacl-forbidden
+nop 'Mq, data16 rexw 0x0f 0x1f /0,
+  amd64 no_memory_access att-show-name-suffix-q nacl-forbidden
 ######## NOT ###################################################################
 not E, 0xf6 /2, lock nacl-amd64-zero-extends
 ######## OR ####################################################################
@@ -584,9 +592,12 @@ pause, 0xf3 0x90, norex
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-pop Ew, data16 0x8f /0, att-show-memory-suffix-w
-pop Er, 0x8f /0, ia32 att-show-memory-suffix-l
-pop Er, 0x8f /0, amd64 att-show-memory-suffix-q
+pop Rw, data16 0x8f /0
+pop Mw, data16 0x8f /0, att-show-name-suffix-w
+pop Rr, 0x8f /0, ia32
+pop Mr, 0x8f /0, ia32 att-show-name-suffix-l
+pop Rr, 0x8f /0, amd64
+pop Mr, 0x8f /0, amd64 att-show-name-suffix-q
 pop rw, data16 0x58
 pop rr, 0x58
 pop as, 0x07, ia32 nacl-forbidden
@@ -646,9 +657,12 @@ prefetcht2 Mb, 0x0f 0x18 /3, CPUFeature_SSE no_memory_access
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-push =Ew, data16 0xff /6, att-show-memory-suffix-w
-push =Er, 0xff /6, ia32 att-show-memory-suffix-l
-push =Er, 0xff /6, amd64 att-show-memory-suffix-q
+push =Rw, data16 0xff /6
+push =Mw, data16 0xff /6, att-show-name-suffix-w
+push =Rr, 0xff /6, ia32
+push =Mr, 0xff /6, ia32 att-show-name-suffix-l
+push =Rr, 0xff /6, amd64
+push =Mr, 0xff /6, amd64 att-show-name-suffix-q
 push =rw, data16 0x50
 push =rr, 0x50
 push =Iw, data16 0x68, att-show-name-suffix-w

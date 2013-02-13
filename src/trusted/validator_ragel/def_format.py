@@ -341,15 +341,6 @@ SUPPORTED_ATTRIBUTES = [
     'nacl-amd64-modifiable',
 
     # AT&T Decoder attributes.
-    'att-show-memory-suffix-b',
-    'att-show-memory-suffix-l',
-    'att-show-memory-suffix-ll',
-    'att-show-memory-suffix-t',
-    'att-show-memory-suffix-s',
-    'att-show-memory-suffix-q',
-    'att-show-memory-suffix-x',
-    'att-show-memory-suffix-y',
-    'att-show-memory-suffix-w',
     'att-show-name-suffix-b',
     'att-show-name-suffix-l',
     'att-show-name-suffix-ll',
