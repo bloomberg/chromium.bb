@@ -359,9 +359,7 @@ void RenderWidgetCompositor::willCommit() {
 }
 
 void RenderWidgetCompositor::didCommit() {
-  // TODO(jamesr): There is no chromium-side implementation of this first call,
-  // remove if it's not needed.
-  widget_->didCommitCompositorFrame();
+  widget_->DidCommitCompositorFrame();
   widget_->didBecomeReadyForAdditionalInput();
 }
 

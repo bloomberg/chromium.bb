@@ -554,9 +554,8 @@ void AwContents::Destroy(JNIEnv* env, jobject obj) {
 void SetAwDrawSWFunctionTable(JNIEnv* env, jclass, jint function_table) {
   g_draw_sw_functions =
       reinterpret_cast<AwDrawSWFunctionTable*>(function_table);
-  // TODO(leandrogracia): uncomment once the glue layer implements this method.
-  //g_is_skia_version_compatible =
-  //   g_draw_sw_functions->is_skia_version_compatible(&SkGraphics::GetVersion);
+  g_is_skia_version_compatible =
+     g_draw_sw_functions->is_skia_version_compatible(&SkGraphics::GetVersion);
   LOG_IF(WARNING, !g_is_skia_version_compatible) <<
       "Skia native versions are not compatible.";
 }
