@@ -458,8 +458,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // Load the new tab page appropriate for this build
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(chrome::search::IsInstantExtendedAPIEnabled(profile_) ?
-                         IDR_NEW_TAB_SEARCH_HTML : IDR_NEW_TAB_4_HTML));
+      GetRawDataResource(IDR_NEW_TAB_4_HTML));
   webui::UseVersion2 version2;
   std::string full_html =
       webui::GetI18nTemplateHtml(new_tab_html, &load_time_data);
@@ -585,8 +584,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          chrome::search::IsInstantExtendedAPIEnabled(profile_) ?
-          IDR_NEW_TAB_SEARCH_THEME_CSS : IDR_NEW_TAB_4_THEME_CSS));
+          IDR_NEW_TAB_4_THEME_CSS));
 
   // Create the string from our template and the replacements.
   std::string css_string;

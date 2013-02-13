@@ -42,8 +42,6 @@
       <if expr="not pp_ifdef('android')">
         <structure name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_NEW_TAB_SEARCH_HTML" file="resources\ntp_search\new_tab.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_NEW_TAB_SEARCH_THEME_CSS" file="resources\ntp_search\new_tab_theme.css" flattenhtml="true" type="chrome_html" />
       </if>
       <if expr="pp_ifdef('android')">
         <structure name="IDR_NEW_TAB_ANDROID_HTML" file="resources\ntp_android\new_tab.html" flattenhtml="true" type="chrome_html" />
@@ -240,8 +238,8 @@
         <include name="IDR_TASK_MANAGER_PRELOAD_JS" file="resources\task_manager\preload.js" type="BINDATA" />
         <!-- The following main.js uses flattenhtml feature to remove the platform-dependent code at complie-time. -->
         <include name="IDR_TASK_MANAGER_JS" file="resources\task_manager\main.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_TASK_MANAGER_MEASURE_TIME_JS" file="resources\task_manager\measure_time.js" type="BINDATA" /> 
-        <include name="IDR_TASK_MANAGER_MEASURE_TIME_END_JS" file="resources\task_manager\measure_time_end.js" type="BINDATA" /> 
+        <include name="IDR_TASK_MANAGER_MEASURE_TIME_JS" file="resources\task_manager\measure_time.js" type="BINDATA" />
+        <include name="IDR_TASK_MANAGER_MEASURE_TIME_END_JS" file="resources\task_manager\measure_time_end.js" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_SYNC_PROMO_JS" file="resources\sync_promo\sync_promo.js" flattenhtml="true" type="BINDATA" />
