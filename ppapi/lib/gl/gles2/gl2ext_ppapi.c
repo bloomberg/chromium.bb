@@ -76,7 +76,7 @@ GLboolean GL_APIENTRY glInitializePPAPI(
   return g_gles2_interface ? GL_TRUE : GL_FALSE;
 }
 
-GLboolean GL_APIENTRY glTerminatePPAPI() {
+GLboolean GL_APIENTRY glTerminatePPAPI(void) {
   g_gles2_interface = NULL;
   return GL_TRUE;
 }
@@ -85,40 +85,40 @@ void GL_APIENTRY glSetCurrentContextPPAPI(PP_Resource context) {
   g_current_context = context;
 }
 
-PP_Resource GL_APIENTRY glGetCurrentContextPPAPI() {
+PP_Resource GL_APIENTRY glGetCurrentContextPPAPI(void) {
   return g_current_context;
 }
 
-const struct PPB_OpenGLES2* GL_APIENTRY glGetInterfacePPAPI() {
+const struct PPB_OpenGLES2* GL_APIENTRY glGetInterfacePPAPI(void) {
   return g_gles2_interface;
 }
 
 const struct PPB_OpenGLES2InstancedArrays* GL_APIENTRY
-    glGetInstancedArraysInterfacePPAPI() {
+    glGetInstancedArraysInterfacePPAPI(void) {
   return g_gles2_instanced_arrays_interface;
 }
 
 const struct PPB_OpenGLES2FramebufferBlit* GL_APIENTRY
-    glGetFramebufferBlitInterfacePPAPI() {
+    glGetFramebufferBlitInterfacePPAPI(void) {
   return g_gles2_framebuffer_blit_interface;
 }
 
 const struct PPB_OpenGLES2FramebufferMultisample* GL_APIENTRY
-    glGetFramebufferMultisampleInterfacePPAPI() {
+    glGetFramebufferMultisampleInterfacePPAPI(void) {
   return g_gles2_framebuffer_multisample_interface;
 }
 
 const struct PPB_OpenGLES2ChromiumEnableFeature* GL_APIENTRY
-    glGetChromiumEnableFeatureInterfacePPAPI() {
+    glGetChromiumEnableFeatureInterfacePPAPI(void) {
   return g_gles2_chromium_enable_feature_interface;
 }
 
 const struct PPB_OpenGLES2ChromiumMapSub* GL_APIENTRY
-    glGetChromiumMapSubInterfacePPAPI() {
+    glGetChromiumMapSubInterfacePPAPI(void) {
   return g_gles2_chromium_map_sub_interface;
 }
 
 const struct PPB_OpenGLES2Query* GL_APIENTRY
-    glGetQueryInterfacePPAPI() {
+    glGetQueryInterfacePPAPI(void) {
   return g_gles2_query_interface;
 }

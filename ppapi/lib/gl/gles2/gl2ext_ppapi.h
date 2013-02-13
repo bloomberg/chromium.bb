@@ -26,29 +26,29 @@ GL_APICALL GLboolean GL_APIENTRY glInitializePPAPI(
 
 // Terminates OpenGL ES 2.0 library.
 // GL_FALSE is returned on failure, GL_TRUE otherwise.
-GL_APICALL GLboolean GL_APIENTRY glTerminatePPAPI();
+GL_APICALL GLboolean GL_APIENTRY glTerminatePPAPI(void);
 
 // Sets context to be used for rendering in the current thread.
 GL_APICALL void GL_APIENTRY glSetCurrentContextPPAPI(PP_Resource context);
 
 // Gets context being used for rendering in the current thread.
 // Returns NULL if a context has not been set yet.
-GL_APICALL PP_Resource GL_APIENTRY glGetCurrentContextPPAPI();
+GL_APICALL PP_Resource GL_APIENTRY glGetCurrentContextPPAPI(void);
 
 // Returns OpenGL ES 2.0 interface.
-GL_APICALL const struct PPB_OpenGLES2* GL_APIENTRY glGetInterfacePPAPI();
+GL_APICALL const struct PPB_OpenGLES2* GL_APIENTRY glGetInterfacePPAPI(void);
 GL_APICALL const struct PPB_OpenGLES2InstancedArrays* GL_APIENTRY
-    glGetInstancedArraysInterfacePPAPI();
+    glGetInstancedArraysInterfacePPAPI(void);
 GL_APICALL const struct PPB_OpenGLES2FramebufferBlit* GL_APIENTRY
-    glGetFramebufferBlitInterfacePPAPI();
+    glGetFramebufferBlitInterfacePPAPI(void);
 GL_APICALL const struct PPB_OpenGLES2FramebufferMultisample* GL_APIENTRY
-    glGetFramebufferMultisampleInterfacePPAPI();
+    glGetFramebufferMultisampleInterfacePPAPI(void);
 GL_APICALL const struct PPB_OpenGLES2ChromiumEnableFeature* GL_APIENTRY
-    glGetChromiumEnableFeatureInterfacePPAPI();
+    glGetChromiumEnableFeatureInterfacePPAPI(void);
 GL_APICALL const struct PPB_OpenGLES2ChromiumMapSub* GL_APIENTRY
-    glGetChromiumMapSubInterfacePPAPI();
+    glGetChromiumMapSubInterfacePPAPI(void);
 GL_APICALL const struct PPB_OpenGLES2Query* GL_APIENTRY
-    glGetQueryInterfacePPAPI();
+    glGetQueryInterfacePPAPI(void);
 
 #ifdef __cplusplus
 }
