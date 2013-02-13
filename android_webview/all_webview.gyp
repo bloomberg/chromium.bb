@@ -17,6 +17,7 @@
         # Needed by android_webview_java
         '../content/content.gyp:page_transition_types_java',
         '../net/net.gyp:certificate_mime_types_java',
+        '../net/net.gyp:cert_verify_result_android_java',
         '../net/net.gyp:net_errors_java',
         '../net/net.gyp:private_key_types_java',
       ],
