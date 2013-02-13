@@ -242,7 +242,13 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       fake_speech_recognition_manager_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim) {
+// http://crbug.com/176122: This test is flaky on Windows.
+#if defined(OS_WIN)
+#define MAYBE_Shim DISABLED_Shim
+#else
+#define MAYBE_Shim Shim
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/shim")) << message_;
 }
 
