@@ -10,6 +10,7 @@
 #include "ppapi/proxy/audio_input_resource.h"
 #include "ppapi/proxy/browser_font_resource_trusted.h"
 #include "ppapi/proxy/connection.h"
+#include "ppapi/proxy/directory_reader_resource.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
 #include "ppapi/proxy/flash_device_id_resource.h"
@@ -318,9 +319,10 @@ PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
 }
 
 PP_Resource ResourceCreationProxy::CreateDirectoryReader(
+    PP_Instance instance,
     PP_Resource directory_ref) {
-  NOTIMPLEMENTED();  // Not proxied yet.
-  return 0;
+  return (new DirectoryReaderResource(
+      GetConnection(), instance, directory_ref))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashDeviceID(PP_Instance instance) {

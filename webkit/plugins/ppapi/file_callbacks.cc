@@ -13,7 +13,6 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 
 using ppapi::Resource;
@@ -27,12 +26,10 @@ FileCallbacks::FileCallbacks(
     Resource* resource,
     scoped_refptr<TrackedCallback> callback,
     PP_FileInfo* info,
-    scoped_refptr<PPB_FileSystem_Impl> file_system,
-    scoped_refptr<PPB_DirectoryReader_Impl> directory_reader)
+    scoped_refptr<PPB_FileSystem_Impl> file_system)
     : callback_(callback),
       info_(info),
-      file_system_(file_system),
-      directory_reader_(directory_reader) {
+      file_system_(file_system) {
 }
 
 FileCallbacks::~FileCallbacks() {}
@@ -67,13 +64,7 @@ void FileCallbacks::DidReadMetadata(
 
 void FileCallbacks::DidReadDirectory(
     const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
-  if (callback_->completed())
-    return;
-
-  DCHECK(directory_reader_);
-  directory_reader_->AddNewEntries(entries, has_more);
-
-  callback_->Run(PP_OK);
+  NOTREACHED();
 }
 
 void FileCallbacks::DidOpenFileSystem(const std::string&,

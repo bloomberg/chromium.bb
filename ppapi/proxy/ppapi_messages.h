@@ -20,6 +20,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/dev/pp_video_capture_dev.h"
 #include "ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
@@ -69,6 +70,7 @@
 IPC_ENUM_TRAITS(PP_AudioSampleRate)
 IPC_ENUM_TRAITS(PP_DeviceType_Dev)
 IPC_ENUM_TRAITS(PP_DecryptorStreamType)
+IPC_ENUM_TRAITS(PP_FileType)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_Permission)
 IPC_ENUM_TRAITS(PP_Flash_BrowserOperations_SettingType)
 IPC_ENUM_TRAITS(PP_FlashSetting)
@@ -1308,6 +1310,14 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Broker_Create)
 // The response is contained in the error value of the
 // ResourceMessageReplyParams in the reply message.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Broker_IsAllowed)
+
+// Directory reader.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_DirectoryReader_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_DirectoryReader_GetEntries,
+                     ppapi::HostResource /* file_ref_resource */)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_DirectoryReader_GetEntriesReply,
+                     std::vector<ppapi::PPB_FileRef_CreateInfo> /* files */,
+                     std::vector<PP_FileType> /* file_types */)
 
 // File chooser.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileChooser_Create)

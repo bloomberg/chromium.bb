@@ -38,8 +38,7 @@ class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
   FileCallbacks(::ppapi::Resource* resource,
                 scoped_refptr< ::ppapi::TrackedCallback> callback,
                 PP_FileInfo* info,
-                scoped_refptr<PPB_FileSystem_Impl> file_system,
-                scoped_refptr<PPB_DirectoryReader_Impl> directory_reader);
+                scoped_refptr<PPB_FileSystem_Impl> file_system);
   virtual ~FileCallbacks();
 
   // FileSystemCallbackDispatcher implementation.
@@ -62,7 +61,6 @@ class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
   scoped_refptr< ::ppapi::TrackedCallback> callback_;
   PP_FileInfo* info_;
   scoped_refptr<PPB_FileSystem_Impl> file_system_;
-  scoped_refptr<PPB_DirectoryReader_Impl> directory_reader_;
 };
 
 }  // namespace ppapi

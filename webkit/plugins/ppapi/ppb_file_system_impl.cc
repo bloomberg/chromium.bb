@@ -17,7 +17,6 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::PPB_FileSystem_API;
@@ -83,7 +82,7 @@ int32_t PPB_FileSystem_Impl::Open(int64_t expected_size,
           GetOrigin(),
       file_system_type, expected_size,
       new FileCallbacks(this, callback, NULL,
-                        scoped_refptr<PPB_FileSystem_Impl>(this), NULL)))
+                        scoped_refptr<PPB_FileSystem_Impl>(this))))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }

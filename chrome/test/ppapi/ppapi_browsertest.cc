@@ -680,10 +680,7 @@ TEST_PPAPI_OUT_OF_PROCESS(X509CertificatePrivate)
 #endif
 
 // Flaky on Mac + Linux, maybe http://codereview.chromium.org/7094008
-// Not implemented out of process: http://crbug.com/106129
-IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_DirectoryReader) {
-  RunTestViaHTTP("DirectoryReader");
-}
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_DirectoryReader)
 
 // There is no proxy. This is used for PDF metrics reporting, and PDF only
 // runs in process, so there's currently no need for a proxy.

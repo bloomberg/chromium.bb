@@ -5,6 +5,7 @@
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -17,14 +18,16 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Resource directory_ref) {
+  ppapi::ProxyAutoLock lock;
   Resource* object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(directory_ref);
   if (!object)
     return 0;
-  EnterResourceCreation enter(object->pp_instance());
+  EnterResourceCreationNoLock enter(object->pp_instance());
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateDirectoryReader(directory_ref);
+  return enter.functions()->CreateDirectoryReader(
+      object->pp_instance(), directory_ref);
 }
 
 PP_Bool IsDirectoryReader(PP_Resource resource) {

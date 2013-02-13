@@ -32,6 +32,8 @@
           'proxy/connection.h',
           'proxy/device_enumeration_resource_helper.cc',
           'proxy/device_enumeration_resource_helper.h',
+          'proxy/directory_reader_resource.cc',
+          'proxy/directory_reader_resource.h',
           'proxy/dispatcher.cc',
           'proxy/dispatcher.h',
           'proxy/enter_proxy.h',

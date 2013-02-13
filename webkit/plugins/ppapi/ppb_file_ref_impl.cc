@@ -18,7 +18,6 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
@@ -178,7 +177,7 @@ int32_t PPB_FileRef_Impl::MakeDirectory(
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->MakeDirectory(
           GetFileSystemURL(), PP_ToBool(make_ancestors),
-          new FileCallbacks(this, callback, NULL, NULL, NULL)))
+          new FileCallbacks(this, callback, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -196,7 +195,7 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
           GetFileSystemURL(),
           PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
-          new FileCallbacks(this, callback, NULL, NULL, NULL)))
+          new FileCallbacks(this, callback, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -210,7 +209,7 @@ int32_t PPB_FileRef_Impl::Delete(scoped_refptr<TrackedCallback> callback) {
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->Delete(
           GetFileSystemURL(),
-          new FileCallbacks(this, callback, NULL, NULL, NULL)))
+          new FileCallbacks(this, callback, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
@@ -234,7 +233,7 @@ int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
     return PP_ERROR_FAILED;
   if (!plugin_instance->delegate()->Rename(
           GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
-          new FileCallbacks(this, callback, NULL, NULL, NULL)))
+          new FileCallbacks(this, callback, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
 }
