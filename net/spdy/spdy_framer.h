@@ -475,12 +475,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Returns true if a frame could be compressed.
   bool IsCompressible(const SpdyFrame& frame) const;
 
-  // Get the stream ID for the given control frame (SYN_STREAM, SYN_REPLY, and
-  // HEADERS). If the control frame is NULL or of another type, this
-  // function returns kInvalidStream.
-  static SpdyStreamId GetControlFrameStreamId(
-      const SpdyControlFrame* control_frame);
-
   // For ease of testing and experimentation we can tweak compression on/off.
   void set_enable_compression(bool value) {
     enable_compression_ = value;
@@ -567,14 +561,14 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // in decompressed form, in chunks. Returns true if the visitor has
   // accepted all of the chunks.
   bool IncrementallyDecompressControlFrameHeaderData(
-      const SpdyControlFrame* frame,
+      SpdyStreamId stream_id,
       const char* data,
       size_t len);
 
   // Deliver the given control frame's uncompressed headers block to the
   // visitor in chunks. Returns true if the visitor has accepted all of the
   // chunks.
-  bool IncrementallyDeliverControlFrameHeaderData(const SpdyControlFrame* frame,
+  bool IncrementallyDeliverControlFrameHeaderData(SpdyStreamId stream_id,
                                                   const char* data,
                                                   size_t len);
 

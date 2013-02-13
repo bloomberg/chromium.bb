@@ -1648,7 +1648,6 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
                  *frame,
                  IsSpdy2() ? kV2FrameData : kV3FrameData,
                  IsSpdy2() ? arraysize(kV2FrameData) : arraysize(kV3FrameData));
-    EXPECT_EQ(1u, SpdyFramer::GetControlFrameStreamId(frame.get()));
   }
 
   {
@@ -2015,7 +2014,6 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
     scoped_ptr<SpdyRstStreamControlFrame> frame(
         framer.CreateRstStream(1, RST_STREAM_PROTOCOL_ERROR));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
-    EXPECT_EQ(1u, SpdyFramer::GetControlFrameStreamId(frame.get()));
   }
 
   {
@@ -2082,8 +2080,6 @@ TEST_P(SpdyFramerTest, CreateSettings) {
                  *frame,
                  IsSpdy2() ? kFrameDatav2 : kFrameDatav3,
                  arraysize(kFrameDatav3));  // Size is unchanged among versions.
-    EXPECT_EQ(SpdyFramer::kInvalidStream,
-              SpdyFramer::GetControlFrameStreamId(frame.get()));
 
     // Make sure that ParseSettings also works as advertised.
     SettingsMap parsed_settings;
@@ -2124,8 +2120,6 @@ TEST_P(SpdyFramerTest, CreateSettings) {
                  *frame,
                  kFrameData,
                  arraysize(kFrameData));
-    EXPECT_EQ(SpdyFramer::kInvalidStream,
-              SpdyFramer::GetControlFrameStreamId(frame.get()));
   }
 
   {
@@ -2155,8 +2149,6 @@ TEST_P(SpdyFramerTest, CreatePingFrame) {
     };
     scoped_ptr<SpdyPingControlFrame> frame(framer.CreatePingFrame(0x12345678u));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
-    EXPECT_EQ(SpdyFramer::kInvalidStream,
-              SpdyFramer::GetControlFrameStreamId(frame.get()));
   }
 }
 
@@ -2181,8 +2173,6 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
                  *frame,
                  IsSpdy2() ? kV2FrameData : kV3FrameData,
                  IsSpdy2() ? arraysize(kV2FrameData) : arraysize(kV3FrameData));
-    EXPECT_EQ(SpdyFramer::kInvalidStream,
-              SpdyFramer::GetControlFrameStreamId(frame.get()));
   }
 
   {
@@ -2403,7 +2393,6 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
     scoped_ptr<SpdyWindowUpdateControlFrame> frame(
         framer.CreateWindowUpdate(1, 1));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
-    EXPECT_EQ(1u, SpdyFramer::GetControlFrameStreamId(frame.get()));
   }
 
   {

@@ -1005,20 +1005,30 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
 size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
                                                   size_t data_len) {
   DCHECK_EQ(SPDY_CONTROL_FRAME_HEADER_BLOCK, state_);
-  SpdyControlFrame control_frame(current_frame_buffer_.get(), false);
+  const SpdyControlFrame control_frame(current_frame_buffer_.get(), false);
 
   bool processed_successfully = true;
-  DCHECK(control_frame.type() == SYN_STREAM ||
-         control_frame.type() == SYN_REPLY ||
-         control_frame.type() == HEADERS);
+  SpdyStreamId stream_id = kInvalidStream;
+  if (control_frame.type() == SYN_STREAM) {
+    stream_id = reinterpret_cast<const SpdySynStreamControlFrame*>(
+        &control_frame)->stream_id();
+  } else if (control_frame.type() == SYN_REPLY) {
+    stream_id = reinterpret_cast<const SpdySynReplyControlFrame*>(
+        &control_frame)->stream_id();
+  } else if (control_frame.type() == HEADERS) {
+    stream_id = reinterpret_cast<const SpdyHeadersControlFrame*>(
+        &control_frame)->stream_id();
+  } else {
+    LOG(DFATAL) << "Unhandled frame type in ProcessControlFrameHeaderBlock.";
+  }
   size_t process_bytes = std::min(data_len, remaining_control_payload_);
   if (process_bytes > 0) {
     if (enable_compression_) {
       processed_successfully = IncrementallyDecompressControlFrameHeaderData(
-          &control_frame, data, process_bytes);
+          stream_id, data, process_bytes);
     } else {
       processed_successfully = IncrementallyDeliverControlFrameHeaderData(
-          &control_frame, data, process_bytes);
+          stream_id, data, process_bytes);
     }
 
     remaining_control_payload_ -= process_bytes;
@@ -1029,13 +1039,11 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
   if (remaining_control_payload_ == 0 && processed_successfully) {
     // The complete header block has been delivered. We send a zero-length
     // OnControlFrameHeaderData() to indicate this.
-    visitor_->OnControlFrameHeaderData(
-        GetControlFrameStreamId(&control_frame), NULL, 0);
+    visitor_->OnControlFrameHeaderData(stream_id, NULL, 0);
 
     // If this is a FIN, tell the caller.
     if (control_frame.flags() & CONTROL_FLAG_FIN) {
-      visitor_->OnStreamFrameData(GetControlFrameStreamId(&control_frame),
-                                  NULL, 0, DATA_FLAG_FIN);
+      visitor_->OnStreamFrameData(stream_id, NULL, 0, DATA_FLAG_FIN);
     }
 
     CHANGE_STATE(SPDY_AUTO_RESET);
@@ -1912,7 +1920,7 @@ SpdyControlFrame* SpdyFramer::CompressControlFrame(
 // indicates that it cannot process any more data, or (more commonly) we
 // run out of data to deliver.
 bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
-    const SpdyControlFrame* control_frame,
+    SpdyStreamId stream_id,
     const char* data,
     size_t len) {
   // Get a decompressor or set error.
@@ -1928,7 +1936,6 @@ bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
 
   decomp->next_in = reinterpret_cast<Bytef*>(const_cast<char*>(data));
   decomp->avail_in = len;
-  const SpdyStreamId stream_id = GetControlFrameStreamId(control_frame);
   DCHECK_LT(0u, stream_id);
   while (decomp->avail_in > 0 && processed_successfully) {
     decomp->next_out = reinterpret_cast<Bytef*>(buffer);
@@ -1982,9 +1989,8 @@ bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
 }
 
 bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
-    const SpdyControlFrame* control_frame, const char* data, size_t len) {
+    SpdyStreamId stream_id, const char* data, size_t len) {
   bool read_successfully = true;
-  const SpdyStreamId stream_id = GetControlFrameStreamId(control_frame);
   while (read_successfully && len > 0) {
     size_t bytes_to_deliver = std::min(len, kHeaderDataChunkMaxSize);
     read_successfully = visitor_->OnControlFrameHeaderData(stream_id, data,
@@ -2021,48 +2027,6 @@ bool SpdyFramer::IsCompressible(const SpdyFrame& frame) const {
 
   // We don't compress Data frames.
   return false;
-}
-
-/* static */
-SpdyStreamId SpdyFramer::GetControlFrameStreamId(
-    const SpdyControlFrame* control_frame) {
-  SpdyStreamId stream_id = kInvalidStream;
-  if (control_frame != NULL) {
-    switch (control_frame->type()) {
-      case SYN_STREAM:
-        stream_id = reinterpret_cast<const SpdySynStreamControlFrame*>(
-            control_frame)->stream_id();
-        break;
-      case SYN_REPLY:
-        stream_id = reinterpret_cast<const SpdySynReplyControlFrame*>(
-            control_frame)->stream_id();
-        break;
-      case HEADERS:
-        stream_id = reinterpret_cast<const SpdyHeadersControlFrame*>(
-            control_frame)->stream_id();
-        break;
-      case RST_STREAM:
-        stream_id = reinterpret_cast<const SpdyRstStreamControlFrame*>(
-            control_frame)->stream_id();
-        break;
-      case WINDOW_UPDATE:
-        stream_id = reinterpret_cast<const SpdyWindowUpdateControlFrame*>(
-            control_frame)->stream_id();
-        break;
-      // All of the following types are not part of a particular stream.
-      // They all fall through to the invalid control frame type case.
-      // (The default case isn't used so that the compile will break if a new
-      // control frame type is added but not included here.)
-      case SETTINGS:
-      case NOOP:
-      case PING:
-      case GOAWAY:
-      case CREDENTIAL:
-      case NUM_CONTROL_FRAME_TYPES:  // makes compiler happy
-        break;
-    }
-  }
-  return stream_id;
 }
 
 void SpdyFramer::SerializeNameValueBlock(
