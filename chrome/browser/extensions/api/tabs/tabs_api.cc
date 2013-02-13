@@ -1098,8 +1098,7 @@ bool TabsCreateFunction::RunImpl() {
 
   index = std::min(std::max(index, -1), tab_strip->count());
 
-  int add_types = active ? TabStripModel::ADD_ACTIVE :
-                             TabStripModel::ADD_NONE;
+  int add_types = active ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE;
   add_types |= TabStripModel::ADD_FORCE_INDEX;
   if (pinned)
     add_types |= TabStripModel::ADD_PINNED;
@@ -1116,8 +1115,10 @@ bool TabsCreateFunction::RunImpl() {
   if (opener)
     tab_strip->SetOpenerOfWebContentsAt(new_index, opener);
 
-  if (active)
-    params.target_contents->GetView()->SetInitialFocus();
+  if (active) {
+    params.target_contents->GetDelegate()->ActivateContents(
+        params.target_contents);
+  }
 
   // Return data about the newly created tab.
   if (has_callback()) {
@@ -1305,7 +1306,7 @@ bool TabsUpdateFunction::RunImpl() {
       tab_strip->ActivateTabAt(tab_index, false);
       DCHECK_EQ(contents, tab_strip->GetActiveWebContents());
     }
-    web_contents_->Focus();
+    web_contents_->GetDelegate()->ActivateContents(web_contents_);
   }
 
   if (update_props->HasKey(keys::kHighlightedKey)) {
