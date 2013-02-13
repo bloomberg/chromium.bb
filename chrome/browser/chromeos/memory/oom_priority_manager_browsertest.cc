@@ -24,6 +24,10 @@ typedef InProcessBrowserTest OomPriorityManagerTest;
 IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   using content::WindowedNotificationObserver;
 
+  chromeos::OomPriorityManager* oom_priority_manager =
+      g_browser_process->oom_priority_manager();
+  EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
+
   // Get three tabs open.
   WindowedNotificationObserver load1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -83,6 +87,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   EXPECT_TRUE(browser()->tab_strip_model()->IsTabDiscarded(0));
   EXPECT_FALSE(browser()->tab_strip_model()->IsTabDiscarded(1));
   EXPECT_FALSE(browser()->tab_strip_model()->IsTabDiscarded(2));
+  EXPECT_TRUE(oom_priority_manager->recent_tab_discard());
 
   // Run discard again, make sure it kills the second tab.
   EXPECT_TRUE(g_browser_process->oom_priority_manager()->DiscardTab());

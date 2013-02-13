@@ -72,6 +72,11 @@ const char kExperiment[] = "LowMemoryMargin";
 // value.
 const int kAdjustmentIntervalSeconds = 10;
 
+// For each period of this length we record a statistic to indicate whether
+// or not the user experienced a low memory event. If you change this interval
+// you must replace Tabs.Discard.DiscardInLastMinute with a new statistic.
+const int kRecentTabDiscardIntervalSeconds = 60;
+
 // If there has been no priority adjustment in this interval, we assume the
 // machine was suspended and correct our timing statistics.
 const int kSuspendThresholdSeconds = kAdjustmentIntervalSeconds * 4;
@@ -86,6 +91,23 @@ const int kFocusedTabScoreAdjustIntervalMs = 500;
 // the WebContents could be deleted if the user closed the tab.
 int64 IdFromWebContents(WebContents* web_contents) {
   return reinterpret_cast<int64>(web_contents);
+}
+
+// Records a statistics |sample| for UMA histogram |name| using a linear
+// distribution of buckets.
+void RecordLinearHistogram(const std::string& name,
+                           int sample,
+                           int maximum,
+                           size_t bucket_count) {
+  // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
+  // instance and thus only work if |name| is constant.
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+      name,
+      1,  // Minimum. The 0 bin for underflow is automatically added.
+      maximum + 1,  // Ensure bucket size of |maximum| / |bucket_count|.
+      bucket_count + 2,  // Account for the underflow and overflow bins.
+      base::Histogram::kUmaTargetedHistogramFlag);
+  counter->Add(sample);
 }
 
 }  // namespace
@@ -154,7 +176,8 @@ OomPriorityManager::TabStats::~TabStats() {
 
 OomPriorityManager::OomPriorityManager()
     : focused_tab_pid_(0),
-      discard_count_(0) {
+      discard_count_(0),
+      recent_tab_discard_(false) {
   // We only need the low memory observer if we want to discard tabs.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoDiscardTabs))
     low_memory_observer_.reset(new LowMemoryObserver);
@@ -181,6 +204,13 @@ void OomPriorityManager::Start() {
                  this,
                  &OomPriorityManager::AdjustOomPriorities);
   }
+  if (!recent_tab_discard_timer_.IsRunning()) {
+    recent_tab_discard_timer_.Start(
+        FROM_HERE,
+        TimeDelta::FromSeconds(kRecentTabDiscardIntervalSeconds),
+        this,
+        &OomPriorityManager::RecordRecentTabDiscard);
+  }
   if (low_memory_observer_.get())
     low_memory_observer_->Start();
   start_time_ = TimeTicks::Now();
@@ -188,6 +218,7 @@ void OomPriorityManager::Start() {
 
 void OomPriorityManager::Stop() {
   timer_.Stop();
+  recent_tab_discard_timer_.Stop();
   if (low_memory_observer_.get())
     low_memory_observer_->Stop();
 }
@@ -282,6 +313,7 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
         // memory state that lead to the discard.
         RecordDiscardStatistics();
         model->DiscardWebContentsAt(idx);
+        recent_tab_discard_ = true;
         return true;
       }
     }
@@ -327,12 +359,22 @@ void OomPriorityManager::RecordDiscardStatistics() {
     EXPERIMENT_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB",
                                    mem_anonymous_mb);
 
+    // Record graphics GEM object size in a histogram with 50 MB buckets.
+    int mem_graphics_gem_mb = 0;
+    if (memory.gem_size != -1)
+      mem_graphics_gem_mb = memory.gem_size / 1024 / 1024;
+    RecordLinearHistogram(
+        "Tabs.Discard.MemGraphicsMB", mem_graphics_gem_mb, 2500, 50);
+
+    // Record shared memory (used by renderer/GPU buffers).
+    int mem_shmem_mb = memory.shmem / 1024;
+    RecordLinearHistogram("Tabs.Discard.MemShmemMB", mem_shmem_mb, 2500, 50);
+
     // On Intel, graphics objects are in anonymous pages, but on ARM they are
     // not. For a total "allocated count" add in graphics pages on ARM.
     int mem_allocated_mb = mem_anonymous_mb;
 #if defined(ARCH_CPU_ARM_FAMILY)
-    if (memory.gem_size != -1)
-      mem_allocated_mb += memory.gem_size / 1024 / 1024;
+    mem_allocated_mb += mem_graphics_gem_mb;
 #endif
     EXPERIMENT_CUSTOM_COUNTS("Tabs.Discard.MemAllocatedMB", mem_allocated_mb,
                              256, 32768, 50)
@@ -344,6 +386,15 @@ void OomPriorityManager::RecordDiscardStatistics() {
   }
   // Set up to record the next interval.
   last_discard_time_ = TimeTicks::Now();
+}
+
+void OomPriorityManager::RecordRecentTabDiscard() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // If we change the interval we need to change the histogram name.
+  UMA_HISTOGRAM_BOOLEAN("Tabs.Discard.DiscardInLastMinute",
+                        recent_tab_discard_);
+  // Reset for the next interval.
+  recent_tab_discard_ = false;
 }
 
 void OomPriorityManager::PurgeBrowserMemory() {
