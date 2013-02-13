@@ -1785,3 +1785,12 @@
    fun:OAuth2RevocationFetcherTest_RequestFailure_Test::OAuth2RevocationFetcherTest_RequestFailure_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
+{
+   bug_176048
+   Heapcheck:Leak
+   ...
+   fun:MetricsNetworkObserver::ProbeWifiPHYLayerProtocol
+   fun:MetricsNetworkObserver::MetricsNetworkObserver
+   fun:MetricsLog::MetricsLog
+   fun:TestMetricsLog
+}
