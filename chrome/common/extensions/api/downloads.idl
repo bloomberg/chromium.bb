@@ -191,8 +191,7 @@ namespace downloads {
     // with a hyphen: '-startTime'.
     DOMString? orderBy;
 
-    // The <code>id</code> of the $ref:DownloadItem
-    // that changed.
+    // The <code>id</code> of the $ref:DownloadItem to query.
     long? id;
 
     // Absolute URL.
@@ -259,7 +258,8 @@ namespace downloads {
 
   // Encapsulates a change in a DownloadItem.
   [inline_doc] dictionary DownloadDelta {
-    // An identifier that is persistent across browser sessions.
+    // The <code>id</code> of the $ref:DownloadItem
+    // that changed.
     long id;
 
     // The change in <code>url</code>, if any.

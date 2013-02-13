@@ -598,7 +598,7 @@
       {
         "name": "captureVisibleTab",
         "type": "function",
-        "description": "Captures the visible area of the currently active tab in the specified window. You must have <a href='manifest.html#permissions'>host permission</a> for the URL displayed by the tab.",
+        "description": "Captures the visible area of the currently active tab in the specified window. You must have <a href='declare_permissions.html'>host permission</a> for the URL displayed by the tab.",
         "parameters": [
           {
             "type": "integer",
@@ -913,7 +913,7 @@
             "type": "object",
             "name": "removeInfo",
             "properties": {
-              "windowId": {"type": "integer", "minimum": 0, "description": "the window whose tab is closed." },
+              "windowId": {"type": "integer", "minimum": 0, "description": "The window whose tab is closed." },
               "isWindowClosing": {"type": "boolean", "description": "True when the tab is being closed because its window is being closed." }
             }
           }

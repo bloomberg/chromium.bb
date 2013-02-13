@@ -285,7 +285,7 @@
       {
         "name": "onSuspendCanceled",
         "type": "function",
-        "description": "Sent after onSuspend() to indicate that the app won't be unloaded after all."
+        "description": "Sent after onSuspend to indicate that the app won't be unloaded after all."
       },
       {
         "name": "onUpdateAvailable",

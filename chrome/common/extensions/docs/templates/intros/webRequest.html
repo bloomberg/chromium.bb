@@ -6,7 +6,7 @@ or modify requests in-flight and to observe and analyze traffic.
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "webRequest" permission in the <a
   href="manifest.html">extension manifest</a> to use the web request
-API, along with <a href="manifest.html#permissions">host permissions</a>
+API, along with <a href="declare_permissions.html">host permissions</a>
 for any hosts whose network requests you want to access. If you want to
 use the web request API in a blocking fashion, you need to request
 the "webRequestBlocking" permission in addition.
@@ -119,7 +119,7 @@ complete nor stable.
 <p>
 The webRequest API only exposes requests that the extension has
 permission to see, given its
-<a href="manifest.html#permissions">host permissions</a>.
+<a href="declare_permissions.html">host permissions</a>.
 Moreover, only the following schemes are accessible:
 <code>http://</code>,
 <code>https://</code>,

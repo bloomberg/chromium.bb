@@ -2,7 +2,7 @@
 
 
 <p>
-  In order to mitigate a large class of potental cross-site scripting issues,
+  In order to mitigate a large class of potential cross-site scripting issues,
   Chrome's extension system has incorporated the general concept of
   <a href="http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html">
     <strong>Content Security Policy (CSP)</strong>
@@ -18,7 +18,7 @@
   extension enables you to carefully consider the resources that your extension
   requires, and to ask the browser to ensure that those are the only resources
   your extension has access to. These policies provide security over and above
-  the <a href="manifest.html#permissions">host permissions</a> your extension
+  the <a href="declare_permissions.html">host permissions</a> your extension
   requests; they're an additional layer of protection, not a replacement.
 </p>
 
@@ -50,7 +50,7 @@
   Packages that do not define a <a href="manifestVersion.html">
     <code>manifest_version</code>
   </a> have no default content security policy. Those that select
-  <code>manifest_version</code></a> 2, have a default content security policy
+  <code>manifest_version</code> 2, have a default content security policy
   of:
 </p>
 
@@ -68,7 +68,7 @@
 <pre>
 alert(eval("foo.bar.baz"));
 window.setTimeout("alert('hi')", 10);
-window.setInteral("alert('hi')", 10);
+window.setInterval("alert('hi')", 10);
 new Function("return foo.bar.baz");
 </pre>
 

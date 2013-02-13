@@ -82,7 +82,7 @@ as in the following example.
 <p>
 If you want to inject the code only sometimes,
 use the
-<a href="manifest.html#permissions"><code>permissions</code></a> field instead,
+<a href="declare_permissions.html"><code>permissions</code></a> field instead,
 as described in <a href="#pi">Programmatic injection</a>.
 </p>
 
@@ -246,7 +246,7 @@ for the page.
 It also must be able to use the <code>chrome.tabs</code> module.
 You can get both kinds of permission
 using the manifest file's
-<a href="manifest.html#permissions">permissions</a> field.
+<a href="declare_permissions.html">permissions</a> field.
 </p>
 
 <p>
@@ -367,7 +367,7 @@ document.getElementById("theButton").addEventListener("click", function() {
 First, be careful not to introduce security vulnerabilities into the web site
 your content script is injected into.  For example, if your content script
 receives content from another web site (for example, by making an <a
-href="messaging.html">XMLHttpRequest</a>),
+href="xhr.html">XMLHttpRequest</a>),
 be careful to filter that content for <a
 href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
 scripting</a> attacks before injecting the content into the current page.

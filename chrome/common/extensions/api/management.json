@@ -321,7 +321,7 @@
       },
       {
         "name": "onDisabled",
-        "description": "Fired when an app or extension has been disabled",
+        "description": "Fired when an app or extension has been disabled.",
         "type": "function",
         "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
       }
