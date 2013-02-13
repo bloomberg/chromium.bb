@@ -231,6 +231,7 @@
           'thunk/ppb_video_decoder_api.h',
           'thunk/ppb_video_decoder_thunk.cc',
           'thunk/ppb_view_api.h',
+          'thunk/ppb_view_dev_thunk.cc',
           'thunk/ppb_view_thunk.cc',
           'thunk/ppb_websocket_api.h',
           'thunk/ppb_websocket_thunk.cc',

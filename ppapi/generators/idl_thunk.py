@@ -143,6 +143,7 @@ def _GetDefaultFailureValue(t):
       'PP_Bool': 'PP_FALSE',
       'PP_Resource': '0',
       'struct PP_Var': 'PP_MakeUndefined()',
+      'float': '0.0f',
       'int32_t': 'enter.retval()',
       'uint16_t': '0',
       'uint32_t': '0',

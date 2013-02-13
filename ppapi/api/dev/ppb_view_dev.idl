@@ -4,6 +4,9 @@
  */
 
 /* This file contains the <code>PPB_View_Dev</code> interface. */
+
+[generate_thunk]
+
 label Chrome {
   M22 = 0.1
 };

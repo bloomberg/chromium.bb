@@ -43,6 +43,14 @@ class PPAPI_SHARED_EXPORT PPB_View_Shared
 
   // PPB_View_API implementation.
   virtual const ViewData& GetData() const OVERRIDE;
+  virtual PP_Bool GetRect(PP_Rect* viewport) const OVERRIDE;
+  virtual PP_Bool IsFullscreen() const OVERRIDE;
+  virtual PP_Bool IsVisible() const OVERRIDE;
+  virtual PP_Bool IsPageVisible() const OVERRIDE;
+  virtual PP_Bool GetClipRect(PP_Rect* clip) const
+      OVERRIDE;
+  virtual float GetDeviceScale() const OVERRIDE;
+  virtual float GetCSSScale() const OVERRIDE;
 
  private:
   ViewData data_;

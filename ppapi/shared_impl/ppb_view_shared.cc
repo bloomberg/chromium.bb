@@ -4,6 +4,14 @@
 
 #include "ppapi/shared_impl/ppb_view_shared.h"
 
+namespace {
+
+bool IsRectNonempty(const PP_Rect& rect) {
+  return rect.size.width > 0 && rect.size.height > 0;
+}
+
+}  // namespace
+
 namespace ppapi {
 
 ViewData::ViewData() {
@@ -48,6 +56,40 @@ thunk::PPB_View_API* PPB_View_Shared::AsPPB_View_API() {
 
 const ViewData& PPB_View_Shared::GetData() const {
   return data_;
+}
+
+PP_Bool PPB_View_Shared::GetRect(PP_Rect* viewport) const {
+  if (!viewport)
+    return PP_FALSE;
+  *viewport = data_.rect;
+  return PP_TRUE;
+}
+
+PP_Bool PPB_View_Shared::IsFullscreen() const {
+  return PP_FromBool(data_.is_fullscreen);
+}
+
+PP_Bool PPB_View_Shared::IsVisible() const {
+  return PP_FromBool(data_.is_page_visible && IsRectNonempty(data_.clip_rect));
+}
+
+PP_Bool PPB_View_Shared::IsPageVisible() const {
+  return PP_FromBool(data_.is_page_visible);
+}
+
+PP_Bool PPB_View_Shared::GetClipRect(PP_Rect* clip) const {
+  if (!clip)
+    return PP_FALSE;
+  *clip = data_.clip_rect;
+  return PP_TRUE;
+}
+
+float PPB_View_Shared::GetDeviceScale() const {
+  return data_.device_scale;
+}
+
+float PPB_View_Shared::GetCSSScale() const {
+  return data_.css_scale;
 }
 
 }  // namespace ppapi

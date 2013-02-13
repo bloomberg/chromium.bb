@@ -8,6 +8,8 @@
  * of the view of an instance.
  */
 
+[generate_thunk]
+
 label Chrome {
   M18 = 1.0
 };
