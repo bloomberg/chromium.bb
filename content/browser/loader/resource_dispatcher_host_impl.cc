@@ -1022,7 +1022,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   if (request->has_upload()) {
     // Block power save while uploading data.
-    throttles.push_back(new PowerSaveBlockResourceThrottle("Uploading data."));
+    throttles.push_back(new PowerSaveBlockResourceThrottle());
   }
 
   if (request_data.resource_type == ResourceType::MAIN_FRAME) {

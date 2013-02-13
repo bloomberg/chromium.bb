@@ -5,27 +5,30 @@
 #ifndef CONTENT_BROWSER_LOADER_POWER_SAVE_BLOCK_RESOURCE_THROTTLE_H_
 #define CONTENT_BROWSER_LOADER_POWER_SAVE_BLOCK_RESOURCE_THROTTLE_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/timer.h"
 #include "content/public/browser/resource_throttle.h"
 
 namespace content {
 
 class PowerSaveBlocker;
 
-// This ResourceThrottle blocks power save until request finishes.
+// This ResourceThrottle blocks power save until large upload request finishes.
 class PowerSaveBlockResourceThrottle : public ResourceThrottle {
  public:
-  explicit PowerSaveBlockResourceThrottle(const std::string& reason);
+  PowerSaveBlockResourceThrottle();
   virtual ~PowerSaveBlockResourceThrottle();
 
-  // ResourceThrottle override.
+  // ResourceThrottle overrides:
+  virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillProcessResponse(bool* defer) OVERRIDE;
 
  private:
+  void ActivatePowerSaveBlocker();
+
+  base::OneShotTimer<PowerSaveBlockResourceThrottle> timer_;
   scoped_ptr<PowerSaveBlocker> power_save_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerSaveBlockResourceThrottle);

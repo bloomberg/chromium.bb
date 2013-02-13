@@ -8,18 +8,36 @@
 
 namespace content {
 
-PowerSaveBlockResourceThrottle::PowerSaveBlockResourceThrottle(
-    const std::string& reason) {
-  power_save_blocker_ = PowerSaveBlocker::Create(
-      PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension, reason);
+namespace {
+
+const int kPowerSaveBlockDelaySeconds = 30;
+
+}  // namespace
+
+PowerSaveBlockResourceThrottle::PowerSaveBlockResourceThrottle() {
 }
 
 PowerSaveBlockResourceThrottle::~PowerSaveBlockResourceThrottle() {
 }
 
+void PowerSaveBlockResourceThrottle::WillStartRequest(bool* defer) {
+  // Delay PowerSaveBlocker activation to dismiss small requests.
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromSeconds(kPowerSaveBlockDelaySeconds),
+               this,
+               &PowerSaveBlockResourceThrottle::ActivatePowerSaveBlocker);
+}
+
 void PowerSaveBlockResourceThrottle::WillProcessResponse(bool* defer) {
   // Stop blocking power save after request finishes.
   power_save_blocker_.reset();
+  timer_.Stop();
+}
+
+void PowerSaveBlockResourceThrottle::ActivatePowerSaveBlocker() {
+  power_save_blocker_ = PowerSaveBlocker::Create(
+      PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+      "Uploading data.");
 }
 
 }  // namespace content
