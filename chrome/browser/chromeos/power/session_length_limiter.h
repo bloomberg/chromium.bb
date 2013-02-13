@@ -38,25 +38,13 @@ class SessionLengthLimiter {
  private:
   void OnSessionLengthLimitChanged();
 
-  // Starts a timer that periodically checks whether the remaining time has
-  // reached zero.
-  void StartTimer();
-
-  // Stops the timer.
-  void StopTimer();
-
-  // Updates the remaining time, and terminates the session when the time
-  // reaches zero.
-  void UpdateRemainingTime();
-
   base::ThreadChecker thread_checker_;
 
   scoped_ptr<Delegate> delegate_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  scoped_ptr<base::RepeatingTimer<SessionLengthLimiter> > repeating_timer_;
+  scoped_ptr<base::OneShotTimer<SessionLengthLimiter::Delegate> > timer_;
   base::Time session_start_time_;
-  base::TimeDelta session_length_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionLengthLimiter);
 };
