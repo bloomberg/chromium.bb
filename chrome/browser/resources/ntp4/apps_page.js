@@ -150,8 +150,13 @@ cr.define('ntp', function() {
         this.disableNotifications_.hidden = false;
         this.disableNotifications_.checked = notificationsDisabled;
       }
-      this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
-          !app.appData.packagedApp;
+      if (cr.isMac) {
+        // On Windows and Linux, these should always be visible. On ChromeOS,
+        // they are never created. On Mac, shortcuts can only be created for
+        // new-style packaged apps, so hide the menu item.
+        this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
+            !app.appData.packagedApp;
+      }
     },
 
     /**
