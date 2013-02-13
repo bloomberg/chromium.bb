@@ -728,9 +728,6 @@ class CONTENT_EXPORT RenderViewImpl
                                              const std::string& value) OVERRIDE;
   virtual void ClearEditCommands() OVERRIDE;
   virtual SSLStatus GetSSLStatusOfFrame(WebKit::WebFrame* frame) const OVERRIDE;
-#if defined(OS_ANDROID)
-  virtual skia::RefPtr<SkPicture> CapturePicture() OVERRIDE;
-#endif
 
   // webkit_glue::WebPluginPageDelegate implementation -------------------------
 
@@ -805,7 +802,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void GetCompositionCharacterBounds(
       std::vector<gfx::Rect>* character_bounds) OVERRIDE;
   virtual bool CanComposeInline() OVERRIDE;
-  virtual void DidCommitCompositorFrame() OVERRIDE;
 
  protected:
   explicit RenderViewImpl(RenderViewImplParams* params);
