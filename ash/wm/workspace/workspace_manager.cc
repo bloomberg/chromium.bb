@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <functional>
 
-#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -23,10 +22,10 @@
 #include "ash/wm/workspace/workspace_animations.h"
 #include "ash/wm/workspace/workspace_cycler.h"
 #include "ash/wm/workspace/workspace_cycler_animator.h"
+#include "ash/wm/workspace/workspace_cycler_configuration.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace.h"
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -127,10 +126,8 @@ WorkspaceManager::WorkspaceManager(Window* contents_view)
   active_workspace_->window()->Show();
   Shell::GetInstance()->AddShellObserver(this);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableWorkspaceScrubbing)) {
+  if (ash::WorkspaceCyclerConfiguration::IsCyclerEnabled())
     workspace_cycler_.reset(new WorkspaceCycler(this));
-  }
 }
 
 WorkspaceManager::~WorkspaceManager() {

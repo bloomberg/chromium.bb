@@ -75,7 +75,7 @@ class ASH_EXPORT WorkspaceCyclerAnimator :
   void AbortAnimations();
 
   // Animate cycling by |scroll_delta|.
-  void AnimateCyclingByScrollDelta(float scroll_delta);
+  void AnimateCyclingByScrollDelta(double scroll_delta);
 
   // Returns the workspace which should be activated if the user does not do
   // any more cycling.

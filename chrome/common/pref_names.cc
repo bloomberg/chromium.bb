@@ -2173,7 +2173,7 @@ const char kMediaGalleriesUniqueId[] = "media_galleries.gallery_id";
 const char kMediaGalleriesRememberedGalleries[] =
     "media_galleries.remembered_galleries";
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 // |kShelfAlignment| and |kShelfAutoHideBehavior| have a local variant. The
 // local variant is not synced and is used if set. If the local variant is not
 // set its value is set from the synced value (once prefs have been
@@ -2196,6 +2196,38 @@ const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 // kShelfAutoHideBehavior.
 const char kShelfPreferences[] = "shelf_preferences";
 
+// Tuning settings for the animations when a user is cycling through workspaces
+// via a three finger vertical scroll.
+const char kWorkspaceCyclerShallowerThanSelectedYOffsets[] =
+    "workspace_cycler.shallower_than_selected_y_offsets";
+const char kWorkspaceCyclerDeeperThanSelectedYOffsets[] =
+    "workspace_cycler.deeper_than_selected_y_offsets";
+const char kWorkspaceCyclerSelectedYOffset[] =
+    "workspace_cycler.selected_y_offset";
+const char kWorkspaceCyclerSelectedScale[] =
+    "workspace_cycler.selected_scale";
+const char kWorkspaceCyclerMinScale[] =
+    "workspace_cycler.min_scale";
+const char kWorkspaceCyclerMaxScale[] =
+    "workspace_cycler.max_scale";
+const char kWorkspaceCyclerMinBrightness[] =
+    "workspace_cycler.min_brightness";
+const char kWorkspaceCyclerBackgroundOpacity[] =
+    "workspace_cycler.background_opacity";
+const char kWorkspaceCyclerDistanceToInitiateCycling[] =
+    "workspace_cycler.distance_to_initiate_cycling";
+const char kWorkspaceCyclerScrollDistanceToCycleToNextWorkspace[] =
+    "workspace_cycler.scroll_distance_to_cycle_to_next_workspace";
+const char kWorkspaceCyclerCyclerStepAnimationDurationRatio[] =
+    "workspace_cycler.cycler_step_animation_duration_ratio";
+const char kWorkspaceCyclerStartCyclerAnimationDuration[] =
+    "workspace_cycler.start_cycler_animation_duration";
+const char kWorkspaceCyclerStopCyclerAnimationDuration[] =
+    "workspace_cycler.stop_cycler_animation_duration";
+#endif
+
+#if defined(USE_AURA)
+// Tuning settings for gestures.
 const char kFlingVelocityCap[] = "gesture.fling_velocity_cap";
 const char kLongPressTimeInSeconds[] =
     "gesture.long_press_time_in_seconds";

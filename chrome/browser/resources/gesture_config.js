@@ -139,7 +139,7 @@ GeneralConfig.prototype = {
  */
 function GestureConfig() {
   /** The title of the section for the gesture preferences. **/
-  /** @const */ var GESTURE_TITLE = 'Gesture Properties';
+  /** @const */ var GESTURE_TITLE = 'Gesture Configuration';
 
   /** Common prefix of gesture preferences. **/
   /** @const */ var GESTURE_PREFIX = 'gesture.';
@@ -285,7 +285,7 @@ function GestureConfig() {
  * @return {object} A GeneralConfig object.
  */
 function OverscrollConfig() {
-  /** @const */ var OVERSCROLL_TITLE = 'Overscroll Properties';
+  /** @const */ var OVERSCROLL_TITLE = 'Overscroll Configuration';
 
   /** @const */ var OVERSCROLL_PREFIX = 'overscroll.';
 
@@ -323,11 +323,77 @@ function OverscrollConfig() {
 }
 
 /**
+ * Returns a GeneralConfig for configuring workspace_cycler.* preferences.
+ * @return {object} A GeneralConfig object.
+ */
+function WorkspaceCyclerConfig() {
+  /** @const */ var WORKSPACE_CYCLER_TITLE = 'Workspace Cycler Configuration';
+
+  /** @const */ var WORKSPACE_CYCLER_PREFIX = 'workspace_cycler.';
+
+  var WORKSPACE_CYCLER_FIELDS = [
+    {
+      key: 'selected_scale',
+      label: 'Scale of the selected workspace',
+      units: '%'
+    },
+    {
+      key: 'min_scale',
+      label: 'Minimum workspace scale (scale of deepest workspace)',
+      units: '%'
+    },
+    {
+      key: 'max_scale',
+      label: 'Maximimum workspace scale (scale of shallowest workspace)',
+      units: '%'
+    },
+    {
+      key: 'min_brightness',
+      label: 'Minimum workspace brightness (deepest & shallowest workspace)',
+      units: '%'
+    },
+    {
+      key: 'background_opacity',
+      label: 'Desktop background opacity when cycling through workspaces',
+      units: '%'
+    },
+    {
+      key: 'distance_to_initiate_cycling',
+      label: 'Vertical distance to scroll to initiate cycling',
+      units: 'pixels'
+    },
+    {
+      key: 'scroll_distance_to_cycle_to_next_workspace',
+      label: 'Vertical distance to scroll to cycle to the next workspace',
+      units: 'pixels'
+    },
+    { key: 'cycler_step_animation_duration_ratio',
+      label: 'Cycler step animation duration ratio',
+      units: 'ms / pixels vertical scroll'
+    },
+    { key: 'start_cycler_animation_duration',
+      label: 'Duration of the animations to start cycling',
+      units: 'ms'
+    },
+    { key: 'stop_cycler_animation_duration',
+      label: 'Duration of the animations to stop cycling',
+      units: 'ms'
+    }
+  ];
+
+  return new GeneralConfig(WORKSPACE_CYCLER_TITLE,
+                           WORKSPACE_CYCLER_PREFIX,
+                           WORKSPACE_CYCLER_FIELDS);
+}
+
+/**
  * Returns a GeneralConfig for configuring flingcurve.* preferences.
  * @return {object} A GeneralConfig object.
  */
 function FlingConfig() {
-  var FLING_PREFIX = 'flingcurve.';
+  /** @const */ var FLING_TITLE = 'Fling Configuration';
+
+  /** @const */ var FLING_PREFIX = 'flingcurve.';
 
   var FLING_FIELDS = [
     {
@@ -362,7 +428,7 @@ function FlingConfig() {
     },
   ];
 
-  return new GeneralConfig(FLING_PREFIX, FLING_FIELDS);
+  return new GeneralConfig(FLING_TITLE, FLING_PREFIX, FLING_FIELDS);
 }
 
 
@@ -385,10 +451,14 @@ var gesture_config = (function() {
     var f = FlingConfig();
     f.buildAll();
 
+    var c = WorkspaceCyclerConfig();
+    c.buildAll();
+
     $('reset-button').onclick = function() {
       g.onReset();
       o.onReset();
       f.onReset();
+      c.onReset();
     };
   }
 

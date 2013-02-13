@@ -782,7 +782,7 @@ extern const char kComponentUpdaterState[];
 extern const char kMediaGalleriesUniqueId[];
 extern const char kMediaGalleriesRememberedGalleries[];
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 extern const char kShelfAlignment[];
 extern const char kShelfAlignmentLocal[];
 extern const char kShelfAutoHideBehavior[];
@@ -791,6 +791,22 @@ extern const char kPinnedLauncherApps[];
 extern const char kShowLogoutButtonInTray[];
 extern const char kShelfPreferences[];
 
+extern const char kWorkspaceCyclerShallowerThanSelectedYOffsets[];
+extern const char kWorkspaceCyclerDeeperThanSelectedYOffsets[];
+extern const char kWorkspaceCyclerSelectedYOffset[];
+extern const char kWorkspaceCyclerSelectedScale[];
+extern const char kWorkspaceCyclerMinScale[];
+extern const char kWorkspaceCyclerMaxScale[];
+extern const char kWorkspaceCyclerMinBrightness[];
+extern const char kWorkspaceCyclerBackgroundOpacity[];
+extern const char kWorkspaceCyclerDistanceToInitiateCycling[];
+extern const char kWorkspaceCyclerScrollDistanceToCycleToNextWorkspace[];
+extern const char kWorkspaceCyclerCyclerStepAnimationDurationRatio[];
+extern const char kWorkspaceCyclerStartCyclerAnimationDuration[];
+extern const char kWorkspaceCyclerStopCyclerAnimationDuration[];
+#endif
+
+#if defined(USE_AURA)
 extern const char kFlingVelocityCap[];
 extern const char kLongPressTimeInSeconds[];
 extern const char kMaxDistanceBetweenTapsForDoubleTap[];

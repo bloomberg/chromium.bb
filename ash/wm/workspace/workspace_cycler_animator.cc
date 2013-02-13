@@ -15,6 +15,8 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/workspace/colored_window_controller.h"
 #include "ash/wm/workspace/workspace.h"
+#include "ash/wm/workspace/workspace_cycler_configuration.h"
+#include "base/values.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/compositor/layer_animator.h"
@@ -22,49 +24,7 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
-// The maximum number of visible workspaces deeper than the selected workspace.
-const int kMinVisibleOffsetFromSelected = -2;
-
-// The maximum number of visible workspaces shallower than the selected
-// workspace.
-const int kMaxVisibleOffsetFromSelected = 3;
-
-// The scale of the selected workspace when it is completely selected.
-const double kSelectedWorkspaceScale = 0.95;
-
-// The minimum scale for workspaces in the top stack. The scales of the
-// workspaces in the top stack decrease as you go deeper into the stack.
-const double kMinTopStackScale = 0.9;
-
-// The maximum scale for workspaces in the bottom stack. The scales of the
-// workspaces in the bottom stack increase as you go up the stack.
-const double kMaxBottomStackScale = 1.0;
-
-// The minimum workspace brightness.
-const float kMinBrightness = -0.4f;
-
-// The required vertical scroll amount to cycle to the next / previous
-// workspace.
-const double kScrollAmountToCycleToNextWorkspace = 10;
-
-// The ratio of the duration of the animation to the amount that the user has
-// scrolled.
-// The duration of an animation is computed by:
-//   distance scrolled * |kCyclerStepAnimationDurationRatio|.
-const double kCyclerStepAnimationDurationRatio = 10;
-
-// The duration of the animations when animating starting the cycler.
-const int kStartCyclerAnimationDuration = 100;
-
-// The duration of the animations when animating stopping the cycler.
-const int kStopCyclerAnimationDuration = 100;
-
-// The background opacity.
-const float kBackgroundOpacity = .8f;
-
-}  // namespace
+typedef ash::WorkspaceCyclerConfiguration Config;
 
 namespace ash {
 namespace internal {
@@ -129,6 +89,16 @@ class StyleCalculator {
   // This method assumes |scroll_delta| == 0.
   bool GetTargetVisibilityForOffset(int offset_from_selected,
                                     size_t workspace_index) const;
+
+  // Returns the minimum offset from the selected workspace at which a
+  // workspace can be visible. The offset is used to limit the amount of
+  // workspaces which are simultaneously visible.
+  int GetMinVisibleOffsetFromSelected() const;
+
+  // Returns the maximum offset from the selected workspace at which a
+  // workspace can be visible. The offset is used to limit the amount of
+  // workspaces which are simultaneously visible.
+  int GetMaxVisibleOffsetFromSelected() const;
 
   // The bounds of the display containing the workspaces in workspace
   // coordinates, including the shelf if any.
@@ -201,7 +171,10 @@ void StyleCalculator::GetTargetProperties(
     second_offset_from_selected = offset_from_selected - 1;
   }
 
-  double progress = fabs(scroll_delta / kScrollAmountToCycleToNextWorkspace);
+  double scroll_distance_to_cycle_to_next_workspace = Config::GetDouble(
+      Config::SCROLL_DISTANCE_TO_CYCLE_TO_NEXT_WORKSPACE);
+  double progress = fabs(
+      scroll_delta / scroll_distance_to_cycle_to_next_workspace);
   DCHECK_GT(1.0, progress);
 
   if (transform) {
@@ -251,9 +224,11 @@ gfx::Transform StyleCalculator::GetStoppedTargetTransformForOffset(
 
   // The workspaces shallower than the selected workspace are stacked exactly
   // on top of each other offscreen.
+  double max_scale = Config::GetDouble(Config::MAX_SCALE);
+
   gfx::Transform transform;
   transform.Translate(0, screen_bounds_.height());
-  transform.Scale(kMaxBottomStackScale, kMaxBottomStackScale);
+  transform.Scale(max_scale, max_scale);
   return transform;
 }
 
@@ -282,41 +257,50 @@ gfx::DecomposedTransform StyleCalculator::GetTargetTransformForOffset(
   // which will be activated if the user does not do any more cycling.
   bool in_top_stack = (offset_from_selected <= 0);
 
-  // Give workspaces with offsets below |kMinVisibleOffsetFromSelected| the
-  // same transform as the workspace at |kMinVisibleOffsetFromSelected|. As
-  // the workspace at |kMinVisibleOffsetFromSelected| completely occludes
-  // these extra workspaces, they can be hidden.
-  // |kMaxVisibleOffsetFromSelected| is dealt with similarly.
-  if (offset_from_selected < kMinVisibleOffsetFromSelected)
-    offset_from_selected = kMinVisibleOffsetFromSelected;
-  else if (offset_from_selected > kMaxVisibleOffsetFromSelected)
-    offset_from_selected = kMaxVisibleOffsetFromSelected;
+  int min_visible_offset_from_selected = GetMinVisibleOffsetFromSelected();
+  int max_visible_offset_from_selected = GetMaxVisibleOffsetFromSelected();
 
-  double scale = kSelectedWorkspaceScale;
+  // Give workspaces at hidden offsets the transform of the workspace at the
+  // nearest visible offset. This is needed to produce a valid result when
+  // interpolating between the values of GetTargetTransformForOffset() for a
+  // visible and hidden offset.
+  if (offset_from_selected < min_visible_offset_from_selected)
+    offset_from_selected = min_visible_offset_from_selected;
+  else if (offset_from_selected > max_visible_offset_from_selected)
+    offset_from_selected = max_visible_offset_from_selected;
+
+  double selected_scale = Config::GetDouble(Config::SELECTED_SCALE);
+
+  double scale = selected_scale;
   if (in_top_stack) {
+    double min_scale = Config::GetDouble(Config::MIN_SCALE);
     scale -= static_cast<double>(offset_from_selected) /
-        kMinVisibleOffsetFromSelected *
-        (kSelectedWorkspaceScale - kMinTopStackScale);
+        min_visible_offset_from_selected * (selected_scale - min_scale);
   } else {
+    double max_scale = Config::GetDouble(Config::MAX_SCALE);
     scale += static_cast<double>(offset_from_selected) /
-        kMaxVisibleOffsetFromSelected *
-        (kMaxBottomStackScale - kSelectedWorkspaceScale);
+        max_visible_offset_from_selected * (max_scale - selected_scale);
   }
 
-  // Compute the workspace's y offset. As abs(|offset_from_selected|) increases,
-  // the amount of the top of the workspace which is visible from beneath the
-  // shallower workspaces decreases exponentially.
+  // Compute the workspace's y offset.
   double y_offset = 0;
-  if (in_top_stack) {
-    const double kTopStackYOffsets[-kMinVisibleOffsetFromSelected + 1] =
-        { 40, 28, 20 };
-    y_offset = kTopStackYOffsets[
-        static_cast<size_t>(std::abs(offset_from_selected))];
+  if (offset_from_selected == 0) {
+    y_offset = Config::GetDouble(Config::SELECTED_Y_OFFSET);
   } else {
-    const double kBottomStackYOffsets[kMaxVisibleOffsetFromSelected] =
-        { -40, -32, -20 };
-    y_offset = maximized_bounds_.height() +
-        kBottomStackYOffsets[static_cast<size_t>(offset_from_selected - 1)];
+    Config::Property y_offsets_property;
+    if (in_top_stack) {
+      y_offsets_property = Config::DEEPER_THAN_SELECTED_Y_OFFSETS;
+    } else {
+      y_offsets_property = Config::SHALLOWER_THAN_SELECTED_Y_OFFSETS;
+      y_offset = maximized_bounds_.height();
+    }
+    const base::ListValue& y_offsets = Config::GetListValue(y_offsets_property);
+    size_t y_offset_index = static_cast<size_t>(
+        std::abs(offset_from_selected) - 1);
+    DCHECK_GT(y_offsets.GetSize(), y_offset_index);
+    double y_offset_config_value = 0;
+    y_offsets.GetDouble(y_offset_index, &y_offset_config_value);
+    y_offset += y_offset_config_value;
   }
 
   // Center the workspace horizontally.
@@ -333,8 +317,9 @@ gfx::DecomposedTransform StyleCalculator::GetTargetTransformForOffset(
 float StyleCalculator::GetTargetBrightnessForOffset(
     int offset_from_selected) const {
   int max_visible_distance_from_selected = std::max(
-      std::abs(kMinVisibleOffsetFromSelected), kMaxVisibleOffsetFromSelected);
-  return kMinBrightness * std::min(
+      std::abs(GetMinVisibleOffsetFromSelected()),
+      GetMaxVisibleOffsetFromSelected());
+  return Config::GetDouble(Config::MIN_BRIGHTNESS) * std::min(
       1.0,
       static_cast<double>(std::abs(offset_from_selected)) /
           max_visible_distance_from_selected);
@@ -345,14 +330,28 @@ bool StyleCalculator::GetTargetVisibilityForOffset(
     size_t workspace_index) const {
   // The workspace at the highest possible index is the shallowest workspace
   // out of both stacks and is always visible.
-  // The workspace at |kMaxVisibleWorkspaceFromSelected| is hidden because
-  // it has the same transform as the shallowest workspace and is completely
+  // The workspace at |GetMaxVisibleOffsetFromSelected()| is hidden because it
+  // has the same transform as the shallowest workspace and is completely
   // occluded by it.
   if (workspace_index == num_workspaces_ - 1)
     return true;
 
-  return offset_from_selected >= kMinVisibleOffsetFromSelected &&
-      offset_from_selected < kMaxVisibleOffsetFromSelected;
+  return offset_from_selected >= GetMinVisibleOffsetFromSelected() &&
+      offset_from_selected < GetMaxVisibleOffsetFromSelected();
+}
+
+int StyleCalculator::GetMinVisibleOffsetFromSelected() const {
+  const base::ListValue& y_offsets = Config::GetListValue(
+      Config::DEEPER_THAN_SELECTED_Y_OFFSETS);
+  // Hide workspaces for which there is no y offset specified.
+  return -1 * static_cast<int>(y_offsets.GetSize());
+}
+
+int StyleCalculator::GetMaxVisibleOffsetFromSelected() const {
+  const base::ListValue& y_offsets = Config::GetListValue(
+      Config::SHALLOWER_THAN_SELECTED_Y_OFFSETS);
+  // Hide workspaces for which there is no y offset specified.
+  return y_offsets.GetSize();
 }
 
 WorkspaceCyclerAnimator::WorkspaceCyclerAnimator(Delegate* delegate)
@@ -413,9 +412,12 @@ void WorkspaceCyclerAnimator::AnimateStartingCycler() {
     layer->SetLayerBrightness(brightness);
   }
 
+  int start_cycler_animation_duration = static_cast<int>(Config::GetDouble(
+      Config::START_CYCLER_ANIMATION_DURATION));
+
   scroll_delta_ = 0;
   animation_type_ = CYCLER_START;
-  AnimateToUpdatedState(kStartCyclerAnimationDuration);
+  AnimateToUpdatedState(start_cycler_animation_duration);
 
   aura::Window* background = GetDesktopBackground();
   if (background) {
@@ -431,9 +433,9 @@ void WorkspaceCyclerAnimator::AnimateStartingCycler() {
       settings.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-          kStartCyclerAnimationDuration));
+          start_cycler_animation_duration));
 
-      layer->SetOpacity(kBackgroundOpacity);
+      layer->SetOpacity(Config::GetDouble(Config::BACKGROUND_OPACITY));
     }
   }
 
@@ -453,8 +455,11 @@ void WorkspaceCyclerAnimator::AnimateStoppingCycler() {
     return;
   }
 
+  int stop_cycler_animation_duration = static_cast<int>(Config::GetDouble(
+      Config::STOP_CYCLER_ANIMATION_DURATION));
+
   animation_type_ = CYCLER_END;
-  AnimateToUpdatedState(kStopCyclerAnimationDuration);
+  AnimateToUpdatedState(stop_cycler_animation_duration);
 
   aura::Window* background = GetDesktopBackground();
   if (background) {
@@ -463,7 +468,7 @@ void WorkspaceCyclerAnimator::AnimateStoppingCycler() {
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kStopCyclerAnimationDuration));
+        stop_cycler_animation_duration));
 
     layer->SetOpacity((selected_workspace_index_ == 0) ? 1.0f : 0.0f);
   }
@@ -475,8 +480,8 @@ void WorkspaceCyclerAnimator::AbortAnimations() {
   CyclerStopped(initial_active_workspace_index_);
 }
 
-void WorkspaceCyclerAnimator::AnimateCyclingByScrollDelta(float scroll_delta) {
-  if (scroll_delta == 0.0f)
+void WorkspaceCyclerAnimator::AnimateCyclingByScrollDelta(double scroll_delta) {
+  if (scroll_delta == 0)
     return;
 
   // Drop any updates received while an animation is running.
@@ -490,12 +495,15 @@ void WorkspaceCyclerAnimator::AnimateCyclingByScrollDelta(float scroll_delta) {
   double old_scroll_delta = scroll_delta_;
   scroll_delta_ += scroll_delta;
 
+  double scroll_distance_to_cycle_to_next_workspace = Config::GetDouble(
+      Config::SCROLL_DISTANCE_TO_CYCLE_TO_NEXT_WORKSPACE);
+
   double min_scroll_delta = -1 *
       static_cast<double>(selected_workspace_index_) *
-      kScrollAmountToCycleToNextWorkspace;
+      scroll_distance_to_cycle_to_next_workspace;
   double max_scroll_delta = static_cast<double>(
       workspaces_.size() - 1 - selected_workspace_index_) *
-      kScrollAmountToCycleToNextWorkspace;
+      scroll_distance_to_cycle_to_next_workspace;
 
   if (scroll_delta_ < min_scroll_delta)
     scroll_delta_ = min_scroll_delta;
@@ -510,11 +518,12 @@ void WorkspaceCyclerAnimator::AnimateCyclingByScrollDelta(float scroll_delta) {
   // has scrolled the exact amount to select the workspace with no undershoot /
   // overshoot.
   int workspace_change = floor(scroll_delta_ /
-      kScrollAmountToCycleToNextWorkspace + .5);
+      scroll_distance_to_cycle_to_next_workspace + .5);
   selected_workspace_index_ += workspace_change;
 
   // Set |scroll_delta_| to the amount of undershoot / overshoot.
-  scroll_delta_ -= workspace_change * kScrollAmountToCycleToNextWorkspace;
+  scroll_delta_ -= workspace_change *
+      scroll_distance_to_cycle_to_next_workspace;
 
   int animation_duration = GetAnimationDurationForChangeInScrollDelta(
       scroll_delta_ - old_scroll_delta);
@@ -636,8 +645,9 @@ void WorkspaceCyclerAnimator::AnimateTo(size_t workspace_index,
 
 int WorkspaceCyclerAnimator::GetAnimationDurationForChangeInScrollDelta(
     double change) const {
-  return static_cast<int>(
-      fabs(change) * kCyclerStepAnimationDurationRatio);
+  double ratio = Config::GetDouble(
+      Config::CYCLER_STEP_ANIMATION_DURATION_RATIO);
+  return static_cast<int>(fabs(change) * ratio);
 }
 
 void WorkspaceCyclerAnimator::CreateLauncherBackground() {
