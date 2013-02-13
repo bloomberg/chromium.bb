@@ -188,10 +188,12 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
     if (!IsPepperFlash(*it))
       continue;
 
-    // If the version we're trying to register is older than the existing one,
-    // don't do it.
-    if (version.IsOlderThan(UTF16ToUTF8(it->version)))
+    // Do it only if the version we're trying to register is newer.
+    Version registered_version(UTF16ToUTF8(it->version));
+    if (registered_version.IsValid() &&
+        version.CompareTo(registered_version) <= 0) {
       return;
+    }
 
     // If the version is newer, remove the old one first.
     PluginService::GetInstance()->UnregisterInternalPlugin(it->path);
