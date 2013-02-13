@@ -70,7 +70,7 @@ def IsInternalRepoCheckout(root):
 
 
 def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
-                 mirror=False, retries=2, depth=None):
+                 mirror=False, retries=constants.SYNC_RETRIES, depth=None):
   """Clone given git repo
   Args:
     repo_url: git repo to clone
@@ -333,7 +333,8 @@ class RepoRepository(object):
       if not all_branches:
         cmd.append('-c')
       # Do the network half of the sync; retry as necessary to get the content.
-      cros_build_lib.RunCommandWithRetries(2, cmd + ['-n'], cwd=self.directory)
+      cros_build_lib.RunCommandWithRetries(constants.SYNC_RETRIES, cmd + ['-n'],
+                                           cwd=self.directory)
 
       if network_only:
         return

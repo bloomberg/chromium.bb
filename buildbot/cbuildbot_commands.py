@@ -26,7 +26,6 @@ from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import parallel
 
-_DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
@@ -1450,4 +1449,5 @@ def SyncChrome(build_root, cache_dir, useflags, tag=None, revision=None):
   cmd += ['--revision', revision] if revision is not None else []
   chrome_src = 'chrome-src-internal' if internal else 'chrome-src'
   cmd += [os.path.join(cache_dir, 'distfiles', 'target', chrome_src)]
-  cros_build_lib.RunCommand(cmd, cwd=build_root)
+  cros_build_lib.RunCommandWithRetries(constants.SYNC_RETRIES, cmd,
+                                       cwd=build_root)
