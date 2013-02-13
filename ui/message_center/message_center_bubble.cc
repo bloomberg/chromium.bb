@@ -180,6 +180,9 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
       : WebNotificationButtonViewBase(list_delegate) {
     set_background(views::Background::CreateSolidBackground(
         kMessageCenterBackgroundColor));
+    set_border(views::Border::CreateSolidSidedBorder(
+        1, 0, 0, 0, kFooterDelimiterColor));
+
 
     notification_label_ = new views::Label(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_FOOTER_TITLE));
@@ -197,7 +200,8 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
 
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
-    layout->SetInsets(0, kFooterMargin, kMarginBetweenItems, 0);
+    layout->SetInsets(
+        kMarginBetweenItems, kFooterMargin, kMarginBetweenItems, 0);
     views::ColumnSet* column = layout->AddColumnSet(0);
     column->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                       1.0f, views::GridLayout::USE_PREF, 0, 0);
@@ -308,7 +312,7 @@ class ScrollContentView : public views::View {
       set_border(views::Border::CreateEmptyBorder(
           kMarginBetweenItems - shadow_insets.top(), /* top */
           kMarginBetweenItems - shadow_insets.left(), /* left */
-          kMarginBetweenItems - shadow_insets.bottom(),  /* bottom */
+          0,  /* bottom */
           kMarginBetweenItems - shadow_insets.right() /* right */ ));
     } else {
       views::BoxLayout* layout =
