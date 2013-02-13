@@ -193,6 +193,21 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceUrlForRemoval) {
           "folder:root", "file:ABCDE").spec());
 }
 
+TEST_F(GDataWapiUrlGeneratorTest, GenerateInitiateUploadNewFileUrl) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/upload/create-session/default/private/"
+      "full/folder%3Aabcde/contents?convert=false&v=3&alt=json",
+      url_generator_.GenerateInitiateUploadNewFileUrl("folder:abcde").spec());
+}
+
+TEST_F(GDataWapiUrlGeneratorTest, GenerateInitiateUploadExistingFileUrl) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/upload/create-session/default/private/"
+      "full/file%3Aresource_id?convert=false&v=3&alt=json",
+      url_generator_.GenerateInitiateUploadExistingFileUrl(
+          "file:resource_id").spec());
+}
+
 TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListRootUrl) {
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full?v=3&alt=json",

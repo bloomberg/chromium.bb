@@ -104,6 +104,16 @@ class GDataWapiUrlGenerator {
   GURL GenerateResourceUrlForRemoval(const std::string& parent_resource_id,
                                      const std::string& resource_id) const;
 
+  // Generates a URL to initiate uploading a new file to a directory
+  // specified by |parent_resource_id|.
+  GURL GenerateInitiateUploadNewFileUrl(
+      const std::string& parent_resource_id) const;
+
+  // Generates a URL to initiate uploading file content to overwrite a
+  // file specified by |resource_id|.
+  GURL GenerateInitiateUploadExistingFileUrl(
+      const std::string& resource_id) const;
+
   // Generates a URL for getting the root resource list feed.
   // Used to make changes in the root directory (ex. create a directory in the
   // root directory)

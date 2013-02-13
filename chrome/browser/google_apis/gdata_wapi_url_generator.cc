@@ -42,6 +42,15 @@ const char kResourceListRootURL[] = "/feeds/default/private/full";
 // Metadata feed with things like user quota.
 const char kAccountMetadataURL[] = "/feeds/metadata/default";
 
+// URL to upload a new file under a particular directory specified by "%s".
+const char kInitiateUploadNewFileURLFormat[] =
+    "/feeds/upload/create-session/default/private/full/%s/contents";
+
+// URL to upload a file content to overwrite a file whose resource id is
+// followed by this prefix.
+const char kInitiateUploadExistingFileURLPrefix[] =
+    "/feeds/upload/create-session/default/private/full/";
+
 #ifndef NDEBUG
 // Use smaller 'page' size while debugging to ensure we hit feed reload
 // almost always. Be careful not to use something too small on account that
@@ -191,6 +200,21 @@ GURL GDataWapiUrlGenerator::GenerateResourceUrlForRemoval(
                          net::EscapePath(parent_resource_id).c_str(),
                          net::EscapePath(resource_id).c_str()));
   return AddStandardUrlParams(result);
+}
+
+GURL GDataWapiUrlGenerator::GenerateInitiateUploadNewFileUrl(
+    const std::string& parent_resource_id) const {
+  GURL result = base_url_.Resolve(
+      base::StringPrintf(kInitiateUploadNewFileURLFormat,
+                         net::EscapePath(parent_resource_id).c_str()));
+  return AddInitiateUploadUrlParams(result);
+}
+
+GURL GDataWapiUrlGenerator::GenerateInitiateUploadExistingFileUrl(
+    const std::string& resource_id) const {
+  GURL result = base_url_.Resolve(
+      kInitiateUploadExistingFileURLPrefix + net::EscapePath(resource_id));
+  return AddInitiateUploadUrlParams(result);
 }
 
 GURL GDataWapiUrlGenerator::GenerateResourceListRootUrl() const {
