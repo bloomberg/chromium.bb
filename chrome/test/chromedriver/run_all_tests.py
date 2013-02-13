@@ -45,8 +45,10 @@ def RunPythonTests(chromedriver, chrome):
   if util.IsMac():
     # In Mac, chromedriver2.so is a 32-bit build, so run with the 32-bit python.
     os.environ['VERSIONER_PYTHON_PREFER_32_BIT'] = 'yes'
-  if util.RunCommand(cmd):
+  code = util.RunCommand(cmd)
+  if code:
     print '@@@STEP_FAILURE@@@'
+  return code
 
 
 def RunJavaTests(chromedriver, chrome):
@@ -57,14 +59,18 @@ def RunJavaTests(chromedriver, chrome):
     '--chromedriver=' + chromedriver,
     '--chrome=' + chrome,
   ]
-  if util.RunCommand(cmd):
+  code = util.RunCommand(cmd)
+  if code:
     print '@@@STEP_FAILURE@@@'
+  return code
 
 
 def RunCppTests(cpp_tests):
   print '@@@BUILD_STEP chromedriver2_tests@@@'
-  if util.RunCommand([cpp_tests]):
+  code = util.RunCommand([cpp_tests])
+  if code:
     print '@@@STEP_FAILURE@@@'
+  return code
 
 
 def main():
