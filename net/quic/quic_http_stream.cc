@@ -48,7 +48,6 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      const CompletionCallback& callback) {
   CHECK(stream_);
 
-  stream_net_log_ = stream_net_log;
   request_info_ = request_info;
 
   return OK;
@@ -73,32 +72,12 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     SpdyFramer::WriteHeaderBlock(&builder, 3, &headers);
     scoped_ptr<SpdyFrame> frame(builder.take());
     request_ = std::string(frame->data(), len);
-    // Log the actual request with the URL Request's net log.
-    stream_net_log_.AddEvent(
-        NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
-        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
-    // Also log to the QuicSession's net log.
-    stream_->net_log().AddEvent(
-        NetLog::TYPE_QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS,
-        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
   } else {
     std::string path = HttpUtil::PathForRequest(request_info_->url);
     std::string first_line = base::StringPrintf("%s %s HTTP/1.1\r\n",
                                                 request_info_->method.c_str(),
                                                 path.c_str());
     request_ = first_line + request_headers.ToString();
-    // Log the actual request with the URL Request's net log.
-    stream_net_log_.AddEvent(
-        NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST_HEADERS,
-        base::Bind(&HttpRequestHeaders::NetLogCallback,
-                   base::Unretained(&request_headers),
-                   &first_line));
-    // Also log to the QuicSession's net log.
-    stream_->net_log().AddEvent(
-        NetLog::TYPE_QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS,
-        base::Bind(&HttpRequestHeaders::NetLogCallback,
-                   base::Unretained(&request_headers),
-                   &first_line));
   }
 
   // Store the request body.
@@ -479,12 +458,6 @@ int QuicHttpStream::ParseResponseHeaders() {
       BufferResponseBody(read_buf_->data(), delta);
     }
 
-    // The URLRequest logs these headers, so only log to the QuicSession's
-    // net log.
-    stream_->net_log().AddEvent(
-        NetLog::TYPE_QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS,
-        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
-
     SpdyHeadersToHttpResponse(headers, 3, response_info_);
     // Put the peer's IP address and port into the response.
     IPEndPoint address = stream_->GetPeerAddress();
@@ -513,13 +486,6 @@ int QuicHttpStream::ParseResponseHeaders() {
   response_info_->headers = headers;
   response_info_->vary_data.Init(*request_info_, *response_info_->headers);
   response_headers_received_ = true;
-
-  // The URLRequest logs these headers, so only log to the QuicSession's
-  // net log.
-  stream_->net_log().AddEvent(
-      NetLog::TYPE_QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS,
-      base::Bind(&HttpResponseHeaders::NetLogCallback,
-                 response_info_->headers));
 
   // Save the remaining received data.
   int delta = read_buf_->offset() - end_offset;

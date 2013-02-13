@@ -31,8 +31,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   QuicClientSession(QuicConnection* connection,
                     QuicConnectionHelper* helper,
                     QuicStreamFactory* stream_factory,
-                    const std::string& server_hostname,
-                    NetLog* net_log);
+                    const std::string& server_hostname);
 
   virtual ~QuicClientSession();
 
@@ -54,8 +53,6 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
 
   base::Value* GetInfoAsValue(const HostPortPair& pair) const;
 
-  const BoundNetLog& net_log() const { return net_log_; }
-
  protected:
   // QuicSession methods:
   virtual ReliableQuicStream* CreateIncomingReliableStream(
@@ -72,8 +69,6 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   scoped_refptr<IOBufferWithSize> read_buffer_;
   bool read_pending_;
   CompletionCallback callback_;
-  size_t num_total_streams_;
-  BoundNetLog net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientSession);
 };

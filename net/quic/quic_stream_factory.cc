@@ -378,7 +378,7 @@ QuicClientSession* QuicStreamFactory::CreateSession(
 
   QuicConnection* connection = new QuicConnection(guid, addr, helper);
   QuicClientSession* session = new QuicClientSession(connection, helper, this,
-                                                     host, net_log.net_log());
+                                                     host);
   all_sessions_.insert(session);  // owning pointer
   return session;
 }

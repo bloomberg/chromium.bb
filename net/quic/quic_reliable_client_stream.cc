@@ -10,10 +10,8 @@
 namespace net {
 
 QuicReliableClientStream::QuicReliableClientStream(QuicStreamId id,
-                                                   QuicSession* session,
-                                                   const BoundNetLog& net_log)
+                                                   QuicSession* session)
     : ReliableQuicStream(id, session),
-      net_log_(net_log),
       delegate_(NULL) {
 }
 

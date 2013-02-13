@@ -56,8 +56,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
   };
 
   QuicReliableClientStream(QuicStreamId id,
-                           QuicSession* session,
-                           const BoundNetLog& net_log);
+                           QuicSession* session);
 
   virtual ~QuicReliableClientStream();
 
@@ -73,10 +72,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
   Delegate* GetDelegate() { return delegate_; }
   void OnError(int error);
 
-  const BoundNetLog& net_log() const { return net_log_; }
-
  private:
-  BoundNetLog net_log_;
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicReliableClientStream);

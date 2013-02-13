@@ -19,25 +19,17 @@ namespace net {
 QuicClientSession::QuicClientSession(QuicConnection* connection,
                                      QuicConnectionHelper* helper,
                                      QuicStreamFactory* stream_factory,
-                                     const string& server_hostname,
-                                     NetLog* net_log)
+                                     const string& server_hostname)
     : QuicSession(connection, false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(crypto_stream_(this, server_hostname)),
       helper_(helper),
       stream_factory_(stream_factory),
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
-      read_pending_(false),
-      num_total_streams_(0),
-      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)) {
-  // TODO(rch): pass in full host port proxy pair
-  net_log_.BeginEvent(
-      NetLog::TYPE_QUIC_SESSION,
-      NetLog::StringCallback("host", &server_hostname));
+      read_pending_(false) {
 }
 
 QuicClientSession::~QuicClientSession() {
-  net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
 }
 
 QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
@@ -51,9 +43,8 @@ QuicReliableClientStream* QuicClientSession::CreateOutgoingReliableStream() {
     return NULL;
   }
   QuicReliableClientStream* stream =
-      new QuicReliableClientStream(GetNextStreamId(), this, net_log_);
+       new QuicReliableClientStream(GetNextStreamId(), this);
   ActivateStream(stream);
-  ++num_total_streams_;
   return stream;
 }
 
@@ -125,16 +116,12 @@ void QuicClientSession::CloseSessionOnError(int error) {
     CloseStream(id);
   }
   stream_factory_->OnSessionClose(this);
-  net_log_.BeginEvent(
-      NetLog::TYPE_QUIC_SESSION,
-      NetLog::IntegerCallback("net_error", error));
 }
 
 Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString("host_port_pair", pair.ToString());
   dict->SetInteger("open_streams", GetNumOpenStreams());
-  dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
   dict->SetString("guid", base::Uint64ToString(guid()));
   return dict;

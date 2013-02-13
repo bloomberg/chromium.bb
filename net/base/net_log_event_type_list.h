@@ -1209,38 +1209,6 @@ EVENT_TYPE(SPDY_PROXY_CLIENT_SESSION)
 //   }
 
 // ------------------------------------------------------------------------
-// QuicSession
-// ------------------------------------------------------------------------
-
-// The start/end of a QuicSession.
-//   {
-//     "host": <The host-port string>,
-//   }
-EVENT_TYPE(QUIC_SESSION)
-
-// Session is closing because of an error.
-//   {
-//     "net_error": <Net error code for the closure>
-//   }
-EVENT_TYPE(QUIC_SESSION_CLOSE_ON_ERROR)
-
-// ------------------------------------------------------------------------
-// QuicHttpStream
-// ------------------------------------------------------------------------
-
-// The stream is sending the request headers.
-//   {
-//     "headers": <The list of header:value pairs>
-//   }
-EVENT_TYPE(QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS)
-
-// The stream has read the response headers.
-//   {
-//     "headers": <The list of header:value pairs>
-//   }
-EVENT_TYPE(QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS)
-
-// ------------------------------------------------------------------------
 // HttpStreamParser
 // ------------------------------------------------------------------------
 
