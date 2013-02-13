@@ -410,6 +410,8 @@ gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
 
   std::string item_key =
       suggested_cc_.GetItemKeyAt(suggested_cc_.checked_item());
+  if (item_key.empty())
+    return gfx::Image();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
   return rb.GetImageNamed(card->IconResourceId());
