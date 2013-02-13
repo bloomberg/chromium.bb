@@ -87,6 +87,9 @@ done
 
 # Are we on a Chrome buildbot running ASan?
 function on_asan_mac_host {
+  if [[ "${OS}" != "Darwin" ]]; then
+    return 1
+  fi
   HOST="$(uname -n)"
   # Chrome Mac ASan Builder.
   if [[ "${HOST}" == "vm633-m1.golo.chromium.org" ]]; then
@@ -97,7 +100,7 @@ function on_asan_mac_host {
     return 0
   fi
   # mac_asan trybots.
-  for num in $(seq 600 655)
+  for num in $(jot - 600 655)
   do
     if [[ "${HOST}" == "vm${num}-m4.golo.chromium.org" ]]; then
       return 0
