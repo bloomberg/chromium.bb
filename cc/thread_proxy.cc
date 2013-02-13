@@ -1191,15 +1191,15 @@ void ThreadProxy::renewTreePriority()
             priority == SMOOTHNESS_TAKES_PRIORITY);
     }
 
+    base::TimeDelta delay = m_smoothnessTakesPriorityExpirationTime -
+        base::TimeTicks::Now();
+
     // Need to make sure a delayed task is posted when we have smoothness
     // takes priority expiration time in the future.
-    if (m_smoothnessTakesPriorityExpirationTime <= base::TimeTicks::Now())
+    if (delay <= base::TimeDelta())
         return;
     if (m_renewTreePriorityOnImplThreadPending)
         return;
-
-    base::TimeDelta delay = m_smoothnessTakesPriorityExpirationTime -
-        base::TimeTicks::Now();
 
     Proxy::implThread()->postDelayedTask(
         base::Bind(&ThreadProxy::renewTreePriorityOnImplThread,
