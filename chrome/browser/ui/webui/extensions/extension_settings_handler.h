@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
@@ -67,7 +66,6 @@ class ExtensionSettingsHandler
       public content::NotificationObserver,
       public content::WebContentsObserver,
       public ui::SelectFileDialog::Listener,
-      public ExtensionInstallPrompt::Delegate,
       public ExtensionUninstallDialog::Delegate,
       public extensions::ExtensionWarningService::Observer,
       public base::SupportsWeakPtr<ExtensionSettingsHandler> {
@@ -123,10 +121,6 @@ class ExtensionSettingsHandler
   // extensions::ExtensionWarningService::Observer implementation.
   virtual void ExtensionWarningsChanged() OVERRIDE;
 
-  // ExtensionInstallPrompt::Delegate implementation.
-  virtual void InstallUIProceed() OVERRIDE;
-  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
-
   // Helper method that reloads all unpacked extensions.
   void ReloadUnpackedExtensions();
 
@@ -162,9 +156,6 @@ class ExtensionSettingsHandler
 
   // Callback for "options" message.
   void HandleOptionsMessage(const base::ListValue* args);
-
-  // Callback for "permissions" message.
-  void HandlePermissionsMessage(const base::ListValue* args);
 
   // Callback for "showButton" message.
   void HandleShowButtonMessage(const base::ListValue* args);
@@ -252,9 +243,6 @@ class ExtensionSettingsHandler
   // another Check() before the previous one is complete will cause the first
   // one to abort.
   scoped_ptr<extensions::RequirementsChecker> requirements_checker_;
-
-  // The UI for showing what permissions the extension has.
-  scoped_ptr<ExtensionInstallPrompt> prompt_;
 
   ScopedObserver<extensions::ExtensionWarningService,
                  extensions::ExtensionWarningService::Observer>

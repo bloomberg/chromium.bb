@@ -57,7 +57,6 @@ static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE,
   IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE,
   IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE,
-  IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE,
 };
 static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
@@ -66,16 +65,6 @@ static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING,
   IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING,
   0,  // External installs use different strings for extensions/apps.
-  IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_HEADING,
-};
-static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
-  ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
-  ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
-  ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
-  ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
-  ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
-  ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
-  ui::DIALOG_BUTTON_CANCEL,
 };
 static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
@@ -84,7 +73,6 @@ static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
   IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON,
   0,  // External installs use different strings for extensions/apps.
-  0,
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   0,  // These all use the platform's default cancel label.
@@ -93,7 +81,6 @@ static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   0,
   IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON,
   IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON,
-  IDS_CLOSE,
 };
 static const int kPermissionsHeaderIds[
     ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -103,7 +90,6 @@ static const int kPermissionsHeaderIds[
   IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
-  IDS_EXTENSION_PROMPT_CAN_ACCESS,
 };
 static const int kOAuthHeaderIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_OAUTH_HEADER,
@@ -113,7 +99,6 @@ static const int kOAuthHeaderIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_OAUTH_PERMISSIONS_HEADER,
   // TODO(mpcomplete): Do we need this for external install UI? If we do,
   // we need to update FetchOAuthIssueAdviceIfNeeded.
-  0,
   0,
 };
 
@@ -260,10 +245,6 @@ string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
     return l10n_util::GetStringFUTF16(
         kHeadingIds[type_], UTF8ToUTF16(extension_->name()));
   }
-}
-
-int ExtensionInstallPrompt::Prompt::GetDialogButtons() const {
-  return kButtons[type_];
 }
 
 string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
@@ -551,17 +532,6 @@ void ExtensionInstallPrompt::ConfirmIssueAdvice(
   LoadImageIfNeeded();
 }
 
-void ExtensionInstallPrompt::ReviewPermissions(Delegate* delegate,
-                                               const Extension* extension) {
-  DCHECK(ui_loop_ == MessageLoop::current());
-  extension_ = extension;
-  permissions_ = extension->GetActivePermissions();
-  delegate_ = delegate;
-  prompt_.set_type(POST_INSTALL_PERMISSIONS_PROMPT);
-
-  LoadImageIfNeeded();
-}
-
 void ExtensionInstallPrompt::OnInstallSuccess(const Extension* extension,
                                               SkBitmap* icon) {
   extension_ = extension;
@@ -674,8 +644,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case RE_ENABLE_PROMPT:
     case INLINE_INSTALL_PROMPT:
     case EXTERNAL_INSTALL_PROMPT:
-    case INSTALL_PROMPT:
-    case POST_INSTALL_PERMISSIONS_PROMPT: {
+    case INSTALL_PROMPT: {
       prompt_.set_extension(extension_);
       prompt_.set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
       break;
