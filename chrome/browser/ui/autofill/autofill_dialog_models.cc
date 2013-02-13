@@ -29,6 +29,12 @@ void SuggestionsMenuModel::AddKeyedItem(
   AddCheckItem(items_.size() - 1, item);
 }
 
+void SuggestionsMenuModel::Reset() {
+  checked_item_ = 0;
+  items_.clear();
+  Clear();
+}
+
 std::string SuggestionsMenuModel::GetItemKeyAt(int index) const {
   return items_[index].first;
 }

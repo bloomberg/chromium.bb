@@ -221,6 +221,7 @@ void AutofillDialogControllerImpl::Show() {
   // fields. First we must figure out what the "right" fields are.
   view_.reset(AutofillDialogView::Create(this));
   view_->Show();
+  GetManager()->AddObserver(this);
 
   // Request sugar info after the view is showing to simplify code for now.
   if (CanPayWithWallet())
@@ -230,6 +231,10 @@ void AutofillDialogControllerImpl::Show() {
 void AutofillDialogControllerImpl::Hide() {
   if (view_)
     view_->Hide();
+}
+
+void AutofillDialogControllerImpl::UpdateProgressBar(double value) {
+  view_->UpdateProgressBar(value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -380,17 +385,11 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
 
   if (section == SECTION_CC) {
     CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
-    if (!card)
-      return string16();
-
     return card->TypeAndLastFourDigits();
   }
 
-  AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
-  if (!profile)
-    return string16();
-
   const std::string app_locale = AutofillCountry::ApplicationLocale();
+  AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
   string16 comma = ASCIIToUTF16(", ");
   string16 label = profile->GetInfo(NAME_FULL, app_locale) +
       comma + profile->GetInfo(ADDRESS_HOME_LINE1, app_locale);
@@ -411,11 +410,8 @@ gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
 
   std::string item_key =
       suggested_cc_.GetItemKeyAt(suggested_cc_.checked_item());
-  CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
-  if (!card)
-    return gfx::Image();
-
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
   return rb.GetImageNamed(card->IconResourceId());
 }
 
@@ -437,11 +433,7 @@ void AutofillDialogControllerImpl::EditClickedForSection(
     FormGroup* form_group = section == SECTION_CC ?
         static_cast<FormGroup*>(GetManager()->GetCreditCardByGUID(guid)) :
         static_cast<FormGroup*>(GetManager()->GetProfileByGUID(guid));
-
-    // TODO(estade): we shouldn't let this happen.
-    if (!form_group)
-      return;
-
+    DCHECK(form_group);
     FillInputFromFormGroup(form_group, inputs);
   }
 
@@ -555,6 +547,8 @@ void AutofillDialogControllerImpl::FocusMoved() {
 }
 
 void AutofillDialogControllerImpl::ViewClosed(DialogAction action) {
+  GetManager()->RemoveObserver(this);
+
   if (action == ACTION_SUBMIT) {
     FillOutputForSection(SECTION_EMAIL);
     FillOutputForSection(SECTION_CC);
@@ -575,10 +569,6 @@ void AutofillDialogControllerImpl::ViewClosed(DialogAction action) {
   }
 
   delete this;
-}
-
-void AutofillDialogControllerImpl::UpdateProgressBar(double value) {
-  view_->UpdateProgressBar(value);
 }
 
 DialogNotification AutofillDialogControllerImpl::CurrentNotification() const {
@@ -635,7 +625,7 @@ content::WebContents* AutofillDialogControllerImpl::web_contents() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutofillPopupDelegate
+// AutofillPopupDelegate implementation.
 
 void AutofillDialogControllerImpl::OnPopupShown(
     content::KeyboardListener* listener) {}
@@ -655,10 +645,7 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
       static_cast<FormGroup*>(GetManager()->GetCreditCardByGUID(pair.first)) :
       // TODO(estade): need to use the variant, |pair.second|.
       static_cast<FormGroup*>(GetManager()->GetProfileByGUID(pair.first));
-
-  // TODO(estade): we shouldn't let this happen.
-  if (!form_group)
-    return;
+  DCHECK(form_group);
 
   FillInputFromFormGroup(
       form_group,
@@ -679,7 +666,7 @@ void AutofillDialogControllerImpl::ClearPreviewedForm() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// content::NotificationObserver
+// content::NotificationObserver implementation.
 
 void AutofillDialogControllerImpl::Observe(
     int type,
@@ -696,7 +683,7 @@ void AutofillDialogControllerImpl::Observe(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SuggestionsMenuModelDelegate
+// SuggestionsMenuModelDelegate implementation.
 
 void AutofillDialogControllerImpl::SuggestionItemSelected(
     const SuggestionsMenuModel& model) {
@@ -706,7 +693,7 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// wallet::WalletClientObserver
+// wallet::WalletClientObserver implementation.
 
 void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
   NOTIMPLEMENTED();
@@ -783,6 +770,15 @@ void AutofillDialogControllerImpl::OnNetworkError(int response_code) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PersonalDataManagerObserver implementation.
+
+void AutofillDialogControllerImpl::OnPersonalDataChanged() {
+  HidePopup();
+  GenerateSuggestionsModels();
+  view_->ModelChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 bool AutofillDialogControllerImpl::HandleKeyPressEventInInput(
     const content::NativeWebKeyboardEvent& event) {
@@ -847,6 +843,11 @@ void AutofillDialogControllerImpl::WalletRequestCompleted(bool success) {
 }
 
 void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
+  suggested_cc_.Reset();
+  suggested_billing_.Reset();
+  suggested_email_.Reset();
+  suggested_shipping_.Reset();
+
   PersonalDataManager* manager = GetManager();
   const std::vector<CreditCard*>& cards = manager->credit_cards();
   for (size_t i = 0; i < cards.size(); ++i) {
@@ -904,9 +905,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     FormGroup* form_group = section == SECTION_CC ?
         static_cast<FormGroup*>(manager->GetCreditCardByGUID(guid)) :
         static_cast<FormGroup*>(manager->GetProfileByGUID(guid));
-    // TODO(estade): we shouldn't let this happen.
-    if (!form_group)
-      return;
+    DCHECK(form_group);
 
     // Calculate the variant by looking at how many items come from the same
     // FormGroup. TODO(estade): add a test for this.

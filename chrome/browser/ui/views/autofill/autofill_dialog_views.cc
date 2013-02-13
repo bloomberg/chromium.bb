@@ -484,6 +484,15 @@ void AutofillDialogViews::UpdateProgressBar(double value) {
   autocheckout_progress_bar_->SetValue(value);
 }
 
+void AutofillDialogViews::ModelChanged() {
+  menu_runner_.reset();
+
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    UpdateDetailsGroupState(iter->second);
+  }
+}
+
 string16 AutofillDialogViews::GetWindowTitle() const {
   return controller_->DialogTitle();
 }

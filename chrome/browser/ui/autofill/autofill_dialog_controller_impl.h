@@ -14,6 +14,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/autofill/wallet/required_action.h"
 #include "chrome/browser/autofill/wallet/wallet_client.h"
 #include "chrome/browser/autofill/wallet/wallet_client_observer.h"
@@ -46,7 +47,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                      public AutofillPopupDelegate,
                                      public content::NotificationObserver,
                                      public SuggestionsMenuModelDelegate,
-                                     public wallet::WalletClientObserver {
+                                     public wallet::WalletClientObserver,
+                                     public PersonalDataManagerObserver {
  public:
   AutofillDialogControllerImpl(
       content::WebContents* contents,
@@ -58,6 +60,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   void Show();
   void Hide();
+
+  // Updates the progress bar based on the Autocheckout progress. |value| should
+  // be in [0.0, 1.0].
+  void UpdateProgressBar(double value);
 
   // AutofillDialogController implementation.
   virtual string16 DialogTitle() const OVERRIDE;
@@ -110,7 +116,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                 int identifier) OVERRIDE;
   virtual void ClearPreviewedForm() OVERRIDE;
 
-  // content::NotificationObserver implementation:
+  // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -140,9 +146,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void OnMalformedResponse() OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;
 
-  // Updates the progress bar based on the Autocheckout progress. |value| should
-  // be in [0.0, 1.0].
-  void UpdateProgressBar(double value);
+  // PersonalDataManagerObserver implementation.
+  virtual void OnPersonalDataChanged() OVERRIDE;
 
  private:
   // Determines whether |input| and |field| match.
