@@ -185,13 +185,12 @@ class TransferStateInternal
     TRACE_EVENT2("gpu", "BindAsyncTransfer glEGLImageTargetTexture2DOES",
                  "width", late_bind_define_params_.width,
                  "height", late_bind_define_params_.height);
-
     DCHECK(bound_params);
     DCHECK(texture_id_);
-    DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
     *bound_params = late_bind_define_params_;
     if (!needs_late_bind_)
       return;
+    DCHECK_NE(EGL_NO_IMAGE_KHR, egl_image_);
 
     // We can only change the active texture and unit 0,
     // as that is all that will be restored.
@@ -379,15 +378,6 @@ class AsyncPixelTransferDelegateAndroid
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateAndroid);
 };
 
-namespace {
-// Imagination has some odd problems still.
-bool IsImagination() {
-  std::string vendor;
-  vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-  return vendor.find("Imagination") != std::string::npos;
-}
-}
-
 // We only used threaded uploads when we can:
 // - Create EGLImages out of OpenGL textures (EGL_KHR_gl_texture_2D_image)
 // - Bind EGLImages to OpenGL textures (GL_OES_EGL_image)
@@ -399,8 +389,7 @@ scoped_ptr<AsyncPixelTransferDelegate>
       context->HasExtension("EGL_KHR_image") &&
       context->HasExtension("EGL_KHR_image_base") &&
       context->HasExtension("EGL_KHR_gl_texture_2D_image") &&
-      context->HasExtension("GL_OES_EGL_image") &&
-      !IsImagination()) {
+      context->HasExtension("GL_OES_EGL_image")) {
     return make_scoped_ptr(
         static_cast<AsyncPixelTransferDelegate*>(
             new AsyncPixelTransferDelegateAndroid()));
@@ -743,12 +732,27 @@ bool AsyncPixelTransferDelegateAndroid::WorkAroundAsyncTexSubImage2D(
     return false;
 
   // Fall back on a synchronous stub as we don't have a known fast path.
+  // Also, older ICS drivers crash when we do any glTexSubImage2D on the
+  // same thread. To work around this we do glTexImage2D instead. Since
+  // we didn't create an EGLImage for this texture (see above), this is
+  // okay, but it limits this API to full updates for now.
+  DCHECK(!state->egl_image_);
+  DCHECK_EQ(tex_params.xoffset, 0);
+  DCHECK_EQ(tex_params.yoffset, 0);
+  DCHECK_EQ(state->late_bind_define_params_.width, tex_params.width);
+  DCHECK_EQ(state->late_bind_define_params_.height, tex_params.height);
+  DCHECK_EQ(state->late_bind_define_params_.level, tex_params.level);
+  DCHECK_EQ(state->late_bind_define_params_.format, tex_params.format);
+  DCHECK_EQ(state->late_bind_define_params_.type, tex_params.type);
+
   void* data = GetAddress(mem_params.shared_memory,
                           mem_params.shm_data_offset);
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   {
     TRACE_EVENT0("gpu", "glTexSubImage2D");
-    DoTexSubImage2D(tex_params, data);
+    // Note we use late_bind_define_params_ instead of tex_params.
+    // The DCHECKs above verify this is always the same.
+    DoTexImage2D(state->late_bind_define_params_, data);
   }
   texture_upload_count_++;
   total_texture_upload_time_ += base::TimeTicks::HighResNow() - begin_time;
