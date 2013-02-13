@@ -99,8 +99,6 @@ void IBusBridge::Shutdown() {
 
 // static.
 IBusBridge* IBusBridge::Get() {
-  CHECK(g_ibus_bridge)
-      << "IBusBrige::Get() called before Initialized() or after Shutdown().";
   return g_ibus_bridge;
 }
 

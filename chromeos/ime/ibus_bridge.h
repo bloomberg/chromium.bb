@@ -7,6 +7,7 @@
 
 #include <string>
 #include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 class IBusInputContextHandlerInterface;
@@ -24,13 +25,13 @@ class IBusBridge {
   virtual ~IBusBridge();
 
   // Allocates the global instance. Must be called before any calls to Get().
-  static void Initialize();
+  static CHROMEOS_EXPORT void Initialize();
 
   // Releases the global instance.
-  static void Shutdown();
+  static CHROMEOS_EXPORT void Shutdown();
 
   // Returns IBusBridge global instance. Initialize() must be called first.
-  static IBusBridge* Get();
+  static CHROMEOS_EXPORT IBusBridge* Get();
 
   // Returns current InputContextHandler. This function returns NULL if input
   // context is not ready to use.
