@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
-#include "chrome/browser/media_gallery/transient_device_ids.h"
 #include "chrome/browser/system_monitor/removable_storage_observer.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
@@ -152,8 +151,6 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
 #endif
 
   scoped_ptr<MediaFileSystemContext> file_system_context_;
-
-  TransientDeviceIds transient_device_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistry);
 };

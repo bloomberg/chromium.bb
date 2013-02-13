@@ -4,7 +4,7 @@
 
 // TransientDeviceIds implementation.
 
-#include "chrome/browser/media_gallery/transient_device_ids.h"
+#include "chrome/browser/system_monitor/transient_device_ids.h"
 
 #include "base/logging.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"

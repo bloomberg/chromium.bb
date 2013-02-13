@@ -7,8 +7,8 @@
 // gets mapped to a transient ID, the mapping remains valid for the duration of
 // TransientDeviceIds' lifetime.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERY_TRANSIENT_DEVICE_IDS_H_
-#define CHROME_BROWSER_MEDIA_GALLERY_TRANSIENT_DEVICE_IDS_H_
+#ifndef CHROME_BROWSER_SYSTEM_MONITOR_TRANSIENT_DEVICE_IDS_H_
+#define CHROME_BROWSER_SYSTEM_MONITOR_TRANSIENT_DEVICE_IDS_H_
 
 #include <map>
 #include <string>
@@ -42,4 +42,4 @@ class TransientDeviceIds {
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERY_TRANSIENT_DEVICE_IDS_H_
+#endif  // CHROME_BROWSER_SYSTEM_MONITOR_TRANSIENT_DEVICE_IDS_H_

@@ -402,9 +402,9 @@ class ExtensionGalleriesHost
   uint64 GetTransientIdForRemovableDeviceId(const std::string& device_id) {
     if (!MediaStorageUtil::IsRemovableDevice(device_id))
       return 0;
-    MediaFileSystemRegistry* registry =
-        file_system_context_->GetMediaFileSystemRegistry();
-    return registry->GetTransientIdForDeviceId(device_id);
+    RemovableStorageNotifications* storage_notifications =
+        RemovableStorageNotifications::GetInstance();
+    return storage_notifications->GetTransientIdForDeviceId(device_id);
   }
 
   // This code is deprecated and should be removed. See http://crbug.com/170138
@@ -627,11 +627,6 @@ void MediaFileSystemRegistry::OnRemovableStorageDetached(
 
 size_t MediaFileSystemRegistry::GetExtensionHostCountForTests() const {
   return extension_hosts_map_.size();
-}
-
-uint64 MediaFileSystemRegistry::GetTransientIdForDeviceId(
-    const std::string& device_id) {
-  return transient_device_ids_.GetTransientIdForDeviceId(device_id);
 }
 
 /******************

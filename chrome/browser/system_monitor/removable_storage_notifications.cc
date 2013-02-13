@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/system_monitor/removable_storage_observer.h"
+#include "chrome/browser/system_monitor/transient_device_ids.h"
 
 namespace chrome {
 
@@ -59,9 +60,40 @@ void RemovableStorageNotifications::ReceiverImpl::ProcessDetach(
   notifications_->ProcessDetach(id);
 }
 
+RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
+  return g_removable_storage_notifications;
+}
+
+std::vector<RemovableStorageNotifications::StorageInfo>
+RemovableStorageNotifications::GetAttachedStorage() const {
+  std::vector<StorageInfo> results;
+
+  base::AutoLock lock(storage_lock_);
+  for (RemovableStorageMap::const_iterator it = storage_map_.begin();
+       it != storage_map_.end();
+       ++it) {
+    results.push_back(it->second);
+  }
+  return results;
+}
+
+void RemovableStorageNotifications::AddObserver(RemovableStorageObserver* obs) {
+  observer_list_->AddObserver(obs);
+}
+
+void RemovableStorageNotifications::RemoveObserver(
+    RemovableStorageObserver* obs) {
+  observer_list_->RemoveObserver(obs);
+}
+
+uint64 RemovableStorageNotifications::GetTransientIdForDeviceId(
+    const std::string& device_id) {
+  return transient_device_ids_->GetTransientIdForDeviceId(device_id);
+}
+
 RemovableStorageNotifications::RemovableStorageNotifications()
-    : observer_list_(
-          new ObserverListThreadSafe<RemovableStorageObserver>()) {
+    : observer_list_(new ObserverListThreadSafe<RemovableStorageObserver>()),
+      transient_device_ids_(new TransientDeviceIds) {
   receiver_.reset(new ReceiverImpl(this));
 
   DCHECK(!g_removable_storage_notifications);
@@ -110,32 +142,6 @@ void RemovableStorageNotifications::ProcessDetach(const std::string& id) {
   DVLOG(1) << "RemovableStorageDetached for id " << id;
   observer_list_->Notify(
       &RemovableStorageObserver::OnRemovableStorageDetached, info);
-}
-
-std::vector<RemovableStorageNotifications::StorageInfo>
-RemovableStorageNotifications::GetAttachedStorage() const {
-  std::vector<StorageInfo> results;
-
-  base::AutoLock lock(storage_lock_);
-  for (RemovableStorageMap::const_iterator it = storage_map_.begin();
-       it != storage_map_.end();
-       ++it) {
-    results.push_back(it->second);
-  }
-  return results;
-}
-
-void RemovableStorageNotifications::AddObserver(RemovableStorageObserver* obs) {
-  observer_list_->AddObserver(obs);
-}
-
-void RemovableStorageNotifications::RemoveObserver(
-    RemovableStorageObserver* obs) {
-  observer_list_->RemoveObserver(obs);
-}
-
-RemovableStorageNotifications* RemovableStorageNotifications::GetInstance() {
-  return g_removable_storage_notifications;
 }
 
 }  // namespace chrome

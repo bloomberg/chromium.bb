@@ -11,11 +11,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/system_monitor/removable_storage_notifications.h"
 #include "chrome/common/extensions/api/media_galleries_private.h"
@@ -26,9 +24,10 @@ namespace extensions {
 namespace {
 
 std::string GetTransientIdForDeviceId(const std::string& device_id) {
-  chrome::MediaFileSystemRegistry* registry =
-      g_browser_process->media_file_system_registry();
-  return base::Uint64ToString(registry->GetTransientIdForDeviceId(device_id));
+  chrome::RemovableStorageNotifications* storage_notifications =
+      chrome::RemovableStorageNotifications::GetInstance();
+  return base::Uint64ToString(
+      storage_notifications->GetTransientIdForDeviceId(device_id));
 }
 
 }  // namespace

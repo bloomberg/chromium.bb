@@ -18,6 +18,7 @@ namespace chrome {
 
 class MediaFileSystemRegistryTest;
 class RemovableStorageObserver;
+class TransientDeviceIds;
 
 // Base class for platform-specific instances watching for removable storage
 // attachments/detachments.
@@ -83,6 +84,8 @@ class RemovableStorageNotifications {
   void AddObserver(RemovableStorageObserver* obs);
   void RemoveObserver(RemovableStorageObserver* obs);
 
+  uint64 GetTransientIdForDeviceId(const std::string& device_id);
+
  protected:
   RemovableStorageNotifications();
   virtual ~RemovableStorageNotifications();
@@ -114,6 +117,8 @@ class RemovableStorageNotifications {
 
   // Map of all the attached removable storage devices.
   RemovableStorageMap storage_map_;
+
+  scoped_ptr<TransientDeviceIds> transient_device_ids_;
 };
 
 } // namespace chrome
