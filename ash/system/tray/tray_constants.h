@@ -60,6 +60,8 @@ extern const int kTrayPopupMaxWidth;
 extern const int kNotificationIconWidth;
 extern const int kTrayNotificationContentsWidth;
 
+extern const int kTraySpacing;
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_

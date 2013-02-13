@@ -10,9 +10,11 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -119,15 +121,30 @@ bool WebNotificationTray::ShowMessageCenter() {
   // TODO(mukai): move this to WebNotificationBubbleWrapper if it's safe
   // to set the height of the popup.
   int max_height = 0;
-  if (GetShelfLayoutManager()->GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
-    gfx::Rect shelf_bounds = GetShelfLayoutManager()->GetIdealBounds();
-    max_height = shelf_bounds.y();
-  } else {
-    // Assume that the bottom line of the status area widget and the bubble are
-    // aligned.
-    aura::Window* status_area_window = status_area_widget()->GetNativeWindow();
-    max_height = status_area_window->GetBoundsInRootWindow().bottom();
+  aura::Window* status_area_window = status_area_widget()->GetNativeWindow();
+  switch (GetShelfLayoutManager()->GetAlignment()) {
+    case SHELF_ALIGNMENT_BOTTOM: {
+      gfx::Rect shelf_bounds = GetShelfLayoutManager()->GetIdealBounds();
+      max_height = shelf_bounds.y();
+      break;
+    }
+    case SHELF_ALIGNMENT_TOP: {
+      aura::RootWindow* root = status_area_window->GetRootWindow();
+      max_height =
+          root->bounds().height() - status_area_window->bounds().height();
+      break;
+    }
+    case SHELF_ALIGNMENT_LEFT:
+    case SHELF_ALIGNMENT_RIGHT: {
+      // Assume that the bottom line of the status area widget and the bubble
+      // are aligned.
+      max_height = status_area_window->GetBoundsInRootWindow().bottom();
+      break;
+    }
+    default:
+      NOTREACHED();
   }
+  max_height = std::max(0, max_height - kTraySpacing);
   message_center_bubble->SetMaxHeight(max_height);
   message_center_bubble_.reset(
       new internal::WebNotificationBubbleWrapper(this, message_center_bubble));

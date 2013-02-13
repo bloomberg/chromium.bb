@@ -62,4 +62,6 @@ const int kNotificationIconWidth = 40;
 const int kTrayNotificationContentsWidth = kTrayPopupMinWidth -
     (kNotificationIconWidth + kTrayPopupPaddingHorizontal) * 2;
 
+const int kTraySpacing = 8;
+
 }  // namespace ash

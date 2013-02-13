@@ -8,6 +8,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -16,12 +17,6 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-int kTraySpacing = 8;
-
-}  // namespace
 
 namespace ash {
 namespace internal {
