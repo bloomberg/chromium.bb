@@ -190,6 +190,7 @@ struct surface {
 
 	struct wl_surface *surface;
 	struct toysurface *toysurface;
+	struct widget *widget;
 
 	struct rectangle allocation;
 	struct rectangle server_allocation;
@@ -236,7 +237,6 @@ struct window {
 	struct wl_callback *frame_cb;
 
 	struct frame *frame;
-	struct widget *widget;
 
 	void *user_data;
 	struct wl_list link;
@@ -1361,6 +1361,12 @@ widget_find_widget(struct widget *widget, int32_t x, int32_t y)
 }
 
 static struct widget *
+window_find_widget(struct window *window, int32_t x, int32_t y)
+{
+	return widget_find_widget(window->main_surface->widget, x, y);
+}
+
+static struct widget *
 widget_create(struct window *window, void *data)
 {
 	struct widget *widget;
@@ -1382,10 +1388,13 @@ widget_create(struct window *window, void *data)
 struct widget *
 window_add_widget(struct window *window, void *data)
 {
-	window->widget = widget_create(window, data);
-	wl_list_init(&window->widget->link);
+	struct widget *widget;
 
-	return window->widget;
+	widget = widget_create(window, data);
+	wl_list_init(&widget->link);
+	window->main_surface->widget = widget;
+
+	return widget;
 }
 
 struct widget *
@@ -2334,7 +2343,7 @@ input_ungrab(struct input *input)
 
 	input->grab = NULL;
 	if (input->pointer_focus) {
-		widget = widget_find_widget(input->pointer_focus->widget,
+		widget = window_find_widget(input->pointer_focus,
 					    input->sx, input->sy);
 		input_set_focus_widget(input, widget, input->sx, input->sy);
 	}
@@ -2384,7 +2393,7 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 	input->sx = sx;
 	input->sy = sy;
 
-	widget = widget_find_widget(window->widget, sx, sy);
+	widget = window_find_widget(window, sx, sy);
 	input_set_focus_widget(input, widget, sx, sy);
 }
 
@@ -2416,7 +2425,7 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 		return;
 
 	if (!(input->grab && input->grab_button)) {
-		widget = widget_find_widget(window->widget, sx, sy);
+		widget = window_find_widget(window, sx, sy);
 		input_set_focus_widget(input, widget, sx, sy);
 	}
 
@@ -3180,7 +3189,7 @@ idle_resize(struct window *window)
 	struct wl_compositor *compositor = window->display->compositor;
 
 	window->resize_needed = 0;
-	widget = window->widget;
+	widget = window->main_surface->widget;
 	widget_set_allocation(widget,
 			      window->pending_allocation.x,
 			      window->pending_allocation.y,
@@ -3265,7 +3274,7 @@ static void
 handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
 {
 	struct window *window = data;
-	struct menu *menu = window->widget->user_data;
+	struct menu *menu = window->main_surface->widget->user_data;
 
 	/* FIXME: Need more context in this event, at least the input
 	 * device.  Or just use wl_callback.  And this really needs to
@@ -3327,7 +3336,7 @@ idle_redraw(struct task *task, uint32_t events)
 		idle_resize(window);
 
 	window_create_surface(window);
-	widget_redraw(window->widget);
+	widget_redraw(window->main_surface->widget);
 	window->redraw_needed = 0;
 	wl_list_init(&window->redraw_task.link);
 
