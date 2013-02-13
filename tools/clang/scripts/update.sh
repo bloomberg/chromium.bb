@@ -36,7 +36,9 @@ mac_only=
 run_tests=
 bootstrap=
 with_android=yes
-is_asan_mac_builder=
+# Temporary workaround for http://crbug.com/170629: use older Clang for ASan
+# Mac builders.
+is_asan_mac_builder_hackfix=
 with_tools_extra=
 if [[ "${OS}" = "Darwin" ]]; then
   with_android=
@@ -59,8 +61,10 @@ while [[ $# > 0 ]]; do
     --without-android)
       with_android=
       ;;
-    --is-asan-mac-builder)
-      is_asan_mac_builder=yes
+    # Temporary workaround for http://crbug.com/170629 - use older Clang for
+    # ASan Mac builders.
+    --is-asan-mac-builder-hackfix)
+      is_asan_mac_builder_hackfix=yes
       ;;
     --with-tools-extra)
       with_tools_extra=yes
@@ -72,7 +76,8 @@ while [[ $# > 0 ]]; do
       echo "--mac-only: Do initial download only on Mac systems."
       echo "--run-tests: Run tests after building. Only for local builds."
       echo "--without-android: Don't build ASan Android runtime library."
-      echo "--is-asan-mac-builder: Use older Clang to build ASan on Mac."
+      echo "--is-asan-mac-builder-hackfix: Use older Clang" \
+           "to build ASan on Mac."
       echo "--with-tools-extra: Also build the clang-tools-extra repository."
       exit 1
       ;;
@@ -102,7 +107,7 @@ function on_asan_mac_host {
 }
 
 # Use older Clang for ASan Mac builds. See http://crbug.com/170629.
-if [[ -n is_asan_mac_builder ]] || on_asan_mac_host; then
+if [[ -n "${is_asan_mac_builder_hackfix}" ]] || on_asan_mac_host; then
   CLANG_REVISION=${CLANG_ASAN_MAC_REVISION}
 fi
 
