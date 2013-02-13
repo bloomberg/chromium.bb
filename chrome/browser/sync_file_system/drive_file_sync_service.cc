@@ -1545,7 +1545,7 @@ void DriveFileSyncService::DidDownloadFileForRemoteSync(
     const std::string& md5_checksum) {
   if (error == google_apis::HTTP_NOT_MODIFIED) {
     param->sync_action = fileapi::SYNC_ACTION_NONE;
-    CompleteRemoteSync(param.Pass(), fileapi::SYNC_STATUS_OK);
+    DidApplyRemoteChange(param.Pass(), fileapi::SYNC_STATUS_OK);
     return;
   }
 
