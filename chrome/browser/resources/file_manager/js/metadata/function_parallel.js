@@ -31,6 +31,7 @@ function FunctionParallel(name, steps, logger, callback, failureCallback) {
 /**
  * Error handling function, which fires error callback.
  *
+ * @private
  * @param err error message.
  */
 FunctionParallel.prototype.onError_ = function(err) {
@@ -44,6 +45,7 @@ FunctionParallel.prototype.onError_ = function(err) {
  * Advances to next step. This method should not be used externally. In external
  * cases should be used nextStep function, which is defined in closure and thus
  * has access to internal variables of functionsequence.
+ * @private
  */
 FunctionParallel.prototype.nextStep_ = function() {
   if (--this.remaining == 0 && !this.failed_) {

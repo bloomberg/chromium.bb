@@ -50,6 +50,7 @@ FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
  * Error handling function, which traces current error step, stops sequence
  * advancing and fires error callback.
  *
+ * @private
  * @param err error message.
  */
 FunctionSequence.prototype.onError_ = function(err) {
@@ -66,6 +67,7 @@ FunctionSequence.prototype.onError_ = function(err) {
  * This method should not be used externally. In external
  * cases should be used finish function, which is defined in closure and thus
  * has access to internal variables of functionsequence.
+ * @private
  */
 FunctionSequence.prototype.finish_ = function() {
   if (!this.failed_ && this.currentStepIdx_ < this.steps_.length) {
@@ -79,6 +81,7 @@ FunctionSequence.prototype.finish_ = function() {
  * This method should not be used externally. In external
  * cases should be used nextStep function, which is defined in closure and thus
  * has access to internal variables of functionsequence.
+ * @private
  */
 FunctionSequence.prototype.nextStep_ = function(var_args) {
   if (this.failed_) {
@@ -116,8 +119,8 @@ FunctionSequence.prototype.start = function(var_args) {
 
 /**
  * Add Function object mimics to FunctionSequence
+ * @private
  */
 FunctionSequence.prototype.apply_ = function(obj, args) {
   this.start.apply(this, args);
 };
-

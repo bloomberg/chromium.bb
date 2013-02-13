@@ -15,6 +15,7 @@ Id3Parser.prototype = {__proto__: MetadataParser.prototype};
  * Reads synchsafe integer.
  * 'SynchSafe' term is taken from id3 documentation.
  *
+ * @private
  * @param {ByteReader} reader - reader to use.
  * @param {int} length - bytes to read.
  * @return {int}
@@ -39,6 +40,7 @@ Id3Parser.readSynchSafe_ = function(reader, length) {
 /**
  * Reads 3bytes integer.
  *
+ * @private
  * @param {ByteReader} reader - reader to use.
  * @return {int}
  */
@@ -49,10 +51,10 @@ Id3Parser.readUInt24_ = function(reader) {
 /**
  * Reads string from reader with specified encoding
  *
+ * @private
  * @param {ByteReader} reader reader to use.
  * @param {int} encoding string encoding.
  * @param {int} size maximum string size. Actual result may be shorter.
- *
  */
 Id3Parser.prototype.readString_ = function(reader, encoding, size) {
   switch (encoding) {
@@ -80,6 +82,7 @@ Id3Parser.prototype.readString_ = function(reader, encoding, size) {
 /**
  * Reads text frame from reader.
  *
+ * @private
  * @param {ByteReader} reader reader to use.
  * @param {int} majorVersion major id3 version to use.
  * @param {Object} frame frame so store data at.
@@ -96,6 +99,7 @@ Id3Parser.prototype.readTextFrame_ = function(reader,
 /**
  * Reads user defined text frame from reader.
  *
+ * @private
  * @param {ByteReader} reader reader to use.
  * @param {int} majorVersion major id3 version to use.
  * @param {Object} frame frame so store data at.
@@ -118,6 +122,9 @@ Id3Parser.prototype.readUserDefinedTextFrame_ = function(reader,
       end - reader.tell());
 };
 
+/**
+ * @private
+ */
 Id3Parser.prototype.readPIC_ = function(reader, majorVersion, frame, end) {
   frame.encoding = reader.readScalar(1, false, end);
   frame.format = reader.readNullTerminatedString(3, end - reader.tell());
@@ -134,6 +141,9 @@ Id3Parser.prototype.readPIC_ = function(reader, majorVersion, frame, end) {
   }
 };
 
+/**
+ * @private
+ */
 Id3Parser.prototype.readAPIC_ = function(reader, majorVersion, frame, end) {
   this.vlog('Extracting picture');
   frame.encoding = reader.readScalar(1, false, end);
@@ -154,6 +164,7 @@ Id3Parser.prototype.readAPIC_ = function(reader, majorVersion, frame, end) {
 /**
  * Reads string from reader with specified encoding
  *
+ * @private
  * @param {ByteReader} reader  reader to use.
  * @return {Object} frame read.
  */
