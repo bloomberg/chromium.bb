@@ -709,7 +709,18 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
                            const NPVariant* variant) OVERRIDE {
     std::string new_value = StringFromNPVariant(*variant);
     std::string old_value = bindings->instance()->GetSrcAttribute();
-    if (old_value != new_value && !new_value.empty()) {
+    bool guest_crashed = bindings->instance()->guest_crashed();
+    if ((old_value != new_value) || guest_crashed) {
+      if (new_value.empty()) {
+        // Remove the DOM attribute to trigger <webview>'s mutation observer
+        // when it is restored to its original value again.
+        bindings->instance()->RemoveDOMAttribute(name());
+        new_value = old_value;
+      }
+      // If the new value was empty then we're effectively resetting the
+      // attribute to the old value here. This will be picked up by <webview>'s
+      // mutation observer and will restore the src attribute after it has been
+      // removed.
       UpdateDOMAttribute(bindings, new_value);
       std::string error_message;
       if (!bindings->instance()->ParseSrcAttribute(&error_message)) {
@@ -724,7 +735,11 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
   }
   virtual void RemoveProperty(BrowserPluginBindings* bindings,
                               NPObject* np_obj) OVERRIDE {
+    std::string old_value = bindings->instance()->GetSrcAttribute();
+    // Remove the DOM attribute to trigger the mutation observer when it is
+    // restored to its original value again.
     bindings->instance()->RemoveDOMAttribute(name());
+    UpdateDOMAttribute(bindings, old_value);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingSrc);

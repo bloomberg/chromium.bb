@@ -156,8 +156,17 @@ WebView.prototype.handleObjectMutation_ = function(mutation) {
     this.node_.removeAttribute(mutation.attributeName);
   } else {
     // Update the <webview> attribute to match the BrowserPlugin attribute.
-    this.node_.setAttribute(mutation.attributeName,
-        this.objectNode_.getAttribute(mutation.attributeName));
+    // Note: Calling setAttribute on <webview> will trigger its mutation
+    // observer which will then propagate that attribute to BrowserPlugin. In
+    // cases where we permit assigning a BrowserPlugin attribute the same value
+    // again (such as navigation when crashed), this could end up in an infinite
+    // loop. Thus, we avoid this loop by only updating the <webview> attribute
+    // if the BrowserPlugin attributes differs from it.
+    var oldValue = this.node_.getAttribute(mutation.attributeName);
+    var newValue = this.objectNode_.getAttribute(mutation.attributeName);
+    if (newValue != oldValue) {
+      this.node_.setAttribute(mutation.attributeName, newValue);
+    }
   }
 };
 

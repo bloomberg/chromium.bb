@@ -413,6 +413,11 @@ void BrowserPlugin::OnGuestContentWindowReady(int instance_id,
 }
 
 void BrowserPlugin::OnGuestGone(int instance_id, int process_id, int status) {
+  // Set the BrowserPlugin in a crashed state before firing event listeners so
+  // that operations on the BrowserPlugin within listeners are aware that
+  // BrowserPlugin is in a crashed state.
+  guest_crashed_ = true;
+
   // We fire the event listeners before painting the sad graphic to give the
   // developer an opportunity to display an alternative overlay image on crash.
   std::string termination_status = TerminationStatusToString(
@@ -427,7 +432,6 @@ void BrowserPlugin::OnGuestGone(int instance_id, int process_id, int status) {
   // but leave other member variables valid below.
   TriggerEvent(browser_plugin::kEventExit, &props);
 
-  guest_crashed_ = true;
   // We won't paint the contents of the current backing store again so we might
   // as well toss it out and save memory.
   backing_store_.reset();
@@ -468,9 +472,9 @@ void BrowserPlugin::OnLoadCommit(
   // If the guest has just committed a new navigation then it is no longer
   // crashed.
   guest_crashed_ = false;
-  if (params.is_top_level) {
+  if (params.is_top_level)
     UpdateDOMAttribute(browser_plugin::kAttributeSrc, params.url.spec());
-  }
+
   guest_process_id_ = params.process_id;
   guest_route_id_ = params.route_id;
   current_nav_entry_index_ = params.current_entry_index;
@@ -797,7 +801,7 @@ void BrowserPlugin::Go(int relative_index) {
 }
 
 void BrowserPlugin::TerminateGuest() {
-  if (!navigate_src_sent_)
+  if (!navigate_src_sent_ || guest_crashed_)
     return;
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_TerminateGuest(render_view_routing_id_,

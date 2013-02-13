@@ -89,6 +89,8 @@ class CONTENT_EXPORT BrowserPlugin :
   int guest_process_id() const { return guest_process_id_; }
   // Returns Chrome's route ID for the current guest.
   int guest_route_id() const { return guest_route_id_; }
+  // Returns whether the guest process has crashed.
+  bool guest_crashed() const { return guest_crashed_; }
 
   // Query whether the guest can navigate back to the previous entry.
   bool CanGoBack() const;
