@@ -18,11 +18,6 @@ class Image;
 }
 class Browser;
 
-// Draws a scaled version of the avatar in |image| on the taskbar button
-// associated with top level, visible |window|. Currently only implemented
-// for Windows 7 and above.
-void DrawTaskBarDecoration(gfx::NativeWindow window, const gfx::Image* image);
-
 // AvatarMenuButton
 //
 // A button used to show either the incognito avatar or the profile avatar.
@@ -41,8 +36,7 @@ class AvatarMenuButton : public views::MenuButton,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
-  virtual void SetAvatarIcon(const gfx::Image& icon,
-                             bool is_gaia_picture);
+  virtual void SetAvatarIcon(const gfx::Image& icon, bool is_gaia_picture);
 
   void ShowAvatarBubble();
 

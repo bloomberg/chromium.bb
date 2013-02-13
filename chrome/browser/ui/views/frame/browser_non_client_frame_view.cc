@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -71,9 +72,9 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   // need to draw the taskbar decoration.
   if (AvatarMenuModel::ShouldShowAvatarMenu() ||
       ManagedMode::IsInManagedMode()) {
-    DrawTaskBarDecoration(frame_->GetNativeWindow(), &avatar);
+    chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), &avatar);
   } else {
-    DrawTaskBarDecoration(frame_->GetNativeWindow(), NULL);
+    chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), NULL);
   }
 }
 
