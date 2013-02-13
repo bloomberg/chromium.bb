@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -686,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReloadRelaunches) {
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_TRUE(GetFirstShellWindow());
 
-  // Now tell the app to reload itself
+  // Now tell the app to reload itself.
   ExtensionTestMessageListener launched_listener2("Launched", false);
   launched_listener.Reply("reload");
   ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
@@ -849,6 +850,24 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
   ShellWindow* window = CreateShellWindow(extension);
   EXPECT_TRUE(window->web_contents()->GetRenderWidgetHostView()->HasFocus());
   CloseShellWindow(window);
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DontCrashWhenReloading) {
+  // Regression test for http://crbug.com/174250
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kExtensionsUIDeveloperMode, true);
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://extensions"));
+  ExtensionTestMessageListener launched_listener("Launched", true);
+  const Extension* extension = LoadAndLaunchPlatformApp("reload");
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(GetFirstShellWindow());
+
+  // Now tell the app to reload itself.
+  ExtensionTestMessageListener launched_listener2("Launched", false);
+  launched_listener.Reply("reload");
+  ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
+  ASSERT_TRUE(GetFirstShellWindow());
 }
 
 }  // namespace extensions

@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/cocoa/extensions/native_app_window_cocoa.h"
 
+#include "base/bind.h"
 #include "base/mac/mac_util.h"
+#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -679,7 +681,13 @@ gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
 void NativeAppWindowCocoa::WindowWillClose() {
   [window_controller_ setAppWindow:NULL];
   shell_window_->OnNativeWindowChanged();
-  shell_window_->OnNativeClose();
+  // On other platforms, the native window doesn't get destroyed synchronously.
+  // We simulate that here so that ShellWindow can assume that it doesn't get
+  // deleted immediately upon calling Close().
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ShellWindow::OnNativeClose,
+                 base::Unretained(shell_window_)));
 }
 
 void NativeAppWindowCocoa::WindowDidBecomeKey() {

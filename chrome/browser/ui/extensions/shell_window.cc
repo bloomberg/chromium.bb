@@ -244,6 +244,11 @@ ShellWindow::~ShellWindow() {
   chrome::EndKeepAlive();
 }
 
+void ShellWindow::Close() {
+  extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
+  native_app_window_->Close();
+}
+
 void ShellWindow::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
@@ -343,9 +348,16 @@ void ShellWindow::RequestToLockMouse(WebContents* web_contents,
 }
 
 void ShellWindow::OnNativeClose() {
+  // This method is shared between the path for the user clicking the close
+  // button and the path where a close is triggered by code (e.g. by the
+  // extension being unloaded). In the latter case, this RemoveShellWindow is
+  // superfluous, since it will already have been removed, but the call is
+  // idempotent so it's harmless the second time.
   extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
-  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  rvh->Send(new ExtensionMsg_AppWindowClosed(rvh->GetRoutingID()));
+  if (extension_) {
+    content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+    rvh->Send(new ExtensionMsg_AppWindowClosed(rvh->GetRoutingID()));
+  }
   delete this;
 }
 
@@ -487,7 +499,7 @@ void ShellWindow::UpdateExtensionAppIcon() {
 
 void ShellWindow::CloseContents(WebContents* contents) {
   DCHECK(contents == web_contents_);
-  native_app_window_->Close();
+  Close();
 }
 
 bool ShellWindow::ShouldSuppressDialogs() {
@@ -561,12 +573,16 @@ void ShellWindow::Observe(int type,
       const extensions::Extension* unloaded_extension =
           content::Details<extensions::UnloadedExtensionInfo>(
               details)->extension;
-      if (extension_ == unloaded_extension)
-        native_app_window_->Close();
+      if (extension_ == unloaded_extension) {
+        Close();
+        // After this notification finishes processing, the Extension will be
+        // deleted, so we null out our reference to avoid bad access.
+        extension_ = NULL;
+      }
       break;
     }
     case chrome::NOTIFICATION_APP_TERMINATING:
-      native_app_window_->Close();
+      Close();
       break;
     default:
       NOTREACHED() << "Received unexpected notification";
