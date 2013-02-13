@@ -172,6 +172,14 @@
     ]
   },
 
+  "AllowDeletingBrowserHistory": {
+    "os": [],
+    "test_policy": { "AllowDeletingBrowserHistory": false },
+    "pref_mappings": [
+      { "pref": "history.deleting_enabled" }
+    ]
+  },
+
   "RemoteAccessClientFirewallTraversal": {
   },
 

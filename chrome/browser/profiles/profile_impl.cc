@@ -276,6 +276,9 @@ void ProfileImpl::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory,
+                                true,
+                                PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kForceSafeSearch,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);

@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 186
+#   For your editing convenience: highest ID currently used: 187
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -435,6 +435,31 @@
       If this setting is enabled, browsing history is not saved.
 
       If this setting is disabled or not set, browsing history is saved.''',
+    },
+    {
+      'name': 'AllowDeletingBrowserHistory',
+      'future': True,
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      # TODO(pamg): Restore the correct 'supported' line when the UI properly
+      # shows that deleting browser history is disabled. Also fix the 'os' line
+      # in policy_test_cases.json.
+      # 'supported_on': ['chrome.*:27-', 'chrome_os:0.27-'],
+      'supported_on': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 187,
+      'caption': '''Enable deleting browser and download history''',
+      'desc': '''Enables deleting browser history and download history in <ph name="PRODUCT_NAME">$<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
+      Note that even with this policy disabled, the browsing and download history are not guaranteed to be retained: users may be able to edit or delete the history database files directly, and the browser itself may expire or archive any or all history items at any time.
+
+      If this setting is enabled or not set, browsing and download history can be deleted.
+
+      If this setting is disabled, browsing and download history cannot be deleted.''',
     },
     {
       'name': 'RemoteAccess',
