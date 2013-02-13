@@ -155,3 +155,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsFileAccess) {
   // that this is supposed to be testing).
   //EXPECT_TRUE(prefs->AllowFileAccess("hlonmbgfjccgolnaboonlakjckinmhmd"));
 }
+
+// Test requesting, querying, and removing host permissions for host
+// permissions that are a subset of the optional permissions.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, HostSubsets) {
+  PermissionsRequestFunction::SetAutoConfirmForTests(true);
+  PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
+  EXPECT_TRUE(RunExtensionTest("permissions/host_subsets")) << message_;
+}

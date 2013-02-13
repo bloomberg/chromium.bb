@@ -68,7 +68,8 @@ class URLPatternSet {
 
   void ClearPatterns();
 
-  // Returns true if the permission |set| is a subset of this.
+  // Returns true if every URL that matches |set| is matched by this. In other
+  // words, if every pattern in |set| is encompassed by a pattern in this.
   bool Contains(const URLPatternSet& set) const;
 
   // Test if the extent contains a URL.
@@ -92,6 +93,9 @@ class URLPatternSet {
                 std::string* error);
 
  private:
+  // Returns true if any pattern in this set encompasses |pattern|.
+  bool ContainsPattern(const URLPattern& pattern) const;
+
   // The list of URL patterns that comprise the extent.
   std::set<URLPattern> patterns_;
 };

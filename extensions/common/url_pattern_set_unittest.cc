@@ -198,10 +198,10 @@ TEST(URLPatternSetTest, Contains) {
   EXPECT_FALSE(set1.Contains(set2));
   EXPECT_TRUE(set2.Contains(set1));
 
-  // Note that this just checks pattern equality, and not if individual patterns
-  // contain other patterns. For example:
+  // Note that this checks if individual patterns contain other patterns, not
+  // just equality. For example:
   AddPattern(&set1, "http://*.reddit.com/*");
-  EXPECT_FALSE(set1.Contains(set2));
+  EXPECT_TRUE(set1.Contains(set2));
   EXPECT_FALSE(set2.Contains(set1));
 }
 

@@ -110,7 +110,6 @@ bool PermissionsRemoveFunction::RunImpl() {
       PermissionSet::CreateIntersection(permissions.get(), required));
   if (!intersection->IsEmpty()) {
     error_ = kCantRemoveRequiredPermissionsError;
-    results_ = Remove::Results::Create(false);
     return false;
   }
 
@@ -159,7 +158,7 @@ bool PermissionsRequestFunction::RunImpl() {
   }
 
   scoped_ptr<Request::Params> params(Request::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   ExtensionPrefs* prefs = ExtensionSystem::Get(profile_)->extension_prefs();
 
@@ -192,7 +191,6 @@ bool PermissionsRequestFunction::RunImpl() {
   if (!GetExtension()->optional_permission_set()->Contains(
           *manifest_required_requested_permissions)) {
     error_ = kNotInOptionalPermissionsError;
-    results_ = Request::Results::Create(false);
     return false;
   }
 
@@ -200,7 +198,7 @@ bool PermissionsRequestFunction::RunImpl() {
   // of the granted permissions set.
   scoped_refptr<const PermissionSet> granted =
       prefs->GetGrantedPermissions(GetExtension()->id());
-  if (granted.get() && granted->Contains(*requested_permissions_)) {
+  if (granted && granted->Contains(*requested_permissions_)) {
     PermissionsUpdater perms_updater(profile());
     perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
     results_ = Request::Results::Create(true);

@@ -93,6 +93,20 @@ bool IsValidPortForScheme(const std::string& scheme, const std::string& port) {
   return (parsed_port >= 0) && (parsed_port < 65536);
 }
 
+// Returns |path| with the trailing wildcard stripped if one existed.
+//
+// The functions that rely on this (OverlapsWith and Contains) are only
+// called for the patterns inside URLPatternSet. In those cases, we know that
+// the path will have only a single wildcard at the end. This makes figuring
+// out overlap much easier. It seems like there is probably a computer-sciency
+// way to solve the general case, but we don't need that yet.
+std::string StripTrailingWildcard(const std::string& path) {
+  size_t wildcard_index = path.find('*');
+  size_t path_last = path.size() - 1;
+  DCHECK(wildcard_index == std::string::npos || wildcard_index == path_last);
+  return wildcard_index == path_last ? path.substr(0, path_last) : path;
+}
+
 }  // namespace
 
 URLPattern::URLPattern()
@@ -391,14 +405,6 @@ bool URLPattern::MatchesPath(const std::string& test) const {
   return true;
 }
 
-bool URLPattern::MatchesPort(int port) const {
-  if (port == url_parse::PORT_INVALID)
-    return false;
-
-  return port_ == "*" || port_ == base::IntToString(port);
-}
-
-
 const std::string& URLPattern::GetAsString() const {
   if (!spec_.empty())
     return spec_;
@@ -437,30 +443,23 @@ const std::string& URLPattern::GetAsString() const {
 }
 
 bool URLPattern::OverlapsWith(const URLPattern& other) const {
-  if (!MatchesAnyScheme(other.GetExplicitSchemes()) &&
-      !other.MatchesAnyScheme(GetExplicitSchemes())) {
-    return false;
-  }
+  if (match_all_urls() || other.match_all_urls())
+    return true;
+  return (MatchesAnyScheme(other.GetExplicitSchemes()) ||
+          other.MatchesAnyScheme(GetExplicitSchemes()))
+      && (MatchesHost(other.host()) || other.MatchesHost(host()))
+      && (MatchesPortPattern(other.port()) || other.MatchesPortPattern(port()))
+      && (MatchesPath(StripTrailingWildcard(other.path())) ||
+          other.MatchesPath(StripTrailingWildcard(path())));
+}
 
-  if (!MatchesHost(other.host()) && !other.MatchesHost(host_))
-    return false;
-
-  if (port_ != "*" && other.port() != "*" && port_ != other.port())
-    return false;
-
-  // We currently only use OverlapsWith() for the patterns inside
-  // URLPatternSet. In those cases, we know that the path will have only a
-  // single wildcard at the end. This makes figuring out overlap much easier. It
-  // seems like there is probably a computer-sciency way to solve the general
-  // case, but we don't need that yet.
-  DCHECK(path_.find('*') == path_.size() - 1);
-  DCHECK(other.path().find('*') == other.path().size() - 1);
-
-  if (!MatchesPath(other.path().substr(0, other.path().size() - 1)) &&
-      !other.MatchesPath(path_.substr(0, path_.size() - 1)))
-    return false;
-
-  return true;
+bool URLPattern::Contains(const URLPattern& other) const {
+  if (match_all_urls())
+    return true;
+  return MatchesAllSchemes(other.GetExplicitSchemes())
+      && MatchesHost(other.host())
+      && MatchesPortPattern(other.port())
+      && MatchesPath(StripTrailingWildcard(other.path()));
 }
 
 bool URLPattern::MatchesAnyScheme(
@@ -474,15 +473,30 @@ bool URLPattern::MatchesAnyScheme(
   return false;
 }
 
+bool URLPattern::MatchesAllSchemes(
+    const std::vector<std::string>& schemes) const {
+  for (std::vector<std::string>::const_iterator i = schemes.begin();
+       i != schemes.end(); ++i) {
+    if (!MatchesScheme(*i))
+      return false;
+  }
+
+  return true;
+}
+
 bool URLPattern::MatchesSecurityOriginHelper(const GURL& test) const {
   // Ignore hostname if scheme is file://.
   if (scheme_ != chrome::kFileScheme && !MatchesHost(test))
     return false;
 
-  if (!MatchesPort(test.EffectiveIntPort()))
+  if (!MatchesPortPattern(base::IntToString(test.EffectiveIntPort())))
     return false;
 
   return true;
+}
+
+bool URLPattern::MatchesPortPattern(const std::string& port) const {
+  return port_ == "*" || port_ == port;
 }
 
 std::vector<std::string> URLPattern::GetExplicitSchemes() const {

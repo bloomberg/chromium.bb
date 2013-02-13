@@ -149,9 +149,6 @@ class URLPattern {
   // Returns true if |test| matches our path.
   bool MatchesPath(const std::string& test) const;
 
-  // Returns true if |port| matches our port.
-  bool MatchesPort(int port) const;
-
   // Sets the port. Returns false if the port is invalid.
   bool SetPort(const std::string& port);
   const std::string& port() const { return port_; }
@@ -159,12 +156,16 @@ class URLPattern {
   // Returns a string representing this instance.
   const std::string& GetAsString() const;
 
-  // Determine whether there is a URL that would match this instance and another
-  // instance. This method is symmetrical: Calling other.OverlapsWith(this)
-  // would result in the same answer.
+  // Determines whether there is a URL that would match this instance and
+  // another instance. This method is symmetrical: Calling
+  // other.OverlapsWith(this) would result in the same answer.
   bool OverlapsWith(const URLPattern& other) const;
 
-  // Convert this URLPattern into an equivalent set of URLPatterns that don't
+  // Returns true if this pattern matches all possible URLs that |other| can
+  // match. For example, http://*.google.com encompasses http://www.google.com.
+  bool Contains(const URLPattern& other) const;
+
+  // Converts this URLPattern into an equivalent set of URLPatterns that don't
   // use a wildcard in the scheme component. If this URLPattern doesn't use a
   // wildcard scheme, then the returned set will contain one element that is
   // equivalent to this instance.
@@ -191,7 +192,13 @@ class URLPattern {
   // Returns true if any of the |schemes| items matches our scheme.
   bool MatchesAnyScheme(const std::vector<std::string>& schemes) const;
 
+  // Returns true if all of the |schemes| items matches our scheme.
+  bool MatchesAllSchemes(const std::vector<std::string>& schemes) const;
+
   bool MatchesSecurityOriginHelper(const GURL& test) const;
+
+  // Returns true if our port matches the |port| pattern (it may be "*").
+  bool MatchesPortPattern(const std::string& port) const;
 
   // If the URLPattern contains a wildcard scheme, returns a list of
   // equivalent literal schemes, otherwise returns the current scheme.

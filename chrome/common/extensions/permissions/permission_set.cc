@@ -225,20 +225,9 @@ bool PermissionSet::operator==(
 }
 
 bool PermissionSet::Contains(const PermissionSet& set) const {
-  // Every set includes the empty set.
-  if (set.IsEmpty())
-    return true;
-
-  if (!apis_.Contains(set.apis()))
-      return false;
-
-  if (!explicit_hosts().Contains(set.explicit_hosts()))
-    return false;
-
-  if (!scriptable_hosts().Contains(set.scriptable_hosts()))
-    return false;
-
-  return true;
+  return apis_.Contains(set.apis()) &&
+         explicit_hosts().Contains(set.explicit_hosts()) &&
+         scriptable_hosts().Contains(set.scriptable_hosts());
 }
 
 std::set<std::string> PermissionSet::GetAPIsAsStrings() const {

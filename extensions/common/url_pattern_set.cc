@@ -129,9 +129,14 @@ void URLPatternSet::ClearPatterns() {
   patterns_.clear();
 }
 
-bool URLPatternSet::Contains(const URLPatternSet& set) const {
-  return std::includes(patterns_.begin(), patterns_.end(),
-                       set.patterns_.begin(), set.patterns_.end());
+bool URLPatternSet::Contains(const URLPatternSet& other) const {
+  for (URLPatternSet::const_iterator it = other.begin();
+       it != other.end(); ++it) {
+    if (!ContainsPattern(*it))
+      return false;
+  }
+
+  return true;
 }
 
 bool URLPatternSet::MatchesURL(const GURL& url) const {
@@ -214,6 +219,15 @@ bool URLPatternSet::Populate(const base::ListValue& value,
     patterns.push_back(item);
   }
   return Populate(patterns, valid_schemes, allow_file_access, error);
+}
+
+bool URLPatternSet::ContainsPattern(const URLPattern& pattern) const {
+  for (URLPatternSet::const_iterator it = begin();
+       it != end(); ++it) {
+    if (it->Contains(pattern))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace extensions

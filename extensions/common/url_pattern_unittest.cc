@@ -7,6 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "googleurl/src/gurl.h"
 
+namespace {
+
 // See url_pattern.h for examples of valid and invalid patterns.
 
 static const int kAllSchemes =
@@ -448,15 +450,23 @@ TEST(ExtensionURLPatternTest, GetAsString) {
   }
 }
 
-void TestPatternOverlap(const URLPattern& pattern1, const URLPattern& pattern2,
-                        bool expect_overlap) {
-  EXPECT_EQ(expect_overlap, pattern1.OverlapsWith(pattern2))
-      << pattern1.GetAsString() << ", " << pattern2.GetAsString();
-  EXPECT_EQ(expect_overlap, pattern2.OverlapsWith(pattern1))
-      << pattern2.GetAsString() << ", " << pattern1.GetAsString();
+testing::AssertionResult Overlaps(const URLPattern& pattern1,
+                                  const URLPattern& pattern2) {
+  if (!pattern1.OverlapsWith(pattern2)) {
+    return testing::AssertionFailure()
+        << pattern1.GetAsString() << " does not overlap " <<
+                                     pattern2.GetAsString();
+  }
+  if (!pattern2.OverlapsWith(pattern1)) {
+    return testing::AssertionFailure()
+        << pattern2.GetAsString() << " does not overlap " <<
+                                     pattern1.GetAsString();
+  }
+  return testing::AssertionSuccess()
+      << pattern1.GetAsString() << " overlaps with " << pattern2.GetAsString();
 }
 
-TEST(ExtensionURLPatternTest, OverlapsWith) {
+TEST(ExtensionURLPatternTest, Overlaps) {
   URLPattern pattern1(kAllSchemes, "http://www.google.com/foo/*");
   URLPattern pattern2(kAllSchemes, "https://www.google.com/foo/*");
   URLPattern pattern3(kAllSchemes, "http://*.google.com/foo/*");
@@ -469,22 +479,22 @@ TEST(ExtensionURLPatternTest, OverlapsWith) {
   URLPattern pattern9(URLPattern::SCHEME_HTTPS, "*://*/*");
   URLPattern pattern10(kAllSchemes, "<all_urls>");
 
-  TestPatternOverlap(pattern1, pattern1, true);
-  TestPatternOverlap(pattern1, pattern2, false);
-  TestPatternOverlap(pattern1, pattern3, true);
-  TestPatternOverlap(pattern1, pattern4, false);
-  TestPatternOverlap(pattern3, pattern4, false);
-  TestPatternOverlap(pattern4, pattern5, false);
-  TestPatternOverlap(pattern5, pattern6, true);
+  EXPECT_TRUE(Overlaps(pattern1, pattern1));
+  EXPECT_FALSE(Overlaps(pattern1, pattern2));
+  EXPECT_TRUE(Overlaps(pattern1, pattern3));
+  EXPECT_FALSE(Overlaps(pattern1, pattern4));
+  EXPECT_FALSE(Overlaps(pattern3, pattern4));
+  EXPECT_FALSE(Overlaps(pattern4, pattern5));
+  EXPECT_TRUE(Overlaps(pattern5, pattern6));
 
   // Test that scheme restrictions work.
-  TestPatternOverlap(pattern1, pattern8, true);
-  TestPatternOverlap(pattern1, pattern9, false);
-  TestPatternOverlap(pattern1, pattern10, true);
+  EXPECT_TRUE(Overlaps(pattern1, pattern8));
+  EXPECT_FALSE(Overlaps(pattern1, pattern9));
+  EXPECT_TRUE(Overlaps(pattern1, pattern10));
 
   // Test that '<all_urls>' includes file URLs, while scheme '*' does not.
-  TestPatternOverlap(pattern7, pattern8, false);
-  TestPatternOverlap(pattern7, pattern10, true);
+  EXPECT_FALSE(Overlaps(pattern7, pattern8));
+  EXPECT_TRUE(Overlaps(pattern7, pattern10));
 
   // Test that wildcard schemes are handled correctly, especially when compared
   // to each-other.
@@ -492,14 +502,14 @@ TEST(ExtensionURLPatternTest, OverlapsWith) {
   URLPattern pattern12(kAllSchemes, "*://example.com/*");
   URLPattern pattern13(kAllSchemes, "*://example.com/foo/*");
   URLPattern pattern14(kAllSchemes, "*://google.com/*");
-  TestPatternOverlap(pattern8, pattern12, true);
-  TestPatternOverlap(pattern9, pattern12, true);
-  TestPatternOverlap(pattern10, pattern12, true);
-  TestPatternOverlap(pattern11, pattern12, true);
-  TestPatternOverlap(pattern12, pattern13, true);
-  TestPatternOverlap(pattern11, pattern13, true);
-  TestPatternOverlap(pattern14, pattern12, false);
-  TestPatternOverlap(pattern14, pattern13, false);
+  EXPECT_TRUE(Overlaps(pattern8, pattern12));
+  EXPECT_TRUE(Overlaps(pattern9, pattern12));
+  EXPECT_TRUE(Overlaps(pattern10, pattern12));
+  EXPECT_TRUE(Overlaps(pattern11, pattern12));
+  EXPECT_TRUE(Overlaps(pattern12, pattern13));
+  EXPECT_TRUE(Overlaps(pattern11, pattern13));
+  EXPECT_FALSE(Overlaps(pattern14, pattern12));
+  EXPECT_FALSE(Overlaps(pattern14, pattern13));
 }
 
 TEST(ExtensionURLPatternTest, ConvertToExplicitSchemes) {
@@ -657,3 +667,116 @@ TEST(ExtensionURLPatternTest, CanReusePatternWithParse) {
   EXPECT_FALSE(pattern3.MatchesURL(GURL("http://aa.com/path")));
   EXPECT_TRUE(pattern3.MatchesURL(GURL("http://aa.com:88/path")));
 }
+
+// Returns success if neither |a| nor |b| encompasses the other.
+testing::AssertionResult NeitherContains(const URLPattern& a,
+                                         const URLPattern& b) {
+  if (a.Contains(b))
+    return testing::AssertionFailure() << a.GetAsString() << " encompasses " <<
+                                          b.GetAsString();
+  if (b.Contains(a))
+    return testing::AssertionFailure() << b.GetAsString() << " encompasses " <<
+                                          a.GetAsString();
+  return testing::AssertionSuccess() <<
+      "Neither " << a.GetAsString() << " nor " << b.GetAsString() <<
+      " encompass the other";
+}
+
+// Returns success if |a| encompasses |b| but not the other way around.
+testing::AssertionResult StrictlyContains(const URLPattern& a,
+                                          const URLPattern& b) {
+  if (!a.Contains(b))
+    return testing::AssertionFailure() << a.GetAsString() <<
+                                          " does not encompass " <<
+                                          b.GetAsString();
+  if (b.Contains(a))
+    return testing::AssertionFailure() << b.GetAsString() << " encompasses " <<
+                                          a.GetAsString();
+  return testing::AssertionSuccess() << a.GetAsString() <<
+                                        " strictly encompasses " <<
+                                        b.GetAsString();
+}
+
+TEST(ExtensionURLPatternTest, Subset) {
+  URLPattern pattern1(kAllSchemes, "http://www.google.com/foo/*");
+  URLPattern pattern2(kAllSchemes, "https://www.google.com/foo/*");
+  URLPattern pattern3(kAllSchemes, "http://*.google.com/foo/*");
+  URLPattern pattern4(kAllSchemes, "http://*.yahooo.com/foo/*");
+  URLPattern pattern5(kAllSchemes, "http://www.yahooo.com/bar/*");
+  URLPattern pattern6(kAllSchemes, "http://www.yahooo.com/bar/baz/*");
+  URLPattern pattern7(kAllSchemes, "file:///*");
+  URLPattern pattern8(kAllSchemes, "*://*/*");
+  URLPattern pattern9(URLPattern::SCHEME_HTTPS, "*://*/*");
+  URLPattern pattern10(kAllSchemes, "<all_urls>");
+  URLPattern pattern11(kAllSchemes, "http://example.com/*");
+  URLPattern pattern12(kAllSchemes, "*://example.com/*");
+  URLPattern pattern13(kAllSchemes, "*://example.com/foo/*");
+
+  // All patterns should encompass themselves.
+  EXPECT_TRUE(pattern1.Contains(pattern1));
+  EXPECT_TRUE(pattern2.Contains(pattern2));
+  EXPECT_TRUE(pattern3.Contains(pattern3));
+  EXPECT_TRUE(pattern4.Contains(pattern4));
+  EXPECT_TRUE(pattern5.Contains(pattern5));
+  EXPECT_TRUE(pattern6.Contains(pattern6));
+  EXPECT_TRUE(pattern7.Contains(pattern7));
+  EXPECT_TRUE(pattern8.Contains(pattern8));
+  EXPECT_TRUE(pattern9.Contains(pattern9));
+  EXPECT_TRUE(pattern10.Contains(pattern10));
+  EXPECT_TRUE(pattern11.Contains(pattern11));
+  EXPECT_TRUE(pattern12.Contains(pattern12));
+  EXPECT_TRUE(pattern13.Contains(pattern13));
+
+  // pattern1's relationship to the other patterns.
+  EXPECT_TRUE(NeitherContains(pattern1, pattern2));
+  EXPECT_TRUE(StrictlyContains(pattern3, pattern1));
+  EXPECT_TRUE(NeitherContains(pattern1, pattern4));
+  EXPECT_TRUE(NeitherContains(pattern1, pattern5));
+  EXPECT_TRUE(NeitherContains(pattern1, pattern6));
+  EXPECT_TRUE(NeitherContains(pattern1, pattern7));
+  EXPECT_TRUE(StrictlyContains(pattern8, pattern1));
+  EXPECT_TRUE(NeitherContains(pattern1, pattern9));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern1));
+  EXPECT_TRUE(NeitherContains(pattern1, pattern11));
+  EXPECT_TRUE(NeitherContains(pattern1, pattern12));
+  EXPECT_TRUE(NeitherContains(pattern1, pattern13));
+
+  // pattern2's relationship to the other patterns.
+  EXPECT_TRUE(NeitherContains(pattern2, pattern3));
+  EXPECT_TRUE(NeitherContains(pattern2, pattern4));
+  EXPECT_TRUE(NeitherContains(pattern2, pattern5));
+  EXPECT_TRUE(NeitherContains(pattern2, pattern6));
+  EXPECT_TRUE(NeitherContains(pattern2, pattern7));
+  EXPECT_TRUE(StrictlyContains(pattern8, pattern2));
+  EXPECT_TRUE(StrictlyContains(pattern9, pattern2));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern2));
+  EXPECT_TRUE(NeitherContains(pattern2, pattern11));
+  EXPECT_TRUE(NeitherContains(pattern2, pattern12));
+  EXPECT_TRUE(NeitherContains(pattern2, pattern13));
+
+  // Specifically test file:// URLs.
+  EXPECT_TRUE(NeitherContains(pattern7, pattern8));
+  EXPECT_TRUE(NeitherContains(pattern7, pattern9));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern7));
+
+  // <all_urls> encompasses everything.
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern1));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern2));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern3));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern4));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern5));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern6));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern7));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern8));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern9));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern11));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern12));
+  EXPECT_TRUE(StrictlyContains(pattern10, pattern13));
+
+  // More...
+  EXPECT_TRUE(StrictlyContains(pattern12, pattern11));
+  EXPECT_TRUE(NeitherContains(pattern11, pattern13));
+  EXPECT_TRUE(StrictlyContains(pattern12, pattern13));
+}
+
+}  // namespace

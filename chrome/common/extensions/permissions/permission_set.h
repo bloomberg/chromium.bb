@@ -67,7 +67,9 @@ class PermissionSet
 
   bool operator==(const PermissionSet& rhs) const;
 
-  // Returns true if |set| is a subset of this.
+  // Returns true if every API or host permission available to |set| is also
+  // available to this. In other words, if the API permissions of |set| are a
+  // subset of this, and the host permissions in this encompass those in |set|.
   bool Contains(const PermissionSet& set) const;
 
   // Gets the API permissions in this set as a set of strings.
