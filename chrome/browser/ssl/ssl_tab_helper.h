@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class SSLAddCertHandler;
@@ -20,9 +21,13 @@ class SSLCertRequestInfo;
 class X509Certificate;
 }
 
-class SSLTabHelper : public content::WebContentsUserData<SSLTabHelper> {
+class SSLTabHelper : public content::WebContentsObserver,
+                     public content::WebContentsUserData<SSLTabHelper> {
  public:
   virtual ~SSLTabHelper();
+
+  // content::WebContentsObserver:
+  virtual void DidChangeVisibleSSLState() OVERRIDE;
 
   // Called when |handler| encounters an error in verifying a received client
   // certificate. Note that, because CAs often will not send us intermediate

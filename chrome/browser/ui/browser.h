@@ -330,6 +330,9 @@ class Browser : public TabStripModelObserver,
   // fullscreen.
   void WindowFullscreenStateChanged();
 
+  // Invoked when visible SSL state (as defined by SSLStatus) changes.
+  void VisibleSSLStateChanged(content::WebContents* web_contents);
+
   // Assorted browser commands ////////////////////////////////////////////////
 
   // NOTE: Within each of the following sections, the IDs are ordered roughly by

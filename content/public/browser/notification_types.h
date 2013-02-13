@@ -102,40 +102,6 @@ enum NotificationType {
   // issued.  Details in the form of a ResourceRedirectDetails are provided.
   NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
 
-  // SSL ---------------------------------------------------------------------
-
-  // Updating the SSL security indicators (the lock icon and such) proceeds
-  // in two phases:
-  //
-  // 1) The internal SSL state for a host or tab changes.  When this happens,
-  //    the SSLManager broadcasts an SSL_INTERNAL_STATE_CHANGED notification.
-  //
-  // 2) The SSLManager for each tab receives this notification and might or
-  //    might not update the navigation entry for its tab, depending on
-  //    whether the change in state affects that tab.  If the SSLManager does
-  //    change the navigation entry, then the SSLManager broadcasts an
-  //    SSL_VISIBLE_STATE_CHANGED notification to the user interface can
-  //    redraw properly.
-
-  // The SSL state of a page has changed in some visible way.  For example,
-  // if an insecure resource is loaded on a secure page.  Note that a
-  // toplevel load commit will also update the SSL state (since the
-  // NavigationEntry is new) and this message won't always be sent in that
-  // case.  Listen to this notification if you need to refresh SSL-related UI
-  // elements.
-  //
-  // There is no source or details.
-  NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
-
-  // The SSL state of the browser has changed in some internal way.  For
-  // example, the user might have explicitly allowed some broken certificate
-  // or a secure origin might have included some insecure content.  Listen to
-  // this notifiation if you need to keep track of our internal SSL state.
-  //
-  // The source will be the browser context. The details will be the navigation
-  // controller associated with the state change.
-  NOTIFICATION_SSL_INTERNAL_STATE_CHANGED,
-
   // Devtools ------------------------------------------------------------------
 
   // Indicates that a devtools agent has attached to a client. The source is

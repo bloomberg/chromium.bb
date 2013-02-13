@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
@@ -191,10 +192,19 @@ void SSLTabHelper::SSLAddCertData::Observe(
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SSLTabHelper);
 
 SSLTabHelper::SSLTabHelper(content::WebContents* contents)
-    : web_contents_(contents) {
+    : WebContentsObserver(contents),
+      web_contents_(contents) {
 }
 
 SSLTabHelper::~SSLTabHelper() {
+}
+
+void SSLTabHelper::DidChangeVisibleSSLState() {
+#if !defined(OS_ANDROID)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  if (browser)
+    browser->VisibleSSLStateChanged(web_contents_);
+#endif  // !defined(OS_ANDROID)
 }
 
 void SSLTabHelper::ShowClientCertificateRequestDialog(
