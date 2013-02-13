@@ -128,6 +128,7 @@ cr.define('ntp', function() {
     if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled'))
       sectionsToWaitFor++;
     measureNavDots();
+    layoutFooter();
 
     // Load the current theme colors.
     themeChanged();
@@ -334,6 +335,16 @@ cr.define('ntp', function() {
     // shrunk.
     styleElement.textContent = '.dot { max-width: ' + pxWidth + 'px; }';
     document.querySelector('head').appendChild(styleElement);
+  }
+
+  /**
+   * Layout the footer so that the nav dots stay centered.
+   */
+  function layoutFooter() {
+    var menu = $('footer-menu-container');
+    var logo = $('logo-img');
+    if (menu.clientWidth > logo.clientWidth)
+      logo.style.width = menu.clientWidth + 'px';
   }
 
   function themeChanged(opt_hasAttribution) {

@@ -180,8 +180,9 @@ html[dir='rtl'] #attribution {
 }
 
 #footer-content {
-  -webkit-box-align: center;
-  display: -webkit-box;
+  -webkit-align-items: center;
+  -webkit-justify-content: space-between;
+  display: -webkit-flex;
   height: 49px;
 }
 
@@ -385,7 +386,10 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   z-index: 5;
 }
 
+/* Footer buttons. ************************************************************/
+
 #chrome-web-store-link {
+  -webkit-order: 3;
   -webkit-padding-end: 12px;
   /* Match transition delay of recently closed button. */
   -webkit-transition-delay: 100ms;
@@ -405,6 +409,11 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   line-height: 49px;
 }
 
+#footer-menu-container .invisible {
+  -webkit-order: -1;
+  visibility: hidden;
+}
+
 #chrome-web-store-link:hover {
   color: #666;
 }
@@ -414,21 +423,24 @@ html[dir='rtl'] #chrome-web-store-title {
 }
 
 #vertical-separator {
+  -webkit-order: -1;
   background-color: rgb(178, 178, 178);
-  display: none;
+  display: inline-block;
   height: 20px;
   margin: 0;
   vertical-align: middle;
+  visibility: hidden;
   width: 1px;
 }
 
 /* Show the separator only if one of the menus is visible. */
-.footer-menu-button:not([hidden]) ~ #vertical-separator {
-  display: block;
+.footer-menu-button:not(.invisible) ~ #chrome-web-store-link:not(.invisible)
+                                    ~ #vertical-separator {
+  -webkit-order: 2;
+  visibility: visible;
 }
 
 /* In trash mode, hide the menus and web store link. */
-#footer.showing-trash-mode #chrome-web-store-link,
 #footer.showing-trash-mode .menu-container {
   -webkit-transition-delay: 0;
   opacity: 0;
@@ -436,11 +448,21 @@ html[dir='rtl'] #chrome-web-store-title {
 }
 
 #footer .menu-container {
-  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -webkit-flex-direction: row;
+  -webkit-justify-content: flex-end;
   /* Put menus in a box so the order can easily be swapped. */
-  display: -webkit-box;
+  display: -webkit-flex;
   height: 100%;
   margin: 0;
+}
+
+#recently-closed-menu-button:not(.invisible) {
+  -webkit-order: 1;
+}
+
+#other-sessions-menu-button:not(.invisible) {
+  -webkit-order: 0;
 }
 
 .other-sessions-promo-message {
