@@ -17,7 +17,6 @@ scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::create()
 
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()
     : Layer()
-    , m_hasFontAtlas(false)
 {
     setBounds(gfx::Size(256, 256));
 }
@@ -53,26 +52,9 @@ bool HeadsUpDisplayLayer::drawsContent() const
     return true;
 }
 
-void HeadsUpDisplayLayer::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
-{
-    m_fontAtlas = fontAtlas.Pass();
-    m_hasFontAtlas = true;
-}
-
 scoped_ptr<LayerImpl> HeadsUpDisplayLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
     return HeadsUpDisplayLayerImpl::create(treeImpl, m_layerId).PassAs<LayerImpl>();
-}
-
-void HeadsUpDisplayLayer::pushPropertiesTo(LayerImpl* layerImpl)
-{
-    Layer::pushPropertiesTo(layerImpl);
-
-    if (!m_fontAtlas)
-        return;
-
-    HeadsUpDisplayLayerImpl* hudLayerImpl = static_cast<HeadsUpDisplayLayerImpl*>(layerImpl);
-    hudLayerImpl->setFontAtlas(m_fontAtlas.Pass());
 }
 
 }  // namespace cc

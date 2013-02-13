@@ -44,10 +44,6 @@ bool LayerTreeDebugState::showHudRects() const {
     return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects || showNonOccludingRects;
 }
 
-bool LayerTreeDebugState::hudNeedsFont() const {
-    return showFPSCounter || showPlatformLayerTree || continuousPainting;
-}
-
 bool LayerTreeDebugState::equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b) {
     return (a.showFPSCounter == b.showFPSCounter &&
             a.showPlatformLayerTree == b.showPlatformLayerTree &&

@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
-#include "cc/font_atlas.h"
 #include "cc/layer.h"
 
 namespace cc {
@@ -19,21 +18,13 @@ public:
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats*) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
 
-    void setFontAtlas(scoped_ptr<FontAtlas>);
-
     virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
-
-    bool hasFontAtlas() const { return m_hasFontAtlas; }
 
 protected:
     HeadsUpDisplayLayer();
 
 private:
     virtual ~HeadsUpDisplayLayer();
-
-    scoped_ptr<FontAtlas> m_fontAtlas;
-    bool m_hasFontAtlas;
 };
 
 }  // namespace cc

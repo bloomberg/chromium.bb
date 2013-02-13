@@ -11,7 +11,6 @@
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace cc {
-class FontAtlas;
 class LayerTreeHost;
 }
 
@@ -73,7 +72,6 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   virtual void didCommitAndDrawFrame() OVERRIDE;
   virtual void didCompleteSwapBuffers() OVERRIDE;
   virtual void scheduleComposite() OVERRIDE;
-  virtual scoped_ptr<cc::FontAtlas> createFontAtlas();
 
  private:
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;

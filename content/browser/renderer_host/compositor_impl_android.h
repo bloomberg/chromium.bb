@@ -17,7 +17,6 @@
 struct ANativeWindow;
 
 namespace cc {
-class FontAtlas;
 class InputHandler;
 class Layer;
 class LayerTreeHost;
@@ -77,7 +76,6 @@ class CONTENT_EXPORT CompositorImpl
   virtual void didCommitAndDrawFrame() OVERRIDE;
   virtual void didCompleteSwapBuffers() OVERRIDE;
   virtual void scheduleComposite() OVERRIDE;
-  virtual scoped_ptr<cc::FontAtlas> createFontAtlas() OVERRIDE;
 
   // WebGraphicsContext3DSwapBuffersClient implementation.
   virtual void OnViewContextSwapBuffersPosted() OVERRIDE;

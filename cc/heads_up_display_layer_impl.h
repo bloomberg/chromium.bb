@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/cc_export.h"
-#include "cc/font_atlas.h"
 #include "cc/layer_impl.h"
 #include "cc/scoped_resource.h"
 
@@ -20,7 +19,6 @@ struct SkRect;
 namespace cc {
 
 class DebugRectHistory;
-class FontAtlas;
 class FrameRateCounter;
 class MemoryHistory;
 class PaintTimeCounter;
@@ -33,10 +31,7 @@ public:
     }
     virtual ~HeadsUpDisplayLayerImpl();
 
-    void setFontAtlas(scoped_ptr<FontAtlas>);
-
     virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
     virtual void willDraw(ResourceProvider*) OVERRIDE;
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
@@ -82,7 +77,6 @@ private:
 
     void drawDebugRects(SkCanvas*, DebugRectHistory*);
 
-    scoped_ptr<FontAtlas> m_fontAtlas;
     scoped_ptr<ScopedResource> m_hudTexture;
     scoped_ptr<SkCanvas> m_hudCanvas;
 

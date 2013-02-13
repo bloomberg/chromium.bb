@@ -7,7 +7,6 @@
 #include "cc/animation.h"
 #include "cc/animation_registrar.h"
 #include "cc/content_layer.h"
-#include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_animation_controller.h"
@@ -225,11 +224,6 @@ public:
     virtual void scheduleComposite() OVERRIDE
     {
         m_testHooks->scheduleComposite();
-    }
-
-    virtual scoped_ptr<FontAtlas> createFontAtlas() OVERRIDE
-    {
-        return scoped_ptr<FontAtlas>();
     }
 
 private:

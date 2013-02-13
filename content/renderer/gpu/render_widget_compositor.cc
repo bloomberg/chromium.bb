@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
-#include "cc/font_atlas.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_debug_state.h"
 #include "cc/layer_tree_host.h"
@@ -377,20 +376,6 @@ void RenderWidgetCompositor::didCompleteSwapBuffers() {
 // that piece out.
 void RenderWidgetCompositor::scheduleComposite() {
   client_->scheduleComposite();
-}
-
-scoped_ptr<cc::FontAtlas> RenderWidgetCompositor::createFontAtlas() {
-  int font_height;
-  WebRect ascii_to_web_rect_table[128];
-  gfx::Rect ascii_to_rect_table[128];
-  SkBitmap bitmap;
-
-  client_->createFontAtlas(bitmap, ascii_to_web_rect_table, font_height);
-
-  for (int i = 0; i < 128; ++i)
-    ascii_to_rect_table[i] = ascii_to_web_rect_table[i];
-
-  return cc::FontAtlas::create(bitmap, ascii_to_rect_table, font_height).Pass();
 }
 
 }  // namespace content

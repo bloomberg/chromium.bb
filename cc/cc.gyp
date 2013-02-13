@@ -60,8 +60,6 @@
       'draw_quad.h',
       'fake_web_graphics_context_3d.cc',
       'fake_web_graphics_context_3d.h',
-      'font_atlas.cc',
-      'font_atlas.h',
       'frame_rate_controller.cc',
       'frame_rate_controller.h',
       'frame_rate_counter.cc',

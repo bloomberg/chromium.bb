@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "cc/animation_registrar.h"
-#include "cc/font_atlas.h"
 #include "cc/heads_up_display_layer.h"
 #include "cc/heads_up_display_layer_impl.h"
 #include "cc/layer.h"
@@ -340,9 +339,6 @@ void LayerTreeHost::willCommit()
     if (m_debugState.showHudInfo()) {
         if (!m_hudLayer)
             m_hudLayer = HeadsUpDisplayLayer::create();
-
-        if (m_debugState.hudNeedsFont() && !m_hudLayer->hasFontAtlas())
-            m_hudLayer->setFontAtlas(m_client->createFontAtlas());
 
         if (m_rootLayer && !m_hudLayer->parent())
             m_rootLayer->addChild(m_hudLayer);

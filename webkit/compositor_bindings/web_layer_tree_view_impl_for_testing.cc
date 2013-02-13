@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "cc/fake_web_graphics_context_3d.h"
-#include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
@@ -179,9 +178,5 @@ void WebLayerTreeViewImplForTesting::didCommitAndDrawFrame() { }
 void WebLayerTreeViewImplForTesting::didCompleteSwapBuffers() { }
 
 void WebLayerTreeViewImplForTesting::scheduleComposite() { }
-
-scoped_ptr<cc::FontAtlas> WebLayerTreeViewImplForTesting::createFontAtlas() {
-  return scoped_ptr<cc::FontAtlas>();
-}
 
 }  // namespace WebKit

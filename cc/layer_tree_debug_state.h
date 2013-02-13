@@ -36,7 +36,6 @@ class CC_EXPORT LayerTreeDebugState {
 
   bool showHudInfo() const;
   bool showHudRects() const;
-  bool hudNeedsFont() const;
 
   static bool equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b);
   static LayerTreeDebugState unite(const LayerTreeDebugState& a, const LayerTreeDebugState& b);

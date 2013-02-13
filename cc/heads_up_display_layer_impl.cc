@@ -8,7 +8,6 @@
 #include "base/stringprintf.h"
 #include "cc/debug_colors.h"
 #include "cc/debug_rect_history.h"
-#include "cc/font_atlas.h"
 #include "cc/frame_rate_counter.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/memory_history.h"
@@ -84,22 +83,6 @@ HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl()
 scoped_ptr<LayerImpl> HeadsUpDisplayLayerImpl::createLayerImpl(LayerTreeImpl* treeImpl)
 {
     return HeadsUpDisplayLayerImpl::create(treeImpl, id()).PassAs<LayerImpl>();
-}
-
-void HeadsUpDisplayLayerImpl::pushPropertiesTo(LayerImpl* layerImpl)
-{
-    LayerImpl::pushPropertiesTo(layerImpl);
-
-    if (!m_fontAtlas)
-        return;
-
-    HeadsUpDisplayLayerImpl* hudLayerImpl = static_cast<HeadsUpDisplayLayerImpl*>(layerImpl);
-    hudLayerImpl->setFontAtlas(m_fontAtlas.Pass());
-}
-
-void HeadsUpDisplayLayerImpl::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
-{
-    m_fontAtlas = fontAtlas.Pass();
 }
 
 void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)

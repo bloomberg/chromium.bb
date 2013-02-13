@@ -6,7 +6,6 @@
 #define CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer_tree_host.h"
 #include "cc/test/fake_output_surface.h"
@@ -37,8 +36,6 @@ public:
 
     // Used only in the single-threaded path.
     virtual void scheduleComposite() OVERRIDE { }
-
-    virtual scoped_ptr<FontAtlas> createFontAtlas() OVERRIDE;
 
 private:
     bool m_useSoftwareRendering;

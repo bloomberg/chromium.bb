@@ -83,7 +83,6 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual void didCommitAndDrawFrame() OVERRIDE;
   virtual void didCompleteSwapBuffers() OVERRIDE;
   virtual void scheduleComposite() OVERRIDE;
-  virtual scoped_ptr<cc::FontAtlas> createFontAtlas() OVERRIDE;
 
 private:
   RenderWidgetCompositor(RenderWidget* widget,

@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
@@ -360,10 +359,6 @@ void CompositorImpl::didCompleteSwapBuffers() {
 
 void CompositorImpl::scheduleComposite() {
   client_->ScheduleComposite();
-}
-
-scoped_ptr<cc::FontAtlas> CompositorImpl::createFontAtlas() {
-  return scoped_ptr<cc::FontAtlas>();
 }
 
 void CompositorImpl::OnViewContextSwapBuffersPosted() {

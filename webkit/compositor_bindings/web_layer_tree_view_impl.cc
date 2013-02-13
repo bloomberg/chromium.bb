@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
-#include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
@@ -212,21 +211,6 @@ void WebLayerTreeViewImpl::setContinuousPaintingEnabled(bool enabled)
     LayerTreeDebugState debugState = m_layerTreeHost->debugState();
     debugState.continuousPainting = enabled;
     m_layerTreeHost->setDebugState(debugState);
-}
-
-scoped_ptr<FontAtlas> WebLayerTreeViewImpl::createFontAtlas()
-{
-    int fontHeight;
-    WebRect asciiToWebRectTable[128];
-    gfx::Rect asciiToRectTable[128];
-    SkBitmap bitmap;
-
-    m_client->createFontAtlas(bitmap, asciiToWebRectTable, fontHeight);
-
-    for (int i = 0; i < 128; ++i)
-        asciiToRectTable[i] = asciiToWebRectTable[i];
-
-    return FontAtlas::create(bitmap, asciiToRectTable, fontHeight).Pass();
 }
 
 void WebLayerTreeViewImpl::willBeginFrame()

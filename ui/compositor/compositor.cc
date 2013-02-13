@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
 #include "cc/layer_tree_host.h"
@@ -549,10 +548,6 @@ void Compositor::didCompleteSwapBuffers() {
 void Compositor::scheduleComposite() {
   if (!disable_schedule_composite_)
     ScheduleDraw();
-}
-
-scoped_ptr<cc::FontAtlas> Compositor::createFontAtlas() {
-  return scoped_ptr<cc::FontAtlas>();
 }
 
 scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {
