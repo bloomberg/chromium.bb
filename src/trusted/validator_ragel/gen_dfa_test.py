@@ -71,7 +71,7 @@ class TestInstruction(unittest.TestCase):
     assert op1.Readable() and not op1.Writable()
     assert op2.Readable() and op2.Writable()
 
-    self.assertEquals(str(instr), 'add =G &E')
+    self.assertEquals(str(instr), 'add =G &E,')
 
   def test_modrm_presence(self):
     instr = gen_dfa.Instruction.Parse(
@@ -304,6 +304,22 @@ class TestInstructionPrinter(unittest.TestCase):
          operand_sib_pure_index)
         @set_spurious_rex_b
         """.split())
+
+
+class TestSplit(unittest.TestCase):
+
+  def test_no_split_rm(self):
+    instr = gen_dfa.Instruction.Parse('mov =G !E, 0x88')
+    self.assertEquals(
+        map(str, gen_dfa.SplitRM(instr)),
+        ['mov =G !R, 0x88',
+         'mov =G !M, 0x88'])
+
+  def test_split_rm(self):
+    instr = gen_dfa.Instruction.Parse('mov =O !a, 0xa0, ia32')
+    self.assertEquals(
+        map(str, gen_dfa.SplitRM(instr)),
+        [str(instr)])
 
 
 class TestParser(unittest.TestCase):

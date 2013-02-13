@@ -140,6 +140,9 @@ class Instruction(object):
         'w_set']
 
   def __init__(self):
+    self.opcodes = []
+    self.attributes = []
+
     self.rex = self.RexStatus()
     self.rex.b_matters = False
     self.rex.x_matters = False
@@ -306,7 +309,11 @@ class Instruction(object):
             self.opcodes[0] == '0x8f' and self.name != 'pop')
 
   def __str__(self):
-    return ' '.join([self.name] + map(str, self.operands))
+    result = ' '.join([self.name] + map(str, self.operands))
+    result += ', ' + ' '.join(self.opcodes)
+    if len(self.attributes) > 0:
+      result += ', ' + ' '.join(self.attributes)
+    return result.strip()
 
   def RMatters(self):
     """Return True iff rex.r bit influences instruction."""
@@ -664,6 +671,44 @@ class InstructionPrinter(object):
     # TODO(shcherbina): @check_access when appropriate.
 
     # TODO(shcherbina): print immediate args.
+
+
+def SplitRM(instruction):
+  """Split instruction into two versions (using register or memory).
+
+  Args:
+    instruction: instruction.
+
+  Returns:
+    List of one or two instructions. If original instruction contains operand
+    that can be either register or memory (such as 'E'), two specific versions
+    are produced. Otherwise, instruction is returned unchanged.
+  """
+  splits = {
+      def_format.OperandType.REGISTER_OR_MEMORY: (
+          def_format.OperandType.REGISTER_IN_RM,
+          def_format.OperandType.MEMORY),
+      def_format.OperandType.MMX_REGISTER_OR_MEMORY: (
+          def_format.OperandType.MMX_REGISTER_IN_RM,
+          def_format.OperandType.MEMORY),
+      def_format.OperandType.XMM_REGISTER_OR_MEMORY: (
+          def_format.OperandType.XMM_REGISTER_IN_RM,
+          def_format.OperandType.MEMORY)}
+
+  instr1 = copy.deepcopy(instruction)
+  instr2 = copy.deepcopy(instruction)
+  splitted = False
+  for i, operand in enumerate(instruction.operands):
+    if operand.arg_type in splits:
+      assert not splitted, 'more than one r/m-splittable operand'
+      splitted = True
+      (instr1.operands[i].arg_type,
+       instr2.operands[i].arg_type) = splits[operand.arg_type]
+
+  if splitted:
+    return [instr1, instr2]
+  else:
+    return [instr1]
 
 
 def ParseDefFile(filename):
