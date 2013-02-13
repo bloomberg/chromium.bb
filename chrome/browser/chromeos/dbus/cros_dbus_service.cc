@@ -112,8 +112,7 @@ void CrosDBusService::Initialize() {
     CrosDBusServiceImpl* service = new CrosDBusServiceImpl(bus);
     service->RegisterServiceProvider(ProxyResolutionServiceProvider::Create());
     service->RegisterServiceProvider(new LivenessServiceProvider);
-    // TODO(vitalybuka): Re-enable after addressing privacy issues.
-    // service->RegisterServiceProvider(new PrinterServiceProvider);
+    service->RegisterServiceProvider(new PrinterServiceProvider);
     g_cros_dbus_service = service;
     service->Start();
   } else {
