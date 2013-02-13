@@ -182,6 +182,11 @@ bool EnsureUserLevelGoogleUpdatePresent() {
     string16 cmd_string;
     if (!GetUserLevelGoogleUpdateInstallCommandLine(&cmd_string)) {
       LOG(ERROR) << "Cannot find Google Update at system-level.";
+      // Ideally we should return false. However, this case should not be
+      // encountered by regular users, and developers (who often installs
+      // Chrome without Google Update) may be unduly impeded by this case.
+      // Therefore we return true.
+      success = true;
     } else {
       success = LaunchProcessAndWaitWithTimeout(cmd_string,
           base::TimeDelta::FromMilliseconds(INFINITE));

@@ -11,7 +11,8 @@ namespace google_update {
 
 // If user-level Google Update is absent, calls the system-level
 // GoogleUpdateSetup.exe to install it, and waits until it finishes.
-// Returns true if already installed or installed successfully.
+// Returns true if already installed, installed successfully, or
+// if Google Update is not present at system-level.
 // Returns false if the installation fails.
 bool EnsureUserLevelGoogleUpdatePresent();
 
