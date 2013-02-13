@@ -897,8 +897,18 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         // We should not DCHECK(!clipped) here, because anti-aliasing inflation may cause deviceQuad to become
         // clipped. To our knowledge this scenario does not need to be handled differently than the unclipped case.
     } else {
+        // Move fragment shader transform to vertex shader. We can do this while
+        // still producing correct results as fragmentTexTransformLocation
+        // should always be non-negative when tiles are transformed in a way
+        // that could result in sampling outside the layer.
+        vertexTexScaleX *= fragmentTexScaleX;
+        vertexTexScaleY *= fragmentTexScaleY;
+        vertexTexTranslateX *= fragmentTexScaleX;
+        vertexTexTranslateY *= fragmentTexScaleY;
+        vertexTexTranslateX += fragmentTexTranslateX;
+        vertexTexTranslateY += fragmentTexTranslateY;
+
         GLC(context(), context()->uniform4f(uniforms.vertexTexTransformLocation, vertexTexTranslateX, vertexTexTranslateY, vertexTexScaleX, vertexTexScaleY));
-        GLC(context(), context()->uniform4f(uniforms.fragmentTexTransformLocation, fragmentTexTranslateX, fragmentTexTranslateY, fragmentTexScaleX, fragmentTexScaleY));
 
         localQuad = gfx::RectF(tileRect);
     }

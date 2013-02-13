@@ -144,12 +144,12 @@ private:
     // This block of bindings defines all of the programs used by the compositor itself.
 
     // Tiled layer shaders.
-    typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexClampAlpha> TileProgram;
+    typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexAlpha> TileProgram;
     typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexClampAlphaAA> TileProgramAA;
     typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexClampSwizzleAlphaAA> TileProgramSwizzleAA;
-    typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexClampOpaque> TileProgramOpaque;
-    typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexClampSwizzleAlpha> TileProgramSwizzle;
-    typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexClampSwizzleOpaque> TileProgramSwizzleOpaque;
+    typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexOpaque> TileProgramOpaque;
+    typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexSwizzleAlpha> TileProgramSwizzle;
+    typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexSwizzleOpaque> TileProgramSwizzleOpaque;
     typedef ProgramBinding<VertexShaderPosTex, FragmentShaderCheckerboard> TileCheckerboardProgram;
 
     // Render surface shaders.
