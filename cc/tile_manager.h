@@ -166,9 +166,9 @@ class CC_EXPORT TileManager {
       int manage_tiles_call_count_when_dispatched);
   void DidFinishTileInitialization(Tile* tile);
   void DidTileRasterStateChange(Tile* tile, TileRasterState state);
-  void DidTileBinChange(Tile* tile,
-                        TileManagerBin bin,
-                        WhichTree tree);
+  void DidTileTreeBinChange(Tile* tile,
+                            TileManagerBin new_tree_bin,
+                            WhichTree tree);
   scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
 
   static void PerformRaster(uint8* buffer,
@@ -192,7 +192,8 @@ class CC_EXPORT TileManager {
   GlobalStateThatImpactsTilePriority global_state_;
 
   typedef std::vector<Tile*> TileVector;
-  TileVector tiles_;
+  TileVector all_tiles_;
+  TileVector live_or_allocated_tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
 
   typedef std::list<Tile*> TileList;
