@@ -397,23 +397,20 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
 // ChromeOS does not support passing arguments on the command line, so the tests
 // that rely on this functionality are disabled.
 #if !defined(OS_CHROMEOS)
-// TODO(thakis): Figure out what to do here, reenable.
 // Tests that command line parameters get passed through to platform apps
 // via launchData correctly when launching with a file.
 // TODO(benwells/jeremya): tests need a way to specify a handler ID.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_LaunchWithFile) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFile) {
   SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file"))
       << message_;
 }
 
-// TODO(thakis): Figure out what to do here, reenable.
 // Tests that relative paths can be passed through to the platform app.
 // This test doesn't use the normal test infrastructure as it needs to open
 // the application differently to all other platform app tests, by setting
 // the chrome::AppLaunchParams.current_directory field.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       DISABLED_LaunchWithRelativeFile) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
   // Setup the command line
   ClearCommandLineArgs();
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -487,10 +484,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNothing) {
       << message_;
 }
 
-// TODO(thakis): Figure out what to do with this test.
 // Test that platform apps can use the chrome.fileSystem.getDisplayPath
 // function to get the native file system path of a file they are launched with.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_GetDisplayPath) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, GetDisplayPath) {
   SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/get_display_path"))
       << message_;
