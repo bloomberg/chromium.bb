@@ -37,7 +37,8 @@ TEST(PictureLayerTilingSetTest, NoResources) {
       &set,
       contents_scale,
       content_rect,
-      contents_scale);
+      contents_scale,
+      PictureLayerTiling::LayerDeviceAlignmentUnknown);
   for (; iter; ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
     EXPECT_TRUE(content_rect.Contains(geometry_rect));
@@ -95,7 +96,8 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
         &set,
         max_contents_scale,
         content_rect,
-        ideal_contents_scale);
+        ideal_contents_scale,
+        PictureLayerTiling::LayerDeviceAlignmentUnknown);
     for (; iter; ++iter) {
       gfx::Rect geometry_rect = iter.geometry_rect();
       EXPECT_TRUE(content_rect.Contains(geometry_rect));

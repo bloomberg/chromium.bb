@@ -65,6 +65,12 @@ class CC_EXPORT PictureLayerTiling {
     return all_tiles;
   }
 
+  enum LayerDeviceAlignment {
+    LayerDeviceAlignmentUnknown,
+    LayerAlignedToDevice,
+    LayerNotAlignedToDevice,
+  };
+
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
   // The union of all geometry_rect calls for each element iterated over should
@@ -72,10 +78,10 @@ class CC_EXPORT PictureLayerTiling {
   class CC_EXPORT Iterator {
    public:
     Iterator();
-    Iterator(
-        const PictureLayerTiling* tiling,
+    Iterator(const PictureLayerTiling* tiling,
         float dest_scale,
-        gfx::Rect rect);
+        gfx::Rect rect,
+        LayerDeviceAlignment layerDeviceAlignment);
     ~Iterator();
 
     // Visible rect (no borders), always in the space of content_rect,

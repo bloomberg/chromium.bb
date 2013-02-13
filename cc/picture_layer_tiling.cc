@@ -135,7 +135,8 @@ void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
     gfx::Rect rect =
         gfx::ToEnclosingRect(ScaleRect(layer_invalidation, contents_scale_));
 
-    for (PictureLayerTiling::Iterator tile_iter(this, contents_scale_, rect);
+    for (PictureLayerTiling::Iterator tile_iter(this, contents_scale_, rect,
+                                                PictureLayerTiling::LayerDeviceAlignmentUnknown);
          tile_iter;
          ++tile_iter) {
       TileMapKey key(tile_iter.tile_i_, tile_iter.tile_j_);
@@ -182,7 +183,8 @@ PictureLayerTiling::Iterator::Iterator()
 
 PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
                                        float dest_scale,
-                                       gfx::Rect dest_rect)
+                                       gfx::Rect dest_rect,
+                                       LayerDeviceAlignment layerDeviceAlignment)
     : tiling_(tiling),
       dest_rect_(dest_rect),
       current_tile_(NULL),
@@ -214,6 +216,21 @@ PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
       static_cast<float>(dest_content_size.width());
   dest_to_content_scale_y_ = content_size_floor.height() /
       static_cast<float>(dest_content_size.height());
+
+  // It's possible that when drawing a quad with texel:pixel ratio < 1
+  // GL_LINEAR will cause us to blend in invalid texels.
+  // We stretch the content a little more to prevent sampling past the
+  // middle of the last texel.
+  if (layerDeviceAlignment == LayerAlignedToDevice){
+    if (dest_to_content_scale_x_ < 1.0)
+      dest_to_content_scale_x_ -= 0.5f / dest_content_size.width();
+    if (dest_to_content_scale_y_ < 1.0)
+      dest_to_content_scale_y_ -= 0.5f / dest_content_size.height();
+  }
+  else if (layerDeviceAlignment == LayerNotAlignedToDevice) {
+    dest_to_content_scale_x_ -= 0.5f / dest_content_size.width();
+    dest_to_content_scale_y_ -= 0.5f / dest_content_size.height();
+  }
 
   gfx::Rect content_rect =
       gfx::ToEnclosingRect(gfx::ScaleRect(dest_rect_,

@@ -174,7 +174,8 @@ class PictureLayerImplTest : public testing::Test {
       PicturePileImpl* pile) {
     for (PictureLayerTiling::Iterator iter(tiling,
                                            tiling->contents_scale(),
-                                           tiling->ContentRect());
+                                           tiling->ContentRect(),
+                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
          iter; ++iter) {
       EXPECT_TRUE(*iter);
       EXPECT_EQ(pile, iter->picture_pile());
@@ -249,7 +250,8 @@ TEST_F(PictureLayerImplTest, clonePartialInvalidation) {
         tiling->contents_scale()));
     for (PictureLayerTiling::Iterator iter(tiling,
                                            tiling->contents_scale(),
-                                           tiling->ContentRect());
+                                           tiling->ContentRect(),
+                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
          iter; ++iter) {
       EXPECT_TRUE(*iter);
       EXPECT_FALSE(iter.geometry_rect().IsEmpty());
@@ -309,7 +311,8 @@ TEST_F(PictureLayerImplTest, noInvalidationBoundsChange) {
         tiling->contents_scale()));
     for (PictureLayerTiling::Iterator iter(tiling,
                                            tiling->contents_scale(),
-                                           tiling->ContentRect());
+                                           tiling->ContentRect(),
+                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
          iter; ++iter) {
       EXPECT_TRUE(*iter);
       EXPECT_FALSE(iter.geometry_rect().IsEmpty());
@@ -358,7 +361,8 @@ TEST_F(PictureLayerImplTest, addTilesFromNewRecording) {
 
     for (PictureLayerTiling::Iterator iter(tiling,
                                            tiling->contents_scale(),
-                                           tiling->ContentRect());
+                                           tiling->ContentRect(),
+                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
          iter; ++iter) {
       EXPECT_FALSE(iter.full_tile_geometry_rect().IsEmpty());
       // Ensure there is a recording for this tile.

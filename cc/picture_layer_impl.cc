@@ -96,11 +96,17 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   bool isAxisAlignedInTarget = !clipped && target_quad.IsRectilinear();
   bool useAA = !isAxisAlignedInTarget;
 
+  bool isPixelAligned = isAxisAlignedInTarget && drawTransform().IsIdentityOrIntegerTranslation();
+  PictureLayerTiling::LayerDeviceAlignment layerDeviceAlignment =
+    isPixelAligned ? PictureLayerTiling::LayerAlignedToDevice
+                   : PictureLayerTiling::LayerNotAlignedToDevice;
+
   if (showDebugBorders()) {
     for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
                                               contentsScaleX(),
                                               rect,
-                                              ideal_contents_scale_);
+                                              ideal_contents_scale_,
+                                              layerDeviceAlignment);
          iter;
          ++iter) {
       SkColor color;
@@ -139,7 +145,8 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
                                             contentsScaleX(),
                                             rect,
-                                            ideal_contents_scale_);
+                                            ideal_contents_scale_,
+                                            layerDeviceAlignment);
        iter;
        ++iter) {
     ResourceProvider::ResourceId resource = 0;
@@ -431,7 +438,8 @@ ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
   for (PictureLayerTilingSet::Iterator iter(tilings_.get(),
                                             scale,
                                             content_rect,
-                                            ideal_contents_scale_);
+                                            ideal_contents_scale_,
+                                            PictureLayerTiling::LayerDeviceAlignmentUnknown);
        iter;
        ++iter) {
     // Mask resource not ready yet.
@@ -479,7 +487,8 @@ bool PictureLayerImpl::areVisibleResourcesReady() const {
 
     for (PictureLayerTiling::Iterator iter(tiling,
                                            contentsScaleX(),
-                                           rect);
+                                           rect,
+                                           PictureLayerTiling::LayerDeviceAlignmentUnknown);
          iter;
          ++iter) {
       // A null tile (i.e. no recording) is considered "ready".
