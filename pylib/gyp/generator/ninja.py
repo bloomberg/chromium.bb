@@ -1050,10 +1050,9 @@ class NinjaWriter:
     env = self.ComputeExportEnvString(self.GetSortedXcodePostbuildEnv())
     # G will be non-null if any postbuild fails. Run all postbuilds in a
     # subshell.
-    commands = env + ' (F=0; ' + \
-        ' '.join([ninja_syntax.escape(command) + ' || F=$$?;'
-                                 for command in postbuilds])
-    command_string = (commands + ' exit $$F); G=$$?; '
+    commands = env + ' (' + \
+        ' && '.join([ninja_syntax.escape(command) for command in postbuilds])
+    command_string = (commands + '); G=$$?; '
                       # Remove the final output if any postbuild failed.
                       '((exit $$G) || rm -rf %s) ' % output + '&& exit $$G)')
     if is_command_start:

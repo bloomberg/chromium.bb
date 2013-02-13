@@ -395,15 +395,14 @@ command_changed = $(or $(subst $(cmd_$(1)),,$(cmd_$(call replace_spaces,$@))),\\
 #   $| -- order-only dependencies
 prereq_changed = $(filter-out FORCE_DO_CMD,$(filter-out $|,$?))
 
-# Helper that executes all postbuilds, and deletes the output file when done
-# if any of the postbuilds failed.
+# Helper that executes all postbuilds until one fails.
 define do_postbuilds
   @E=0;\\
   for p in $(POSTBUILDS); do\\
     eval $$p;\\
-    F=$$?;\\
-    if [ $$F -ne 0 ]; then\\
-      E=$$F;\\
+    E=$$?;\\
+    if [ $$E -ne 0 ]; then\\
+      break;\\
     fi;\\
   done;\\
   if [ $$E -ne 0 ]; then\\
