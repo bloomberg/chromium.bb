@@ -221,12 +221,11 @@ class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
-    // TODO(mukai): Replace ShowNotificationSettings with
-    // ShowNotificationSettingsDialog(GetWidget()->GetNativeView())
     if (sender == close_all_button())
       list_delegate()->SendRemoveAllNotifications();
     else if (sender == settings_button_)
-      list_delegate()->ShowNotificationSettings("");
+      list_delegate()->ShowNotificationSettingsDialog(
+          GetWidget()->GetNativeView());
     else
       NOTREACHED();
   }
