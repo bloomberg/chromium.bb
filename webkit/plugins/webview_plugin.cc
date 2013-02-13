@@ -127,13 +127,6 @@ void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
 
   paint_rect.Offset(-rect_.x(), -rect_.y());
 
-  float content_scale = 1.0f / GetPageScaleFactor();
-  paint_rect.SetRect(
-      ceil(content_scale * paint_rect.x()),
-      ceil(content_scale * paint_rect.y()),
-      ceil(content_scale * paint_rect.width()),
-      ceil(content_scale * paint_rect.height()));
-
   canvas->translate(SkIntToScalar(rect_.x()), SkIntToScalar(rect_.y()));
   canvas->save();
 
@@ -147,13 +140,8 @@ void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
 void WebViewPlugin::updateGeometry(
     const WebRect& frame_rect, const WebRect& clip_rect,
     const WebVector<WebRect>& cut_out_rects, bool is_visible) {
-  if (static_cast<gfx::Rect>(frame_rect) != rect_) {
+  if (static_cast<gfx::Rect>(frame_rect) != rect_)
     rect_ = frame_rect;
-
-    float content_scale = 1.0f / GetPageScaleFactor();
-    web_view_->resize(WebSize(content_scale * frame_rect.width,
-                              content_scale * frame_rect.height));
-  }
 }
 
 bool WebViewPlugin::acceptsInputEvents() {
@@ -254,15 +242,6 @@ void WebViewPlugin::didReceiveResponse(WebFrame* frame,
                                        unsigned identifier,
                                        const WebURLResponse& response) {
   WebFrameClient::didReceiveResponse(frame, identifier, response);
-}
-
-float WebViewPlugin::GetPageScaleFactor() {
-  if (container_) {
-    WebFrame* frame = container_->element().document().frame();
-    WebView* top_view = frame->top()->view();
-    return top_view->pageScaleFactor();
-  }
-  return 1.0f;
 }
 
 }  // namespace webkit

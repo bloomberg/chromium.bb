@@ -143,9 +143,6 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   friend class base::DeleteHelper<WebViewPlugin>;
   virtual ~WebViewPlugin();
 
-  // Get the scale factor for the current page.
-  float GetPageScaleFactor();
-
   Delegate* delegate_;
   // Destroys itself.
   WebKit::WebCursorInfo current_cursor_;
