@@ -4,14 +4,12 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
-#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_util.h"
 #include "ash/shell.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"
-#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -56,12 +54,6 @@ class LauncherPlatformPerAppAppBrowserTest
 
   virtual ~LauncherPlatformPerAppAppBrowserTest() {}
 
-  // TODO(skuhne): Remove when the old launcher gets removed.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    PlatformAppBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kAshEnablePerAppLauncher);
-  }
-
   ash::LauncherModel* launcher_model() {
     return ash::test::ShellTestApi(ash::Shell::GetInstance()).launcher_model();
   }
@@ -95,12 +87,6 @@ class LauncherPerAppAppBrowserTest : public ExtensionBrowserTest {
   }
 
   virtual ~LauncherPerAppAppBrowserTest() {}
-
-  // TODO(skuhne): Remove when the old launcher gets removed.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kAshEnablePerAppLauncher);
-  }
 
   virtual void RunTestOnMainThreadLoop() OVERRIDE {
     launcher_ = ash::Launcher::ForPrimaryDisplay();
