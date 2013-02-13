@@ -14,12 +14,12 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/fileapi/async_file_test_helper.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/mock_file_change_observer.h"
 #include "webkit/quota/mock_quota_manager.h"
@@ -111,18 +111,15 @@ class LocalFileSystemOperationTest
 
   bool FileExists(const base::FilePath& virtual_path) {
     FileSystemURL url = test_helper_.CreateURL(virtual_path);
-    base::PlatformFileInfo file_info;
-    base::FilePath platform_path;
-    scoped_ptr<FileSystemOperationContext> context(NewContext());
-    base::PlatformFileError error = file_util()->GetFileInfo(
-        context.get(), url, &file_info, &platform_path);
-    return error == base::PLATFORM_FILE_OK && !file_info.is_directory;
+    return AsyncFileTestHelper::FileExists(
+        test_helper_.file_system_context(), url,
+        AsyncFileTestHelper::kDontCheckSize);
   }
 
   bool DirectoryExists(const base::FilePath& virtual_path) {
     FileSystemURL url = test_helper_.CreateURL(virtual_path);
-    scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return FileUtilHelper::DirectoryExists(context.get(), file_util(), url);
+    return AsyncFileTestHelper::DirectoryExists(
+        test_helper_.file_system_context(), url);
   }
 
   base::FilePath CreateUniqueFileInDir(const base::FilePath& virtual_dir_path) {
@@ -209,29 +206,11 @@ class LocalFileSystemOperationTest
     shareable_file_ref_ = shareable_file_ref;
   }
 
-  static void DidGetUsageAndQuota(quota::QuotaStatusCode* status_out,
-                           int64* usage_out,
-                           int64* quota_out,
-                           quota::QuotaStatusCode status,
-                           int64 usage,
-                           int64 quota) {
-    if (status_out)
-      *status_out = status;
-
-    if (usage_out)
-      *usage_out = usage;
-
-    if (quota_out)
-      *quota_out = quota;
-  }
-
   void GetUsageAndQuota(int64* usage, int64* quota) {
-    quota::QuotaStatusCode status = quota::kQuotaStatusUnknown;
-    quota_manager_->GetUsageAndQuota(
-        test_helper_.origin(),
-        test_helper_.storage_type(),
-        base::Bind(&LocalFileSystemOperationTest::DidGetUsageAndQuota,
-                   &status, usage, quota));
+    quota::QuotaStatusCode status =
+        AsyncFileTestHelper::GetUsageAndQuota(
+            quota_manager_, test_helper_.origin(), test_helper_.type(),
+            usage, quota);
     MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(quota::kQuotaStatusOk, status);
   }
@@ -407,9 +386,7 @@ TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndOverwrite) {
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_file_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 
-  // Move is considered 'write' access (for both side), and won't be counted
-  // as read access.
-  EXPECT_EQ(0, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
 }
 
 TEST_F(LocalFileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
@@ -609,7 +586,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndOverwrite) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists(dest_file_path));
-  EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(2, quota_manager_proxy()->notify_storage_accessed_count());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -619,14 +596,15 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
   base::FilePath src_dir_path(CreateUniqueDir());
   base::FilePath src_file_path(CreateUniqueFileInDir(src_dir_path));
   base::FilePath dest_dir_path(CreateUniqueDir());
-  base::FilePath dest_file_path(dest_dir_path.Append(FILE_PATH_LITERAL("NewFile")));
+  base::FilePath dest_file_path(dest_dir_path.Append(
+      FILE_PATH_LITERAL("NewFile")));
 
   operation()->Copy(URLForPath(src_file_path), URLForPath(dest_file_path),
                     RecordStatusCallback());
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(FileExists(dest_file_path));
-  EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(2, quota_manager_proxy()->notify_storage_accessed_count());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_from_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -645,7 +623,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
   EXPECT_TRUE(DirectoryExists(dest_dir_path));
   EXPECT_FALSE(DirectoryExists(
       dest_dir_path.Append(VirtualPath::BaseName(src_dir_path))));
-  EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(3, quota_manager_proxy()->notify_storage_accessed_count());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
@@ -663,7 +641,7 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
   MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(DirectoryExists(dest_child_dir_path));
-  EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(2, quota_manager_proxy()->notify_storage_accessed_count());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
   EXPECT_TRUE(change_observer()->HasNoChange());

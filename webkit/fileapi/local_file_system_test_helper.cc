@@ -15,7 +15,6 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
@@ -122,20 +121,6 @@ base::FilePath LocalFileSystemTestOriginHelper::GetUsageCachePath() const {
 FileSystemURL LocalFileSystemTestOriginHelper::CreateURL(const base::FilePath& path)
     const {
   return file_system_context_->CreateCrackedFileSystemURL(origin_, type_, path);
-}
-
-base::PlatformFileError LocalFileSystemTestOriginHelper::SameFileUtilCopy(
-    FileSystemOperationContext* context,
-    const FileSystemURL& src,
-    const FileSystemURL& dest) const {
-  return FileUtilHelper::Copy(context, file_util(), file_util(), src, dest);
-}
-
-base::PlatformFileError LocalFileSystemTestOriginHelper::SameFileUtilMove(
-    FileSystemOperationContext* context,
-    const FileSystemURL& src,
-    const FileSystemURL& dest) const {
-  return FileUtilHelper::Move(context, file_util(), file_util(), src, dest);
 }
 
 int64 LocalFileSystemTestOriginHelper::GetCachedOriginUsage() const {
