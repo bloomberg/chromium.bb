@@ -440,12 +440,14 @@ bool CompleteInstallFunction::RunImpl() {
 #if defined(OS_WIN)
   if (approval_->enable_launcher) {
     if (BrowserDistribution::GetDistribution()->AppHostIsSupported()) {
+      LOG(INFO) << "Enabling App Launcher via installation";
       extensions::AppHostInstaller::SetInstallWithLauncher(true);
       extensions::AppHostInstaller::EnsureAppHostInstalled(
           base::Bind(&CompleteInstallFunction::AfterMaybeInstallAppLauncher,
                      this));
       return true;
     } else {
+      LOG(INFO) << "Enabling App Launcher via flags";
       about_flags::SetExperimentEnabled(g_browser_process->local_state(),
                                         switches::kShowAppListShortcut,
                                         true);
@@ -458,6 +460,8 @@ bool CompleteInstallFunction::RunImpl() {
 }
 
 void CompleteInstallFunction::AfterMaybeInstallAppLauncher(bool ok) {
+  if (!ok)
+    LOG(ERROR) << "Error installing app launcher";
   apps::GetIsAppLauncherEnabled(base::Bind(
       &CompleteInstallFunction::OnGetAppLauncherEnabled, this,
       approval_->extension_id));
