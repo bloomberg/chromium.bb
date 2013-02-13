@@ -6,10 +6,10 @@
  * @constructor
  * @class FunctionSequence to invoke steps in sequence
  *
- * @param {Array} steps                array of functions to invoke in sequence
- * @param {Object} logger              logger
- * @param {Function} [callback]        callback to invoke on success
- * @param {Function} [failureCallback] callback to invoke on failure
+ * @param {Array} steps                array of functions to invoke in sequence.
+ * @param {Object} logger              logger.
+ * @param {Function} [callback]        callback to invoke on success.
+ * @param {Function} [failureCallback] callback to invoke on failure.
  */
 function FunctionSequence(name, steps, logger, callback, failureCallback) {
   // Private variables hidden in closure
@@ -30,7 +30,7 @@ function FunctionSequence(name, steps, logger, callback, failureCallback) {
 /**
  * Sets new callback
  *
- * @param {Function} callback new callback to call on succeed
+ * @param {Function} callback new callback to call on succeed.
  */
 FunctionSequence.prototype.setCallback = function(callback) {
     this.callback_ = callback;
@@ -39,7 +39,7 @@ FunctionSequence.prototype.setCallback = function(callback) {
 /**
  * Sets new error callback
  *
- * @param {Function} failureCallback new callback to call on failure
+ * @param {Function} failureCallback new callback to call on failure.
  */
 FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
     this.failureCallback_ = failureCallback;
@@ -50,7 +50,7 @@ FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
  * Error handling function, which traces current error step, stops sequence
  * advancing and fires error callback.
  *
- * @param err error message
+ * @param err error message.
  */
 FunctionSequence.prototype.onError_ = function(err) {
   this.logger.vlog('Failed step: ' + this.steps_[this.currentStepIdx_].name

@@ -97,7 +97,7 @@ ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 
 /**
  * Draw below overlays with the default zIndex.
- * @return {number} Z-index
+ * @return {number} Z-index.
  */
 ImageView.prototype.getZIndex = function() { return -1 };
 
@@ -231,7 +231,7 @@ ImageView.prototype.paintDeviceRect = function(deviceRect, canvas, imageRect) {
  * Create an overlay canvas with properties similar to the screen canvas.
  * Useful for showing quick feedback when editing.
  *
- * @return {HTMLCanvasElement} Overlay canvas
+ * @return {HTMLCanvasElement} Overlay canvas.
  */
 ImageView.prototype.createOverlayCanvas = function() {
   var canvas = this.document_.createElement('canvas');

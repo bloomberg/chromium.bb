@@ -198,7 +198,7 @@ AudioPlayer.prototype.load = function(playlist) {
 
 /**
  * Load metadata for a track.
- * @param {number} track Track number
+ * @param {number} track Track number.
  * @private
  */
 AudioPlayer.prototype.loadMetadata_ = function(track) {

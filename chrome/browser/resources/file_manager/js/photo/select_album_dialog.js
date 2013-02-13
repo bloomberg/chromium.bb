@@ -120,7 +120,7 @@ SelectAlbumDialog.prototype.renderItem = function(item) {
  * Shows dialog.
  *
  * @param {string} message Message in dialog caption.
- * @param {Array} items Albums to render in list
+ * @param {Array} items Albums to render in list.
  * @param {string} defaultNewName Default name of the new album.
  * @param {string} okCaption Text on the ok button.
  * @param {function} onOk Callback function.

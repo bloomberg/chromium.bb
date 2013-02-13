@@ -353,8 +353,8 @@ ExifParser.ROTATE90 = [0, 0, 0, 0, 1, 1, 1, 1];
  * Transform exif-encoded orientation into a set of parameters compatible with
  * CSS and canvas transforms (scaleX, scaleY, rotation).
  *
- * @param {Object} ifd exif property dictionary (image or thumbnail)
- * @return {Object} //TODO(JSDOC)
+ * @param {Object} ifd exif property dictionary (image or thumbnail).
+ * @return {Object} //TODO(JSDOC).
  */
 ExifParser.prototype.parseOrientation = function(ifd) {
   if (ifd[EXIF_TAG_ORIENTATION]) {

@@ -6,9 +6,9 @@
  * @constructor
  * @class FunctionSequence to invoke steps in sequence
  *
- * @param steps             array of functions to invoke in parallel
- * @param callback          callback to invoke on success
- * @param failureCallback   callback to invoke on failure
+ * @param steps             array of functions to invoke in parallel.
+ * @param callback          callback to invoke on success.
+ * @param failureCallback   callback to invoke on failure.
  */
 function FunctionParallel(name, steps, logger, callback, failureCallback) {
   // Private variables hidden in closure
@@ -31,7 +31,7 @@ function FunctionParallel(name, steps, logger, callback, failureCallback) {
 /**
  * Error handling function, which fires error callback.
  *
- * @param err error message
+ * @param err error message.
  */
 FunctionParallel.prototype.onError_ = function(err) {
   if (!this.failed_) {

@@ -68,7 +68,7 @@ SlideMode.editorModes = [
 ];
 
 /**
- * @return {string} Mode name
+ * @return {string} Mode name.
  */
 SlideMode.prototype.getName = function() { return 'slide' };
 
@@ -368,7 +368,7 @@ SlideMode.prototype.getSelectedImageRect = function() {
 };
 
 /**
- * @return {Gallery.Item} Selected item
+ * @return {Gallery.Item} Selected item.
  */
 SlideMode.prototype.getSelectedItem = function() {
   return this.getItem(this.getSelectedIndex());

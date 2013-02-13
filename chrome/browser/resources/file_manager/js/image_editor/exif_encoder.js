@@ -78,8 +78,8 @@ ExifEncoder.prototype.setImageData = function(canvas) {
 
 
 /**
- * @param {HTMLCanvasElement} canvas Thumbnail canvas
- * @param {number} quality (0..1] Thumbnail encoding quality
+ * @param {HTMLCanvasElement} canvas Thumbnail canvas.
+ * @param {number} quality (0..1] Thumbnail encoding quality.
  */
 ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
   // Empirical formula with reasonable behavior:
@@ -437,7 +437,7 @@ ByteWriter.BIG_ENDIAN = 1;
 /**
  * Set the byte ordering for future writes.
  * @param {number} order ByteOrder to use {ByteWriter.LITTLE_ENDIAN}
- *   or {ByteWriter.BIG_ENDIAN}
+ *   or {ByteWriter.BIG_ENDIAN}.
  */
 ByteWriter.prototype.setByteOrder = function(order) {
   this.littleEndian_ = (order == ByteWriter.LITTLE_ENDIAN);

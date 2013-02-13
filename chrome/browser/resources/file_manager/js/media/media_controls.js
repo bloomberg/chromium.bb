@@ -202,7 +202,7 @@ MediaControls.prototype.displayProgress_ = function(current, duration) {
 };
 
 /**
- * @param {number} value Progress [0..1]
+ * @param {number} value Progress [0..1].
  * @private
  */
 MediaControls.prototype.onProgressChange_ = function(value) {
@@ -271,7 +271,7 @@ MediaControls.prototype.onSoundButtonClick_ = function() {
 };
 
 /**
- * @param {number} value Volume [0..1]
+ * @param {number} value Volume [0..1].
  * @return {number} The rough level [0..3] used to pick an icon.
  * @private
  */
@@ -602,7 +602,7 @@ MediaControls.Slider.prototype.getValue = function() {
 };
 
 /**
- * @param {number} value [0..1]
+ * @param {number} value [0..1].
  */
 MediaControls.Slider.prototype.setValue = function(value) {
   this.value_ = value;
@@ -612,7 +612,7 @@ MediaControls.Slider.prototype.setValue = function(value) {
 /**
  * Fill the given proportion the slider bar (from the left).
  *
- * @param {number} proportion [0..1]
+ * @param {number} proportion [0..1].
  * @private
  */
 MediaControls.Slider.prototype.setFilled_ = function(proportion) {
@@ -622,7 +622,7 @@ MediaControls.Slider.prototype.setFilled_ = function(proportion) {
 /**
  * Get the value from the input element.
  *
- * @return {number} Value [0..1]
+ * @return {number} Value [0..1].
  * @private
  */
 MediaControls.Slider.prototype.getValueFromUI_ = function() {
@@ -632,7 +632,7 @@ MediaControls.Slider.prototype.getValueFromUI_ = function() {
 /**
  * Update the UI with the current value.
  *
- * @param {number} value [0..1]
+ * @param {number} value [0..1].
  * @private
  */
 MediaControls.Slider.prototype.setValueToUI_ = function(value) {
@@ -709,7 +709,7 @@ MediaControls.AnimatedSlider.STEPS = 10;
 MediaControls.AnimatedSlider.DURATION = 100;
 
 /**
- * @param {number} value [0..1]
+ * @param {number} value [0..1].
  * @private
  */
 MediaControls.AnimatedSlider.prototype.setValueToUI_ = function(value) {

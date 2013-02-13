@@ -265,8 +265,8 @@ Command.prototype.revertView = function(canvas, imageView) {
  *
  * @param {Document} document Document to create canvas in.
  * @param {HTMLCanvasElement} srcCanvas to copy optional dimensions from.
- * @param {int} opt_width new canvas width;
- * @param {int} opt_height new canvas height;
+ * @param {int} opt_width new canvas width.
+ * @param {int} opt_height new canvas height.
  * @return {HTMLCanvasElement} Newly created canvas.
  * @private
  */
@@ -281,7 +281,7 @@ Command.prototype.createCanvas_ = function(
 
 /**
  * Rotate command
- * @param {number} rotate90 Rotation angle in 90 degree increments (signed)
+ * @param {number} rotate90 Rotation angle in 90 degree increments (signed).
  * @constructor
  * @extends {Command}
  */
@@ -351,9 +351,9 @@ Command.Crop.prototype.revertView = function(canvas, imageView) {
 /**
  * Filter command.
  *
- * @param {string} name Command name
- * @param {function(ImageData,ImageData,number,number)} filter Filter function
- * @param {string} message Message to display when done
+ * @param {string} name Command name.
+ * @param {function(ImageData,ImageData,number,number)} filter Filter function.
+ * @param {string} message Message to display when done.
  * @constructor
  * @extends {Command}
  */

@@ -91,7 +91,7 @@ ThumbnailLoader.LoaderType = {
  * the image itself as a thumbnail. If the image is too large it hurts
  * the performance a lot so we allow it only for moderately sized files.
  *
- * @param {Object} metadata Metadata object
+ * @param {Object} metadata Metadata object.
  * @return {boolean} Whether it is OK to use the image url for a preview.
  * @private
  */

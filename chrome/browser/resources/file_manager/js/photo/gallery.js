@@ -38,7 +38,7 @@ function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
  *     {Array.<Object>} shareActions
  *     {string} readonlyDirName Directory name for readonly warning or null.
  *     {DirEntry} saveDirEntry Directory to save to.
- *     {function(string)} displayStringFunction
+ *     {function(string)} displayStringFunction.
  * @class
  * @constructor
  */
@@ -790,7 +790,7 @@ Gallery.prototype.onFilenameEditKeydown_ = function() {
 };
 
 /**
- * @return {boolean} True if file renaming is currently in progress
+ * @return {boolean} True if file renaming is currently in progress.
  * @private
  */
 Gallery.prototype.isRenaming_ = function() {

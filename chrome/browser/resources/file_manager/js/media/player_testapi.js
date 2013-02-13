@@ -93,7 +93,7 @@ var playerTestAPI = {
 
   /**
    * Change volume.
-   * @param {number} volume Volume [0..100]
+   * @param {number} volume Volume [0..100].
    */
   setVolume: function(volume) {
     this.respond_(this.getControls_().onVolumeChange_(volume / 100));

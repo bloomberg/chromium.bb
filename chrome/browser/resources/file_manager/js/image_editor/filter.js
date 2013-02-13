@@ -124,7 +124,7 @@ filter.getHistogram = function(source) {
  *
  * @param {number} maxArg Maximum argument value (inclusive).
  * @param {function(number): number} func Function to precompute.
- * @return {Uint8Array} Computed results
+ * @return {Uint8Array} Computed results.
  */
 filter.precompute = function(maxArg, func) {
   var results = new Uint8Array(maxArg + 1);
@@ -281,7 +281,7 @@ filter.convolve5x5 = function(weights, dst, src, offsetX, offsetY) {
 /**
  * Compute the average color for the image.
  *
- * @param {ImageData} imageData Image data to analyze
+ * @param {ImageData} imageData Image data to analyze.
  * @return {{r: number, g: number, b: number}} average color.
  */
 filter.getAverageColor = function(imageData) {
@@ -309,7 +309,7 @@ filter.getAverageColor = function(imageData) {
 /**
  * Compute the average color with more weight given to pixes at the center.
  *
- * @param {ImageData} imageData Image data to analyze
+ * @param {ImageData} imageData Image data to analyze.
  * @return {{r: number, g: number, b: number}} weighted average color.
  */
 filter.getWeightedAverageColor = function(imageData) {

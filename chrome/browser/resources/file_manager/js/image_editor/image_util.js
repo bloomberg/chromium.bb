@@ -67,7 +67,7 @@ ImageUtil.clamp = function(min, value, max) {
  * @param {number} min Minimum value.
  * @param {number} value Value to check.
  * @param {number} max Maximum value.
- * @return {boolean} True if value is between
+ * @return {boolean} True if value is between.
  */
 ImageUtil.between = function(min, value, max) {
   return (value - min) * (value - max) <= 0;
@@ -358,7 +358,7 @@ Circle.prototype.inside = function(x, y) {
  * @param {HTMLCanvasElement|HTMLImageElement} src Source.
  * @param {number} scaleX Y scale transformation.
  * @param {number} scaleY X scale transformation.
- * @param {number} angle (in radians)
+ * @param {number} angle (in radians).
  */
 ImageUtil.drawImageTransformed = function(dst, src, scaleX, scaleY, angle) {
   var context = dst.getContext('2d');
@@ -437,7 +437,7 @@ ImageUtil.ImageLoader.isTooLarge = function(image) {
 /**
  * @param {string} url Image URL.
  * @param {function(function(object))} transformFetcher function to get
- *    the image transform (which we need for the image orientation)
+ *    the image transform (which we need for the image orientation).
  * @param {function(HTMLCanvasElement)} callback To be called when loaded.
  * @param {number} opt_delay Load delay in milliseconds, useful to let the
  *        animations play out before the computation heavy image loading starts.

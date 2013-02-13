@@ -67,7 +67,7 @@ MouseInactivityWatcher.prototype.showTools = function(on) {
 };
 
 /**
- * @param {Element} element DOM element
+ * @param {Element} element DOM element.
  * @return {boolean} True if the element is a tool. Tools should never be hidden
  *   while the mouse is over one of them.
  */

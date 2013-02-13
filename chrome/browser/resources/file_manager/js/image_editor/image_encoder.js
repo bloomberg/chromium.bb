@@ -20,7 +20,7 @@ ImageEncoder.registerMetadataEncoder = function(constructor, mimeType) {
  *
  * The encoder will own and modify a copy of the original metadata.
  *
- * @param {Object} metadata Original metadata
+ * @param {Object} metadata Original metadata.
  * @return {ImageEncoder.MetadataEncoder} Created metadata encoder.
  */
 ImageEncoder.createMetadataEncoder = function(metadata) {
@@ -34,9 +34,9 @@ ImageEncoder.createMetadataEncoder = function(metadata) {
  * Create a metadata encoder object holding a copy of metadata
  * modified according to the properties of the supplied image.
  *
- * @param {Object} metadata Original metadata
+ * @param {Object} metadata Original metadata.
  * @param {HTMLCanvasElement} canvas Canvas to use for metadata.
- * @param {number} quality Encoding quality (defaults to 1)
+ * @param {number} quality Encoding quality (defaults to 1).
  * @return {ImageEncoder.MetadataEncoder} Encoder with encoded metadata.
  */
 ImageEncoder.encodeMetadata = function(metadata, canvas, quality) {
@@ -120,7 +120,7 @@ ImageEncoder.decodeDataURL = function(dataURL) {
  * @param {HTMLCanvasElement} canvas Original image.
  * @param {number} opt_shrinkage Thumbnail should be at least this much smaller
  *                               than the original image (in each dimension).
- * @return {HTMLCanvasElement} Thumbnail canvas
+ * @return {HTMLCanvasElement} Thumbnail canvas.
  */
 ImageEncoder.createThumbnail = function(canvas, opt_shrinkage) {
   var MAX_THUMBNAIL_DIMENSION = 320;
@@ -193,7 +193,7 @@ ImageEncoder.MetadataEncoder.prototype.setThumbnailData =
 
 /**
  * Return a range where the metadata is (or should be) located.
- * @param {string} encodedImage //TODO(JSDOC)
+ * @param {string} encodedImage //TODO(JSDOC).
  * @return {Object} An object with from and to properties.
  */
 ImageEncoder.MetadataEncoder.prototype.
@@ -202,7 +202,7 @@ ImageEncoder.MetadataEncoder.prototype.
 /**
  * Return serialized metadata ready to write to an image file.
  * The return type is optimized for passing to Blob.append.
- * @return {ArrayBuffer} //TODO(JSDOC)
+ * @return {ArrayBuffer} //TODO(JSDOC).
  */
 ImageEncoder.MetadataEncoder.prototype.encode = function() {
   return new Uint8Array(0).buffer;

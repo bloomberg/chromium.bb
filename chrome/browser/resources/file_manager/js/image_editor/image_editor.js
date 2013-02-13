@@ -375,7 +375,7 @@ ImageEditor.Mode.OneClick = function(name, command) {
 ImageEditor.Mode.OneClick.prototype = {__proto__: ImageEditor.Mode.prototype};
 
 /**
- * @return {Command} command
+ * @return {Command} command.
  */
 ImageEditor.Mode.OneClick.prototype.getCommand = function() {
   return this.command_;
