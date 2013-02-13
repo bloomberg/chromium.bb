@@ -245,6 +245,7 @@ struct window {
 
 struct widget {
 	struct window *window;
+	struct surface *surface;
 	struct tooltip *tooltip;
 	struct wl_list child_list;
 	struct wl_list link;
@@ -1369,15 +1370,16 @@ window_find_widget(struct window *window, int32_t x, int32_t y)
 }
 
 static struct widget *
-widget_create(struct window *window, void *data)
+widget_create(struct window *window, struct surface *surface, void *data)
 {
 	struct widget *widget;
 
 	widget = malloc(sizeof *widget);
 	memset(widget, 0, sizeof *widget);
 	widget->window = window;
+	widget->surface = surface;
 	widget->user_data = data;
-	widget->allocation = window->main_surface->allocation;
+	widget->allocation = surface->allocation;
 	wl_list_init(&widget->child_list);
 	widget->opaque = 0;
 	widget->tooltip = NULL;
@@ -1392,7 +1394,7 @@ window_add_widget(struct window *window, void *data)
 {
 	struct widget *widget;
 
-	widget = widget_create(window, data);
+	widget = widget_create(window, window->main_surface, data);
 	wl_list_init(&widget->link);
 	window->main_surface->widget = widget;
 
@@ -1404,7 +1406,7 @@ widget_add_widget(struct widget *parent, void *data)
 {
 	struct widget *widget;
 
-	widget = widget_create(parent->window, data);
+	widget = widget_create(parent->window, parent->surface, data);
 	wl_list_insert(parent->child_list.prev, &widget->link);
 
 	return widget;
@@ -1734,7 +1736,7 @@ frame_resize_handler(struct widget *widget,
 	struct widget *child = frame->child;
 	struct rectangle allocation;
 	struct display *display = widget->window->display;
-	struct surface *surface = widget->window->main_surface;
+	struct surface *surface = widget->surface;
 	struct frame_button * button;
 	struct theme *t = display->theme;
 	int x_l, x_r, y, w, h;
