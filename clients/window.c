@@ -1230,7 +1230,7 @@ surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
 }
 
 static void
-window_create_surface(struct window *window)
+window_create_main_surface(struct window *window)
 {
 	struct surface *surface = window->main_surface;
 	uint32_t flags = 0;
@@ -1459,6 +1459,34 @@ widget_get_user_data(struct widget *widget)
 	return widget->user_data;
 }
 
+static cairo_surface_t *
+widget_get_cairo_surface(struct widget *widget)
+{
+	struct surface *surface = widget->surface;
+	struct window *window = widget->window;
+
+	if (!surface->cairo_surface) {
+		if (surface == window->main_surface)
+			window_create_main_surface(window);
+		else
+			surface_create_surface(surface, 0, 0, 0);
+	}
+
+	return surface->cairo_surface;
+}
+
+cairo_t *
+widget_cairo_create(struct widget *widget)
+{
+	cairo_surface_t *cairo_surface;
+	cairo_t *cr;
+
+	cairo_surface = widget_get_cairo_surface(widget);
+	cr = cairo_create(cairo_surface);
+
+	return cr;
+}
+
 void
 widget_set_resize_handler(struct widget *widget,
 			  widget_resize_handler_t handler)
@@ -1515,7 +1543,11 @@ widget_schedule_redraw(struct widget *widget)
 cairo_surface_t *
 window_get_surface(struct window *window)
 {
-	return cairo_surface_reference(window->main_surface->cairo_surface);
+	cairo_surface_t *cairo_surface;
+
+	cairo_surface = widget_get_cairo_surface(window->main_surface->widget);
+
+	return cairo_surface_reference(cairo_surface);
 }
 
 struct wl_surface *
@@ -1538,7 +1570,7 @@ tooltip_redraw_handler(struct widget *widget, void *data)
 	struct tooltip *tooltip = data;
 	int32_t width, height;
 
-	cr = cairo_create(widget->surface->cairo_surface);
+	cr = widget_cairo_create(widget);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
 	cairo_paint(cr);
@@ -1950,7 +1982,7 @@ frame_button_redraw_handler(struct widget *widget, void *data)
 	if (widget->opaque)
 		return;
 
-	cr = cairo_create(widget->surface->cairo_surface);
+	cr = widget_cairo_create(widget);
 
 	if (frame_button->decoration == FRAME_BUTTON_FANCY) {
 		cairo_set_line_width(cr, 1);
@@ -2032,7 +2064,7 @@ frame_redraw_handler(struct widget *widget, void *data)
 	if (window->type == TYPE_FULLSCREEN)
 		return;
 
-	cr = cairo_create(widget->surface->cairo_surface);
+	cr = widget_cairo_create(widget);
 
 	if (window->focus_count)
 		flags |= THEME_FRAME_ACTIVE;
@@ -3324,7 +3356,6 @@ idle_redraw(struct task *task, uint32_t events)
 	if (window->resize_needed)
 		idle_resize(window);
 
-	window_create_surface(window);
 	widget_redraw(window->main_surface->widget);
 	window->redraw_needed = 0;
 	wl_list_init(&window->redraw_task.link);
@@ -3757,7 +3788,7 @@ menu_redraw_handler(struct widget *widget, void *data)
 	struct menu *menu = data;
 	int32_t width, height, i;
 
-	cr = cairo_create(widget->surface->cairo_surface);
+	cr = widget_cairo_create(widget);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
 	cairo_paint(cr);

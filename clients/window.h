@@ -382,6 +382,9 @@ widget_schedule_resize(struct widget *widget, int32_t width, int32_t height);
 void *
 widget_get_user_data(struct widget *widget);
 
+cairo_t *
+widget_cairo_create(struct widget *widget);
+
 void
 widget_set_redraw_handler(struct widget *widget,
 			  widget_redraw_handler_t handler);
@@ -409,6 +412,7 @@ widget_schedule_redraw(struct widget *widget);
 
 struct widget *
 frame_create(struct window *window, void *data);
+
 void
 frame_set_child_size(struct widget *widget, int child_width, int child_height);
 
