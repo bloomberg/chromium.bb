@@ -171,6 +171,14 @@ void WebContentsObserverAndroid::DidFinishLoad(
       env, obj.obj(), frame_id, jstring_url.obj(), is_main_frame);
 }
 
+void WebContentsObserverAndroid::DidChangeVisibleSSLState() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
+  if (obj.is_null())
+    return;
+  Java_WebContentsObserverAndroid_didChangeVisibleSSLState(env, obj.obj());
+}
+
 void WebContentsObserverAndroid::DidFailLoadInternal(
     bool is_provisional_load,
     bool is_main_frame,

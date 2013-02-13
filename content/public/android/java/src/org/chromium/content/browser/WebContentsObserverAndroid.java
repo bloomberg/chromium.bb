@@ -96,6 +96,13 @@ public abstract class WebContentsObserverAndroid {
     }
 
     /**
+     * Invoked when visible SSL state changes.
+     */
+    @CalledByNative
+    public void didChangeVisibleSSLState() {
+    }
+
+    /**
      * Destroy the corresponding native object.
      */
     @CalledByNative
