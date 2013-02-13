@@ -8,8 +8,8 @@
  *
  * @param {Array} steps                array of functions to invoke in sequence.
  * @param {Object} logger              logger.
- * @param {Function} [callback]        callback to invoke on success.
- * @param {Function} [failureCallback] callback to invoke on failure.
+ * @param {Function} callback          callback to invoke on success.
+ * @param {Function} failureCallback   callback to invoke on failure.
  */
 function FunctionSequence(name, steps, logger, callback, failureCallback) {
   // Private variables hidden in closure
