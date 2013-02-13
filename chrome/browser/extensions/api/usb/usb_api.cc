@@ -309,7 +309,7 @@ bool UsbFindDevicesFunction::Prepare() {
 }
 
 void UsbFindDevicesFunction::AsyncWorkStart() {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
+  result_.reset(new base::ListValue());
 
   if (device_for_test_) {
     UsbDeviceResource* const resource = new UsbDeviceResource(
@@ -317,8 +317,8 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
         device_for_test_);
 
     Device device;
-    result->Append(PopulateDevice(manager_->Add(resource), 0, 0));
-    SetResult(result.release());
+    result_->Append(PopulateDevice(manager_->Add(resource), 0, 0));
+    SetResult(result_.release());
     AsyncWorkCompleted();
     return;
   }
@@ -341,20 +341,23 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
     return;
   }
 
-  vector<scoped_refptr<UsbDevice> > devices;
-  service->FindDevices(vendor_id, product_id, &devices);
-  for (size_t i = 0; i < devices.size(); ++i) {
-    UsbDevice* const device = devices[i];
+  service->FindDevices(vendor_id, product_id, &devices_, base::Bind(
+      &UsbFindDevicesFunction::OnCompleted, this));
+}
+
+void UsbFindDevicesFunction::OnCompleted() {
+  for (size_t i = 0; i < devices_.size(); ++i) {
+    UsbDevice* const device = devices_[i];
     UsbDeviceResource* const resource = new UsbDeviceResource(
         extension_->id(), device);
 
     Device js_device;
-    result->Append(PopulateDevice(manager_->Add(resource),
-                                  vendor_id,
-                                  product_id));
+    result_->Append(PopulateDevice(manager_->Add(resource),
+                                   parameters_->options.vendor_id,
+                                   parameters_->options.product_id));
   }
 
-  SetResult(result.release());
+  SetResult(result_.release());
   AsyncWorkCompleted();
 }
 
