@@ -30,7 +30,6 @@ class UI_EXPORT QuadF {
         p3_(rect.right(), rect.bottom()),
         p4_(rect.x(), rect.bottom()) {}
 
-  void operator=(const QuadF& quad);
   void operator=(const RectF& rect);
 
   void set_p1(const PointF& p) { p1_ = p; }

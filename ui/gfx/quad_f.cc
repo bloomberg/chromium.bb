@@ -11,13 +11,6 @@
 
 namespace gfx {
 
-void QuadF::operator=(const QuadF& quad) {
-  p1_ = quad.p1_;
-  p2_ = quad.p2_;
-  p3_ = quad.p3_;
-  p4_ = quad.p4_;
-}
-
 void QuadF::operator=(const RectF& rect) {
   p1_ = PointF(rect.x(), rect.y());
   p2_ = PointF(rect.right(), rect.y());
