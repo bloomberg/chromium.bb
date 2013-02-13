@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/gtk/extensions/native_app_window_gtk.h"
 
-#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/extensions/extension_keybinding_registry_gtk.h"
@@ -185,15 +184,12 @@ void NativeAppWindowGtk::Close() {
   // To help catch bugs in any event handlers that might get fired during the
   // destruction, set window_ to NULL before any handlers will run.
   window_ = NULL;
-  gtk_widget_destroy(window);
 
-  // On other platforms, the native window doesn't get destroyed synchronously.
-  // We simulate that here so that ShellWindow can assume that it doesn't get
-  // deleted immediately upon calling Close().
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ShellWindow::OnNativeClose,
-                 base::Unretained(shell_window_)));
+  // OnNativeClose does a delete this so no other members should
+  // be accessed after. gtk_widget_destroy is safe (and must
+  // be last).
+  shell_window_->OnNativeClose();
+  gtk_widget_destroy(window);
 }
 
 void NativeAppWindowGtk::Activate() {

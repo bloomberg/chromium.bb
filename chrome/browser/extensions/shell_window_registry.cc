@@ -67,9 +67,8 @@ void ShellWindowRegistry::ShellWindowIconChanged(ShellWindow* shell_window) {
 }
 
 void ShellWindowRegistry::RemoveShellWindow(ShellWindow* shell_window) {
-  size_t num_erased = shell_windows_.erase(shell_window);
-  if (num_erased > 0)
-    FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowRemoved(shell_window));
+  shell_windows_.erase(shell_window);
+  FOR_EACH_OBSERVER(Observer, observers_, OnShellWindowRemoved(shell_window));
 }
 
 void ShellWindowRegistry::AddObserver(Observer* observer) {
