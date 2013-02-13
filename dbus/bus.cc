@@ -875,11 +875,6 @@ void Bus::OnConnectionDisconnected(DBusConnection* connection) {
     return;
   DCHECK(!dbus_connection_get_is_connected(connection));
 
-  if (shutdown_completed_)
-    return;  // Do nothing if the shutdown is already completed.
-
-  // Unexpected disconnection, maybe the peer closes the connection.
-  DCHECK_EQ(connection, connection_);
   ShutdownAndBlock();
 }
 
