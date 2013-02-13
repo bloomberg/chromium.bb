@@ -177,6 +177,7 @@ class BaseParser(object):
         opts.debug = (value == "DEBUG")
 
     if self.caching:
+      opts.cache_dir_specified = opts.cache_dir is not None
       if opts.cache_dir is None:
         func = self.FindCacheDir if not callable(self.caching) else self.caching
         opts.cache_dir = func(self, opts)

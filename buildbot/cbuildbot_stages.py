@@ -357,7 +357,11 @@ class BootstrapStage(PatchChangesStage):
     args = [cbuildbot_path]
     args.extend(options.build_targets)
     args.extend(cls._FilterArgsForApi(options.parsed_args, minor))
-    if minor >= 2:
+
+    # Only pass down --cache-dir if it was specified. By default, we want
+    # the cache dir to live in the root of each checkout, so this means that
+    # each instance of cbuildbot needs to calculate the default separately.
+    if minor >= 2 and options.cache_dir_specified:
       args += ['--cache-dir', options.cache_dir]
 
     return args
