@@ -259,9 +259,7 @@ cr.define('cr.ui', function() {
    * @param {string} termsOfService The terms of service, as plain text.
    */
   Oobe.setTermsOfService = function(termsOfService) {
-    $('terms-of-service').classList.remove('tos-loading');
-    $('tos-content-main').textContent = termsOfService;
-    $('tos-accept-button').disabled = false;
+    oobe.TermsOfServiceScreen.setTermsOfService(termsOfService);
   };
 
   // Export

@@ -37,6 +37,22 @@ cr.define('oobe', function() {
         localStrings.getStringF('termsOfServiceContentHeading', domain);
   };
 
+  /**
+   * Displays the given |termsOfService|, enables the accept button and moves
+   * the focus to it.
+   * @param {string} termsOfService The terms of service, as plain text.
+   */
+  TermsOfServiceScreen.setTermsOfService = function(termsOfService) {
+    $('terms-of-service').classList.remove('tos-loading');
+    $('tos-content-main').textContent = termsOfService;
+    $('tos-accept-button').disabled = false;
+    // Initially, the back button is focused and the accept button is disabled.
+    // Move the focus to the accept button now but only if the user has not
+    // moved the focus anywhere in the meantime.
+    if (!$('tos-back-button').blurred)
+      $('tos-accept-button').focus();
+  };
+
   TermsOfServiceScreen.prototype = {
     // Set up the prototype chain.
     __proto__: HTMLDivElement.prototype,
@@ -61,6 +77,9 @@ cr.define('oobe', function() {
         $('tos-accept-button').disabled = true;
         chrome.send('termsOfServiceBack');
       });
+      backButton.addEventListener('blur', function(event) {
+        this.blurred = true;
+      });
       buttons.push(backButton);
 
       var acceptButton = this.ownerDocument.createElement('button');
@@ -77,6 +96,14 @@ cr.define('oobe', function() {
       buttons.push(acceptButton);
 
       return buttons;
+    },
+
+    /**
+     * Returns the control which should receive initial focus.
+     */
+    get defaultControl() {
+      return $('tos-accept-button').disabled ? $('tos-back-button') :
+                                               $('tos-accept-button');
     },
 
     /**
