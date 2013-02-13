@@ -30,7 +30,9 @@ ImageEditor.Mode.Adjust.prototype.cleanUpUI = function() {
   this.hidePreview();
 };
 
-//TODO(JSDOC)
+/**
+ * TODO(JSDOC)
+ */
 ImageEditor.Mode.Adjust.prototype.hidePreview = function() {
   if (this.canvas_) {
     this.canvas_.parentNode.removeChild(this.canvas_);
@@ -38,20 +40,27 @@ ImageEditor.Mode.Adjust.prototype.hidePreview = function() {
   }
 };
 
-//TODO(JSDOC)
+/**
+ * TODO(JSDOC)
+ */
 ImageEditor.Mode.Adjust.prototype.cleanUpCaches = function() {
   this.filter_ = null;
   this.previewImageData_ = null;
 };
 
-//TODO(JSDOC)
+/**
+ * TODO(JSDOC)
+ */
 ImageEditor.Mode.Adjust.prototype.reset = function() {
   ImageEditor.Mode.prototype.reset.call(this);
   this.hidePreview();
   this.cleanUpCaches();
 };
 
-//TODO(JSDOC)
+/**
+ * TODO(JSDOC)
+ * @param {Object} options  //TODO(JSDOC).
+ */
 ImageEditor.Mode.Adjust.prototype.update = function(options) {
   ImageEditor.Mode.prototype.update.apply(this, arguments);
 
@@ -90,7 +99,11 @@ ImageEditor.Mode.Adjust.prototype.updatePreviewImage = function() {
  * Own methods
  */
 
-//TODO(JSDOC)
+/**
+ * TODO(JSDOC)
+ * @param {Object} options  //TODO(JSDOC).
+ * @return {function(ImageData,ImageData,number,number)} Created function.
+ */
 ImageEditor.Mode.Adjust.prototype.createFilter = function(options) {
   return filter.create(this.name, options);
 };
@@ -106,6 +119,11 @@ ImageEditor.Mode.ColorFilter = function() {
 ImageEditor.Mode.ColorFilter.prototype =
     {__proto__: ImageEditor.Mode.Adjust.prototype};
 
+/**
+ * TODO(JSDOC)
+ * @return {{r: Array.<number>, g: Array.<number>, b: Array.<number>}}
+ *    histogram.
+ */
 ImageEditor.Mode.ColorFilter.prototype.getHistogram = function() {
   return filter.getHistogram(this.getImageView().getThumbnail());
 };
@@ -121,6 +139,10 @@ ImageEditor.Mode.Exposure = function() {
 ImageEditor.Mode.Exposure.prototype =
     {__proto__: ImageEditor.Mode.ColorFilter.prototype};
 
+/**
+ * TODO(JSDOC)
+ * @param {ImageEditor.Toolbar} toolbar The toolbar to populate.
+ */
 ImageEditor.Mode.Exposure.prototype.createTools = function(toolbar) {
   toolbar.addRange('brightness', -1, 0, 1, 100);
   toolbar.addRange('contrast', -1, 0, 1, 100);
@@ -138,16 +160,27 @@ ImageEditor.Mode.Autofix = function() {
 ImageEditor.Mode.Autofix.prototype =
     {__proto__: ImageEditor.Mode.ColorFilter.prototype};
 
+/**
+ * TODO(JSDOC)
+ * @param {ImageEditor.Toolbar} toolbar The toolbar to populate.
+ */
 ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
   var self = this;
   toolbar.addButton('Apply', this.apply.bind(this));
 };
 
+/**
+ * TODO(JSDOC)
+ * @return {boolean}  //TODO(JSDOC)
+ */
 ImageEditor.Mode.Autofix.prototype.isApplicable = function() {
   return this.getImageView().hasValidImage() &&
       filter.autofix.isApplicable(this.getHistogram());
 };
 
+/**
+ * TODO(JSDOC)
+ */
 ImageEditor.Mode.Autofix.prototype.apply = function() {
   this.update({histogram: this.getHistogram()});
 };
@@ -164,6 +197,9 @@ ImageEditor.Mode.InstantAutofix = function() {
 ImageEditor.Mode.InstantAutofix.prototype =
     {__proto__: ImageEditor.Mode.Autofix.prototype};
 
+/**
+ * TODO(JSDOC)
+ */
 ImageEditor.Mode.InstantAutofix.prototype.setUp = function() {
   ImageEditor.Mode.Autofix.prototype.setUp.apply(this, arguments);
   this.apply();
@@ -180,6 +216,10 @@ ImageEditor.Mode.Blur = function() {
 ImageEditor.Mode.Blur.prototype =
     {__proto__: ImageEditor.Mode.Adjust.prototype};
 
+/**
+ * TODO(JSDOC)
+ * @param {ImageEditor.Toolbar} toolbar The toolbar to populate.
+ */
 ImageEditor.Mode.Blur.prototype.createTools = function(toolbar) {
   toolbar.addRange('strength', 0, 0, 1, 100);
   toolbar.addRange('radius', 1, 1, 3);
@@ -196,6 +236,10 @@ ImageEditor.Mode.Sharpen = function() {
 ImageEditor.Mode.Sharpen.prototype =
     {__proto__: ImageEditor.Mode.Adjust.prototype};
 
+/**
+ * TODO(JSDOC)
+ * @param {ImageEditor.Toolbar} toolbar The toolbar to populate.
+ */
 ImageEditor.Mode.Sharpen.prototype.createTools = function(toolbar) {
   toolbar.addRange('strength', 0, 0, 1, 100);
   toolbar.addRange('radius', 1, 1, 3);
