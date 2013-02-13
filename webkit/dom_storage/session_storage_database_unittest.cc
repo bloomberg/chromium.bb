@@ -83,7 +83,7 @@ class SessionStorageDatabaseTest : public testing::Test {
 SessionStorageDatabaseTest::SessionStorageDatabaseTest()
     : kOrigin1("http://www.origin1.com"),
       kOrigin2("http://www.origin2.com"),
-      kNamespace1("1"),
+      kNamespace1("namespace1"),
       kNamespace2("namespace2"),
       kNamespaceClone("wascloned"),
       kKey1(ASCIIToUTF16("key1")),
@@ -213,6 +213,7 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
 
   // Iterate the "namespace-" keys.
   std::set<std::string> found_namespace_ids;
+  std::set<std::string> namespaces_with_areas;
   std::map<int64, int64> expected_map_refcounts;
   int64 max_map_id = -1;
 
@@ -228,6 +229,7 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
       // has been read by now, since the keys are stored in order.
       ASSERT_TRUE(found_namespace_ids.find(namespace_id) !=
                   found_namespace_ids.end());
+      namespaces_with_areas.insert(namespace_id);
       int64 map_id;
       bool conversion_ok = base::StringToInt64(it->second, &map_id);
       ASSERT_TRUE(conversion_ok);
@@ -237,6 +239,10 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
       ++valid_keys;
     }
   }
+  // Check that there are no leftover "namespace-namespaceid-" keys without
+  // associated areas.
+  ASSERT_EQ(found_namespace_ids.size(), namespaces_with_areas.size());
+
   if (max_map_id != -1) {
     // The database contains maps.
     ASSERT_TRUE(data.find(next_map_id_key) != data.end());
@@ -772,5 +778,21 @@ TEST_F(SessionStorageDatabaseTest, ReadOriginsInNamespace) {
 
   CheckDatabaseConsistency();
 }
+
+TEST_F(SessionStorageDatabaseTest, DeleteAllOrigins) {
+  // Write data for a namespace, for 2 origins.
+  ValuesMap data1;
+  data1[kKey1] = kValue1;
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
+  ValuesMap data2;
+  data2[kKey1] = kValue2;
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data2));
+
+  EXPECT_TRUE(db_->DeleteArea(kNamespace1, kOrigin1));
+  EXPECT_TRUE(db_->DeleteArea(kNamespace1, kOrigin2));
+  // Check that also the namespace start key was deleted.
+  CheckDatabaseConsistency();
+}
+
 
 }  // namespace dom_storage

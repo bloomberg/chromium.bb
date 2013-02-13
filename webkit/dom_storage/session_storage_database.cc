@@ -240,6 +240,10 @@ bool SessionStorageDatabase::ReadNamespacesAndOrigins(
       current_namespace_id =
           key.substr(namespace_prefix.length(),
                      key.length() - namespace_prefix.length() - 1);
+      // Ensure that we keep track of the namespace even if it doesn't contain
+      // any origins.
+      namespaces_and_origins->insert(
+          std::make_pair(current_namespace_id, std::vector<GURL>()));
     } else {
       // The key is of the form "namespace-<namespaceid>-<origin>".
       std::string origin = key.substr(current_namespace_start_key.length());
@@ -411,6 +415,25 @@ bool SessionStorageDatabase::DeleteAreaHelper(
     return false;
   std::string namespace_key = NamespaceKey(namespace_id, origin);
   batch->Delete(namespace_key);
+
+  // If this was the only area in the namespace, delete the namespace start key,
+  // too.
+  std::string namespace_start_key = NamespaceStartKey(namespace_id);
+  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
+  it->Seek(namespace_start_key);
+  if (!ConsistencyCheck(it->Valid()))
+    return false;
+  // Advance the iterator 2 times (we still haven't really deleted
+  // namespace_key).
+  it->Next();
+  if (!ConsistencyCheck(it->Valid()))
+    return false;
+  it->Next();
+  if (!it->Valid())
+    return true;
+  std::string key = it->key().ToString();
+  if (key.find(namespace_start_key) != 0)
+    batch->Delete(namespace_start_key);
   return true;
 }
 
