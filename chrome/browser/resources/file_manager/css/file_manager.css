@@ -169,6 +169,8 @@ body.loaded {
   -webkit-box-flex: 0;
   background-color: #e6e6e6;
   display: -webkit-box;
+  max-width: 50%;
+  min-width: 45px;
   overflow: hidden;
   position: relative;
   width: 168px;
