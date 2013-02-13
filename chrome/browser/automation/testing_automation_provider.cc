@@ -91,7 +91,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -1754,8 +1753,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   handler_map_["OverrideGeoposition"] =
       &TestingAutomationProvider::OverrideGeoposition;
-  handler_map_["AppendSwitchASCIIToCommandLine"] =
-      &TestingAutomationProvider::AppendSwitchASCIIToCommandLine;
   handler_map_["SimulateAsanMemoryBug"] =
       &TestingAutomationProvider::SimulateAsanMemoryBug;
 
@@ -1870,9 +1867,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::OmniboxAcceptInput;
   browser_handler_map_["OmniboxMovePopupSelection"] =
       &TestingAutomationProvider::OmniboxMovePopupSelection;
-
-  browser_handler_map_["GetInstantInfo"] =
-      &TestingAutomationProvider::GetInstantInfo;
 
   browser_handler_map_["LoadSearchEngineInfo"] =
       &TestingAutomationProvider::LoadSearchEngineInfo;
@@ -3082,31 +3076,6 @@ void TestingAutomationProvider::OmniboxAcceptInput(
   loc_bar->AcceptInput();
 }
 
-// Sample json input: { "command": "GetInstantInfo" }
-void TestingAutomationProvider::GetInstantInfo(Browser* browser,
-                                               DictionaryValue* args,
-                                               IPC::Message* reply_message) {
-  DictionaryValue* info = new DictionaryValue;
-  if (chrome::BrowserInstantController::IsInstantEnabled(browser->profile()) &&
-      browser->instant_controller()) {
-    InstantController* instant = browser->instant_controller()->instant();
-    info->SetBoolean("enabled", true);
-    info->SetBoolean("active", (instant->GetPreviewContents() != NULL));
-    info->SetBoolean("current", instant->IsPreviewingSearchResults());
-    if (instant->GetPreviewContents()) {
-      WebContents* contents = instant->GetPreviewContents();
-      info->SetBoolean("loading", contents->IsLoading());
-      info->SetString("location", contents->GetURL().spec());
-      info->SetString("title", contents->GetTitle());
-    }
-  } else {
-    info->SetBoolean("enabled", false);
-  }
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  return_value->Set("instant", info);
-  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
-}
-
 // Sample json input: { "command": "GetInitialLoadTimes" }
 // Refer to InitialLoadObserver::GetTimingInformation() for sample output.
 void TestingAutomationProvider::GetInitialLoadTimes(
@@ -4152,24 +4121,6 @@ void TestingAutomationProvider::OverrideGeoposition(
   content::OverrideLocationForTesting(
       position,
       base::Bind(&SendSuccessIfAlive, AsWeakPtr(), reply_message));
-}
-
-// Sample json input:
-// { "command": "AppendSwitchASCIIToCommandLine",
-//   "switch": "instant-field-trial",
-//   "value": "disabled" }
-void TestingAutomationProvider::AppendSwitchASCIIToCommandLine(
-         DictionaryValue* args, IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  std::string switch_name, switch_value;
-  if (!args->GetString("switch", &switch_name) ||
-      !args->GetString("value", &switch_value)) {
-    reply.SendError("Missing or invalid command line switch");
-    return;
-  }
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switch_name,
-                                                      switch_value);
-  reply.SendSuccess(NULL);
 }
 
 // Refer to GetAllNotifications() in chrome/test/pyautolib/pyauto.py for

@@ -451,12 +451,6 @@ class TestingAutomationProvider : public AutomationProvider,
                           base::DictionaryValue* args,
                           IPC::Message* reply_message);
 
-  // Generate dictionary info about instant tab.
-  // Uses the JSON interface for input/output.
-  void GetInstantInfo(Browser* browser,
-                      base::DictionaryValue* args,
-                      IPC::Message* reply_message);
-
   // Save the contents of a tab into a file.
   // Uses the JSON interface for input/output.
   void SaveTabContents(Browser* browser,
@@ -539,11 +533,6 @@ class TestingAutomationProvider : public AutomationProvider,
   // Uses the JSON interface for input/output.
   void OverrideGeoposition(base::DictionaryValue* args,
                            IPC::Message* reply_message);
-
-  // Append a command-line switch.
-  // Uses the JSON interface for input/output.
-  void AppendSwitchASCIIToCommandLine(base::DictionaryValue* args,
-                                      IPC::Message* reply_message);
 
   // Responds to the Find request and returns the match count.
   void FindInPage(Browser* browser,
