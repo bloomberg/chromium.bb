@@ -20,6 +20,7 @@ LayerTreeSettings::LayerTreeSettings()
     , renderVSyncEnabled(true)
     , perTilePaintingEnabled(false)
     , partialSwapEnabled(false)
+    , cacheRenderPassContents(true)
     , rightAlignedSchedulingEnabled(false)
     , acceleratedAnimationEnabled(true)
     , pageScalePinchZoomEnabled(false)
@@ -41,6 +42,8 @@ LayerTreeSettings::LayerTreeSettings()
     , maxUntiledLayerSize(gfx::Size(512, 512))
     , minimumOcclusionTrackingSize(gfx::Size(160, 160))
 {
+    // TODO(danakj): Renable surface caching when we can do it more realiably. crbug.com/170713
+    cacheRenderPassContents = false;
 }
 
 LayerTreeSettings::~LayerTreeSettings()

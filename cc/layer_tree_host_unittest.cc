@@ -1405,6 +1405,11 @@ public:
     {
     }
 
+    virtual void initializeSettings(LayerTreeSettings& settings) OVERRIDE
+    {
+        settings.cacheRenderPassContents = true;
+    }
+
     virtual void beginTest() OVERRIDE
     {
         m_layerTreeHost->setViewportSize(gfx::Size(100, 100), gfx::Size(100, 100));

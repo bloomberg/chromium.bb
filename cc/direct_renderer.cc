@@ -291,6 +291,9 @@ bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* render
 
 bool DirectRenderer::haveCachedResourcesForRenderPassId(RenderPass::Id id) const
 {
+    if (!settings().cacheRenderPassContents)
+        return false;
+
     CachedResource* texture = m_renderPassTextures.get(id);
     return texture && texture->id() && texture->isComplete();
 }
