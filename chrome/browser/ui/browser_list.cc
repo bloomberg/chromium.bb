@@ -57,16 +57,6 @@ void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
 }
 
 // static
-BrowserList::const_iterator BrowserList::begin() {
-  return GetNativeList()->begin();
-}
-
-// static
-BrowserList::const_iterator BrowserList::end() {
-  return GetNativeList()->end();
-}
-
-// static
 bool BrowserList::empty() {
   return GetNativeList()->empty();
 }

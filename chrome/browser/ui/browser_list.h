@@ -20,7 +20,6 @@ class BrowserListObserver;
 class BrowserList {
  public:
   typedef std::vector<Browser*> BrowserVector;
-  typedef BrowserVector::const_iterator const_iterator;
   typedef BrowserVector::const_reverse_iterator const_reverse_iterator;
 
   // Adds and removes browsers from the global list. The browser object should
@@ -38,11 +37,6 @@ class BrowserList {
 
   // Closes all browsers for |profile| across all desktops.
   static void CloseAllBrowsersWithProfile(Profile* profile);
-
-  // Browsers are added to the list before they have constructed windows,
-  // so the |window()| member function may return NULL.
-  static const_iterator begin();
-  static const_iterator end();
 
   static bool empty();
   static size_t size();
