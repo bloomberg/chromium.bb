@@ -16,6 +16,7 @@
         '../../skia/skia.gyp:skia',
         '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
+        '../ui.gyp:ui_resources',
       ],
       'defines': [
         'APP_LIST_IMPLEMENTATION',

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/utf_string_conversions.h"
+#include "grit/ui_resources.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -31,7 +32,7 @@ namespace {
 const int kTopBottomPadding = 10;
 const int kTopPadding = 20;
 const int kIconTitleSpacing = 7;
-const int kProgressBarHorizontalPadding = 8;
+const int kProgressBarHorizontalPadding = 12;
 const int kProgressBarVerticalPadding = 4;
 const int kProgressBarHeight = 4;
 
@@ -75,6 +76,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetEnabledColor(kTitleColor);
   title_->SetFont(rb.GetFont(ui::ResourceBundle::SmallBoldFont));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_->SetVisible(!model_->is_installing());
 
   const gfx::ShadowValue kIconShadows[] = {
     gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x24, 0, 0, 0)),
@@ -177,6 +179,7 @@ void AppListItemView::ItemHighlightedChanged() {
 void AppListItemView::ItemIsInstallingChanged() {
   if (model_->is_installing())
     apps_grid_view_->EnsureViewVisible(this);
+  title_->SetVisible(!model_->is_installing());
   SchedulePaint();
 }
 
@@ -228,21 +231,29 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
   }
 
   if (model_->is_installing()) {
-    gfx::Rect progress_bar_background(
-        rect.x() + kProgressBarHorizontalPadding,
-        rect.bottom() - kProgressBarVerticalPadding - kProgressBarHeight,
-        rect.width() - 2 * kProgressBarHorizontalPadding,
-        kProgressBarHeight);
-    canvas->FillRect(progress_bar_background, kDownloadProgressBackgroundColor);
+    gfx::ImageSkia background = *ResourceBundle::GetSharedInstance().
+        GetImageSkiaNamed(IDR_APP_LIST_ITEM_PROGRESS_BACKGROUND);
+    gfx::ImageSkia left = *ResourceBundle::GetSharedInstance().
+        GetImageSkiaNamed(IDR_APP_LIST_ITEM_PROGRESS_LEFT);
+    gfx::ImageSkia center = *ResourceBundle::GetSharedInstance().
+        GetImageSkiaNamed(IDR_APP_LIST_ITEM_PROGRESS_CENTER);
+    gfx::ImageSkia right = *ResourceBundle::GetSharedInstance().
+        GetImageSkiaNamed(IDR_APP_LIST_ITEM_PROGRESS_RIGHT);
 
+    int bar_x = rect.x() + kProgressBarHorizontalPadding;
+    int bar_y = icon_->bounds().bottom() + kIconTitleSpacing;
+
+    canvas->DrawImageInt(background, bar_x, bar_y);
     if (model_->percent_downloaded() != -1) {
       float percent = model_->percent_downloaded() / 100.0;
-      gfx::Rect progress_bar(
-          progress_bar_background.x(),
-          progress_bar_background.y(),
-          progress_bar_background.width() * percent,
-          progress_bar_background.height());
-      canvas->FillRect(progress_bar, kDownloadProgressColor);
+      int bar_width = percent *
+          (background.width() - (left.width() + right.width()));
+
+      canvas->DrawImageInt(left, bar_x, bar_y);
+      int x = bar_x + left.width();
+      canvas->TileImageInt(center, x, bar_y, bar_width, center.height());
+      x += bar_width;
+      canvas->DrawImageInt(right, x, bar_y);
     }
   }
 }
