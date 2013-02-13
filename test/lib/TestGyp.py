@@ -961,6 +961,7 @@ class TestGypXcode(TestGypBase):
   up_to_date_endings = (
     'Checking Dependencies...\n** BUILD SUCCEEDED **\n', # Xcode 3.0/3.1
     'Check dependencies\n** BUILD SUCCEEDED **\n\n',     # Xcode 3.2
+    'Check dependencies\n\n\n** BUILD SUCCEEDED **\n\n', # Xcode 4.2
   )
 
   def build(self, gyp_file, target=None, **kw):
