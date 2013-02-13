@@ -13,9 +13,11 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -281,6 +283,9 @@ public abstract class AwContentsClient extends ContentViewClient {
     public abstract void onPageFinished(String url);
 
     public abstract void onReceivedError(int errorCode, String description, String failingUrl);
+
+    public abstract void onShowCustomView(View view,
+           int requestedOrientation, WebChromeClient.CustomViewCallback callback);
 
     //--------------------------------------------------------------------------------------------
     //             Stuff that we ignore since it only makes sense for Chrome browser

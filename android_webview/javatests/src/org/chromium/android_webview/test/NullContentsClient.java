@@ -8,9 +8,11 @@ import android.content.Context;
 import android.graphics.Picture;
 import android.os.Message;
 import android.view.KeyEvent;
+import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwHttpAuthHandler;
@@ -138,5 +140,10 @@ class NullContentsClient extends AwContentsClient {
 
     @Override
     public void onRequestFocus() {
+    }
+
+    @Override
+    public void onShowCustomView(View view,
+           int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
     }
 }

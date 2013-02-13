@@ -27,6 +27,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentSettings;
+import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
@@ -272,6 +273,9 @@ public class AwContents {
                 mContentViewCore.getNativeContentViewCore());
 
         mDIPScale = DeviceDisplayInfo.create(containerView.getContext()).getDIPScale();
+
+        ContentVideoView.registerContentVideoViewContextDelegate(
+                new AwContentVideoViewDelegate(contentsClient, containerView.getContext()));
     }
 
     public ContentViewCore getContentViewCore() {
