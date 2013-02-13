@@ -248,6 +248,13 @@ int main(int argc, char *argv[])
 	struct screenshooter_output *output;
 	int width, height;
 
+	if (getenv("WAYLAND_SOCKET") == NULL) {
+		fprintf(stderr, "%s is must be launched by weston.\n"
+			"Use the MOD+S shortcut to take a screenshot.",
+			argv[0]);
+		return -1;
+	}
+
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
