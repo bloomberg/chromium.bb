@@ -28,13 +28,6 @@ class AppShortcutManager : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  void UpdateApplicationShortcuts(const Extension* extension);
-
-#if defined(OS_WIN)
-  void OnAppHostInstallationComplete(scoped_refptr<Extension> extension,
-                                     bool app_host_install_success);
-#endif
-
   void DeleteApplicationShortcuts(const Extension* extension);
 
   content::NotificationRegistrar registrar_;

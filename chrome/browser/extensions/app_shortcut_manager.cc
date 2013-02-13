@@ -22,11 +22,6 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/extensions/app_host_installer_win.h"
-#include "chrome/installer/util/browser_distribution.h"
-#endif
-
 namespace extensions {
 
 AppShortcutManager::AppShortcutManager(Profile* profile)
@@ -50,20 +45,8 @@ void AppShortcutManager::Observe(int type,
           details).ptr();
       if (extension->is_platform_app() &&
           extension->location() != Manifest::COMPONENT) {
-#if defined(OS_WIN)
-        if (BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
-            extensions::AppHostInstaller::GetInstallWithLauncher()) {
-          scoped_refptr<Extension> extension_ref(const_cast<Extension*>(
-              extension));
-          extensions::AppHostInstaller::EnsureAppHostInstalled(
-              base::Bind(&AppShortcutManager::OnAppHostInstallationComplete,
-                         weak_factory_.GetWeakPtr(), extension_ref));
-        } else {
-          UpdateApplicationShortcuts(extension);
-        }
-#else
-        UpdateApplicationShortcuts(extension);
-#endif  // defined(OS_WIN)
+        web_app::UpdateShortcutInfoAndIconForApp(*extension, profile_,
+          base::Bind(&web_app::UpdateAllShortcuts));
       }
 #endif  // !defined(OS_MACOSX)
       break;
@@ -77,24 +60,6 @@ void AppShortcutManager::Observe(int type,
     default:
       NOTREACHED();
   }
-}
-
-#if defined(OS_WIN)
-void AppShortcutManager::OnAppHostInstallationComplete(
-    scoped_refptr<Extension> extension, bool app_host_install_success) {
-  if (!app_host_install_success) {
-    // Do not create shortcuts if App Host fails to install.
-    LOG(ERROR) << "Application Runtime installation failed.";
-    return;
-  }
-  UpdateApplicationShortcuts(extension);
-}
-#endif
-
-void AppShortcutManager::UpdateApplicationShortcuts(
-    const Extension* extension) {
-  web_app::UpdateShortcutInfoAndIconForApp(*extension, profile_,
-      base::Bind(&web_app::UpdateAllShortcuts));
 }
 
 void AppShortcutManager::DeleteApplicationShortcuts(
