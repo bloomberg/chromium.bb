@@ -64,8 +64,8 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chrome::ShouldOpenAshOnStartup()) {
     chrome::OpenAsh();
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kAshEnableTabScrubbing)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kAshDisableTabScrubbing)) {
       TabScrubber::GetInstance();
     }
   } else {

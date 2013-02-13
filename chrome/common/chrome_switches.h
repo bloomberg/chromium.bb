@@ -381,7 +381,7 @@ extern const char kTabletUI[];
 #endif
 
 #if defined(USE_ASH)
-extern const char kAshEnableTabScrubbing[];
+extern const char kAshDisableTabScrubbing[];
 extern const char kOpenAsh[];
 #endif
 

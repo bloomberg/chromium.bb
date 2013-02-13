@@ -40,7 +40,6 @@ class TabScrubberTest : public InProcessBrowserTest,
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(switches::kNaturalScrollDefault);
 #endif
-    command_line->AppendSwitch(switches::kAshEnableTabScrubbing);
     command_line->AppendSwitch(switches::kOpenAsh);
   }
 
