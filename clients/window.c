@@ -807,6 +807,8 @@ shm_surface_leaf_release(struct shm_surface_leaf *leaf)
 
 	if (leaf->resize_pool)
 		shm_pool_destroy(leaf->resize_pool);
+
+	memset(leaf, 0, sizeof *leaf);
 }
 
 struct shm_surface {
@@ -829,17 +831,17 @@ to_shm_surface(struct toysurface *base)
 static void
 shm_surface_buffer_release(void *data, struct wl_buffer *buffer)
 {
-	struct shm_surface_leaf *leaf = data;
+	struct shm_surface *surface = data;
 
-	leaf->busy = 0;
+	if (surface->leaf[0].data->buffer == buffer)
+		surface->leaf[0].busy = 0;
+	else if (surface->leaf[1].data->buffer == buffer)
+		surface->leaf[1].busy = 0;
+	else
+		assert(0 && "shm_surface_buffer_release: unknown buffer");
 
-	/* If both leaves are now free, we should call
-	 * shm_surface_leaf_release(shm_surface::leaf[1]).
-	 * However, none of Weston's backends switch dynamically
-	 * between early buffer release and requiring double-buffering,
-	 * so if both leaves are free, we never used the second
-	 * leaf to begin with.
-	 */
+	if (!surface->leaf[0].busy && !surface->leaf[1].busy)
+		shm_surface_leaf_release(&surface->leaf[1]);
 }
 
 static const struct wl_buffer_listener shm_surface_buffer_listener = {
@@ -908,7 +910,7 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 					   leaf->resize_pool,
 					   &leaf->data);
 	wl_buffer_add_listener(leaf->data->buffer,
-			       &shm_surface_buffer_listener, leaf);
+			       &shm_surface_buffer_listener, surface);
 
 out:
 	surface->current = leaf;
