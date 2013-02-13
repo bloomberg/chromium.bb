@@ -41,7 +41,7 @@
  "linux-release-lowmem/v8_benchmark/score/score": {"reva": 153398, "revb": 155269, "improve": -304, "regress": -1115, "sha1": "4c4aa3cd"},
  "linux-release/dhtml/times/t": {"reva": 137725, "revb": 137748, "improve": -233, "regress": -54, "sha1": "784909f8"},
  "linux-release/dom_perf/Total/score": {"reva": 167354, "revb": 168275, "improve": 258, "regress": 106, "sha1": "fc6899bf"},
- "linux-release/intl1/times/t": {"reva": 178795, "revb": 179207, "improve": 134.477777772, "regress": 305.083333327, "sha1": "e6a4a848"},
+ "linux-release/intl1/times/t": {"reva": 181055, "revb": 182066, "improve": 230.955555554, "regress": 477.866666665, "sha1": "080c770c"},
  "linux-release/intl2/times/t": {"reva": 178795, "revb": 179207, "improve": 3.1666666635, "regress": 155.283333334, "sha1": "540bb0b3"},
  "linux-release/media_tests_av_perf/audio_latency/latency": {"reva": 180005, "revb": 180520, "type": "absolute", "better": "lower", "improve": 190, "regress": 222, "sha1": "fc9815d5"},
  "linux-release/media_tests_av_perf/audio_latency/latency_bg_clip": {"reva": 180005, "revb": 180520, "type": "absolute", "better": "lower", "improve": 165, "regress": 193, "sha1": "a0029792"},
