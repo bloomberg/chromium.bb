@@ -96,7 +96,7 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 void KeyboardHandler::InitializePage() {
   bool chromeos_keyboard = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHasChromeOSKeyboard);
-  const base::FundamentalValue show_caps_lock_options(chromeos_keyboard);
+  const base::FundamentalValue show_caps_lock_options(!chromeos_keyboard);
 
   bool has_diamond_key = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHasChromeOSDiamondKey);
