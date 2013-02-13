@@ -214,7 +214,7 @@ void TileManager::SetGlobalState(
 }
 
 void TileManager::RegisterTile(Tile* tile) {
-  all_tiles_.push_back(tile);
+  all_tiles_.insert(tile);
 
   const ManagedTileState& mts = tile->managed_state();
   for (int i = 0; i < NUM_TREES; ++i)
@@ -245,18 +245,13 @@ void TileManager::UnregisterTile(Tile* tile) {
       break;
     }
   }
-  for (TileVector::iterator it = all_tiles_.begin();
-       it != all_tiles_.end(); it++) {
-    if (*it == tile) {
-      const ManagedTileState& mts = tile->managed_state();
-      for (int i = 0; i < NUM_TREES; ++i)
-        --raster_state_count_[mts.raster_state][i][mts.tree_bin[i]];
-      FreeResourcesForTile(tile);
-      all_tiles_.erase(it);
-      return;
-    }
-  }
-  DCHECK(false) << "Could not find tile version.";
+  TileSet::iterator it = all_tiles_.find(tile);
+  DCHECK(it != all_tiles_.end());
+  const ManagedTileState& mts = tile->managed_state();
+  for (int i = 0; i < NUM_TREES; ++i)
+    --raster_state_count_[mts.raster_state][i][mts.tree_bin[i]];
+  FreeResourcesForTile(tile);
+  all_tiles_.erase(it);
 }
 
 class BinComparator {
@@ -327,7 +322,7 @@ void TileManager::ManageTiles() {
 
   live_or_allocated_tiles_.clear();
   // For each tree, bin into different categories of tiles.
-  for (TileVector::iterator it = all_tiles_.begin();
+  for (TileSet::iterator it = all_tiles_.begin();
        it != all_tiles_.end(); ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
@@ -474,8 +469,10 @@ scoped_ptr<base::Value> TileManager::BasicStateAsValue() const {
 }
 scoped_ptr<base::Value> TileManager::AllTilesAsValue() const {
     scoped_ptr<base::ListValue> state(new base::ListValue());
-    for (size_t i = 0; i < all_tiles_.size(); i++)
-        state->Append(all_tiles_[i]->AsValue().release());
+    for (TileSet::const_iterator it = all_tiles_.begin();
+         it != all_tiles_.end(); it++) {
+        state->Append((*it)->AsValue().release());
+    }
     return state.PassAs<base::Value>();
 }
 

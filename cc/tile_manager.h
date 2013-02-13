@@ -7,6 +7,7 @@
 
 #include <list>
 #include <queue>
+#include <set>
 #include <vector>
 
 #include "base/hash_tables.h"
@@ -199,7 +200,8 @@ class CC_EXPORT TileManager {
   GlobalStateThatImpactsTilePriority global_state_;
 
   typedef std::vector<Tile*> TileVector;
-  TileVector all_tiles_;
+  typedef std::set<Tile*> TileSet;
+  TileSet all_tiles_;
   TileVector live_or_allocated_tiles_;
   TileVector tiles_that_need_to_be_rasterized_;
 
