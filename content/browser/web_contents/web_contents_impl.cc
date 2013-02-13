@@ -497,13 +497,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.accelerated_compositing_enabled =
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
-#if defined(OS_WIN) && defined(ENABLE_HIDPI)
-  prefs.force_compositing_mode = true;
-#else
   prefs.force_compositing_mode =
       content::IsForceCompositingModeEnabled() &&
       !command_line.HasSwitch(switches::kDisableForceCompositingMode);
-#endif
   prefs.accelerated_2d_canvas_enabled =
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
@@ -620,10 +616,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
 
-#if defined(OS_WIN) && defined(ENABLE_HIDPI)
-  prefs.accelerated_compositing_enabled = true;
-  prefs.accelerated_2d_canvas_enabled = true;
-#else
   // Force accelerated compositing and 2d canvas off for chrome: and about:
   // pages (unless it's specifically allowed).
   if ((url.SchemeIs(chrome::kChromeUIScheme) ||
@@ -633,7 +625,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.accelerated_compositing_enabled = false;
     prefs.accelerated_2d_canvas_enabled = false;
   }
-#endif
 
   if (url.SchemeIs(chrome::kChromeDevToolsScheme))
     prefs.show_fps_counter = false;

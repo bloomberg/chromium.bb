@@ -192,8 +192,13 @@ void BackingStoreWin::ScrollBackingStore(const gfx::Vector2d& delta,
   // TODO(darin): this doesn't work if delta x() and y() are both non-zero!
   DCHECK(delta.x() == 0 || delta.y() == 0);
 
-  RECT damaged_rect, r = clip_rect.ToRECT();
-  ScrollDC(hdc_, delta.x(), delta.y(), NULL, &r, NULL, &damaged_rect);
+  float scale = ui::win::GetDeviceScaleFactor();
+  gfx::Rect screen_rect = gfx::ToEnclosingRect(
+      gfx::ScaleRect(clip_rect, scale));
+  int dx = static_cast<int>(delta.x() * scale);
+  int dy = static_cast<int>(delta.y() * scale);
+  RECT damaged_rect, r = screen_rect.ToRECT();
+  ScrollDC(hdc_, dx, dy, NULL, &r, NULL, &damaged_rect);
 }
 
 }  // namespace content

@@ -736,9 +736,14 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
   }
 
   if (!scroll_rect.IsEmpty()) {
-    RECT clip_rect = scroll_rect.ToRECT();
-    ScrollWindowEx(scroll_delta.x(), scroll_delta.y(), NULL, &clip_rect,
-                   NULL, NULL, SW_INVALIDATE);
+    gfx::Rect pixel_rect = ui::win::DIPToScreenRect(scroll_rect);
+    // Damage might not be DIP aligned.
+    pixel_rect.Inset(-1, -1);
+    RECT clip_rect = pixel_rect.ToRECT();
+    float scale = ui::win::GetDeviceScaleFactor();
+    int dx = static_cast<int>(scale * scroll_delta.x());
+    int dy = static_cast<int>(scale * scroll_delta.y());
+    ScrollWindowEx(dx, dy, NULL, &clip_rect, NULL, NULL, SW_INVALIDATE);
   }
 
   if (!about_to_validate_and_paint_)
