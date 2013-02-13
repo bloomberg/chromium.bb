@@ -93,17 +93,12 @@ const char kFilepathSinglePrefExtensions[] =
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS)
-
 const char kDefaultAppOrderFileName[] =
 #if defined(GOOGLE_CHROME_BUILD)
     FILE_PATH_LITERAL("/usr/share/google-chrome/default_app_order.json");
 #else
     FILE_PATH_LITERAL("/usr/share/chromium/default_app_order.json");
 #endif  // defined(GOOGLE_CHROME_BUILD)
-
-const FilePath::CharType kDefaultUserPolicyKeysDir[] =
-    FILE_PATH_LITERAL("/var/run/user_policy");
-
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
@@ -409,9 +404,6 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case chrome::FILE_DEFAULT_APP_ORDER:
       cur = base::FilePath(FILE_PATH_LITERAL(kDefaultAppOrderFileName));
-      break;
-    case chrome::DIR_USER_POLICY_KEYS:
-      cur = FilePath(kDefaultUserPolicyKeysDir);
       break;
 #endif
     // The following are only valid in the development environment, and
