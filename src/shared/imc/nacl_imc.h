@@ -229,22 +229,6 @@ int SendDatagramTo(const MessageHeader* message, int flags,
 
 /**
  *  @nacl
- *  Sends the message to the remote peer of the connection created by
- *  SocketPair().
- *  The total number of bytes sent must be less than 2**32.
- *  Note it is not safe to send messages from the same socket handle by
- *  multiple threads simultaneously.
- *  @param socket The socket descriptor.
- *  @param buffer Pointer to the data to send.
- *  @param length The length of the data to send.
- *  @param flags Either 0 or kDontWait.
- *  @return The number of bytes sent, or -1 upon failure
- *  @see SendDatagram()
- */
-int Send(Handle socket, const void* buffer, size_t length, int flags);
-
-/**
- *  @nacl
  *  Receives a message from a socket.
  *
  *  If kDontWait flag is specified with the call and no messages are available
@@ -260,22 +244,6 @@ int Send(Handle socket, const void* buffer, size_t length, int flags);
  *  @return The number of bytes received, or -1 upon failure.
  */
 int ReceiveDatagram(Handle socket, MessageHeader* message, int flags);
-
-/**
- *  @nacl
- *  Receives a message from a socket.
- *
- *  Note it is not safe to receive messages from the same socket handle
- *  by multiple threads simultaneously unless the socket handle is created
- *  by BoundSocket().
- *  @param socket The socket descriptor.
- *  @param buffer Pointer to the buffer to receive data.
- *  @param length The length of the buffer to receive data.
- *  @param flags Either 0 or kDontWait.
- *  @return The number of bytes received, or -1 upon failure.
- *  @see ReceiveDatagram()
- */
-int Receive(Handle socket, void* buffer, size_t length, int flags);
 
 /**
  *  @nacl

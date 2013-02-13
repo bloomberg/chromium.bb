@@ -25,51 +25,6 @@
 
 namespace nacl {
 
-static int InitHeader(IOVec *vec,
-                         MessageHeader *header,
-                         const void* buffer,
-                         size_t length) {
-  vec->base = const_cast<void*>(buffer);
-  if (length > UINT32_MAX) {
-    return -1;
-  }
-  vec->length = static_cast<unsigned int>(length);
-
-  header->iov = vec;
-  header->iov_length = 1;
-  header->handles = NULL;
-  header->handle_count = 0;
-  header->flags = 0;
-
-  return 0;
-}
-
-int Send(Handle socket, const void* buffer, size_t length, int flags) {
-  MessageHeader header;
-  IOVec vec;
-  int retval;
-
-  retval = InitHeader(&vec, &header, buffer, length);
-  if (retval) {
-    return retval;
-  }
-
-  return SendDatagram(socket, &header, flags);
-}
-
-int Receive(Handle socket, void* buffer, size_t length, int flags) {
-  MessageHeader header;
-  IOVec vec;
-  int retval;
-
-  retval = InitHeader(&vec, &header, buffer, length);
-  if (retval) {
-    return retval;
-  }
-
-  return ReceiveDatagram(socket, &header, flags);
-}
-
 bool MessageSizeIsValid(const MessageHeader *message) {
   size_t cur_bytes = 0;
   static size_t const kMax = static_cast<size_t>(~static_cast<uint32_t>(0));
