@@ -1,6 +1,6 @@
 /*
  * Copyright © 2008 Kristian Høgsberg
- * Copyright © 2012 Collabora, Ltd.
+ * Copyright © 2012-2013 Collabora, Ltd.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -189,12 +189,16 @@ struct toysurface {
 	void (*destroy)(struct toysurface *base);
 };
 
+struct surface {
+	struct window *window;
+
+	struct wl_surface *surface;
+};
+
 struct window {
 	struct display *display;
 	struct window *parent;
 	struct wl_list window_output_list;
-	struct wl_surface *surface;
-	struct wl_shell_surface *shell_surface;
 	struct wl_region *input_region;
 	struct wl_region *opaque_region;
 	char *title;
@@ -227,6 +231,8 @@ struct window {
 	window_fullscreen_handler_t fullscreen_handler;
 	window_output_handler_t output_handler;
 
+	struct surface *main_surface;
+	struct wl_shell_surface *shell_surface;
 	struct wl_callback *frame_cb;
 
 	struct frame *frame;
@@ -1163,14 +1169,14 @@ window_attach_surface(struct window *window)
 	}
 
 	if (window->opaque_region) {
-		wl_surface_set_opaque_region(window->surface,
+		wl_surface_set_opaque_region(window->main_surface->surface,
 					     window->opaque_region);
 		wl_region_destroy(window->opaque_region);
 		window->opaque_region = NULL;
 	}
 
 	if (window->input_region) {
-		wl_surface_set_input_region(window->surface,
+		wl_surface_set_input_region(window->main_surface->surface,
 					    window->input_region);
 		wl_region_destroy(window->input_region);
 		window->input_region = NULL;
@@ -1230,14 +1236,15 @@ window_create_surface(struct window *window)
 	    window->display->dpy) {
 		window->toysurface =
 			egl_window_surface_create(window->display,
-						  window->surface, flags,
+						  window->main_surface->surface,
+						  flags,
 						  &allocation);
 	}
 
 	if (!window->toysurface)
 		window->toysurface = shm_surface_create(window->display,
-							window->surface, flags,
-							&allocation);
+						window->main_surface->surface,
+						flags, &allocation);
 
 	if (window->resizing)
 		flags = SURFACE_HINT_RESIZE;
@@ -1263,10 +1270,18 @@ window_set_buffer_transform(struct window *window,
 			    enum wl_output_transform transform)
 {
 	window->buffer_transform = transform;
-	wl_surface_set_buffer_transform(window->surface, transform);
+	wl_surface_set_buffer_transform(window->main_surface->surface,
+					transform);
 }
 
 static void frame_destroy(struct frame *frame);
+
+static void
+surface_destroy(struct surface *surface)
+{
+	wl_surface_destroy(surface->surface);
+	free(surface);
+}
 
 void
 window_destroy(struct window *window)
@@ -1304,7 +1319,9 @@ window_destroy(struct window *window)
 
 	if (window->shell_surface)
 		wl_shell_surface_destroy(window->shell_surface);
-	wl_surface_destroy(window->surface);
+
+	surface_destroy(window->main_surface);
+
 	wl_list_remove(&window->link);
 
 	if (window->toysurface)
@@ -1498,7 +1515,7 @@ window_get_surface(struct window *window)
 struct wl_surface *
 window_get_wl_surface(struct window *window)
 {
-	return window->surface;
+	return window->main_surface->surface;
 }
 
 struct wl_shell_surface *
@@ -2076,16 +2093,18 @@ frame_menu_func(struct window *window, int index, void *data)
 	case 1: /* move to workspace above */
 		display = window->display;
 		if (display->workspace > 0)
-			workspace_manager_move_surface(display->workspace_manager,
-						       window->surface,
-						       display->workspace - 1);
+			workspace_manager_move_surface(
+				display->workspace_manager,
+				window->main_surface->surface,
+				display->workspace - 1);
 		break;
 	case 2: /* move to workspace below */
 		display = window->display;
 		if (display->workspace < display->workspace_count - 1)
-			workspace_manager_move_surface(display->workspace_manager,
-						       window->surface,
-						       display->workspace + 1);
+			workspace_manager_move_surface(
+				display->workspace_manager,
+				window->main_surface->surface,
+				display->workspace + 1);
 		break;
 	case 3: /* fullscreen */
 		/* we don't have a way to get out of fullscreen for now */
@@ -3300,7 +3319,7 @@ idle_redraw(struct task *task, uint32_t events)
 	window->redraw_needed = 0;
 	wl_list_init(&window->redraw_task.link);
 
-	window->frame_cb = wl_surface_frame(window->surface);
+	window->frame_cb = wl_surface_frame(window->main_surface->surface);
 	wl_callback_add_listener(window->frame_cb, &listener, window);
 	window_flush(window);
 }
@@ -3465,16 +3484,16 @@ window_set_text_cursor_position(struct window *window, int32_t x, int32_t y)
 		return;
 
 	text_cursor_position_notify(text_cursor_position,
-						window->surface,
-						wl_fixed_from_int(x),
-						wl_fixed_from_int(y));
+				    window->main_surface->surface,
+				    wl_fixed_from_int(x),
+				    wl_fixed_from_int(y));
 }
 
 void
 window_damage(struct window *window, int32_t x, int32_t y,
 	      int32_t width, int32_t height)
 {
-	wl_surface_damage(window->surface, x, y, width, height);
+	wl_surface_damage(window->main_surface->surface, x, y, width, height);
 }
 
 static void
@@ -3537,6 +3556,23 @@ static const struct wl_surface_listener surface_listener = {
 	surface_leave
 };
 
+static struct surface *
+surface_create(struct window *window)
+{
+	struct display *display = window->display;
+	struct surface *surface;
+
+	surface = calloc(1, sizeof *surface);
+	if (!surface)
+		return NULL;
+
+	surface->window = window;
+	surface->surface = wl_compositor_create_surface(display->compositor);
+	wl_surface_add_listener(surface->surface, &surface_listener, window);
+
+	return surface;
+}
+
 static struct window *
 window_create_internal(struct display *display,
 		       struct window *parent, int type)
@@ -3550,12 +3586,11 @@ window_create_internal(struct display *display,
 	memset(window, 0, sizeof *window);
 	window->display = display;
 	window->parent = parent;
-	window->surface = wl_compositor_create_surface(display->compositor);
-	wl_surface_add_listener(window->surface, &surface_listener, window);
+	window->main_surface = surface_create(window);
 	if (type != TYPE_CUSTOM && display->shell) {
 		window->shell_surface =
 			wl_shell_get_shell_surface(display->shell,
-						   window->surface);
+				window->main_surface->surface);
 	}
 	window->allocation.x = 0;
 	window->allocation.y = 0;
@@ -3577,7 +3612,7 @@ window_create_internal(struct display *display,
 	else
 		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
 
-	wl_surface_set_user_data(window->surface, window);
+	wl_surface_set_user_data(window->main_surface->surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
 	wl_list_init(&window->redraw_task.link);
 
@@ -3631,9 +3666,10 @@ window_create_transient(struct display *display, struct window *parent,
 	window->y = y;
 
 	if (display->shell)
-		wl_shell_surface_set_transient(window->shell_surface,
-					       window->parent->surface,
-					       window->x, window->y, flags);
+		wl_shell_surface_set_transient(
+			window->shell_surface,
+			window->parent->main_surface->surface,
+			window->x, window->y, flags);
 
 	return window;
 }
@@ -3783,7 +3819,7 @@ window_show_menu(struct display *display,
 	input_ungrab(input);
 	wl_shell_surface_set_popup(window->shell_surface, input->seat,
 				   display_get_serial(window->display),
-				   window->parent->surface,
+				   window->parent->main_surface->surface,
 				   window->x, window->y, 0);
 
 	widget_set_redraw_handler(menu->widget, menu_redraw_handler);
