@@ -145,10 +145,6 @@ struct window_output {
 	struct wl_list link;
 };
 
-enum toysurface_prepare_flags {
-	SURFACE_HINT_RESIZE = 0x01,
-};
-
 struct toysurface {
 	/*
 	 * Prepare the surface for drawing. Makes sure there is a surface
@@ -197,6 +193,9 @@ struct surface {
 
 	struct rectangle allocation;
 	struct rectangle server_allocation;
+
+	enum window_buffer_type buffer_type;
+	enum wl_output_transform buffer_transform;
 };
 
 struct window {
@@ -219,8 +218,6 @@ struct window {
 	int transparent;
 	int focus_count;
 
-	enum window_buffer_type buffer_type;
-	enum wl_output_transform buffer_transform;
 	cairo_surface_t *cairo_surface;
 
 	int resizing;
@@ -1221,18 +1218,13 @@ window_get_display(struct window *window)
 	return window->display;
 }
 
-static void
-window_create_surface(struct window *window)
+static cairo_surface_t *
+surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
 {
-	struct surface *surface = window->main_surface;
+	struct display *display = surface->window->display;
 	struct rectangle allocation = surface->allocation;
-	uint32_t flags = 0;
-	int dx, dy;
 
-	if (!window->transparent)
-		flags = SURFACE_OPAQUE;
-
-	switch (window->buffer_transform) {
+	switch (surface->buffer_transform) {
 	case WL_OUTPUT_TRANSFORM_90:
 	case WL_OUTPUT_TRANSFORM_270:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
@@ -1244,45 +1236,54 @@ window_create_surface(struct window *window)
 		break;
 	}
 
-	if (!surface->toysurface &&
-	    window->buffer_type == WINDOW_BUFFER_TYPE_EGL_WINDOW &&
-	    window->display->dpy) {
+	if (!surface->toysurface && display->dpy &&
+	    surface->buffer_type == WINDOW_BUFFER_TYPE_EGL_WINDOW) {
 		surface->toysurface =
-			egl_window_surface_create(window->display,
+			egl_window_surface_create(display,
 						  surface->surface,
 						  flags,
 						  &allocation);
 	}
 
 	if (!surface->toysurface)
-		surface->toysurface = shm_surface_create(window->display,
+		surface->toysurface = shm_surface_create(display,
 							 surface->surface,
 							 flags, &allocation);
 
+	return surface->toysurface->prepare(surface->toysurface, dx, dy,
+					    allocation.width,
+					    allocation.height,
+					    flags);
+}
+
+static void
+window_create_surface(struct window *window)
+{
+	uint32_t flags = 0;
+	int dx, dy;
+
+	if (!window->transparent)
+		flags |= SURFACE_OPAQUE;
+
 	if (window->resizing)
-		flags = SURFACE_HINT_RESIZE;
-	else
-		flags = 0;
+		flags |= SURFACE_HINT_RESIZE;
 
 	window_get_resize_dx_dy(window, &dx, &dy);
 	window->cairo_surface =
-		surface->toysurface->prepare(surface->toysurface, dx, dy,
-					     allocation.width,
-					     allocation.height,
-					     flags);
+		surface_create_surface(window->main_surface, dx, dy, flags);
 }
 
 int
 window_get_buffer_transform(struct window *window)
 {
-	return window->buffer_transform;
+	return window->main_surface->buffer_transform;
 }
 
 void
 window_set_buffer_transform(struct window *window,
 			    enum wl_output_transform transform)
 {
-	window->buffer_transform = transform;
+	window->main_surface->buffer_transform = transform;
 	wl_surface_set_buffer_transform(window->main_surface->surface,
 					transform);
 }
@@ -3598,6 +3599,7 @@ window_create_internal(struct display *display,
 		       struct window *parent, int type)
 {
 	struct window *window;
+	struct surface *surface;
 
 	window = malloc(sizeof *window);
 	if (window == NULL)
@@ -3606,11 +3608,14 @@ window_create_internal(struct display *display,
 	memset(window, 0, sizeof *window);
 	window->display = display;
 	window->parent = parent;
-	window->main_surface = surface_create(window);
+
+	surface = surface_create(window);
+	window->main_surface = surface;
+
 	if (type != TYPE_CUSTOM && display->shell) {
 		window->shell_surface =
 			wl_shell_get_shell_surface(display->shell,
-				window->main_surface->surface);
+						   surface->surface);
 	}
 
 	window->transparent = 1;
@@ -3621,14 +3626,14 @@ window_create_internal(struct display *display,
 
 	if (display->argb_device)
 #ifdef HAVE_CAIRO_EGL
-		window->buffer_type = WINDOW_BUFFER_TYPE_EGL_WINDOW;
+		surface->buffer_type = WINDOW_BUFFER_TYPE_EGL_WINDOW;
 #else
-		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
+		surface->buffer_type = WINDOW_BUFFER_TYPE_SHM;
 #endif
 	else
-		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
+		surface->buffer_type = WINDOW_BUFFER_TYPE_SHM;
 
-	wl_surface_set_user_data(window->main_surface->surface, window);
+	wl_surface_set_user_data(surface->surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
 	wl_list_init(&window->redraw_task.link);
 
@@ -3851,7 +3856,7 @@ window_show_menu(struct display *display,
 void
 window_set_buffer_type(struct window *window, enum window_buffer_type type)
 {
-	window->buffer_type = type;
+	window->main_surface->buffer_type = type;
 }
 
 
@@ -4499,7 +4504,7 @@ display_acquire_window_surface(struct display *display,
 {
 	struct surface *surface = window->main_surface;
 
-	if (window->buffer_type != WINDOW_BUFFER_TYPE_EGL_WINDOW)
+	if (surface->buffer_type != WINDOW_BUFFER_TYPE_EGL_WINDOW)
 		return -1;
 
 	return surface->toysurface->acquire(surface->toysurface, ctx);
@@ -4511,7 +4516,7 @@ display_release_window_surface(struct display *display,
 {
 	struct surface *surface = window->main_surface;
 
-	if (window->buffer_type != WINDOW_BUFFER_TYPE_EGL_WINDOW)
+	if (surface->buffer_type != WINDOW_BUFFER_TYPE_EGL_WINDOW)
 		return;
 
 	surface->toysurface->release(surface->toysurface);

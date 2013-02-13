@@ -126,6 +126,8 @@ display_release_window_surface(struct display *display,
 #define SURFACE_OPAQUE 0x01
 #define SURFACE_SHM    0x02
 
+#define SURFACE_HINT_RESIZE 0x10
+
 cairo_surface_t *
 display_create_surface(struct display *display,
 		       struct wl_surface *surface,
