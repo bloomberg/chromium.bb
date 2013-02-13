@@ -167,12 +167,10 @@ gfx::ImageSkia TrayPower::GetBatteryImage(int image_index, IconSet icon_set) {
       icon_set == ICON_DARK ?
       IDR_AURA_UBER_TRAY_POWER_SMALL_DARK : IDR_AURA_UBER_TRAY_POWER_SMALL);
 
-  // TODO(mbolohan): Remove the 2px offset when the assets are centered. See
-  // crbug.com/119832.
   gfx::Rect region(
-      ((image_index & 0x1) ? kBatteryImageWidth : 0) + 2,
+      (image_index & 0x1) ? kBatteryImageWidth : 0,
       (image_index >> 1) * kBatteryImageHeight,
-      kBatteryImageWidth - 2, kBatteryImageHeight);
+      kBatteryImageWidth, kBatteryImageHeight);
   return gfx::ImageSkiaOperations::ExtractSubset(*all.ToImageSkia(), region);
 }
 
