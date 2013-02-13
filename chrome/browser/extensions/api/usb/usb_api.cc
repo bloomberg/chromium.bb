@@ -64,8 +64,15 @@ static const char* kErrorPermissionDenied =
     "Permission to access device was denied";
 static const char* kErrorInvalidTransferLength = "Transfer length must be a "
     "positive number less than 104,857,600.";
+static const char* kErrorInvalidNumberOfPackets = "Number of packets must be a "
+    "positive number less than 4,194,304.";
+static const char* kErrorInvalidPacketLength = "Packet length must be a "
+    "positive number less than 65,536.";
 
 static const size_t kMaxTransferLength = 100 * 1024 * 1024;
+static const int kMaxPackets = 4 * 1024 * 1024;
+static const int kMaxPacketLength = 64 * 1024;
+
 static UsbDevice* device_for_test_ = NULL;
 
 static bool ConvertDirection(const Direction& input,
@@ -150,7 +157,7 @@ template<class T>
 static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(
     const T& input, UsbDevice::TransferDirection direction, size_t size) {
 
-  if (size > kMaxTransferLength)
+  if (size >= kMaxTransferLength)
     return NULL;
 
   // Allocate a |size|-bytes buffer, or a one-byte buffer if |size| is 0. This
@@ -628,9 +635,24 @@ void UsbIsochronousTransferFunction::AsyncWorkStart() {
     AsyncWorkCompleted();
     return;
   }
-
   if (!GetTransferSize(generic_transfer, &size)) {
     CompleteWithError(kErrorInvalidTransferLength);
+    return;
+  }
+  if (transfer.packets < 0 || transfer.packets >= kMaxPackets) {
+    CompleteWithError(kErrorInvalidNumberOfPackets);
+    return;
+  }
+  unsigned int packets = transfer.packets;
+  if (transfer.packet_length < 0 ||
+      transfer.packet_length >= kMaxPacketLength) {
+    CompleteWithError(kErrorInvalidPacketLength);
+    return;
+  }
+  unsigned int packet_length = transfer.packet_length;
+  const uint64 total_length = packets * packet_length;
+  if (packets > size || total_length > size) {
+    CompleteWithError(kErrorTransferLength);
     return;
   }
 
@@ -642,7 +664,7 @@ void UsbIsochronousTransferFunction::AsyncWorkStart() {
   }
 
   device->device()->IsochronousTransfer(direction, generic_transfer.endpoint,
-      buffer, size, transfer.packets, transfer.packet_length, 0, base::Bind(
+      buffer, size, packets, packet_length, 0, base::Bind(
           &UsbIsochronousTransferFunction::OnCompleted, this));
 }
 
