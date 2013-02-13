@@ -50,6 +50,7 @@ RendererCapabilities::RendererCapabilities()
     , usingEglImage(false)
     , allowPartialTextureUpdates(false)
     , maxTextureSize(0)
+    , avoidPow2Textures(false)
 {
 }
 

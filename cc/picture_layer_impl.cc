@@ -363,12 +363,14 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
         std::min(max_untiled_content_size.width(), content_bounds.width());
     int height =
         std::min(max_untiled_content_size.height(), content_bounds.height());
-    // Round width and height up to the closest multiple of 64.  This is to
-    // help IMG drivers where facter of 8 texture sizes are faster, and also
-    // to prevent creating textures of too many different size for better
-    // recycling.
-    width = RoundUp(width, 64);
-    height = RoundUp(height, 64);
+    // Round width and height up to the closest multiple of 64, or 56 if
+    // we should avoid power-of-two textures. This helps reduce the number
+    // of different textures sizes to help recycling, and also keeps all
+    // textures multiple-of-eight, which is preferred on some drivers (IMG).
+    bool avoidPow2 = layerTreeImpl()->rendererCapabilities().avoidPow2Textures;
+    int roundUpTo = avoidPow2 ? 56 : 64;
+    width = RoundUp(width, roundUpTo);
+    height = RoundUp(height, roundUpTo);
     return gfx::Size(width, height);
   }
 

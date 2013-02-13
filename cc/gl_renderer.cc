@@ -151,6 +151,10 @@ bool GLRenderer::initialize()
     // The updater can access textures while the GLRenderer is using them.
     m_capabilities.allowPartialTextureUpdates = true;
 
+    // Check for texture fast paths. Currently we always use MO8 textures,
+    // so we only need to avoid POT textures if we have an NPOT fast-path.
+    m_capabilities.avoidPow2Textures = extensions.count("GL_CHROMIUM_fast_NPOT_MO8_textures");
+
     m_isUsingBindUniform = extensions.count("GL_CHROMIUM_bind_uniform_location");
 
     // Make sure scissoring starts as disabled.

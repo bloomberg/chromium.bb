@@ -70,6 +70,7 @@ struct CC_EXPORT RendererCapabilities {
     bool usingEglImage;
     bool allowPartialTextureUpdates;
     int maxTextureSize;
+    bool avoidPow2Textures;
 };
 
 class CC_EXPORT LayerTreeHost : public RateLimiterClient {

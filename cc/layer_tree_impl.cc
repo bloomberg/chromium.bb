@@ -354,6 +354,10 @@ const LayerTreeSettings& LayerTreeImpl::settings() const {
   return layer_tree_host_impl_->settings();
 }
 
+const RendererCapabilities& LayerTreeImpl::rendererCapabilities() const {
+  return layer_tree_host_impl_->rendererCapabilities();
+}
+
 OutputSurface* LayerTreeImpl::output_surface() const {
   return layer_tree_host_impl_->outputSurface();
 }

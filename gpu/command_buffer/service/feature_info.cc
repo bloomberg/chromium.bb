@@ -166,6 +166,7 @@ void FeatureInfo::AddFeatures() {
   bool is_amd = false;
   bool is_mesa = false;
   bool is_qualcomm = false;
+  bool is_imagination = false;
   for (size_t ii = 0; ii < arraysize(string_ids); ++ii) {
     const char* str = reinterpret_cast<const char*>(
           glGetString(string_ids[ii]));
@@ -177,6 +178,7 @@ void FeatureInfo::AddFeatures() {
       is_amd |= string_set.Contains("amd") || string_set.Contains("ati");
       is_mesa |= string_set.Contains("mesa");
       is_qualcomm |= string_set.Contains("qualcomm");
+      is_imagination |= string_set.Contains("imagination");
     }
   }
 
@@ -209,6 +211,12 @@ void FeatureInfo::AddFeatures() {
   AddExtensionString("GL_CHROMIUM_stream_texture");
   AddExtensionString("GL_CHROMIUM_texture_mailbox");
   AddExtensionString("GL_EXT_debug_marker");
+
+  // Add extension to indicate fast-path texture uploads. This is
+  // for IMG, where everything except async + non-power-of-two +
+  // multiple-of-eight textures are brutally slow.
+  if (is_imagination)
+    AddExtensionString("GL_CHROMIUM_fast_NPOT_MO8_textures");
 
   feature_flags_.chromium_stream_texture = true;
 

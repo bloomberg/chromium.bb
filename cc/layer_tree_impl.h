@@ -34,6 +34,7 @@ class PaintTimeCounter;
 class Proxy;
 class ResourceProvider;
 class TileManager;
+struct RendererCapabilities;
 
 class CC_EXPORT LayerTreeImpl {
  public:
@@ -48,6 +49,7 @@ class CC_EXPORT LayerTreeImpl {
   // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------
   const LayerTreeSettings& settings() const;
+  const RendererCapabilities& rendererCapabilities() const;
   OutputSurface* output_surface() const;
   ResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
