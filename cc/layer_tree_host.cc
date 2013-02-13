@@ -157,7 +157,7 @@ void LayerTreeHost::initializeRenderer()
 
     // Update m_settings based on partial update capability.
     size_t maxPartialTextureUpdates = 0;
-    if (m_proxy->rendererCapabilities().allowPartialTextureUpdates)
+    if (m_proxy->rendererCapabilities().allowPartialTextureUpdates && !m_settings.implSidePainting)
         maxPartialTextureUpdates = std::min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
     m_settings.maxPartialTextureUpdates = maxPartialTextureUpdates;
 
