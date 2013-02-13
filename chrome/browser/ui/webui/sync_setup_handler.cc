@@ -1201,9 +1201,16 @@ void SyncSetupHandler::DidStopLoading(
   // this as if the user closed the tab. However, don't actually close the tab
   // since the user is doing something with it.  Disconnect and forget about it
   // before closing down the sync setup.
-  // Ignore navigations to about:blank since that can happen during sign in.
+  // The one exception is the expected continue URL.  If the user lands there,
+  // this means sign in was successful.
   const GURL& url = active_gaia_signin_tab_->GetURL();
-  if (url != GURL("about:blank") && !gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+  const GURL continue_url =
+      SyncPromoUI::GetNextPageURLForSyncPromoURL(
+          SyncPromoUI::GetSyncPromoURL(GURL(),
+                                       SyncPromoUI::SOURCE_SETTINGS,
+                                       false));
+
+  if (url != continue_url && !gaia::IsGaiaSignonRealm(url.GetOrigin())) {
     content::WebContentsObserver::Observe(NULL);
     active_gaia_signin_tab_ = NULL;
     CloseSyncSetup();
