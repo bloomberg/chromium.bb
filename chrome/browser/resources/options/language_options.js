@@ -125,11 +125,7 @@ cr.define('options', function() {
       }
 
       if (cr.isChromeOS) {
-        // Listen to user clicks on the add language list.
-        var addLanguageList = $('add-language-overlay-language-list');
-        addLanguageList.addEventListener(
-            'click',
-            this.handleAddLanguageListClick_.bind(this));
+        // Listen to user click on the extension ime button.
         $('language-options-extension-ime-button').addEventListener(
             'click',
             this.handleExtensionImeButtonClick_.bind(this));
@@ -147,13 +143,13 @@ cr.define('options', function() {
         }
         // Show the Extension IME button only if available.
         $('language-options-extension-ime-button').hidden = !hasExtensionIme;
-      } else {
-        // Listen to add language dialog ok button.
-        var addLanguageOkButton = $('add-language-overlay-ok-button');
-        addLanguageOkButton.addEventListener(
-            'click',
-            this.handleAddLanguageOkButtonClick_.bind(this));
+      }
 
+      // Listen to add language dialog ok button.
+      $('add-language-overlay-ok-button').addEventListener(
+          'click', this.handleAddLanguageOkButtonClick_.bind(this));
+
+      if (!cr.isChromeOS) {
         // Show experimental features if enabled.
         if (loadTimeData.getBoolean('enableSpellingAutoCorrect'))
           $('auto-spell-correction-option').hidden = false;
@@ -676,34 +672,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles add language list's click event.
-     * @param {Event} e Click event.
-     */
-    handleAddLanguageListClick_: function(e) {
-      var languageOptionsList = $('language-options-list');
-      var languageCode = e.target.languageCode;
-      // languageCode can be undefined, if click was made on some random
-      // place in the overlay, rather than a button. Ignore it.
-      if (!languageCode) {
-        return;
-      }
-      languageOptionsList.addLanguage(languageCode);
-      var inputMethodIds = this.languageCodeToInputMethodIdsMap_[languageCode];
-      // Enable the first input method for the language added.
-      if (inputMethodIds && inputMethodIds[0] &&
-          // Don't add the input method it's already present. This can
-          // happen if the same input method is shared among multiple
-          // languages (ex. English US keyboard is used for English US and
-          // Filipino).
-          this.preloadEngines_.indexOf(inputMethodIds[0]) == -1) {
-        this.preloadEngines_.push(inputMethodIds[0]);
-        this.updateCheckboxesFromPreloadEngines_();
-        this.savePreloadEnginesPref_();
-      }
-      OptionsPage.closeOverlay();
-    },
-
-    /**
      * Handles extension IME button.
      */
     handleExtensionImeButtonClick_: function() {
@@ -742,6 +710,21 @@ cr.define('options', function() {
       if (selectedIndex >= 0) {
         var selection = languagesSelect.options[selectedIndex];
         $('language-options-list').addLanguage(String(selection.value));
+        if (cr.isChromeOS) {
+          var inputMethodIds =
+              this.languageCodeToInputMethodIdsMap_[selection.value];
+          // Enable the first input method for the language added.
+          if (inputMethodIds && inputMethodIds[0] &&
+              // Don't add the input method it's already present. This can
+              // happen if the same input method is shared among multiple
+              // languages (ex. English US keyboard is used for English US and
+              // Filipino).
+              this.preloadEngines_.indexOf(inputMethodIds[0]) == -1) {
+            this.preloadEngines_.push(inputMethodIds[0]);
+            this.updateCheckboxesFromPreloadEngines_();
+            this.savePreloadEnginesPref_();
+          }
+        }
         OptionsPage.closeOverlay();
       }
     },

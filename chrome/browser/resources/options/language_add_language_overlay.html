@@ -2,17 +2,6 @@
   <div class="close-button"></div>
   <!-- TODO(kevers): Fix format of i18n-content labels -->
   <h1 i18n-content="add_language_title"></h1>
-<if expr="pp_ifdef('chromeos')">
-  <div class="content-area">
-    <ul id="add-language-overlay-language-list">
-    </ul>
-  </div>
-  <div class="action-area button-strip">
-    <button id="add-language-overlay-cancel-button" i18n-content="cancel">
-    </button>
-  </div>
-</if>
-<if expr="not pp_ifdef('chromeos')">
   <div class="content-area">
     <span i18n-content="add_language_select_label"></span>
     <select id="add-language-overlay-language-list"></select>
@@ -22,5 +11,4 @@
     </button>
     <button id="add-language-overlay-ok-button" i18n-content="ok"></button>
   </div>
-</if>
 </div>

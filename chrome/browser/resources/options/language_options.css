@@ -127,34 +127,6 @@
   z-index: 10;
 }
 
-/* In ChromeOS we present the language choices as a big page of links. */
-<if expr="pp_ifdef('chromeos')">
-#add-language-overlay-language-list {
-  -webkit-column-count: 2;
-  -webkit-column-gap: 20px;
-}
-
-#add-language-overlay-language-list > li > button.link-button {
-  padding-bottom: 8px;
-  padding-top: 8px;
-}
-
-#add-language-overlay-page {
-  width: 800px;
-}
-
-#add-language-overlay-page button.link-button {
-  padding-left: 0;
-  padding-right: 0;
-  text-align: left;
-}
-
-#add-language-overlay-page ul {
-  margin: 0;
-  padding: 0;
-}
-</if>
-
 /* TODO(kochi): This is temporary copy from new_tab.css */
 /* Notification */
 

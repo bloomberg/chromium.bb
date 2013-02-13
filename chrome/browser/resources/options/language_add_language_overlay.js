@@ -44,25 +44,13 @@ cr.define('options', function() {
         var language = languageListData[i];
         var displayText = language.displayName;
         // If the native name is different, add it.
-        if (language.displayName != language.nativeDisplayName) {
+        if (language.displayName != language.nativeDisplayName)
           displayText += ' - ' + language.nativeDisplayName;
-        }
 
-        if (cr.isChromeOS) {
-          var button = document.createElement('button');
-          button.className = 'link-button';
-          button.textContent = displayText;
-          button.languageCode = language.code;
-          var li = document.createElement('li');
-          li.languageCode = language.code;
-          li.appendChild(button);
-          addLanguageList.appendChild(li);
-        } else {
-          var option = document.createElement('option');
-          option.value = language.code;
-          option.textContent = displayText;
-          addLanguageList.appendChild(option);
-        }
+        var option = cr.doc.createElement('option');
+        option.value = language.code;
+        option.textContent = displayText;
+        addLanguageList.appendChild(option);
       }
     },
   };
