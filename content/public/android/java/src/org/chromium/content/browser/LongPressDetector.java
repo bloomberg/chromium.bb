@@ -109,6 +109,7 @@ class LongPressDetector {
                 }
                 break;
             case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
                 if (mCurrentDownEvent.getDownTime() + TAP_TIMEOUT + LONGPRESS_TIMEOUT >
                     ev.getEventTime()) {
                     mInLongPress = false;

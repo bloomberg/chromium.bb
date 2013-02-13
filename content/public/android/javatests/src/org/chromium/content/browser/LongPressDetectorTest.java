@@ -51,14 +51,7 @@ public class LongPressDetectorTest extends InstrumentationTestCase {
         assertTrue("Should have a pending LONG_PRESS", mLongPressDetector.hasPendingMessage());
     }
 
-    /**
-     * Verify a DOWN with a corresponding UP will not have a pending Gesture.
-     *
-     * @throws Exception
-     */
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testGestureNoLongPress() throws Exception {
+    private void gestureNoLongPressTestHelper(int cancelActionType) throws Exception {
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
 
@@ -67,9 +60,31 @@ public class LongPressDetectorTest extends InstrumentationTestCase {
 
         assertTrue("Should have a pending LONG_PRESS", mLongPressDetector.hasPendingMessage());
 
-        event = motionEvent(MotionEvent.ACTION_UP, downTime, eventTime + 10);
+        event = motionEvent(cancelActionType, downTime, eventTime + 10);
         mLongPressDetector.cancelLongPressIfNeeded(event);
         assertTrue("Should not have a pending LONG_PRESS", !mLongPressDetector.hasPendingMessage());
+    }
+
+    /**
+     * Verify a DOWN with a corresponding UP will not have a pending Gesture.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testGestureNoLongPressOnUp() throws Exception {
+        gestureNoLongPressTestHelper(MotionEvent.ACTION_UP);
+    }
+
+    /**
+     * Verify a DOWN with a corresponding CANCEL will not have a pending Gesture.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testGestureNoLongPressOnCancel() throws Exception {
+        gestureNoLongPressTestHelper(MotionEvent.ACTION_CANCEL);
     }
 
     /**
