@@ -219,7 +219,6 @@ struct window {
 	struct task redraw_task;
 	int resize_needed;
 	int type;
-	int transparent;
 	int focus_count;
 
 	int resizing;
@@ -1237,9 +1236,6 @@ window_create_surface(struct window *window)
 	uint32_t flags = 0;
 	int dx = 0;
 	int dy = 0;
-
-	if (!window->transparent)
-		flags |= SURFACE_OPAQUE;
 
 	if (window->resizing)
 		flags |= SURFACE_HINT_RESIZE;
@@ -3612,7 +3608,6 @@ window_create_internal(struct display *display,
 						   surface->surface);
 	}
 
-	window->transparent = 1;
 	window->type = type;
 	window->fullscreen_method = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 
