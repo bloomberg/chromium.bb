@@ -246,7 +246,9 @@ void IBusControllerImpl::Reset() {
     return;
   IBusInputContextClient* client
       = DBusThreadManager::Get()->GetIBusInputContextClient();
-  if (client)
+  // We don't need to call Reset if there is no on-going input context, because
+  // the input context will be reset at initialization.
+  if (client && client->IsObjectProxyReady())
     client->Reset();
 }
 
