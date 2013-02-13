@@ -43,7 +43,7 @@
 #include "extensions/common/url_pattern.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
-#include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "net/base/net_util.h"
 #include "net/base/tcp_listen_socket.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -77,7 +77,7 @@ bool RunningOnWOW64() {
 }
 #endif
 
-void SetCloseOnExec(nacl::Handle fd) {
+void SetCloseOnExec(NaClHandle fd) {
 #if defined(OS_POSIX)
   int flags = fcntl(fd, F_GETFD);
   CHECK_NE(flags, -1);
@@ -88,7 +88,7 @@ void SetCloseOnExec(nacl::Handle fd) {
 
 bool ShareHandleToSelLdr(
     base::ProcessHandle processh,
-    nacl::Handle sourceh,
+    NaClHandle sourceh,
     bool close_source,
     std::vector<nacl::FileDescriptor> *handles_for_sel_ldr) {
 #if defined(OS_WIN)
@@ -128,12 +128,12 @@ ppapi::PpapiPermissions GetNaClPermissions(uint32 permission_bits) {
 }  // namespace
 
 struct NaClProcessHost::NaClInternal {
-  nacl::Handle socket_for_renderer;
-  nacl::Handle socket_for_sel_ldr;
+  NaClHandle socket_for_renderer;
+  NaClHandle socket_for_sel_ldr;
 
   NaClInternal()
-    : socket_for_renderer(nacl::kInvalidHandle),
-      socket_for_sel_ldr(nacl::kInvalidHandle) { }
+    : socket_for_renderer(NACL_INVALID_HANDLE),
+      socket_for_sel_ldr(NACL_INVALID_HANDLE) { }
 };
 
 // -----------------------------------------------------------------------------
@@ -203,15 +203,15 @@ NaClProcessHost::~NaClProcessHost() {
     LOG(ERROR) << message;
   }
 
-  if (internal_->socket_for_renderer != nacl::kInvalidHandle) {
-    if (nacl::Close(internal_->socket_for_renderer) != 0) {
-      NOTREACHED() << "nacl::Close() failed";
+  if (internal_->socket_for_renderer != NACL_INVALID_HANDLE) {
+    if (NaClClose(internal_->socket_for_renderer) != 0) {
+      NOTREACHED() << "NaClClose() failed";
     }
   }
 
-  if (internal_->socket_for_sel_ldr != nacl::kInvalidHandle) {
-    if (nacl::Close(internal_->socket_for_sel_ldr) != 0) {
-      NOTREACHED() << "nacl::Close() failed";
+  if (internal_->socket_for_sel_ldr != NACL_INVALID_HANDLE) {
+    if (NaClClose(internal_->socket_for_sel_ldr) != 0) {
+      NOTREACHED() << "NaClClose() failed";
     }
   }
 
@@ -278,9 +278,9 @@ void NaClProcessHost::Launch(
   // This means the sandboxed renderer cannot send handles to the
   // browser process.
 
-  nacl::Handle pair[2];
+  NaClHandle pair[2];
   // Create a connected socket
-  if (nacl::SocketPair(pair) == -1) {
+  if (NaClSocketPair(pair) == -1) {
     LOG(ERROR) << "NaCl process launch failed: could not create a socket pair";
     delete this;
     return;
@@ -667,7 +667,7 @@ bool NaClProcessHost::ReplyToRenderer(
   chrome_render_message_filter_->Send(reply_msg_);
   chrome_render_message_filter_ = NULL;
   reply_msg_ = NULL;
-  internal_->socket_for_renderer = nacl::kInvalidHandle;
+  internal_->socket_for_renderer = NACL_INVALID_HANDLE;
   return true;
 }
 
@@ -768,7 +768,7 @@ bool NaClProcessHost::StartNaClExecution() {
 
   process_->Send(new NaClProcessMsg_Start(params));
 
-  internal_->socket_for_sel_ldr = nacl::kInvalidHandle;
+  internal_->socket_for_sel_ldr = NACL_INVALID_HANDLE;
   return true;
 }
 

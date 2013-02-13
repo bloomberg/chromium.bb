@@ -121,7 +121,7 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
   if (!invalid_handle)
     g_instance_info.Get()[instance] = instance_info;
 
-  *(static_cast<nacl::Handle*>(imc_handle)) =
+  *(static_cast<NaClHandle*>(imc_handle)) =
       nacl::ToNativeHandle(result_socket);
 
   return PP_NACL_OK;

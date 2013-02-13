@@ -61,7 +61,7 @@ typedef enum {
 /* PPB_NaCl_Private */
 struct PPB_NaCl_Private_1_0 {
   /* Launches NaCl's sel_ldr process.  Returns PP_NACL_OK on success and
-   * writes a nacl::Handle to imc_handle. Returns PP_NACL_FAILED on failure.
+   * writes a NaClHandle to imc_handle. Returns PP_NACL_FAILED on failure.
    * The |enable_ppapi_dev| parameter controls whether GetInterface
    * returns 'Dev' interfaces to the NaCl plugin.  The |uses_ppapi| flag
    * indicates that the nexe run by sel_ldr will use the PPAPI APIs.
