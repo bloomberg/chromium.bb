@@ -12,9 +12,6 @@ ImageEditor.Mode.Crop = function() {
 
 ImageEditor.Mode.Crop.prototype = {__proto__: ImageEditor.Mode.prototype};
 
-/**
- * TODO(JSDOC).
- */
 ImageEditor.Mode.Crop.prototype.setUp = function() {
   ImageEditor.Mode.prototype.setUp.apply(this, arguments);
 
@@ -68,17 +65,11 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
   this.createDefaultCrop();
 };
 
-/**
- * TODO(JSDOC).
- */
 ImageEditor.Mode.Crop.prototype.reset = function() {
   ImageEditor.Mode.prototype.reset.call(this);
   this.createDefaultCrop();
 };
 
-/**
- * TODO(JSDOC).
- */
 ImageEditor.Mode.Crop.prototype.positionDOM = function() {
   var screenClipped = this.viewport_.getScreenClipped();
 
@@ -104,9 +95,6 @@ ImageEditor.Mode.Crop.prototype.positionDOM = function() {
       (screenCrop.top + screenCrop.height) + 'px';
 };
 
-/**
- * TODO(JSDOC).
- */
 ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
   this.domOverlay_.parentNode.removeChild(this.domOverlay_);
@@ -114,29 +102,14 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   this.editor_.hideOverlappingTools();
 };
 
-/**
- * @const
- * @type {number}
- */
 ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS = 6;
-/**
- * @const
- * @type {number}
- */
 ImageEditor.Mode.Crop.TOUCH_GRAB_RADIUS = 20;
 
-/**
- * TODO(JSDOC).
- * @return {Command.Crop}  //TODO(JSDOC).
- */
 ImageEditor.Mode.Crop.prototype.getCommand = function() {
   var cropImageRect = this.cropRect_.getRect();
   return new Command.Crop(cropImageRect);
 };
 
-/**
- * TODO(JSDOC).
- */
 ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
   var rect = new Rect(this.getViewport().getImageClipped());
   rect = rect.inflate(
@@ -145,24 +118,10 @@ ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
   this.positionDOM();
 };
 
-/**
- * TODO(JSDOC).
- * @param {number} x X coordinate for cursor.
- * @param {number} y Y coordinate for cursor.
- * @param {boolean} mouseDown If mouse button is down.
- * @return {string} A value for style.cursor CSS property.
- */
 ImageEditor.Mode.Crop.prototype.getCursorStyle = function(x, y, mouseDown) {
   return this.cropRect_.getCursorStyle(x, y, mouseDown);
 };
 
-/**
- * TODO(JSDOC).
- * @param {number} x Event X coordinate.
- * @param {number} y Event Y coordinate.
- * @param {boolean} touch True if it's a touch event, false if mouse.
- * @return {function(number,number)} A function to be called on mouse drag.
- */
 ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
   var cropDragHandler = this.cropRect_.getDragHandler(x, y, touch);
   if (!cropDragHandler) return null;
@@ -175,12 +134,6 @@ ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
   };
 };
 
-/**
- * TODO(JSDOC).
- * @param {number} x X coordinate of the event.
- * @param {number} y Y coordinate of the event.
- * @return {ImageBuffer.DoubleTapAction} Action to perform as result.
- */
 ImageEditor.Mode.Crop.prototype.getDoubleTapAction = function(x, y) {
   return this.cropRect_.getDoubleTapAction(x, y);
 };
@@ -188,7 +141,7 @@ ImageEditor.Mode.Crop.prototype.getDoubleTapAction = function(x, y) {
 /*
  * A draggable rectangle over the image.
  */
-//TODO(JSDOC).
+//TODO(JSDOC)
 function DraggableRect(rect, viewport, sensitivity) {
 
   // The bounds are not held in a regular rectangle (with width/height).
@@ -218,79 +171,36 @@ function DraggableRect(rect, viewport, sensitivity) {
 }
 
 // Static members to simplify reflective access to the bounds.
-/**
- * @const
- * @type {string}
- */
 DraggableRect.LEFT = 'left';
-/**
- * @const
- * @type {string}
- */
 DraggableRect.RIGHT = 'right';
-/**
- * @const
- * @type {string}
- */
 DraggableRect.TOP = 'top';
-/**
- * @const
- * @type {string}
- */
 DraggableRect.BOTTOM = 'bottom';
-/**
- * @const
- * @type {string}
- */
 DraggableRect.NONE = 'none';
 
-/**
- * TODO(JSDOC)
- * @return {number}  //TODO(JSDOC).
- */
+//TODO(JSDOC)
 DraggableRect.prototype.getLeft = function() {
   return this.bounds_[DraggableRect.LEFT];
 };
 
-/**
- * TODO(JSDOC)
- * @return {number}  //TODO(JSDOC).
- */
+//TODO(JSDOC)
 DraggableRect.prototype.getRight = function() {
   return this.bounds_[DraggableRect.RIGHT];
 };
 
-/**
- * TODO(JSDOC)
- * @return {number}  //TODO(JSDOC).
- */
+//TODO(JSDOC)
 DraggableRect.prototype.getTop = function() {
   return this.bounds_[DraggableRect.TOP];
 };
 
-/**
- * TODO(JSDOC)
- * @return {number}  //TODO(JSDOC).
- */
+//TODO(JSDOC)
 DraggableRect.prototype.getBottom = function() {
   return this.bounds_[DraggableRect.BOTTOM];
 };
 
-/**
- * TODO(JSDOC)
- * @return {Rect}  //TODO(JSDOC).
- */
-DraggableRect.prototype.getRect = function() {
-  return new Rect(this.bounds_);
-};
+//TODO(JSDOC)
+DraggableRect.prototype.getRect = function() { return new Rect(this.bounds_) };
 
-/**
- * TODO(JSDOC)
- * @param {number} x X coordinate for cursor.
- * @param {number} y Y coordinate for cursor.
- * @param {boolean} touch  //TODO(JSDOC).
- * @return {Object}  //TODO(JSDOC).
- */
+//TODO(JSDOC)
 DraggableRect.prototype.getDragMode = function(x, y, touch) {
   var result = {
     xSide: DraggableRect.NONE,
@@ -338,13 +248,6 @@ DraggableRect.prototype.getDragMode = function(x, y, touch) {
   return result;
 };
 
-/**
- * TODO(JSDOC)
- * @param {number} x X coordinate for cursor.
- * @param {number} y Y coordinate for cursor.
- * @param {boolean} mouseDown  If mouse button is down.
- * @return {string}  //TODO(JSDOC).
- */
 DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
   var mode;
   if (mouseDown) {
@@ -358,13 +261,6 @@ DraggableRect.prototype.getCursorStyle = function(x, y, mouseDown) {
   return this.cssSide_[mode.ySide] + this.cssSide_[mode.xSide] + '-resize';
 };
 
-/**
- * TODO(JSDOC)
- * @param {number} x X coordinate for cursor.
- * @param {number} y Y coordinate for cursor.
- * @param {boolean} touch  //TODO(JSDOC).
- * @return {function(number,number)}  //TODO(JSDOC).
- */
 DraggableRect.prototype.getDragHandler = function(x, y, touch) {
   x = this.viewport_.screenToImageX(x);
   y = this.viewport_.screenToImageY(y);
@@ -459,13 +355,6 @@ DraggableRect.prototype.getDragHandler = function(x, y, touch) {
   };
 };
 
-/**
- * TODO(JSDOC)
- * @param {number} x X coordinate for cursor.
- * @param {number} y Y coordinate for cursor.
- * @param {boolean} touch  //TODO(JSDOC).
- * @return {ImageBuffer.DoubleTapAction}  //TODO(JSDOC).
- */
 DraggableRect.prototype.getDoubleTapAction = function(x, y, touch) {
   x = this.viewport_.screenToImageX(x);
   y = this.viewport_.screenToImageY(y);
