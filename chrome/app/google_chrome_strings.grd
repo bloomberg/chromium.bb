@@ -607,7 +607,7 @@ Google Chrome is unable to recover your settings.
 
       <!-- Obsolete System info bar -->
       <message name="IDS_SYSTEM_OBSOLETE_MESSAGE" desc="Message shown when your OS is no longer supported. This messages is followed by a 'Learn more' link.">
-         Google Chrome is no longer updating because your operating system is obsolete.
+         Google Chrome has stopped updating and no longer supports this version of your operating system.
       </message>
 
       <!-- about:memory -->
