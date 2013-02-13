@@ -16,32 +16,18 @@
 
 using extensions::Extension;
 
-ExtensionManifestTest::ExtensionManifestTest()
-    : enable_apps_(true),
-      // UNKNOWN == trunk.
-      current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+namespace {
 
-void ExtensionManifestTest::TearDown() {
-  extensions::ManifestHandler::ClearRegistryForTesting();
-}
-
-// static
-DictionaryValue* ExtensionManifestTest::LoadManifestFile(
-    const std::string& filename,
-    std::string* error) {
-  base::FilePath filename_path(base::FilePath::FromUTF8Unsafe(filename));
+// If filename is a relative path, LoadManifestFile will treat it relative to
+// the appropriate test directory.
+DictionaryValue* LoadManifestFile(
+    const base::FilePath& filename_path, std::string* error) {
   base::FilePath extension_path;
   base::FilePath manifest_path;
 
-  if (filename_path.IsAbsolute()) {
-    extension_path = filename_path.DirName();
-    manifest_path = filename_path;
-  } else {
-    PathService::Get(chrome::DIR_TEST_DATA, &extension_path);
-    extension_path = extension_path.AppendASCII("extensions")
-        .AppendASCII("manifest_tests");
-    manifest_path = extension_path.AppendASCII(filename.c_str());
-  }
+  PathService::Get(chrome::DIR_TEST_DATA, &manifest_path);
+  manifest_path = manifest_path.Append(filename_path);
+  extension_path = manifest_path.DirName();
 
   EXPECT_TRUE(file_util::PathExists(manifest_path)) <<
       "Couldn't find " << manifest_path.value();
@@ -55,10 +41,23 @@ DictionaryValue* ExtensionManifestTest::LoadManifestFile(
   // Only localize manifests that indicate they want to be localized.
   // Calling LocalizeExtension at this point mirrors
   // extension_file_util::LoadExtension.
-  if (manifest && filename.find("localized") != std::string::npos)
+  if (manifest &&
+      filename_path.value().find(FILE_PATH_LITERAL("localized")) !=
+      std::string::npos)
     extension_l10n_util::LocalizeExtension(extension_path, manifest, error);
 
   return manifest;
+}
+
+}  // namespace
+
+ExtensionManifestTest::ExtensionManifestTest()
+    : enable_apps_(true),
+      // UNKNOWN == trunk.
+      current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+
+void ExtensionManifestTest::TearDown() {
+  extensions::ManifestHandler::ClearRegistryForTesting();
 }
 
 // Helper class that simplifies creating methods that take either a filename
@@ -81,13 +80,30 @@ ExtensionManifestTest::Manifest::~Manifest() {
 }
 
 DictionaryValue* ExtensionManifestTest::Manifest::GetManifest(
-    std::string* error) const {
+    char const* test_data_dir, std::string* error) const {
   if (manifest_)
     return manifest_;
 
-  manifest_ = LoadManifestFile(name_, error);
+  base::FilePath filename_path;
+  filename_path = filename_path.AppendASCII("extensions")
+      .AppendASCII(test_data_dir)
+      .AppendASCII(name_);
+  manifest_ = LoadManifestFile(filename_path, error);
   manifest_holder_.reset(manifest_);
   return manifest_;
+}
+
+char const* ExtensionManifestTest::test_data_dir() {
+  return "manifest_tests";
+}
+
+scoped_ptr<DictionaryValue> ExtensionManifestTest::LoadManifest(
+    char const* manifest_name, std::string* error) {
+  base::FilePath filename_path;
+  filename_path = filename_path.AppendASCII("extensions")
+      .AppendASCII(test_data_dir())
+      .AppendASCII(manifest_name);
+  return make_scoped_ptr(LoadManifestFile(filename_path, error));
 }
 
 scoped_refptr<Extension> ExtensionManifestTest::LoadExtension(
@@ -95,12 +111,12 @@ scoped_refptr<Extension> ExtensionManifestTest::LoadExtension(
     std::string* error,
     extensions::Manifest::Location location,
     int flags) {
-  DictionaryValue* value = manifest.GetManifest(error);
+  DictionaryValue* value = manifest.GetManifest(test_data_dir(), error);
   if (!value)
     return NULL;
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions").AppendASCII("manifest_tests");
+  path = path.AppendASCII("extensions").AppendASCII(test_data_dir());
   return Extension::Create(path.DirName(), location, *value, flags, error);
 }
 

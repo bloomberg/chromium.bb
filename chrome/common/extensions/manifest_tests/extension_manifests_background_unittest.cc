@@ -28,7 +28,7 @@ TEST_F(ExtensionManifestTest, BackgroundPermission) {
 TEST_F(ExtensionManifestTest, BackgroundScripts) {
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
-      LoadManifestFile("background_scripts.json", &error));
+      LoadManifest("background_scripts.json", &error));
   ASSERT_TRUE(manifest.get());
 
   scoped_refptr<Extension> extension(
@@ -57,7 +57,7 @@ TEST_F(ExtensionManifestTest, BackgroundPage) {
 
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
-      LoadManifestFile("background_page_legacy.json", &error));
+      LoadManifest("background_page_legacy.json", &error));
   ASSERT_TRUE(manifest.get());
   extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
   ASSERT_TRUE(extension);
@@ -88,7 +88,7 @@ TEST_F(ExtensionManifestTest, BackgroundPageWebRequest) {
 
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
-      LoadManifestFile("background_page.json", &error));
+      LoadManifest("background_page.json", &error));
   ASSERT_TRUE(manifest.get());
   manifest->SetBoolean(keys::kBackgroundPersistent, false);
   manifest->SetInteger(keys::kManifestVersion, 2);

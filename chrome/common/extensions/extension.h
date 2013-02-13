@@ -501,7 +501,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return converted_from_user_script_;
   }
   const UserScriptList& content_scripts() const { return content_scripts_; }
-  const ActionInfo* page_action_info() const { return page_action_info_.get(); }
   const ActionInfo* system_indicator_info() const {
     return system_indicator_info_.get();
   }
@@ -686,7 +685,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadExtensionFeatures(APIPermissionSet* api_permissions,
                              string16* error);
   bool LoadContentScripts(string16* error);
-  bool LoadPageAction(string16* error);
   bool LoadBrowserAction(string16* error);
   bool LoadSystemIndicator(APIPermissionSet* api_permissions, string16* error);
   bool LoadTextToSpeechVoices(string16* error);
@@ -807,9 +805,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Paths to the content scripts the extension contains.
   UserScriptList content_scripts_;
 
-  // The extension's page action, if any.
-  scoped_ptr<ActionInfo> page_action_info_;
-
   // The extension's system indicator, if any.
   scoped_ptr<ActionInfo> system_indicator_info_;
 
@@ -907,7 +902,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // vulnerabilities.
   std::string content_security_policy_;
 
-  FRIEND_TEST_ALL_PREFIXES(ExtensionTest, LoadPageActionHelper);
   FRIEND_TEST_ALL_PREFIXES(::TabStripModelTest, Apps);
 
   DISALLOW_COPY_AND_ASSIGN(Extension);

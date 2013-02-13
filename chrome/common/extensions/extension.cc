@@ -27,6 +27,7 @@
 // TODO(rdevlin.cronin): Remove this once PageAction, BrowserAction, and
 // SystemIndicator have been moved out of Extension.
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
 #include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -825,10 +826,11 @@ std::set<base::FilePath> Extension::GetBrowserImages() const {
     }
   }
 
-  if (page_action_info() && !page_action_info()->default_icon.empty()) {
+  const ActionInfo* page_action_info = ActionInfo::GetPageActionInfo(this);
+  if (page_action_info && !page_action_info->default_icon.empty()) {
     for (ExtensionIconSet::IconMap::const_iterator iter =
-             page_action_info()->default_icon.map().begin();
-         iter != page_action_info()->default_icon.map().end();
+             page_action_info->default_icon.map().begin();
+         iter != page_action_info->default_icon.map().end();
          ++iter) {
       image_paths.insert(
           base::FilePath::FromWStringHack(UTF8ToWide(iter->second)));
@@ -2258,7 +2260,6 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
                           &converted_from_user_script_);
 
   if (!LoadContentScripts(error) ||
-      !LoadPageAction(error) ||
       !LoadSystemIndicator(api_permissions, error) ||
       !LoadIncognitoMode(error) ||
       !LoadContentSecurityPolicy(error))
@@ -2294,48 +2295,6 @@ bool Extension::LoadContentScripts(string16* error) {
     }
     content_scripts_.push_back(script);
   }
-  return true;
-}
-
-bool Extension::LoadPageAction(string16* error) {
-  DictionaryValue* page_action_value = NULL;
-
-  if (manifest_->HasKey(keys::kPageActions)) {
-    ListValue* list_value = NULL;
-    if (!manifest_->GetList(keys::kPageActions, &list_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionsList);
-      return false;
-    }
-
-    size_t list_value_length = list_value->GetSize();
-
-    if (list_value_length == 0u) {
-      // A list with zero items is allowed, and is equivalent to not having
-      // a page_actions key in the manifest.  Don't set |page_action_value|.
-    } else if (list_value_length == 1u) {
-      if (!list_value->GetDictionary(0, &page_action_value)) {
-        *error = ASCIIToUTF16(errors::kInvalidPageAction);
-        return false;
-      }
-    } else {  // list_value_length > 1u.
-      *error = ASCIIToUTF16(errors::kInvalidPageActionsListSize);
-      return false;
-    }
-  } else if (manifest_->HasKey(keys::kPageAction)) {
-    if (!manifest_->GetDictionary(keys::kPageAction, &page_action_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidPageAction);
-      return false;
-    }
-  }
-
-  // If page_action_value is not NULL, then there was a valid page action.
-  if (page_action_value) {
-    page_action_info_ = LoadExtensionActionInfoHelper(
-        this, page_action_value, error);
-    if (!page_action_info_.get())
-      return false;  // Failed to parse page action definition.
-  }
-
   return true;
 }
 
@@ -2669,7 +2628,7 @@ bool Extension::LoadGlobsHelper(
 bool Extension::HasMultipleUISurfaces() const {
   int num_surfaces = 0;
 
-  if (page_action_info())
+  if (ActionInfo::GetPageActionInfo(this))
     ++num_surfaces;
 
   if (ActionInfo::GetBrowserActionInfo(this))

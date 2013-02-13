@@ -30,6 +30,9 @@ struct ActionInfo {
   // Returns the extension's browser action, if any.
   static const ActionInfo* GetBrowserActionInfo(const Extension* extension);
 
+  // Returns the extension's page action, if any.
+  static const ActionInfo* GetPageActionInfo(const Extension* extension);
+
   // Returns the extension's script badge.
   static const ActionInfo* GetScriptBadgeInfo(const Extension* etxension);
 
@@ -39,11 +42,18 @@ struct ActionInfo {
   // Sets the extension's browser action. |extension| takes ownership of |info|.
   static void SetBrowserActionInfo(Extension* extension, ActionInfo* info);
 
+  // Sets the extension's page action. |extension| takes ownership of |info|.
+  static void SetPageActionInfo(Extension* extension, ActionInfo* info);
+
   // Sets the extension's script badge. |extension| takes ownership of |info|.
-  static void SetScriptBadgeInfo(Extension* etxension, ActionInfo* info);
+  static void SetScriptBadgeInfo(Extension* extension, ActionInfo* info);
 
   // Sets the extension's page launcher. |extension| takes ownership of |info|.
   static void SetPageLauncherInfo(Extension* extension, ActionInfo* info);
+
+  // Returns true if the extension needs a verbose install message because
+  // of its page action.
+  static bool IsVerboseInstallMessage(const Extension* extension);
 
   // Empty implies the key wasn't present.
   ExtensionIconSet default_icon;

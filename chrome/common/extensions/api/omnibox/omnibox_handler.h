@@ -20,11 +20,6 @@ struct OmniboxInfo : public Extension::ManifestData {
 
   // Returns the omnibox keyword for the extension.
   static const std::string& GetKeyword(const Extension* extension);
-
-  // Returns true if the extension needs a verbose install message.
-  // TODO(yoz): This should be associated with page actions, not
-  // the omnibox.
-  static bool IsVerboseInstallMessage(const Extension* extension);
 };
 
 // Parses the "omnibox" manifest key.

@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
+#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/script_badge_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
@@ -190,6 +191,11 @@ static base::LazyInstance<ProfileKeyedAPIFactory<ExtensionActionAPI> >
 ExtensionActionAPI::ExtensionActionAPI(Profile* profile) {
   ManifestHandler::Register(extension_manifest_keys::kBrowserAction,
                             make_linked_ptr(new BrowserActionHandler));
+  linked_ptr<PageActionHandler> page_action_handler(new PageActionHandler);
+  ManifestHandler::Register(
+      extension_manifest_keys::kPageAction, page_action_handler);
+  ManifestHandler::Register(
+      extension_manifest_keys::kPageActions, page_action_handler);
   ManifestHandler::Register(extension_manifest_keys::kScriptBadge,
                             make_linked_ptr(new ScriptBadgeHandler));
 

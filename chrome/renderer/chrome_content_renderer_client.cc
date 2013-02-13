@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
+#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -132,6 +133,12 @@ void RegisterExtensionManifestHandlers() {
   extensions::ManifestHandler::Register(
       extension_manifest_keys::kWebAccessibleResources,
       make_linked_ptr(new extensions::WebAccessibleResourcesHandler));
+  linked_ptr<extensions::PageActionHandler> page_action_handler(
+      new extensions::PageActionHandler);
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kPageAction, page_action_handler);
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kPageActions, page_action_handler);
 }
 
 static void AppendParams(const std::vector<string16>& additional_names,

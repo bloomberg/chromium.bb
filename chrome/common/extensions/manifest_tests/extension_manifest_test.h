@@ -5,8 +5,9 @@
 #ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_TESTS_EXTENSION_MANIFEST_TEST_H_
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_TESTS_EXTENSION_MANIFEST_TEST_H_
 
-#include "base/values.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/feature.h"
@@ -19,11 +20,6 @@ class ExtensionManifestTest : public testing::Test {
 
  protected:
   virtual void TearDown() OVERRIDE;
-
-  // If filename is a relative path, LoadManifestFile will treat it relative to
-  // the appropriate test directory.
-  static DictionaryValue* LoadManifestFile(const std::string& filename,
-                                           std::string* error);
 
   // Helper class that simplifies creating methods that take either a filename
   // to a manifest or the manifest itself.
@@ -46,13 +42,21 @@ class ExtensionManifestTest : public testing::Test {
 
     const std::string& name() const { return name_; };
 
-    DictionaryValue* GetManifest(std::string* error) const;
+    DictionaryValue* GetManifest(char const* test_data_dir,
+                                 std::string* error) const;
 
    private:
     const std::string name_;
     mutable DictionaryValue* manifest_;
     mutable scoped_ptr<DictionaryValue> manifest_holder_;
   };
+
+  // The subdirectory in which to find test data files.
+  virtual char const* test_data_dir();
+
+  scoped_ptr<DictionaryValue> LoadManifest(
+      char const* manifest_name,
+      std::string* error);
 
   scoped_refptr<extensions::Extension> LoadExtension(
       const Manifest& manifest,

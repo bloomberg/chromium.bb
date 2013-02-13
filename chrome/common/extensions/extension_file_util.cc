@@ -340,7 +340,8 @@ bool ValidateExtension(const Extension* extension,
     }
   }
 
-  const extensions::ActionInfo* action = extension->page_action_info();
+  const extensions::ActionInfo* action =
+      extensions::ActionInfo::GetPageActionInfo(extension);
   if (action && !action->default_icon.empty() &&
       !ValidateExtensionIconSet(action->default_icon, extension,
           IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED, error)) {

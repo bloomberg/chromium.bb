@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
+#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -32,8 +33,14 @@ class ExtensionFileUtilTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
     extensions::ManifestHandler::Register(
-        extension_manifest_keys::kBrowserAction,
+        keys::kBrowserAction,
         make_linked_ptr(new extensions::BrowserActionHandler));
+    linked_ptr<extensions::PageActionHandler> page_action_handler(
+        new extensions::PageActionHandler);
+    extensions::ManifestHandler::Register(keys::kPageAction,
+                                          page_action_handler);
+    extensions::ManifestHandler::Register(keys::kPageActions,
+                                          page_action_handler);
     extensions::ManifestHandler::Register(
         keys::kDefaultLocale,
         make_linked_ptr(new extensions::DefaultLocaleHandler));

@@ -21,8 +21,7 @@ TEST_F(ExtensionManifestTest, ValidApp) {
 
 TEST_F(ExtensionManifestTest, AllowUnrecognizedPermissions) {
   std::string error;
-  scoped_ptr<DictionaryValue> manifest(
-      LoadManifestFile("valid_app.json", &error));
+  scoped_ptr<DictionaryValue> manifest(LoadManifest("valid_app.json", &error));
   ListValue* permissions = NULL;
   ASSERT_TRUE(manifest->GetList("permissions", &permissions));
   permissions->Append(new StringValue("not-a-valid-permission"));

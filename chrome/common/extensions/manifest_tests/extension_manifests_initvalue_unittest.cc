@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -19,16 +20,22 @@
 #endif
 
 namespace errors = extension_manifest_errors;
+namespace keys = extension_manifest_keys;
 
 class InitValueManifestTest : public ExtensionManifestTest {
   virtual void SetUp() OVERRIDE {
     ExtensionManifestTest::SetUp();
     extensions::ManifestHandler::Register(
-        extension_manifest_keys::kOptionsPage,
+        keys::kOptionsPage,
         make_linked_ptr(new extensions::OptionsPageHandler));
     extensions::ManifestHandler::Register(
-        extension_manifest_keys::kDefaultLocale,
+        keys::kDefaultLocale,
         make_linked_ptr(new extensions::DefaultLocaleHandler));
+  linked_ptr<extensions::PageActionHandler> page_action_handler(
+      new extensions::PageActionHandler);
+  extensions::ManifestHandler::Register(keys::kPageAction, page_action_handler);
+  extensions::ManifestHandler::Register(
+      keys::kPageActions, page_action_handler);
   }
 };
 
