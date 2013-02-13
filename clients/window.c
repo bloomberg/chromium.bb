@@ -195,6 +195,9 @@ struct surface {
 	struct rectangle allocation;
 	struct rectangle server_allocation;
 
+	struct wl_region *input_region;
+	struct wl_region *opaque_region;
+
 	enum window_buffer_type buffer_type;
 	enum wl_output_transform buffer_transform;
 };
@@ -203,8 +206,6 @@ struct window {
 	struct display *display;
 	struct window *parent;
 	struct wl_list window_output_list;
-	struct wl_region *input_region;
-	struct wl_region *opaque_region;
 	char *title;
 	struct rectangle saved_allocation;
 	struct rectangle min_allocation;
@@ -1143,6 +1144,20 @@ display_get_pointer_image(struct display *display, int pointer)
 static void
 surface_attach_surface(struct surface *surface)
 {
+	if (surface->opaque_region) {
+		wl_surface_set_opaque_region(surface->surface,
+					     surface->opaque_region);
+		wl_region_destroy(surface->opaque_region);
+		surface->opaque_region = NULL;
+	}
+
+	if (surface->input_region) {
+		wl_surface_set_input_region(surface->surface,
+					    surface->input_region);
+		wl_region_destroy(surface->input_region);
+		surface->input_region = NULL;
+	}
+
 	surface->toysurface->swap(surface->toysurface,
 				  &surface->server_allocation);
 }
@@ -1156,20 +1171,6 @@ window_attach_surface(struct window *window)
 		window->type = TYPE_TOPLEVEL;
 		if (display->shell)
 			wl_shell_surface_set_toplevel(window->shell_surface);
-	}
-
-	if (window->opaque_region) {
-		wl_surface_set_opaque_region(window->main_surface->surface,
-					     window->opaque_region);
-		wl_region_destroy(window->opaque_region);
-		window->opaque_region = NULL;
-	}
-
-	if (window->input_region) {
-		wl_surface_set_input_region(window->main_surface->surface,
-					    window->input_region);
-		wl_region_destroy(window->input_region);
-		window->input_region = NULL;
 	}
 
 	surface_attach_surface(window->main_surface);
@@ -1284,6 +1285,12 @@ static void frame_destroy(struct frame *frame);
 static void
 surface_destroy(struct surface *surface)
 {
+	if (surface->input_region)
+		wl_region_destroy(surface->input_region);
+
+	if (surface->opaque_region)
+		wl_region_destroy(surface->opaque_region);
+
 	wl_surface_destroy(surface->surface);
 
 	if (surface->toysurface)
@@ -1317,11 +1324,6 @@ window_destroy(struct window *window)
 			      &window->window_output_list, link) {
 		free (window_output);
 	}
-
-	if (window->input_region)
-		wl_region_destroy(window->input_region);
-	if (window->opaque_region)
-		wl_region_destroy(window->opaque_region);
 
 	if (window->frame)
 		frame_destroy(window->frame);
@@ -1732,6 +1734,7 @@ frame_resize_handler(struct widget *widget,
 	struct widget *child = frame->child;
 	struct rectangle allocation;
 	struct display *display = widget->window->display;
+	struct surface *surface = widget->window->main_surface;
 	struct frame_button * button;
 	struct theme *t = display->theme;
 	int x_l, x_r, y, w, h;
@@ -1797,22 +1800,21 @@ frame_resize_handler(struct widget *widget,
 
 	shadow_margin = widget->window->type == TYPE_MAXIMIZED ? 0 : t->margin;
 
-	widget->window->input_region =
+	surface->input_region =
 		wl_compositor_create_region(display->compositor);
 	if (widget->window->type != TYPE_FULLSCREEN) {
-		wl_region_add(widget->window->input_region,
+		wl_region_add(surface->input_region,
 			      shadow_margin, shadow_margin,
 			      width - 2 * shadow_margin,
 			      height - 2 * shadow_margin);
 	} else {
-		wl_region_add(widget->window->input_region,
-			      0, 0, width, height);
+		wl_region_add(surface->input_region, 0, 0, width, height);
 	}
 
 	widget_set_allocation(widget, 0, 0, width, height);
 
 	if (child->opaque)
-		wl_region_add(widget->window->opaque_region,
+		wl_region_add(surface->opaque_region,
 			      opaque_margin, opaque_margin,
 			      widget->allocation.width - 2 * opaque_margin,
 			      widget->allocation.height - 2 * opaque_margin);
@@ -3173,38 +3175,20 @@ window_move(struct window *window, struct input *input, uint32_t serial)
 }
 
 static void
-surface_resize(struct surface *surface, struct widget *widget)
+surface_resize(struct surface *surface)
 {
-	if (surface->allocation.width != widget->allocation.width ||
-	    surface->allocation.height != widget->allocation.height) {
-		surface->allocation = widget->allocation;
-		window_schedule_redraw(surface->window);
-	}
-}
+	struct widget *widget = surface->widget;
+	struct wl_compositor *compositor = widget->window->display->compositor;
 
-static void
-idle_resize(struct window *window)
-{
-	struct widget *widget;
-	struct wl_compositor *compositor = window->display->compositor;
-
-	window->resize_needed = 0;
-	widget = window->main_surface->widget;
-	widget_set_allocation(widget,
-			      window->pending_allocation.x,
-			      window->pending_allocation.y,
-			      window->pending_allocation.width,
-			      window->pending_allocation.height);
-
-	if (window->input_region) {
-		wl_region_destroy(window->input_region);
-		window->input_region = NULL;
+	if (surface->input_region) {
+		wl_region_destroy(surface->input_region);
+		surface->input_region = NULL;
 	}
 
-	if (window->opaque_region)
-		wl_region_destroy(window->opaque_region);
+	if (surface->opaque_region)
+		wl_region_destroy(surface->opaque_region);
 
-	window->opaque_region = wl_compositor_create_region(compositor);
+	surface->opaque_region = wl_compositor_create_region(compositor);
 
 	if (widget->resize_handler)
 		widget->resize_handler(widget,
@@ -3212,12 +3196,30 @@ idle_resize(struct window *window)
 				       widget->allocation.height,
 				       widget->user_data);
 
-	surface_resize(window->main_surface, widget);
+	if (surface->allocation.width != widget->allocation.width ||
+	    surface->allocation.height != widget->allocation.height) {
+		surface->allocation = widget->allocation;
+		window_schedule_redraw(widget->window);
+	}
 
 	if (widget->opaque)
-		wl_region_add(window->opaque_region, 0, 0,
+		wl_region_add(surface->opaque_region, 0, 0,
 			      widget->allocation.width,
 			      widget->allocation.height);
+}
+
+static void
+idle_resize(struct window *window)
+{
+	window->resize_needed = 0;
+
+	widget_set_allocation(window->main_surface->widget,
+			      window->pending_allocation.x,
+			      window->pending_allocation.y,
+			      window->pending_allocation.width,
+			      window->pending_allocation.height);
+
+	surface_resize(window->main_surface);
 }
 
 void
@@ -3620,8 +3622,6 @@ window_create_internal(struct display *display,
 
 	window->transparent = 1;
 	window->type = type;
-	window->input_region = NULL;
-	window->opaque_region = NULL;
 	window->fullscreen_method = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 
 	if (display->argb_device)
