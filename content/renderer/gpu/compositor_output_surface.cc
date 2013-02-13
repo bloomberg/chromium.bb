@@ -149,10 +149,10 @@ namespace {
 
 void CompositorOutputSurface::UpdateSmoothnessTakesPriority(
     bool prefers_smoothness) {
-#if ENABLE_DCHECK
+#ifndef NDEBUG
   // If we use different compositor threads, we need to
   // use an atomic int to track prefer smoothness count.
-  static int g_last_thread = base::PlatformThread::CurrentId();
+  base::PlatformThreadId g_last_thread = base::PlatformThread::CurrentId();
   DCHECK_EQ(g_last_thread, base::PlatformThread::CurrentId());
 #endif
   if (prefers_smoothness_ == prefers_smoothness)

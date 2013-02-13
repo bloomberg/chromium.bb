@@ -231,6 +231,8 @@ private:
 
     scoped_ptr<ResourceProvider::ScopedWriteLockGL> m_currentFramebufferLock;
 
+    scoped_refptr<ResourceProvider::Fence> m_lastSwapFence;
+
     DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };
 

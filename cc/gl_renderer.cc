@@ -1324,11 +1324,6 @@ bool GLRenderer::swapBuffers()
     TRACE_EVENT0("cc", "GLRenderer::swapBuffers");
     // We're done! Time to swapbuffers!
 
-    scoped_refptr<ResourceProvider::Fence> lastSwapFence = m_resourceProvider->getReadLockFence();
-    if (lastSwapFence)
-        static_cast<SimpleSwapFence*>(lastSwapFence.get())->setHasPassed();
-    m_resourceProvider->setReadLockFence(new SimpleSwapFence());
-
     if (m_capabilities.usingPartialSwap) {
         // If supported, we can save significant bandwidth by only swapping the damaged/scissored region (clamped to the viewport)
         m_swapBufferRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
@@ -1341,6 +1336,14 @@ bool GLRenderer::swapBuffers()
     }
 
     m_swapBufferRect = gfx::Rect();
+
+    // We don't have real fences, so we mark read fences as passed
+    // assuming a double-buffered GPU pipeline. A texture can be
+    // written to after one full frame has past since it was last read.
+    if (m_lastSwapFence)
+        static_cast<SimpleSwapFence*>(m_lastSwapFence.get())->setHasPassed();
+    m_lastSwapFence = m_resourceProvider->getReadLockFence();
+    m_resourceProvider->setReadLockFence(new SimpleSwapFence());
 
     return true;
 }
