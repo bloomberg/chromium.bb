@@ -253,11 +253,6 @@ string16 AutofillDialogControllerImpl::UseBillingForShippingText() const {
       IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING);
 }
 
-string16 AutofillDialogControllerImpl::WalletOptionText() const {
-  // TODO(estade): real strings and l10n.
-  return string16(ASCIIToUTF16("I love lamp."));
-}
-
 string16 AutofillDialogControllerImpl::CancelButtonText() const {
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
@@ -855,8 +850,6 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
   for (size_t i = 0; i < cards.size(); ++i) {
     suggested_cc_.AddKeyedItem(cards[i]->guid(), cards[i]->Label());
   }
-  // TODO(estade): real strings and i18n.
-  suggested_cc_.AddKeyedItem("", ASCIIToUTF16("Enter new card"));
 
   const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
   const std::string app_locale = AutofillCountry::ApplicationLocale();
@@ -878,10 +871,18 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
     suggested_shipping_.AddKeyedItem(profiles[i]->guid(), profiles[i]->Label());
   }
 
-  // TODO(estade): real strings and i18n.
-  suggested_billing_.AddKeyedItem("", ASCIIToUTF16("Enter new billing"));
-  suggested_email_.AddKeyedItem("", ASCIIToUTF16("Enter new email"));
-  suggested_shipping_.AddKeyedItem("", ASCIIToUTF16("Enter new shipping"));
+  suggested_email_.AddKeyedItem(
+      std::string(),
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_EMAIL_ADDRESS));
+  suggested_cc_.AddKeyedItem(
+      std::string(),
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_CREDIT_CARD));
+  suggested_billing_.AddKeyedItem(
+      std::string(),
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_ADDRESS));
+  suggested_shipping_.AddKeyedItem(
+      std::string(),
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS));
 }
 
 bool AutofillDialogControllerImpl::IsCompleteProfile(

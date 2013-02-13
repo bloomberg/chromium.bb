@@ -11016,6 +11016,22 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_PROGRESS_BAR" desc="Label for Autocheckout progres bar.">
         Auto-Checkout...
       </message>
+      <!-- Menu items in the requestAutocomplete dialog. -->
+      <message name="IDS_AUTOFILL_DIALOG_ADD_EMAIL_ADDRESS" desc="Menu item for adding a new email address in the autofill dialog.">
+        Add email address...
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_CREDIT_CARD" desc="Menu item for adding a new credit card in the autofill dialog.">
+        Add credit card...
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_BILLING_ADDRESS" desc="Menu item for adding a new billing address in the autofill dialog.">
+        Add billing address...
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_BILLING_DETAILS" desc="Menu item for adding new billing details (credit card + address) in the autofill dialog.">
+        Add billing details...
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS" desc="Menu item for adding new shipping address in the autofill dialog.">
+        Add shipping address...
+      </message>
 
 
       <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">

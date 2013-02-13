@@ -70,7 +70,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 AccountChooserText() const OVERRIDE;
   virtual string16 EditSuggestionText() const OVERRIDE;
   virtual string16 UseBillingForShippingText() const OVERRIDE;
-  virtual string16 WalletOptionText() const OVERRIDE;
   virtual string16 CancelButtonText() const OVERRIDE;
   virtual string16 ConfirmButtonText() const OVERRIDE;
   virtual string16 SaveLocallyText() const OVERRIDE;

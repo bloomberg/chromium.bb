@@ -41,7 +41,6 @@ class AutofillDialogController {
   virtual string16 AccountChooserText() const = 0;
   virtual string16 EditSuggestionText() const = 0;
   virtual string16 UseBillingForShippingText() const = 0;
-  virtual string16 WalletOptionText() const = 0;
   virtual string16 CancelButtonText() const = 0;
   virtual string16 ConfirmButtonText() const = 0;
   virtual string16 CancelSignInText() const = 0;
