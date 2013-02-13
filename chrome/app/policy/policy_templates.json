@@ -4221,7 +4221,7 @@
           'example_value': 200,
           'id': 184,
           'caption': '''Percentage by which to scale the idle delay in presentation mode''',
-          'desc': '''Specifies the percentage by which the idle delay is scaled when the device is in presentation node.
+          'desc': '''Specifies the percentage by which the idle delay is scaled when the device is in presentation mode.
 
           If this policy is set, it specifies the percentage by which the idle delay is scaled when the device is in presentation mode. When the idle delay is scaled, the screen dimming, screen off and screen lock delays get adjusted to maintain the same distances from the idle delay as originally configured.
 
