@@ -136,7 +136,10 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Audio parameters utilized by the audio capturer. Can be utilized by
   // a local renderer to set up a renderer using identical parameters as the
   // capturer.
-  const media::AudioParameters& audio_parameter() const { return params_; }
+  // TODO(phoglund): This accessor is inherently unsafe since the returned
+  // parameters can become outdated at any time. Think over the implications
+  // of this accessor and if we can remove it.
+  media::AudioParameters audio_parameters() const;
 
   // AudioCapturerSource::CaptureCallback implementation.
   // Called on the AudioInputDevice audio thread.
@@ -165,12 +168,17 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   WebRtcAudioCapturer();
 
+  // Reconfigures the capturer with a new buffer size and capture parameters.
+  // Must be called without holding the lock. Returns true on success.
+  bool Reconfigure(int sample_rate, media::AudioParameters::Format format,
+                   media::ChannelLayout channel_layout);
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
   // Protects |source_|, |sinks_|, |running_|, |on_device_stopped_cb_|,
-  // |loopback_fifo_| and |buffering_|.
-  base::Lock lock_;
+  // |loopback_fifo_|, |params_| and |buffering_|.
+  mutable base::Lock lock_;
 
   // A list of sinks that the audio data is fed to.
   SinkList sinks_;
@@ -178,12 +186,10 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // The audio data source from the browser process.
   scoped_refptr<media::AudioCapturerSource> source_;
 
-  // Cached values of utilized audio parameters. Platform dependent.
-  media::AudioParameters params_;
-
   // Buffers used for temporary storage during capture callbacks.
   // Allocated during initialization.
-  scoped_array<int16> buffer_;
+  class ConfiguredBuffer;
+  scoped_refptr<ConfiguredBuffer> buffer_;
   std::string device_id_;
   bool running_;
 

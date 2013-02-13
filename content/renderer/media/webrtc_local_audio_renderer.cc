@@ -163,7 +163,7 @@ void WebRtcLocalAudioRenderer::Start() {
   // cases where resampling is needed on the output side.
   // TODO(henrika): verify this scheme on as many different devices and
   // combinations of sample rates as possible
-  media::AudioParameters source_params = source_->audio_parameter();
+  media::AudioParameters source_params = source_->audio_parameters();
   media::AudioParameters sink_params(source_params.format(),
                                      source_params.channel_layout(),
                                      source_params.sample_rate(),
