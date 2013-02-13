@@ -136,7 +136,8 @@ bool GLRenderer::initialize()
     if (extensions.count("GL_CHROMIUM_iosurface"))
         DCHECK(extensions.count("GL_ARB_texture_rectangle"));
 
-    m_capabilities.usingGpuMemoryManager = extensions.count("GL_CHROMIUM_gpu_memory_manager");
+    m_capabilities.usingGpuMemoryManager = extensions.count("GL_CHROMIUM_gpu_memory_manager")
+                                           && settings().useMemoryManagement;
     if (m_capabilities.usingGpuMemoryManager)
         m_context->setMemoryAllocationChangedCallbackCHROMIUM(this);
 
