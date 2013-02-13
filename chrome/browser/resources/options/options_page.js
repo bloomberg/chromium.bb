@@ -759,6 +759,10 @@ cr.define('options', function() {
      * strategy.
      */
     focus: function() {
+      // Do not change focus if any control on this page is already focused.
+      if (this.pageDiv.contains(document.activeElement))
+        return;
+
       var elements = this.pageDiv.querySelectorAll(
           'input, list, select, textarea, button');
       for (var i = 0; i < elements.length; i++) {
