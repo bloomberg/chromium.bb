@@ -14,29 +14,29 @@
 namespace nacl {
 
 SelLdrLauncherBase::SelLdrLauncherBase()
-  : channel_(kInvalidHandle),
+  : channel_(NACL_INVALID_HANDLE),
     bootstrap_socket_(NULL),
     secure_socket_addr_(NULL),
     socket_addr_(NULL) {
 }
 
 SelLdrLauncherBase::~SelLdrLauncherBase() {
-  if (kInvalidHandle != channel_) {
-    Close(channel_);
+  if (NACL_INVALID_HANDLE != channel_) {
+    NaClClose(channel_);
   }
 }
 
 bool SelLdrLauncherBase::ConnectBootstrapSocket() {
   CHECK(factory_ == NULL);
   factory_.reset(new DescWrapperFactory);
-  CHECK(channel_ != kInvalidHandle);
+  CHECK(channel_ != NACL_INVALID_HANDLE);
   bootstrap_socket_.reset(factory_->MakeImcSock(channel_));
   if (bootstrap_socket_ == NULL) {
     return false;
   }
   // bootstrap_socket_ now has ownership of channel_, so we get rid of
   // our "reference" to it.
-  channel_ = kInvalidHandle;
+  channel_ = NACL_INVALID_HANDLE;
 
   return true;
 }

@@ -32,7 +32,7 @@ namespace nacl {
 
 SelLdrLauncherStandalone::~SelLdrLauncherStandalone() {
   CloseHandlesAfterLaunch();
-  if (kInvalidHandle != child_process_) {
+  if (NACL_INVALID_HANDLE != child_process_) {
     int status;
     // Ensure child process (service runtime) is kaput.  NB: we might
     // close the command channel (or use the hard_shutdown RPC) rather
@@ -64,10 +64,11 @@ nacl::string SelLdrLauncherStandalone::GetSelLdrBootstrapPathName() {
 #endif
 }
 
-Handle SelLdrLauncherStandalone::CreateBootstrapSocket(nacl::string* dest_fd) {
-  Handle pair[2];
-  if (SocketPair(pair) == -1) {
-    return kInvalidHandle;
+NaClHandle SelLdrLauncherStandalone::CreateBootstrapSocket(
+    nacl::string* dest_fd) {
+  NaClHandle pair[2];
+  if (NaClSocketPair(pair) == -1) {
+    return NACL_INVALID_HANDLE;
   }
 
   int rc = fcntl(pair[0], F_SETFD, FD_CLOEXEC);
@@ -125,17 +126,17 @@ bool SelLdrLauncherStandalone::StartViaCommandLine(
 }
 
 bool SelLdrLauncherStandalone::KillChildProcess() {
-  if (kInvalidHandle == child_process_) {
-    // It is incorrect to use the kill syscall on kInvalidHandle as
-    // the pid, since using -1 as pid is defined by POSIX.1-2001 to
+  if (NACL_INVALID_HANDLE == child_process_) {
+    // It is incorrect to use the kill syscall on NACL_INVALID_HANDLE
+    // as the pid, since using -1 as pid is defined by POSIX.1-2001 to
     // send the signal (SIGKILL) to every process that the calling
     // process may send signals to (except for init), which is
     // Definitely Not What Was Intended for this.
     return true;
   }
   return 0 == kill(child_process_, SIGKILL);
-  // We cannot set child_process_ to kInvalidHandle since we will want to wait
-  // on its exit status.
+  // We cannot set child_process_ to NACL_INVALID_HANDLE since we will
+  // want to wait on its exit status.
 }
 
 }  // namespace nacl

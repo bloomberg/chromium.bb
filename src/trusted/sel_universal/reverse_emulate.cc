@@ -75,7 +75,7 @@ KeyToFileMap g_key_to_file;
 
 nacl::scoped_ptr_refcount<nacl::ReverseService> g_reverse_service;
 
-typedef std::map<nacl::Handle, nacl::SelLdrLauncherStandalone*>
+typedef std::map<NaClHandle, nacl::SelLdrLauncherStandalone*>
   HandleToLauncherMap;
 
 /*

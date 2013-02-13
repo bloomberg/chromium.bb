@@ -25,7 +25,7 @@ namespace nacl {
 
 SelLdrLauncherStandalone::~SelLdrLauncherStandalone() {
   CloseHandlesAfterLaunch();
-  if (kInvalidHandle != child_process_) {
+  if (NACL_INVALID_HANDLE != child_process_) {
     // Ensure child process (service runtime) is kaput.  NB: we might
     // close the command channel (or use the hard_shutdown RPC) rather
     // than killing the process to allow the service runtime to do
@@ -71,10 +71,11 @@ static nacl::string Escape(nacl::string s) {
   return result;
 }
 
-Handle SelLdrLauncherStandalone::CreateBootstrapSocket(nacl::string* dest_fd) {
-  Handle pair[2];
-  if (SocketPair(pair) == -1) {
-    return kInvalidHandle;
+NaClHandle SelLdrLauncherStandalone::CreateBootstrapSocket(
+    nacl::string* dest_fd) {
+  NaClHandle pair[2];
+  if (NaClSocketPair(pair) == -1) {
+    return NACL_INVALID_HANDLE;
   }
 
   // Transfer pair[1] to child_process_ by inheritance.
@@ -82,15 +83,15 @@ Handle SelLdrLauncherStandalone::CreateBootstrapSocket(nacl::string* dest_fd) {
   // set HANDLE_FLAG_INHERIT rather than duplicating the handle and
   // closing the original.  But for now, we do the same as in
   // LaunchFromCommandLine() below.
-  Handle channel;
+  NaClHandle channel;
   if (!DuplicateHandle(GetCurrentProcess(), pair[1],
                        GetCurrentProcess(), &channel,
                        0, TRUE, DUPLICATE_SAME_ACCESS)) {
-    Close(pair[0]);
-    Close(pair[1]);
-    return kInvalidHandle;
+    NaClClose(pair[0]);
+    NaClClose(pair[1]);
+    return NACL_INVALID_HANDLE;
   }
-  Close(pair[1]);
+  NaClClose(pair[1]);
   close_after_launch_.push_back(channel);
 
   *dest_fd = ToString(reinterpret_cast<uintptr_t>(channel));
@@ -137,7 +138,7 @@ bool SelLdrLauncherStandalone::StartViaCommandLine(
 }
 
 bool SelLdrLauncherStandalone::KillChildProcess() {
-  if (kInvalidHandle == child_process_)
+  if (NACL_INVALID_HANDLE == child_process_)
     return false;
   return 0 != TerminateProcess(child_process_, 9);
   // 9 is the exit code for the child_process_.  The value is actually not

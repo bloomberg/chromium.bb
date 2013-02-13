@@ -30,7 +30,7 @@ using std::vector;
 namespace nacl {
 
 SelLdrLauncherStandalone::SelLdrLauncherStandalone()
-  : child_process_(kInvalidHandle),
+  : child_process_(NACL_INVALID_HANDLE),
     sel_ldr_locator_(new PluginSelLdrLocator()) {
 }
 
@@ -127,7 +127,7 @@ void SelLdrLauncherStandalone::InitCommandLine(
 
 void SelLdrLauncherStandalone::CloseHandlesAfterLaunch() {
   for (size_t i = 0; i < close_after_launch_.size(); i++) {
-    Close(close_after_launch_[i]);
+    NaClClose(close_after_launch_[i]);
   }
   close_after_launch_.clear();
 }

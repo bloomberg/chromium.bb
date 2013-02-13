@@ -18,7 +18,6 @@
 #include <sstream>
 
 using std::stringstream;
-#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
@@ -69,7 +68,7 @@ bool HandlerSyncSocketCreate(NaClCommandLoop* ncl,
     return false;
   }
 
-  nacl::Handle handles[2] = {nacl::kInvalidHandle, nacl::kInvalidHandle};
+  NaClHandle handles[2] = {NACL_INVALID_HANDLE, NACL_INVALID_HANDLE};
   if (NaClSocketPair(handles) != 0) {
     return false;
   }

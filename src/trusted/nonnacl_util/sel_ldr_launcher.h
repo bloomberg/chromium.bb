@@ -16,7 +16,7 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
@@ -134,7 +134,7 @@ class SelLdrLauncherBase {
   nacl::string GetCrashLogOutput();
 
  protected:
-  Handle channel_;
+  NaClHandle channel_;
 
  private:
   // lifetime of bootstrap_socket_ must be at least that of factory_
@@ -165,13 +165,13 @@ class SelLdrLauncherStandalone : public SelLdrLauncherBase {
   // specifies the arguments to be passed to sel_ldr itself, while
   // |application_argv| specifies the arguments to be passed to the nexe.
   // If subprocess creation fails, returns false and both child_process_ and
-  // channel_ are set to kInvalidHandle.
+  // channel_ are set to NACL_INVALID_HANDLE.
   bool StartViaCommandLine(const std::vector<nacl::string>& prefix,
                            const std::vector<nacl::string>& sel_ldr_argv,
                            const std::vector<nacl::string>& application_argv);
 
   // Returns the child process handle.
-  Handle child_process() const { return child_process_; }
+  NaClHandle child_process() const { return child_process_; }
 
  private:
   // Builds a command line out of the prepopulated args.
@@ -187,8 +187,8 @@ class SelLdrLauncherStandalone : public SelLdrLauncherBase {
                        const std::vector<nacl::string>& app_argv);
 
   // Creates a socket pair.  Dups the first socket into the NaCl subprocess as
-  // dest_fd.  Returns the second socket or kInvalidHandle on failure.
-  Handle CreateBootstrapSocket(nacl::string* dest_fd);
+  // dest_fd.  Returns the second socket or NACL_INVALID_HANDLE on failure.
+  NaClHandle CreateBootstrapSocket(nacl::string* dest_fd);
 
   void GetPluginDirectory(char* buffer, size_t len);
   nacl::string GetSelLdrPathName();
@@ -201,7 +201,7 @@ class SelLdrLauncherStandalone : public SelLdrLauncherBase {
 
   // On Windows, child_process_ is a handle for the process.  On Unix,
   // child_process_ is a process ID.
-  Handle child_process_;
+  NaClHandle child_process_;
 
   // The following members are used to initialize and build the command line.
   // The detailed magic is in BuildCommandLine() but roughly we run
@@ -217,7 +217,7 @@ class SelLdrLauncherStandalone : public SelLdrLauncherBase {
   // arguments to the nexe
   std::vector<nacl::string> application_argv_;
 
-  std::vector<Handle> close_after_launch_;
+  std::vector<NaClHandle> close_after_launch_;
 
   scoped_ptr<SelLdrLocator> sel_ldr_locator_;
 };
