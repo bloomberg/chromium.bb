@@ -3827,7 +3827,9 @@ drm_intel_decode_context_alloc(uint32_t devid)
 	ctx->devid = devid;
 	ctx->out = stdout;
 
-	if (IS_GEN7(devid))
+	if (IS_GEN8(devid))
+		ctx->gen = 8;
+	else if (IS_GEN7(devid))
 		ctx->gen = 7;
 	else if (IS_GEN6(devid))
 		ctx->gen = 6;
