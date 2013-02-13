@@ -94,6 +94,7 @@ std::string Interpreter::Encode() {
 
   std::string out;
   base::JSONWriter::Write(root, true, &out);
+  delete root;
   return out;
 }
 

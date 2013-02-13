@@ -366,6 +366,7 @@ string ActivityLog::Encode() {
 
   string out;
   base::JSONWriter::Write(root, true, &out);
+  delete root;
   return out;
 }
 
