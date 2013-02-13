@@ -6,7 +6,7 @@
 #include <new>
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
-#include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -206,21 +206,6 @@ DescWrapper* DescWrapperFactory::MakeImcSock(NaClHandle handle) {
   }
 
   return MakeGenericCleanup(reinterpret_cast<struct NaClDesc*>(desc));
-}
-
-DescWrapper* DescWrapperFactory::MakeShm(size_t size) {
-  CHECK(common_data_->is_initialized());
-  // HACK: there's an inlining issue with this.
-  // size_t rounded_size = NaClRoundAllocPage(size);
-  size_t rounded_size =
-      (size + NACL_MAP_PAGESIZE - 1) &
-      ~static_cast<size_t>(NACL_MAP_PAGESIZE - 1);
-  // TODO(sehr): fix the inlining issue.
-  NaClHandle handle = CreateMemoryObject(rounded_size, /* executable= */ false);
-  if (kInvalidHandle == handle) {
-    return NULL;
-  }
-  return ImportShmHandle(handle, size);
 }
 
 DescWrapper* DescWrapperFactory::ImportShmHandle(NaClHandle handle,
@@ -509,7 +494,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
     header.iov[i].length = dgram->iov[i].length;
   }
   // Allocate and copy the descriptor vector, removing DescWrappers.
-  if (kHandleCountMax < dgram->ndescv_length) {
+  if (NACL_HANDLE_COUNT_MAX < dgram->ndescv_length) {
     goto cleanup;
   }
   if (NACL_ABI_SIZE_T_MAX / sizeof(header.ndescv[0]) <= ddescv_length) {
@@ -562,7 +547,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags,
     header.iov[i].length = dgram->iov[i].length;
   }
   // Allocate and copy the descriptor vector.
-  if (kHandleCountMax < dgram->ndescv_length) {
+  if (NACL_HANDLE_COUNT_MAX < dgram->ndescv_length) {
     goto cleanup;
   }
   if (NACL_ABI_SIZE_T_MAX / sizeof(header.ndescv[0]) <= ddescv_length) {

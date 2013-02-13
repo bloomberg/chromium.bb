@@ -27,8 +27,6 @@ class DescWrapperFactory {
   int MakeSocketPair(DescWrapper* pair[2]);
   // Create an IMC socket object.
   DescWrapper* MakeImcSock(NaClHandle handle);
-  // Create a shared memory object.
-  DescWrapper* MakeShm(size_t size);
   // Create a file descriptor object.
   DescWrapper* MakeFileDesc(int host_os_desc, int mode);
   // As with MakeFileDesc, but with quota management.
