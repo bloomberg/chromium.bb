@@ -1141,26 +1141,6 @@ display_get_pointer_image(struct display *display, int pointer)
 }
 
 static void
-window_get_resize_dx_dy(struct window *window, int *x, int *y)
-{
-	struct surface *surface = window->main_surface;
-
-	if (window->resize_edges & WINDOW_RESIZING_LEFT)
-		*x = surface->server_allocation.width -
-			surface->allocation.width;
-	else
-		*x = 0;
-
-	if (window->resize_edges & WINDOW_RESIZING_TOP)
-		*y = surface->server_allocation.height -
-			surface->allocation.height;
-	else
-		*y = 0;
-
-	window->resize_edges = 0;
-}
-
-static void
 surface_attach_surface(struct surface *surface)
 {
 	surface->toysurface->swap(surface->toysurface,
@@ -1259,8 +1239,10 @@ surface_create_surface(struct surface *surface, int dx, int dy, uint32_t flags)
 static void
 window_create_surface(struct window *window)
 {
+	struct surface *surface = window->main_surface;
 	uint32_t flags = 0;
-	int dx, dy;
+	int dx = 0;
+	int dy = 0;
 
 	if (!window->transparent)
 		flags |= SURFACE_OPAQUE;
@@ -1268,9 +1250,18 @@ window_create_surface(struct window *window)
 	if (window->resizing)
 		flags |= SURFACE_HINT_RESIZE;
 
-	window_get_resize_dx_dy(window, &dx, &dy);
-	window->cairo_surface =
-		surface_create_surface(window->main_surface, dx, dy, flags);
+	if (window->resize_edges & WINDOW_RESIZING_LEFT)
+		dx = surface->server_allocation.width -
+			surface->allocation.width;
+
+	if (window->resize_edges & WINDOW_RESIZING_TOP)
+		dy = surface->server_allocation.height -
+			surface->allocation.height;
+
+	window->resize_edges = 0;
+
+	window->cairo_surface = surface_create_surface(window->main_surface,
+						       dx, dy, flags);
 }
 
 int
