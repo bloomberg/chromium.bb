@@ -193,6 +193,10 @@ struct surface {
 	struct window *window;
 
 	struct wl_surface *surface;
+	struct toysurface *toysurface;
+
+	struct rectangle allocation;
+	struct rectangle server_allocation;
 };
 
 struct window {
@@ -202,7 +206,7 @@ struct window {
 	struct wl_region *input_region;
 	struct wl_region *opaque_region;
 	char *title;
-	struct rectangle allocation, saved_allocation, server_allocation;
+	struct rectangle saved_allocation;
 	struct rectangle min_allocation;
 	struct rectangle pending_allocation;
 	int x, y;
@@ -217,7 +221,6 @@ struct window {
 
 	enum window_buffer_type buffer_type;
 	enum wl_output_transform buffer_transform;
-	struct toysurface *toysurface;
 	cairo_surface_t *cairo_surface;
 
 	int resizing;
@@ -1143,18 +1146,28 @@ display_get_pointer_image(struct display *display, int pointer)
 static void
 window_get_resize_dx_dy(struct window *window, int *x, int *y)
 {
+	struct surface *surface = window->main_surface;
+
 	if (window->resize_edges & WINDOW_RESIZING_LEFT)
-		*x = window->server_allocation.width - window->allocation.width;
+		*x = surface->server_allocation.width -
+			surface->allocation.width;
 	else
 		*x = 0;
 
 	if (window->resize_edges & WINDOW_RESIZING_TOP)
-		*y = window->server_allocation.height -
-			window->allocation.height;
+		*y = surface->server_allocation.height -
+			surface->allocation.height;
 	else
 		*y = 0;
 
 	window->resize_edges = 0;
+}
+
+static void
+surface_attach_surface(struct surface *surface)
+{
+	surface->toysurface->swap(surface->toysurface,
+				  &surface->server_allocation);
 }
 
 static void
@@ -1182,8 +1195,7 @@ window_attach_surface(struct window *window)
 		window->input_region = NULL;
 	}
 
-	window->toysurface->swap(window->toysurface,
-				 &window->server_allocation);
+	surface_attach_surface(window->main_surface);
 }
 
 int
@@ -1212,7 +1224,8 @@ window_get_display(struct window *window)
 static void
 window_create_surface(struct window *window)
 {
-	struct rectangle allocation = window->allocation;
+	struct surface *surface = window->main_surface;
+	struct rectangle allocation = surface->allocation;
 	uint32_t flags = 0;
 	int dx, dy;
 
@@ -1224,27 +1237,27 @@ window_create_surface(struct window *window)
 	case WL_OUTPUT_TRANSFORM_270:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		allocation.width = window->allocation.height;
-		allocation.height = window->allocation.width;
+		allocation.width = surface->allocation.height;
+		allocation.height = surface->allocation.width;
 		break;
 	default:
 		break;
 	}
 
-	if (!window->toysurface &&
+	if (!surface->toysurface &&
 	    window->buffer_type == WINDOW_BUFFER_TYPE_EGL_WINDOW &&
 	    window->display->dpy) {
-		window->toysurface =
+		surface->toysurface =
 			egl_window_surface_create(window->display,
-						  window->main_surface->surface,
+						  surface->surface,
 						  flags,
 						  &allocation);
 	}
 
-	if (!window->toysurface)
-		window->toysurface = shm_surface_create(window->display,
-						window->main_surface->surface,
-						flags, &allocation);
+	if (!surface->toysurface)
+		surface->toysurface = shm_surface_create(window->display,
+							 surface->surface,
+							 flags, &allocation);
 
 	if (window->resizing)
 		flags = SURFACE_HINT_RESIZE;
@@ -1253,10 +1266,10 @@ window_create_surface(struct window *window)
 
 	window_get_resize_dx_dy(window, &dx, &dy);
 	window->cairo_surface =
-		window->toysurface->prepare(window->toysurface, dx, dy,
-					    allocation.width,
-					    allocation.height,
-					    flags);
+		surface->toysurface->prepare(surface->toysurface, dx, dy,
+					     allocation.width,
+					     allocation.height,
+					     flags);
 }
 
 int
@@ -1280,6 +1293,10 @@ static void
 surface_destroy(struct surface *surface)
 {
 	wl_surface_destroy(surface->surface);
+
+	if (surface->toysurface)
+		surface->toysurface->destroy(surface->toysurface);
+
 	free(surface);
 }
 
@@ -1324,9 +1341,6 @@ window_destroy(struct window *window)
 
 	wl_list_remove(&window->link);
 
-	if (window->toysurface)
-		window->toysurface->destroy(window->toysurface);
-
 	if (window->frame_cb)
 		wl_callback_destroy(window->frame_cb);
 	free(window->title);
@@ -1363,7 +1377,7 @@ widget_create(struct window *window, void *data)
 	memset(widget, 0, sizeof *widget);
 	widget->window = window;
 	widget->user_data = data;
-	widget->allocation = window->allocation;
+	widget->allocation = window->main_surface->allocation;
 	wl_list_init(&widget->child_list);
 	widget->opaque = 0;
 	widget->tooltip = NULL;
@@ -1538,8 +1552,8 @@ tooltip_redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
 	cairo_paint(cr);
 
-	width = window->allocation.width;
-	height = window->allocation.height;
+	width = window->main_surface->allocation.width;
+	height = window->main_surface->allocation.height;
 	rounded_rect(cr, 0, 0, width, height, r);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -3158,6 +3172,16 @@ window_move(struct window *window, struct input *input, uint32_t serial)
 }
 
 static void
+surface_resize(struct surface *surface, struct widget *widget)
+{
+	if (surface->allocation.width != widget->allocation.width ||
+	    surface->allocation.height != widget->allocation.height) {
+		surface->allocation = widget->allocation;
+		window_schedule_redraw(surface->window);
+	}
+}
+
+static void
 idle_resize(struct window *window)
 {
 	struct widget *widget;
@@ -3187,11 +3211,7 @@ idle_resize(struct window *window)
 				       widget->allocation.height,
 				       widget->user_data);
 
-	if (window->allocation.width != widget->allocation.width ||
-	    window->allocation.height != widget->allocation.height) {
-		window->allocation = widget->allocation;
-		window_schedule_redraw(window);
-	}
+	surface_resize(window->main_surface, widget);
 
 	if (widget->opaque)
 		wl_region_add(window->opaque_region, 0, 0,
@@ -3275,7 +3295,7 @@ void
 window_get_allocation(struct window *window,
 		      struct rectangle *allocation)
 {
-	*allocation = window->allocation;
+	*allocation = window->main_surface->allocation;
 }
 
 static void
@@ -3352,7 +3372,7 @@ window_set_fullscreen(struct window *window, int fullscreen)
 
 	if (fullscreen) {
 		window->type = TYPE_FULLSCREEN;
-		window->saved_allocation = window->allocation;
+		window->saved_allocation = window->main_surface->allocation;
 		wl_shell_surface_set_fullscreen(window->shell_surface,
 						window->fullscreen_method,
 						0, NULL);
@@ -3388,7 +3408,7 @@ window_set_maximized(struct window *window, int maximized)
 		return;
 
 	if (window->type == TYPE_TOPLEVEL) {
-		window->saved_allocation = window->allocation;
+		window->saved_allocation = window->main_surface->allocation;
 		wl_shell_surface_set_maximized(window->shell_surface, NULL);
 		window->type = TYPE_MAXIMIZED;
 	} else {
@@ -3592,11 +3612,7 @@ window_create_internal(struct display *display,
 			wl_shell_get_shell_surface(display->shell,
 				window->main_surface->surface);
 	}
-	window->allocation.x = 0;
-	window->allocation.y = 0;
-	window->allocation.width = 0;
-	window->allocation.height = 0;
-	window->saved_allocation = window->allocation;
+
 	window->transparent = 1;
 	window->type = type;
 	window->input_region = NULL;
@@ -3756,8 +3772,8 @@ menu_redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
 	cairo_paint(cr);
 
-	width = window->allocation.width;
-	height = window->allocation.height;
+	width = window->main_surface->allocation.width;
+	height = window->main_surface->allocation.height;
 	rounded_rect(cr, 0, 0, width, height, r);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -4481,20 +4497,24 @@ display_acquire_window_surface(struct display *display,
 			       struct window *window,
 			       EGLContext ctx)
 {
+	struct surface *surface = window->main_surface;
+
 	if (window->buffer_type != WINDOW_BUFFER_TYPE_EGL_WINDOW)
 		return -1;
 
-	return window->toysurface->acquire(window->toysurface, ctx);
+	return surface->toysurface->acquire(surface->toysurface, ctx);
 }
 
 void
 display_release_window_surface(struct display *display,
 			       struct window *window)
 {
+	struct surface *surface = window->main_surface;
+
 	if (window->buffer_type != WINDOW_BUFFER_TYPE_EGL_WINDOW)
 		return;
 
-	window->toysurface->release(window->toysurface);
+	surface->toysurface->release(surface->toysurface);
 }
 
 void
