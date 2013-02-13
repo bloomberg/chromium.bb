@@ -980,9 +980,11 @@ inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
 #define NOTIMPLEMENTED() LOG(ERROR) << NOTIMPLEMENTED_MSG
 #elif NOTIMPLEMENTED_POLICY == 5
 #define NOTIMPLEMENTED() do {\
-  static int count = 0;\
-  LOG_IF(ERROR, 0 == count++) << NOTIMPLEMENTED_MSG;\
-} while(0)
+  static bool logged_once = false;\
+  LOG_IF(ERROR, !logged_once) << NOTIMPLEMENTED_MSG;\
+  logged_once = true;\
+} while(0);\
+EAT_STREAM_PARAMETERS
 #endif
 
 #endif  // BASE_LOGGING_H_
