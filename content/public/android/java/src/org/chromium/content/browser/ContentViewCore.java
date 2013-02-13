@@ -1300,6 +1300,12 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
 
         if (mNeedUpdateOrientationChanged) {
+            // TODO(cjhopman): Once selection bounds are received from the renderer as absolute
+            // positions, we will no longer need to unselect before rotation (though we may decide
+            // it is the correct behavior).
+            // http://crbug.com/174665
+            mImeAdapter.unselect();
+
             sendOrientationChangeEvent();
             mNeedUpdateOrientationChanged = false;
         }
