@@ -1028,6 +1028,25 @@ class UprevStage(bs.BuilderStage):
       sys.exit(0)
 
 
+class SyncChromeStage(bs.BuilderStage):
+  """Stage that syncs Chrome sources if needed."""
+
+  def _PerformStage(self):
+    # Only sync Chrome if we'll definitely need the source.
+    if (self._chrome_rev != constants.CHROME_REV_LOCAL and
+        (self._chrome_rev or not self._build_config['usepkg_build_packages'])):
+      kwargs = {}
+      if self._chrome_rev == constants.CHROME_REV_SPEC:
+        kwargs['revision'] = self._options.chrome_version
+      else:
+        cpv = portage_utilities.BestVisible(constants.CHROME_CP,
+                                            buildroot=self._build_root)
+        kwargs['tag'] = cpv.version_no_rev.partition('_')[0]
+      useflags = self._build_config['useflags'] or []
+      commands.SyncChrome(self._build_root, self._options.cache_dir, useflags,
+                          **kwargs)
+
+
 class BuildTargetStage(BoardSpecificBuilderStage):
   """This stage builds Chromium OS for a target.
 

@@ -34,6 +34,7 @@ from chromite.lib import cgroups
 from chromite.lib import cleanup
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import gclient
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils
@@ -381,6 +382,7 @@ class SimpleBuilder(Builder):
     if self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
       self._RunStage(stages.UprevStage, boards=[], enter_chroot=False)
       self._RunStage(stages.BuildBoardStage, [constants.CHROOT_BUILDER_BOARD])
+      self._RunStage(stages.SyncChromeStage)
       self._RunStage(stages.SDKPackageStage)
       self._RunStage(stages.SDKTestStage)
       self._RunStage(stages.UploadPrebuiltsStage,
@@ -391,6 +393,7 @@ class SimpleBuilder(Builder):
     else:
       self._RunStage(stages.BuildBoardStage)
       self._RunStage(stages.UprevStage)
+      self._RunStage(stages.SyncChromeStage)
 
       configs = self.build_config['board_specific_configs']
       for board in self.build_config['boards']:
@@ -581,10 +584,6 @@ def _RunBuildStagesWrapper(options, build_config):
     if not options.buildbot:
       return False
     elif build_config['build_type'] in _DISTRIBUTED_TYPES:
-      chrome_rev = build_config['chrome_rev']
-      if options.chrome_rev:
-        chrome_rev = options.chrome_rev
-
       # We don't do distributed logic to TOT Chrome PFQ's, nor local
       # chrome roots (e.g. chrome try bots)
       if chrome_rev not in [constants.CHROME_REV_TOT,
@@ -596,6 +595,15 @@ def _RunBuildStagesWrapper(options, build_config):
 
   cros_build_lib.Info("cbuildbot executed with args %s"
                       % ' '.join(map(repr, sys.argv)))
+
+  chrome_rev = build_config['chrome_rev']
+  if options.chrome_rev:
+    chrome_rev = options.chrome_rev
+  if chrome_rev == constants.CHROME_REV_TOT:
+    # Build the TOT Chrome revision.
+    svn_url = gclient.GetBaseURLs()[0]
+    options.chrome_version = gclient.GetTipOfTrunkSvnRevision(svn_url)
+    options.chrome_rev = constants.CHROME_REV_SPEC
 
   target = DistributedBuilder if IsDistributedBuilder() else SimpleBuilder
   buildbot = target(options, build_config)
@@ -954,20 +962,18 @@ def _FinishParsing(options, args):
     if options.chrome_rev != constants.CHROME_REV_LOCAL:
       cros_build_lib.Die('Chrome rev must be %s if chrome_root is set.' %
                          constants.CHROME_REV_LOCAL)
-  else:
-    if options.chrome_rev == constants.CHROME_REV_LOCAL:
-      cros_build_lib.Die('Chrome root must be set if chrome_rev is %s.' %
-                         constants.CHROME_REV_LOCAL)
+  elif options.chrome_rev == constants.CHROME_REV_LOCAL:
+    cros_build_lib.Die('Chrome root must be set if chrome_rev is %s.' %
+                       constants.CHROME_REV_LOCAL)
 
   if options.chrome_version:
     if options.chrome_rev != constants.CHROME_REV_SPEC:
       cros_build_lib.Die('Chrome rev must be %s if chrome_version is set.' %
                          constants.CHROME_REV_SPEC)
-  else:
-    if options.chrome_rev == constants.CHROME_REV_SPEC:
-      cros_build_lib.Die(
-          'Chrome rev must not be %s if chrome_version is not set.'
-          % constants.CHROME_REV_SPEC)
+  elif options.chrome_rev == constants.CHROME_REV_SPEC:
+    cros_build_lib.Die(
+        'Chrome rev must not be %s if chrome_version is not set.'
+        % constants.CHROME_REV_SPEC)
 
   patches = bool(options.gerrit_patches or options.local_patches)
   if options.remote:

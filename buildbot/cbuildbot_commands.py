@@ -1426,3 +1426,28 @@ def GetChromeLKGM(svn_revision):
 
   svn_cmd = ['svn', 'cat', svn_url] + svn_revision_args
   return cros_build_lib.RunCommandCaptureOutput(svn_cmd).output.strip()
+
+
+def SyncChrome(build_root, cache_dir, useflags, tag=None, revision=None):
+  """Sync chrome.
+
+  Args:
+    build_root: The root of the chromium os checkout.
+    cache_dir: The directory where the cbuildbot cache is stored.
+    useflags: Array of use flags.
+    tag: If supplied, the Chrome tag to sync.
+    revision: If supplied, the Chrome revision to sync.
+  """
+  # --reset tells sync_chrome to blow away local changes and to feel
+  # free to delete any directories that get in the way of syncing. This
+  # is needed for unattended operation.
+  sync_chrome = os.path.join(build_root, 'chromite', 'bin', 'sync_chrome')
+  internal = constants.USE_CHROME_INTERNAL in useflags
+  cmd = [sync_chrome, '--reset']
+  cmd += ['--internal'] if internal else []
+  cmd += ['--pdf'] if constants.USE_CHROME_PDF in useflags else []
+  cmd += ['--tag', tag] if tag is not None else []
+  cmd += ['--revision', revision] if revision is not None else []
+  chrome_src = 'chrome-src-internal' if internal else 'chrome-src'
+  cmd += [os.path.join(cache_dir, 'distfiles', 'target', chrome_src)]
+  cros_build_lib.RunCommand(cmd, cwd=build_root)

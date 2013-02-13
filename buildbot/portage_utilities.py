@@ -857,3 +857,22 @@ def ListInstalledPackages(sysroot):
     if package == packagecheck and pv is not None:
       packages.append(('%s/%s' % (category, pv.package), pv.version))
   return packages
+
+
+def BestVisible(atom, board=None, buildroot=constants.SOURCE_ROOT):
+  """Get the best visible ebuild CPV for the given atom.
+
+  Args:
+    atom: Portage atom.
+    board: Board to look at. By default, look in chroot.
+    root: Directory
+
+  Returns:
+    A CPV object.
+  """
+  portageq = 'portageq' if board is None else 'portageq-%s' % board
+  root = '/' if board is None else '/build/%s' % board
+  cmd = [portageq, 'best_visible', root, 'ebuild', atom]
+  result = cros_build_lib.RunCommandCaptureOutput(
+      cmd, cwd=buildroot, enter_chroot=True, debug_level=logging.DEBUG)
+  return SplitCPV(result.output.strip())
