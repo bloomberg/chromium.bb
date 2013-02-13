@@ -1182,23 +1182,35 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(
 
 void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   int tab_id;
+  int frame_id;
   views::Widget* widget = GetWidget();
   if (widget && widget->GetTopLevelWidget()->ShouldUseNativeFrame()) {
     tab_id = IDR_THEME_TAB_BACKGROUND_V;
+    frame_id = 0;
   } else if (data().incognito) {
     tab_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
+    frame_id = IDR_THEME_FRAME_INCOGNITO;
 #if defined(OS_WIN)
   } else if (win8::IsSingleWindowMetroMode()) {
     tab_id = IDR_THEME_TAB_BACKGROUND_V;
+    frame_id = 0;
 #endif
   } else {
     tab_id = IDR_THEME_TAB_BACKGROUND;
+    frame_id = IDR_THEME_FRAME;
   }
   // Explicitly map the id so we cache correctly.
   const chrome::HostDesktopType host_desktop_type = GetHostDesktopType(this);
   tab_id = chrome::MapThemeImage(host_desktop_type, tab_id);
 
-  const bool can_cache = !GetThemeProvider()->HasCustomImage(tab_id) &&
+  // HasCustomImage() is only true if the theme provides the image. However,
+  // even if the theme does not provide a tab background, the theme machinery
+  // will make one if given a frame image.
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const bool theme_provided_image = theme_provider->HasCustomImage(tab_id) ||
+      (frame_id != 0 && theme_provider->HasCustomImage(frame_id));
+
+  const bool can_cache = !theme_provided_image &&
       !hover_controller_.ShouldDraw();
 
   if (can_cache) {
