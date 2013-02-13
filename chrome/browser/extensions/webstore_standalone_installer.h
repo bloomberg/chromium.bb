@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -26,7 +27,7 @@ class URLFetcher;
 
 namespace extensions {
 class Extension;
-class SafeWebstoreResponseParser;
+class WebstoreDataFetcher;
 
 // Manages inline installs requested by a page (downloads and parses metadata
 // from the webstore, shows the install UI, starts the download once the user
@@ -38,7 +39,7 @@ class WebstoreStandaloneInstaller
     : public base::RefCountedThreadSafe<WebstoreStandaloneInstaller>,
       public ExtensionInstallPrompt::Delegate,
       public content::WebContentsObserver,
-      public net::URLFetcherDelegate,
+      public WebstoreDataFetcherDelegate,
       public WebstoreInstaller::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
@@ -71,7 +72,6 @@ class WebstoreStandaloneInstaller
 
  private:
   friend class base::RefCountedThreadSafe<WebstoreStandaloneInstaller>;
-  friend class SafeWebstoreResponseParser;
   FRIEND_TEST_ALL_PREFIXES(WebstoreStandaloneInstallerTest, DomainVerification);
 
   virtual ~WebstoreStandaloneInstaller();
@@ -89,12 +89,12 @@ class WebstoreStandaloneInstaller
   // All flows (whether successful or not) end up in CompleteInstall, which
   // informs our delegate of success/failure.
 
-  // net::URLFetcherDelegate interface implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
-  // Client callbacks for SafeWebstoreResponseParser when parsing is complete.
-  void OnWebstoreResponseParseSuccess(DictionaryValue* webstore_data);
-  void OnWebstoreResponseParseFailure(const std::string& error);
+  // WebstoreDataFetcherDelegate interface implementation.
+  virtual void OnWebstoreRequestFailure() OVERRIDE;
+  virtual void OnWebstoreResponseParseSuccess(
+      base::DictionaryValue* webstore_data) OVERRIDE;
+  virtual void OnWebstoreResponseParseFailure(
+      const std::string& error) OVERRIDE;
 
   // WebstoreInstallHelper::Delegate interface implementation.
   virtual void OnWebstoreParseSuccess(
@@ -137,7 +137,7 @@ class WebstoreStandaloneInstaller
   bool skip_post_install_ui_;
 
   // For fetching webstore JSON data.
-  scoped_ptr<net::URLFetcher> webstore_data_url_fetcher_;
+  scoped_ptr<WebstoreDataFetcher> webstore_data_fetcher_;
 
   // Extracted from the webstore JSON data response.
   std::string localized_name_;
