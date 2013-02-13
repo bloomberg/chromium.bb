@@ -193,6 +193,7 @@ void MessageService::OpenChannelToNativeApp(
   if (!source)
     return;
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   WebContents* source_contents = tab_util::GetWebContentsByID(
       source_process_id, source_routing_id);
 
@@ -217,6 +218,9 @@ void MessageService::OpenChannelToNativeApp(
   // Abandon the channel
   if (!native_process.get()) {
     LOG(ERROR) << "Failed to create native process.";
+    // Treat it as a disconnect.
+    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, "");
+    port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id), true);
     return;
   }
   channel->receiver.reset(new NativeMessagePort(native_process.release()));
@@ -225,6 +229,10 @@ void MessageService::OpenChannelToNativeApp(
   channel->opener->IncrementLazyKeepaliveCount();
 
   AddChannel(channel.release(), receiver_port_id);
+#else  // !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))
+  ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, "");
+  port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id), true);
+#endif  // !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))
 }
 
 void MessageService::OpenChannelToTab(
