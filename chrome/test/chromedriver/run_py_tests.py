@@ -122,6 +122,10 @@ class ChromeDriverTest(unittest.TestCase):
     self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
     self._driver.SwitchToFrameByIndex(0)
     self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
+    self._driver.SwitchToMainFrame()
+    self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
+    self._driver.SwitchToFrame(self._driver.FindElement('tag name', 'iframe'))
+    self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
 
   def testExecuteInRemovedFrame(self):
     self._driver.ExecuteScript(
