@@ -17,6 +17,7 @@ import time
 
 from pylib import android_commands, forwarder
 from pylib.utils import run_tests_helper
+from pylib.valgrind_tools import CreateTool
 
 
 def main(argv):
@@ -53,9 +54,10 @@ def main(argv):
     sys.exit(1)
 
   adb = android_commands.AndroidCommands(options.device)
+  tool = CreateTool(None, adb)
   forwarder_instance = forwarder.Forwarder(adb, options.build_type)
   try:
-    forwarder_instance.Run(port_pairs, None, options.host)
+    forwarder_instance.Run(port_pairs, tool, options.host)
     while True:
       time.sleep(60)
   except KeyboardInterrupt:
