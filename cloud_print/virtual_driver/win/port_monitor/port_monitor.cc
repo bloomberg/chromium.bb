@@ -42,6 +42,7 @@ const wchar_t kCloudPrintRegKey[] = L"Software\\Google\\CloudPrint";
 
 const wchar_t kXpsMimeType[] = L"application/vnd.ms-xpsdocument";
 
+const wchar_t kAppDataDir[] = L"Google\\Cloud Printer";
 
 struct MonitorData {
   scoped_ptr<base::AtExitManager> at_exit_manager;
@@ -102,6 +103,29 @@ MONITOR2 g_monitor_2 = {
   Monitor2XcvClosePort,
   Monitor2Shutdown
 };
+
+FilePath GetAppDataDir() {
+  FilePath file_path;
+  if (!PathService::Get(base::DIR_LOCAL_APP_DATA_LOW, &file_path)) {
+    LOG(ERROR) << "Can't get DIR_LOCAL_APP_DATA_LOW";
+    return FilePath();
+  }
+  return file_path.Append(kAppDataDir);
+}
+
+// Delete files which where not deleted by chrome.
+void DeleteLeakedFiles(const FilePath& dir) {
+  using file_util::FileEnumerator;
+  base::Time delete_before = base::Time::Now() - base::TimeDelta::FromDays(1);
+  FileEnumerator enumerator(dir, false, FileEnumerator::FILES);
+  for (FilePath file_path = enumerator.Next(); !file_path.empty();
+       file_path = enumerator.Next()) {
+    FileEnumerator::FindInfo info;
+    enumerator.GetFindInfo(&info);
+    if (FileEnumerator::GetLastModifiedTime(info) < delete_before)
+      file_util::Delete(file_path, false);
+  }
+}
 
 // Attempts to retrieve the title of the specified print job.
 // On success returns TRUE and the first title_chars characters of the job title
@@ -414,17 +438,15 @@ BOOL WINAPI Monitor2StartDocPort(HANDLE port_handle,
     port_data->printer_handle = NULL;
   }
   FilePath& file_path = port_data->file_path;
-  if (!PathService::Get(base::DIR_LOCAL_APP_DATA_LOW, &file_path)) {
-    LOG(ERROR) << "Can't get DIR_LOCAL_APP_DATA_LOW";
+  FilePath app_data_dir = GetAppDataDir();
+  if (app_data_dir.empty())
+    return FALSE;
+  DeleteLeakedFiles(app_data_dir);
+  if (!file_util::CreateDirectory(app_data_dir) ||
+      !file_util::CreateTemporaryFileInDir(app_data_dir, &file_path)) {
+    LOG(ERROR) << "Can't create temporary file in " << app_data_dir.value();
     return FALSE;
   }
-  file_path = file_path.Append(L"Google\\Cloud Print");
-  if (!file_util::CreateDirectory(file_path) ||
-      !file_util::CreateTemporaryFileInDir(file_path, &file_path)) {
-    LOG(ERROR) << "Can't get create temporary file in " << file_path.value();
-    return FALSE;
-  }
-  file_path = file_path.AddExtension(L"xps");
   port_data->file = file_util::OpenFile(file_path, "wb+");
   if (port_data->file == NULL) {
     LOG(ERROR) << "Error opening file " << file_path.value() << ".";
