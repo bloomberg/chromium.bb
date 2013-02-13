@@ -291,7 +291,7 @@ bool NetworkingPrivateStartDisconnectFunction::RunImpl() {
   // TODO(gspencer): Currently the |network_guid| parameter is storing the
   // service path.  Convert to using the actual GUID when we start using
   // the NetworkStateHandler.
-  DBusThreadManager::Get()->GetShillServiceClient()->Connect(
+  DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
       dbus::ObjectPath(params->network_guid),
       base::Bind(
           &NetworkingPrivateStartDisconnectFunction::DisconnectionStartSuccess,

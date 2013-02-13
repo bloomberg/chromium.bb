@@ -679,12 +679,13 @@ void NetworkLibraryImplStub::SetCellularDataRoamingAllowed(bool new_value) {}
 void NetworkLibraryImplStub::SetCarrier(
     const std::string& carrier,
     const NetworkOperationCallback& completed) {
-  // Call the completed callback with a 10s delay.
+  // Call the completed callback with a 10s delay if we're interactive.
+  int delay_ms = IsInteractive() ? 10000 : 100;
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(completed, "", NETWORK_METHOD_ERROR_NONE,""),
-      base::TimeDelta::FromMilliseconds(10000));
+      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 void NetworkLibraryImplStub::ResetModem() {
@@ -696,13 +697,13 @@ bool NetworkLibraryImplStub::IsCellularAlwaysInRoaming() {
 
 void NetworkLibraryImplStub::RequestNetworkScan() {
   // This is triggered by user interaction, so set a network connect delay.
-  const int kScanDelayMs = 2 * 1000;
+  int scan_delay_ms = IsInteractive() ? 2 * 1000 : 100;
   wifi_scanning_ = true;
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NetworkLibraryImplStub::ScanCompleted,
                  weak_pointer_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kScanDelayMs));
+      base::TimeDelta::FromMilliseconds(scan_delay_ms));
 }
 
 void NetworkLibraryImplStub::RefreshIPConfig(Network* network) {

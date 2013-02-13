@@ -35,6 +35,7 @@ class NetworkingPrivateEventRouter : public ProfileKeyedService,
 
   // NetworkStateHandlerObserver overrides:
   virtual void NetworkListChanged() OVERRIDE;
+  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
 
  private:
   // Decide if we should listen for network changes or not. If there are any

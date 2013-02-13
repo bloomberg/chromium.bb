@@ -19,10 +19,52 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, "epcifkihnkjgphfkloaaleeakhpmgdmn");
  }
+
+  bool RunNetworkingSubtest(const std::string& subtest) {
+    return RunExtensionSubtest(
+        "networking", "main.html?" + subtest,
+        kFlagEnableFileAccess | kFlagLoadAsComponent);
+  }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, BasicFunctions) {
-  ASSERT_TRUE(RunComponentExtensionTest("networking")) << message_;
+// Place each subtest into a separate browser test so that the stub networking
+// library state is reset for each subtest run. This way they won't affect each
+// other.
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, StartConnect) {
+  EXPECT_TRUE(RunNetworkingSubtest("startConnect")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, StartDisconnect) {
+  EXPECT_TRUE(RunNetworkingSubtest("startDisconnect")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       StartConnectNonexistent) {
+  EXPECT_TRUE(RunNetworkingSubtest("startConnectNonexistent")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetVisibleNetworks) {
+  EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworks")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       GetVisibleNetworksWifi) {
+  EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworksWifi")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetProperties) {
+  EXPECT_TRUE(RunNetworkingSubtest("getProperties")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       OnNetworksChangedEvent) {
+  EXPECT_TRUE(RunNetworkingSubtest("onNetworksChangedEvent")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
+                       OnNetworkListChangedEvent) {
+  EXPECT_TRUE(RunNetworkingSubtest("onNetworkListChangedEvent")) << message_;
 }
 
 }  // namespace chromeos

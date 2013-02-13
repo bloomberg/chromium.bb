@@ -102,14 +102,26 @@
     ],
     "events": [
       {
-        "name": "onNetworkChanged",
+        "name": "onNetworksChanged",
         "type": "function",
-        "description": "Fired when the properties change on any of the networks.  Only contains the networks that changed, but each item contains all the properties for the changed network.",
+        "description": "Fired when the properties change on any of the networks.  Sends a list of identifiers for networks whose properties have changed.",
         "parameters": [
           {
             "name": "changes",
             "type": "array",
-            "items": { "$ref": "NetworkProperties" }
+            "items": { "type": "string" }
+          }
+        ]
+      },
+      {
+        "name": "onNetworkListChanged",
+        "type": "function",
+        "description": "Fired when the list of networks has changed.  Sends a complete list of identifiers for all the current networks.",
+        "parameters": [
+          {
+            "name": "changes",
+            "type": "array",
+            "items": { "type": "string" }
           }
         ]
       }

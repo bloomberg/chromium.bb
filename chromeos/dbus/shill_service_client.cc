@@ -9,6 +9,8 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -246,6 +248,18 @@ class ShillServiceClientStubImpl : public ShillServiceClient,
             service_path.value(), &dict)) {
       error_callback.Run("StubError", "Service not found");
       return;
+    }
+    if (name == flimflam::kStateProperty) {
+      // If we connect to a service, then we move it to the top of the list in
+      // the manager client.
+      std::string state;
+      if (value.GetAsString(&state) && state == flimflam::kStateOnline) {
+        ShillManagerClient* manager_client =
+            DBusThreadManager::Get()->GetShillManagerClient();
+        manager_client->GetTestInterface()->RemoveService(service_path.value());
+        manager_client->GetTestInterface()->AddServiceAtIndex(
+            service_path.value(), 0, true);
+      }
     }
     dict->SetWithoutPathExpansion(name, value.DeepCopy());
     MessageLoop::current()->PostTask(

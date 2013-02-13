@@ -21,6 +21,9 @@
 #include "chromeos/network/onc/onc_translator.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using extensions::event_names::kOnNetworkListChanged;
+using extensions::event_names::kOnNetworksChanged;
+using extensions::EventRouter;
 using extensions::ExtensionSystem;
 namespace api = extensions::api::networking_private;
 
@@ -62,11 +65,12 @@ NetworkingPrivateEventRouter::NetworkingPrivateEventRouter(Profile* profile)
   // our events. We first check and see if there *is* an event router, because
   // some unit tests try to create all profile services, but don't initialize
   // the event router first.
-  extensions::EventRouter* event_router =
-      ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   if (event_router) {
     event_router->RegisterObserver(
-        this, extensions::event_names::kOnNetworkChanged);
+        this, extensions::event_names::kOnNetworksChanged);
+    event_router->RegisterObserver(
+        this, extensions::event_names::kOnNetworkListChanged);
     StartOrStopListeningForNetworkChanges();
   }
 }
@@ -78,8 +82,7 @@ void NetworkingPrivateEventRouter::Shutdown() {
   // Unregister with the event router. We first check and see if there *is* an
   // event router, because some unit tests try to shutdown all profile services,
   // but didn't initialize the event router first.
-  extensions::EventRouter* event_router =
-      ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   if (event_router)
     event_router->UnregisterObserver(this);
 
@@ -102,8 +105,9 @@ void NetworkingPrivateEventRouter::OnListenerRemoved(
 }
 
 void NetworkingPrivateEventRouter::StartOrStopListeningForNetworkChanges() {
-  bool should_listen = ExtensionSystem::Get(profile_)->event_router()->
-      HasEventListener(extensions::event_names::kOnNetworkChanged);
+  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  bool should_listen = event_router->HasEventListener(kOnNetworksChanged) ||
+      event_router->HasEventListener(kOnNetworkListChanged);
 
   if (should_listen) {
     if (!listening_)
@@ -116,30 +120,38 @@ void NetworkingPrivateEventRouter::StartOrStopListeningForNetworkChanges() {
 }
 
 void NetworkingPrivateEventRouter::NetworkListChanged() {
+  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   NetworkStateList networks;
   NetworkStateHandler::Get()->GetNetworkList(&networks);
-  std::vector<linked_ptr<api::NetworkProperties> > changes;
+  if (!event_router->HasEventListener(kOnNetworkListChanged))
+    return;
+
+  std::vector<std::string> changes;
   for (NetworkStateList::const_iterator iter = networks.begin();
       iter != networks.end(); ++iter) {
-    api::NetworkProperties* network_properties = new api::NetworkProperties;
-    network_properties->additional_properties.SetString(
-        onc::network_config::kName, (*iter)->name());
-    network_properties->additional_properties.SetString(
-        onc::network_config::kGUID, (*iter)->path());
-    network_properties->additional_properties.SetString(
-        onc::network_config::kType,
-        GetConnectionType((*iter)->type()));
-    network_properties->additional_properties.SetString(
-        onc::network_config::kConnectionState,
-        GetConnectionState(*iter));
-    changes.push_back(make_linked_ptr(network_properties));
+    // TODO(gspencer): Currently the "GUID" is actually the service path. Fix
+    // this to be the real GUID once we're using
+    // ManagedNetworkConfigurationManager.
+    changes.push_back((*iter)->path());
   }
 
-  scoped_ptr<base::ListValue> args(api::OnNetworkChanged::Create(changes));
+  scoped_ptr<base::ListValue> args(api::OnNetworkListChanged::Create(changes));
   scoped_ptr<extensions::Event> extension_event(new extensions::Event(
-      extensions::event_names::kOnNetworkChanged, args.Pass()));
-  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
-      extension_event.Pass());
+      kOnNetworkListChanged, args.Pass()));
+  event_router->BroadcastEvent(extension_event.Pass());
+}
+
+void NetworkingPrivateEventRouter::NetworkPropertiesUpdated(
+    const NetworkState* network) {
+  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  if (!event_router->HasEventListener(kOnNetworksChanged))
+    return;
+
+  scoped_ptr<base::ListValue> args(api::OnNetworksChanged::Create(
+      std::vector<std::string>(1, network->path())));
+  scoped_ptr<extensions::Event> extension_event(
+      new extensions::Event(kOnNetworksChanged, args.Pass()));
+  event_router->BroadcastEvent(extension_event.Pass());
 }
 
 }  // namespace chromeos
