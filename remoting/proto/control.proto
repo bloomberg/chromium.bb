@@ -10,10 +10,19 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting.protocol;
 
-message ClientDimensions {
-  // Width and height of the client.
-  optional int32 width = 1;
-  optional int32 height = 2;
+message ClientResolution {
+  // Legacy width and height of the client in Density-Independent Pixels
+  optional int32 dips_width = 1;
+  optional int32 dips_height = 2;
+
+  // Width and height of the client in device pixels.
+  optional int32 width = 3;
+  optional int32 height = 4;
+
+  // Horizontal and vertical DPI of the screen. If either of these is zero or
+  // unset, the corresponding DPI should be assumed to be 96 (Windows' default)
+  optional int32 x_dpi = 5;
+  optional int32 y_dpi = 6;
 }
 
 message VideoControl {

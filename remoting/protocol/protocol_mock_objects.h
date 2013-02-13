@@ -102,8 +102,8 @@ class MockHostStub : public HostStub {
   MockHostStub();
   virtual ~MockHostStub();
 
-  MOCK_METHOD1(NotifyClientDimensions,
-               void(const ClientDimensions& dimensions));
+  MOCK_METHOD1(NotifyClientResolution,
+               void(const ClientResolution& resolution));
   MOCK_METHOD1(ControlVideo,
                void(const VideoControl& video_control));
   MOCK_METHOD1(ControlAudio,

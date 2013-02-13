@@ -74,7 +74,8 @@ class ResizingHostObserverTest : public testing::Test {
   }
 
   SkISize GetBestSize(const SkISize& client_size) {
-    resizing_host_observer_->OnClientDimensionsChanged("", client_size);
+    resizing_host_observer_->OnClientResolutionChanged(
+        "", client_size, SkIPoint());
     return desktop_resizer_->GetCurrentSize();
   }
 

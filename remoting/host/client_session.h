@@ -78,10 +78,11 @@ class ClientSession
         const std::string& channel_name,
         const protocol::TransportRoute& route) = 0;
 
-    // Called when the initial client dimensions are received, and when they
-    // change.
-    virtual void OnClientDimensionsChanged(ClientSession* client,
-                                           const SkISize& size) = 0;
+    // Called when the initial client resolution is received, and when it
+    // changes.
+    virtual void OnClientResolutionChanged(ClientSession* client,
+                                           const SkISize& size,
+                                           const SkIPoint& dpi) = 0;
 
    protected:
     virtual ~EventHandler() {}
@@ -102,8 +103,8 @@ class ClientSession
       const base::TimeDelta& max_duration);
 
   // protocol::HostStub interface.
-  virtual void NotifyClientDimensions(
-      const protocol::ClientDimensions& dimensions) OVERRIDE;
+  virtual void NotifyClientResolution(
+      const protocol::ClientResolution& resolution) OVERRIDE;
   virtual void ControlVideo(
       const protocol::VideoControl& video_control) OVERRIDE;
   virtual void ControlAudio(

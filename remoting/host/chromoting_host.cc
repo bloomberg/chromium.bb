@@ -266,11 +266,13 @@ void ChromotingHost::OnSessionRouteChange(
                                         route));
 }
 
-void ChromotingHost::OnClientDimensionsChanged(ClientSession* session,
-                                               const SkISize& size) {
+void ChromotingHost::OnClientResolutionChanged(ClientSession* session,
+                                               const SkISize& size,
+                                               const SkIPoint& dpi) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientDimensionsChanged(session->client_jid(), size));
+                    OnClientResolutionChanged(session->client_jid(),
+                                              size, dpi));
 }
 
 void ChromotingHost::OnSessionManagerReady() {

@@ -54,8 +54,8 @@ void HostControlDispatcher::OnMessageReceived(
 
   if (message->has_clipboard_event()) {
     clipboard_stub_->InjectClipboardEvent(message->clipboard_event());
-  } else if (message->has_client_dimensions()) {
-    host_stub_->NotifyClientDimensions(message->client_dimensions());
+  } else if (message->has_client_resolution()) {
+    host_stub_->NotifyClientResolution(message->client_resolution());
   } else if (message->has_video_control()) {
     host_stub_->ControlVideo(message->video_control());
   } else if (message->has_audio_control()) {

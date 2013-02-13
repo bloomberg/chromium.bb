@@ -29,8 +29,9 @@ class ResizingHostObserver : public HostStatusObserver {
   // HostStatusObserver interface
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-  virtual void OnClientDimensionsChanged(const std::string& jid,
-                                         const SkISize& size) OVERRIDE;
+  virtual void OnClientResolutionChanged(const std::string& jid,
+                                         const SkISize& size,
+                                         const SkIPoint& dpi) OVERRIDE;
 
  private:
   DesktopResizer* const desktop_resizer_;

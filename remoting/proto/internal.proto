@@ -17,7 +17,7 @@ package remoting.protocol;
 // Represents a message being sent on the control channel.
 message ControlMessage {
   optional ClipboardEvent clipboard_event = 1;
-  optional ClientDimensions client_dimensions = 2;
+  optional ClientResolution client_resolution = 2;
   optional CursorShapeInfo cursor_shape = 4;
   optional VideoControl video_control = 3;
   optional AudioControl audio_control = 5;

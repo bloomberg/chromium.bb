@@ -54,6 +54,10 @@ namespace {
 // 32-bit BGRA is 4 bytes per pixel.
 const int kBytesPerPixel = 4;
 
+// Default DPI to assume for old clients that use notifyClientDimensions.
+const int kDefaultDPI = 96;
+
+// Interval at which to sample performance statistics.
 const int kPerfStatsIntervalMs = 1000;
 
 // URL scheme used by Chrome apps and extensions.
@@ -593,10 +597,18 @@ void ChromotingInstance::NotifyClientDimensions(int width, int height) {
   if (!IsConnected()) {
     return;
   }
-  protocol::ClientDimensions client_dimensions;
-  client_dimensions.set_width(width);
-  client_dimensions.set_height(height);
-  host_connection_->host_stub()->NotifyClientDimensions(client_dimensions);
+
+  protocol::ClientResolution client_resolution;
+  client_resolution.set_width(width);
+  client_resolution.set_height(height);
+  client_resolution.set_x_dpi(kDefaultDPI);
+  client_resolution.set_y_dpi(kDefaultDPI);
+
+  // Include the legacy width & height for use by older hosts.
+  client_resolution.set_dips_width(width);
+  client_resolution.set_dips_height(height);
+
+  host_connection_->host_stub()->NotifyClientResolution(client_resolution);
 }
 
 void ChromotingInstance::PauseVideo(bool pause) {

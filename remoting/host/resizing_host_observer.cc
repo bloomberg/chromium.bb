@@ -126,8 +126,10 @@ class CandidateSize {
   SkISize size_;
 };
 
-void ResizingHostObserver::OnClientDimensionsChanged(
-    const std::string& jid, const SkISize& preferred_size) {
+void ResizingHostObserver::OnClientResolutionChanged(
+    const std::string& jid,
+    const SkISize& preferred_size,
+    const SkIPoint& dpi) {
   if (previous_size_.isZero() || preferred_size.isEmpty()) {
     return;
   }

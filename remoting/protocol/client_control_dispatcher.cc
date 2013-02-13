@@ -41,10 +41,10 @@ void ClientControlDispatcher::InjectClipboardEvent(
   writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
-void ClientControlDispatcher::NotifyClientDimensions(
-    const ClientDimensions& dimensions) {
+void ClientControlDispatcher::NotifyClientResolution(
+    const ClientResolution& resolution) {
   ControlMessage message;
-  message.mutable_client_dimensions()->CopyFrom(dimensions);
+  message.mutable_client_resolution()->CopyFrom(resolution);
   writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
