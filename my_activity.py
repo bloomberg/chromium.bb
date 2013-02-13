@@ -132,6 +132,7 @@ google_code_projects = [
   },
   {
     'name': 'chromium-os',
+    'shorturl': 'crosbug.com',
   },
   {
     'name': 'chrome-os-partner',
