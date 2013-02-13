@@ -684,6 +684,8 @@ cr.define('options', function() {
           !syncData.signoutAllowed;
       if (!syncData.signoutAllowed)
         $('start-stop-sync-indicator').setAttribute('controlled-by', 'policy');
+      else
+        $('start-stop-sync-indicator').removeAttribute('controlled-by');
       startStopButton.hidden =
           syncData.setupCompleted && cr.isChromeOS;
       startStopButton.textContent =
