@@ -2181,15 +2181,11 @@ void PrintInstructionVYZSplit(const MarkedInstruction& instruction) {
       MarkedInstruction instruction_w =
         instruction.with_flag("att-show-memory-suffix-q").set_rex_w_required();
       PrintInstructionPXSplit(instruction_w);
-      if (enabled(kNaClForbidden))
-        PrintInstructionPXSplit(instruction_w.add_required_prefix("data16"));
     } else {
       PrintInstructionPXSplit(instruction.add_required_prefix("data16"));
       PrintInstructionPXSplit(instruction.clear_rex_w_required());
       MarkedInstruction instruction_w = instruction.set_rex_w_required();
       PrintInstructionPXSplit(instruction_w);
-      if (enabled(kNaClForbidden))
-        PrintInstructionPXSplit(instruction_w.add_required_prefix("data16"));
     }
     return;
   }
