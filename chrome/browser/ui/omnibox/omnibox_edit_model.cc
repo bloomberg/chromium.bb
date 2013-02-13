@@ -573,6 +573,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
   // open).
   if (popup_->IsOpen()) {
     const base::TimeTicks& now(base::TimeTicks::Now());
+    const content::WebContents* web_contents = controller_->GetWebContents();
     // TODO(sreeram): Handle is_temporary_text_set_by_instant_ correctly.
     AutocompleteLog log(
         autocomplete_controller_->input().text(),
@@ -580,7 +581,8 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         autocomplete_controller_->input().type(),
         popup_->selected_line(),
         -1,  // don't yet know tab ID; set later if appropriate
-        ClassifyPage(controller_->GetWebContents()->GetURL()),
+        web_contents ? ClassifyPage(web_contents->GetURL()) :
+            metrics::OmniboxEventProto_PageClassification_OTHER,
         now - time_user_first_modified_omnibox_,
         string16::npos,  // completed_length; possibly set later
         now - autocomplete_controller_->last_time_default_match_changed(),
