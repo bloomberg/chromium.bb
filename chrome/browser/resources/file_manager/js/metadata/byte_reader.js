@@ -13,12 +13,37 @@ function ByteReader(arrayBuffer, opt_offset, opt_length) {
 
 // Static const and methods.
 
-ByteReader.LITTLE_ENDIAN = 0;  // Intel, 0x1234 is [0x34, 0x12]
-ByteReader.BIG_ENDIAN = 1;  // Motorola, 0x1234 is [0x12, 0x34]
+/**
+ * Intel, 0x1234 is [0x34, 0x12]
+ * @const
+ * @type {number}
+ */
+ByteReader.LITTLE_ENDIAN = 0;
+/**
+ * Motorola, 0x1234 is [0x12, 0x34]
+ * @const
+ * @type {number}
+ */
+ByteReader.BIG_ENDIAN = 1;
 
-ByteReader.SEEK_BEG = 0;  // Seek relative to the beginning of the buffer.
-ByteReader.SEEK_CUR = 1;  // Seek relative to the current position.
-ByteReader.SEEK_END = 2;  // Seek relative to the end of the buffer.
+/**
+ * Seek relative to the beginning of the buffer.
+ * @const
+ * @type {number}
+ */
+ByteReader.SEEK_BEG = 0;
+/**
+ * Seek relative to the current position.
+ * @const
+ * @type {number}
+ */
+ByteReader.SEEK_CUR = 1;
+/**
+ * Seek relative to the end of the buffer.
+ * @const
+ * @type {number}
+ */
+ByteReader.SEEK_END = 2;
 
 /**
  * Throw an error if (0 > pos >= end) or if (pos + size > end).
@@ -99,6 +124,11 @@ ByteReader.readNullTerminatedStringUTF16 = function(
   return String.fromCharCode.apply(null, codes);
 };
 
+/**
+ * @const
+ * @type {Array.<string>}
+ * @private
+ */
 ByteReader.base64Alphabet_ =
     ('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/').
     split('');
@@ -225,6 +255,12 @@ ByteReader.prototype.validateRead = function(size, opt_end) {
   ByteReader.validateRead(this.view_, this.pos_, size, opt_end);
 };
 
+/**
+ * @param {number} width  //TODO(JSDOC).
+ * @param {boolean=} opt_signed  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
+ * @return {string}  //TODO(JSDOC).
+ */
 ByteReader.prototype.readScalar = function(width, opt_signed, opt_end) {
   var method = opt_signed ? 'getInt' : 'getUint';
 

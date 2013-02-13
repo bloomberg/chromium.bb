@@ -28,10 +28,24 @@ function ExifParser(parent) {
 
 ExifParser.prototype = {__proto__: ImageParser.prototype};
 
+/**
+ * @param {File} file  //TODO(JSDOC).
+ * @param {Object} metadata  //TODO(JSDOC).
+ * @param {function} callback  //TODO(JSDOC).
+ * @param {function} errorCallback  //TODO(JSDOC).
+ */
 ExifParser.prototype.parse = function(file, metadata, callback, errorCallback) {
   this.requestSlice(file, callback, errorCallback, metadata, 0);
 };
 
+/**
+ * @param {File} file  //TODO(JSDOC).
+ * @param {function} callback  //TODO(JSDOC).
+ * @param {function} errorCallback  //TODO(JSDOC).
+ * @param {Object} metadata  //TODO(JSDOC).
+ * @param {number} filePos  //TODO(JSDOC).
+ * @param {number=} opt_length  //TODO(JSDOC).
+ */
 ExifParser.prototype.requestSlice = function(
     file, callback, errorCallback, metadata, filePos, opt_length) {
   // Read at least 1Kb so that we do not issue too many read requests.
@@ -46,6 +60,14 @@ ExifParser.prototype.requestSlice = function(
   reader.readAsArrayBuffer(file.slice(filePos, filePos + opt_length));
 };
 
+/**
+ * @param {File} file  //TODO(JSDOC).
+ * @param {function} callback  //TODO(JSDOC).
+ * @param {function} errorCallback  //TODO(JSDOC).
+ * @param {Object} metadata  //TODO(JSDOC).
+ * @param {number} filePos  //TODO(JSDOC).
+ * @param {ArrayBuffer} buf  //TODO(JSDOC).
+ */
 ExifParser.prototype.parseSlice = function(
     file, callback, errorCallback, metadata, filePos, buf) {
   try {
@@ -112,6 +134,11 @@ ExifParser.prototype.parseSlice = function(
   }
 };
 
+/**
+ * @private
+ * @param {number} mark  //TODO(JSDOC).
+ * @return {boolean}  //TODO(JSDOC).
+ */
 ExifParser.isSOF_ = function(mark) {
   // There are 13 variants of SOF fragment format distinguished by the last
   // hex digit of the mark, but the part we want is always the same.
@@ -122,6 +149,11 @@ ExifParser.isSOF_ = function(mark) {
   return (type != 4 && type != 8 && type != 12);
 };
 
+/**
+ * @param {Object} metadata  //TODO(JSDOC).
+ * @param {ArrayBuffer} buf  //TODO(JSDOC).
+ * @param {ByteReader} br  //TODO(JSDOC).
+ */
 ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
   var magic = br.readString(6);
   if (magic != 'Exif\0\0') {
@@ -205,6 +237,11 @@ ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
   }
 };
 
+/**
+ * @param {Object} metadata  //TODO(JSDOC).
+ * @param {number} width  //TODO(JSDOC).
+ * @param {number} height  //TODO(JSDOC).
+ */
 ExifParser.setImageSize = function(metadata, width, height) {
   if (metadata.imageTransform && metadata.imageTransform.rotate90) {
     metadata.width = height;
@@ -215,15 +252,28 @@ ExifParser.setImageSize = function(metadata, width, height) {
   }
 };
 
+/**
+ * @param {ByteReader} br  //TODO(JSDOC).
+ * @return {number}  //TODO(JSDOC).
+ */
 ExifParser.prototype.readMark = function(br) {
   return br.readScalar(2);
 };
 
+/**
+ * @param {ByteReader} br  //TODO(JSDOC).
+ * @return {number}  //TODO(JSDOC).
+ */
 ExifParser.prototype.readMarkLength = function(br) {
   // Length includes the 2 bytes used to store the length.
   return br.readScalar(2) - 2;
 };
 
+/**
+ * @param {ByteReader} br  //TODO(JSDOC).
+ * @param {Array.<Object>} tags  //TODO(JSDOC).
+ * @return {number}  //TODO(JSDOC).
+ */
 ExifParser.prototype.readDirectory = function(br, tags) {
   var entryCount = br.readScalar(2);
   for (var i = 0; i < entryCount; i++) {
@@ -237,6 +287,10 @@ ExifParser.prototype.readDirectory = function(br, tags) {
   return br.readScalar(4);
 };
 
+/**
+ * @param {ByteReader} br  //TODO(JSDOC).
+ * @param {Object} tag  //TODO(JSDOC).
+ */
 ExifParser.prototype.readTagValue = function(br, tag) {
   var self = this;
 
@@ -340,13 +394,25 @@ ExifParser.prototype.readTagValue = function(br, tag) {
             tag.value);
 };
 
-//TODO(JSDOC)
+/**
+ * TODO(JSDOC)
+ * @const
+ * @type {Array.<number>}
+ */
 ExifParser.SCALEX = [1, -1, -1, 1, 1, 1, -1, -1];
 
-//TODO(JSDOC)
+/**
+ * TODO(JSDOC)
+ * @const
+ * @type {Array.<number>}
+ */
 ExifParser.SCALEY = [1, 1, -1, -1, -1, 1, 1, -1];
 
-//TODO(JSDOC)
+/**
+ * TODO(JSDOC)
+ * @const
+ * @type {Array.<number>}
+ */
 ExifParser.ROTATE90 = [0, 0, 0, 0, 1, 1, 1, 1];
 
 /**

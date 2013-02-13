@@ -124,6 +124,10 @@ Id3Parser.prototype.readUserDefinedTextFrame_ = function(reader,
 
 /**
  * @private
+ * @param {ByteReader} reader Reader to use.
+ * @param {number} majorVersion Major id3 version to use.
+ * @param {Object} frame Frame so store data at.
+ * @param {number} end Frame end position in reader.
  */
 Id3Parser.prototype.readPIC_ = function(reader, majorVersion, frame, end) {
   frame.encoding = reader.readScalar(1, false, end);
@@ -143,6 +147,10 @@ Id3Parser.prototype.readPIC_ = function(reader, majorVersion, frame, end) {
 
 /**
  * @private
+ * @param {ByteReader} reader Reader to use.
+ * @param {number} majorVersion Major id3 version to use.
+ * @param {Object} frame Frame so store data at.
+ * @param {number} end Frame end position in reader.
  */
 Id3Parser.prototype.readAPIC_ = function(reader, majorVersion, frame, end) {
   this.vlog('Extracting picture');
@@ -227,6 +235,12 @@ Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
   return frame;
 };
 
+/**
+ * @param {File} file  //TODO(JSDOC).
+ * @param {Object} metadata  //TODO(JSDOC).
+ * @param {function(Object)} callback  //TODO(JSDOC).
+ * @param {function(etring)} onError  //TODO(JSDOC).
+ */
 Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
   var self = this;
 
