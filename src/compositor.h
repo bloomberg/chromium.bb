@@ -85,6 +85,10 @@ struct weston_shell_interface {
 	void (*set_transient)(struct shell_surface *shsurf,
 			      struct weston_surface *parent,
 			      int x, int y, uint32_t flags);
+	void (*set_fullscreen)(struct shell_surface *shsurf,
+			       uint32_t method,
+			       uint32_t framerate,
+			       struct weston_output *output);
 	int (*move)(struct shell_surface *shsurf, struct weston_seat *ws);
 	int (*resize)(struct shell_surface *shsurf,
 		      struct weston_seat *ws, uint32_t edges);

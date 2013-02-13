@@ -89,8 +89,6 @@ struct motif_wm_hints {
 #define _NET_WM_MOVERESIZE_MOVE_KEYBOARD    10   /* move via keyboard */
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
-
-
 struct weston_wm_window {
 	struct weston_wm *wm;
 	xcb_window_t id;
@@ -111,8 +109,10 @@ struct weston_wm_window {
 	xcb_atom_t type;
 	int width, height;
 	int x, y;
+	int saved_width, saved_height;
 	int decorate;
 	int override_redirect;
+	int fullscreen;
 };
 
 static struct weston_wm_window *
@@ -287,6 +287,7 @@ read_and_dump_property(struct weston_wm *wm,
 /* We reuse some predefined, but otherwise useles atoms */
 #define TYPE_WM_PROTOCOLS	XCB_ATOM_CUT_BUFFER0
 #define TYPE_MOTIF_WM_HINTS	XCB_ATOM_CUT_BUFFER1
+#define TYPE_NET_WM_STATE	XCB_ATOM_CUT_BUFFER2
 
 static void
 weston_wm_window_read_properties(struct weston_wm_window *window)
@@ -303,6 +304,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		{ XCB_ATOM_WM_NAME, XCB_ATOM_STRING, F(name) },
 		{ XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, F(transient_for) },
 		{ wm->atom.wm_protocols, TYPE_WM_PROTOCOLS, F(protocols) },
+		{ wm->atom.net_wm_state, TYPE_NET_WM_STATE },
 		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM, F(type) },
 		{ wm->atom.net_wm_name, XCB_ATOM_STRING, F(name) },
 		{ wm->atom.net_wm_pid, XCB_ATOM_CARDINAL, F(pid) },
@@ -368,6 +370,13 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 			break;
 		case TYPE_WM_PROTOCOLS:
 			break;
+		case TYPE_NET_WM_STATE:
+			window->fullscreen = 0;
+			atom = xcb_get_property_value(reply);
+			for (i = 0; i < reply->value_len; i++)
+				if (atom[i] == wm->atom.net_wm_state_fullscreen)
+					window->fullscreen = 1;
+			break;
 		case TYPE_MOTIF_WM_HINTS:
 			hints = xcb_get_property_value(reply);
 			if (hints->flags & MWM_HINTS_DECORATIONS)
@@ -386,7 +395,10 @@ weston_wm_window_get_frame_size(struct weston_wm_window *window,
 {
 	struct theme *t = window->wm->theme;
 
-	if (window->decorate) {
+	if (window->fullscreen) {
+		*width = window->width;
+		*height = window->height;
+	} else if (window->decorate) {
 		*width = window->width + (t->margin + t->width) * 2;
 		*height = window->height +
 			t->margin * 2 + t->width + t->titlebar_height;
@@ -402,13 +414,42 @@ weston_wm_window_get_child_position(struct weston_wm_window *window,
 {
 	struct theme *t = window->wm->theme;
 
-	if (window->decorate) {
+	if (window->fullscreen) {
+		*x = 0;
+		*y = 0;
+	} else if (window->decorate) {
 		*x = t->margin + t->width;
 		*y = t->margin + t->titlebar_height;
 	} else {
 		*x = t->margin;
 		*y = t->margin;
 	}
+}
+
+static void
+weston_wm_window_send_configure_notify(struct weston_wm_window *window)
+{
+	xcb_configure_notify_event_t configure_notify;
+	struct weston_wm *wm = window->wm;
+	int x, y;
+
+	weston_wm_window_get_child_position(window, &x, &y);
+	configure_notify.response_type = XCB_CONFIGURE_NOTIFY;
+	configure_notify.pad0 = 0;
+	configure_notify.event = window->id;
+	configure_notify.window = window->id;
+	configure_notify.above_sibling = XCB_WINDOW_NONE;
+	configure_notify.x = x;
+	configure_notify.y = y;
+	configure_notify.width = window->width;
+	configure_notify.height = window->height;
+	configure_notify.border_width = 0;
+	configure_notify.override_redirect = 0;
+	configure_notify.pad1 = 0;
+
+	xcb_send_event(wm->conn, 0, window->id, 
+		       XCB_EVENT_MASK_STRUCTURE_NOTIFY,
+		       (char *) &configure_notify);
 }
 
 static void
@@ -426,6 +467,11 @@ weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *ev
 		configure_request->width, configure_request->height);
 
 	window = hash_table_lookup(wm->window_hash, configure_request->window);
+
+	if (window->fullscreen) {
+		weston_wm_window_send_configure_notify(window);
+		return;
+	}
 
 	if (configure_request->value_mask & XCB_CONFIG_WINDOW_WIDTH)
 		window->width = configure_request->width;
@@ -559,7 +605,7 @@ our_resource(struct weston_wm *wm, uint32_t id)
 #define ICCCM_ICONIC_STATE	3
 
 static void
-weston_wm_window_set_state(struct weston_wm_window *window, int32_t state)
+weston_wm_window_set_wm_state(struct weston_wm_window *window, int32_t state)
 {
 	struct weston_wm *wm = window->wm;
 	uint32_t property[2];
@@ -574,6 +620,26 @@ weston_wm_window_set_state(struct weston_wm_window *window, int32_t state)
 			    wm->atom.wm_state,
 			    32, /* format */
 			    2, property);
+}
+
+static void
+weston_wm_window_set_net_wm_state(struct weston_wm_window *window)
+{
+	struct weston_wm *wm = window->wm;
+	uint32_t property[1];
+	int i;
+
+	i = 0;
+	if (window->fullscreen)
+		property[i++] = wm->atom.net_wm_state_fullscreen;
+
+	xcb_change_property(wm->conn,
+			    XCB_PROP_MODE_REPLACE,
+			    window->id,
+			    wm->atom.net_wm_state,
+			    XCB_ATOM_ATOM,
+			    32, /* format */
+			    i, property);
 }
 
 static void
@@ -632,9 +698,11 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	weston_log("XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
 		window->id, window, window->frame_id);
 
+	weston_wm_window_set_wm_state(window, ICCCM_NORMAL_STATE);
+	weston_wm_window_set_net_wm_state(window);
+
 	xcb_map_window(wm->conn, map_request->window);
 	xcb_map_window(wm->conn, window->frame_id);
-	weston_wm_window_set_state(window, ICCCM_NORMAL_STATE);
 
 	window->cairo_surface =
 		cairo_xcb_surface_create_with_xrender_format(wm->conn,
@@ -689,7 +757,7 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	if (window->frame_id) {
 		xcb_reparent_window(wm->conn, window->id, wm->wm_window, 0, 0);
 		xcb_destroy_window(wm->conn, window->frame_id);
-		weston_wm_window_set_state(window, ICCCM_WITHDRAWN_STATE);
+		weston_wm_window_set_wm_state(window, ICCCM_WITHDRAWN_STATE);
 		hash_table_remove(wm->window_hash, window->frame_id);
 		window->frame_id = XCB_WINDOW_NONE;
 	}
@@ -722,7 +790,9 @@ weston_wm_window_draw_decoration(void *data)
 	cairo_xcb_surface_set_size(window->cairo_surface, width, height);
 	cr = cairo_create(window->cairo_surface);
 
-	if (window->decorate) {
+	if (window->fullscreen) {
+		/* nothing */
+	} else if (window->decorate) {
 		if (wm->focus_window == window)
 			flags |= THEME_FRAME_ACTIVE;
 
@@ -965,6 +1035,68 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 	}
 }
 
+#define _NET_WM_STATE_REMOVE	0
+#define _NET_WM_STATE_ADD	1
+#define _NET_WM_STATE_TOGGLE	2
+
+static int
+update_state(int action, int *state)
+{
+	int new_state, changed;
+
+	switch (action) {
+	case _NET_WM_STATE_REMOVE:
+		new_state = 0;
+		break;
+	case _NET_WM_STATE_ADD:
+		new_state = 1;
+		break;
+	case _NET_WM_STATE_TOGGLE:
+		new_state = !*state;
+		break;
+	default:
+		return 0;
+	}
+
+	changed = (*state != new_state);
+	*state = new_state;
+
+	return changed;
+}
+
+static void
+weston_wm_window_configure(void *data);
+
+static void
+weston_wm_window_handle_state(struct weston_wm_window *window,
+			      xcb_client_message_event_t *client_message)
+{
+	struct weston_wm *wm = window->wm;
+	struct weston_shell_interface *shell_interface =
+		&wm->server->compositor->shell_interface;
+	uint32_t action, property;
+
+	action = client_message->data.data32[0];
+	property = client_message->data.data32[1];
+
+	if (property == wm->atom.net_wm_state_fullscreen &&
+	    update_state(action, &window->fullscreen)) {
+		weston_wm_window_set_net_wm_state(window);
+		if (window->fullscreen) {
+			window->saved_width = window->width;
+			window->saved_height = window->height;
+			shell_interface->set_fullscreen(window->shsurf,
+							WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+							0, NULL);
+		} else {
+			shell_interface->set_toplevel(window->shsurf);
+			window->width = window->saved_width;
+			window->height = window->saved_height;
+			weston_wm_window_configure(window);
+		}
+	}
+}
+
 static void
 weston_wm_handle_client_message(struct weston_wm *wm,
 				xcb_generic_event_t *event)
@@ -975,16 +1107,19 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 
 	window = hash_table_lookup(wm->window_hash, client_message->window);
 
-	weston_log("XCB_CLIENT_MESSAGE (%s %d %d %d %d %d)\n",
-		get_atom_name(wm->conn, client_message->type),
-		client_message->data.data32[0],
-		client_message->data.data32[1],
-		client_message->data.data32[2],
-		client_message->data.data32[3],
-		client_message->data.data32[4]);
+	weston_log("XCB_CLIENT_MESSAGE (%s %d %d %d %d %d win %d)\n",
+		   get_atom_name(wm->conn, client_message->type),
+		   client_message->data.data32[0],
+		   client_message->data.data32[1],
+		   client_message->data.data32[2],
+		   client_message->data.data32[3],
+		   client_message->data.data32[4],
+		   client_message->window);
 
 	if (client_message->type == wm->atom.net_wm_moveresize)
 		weston_wm_window_handle_moveresize(window, client_message);
+	else if (client_message->type == wm->atom.net_wm_state)
+		weston_wm_window_handle_state(window, client_message);
 }
 
 enum cursor_type {
@@ -1428,7 +1563,7 @@ weston_wm_create(struct weston_xserver *wxs)
 	xcb_screen_iterator_t s;
 	uint32_t values[1];
 	int sv[2];
-	xcb_atom_t supported[1];
+	xcb_atom_t supported[3];
 
 	wm = malloc(sizeof *wm);
 	if (wm == NULL)
@@ -1486,6 +1621,8 @@ weston_wm_create(struct weston_xserver *wxs)
 	weston_wm_create_wm_window(wm);
 
 	supported[0] = wm->atom.net_wm_moveresize;
+	supported[1] = wm->atom.net_wm_state;
+	supported[2] = wm->atom.net_wm_state_fullscreen;
 	xcb_change_property(wm->conn,
 			    XCB_PROP_MODE_REPLACE,
 			    wm->screen->root,
@@ -1557,13 +1694,18 @@ weston_wm_window_configure(void *data)
 {
 	struct weston_wm_window *window = data;
 	struct weston_wm *wm = window->wm;
-	uint32_t values[2];
-	int width, height;
+	uint32_t values[4];
+	int x, y, width, height;
 
-	values[0] = window->width;
-	values[1] = window->height;
+	weston_wm_window_get_child_position(window, &x, &y);
+	values[0] = x;
+	values[1] = y;
+	values[2] = window->width;
+	values[3] = window->height;
 	xcb_configure_window(wm->conn,
 			     window->id,
+			     XCB_CONFIG_WINDOW_X |
+			     XCB_CONFIG_WINDOW_Y |
 			     XCB_CONFIG_WINDOW_WIDTH |
 			     XCB_CONFIG_WINDOW_HEIGHT,
 			     values);
@@ -1590,7 +1732,10 @@ send_configure(struct weston_surface *surface,
 	struct weston_wm *wm = window->wm;
 	struct theme *t = window->wm->theme;
 
-	if (window->decorate) {
+	if (window->fullscreen) {
+		window->width = width;
+		window->height = height;
+	} else if (window->decorate) {
 		window->width = width - 2 * (t->margin + t->width);
 		window->height = height - 2 * t->margin -
 			t->titlebar_height - t->width;
@@ -1629,8 +1774,15 @@ xserver_map_shell_surface(struct weston_wm *wm,
 						      window->surface,
 						      &shell_client);
 
-	/* ICCCM 4.1.1 */
-	if (!window->override_redirect) {
+	if (window->fullscreen) {
+		window->saved_width = window->width;
+		window->saved_height = window->height;
+		shell_interface->set_fullscreen(window->shsurf,
+						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+						0, NULL);
+		return;
+	} else if (!window->override_redirect) {
+		/* ICCCM 4.1.1 */
 		shell_interface->set_toplevel(window->shsurf);
 		return;
 	}

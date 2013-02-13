@@ -1754,17 +1754,15 @@ shell_map_fullscreen(struct shell_surface *shsurf)
 }
 
 static void
-shell_surface_set_fullscreen(struct wl_client *client,
-			     struct wl_resource *resource,
-			     uint32_t method,
-			     uint32_t framerate,
-			     struct wl_resource *output_resource)
+set_fullscreen(struct shell_surface *shsurf,
+	       uint32_t method,
+	       uint32_t framerate,
+	       struct weston_output *output)
 {
-	struct shell_surface *shsurf = resource->data;
 	struct weston_surface *es = shsurf->surface;
 
-	if (output_resource)
-		shsurf->output = output_resource->data;
+	if (output)
+		shsurf->output = output;
 	else if (es->output)
 		shsurf->output = es->output;
 	else
@@ -1778,6 +1776,24 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	shsurf->client->send_configure(shsurf->surface, 0,
 				       shsurf->output->width,
 				       shsurf->output->height);
+}
+
+static void
+shell_surface_set_fullscreen(struct wl_client *client,
+			     struct wl_resource *resource,
+			     uint32_t method,
+			     uint32_t framerate,
+			     struct wl_resource *output_resource)
+{
+	struct shell_surface *shsurf = resource->data;
+	struct weston_output *output;
+
+	if (output_resource)
+		output = output_resource->data;
+	else
+		output = NULL;
+
+	set_fullscreen(shsurf, method, framerate, output);
 }
 
 static void
@@ -3832,6 +3848,7 @@ module_init(struct weston_compositor *ec)
 	ec->shell_interface.create_shell_surface = create_shell_surface;
 	ec->shell_interface.set_toplevel = set_toplevel;
 	ec->shell_interface.set_transient = set_transient;
+	ec->shell_interface.set_fullscreen = set_fullscreen;
 	ec->shell_interface.move = surface_move;
 	ec->shell_interface.resize = surface_resize;
 
