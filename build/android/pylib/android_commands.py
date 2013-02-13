@@ -729,7 +729,7 @@ class AndroidCommands(object):
     Devices running user builds don't have adb root, but may provide "su" which
     can be used for accessing protected files.
     """
-    return self.RunShellCommand('su -c echo') == ['']
+    return self.RunShellCommand('su -c cat /dev/null') == ['']
 
   def GetProtectedFileContents(self, filename, log_result=False):
     """Gets contents from the protected file specified by |filename|.
