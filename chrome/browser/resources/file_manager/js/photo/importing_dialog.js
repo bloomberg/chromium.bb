@@ -5,6 +5,7 @@
 
 /**
  * ImportingDialog manages the import process (which is really a copying).
+ * @constructor
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
  * @param {FileCopyManager} copyManager Copy manager isntance.
  * @param {MetadataCache} metadataCache Metadata cache.

@@ -156,6 +156,7 @@ ImageEncoder.stringToArrayBuffer = function(string, from, to) {
  * Serves as a default metadata encoder for images that none of the metadata
  * parsers recognized.
  *
+ * @constructor
  * @param {Object} original_metadata Starting metadata.
  */
 ImageEncoder.MetadataEncoder = function(original_metadata) {

@@ -449,6 +449,7 @@ TileBox.decorate = function(self, view, entry) {
 
 /**
  * Sets box position according to the |rect| property and given sizes.
+ * @constructor
  * @param {number} margin Margin between cells.
  * @param {number} cellSize The size of one cell.
  */

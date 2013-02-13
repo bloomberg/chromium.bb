@@ -12,6 +12,7 @@ importScripts('../util.js');
 /**
  * Dispatches metadata requests to the correct parser.
  *
+ * @constructor
  * @param {Object} port Worker port.
  */
 function MetadataDispatcher(port) {

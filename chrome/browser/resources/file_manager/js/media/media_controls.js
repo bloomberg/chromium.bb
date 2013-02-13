@@ -681,6 +681,7 @@ MediaControls.Slider.prototype.onInputDrag_ = function(on) {
 /**
  * Create a customized slider with animated thumb movement.
  *
+ * @constructor
  * @param {HTMLElement} container The containing div element.
  * @param {number} value Initial value [0..1].
  * @param {number} range Number of distinct slider positions to be supported.
@@ -734,6 +735,7 @@ MediaControls.AnimatedSlider.prototype.setValueToUI_ = function(value) {
  *
  * The time value is shown above the slider bar at the mouse position.
  *
+ * @constructor
  * @param {HTMLElement} container The containing div element.
  * @param {number} value Initial value [0..1].
  * @param {number} range Number of distinct slider positions to be supported.

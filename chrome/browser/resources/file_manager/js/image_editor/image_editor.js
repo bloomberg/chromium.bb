@@ -1034,6 +1034,7 @@ ImageEditor.Toolbar.prototype.show = function(on) {
 
 /** A prompt panel for the editor.
  *
+ * @constructor
  * @param {HTMLElement} container Container element.
  * @param {function} displayStringFunction A formatting function.
  */

@@ -4,6 +4,7 @@
 
 /**
  * The overlay displaying the image.
+ * @constructor
  * @param {HTMLElement} container The container element.
  * @param {Viewport} viewport The viewport.
  * @param {MetadataCache} metadataCache The metadataCache.
@@ -769,6 +770,7 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
 /**
  * Generic cache with a limited capacity and LRU eviction.
  *
+ * @constructor
  * @param {number} capacity Maximum number of cached item.
  */
 ImageView.Cache = function(capacity) {

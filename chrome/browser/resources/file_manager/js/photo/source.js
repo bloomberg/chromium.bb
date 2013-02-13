@@ -4,6 +4,7 @@
 
 /**
  * The album.
+ * @constructor
  * @param {PhotoSource} source The parent source.
  * @param {string} name The album name.
  * @param {Array.<FileEntry>} entries The entries list.
