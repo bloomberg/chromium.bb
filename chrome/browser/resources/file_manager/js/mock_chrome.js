@@ -157,7 +157,8 @@ chrome.fileBrowserPrivate = {
       {
         taskId: internalTaskPrefix + '|gallery',
         title: 'View',
-        regexp: /\.(bmp|gif|jpe?g|png|webp|3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
+        regexp: new RegExp('\.(bmp|gif|jpe?g|png|webp|3gp|avi|m4v|mov|mp4|' +
+            'mpeg4?|mpg4?|ogm|ogv|ogx|webm)$', 'i'),
         iconUrl: emptyIcon
       },
       {
@@ -169,7 +170,8 @@ chrome.fileBrowserPrivate = {
       {
         taskId: 'fake-extension-id|file|fake-item',
         title: 'External action',
-        regexp: /\.(bmp|gif|jpe?g|png|webp|3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
+        regexp: new RegExp('\.(bmp|gif|jpe?g|png|webp|3gp|avi|m4v|mov|mp4|' +
+            'mpeg4?|mpg4?|ogm|ogv|ogx|webm)$', 'i'),
         iconUrl: 'chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC'
       },
       {
@@ -473,7 +475,10 @@ chrome.fileBrowserPrivate = {
 
       ROOT_DIRECTORY_LABEL: 'Files',
       DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
-      DOWNLOADS_DIRECTORY_WARNING: "&lt;strong&gt;Caution:&lt;/strong&gt; These files are temporary and may be automatically deleted to free up disk space.  &lt;a href='javascript://'&gt;Learn More&lt;/a&gt;",
+      DOWNLOADS_DIRECTORY_WARNING:
+          '&lt;strong&gt;Caution:&lt;/strong&gt; These files are temporary ' +
+          'and may be automatically deleted to free up disk space.  ' +
+          "&lt;a href='javascript://'&gt;Learn More&lt;/a&gt;",
       NAME_COLUMN_LABEL: 'Name',
       SIZE_COLUMN_LABEL: 'Size',
       SIZE_BYTES: '$ bytes',
@@ -548,11 +553,13 @@ chrome.fileBrowserPrivate = {
       GALLERY_OVERWRITE_BUBBLE: 'Your edits are saved automatically.<br><br>' +
           'To keep a copy of the original image, uncheck "Overwrite original"',
       GALLERY_UNSAVED_CHANGES: 'Changes are not saved yet.',
-      GALLERY_READONLY_WARNING: '$1 is read only. Edited images will be saved in the Downloads folder.',
+      GALLERY_READONLY_WARNING: '$1 is read only. Edited images will be ' +
+          'saved in the Downloads folder.',
       GALLERY_IMAGE_ERROR: 'This file could not be displayed',
       GALLERY_IMAGE_TOO_BIG_ERROR: 'This file is too large to be opened.',
       GALLERY_VIDEO_ERROR: 'This file could not be played.',
-      GALLERY_VIDEO_DECODING_ERROR: 'An error occurred. Click to restart from the beginning.',
+      GALLERY_VIDEO_DECODING_ERROR:
+          'An error occurred. Click to restart from the beginning.',
 
       GALLERY_ITEMS_SELECTED: '$1 items selected',
       GALLERY_NO_IMAGES: 'No images in this directory.',
@@ -568,9 +575,12 @@ chrome.fileBrowserPrivate = {
 
       AUDIO_ERROR: 'This file could not be played',
 
-      CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
-      FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',
-      DIRECTORY_ALREADY_EXISTS: 'The folder named "$1" already exists. Please choose a different name.',
+      CONFIRM_OVERWRITE_FILE:
+          'A file named "$1" already exists. Do you want to replace it?',
+      FILE_ALREADY_EXISTS:
+          'The file named "$1" already exists. Please choose a different name.',
+      DIRECTORY_ALREADY_EXISTS: 'The folder named "$1" already exists. ' +
+                                'Please choose a different name.',
       ERROR_RENAMING: 'Unable to rename "$1". $2',
       RENAME_PROMPT: 'Enter a new name',
       RENAME_BUTTON_LABEL: 'Rename',
@@ -614,7 +624,8 @@ chrome.fileBrowserPrivate = {
           'All files saved in this folder are backed up online automatically',
       DRIVE_WELCOME_TEXT_LONG:
           '<p><strong>Access files from everywhere, even offline.</strong> ' +
-          'Files in Google Drive are up-to-date and available from any device.</p>' +
+          'Files in Google Drive are up-to-date and available from any ' +
+          'device.</p>' +
           '<p><strong>Keep your files safe.</strong> ' +
           'No matter what happens to your device, your files are ' +
           'safely stored in Google Drive .</p>' +
@@ -625,13 +636,18 @@ chrome.fileBrowserPrivate = {
       DRIVE_LOADING_PROGRESS: '$1 files fetched',
 
       OFFLINE_HEADER: 'You are offline',
-      OFFLINE_MESSAGE: 'To save this file for offline use, get back online and<br>select the \'$1\' checkbox for this file.',
-      OFFLINE_MESSAGE_PLURAL: 'To save these files for offline use, get back online and<br>select the \'$1\' checkbox for this file.',
+      OFFLINE_MESSAGE: 'To save this file for offline use, get back online ' +
+          'and<br>select the \'$1\' checkbox for this file.',
+      OFFLINE_MESSAGE_PLURAL: 'To save these files for offline use, get back ' +
+          'online and<br>select the \'$1\' checkbox for this file.',
       HOSTED_OFFLINE_MESSAGE: 'You must be online to access this file.',
-      HOSTED_OFFLINE_MESSAGE_PLURAL: 'You must be online to access these files.',
+      HOSTED_OFFLINE_MESSAGE_PLURAL:
+          'You must be online to access these files.',
 
-      CONFIRM_MOBILE_DATA_USE: 'Fetching this file will use approximately $1 of mobile data.',
-      CONFIRM_MOBILE_DATA_USE_PLURAL: 'Fetching these files will use approximately $1 of mobile data.',
+      CONFIRM_MOBILE_DATA_USE:
+          'Fetching this file will use approximately $1 of mobile data.',
+      CONFIRM_MOBILE_DATA_USE_PLURAL:
+          'Fetching these files will use approximately $1 of mobile data.',
 
       GDOC_DOCUMENT_FILE_TYPE: 'Google document',
       GSHEET_DOCUMENT_FILE_TYPE: 'Google spreadsheet',
