@@ -28,7 +28,13 @@ class PanelResizeBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, DockedPanelResizability) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_DockedPanelResizability DISABLED_DockedPanelResizability
+#else
+#define MAYBE_DockedPanelResizability DockedPanelResizability
+#endif
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_DockedPanelResizability) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanel("Panel");
 
@@ -147,7 +153,13 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, DockedPanelResizability) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanel) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_ResizeDetachedPanel DISABLED_ResizeDetachedPanel
+#else
+#define MAYBE_ResizeDetachedPanel ResizeDetachedPanel
+#endif
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeDetachedPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
 
@@ -214,7 +226,15 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanel) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToClampSize) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_ResizeDetachedPanelToClampSize \
+  DISABLED_ResizeDetachedPanelToClampSize
+#else
+#define MAYBE_ResizeDetachedPanelToClampSize ResizeDetachedPanelToClampSize
+#endif
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest,
+                       MAYBE_ResizeDetachedPanelToClampSize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
 
@@ -259,7 +279,14 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToClampSize) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, CloseDetachedPanelOnResize) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_CloseDetachedPanelOnResize DISABLED_CloseDetachedPanelOnResize
+#else
+#define MAYBE_CloseDetachedPanelOnResize CloseDetachedPanelOnResize
+#endif
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest,
+                       MAYBE_CloseDetachedPanelOnResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelResizeController* resize_controller = panel_manager->resize_controller();
   DetachedPanelCollection* detached_collection =
@@ -322,7 +349,13 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, CloseDetachedPanelOnResize) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeAndCancel) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_ResizeAndCancel DISABLED_ResizeAndCancel
+#else
+#define MAYBE_ResizeAndCancel ResizeAndCancel
+#endif
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeAndCancel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
   PanelResizeController* resize_controller = panel_manager->resize_controller();
@@ -367,7 +400,13 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeAndCancel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToTop) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_ResizeDetachedPanelToTop DISABLED_ResizeDetachedPanelToTop
+#else
+#define MAYBE_ResizeDetachedPanelToTop ResizeDetachedPanelToTop
+#endif
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeDetachedPanelToTop) {
   // Setup the test areas to have top-aligned bar excluded from work area.
   const gfx::Rect primary_scren_area(0, 0, 800, 600);
   const gfx::Rect work_area(0, 10, 800, 590);

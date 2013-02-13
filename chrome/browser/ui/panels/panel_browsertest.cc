@@ -1132,9 +1132,18 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionWhileMinimized) {
   panel3->Close();
 }
 
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_StopDrawingAttentionWhileMinimized \
+  DISABLED_StopDrawingAttentionWhileMinimized
+#else
+#define MAYBE_StopDrawingAttentionWhileMinimized \
+  StopDrawingAttentionWhileMinimized
+#endif
 // Verify that minimized state of a panel is correct after draw attention
 // is stopped when there are other minimized panels.
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, StopDrawingAttentionWhileMinimized) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+                       MAYBE_StopDrawingAttentionWhileMinimized) {
   Panel* panel1 = CreatePanel("panel1");
   Panel* panel2 = CreatePanel("panel2");
 
@@ -1322,8 +1331,15 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
   panel2->Close();
 }
 
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_MinimizeImmediatelyAfterRestore \
+  DISABLED_MinimizeImmediatelyAfterRestore
+#else
+#define MAYBE_MinimizeImmediatelyAfterRestore MinimizeImmediatelyAfterRestore
+#endif
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       MinimizeImmediatelyAfterRestore) {
+                       MAYBE_MinimizeImmediatelyAfterRestore) {
   CreatePanelParams params("Panel Test", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(

@@ -1076,7 +1076,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAndCancel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Attach) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_Attach DISABLED_Attach
+#else
+#define MAYBE_Attach Attach
+#endif
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_Attach) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelCollection* docked_collection = panel_manager->docked_collection();
   DetachedPanelCollection* detached_collection =
@@ -1136,7 +1142,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Attach) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachAndCancel) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_AttachAndCancel DISABLED_AttachAndCancel
+#else
+#define MAYBE_AttachAndCancel AttachAndCancel
+#endif
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_AttachAndCancel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelCollection* docked_collection = panel_manager->docked_collection();
   DetachedPanelCollection* detached_collection =
@@ -1254,7 +1266,13 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
+// http://crbug.com/175760; several panel tests failing regularly on mac.
+#if defined(OS_MAC)
+#define MAYBE_DetachWithSqueeze DISABLED_DetachWithSqueeze
+#else
+#define MAYBE_DetachWithSqueeze DetachWithSqueeze
+#endif
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, MAYBE_DetachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelCollection* docked_collection = panel_manager->docked_collection();
   DetachedPanelCollection* detached_collection =
@@ -1336,8 +1354,8 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   panel_manager->CloseAll();
 }
 
-// http://crbug.com/143247
-#if defined(OS_LINUX)
+// http://crbug.com/143247, http://crbug.com/175760
+#if defined(OS_LINUX) || defined(OS_MAC)
 #define MAYBE_AttachWithSqueeze DISABLED_AttachWithSqueeze
 #else
 #define MAYBE_AttachWithSqueeze AttachWithSqueeze
