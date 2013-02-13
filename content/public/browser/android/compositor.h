@@ -60,6 +60,9 @@ class CONTENT_EXPORT Compositor {
   // Attaches the layer tree.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> root) = 0;
 
+  // Set the scale factor from DIP to pixel.
+  virtual void setDeviceScaleFactor(float factor) = 0;
+
   // Set the output surface bounds.
   virtual void SetWindowBounds(const gfx::Size& size) = 0;
 

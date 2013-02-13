@@ -46,6 +46,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual void SetRootLayer(scoped_refptr<cc::Layer> root) OVERRIDE;
   virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
+  virtual void setDeviceScaleFactor(float factor) OVERRIDE;
   virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE;
   virtual void SetHasTransparentBackground(bool flag) OVERRIDE;
   virtual bool CompositeAndReadback(
