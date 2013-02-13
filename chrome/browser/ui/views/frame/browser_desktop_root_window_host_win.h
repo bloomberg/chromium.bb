@@ -48,6 +48,7 @@ class BrowserDesktopRootWindowHostWin : public BrowserDesktopRootWindowHost,
                              WPARAM w_param,
                              LPARAM l_param) OVERRIDE;
   virtual bool IsUsingCustomFrame() const OVERRIDE;
+  virtual bool ShouldUseNativeFrame() OVERRIDE;
 
   void UpdateDWMFrame();
 

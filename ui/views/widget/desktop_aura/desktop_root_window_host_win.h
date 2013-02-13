@@ -200,6 +200,10 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   const Widget* GetWidget() const;
   HWND GetHWND() const;
 
+  const DesktopNativeWidgetAura* desktop_native_widget_aura() const {
+    return desktop_native_widget_aura_;
+  }
+
  private:
   // We are owned by the RootWindow, but we have to have a back pointer to it.
   aura::RootWindow* root_window_;
