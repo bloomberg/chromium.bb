@@ -154,7 +154,7 @@ message SystemProfileProto {
 
   // Information about the network connection.
   message Network {
-    // Set to true if there was a network change during the lifetime of the log.
+    // Set to true if connection_type changed during the lifetime of the log.
     optional bool connection_type_is_ambiguous = 1;
 
     // See net::NetworkChangeNotifier::ConnectionType.
@@ -166,7 +166,24 @@ message SystemProfileProto {
       CONNECTION_3G = 4;
       CONNECTION_4G = 5;
     }
+    // The connection type according to NetworkChangeNotifier.
     optional ConnectionType connection_type = 2;
+
+    // Set to true if wifi_phy_layer_protocol changed during the lifetime of the log.
+    optional bool wifi_phy_layer_protocol_is_ambiguous = 3;
+
+    // See net::WifiPHYLayerProtocol.
+    enum WifiPHYLayerProtocol {
+      WIFI_PHY_LAYER_PROTOCOL_NONE = 0;
+      WIFI_PHY_LAYER_PROTOCOL_ANCIENT = 1;
+      WIFI_PHY_LAYER_PROTOCOL_A = 2;
+      WIFI_PHY_LAYER_PROTOCOL_B = 3;
+      WIFI_PHY_LAYER_PROTOCOL_G = 4;
+      WIFI_PHY_LAYER_PROTOCOL_N = 5;
+      WIFI_PHY_LAYER_PROTOCOL_UNKNOWN = 6;
+    }
+    // The physical layer mode of the associated wifi access point, if any.
+    optional WifiPHYLayerProtocol wifi_phy_layer_protocol = 4;
   }
   optional Network network = 13;
 

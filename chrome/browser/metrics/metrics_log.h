@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chrome/browser/metrics/metrics_network_observer.h"
 #include "chrome/common/metrics/metrics_log_base.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/common/process_type.h"
@@ -22,6 +23,7 @@
 #endif
 
 struct AutocompleteLog;
+class MetricsNetworkObserver;
 class PrefService;
 class PrefRegistrySimple;
 
@@ -145,8 +147,6 @@ class MetricsLog : public MetricsLogBase {
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
 
-  class NetworkObserver;
-
   // Writes application stability metrics (as part of the profile log).
   // NOTE: Has the side-effect of clearing those counts.
   void WriteStabilityElement(
@@ -190,9 +190,9 @@ class MetricsLog : public MetricsLogBase {
   // This is a no-op if called on a non-Windows platform.
   void WriteGoogleUpdateProto(const GoogleUpdateMetrics& google_update_metrics);
 
-  // Registers as observer with net::NetworkChangeNotifier and keeps track of
-  // the network environment.
-  scoped_ptr<NetworkObserver> network_observer_;
+  // Observes network state to provide values for SystemProfile::Network.
+  MetricsNetworkObserver network_observer_;
+
 #if defined(OS_CHROMEOS)
   metrics::PerfProvider perf_provider_;
 #endif

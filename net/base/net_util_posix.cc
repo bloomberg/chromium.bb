@@ -141,4 +141,8 @@ bool GetNetworkList(NetworkInterfaceList* networks) {
 #endif
 }
 
+WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {
+  return WIFI_PHY_LAYER_PROTOCOL_UNKNOWN;
+}
+
 }  // namespace net

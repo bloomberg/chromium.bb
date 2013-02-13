@@ -45,7 +45,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/network_change_notifier.h"
 #include "ui/gfx/screen.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -308,65 +307,6 @@ void WriteScreenDPIInformationProto(SystemProfileProto::Hardware* hardware) {
 
 }  // namespace
 
-class MetricsLog::NetworkObserver
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
- public:
-  NetworkObserver() : connection_type_is_ambiguous_(false) {
-    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-    Reset();
-  }
-  virtual ~NetworkObserver() {
-    net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-  }
-
-  void Reset() {
-    connection_type_is_ambiguous_ = false;
-    connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
-  }
-
-  // ConnectionTypeObserver:
-  virtual void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE {
-    if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
-      return;
-    if (type != connection_type_ &&
-        connection_type_ != net::NetworkChangeNotifier::CONNECTION_NONE) {
-      connection_type_is_ambiguous_ = true;
-    }
-    connection_type_ = type;
-  }
-
-  bool connection_type_is_ambiguous() const {
-    return connection_type_is_ambiguous_;
-  }
-
-  SystemProfileProto::Network::ConnectionType connection_type() const {
-    switch (connection_type_) {
-      case net::NetworkChangeNotifier::CONNECTION_NONE:
-      case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-        return SystemProfileProto::Network::CONNECTION_UNKNOWN;
-      case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-        return SystemProfileProto::Network::CONNECTION_ETHERNET;
-      case net::NetworkChangeNotifier::CONNECTION_WIFI:
-        return SystemProfileProto::Network::CONNECTION_WIFI;
-      case net::NetworkChangeNotifier::CONNECTION_2G:
-        return SystemProfileProto::Network::CONNECTION_2G;
-      case net::NetworkChangeNotifier::CONNECTION_3G:
-        return SystemProfileProto::Network::CONNECTION_3G;
-      case net::NetworkChangeNotifier::CONNECTION_4G:
-        return SystemProfileProto::Network::CONNECTION_4G;
-    }
-    NOTREACHED();
-    return SystemProfileProto::Network::CONNECTION_UNKNOWN;
-  }
-
- private:
-  bool connection_type_is_ambiguous_;
-  net::NetworkChangeNotifier::ConnectionType connection_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkObserver);
-};
-
 GoogleUpdateMetrics::GoogleUpdateMetrics() : is_system_install(false) {}
 
 GoogleUpdateMetrics::~GoogleUpdateMetrics() {}
@@ -375,8 +315,7 @@ static base::LazyInstance<std::string>::Leaky
   g_version_extension = LAZY_INSTANCE_INITIALIZER;
 
 MetricsLog::MetricsLog(const std::string& client_id, int session_id)
-    : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()),
-      network_observer_(new NetworkObserver()) {}
+    : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()) {}
 
 MetricsLog::~MetricsLog() {}
 
@@ -876,9 +815,13 @@ void MetricsLog::RecordEnvironmentProto(
 
   SystemProfileProto::Network* network = system_profile->mutable_network();
   network->set_connection_type_is_ambiguous(
-      network_observer_->connection_type_is_ambiguous());
-  network->set_connection_type(network_observer_->connection_type());
-  network_observer_->Reset();
+      network_observer_.connection_type_is_ambiguous());
+  network->set_connection_type(network_observer_.connection_type());
+  network->set_wifi_phy_layer_protocol_is_ambiguous(
+      network_observer_.wifi_phy_layer_protocol_is_ambiguous());
+  network->set_wifi_phy_layer_protocol(
+      network_observer_.wifi_phy_layer_protocol());
+  network_observer_.Reset();
 
   SystemProfileProto::OS* os = system_profile->mutable_os();
   std::string os_name = base::SysInfo::OperatingSystemName();
