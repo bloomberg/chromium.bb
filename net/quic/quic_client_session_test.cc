@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/stl_util.h"
+#include "net/base/capturing_net_log.h"
 #include "net/base/test_completion_callback.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -24,7 +25,7 @@ class QuicClientSessionTest : public ::testing::Test {
   QuicClientSessionTest()
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint())),
-        session_(connection_, NULL, NULL, kServerHostname) {
+        session_(connection_, NULL, NULL, kServerHostname, NULL) {
   }
 
   QuicGuid guid_;

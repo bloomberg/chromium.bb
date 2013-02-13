@@ -311,7 +311,7 @@ function painterTestURLRequest() {
       'params': {
         'source_dependency': {
           'id': 149,
-          'type': 11
+          'type': EventSourceType.HTTP_STREAM_JOB
         }
       },
       'phase': EventPhase.PHASE_NONE,
@@ -1077,7 +1077,7 @@ function painterTestHexEncodedBytes() {
       'params': {
         'source_dependency': {
           'id': 634,
-          'type': 4
+          'type': EventSourceType.CONNECT_JOB
         }
       },
       'phase': EventPhase.PHASE_BEGIN,
@@ -1139,7 +1139,7 @@ function painterTestHexEncodedBytes() {
       'params': {
         'source_dependency': {
           'id': 628,
-          'type': 11
+          'type': EventSourceType.HTTP_STREAM_JOB
         }
       },
       'phase': EventPhase.PHASE_BEGIN,
