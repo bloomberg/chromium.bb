@@ -62,7 +62,9 @@ void ComputeDatabaseMetrics(const base::FilePath& history_name,
   sql::Statement weekly_visit_sql(db.GetUniqueStatement(
       "SELECT count(*) FROM visits WHERE visit_time > ?"));
   weekly_visit_sql.BindInt64(0, one_week_ago.ToInternalValue());
-  int weekly_visit_count = weekly_visit_sql.ColumnInt(0);
+  int weekly_visit_count = 0;
+  if (weekly_visit_sql.Step())
+    weekly_visit_count = weekly_visit_sql.ColumnInt(0);
   UMA_HISTOGRAM_COUNTS("History.WeeklyVisitCount", weekly_visit_count);
 
   base::Time one_month_ago = base::Time::Now() - base::TimeDelta::FromDays(30);
@@ -70,8 +72,11 @@ void ComputeDatabaseMetrics(const base::FilePath& history_name,
       "SELECT count(*) FROM visits WHERE visit_time > ? AND visit_time <= ?"));
   monthly_visit_sql.BindInt64(0, one_month_ago.ToInternalValue());
   monthly_visit_sql.BindInt64(1, one_week_ago.ToInternalValue());
+  int older_visit_count = 0;
+  if (monthly_visit_sql.Step())
+    older_visit_count = monthly_visit_sql.ColumnInt(0);
   UMA_HISTOGRAM_COUNTS("History.MonthlyVisitCount",
-                       monthly_visit_sql.ColumnInt(0) + weekly_visit_count);
+                       older_visit_count + weekly_visit_count);
 
   UMA_HISTOGRAM_TIMES("History.DatabaseBasicMetricsTime",
                       base::TimeTicks::Now() - start_time);
