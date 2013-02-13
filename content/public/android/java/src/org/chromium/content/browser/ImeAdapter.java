@@ -280,7 +280,8 @@ class ImeAdapter {
         }
     }
 
-    private boolean checkCompositionQueueAndCallNative(String text, int newCursorPosition,
+    @VisibleForTesting
+    boolean checkCompositionQueueAndCallNative(String text, int newCursorPosition,
             boolean isCommit) {
         if (mNativeImeAdapterAndroid == 0) {
             return false;
@@ -461,19 +462,20 @@ class ImeAdapter {
         return true;
     }
 
-    // This InputConnection is created by ContentView.onCreateInputConnection.
-    // It then adapts android's IME to chrome's RenderWidgetHostView using the
-    // native ImeAdapterAndroid via the outer class ImeAdapter.
-    static public class AdapterInputConnection extends BaseInputConnection {
-        private View mInternalView;
-        private ImeAdapter mImeAdapter;
-        private boolean mSingleLine;
-
-        // Factory function.
-        static public AdapterInputConnection getInstance(View view, ImeAdapter imeAdapter,
+    public static class AdapterInputConnectionFactory {
+        public AdapterInputConnection get(View view, ImeAdapter imeAdapter,
                 EditorInfo outAttrs) {
             return new AdapterInputConnection(view, imeAdapter, outAttrs);
         }
+    }
+
+    // This InputConnection is created by ContentView.onCreateInputConnection.
+    // It then adapts android's IME to chrome's RenderWidgetHostView using the
+    // native ImeAdapterAndroid via the outer class ImeAdapter.
+    public static class AdapterInputConnection extends BaseInputConnection {
+        private View mInternalView;
+        private ImeAdapter mImeAdapter;
+        private boolean mSingleLine;
 
         /**
          * Updates the AdapterInputConnection's internal representation of the text
@@ -522,7 +524,6 @@ class ImeAdapter {
             }
             Selection.setSelection(editable, selectionStart, selectionEnd);
             super.setComposingRegion(compositionStart, compositionEnd);
-
             if (textUnchanged || prevText.equals("")) {
                 // updateSelection should be called when a manual selection change occurs.
                 // Should not be called if text is being entered else issues can occur
@@ -685,7 +686,8 @@ class ImeAdapter {
                     .getSystemService(Context.INPUT_METHOD_SERVICE);
         }
 
-        private AdapterInputConnection(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
+        @VisibleForTesting
+        protected AdapterInputConnection(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
             super(view, true);
             mInternalView = view;
             mImeAdapter = imeAdapter;

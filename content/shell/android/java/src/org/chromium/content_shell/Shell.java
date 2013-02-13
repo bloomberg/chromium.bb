@@ -146,6 +146,9 @@ public class Shell extends LinearLayout {
             mContentView.loadUrl(new LoadUrlParams(sanitizeUrl(url)));
         }
         mUrlTextView.clearFocus();
+        // TODO(aurimas): Remove this when crbug.com/174541 is fixed.
+        mContentView.clearFocus();
+        mContentView.requestFocus();
     }
 
     /**

@@ -44,6 +44,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
+import org.chromium.content.browser.ImeAdapter.AdapterInputConnectionFactory;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content.common.TraceEvent;
@@ -211,6 +212,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     // Only valid when focused on a text / password field.
     private ImeAdapter mImeAdapter;
+    private ImeAdapter.AdapterInputConnectionFactory mAdapterInputConnectionFactory;
     private ImeAdapter.AdapterInputConnection mInputConnection;
 
     private SelectionHandleController mSelectionHandleController;
@@ -285,6 +287,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         WeakContext.initializeWeakContext(context);
         mPersonality = personality;
         HeapStatsLogger.init(mContext.getApplicationContext());
+        mAdapterInputConnectionFactory = new AdapterInputConnectionFactory();
     }
 
     /**
@@ -330,6 +333,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     @VisibleForTesting
     protected ImeAdapter getImeAdapterForTest() {
         return mImeAdapter;
+    }
+
+    @VisibleForTesting
+    protected void setAdapterInputConnectionFactory(AdapterInputConnectionFactory factory) {
+        mAdapterInputConnectionFactory = factory;
     }
 
     @VisibleForTesting
@@ -1227,8 +1235,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             // enter fullscreen mode.
             outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
         }
-        mInputConnection = ImeAdapter.AdapterInputConnection.getInstance(
-                mContainerView, mImeAdapter, outAttrs);
+        mInputConnection =
+                mAdapterInputConnectionFactory.get(mContainerView, mImeAdapter, outAttrs);
         return mInputConnection;
     }
 
