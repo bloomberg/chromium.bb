@@ -824,9 +824,9 @@ void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
     entries.back() = NULL;
     entries.get().pop_back();
 
-    DeleteEntries(entries.Pass(),
-                  base::Bind(&EntryAdapter, base::Passed(&earliest_entry),
-                             callback));
+    DeleteEntriesForEnsuringTitleUniqueness(
+        entries.Pass(),
+        base::Bind(&EntryAdapter, base::Passed(&earliest_entry), callback));
     return;
   }
 
@@ -837,7 +837,7 @@ void DriveFileSyncClient::DidListEntriesToEnsureUniqueness(
   callback.Run(google_apis::HTTP_FOUND, entry.Pass());
 }
 
-void DriveFileSyncClient::DeleteEntries(
+void DriveFileSyncClient::DeleteEntriesForEnsuringTitleUniqueness(
     ScopedVector<google_apis::ResourceEntry> entries,
     const GDataErrorCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -852,14 +852,17 @@ void DriveFileSyncClient::DeleteEntries(
   entries.back() = NULL;
   entries.get().pop_back();
 
+  // We don't care conflicts here as other clients may be also deleting this
+  // file, so passing an empty etag.
   drive_service_->DeleteResource(
       entry->resource_id(),
-      entry->etag(),
-      base::Bind(&DriveFileSyncClient::DidDeleteEntry, AsWeakPtr(),
-                 base::Passed(&entries), callback));
+      std::string(),  // empty etag
+      base::Bind(
+          &DriveFileSyncClient::DidDeleteEntriesForEnsuringTitleUniqueness,
+          AsWeakPtr(), base::Passed(&entries), callback));
 }
 
-void DriveFileSyncClient::DidDeleteEntry(
+void DriveFileSyncClient::DidDeleteEntriesForEnsuringTitleUniqueness(
     ScopedVector<google_apis::ResourceEntry> entries,
     const GDataErrorCallback& callback,
     google_apis::GDataErrorCode error) {
@@ -873,7 +876,7 @@ void DriveFileSyncClient::DidDeleteEntry(
   }
 
   DVLOG(2) << "Deletion completed";
-  DeleteEntries(entries.Pass(), callback);
+  DeleteEntriesForEnsuringTitleUniqueness(entries.Pass(), callback);
 }
 
 }  // namespace sync_file_system

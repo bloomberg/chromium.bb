@@ -291,11 +291,13 @@ class DriveFileSyncClient
       const ResourceEntryCallback& callback,
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> feed);
-  void DeleteEntries(ScopedVector<google_apis::ResourceEntry> entries,
-                     const GDataErrorCallback& callback);
-  void DidDeleteEntry(ScopedVector<google_apis::ResourceEntry> entries,
-                      const GDataErrorCallback& callback,
-                      google_apis::GDataErrorCode error);
+  void DeleteEntriesForEnsuringTitleUniqueness(
+      ScopedVector<google_apis::ResourceEntry> entries,
+      const GDataErrorCallback& callback);
+  void DidDeleteEntriesForEnsuringTitleUniqueness(
+      ScopedVector<google_apis::ResourceEntry> entries,
+      const GDataErrorCallback& callback,
+      google_apis::GDataErrorCode error);
 
   static std::string FormatTitleQuery(const std::string& title);
 
