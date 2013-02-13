@@ -10,9 +10,11 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 
+from chromite.cros.commands import cros_chrome_sdk_unittest
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access_unittest
 from chromite.scripts import deploy_chrome
@@ -35,6 +37,8 @@ def _ParseCommandLine(argv):
 
 class InterfaceTest(cros_test_lib.OutputTestCase):
   """Tests the commandline interface of the script."""
+
+  BOARD = 'lumpy'
 
   def testGsLocalPathUnSpecified(self):
     """Test no chrome path specified."""
@@ -65,12 +69,16 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
   def testStagingFlagsNoStrict(self):
     """Errors out when --staging-flags is set without --strict."""
     argv = ['--staging-only', '--build-dir=/path/to/nowhere',
-            '--staging-flags=highdpi']
+            '--board=%s' % self.BOARD, '--staging-flags=highdpi']
     self.assertParseError(argv)
 
   def testStrictNoBuildDir(self):
     """Errors out when --strict is set without --build-dir."""
     argv = ['--staging-only', '--strict', '--gs-path', _GS_PATH]
+    self.assertParseError(argv)
+
+  def testNoBoardBuildDir(self):
+    argv = ['--staging-only', '--build-dir=/path/to/nowhere']
     self.assertParseError(argv)
 
 
@@ -203,7 +211,13 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
     self.sudo_cleanup = True
     self.staging_dir = os.path.join(self.tempdir, 'staging')
     self.build_dir = os.path.join(self.tempdir, 'build_dir')
-    self.common_flags = ['--build-dir', self.build_dir, '--staging-only']
+    self.common_flags = ['--build-dir', self.build_dir,
+                         '--board=lumpy', '--staging-only', '--cache-dir',
+                         self.tempdir]
+    self.sdk_mock = self.StartPatcher(cros_chrome_sdk_unittest.ChromeSDKMock())
+    self.PatchObject(
+        osutils, 'SourceEnvironment', autospec=True,
+        return_value={'STRIP': 'x86_64-cros-linux-gnu-strip'})
 
   def testEmptyDeploySuccess(self):
     """User-mode staging - stage whatever we can find."""
@@ -215,6 +229,9 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
     """ebuild-mode staging - stage only things we want."""
     options, _ = _ParseCommandLine(
         self.common_flags + ['--gyp-defines', 'chromeos=1', '--strict'])
+    chrome_util.MissingPathError(deploy_chrome._PrepareStagingDir,
+        options, self.tempdir, self.staging_dir)
+
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
         options, self.tempdir, self.staging_dir)

@@ -1789,7 +1789,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
       cros_build_lib.RunCommand(
           [bzip2, '-d', env_bzip, '-c'],
-          log_stdout_to_file=os.path.join(tempdir, 'environment'))
+          log_stdout_to_file=os.path.join(tempdir, constants.CHROME_ENV_FILE))
       env_tar = os.path.join(self._archive_path, constants.CHROME_ENV_TAR)
       cros_build_lib.CreateTarball(env_tar, tempdir)
       self._upload_queue.put([os.path.basename(env_tar)])

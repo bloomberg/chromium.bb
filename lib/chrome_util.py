@@ -106,12 +106,16 @@ class MissingPathError(Exception):
 class Path(object):
   """Represents an artifact to be copied from build dir to staging dir."""
 
-  def __init__(self, src, cond=None, dest=None, optional=False):
+  def __init__(self, src, strip=False, cond=None, dest=None, optional=False):
     """Initializes the object.
 
     Arguments:
       src: The relative path of the artifact.  Can be a file or a directory.
            Can be a glob pattern.
+      strip: Whether to perform symbol stripping on the surce files.  We
+             currently only support stripping of specified files and glob
+             patterns that return files.  If |src| is a directory or contains
+             directories, the content of the directory will not be stripped.
       cond: A condition (see Conditions class) to test for in deciding whether
             to process this artifact.
       dest: Name to give to the target file/directory.  Defaults to keeping the
@@ -120,6 +124,7 @@ class Path(object):
                 script errors out if the artifact does not exist.
     """
     self.src = src
+    self.strip = strip
     self.cond = cond
     self.optional = optional
     self.dest = dest
@@ -130,8 +135,7 @@ class Path(object):
       return self.cond(gyp_defines, staging_flags)
     return True
 
-  @staticmethod
-  def _Copy(src, dest):
+  def _Copy(self, src, dest, strip_bin):
     def Log(directory):
       sep = ' [d] -> ' if directory else ' -> '
       logging.debug('%s %s %s', src, sep, dest)
@@ -144,11 +148,19 @@ class Path(object):
       if os.path.isdir(dest):
         dest = os.path.join(dest, os.path.basename(src))
       shutil.copytree(src, dest)
+    elif self.strip:
+      cros_build_lib.RunCommand([strip_bin, '--strip-unneeded', '-o', dest,
+                                 src])
     else:
       shutil.copy(src, dest)
 
-  def Copy(self, src_base, dest_base, ignore_missing=False):
-    """Copy artifact(s) from source directory to destination."""
+  def Copy(self, src_base, dest_base, strip_bin, ignore_missing=False):
+    """Copy artifact(s) from source directory to destination.
+
+    Arguments:
+      src_base: The directory to apply the src glob pattern match in.
+      dest_base: The directory to copy matched files to.  |Path.dest|.
+    """
     src = os.path.join(src_base, self.src)
     paths = glob.glob(src)
     if not paths:
@@ -167,7 +179,7 @@ class Path(object):
       dest = os.path.join(
           dest_base,
           os.path.relpath(p, src_base) if self.dest is None else self.dest)
-      self._Copy(p, dest)
+      self._Copy(p, dest, strip_bin)
 
 
 _DISABLE_NACL = 'disable_nacl'
@@ -183,27 +195,30 @@ C = Conditions
 
 
 _COPY_PATHS = (
-  Path('chrome'),
+  Path('chrome', strip=True),
   Path('chrome_sandbox', dest=_CHROME_SANDBOX_DEST),
   Path('chrome-wrapper'),
   Path('chrome.pak'),
   Path('chrome_100_percent.pak'),
   Path('extensions', optional=True),
-  Path('libffmpegsumo.so'),
-  Path('libosmesa.so'),
+  Path('libffmpegsumo.so', strip=True),
+  Path('libosmesa.so', strip=True),
   Path('locales'),
   Path('resources'),
   Path('resources.pak'),
   Path('xdg-settings'),
   Path('*.png'),
-  Path('lib.target/*.so', cond=C.GypSet('component', value='shared_library')),
-  Path('libppGoogleNaClPluginChrome.so', cond=C.GypNotSet(_DISABLE_NACL)),
+  Path('lib.target/*.so', strip=True,
+       cond=C.GypSet('component', value='shared_library')),
+  Path('libppGoogleNaClPluginChrome.so', strip=True,
+       cond=C.GypNotSet(_DISABLE_NACL)),
   Path('nacl_helper_bootstrap', cond=C.GypNotSet(_DISABLE_NACL)),
-  Path('nacl_irt_*.nexe', cond=C.GypNotSet(_DISABLE_NACL)),
-  Path('nacl_helper.exe', optional=True, cond=C.GypNotSet(_DISABLE_NACL)),
+  Path('nacl_irt_*.nexe', strip=True, cond=C.GypNotSet(_DISABLE_NACL)),
+  Path('nacl_helper.exe', strip=True, optional=True,
+       cond=C.GypNotSet(_DISABLE_NACL)),
   Path('ash_shell', cond=C.GypSet(_USE_DRM)),
   Path('aura_demo', cond=C.GypSet(_USE_DRM)),
-  Path('libpdf.so', cond=C.GypSet(_USE_PDF)),
+  Path('libpdf.so', strip=True, cond=C.GypSet(_USE_PDF)),
   Path('chrome_200_percent.pak', cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
 )
 
@@ -223,7 +238,7 @@ class StagingError(Exception):
   pass
 
 
-def StageChromeFromBuildDir(staging_dir, build_dir, strict=False,
+def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
                             gyp_defines=None, staging_flags=None):
   """Populates a staging directory with necessary build artifacts.
 
@@ -234,6 +249,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strict=False,
   Arguments:
     staging_dir: Path to an empty staging directory.
     build_dir: Path to location of Chrome build artifacts.
+    strip_bin: Path to executable used for stripping binaries.
     strict: If set, decide what to stage based on the |gyp_defines| and
       |staging_flags| passed in.  Otherwise, we stage everything that we know
       about, that we can find.
@@ -255,6 +271,6 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strict=False,
 
   for p in _COPY_PATHS:
     if not strict or p.ShouldProcess(gyp_defines, staging_flags):
-      p.Copy(build_dir, dest_base, ignore_missing=(not strict))
+      p.Copy(build_dir, dest_base, strip_bin, ignore_missing=(not strict))
 
   _SetPermissions(staging_dir, dest_base)

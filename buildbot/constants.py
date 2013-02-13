@@ -253,6 +253,7 @@ def _SlashToUnderscore(string):
 DEFAULT_ARCHIVE_BUCKET = 'gs://chromeos-image-archive'
 CHROME_SYSROOT_TAR = 'sysroot_%s.tar.xz' % _SlashToUnderscore(CHROME_CP)
 CHROME_ENV_TAR = 'environment_%s.tar.xz' % _SlashToUnderscore(CHROME_CP)
+CHROME_ENV_FILE = 'environment'
 BASE_IMAGE_NAME = 'chromiumos_base_image'
 BASE_IMAGE_TAR = '%s.tar.xz' % BASE_IMAGE_NAME
 BASE_IMAGE_BIN = '%s.bin' % BASE_IMAGE_NAME

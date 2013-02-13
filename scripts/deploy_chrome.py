@@ -26,6 +26,7 @@ import time
 
 
 from chromite.buildbot import constants
+from chromite.cros.commands import cros_chrome_sdk
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
 from chromite.lib import commandline
@@ -211,33 +212,38 @@ def _CreateParser():
   # TODO(rcui): Have this use the UI-V2 format of having source and target
   # device be specified as positional arguments.
   parser.add_option('--force', action='store_true', default=False,
-                    help=('Skip all prompts (i.e., for disabling of rootfs '
-                          'verification).  This may result in the target '
-                          'machine being rebooted.'))
+                    help='Skip all prompts (i.e., for disabling of rootfs '
+                         'verification).  This may result in the target '
+                         'machine being rebooted.')
+  parser.add_option('--board',
+                    default=os.environ.get(cros_chrome_sdk.SDK_BOARD_ENV),
+                    help="The board the Chrome build is targeted for.  When in "
+                         "a 'cros chrome-sdk' shell, defaults to the SDK "
+                         "board.")
   parser.add_option('--build-dir', type='path',
-                    help=('The directory with Chrome build artifacts to deploy '
-                          'from.  Typically of format <chrome_root>/out/Debug. '
-                          'When this option is used, the GYP_DEFINES '
-                          'environment variable must be set.'))
+                    help='The directory with Chrome build artifacts to deploy '
+                         'from.  Typically of format <chrome_root>/out/Debug. '
+                         'When this option is used, the GYP_DEFINES '
+                         'environment variable must be set.')
   parser.add_option('-g', '--gs-path', type='gs_path',
-                    help=('GS path that contains the chrome to deploy.'))
+                    help='GS path that contains the chrome to deploy.')
   parser.add_option('-p', '--port', type=int, default=remote.DEFAULT_SSH_PORT,
-                    help=('Port of the target device to connect to.'))
+                    help='Port of the target device to connect to.')
   parser.add_option('-t', '--to',
-                    help=('The IP address of the CrOS device to deploy to.'))
+                    help='The IP address of the CrOS device to deploy to.')
   parser.add_option('-v', '--verbose', action='store_true', default=False,
-                    help=('Show more debug output.'))
+                    help='Show more debug output.')
 
   group = optparse.OptionGroup(parser, 'Advanced Options')
   group.add_option('-l', '--local-pkg-path', type='path',
-                    help='Path to local chrome prebuilt package to deploy.')
+                   help='Path to local chrome prebuilt package to deploy.')
   group.add_option('--strict', action='store_true', default=False,
-                    help='Stage artifacts based on the GYP_DEFINES environment '
-                         'variable and --staging-flags, if set.')
+                   help='Stage artifacts based on the GYP_DEFINES environment '
+                        'variable and --staging-flags, if set.')
   group.add_option('--staging-flags', default=None, type='gyp_defines',
-                    help=('Requires --strict to be set.  Extra flags to '
-                          'control staging.  Valid flags are - %s'
-                          % ', '.join(chrome_util.STAGING_FLAGS)))
+                   help='Requires --strict to be set.  Extra flags to '
+                        'control staging.  Valid flags are - %s'
+                        % ', '.join(chrome_util.STAGING_FLAGS))
 
   parser.add_option_group(group)
 
@@ -268,6 +274,8 @@ def _ParseCommandLine(argv):
   if options.build_dir and any([options.gs_path, options.local_pkg_path]):
     parser.error('Cannot specify both --build_dir and '
                  '--gs-path/--local-pkg-patch')
+  if options.build_dir and not options.board:
+    parser.error('--board is required when --build-dir is specified.')
   if options.gs_path and options.local_pkg_path:
     parser.error('Cannot specify both --gs-path and --local-pkg-path')
   if not (options.staging_only or options.to):
@@ -277,7 +285,6 @@ def _ParseCommandLine(argv):
                  'set.')
   if options.staging_flags and not options.strict:
     parser.error('--strict requires --staging-flags to be set.')
-
   return options, args
 
 
@@ -290,15 +297,15 @@ def _PostParseCheck(options, _args):
   if options.local_pkg_path and not os.path.isfile(options.local_pkg_path):
     cros_build_lib.Die('%s is not a file.', options.local_pkg_path)
 
-  if options.build_dir and options.strict and not options.gyp_defines:
+  if options.strict and not options.gyp_defines:
     gyp_env = os.getenv('GYP_DEFINES', None)
     if gyp_env is not None:
       options.gyp_defines = chrome_util.ProcessGypDefines(gyp_env)
       logging.info('GYP_DEFINES taken from environment: %s',
                    options.gyp_defines)
     else:
-      cros_build_lib.Die('When --build-dir and --strict is set, the '
-                         'GYP_DEFINES environment variable must be set.')
+      cros_build_lib.Die('When --strict is set, the GYP_DEFINES environment '
+                         'variable must be set.')
 
 
 def _FetchChromePackage(cache_dir, tempdir, gs_path):
@@ -340,9 +347,17 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
   staging directory.
   """
   if options.build_dir:
-    chrome_util.StageChromeFromBuildDir(
-        staging_dir, options.build_dir, options.gyp_defines,
-        options.staging_flags)
+    sdk = cros_chrome_sdk.ChromeSDK(options.cache_dir, options.board)
+    components = (sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_ENV_TAR)
+    with sdk.Prepare(components=components) as ctx:
+      env_path = os.path.join(ctx.key_map[constants.CHROME_ENV_TAR].path,
+                              constants.CHROME_ENV_FILE)
+      strip_bin = osutils.SourceEnvironment(env_path, ['STRIP'])['STRIP']
+      strip_bin = os.path.join(ctx.key_map[sdk.TARGET_TOOLCHAIN_KEY].path,
+                               'bin', os.path.basename(strip_bin))
+      chrome_util.StageChromeFromBuildDir(
+          staging_dir, options.build_dir, strip_bin, strict=options.strict,
+          gyp_defines=options.gyp_defines, staging_flags=options.staging_flags)
   else:
     pkg_path = options.local_pkg_path
     if options.gs_path:

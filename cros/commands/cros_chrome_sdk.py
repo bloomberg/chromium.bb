@@ -273,7 +273,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     Arguments:
       var_contents: The contents of the environment variable.
     """
-    cmd = var_contents.partition(' -B')[0]
+    cmd = os.path.basename(var_contents.partition(' -B')[0])
     return '%s -fuse-ld=ld.gold' % cmd
 
   def _SetupEnvironment(self, board, version, key_map):

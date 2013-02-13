@@ -117,7 +117,10 @@ class ChromeSDKMock(partial_mock.PartialMock):
 
   @_DependencyMockCtx
   def _target__init__(self, inst, *args, **kwargs):
-    return self.backup['__init__'](inst, *args, **kwargs)
+    self.backup['__init__'](inst, *args, **kwargs)
+    if not inst.cache_base.startswith('/tmp'):
+      raise AssertionError('For testing, ChromeSDK cache_dir needs to be a '
+                           'dir under /tmp')
 
   @_DependencyMockCtx
   def _GetChromeLKGM(self, _inst, *_args, **_kwargs):
