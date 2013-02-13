@@ -11,4 +11,5 @@ include_rules = [
   "+third_party/skia",
   "+net",
   "+ui",
+  "+win8",
 ]

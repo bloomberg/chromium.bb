@@ -28,15 +28,11 @@ class TestMetroViewerProcessHost : public IPC::Listener,
   explicit TestMetroViewerProcessHost(const std::string& ipc_channel_name);
   virtual ~TestMetroViewerProcessHost();
 
-  // Launches the Chrome viewer process and blocks until that viewer process
-  // connects or until a timeout is reached. Returns true if the viewer process
-  // connects before the timeout is reached.
-  // TODO(robertshield): This creates a run-time dependency on chrome.exe as the
-  // viewer process and, indirectly, setup.exe as the only thing that can
-  // correctly register a program as the default browser on metro. Investigate
-  // extracting the registration code and the metro init code and building them
-  // into a standalone viewer process.
-  bool LaunchImmersiveChromeAndWaitForConnection();
+  // Launches the viewer process associated with the given |app_user_model_id|
+  // and blocks until that viewer process connects or until a timeout is
+  // reached. Returns true if the viewer process connects before the timeout is
+  // reached.
+  bool LaunchViewerAndWaitForConnection(const string16& app_user_model_id);
 
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;

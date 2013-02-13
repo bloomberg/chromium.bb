@@ -1,0 +1,99 @@
+HKCU {
+  NoRemove Software {
+    NoRemove Classes {
+      ForceRemove '%APP_USER_MODEL_ID%' {
+        ForceRemove .exe {
+          ForceRemove shell = s 'open' {
+            ForceRemove open {
+              command = s '%EXE_OPEN_COMMAND%' {
+                val DelegateExecute = s '%DELEGATE_EXECUTE_CLSID%'
+              }
+              val CommandId = s 'Browser.Launch'
+            }
+            ForceRemove opennewwindow = s 'New Window' {
+              command = s '%EXE_OPEN_COMMAND%' {
+                val DelegateExecute = s '%DELEGATE_EXECUTE_CLSID%'
+              }
+              val CommandId = s 'Browser.Launch'
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+HKCU {
+  NoRemove Software {
+    NoRemove Classes {
+      ForceRemove '%PROG_ID%' = s 'Test Delegate Execute ProgId' {
+        val AppUserModelId = s '%APP_USER_MODEL_ID%'
+        val 'URL Protocol' = s ''
+        ForceRemove Application {
+          val ApplicationName = s '%EXE_NAME%'
+          val ApplicationCompany = s 'Google Inc.'
+          val ApplicationDescription = s 'Test Description'
+          val ApplicationIcon = s '%EXE_ICON%'
+          val AppUserModelId = s '%APP_USER_MODEL_ID%'
+        }
+        ForceRemove DefaultIcon = s '%EXE_ICON%' {
+        }
+        ForceRemove shell {
+          ForceRemove open {
+            ForceRemove command = s '%PROG_ID_OPEN_COMMAND%' {
+              val DelegateExecute = s '%DELEGATE_EXECUTE_CLSID%'
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+HKCU {
+  NoRemove Software {
+    NoRemove Classes {
+      NoRemove CLSID {
+        ForceRemove '%DELEGATE_EXECUTE_CLSID%' = s 'Test CommandExecuteImpl Class' {
+          ForceRemove Programmable
+          LocalServer32 = s '%MODULE%' {
+            val ServerExecutable = s '%MODULE_RAW%'
+          }
+        }
+      }
+    }
+  }
+}
+
+HKCU {
+  NoRemove Software {
+    NoRemove Clients {
+      NoRemove StartMenuInternet {
+        ForceRemove '%APP_USER_MODEL_ID%' = s '%EXE_NAME%' {
+          ForceRemove Capabilities {
+            val ApplicationDescription = s 'Test Description'
+            val ApplicationIcon = s '%EXE_ICON%'
+            val ApplicationName = s '%EXE_NAME%'
+            ForceRemove Startmenu {
+              val StartMenuInternet = s '%APP_USER_MODEL_ID%'
+            }
+            ForceRemove URLAssociations {
+              val http = s '%PROG_ID%'
+              val https = s '%PROG_ID%'
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+HKCU {
+  NoRemove Software {
+    NoRemove RegisteredApplications {
+      val '%APP_USER_MODEL_ID%' = s 'Software\Clients\StartMenuInternet\%APP_USER_MODEL_ID%\Capabilities'
+    }
+  }
+}
+
+

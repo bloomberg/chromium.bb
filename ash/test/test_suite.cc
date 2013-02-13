@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor_setup.h"
@@ -19,6 +20,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "ui/base/win/atl_module.h"
+#include "win8/test/metro_registration_helper.h"
+#include "win8/test/open_with_dialog_controller.h"
+#include "win8/test/test_registrar_constants.h"
 #endif
 
 namespace ash {
@@ -29,6 +34,21 @@ AuraShellTestSuite::AuraShellTestSuite(int argc, char** argv)
 
 void AuraShellTestSuite::Initialize() {
   base::TestSuite::Initialize();
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    ASSERT_TRUE(win8::RegisterTestDefaultBrowser(
+        win8::test::kDefaultTestAppUserModelId,
+        win8::test::kDefaultTestExeName));
+
+    ui::win::CreateATLModuleIfNeeded();
+
+    std::vector<string16> choices;
+    win8::OpenWithDialogController controller;
+    controller.RunSynchronously(NULL, L"http", win8::test::kDefaultTestExeName,
+                                &choices);
+  }
+#endif
 
   gfx::RegisterPathProvider();
   ui::RegisterPathProvider();

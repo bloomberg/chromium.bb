@@ -35,6 +35,7 @@
 #include "base/win/windows_version.h"
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/aura/root_window_host_win.h"
+#include "win8/test/test_registrar_constants.h"
 #endif
 
 namespace ash {
@@ -106,7 +107,8 @@ void AshTestBase::SetUp() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     metro_viewer_host_.reset(new TestMetroViewerProcessHost("viewer"));
     ASSERT_TRUE(
-        metro_viewer_host_->LaunchImmersiveChromeAndWaitForConnection());
+        metro_viewer_host_->LaunchViewerAndWaitForConnection(
+            win8::test::kDefaultTestAppUserModelId));
     aura::RemoteRootWindowHostWin* root_window_host =
         aura::RemoteRootWindowHostWin::Instance();
     ASSERT_TRUE(root_window_host != NULL);

@@ -61,39 +61,20 @@ void TestMetroViewerProcessHost::NotifyChannelConnected() {
   channel_connected_event_.Signal();
 }
 
-bool TestMetroViewerProcessHost::LaunchImmersiveChromeAndWaitForConnection() {
-  // Activate metro chrome. NOTE: This assumes a few things:
-  // 1) That we are using the per-user AppModelId. This is safe for tests.
-  //
-  // 2) That Chrome is registered as the default browser using a test AppModelId
-  // suffix.
-  // TODO(robertshield,grt): Automate 2). Note that at current, The Way to
-  // register chrome.exe is to run
-  //
-  // setup.exe --register-dev-chrome --register-dev-chrome-suffix=.test
-  //
-  // 3) That chrome.exe/delegate_execute.exe are at all suitable for using as
-  //    a metro viewer process for tests.
-  // TODO(robertshield): Investigate having a minimal non-chrome viewer process.
-  //                     http://crbug.com/170425
-#if defined(GOOGLE_CHROME_BUILD)
-  const wchar_t kAppUserModelId[] = L"Chrome";
-#else  // GOOGLE_CHROME_BUILD
-  const wchar_t kAppUserModelId[] = L"Chromium";
-#endif  // GOOGLE_CHROME_BUILD
+bool TestMetroViewerProcessHost::LaunchViewerAndWaitForConnection(
+    const string16& app_user_model_id) {
+  // Activate the viewer process. NOTE: This assumes that the viewer process is
+  // registered as the default browser using the provided |app_user_model_id|.
 
   // TODO(robertshield): Initialize COM at test suite startup.
   base::win::ScopedCOMInitializer com_initializer;
-
-  string16 app_model_id(kAppUserModelId);
-  app_model_id.append(L".test");
 
   base::win::ScopedComPtr<IApplicationActivationManager> activator;
   HRESULT hr = activator.CreateInstance(CLSID_ApplicationActivationManager);
   if (SUCCEEDED(hr)) {
     DWORD pid = 0;
     hr = activator->ActivateApplication(
-        app_model_id.c_str(), L"open", AO_NONE, &pid);
+        app_user_model_id.c_str(), L"open", AO_NONE, &pid);
   }
 
   LOG_IF(ERROR, FAILED(hr)) << "Tried and failed to launch Metro Chrome. "

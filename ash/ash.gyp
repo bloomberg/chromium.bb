@@ -517,6 +517,8 @@
           'dependencies': [
             '../ipc/ipc.gyp:ipc',
             '../ui/metro_viewer/metro_viewer.gyp:metro_viewer',
+            '../win8/win8.gyp:test_registrar',
+            '../win8/win8.gyp:test_support_win8',
           ],
           'sources': [
             'test/test_metro_viewer_process_host.cc',
