@@ -103,44 +103,44 @@ var harness = {
 
   initPathControls: function() {
     var paramstr = decodeURIComponent(document.location.search.substr(1));
-    this.params = paramstr ? JSON.parse(paramstr) : {};
+    harness.params = paramstr ? JSON.parse(paramstr) : {};
 
     var input = document.querySelector('#default-path');
-    input.value = this.params.defaultPath || '';
-    input.addEventListener('keyup', this.onInputKeyUp.bind(this));
+    input.value = harness.params.defaultPath || '';
+    input.addEventListener('keyup', harness.onInputKeyUp);
   },
 
   initListeners: function() {
     document.querySelector('input[type="file"]').
-        addEventListener('change', this.onFilesChange.bind(this));
+        addEventListener('change', harness.onFilesChange);
     document.querySelector('button#reset').
-        addEventListener('click', this.onClearClick.bind(this));
+        addEventListener('click', harness.onClearClick);
     document.querySelector('button#populate').
-        addEventListener('click', this.onPopulateClick.bind(this));
+        addEventListener('click', harness.onPopulateClick);
   },
 
   onInputKeyUp: function(event) {
     if (event.keyCode != 13)
       return;
 
-    this.changePath();
+    harness.changePath();
   },
 
   changePath: function() {
     var input = document.querySelector('#default-path');
-    this.changeParam('defaultPath', input.value);
+    harness.changeParam('defaultPath', input.value);
   },
 
   changeParam: function(name, value) {
-    this.params[name] = value;
-    document.location.href = '?' + JSON.stringify(this.params);
+    harness.params[name] = value;
+    document.location.href = '?' + JSON.stringify(harness.params);
   },
 
   /**
    * 'Reset Filesystem' button click handler.
    */
   onClearClick: function() {
-    harness.resetFilesystem(this.filesystem, harness.initFileSystem);
+    harness.resetFilesystem(harness.filesystem, harness.initFileSystem);
   },
 
   resetFilesystem: function(filesystem, opt_callback) {
@@ -161,7 +161,7 @@ var harness = {
    * 'Auto-populate' button click handler.
    */
   onPopulateClick: function() {
-    harness.importWebDirectory(this.filesystem,
+    harness.importWebDirectory(harness.filesystem,
         'Downloads', 'harness_files', function() {}, harness.refreshDirectory);
   },
 
@@ -169,7 +169,7 @@ var harness = {
    * Change handler for the 'input type=file' element.
    */
   onFilesChange: function(event) {
-    this.importFiles(harness.filesystem,
+    harness.importFiles(harness.filesystem,
         harness.fileManager.getCurrentDirectory(),
         [].slice.call(event.target.files),
         harness.refreshDirectory.bind(harness));

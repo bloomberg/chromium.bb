@@ -68,7 +68,7 @@ chrome.fileBrowserPrivate = {
    * --allow-file-access-from-files in order for this to work.
    */
   requestLocalFileSystem: function(callback) {
-    window.webkitRequestFileSystem(this.FS_TYPE,
+    window.webkitRequestFileSystem(chrome.fileBrowserPrivate.FS_TYPE,
         16 * 1024 * 1024, callback, util.ferr('Error requesting filesystem'));
   },
 

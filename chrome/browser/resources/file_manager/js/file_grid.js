@@ -94,8 +94,6 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache) {
  */
 FileGrid.decorateThumbnailBox = function(
     box, entry, metadataCache, fillMode, opt_imageLoadCallback) {
-  var self = this;
-
   box.className = 'img-container';
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');

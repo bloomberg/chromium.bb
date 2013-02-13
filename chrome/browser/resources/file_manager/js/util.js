@@ -854,7 +854,7 @@ util.platform = {
    * Close current window.
    */
   closeWindow: function() {
-    if (this.v2()) {
+    if (util.platform.v2()) {
       window.close();
     } else {
       chrome.tabs.getCurrent(function(tab) {
@@ -867,7 +867,7 @@ util.platform = {
    * @return {string} Applicaton id.
    */
   getAppId: function() {
-    if (this.v2()) {
+    if (util.platform.v2()) {
       return chrome.runtime.id;
     } else {
       return chrome.extension.getURL('').split('/')[2];
@@ -879,7 +879,7 @@ util.platform = {
    * @return {string} Extension-based URL.
    */
   getURL: function(path) {
-    if (this.v2()) {
+    if (util.platform.v2()) {
       return chrome.runtime.getURL(path);
     } else {
       return chrome.extension.getURL(path);
