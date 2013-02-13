@@ -68,6 +68,13 @@ class DriveApiUrlGenerator {
   GURL GetChildrenUrlForRemoval(const std::string& folder_id,
                                 const std::string& child_id) const;
 
+  // Returns a URL to initiate uploading a new file.
+  GURL GetInitiateUploadNewFileUrl() const;
+
+  // Returns a URL to initiate uploading an existing file specified by
+  // |resource_id|.
+  GURL GetInitiateUploadExistingFileUrl(const std::string& resource_id) const;
+
  private:
   const GURL base_url_;
 

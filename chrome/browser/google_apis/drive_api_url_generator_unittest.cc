@@ -176,4 +176,46 @@ TEST_F(DriveApiUrlGeneratorTest, GetFileTrashUrl) {
             test_url_generator_.GetFileTrashUrl("file:file_id").spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GetInitiateUploadNewFileUrl) {
+  EXPECT_EQ(
+      "https://www.googleapis.com/upload/drive/v2/files?uploadType=resumable",
+      url_generator_.GetInitiateUploadNewFileUrl().spec());
+
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files?uploadType=resumable",
+      test_url_generator_.GetInitiateUploadNewFileUrl().spec());
+}
+
+TEST_F(DriveApiUrlGeneratorTest, GetInitiateUploadExistingFileUrl) {
+  // |resource_id| should be embedded into the url.
+  EXPECT_EQ(
+      "https://www.googleapis.com/upload/drive/v2/files/0ADK06pfg"
+      "?uploadType=resumable",
+      url_generator_.GetInitiateUploadExistingFileUrl("0ADK06pfg").spec());
+  EXPECT_EQ(
+      "https://www.googleapis.com/upload/drive/v2/files/0Bz0bd074"
+      "?uploadType=resumable",
+      url_generator_.GetInitiateUploadExistingFileUrl("0Bz0bd074").spec());
+  EXPECT_EQ(
+      "https://www.googleapis.com/upload/drive/v2/files/file%3Afile_id"
+      "?uploadType=resumable",
+      url_generator_.GetInitiateUploadExistingFileUrl("file:file_id").spec());
+
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files/0ADK06pfg"
+      "?uploadType=resumable",
+      test_url_generator_.GetInitiateUploadExistingFileUrl(
+          "0ADK06pfg").spec());
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files/0Bz0bd074"
+      "?uploadType=resumable",
+      test_url_generator_.GetInitiateUploadExistingFileUrl(
+          "0Bz0bd074").spec());
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/upload/drive/v2/files/file%3Afile_id"
+      "?uploadType=resumable",
+      test_url_generator_.GetInitiateUploadExistingFileUrl(
+          "file:file_id").spec());
+}
+
 }  // namespace google_apis
