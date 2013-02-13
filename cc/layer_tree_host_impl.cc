@@ -972,11 +972,19 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
     // activate once all visible resources in pending tree are ready
     // or tile manager has no work scheduled for pending tree.
     if (activeTree()->RootLayer() &&
-        !pendingTree()->AreVisibleResourcesReady() &&
-        m_tileManager->HasPendingWorkScheduled(PENDING_TREE)) {
-        TRACE_EVENT_ASYNC_STEP0("cc",
-                                "PendingTree", m_pendingTree.get(), "waiting");
-      return;
+        !pendingTree()->AreVisibleResourcesReady()) {
+        // In smoothness takes priority mode, the pending tree's priorities are
+        // ignored, so the tile manager may not have work for it even though it
+        // is simultaneously not ready to be activated.
+        if (m_tileManager->GlobalState().tree_priority ==
+            SMOOTHNESS_TAKES_PRIORITY ||
+            m_tileManager->HasPendingWorkScheduled(PENDING_TREE)) {
+            TRACE_EVENT_ASYNC_STEP0("cc",
+                                    "PendingTree",
+                                    m_pendingTree.get(),
+                                    "waiting");
+            return;
+        }
     }
 
     activatePendingTree();
