@@ -266,6 +266,7 @@ void PanelTitlebarGtk::OnButtonClicked(GtkWidget* button) {
     panel->OnRestoreButtonClicked(
         (event->button.state & GDK_CONTROL_MASK) ?
             panel::APPLY_TO_ALL : panel::NO_MODIFIER);
+    panel->Activate();
   }
 
   gdk_event_free(event);

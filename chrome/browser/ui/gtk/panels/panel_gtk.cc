@@ -823,6 +823,14 @@ void PanelGtk::ClosePanel() {
 
 void PanelGtk::ActivatePanel() {
   gtk_window_present(window_);
+
+  // When the user clicks to expand the minimized panel, the panel has already
+  // become an active window before gtk_window_present is called. Thus the
+  // active window change event, fired by ActiveWindowWatcherXObserver, is not
+  // triggered. We need to call ActiveWindowChanged manually to update panel's
+  // active status. It is OK to call ActiveWindowChanged with the same active
+  // window twice since the 2nd call is just a no-op.
+  ActiveWindowChanged(gtk_widget_get_window(GTK_WIDGET(window_)));
 }
 
 void PanelGtk::DeactivatePanel() {
