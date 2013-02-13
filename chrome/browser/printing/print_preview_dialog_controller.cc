@@ -215,52 +215,42 @@ PrintPreviewDialogController* PrintPreviewDialogController::GetInstance() {
 }
 
 // static
-void PrintPreviewDialogController::PrintPreview(WebContents* tab) {
-  if (tab->ShowingInterstitialPage())
+void PrintPreviewDialogController::PrintPreview(WebContents* initiator_tab) {
+  if (initiator_tab->ShowingInterstitialPage())
     return;
 
-  PrintPreviewDialogController* tab_controller = GetInstance();
-  if (!tab_controller)
+  PrintPreviewDialogController* dialog_controller = GetInstance();
+  if (!dialog_controller)
     return;
-  if (!tab_controller->GetOrCreatePreviewTab(tab))
-    PrintViewManager::FromWebContents(tab)->PrintPreviewDone();
+  if (!dialog_controller->GetOrCreatePreviewDialog(initiator_tab))
+    PrintViewManager::FromWebContents(initiator_tab)->PrintPreviewDone();
 }
 
 WebContents* PrintPreviewDialogController::GetOrCreatePreviewDialog(
     WebContents* initiator_tab) {
-  return GetOrCreatePreviewTab(initiator_tab);
-}
-
-WebContents* PrintPreviewDialogController::GetOrCreatePreviewTab(
-    WebContents* initiator_tab) {
   DCHECK(initiator_tab);
 
-  // Get the print preview tab for |initiator_tab|.
-  WebContents* preview_tab = GetPrintPreviewForTab(initiator_tab);
-  if (!preview_tab)
+  // Get the print preview dialog for |initiator_tab|.
+  WebContents* preview_dialog = GetPrintPreviewForContents(initiator_tab);
+  if (!preview_dialog)
     return CreatePrintPreviewTab(initiator_tab);
 
-  // Show the initiator tab holding the existing preview tab.
+  // Show the initiator tab holding the existing preview dialog.
   initiator_tab->GetDelegate()->ActivateContents(initiator_tab);
-  return preview_tab;
+  return preview_dialog;
 }
 
 WebContents* PrintPreviewDialogController::GetPrintPreviewForContents(
     WebContents* contents) const {
-  return GetPrintPreviewForTab(contents);
-}
-
-WebContents* PrintPreviewDialogController::GetPrintPreviewForTab(
-    WebContents* tab) const {
-  // |preview_tab_map_| is keyed by the preview tab, so if find() succeeds, then
-  // |tab| is the preview tab.
-  PrintPreviewTabMap::const_iterator it = preview_tab_map_.find(tab);
+  // |preview_tab_map_| is keyed by the preview dialog, so if find() succeeds,
+  // then |contents| is the preview dialog.
+  PrintPreviewTabMap::const_iterator it = preview_tab_map_.find(contents);
   if (it != preview_tab_map_.end())
-    return tab;
+    return contents;
 
   for (it = preview_tab_map_.begin(); it != preview_tab_map_.end(); ++it) {
-    // If |tab| is an initiator tab.
-    if (tab == it->second) {
+    // If |contents| is an initiator tab.
+    if (contents == it->second) {
       // Return the associated preview tab.
       return it->first;
     }
@@ -297,11 +287,6 @@ void PrintPreviewDialogController::Observe(
 // static
 bool PrintPreviewDialogController::IsPrintPreviewDialog(WebContents* contents) {
   return IsPrintPreviewURL(contents->GetURL());
-}
-
-// static
-bool PrintPreviewDialogController::IsPrintPreviewTab(WebContents* tab) {
-  return IsPrintPreviewURL(tab->GetURL());
 }
 
 // static
@@ -357,7 +342,7 @@ void PrintPreviewDialogController::OnRendererProcessClosed(
 }
 
 void PrintPreviewDialogController::OnWebContentsDestroyed(WebContents* tab) {
-  WebContents* preview_tab = GetPrintPreviewForTab(tab);
+  WebContents* preview_tab = GetPrintPreviewForContents(tab);
   if (!preview_tab) {
     NOTREACHED();
     return;
@@ -371,7 +356,7 @@ void PrintPreviewDialogController::OnWebContentsDestroyed(WebContents* tab) {
 
 void PrintPreviewDialogController::OnNavEntryCommitted(
     WebContents* tab, content::LoadCommittedDetails* details) {
-  WebContents* preview_tab = GetPrintPreviewForTab(tab);
+  WebContents* preview_tab = GetPrintPreviewForContents(tab);
   if (!preview_tab) {
     NOTREACHED();
     return;
@@ -499,7 +484,7 @@ void PrintPreviewDialogController::RemoveObservers(WebContents* tab) {
 
 void PrintPreviewDialogController::RemoveInitiatorTab(
     WebContents* initiator_tab) {
-  WebContents* preview_tab = GetPrintPreviewForTab(initiator_tab);
+  WebContents* preview_tab = GetPrintPreviewForContents(initiator_tab);
   DCHECK(preview_tab);
   // Update the map entry first, so when the print preview tab gets destroyed
   // and reaches RemovePreviewTab(), it does not attempt to also remove the

@@ -30,7 +30,7 @@ class TestTabStripModelObserver : public content::TestNavigationObserver,
 
  private:
   // Callback to observer the print preview dialog associated with |contents|.
-  void ObservePrintPreviewTabContents(content::WebContents* contents);
+  void ObservePrintPreviewDialog(content::WebContents* contents);
 
   // TabStripModelObserver:
   virtual void TabBlockedStateChanged(content::WebContents* contents,

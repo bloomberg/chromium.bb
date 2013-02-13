@@ -52,20 +52,11 @@ class PrintPreviewDialogController
   content::WebContents* GetOrCreatePreviewDialog(
       content::WebContents* initiator_tab);
 
-  // DEPRECATED. Use GetOrCreatePreviewDialog() instead.
-  // TODO(thestig) Remove.
-  content::WebContents* GetOrCreatePreviewTab(
-      content::WebContents* initiator_tab);
-
   // Returns the preview dialog for |contents|.
   // Returns |contents| if |contents| is a preview dialog.
   // Returns NULL if no preview dialog exists for |contents|.
   content::WebContents* GetPrintPreviewForContents(
       content::WebContents* contents) const;
-
-  // DEPRECATED. Use GetPrintPreviewForContents() instead.
-  // TODO(thestig) Remove.
-  content::WebContents* GetPrintPreviewForTab(content::WebContents* tab) const;
 
   // Returns initiator tab for |preview_tab|.
   // Returns NULL if no initiator tab exists for |preview_tab|.
@@ -78,10 +69,6 @@ class PrintPreviewDialogController
 
   // Returns true if |contents| is a print preview dialog.
   static bool IsPrintPreviewDialog(content::WebContents* contents);
-
-  // DEPRECATED. Use IsPrintPreviewDialog() instead.
-  // TODO(thestig) Remove.
-  static bool IsPrintPreviewTab(content::WebContents* tab);
 
   // Returns true if |url| is a print preview url.
   static bool IsPrintPreviewURL(const GURL& url);

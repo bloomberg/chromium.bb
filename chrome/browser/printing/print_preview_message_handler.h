@@ -41,8 +41,9 @@ class PrintPreviewMessageHandler
   explicit PrintPreviewMessageHandler(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PrintPreviewMessageHandler>;
 
-  // Gets the print preview tab associated with the WebContents being observed.
-  content::WebContents* GetPrintPreviewTab();
+  // Gets the print preview dialog associated with the WebContents being
+  // observed.
+  content::WebContents* GetPrintPreviewDialog();
 
   // Gets the PrintPreviewUI associated with the WebContents being observed.
   PrintPreviewUI* GetPrintPreviewUI();

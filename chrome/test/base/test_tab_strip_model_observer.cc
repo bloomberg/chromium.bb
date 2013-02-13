@@ -28,21 +28,21 @@ void TestTabStripModelObserver::TabBlockedStateChanged(
   // Need to do this later - the print preview dialog has not been created yet.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&TestTabStripModelObserver::ObservePrintPreviewTabContents,
+      base::Bind(&TestTabStripModelObserver::ObservePrintPreviewDialog,
                  base::Unretained(this),
                  contents));
 }
 
-void TestTabStripModelObserver::ObservePrintPreviewTabContents(
+void TestTabStripModelObserver::ObservePrintPreviewDialog(
     content::WebContents* contents) {
-  printing::PrintPreviewDialogController* tab_controller =
+  printing::PrintPreviewDialogController* dialog_controller =
       printing::PrintPreviewDialogController::GetInstance();
-  if (tab_controller) {
-    content::WebContents* preview_tab =
-        tab_controller->GetPrintPreviewForTab(contents);
-    if (preview_tab) {
-      RegisterAsObserver(content::Source<content::NavigationController>(
-          &preview_tab->GetController()));
-    }
-  }
+  if (!dialog_controller)
+    return;
+  content::WebContents* preview_dialog =
+      dialog_controller->GetPrintPreviewForContents(contents);
+  if (!preview_dialog)
+    return;
+  RegisterAsObserver(content::Source<content::NavigationController>(
+      &preview_dialog->GetController()));
 }

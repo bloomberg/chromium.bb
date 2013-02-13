@@ -31,22 +31,23 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
   }
 };
 
-class TabDestroyedObserver : public content::WebContentsObserver {
+class PrintPreviewDialogDestroyedObserver
+    : public content::WebContentsObserver {
  public:
-  explicit TabDestroyedObserver(WebContents* contents)
-      : content::WebContentsObserver(contents),
-        tab_destroyed_(false) {
+  explicit PrintPreviewDialogDestroyedObserver(WebContents* dialog)
+      : content::WebContentsObserver(dialog),
+        dialog_destroyed_(false) {
   }
-  virtual ~TabDestroyedObserver() {}
+  virtual ~PrintPreviewDialogDestroyedObserver() {}
 
-  bool tab_destroyed() { return tab_destroyed_; }
+  bool dialog_destroyed() { return dialog_destroyed_; }
 
  private:
-  virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
-    tab_destroyed_ = true;
+  virtual void WebContentsDestroyed(WebContents* contents) OVERRIDE {
+    dialog_destroyed_ = true;
   }
 
-  bool tab_destroyed_;
+  bool dialog_destroyed_;
 };
 
 // Test to verify that when a initiator tab navigates, we can create a new
@@ -61,33 +62,33 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewDialogController* tab_controller =
+  printing::PrintPreviewDialogController* dialog_controller =
       printing::PrintPreviewDialogController::GetInstance();
-  ASSERT_TRUE(tab_controller);
+  ASSERT_TRUE(dialog_controller);
 
   // Get the preview tab for initiator tab.
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(initiator_tab);
   print_view_manager->PrintPreviewNow(false);
   WebContents* preview_tab =
-      tab_controller->GetOrCreatePreviewTab(initiator_tab);
+      dialog_controller->GetOrCreatePreviewDialog(initiator_tab);
 
   // New print preview tab is created.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_TRUE(preview_tab);
   ASSERT_NE(initiator_tab, preview_tab);
-  TabDestroyedObserver observer(preview_tab);
+  PrintPreviewDialogDestroyedObserver observer(preview_tab);
 
   // Navigate in the initiator tab.
   GURL url(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  ASSERT_TRUE(observer.tab_destroyed());
+  ASSERT_TRUE(observer.dialog_destroyed());
 
   // Get the print preview tab for initiator tab.
   print_view_manager->PrintPreviewNow(false);
   WebContents* new_preview_tab =
-      tab_controller->GetOrCreatePreviewTab(initiator_tab);
+      dialog_controller->GetOrCreatePreviewDialog(initiator_tab);
 
   // New preview tab is created.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -106,22 +107,22 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewDialogController* tab_controller =
+  printing::PrintPreviewDialogController* dialog_controller =
       printing::PrintPreviewDialogController::GetInstance();
-  ASSERT_TRUE(tab_controller);
+  ASSERT_TRUE(dialog_controller);
 
   // Get the preview tab for initiator tab.
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(initiator_tab);
   print_view_manager->PrintPreviewNow(false);
   WebContents* preview_tab =
-      tab_controller->GetOrCreatePreviewTab(initiator_tab);
+      dialog_controller->GetOrCreatePreviewDialog(initiator_tab);
 
   // New print preview tab is created.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_TRUE(preview_tab);
   ASSERT_NE(initiator_tab, preview_tab);
-  TabDestroyedObserver tab_destroyed_observer(preview_tab);
+  PrintPreviewDialogDestroyedObserver dialog_destroyed_observer(preview_tab);
 
   // Reload the initiator tab.
   content::WindowedNotificationObserver notification_observer(
@@ -130,12 +131,12 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   chrome::Reload(browser(), CURRENT_TAB);
   notification_observer.Wait();
 
-  ASSERT_TRUE(tab_destroyed_observer.tab_destroyed());
+  ASSERT_TRUE(dialog_destroyed_observer.dialog_destroyed());
 
   // Get the print preview tab for initiator tab.
   print_view_manager->PrintPreviewNow(false);
   WebContents* new_preview_tab =
-      tab_controller->GetOrCreatePreviewTab(initiator_tab);
+      dialog_controller->GetOrCreatePreviewDialog(initiator_tab);
 
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_TRUE(new_preview_tab);

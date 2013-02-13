@@ -472,7 +472,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
         web_ui()->GetController());
     print_preview_ui->OnHidePreviewDialog();
 
-    // Do this so the initiator tab can open a new print preview dialog.
+    // Do this so the initiator tab can open a new print preview dialog, while
+    // the current print preview dialog is still handling its print job.
     ClearInitiatorTabDetails();
 
     // The PDF being printed contains only the pages that the user selected,
