@@ -47,6 +47,11 @@ function cloneShallow(object) {
 }
 
 /**
+ * Mock for |chrome| namespace.
+ */
+var chrome = {};
+
+/**
  * Mock out the chrome.fileBrowserPrivate API for use in the harness.
  */
 chrome.fileBrowserPrivate = {
@@ -897,3 +902,24 @@ chrome.mediaPlayerPrivate = {
     this.onVideoLaunched.notify();
   }
 };
+
+/**
+ * Mock for |v8Intl| namespace.
+ */
+var v8Intl = {};
+
+/**
+ * Mock constructor of |v8Intl.Collator|.
+ * @constructor
+ * @param {Array<*>} locales  //TODO(JSDOC).
+ * @param {Object.<*, *>} options  //TODO(JSDOC).
+ */
+v8Intl.Collator = function(locales, options) {};
+
+/**
+ * Mock constructor of |v8Intl.DateTimeFormat|.
+ * @constructor
+ * @param {Array<*>} locales  //TODO(JSDOC).
+ * @param {Object.<*, *>} options  //TODO(JSDOC).
+ */
+v8Intl.DateTimeFormat = function(locales, options) {};
