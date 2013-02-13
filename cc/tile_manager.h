@@ -63,6 +63,12 @@ enum TileRasterState {
 scoped_ptr<base::Value> TileRasterStateAsValue(
     TileRasterState bin);
 
+// Metadata that is passed to raster tasks for diagnostic purposes.
+struct RasterTaskMetadata {
+    bool is_tile_in_pending_tree_now_bin;
+    TileResolution tile_resolution;
+};
+
 // This is state that is specific to a tile that is
 // managed by the TileManager.
 class CC_EXPORT ManagedTileState {
@@ -175,6 +181,7 @@ class CC_EXPORT TileManager {
                             const gfx::Rect& rect,
                             float contents_scale,
                             bool use_cheapness_estimator,
+                            const RasterTaskMetadata& raster_task_metadata,
                             PicturePileImpl* picture_pile,
                             RenderingStats* stats);
   static void RunImageDecodeTask(skia::LazyPixelRef* pixel_ref,

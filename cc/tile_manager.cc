@@ -69,6 +69,14 @@ std::string ValueToString(scoped_ptr<base::Value> value)
   return str;
 }
 
+RasterTaskMetadata GetRasterTaskMetadata(const ManagedTileState& mts) {
+  RasterTaskMetadata raster_task_metadata;
+  raster_task_metadata.is_tile_in_pending_tree_now_bin =
+      mts.tree_bin[PENDING_TREE] == NOW_BIN;
+  raster_task_metadata.tile_resolution = mts.resolution;
+  return raster_task_metadata;
+}
+
 }  // namespace
 
 scoped_ptr<base::Value> TileManagerBinAsValue(TileManagerBin bin) {
@@ -771,7 +779,8 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
                      resource_id),
                  tile->content_rect_,
                  tile->contents_scale(),
-                 use_cheapness_estimator_),
+                 use_cheapness_estimator_,
+                 GetRasterTaskMetadata(tile->managed_state())),
       base::Bind(&TileManager::OnRasterTaskCompleted,
                  base::Unretained(this),
                  tile,
@@ -788,6 +797,7 @@ void TileManager::PerformOneRaster(Tile* tile) {
                 tile->content_rect_,
                 tile->contents_scale(),
                 use_cheapness_estimator_,
+                GetRasterTaskMetadata(tile->managed_state()),
                 tile->picture_pile(),
                 &rendering_stats_);
 
@@ -893,9 +903,16 @@ void TileManager::PerformRaster(uint8* buffer,
                                 const gfx::Rect& rect,
                                 float contents_scale,
                                 bool use_cheapness_estimator,
+                                const RasterTaskMetadata& raster_task_metadata,
                                 PicturePileImpl* picture_pile,
                                 RenderingStats* stats) {
-  TRACE_EVENT0("cc", "TileManager::PerformRaster");
+  TRACE_EVENT2(
+      "cc", "TileManager::PerformRaster",
+      "is_on_pending_tree",
+          raster_task_metadata.is_tile_in_pending_tree_now_bin,
+      "is_low_res",
+          raster_task_metadata.tile_resolution == LOW_RESOLUTION);
+
   DCHECK(picture_pile);
   DCHECK(buffer);
   SkBitmap bitmap;
