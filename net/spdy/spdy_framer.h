@@ -475,10 +475,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Returns true if a frame could be compressed.
   bool IsCompressible(const SpdyFrame& frame) const;
 
-  // Get the minimum size of the control frame for the given control frame
-  // type. This is useful for validating frame blocks.
-  static size_t GetMinimumControlFrameSize(int version, SpdyControlType type);
-
   // Get the stream ID for the given control frame (SYN_STREAM, SYN_REPLY, and
   // HEADERS). If the control frame is NULL or of another type, this
   // function returns kInvalidStream.
@@ -494,6 +490,19 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   void set_display_protocol(const std::string& protocol) {
     display_protocol_ = protocol;
   }
+
+  // Returns the (minimum) size of control frames (sans variable-length
+  // portions).
+  size_t GetControlFrameMinimumSize() const;
+  size_t GetSynStreamMinimumSize() const;
+  size_t GetSynReplyMinimumSize() const;
+  size_t GetRstStreamSize() const;
+  size_t GetSettingsMinimumSize() const;
+  size_t GetPingSize() const;
+  size_t GetGoAwaySize() const;
+  size_t GetHeadersMinimumSize() const;
+  size_t GetWindowUpdateSize() const;
+  size_t GetCredentialMinimumSize() const;
 
   // For debugging.
   static const char* StateToString(int state);

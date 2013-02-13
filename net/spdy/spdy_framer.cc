@@ -155,6 +155,93 @@ void SpdyFramer::Reset() {
   settings_scratch_.Reset();
 }
 
+size_t SpdyFramer::GetControlFrameMinimumSize() const {
+  // Size, in bytes, of the control frame header. Future versions of SPDY
+  // will likely vary this, so we allow for the flexibility of a function call
+  // for this value as opposed to a constant.
+  return 8;
+}
+
+size_t SpdyFramer::GetSynStreamMinimumSize() const {
+  // Size, in bytes, of a SYN_STREAM frame not including the variable-length
+  // name-value block. Calculated as:
+  // control frame header + 2 * 4 (stream IDs) + 1 (priority) + 1 (slot)
+  return GetControlFrameMinimumSize() + 10;
+}
+
+size_t SpdyFramer::GetSynReplyMinimumSize() const {
+  // Size, in bytes, of a SYN_REPLY frame not including the variable-length
+  // name-value block. Calculated as:
+  // control frame header + 4 (stream ID)
+  size_t size = GetControlFrameMinimumSize() + 4;
+
+  // In SPDY 2, there were 2 unused bytes before payload.
+  if (protocol_version() < 3) {
+    size += 2;
+  }
+
+  return size;
+}
+
+size_t SpdyFramer::GetRstStreamSize() const {
+  // Size, in bytes, of a RST_STREAM frame. Calculated as:
+  // control frame header + 4 (stream id) + 4 (status code)
+  return GetControlFrameMinimumSize() + 8;
+}
+
+size_t SpdyFramer::GetSettingsMinimumSize() const {
+  // Size, in bytes, of a SETTINGS frame not including the IDs and values
+  // from the variable-length value block. Calculated as:
+  // control frame header + 4 (number of ID/value pairs)
+  return GetControlFrameMinimumSize() + 4;
+}
+
+size_t SpdyFramer::GetPingSize() const {
+  // Size, in bytes, of this PING frame. Calculated as:
+  // control frame header + 4 (id)
+  return GetControlFrameMinimumSize() + 4;
+}
+
+size_t SpdyFramer::GetGoAwaySize() const {
+  // Size, in bytes, of this GOAWAY frame. Calculated as:
+  // control frame header + 4 (last good stream id)
+  size_t size = GetControlFrameMinimumSize() + 4;
+
+  // SPDY 3+ GOAWAY frames also contain a status.
+  if (protocol_version() >= 3) {
+    size += 4;
+  }
+
+  return size;
+}
+
+size_t SpdyFramer::GetHeadersMinimumSize() const  {
+  // Size, in bytes, of a HEADERS frame not including the variable-length
+  // name-value block. Calculated as:
+  // control frame header + 4 (stream ID)
+  size_t size = GetControlFrameMinimumSize() + 4;
+
+  // In SPDY 2, there were 2 unused bytes before payload.
+  if (protocol_version() < 3) {
+    size += 2;
+  }
+
+  return size;
+}
+
+size_t SpdyFramer::GetWindowUpdateSize() const {
+  // Size, in bytes, of this WINDOW_UPDATE frame. Calculated as:
+  // control frame header + 4 (stream id) + 4 (delta)
+  return GetControlFrameMinimumSize() + 8;
+}
+
+size_t SpdyFramer::GetCredentialMinimumSize() const {
+  // Size, in bytes, of a CREDENTIAL frame sans variable-length certificate list
+  // and proof. Calculated as:
+  // control frame header + 2 (slot)
+  return GetControlFrameMinimumSize() + 2;
+}
+
 const char* SpdyFramer::StateToString(int state) {
   switch (state) {
     case SPDY_ERROR:
@@ -468,7 +555,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
   switch (current_control_frame.type()) {
     case SYN_STREAM:
       if (current_control_frame.length() <
-          SpdySynStreamControlFrame::size() - SpdyControlFrame::kHeaderSize) {
+          GetSynStreamMinimumSize() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_control_frame.flags() &
                  ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
@@ -477,7 +564,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       break;
     case SYN_REPLY:
       if (current_control_frame.length() <
-          SpdySynReplyControlFrame::size() - SpdyControlFrame::kHeaderSize) {
+          GetSynReplyMinimumSize() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_control_frame.flags() & ~CONTROL_FLAG_FIN) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -485,7 +572,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       break;
     case RST_STREAM:
       if (current_control_frame.length() !=
-          SpdyRstStreamControlFrame::size() - SpdyFrame::kHeaderSize) {
+          GetRstStreamSize() - SpdyFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_control_frame.flags() != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -495,7 +582,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       // Make sure that we have an integral number of 8-byte key/value pairs,
       // plus a 4-byte length field.
       if (current_control_frame.length() <
-          SpdySettingsControlFrame::size() - SpdyControlFrame::kHeaderSize ||
+          GetSettingsMinimumSize() - SpdyControlFrame::kHeaderSize ||
           (current_control_frame.length() % 8 != 4)) {
         DLOG(WARNING) << "Invalid length for SETTINGS frame: "
                       << current_control_frame.length();
@@ -507,12 +594,8 @@ void SpdyFramer::ProcessControlFrameHeader() {
       break;
     case GOAWAY:
       {
-        // SPDY 2 GOAWAY frames are 4 bytes smaller than in SPDY 3. We account
-        // for this difference via a separate offset variable, since
-        // SpdyGoAwayControlFrame::size() returns the SPDY 3 size.
-        const size_t goaway_offset = (protocol_version() < 3) ? 4 : 0;
-        if (current_control_frame.length() + goaway_offset !=
-            SpdyGoAwayControlFrame::size() - SpdyFrame::kHeaderSize) {
+        if (current_control_frame.length() !=
+            GetGoAwaySize() - SpdyFrame::kHeaderSize) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (current_control_frame.flags() != 0) {
           set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -521,7 +604,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       }
     case HEADERS:
       if (current_control_frame.length() <
-          SpdyHeadersControlFrame::size() - SpdyControlFrame::kHeaderSize) {
+          GetHeadersMinimumSize() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_control_frame.flags() & ~CONTROL_FLAG_FIN) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -529,8 +612,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       break;
     case WINDOW_UPDATE:
       if (current_control_frame.length() !=
-          SpdyWindowUpdateControlFrame::size() -
-          SpdyControlFrame::kHeaderSize) {
+          GetWindowUpdateSize() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_control_frame.flags() != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -538,7 +620,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       break;
     case PING:
       if (current_control_frame.length() !=
-          SpdyPingControlFrame::size() - SpdyControlFrame::kHeaderSize) {
+          GetPingSize() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_control_frame.flags() != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -546,7 +628,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       break;
     case CREDENTIAL:
       if (current_control_frame.length() <
-          SpdyCredentialControlFrame::size() - SpdyControlFrame::kHeaderSize) {
+          GetCredentialMinimumSize() - SpdyControlFrame::kHeaderSize) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_control_frame.flags() != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -1323,13 +1405,8 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
     flags |= CONTROL_FLAG_UNIDIRECTIONAL;
   }
 
-  // The size, in bytes, of this frame not including the variable-length
-  // name-value block. Calculated as:
-  // 8 (control frame header) + 2 * 4 (stream IDs) + 1 (priority) + 1 (slot)
-  const size_t kSynStreamSizeBeforeNameValueBlock = 18;
-
   // The size of this frame, including variable-length name-value block.
-  const size_t size = kSynStreamSizeBeforeNameValueBlock
+  const size_t size = GetSynStreamMinimumSize()
       + GetSerializedLength(protocol_version(),
                             &(syn_stream.name_value_block()));
 
@@ -1343,7 +1420,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   }
   builder.WriteUInt8(priority << ((spdy_version_ < 3) ? 6 : 5));
   builder.WriteUInt8(syn_stream.slot());
-  DCHECK_EQ(kSynStreamSizeBeforeNameValueBlock, builder.length());
+  DCHECK_EQ(GetSynStreamMinimumSize(), builder.length());
   SerializeNameValueBlock(&builder, syn_stream);
 
   return builder.take();
@@ -1378,17 +1455,8 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
     flags |= CONTROL_FLAG_FIN;
   }
 
-  // The size, in bytes, of this frame not including the variable-length
-  // name-value block. Calculated as:
-  // 8 (control frame header) + 4 (stream ID)
-  size_t syn_reply_size_before_name_value_block = 12;
-  // In SPDY 2, there were 2 unused bytes before payload.
-  if (protocol_version() < 3) {
-    syn_reply_size_before_name_value_block += 2;
-  }
-
   // The size of this frame, including variable-length name-value block.
-  size_t size = syn_reply_size_before_name_value_block
+  size_t size = GetSynReplyMinimumSize()
       + GetSerializedLength(protocol_version(),
                             &(syn_reply.name_value_block()));
 
@@ -1397,7 +1465,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
   if (protocol_version() < 3) {
     builder.WriteUInt16(0);  // Unused.
   }
-  DCHECK_EQ(syn_reply_size_before_name_value_block, builder.length());
+  DCHECK_EQ(GetSynReplyMinimumSize(), builder.length());
   SerializeNameValueBlock(&builder, syn_reply);
 
   return builder.take();
@@ -1413,17 +1481,13 @@ SpdyRstStreamControlFrame* SpdyFramer::CreateRstStream(
 
 SpdySerializedFrame* SpdyFramer::SerializeRstStream(
     const SpdyRstStreamIR& rst_stream) const {
-  // Size of our RST_STREAM frame. Calculated as:
-  // 8 (control frame header) + 4 (stream id) + 4 (status code)
-  const size_t kRstStreamFrameSize = 16;
-
   SpdyFrameBuilder builder(RST_STREAM,
                            kNoFlags,
                            protocol_version(),
-                           kRstStreamFrameSize);
+                           GetRstStreamSize());
   builder.WriteUInt32(rst_stream.stream_id());
   builder.WriteUInt32(rst_stream.status());
-  DCHECK_EQ(kRstStreamFrameSize, builder.length());
+  DCHECK_EQ(GetRstStreamSize(), builder.length());
   return builder.take();
 }
 
@@ -1450,16 +1514,12 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   }
   const SpdySettingsIR::ValueMap* values = &(settings.values());
 
-  // Size, in bytes, of this SETTINGS frame not including the IDs and values
-  // from the variable-length value block. Calculated as:
-  // 8 (control frame header) + 4 (number of ID/value pairs)
-  const size_t kSettingsSizeWithoutValues = 12;
   // Size, in bytes, of this SETTINGS frame.
-  const size_t size = kSettingsSizeWithoutValues + (values->size() * 8);
+  const size_t size = GetSettingsMinimumSize() + (values->size() * 8);
 
   SpdyFrameBuilder builder(SETTINGS, flags, protocol_version(), size);
   builder.WriteUInt32(values->size());
-  DCHECK_EQ(kSettingsSizeWithoutValues, builder.length());
+  DCHECK_EQ(GetSettingsMinimumSize(), builder.length());
   for (SpdySettingsIR::ValueMap::const_iterator it = values->begin();
        it != values->end();
        ++it) {
@@ -1485,12 +1545,9 @@ SpdyPingControlFrame* SpdyFramer::CreatePingFrame(uint32 unique_id) const {
 }
 
 SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
-  // Size, in bytes, of this PING frame. Calculated as:
-  // 8 (control frame header) + 4 (id)
-  const size_t kPingSize = 12;
-  SpdyFrameBuilder builder(PING, 0, protocol_version(), kPingSize);
+  SpdyFrameBuilder builder(PING, 0, protocol_version(), GetPingSize());
   builder.WriteUInt32(ping.id());
-  DCHECK_EQ(kPingSize, builder.length());
+  DCHECK_EQ(GetPingSize(), builder.length());
   return builder.take();
 }
 
@@ -1503,19 +1560,12 @@ SpdyGoAwayControlFrame* SpdyFramer::CreateGoAway(
 
 SpdySerializedFrame* SpdyFramer::SerializeGoAway(
     const SpdyGoAwayIR& goaway) const {
-  // Size, in bytes, of this GOAWAY frame. Calculated as:
-  // 8 (control frame header) + 4 (last good stream id)
-  size_t size = 12;
-  // SPDY 3+ GOAWAY frames also contain a status.
-  if (protocol_version() >= 3) {
-    size += 4;
-  }
-  SpdyFrameBuilder builder(GOAWAY, 0, protocol_version(), size);
+  SpdyFrameBuilder builder(GOAWAY, 0, protocol_version(), GetGoAwaySize());
   builder.WriteUInt32(goaway.last_good_stream_id());
   if (protocol_version() >= 3) {
     builder.WriteUInt32(goaway.status());
   }
-  DCHECK_EQ(size, builder.length());
+  DCHECK_EQ(GetGoAwaySize(), builder.length());
   return builder.take();
 }
 
@@ -1549,17 +1599,8 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
     flags |= CONTROL_FLAG_FIN;
   }
 
-  // The size, in bytes, of this frame not including the variable-length
-  // name-value block. Calculated as:
-  // 8 (control frame header) + 4 (stream ID)
-  size_t headers_size_before_name_value_block = 12;
-  // In SPDY 2, there were 2 unused bytes before payload.
-  if (protocol_version() < 3) {
-    headers_size_before_name_value_block += 2;
-  }
-
   // The size of this frame, including variable-length name-value block.
-  size_t size = headers_size_before_name_value_block
+  size_t size = GetHeadersMinimumSize()
       + GetSerializedLength(protocol_version(),
                             &(headers.name_value_block()));
 
@@ -1568,7 +1609,7 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   if (protocol_version() < 3) {
     builder.WriteUInt16(0);  // Unused.
   }
-  DCHECK_EQ(headers_size_before_name_value_block, builder.length());
+  DCHECK_EQ(GetHeadersMinimumSize(), builder.length());
 
   SerializeNameValueBlock(&builder, headers);
   DCHECK_EQ(size, builder.length());
@@ -1586,17 +1627,13 @@ SpdyWindowUpdateControlFrame* SpdyFramer::CreateWindowUpdate(
 
 SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(
     const SpdyWindowUpdateIR& window_update) const {
-  // Size, in bytes, of this WINDOW_UPDATE frame. Calculated as:
-  // 8 (control frame header) + 4 (stream id) + 4 (delta)
-  const size_t kWindowUpdateSize = 16;
-
   SpdyFrameBuilder builder(WINDOW_UPDATE,
                            kNoFlags,
                            protocol_version(),
-                           kWindowUpdateSize);
+                           GetWindowUpdateSize());
   builder.WriteUInt32(window_update.stream_id());
   builder.WriteUInt32(window_update.delta());
-  DCHECK_EQ(kWindowUpdateSize, builder.length());
+  DCHECK_EQ(GetWindowUpdateSize(), builder.length());
   return builder.take();
 }
 
@@ -1616,8 +1653,7 @@ SpdyCredentialControlFrame* SpdyFramer::CreateCredentialFrame(
 
 SpdySerializedFrame* SpdyFramer::SerializeCredential(
     const SpdyCredentialIR& credential) const {
-  size_t size = 8;  // Room for frame header.
-  size += 2;  // Room for slot.
+  size_t size = GetCredentialMinimumSize();
   size += 4 + credential.proof().length();  // Room for proof.
   for (SpdyCredentialIR::CertificateList::const_iterator it =
        credential.certificates()->begin();
@@ -1628,6 +1664,7 @@ SpdySerializedFrame* SpdyFramer::SerializeCredential(
 
   SpdyFrameBuilder builder(CREDENTIAL, 0, protocol_version(), size);
   builder.WriteUInt16(credential.slot());
+  DCHECK_EQ(GetCredentialMinimumSize(), builder.length());
   builder.WriteStringPiece32(credential.proof());
   for (SpdyCredentialIR::CertificateList::const_iterator it =
        credential.certificates()->begin();
@@ -1984,46 +2021,6 @@ bool SpdyFramer::IsCompressible(const SpdyFrame& frame) const {
 
   // We don't compress Data frames.
   return false;
-}
-
-size_t SpdyFramer::GetMinimumControlFrameSize(int version,
-                                              SpdyControlType type) {
-  switch (type) {
-    case SYN_STREAM:
-      return SpdySynStreamControlFrame::size();
-    case SYN_REPLY:
-      return SpdySynReplyControlFrame::size();
-    case RST_STREAM:
-      return SpdyRstStreamControlFrame::size();
-    case SETTINGS:
-      return SpdySettingsControlFrame::size();
-    case NOOP:
-      // Even though NOOP is no longer supported, we still correctly report its
-      // size so that it can be handled correctly as incoming data if
-      // implementations so desire.
-      return SpdyFrame::kHeaderSize;
-    case PING:
-      return SpdyPingControlFrame::size();
-    case GOAWAY:
-      if (version < 3) {
-        // SPDY 2 GOAWAY is smaller by 32 bits. Since
-        // SpdyGoAwayControlFrame::size() returns the size for SPDY 3, we adjust
-        // before returning here.
-        return SpdyGoAwayControlFrame::size() - 4;
-      } else {
-        return SpdyGoAwayControlFrame::size();
-      }
-    case HEADERS:
-      return SpdyHeadersControlFrame::size();
-    case WINDOW_UPDATE:
-      return SpdyWindowUpdateControlFrame::size();
-    case CREDENTIAL:
-      return SpdyCredentialControlFrame::size();
-    case NUM_CONTROL_FRAME_TYPES:
-      break;
-  }
-  LOG(ERROR) << "Unknown control frame type " << type;
-  return std::numeric_limits<size_t>::max();
 }
 
 /* static */

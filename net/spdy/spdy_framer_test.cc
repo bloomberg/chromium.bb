@@ -3020,6 +3020,20 @@ TEST_P(SpdyFramerTest, ReadGarbageWithValidVersion) {
   EXPECT_EQ(1, visitor.error_count_);
 }
 
+TEST_P(SpdyFramerTest, SizesTest) {
+  SpdyFramer framer(spdy_version_);
+  EXPECT_EQ(8u, framer.GetControlFrameMinimumSize());
+  EXPECT_EQ(18u, framer.GetSynStreamMinimumSize());
+  EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetSynReplyMinimumSize());
+  EXPECT_EQ(16u, framer.GetRstStreamSize());
+  EXPECT_EQ(12u, framer.GetSettingsMinimumSize());
+  EXPECT_EQ(12u, framer.GetPingSize());
+  EXPECT_EQ(IsSpdy2() ? 12u : 16u, framer.GetGoAwaySize());
+  EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetHeadersMinimumSize());
+  EXPECT_EQ(16u, framer.GetWindowUpdateSize());
+  EXPECT_EQ(10u, framer.GetCredentialMinimumSize());
+}
+
 TEST_P(SpdyFramerTest, StateToStringTest) {
   EXPECT_STREQ("ERROR",
                SpdyFramer::StateToString(SpdyFramer::SPDY_ERROR));
@@ -3133,47 +3147,6 @@ TEST_P(SpdyFramerTest, ControlTypeToStringTest) {
                SpdyFramer::ControlTypeToString(CREDENTIAL));
   EXPECT_STREQ("UNKNOWN_CONTROL_TYPE",
                SpdyFramer::ControlTypeToString(NUM_CONTROL_FRAME_TYPES));
-}
-
-TEST_P(SpdyFramerTest, GetMinimumControlFrameSizeTest) {
-  EXPECT_EQ(SpdySynStreamControlFrame::size(),
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   SYN_STREAM));
-  EXPECT_EQ(SpdySynReplyControlFrame::size(),
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   SYN_REPLY));
-  EXPECT_EQ(SpdyRstStreamControlFrame::size(),
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   RST_STREAM));
-  EXPECT_EQ(SpdySettingsControlFrame::size(),
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   SETTINGS));
-  EXPECT_EQ(SpdyFrame::kHeaderSize,
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   NOOP));
-  EXPECT_EQ(SpdyPingControlFrame::size(),
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   PING));
-  size_t goaway_size = SpdyGoAwayControlFrame::size();
-  if (IsSpdy2()) {
-    // SPDY 2 GOAWAY is smaller by 32 bits.
-    goaway_size -= 4;
-  }
-  EXPECT_EQ(goaway_size,
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   GOAWAY));
-  EXPECT_EQ(SpdyHeadersControlFrame::size(),
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   HEADERS));
-  EXPECT_EQ(SpdyWindowUpdateControlFrame::size(),
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   WINDOW_UPDATE));
-  EXPECT_EQ(SpdyCredentialControlFrame::size(),
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   CREDENTIAL));
-  EXPECT_EQ(numeric_limits<size_t>::max(),
-            SpdyFramer::GetMinimumControlFrameSize(spdy_version_,
-                                                   NUM_CONTROL_FRAME_TYPES));
 }
 
 TEST_P(SpdyFramerTest, CatchProbableHttpResponse) {
