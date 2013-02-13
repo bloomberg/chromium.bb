@@ -50,29 +50,25 @@ bool GetEnabledByTrial() {
           == kDnsProbeFieldTrialEnableGroupName);
 }
 
-void DnsProbeCallback(
-    base::WeakPtr<NetErrorTabHelper> tab_helper,
-    base::Callback<void(NetErrorTabHelper*, DnsProbeResult)> callback,
+void OnDnsProbeFinishedOnIOThread(
+    const base::Callback<void(DnsProbeResult)>& callback,
     DnsProbeResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(callback, tab_helper, result));
+      base::Bind(callback, result));
 }
 
-void StartDnsProbe(
-    base::WeakPtr<NetErrorTabHelper> tab_helper,
-    base::Callback<void(NetErrorTabHelper*, DnsProbeResult)> callback,
-    IOThread* io_thread) {
+void StartDnsProbeOnIOThread(
+    const base::Callback<void(DnsProbeResult)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   DnsProbeService* probe_service =
-      io_thread->globals()->dns_probe_service.get();
-  probe_service->ProbeDns(base::Bind(&DnsProbeCallback,
-                                     tab_helper,
-                                     callback));
+      g_browser_process->io_thread()->globals()->dns_probe_service.get();
+
+  probe_service->ProbeDns(base::Bind(&OnDnsProbeFinishedOnIOThread, callback));
 }
 
 }  // namespace
@@ -189,10 +185,9 @@ void NetErrorTabHelper::PostStartDnsProbeTask() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&StartDnsProbe,
-                 weak_factory_.GetWeakPtr(),
-                 base::Bind(&NetErrorTabHelper::OnDnsProbeFinished),
-                 g_browser_process->io_thread()));
+      base::Bind(&StartDnsProbeOnIOThread,
+                 base::Bind(&NetErrorTabHelper::OnDnsProbeFinished,
+                            weak_factory_.GetWeakPtr())));
 }
 
 void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeResult result) {
