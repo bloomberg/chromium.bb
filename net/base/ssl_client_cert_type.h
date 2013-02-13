@@ -11,6 +11,7 @@ namespace net {
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-1
 enum SSLClientCertType {
   CLIENT_CERT_RSA_SIGN = 1,
+  CLIENT_CERT_DSS_SIGN = 2,
   CLIENT_CERT_ECDSA_SIGN = 64,
   // 224-255 are Reserved for Private Use, we pick one to use as "invalid".
   CLIENT_CERT_INVALID_TYPE = 255,

@@ -11555,6 +11555,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_CLIENT_CERT_RSA_SIGN" translateable="false" desc="">
         rsa_sign
       </message>
+      <message name="IDS_CLIENT_CERT_DSS_SIGN" translateable="false" desc="">
+        dss_sign
+      </message>
       <message name="IDS_CLIENT_CERT_ECDSA_SIGN" translateable="false" desc="">
         ecdsa_sign
       </message>

@@ -112,6 +112,17 @@ TEST_F(SpdyCredentialBuilderTest, MAYBE_FailsWithRSACert) {
 }
 
 #if defined(USE_OPENSSL)
+#define MAYBE_FailsWithDSACert DISABLED_FailsWithDSACert
+#else
+#define MAYBE_FailsWithDSACert FailsWithDSACert
+#endif
+
+TEST_F(SpdyCredentialBuilderTest, MAYBE_FailsWithDSACert) {
+  EXPECT_EQ(ERR_BAD_SSL_CLIENT_AUTH_CERT,
+            BuildWithType(CLIENT_CERT_DSS_SIGN));
+}
+
+#if defined(USE_OPENSSL)
 #define MAYBE_SetsSlotCorrectly DISABLED_SetsSlotCorrectly
 #else
 #define MAYBE_SetsSlotCorrectly SetsSlotCorrectly

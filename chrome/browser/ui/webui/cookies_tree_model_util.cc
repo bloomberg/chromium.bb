@@ -60,6 +60,8 @@ std::string ClientCertTypeToString(net::SSLClientCertType type) {
   switch (type) {
     case net::CLIENT_CERT_RSA_SIGN:
       return l10n_util::GetStringUTF8(IDS_CLIENT_CERT_RSA_SIGN);
+    case net::CLIENT_CERT_DSS_SIGN:
+      return l10n_util::GetStringUTF8(IDS_CLIENT_CERT_DSS_SIGN);
     case net::CLIENT_CERT_ECDSA_SIGN:
       return l10n_util::GetStringUTF8(IDS_CLIENT_CERT_ECDSA_SIGN);
     default:
