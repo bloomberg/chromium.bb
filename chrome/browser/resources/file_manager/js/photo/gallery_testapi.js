@@ -22,53 +22,53 @@ var galleryTestAPI = {
    */
   load: function(path) {
     Gallery.openStandalone(path, null, function() {
-      this.waitFor_('loaded');
-    }.bind(this));
+      galleryTestAPI.waitFor_('loaded');
+    });
   },
 
   /**
    * Responds with the selected file name.
    */
   getSelectedFileName: function() {
-    this.respond_(document.querySelector('.namebox').value);
+    galleryTestAPI.respond_(document.querySelector('.namebox').value);
   },
 
   /**
    * Toggles edit mode.
    */
   clickEditToggle: function() {
-    this.click('.edit');
-    setTimeout(this.respond_.bind(this, true), 0);
+    galleryTestAPI.click('.edit');
+    setTimeout(galleryTestAPI.respond_.bind(null, true), 0);
   },
 
   /**
    * Clicks arrow to select next image.
    */
   clickNextImageArrow: function() {
-    this.click('.arrow.right');
-    this.waitFor_('image-displayed');
+    galleryTestAPI.click('.arrow.right');
+    galleryTestAPI.waitFor_('image-displayed');
   },
 
   /**
    * Clicks arrow to select previous image.
    */
   clickPreviousImageArrow: function() {
-    this.click('.arrow.left');
-    this.waitFor_('image-displayed');
+    galleryTestAPI.click('.arrow.left');
+    galleryTestAPI.waitFor_('image-displayed');
   },
 
   /**
    * Clicks last thumbnail in ribbon to select an image.
    */
   clickLastRibbonThumbnail: function() {
-    this.clickRibbonThumbnail(true);
+    galleryTestAPI.clickRibbonThumbnail(true);
   },
 
   /**
    * Clicks first thumbnail in ribbon to select an image.
    */
   clickFirstRibbonThumbnail: function() {
-    this.clickRibbonThumbnail(false);
+    galleryTestAPI.clickRibbonThumbnail(false);
   },
 
   /**
@@ -80,54 +80,57 @@ var galleryTestAPI = {
     setTimeout(function() {
       var nodes = document.querySelectorAll('.ribbon > :not([vanishing])');
       if (nodes.length == 0) {
-        this.respond_(false);
+        galleryTestAPI.respond_(false);
         return;
       }
       nodes[last ? nodes.length - 1 : 0].click();
-      this.waitFor_('image-displayed');
-    }.bind(this), 0);
+      galleryTestAPI.waitFor_('image-displayed');
+    }, 0);
   },
 
   /**
    * Clicks 'rotate left' tool.
    */
   clickRotateLeft: function() {
-    this.editAndRespond_(this.click.bind(this, '.rotate_left'));
+    galleryTestAPI.editAndRespond_(
+        galleryTestAPI.click.bind(null, '.rotate_left'));
   },
 
   /**
    * Clicks 'rotate right' tool.
    */
   clickRotateRight: function() {
-    this.editAndRespond_(this.click.bind(this, '.rotate_right'));
+    galleryTestAPI.editAndRespond_(
+        galleryTestAPI.click.bind(null, '.rotate_right'));
   },
 
   /**
    * Clicks 'undo' tool.
    */
   clickUndo: function() {
-    this.editAndRespond_(this.click.bind(this, '.undo'));
+    galleryTestAPI.editAndRespond_(galleryTestAPI.click.bind(null, '.undo'));
   },
 
   /**
    * Clicks 'redo' tool.
    */
   clickRedo: function() {
-    this.editAndRespond_(this.click.bind(this, '.redo'));
+    galleryTestAPI.editAndRespond_(galleryTestAPI.click.bind(null, '.redo'));
   },
 
   /**
    * Clicks 'autofix' tool.
    */
   clickAutofix: function() {
-    this.editAndRespond_(this.click.bind(this, '.autofix'));
+    galleryTestAPI.editAndRespond_(galleryTestAPI.click.bind(null, '.autofix'));
   },
 
   /**
    * Responds whether autofix tool is available.
    */
   isAutofixAvailable: function() {
-    this.respond_(!document.querySelector('.autofix').hasAttribute('disabled'));
+    galleryTestAPI.respond_(
+        !document.querySelector('.autofix').hasAttribute('disabled'));
   },
 
   /**
@@ -147,19 +150,19 @@ var galleryTestAPI = {
     // TODO(dgozman): investigate why this is required sometimes.
     setTimeout(function() {
       action();
-      this.waitFor_('image-saved');
-    }.bind(this), 0);
+      galleryTestAPI.waitFor_('image-saved');
+    }, 0);
   },
 
   /**
    * Waits for event fired and then calls a function.
    * @param {string} event Event name.
    * @param {function=} opt_callback Callback. If not passed,
-   *     |this.respond_(true)| is called.
+   *     |galleryTestAPI.respond_(true)| is called.
    * @private
    */
   waitFor_: function(event, opt_callback) {
-    var callback = opt_callback || this.respond_.bind(this, true);
+    var callback = opt_callback || galleryTestAPI.respond_.bind(null, true);
     var listener = function() {
       Gallery.instance.removeEventListener(event, listener);
       callback();
@@ -174,8 +177,8 @@ var galleryTestAPI = {
   respond_: function(value) {
     if (window.domAutomationController) {
       window.domAutomationController.send(value);
-    } else if (this.respondCallback) {
-      this.respondCallback(value);
+    } else if (galleryTestAPI.respondCallback) {
+      galleryTestAPI.respondCallback(value);
     } else {
       console.log('playerTestAPI response: ' + value);
     }

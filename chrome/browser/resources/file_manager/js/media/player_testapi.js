@@ -20,42 +20,42 @@ var playerTestAPI = {
    * Respond with the path to the current media source.
    */
   getSrc: function() {
-    this.respond_(util.extractFilePath(this.getMedia_().src));
+    playerTestAPI.respond_(util.extractFilePath(playerTestAPI.getMedia_().src));
   },
 
   /**
    * Respond with a boolean value, true if the media is playing.
    */
   isPlaying: function() {
-    this.respond_(this.getControls_().isPlaying());
+    playerTestAPI.respond_(playerTestAPI.getControls_().isPlaying());
   },
 
   /**
    * Play the media.
    */
   play: function() {
-    this.getControls_().play();
+    playerTestAPI.getControls_().play();
   },
 
   /**
    * Pause the playback.
    */
   pause: function() {
-    this.getControls_().pause();
+    playerTestAPI.getControls_().pause();
   },
 
   /**
    * Respond with a number, duration of the media in seconds.
    */
   getDuration: function() {
-    this.respond_(this.getMedia_().duration);
+    playerTestAPI.respond_(playerTestAPI.getMedia_().duration);
   },
 
   /**
    * Respond with a number, current media position in seconds.
    */
   getCurrentTime: function() {
-    this.respond_(this.getMedia_().currentTime);
+    playerTestAPI.respond_(playerTestAPI.getMedia_().currentTime);
   },
 
   /**
@@ -63,7 +63,7 @@ var playerTestAPI = {
    * @param {number} time Media positions.
    */
   seekTo: function(time) {
-    this.getMedia_().currentTime = time;
+    playerTestAPI.getMedia_().currentTime = time;
   },
 
   /* Video player-specific methods.
@@ -88,7 +88,7 @@ var playerTestAPI = {
    * Respond with a number, current volume [0..100].
    */
   getVolume: function() {
-    this.respond_(this.getMedia_().volume * 100);
+    playerTestAPI.respond_(playerTestAPI.getMedia_().volume * 100);
   },
 
   /**
@@ -96,30 +96,31 @@ var playerTestAPI = {
    * @param {number} volume Volume [0..100].
    */
   setVolume: function(volume) {
-    this.respond_(this.getControls_().onVolumeChange_(volume / 100));
+    playerTestAPI.respond_(
+        playerTestAPI.getControls_().onVolumeChange_(volume / 100));
   },
 
   /**
    * Respond with a boolean, true if the volume is muted.
    */
   isMuted: function() {
-    this.respond_(this.getMedia_().volume == 0);
+    playerTestAPI.respond_(playerTestAPI.getMedia_().volume == 0);
   },
 
   /**
    * Mute the volume. No-op if already muted.
    */
   mute: function() {
-    if (this.getMedia_().volume != 0)
-      this.getControls_().onSoundButtonClick_();
+    if (playerTestAPI.getMedia_().volume != 0)
+      playerTestAPI.getControls_().onSoundButtonClick_();
   },
 
   /**
    * Unmute the volume. No-op if not muted.
    */
   unmute: function() {
-    if (this.getMedia_().volume == 0)
-      this.getControls_().onSoundButtonClick_();
+    if (playerTestAPI.getMedia_().volume == 0)
+      playerTestAPI.getControls_().onSoundButtonClick_();
   },
 
   /* Audio player-specific methods. */
@@ -141,14 +142,14 @@ var playerTestAPI = {
    * Respond with a current track number,
    */
   getTrackNumber: function() {
-    this.respond_(AudioPlayer.instance.currentTrack_);
+    playerTestAPI.respond_(AudioPlayer.instance.currentTrack_);
   },
 
   /**
    * Play the next track.
    */
   forward: function() {
-    this.getControls_().onAdvanceClick_(true /* forward */);
+    playerTestAPI.getControls_().onAdvanceClick_(true /* forward */);
   },
 
   /**
@@ -156,7 +157,7 @@ var playerTestAPI = {
    * or play the previous track otherwise.
    */
   back: function() {
-    this.getControls_().onAdvanceClick_(false /* back */);
+    playerTestAPI.getControls_().onAdvanceClick_(false /* back */);
   },
 
   /* Utility methods */
@@ -174,7 +175,7 @@ var playerTestAPI = {
    * @private
    */
   getMedia_: function() {
-    return this.getControls_().getMedia();
+    return playerTestAPI.getControls_().getMedia();
   },
 
   /**
