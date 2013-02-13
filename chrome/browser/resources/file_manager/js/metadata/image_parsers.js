@@ -15,11 +15,11 @@ SimpleImageParser.prototype.parse = function(
     file, metadata, callback, errorCallback) {
   var self = this;
   util.readFileBytes(file, 0, this.headerSize,
-    function (file, br) {
+    function(file, br) {
       try {
         self.parseHeader(metadata, br);
         callback(metadata);
-      } catch(e) {
+      } catch (e) {
         errorCallback(e.toString());
       }
     },

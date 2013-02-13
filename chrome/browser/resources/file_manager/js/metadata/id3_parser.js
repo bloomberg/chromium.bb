@@ -167,14 +167,13 @@ Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
 
   var position = reader.tell();
 
-  frame.name = (majorVersion == 2)
-      ? reader.readNullTerminatedString(3)
-      : reader.readNullTerminatedString(4);
+  frame.name = (majorVersion == 2) ? reader.readNullTerminatedString(3) :
+                                     reader.readNullTerminatedString(4);
 
   if (frame.name == '')
     return null;
 
-  this.vlog('Found frame ' + (frame.name) + ' at position ' + position );
+  this.vlog('Found frame ' + (frame.name) + ' at position ' + position);
 
   switch (majorVersion) {
     case 2:
@@ -193,7 +192,7 @@ Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
       break;
   }
 
-  this.vlog('Found frame [' + frame.name + '] with size ['+frame.size+']');
+  this.vlog('Found frame [' + frame.name + '] with size [' + frame.size + ']');
 
   if (Id3Parser.v2.HANDLERS[frame.name]) {
     Id3Parser.v2.HANDLERS[frame.name].call(
@@ -217,7 +216,7 @@ Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
   return frame;
 };
 
-Id3Parser.prototype.parse = function (file, metadata, callback, onError) {
+Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
   var self = this;
 
   this.log('Starting id3 parser for ' + file.name);
@@ -243,7 +242,7 @@ Id3Parser.prototype.parse = function (file, metadata, callback, onError) {
          * @param {ByteReader} reader ByteReader of 128 bytes.
          */
         function extractId3v1(file, reader) {
-          if ( reader.readString(3) == 'TAG') {
+          if (reader.readString(3) == 'TAG') {
             this.logger.vlog('id3v1 found');
             var id3v1 = metadata.id3v1 = {};
 
@@ -310,8 +309,8 @@ Id3Parser.prototype.parse = function (file, metadata, callback, onError) {
         function extractFrames(file, reader) {
           var id3v2 = metadata.id3v2;
 
-          if ((id3v2.major > 2)
-              && (id3v2.flags & Id3Parser.v2.FLAG_EXTENDED_HEADER != 0)) {
+          if ((id3v2.major > 2) &&
+              (id3v2.flags & Id3Parser.v2.FLAG_EXTENDED_HEADER != 0)) {
             // Skip extended header if found
             if (id3v2.major == 3) {
               reader.seek(reader.readScalar(4, false) - 4);
@@ -371,7 +370,7 @@ Id3Parser.prototype.parse = function (file, metadata, callback, onError) {
           extract('artist', 'TPE1', 'TP1');
 
           metadata.description.sort(function(a, b) {
-            return Id3Parser.METADATA_ORDER.indexOf(a.key)-
+            return Id3Parser.METADATA_ORDER.indexOf(a.key) -
                    Id3Parser.METADATA_ORDER.indexOf(b.key);
           });
           this.nextStep();
@@ -439,7 +438,7 @@ Id3Parser.v1 = {
    * other languages), translation exists at least fo 10% and most time
    * translation would degrade to transliteration.
    */
-  GENRES : [
+  GENRES: [
     'Blues',
     'Classic Rock',
     'Country',
@@ -604,7 +603,7 @@ Id3Parser.v2 = {
      * @const
      * @type {int}
      */
-    ISO_8859_1 : 0,
+    ISO_8859_1: 0,
 
 
     /**
@@ -615,7 +614,7 @@ Id3Parser.v2 = {
      * @const
      * @type {int}
      */
-    UTF_16 : 1,
+    UTF_16: 1,
 
     /**
      * UTF-16BE [UTF-16] encoded Unicode [UNICODE] without BOM.
@@ -624,7 +623,7 @@ Id3Parser.v2 = {
      * @const
      * @type {int}
      */
-    UTF_16BE : 2,
+    UTF_16BE: 2,
 
     /**
      * UTF-8 [UTF-8] encoded Unicode [UNICODE]. Terminated with $00.
@@ -632,7 +631,7 @@ Id3Parser.v2 = {
      * @const
      * @type {int}
      */
-    UTF_8 : 3
+    UTF_8: 3
   },
   HANDLERS: {
    //User defined text information frame

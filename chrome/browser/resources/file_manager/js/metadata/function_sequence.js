@@ -53,9 +53,8 @@ FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
  * @param err error message.
  */
 FunctionSequence.prototype.onError_ = function(err) {
-  this.logger.vlog('Failed step: ' + this.steps_[this.currentStepIdx_].name
-      + ': '
-      + err);
+  this.logger.vlog('Failed step: ' + this.steps_[this.currentStepIdx_].name +
+                   ': ' + err);
   if (!this.failed_) {
     this.failed_ = true;
     this.failureCallback_(err);
@@ -90,12 +89,12 @@ FunctionSequence.prototype.nextStep_ = function(var_args) {
     this.logger.vlog('Sequence ended');
     this.callback_.apply(this, arguments);
   } else {
-    this.logger.vlog('Attempting to start step ['
-                      + this.steps_[this.currentStepIdx_].name
-                      + ']');
+    this.logger.vlog('Attempting to start step [' +
+                     this.steps_[this.currentStepIdx_].name +
+                     ']');
     try {
       this.steps_[this.currentStepIdx_].apply(this, arguments);
-    } catch(e) {
+    } catch (e) {
       this.onError(e.toString());
     }
   }
@@ -109,7 +108,7 @@ FunctionSequence.prototype.start = function(var_args) {
     throw new Error('"Start" method of FunctionSequence was called twice');
   }
 
-  this.logger.log("Starting sequence with " + arguments.length + " arguments");
+  this.logger.log('Starting sequence with ' + arguments.length + ' arguments');
 
   this.started = true;
   this.nextStep.apply(this, arguments);

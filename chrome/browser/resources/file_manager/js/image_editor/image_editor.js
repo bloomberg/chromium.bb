@@ -630,7 +630,7 @@ ImageEditor.MouseControl = function(rootContainer, container, buffer) {
     'touchcancel': this.onTouchCancel,
     'touchmove': this.onTouchMove,
     'mousedown': this.onMouseDown,
-    'mouseup': this.onMouseUp,
+    'mouseup': this.onMouseUp
   };
 
   for (var eventName in handlers) {

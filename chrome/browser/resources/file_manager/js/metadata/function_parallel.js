@@ -63,11 +63,11 @@ FunctionParallel.prototype.start = function(var_args) {
       this.logger.vlog(arguments[j]);
     }
   }
-  for (var i=0; i < this.steps_.length; i++) {
+  for (var i = 0; i < this.steps_.length; i++) {
     this.logger.vlog('Attempting to start step [' + this.steps_[i].name + ']');
     try {
       this.steps_[i].apply(this, arguments);
-    } catch(e) {
+    } catch (e) {
       this.onError(e.toString());
     }
   }
