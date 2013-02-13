@@ -6531,3 +6531,9 @@
    ...
    fun:_ZN18ValueStoreFrontend*
 }
+{
+    bug_175985
+    Memcheck:Uninitialized
+    fun:_ZN2cc13LayerTreeHost13setDebugStateERKNS_19LayerTreeDebugStateE
+    fun:_ZN6WebKit20WebLayerTreeViewImpl19setShowDebugBordersEb
+}
