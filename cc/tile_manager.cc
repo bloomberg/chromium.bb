@@ -30,8 +30,11 @@ namespace {
 // For reference, the Nexus10 can upload 1MB in about 2.5ms.
 // Assuming a three frame deep pipeline this implies ~20MB.
 const int kMaxPendingUploadBytes = 20 * 1024 * 1024;
+// TODO(epenner): We should remove this upload limit (crbug.com/176197)
+const int kMaxPendingUploads = 72;
 #else
 const int kMaxPendingUploadBytes = 100 * 1024 * 1024;
+const int kMaxPendingUploads = 1000;
 #endif
 
 // Determine bin based on three categories of tiles: things we need now,
@@ -630,7 +633,8 @@ bool TileManager::CanDispatchRasterTask(Tile* tile) {
     return false;
   size_t new_bytes_pending = bytes_pending_set_pixels_;
   new_bytes_pending += tile->bytes_consumed_if_allocated();
-  return new_bytes_pending <= kMaxPendingUploadBytes;
+  return new_bytes_pending <= kMaxPendingUploadBytes &&
+         tiles_with_pending_set_pixels_.size() < kMaxPendingUploads;
 }
 
 void TileManager::DispatchMoreTasks() {
