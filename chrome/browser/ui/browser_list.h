@@ -22,12 +22,13 @@ class BrowserList {
   typedef std::vector<Browser*> BrowserVector;
   typedef BrowserVector::const_reverse_iterator const_reverse_iterator;
 
-  // Adds and removes browsers from the global list. The browser object should
-  // be valid BEFORE these calls (for the benefit of observers), so notify and
-  // THEN delete the object.
+  // Adds and removes browsers from the list they are associated with. The
+  // browser object should be valid BEFORE these calls (for the benefit of
+  // observers), so notify and THEN delete the object.
   static void AddBrowser(Browser* browser);
   static void RemoveBrowser(Browser* browser);
 
+  // Adds and removes |observer| from the observer list of each desktop.
   static void AddObserver(chrome::BrowserListObserver* observer);
   static void RemoveObserver(chrome::BrowserListObserver* observer);
 

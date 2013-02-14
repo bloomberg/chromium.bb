@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 
 using content::WebContents;
 
@@ -35,12 +36,20 @@ void BrowserList::RemoveBrowser(Browser* browser) {
 
 // static
 void BrowserList::AddObserver(chrome::BrowserListObserver* observer) {
-  GetNativeList()->AddObserver(observer);
+  for (chrome::HostDesktopType t = chrome::HOST_DESKTOP_TYPE_FIRST;
+       t < chrome::HOST_DESKTOP_TYPE_COUNT;
+       t = static_cast<chrome::HostDesktopType>(t + 1)) {
+    chrome::BrowserListImpl::GetInstance(t)->AddObserver(observer);
+  }
 }
 
 // static
 void BrowserList::RemoveObserver(chrome::BrowserListObserver* observer) {
-  GetNativeList()->RemoveObserver(observer);
+  for (chrome::HostDesktopType t = chrome::HOST_DESKTOP_TYPE_FIRST;
+       t < chrome::HOST_DESKTOP_TYPE_COUNT;
+       t = static_cast<chrome::HostDesktopType>(t + 1)) {
+    chrome::BrowserListImpl::GetInstance(t)->RemoveObserver(observer);
+  }
 }
 
 void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {

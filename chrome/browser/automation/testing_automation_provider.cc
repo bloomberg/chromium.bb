@@ -92,6 +92,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -253,9 +254,7 @@ TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
       , power_manager_observer_(NULL)
 #endif
       {
-  // The automation layer doesn't support non-native desktops.
-  chrome::BrowserListImpl::GetInstance(
-      chrome::HOST_DESKTOP_TYPE_NATIVE)->AddObserver(this);
+  BrowserList::AddObserver(this);
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_END,
                  content::NotificationService::AllSources());
 #if defined(OS_CHROMEOS)
@@ -267,9 +266,7 @@ TestingAutomationProvider::~TestingAutomationProvider() {
 #if defined(OS_CHROMEOS)
   RemoveChromeosObservers();
 #endif
-  // The automation layer doesn't support non-native desktops.
-  chrome::BrowserListImpl::GetInstance(
-      chrome::HOST_DESKTOP_TYPE_NATIVE)->RemoveObserver(this);
+  BrowserList::RemoveObserver(this);
 }
 
 IPC::Channel::Mode TestingAutomationProvider::GetChannelMode(

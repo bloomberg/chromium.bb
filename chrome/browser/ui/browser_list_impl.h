@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_BROWSER_LIST_IMPL_H_
 
 #include "base/observer_list.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 
 class Browser;
-class BrowserList;
 class Profile;
 
 namespace chrome {
@@ -32,9 +32,6 @@ class BrowserListImpl {
   // THEN delete the object.
   void AddBrowser(Browser* browser);
   void RemoveBrowser(Browser* browser);
-
-  void AddObserver(BrowserListObserver* observer);
-  void RemoveObserver(BrowserListObserver* observer);
 
   // Called by Browser objects when their window is activated (focused).  This
   // allows us to determine what the last active Browser was.
@@ -72,6 +69,14 @@ class BrowserListImpl {
  private:
   BrowserListImpl();
   ~BrowserListImpl();
+
+  // Only callable by BrowserList::(Add|Remove)Observer.
+  // TODO(gab): Merge BrowserListImpl into BrowserList removing the need for
+  // friend.
+  friend void BrowserList::AddObserver(chrome::BrowserListObserver*);
+  friend void BrowserList::RemoveObserver(chrome::BrowserListObserver*);
+  void AddObserver(BrowserListObserver* observer);
+  void RemoveObserver(BrowserListObserver* observer);
 
   // Helper method to remove a browser instance from a list of browsers
   void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
