@@ -11,11 +11,23 @@
   },
   'targets': [
     {
+      # This target is only invoked when we are building chromium inside
+      # of a WebKit checkout. In this case, we will have chromium files
+      # that include WebKit headers via third_party/WebKit/Source/... ;
+      # that directory doesn't exist in a chromium-inside-webkit
+      # checkout, and so we need to create sets of forwarding headers.
+      #
+      # In addition, we can hit limits on the include paths on windows
+      # with a regular forwarding header due to the deep directory
+      # hierarchies, and so rather than using #includes that are relative
+      # to the directory containing the generated header, the generated files
+      # use #includes that are relative to <(DEPTH).
       'target_name': 'third_party_headers',
       'type': 'none',
       'direct_dependent_settings': {
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
+          '<(DEPTH)',
         ],
       },
       'actions': [
@@ -33,6 +45,7 @@
             'setup_headers',
             '<(DEPTH)/public',
             '<(webkit_client_api_dest)',
+            '<(DEPTH)',
           ],
           'message': 'Generating forwarding headers for third_party/WebKit/Source/WebKit/chromium/public',
         },
@@ -72,6 +85,7 @@
                 'setup_headers',
                 '<(DEPTH)/../mac/WebCoreSupport',
                 '<(mac_webcoresupport_dest)',
+                '<(DEPTH)',
               ],
               'message': 'Generating forwarding headers for third_party/WebKit/Source/WebKit/mac/WebCoreSupport',
             },
