@@ -37,10 +37,10 @@ PhotoImport.prototype = { __proto__: cr.EventTarget.prototype };
 PhotoImport.ITEM_WIDTH = 164 + 8;
 
 /**
- * Directory name on the GData containing the imported photos.
+ * Directory name on the Drive containing the imported photos.
  * TODO(dgozman): localize
  */
-PhotoImport.GDATA_PHOTOS_DIR = 'My Photos';
+PhotoImport.DRIVE_PHOTOS_DIR = 'My Photos';
 
 /**
  * Loads app in the document body.
@@ -129,14 +129,14 @@ PhotoImport.prototype.initDestination_ = function() {
   }.bind(this);
 
   var onMounted = function() {
-    var dir = PathUtil.join(RootDirectory.GDATA, PhotoImport.GDATA_PHOTOS_DIR);
+    var dir = PathUtil.join(RootDirectory.DRIVE, PhotoImport.DRIVE_PHOTOS_DIR);
     util.getOrCreateDirectory(this.filesystem_.root, dir, onDirectory, onError);
   }.bind(this);
 
-  if (this.volumeManager_.isMounted(RootDirectory.GDATA)) {
+  if (this.volumeManager_.isMounted(RootDirectory.DRIVE)) {
     onMounted();
   } else {
-    this.volumeManager_.mountGData(onMounted, onError);
+    this.volumeManager_.mountDrive(onMounted, onError);
   }
 };
 
