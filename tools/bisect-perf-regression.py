@@ -126,6 +126,24 @@ def IsStringInt(string_to_check):
     return False
 
 
+def OutputAnnotationStepStart(name):
+  """Outputs appropriate annotation to signal the start of a step to
+  a trybot.
+
+  Args:
+    name: The name of the step.
+  """
+  print '@@@SEED_STEP %s@@@' % name
+  print '@@@STEP_CURSOR %s@@@' % name
+  print '@@@STEP_STARTED@@@'
+
+
+def OutputAnnotationStepClosed():
+  """Outputs appropriate annotation to signal the closing of a step to
+  a trybot."""
+  print '@@@STEP_CLOSED@@@'
+
+
 def RunProcess(command):
   """Run an arbitrary command, returning its output and return code.
 
@@ -779,11 +797,19 @@ class BisectPerformanceMetrics(object):
                           'sort' : i + sort + 1}
 
   def PrintRevisionsToBisectMessage(self, revision_list, depot):
+    if self.opts.output_buildbot_annotations:
+      step_name = 'Bisection Range: [%s - %s]' % (
+          revision_list[len(revision_list)-1], revision_list[0])
+      OutputAnnotationStepStart(step_name)
+
     print
     print 'Revisions to bisect on [%s]:' % depot
     for revision_id in revision_list:
       print '  -> %s' % (revision_id, )
     print
+
+    if self.opts.output_buildbot_annotations:
+      OutputAnnotationStepClosed()
 
   def Run(self, command_to_run, bad_revision_in, good_revision_in, metric):
     """Given known good and bad revisions, run a binary search on all
@@ -846,10 +872,16 @@ class BisectPerformanceMetrics(object):
       results['error'] = 'Could\'t resolve [%s] to SHA1.' % (good_revision_in,)
       return results
 
+    if self.opts.output_buildbot_annotations:
+      OutputAnnotationStepStart('Gathering Revisions')
+
     print 'Gathering revision range for bisection.'
 
     # Retrieve a list of revisions to do bisection on.
     src_revision_list = self.GetRevisionList(bad_revision, good_revision)
+
+    if self.opts.output_buildbot_annotations:
+      OutputAnnotationStepClosed()
 
     if src_revision_list:
       # revision_data will store information about a revision such as the
@@ -877,6 +909,9 @@ class BisectPerformanceMetrics(object):
 
       self.PrintRevisionsToBisectMessage(revision_list, 'src')
 
+      if self.opts.output_buildbot_annotations:
+        OutputAnnotationStepStart('Gathering Reference Values')
+
       print 'Gathering reference values for bisection.'
 
       # Perform the performance tests on the good and bad revisions, to get
@@ -885,6 +920,9 @@ class BisectPerformanceMetrics(object):
                                                                bad_revision,
                                                                command_to_run,
                                                                metric)
+
+      if self.opts.output_buildbot_annotations:
+        OutputAnnotationStepClosed()
 
       if bad_results[1]:
         results['error'] = bad_results[0]
@@ -985,12 +1023,19 @@ class BisectPerformanceMetrics(object):
 
         self.ChangeToDepotWorkingDirectory(next_revision_depot)
 
+        if self.opts.output_buildbot_annotations:
+          step_name = 'Working on [%s]' % next_revision_id
+          OutputAnnotationStepStart(step_name)
+
         print 'Working on revision: [%s]' % next_revision_id
 
         run_results = self.SyncBuildAndRunRevision(next_revision_id,
                                                    next_revision_depot,
                                                    command_to_run,
                                                    metric)
+
+        if self.opts.output_buildbot_annotations:
+          OutputAnnotationStepClosed()
 
         # If the build is successful, check whether or not the metric
         # had regressed.
@@ -1033,6 +1078,9 @@ class BisectPerformanceMetrics(object):
     revision_data_sorted = sorted(revision_data.iteritems(),
                                   key = lambda x: x[1]['sort'])
 
+    if self.opts.output_buildbot_annotations:
+      OutputAnnotationStepStart('Results')
+
     print
     print 'Full results of bisection:'
     for current_id, current_data  in revision_data_sorted:
@@ -1057,13 +1105,16 @@ class BisectPerformanceMetrics(object):
         last_broken_revision = k
 
     if last_broken_revision != None and first_working_revision != None:
-      print 'Results: Regression was detected as a result of changes on:'
+      print 'Results: Regression may have occurred in range:'
       print '  -> First Bad Revision: [%s] [%s]' %\
             (last_broken_revision,
             revision_data[last_broken_revision]['depot'])
       print '  -> Last Good Revision: [%s] [%s]' %\
             (first_working_revision,
             revision_data[first_working_revision]['depot'])
+
+    if self.opts.output_buildbot_annotations:
+      OutputAnnotationStepClosed()
 
 
 def DetermineAndCreateSourceControl():
@@ -1112,6 +1163,9 @@ def main():
   parser.add_option('--use_goma',
                     action="store_true",
                     help='Add a bunch of extra threads for goma.')
+  parser.add_option('--output_buildbot_annotations',
+                    action="store_true",
+                    help='Add extra annotation output for buildbot.')
   parser.add_option('--debug_ignore_build',
                     action="store_true",
                     help='DEBUG: Don\'t perform builds.')
