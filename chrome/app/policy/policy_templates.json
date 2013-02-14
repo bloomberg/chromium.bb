@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 187
+#   For your editing convenience: highest ID currently used: 188
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4268,6 +4268,37 @@
       If this policy is not set, no Terms of Service are shown.
 
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.''',
+    },
+    {
+      'name': 'Accessibility',
+      'type': 'group',
+      'caption': '''Accessibility settings''',
+      'desc': '''Configure <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> accessibility features.''',
+      'policies': [
+        {
+          'name': 'ShowAccessibilityOptionsInSystemTrayMenu',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:27-'],
+          'features': {
+            'can_be_recommended': True,
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': True,
+          'id': 188,
+          'caption': '''Show accessibility options in system tray menu''',
+          'desc': '''Show <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> accessibility options in the systenm menu.
+
+          If this policy is set to true, Accessibility options always appear in system tray menu.
+
+          If this policy is set to false, Accessibility options never appear in system tray menu.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.'''
+        },
+      ],
     },
   ],
   'messages': {

@@ -1682,6 +1682,18 @@
     ]
   },
 
+  "ShowAccessibilityOptionsInSystemTrayMenu": {
+    "os": ["chromeos"],
+    "test_policy": { "ShowAccessibilityOptionsInSystemTrayMenu": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.enable_menu",
+        "indicator_tests": [
+          { "policy": { "ShowAccessibilityOptionsInSystemTrayMenu": true } }
+        ]
+      }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

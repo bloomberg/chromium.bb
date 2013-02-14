@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, PolicyToPrefsMapping) {
   // Verifies that policies make their corresponding preferences become managed,
   // and that the user can't override that setting.
   const PolicyTestCase* test_case = policy_test_cases_.Get(GetParam().name);
-  ASSERT_TRUE(test_case);
+  ASSERT_TRUE(test_case) << "PolicyTestCase not found for " << GetParam().name;
   const ScopedVector<PrefMapping>& pref_mappings = test_case->pref_mappings();
   if (!test_case->IsSupported() || pref_mappings.empty())
     return;
@@ -472,7 +472,8 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
   // value is recommended or enforced by a corresponding policy.
   const PolicyTestCase* policy_test_case =
       policy_test_cases_.Get(GetParam().name);
-  ASSERT_TRUE(policy_test_case);
+  ASSERT_TRUE(policy_test_case) << "PolicyTestCase not found for "
+      << GetParam().name;
   const ScopedVector<PrefMapping>& pref_mappings =
       policy_test_case->pref_mappings();
   if (!policy_test_case->IsSupported() || pref_mappings.empty())

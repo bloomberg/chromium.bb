@@ -299,6 +299,8 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kDisableDriveOverCellular),
         PolicyAndPref(key::kExternalStorageDisabled,
                       prefs::kExternalStorageDisabled),
+        PolicyAndPref(key::kShowAccessibilityOptionsInSystemTrayMenu,
+                      prefs::kShouldAlwaysShowAccessibilityMenu),
         PolicyAndPref(key::kAudioOutputAllowed,
                       prefs::kAudioOutputAllowed),
         PolicyAndPref(key::kAudioCaptureAllowed,

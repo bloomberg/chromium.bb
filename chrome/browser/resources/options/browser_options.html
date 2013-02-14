@@ -616,11 +616,17 @@
       </p>
       <div class="option-name">
         <div class="checkbox">
-          <label>
+          <span class="controlled-setting-with-label">
             <input id="accessibility-should-always-show-menu"
                 pref="settings.a11y.enable_menu" type="checkbox">
-            <span i18n-content="accessibilityAlwaysShowMenu"></span>
-          </label>
+            <span>
+              <label for="accessibility-should-always-show-menu"
+                  i18n-content="accessibilityAlwaysShowMenu">
+              </label>
+              <span class="controlled-setting-indicator"
+                  pref="settings.a11y.enable_menu">
+            </span>
+          </span>
         </div>
       </div>
       <div class="option-name">

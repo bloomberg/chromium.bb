@@ -360,6 +360,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kTermsOfServiceURL,
     prefs::kTermsOfServiceURL,
     Value::TYPE_STRING },
+  { key::kShowAccessibilityOptionsInSystemTrayMenu,
+    prefs::kShouldAlwaysShowAccessibilityMenu,
+    Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
