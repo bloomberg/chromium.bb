@@ -21,20 +21,20 @@ class OAuth2ManifestTest : public ExtensionManifestTest {
 };
 
 TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
-  DictionaryValue base_manifest;
+  base::DictionaryValue base_manifest;
 
   base_manifest.SetString(keys::kName, "test");
   base_manifest.SetString(keys::kVersion, "0.1");
   base_manifest.SetInteger(keys::kManifestVersion, 2);
   base_manifest.SetString(keys::kOAuth2ClientId, "client1");
-  ListValue* scopes = new ListValue();
-  scopes->Append(Value::CreateStringValue("scope1"));
-  scopes->Append(Value::CreateStringValue("scope2"));
+  base::ListValue* scopes = new base::ListValue();
+  scopes->Append(new base::StringValue("scope1"));
+  scopes->Append(new base::StringValue("scope2"));
   base_manifest.Set(keys::kOAuth2Scopes, scopes);
 
   // OAuth2 section should be parsed for an extension.
   {
-    DictionaryValue ext_manifest;
+    base::DictionaryValue ext_manifest;
     // Lack of "app" section representa an extension. So the base manifest
     // itself represents an extension.
     ext_manifest.MergeDictionary(&base_manifest);
@@ -51,7 +51,7 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
 
   // OAuth2 section should be parsed for a packaged app.
   {
-    DictionaryValue app_manifest;
+    base::DictionaryValue app_manifest;
     app_manifest.SetString(keys::kLaunchLocalPath, "launch.html");
     app_manifest.MergeDictionary(&base_manifest);
 
@@ -67,7 +67,7 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
 
   // OAuth2 section should NOT be parsed for a hosted app.
   {
-    DictionaryValue app_manifest;
+    base::DictionaryValue app_manifest;
     app_manifest.SetString(keys::kLaunchWebURL, "http://www.google.com");
     app_manifest.MergeDictionary(&base_manifest);
 

@@ -193,15 +193,15 @@ TEST(ExtensionAPI, LazyGetSchema) {
 
 scoped_refptr<Extension> CreateExtensionWithPermissions(
     const std::set<std::string>& permissions) {
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("name", "extension");
   manifest.SetString("version", "1.0");
   manifest.SetInteger("manifest_version", 2);
   {
-    scoped_ptr<ListValue> permissions_list(new ListValue());
+    scoped_ptr<base::ListValue> permissions_list(new base::ListValue());
     for (std::set<std::string>::const_iterator i = permissions.begin();
         i != permissions.end(); ++i) {
-      permissions_list->Append(Value::CreateStringValue(*i));
+      permissions_list->Append(new base::StringValue(*i));
     }
     manifest.Set("permissions", permissions_list.release());
   }
@@ -386,20 +386,20 @@ TEST(ExtensionAPI, DefaultConfigurationFeatures) {
 }
 
 TEST(ExtensionAPI, FeaturesRequireContexts) {
-  scoped_ptr<ListValue> schema1(new ListValue());
-  DictionaryValue* feature_definition = new DictionaryValue();
+  scoped_ptr<base::ListValue> schema1(new base::ListValue());
+  base::DictionaryValue* feature_definition = new base::DictionaryValue();
   schema1->Append(feature_definition);
   feature_definition->SetString("namespace", "test");
   feature_definition->SetBoolean("uses_feature_system", true);
 
-  scoped_ptr<ListValue> schema2(schema1->DeepCopy());
+  scoped_ptr<base::ListValue> schema2(schema1->DeepCopy());
 
-  ListValue* contexts = new ListValue();
-  contexts->Append(Value::CreateStringValue("content_script"));
+  base::ListValue* contexts = new base::ListValue();
+  contexts->Append(new base::StringValue("content_script"));
   feature_definition->Set("contexts", contexts);
 
   struct {
-    ListValue* schema;
+    base::ListValue* schema;
     bool expect_success;
   } test_data[] = {
     { schema1.get(), true },
@@ -419,11 +419,11 @@ TEST(ExtensionAPI, FeaturesRequireContexts) {
   }
 }
 
-static void GetDictionaryFromList(const DictionaryValue* schema,
+static void GetDictionaryFromList(const base::DictionaryValue* schema,
                                   const std::string& list_name,
                                   const int list_index,
-                                  const DictionaryValue** out) {
-  const ListValue* list;
+                                  const base::DictionaryValue** out) {
+  const base::ListValue* list;
   EXPECT_TRUE(schema->GetList(list_name, &list));
   EXPECT_TRUE(list->GetDictionary(list_index, out));
 }
@@ -443,10 +443,10 @@ TEST(ExtensionAPI, TypesHaveNamespace) {
   api.RegisterSchema("test.foo", manifest_str);
   api.LoadAllSchemas();
 
-  const DictionaryValue* schema = api.GetSchema("test.foo");
+  const base::DictionaryValue* schema = api.GetSchema("test.foo");
 
-  const DictionaryValue* dict;
-  const DictionaryValue* sub_dict;
+  const base::DictionaryValue* dict;
+  const base::DictionaryValue* sub_dict;
   std::string type;
 
   GetDictionaryFromList(schema, "types", 0, &dict);
@@ -455,7 +455,7 @@ TEST(ExtensionAPI, TypesHaveNamespace) {
   EXPECT_TRUE(dict->GetString("customBindings", &type));
   EXPECT_EQ("test.foo.TestType", type);
   EXPECT_TRUE(dict->GetDictionary("properties", &sub_dict));
-  const DictionaryValue* property;
+  const base::DictionaryValue* property;
   EXPECT_TRUE(sub_dict->GetDictionary("foo", &property));
   EXPECT_TRUE(property->GetString("$ref", &type));
   EXPECT_EQ("test.foo.OtherType", type);

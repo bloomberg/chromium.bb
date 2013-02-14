@@ -10,12 +10,12 @@
 namespace keys = extension_manifest_keys;
 
 TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
-  DictionaryValue base_manifest;
+  base::DictionaryValue base_manifest;
   {
     base_manifest.SetString(keys::kName, "test");
     base_manifest.SetString(keys::kVersion, "0.1");
-    ListValue* permissions = new ListValue();
-    permissions->Append(Value::CreateStringValue("storage"));
+    base::ListValue* permissions = new base::ListValue();
+    permissions->Append(new base::StringValue("storage"));
     base_manifest.Set(keys::kPermissions, permissions);
   }
 
@@ -30,7 +30,7 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
 
   // Extension with manifest version 1 cannot use storage API.
   {
-    DictionaryValue manifest_with_version;
+    base::DictionaryValue manifest_with_version;
     manifest_with_version.SetInteger(keys::kManifestVersion, 1);
     manifest_with_version.MergeDictionary(&base_manifest);
 
@@ -40,7 +40,7 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
 
   // Extension with manifest version 2 *can* use storage API.
   {
-    DictionaryValue manifest_with_version;
+    base::DictionaryValue manifest_with_version;
     manifest_with_version.SetInteger(keys::kManifestVersion, 2);
     manifest_with_version.MergeDictionary(&base_manifest);
 

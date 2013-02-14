@@ -20,25 +20,25 @@ DictionaryBuilder::~DictionaryBuilder() {}
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           int in_value) {
-  dict_->SetWithoutPathExpansion(path, Value::CreateIntegerValue(in_value));
+  dict_->SetWithoutPathExpansion(path, new base::FundamentalValue(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           double in_value) {
-  dict_->SetWithoutPathExpansion(path, Value::CreateDoubleValue(in_value));
+  dict_->SetWithoutPathExpansion(path, new base::FundamentalValue(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           const std::string& in_value) {
-  dict_->SetWithoutPathExpansion(path, Value::CreateStringValue(in_value));
+  dict_->SetWithoutPathExpansion(path, new base::StringValue(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           const string16& in_value) {
-  dict_->SetWithoutPathExpansion(path, Value::CreateStringValue(in_value));
+  dict_->SetWithoutPathExpansion(path, new base::StringValue(in_value));
   return *this;
 }
 
@@ -56,7 +56,7 @@ DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
 
 DictionaryBuilder& DictionaryBuilder::SetBoolean(
     const std::string& path, bool in_value) {
-  dict_->SetWithoutPathExpansion(path, Value::CreateBooleanValue(in_value));
+  dict_->SetWithoutPathExpansion(path, new base::FundamentalValue(in_value));
   return *this;
 }
 
@@ -67,22 +67,22 @@ ListBuilder::ListBuilder(const ListValue& init) : list_(init.DeepCopy()) {}
 ListBuilder::~ListBuilder() {}
 
 ListBuilder& ListBuilder::Append(int in_value) {
-  list_->Append(Value::CreateIntegerValue(in_value));
+  list_->Append(new base::FundamentalValue(in_value));
   return *this;
 }
 
 ListBuilder& ListBuilder::Append(double in_value) {
-  list_->Append(Value::CreateDoubleValue(in_value));
+  list_->Append(new base::FundamentalValue(in_value));
   return *this;
 }
 
 ListBuilder& ListBuilder::Append(const std::string& in_value) {
-  list_->Append(Value::CreateStringValue(in_value));
+  list_->Append(new base::StringValue(in_value));
   return *this;
 }
 
 ListBuilder& ListBuilder::Append(const string16& in_value) {
-  list_->Append(Value::CreateStringValue(in_value));
+  list_->Append(new base::StringValue(in_value));
   return *this;
 }
 
@@ -97,7 +97,7 @@ ListBuilder& ListBuilder::Append(ListBuilder& in_value) {
 }
 
 ListBuilder& ListBuilder::AppendBoolean(bool in_value) {
-  list_->Append(Value::CreateBooleanValue(in_value));
+  list_->Append(new base::FundamentalValue(in_value));
   return *this;
 }
 

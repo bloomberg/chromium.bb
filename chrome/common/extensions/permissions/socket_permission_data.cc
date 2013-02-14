@@ -154,7 +154,7 @@ bool SocketPermissionData::Check(
 }
 
 scoped_ptr<base::Value> SocketPermissionData::ToValue() const {
-  return scoped_ptr<base::Value>(base::Value::CreateStringValue(GetAsString()));
+  return scoped_ptr<base::Value>(new base::StringValue(GetAsString()));
 }
 
 bool SocketPermissionData::FromValue(const base::Value* value) {

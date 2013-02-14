@@ -25,7 +25,7 @@ namespace {
 
 #define TEST_SOURCE base::StringPrintf("%s:%i", __FILE__, __LINE__)
 
-Value* LoadValue(const std::string& filename) {
+base::Value* LoadValue(const std::string& filename) {
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("json_schema_validator").AppendASCII(filename);
@@ -33,14 +33,14 @@ Value* LoadValue(const std::string& filename) {
 
   std::string error_message;
   JSONFileValueSerializer serializer(path);
-  Value* result = serializer.Deserialize(NULL, &error_message);
+  base::Value* result = serializer.Deserialize(NULL, &error_message);
   if (!result)
     ADD_FAILURE() << "Could not parse JSON: " << error_message;
   return result;
 }
 
-Value* LoadValue(const std::string& filename, base::Value::Type type) {
-  scoped_ptr<Value> result(LoadValue(filename));
+base::Value* LoadValue(const std::string& filename, base::Value::Type type) {
+  scoped_ptr<base::Value> result(LoadValue(filename));
   if (!result.get())
     return NULL;
   if (!result->IsType(type)) {
@@ -50,14 +50,14 @@ Value* LoadValue(const std::string& filename, base::Value::Type type) {
   return result.release();
 }
 
-ListValue* LoadList(const std::string& filename) {
-  return static_cast<ListValue*>(
-      LoadValue(filename, Value::TYPE_LIST));
+base::ListValue* LoadList(const std::string& filename) {
+  return static_cast<base::ListValue*>(
+      LoadValue(filename, base::Value::TYPE_LIST));
 }
 
-DictionaryValue* LoadDictionary(const std::string& filename) {
-  return static_cast<DictionaryValue*>(
-      LoadValue(filename, Value::TYPE_DICTIONARY));
+base::DictionaryValue* LoadDictionary(const std::string& filename) {
+  return static_cast<base::DictionaryValue*>(
+      LoadValue(filename, base::Value::TYPE_DICTIONARY));
 }
 
 }  // namespace
@@ -85,8 +85,9 @@ void JSONSchemaValidatorTestBase::RunTests() {
 }
 
 void JSONSchemaValidatorTestBase::TestComplex() {
-  scoped_ptr<DictionaryValue> schema(LoadDictionary("complex_schema.json"));
-  scoped_ptr<ListValue> instance(LoadList("complex_instance.json"));
+  scoped_ptr<base::DictionaryValue> schema(
+      LoadDictionary("complex_schema.json"));
+  scoped_ptr<base::ListValue> instance(LoadList("complex_instance.json"));
 
   ASSERT_TRUE(schema.get());
   ASSERT_TRUE(instance.get());
@@ -94,7 +95,7 @@ void JSONSchemaValidatorTestBase::TestComplex() {
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
   instance->Remove(instance->GetSize() - 1, NULL);
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
-  instance->Append(new DictionaryValue());
+  instance->Append(new base::DictionaryValue());
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "1",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -102,7 +103,7 @@ void JSONSchemaValidatorTestBase::TestComplex() {
                      schema::kObject));
   instance->Remove(instance->GetSize() - 1, NULL);
 
-  DictionaryValue* item = NULL;
+  base::DictionaryValue* item = NULL;
   ASSERT_TRUE(instance->GetDictionary(0, &item));
   item->SetString("url", "xxxxxxxxxxx");
 
@@ -117,63 +118,64 @@ void JSONSchemaValidatorTestBase::TestStringPattern() {
   if (type_ == CPP)
     return;
 
-  scoped_ptr<DictionaryValue> schema(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kString);
   schema->SetString(schema::kPattern, "foo+");
 
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateStringValue("foo")).get(),
+              scoped_ptr<base::Value>(new base::StringValue("foo")).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateStringValue("foooooo")).get(),
+              scoped_ptr<base::Value>(new base::StringValue("foooooo")).get(),
               schema.get(), NULL);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateStringValue("bar")).get(),
+                 scoped_ptr<base::Value>(new base::StringValue("bar")).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kStringPattern, "foo+"));
 }
 
 void JSONSchemaValidatorTestBase::TestEnum() {
-  scoped_ptr<DictionaryValue> schema(LoadDictionary("enum_schema.json"));
+  scoped_ptr<base::DictionaryValue> schema(LoadDictionary("enum_schema.json"));
 
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateStringValue("foo")).get(),
+              scoped_ptr<base::Value>(new base::StringValue("foo")).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateIntegerValue(42)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateBooleanValue(false)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(false)).get(),
               schema.get(), NULL);
 
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateStringValue("42")).get(),
+                 scoped_ptr<base::Value>(new base::StringValue("42")).get(),
                  schema.get(), NULL, "", JSONSchemaValidator::kInvalidEnum);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateNullValue()).get(),
+                 scoped_ptr<base::Value>(base::Value::CreateNullValue()).get(),
                  schema.get(), NULL, "", JSONSchemaValidator::kInvalidEnum);
 }
 
 void JSONSchemaValidatorTestBase::TestChoices() {
-  scoped_ptr<DictionaryValue> schema(LoadDictionary("choices_schema.json"));
+  scoped_ptr<base::DictionaryValue> schema(
+      LoadDictionary("choices_schema.json"));
 
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateNullValue()).get(),
+              scoped_ptr<base::Value>(base::Value::CreateNullValue()).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateIntegerValue(42)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
               schema.get(), NULL);
 
-  scoped_ptr<DictionaryValue> instance(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> instance(new base::DictionaryValue());
   instance->SetString("foo", "bar");
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateStringValue("foo")).get(),
+                 scoped_ptr<base::Value>(new base::StringValue("foo")).get(),
                  schema.get(), NULL, "", JSONSchemaValidator::kInvalidChoice);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(new ListValue()).get(),
+                 scoped_ptr<base::Value>(new base::ListValue()).get(),
                  schema.get(), NULL, "", JSONSchemaValidator::kInvalidChoice);
 
   instance->SetInteger("foo", 42);
@@ -186,12 +188,12 @@ void JSONSchemaValidatorTestBase::TestExtends() {
 }
 
 void JSONSchemaValidatorTestBase::TestObject() {
-  scoped_ptr<DictionaryValue> schema(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kObject);
   schema->SetString("properties.foo.type", schema::kString);
   schema->SetString("properties.bar.type", schema::kInteger);
 
-  scoped_ptr<DictionaryValue> instance(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> instance(new base::DictionaryValue());
   instance->SetString("foo", "foo");
   instance->SetInteger("bar", 42);
 
@@ -213,7 +215,7 @@ void JSONSchemaValidatorTestBase::TestObject() {
                      schema::kInteger,
                      schema::kString));
 
-  DictionaryValue* additional_properties = new DictionaryValue();
+  base::DictionaryValue* additional_properties = new base::DictionaryValue();
   additional_properties->SetString(schema::kType, schema::kAny);
   schema->Set(schema::kAdditionalProperties, additional_properties);
 
@@ -235,8 +237,8 @@ void JSONSchemaValidatorTestBase::TestObject() {
                      schema::kBoolean,
                      schema::kString));
 
-  DictionaryValue* properties = NULL;
-  DictionaryValue* bar_property = NULL;
+  base::DictionaryValue* properties = NULL;
+  base::DictionaryValue* bar_property = NULL;
   ASSERT_TRUE(schema->GetDictionary(schema::kProperties, &properties));
   ASSERT_TRUE(properties->GetDictionary("bar", &bar_property));
 
@@ -245,7 +247,7 @@ void JSONSchemaValidatorTestBase::TestObject() {
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
   instance->Remove("bar", NULL);
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
-  instance->Set("bar", Value::CreateNullValue());
+  instance->Set("bar", base::Value::CreateNullValue());
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL,
                  "bar", JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -260,16 +262,16 @@ void JSONSchemaValidatorTestBase::TestObject() {
 }
 
 void JSONSchemaValidatorTestBase::TestTypeReference() {
-  scoped_ptr<ListValue> types(LoadList("reference_types.json"));
+  scoped_ptr<base::ListValue> types(LoadList("reference_types.json"));
   ASSERT_TRUE(types.get());
 
-  scoped_ptr<DictionaryValue> schema(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kObject);
   schema->SetString("properties.foo.type", schema::kString);
   schema->SetString("properties.bar.$ref", "Max10Int");
   schema->SetString("properties.baz.$ref", "MinLengthString");
 
-  scoped_ptr<DictionaryValue> schema_inline(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> schema_inline(new base::DictionaryValue());
   schema_inline->SetString(schema::kType, schema::kObject);
   schema_inline->SetString("properties.foo.type", schema::kString);
   schema_inline->SetString("properties.bar.id", "NegativeInt");
@@ -277,12 +279,13 @@ void JSONSchemaValidatorTestBase::TestTypeReference() {
   schema_inline->SetInteger("properties.bar.maximum", 0);
   schema_inline->SetString("properties.baz.$ref", "NegativeInt");
 
-  scoped_ptr<DictionaryValue> instance(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> instance(new base::DictionaryValue());
   instance->SetString("foo", "foo");
   instance->SetInteger("bar", 4);
   instance->SetString("baz", "ab");
 
-  scoped_ptr<DictionaryValue> instance_inline(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> instance_inline(
+      new base::DictionaryValue());
   instance_inline->SetString("foo", "foo");
   instance_inline->SetInteger("bar", -4);
   instance_inline->SetInteger("baz", -2);
@@ -319,16 +322,17 @@ void JSONSchemaValidatorTestBase::TestTypeReference() {
 }
 
 void JSONSchemaValidatorTestBase::TestArrayTuple() {
-  scoped_ptr<DictionaryValue> schema(LoadDictionary("array_tuple_schema.json"));
+  scoped_ptr<base::DictionaryValue> schema(
+      LoadDictionary("array_tuple_schema.json"));
   ASSERT_TRUE(schema.get());
 
-  scoped_ptr<ListValue> instance(new ListValue());
-  instance->Append(Value::CreateStringValue("42"));
-  instance->Append(Value::CreateIntegerValue(42));
+  scoped_ptr<base::ListValue> instance(new base::ListValue());
+  instance->Append(new base::StringValue("42"));
+  instance->Append(new base::FundamentalValue(42));
 
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
-  instance->Append(Value::CreateStringValue("anything"));
+  instance->Append(new base::StringValue("anything"));
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kArrayMaxItems, "2"));
@@ -338,21 +342,21 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "1",
                  JSONSchemaValidator::kArrayItemRequired);
 
-  instance->Set(0, Value::CreateIntegerValue(42));
-  instance->Append(Value::CreateIntegerValue(42));
+  instance->Set(0, new base::FundamentalValue(42));
+  instance->Append(new base::FundamentalValue(42));
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "0",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
                      schema::kString,
                      schema::kInteger));
 
-  DictionaryValue* additional_properties = new DictionaryValue();
+  base::DictionaryValue* additional_properties = new base::DictionaryValue();
   additional_properties->SetString(schema::kType, schema::kAny);
   schema->Set(schema::kAdditionalProperties, additional_properties);
-  instance->Set(0, Value::CreateStringValue("42"));
-  instance->Append(Value::CreateStringValue("anything"));
+  instance->Set(0, new base::StringValue("42"));
+  instance->Append(new base::StringValue("anything"));
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
-  instance->Set(2, new ListValue());
+  instance->Set(2, new base::ListValue());
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
   additional_properties->SetString(schema::kType, schema::kBoolean);
@@ -361,11 +365,11 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
                      JSONSchemaValidator::kInvalidType,
                      schema::kBoolean,
                      schema::kArray));
-  instance->Set(2, Value::CreateBooleanValue(false));
+  instance->Set(2, new base::FundamentalValue(false));
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
-  ListValue* items_schema = NULL;
-  DictionaryValue* item0_schema = NULL;
+  base::ListValue* items_schema = NULL;
+  base::DictionaryValue* item0_schema = NULL;
   ASSERT_TRUE(schema->GetList(schema::kItems, &items_schema));
   ASSERT_TRUE(items_schema->GetDictionary(0, &item0_schema));
   item0_schema->SetBoolean(schema::kOptional, true);
@@ -373,9 +377,9 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
   // TODO(aa): I think this is inconsistent with the handling of NULL+optional
   // for objects.
-  instance->Set(0, Value::CreateNullValue());
+  instance->Set(0, base::Value::CreateNullValue());
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
-  instance->Set(0, Value::CreateIntegerValue(42));
+  instance->Set(0, new base::FundamentalValue(42));
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "0",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -384,21 +388,21 @@ void JSONSchemaValidatorTestBase::TestArrayTuple() {
 }
 
 void JSONSchemaValidatorTestBase::TestArrayNonTuple() {
-  scoped_ptr<DictionaryValue> schema(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kArray);
   schema->SetString("items.type", schema::kString);
   schema->SetInteger(schema::kMinItems, 2);
   schema->SetInteger(schema::kMaxItems, 3);
 
-  scoped_ptr<ListValue> instance(new ListValue());
-  instance->Append(Value::CreateStringValue("x"));
-  instance->Append(Value::CreateStringValue("x"));
+  scoped_ptr<base::ListValue> instance(new base::ListValue());
+  instance->Append(new base::StringValue("x"));
+  instance->Append(new base::StringValue("x"));
 
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
-  instance->Append(Value::CreateStringValue("x"));
+  instance->Append(new base::StringValue("x"));
   ExpectValid(TEST_SOURCE, instance.get(), schema.get(), NULL);
 
-  instance->Append(Value::CreateStringValue("x"));
+  instance->Append(new base::StringValue("x"));
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kArrayMaxItems, "3"));
@@ -410,7 +414,7 @@ void JSONSchemaValidatorTestBase::TestArrayNonTuple() {
                      JSONSchemaValidator::kArrayMinItems, "2"));
 
   instance->Remove(1, NULL);
-  instance->Append(Value::CreateIntegerValue(42));
+  instance->Append(new base::FundamentalValue(42));
   ExpectNotValid(TEST_SOURCE, instance.get(), schema.get(), NULL, "1",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -419,61 +423,61 @@ void JSONSchemaValidatorTestBase::TestArrayNonTuple() {
 }
 
 void JSONSchemaValidatorTestBase::TestString() {
-  scoped_ptr<DictionaryValue> schema(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kString);
   schema->SetInteger(schema::kMinLength, 1);
   schema->SetInteger(schema::kMaxLength, 10);
 
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateStringValue("x")).get(),
+              scoped_ptr<base::Value>(new base::StringValue("x")).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateStringValue("xxxxxxxxxx")).get(),
+              scoped_ptr<base::Value>(
+                  new base::StringValue("xxxxxxxxxx")).get(),
               schema.get(), NULL);
 
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateStringValue("")).get(),
+                 scoped_ptr<base::Value>(new base::StringValue("")).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kStringMinLength, "1"));
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<Value>(Value::CreateStringValue("xxxxxxxxxxx")).get(),
+      scoped_ptr<base::Value>(new base::StringValue("xxxxxxxxxxx")).get(),
       schema.get(), NULL, "",
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kStringMaxLength, "10"));
-
 }
 
 void JSONSchemaValidatorTestBase::TestNumber() {
-  scoped_ptr<DictionaryValue> schema(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
   schema->SetString(schema::kType, schema::kNumber);
   schema->SetInteger(schema::kMinimum, 1);
   schema->SetInteger(schema::kMaximum, 100);
   schema->SetInteger("maxDecimal", 2);
 
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateIntegerValue(1)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(1)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateIntegerValue(50)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(50)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateIntegerValue(100)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(100)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateDoubleValue(88.88)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(88.88)).get(),
               schema.get(), NULL);
 
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<Value>(Value::CreateDoubleValue(0.5)).get(),
+      scoped_ptr<base::Value>(new base::FundamentalValue(0.5)).get(),
       schema.get(), NULL, "",
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kNumberMinimum, "1"));
   ExpectNotValid(
       TEST_SOURCE,
-      scoped_ptr<Value>(Value::CreateDoubleValue(100.1)).get(),
+      scoped_ptr<base::Value>(new base::FundamentalValue(100.1)).get(),
       schema.get(), NULL, "",
       JSONSchemaValidator::FormatErrorMessage(
           JSONSchemaValidator::kNumberMaximum, "100"));
@@ -482,122 +486,128 @@ void JSONSchemaValidatorTestBase::TestNumber() {
 void JSONSchemaValidatorTestBase::TestTypeClassifier() {
   EXPECT_EQ(std::string(schema::kBoolean),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(Value::CreateBooleanValue(true)).get()));
+                scoped_ptr<base::Value>(
+                    new base::FundamentalValue(true)).get()));
   EXPECT_EQ(std::string(schema::kBoolean),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(Value::CreateBooleanValue(false)).get()));
+                scoped_ptr<base::Value>(
+                    new base::FundamentalValue(false)).get()));
 
   // It doesn't matter whether the C++ type is 'integer' or 'real'. If the
   // number is integral and within the representable range of integers in
   // double, it's classified as 'integer'.
   EXPECT_EQ(std::string(schema::kInteger),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(Value::CreateIntegerValue(42)).get()));
+                scoped_ptr<base::Value>(new base::FundamentalValue(42)).get()));
   EXPECT_EQ(std::string(schema::kInteger),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(Value::CreateIntegerValue(0)).get()));
+                scoped_ptr<base::Value>(new base::FundamentalValue(0)).get()));
   EXPECT_EQ(std::string(schema::kInteger),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(Value::CreateDoubleValue(42)).get()));
+                scoped_ptr<base::Value>(new base::FundamentalValue(42)).get()));
   EXPECT_EQ(std::string(schema::kInteger),
-            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<Value>(
-                Value::CreateDoubleValue(pow(2.0, DBL_MANT_DIG))).get()));
+            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<base::Value>(
+                new base::FundamentalValue(pow(2.0, DBL_MANT_DIG))).get()));
   EXPECT_EQ(std::string(schema::kInteger),
-            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<Value>(
-                Value::CreateDoubleValue(pow(-2.0, DBL_MANT_DIG))).get()));
+            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<base::Value>(
+                new base::FundamentalValue(pow(-2.0, DBL_MANT_DIG))).get()));
 
   // "number" is only used for non-integral numbers, or numbers beyond what
   // double can accurately represent.
   EXPECT_EQ(std::string(schema::kNumber),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(Value::CreateDoubleValue(88.8)).get()));
+                scoped_ptr<base::Value>(
+                    new base::FundamentalValue(88.8)).get()));
   EXPECT_EQ(std::string(schema::kNumber),
-            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<Value>(
-                Value::CreateDoubleValue(pow(2.0, DBL_MANT_DIG) * 2)).get()));
+            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<base::Value>(
+                new base::FundamentalValue(pow(2.0, DBL_MANT_DIG) * 2)).get()));
   EXPECT_EQ(std::string(schema::kNumber),
-            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<Value>(
-                Value::CreateDoubleValue(pow(-2.0, DBL_MANT_DIG) * 2)).get()));
+            JSONSchemaValidator::GetJSONSchemaType(scoped_ptr<base::Value>(
+                new base::FundamentalValue(
+                    pow(-2.0, DBL_MANT_DIG) * 2)).get()));
 
   EXPECT_EQ(std::string(schema::kString),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(Value::CreateStringValue("foo")).get()));
+                scoped_ptr<base::Value>(new base::StringValue("foo")).get()));
   EXPECT_EQ(std::string(schema::kArray),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(new ListValue()).get()));
+                scoped_ptr<base::Value>(new base::ListValue()).get()));
   EXPECT_EQ(std::string(schema::kObject),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(new DictionaryValue()).get()));
+                scoped_ptr<base::Value>(new base::DictionaryValue()).get()));
   EXPECT_EQ(std::string(schema::kNull),
             JSONSchemaValidator::GetJSONSchemaType(
-                scoped_ptr<Value>(Value::CreateNullValue()).get()));
+                scoped_ptr<base::Value>(base::Value::CreateNullValue()).get()));
 }
 
 void JSONSchemaValidatorTestBase::TestTypes() {
-  scoped_ptr<DictionaryValue> schema(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> schema(new base::DictionaryValue());
 
   // valid
   schema->SetString(schema::kType, schema::kObject);
-  ExpectValid(TEST_SOURCE, scoped_ptr<Value>(new DictionaryValue()).get(),
+  ExpectValid(TEST_SOURCE,
+              scoped_ptr<base::Value>(new base::DictionaryValue()).get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kArray);
-  ExpectValid(TEST_SOURCE, scoped_ptr<Value>(new ListValue()).get(),
+  ExpectValid(TEST_SOURCE, scoped_ptr<base::Value>(new base::ListValue()).get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kString);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateStringValue("foobar")).get(),
+              scoped_ptr<base::Value>(new base::StringValue("foobar")).get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kNumber);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateDoubleValue(88.8)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(88.8)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateDoubleValue(42)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateIntegerValue(42)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateIntegerValue(0)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(0)).get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kInteger);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateIntegerValue(42)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateDoubleValue(42)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateIntegerValue(0)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(0)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(
-                  Value::CreateDoubleValue(pow(2.0, DBL_MANT_DIG))).get(),
+              scoped_ptr<base::Value>(
+                  new base::FundamentalValue(pow(2.0, DBL_MANT_DIG))).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(
-                  Value::CreateDoubleValue(pow(-2.0, DBL_MANT_DIG))).get(),
+              scoped_ptr<base::Value>(
+                  new base::FundamentalValue(pow(-2.0, DBL_MANT_DIG))).get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kBoolean);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateBooleanValue(false)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(false)).get(),
               schema.get(), NULL);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateBooleanValue(true)).get(),
+              scoped_ptr<base::Value>(new base::FundamentalValue(true)).get(),
               schema.get(), NULL);
 
   schema->SetString(schema::kType, schema::kNull);
   ExpectValid(TEST_SOURCE,
-              scoped_ptr<Value>(Value::CreateNullValue()).get(),
+              scoped_ptr<base::Value>(base::Value::CreateNullValue()).get(),
               schema.get(), NULL);
 
   // not valid
   schema->SetString(schema::kType, schema::kObject);
-  ExpectNotValid(TEST_SOURCE, scoped_ptr<Value>(new ListValue()).get(),
+  ExpectNotValid(TEST_SOURCE,
+                 scoped_ptr<base::Value>(new base::ListValue()).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -605,7 +615,8 @@ void JSONSchemaValidatorTestBase::TestTypes() {
                      schema::kArray));
 
   schema->SetString(schema::kType, schema::kObject);
-  ExpectNotValid(TEST_SOURCE, scoped_ptr<Value>(Value::CreateNullValue()).get(),
+  ExpectNotValid(TEST_SOURCE,
+                 scoped_ptr<base::Value>(base::Value::CreateNullValue()).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -614,7 +625,7 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString(schema::kType, schema::kArray);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateIntegerValue(42)).get(),
+                 scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -623,7 +634,7 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString(schema::kType, schema::kString);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateIntegerValue(42)).get(),
+                 scoped_ptr<base::Value>(new base::FundamentalValue(42)).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -632,7 +643,7 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString(schema::kType, schema::kNumber);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateStringValue("42")).get(),
+                 scoped_ptr<base::Value>(new base::StringValue("42")).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -641,7 +652,8 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString(schema::kType, schema::kInteger);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateDoubleValue(88.8)).get(),
+                 scoped_ptr<base::Value>(
+                     new base::FundamentalValue(88.8)).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -650,7 +662,8 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString(schema::kType, schema::kInteger);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateDoubleValue(88.8)).get(),
+                 scoped_ptr<base::Value>(
+                     new base::FundamentalValue(88.8)).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -659,7 +672,7 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString(schema::kType, schema::kBoolean);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateIntegerValue(1)).get(),
+                 scoped_ptr<base::Value>(new base::FundamentalValue(1)).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,
@@ -668,7 +681,8 @@ void JSONSchemaValidatorTestBase::TestTypes() {
 
   schema->SetString(schema::kType, schema::kNull);
   ExpectNotValid(TEST_SOURCE,
-                 scoped_ptr<Value>(Value::CreateBooleanValue(false)).get(),
+                 scoped_ptr<base::Value>(
+                     new base::FundamentalValue(false)).get(),
                  schema.get(), NULL, "",
                  JSONSchemaValidator::FormatErrorMessage(
                      JSONSchemaValidator::kInvalidType,

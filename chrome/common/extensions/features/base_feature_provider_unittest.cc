@@ -31,7 +31,7 @@ TEST(BaseFeatureProvider, ManifestFeatures) {
   EXPECT_EQ(1u, feature->extension_types()->count(Manifest::TYPE_HOSTED_APP));
   EXPECT_EQ(1u, feature->extension_types()->count(Manifest::TYPE_THEME));
 
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("name", "test extension");
   manifest.SetString("version", "1");
   manifest.SetString("description", "hello there");
@@ -71,12 +71,12 @@ TEST(BaseFeatureProvider, PermissionFeatures) {
   EXPECT_EQ(1u,
             feature->extension_types()->count(Manifest::TYPE_PLATFORM_APP));
 
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("name", "test extension");
   manifest.SetString("version", "1");
-  ListValue* permissions = new ListValue();
+  base::ListValue* permissions = new base::ListValue();
   manifest.Set("permissions", permissions);
-  permissions->Append(Value::CreateStringValue("contextMenus"));
+  permissions->Append(new base::StringValue("contextMenus"));
 
   std::string error;
   scoped_refptr<const Extension> extension(Extension::Create(
@@ -101,17 +101,17 @@ TEST(BaseFeatureProvider, PermissionFeatures) {
 }
 
 TEST(BaseFeatureProvider, Validation) {
-  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
-  DictionaryValue* feature1 = new DictionaryValue();
+  base::DictionaryValue* feature1 = new base::DictionaryValue();
   value->Set("feature1", feature1);
 
-  DictionaryValue* feature2 = new DictionaryValue();
-  ListValue* extension_types = new ListValue();
-  extension_types->Append(Value::CreateStringValue("extension"));
+  base::DictionaryValue* feature2 = new base::DictionaryValue();
+  base::ListValue* extension_types = new base::ListValue();
+  extension_types->Append(new base::StringValue("extension"));
   feature2->Set("extension_types", extension_types);
-  ListValue* contexts = new ListValue();
-  contexts->Append(Value::CreateStringValue("blessed_extension"));
+  base::ListValue* contexts = new base::ListValue();
+  contexts->Append(new base::StringValue("blessed_extension"));
   feature2->Set("contexts", contexts);
   value->Set("feature2", feature2);
 
@@ -136,7 +136,7 @@ TEST(BaseFeatureProvider, Validation) {
 }
 
 TEST(BaseFeatureProvider, ComplexFeatures) {
-  scoped_ptr<DictionaryValue> rule(
+  scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
       .Set("feature1",
            ListBuilder().Append(DictionaryBuilder()
@@ -152,7 +152,7 @@ TEST(BaseFeatureProvider, ComplexFeatures) {
   scoped_ptr<BaseFeatureProvider> provider(
       new BaseFeatureProvider(*rule, NULL));
 
-  Feature *feature = provider->GetFeature("feature1");
+  Feature* feature = provider->GetFeature("feature1");
   EXPECT_TRUE(feature);
 
   // Make sure both rules are applied correctly.

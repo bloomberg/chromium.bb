@@ -41,9 +41,10 @@ class ManifestTest : public testing::Test {
   // Helper function that replaces the Manifest held by |manifest| with a copy
   // with its |key| changed to |value|. If |value| is NULL, then |key| will
   // instead be deleted.
-  void MutateManifest(
-      scoped_ptr<Manifest>* manifest, const std::string& key, Value* value) {
-    scoped_ptr<DictionaryValue> manifest_value(
+  void MutateManifest(scoped_ptr<Manifest>* manifest,
+                      const std::string& key,
+                      base::Value* value) {
+    scoped_ptr<base::DictionaryValue> manifest_value(
         manifest->get()->value()->DeepCopy());
     if (value)
       manifest_value->Set(key, value);
@@ -57,7 +58,7 @@ class ManifestTest : public testing::Test {
 
 // Verifies that extensions can access the correct keys.
 TEST_F(ManifestTest, Extension) {
-  scoped_ptr<DictionaryValue> manifest_value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> manifest_value(new base::DictionaryValue());
   manifest_value->SetString(keys::kName, "extension");
   manifest_value->SetString(keys::kVersion, "1");
   // Only supported in manifest_version=1.
@@ -86,7 +87,7 @@ TEST_F(ManifestTest, Extension) {
   // Set the manifest_version to 2; background_page should stop working.
   value.clear();
   MutateManifest(
-      &manifest, keys::kManifestVersion, Value::CreateIntegerValue(2));
+      &manifest, keys::kManifestVersion, new base::FundamentalValue(2));
   EXPECT_FALSE(manifest->GetString("background_page", &value));
   EXPECT_EQ("", value);
 
@@ -109,13 +110,13 @@ TEST_F(ManifestTest, Extension) {
   EXPECT_TRUE(manifest->Equals(manifest2.get()));
   EXPECT_TRUE(manifest2->Equals(manifest.get()));
   MutateManifest(
-      &manifest, "foo", Value::CreateStringValue("blah"));
+      &manifest, "foo", new base::StringValue("blah"));
   EXPECT_FALSE(manifest->Equals(manifest2.get()));
 }
 
 // Verifies that key restriction based on type works.
 TEST_F(ManifestTest, ExtensionTypes) {
-  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString(keys::kName, "extension");
   value->SetString(keys::kVersion, "1");
 
@@ -132,31 +133,31 @@ TEST_F(ManifestTest, ExtensionTypes) {
 
   // Theme.
   MutateManifest(
-      &manifest, keys::kTheme, new DictionaryValue());
+      &manifest, keys::kTheme, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_THEME);
   MutateManifest(
       &manifest, keys::kTheme, NULL);
 
   // Packaged app.
   MutateManifest(
-      &manifest, keys::kApp, new DictionaryValue());
+      &manifest, keys::kApp, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_LEGACY_PACKAGED_APP);
 
   // Platform app.
   MutateManifest(
-      &manifest, keys::kPlatformAppBackground, new DictionaryValue());
+      &manifest, keys::kPlatformAppBackground, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, NULL);
 
   // Hosted app.
   MutateManifest(
-      &manifest, keys::kWebURLs, new ListValue());
+      &manifest, keys::kWebURLs, new base::ListValue());
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kWebURLs, NULL);
   MutateManifest(
-      &manifest, keys::kLaunchWebURL, Value::CreateStringValue("foo"));
+      &manifest, keys::kLaunchWebURL, new base::StringValue("foo"));
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kLaunchWebURL, NULL);
@@ -164,7 +165,7 @@ TEST_F(ManifestTest, ExtensionTypes) {
 
 // Verifies that the getters filter restricted keys.
 TEST_F(ManifestTest, RestrictedKeys) {
-  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString(keys::kName, "extension");
   value->SetString(keys::kVersion, "1");
 
@@ -178,14 +179,14 @@ TEST_F(ManifestTest, RestrictedKeys) {
 
   // Platform apps cannot have a "page_action" key.
   MutateManifest(
-      &manifest, keys::kPageAction, new DictionaryValue());
+      &manifest, keys::kPageAction, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_EXTENSION);
   base::Value* output = NULL;
   EXPECT_TRUE(manifest->HasKey(keys::kPageAction));
   EXPECT_TRUE(manifest->Get(keys::kPageAction, &output));
 
   MutateManifest(
-      &manifest, keys::kPlatformAppBackground, new DictionaryValue());
+      &manifest, keys::kPlatformAppBackground, new base::DictionaryValue());
   AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
   EXPECT_FALSE(manifest->HasKey(keys::kPageAction));
   EXPECT_FALSE(manifest->Get(keys::kPageAction, &output));
@@ -199,12 +200,12 @@ TEST_F(ManifestTest, RestrictedKeys) {
         chrome::VersionInfo::CHANNEL_DEV);
 
     MutateManifest(
-        &manifest, keys::kCommands, new DictionaryValue());
+        &manifest, keys::kCommands, new base::DictionaryValue());
     EXPECT_FALSE(manifest->HasKey(keys::kCommands));
     EXPECT_FALSE(manifest->Get(keys::kCommands, &output));
 
     MutateManifest(
-        &manifest, keys::kManifestVersion, Value::CreateIntegerValue(2));
+        &manifest, keys::kManifestVersion, new base::FundamentalValue(2));
     EXPECT_TRUE(manifest->HasKey(keys::kCommands));
     EXPECT_TRUE(manifest->Get(keys::kCommands, &output));
   }

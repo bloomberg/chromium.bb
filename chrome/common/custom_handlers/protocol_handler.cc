@@ -28,7 +28,7 @@ ProtocolHandler ProtocolHandler::CreateProtocolHandler(
 ProtocolHandler::ProtocolHandler() {
 }
 
-bool ProtocolHandler::IsValidDict(const DictionaryValue* value) {
+bool ProtocolHandler::IsValidDict(const base::DictionaryValue* value) {
   return value->HasKey("protocol") && value->HasKey("url") &&
     value->HasKey("title");
 }
@@ -44,7 +44,7 @@ const ProtocolHandler& ProtocolHandler::EmptyProtocolHandler() {
 }
 
 ProtocolHandler ProtocolHandler::CreateProtocolHandler(
-    const DictionaryValue* value) {
+    const base::DictionaryValue* value) {
   if (!IsValidDict(value)) {
     return EmptyProtocolHandler();
   }
@@ -63,11 +63,11 @@ GURL ProtocolHandler::TranslateUrl(const GURL& url) const {
   return GURL(translatedUrlSpec);
 }
 
-DictionaryValue* ProtocolHandler::Encode() const {
-  DictionaryValue* d = new DictionaryValue();
-  d->Set("protocol", Value::CreateStringValue(protocol_));
-  d->Set("url", Value::CreateStringValue(url_.spec()));
-  d->Set("title", Value::CreateStringValue(title_));
+base::DictionaryValue* ProtocolHandler::Encode() const {
+  base::DictionaryValue* d = new base::DictionaryValue();
+  d->Set("protocol", new base::StringValue(protocol_));
+  d->Set("url", new base::StringValue(url_.spec()));
+  d->Set("title", new base::StringValue(title_));
   return d;
 }
 

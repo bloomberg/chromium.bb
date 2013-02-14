@@ -103,7 +103,7 @@ TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
   // testing. The requirements are that (1) it be a valid platform app, and (2)
   // it contain no permissions dictionary.
   std::string error;
-  scoped_ptr<DictionaryValue> manifest(
+  scoped_ptr<base::DictionaryValue> manifest(
       LoadManifest("init_valid_platform_app.json", &error));
 
   std::vector<linked_ptr<DictionaryValue> > manifests;
@@ -112,9 +112,9 @@ TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
     const char* api_name = kPlatformAppExperimentalApis[i];
 
     // DictionaryValue will take ownership of this ListValue.
-    ListValue *permissions = new ListValue();
-    permissions->Append(base::Value::CreateStringValue("experimental"));
-    permissions->Append(base::Value::CreateStringValue(api_name));
+    base::ListValue *permissions = new base::ListValue();
+    permissions->Append(new base::StringValue("experimental"));
+    permissions->Append(new base::StringValue(api_name));
     manifest->Set("permissions", permissions);
     manifests.push_back(make_linked_ptr(manifest->DeepCopy()));
   }
