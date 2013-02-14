@@ -39,6 +39,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                         const std::string& mailbox_name,
                         int gpu_route_id,
                         int gpu_host_id);
+  void UpdateVisibility(bool);
  protected:
   // Friend RefCounted so that the dtor can be non-public.
   friend class base::RefCounted<BrowserPluginCompositingHelper>;

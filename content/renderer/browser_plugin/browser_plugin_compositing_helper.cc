@@ -210,4 +210,9 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   last_mailbox_valid_ = current_mailbox_valid;
 }
 
+void BrowserPluginCompositingHelper::UpdateVisibility(bool visible) {
+  if (texture_layer_)
+    texture_layer_->setIsDrawable(visible);
+}
+
 }  // namespace content

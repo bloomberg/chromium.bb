@@ -1102,6 +1102,9 @@ void BrowserPlugin::updateVisibility(bool visible) {
   if (!navigate_src_sent_)
     return;
 
+  if (compositing_helper_)
+    compositing_helper_->UpdateVisibility(visible);
+
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetVisibility(
       render_view_routing_id_,
       instance_id_,
