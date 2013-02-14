@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_DETAILS_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_DETAILS_VIEW_H_
 
+#include "ash/system/tray/special_popup_row.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -19,7 +20,6 @@ namespace internal {
 
 class FixedSizedScrollView;
 class ScrollBorder;
-class SpecialPopupRow;
 class ViewClickListener;
 
 class TrayDetailsView : public views::View {

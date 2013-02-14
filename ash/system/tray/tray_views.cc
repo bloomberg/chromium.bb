@@ -35,10 +35,8 @@ namespace ash {
 namespace internal {
 
 namespace {
-const int kIconPaddingLeft = 5;
 const int kPopupDetailLabelExtraLeftMargin = 8;
 const int kCheckLabelPadding = 4;
-const int kSpecialPopupRowHeight = 55;
 const int kTrayPopupLabelButtonPaddingHorizontal = 16;
 const int kTrayPopupLabelButtonPaddingVertical = 8;
 
@@ -81,42 +79,6 @@ const int kTrayPopupLabelButtonBorderImagesHovered[] = {
     IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
     IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
     IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
-};
-
-views::View* CreatePopupHeaderButtonsContainer() {
-  views::View* view = new views::View;
-  view->SetLayoutManager(new
-      views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, -1));
-  view->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 5));
-  return view;
-}
-
-const int kBorderHeight = 3;
-const SkColor kBorderGradientDark = SkColorSetRGB(0xae, 0xae, 0xae);
-const SkColor kBorderGradientLight = SkColorSetRGB(0xe8, 0xe8, 0xe8);
-
-class SpecialPopupRowBorder : public views::Border {
- public:
-  SpecialPopupRowBorder()
-      : painter_(views::Painter::CreateVerticalGradient(kBorderGradientDark,
-                                                        kBorderGradientLight)) {
-  }
-
-  virtual ~SpecialPopupRowBorder() {}
-
- private:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE {
-    views::Painter::PaintPainterAt(canvas, painter_.get(),
-        gfx::Rect(gfx::Size(view.width(), kBorderHeight)));
-  }
-
-  virtual gfx::Insets GetInsets() const OVERRIDE {
-    return gfx::Insets(kBorderHeight, 0, 0, 0);
-  }
-
-  scoped_ptr<views::Painter> painter_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpecialPopupRowBorder);
 };
 
 }
@@ -698,101 +660,6 @@ void ThrobberView::ScheduleAnimation(bool start_throbber) {
       base::TimeDelta::FromMilliseconds(kThrobberAnimationDurationMs));
 
   layer()->SetOpacity(start_throbber ? 1.0 : 0.0);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SpecialPopupRow
-
-SpecialPopupRow::SpecialPopupRow()
-    : content_(NULL),
-      button_container_(NULL) {
-  views::Background* background = views::Background::CreateBackgroundPainter(
-      true, views::Painter::CreateVerticalGradient(kHeaderBackgroundColorLight,
-                                                   kHeaderBackgroundColorDark));
-  background->SetNativeControlColor(kHeaderBackgroundColorDark);
-  set_background(background);
-  set_border(new SpecialPopupRowBorder);
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-}
-
-SpecialPopupRow::~SpecialPopupRow() {
-}
-
-void SpecialPopupRow::SetTextLabel(int string_id, ViewClickListener* listener) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  HoverHighlightView* container = new HoverHighlightView(listener);
-  container->SetLayoutManager(new
-      views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
-
-  container->set_highlight_color(SkColorSetARGB(0, 0, 0, 0));
-  container->set_default_color(SkColorSetARGB(0, 0, 0, 0));
-  container->set_text_highlight_color(kHeaderTextColorHover);
-  container->set_text_default_color(kHeaderTextColorNormal);
-
-  container->AddIconAndLabel(
-      *rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToImageSkia(),
-      rb.GetLocalizedString(string_id),
-      gfx::Font::BOLD);
-
-  container->set_border(views::Border::CreateEmptyBorder(0,
-      kTrayPopupPaddingHorizontal, 0, 0));
-
-  container->SetAccessibleName(
-      rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
-  SetContent(container);
-}
-
-void SpecialPopupRow::SetContent(views::View* view) {
-  CHECK(!content_);
-  content_ = view;
-  AddChildViewAt(content_, 0);
-}
-
-void SpecialPopupRow::AddButton(TrayPopupHeaderButton* button) {
-  if (!button_container_) {
-    button_container_ = CreatePopupHeaderButtonsContainer();
-    AddChildView(button_container_);
-  }
-
-  button_container_->AddChildView(button);
-}
-
-void SpecialPopupRow::AddThrobber(ThrobberView* throbber) {
-  if (!button_container_) {
-    button_container_ = CreatePopupHeaderButtonsContainer();
-    AddChildView(button_container_);
-  }
-
-  button_container_->AddChildView(throbber);
-}
-
-gfx::Size SpecialPopupRow::GetPreferredSize() {
-  gfx::Size size = views::View::GetPreferredSize();
-  size.set_height(kSpecialPopupRowHeight);
-  return size;
-}
-
-void SpecialPopupRow::Layout() {
-  views::View::Layout();
-  gfx::Rect content_bounds = GetContentsBounds();
-  if (content_bounds.IsEmpty())
-    return;
-  if (!button_container_) {
-    content_->SetBoundsRect(GetContentsBounds());
-    return;
-  }
-
-  gfx::Rect bounds(button_container_->GetPreferredSize());
-  bounds.set_height(content_bounds.height());
-  gfx::Rect container_bounds = content_bounds;
-  container_bounds.ClampToCenteredSize(bounds.size());
-  container_bounds.set_x(content_bounds.width() - container_bounds.width());
-  button_container_->SetBoundsRect(container_bounds);
-
-  bounds = content_->bounds();
-  bounds.set_width(button_container_->x());
-  content_->SetBoundsRect(bounds);
 }
 
 void SetupLabelForTray(views::Label* label) {

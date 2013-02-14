@@ -319,32 +319,6 @@ class ThrobberView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ThrobberView);
 };
 
-// The 'special' looking row in the uber-tray popups. This is usually the bottom
-// row in the popups, and has a fixed height.
-class SpecialPopupRow : public views::View {
- public:
-  SpecialPopupRow();
-  virtual ~SpecialPopupRow();
-
-  void SetTextLabel(int string_id, ViewClickListener* listener);
-  void SetContent(views::View* view);
-
-  void AddButton(TrayPopupHeaderButton* button);
-  void AddThrobber(ThrobberView* throbber);
-
-  views::View* content() const { return content_; }
-
- private:
-  // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-
-  views::View* content_;
-  views::View* button_container_;
-  views::Label* text_label_;
-  DISALLOW_COPY_AND_ASSIGN(SpecialPopupRow);
-};
-
 // Sets up a Label properly for the tray (sets color, font etc.).
 void SetupLabelForTray(views::Label* label);
 
