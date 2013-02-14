@@ -32,8 +32,7 @@ float GetForcedDeviceScaleFactorImpl() {
   return static_cast<float>(scale_in_double);
 }
 
-int64 internal_display_id_ = Display::kInvalidDisplayID;
-}  // namespace
+} // namespace
 
 const int64 Display::kInvalidDisplayID = -1;
 
@@ -130,25 +129,11 @@ gfx::Size Display::GetSizeInPixel() const {
 }
 
 std::string Display::ToString() const {
-  return base::StringPrintf(
-      "Display[%lld] bounds=%s, workarea=%s, scale=%f, %s",
-      static_cast<long long int>(id_),
-      bounds_.ToString().c_str(),
-      work_area_.ToString().c_str(),
-      device_scale_factor_,
-      IsInternal() ? "internal" : "external");
-}
-
-bool Display::IsInternal() const {
-  return is_valid() && (id_ == internal_display_id_);
-}
-
-int64 Display::InternalDisplayId() {
-  return internal_display_id_;
-}
-
-void Display::SetInternalDisplayId(int64 internal_display_id) {
-  internal_display_id_ = internal_display_id;
+  return base::StringPrintf("Display[%lld] bounds=%s, workarea=%s, scale=%f",
+                            static_cast<long long int>(id_),
+                            bounds_.ToString().c_str(),
+                            work_area_.ToString().c_str(),
+                            device_scale_factor_);
 }
 
 }  // namespace gfx

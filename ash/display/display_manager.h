@@ -59,6 +59,8 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   bool IsInternalDisplayId(int64 id) const;
 
+  uint64 internal_display_id() const { return internal_display_id_; }
+
   bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
 
@@ -186,6 +188,8 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   void SetHasOverscanFlagForTest(int64 id, bool has_overscan);
 
   DisplayList displays_;
+
+  int64 internal_display_id_;
 
   // An internal display cache used when the internal display is disconnectd.
   scoped_ptr<gfx::Display> internal_display_;

@@ -91,6 +91,7 @@ DEFINE_WINDOW_PROPERTY_KEY(int64, kDisplayIdKey,
                            gfx::Display::kInvalidDisplayID);
 
 DisplayManager::DisplayManager() :
+    internal_display_id_(gfx::Display::kInvalidDisplayID),
     force_bounds_changed_(false) {
   Init();
 }
@@ -118,11 +119,11 @@ bool DisplayManager::IsActiveDisplay(const gfx::Display& display) const {
 }
 
 bool DisplayManager::HasInternalDisplay() const {
-  return gfx::Display::InternalDisplayId() != gfx::Display::kInvalidDisplayID;
+  return internal_display_id_ != gfx::Display::kInvalidDisplayID;
 }
 
 bool DisplayManager::IsInternalDisplayId(int64 id) const {
-  return gfx::Display::InternalDisplayId() == id;
+  return internal_display_id_ == id;
 }
 
 bool DisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
@@ -184,11 +185,11 @@ void DisplayManager::OnNativeDisplaysChanged(
     return;
   }
   DisplayList new_displays = updated_displays;
-  if (HasInternalDisplay()) {
+  if (internal_display_id_ != gfx::Display::kInvalidDisplayID) {
     bool internal_display_connected = false;
     for (DisplayList::const_iterator iter = updated_displays.begin();
          iter != updated_displays.end(); ++iter) {
-      if ((*iter).IsInternal()) {
+      if ((*iter).id() == internal_display_id_) {
         internal_display_connected = true;
         // Update the internal display cache.
         internal_display_.reset(new gfx::Display);
@@ -200,9 +201,8 @@ void DisplayManager::OnNativeDisplaysChanged(
     if (!internal_display_connected) {
       // Internal display may be reported as disconnect during startup time.
       if (!internal_display_.get()) {
-        internal_display_.reset(
-            new gfx::Display(gfx::Display::InternalDisplayId(),
-                             gfx::Rect(800, 600)));
+        internal_display_.reset(new gfx::Display(internal_display_id_,
+                                                 gfx::Rect(800, 600)));
       }
       new_displays.push_back(*internal_display_.get());
     }
@@ -441,8 +441,7 @@ void DisplayManager::Init() {
     for (size_t i = 0; i < output_names.size(); ++i) {
       if (chromeos::OutputConfigurator::IsInternalOutputName(
               output_names[i])) {
-        gfx::Display::SetInternalDisplayId(
-            GetDisplayIdForOutput(outputs[i], i));
+        internal_display_id_ = GetDisplayIdForOutput(outputs[i], i);
         break;
       }
     }
@@ -531,10 +530,10 @@ void DisplayManager::AddDisplayFromSpec(const std::string& spec) {
 }
 
 int64 DisplayManager::SetFirstDisplayAsInternalDisplayForTest() {
-  gfx::Display::SetInternalDisplayId(displays_[0].id());
+  internal_display_id_ = displays_[0].id();
   internal_display_.reset(new gfx::Display);
   *internal_display_ = displays_[0];
-  return gfx::Display::InternalDisplayId();
+  return internal_display_id_;
 }
 
 void DisplayManager::EnsurePointerInDisplays() {

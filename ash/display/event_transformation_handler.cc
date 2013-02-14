@@ -4,6 +4,7 @@
 
 #include "ash/display/event_transformation_handler.h"
 
+#include "ash/display/display_manager.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -44,7 +45,8 @@ void EventTransformationHandler::OnScrollEvent(ui::ScrollEvent* event) {
   wm::ConvertPointToScreen(target, &point_in_screen);
   const gfx::Display& display =
       Shell::GetScreen()->GetDisplayNearestPoint(point_in_screen);
-  if (!display.IsInternal())
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  if (!display_manager->IsInternalDisplayId(display.id()))
     scale *= kBoostForNonIntegrated;
 
   event->Scale(scale);
