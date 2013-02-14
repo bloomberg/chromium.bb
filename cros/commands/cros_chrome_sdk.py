@@ -22,7 +22,7 @@ from chromite.buildbot import constants
 
 COMMAND_NAME = 'chrome-sdk'
 SDK_VERSION_ENV = '%CHROME_SDK_VERSION'
-
+SDK_BOARD_ENV = '%CHROME_SDK_BOARD'
 
 class ChromeSDK(object):
   """Functionality for fetching a Chrome SDK environment.
@@ -118,9 +118,10 @@ class ChromeSDK(object):
     Otherwise, use what we defaulted to last time.  If there was no last time,
     use the result of UpdateDefaultVersion().
     """
-    sdk_version = os.environ.get(SDK_VERSION_ENV)
-    if sdk_version is not None:
-      return sdk_version
+    if os.environ.get(SDK_BOARD_ENV) == self.board:
+      sdk_version = os.environ.get(SDK_VERSION_ENV)
+      if sdk_version is not None:
+        return sdk_version
 
     with self.misc_cache.Lookup((self.board, 'latest')) as ref:
       if ref.Exists(lock=True):
@@ -275,7 +276,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     cmd = var_contents.partition(' -B')[0]
     return '%s -fuse-ld=ld.gold' % cmd
 
-  def _SetupEnvironment(self, version, key_map):
+  def _SetupEnvironment(self, board, version, key_map):
     """Sets environment variables to export to the SDK shell."""
     sysroot = key_map[constants.CHROME_SYSROOT_TAR].path
     environment = os.path.join(key_map[constants.CHROME_ENV_TAR].path,
@@ -285,6 +286,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
 
     os.environ[SDK_VERSION_ENV] = version
+    os.environ[SDK_BOARD_ENV] = board
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
     gyp_dict = chrome_util.ProcessGypDefines(env['GYP_DEFINES'])
@@ -355,7 +357,7 @@ class ChromeSDKCommand(cros.CrosCommand):
       prepare_version = self.sdk.UpdateDefaultVersion()
 
     with self.sdk.Prepare(version=prepare_version) as ctx:
-      env = self._SetupEnvironment(ctx.version, ctx.key_map)
+      env = self._SetupEnvironment(self.options.board, ctx.version, ctx.key_map)
       with self._GetRCFile(env, self.options.bashrc) as rcfile:
         bash_header = ['/bin/bash', '--noprofile', '--rcfile', rcfile]
 

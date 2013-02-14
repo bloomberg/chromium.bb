@@ -235,9 +235,15 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     # pylint: disable=E1101
     self.assertTrue(gclient.FindGclientCheckoutRoot.called)
 
-  def testDefaultEnv(self):
-    """Test that we pick up the version from the environment."""
+  def testDefaultEnvBadBoard(self):
+    """We don't use the version in the environment if board doesn't match."""
     os.environ[cros_chrome_sdk.SDK_VERSION_ENV] = self.ENV_VERSION
+    self.assertEquals(self.sdk.GetDefaultVersion(), self.sdk_mock.VERSION)
+
+  def testDefaultEnvGoodBoard(self):
+    """We use the version in the environment if board matches."""
+    os.environ[cros_chrome_sdk.SDK_VERSION_ENV] = self.ENV_VERSION
+    os.environ[cros_chrome_sdk.SDK_BOARD_ENV] = self.BOARD
     self.assertEquals(self.sdk.GetDefaultVersion(), self.ENV_VERSION)
 
 
