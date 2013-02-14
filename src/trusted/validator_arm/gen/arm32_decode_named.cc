@@ -1814,7 +1814,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000)  !=
           0x0000F000 /* Rd(15:12)=~1111 */) {
-    return Binary4RegisterDualOp_USADA8_instance_;
+    return USADA8_cccc01111000ddddaaaammmm0001nnnn_case_0_USADA8_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000)  ==
@@ -1823,7 +1823,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* Rd(15:12)=1111 */) {
-    return Binary3RegisterOpAltA_USAD8_instance_;
+    return USAD8_cccc01111000dddd1111mmmm0001nnnn_case_0_USAD8_instance_;
   }
 
   if ((inst.Bits() & 0x01F00000)  ==
@@ -1837,7 +1837,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
           0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000060)  ==
           0x00000040 /* op2(7:5)=x10 */) {
-    return Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_SBFX_instance_;
+    return SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0_SBFX_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -1846,7 +1846,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
           0x00000000 /* op2(7:5)=x00 */ &&
       (inst.Bits() & 0x0000000F)  !=
           0x0000000F /* Rn(3:0)=~1111 */) {
-    return Binary2RegisterBitRangeMsbGeLsb_BFI_instance_;
+    return BFI_cccc0111110mmmmmddddlllll001nnnn_case_0_BFI_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -1855,14 +1855,14 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
           0x00000000 /* op2(7:5)=x00 */ &&
       (inst.Bits() & 0x0000000F)  ==
           0x0000000F /* Rn(3:0)=1111 */) {
-    return Unary1RegisterBitRangeMsbGeLsb_BFC_instance_;
+    return BFC_cccc0111110mmmmmddddlllll0011111_case_0_BFC_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
           0x01E00000 /* op1(24:20)=1111x */ &&
       (inst.Bits() & 0x00000060)  ==
           0x00000040 /* op2(7:5)=x10 */) {
-    return Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_UBFX_instance_;
+    return UBFX_cccc0111111mmmmmddddlllll101nnnn_case_0_UBFX_instance_;
   }
 
   if ((inst.Bits() & 0x01C00000)  ==
