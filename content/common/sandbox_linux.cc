@@ -277,25 +277,29 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   if (command_line->HasSwitch(switches::kNoSandbox)) {
     return false;
   }
+
+  // Limit the address space to 4GB.
+  // This is in the hope of making some kernel exploits more complex and less
+  // reliable. It also limits sprays a little on 64-bit.
+  rlim_t address_space_limit = std::numeric_limits<uint32_t>::max();
 #if defined(__LP64__)
-  // On 64 bits, limit the address space to 16GB. This is in the hope of making
-  // some kernel exploits more complex and less reliable.  This limit has to be
-  // very high because V8 and possibly others will reserve memory ranges and
+  // On 64 bits, V8 and possibly others will reserve massive memory ranges and
   // rely on on-demand paging for allocation.  Unfortunately, even
   // MADV_DONTNEED ranges  count towards RLIMIT_AS so this is not an option.
   // See crbug.com/169327 for a discussion.
-  const rlim_t kNewAddressSpaceMaxSize = 1L << 34;
-#else
-  // On 32 bits, enforce the 4GB limit. On a 64 bits kernel, this could
-  // prevent far calling to 64 bits and abuse the memory allocator to exploit
-  // a kernel vulnerability.
-  const rlim_t kNewAddressSpaceMaxSize = std::numeric_limits<uint32_t>::max();
+  // For now, increase limit to 16GB for renderer and worker processes to
+  // accomodate.
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kWorkerProcess) {
+    address_space_limit = 1L << 34;
+  }
 #endif  // defined(__LP64__)
+
   // On all platforms, add a limit to the brk() heap that would prevent
   // allocations that can't be index by an int.
   const rlim_t kNewDataSegmentMaxSize = std::numeric_limits<int>::max();
 
-  bool limited_as = AddResourceLimit(RLIMIT_AS, kNewAddressSpaceMaxSize);
+  bool limited_as = AddResourceLimit(RLIMIT_AS, address_space_limit);
   bool limited_data = AddResourceLimit(RLIMIT_DATA, kNewDataSegmentMaxSize);
   return limited_as && limited_data;
 #else
