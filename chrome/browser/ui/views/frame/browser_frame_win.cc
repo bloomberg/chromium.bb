@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/browser_frame_common_win.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/system_menu_insertion_delegate_win.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -276,21 +277,10 @@ void BrowserFrameWin::OnScreenReaderDetected() {
 }
 
 bool BrowserFrameWin::ShouldUseNativeFrame() const {
-  // App panel windows draw their own frame.
-  if (browser_view_->IsPanel())
+  if (!NativeWidgetWin::ShouldUseNativeFrame())
     return false;
-
-  // We don't theme popup or app windows, so regardless of whether or not a
-  // theme is active for normal browser windows, we don't want to use the custom
-  // frame for popups/apps.
-  if (!browser_view_->IsBrowserTypeNormal() &&
-      NativeWidgetWin::ShouldUseNativeFrame()) {
-    return true;
-  }
-
-  // Otherwise, we use the native frame when we're told we should by the theme
-  // provider (e.g. no custom theme is active).
-  return GetWidget()->GetThemeProvider()->ShouldUseNativeFrame();
+  return chrome::ShouldUseNativeFrame(browser_view_,
+                                      GetWidget()->GetThemeProvider());
 }
 
 void BrowserFrameWin::Show() {

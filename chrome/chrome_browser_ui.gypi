@@ -1523,6 +1523,8 @@
         'browser/ui/views/frame/browser_frame.h',
         'browser/ui/views/frame/browser_frame_aura.cc',
         'browser/ui/views/frame/browser_frame_aura.h',
+        'browser/ui/views/frame/browser_frame_common_win.cc',
+        'browser/ui/views/frame/browser_frame_common_win.h',
         'browser/ui/views/frame/browser_frame_win.cc',
         'browser/ui/views/frame/browser_frame_win.h',
         'browser/ui/views/frame/browser_non_client_frame_view.cc',
