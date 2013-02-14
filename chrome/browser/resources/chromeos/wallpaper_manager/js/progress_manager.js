@@ -32,8 +32,8 @@ ProgressManager.prototype.reset = function(xhr, selectedGridItem) {
   this.xhrListeners_ = {
     'loadstart': this.onDownloadStart_.bind(this),
     'progress': this.onDownloadProgress_.bind(this),
-    'abort': this.onDownloadAbort_.bind(this),
-    'error': this.onDownloadError_.bind(this),
+    'abort': this.onDownloadErrorOrAbort_.bind(this),
+    'error': this.onDownloadErrorOrAbort_.bind(this),
     'load': this.onDownloadComplete_.bind(this)
   };
   for (var eventType in this.xhrListeners_)
@@ -86,9 +86,9 @@ ProgressManager.prototype.onDownloadStart_ = function(e) {
 /**
  * Hides progress bar when progression is terminated.
  * @private
- * @param {Event} e An abort ProgressEvent from XMLHttpRequest.
+ * @param {Event} e An error/abort ProgressEvent from XMLHttpRequest.
  */
-ProgressManager.prototype.onDownloadAbort_ = function(e) {
+ProgressManager.prototype.onDownloadErrorOrAbort_ = function(e) {
   this.removeEventListeners_();
   this.xhr_ = null;
   this.hideProgressBar(this.selectedGridItem_);
@@ -103,19 +103,6 @@ ProgressManager.prototype.onDownloadComplete_ = function(e) {
   this.setProgress_(1);
   this.removeEventListeners_();
   this.xhr_ = null;
-};
-
-/**
- * Shows error message when progression failed.
- * @private
- * @param {Event} e An error ProgressEvent from XMLHttpRequest.
- */
-ProgressManager.prototype.onDownloadError_ = function(e) {
-  this.removeEventListeners_();
-  // TODO(bshe): Add error message back once we decide how to show error
-  // message in the new UI. http://crbug.com/162563
-  this.xhr_ = null;
-  this.hideProgressBar(this.selectedGridItem_);
 };
 
 /**

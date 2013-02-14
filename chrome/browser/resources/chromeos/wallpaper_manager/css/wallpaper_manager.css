@@ -73,9 +73,7 @@ body {
 }
 
 #close {
-  background-image: -webkit-image-set(
-    url('../images/ui/close-white.png') 1x,
-    url('../images/ui/2x/close-white.png') 2x);
+  background-image: url('../images/ui/close-white.png');
   height: 14px;
   position: absolute;
   right: 10px;
@@ -84,9 +82,7 @@ body {
 }
 
 #close:hover {
-  background-image: -webkit-image-set(
-    url('../images/ui/close-white-hover.png') 1x,
-    url('../images/ui/2x/close-white-hover.png') 2x);
+  background-image: url('../images/ui/close-white-hover.png');
 }
 
 #bar {
@@ -160,9 +156,7 @@ body {
 }
 
 .image-picker .check {
-  background-image: -webkit-image-set(
-    url('../images/ui/check.png') 1x,
-    url('../images/ui/2x/check.png') 2x);
+  background-image: url('../images/ui/check.png');
   height: 32px;
   left: 38px;
   position: absolute;
@@ -253,4 +247,44 @@ body {
   background-color: rgb(66, 129, 244);
   height: 100%;
   width: 0;
+}
+
+#error-container {
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  background-color: rgba(25, 25, 25, 0.25);
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  overflow: auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 4;
+}
+
+#error-container .page {
+  -webkit-border-radius: 3px;
+  -webkit-box-orient: vertical;
+  background: rgb(255, 255, 255);
+  box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15);
+  color: #333;
+  display: -webkit-box;
+  padding: 20px;
+  position: relative;
+  width: 302px;
+}
+
+#close-error {
+  background-image: url('../images/ui/close-error.png');
+  height: 14px;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 14px
+}
+
+#close-error:hover {
+  background-image: url('../images/ui/close-error-hover.png');
 }
