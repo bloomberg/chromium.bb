@@ -104,7 +104,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     LOG(FATAL) << "Unexpected OnDataFrameHeader call.";
   }
 
-  void OnRstStream(const SpdyRstStreamControlFrame& frame) {}
+  void OnRstStream(const SpdyFrame& frame) {}
   void OnGoAway(const SpdyFrame& frame) {}
   void OnPing(const SpdyFrame& frame) {}
   virtual void OnWindowUpdate(SpdyStreamId stream_id,

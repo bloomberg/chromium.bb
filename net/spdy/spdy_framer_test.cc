@@ -2015,7 +2015,7 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x00, 0x00, 0x00, 0x01,
       0x00, 0x00, 0x00, 0x01,
     };
-    scoped_ptr<SpdyRstStreamControlFrame> frame(
+    scoped_ptr<SpdyFrame> frame(
         framer.CreateRstStream(1, RST_STREAM_PROTOCOL_ERROR));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
   }
@@ -3557,6 +3557,41 @@ TEST_P(SpdyFramerTest, SettingsFlagsAndId) {
   EXPECT_EQ(kId, id_and_flags.id());
   EXPECT_EQ(kFlags, id_and_flags.flags());
   EXPECT_EQ(kWireFormat, id_and_flags.GetWireFormat(spdy_version_));
+}
+
+// Test handling of a RST_STREAM with out-of-bounds status codes.
+TEST_P(SpdyFramerTest, RstStreamStatusBounds) {
+  DCHECK_GE(0xff, RST_STREAM_NUM_STATUS_CODES);
+
+  const unsigned char kRstStreamInvalid[] = {
+    0x80, spdy_version_, 0x00, 0x03,
+    0x00, 0x00, 0x00, 0x08,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, RST_STREAM_INVALID
+  };
+
+  const unsigned char kRstStreamNumStatusCodes[] = {
+    0x80, spdy_version_, 0x00, 0x03,
+    0x00, 0x00, 0x00, 0x08,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, RST_STREAM_NUM_STATUS_CODES
+  };
+
+  testing::StrictMock<net::test::MockVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  EXPECT_CALL(visitor, OnRstStream(1, RST_STREAM_INVALID));
+  framer.ProcessInput(reinterpret_cast<const char*>(kRstStreamInvalid),
+                      arraysize(kRstStreamInvalid));
+  EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+
+  EXPECT_CALL(visitor, OnRstStream(1, RST_STREAM_INVALID));
+  framer.ProcessInput(reinterpret_cast<const char*>(kRstStreamNumStatusCodes),
+                      arraysize(kRstStreamNumStatusCodes));
+  EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
 }
 
 // Tests handling of a GOAWAY frame with out-of-bounds stream ID.

@@ -158,8 +158,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                             SpdyControlFlags flags,
                             bool compressed,
                             const SpdyHeaderBlock* headers);
-  SpdyRstStreamControlFrame* CreateRstStream(SpdyStreamId stream_id,
-                                             SpdyRstStreamStatus status) const;
+  SpdyFrame* CreateRstStream(SpdyStreamId stream_id,
+                             SpdyRstStreamStatus status) const;
   SpdySettingsControlFrame* CreateSettings(const SettingsMap& values) const;
   SpdyFrame* CreatePingFrame(uint32 unique_id) const;
   SpdyFrame* CreateGoAway(

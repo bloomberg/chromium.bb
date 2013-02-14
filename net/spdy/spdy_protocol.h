@@ -491,12 +491,6 @@ struct SpdySynStreamControlFrameBlock : SpdyFrameBlock {
   uint8 credential_slot_;
 };
 
-// A RST_STREAM Control Frame structure.
-struct SpdyRstStreamControlFrameBlock : SpdyFrameBlock {
-  SpdyStreamId stream_id_;
-  uint32 status_;
-};
-
 // A SETTINGS Control Frame structure.
 struct SpdySettingsControlFrameBlock : SpdyFrameBlock {
   uint32 num_entries_;
@@ -1036,43 +1030,6 @@ class SpdySynStreamControlFrame : public SpdyControlFrame {
     return static_cast<SpdySynStreamControlFrameBlock*>(frame_);
   }
   DISALLOW_COPY_AND_ASSIGN(SpdySynStreamControlFrame);
-};
-
-// A RST_STREAM frame.
-class SpdyRstStreamControlFrame : public SpdyControlFrame {
- public:
-  SpdyRstStreamControlFrame() : SpdyControlFrame(size()) {}
-  SpdyRstStreamControlFrame(char* data, bool owns_buffer)
-      : SpdyControlFrame(data, owns_buffer) {}
-
-  SpdyStreamId stream_id() const {
-    return ntohl(block()->stream_id_) & kStreamIdMask;
-  }
-
-  SpdyRstStreamStatus status() const {
-    SpdyRstStreamStatus status =
-        static_cast<SpdyRstStreamStatus>(ntohl(block()->status_));
-    if (status < RST_STREAM_INVALID || status >= RST_STREAM_NUM_STATUS_CODES) {
-      status = RST_STREAM_INVALID;
-    }
-    return status;
-  }
-  void set_status(SpdyRstStreamStatus status) {
-    mutable_block()->status_ = htonl(static_cast<uint32>(status));
-  }
-
-  // Returns the size of the SpdyRstStreamControlFrameBlock structure.
-  // Note: this is not the size of the SpdyRstStreamControlFrame class.
-  static size_t size() { return sizeof(SpdyRstStreamControlFrameBlock); }
-
- private:
-  const struct SpdyRstStreamControlFrameBlock* block() const {
-    return static_cast<SpdyRstStreamControlFrameBlock*>(frame_);
-  }
-  struct SpdyRstStreamControlFrameBlock* mutable_block() {
-    return static_cast<SpdyRstStreamControlFrameBlock*>(frame_);
-  }
-  DISALLOW_COPY_AND_ASSIGN(SpdyRstStreamControlFrame);
 };
 
 class SpdySettingsControlFrame : public SpdyControlFrame {

@@ -237,7 +237,7 @@ SpdyFrame* BufferedSpdyFramer::CreateSynReply(
   return spdy_framer_.CreateSynReply(stream_id, flags, compressed, headers);
 }
 
-SpdyRstStreamControlFrame* BufferedSpdyFramer::CreateRstStream(
+SpdyFrame* BufferedSpdyFramer::CreateRstStream(
     SpdyStreamId stream_id,
     SpdyRstStreamStatus status) const {
   return spdy_framer_.CreateRstStream(stream_id, status);

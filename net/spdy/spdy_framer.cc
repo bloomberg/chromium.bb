@@ -1208,10 +1208,26 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
           }
           break;
         case RST_STREAM: {
-            SpdyRstStreamControlFrame* rst_stream_frame =
-                reinterpret_cast<SpdyRstStreamControlFrame*>(&control_frame);
-            visitor_->OnRstStream(rst_stream_frame->stream_id(),
-                                  rst_stream_frame->status());
+            SpdyFrameReader reader(current_frame_buffer_.get(),
+                                   current_frame_len_);
+            reader.Seek(GetControlFrameMinimumSize());  // Skip frame header.
+            SpdyStreamId stream_id = kInvalidStream;
+            bool successful_read = reader.ReadUInt32(&stream_id);
+            DCHECK(successful_read);
+            SpdyRstStreamStatus status = RST_STREAM_INVALID;
+            uint32 status_raw = status;
+            successful_read = reader.ReadUInt32(&status_raw);
+            DCHECK(successful_read);
+            if (status_raw > RST_STREAM_INVALID &&
+                status_raw < RST_STREAM_NUM_STATUS_CODES) {
+              status = static_cast<SpdyRstStreamStatus>(status_raw);
+            } else {
+              // TODO(hkhalil): Probably best to OnError here, depending on
+              // our interpretation of the spec. Keeping with existing liberal
+              // behavior for now.
+            }
+            DCHECK(reader.IsDoneReading());
+            visitor_->OnRstStream(stream_id, status);
           }
           break;
         case GOAWAY: {
@@ -1511,12 +1527,11 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
   return builder.take();
 }
 
-SpdyRstStreamControlFrame* SpdyFramer::CreateRstStream(
+SpdyFrame* SpdyFramer::CreateRstStream(
     SpdyStreamId stream_id,
     SpdyRstStreamStatus status) const {
   SpdyRstStreamIR rst_stream(stream_id, status);
-  return reinterpret_cast<SpdyRstStreamControlFrame*>(
-      SerializeRstStream(rst_stream));
+  return SerializeRstStream(rst_stream);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeRstStream(

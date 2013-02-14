@@ -380,8 +380,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                             const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeSynReply(const SpdySynReplyIR& syn_reply);
 
-  SpdyRstStreamControlFrame* CreateRstStream(SpdyStreamId stream_id,
-                                             SpdyRstStreamStatus status) const;
+  SpdyFrame* CreateRstStream(SpdyStreamId stream_id,
+                             SpdyRstStreamStatus status) const;
   SpdySerializedFrame* SerializeRstStream(
       const SpdyRstStreamIR& rst_stream) const;
 

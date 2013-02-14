@@ -44,7 +44,6 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(8u, SpdyDataFrame::size());
   EXPECT_EQ(8u, SpdyControlFrame::kHeaderSize);
   EXPECT_EQ(18u, SpdySynStreamControlFrame::size());
-  EXPECT_EQ(16u, SpdyRstStreamControlFrame::size());
   EXPECT_EQ(12u, SpdySettingsControlFrame::size());
   EXPECT_EQ(12u, SpdyHeadersControlFrame::size());
   EXPECT_EQ(4u, sizeof(FlagsAndLength));
@@ -101,17 +100,6 @@ TEST_P(SpdyProtocolTest, ControlFrameStructs) {
   syn_frame->set_associated_stream_id(999u);
   EXPECT_EQ(123u, syn_frame->stream_id());
   EXPECT_EQ(999u, syn_frame->associated_stream_id());
-
-  scoped_ptr<SpdyRstStreamControlFrame> rst_frame(
-      framer.CreateRstStream(123, net::RST_STREAM_PROTOCOL_ERROR));
-  EXPECT_EQ(framer.protocol_version(), rst_frame->version());
-  EXPECT_TRUE(rst_frame->is_control_frame());
-  EXPECT_EQ(RST_STREAM, rst_frame->type());
-  EXPECT_EQ(123u, rst_frame->stream_id());
-  EXPECT_EQ(net::RST_STREAM_PROTOCOL_ERROR, rst_frame->status());
-  rst_frame->set_status(net::RST_STREAM_INVALID_STREAM);
-  EXPECT_EQ(net::RST_STREAM_INVALID_STREAM, rst_frame->status());
-  EXPECT_EQ(0, rst_frame->flags());
 
   scoped_ptr<SpdyHeadersControlFrame> headers_frame(
       framer.CreateHeaders(123, CONTROL_FLAG_NONE, false, &headers));
@@ -324,25 +312,6 @@ TEST_P(SpdyProtocolDeathTest, TestSpdyControlFrameType) {
     EXPECT_EQ(version, frame.version());
     EXPECT_TRUE(frame.is_control_frame());
   }
-}
-
-TEST_P(SpdyProtocolDeathTest, TestRstStreamStatusBounds) {
-  SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyRstStreamControlFrame> rst_frame;
-
-  rst_frame.reset(framer.CreateRstStream(
-      123, RST_STREAM_PROTOCOL_ERROR));
-  EXPECT_EQ(RST_STREAM_PROTOCOL_ERROR, rst_frame->status());
-
-  rst_frame->set_status(RST_STREAM_INVALID);
-  EXPECT_EQ(RST_STREAM_INVALID, rst_frame->status());
-
-  rst_frame->set_status(static_cast<SpdyRstStreamStatus>(
-      RST_STREAM_INVALID - 1));
-  EXPECT_EQ(RST_STREAM_INVALID, rst_frame->status());
-
-  rst_frame->set_status(RST_STREAM_NUM_STATUS_CODES);
-  EXPECT_EQ(RST_STREAM_INVALID, rst_frame->status());
 }
 
 }  // namespace net
