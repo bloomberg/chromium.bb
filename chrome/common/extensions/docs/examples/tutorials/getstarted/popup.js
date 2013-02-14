@@ -37,7 +37,7 @@ var kittenGenerator = {
    */
   requestKittens: function() {
     var req = new XMLHttpRequest();
-    req.open("GET", this.kittensOnFlickr_, true);
+    req.open("GET", this.searchOnFlickr_, true);
     req.onload = this.showPhotos_.bind(this);
     req.send(null);
   },
