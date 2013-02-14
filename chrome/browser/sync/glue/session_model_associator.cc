@@ -613,6 +613,9 @@ syncer::SyncError SessionModelAssociator::AssociateModels(
 
   scoped_ptr<DeviceInfo> local_device_info(sync_service_->GetLocalDeviceInfo());
 
+#if defined(OS_ANDROID)
+  std::string transaction_tag;
+#endif
   // Read any available foreign sessions and load any session data we may have.
   // If we don't have any local session data in the db, create a header node.
   {
@@ -672,11 +675,16 @@ syncer::SyncError SessionModelAssociator::AssociateModels(
       local_session_syncid_ = write_node.GetId();
     }
 #if defined(OS_ANDROID)
-    std::string transaction_tag = GetMachineTagFromTransaction(&trans);
-    if (current_machine_tag_.compare(transaction_tag) != 0)
-      DeleteForeignSession(transaction_tag);
+    transaction_tag = GetMachineTagFromTransaction(&trans);
 #endif
   }
+#if defined(OS_ANDROID)
+  // We need to delete foreign sessions after giving up our
+  // syncer::WriteTransaction, since DeleteForeignSession(std::string&) uses
+  // its own syncer::WriteTransaction.
+  if (current_machine_tag_.compare(transaction_tag) != 0)
+    DeleteForeignSession(transaction_tag);
+#endif
 
   // Check if anything has changed on the client side.
   if (!UpdateSyncModelDataFromClient(&error)) {
