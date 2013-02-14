@@ -47,6 +47,10 @@ class DeviceOrientation implements SensorEventListener {
     // Lazily initialized when registering for notifications.
     private SensorManager mSensorManager;
 
+    // The only instance of that class and its associated lock.
+    private static DeviceOrientation sSingleton;
+    private static Object sSingletonLock = new Object();
+
     private DeviceOrientation() {
     }
 
@@ -247,8 +251,13 @@ class DeviceOrientation implements SensorEventListener {
     }
 
     @CalledByNative
-    private static DeviceOrientation create() {
-        return new DeviceOrientation();
+    private static DeviceOrientation getInstance() {
+        synchronized (sSingletonLock) {
+            if (sSingleton == null) {
+                sSingleton = new DeviceOrientation();
+            }
+            return sSingleton;
+        }
     }
 
     /**

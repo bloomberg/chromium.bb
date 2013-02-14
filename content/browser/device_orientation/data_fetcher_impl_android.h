@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_DEVICE_ORIENTATION_DATA_FETCHER_IMPL_ANDROID_H_
 #define CHROME_BROWSER_DEVICE_ORIENTATION_DATA_FETCHER_IMPL_ANDROID_H_
 
-#include <jni.h>
-
+#include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/device_orientation/data_fetcher.h"
@@ -56,6 +55,9 @@ class DataFetcherImplAndroid : public DataFetcher {
   // 1-element buffer, written by GotOrientation, read by GetDeviceData.
   base::Lock next_orientation_lock_;
   scoped_refptr<Orientation> next_orientation_;
+
+  // The Java provider of orientation info.
+  base::android::ScopedJavaGlobalRef<jobject> device_orientation_;
 
   DISALLOW_COPY_AND_ASSIGN(DataFetcherImplAndroid);
 };

@@ -5,17 +5,11 @@
 #include "content/browser/device_orientation/data_fetcher_impl_android.h"
 
 #include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "jni/DeviceOrientation_jni.h"
 
 using base::android::AttachCurrentThread;
-using base::android::CheckException;
-using base::android::GetClass;
-using base::android::ScopedJavaGlobalRef;
-using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
@@ -25,19 +19,16 @@ namespace {
 // TODO(husky): Make that constant public so we can use it directly.
 const int kPeriodInMilliseconds = 100;
 
-base::LazyInstance<ScopedJavaGlobalRef<jobject> >
-     g_jni_obj = LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 DataFetcherImplAndroid::DataFetcherImplAndroid() {
+  device_orientation_.Reset(
+      Java_DeviceOrientation_getInstance(AttachCurrentThread()));
 }
 
 void DataFetcherImplAndroid::Init(JNIEnv* env) {
   bool result = RegisterNativesImpl(env);
   DCHECK(result);
-
-  g_jni_obj.Get().Reset(Java_DeviceOrientation_create(env));
 }
 
 DataFetcher* DataFetcherImplAndroid::Create() {
@@ -86,16 +77,16 @@ void DataFetcherImplAndroid::GotOrientation(
 }
 
 bool DataFetcherImplAndroid::Start(int rate_in_milliseconds) {
-  DCHECK(!g_jni_obj.Get().is_null());
+  DCHECK(!device_orientation_.is_null());
   return Java_DeviceOrientation_start(AttachCurrentThread(),
-                                      g_jni_obj.Get().obj(),
+                                      device_orientation_.obj(),
                                       reinterpret_cast<jint>(this),
                                       rate_in_milliseconds);
 }
 
 void DataFetcherImplAndroid::Stop() {
-  DCHECK(!g_jni_obj.Get().is_null());
-  Java_DeviceOrientation_stop(AttachCurrentThread(), g_jni_obj.Get().obj());
+  DCHECK(!device_orientation_.is_null());
+  Java_DeviceOrientation_stop(AttachCurrentThread(), device_orientation_.obj());
 }
 
 }  // namespace content
