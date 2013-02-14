@@ -1794,3 +1794,11 @@
    fun:MetricsLog::MetricsLog
    fun:TestMetricsLog
 }
+{
+   bug_176210
+   Heapcheck:Leak
+   ...
+   fun:disk_cache::*
+   fun:disk_cache::EntryImpl::*
+   fun:disk_cache::*
+}
