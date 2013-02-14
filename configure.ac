@@ -1,7 +1,7 @@
 AC_PREREQ([2.64])
 AC_INIT([weston],
         [1.0.90],
-        [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=weston],
+        [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=weston&version=1.0.90],
         [weston],
         [http://wayland.freedesktop.org/])
 
