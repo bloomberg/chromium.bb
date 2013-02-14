@@ -186,8 +186,6 @@
     'renderer/pepper/pepper_file_chooser_host.h',
     'renderer/pepper/pepper_file_io_host.cc',
     'renderer/pepper/pepper_file_io_host.h',
-    'renderer/pepper/pepper_flash_clipboard_host.cc',
-    'renderer/pepper/pepper_flash_clipboard_host.h',
     'renderer/pepper/pepper_graphics_2d_host.cc',
     'renderer/pepper/pepper_graphics_2d_host.h',
     'renderer/pepper/pepper_hung_plugin_filter.cc',

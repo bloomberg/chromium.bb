@@ -6,6 +6,7 @@
 
 #include "chrome/browser/renderer_host/pepper/pepper_broker_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
+#include "chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_device_id_host.h"
 #include "chrome/browser/renderer_host/pepper/pepper_talk_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -51,9 +52,6 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
             host_->GetPpapiHost(), instance, params.pp_resource(),
             broker_filter));
       }
-      case PpapiHostMsg_FlashDeviceID_Create::ID:
-        return scoped_ptr<ResourceHost>(new PepperFlashDeviceIDHost(
-            host_, instance, params.pp_resource()));
       case PpapiHostMsg_Talk_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperTalkHost(
             host_, instance, params.pp_resource()));
@@ -67,9 +65,18 @@ scoped_ptr<ResourceHost> ChromeBrowserPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_Flash_Create::ID:
         return scoped_ptr<ResourceHost>(new PepperFlashBrowserHost(
             host_, instance, params.pp_resource()));
+      case PpapiHostMsg_FlashClipboard_Create::ID: {
+        scoped_refptr<ResourceMessageFilter> clipboard_filter(
+            new PepperFlashClipboardMessageFilter);
+        return scoped_ptr<ResourceHost>(new MessageFilterHost(
+            host_->GetPpapiHost(), instance, params.pp_resource(),
+            clipboard_filter));
+      }
+      case PpapiHostMsg_FlashDeviceID_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperFlashDeviceIDHost(
+            host_, instance, params.pp_resource()));
     }
   }
-
   return scoped_ptr<ResourceHost>();
 }
 

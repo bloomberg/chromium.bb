@@ -61,7 +61,7 @@ PP_Var ClipboardStringToPPVar(int32_t format,
 FlashClipboardResource::FlashClipboardResource(
     Connection connection, PP_Instance instance)
     : PluginResource(connection, instance) {
-  SendCreate(RENDERER, PpapiHostMsg_FlashClipboard_Create());
+  SendCreate(BROWSER, PpapiHostMsg_FlashClipboard_Create());
 }
 
 FlashClipboardResource::~FlashClipboardResource() {
@@ -81,7 +81,7 @@ uint32_t FlashClipboardResource::RegisterCustomFormat(
     return format;
   int32_t result =
       SyncCall<PpapiPluginMsg_FlashClipboard_RegisterCustomFormatReply>(
-          RENDERER,
+          BROWSER,
           PpapiHostMsg_FlashClipboard_RegisterCustomFormat(format_name),
           &format);
   if (result != PP_OK || format == PP_FLASH_CLIPBOARD_FORMAT_INVALID)
@@ -97,7 +97,7 @@ PP_Bool FlashClipboardResource::IsFormatAvailable(
   if (IsValidClipboardType(clipboard_type) &&
       (FlashClipboardFormatRegistry::IsValidPredefinedFormat(format) ||
        clipboard_formats_.IsFormatRegistered(format))) {
-    int32_t result = SyncCall<IPC::Message>(RENDERER,
+    int32_t result = SyncCall<IPC::Message>(BROWSER,
         PpapiHostMsg_FlashClipboard_IsFormatAvailable(clipboard_type, format));
     return result == PP_OK ? PP_TRUE : PP_FALSE;
   }
@@ -111,7 +111,7 @@ PP_Var FlashClipboardResource::ReadData(
   std::string value;
   int32_t result =
       SyncCall<PpapiPluginMsg_FlashClipboard_ReadDataReply>(
-          RENDERER,
+          BROWSER,
           PpapiHostMsg_FlashClipboard_ReadData(clipboard_type, format),
           &value);
   if (result != PP_OK)
@@ -142,7 +142,7 @@ int32_t FlashClipboardResource::WriteData(
     data_items_vector.push_back(string);
   }
 
-  Post(RENDERER,
+  Post(BROWSER,
        PpapiHostMsg_FlashClipboard_WriteData(
            static_cast<uint32_t>(clipboard_type),
            formats_vector,
