@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,8 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       initiating_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
       aggregated_clicks_(0),
-      touch_selection_controller_(NULL) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(touch_selection_controller_(
+          ui::TouchSelectionController::create(this))) {
   set_border(text_border_);
 
 #if defined(OS_CHROMEOS)
@@ -103,7 +104,6 @@ bool NativeTextfieldViews::OnMousePressed(const ui::MouseEvent& event) {
   }
 
   OnAfterUserAction();
-  touch_selection_controller_.reset();
   return true;
 }
 
@@ -169,12 +169,6 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
       OnAfterUserAction();
       event->SetHandled();
       return;
-    case ui::ET_GESTURE_TAP:
-      touch_selection_controller_.reset(
-          ui::TouchSelectionController::create(this));
-      if (touch_selection_controller_.get())
-        touch_selection_controller_->SelectionChanged();
-      break;
     default:
       break;
   }
@@ -317,16 +311,6 @@ void NativeTextfieldViews::SelectRect(const gfx::Point& start,
   OnAfterUserAction();
 }
 
-void NativeTextfieldViews::GetSelectionEndPoints(gfx::Rect* p1,
-                                                 gfx::Rect* p2) {
-  gfx::RenderText* render_text = GetRenderText();
-  const gfx::SelectionModel& sel = render_text->selection_model();
-  gfx::SelectionModel start_sel =
-      render_text->GetSelectionModelForSelectionStart();
-  *p1 = render_text->GetCursorBounds(start_sel, true);
-  *p2 = render_text->GetCursorBounds(sel, true);
-}
-
 const gfx::Rect& NativeTextfieldViews::GetBounds() {
   return bounds();
 }
@@ -341,15 +325,6 @@ void NativeTextfieldViews::ConvertPointToScreen(gfx::Point* point) {
 
 void NativeTextfieldViews::ConvertPointFromScreen(gfx::Point* point) {
   View::ConvertPointFromScreen(this, point);
-}
-
-bool NativeTextfieldViews::DrawsHandles() {
-  return false;
-}
-
-void NativeTextfieldViews::OpenContextMenu(const gfx::Point anchor) {
-  touch_selection_controller_.reset();
-  ShowContextMenu(anchor, false);
 }
 
 gfx::NativeCursor NativeTextfieldViews::GetCursor(const ui::MouseEvent& event) {
@@ -600,7 +575,6 @@ bool NativeTextfieldViews::HandleKeyPressed(const ui::KeyEvent& e) {
   bool handled = false;
   if (controller)
     handled = controller->HandleKeyEvent(textfield_, e);
-  touch_selection_controller_.reset();
   return handled || HandleKeyEvent(e);
 }
 
@@ -630,7 +604,8 @@ void NativeTextfieldViews::HandleBlur() {
     RepaintCursor();
   }
 
-  touch_selection_controller_.reset();
+  if (touch_selection_controller_.get())
+    touch_selection_controller_->ClientViewLostFocus();
 
   ClearSelection();
 }
@@ -699,7 +674,6 @@ string16 NativeTextfieldViews::GetLabelForCommandId(int command_id) const {
 }
 
 void NativeTextfieldViews::ExecuteCommand(int command_id) {
-  touch_selection_controller_.reset();
   if (!IsCommandIdEnabled(command_id))
     return;
 
@@ -1215,8 +1189,17 @@ void NativeTextfieldViews::OnCaretBoundsChanged() {
     textfield_->GetInputMethod()->OnCaretBoundsChanged(textfield_);
 
   // Notify selection controller
-  if (touch_selection_controller_.get())
-    touch_selection_controller_->SelectionChanged();
+  if (!touch_selection_controller_.get())
+    return;
+  gfx::RenderText* render_text = GetRenderText();
+  const gfx::SelectionModel& sel = render_text->selection_model();
+  gfx::SelectionModel start_sel =
+      render_text->GetSelectionModelForSelectionStart();
+  gfx::Rect start_cursor = render_text->GetCursorBounds(start_sel, true);
+  gfx::Rect end_cursor = render_text->GetCursorBounds(sel, true);
+  gfx::Point start(start_cursor.x(), start_cursor.bottom() - 1);
+  gfx::Point end(end_cursor.x(), end_cursor.bottom() - 1);
+  touch_selection_controller_->SelectionChanged(start, end);
 }
 
 void NativeTextfieldViews::OnBeforeUserAction() {

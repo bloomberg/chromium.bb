@@ -49,8 +49,6 @@ class VIEWS_EXPORT ViewsDelegate {
   // The active ViewsDelegate used by the views system.
   static ViewsDelegate* views_delegate;
 
-  ViewsDelegate();
-
   virtual ~ViewsDelegate() {}
 
   // Saves the position, size and "show" state for the window with the

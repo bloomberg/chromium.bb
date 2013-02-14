@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include "base/timer.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/point.h"
-#include "ui/views/touchui/touch_editing_menu.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
@@ -17,9 +16,7 @@ namespace views {
 // Touch specific implementation of TouchSelectionController. Responsible for
 // displaying selection handles and menu elements relevant in a touch interface.
 class VIEWS_EXPORT TouchSelectionControllerImpl
-    : public ui::TouchSelectionController,
-      public TouchEditingMenuController,
-      public WidgetObserver {
+    : public ui::TouchSelectionController {
  public:
   // Use TextSelectionController::create().
   explicit TouchSelectionControllerImpl(
@@ -28,11 +25,15 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   virtual ~TouchSelectionControllerImpl();
 
   // TextSelectionController.
-  virtual void SelectionChanged() OVERRIDE;
+  virtual void SelectionChanged(const gfx::Point& p1,
+                                const gfx::Point& p2) OVERRIDE;
+
+  virtual void ClientViewLostFocus() OVERRIDE;
 
  private:
   friend class TouchSelectionControllerImplTest;
   class SelectionHandleView;
+  class TouchContextMenuView;
 
   // Callback to inform the client view that the selection handle has been
   // dragged, hence selection may need to be updated.
@@ -42,18 +43,11 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // system to that of the client view.
   void ConvertPointToClientView(SelectionHandleView* source, gfx::Point* point);
 
-  // Overridden from TouchEditingMenuController.
-  bool IsCommandIdEnabled(int command_id) const OVERRIDE;
-  void ExecuteCommand(int command_id) OVERRIDE;
-  void OpenContextMenu() OVERRIDE;
-  void OnMenuClosed(TouchEditingMenuView* menu) OVERRIDE;
+  // Checks if the client view supports a context menu command.
+  bool IsCommandIdEnabled(int command_id) const;
 
-  // Overridden from WidgetObserver. We will observe the widget backing the
-  // |client_view_| so that when its moved/resized, we can update the selection
-  // handles appropriately.
-  void OnWidgetClosing(Widget* widget) OVERRIDE;
-  void OnWidgetBoundsChanged(Widget* widget,
-                             const gfx::Rect& new_bounds) OVERRIDE;
+  // Sends a context menu command to the client view.
+  void ExecuteCommand(int command_id);
 
   // Time to show context menu.
   void ContextMenuTimerFired();
@@ -71,10 +65,9 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   bool IsSelectionHandle2Visible();
 
   ui::TouchEditable* client_view_;
-  Widget* client_widget_;
   scoped_ptr<SelectionHandleView> selection_handle_1_;
   scoped_ptr<SelectionHandleView> selection_handle_2_;
-  TouchEditingMenuView* context_menu_;
+  scoped_ptr<TouchContextMenuView> context_menu_;
 
   // Timer to trigger |context_menu| (|context_menu| is not shown if the
   // selection handles are being updated. It appears only when the handles are
@@ -85,15 +78,6 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   SelectionHandleView* dragging_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerImpl);
-};
-
-class VIEWS_EXPORT ViewsTouchSelectionControllerFactory
-    : public ui::TouchSelectionControllerFactory {
- public:
-  ViewsTouchSelectionControllerFactory();
-
-  // Overridden from ui::TouchSelectionControllerFactory.
-  ui::TouchSelectionController* create(ui::TouchEditable* client_view) OVERRIDE;
 };
 
 }  // namespace views

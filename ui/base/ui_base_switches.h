@@ -17,7 +17,6 @@ UI_EXPORT extern const char kDisableTouchAdjustment[];
 UI_EXPORT extern const char kEnableBezelTouch[];
 UI_EXPORT extern const char kEnableNewDialogStyle[];
 UI_EXPORT extern const char kEnableTouchDragDrop[];
-UI_EXPORT extern const char kEnableTouchEditing[];
 UI_EXPORT extern const char kEnableViewsTextfield[];
 UI_EXPORT extern const char kForceDeviceScaleFactor[];
 UI_EXPORT extern const char kHighlightMissingScaledResources[];
