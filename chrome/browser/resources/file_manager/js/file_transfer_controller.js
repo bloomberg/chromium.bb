@@ -36,6 +36,7 @@ function FileTransferController(doc,
 
   /**
    * File objects for seletced files.
+   *
    * @type {Array.<File>}
    * @private
    */
@@ -46,6 +47,7 @@ FileTransferController.prototype = {
   __proto__: cr.EventTarget.prototype,
 
   /**
+   * @this {FileTransferController}
    * @param {cr.ui.List} list Items in the list will be draggable.
    */
   attachDragSource: function(list) {
@@ -55,6 +57,7 @@ FileTransferController.prototype = {
   },
 
   /**
+   * @this {FileTransferController}
    * @param {cr.ui.List} list List itself and its directory items will could
    *                          be drop target.
    * @param {boolean=} opt_onlyIntoDirectories If true only directory list
@@ -70,6 +73,9 @@ FileTransferController.prototype = {
                           !!opt_onlyIntoDirectories));
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   attachBreadcrumbsDropTarget: function(breadcrumbsController) {
     var container = breadcrumbsController.getContainer();
     container.addEventListener('dragover',
@@ -83,6 +89,8 @@ FileTransferController.prototype = {
 
   /**
    * Attach handlers of copy, cut and paste operations to the document.
+   *
+   * @this {FileTransferController}
    */
   attachCopyPasteHandlers: function() {
     this.document_.addEventListener('beforecopy',
@@ -103,6 +111,7 @@ FileTransferController.prototype = {
   /**
    * Write the current selection to system clipboard.
    *
+   * @this {FileTransferController}
    * @param {DataTransfer} dataTransfer DataTransfer from the event.
    * @param {string} effectAllowed Value must be valid for the
    *     |dataTransfer.effectAllowed| property ('move', 'copy', 'copyMove').
@@ -133,6 +142,8 @@ FileTransferController.prototype = {
 
   /**
    * Extracts source root from the |dataTransfer| object.
+   *
+   * @this {FileTransferController}
    * @param {DataTransfer} dataTransfer DataTransfer object from the event.
    * @return {string} Path or empty string (if unknown).
    */
@@ -163,6 +174,8 @@ FileTransferController.prototype = {
 
   /**
    * Queue up a file copy operation based on the current system clipboard.
+   *
+   * @this {FileTransferController}
    * @param {DataTransfer} dataTransfer System data transfer object.
    * @param {string=} opt_destinationPath Paste destination.
    * @param {string=} opt_effect Desired drop/paste effect. Could be
@@ -204,6 +217,8 @@ FileTransferController.prototype = {
 
   /**
    * Preloads an image thumbnail for the specified file entry.
+   *
+   * @this {FileTransferController}
    * @param {Entry} entry Entry to preload a thumbnail for.
    */
   preloadThumbnailImage_: function(entry) {
@@ -225,6 +240,8 @@ FileTransferController.prototype = {
 
   /**
    * Renders a drag-and-drop thumbnail.
+   *
+   * @this {FileTransferController}
    * @return {HTMLElement} Element containing the thumbnail.
    */
   renderThumbnail_: function() {
@@ -269,6 +286,9 @@ FileTransferController.prototype = {
     return container;
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onDragStart_: function(list, event) {
     // Nothing selected.
     if (!this.selectedEntries_.length) {
@@ -294,6 +314,9 @@ FileTransferController.prototype = {
     };
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onDragEnd_: function(list, event) {
     var container = this.document_.querySelector('#drag-container');
     container.textContent = '';
@@ -302,6 +325,9 @@ FileTransferController.prototype = {
     delete window[DRAG_AND_DROP_GLOBAL_DATA];
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onDragOver_: function(onlyIntoDirectories, list, event) {
     if (list) {
       // Scroll the list if mouse close to the top or the bottom.
@@ -321,6 +347,9 @@ FileTransferController.prototype = {
     event.preventDefault();
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onDragEnterList_: function(list, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
     this.lastEnteredTarget_ = event.target;
@@ -338,6 +367,9 @@ FileTransferController.prototype = {
     }
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onDragEnterBreadcrumbs_: function(breadcrumbsContainer, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
     this.lastEnteredTarget_ = event.target;
@@ -348,6 +380,9 @@ FileTransferController.prototype = {
     this.setDropTarget_(event.target, true, event.dataTransfer, path);
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onDragLeave_: function(list, event) {
     // If mouse moves from one element to another the 'dragenter'
     // event for the new element comes before the 'dragleave' event for
@@ -363,6 +398,9 @@ FileTransferController.prototype = {
       this.setScrollSpeed_(list, 0);
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onDrop_: function(onlyIntoDirectories, event) {
     if (onlyIntoDirectories && !this.dropTarget_)
       return;
@@ -377,6 +415,9 @@ FileTransferController.prototype = {
     this.setScrollSpeed_(null, 0);
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   setDropTarget_: function(domElement, isDirectory, opt_dataTransfer,
                            opt_destinationPath) {
     if (this.dropTarget_ == domElement)
@@ -411,13 +452,21 @@ FileTransferController.prototype = {
     }
   },
 
-  isDocumentWideEvent_: function(event) {
+  /**
+   * @this {FileTransferController}
+   * @return {boolean} Returns false if {@code <input type="text">} element is
+   *     currently active. Otherwise, returns true.
+   */
+  isDocumentWideEvent_: function() {
     return this.document_.activeElement.nodeName.toLowerCase() != 'input' ||
         this.document_.activeElement.type.toLowerCase() != 'text';
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onCopy_: function(event) {
-    if (!this.isDocumentWideEvent_(event) ||
+    if (!this.isDocumentWideEvent_() ||
         !this.canCopyOrDrag_()) {
       return;
     }
@@ -426,14 +475,22 @@ FileTransferController.prototype = {
     this.notify_('selection-copied');
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onBeforeCopy_: function(event) {
-    if (!this.isDocumentWideEvent_(event))
+    if (!this.isDocumentWideEvent_())
       return;
 
     // queryCommandEnabled returns true if event.returnValue is false.
     event.returnValue = !this.canCopyOrDrag_();
   },
 
+  /**
+   * @this {FileTransferController}
+   * @return {boolean} Returns true if some files are selected and all the file
+   *     on drive is available to be copied. Otherwise, returns false.
+   */
   canCopyOrDrag_: function() {
     if (this.isOnDrive &&
         this.directoryModel_.isDriveOffline() &&
@@ -442,8 +499,11 @@ FileTransferController.prototype = {
     return this.selectedEntries_.length > 0;
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onCut_: function(event) {
-    if (!this.isDocumentWideEvent_(event) ||
+    if (!this.isDocumentWideEvent_() ||
         !this.canCutOrDrag_()) {
       return;
     }
@@ -452,20 +512,31 @@ FileTransferController.prototype = {
     this.notify_('selection-cut');
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onBeforeCut_: function(event) {
-    if (!this.isDocumentWideEvent_(event))
+    if (!this.isDocumentWideEvent_())
       return;
     // queryCommandEnabled returns true if event.returnValue is false.
     event.returnValue = !this.canCutOrDrag_();
   },
 
+  /**
+   * @this {FileTransferController}
+   * @return {boolean}  Returns true if some files are selected and all the file
+   *     on drive is available to be cut. Otherwise, returns false.
+   */
   canCutOrDrag_: function() {
     return !this.readonly && this.canCopyOrDrag_();
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onPaste_: function(event) {
     // Need to update here since 'beforepaste' doesn't fire.
-    if (!this.isDocumentWideEvent_(event) ||
+    if (!this.isDocumentWideEvent_() ||
         !this.canPasteOrDrop_(event.clipboardData)) {
       return;
     }
@@ -482,13 +553,21 @@ FileTransferController.prototype = {
     }
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onBeforePaste_: function(event) {
-    if (!this.isDocumentWideEvent_(event))
+    if (!this.isDocumentWideEvent_())
       return;
     // queryCommandEnabled returns true if event.returnValue is false.
     event.returnValue = !this.canPasteOrDrop_(event.clipboardData);
   },
 
+  /**
+   * @this {FileTransferController}
+   * @return {boolean}  Returns true if {@code opt_destinationPath} is
+   *     available to be pasted to. Otherwise, returns false.
+   */
   canPasteOrDrop_: function(dataTransfer, opt_destinationPath) {
     var destinationPath = opt_destinationPath ||
                           this.directoryModel_.getCurrentDirPath();
@@ -517,6 +596,13 @@ FileTransferController.prototype = {
     return true;
   },
 
+  /**
+   * Execute paste command.
+   *
+   * @this {FileTransferController}
+   * @return {boolean}  Returns true, the paste is success. Otherwise, returns
+   *     false.
+   */
   queryPasteCommandEnabled: function() {
     if (!this.isDocumentWideEvent_()) {
       return false;
@@ -533,6 +619,8 @@ FileTransferController.prototype = {
 
   /**
    * Allows to simulate commands to get access to clipboard.
+   *
+   * @this {FileTransferController}
    * @param {string} command 'copy', 'cut' or 'paste'.
    * @param {Function} handler Event handler.
    */
@@ -544,6 +632,9 @@ FileTransferController.prototype = {
     doc.removeEventListener(command, handler);
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   onSelectionChanged_: function(event) {
     var entries = this.selectedEntries_;
     var files = this.selectedFileObjects_ = [];
@@ -594,20 +685,32 @@ FileTransferController.prototype = {
     }
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   get currentDirectory() {
     if (this.directoryModel_.isSearching() && this.isOnDrive)
       return null;
     return this.directoryModel_.getCurrentDirEntry();
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   get readonly() {
     return this.directoryModel_.isReadOnly();
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   get isOnDrive() {
     return this.directoryModel_.getCurrentRootType() === RootType.DRIVE;
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   notify_: function(eventName) {
     var self = this;
     // Set timeout to avoid recursive events.
@@ -617,6 +720,7 @@ FileTransferController.prototype = {
   },
 
   /**
+   * @this {FileTransferController}
    * @type {Array.<Entry>}
    */
   get selectedEntries_() {
@@ -638,6 +742,11 @@ FileTransferController.prototype = {
     return entries;
   },
 
+  /**
+   * @this {FileTransferController}
+   * @return {string}  Returns the appropriate drop query type ('none', 'move'
+   *     or copy') to the current modifiers status and the destination.
+   */
   selectDropEffect_: function(event, destinationPath) {
     if (!destinationPath ||
         this.directoryModel_.isPathReadOnly(destinationPath))
@@ -655,6 +764,10 @@ FileTransferController.prototype = {
     return 'copy';
   },
 
+  /**
+   * @this {FileTransferController}
+   * @return {number} Returns an appropriate scroll speed to the distance.
+   */
   calculateScrollSpeed_: function(distance) {
     var SCROLL_AREA = 25;  // Pixels.
     var MIN_SCROLL_SPEED = 50; // Pixels/sec.
@@ -665,6 +778,9 @@ FileTransferController.prototype = {
         (distance / SCROLL_AREA);
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   setScrollSpeed_: function(list, speed) {
     var SCROLL_INTERVAL = 200;   // Milliseconds.
     if (speed == 0 && this.scrollInterval_) {
@@ -678,6 +794,9 @@ FileTransferController.prototype = {
     this.scrollList_ = list;
   },
 
+  /**
+   * @this {FileTransferController}
+   */
   scroll_: function() {
     if (this.scrollList_)
       this.scrollList_.scrollTop += this.scrollStep_;

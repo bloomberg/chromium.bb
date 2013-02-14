@@ -55,8 +55,8 @@ FileCopyManagerWrapper.getInstance = function(root) {
 
 /**
  * Load background page and call callback with copy manager as an argument.
- * @private
  * @param {Function} callback Function with FileCopyManager as a parameter.
+ * @private
  */
 FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
   var MAX_RETRIES = 10;

@@ -4,8 +4,10 @@
 
 /**
  * This object encapsulates everything related to tasks execution.
+ *
  * @param {FileManager} fileManager FileManager instance.
  * @param {object} opt_params File manager load parameters.
+ * @constructor
  */
 function FileTasks(fileManager, opt_params) {
   this.fileManager_ = fileManager;
@@ -15,17 +17,26 @@ function FileTasks(fileManager, opt_params) {
 
   /**
    * List of invocations to be called once tasks are available.
+   *
+   * @private
+   * @type {Array,<Object>}
    */
   this.pendingInvocations_ = [];
 }
 
 /**
 * Location of the Chrome Web Store.
+*
+* @const
+* @type {string}
 */
 FileTasks.CHROME_WEB_STORE_URL = 'https://chrome.google.com/webstore';
 
 /**
 * Location of the FAQ about the file actions.
+*
+* @const
+* @type {string}
 */
 FileTasks.NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
     'answer.py?answer=1700055&topic=29026&ctx=topic';
@@ -46,7 +57,8 @@ FileTasks.prototype.init = function(urls, opt_mimeTypes) {
 
 /**
  * Returns amount of tasks.
- * @return {number=} amount of tasks.
+ *
+ * @return {number} amount of tasks.
  */
 FileTasks.prototype.size = function() {
   return (this.tasks_ && this.tasks_.length) || 0;
@@ -54,6 +66,7 @@ FileTasks.prototype.size = function() {
 
 /**
  * Callback when tasks found.
+ *
  * @param {Array.<Object>} tasks The tasks.
  * @private
  */
@@ -69,6 +82,7 @@ FileTasks.prototype.onTasks_ = function(tasks) {
 
 /**
  * Processes internal tasks.
+ *
  * @param {Array.<Object>} tasks The tasks.
  * @private
  */
@@ -156,6 +170,7 @@ FileTasks.prototype.processTasks_ = function(tasks) {
 
 /**
  * Executes default task.
+ *
  * @private
  */
 FileTasks.prototype.executeDefault_ = function() {
@@ -190,6 +205,7 @@ FileTasks.prototype.executeDefault_ = function() {
 
 /**
  * Executes a single task.
+ *
  * @param {string} taskId Task identifier.
  * @param {Array.<string>=} opt_urls Urls to execute on instead of |this.urls_|.
  * @private
@@ -211,6 +227,7 @@ FileTasks.prototype.execute_ = function(taskId, opt_urls) {
 
 /**
  * Checks whether the remote files are available right now.
+ *
  * @param {function} callback The callback.
  * @private
  */
@@ -279,6 +296,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
 
 /**
  * Executes an internal task.
+ *
  * @param {string} id The short task id.
  * @param {Array.<string>} urls The urls to execute on.
  * @private
@@ -344,6 +362,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
 
 /**
  * Mounts archives.
+ *
  * @param {Array.<string>} urls Mount file urls list.
  * @private
  */
@@ -373,6 +392,7 @@ FileTasks.prototype.mountArchives_ = function(urls) {
 
 /**
  * Open the Gallery.
+ *
  * @param {Array.<string>} urls List of selected urls.
  */
 FileTasks.prototype.openGallery = function(urls) {
@@ -450,6 +470,7 @@ FileTasks.prototype.openGallery = function(urls) {
 
 /**
  * Displays the list of tasks in a task picker combobutton.
+ *
  * @param {cr.ui.ComboButton} combobutton The task picker element.
  * @private
  */
@@ -483,6 +504,7 @@ FileTasks.prototype.display_ = function(combobutton) {
 
 /**
  * Creates sorted array of available task descriptions such as title and icon.
+ *
  * @return {Array} created array can be used to feed combobox, menus and so on.
  * @private
  */
@@ -509,6 +531,7 @@ FileTasks.prototype.createItems_ = function() {
  * Updates context menu with default item.
  * @private
  */
+
 FileTasks.prototype.updateMenuItem_ = function() {
   this.fileManager_.updateContextMenuActionItems(this.defaultTask_,
       this.tasks_.length > 1);
@@ -516,6 +539,7 @@ FileTasks.prototype.updateMenuItem_ = function() {
 
 /**
  * Creates combobutton item based on task.
+ *
  * @param {Object} task Task to convert.
  * @param {string=} opt_title Title.
  * @param {boolean} opt_bold Make a menu item bold.
@@ -538,6 +562,7 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
  * Decorates a FileTasks method, so it will be actually executed after the tasks
  * are available.
  * This decorator expects an implementation called |method + '_'|.
+ *
  * @param {string} method The method name.
  */
 FileTasks.decorate = function(method) {
