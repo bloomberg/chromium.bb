@@ -20,9 +20,11 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -44,7 +46,9 @@ const char* gmail_url = "https://mail.google.com/mail/u";
 
 class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
  protected:
-  ChromeLauncherControllerPerAppTest() : extension_service_(NULL) {
+  ChromeLauncherControllerPerAppTest()
+      : BrowserWithTestWindowTest(chrome::HOST_DESKTOP_TYPE_ASH),
+        extension_service_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -338,8 +342,9 @@ TEST_F(ChromeLauncherControllerPerAppTest, BrowserMenuGeneration) {
   CheckMenuCreation(&launcher_controller, item_browser, 1, one_menu_item, true);
 
   // Create one more browser/window and check that one more was added.
+  Browser::CreateParams ash_params(profile(), chrome::HOST_DESKTOP_TYPE_ASH);
   scoped_ptr<Browser> browser2(
-      chrome::CreateBrowserWithTestWindowForProfile(profile()));
+      chrome::CreateBrowserWithTestWindowForParams(&ash_params));
   chrome::NewTab(browser2.get());
   BrowserList::SetLastActive(browser2.get());
   string16 title2 = ASCIIToUTF16("Test2");
