@@ -6549,3 +6549,8 @@
    fun:_ZN10MetricsLogC2ERKSsi
    fun:_ZN12_GLOBAL__N_114TestMetricsLogC1ERKSsi
 }
+{
+   bug_176270
+   Memcheck:Uninitialized
+   fun:_ZNK2cc19LayerTreeDebugState20recordRenderingStatsEv
+}
