@@ -138,6 +138,7 @@ BASELINE_GEN_TABLES = [
     "parallel_addition_and_subtraction_signed",
     "parallel_addition_and_subtraction_unsigned",
     "packing_unpacking_saturation_and_reversal",
+    "signed_multiply_signed_and_unsigned_divide",
     ]
 
 # Verify that BASELINE_TEST_TABLES and BASELINE_GEN_TABLES don't intersect.

@@ -3187,7 +3187,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
           0x00000000 /* op2(7:5)=00x */ &&
       (inst.Bits() & 0x0000F000)  !=
           0x0000F000 /* A(15:12)=~1111 */) {
-    return Binary4RegisterDualOpNoCondsUpdate_SMLAD_instance_;
+    return SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0_SMLAD_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -3196,7 +3196,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
           0x00000000 /* op2(7:5)=00x */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* A(15:12)=1111 */) {
-    return Binary3RegisterOpAltANoCondsUpdate_SMUAD_instance_;
+    return SMUAD_cccc01110000dddd1111mmmm00m1nnnn_case_0_SMUAD_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -3205,7 +3205,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
           0x00000040 /* op2(7:5)=01x */ &&
       (inst.Bits() & 0x0000F000)  !=
           0x0000F000 /* A(15:12)=~1111 */) {
-    return Binary4RegisterDualOpNoCondsUpdate_SMLSD_instance_;
+    return SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0_SMLSD_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -3214,7 +3214,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
           0x00000040 /* op2(7:5)=01x */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* A(15:12)=1111 */) {
-    return Binary3RegisterOpAltANoCondsUpdate_SMUSD_instance_;
+    return SMUSD_cccc01110000dddd1111mmmm01m1nnnn_case_0_SMUSD_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -3223,7 +3223,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return Binary3RegisterOpAltANoCondsUpdate_SDIV_instance_;
+    return SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0_SDIV_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -3232,21 +3232,21 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return Binary3RegisterOpAltANoCondsUpdate_UDIV_instance_;
+    return UDIV_cccc01110011dddd1111mmmm0001nnnn_case_0_UDIV_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
           0x00400000 /* op1(22:20)=100 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x00000000 /* op2(7:5)=00x */) {
-    return Binary4RegisterDualResultNoCondsUpdate_SMLALD_instance_;
+    return SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0_SMLALD_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
           0x00400000 /* op1(22:20)=100 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x00000040 /* op2(7:5)=01x */) {
-    return Binary4RegisterDualResultNoCondsUpdate_SMLSLD_instance_;
+    return SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0_SMLSLD_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -3255,7 +3255,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
           0x00000000 /* op2(7:5)=00x */ &&
       (inst.Bits() & 0x0000F000)  !=
           0x0000F000 /* A(15:12)=~1111 */) {
-    return Binary4RegisterDualOpNoCondsUpdate_SMMLA_instance_;
+    return SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0_SMMLA_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
@@ -3264,14 +3264,14 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
           0x00000000 /* op2(7:5)=00x */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* A(15:12)=1111 */) {
-    return Binary3RegisterOpAltANoCondsUpdate_SMMUL_instance_;
+    return SMMUL_cccc01110101dddd1111mmmm00r1nnnn_case_0_SMMUL_instance_;
   }
 
   if ((inst.Bits() & 0x00700000)  ==
           0x00500000 /* op1(22:20)=101 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x000000C0 /* op2(7:5)=11x */) {
-    return Binary4RegisterDualOpNoCondsUpdate_SMMLS_instance_;
+    return SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0_SMMLS_instance_;
   }
 
   if (true) {
