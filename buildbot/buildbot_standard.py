@@ -10,6 +10,7 @@ import os.path
 import re
 import subprocess
 import sys
+import time
 
 from buildbot_lib import (
     BuildContext, BuildStatus, Command, EnsureDirectoryExists,
@@ -401,5 +402,14 @@ def Main():
   RunBuild(BuildScript, status)
 
 
+def TimedMain():
+  start_time = time.time()
+  try:
+    Main()
+  finally:
+    time_taken = time.time() - start_time
+    print 'RESULT BuildbotTime: total= %.3f minutes' % (time_taken / 60)
+
+
 if __name__ == '__main__':
-  Main()
+  TimedMain()
