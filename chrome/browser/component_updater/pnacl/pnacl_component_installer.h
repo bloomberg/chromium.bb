@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_
 
+class CommandLine;
 class ComponentUpdateService;
 class Version;
 
@@ -13,7 +14,8 @@ class DictionaryValue;
 }
 
 // Component update registration for Portable Native Client.
-void RegisterPnaclComponent(ComponentUpdateService* cus);
+void RegisterPnaclComponent(ComponentUpdateService* cus,
+                            const CommandLine& command_line);
 
 // Returns true if this browser is compatible with the given Pnacl component
 // manifest, with the version specified in the manifest in |version_out|.

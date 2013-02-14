@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -253,6 +254,7 @@ class CrxUpdateService : public ComponentUpdateService {
   virtual Status Start() OVERRIDE;
   virtual Status Stop() OVERRIDE;
   virtual Status RegisterComponent(const CrxComponent& component) OVERRIDE;
+  virtual Status CheckForUpdateSoon(const CrxComponent& component) OVERRIDE;
 
   // The only purpose of this class is to forward the
   // UtilityProcessHostClient callbacks so CrxUpdateService does
@@ -342,7 +344,11 @@ class CrxUpdateService : public ComponentUpdateService {
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
   typedef std::vector<CrxUpdateItem*> UpdateItems;
+  // A collection of every work item.
   UpdateItems work_items_;
+
+  // A particular set of items from work_items_, which should be checked ASAP.
+  std::set<CrxUpdateItem*> requested_work_items_;
 
   base::OneShotTimer<CrxUpdateService> timer_;
 
@@ -396,9 +402,11 @@ ComponentUpdateService::Status CrxUpdateService::Stop() {
   return kOk;
 }
 
-// This function sets the timer which will call ProcessPendingItems() there
-// are two kind of waits, the short one (with step_delay = true) and the
-// long one.
+// This function sets the timer which will call ProcessPendingItems() or
+// ProcessRequestedItem() if there is an important requested item.  There
+// are two kinds of waits: a short step_delay (when step_status is
+// kPrevInProgress) and a long one when a full check/update cycle
+// has completed either successfully or with an error.
 void CrxUpdateService::ScheduleNextRun(bool step_delay) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(url_fetcher_.get() == NULL);
@@ -409,7 +417,10 @@ void CrxUpdateService::ScheduleNextRun(bool step_delay) {
   if (!running_)
     return;
 
-  int64 delay = step_delay ? config_->StepDelay() : config_->NextCheckDelay();
+  // Keep the delay short if in the middle of an update (step_delay),
+  // or there are new requested_work_items_ that have not been processed yet.
+  int64 delay = (step_delay || requested_work_items_.size() > 0)
+      ? config_->StepDelay() : config_->NextCheckDelay();
 
   if (!step_delay) {
     content::NotificationService::current()->Notify(
@@ -503,6 +514,62 @@ bool CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
   return true;
 }
 
+// Start the process of checking for an update, for a particular component
+// that was previously registered.
+ComponentUpdateService::Status CrxUpdateService::CheckForUpdateSoon(
+    const CrxComponent& component) {
+  if (component.pk_hash.empty() ||
+      !component.version.IsValid() ||
+      !component.installer)
+    return kError;
+
+  std::string id =
+    HexStringToID(StringToLowerASCII(base::HexEncode(&component.pk_hash[0],
+                                     component.pk_hash.size()/2)));
+
+  CrxUpdateItem* uit;
+  uit = FindUpdateItemById(id);
+  if (!uit)
+    return kError;
+
+  // Check if the request is too soon.
+  base::TimeDelta delta = base::Time::Now() - uit->last_check;
+  if (delta < base::TimeDelta::FromSeconds(config_->OnDemandDelay())) {
+    return kError;
+  }
+
+  switch (uit->status) {
+    // If the item is already in the process of being updated, there is
+    // no point in this call, so return kInProgress.
+    case CrxUpdateItem::kChecking:
+    case CrxUpdateItem::kCanUpdate:
+    case CrxUpdateItem::kDownloading:
+    case CrxUpdateItem::kUpdating:
+      return kInProgress;
+    // Otherwise the item was already checked a while back (or it is new),
+    // set its status to kNew to give it a slightly higher priority.
+    case CrxUpdateItem::kNew:
+    case CrxUpdateItem::kUpdated:
+    case CrxUpdateItem::kUpToDate:
+    case CrxUpdateItem::kNoUpdate:
+      uit->status = CrxUpdateItem::kNew;
+      requested_work_items_.insert(uit);
+      break;
+    case CrxUpdateItem::kLastStatus:
+      NOTREACHED() << uit->status;
+  }
+
+  // In case the current delay is long, set the timer to a shorter value
+  // to get the ball rolling.
+  if (timer_.IsRunning()) {
+    timer_.Stop();
+    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(config_->StepDelay()),
+                 this, &CrxUpdateService::ProcessPendingItems);
+  }
+
+  return kOk;
+}
+
 // Here is where the work gets scheduled. Given that our |work_items_| list
 // is expected to be ten or less items, we simply loop several times.
 void CrxUpdateService::ProcessPendingItems() {
@@ -542,6 +609,12 @@ void CrxUpdateService::ProcessPendingItems() {
         continue;
       if (!AddItemToUpdateCheck(item, &query))
         break;
+      // Requested work items may speed up the update cycle up until
+      // the point that we start an update check. I.e., transition
+      // from kNew -> kChecking.  Since the service doesn't guarantee that
+      // the requested items make it any further than kChecking,
+      // forget them now.
+      requested_work_items_.erase(item);
     }
 
     // Next we can go back to components we already checked, here
@@ -602,7 +675,7 @@ void CrxUpdateService::ProcessPendingItems() {
   ScheduleNextRun(false);
 }
 
-// Caled when we got a response from the update server. It consists of an xml
+// Called when we got a response from the update server. It consists of an xml
 // document following the omaha update scheme.
 void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
                                           UpdateContext* context) {

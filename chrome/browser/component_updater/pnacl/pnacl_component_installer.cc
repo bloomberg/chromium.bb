@@ -6,6 +6,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -19,11 +20,17 @@
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
 namespace {
+
+// If PNaCl isn't installed yet, but a user is running chrome with
+// --enable-pnacl, this is the amount of time to wait before starting
+// a background install.
+const int kInitialDelaySeconds = 10;
 
 // One of the Pnacl component files, for checking that expected files exist.
 // TODO(jvoung): perhaps replace this with a list of the expected files in the
@@ -127,10 +134,6 @@ void SetPnaclHash(CrxComponent* component) {
 
 
 // If we don't have Pnacl installed, this is the version we claim.
-// TODO(jvoung): Is there a way to trick the configurator to ping the server
-// earlier if there are components that are not yet installed (version 0.0.0.0),
-// So that they will be available ASAP? Be careful not to hurt startup speed.
-// Make kNullVersion part of ComponentUpdater in that case, to avoid skew?
 const char kNullVersion[] = "0.0.0.0";
 
 // Pnacl components have the version encoded in the path itself:
@@ -315,6 +318,13 @@ bool PnaclComponentInstaller::Install(base::DictionaryValue* manifest,
 
 namespace {
 
+void DoCheckForUpdate(ComponentUpdateService* cus,
+                   const CrxComponent& pnacl) {
+  if (cus->CheckForUpdateSoon(pnacl) != ComponentUpdateService::kOk) {
+    LOG(WARNING) << "Pnacl check for update failed.";
+  }
+}
+
 // Finally, do the registration with the right version number.
 void FinishPnaclUpdateRegistration(ComponentUpdateService* cus,
                                    const Version& current_version) {
@@ -328,6 +338,17 @@ void FinishPnaclUpdateRegistration(ComponentUpdateService* cus,
   SetPnaclHash(&pnacl);
   if (cus->RegisterComponent(pnacl) != ComponentUpdateService::kOk) {
     NOTREACHED() << "Pnacl component registration failed.";
+  }
+
+  // If PNaCl is not yet installed but it is requested by --enable-pnacl,
+  // we want it to be available "soon", so kick off an update check
+  // earlier than usual.
+  Version null_version(kNullVersion);
+  if (current_version.Equals(null_version)) {
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(DoCheckForUpdate, cus, pnacl),
+        base::TimeDelta::FromSeconds(kInitialDelaySeconds));
   }
 }
 
@@ -366,8 +387,13 @@ void StartPnaclUpdateRegistration(ComponentUpdateService* cus) {
 
 }  // namespace
 
-void RegisterPnaclComponent(ComponentUpdateService* cus) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&StartPnaclUpdateRegistration, cus));
+void RegisterPnaclComponent(ComponentUpdateService* cus,
+                            const CommandLine& command_line) {
+  // Only register when given the right flag.  This is important since
+  // we do an early component updater check above (in DoCheckForUpdate).
+  if (command_line.HasSwitch(switches::kEnablePnacl)) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&StartPnaclUpdateRegistration, cus));
+  }
 }

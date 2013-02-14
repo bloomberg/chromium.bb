@@ -87,6 +87,7 @@ class ComponentUpdateService {
   enum Status {
     kOk,
     kReplaced,
+    kInProgress,
     kError
   };
   // Controls the component updater behavior.
@@ -108,8 +109,11 @@ class ComponentUpdateService {
     virtual int NextCheckDelay() = 0;
     // Delay in seconds from each task step. Used to smooth out CPU/IO usage.
     virtual int StepDelay() = 0;
-    // Minimun delta time in seconds before checking again the same component.
+    // Minimum delta time in seconds before checking again the same component.
     virtual int MinimumReCheckWait() = 0;
+    // Minimum delta time in seconds before an on-demand check is allowed
+    // for the same component.
+    virtual int OnDemandDelay() = 0;
     // The url that is going to be used update checks over Omaha protocol.
     virtual GURL UpdateUrl(CrxComponent::UrlSource source) = 0;
     // Parameters added to each url request. It can be null if none are needed.
@@ -138,6 +142,17 @@ class ComponentUpdateService {
   // before calling Start().
   virtual Status RegisterComponent(const CrxComponent& component) = 0;
 
+  // Ask the component updater to do an update check for a previously
+  // registered component, soon. If an update or check is already in progress,
+  // returns |kInProgress|. The same component cannot be checked repeatedly
+  // in a short interval either (returns |kError| if so).
+  // There is no guarantee that the item will actually be updated,
+  // since another item may be chosen to be updated. Since there is
+  // no time guarantee, there is no notification if the item is not updated.
+  // However, the ComponentInstaller should know if an update succeeded
+  // via the Install() hook.
+  virtual Status CheckForUpdateSoon(const CrxComponent& component) = 0;
+
   virtual ~ComponentUpdateService() {}
 };
 
@@ -147,4 +162,3 @@ ComponentUpdateService* ComponentUpdateServiceFactory(
     ComponentUpdateService::Configurator* config);
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_SERVICE_H_
-

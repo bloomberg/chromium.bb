@@ -485,8 +485,7 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   if (!command_line.HasSwitch(switches::kDisableCRLSets))
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus);
 
-  if (command_line.HasSwitch(switches::kEnablePnacl))
-    RegisterPnaclComponent(cus);
+  RegisterPnaclComponent(cus, command_line);
 
   cus->Start();
 }

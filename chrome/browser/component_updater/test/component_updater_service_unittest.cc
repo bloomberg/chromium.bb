@@ -4,6 +4,9 @@
 
 #include "chrome/browser/component_updater/component_updater_service.h"
 
+#include <list>
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -32,21 +35,37 @@ namespace {
 // and loops faster. In actual usage it takes hours do to a full cycle.
 class TestConfigurator : public ComponentUpdateService::Configurator {
  public:
-  TestConfigurator() : times_(1), recheck_time_(0) {
+  TestConfigurator()
+      : times_(1), recheck_time_(0), ondemand_time_(0), cus_(NULL) {
   }
 
   virtual int InitialDelay() OVERRIDE { return 0; }
+
+  typedef std::pair<CrxComponent*, int> CheckAtLoopCount;
 
   virtual int NextCheckDelay() OVERRIDE {
     // This is called when a new full cycle of checking for updates is going
     // to happen. In test we normally only test one cycle so it is a good
     // time to break from the test messageloop Run() method so the test can
     // finish.
-    if (--times_ > 0)
-      return 1;
+    if (--times_ <= 0) {
+      MessageLoop::current()->Quit();
+      return 0;
 
-    MessageLoop::current()->Quit();
-    return 0;
+    }
+
+    // Look for checks to issue in the middle of the loop.
+    for (std::list<CheckAtLoopCount>::iterator
+             i = components_to_check_.begin();
+         i != components_to_check_.end(); ) {
+      if (i->second == times_) {
+        cus_->CheckForUpdateSoon(*i->first);
+        i = components_to_check_.erase(i);
+      } else {
+        ++i;
+      }
+    }
+    return 1;
   }
 
   virtual int StepDelay() OVERRIDE {
@@ -55,6 +74,10 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   virtual int MinimumReCheckWait() OVERRIDE {
     return recheck_time_;
+  }
+
+  virtual int OnDemandDelay() OVERRIDE {
+    return ondemand_time_;
   }
 
   virtual GURL UpdateUrl(CrxComponent::UrlSource source) OVERRIDE {
@@ -89,9 +112,25 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
     recheck_time_ = seconds;
   }
 
+  void SetOnDemandTime(int seconds) {
+    ondemand_time_ = seconds;
+  }
+
+  void AddComponentToCheck(CrxComponent* com, int at_loop_iter) {
+    components_to_check_.push_back(std::make_pair(com, at_loop_iter));
+  }
+
+  void SetComponentUpdateService(ComponentUpdateService* cus) {
+    cus_ = cus;
+  }
+
  private:
   int times_;
   int recheck_time_;
+  int ondemand_time_;
+
+  std::list<CheckAtLoopCount> components_to_check_;
+  ComponentUpdateService* cus_;
 };
 
 class TestInstaller : public ComponentInstaller {
@@ -151,6 +190,7 @@ class ComponentUpdaterTest : public testing::Test {
     // The component updater instance under test.
     test_config_ = new TestConfigurator;
     component_updater_.reset(ComponentUpdateServiceFactory(test_config_));
+    test_config_->SetComponentUpdateService(component_updater_.get());
     // The test directory is chrome/test/data/components.
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
     test_data_dir_ = test_data_dir_.AppendASCII("components");
@@ -380,7 +420,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
 
   TestNotificationTracker::Event ev4 = notification_tracker().at(4);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev4.type);
 
   component_updater()->Stop();
 }
@@ -452,7 +492,7 @@ TEST_F(ComponentUpdaterTest, InstallCrxTwoSources) {
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
 
   TestNotificationTracker::Event ev4 = notification_tracker().at(5);
-  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev4.type);
 
   component_updater()->Stop();
 }
@@ -491,5 +531,125 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
 
+  component_updater()->Stop();
+}
+
+// Test that a ping for an update check can cause installs.
+// Here is the timeline:
+//  - First loop: we return a reply that indicates no update, so
+//    nothing happens.
+//  - We ping.
+//  - This triggers a second loop, which has a reply that triggers an install.
+TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
+  MessageLoop message_loop;
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread file_thread(BrowserThread::FILE);
+  content::TestBrowserThread io_thread(BrowserThread::IO);
+
+  io_thread.StartIOThread();
+  file_thread.Start();
+
+  content::URLRequestPrepackagedInterceptor interceptor;
+
+  CrxComponent com1;
+  RegisterComponent(&com1, kTestComponent_abag, Version("2.2"));
+  CrxComponent com2;
+  RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"));
+
+  const GURL expected_update_url_1(
+      "http://localhost/upd?extra=foo&x=id%3D"
+      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc");
+
+  const GURL expected_update_url_2(
+      "http://localhost/upd?extra=foo&x=id%3D"
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
+      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
+
+  interceptor.SetResponse(expected_update_url_1,
+                          test_file("updatecheck_reply_empty"));
+  interceptor.SetResponse(expected_update_url_2,
+                          test_file("updatecheck_reply_1.xml"));
+  interceptor.SetResponse(GURL(expected_crx_url),
+                          test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"));
+  // Test success.
+  test_configurator()->SetLoopCount(2);
+  test_configurator()->AddComponentToCheck(&com2, 1);
+  component_updater()->Start();
+  message_loop.Run();
+
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->install_count());
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
+  EXPECT_EQ(1, static_cast<TestInstaller*>(com2.installer)->install_count());
+
+  EXPECT_EQ(3, interceptor.GetHitCount());
+
+  ASSERT_EQ(5ul, notification_tracker().size());
+
+  TestNotificationTracker::Event ev0= notification_tracker().at(0);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
+
+  TestNotificationTracker::Event ev1 = notification_tracker().at(1);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev1.type);
+
+  TestNotificationTracker::Event ev2 = notification_tracker().at(2);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND, ev2.type);
+
+  TestNotificationTracker::Event ev3 = notification_tracker().at(3);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATE_READY, ev3.type);
+
+  TestNotificationTracker::Event ev4 = notification_tracker().at(4);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev4.type);
+
+  // Also check what happens if previous check too soon.
+  test_configurator()->SetOnDemandTime(60 * 60);
+  EXPECT_EQ(ComponentUpdateService::kError,
+            component_updater()->CheckForUpdateSoon(com2));
+  // Okay, now reset to 0 for the other tests.
+  test_configurator()->SetOnDemandTime(0);
+  component_updater()->Stop();
+
+  // Test a few error cases. NOTE: We don't have callbacks for
+  // when the updates failed yet.
+  const GURL expected_update_url_3(
+      "http://localhost/upd?extra=foo&x=id%3D"
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc&x=id%3D"
+      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
+
+  // No update: error from no server response
+  interceptor.SetResponse(expected_update_url_3,
+                          test_file("updatecheck_reply_empty"));
+  notification_tracker().Reset();
+  test_configurator()->SetLoopCount(1);
+  component_updater()->Start();
+  EXPECT_EQ(ComponentUpdateService::kOk,
+            component_updater()->CheckForUpdateSoon(com2));
+
+  message_loop.Run();
+
+  ASSERT_EQ(2ul, notification_tracker().size());
+  ev0 = notification_tracker().at(0);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
+  ev1 = notification_tracker().at(1);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev1.type);
+  component_updater()->Stop();
+
+  // No update: already updated to 1.0 so nothing new
+  interceptor.SetResponse(expected_update_url_3,
+                          test_file("updatecheck_reply_1.xml"));
+  notification_tracker().Reset();
+  test_configurator()->SetLoopCount(1);
+  component_updater()->Start();
+  EXPECT_EQ(ComponentUpdateService::kOk,
+            component_updater()->CheckForUpdateSoon(com2));
+
+  message_loop.Run();
+
+  ASSERT_EQ(2ul, notification_tracker().size());
+  ev0 = notification_tracker().at(0);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED, ev0.type);
+  ev1 = notification_tracker().at(1);
+  EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev1.type);
   component_updater()->Stop();
 }

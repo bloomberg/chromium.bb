@@ -114,6 +114,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   virtual int NextCheckDelay() OVERRIDE;
   virtual int StepDelay() OVERRIDE;
   virtual int MinimumReCheckWait() OVERRIDE;
+  virtual int OnDemandDelay() OVERRIDE;
   virtual GURL UpdateUrl(CrxComponent::UrlSource source) OVERRIDE;
   virtual const char* ExtraRequestParams() OVERRIDE;
   virtual size_t UrlSizeLimit() OVERRIDE;
@@ -152,7 +153,7 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
 }
 
 int ChromeConfigurator::InitialDelay() {
-  return  fast_update_ ? 1 : (6 * kDelayOneMinute);
+  return fast_update_ ? 1 : (6 * kDelayOneMinute);
 }
 
 int ChromeConfigurator::NextCheckDelay() {
@@ -165,6 +166,10 @@ int ChromeConfigurator::StepDelay() {
 
 int ChromeConfigurator::MinimumReCheckWait() {
   return fast_update_ ? 30 : (6 * kDelayOneHour);
+}
+
+int ChromeConfigurator::OnDemandDelay() {
+  return fast_update_ ? 2 : (30 * kDelayOneMinute);
 }
 
 GURL ChromeConfigurator::UpdateUrl(CrxComponent::UrlSource source) {
