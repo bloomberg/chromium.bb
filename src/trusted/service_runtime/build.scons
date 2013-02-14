@@ -356,6 +356,13 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
 
   env.SDKInstallBin('sel_ldr', SEL_LDR_NODE)
 
+if env.Bit('linux') and env.Bit('target_x86_64'):
+  sel_ldr_seccomp_node = env.ComponentProgram('sel_ldr_seccomp',
+                                              ['sel_ldr_seccomp_main.c'],
+                                              EXTRA_LIBS=['sel_main',
+                                                          'seccomp_bpf'])
+  env.SDKInstallBin('sel_ldr_seccomp', sel_ldr_seccomp_node)
+
 env.EnsureRequiredBuildWarnings()
 
 # Bootstrap loader used on Linux.

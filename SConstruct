@@ -1160,6 +1160,22 @@ def GetSelLdr(env):
 
 pre_base_env.AddMethod(GetSelLdr)
 
+
+def GetSelLdrSeccomp(env):
+  # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
+  if 'TRUSTED_ENV' not in env:
+    return None
+
+  if not (env.Bit('linux') and env.Bit('build_x86_64')):
+    return None
+
+  trusted_env = env['TRUSTED_ENV']
+  return trusted_env.File('${STAGING_DIR}/${PROGPREFIX}'
+                          'sel_ldr_seccomp${PROGSUFFIX}')
+
+pre_base_env.AddMethod(GetSelLdrSeccomp)
+
+
 def GetBootstrap(env):
   if 'TRUSTED_ENV' in env:
     trusted_env = env['TRUSTED_ENV']
@@ -1954,6 +1970,7 @@ def MakeBaseTrustedEnv():
       'src/trusted/platform_qualify/build.scons',
       'src/trusted/python_bindings/build.scons',
       'src/trusted/reverse_service/build.scons',
+      'src/trusted/seccomp_bpf/build.scons',
       'src/trusted/sel_universal/build.scons',
       'src/trusted/service_runtime/build.scons',
       'src/trusted/simple_service/build.scons',
@@ -2964,6 +2981,7 @@ irt_variant_tests = [
     'tests/rodata_not_writable/nacl.scons',
     'tests/sbrk/nacl.scons',
     'tests/sel_ldr/nacl.scons',
+    'tests/sel_ldr_seccomp/nacl.scons',
     'tests/sel_main_chrome/nacl.scons',
     'tests/signal_handler/nacl.scons',
     'tests/sleep/nacl.scons',
