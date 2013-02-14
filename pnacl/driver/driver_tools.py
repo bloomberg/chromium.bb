@@ -226,6 +226,7 @@ DriverArgPatterns = [
   ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
   ( '--pnacl-arm-bias',                "env.set('BIAS', 'ARM')"),
+  ( '--pnacl-mips-bias',               "env.set('BIAS', 'MIPS32')"),
   ( '--pnacl-i686-bias',               "env.set('BIAS', 'X8632')"),
   ( '--pnacl-x86_64-bias',             "env.set('BIAS', 'X8664')"),
   ( '--pnacl-bias=(.+)',               "env.set('BIAS', FixArch($0))"),
@@ -947,6 +948,7 @@ def FixArch(arch):
 
               'mips32': 'MIPS32',
               'mips'  : 'MIPS32',
+              'mipsel': 'MIPS32',
               }
   if arch not in archfix:
     Log.Fatal('Unrecognized arch "%s"!', arch)

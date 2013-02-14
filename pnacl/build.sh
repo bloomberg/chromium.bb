@@ -1459,6 +1459,7 @@ libgcc_eh-newlib() {
   # This is a temporary situation. Eventually, libgcc_eh won't depend
   # on LibC, and it will be built once for each architecture in a neutral way.
   libgcc_eh arm    newlib
+  libgcc_eh mips32 newlib
   libgcc_eh x86-32 newlib
   libgcc_eh x86-64 newlib
 }
@@ -1593,6 +1594,7 @@ install-unwind-header() {
 compiler-rt-all() {
   StepBanner "COMPILER-RT (LIBGCC)"
   compiler-rt arm
+  compiler-rt mips32
   compiler-rt x86-32
   compiler-rt x86-64
 }

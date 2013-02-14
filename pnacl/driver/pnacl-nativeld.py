@@ -154,12 +154,14 @@ LDPatterns = [
   ( '(--unresolved-symbols=.*)',  PassThrough),
   ( '(--dynamic-linker=.*)',      PassThrough),
 
-  ( '-melf_nacl',          "env.set('ARCH', 'X8632')"),
-  ( ('-m','elf_nacl'),     "env.set('ARCH', 'X8632')"),
-  ( '-melf64_nacl',        "env.set('ARCH', 'X8664')"),
-  ( ('-m','elf64_nacl'),   "env.set('ARCH', 'X8664')"),
-  ( '-marmelf_nacl',       "env.set('ARCH', 'ARM')"),
-  ( ('-m','armelf_nacl'),  "env.set('ARCH', 'ARM')"),
+  ( '-melf_nacl',            "env.set('ARCH', 'X8632')"),
+  ( ('-m','elf_nacl'),       "env.set('ARCH', 'X8632')"),
+  ( '-melf64_nacl',          "env.set('ARCH', 'X8664')"),
+  ( ('-m','elf64_nacl'),     "env.set('ARCH', 'X8664')"),
+  ( '-marmelf_nacl',         "env.set('ARCH', 'ARM')"),
+  ( ('-m','armelf_nacl'),    "env.set('ARCH', 'ARM')"),
+  ( '-mmipselelf_nacl',      "env.set('ARCH', 'MIPS32')"),
+  ( ('-m','mipselelf_nacl'), "env.set('ARCH', 'MIPS32')"),
 
   # Inputs and options that need to be kept in order
   ( '(--no-as-needed)',    "env.append('INPUTS', $0)"),

@@ -54,16 +54,18 @@ INITIAL_ENV = {
     '${BASE_TOOLCHAIN}/pnacl_translator/${STANDARD_ARCH}/bin',
 
   # TODO(pdox): Unify this with ARCH.
-  'STANDARD_ARCH'      : '${STANDARD_ARCH_%ARCH%}',
-  'STANDARD_ARCH_X8632': 'i686',
-  'STANDARD_ARCH_X8664': 'x86_64',
-  'STANDARD_ARCH_ARM'  : 'armv7',
+  'STANDARD_ARCH'       : '${STANDARD_ARCH_%ARCH%}',
+  'STANDARD_ARCH_X8632' : 'i686',
+  'STANDARD_ARCH_X8664' : 'x86_64',
+  'STANDARD_ARCH_ARM'   : 'armv7',
+  'STANDARD_ARCH_MIPS32': 'mips32',
 
   'SCONS_OUT'       : '${BASE_NACL}/scons-out',
 
   # Driver settings
   'ARCH'        : '',     # Target architecture
-  'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'X8632', or 'X8664'.
+  'BIAS'        : 'NONE', # This can be 'NONE', 'ARM', 'MIPS32', 'X8632' or
+                          # 'X8664'.
                           # When not set to none, this causes the front-end to
                           # act like a target-specific compiler. This bias is
                           # currently needed while compiling newlib,
@@ -128,6 +130,7 @@ INITIAL_ENV = {
   'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',
   'SCONS_STAGING_X8664' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-64/staging',
   'SCONS_STAGING_ARM'   : '${SCONS_OUT}/opt-${SCONS_OS}-arm/staging',
+  'SCONS_STAGING_MIPS32': '${SCONS_OUT}/opt-${SCONS_OS}-mips32/staging',
 
   'SEL_UNIVERSAL_PREFIX': '${USE_EMULATOR ? ${EMULATOR}}',
   'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
@@ -144,6 +147,8 @@ INITIAL_ENV = {
   # NOTE: this is currently the only dependency on the arm trusted TC
   'EMULATOR_ARM'        :
       '${BASE_NACL}/toolchain/linux_arm-trusted/run_under_qemu_arm',
+  'EMULATOR_MIPS32'     :
+      '${BASE_NACL}/toolchain/linux_mips-trusted/run_under_qemu_mips32',
 
   'SEL_LDR'       : '${SCONS_STAGING}/sel_ldr${EXEC_EXT}',
   'BOOTSTRAP_LDR' : '${SCONS_STAGING}/nacl_helper_bootstrap${EXEC_EXT}',
