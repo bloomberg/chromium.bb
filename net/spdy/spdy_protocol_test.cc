@@ -48,7 +48,6 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(12u, SpdySettingsControlFrame::size());
   EXPECT_EQ(12u, SpdyPingControlFrame::size());
   EXPECT_EQ(12u, SpdyHeadersControlFrame::size());
-  EXPECT_EQ(16u, SpdyWindowUpdateControlFrame::size());
   EXPECT_EQ(4u, sizeof(FlagsAndLength));
   EXPECT_EQ(1, SYN_STREAM);
   EXPECT_EQ(2, SYN_REPLY);
@@ -81,6 +80,59 @@ TEST_P(SpdyProtocolTest, DataFrameStructs) {
   SpdyDataFrame data_frame;
   data_frame.set_stream_id(12345);
   EXPECT_EQ(12345u, data_frame.stream_id());
+}
+
+TEST_P(SpdyProtocolTest, ControlFrameStructs) {
+  SpdyFramer framer(spdy_version_);
+  SpdyHeaderBlock headers;
+
+  const uint8 credential_slot = IsSpdy2() ? 0 : 5;
+
+  scoped_ptr<SpdySynStreamControlFrame> syn_frame(framer.CreateSynStream(
+      123, 456, 2, credential_slot, CONTROL_FLAG_FIN, false, &headers));
+  EXPECT_EQ(framer.protocol_version(), syn_frame->version());
+  EXPECT_TRUE(syn_frame->is_control_frame());
+  EXPECT_EQ(SYN_STREAM, syn_frame->type());
+  EXPECT_EQ(123u, syn_frame->stream_id());
+  EXPECT_EQ(456u, syn_frame->associated_stream_id());
+  EXPECT_EQ(2u, syn_frame->priority());
+  EXPECT_EQ(credential_slot, syn_frame->credential_slot());
+  EXPECT_EQ(IsSpdy2() ? 2 : 4, syn_frame->header_block_len());
+  EXPECT_EQ(1u, syn_frame->flags());
+  syn_frame->set_associated_stream_id(999u);
+  EXPECT_EQ(123u, syn_frame->stream_id());
+  EXPECT_EQ(999u, syn_frame->associated_stream_id());
+
+  scoped_ptr<SpdyRstStreamControlFrame> rst_frame(
+      framer.CreateRstStream(123, net::RST_STREAM_PROTOCOL_ERROR));
+  EXPECT_EQ(framer.protocol_version(), rst_frame->version());
+  EXPECT_TRUE(rst_frame->is_control_frame());
+  EXPECT_EQ(RST_STREAM, rst_frame->type());
+  EXPECT_EQ(123u, rst_frame->stream_id());
+  EXPECT_EQ(net::RST_STREAM_PROTOCOL_ERROR, rst_frame->status());
+  rst_frame->set_status(net::RST_STREAM_INVALID_STREAM);
+  EXPECT_EQ(net::RST_STREAM_INVALID_STREAM, rst_frame->status());
+  EXPECT_EQ(0, rst_frame->flags());
+
+  const uint32 kUniqueId = 1234567u;
+  const uint32 kUniqueId2 = 31415926u;
+  scoped_ptr<SpdyPingControlFrame> ping_frame(
+      framer.CreatePingFrame(kUniqueId));
+  EXPECT_EQ(framer.protocol_version(), ping_frame->version());
+  EXPECT_TRUE(ping_frame->is_control_frame());
+  EXPECT_EQ(PING, ping_frame->type());
+  EXPECT_EQ(kUniqueId, ping_frame->unique_id());
+  ping_frame->set_unique_id(kUniqueId2);
+  EXPECT_EQ(kUniqueId2, ping_frame->unique_id());
+
+  scoped_ptr<SpdyHeadersControlFrame> headers_frame(
+      framer.CreateHeaders(123, CONTROL_FLAG_NONE, false, &headers));
+  EXPECT_EQ(framer.protocol_version(), headers_frame->version());
+  EXPECT_TRUE(headers_frame->is_control_frame());
+  EXPECT_EQ(HEADERS, headers_frame->type());
+  EXPECT_EQ(123u, headers_frame->stream_id());
+  EXPECT_EQ(IsSpdy2() ? 2 : 4, headers_frame->header_block_len());
+  EXPECT_EQ(0, headers_frame->flags());
 }
 
 TEST_P(SpdyProtocolTest, TestDataFrame) {

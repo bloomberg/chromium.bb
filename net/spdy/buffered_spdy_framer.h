@@ -169,7 +169,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                                          SpdyControlFlags flags,
                                          bool compressed,
                                          const SpdyHeaderBlock* headers);
-  SpdyWindowUpdateControlFrame* CreateWindowUpdate(
+  SpdyFrame* CreateWindowUpdate(
       SpdyStreamId stream_id,
       uint32 delta_window_size) const;
   SpdyCredentialControlFrame* CreateCredentialFrame(

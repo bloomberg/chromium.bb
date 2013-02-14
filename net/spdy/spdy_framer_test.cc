@@ -1494,7 +1494,7 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressorsOneByteAtATime) {
 
 TEST_P(SpdyFramerTest, WindowUpdateFrame) {
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyWindowUpdateControlFrame> window_update_frame(
+  scoped_ptr<SpdyFrame> window_update_frame(
       framer.CreateWindowUpdate(1, 0x12345678));
 
   const unsigned char expected_data_frame[] = {
@@ -1504,9 +1504,13 @@ TEST_P(SpdyFramerTest, WindowUpdateFrame) {
       0x12, 0x34, 0x56, 0x78
   };
 
-  EXPECT_EQ(16u, window_update_frame->size());
+  EXPECT_EQ(framer.GetWindowUpdateSize(), arraysize(expected_data_frame));
+  EXPECT_EQ(framer.GetWindowUpdateSize(),
+            window_update_frame->length() + SpdyFrame::kHeaderSize);
   EXPECT_EQ(0,
-            memcmp(window_update_frame->data(), expected_data_frame, 16));
+            memcmp(window_update_frame->data(),
+                   expected_data_frame,
+                   framer.GetWindowUpdateSize()));
 }
 
 TEST_P(SpdyFramerTest, CreateDataFrame) {
@@ -2390,7 +2394,7 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
       0x00, 0x00, 0x00, 0x01,
       0x00, 0x00, 0x00, 0x01,
     };
-    scoped_ptr<SpdyWindowUpdateControlFrame> frame(
+    scoped_ptr<SpdyFrame> frame(
         framer.CreateWindowUpdate(1, 1));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
   }
@@ -2867,7 +2871,7 @@ TEST_P(SpdyFramerTest, ReadOutOfOrderSettings) {
 
 TEST_P(SpdyFramerTest, ReadWindowUpdate) {
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyWindowUpdateControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateWindowUpdate(1, 2));
   TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(

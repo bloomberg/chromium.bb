@@ -1189,10 +1189,17 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
           }
           break;
         case WINDOW_UPDATE: {
-            SpdyWindowUpdateControlFrame *window_update_frame =
-                reinterpret_cast<SpdyWindowUpdateControlFrame*>(&control_frame);
-            visitor_->OnWindowUpdate(window_update_frame->stream_id(),
-                                     window_update_frame->delta_window_size());
+            SpdyFrameReader reader(current_frame_buffer_.get(),
+                                   current_frame_len_);
+            reader.Seek(SpdyFrame::kHeaderSize);  // Seek past frame header.
+            SpdyStreamId stream_id = kInvalidStream;
+            uint32 delta_window_size = 0;
+            bool successful_read = reader.ReadUInt31(&stream_id);
+            DCHECK(successful_read);
+            successful_read = reader.ReadUInt32(&delta_window_size);
+            DCHECK(successful_read);
+            DCHECK(reader.IsDoneReading());
+            visitor_->OnWindowUpdate(stream_id, delta_window_size);
           }
           break;
         case RST_STREAM: {
@@ -1645,12 +1652,11 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   return builder.take();
 }
 
-SpdyWindowUpdateControlFrame* SpdyFramer::CreateWindowUpdate(
+SpdyFrame* SpdyFramer::CreateWindowUpdate(
     SpdyStreamId stream_id,
     uint32 delta_window_size) const {
   SpdyWindowUpdateIR window_update(stream_id, delta_window_size);
-  return reinterpret_cast<SpdyWindowUpdateControlFrame*>(
-      SerializeWindowUpdate(window_update));
+  return SerializeWindowUpdate(window_update);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(

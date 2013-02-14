@@ -412,9 +412,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                          const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeHeaders(const SpdyHeadersIR& headers);
 
-  // Creates an instance of SpdyWindowUpdateControlFrame. The WINDOW_UPDATE
+  // Creates and serializes a WINDOW_UPDATE frame. The WINDOW_UPDATE
   // frame is used to implement per stream flow control in SPDY.
-  SpdyWindowUpdateControlFrame* CreateWindowUpdate(
+  SpdyFrame* CreateWindowUpdate(
       SpdyStreamId stream_id,
       uint32 delta_window_size) const;
   SpdySerializedFrame* SerializeWindowUpdate(

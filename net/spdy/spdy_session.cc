@@ -1681,7 +1681,7 @@ void SpdySession::SendWindowUpdate(SpdyStreamId stream_id,
                  stream_id, delta_window_size));
 
   DCHECK(buffered_spdy_framer_.get());
-  scoped_ptr<SpdyWindowUpdateControlFrame> window_update_frame(
+  scoped_ptr<SpdyFrame> window_update_frame(
       buffered_spdy_framer_->CreateWindowUpdate(stream_id, delta_window_size));
   QueueFrame(window_update_frame.release(), stream->priority());
 }

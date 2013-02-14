@@ -267,7 +267,7 @@ SpdyHeadersControlFrame* BufferedSpdyFramer::CreateHeaders(
   return spdy_framer_.CreateHeaders(stream_id, flags, compressed, headers);
 }
 
-SpdyWindowUpdateControlFrame* BufferedSpdyFramer::CreateWindowUpdate(
+SpdyFrame* BufferedSpdyFramer::CreateWindowUpdate(
     SpdyStreamId stream_id,
     uint32 delta_window_size) const {
   return spdy_framer_.CreateWindowUpdate(stream_id, delta_window_size);
