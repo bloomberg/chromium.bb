@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread.h"

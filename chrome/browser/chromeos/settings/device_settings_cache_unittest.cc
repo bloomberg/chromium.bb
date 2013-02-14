@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 
+#include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace em = enterprise_management;

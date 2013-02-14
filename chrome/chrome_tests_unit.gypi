@@ -1,4 +1,4 @@
- # Copyright 2012 The Chromium Authors. All rights reserved.
+# Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -231,8 +231,6 @@
         'test/base/test_tab_strip_model_observer.h',
         'test/base/testing_browser_process.cc',
         'test/base/testing_browser_process.h',
-        'test/base/testing_pref_service.cc',
-        'test/base/testing_pref_service.h',
         'test/base/testing_pref_service_syncable.cc',
         'test/base/testing_pref_service_syncable.h',
         'test/base/testing_profile.cc',
@@ -993,8 +991,6 @@
         'browser/prefs/command_line_pref_store_unittest.cc',
         'browser/prefs/incognito_mode_prefs_unittest.cc',
         'browser/prefs/pref_model_associator_unittest.cc',
-        'browser/prefs/pref_notifier_impl_unittest.cc',
-        'browser/prefs/pref_service_unittest.cc',
         'browser/prefs/proxy_config_dictionary_unittest.cc',
         'browser/prefs/proxy_policy_unittest.cc',
         'browser/prefs/proxy_prefs_unittest.cc',
@@ -1625,11 +1621,6 @@
         # Duplicate these tests here because PathService has more items in
         # unit_tests than in base_unittests.
         '../base/path_service_unittest.cc',
-
-        # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
-        # Prefs move is complete and dependencies have been broken.
-        '../base/prefs/public/pref_change_registrar_unittest.cc',
-        '../base/prefs/public/pref_member_unittest.cc',
 
         # TODO(joi): Move the google_apis tests to a separate
         # google_apis_unittests executable.

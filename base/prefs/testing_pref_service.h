@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_TESTING_PREF_SERVICE_H_
-#define CHROME_TEST_BASE_TESTING_PREF_SERVICE_H_
+#ifndef BASE_PREFS_TESTING_PREF_SERVICE_H_
+#define BASE_PREFS_TESTING_PREF_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -193,4 +193,4 @@ void TestingPrefServiceBase<
   pref_store->RemoveValue(path);
 }
 
-#endif  // CHROME_TEST_BASE_TESTING_PREF_SERVICE_H_
+#endif  // BASE_PREFS_TESTING_PREF_SERVICE_H_

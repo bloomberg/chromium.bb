@@ -6,8 +6,8 @@
 #define CHROME_TEST_BASE_TESTING_PREF_SERVICE_SYNCABLE_H_
 
 #include "base/basictypes.h"
+#include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
-#include "chrome/test/base/testing_pref_service.h"
 
 class PrefRegistrySyncable;
 

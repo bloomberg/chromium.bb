@@ -9,12 +9,12 @@
 #include <string>
 
 #include "base/message_loop.h"
+#include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
-#include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_browser_thread.h"

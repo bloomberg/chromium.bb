@@ -4,6 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -17,7 +18,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_pref_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
