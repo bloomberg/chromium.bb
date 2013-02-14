@@ -9,6 +9,8 @@ base.require('model.layer_tree_host_impl');
 base.exportTo('ccfv', function() {
 
   function unquoteIfNeeded(val) {
+    if (typeof val !== 'string')
+      return val;
     if (val[0] == '{' && val[val.length - 1] == '}') {
       return JSON.parse(val);
     } else {
@@ -55,7 +57,7 @@ base.exportTo('ccfv', function() {
     },
 
     handleFrameEvent: function(event) {
-      if (typeof event.args.frame !== 'string')
+      if (event.args.frame === 'undefined')
         throw new Error('Expected Frame to have args.frame of type string.');
       var frameData = unquoteIfNeeded(event.args.frame);
 

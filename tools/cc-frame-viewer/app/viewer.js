@@ -29,7 +29,12 @@ base.exportTo('ccfv', function() {
 
     window.g_lastResult = trace;
     var model = new ccfv.Model();
-    model.initFromTraceEvents(trace);
+    try {
+        model.initFromTraceEvents(trace);
+    } catch(e) {
+        onLoadError(e);
+        return;
+    }
     window.g_model = model;
 
     var modelViewEl = new ccfv.ModelView();

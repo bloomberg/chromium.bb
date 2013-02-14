@@ -79,6 +79,7 @@ base.exportTo('ccfv', function() {
 
       world_rect.enlarge(world_pad);
       this.worldRect = world_rect;
+      this.updateScale_();
       this.updateTransform_();
       this.didChange_();
     },

@@ -52,6 +52,11 @@ base.exportTo('ccfv', function() {
       optionsEl.appendChild(ui.createSpan('Scale:'));
       optionsEl.appendChild(this.scaleSelector_);
 
+      this.headerTextEl_ = document.createElement('span');
+      optionsEl.appendChild(ui.createSpan('Details:'));
+      optionsEl.appendChild(this.headerTextEl_);
+
+
       this.activeTreeQuadView_ = new TreeQuadView();
       this.pendingTreeQuadView_ = new TreeQuadView();
       this.inactiveTileView_ = new InactiveTileView();
@@ -101,14 +106,11 @@ base.exportTo('ccfv', function() {
         return;
       }
 
-      var bbox = new base.BBox2();
-      bbox.addBBox2(lthi.pendingTree.tileBBox);
-      bbox.addBBox2(lthi.activeTree.tileBBox);
-
+      var bbox = lthi.history.allTilesBBox;
       if (!this.viewport_) {
         if (!bbox.isEmpty) {
           this.viewport_ = new ccfv.QuadViewViewport(
-            lthi.history.allTilesBBox);
+            bbox);
           this.viewport_.scale = this.scaleSelector_.selectedOptions[0].scale;
           this.activeTreeQuadView_.viewport = this.viewport_;
           this.pendingTreeQuadView_.viewport = this.viewport_;
@@ -116,9 +118,6 @@ base.exportTo('ccfv', function() {
           return;
         }
       }
-
-      this.activeTreeQuadView_.viewport.setWorldBBox(bbox);
-      this.pendingTreeQuadView_.viewport.setWorldBBox(bbox);
 
       this.activeTreeQuadView_.which_tree = lthi.activeTree.which_tree;
       this.activeTreeQuadView_.tiles = lthi.activeTree.tiles;
@@ -134,6 +133,8 @@ base.exportTo('ccfv', function() {
       this.pendingTreeQuadView_.deviceViewportSizeForFrame =
         lthi.deviceViewportSize;
 
+      this.headerTextEl_.textContent = lthi.inactiveTiles.length +
+        ' inactive tiles';
       this.inactiveTileView_.tiles = lthi.inactiveTiles;
     },
 
