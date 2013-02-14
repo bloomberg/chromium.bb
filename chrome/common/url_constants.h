@@ -272,6 +272,7 @@ extern const char kManageProfileSubPage[];
 extern const char kPasswordManagerSubPage[];
 extern const char kSearchEnginesSubPage[];
 extern const char kSearchSubPage[];
+extern const char kSearchUsersSubPage[];
 extern const char kSyncSetupForceLoginSubPage[];
 extern const char kSyncSetupSubPage[];
 #if defined(OS_CHROMEOS)

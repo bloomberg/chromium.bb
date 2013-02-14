@@ -171,7 +171,8 @@ void StartExplicitSync(const StartSyncArgs& args,
     contents->GetController().LoadURL(
         GURL(chrome::kChromeUINewTabURL), content::Referrer(),
         content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-    chrome::ShowSettings(args.browser);
+    chrome::ShowSettingsSubPage(args.browser,
+                                std::string(chrome::kSearchUsersSubPage));
   } else {
     StartSync(args, start_mode);
   }
