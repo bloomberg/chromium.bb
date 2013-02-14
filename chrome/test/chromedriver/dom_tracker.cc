@@ -28,6 +28,7 @@ Status DomTracker::GetFrameIdForNode(
 }
 
 Status DomTracker::OnConnected() {
+  node_to_frame_map_.clear();
   // Fetch the root document node so that Inspector will push DOM node
   // information to the client.
   base::DictionaryValue params;

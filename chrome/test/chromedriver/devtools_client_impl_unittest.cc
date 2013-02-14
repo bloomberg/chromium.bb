@@ -567,3 +567,115 @@ TEST(DevToolsClientImpl, NestedCommandsWithOutOfOrderResults) {
   ASSERT_TRUE(result->GetInteger("key", &key));
   ASSERT_EQ(2, key);
 }
+
+namespace {
+
+class OnConnectedListener : public DevToolsEventListener {
+ public:
+  OnConnectedListener(const std::string& method, DevToolsClient* client)
+      : method_(method),
+        client_(client),
+        on_connected_called_(false),
+        on_event_called_(false) {
+    client_->AddListener(this);
+  }
+  virtual ~OnConnectedListener() {}
+
+  void VerifyCalled() {
+    EXPECT_TRUE(on_connected_called_);
+    EXPECT_TRUE(on_event_called_);
+  }
+
+  virtual Status OnConnected() OVERRIDE {
+    EXPECT_FALSE(on_connected_called_);
+    EXPECT_FALSE(on_event_called_);
+    on_connected_called_ = true;
+    base::DictionaryValue params;
+    return client_->SendCommand(method_, params);
+  }
+
+  virtual void OnEvent(const std::string& method,
+                       const base::DictionaryValue& params) OVERRIDE {
+    EXPECT_TRUE(on_connected_called_);
+    on_event_called_ = true;
+  }
+
+ private:
+  std::string method_;
+  DevToolsClient* client_;
+  bool on_connected_called_;
+  bool on_event_called_;
+};
+
+class OnConnectedSyncWebSocket : public SyncWebSocket {
+ public:
+  OnConnectedSyncWebSocket() : connected_(false) {}
+  virtual ~OnConnectedSyncWebSocket() {}
+
+  virtual bool Connect(const GURL& url) OVERRIDE {
+    connected_ = true;
+    return true;
+  }
+
+  virtual bool Send(const std::string& message) OVERRIDE {
+    EXPECT_TRUE(connected_);
+    scoped_ptr<base::Value> value(base::JSONReader::Read(message));
+    base::DictionaryValue* dict = NULL;
+    EXPECT_TRUE(value->GetAsDictionary(&dict));
+    if (!dict)
+      return false;
+    int id;
+    EXPECT_TRUE(dict->GetInteger("id", &id));
+    std::string method;
+    EXPECT_TRUE(dict->GetString("method", &method));
+
+    base::DictionaryValue response;
+    response.SetInteger("id", id);
+    response.Set("result", new base::DictionaryValue());
+    std::string json_response;
+    base::JSONWriter::Write(&response, &json_response);
+    queued_response_.push_back(json_response);
+
+    // Push one event.
+    base::DictionaryValue event;
+    event.SetString("method", "updateEvent");
+    event.Set("params", new base::DictionaryValue());
+    std::string json_event;
+    base::JSONWriter::Write(&event, &json_event);
+    queued_response_.push_back(json_event);
+
+    return true;
+  }
+
+  virtual bool ReceiveNextMessage(std::string* message) OVERRIDE {
+    if (queued_response_.empty())
+      return false;
+    *message = queued_response_.front();
+    queued_response_.pop_front();
+    return true;
+  }
+
+  virtual bool HasNextMessage() OVERRIDE {
+    return !queued_response_.empty();
+  }
+
+ private:
+  bool connected_;
+  std::list<std::string> queued_response_;
+};
+
+}  // namespace
+
+TEST(DevToolsClientImpl, ProcessOnConnectedBeforeOnEvent) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket<OnConnectedSyncWebSocket>);
+  DevToolsClientImpl client(factory, "http://url");
+  OnConnectedListener listener1("DOM.getDocument", &client);
+  OnConnectedListener listener2("Runtime.enable", &client);
+  OnConnectedListener listener3("Page.enable", &client);
+  base::DictionaryValue params;
+  EXPECT_EQ(kOk, client.SendCommand("Runtime.execute", params).code());
+  listener1.VerifyCalled();
+  listener2.VerifyCalled();
+  listener3.VerifyCalled();
+}

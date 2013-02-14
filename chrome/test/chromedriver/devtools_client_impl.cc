@@ -126,12 +126,9 @@ Status DevToolsClientImpl::SendCommandInternal(
     if (!socket_->Connect(url_))
       return Status(kDisconnected, "unable to connect to renderer");
     connected_ = true;
-    for (std::list<DevToolsEventListener*>::iterator iter = listeners_.begin();
-         iter != listeners_.end(); ++iter) {
-      Status status = (*iter)->OnConnected();
-      if (status.IsError())
-        return status;
-    }
+
+    // OnConnected notification will be sent out in method ReceiveNextMessage.
+    listeners_for_on_connected_ = listeners_;
   }
 
   int command_id = next_id_++;
@@ -155,7 +152,7 @@ Status DevToolsClientImpl::ReceiveCommandResponse(
   internal::InspectorEvent event;
   internal::InspectorCommandResponse response;
   cmd_response_map_[command_id] = NULL;
-  while (cmd_response_map_[command_id] == NULL) {
+  while (!HasReceivedCommandResponse(command_id)) {
     Status status = ReceiveNextMessage(command_id, &type, &event, &response);
     if (status.IsError())
       return status;
@@ -170,6 +167,18 @@ Status DevToolsClientImpl::ReceiveNextMessage(
     internal::InspectorMessageType* type,
     internal::InspectorEvent* event,
     internal::InspectorCommandResponse* response) {
+  while (!listeners_for_on_connected_.empty()) {
+    DevToolsEventListener* listener = listeners_for_on_connected_.front();
+    listeners_for_on_connected_.pop_front();
+    Status status = listener->OnConnected();
+    if (status.IsError())
+      return status;
+  }
+  // The message might be received already when processing other commands sent
+  // from DevToolsEventListener::OnConnected.
+  if (HasReceivedCommandResponse(expected_id))
+    return Status(kOk);
+
   std::string message;
   if (!socket_->ReceiveNextMessage(&message)) {
     connected_ = false;
@@ -191,6 +200,11 @@ Status DevToolsClientImpl::ReceiveNextMessage(
     }
   }
   return Status(kOk);
+}
+
+bool DevToolsClientImpl::HasReceivedCommandResponse(int cmd_id) {
+  return cmd_response_map_.find(cmd_id) != cmd_response_map_.end()
+      && cmd_response_map_[cmd_id] != NULL;
 }
 
 Status DevToolsClientImpl::NotifyEventListeners(

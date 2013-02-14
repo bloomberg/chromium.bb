@@ -36,6 +36,8 @@ Status FrameTracker::GetContextIdForFrame(
 }
 
 Status FrameTracker::OnConnected() {
+  frame_to_context_map_.clear();
+  context_to_frame_map_.clear();
   // Enable runtime events to allow tracking execution context creation.
   base::DictionaryValue params;
   Status status = client_->SendCommand("Runtime.enable", params);

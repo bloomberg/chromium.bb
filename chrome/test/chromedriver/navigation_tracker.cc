@@ -22,6 +22,7 @@ bool NavigationTracker::IsPendingNavigation(const std::string& frame_id) {
 }
 
 Status NavigationTracker::OnConnected() {
+  frame_state_.clear();
   // Enable page domain notifications to allow tracking navigation state.
   base::DictionaryValue params;
   return client_->SendCommand("Page.enable", params);

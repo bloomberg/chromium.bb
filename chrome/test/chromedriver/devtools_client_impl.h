@@ -92,12 +92,14 @@ class DevToolsClientImpl : public DevToolsClient {
       internal::InspectorMessageType* type,
       internal::InspectorEvent* event,
       internal::InspectorCommandResponse* response);
-  virtual Status NotifyEventListeners(const std::string& method,
-                                      const base::DictionaryValue& params);
+  bool HasReceivedCommandResponse(int cmd_id);
+  Status NotifyEventListeners(const std::string& method,
+                              const base::DictionaryValue& params);
   scoped_ptr<SyncWebSocket> socket_;
   GURL url_;
   ParserFunc parser_func_;
   std::list<DevToolsEventListener*> listeners_;
+  std::list<DevToolsEventListener*> listeners_for_on_connected_;
   typedef std::map<int, base::DictionaryValue*> ResponseMap;
   ResponseMap cmd_response_map_;
   bool connected_;
