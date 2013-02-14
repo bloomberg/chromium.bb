@@ -48,8 +48,6 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
@@ -191,12 +189,6 @@ bool PrintPreviewShowing(const Browser* browser) {
       printing::PrintPreviewDialogController::GetInstance();
   return controller && (controller->GetPrintPreviewForContents(contents) ||
                         controller->is_creating_print_preview_dialog());
-}
-
-bool IsNTPModeForInstantExtendedAPI(const Browser* browser) {
-  return browser->search_model() &&
-      search::IsInstantExtendedAPIEnabled(browser->profile()) &&
-          browser->search_model()->mode().is_ntp();
 }
 
 }  // namespace
@@ -387,7 +379,7 @@ void ReloadIgnoringCache(Browser* browser, WindowOpenDisposition disposition) {
 }
 
 bool CanReload(const Browser* browser) {
-  return !browser->is_devtools() && !IsNTPModeForInstantExtendedAPI(browser);
+  return !browser->is_devtools();
 }
 
 void Home(Browser* browser, WindowOpenDisposition disposition) {
@@ -735,11 +727,9 @@ void Print(Browser* browser) {
 bool CanPrint(const Browser* browser) {
   // Do not print when printing is disabled via pref or policy.
   // Do not print when a constrained window is showing. It's confusing.
-  // Do not print if instant extended API is enabled and mode is NTP.
   return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
       !(IsShowingWebContentsModalDialog(browser) ||
-      GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_PRINT ||
-      IsNTPModeForInstantExtendedAPI(browser));
+      GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_PRINT);
 }
 
 void AdvancedPrint(Browser* browser) {
