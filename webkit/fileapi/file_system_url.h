@@ -111,17 +111,6 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
 
   std::string DebugString() const;
 
-  // DEPRECATED: Returns a new FileSystemURL with the given path.
-  // This creates a new FileSystemURL, copies all fields of this instance
-  // to that one, resets the path_ to the given |path| and resets the
-  // virtual_path to *empty*.
-  // Note that the resulting FileSystemURL loses original URL information
-  // if it was a cracked filesystem; i.e. virtual_path and mount_type will
-  // be set to empty values.
-  //
-  // TODO(kinuko): deprecate this. http://crbug.com/174576
-  FileSystemURL WithPath(const base::FilePath& path) const;
-
   // Returns true if this URL is a strict parent of the |child|.
   bool IsParent(const FileSystemURL& child) const;
 

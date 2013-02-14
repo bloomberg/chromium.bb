@@ -151,13 +151,6 @@ std::string FileSystemURL::DebugString() const {
   return ss.str();
 }
 
-FileSystemURL FileSystemURL::WithPath(const base::FilePath& path) const {
-  FileSystemURL url = *this;
-  url.path_ = path;
-  url.virtual_path_.clear();
-  return url;
-}
-
 bool FileSystemURL::IsParent(const FileSystemURL& child) const {
   return origin() == child.origin() &&
          type() == child.type() &&

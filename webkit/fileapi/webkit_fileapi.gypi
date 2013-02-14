@@ -52,8 +52,6 @@
       '../fileapi/file_system_usage_cache.h',
       '../fileapi/file_system_util.cc',
       '../fileapi/file_system_util.h',
-      '../fileapi/file_util_helper.cc',
-      '../fileapi/file_util_helper.h',
       '../fileapi/file_writer_delegate.cc',
       '../fileapi/file_writer_delegate.h',
       '../fileapi/isolated_context.cc',
