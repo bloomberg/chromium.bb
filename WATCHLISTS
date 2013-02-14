@@ -331,7 +331,7 @@
     },
     'ntp': {
       'filepath': 'chrome/browser/resources/ntp4/|'\
-        'chrome/browser/resources/ntp_search/|'\
+        'chrome/browser/resources/ntp_android/|'\
         'chrome/browser/ui/webui/ntp/',
     },
     'omnibox': {
