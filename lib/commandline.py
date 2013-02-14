@@ -177,12 +177,8 @@ class BaseParser(object):
         opts.debug = (value == "DEBUG")
 
     if self.caching:
-      path = os.environ.get(constants.SHARED_CACHE_ENVVAR)
-      if path is not None:
-        opts.cache_dir = os.path.abspath(path)
-
       opts.cache_dir_specified = opts.cache_dir is not None
-      if not opts.cache_dir_specified:
+      if opts.cache_dir is None:
         func = self.FindCacheDir if not callable(self.caching) else self.caching
         opts.cache_dir = func(self, opts)
       if opts.cache_dir is not None:
@@ -197,6 +193,10 @@ class BaseParser(object):
 
   @staticmethod
   def FindCacheDir(_parser, _opts):
+    path = os.environ.get(constants.SHARED_CACHE_ENVVAR)
+    if path is not None:
+      return os.path.abspath(path)
+
     debug_msg = 'Cache dir lookup: looking for %s checkout root.'
     logging.debug(debug_msg, 'repo')
     path = git.FindRepoCheckoutRoot(os.getcwd())
