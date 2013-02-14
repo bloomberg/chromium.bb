@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill_profile_client_stub.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -119,72 +120,6 @@ void ShillProfileClientImpl::DeleteEntry(
       &method_call, callback, error_callback);
 }
 
-// A stub implementation of ShillProfileClient.
-class ShillProfileClientStubImpl : public ShillProfileClient {
- public:
-  ShillProfileClientStubImpl() : weak_ptr_factory_(this) {}
-
-  virtual ~ShillProfileClientStubImpl() {}
-
-  //////////////////////////////////////
-  // ShillProfileClient overrides.
-  virtual void AddPropertyChangedObserver(
-      const dbus::ObjectPath& profile_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE {}
-
-  virtual void RemovePropertyChangedObserver(
-      const dbus::ObjectPath& profile_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE {}
-
-  virtual void GetProperties(
-      const dbus::ObjectPath& profile_path,
-      const DictionaryValueCallbackWithoutStatus& callback,
-      const ErrorCallback& error_callback) OVERRIDE {
-    if (callback.is_null())
-      return;
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ShillProfileClientStubImpl::PassEmptyDictionaryValue,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
-  }
-
-  virtual void GetEntry(const dbus::ObjectPath& profile_path,
-                        const std::string& entry_path,
-                        const DictionaryValueCallbackWithoutStatus& callback,
-                        const ErrorCallback& error_callback) OVERRIDE {
-    if (callback.is_null())
-      return;
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ShillProfileClientStubImpl::PassEmptyDictionaryValue,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
-  }
-
-  virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
-                           const std::string& entry_path,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) OVERRIDE {
-    if (callback.is_null())
-      return;
-    MessageLoop::current()->PostTask(FROM_HERE, callback);
-  }
-
- private:
-  void PassEmptyDictionaryValue(
-      const DictionaryValueCallbackWithoutStatus& callback) const {
-    base::DictionaryValue dictionary;
-    callback.Run(dictionary);
-  }
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ShillProfileClientStubImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShillProfileClientStubImpl);
-};
-
 }  // namespace
 
 ShillProfileClient::ShillProfileClient() {}
@@ -198,7 +133,7 @@ ShillProfileClient* ShillProfileClient::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new ShillProfileClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new ShillProfileClientStubImpl();
+  return new ShillProfileClientStub();
 }
 
 }  // namespace chromeos

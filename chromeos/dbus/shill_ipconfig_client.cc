@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/dbus/shill_ipconfig_client_stub.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -169,82 +170,6 @@ void ShillIPConfigClientImpl::Remove(
   GetHelper(ipconfig_path)->CallVoidMethod(&method_call, callback);
 }
 
-// A stub implementation of ShillIPConfigClient.
-class ShillIPConfigClientStubImpl : public ShillIPConfigClient {
- public:
-  ShillIPConfigClientStubImpl() : weak_ptr_factory_(this) {}
-
-  virtual ~ShillIPConfigClientStubImpl() {}
-
-  ///////////////////////////////////////////////
-  // ShillIPConfigClient overrides:
-  virtual void AddPropertyChangedObserver(
-      const dbus::ObjectPath& ipconfig_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE {}
-  virtual void RemovePropertyChangedObserver(
-      const dbus::ObjectPath& ipconfig_path,
-      ShillPropertyChangedObserver* observer) OVERRIDE {}
-
-  virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
-                       const VoidDBusMethodCallback& callback) OVERRIDE {}
-
-  virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
-                             const DictionaryValueCallback& callback) OVERRIDE {
-    if (callback.is_null())
-      return;
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&ShillIPConfigClientStubImpl::PassProperties,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              callback));
-  }
-
-  virtual base::DictionaryValue* CallGetPropertiesAndBlock(
-      const dbus::ObjectPath& ipconfig_path) OVERRIDE {
-    return new base::DictionaryValue;
-  }
-
-  virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
-                           const std::string& name,
-                           const base::Value& value,
-                           const VoidDBusMethodCallback& callback) OVERRIDE {
-    if (callback.is_null())
-      return;
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
-  }
-
-  virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
-                             const std::string& name,
-                             const VoidDBusMethodCallback& callback) OVERRIDE {
-    if (callback.is_null())
-      return;
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
-  }
-
-  virtual void Remove(const dbus::ObjectPath& ipconfig_path,
-                      const VoidDBusMethodCallback& callback) OVERRIDE {
-    if (callback.is_null())
-      return;
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
-  }
-
- private:
-  // Runs callback with |properties_|.
-  void PassProperties(const DictionaryValueCallback& callback) const {
-    callback.Run(DBUS_METHOD_CALL_SUCCESS, properties_);
-  }
-
-  base::DictionaryValue properties_;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ShillIPConfigClientStubImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShillIPConfigClientStubImpl);
-};
-
 }  // namespace
 
 ShillIPConfigClient::ShillIPConfigClient() {}
@@ -258,7 +183,7 @@ ShillIPConfigClient* ShillIPConfigClient::Create(
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
     return new ShillIPConfigClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new ShillIPConfigClientStubImpl();
+  return new ShillIPConfigClientStub();
 }
 
 }  // namespace chromeos
