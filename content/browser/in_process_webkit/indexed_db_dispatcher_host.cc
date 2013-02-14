@@ -95,6 +95,10 @@ void IndexedDBDispatcherHost::ResetDispatcherHosts() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED) ||
          CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
 
+  // Note that we explicitly separate CloseAll() from destruction of the
+  // DatabaseDispatcherHost, since CloseAll() can invoke callbacks which need to
+  // be dispatched through database_dispatcher_host_.
+  database_dispatcher_host_->CloseAll();
   database_dispatcher_host_.reset();
   cursor_dispatcher_host_.reset();
 }
@@ -324,6 +328,11 @@ IndexedDBDispatcherHost::DatabaseDispatcherHost::DatabaseDispatcherHost(
 }
 
 IndexedDBDispatcherHost::DatabaseDispatcherHost::~DatabaseDispatcherHost() {
+  DCHECK(transaction_size_map_.empty());
+  DCHECK(transaction_url_map_.empty());
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
   for (WebIDBObjectIDToURLMap::iterator iter = database_url_map_.begin();
        iter != database_url_map_.end(); iter++) {
     WebIDBDatabase* database = map_.Lookup(iter->first);

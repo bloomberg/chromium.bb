@@ -115,6 +115,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     explicit DatabaseDispatcherHost(IndexedDBDispatcherHost* parent);
     ~DatabaseDispatcherHost();
 
+    void CloseAll();
     bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
     void Send(IPC::Message* message);
 
