@@ -36,16 +36,17 @@ MenuButton.createDropDownArrows();
  * @param {boolean} continued Whether this visit is on the same day as the
  *     visit before it.
  * @param {HistoryModel} model The model object this entry belongs to.
- * @param {number} id The identifier for the entry.
  * @constructor
  */
-function Visit(result, continued, model, id) {
+function Visit(result, continued, model) {
   this.model_ = model;
   this.title_ = result.title;
   this.url_ = result.url;
   this.starred_ = result.starred;
   this.snippet_ = result.snippet || '';
-  this.id_ = id;
+  // The id will be set according to when the visit was displayed, not
+  // received. Set to -1 to show that it has not been set yet.
+  this.id_ = -1;
 
   this.isRendered = false;  // Has the visit already been rendered on the page?
 
@@ -102,6 +103,8 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   dropDown.title = loadTimeData.getString('actionMenuDescription');
   dropDown.setAttribute('menu', '#action-menu');
   cr.ui.decorate(dropDown, MenuButton);
+
+  this.id_ = this.model_.nextVisitId_++;
 
   // Checkbox is always created, but only visible on hover & when checked.
   var checkbox = document.createElement('input');
@@ -436,7 +439,7 @@ HistoryModel.prototype.addResults = function(info, results) {
       visit.addDuplicateTimestamp(thisResult.timestamp);
       continue;
     }
-    visit = new Visit(thisResult, isSameDay, this, this.nextVisitId_++);
+    visit = new Visit(thisResult, isSameDay, this);
     this.urlsFromLastSeenDay_[thisResult.url] = visit;
     this.visits_.push(visit);
     this.changed = true;

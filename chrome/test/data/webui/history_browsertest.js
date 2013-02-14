@@ -50,6 +50,20 @@ function callFrontendAsync(functionName) {
 }
 
 /**
+ * Checks that all the checkboxes in the [|start|, |end|] interval are checked
+ * and that their IDs are properly set. Does that against the checkboxes in
+ * |checked|, starting from the |startInChecked| position.
+ * @param {Array} checked An array of all the relevant checked checkboxes
+ *    on this page.
+ * @param {Number} start The starting checkbox id.
+ * @param {Number} end The ending checkbox id.
+ */
+function checkInterval(checked, start, end) {
+  for (var i = start; i <= end; i++)
+    expectEquals('checkbox-' + i, checked[i - start].id);
+}
+
+/**
  * Base fixture for History WebUI testing.
  * @extends {testing.Test}
  * @constructor
@@ -315,4 +329,67 @@ TEST_F('HistoryWebUITest', 'deletion', function() {
       testDone();
     });
   });
+});
+
+/**
+ * Test selecting multiple entries using shift click.
+ */
+TEST_F('HistoryWebUITest', 'multipleSelect', function() {
+  var checkboxes = document.querySelectorAll(
+      '#results-display input[type=checkbox]');
+
+  var getAllChecked = function () {
+    return Array.prototype.slice.call(document.querySelectorAll(
+        '#results-display input[type=checkbox]:checked'));
+  }
+
+  // Make sure that nothing is checked.
+  expectEquals(0, getAllChecked().length);
+
+  var shiftClick = function(el) {
+    el.dispatchEvent(new MouseEvent('click', { shiftKey: true }));
+  };
+
+  // Check the start.
+  shiftClick($('checkbox-4'));
+  // And the end.
+  shiftClick($('checkbox-9'));
+
+  // See if they are checked.
+  var checked = getAllChecked();
+  expectEquals(6, checked.length);
+  checkInterval(checked, 4, 9);
+
+  // Extend the selection.
+  shiftClick($('checkbox-14'));
+
+  checked = getAllChecked();
+  expectEquals(11, checked.length);
+  checkInterval(checked, 4, 14);
+
+  // Now do a normal click on a higher ID box and a shift click on a lower ID
+  // one (test the other way around).
+  $('checkbox-24').click();
+  shiftClick($('checkbox-19'));
+
+  checked = getAllChecked();
+  expectEquals(17, checked.length);
+  // First set of checkboxes (11).
+  checkInterval(checked, 4, 14);
+  // Second set (6).
+  checkInterval(checked.slice(11), 19, 24);
+
+  // Test deselection.
+  $('checkbox-26').click();
+  shiftClick($('checkbox-20'));
+
+  checked = getAllChecked();
+  // checkbox-20 to checkbox-24 should be deselected now.
+  expectEquals(12, checked.length);
+  // First set of checkboxes (11).
+  checkInterval(checked, 4, 14);
+  // Only checkbox-19 should still be selected.
+  expectEquals('checkbox-19', checked[11].id);
+
+  testDone();
 });
