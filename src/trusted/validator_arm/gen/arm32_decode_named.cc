@@ -2396,49 +2396,54 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_multiply_and_multiply_ac
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00F00000)  ==
           0x00400000 /* op(23:20)=0100 */) {
-    return Binary4RegisterDualResult_UMAAL_A1_instance_;
+    return UMAAL_A1_cccc00000100hhhhllllmmmm1001nnnn_case_0_UMAAL_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00F00000)  ==
+          0x00500000 /* op(23:20)=0101 */) {
+    return Unnamed_cccc00000101xxxxxxxxxxxx1001xxxx_case_0_None_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00600000 /* op(23:20)=0110 */) {
-    return Binary4RegisterDualOp_MLS_A1_instance_;
+    return MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0_MLS_A1_instance_;
   }
 
-  if ((inst.Bits() & 0x00D00000)  ==
-          0x00500000 /* op(23:20)=01x1 */) {
-    return Undefined_None_instance_;
+  if ((inst.Bits() & 0x00F00000)  ==
+          0x00700000 /* op(23:20)=0111 */) {
+    return Unnamed_cccc00000111xxxxxxxxxxxx1001xxxx_case_0_None_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==
           0x00000000 /* op(23:20)=000x */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary3RegisterOpAltA_MUL_A1_instance_;
+    return MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0_MUL_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==
           0x00200000 /* op(23:20)=001x */) {
-    return Binary4RegisterDualOpLtV6RdNotRn_MLA_A1_instance_;
+    return MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0_MLA_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==
           0x00800000 /* op(23:20)=100x */) {
-    return Binary4RegisterDualResultUsesRnRm_UMULL_A1_instance_;
+    return UMULL_A1_cccc0000100shhhhllllmmmm1001nnnn_case_0_UMULL_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==
           0x00A00000 /* op(23:20)=101x */) {
-    return Binary4RegisterDualResultLtV6RdHiLoNotRn_UMLAL_A1_instance_;
+    return UMLAL_A1_cccc0000101shhhhllllmmmm1001nnnn_case_0_UMLAL_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==
           0x00C00000 /* op(23:20)=110x */) {
-    return Binary4RegisterDualResultUsesRnRm_SMULL_A1_instance_;
+    return SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_0_SMULL_A1_instance_;
   }
 
   if ((inst.Bits() & 0x00E00000)  ==
           0x00E00000 /* op(23:20)=111x */) {
-    return Binary4RegisterDualResultLtV6RdHiLoNotRn_SMLAL_A1_instance_;
+    return SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0_SMLAL_A1_instance_;
   }
 
   // Catch any attempt to fall through...
