@@ -114,7 +114,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURLWithRef) {
   TestExtensionURLOverride(url_with_ref);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURLOverride) {
+// Disabled for flakiness: crbug.com/176332
+IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest,
+                       DISABLED_BookmarksURLOverride) {
   // Load an extension that overrides chrome://bookmarks.
   LoadExtension(GetTestExtensionPath("bookmarks"));
   // Navigate to chrome://bookmarks and check that the location bar URL is what
