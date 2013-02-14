@@ -35,7 +35,7 @@ void DevToolsAgentHostImpl::Detach() {
   NotifyClientDetaching();
 }
 
-void DevToolsAgentHostImpl::DipatchOnInspectorBackend(
+void DevToolsAgentHostImpl::DispatchOnInspectorBackend(
     const std::string& message) {
   SendMessageToAgent(new DevToolsAgentMsg_DispatchOnInspectorBackend(
       MSG_ROUTING_NONE, message));

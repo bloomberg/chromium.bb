@@ -32,7 +32,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   void Attach();
   void Reattach(const std::string& saved_agent_state);
   void Detach();
-  void DipatchOnInspectorBackend(const std::string& message);
+  virtual void DispatchOnInspectorBackend(const std::string& message);
   void InspectElement(int x, int y);
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message);

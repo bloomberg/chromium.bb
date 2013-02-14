@@ -147,6 +147,11 @@ RenderViewHost* RenderViewDevToolsAgentHost::GetRenderViewHost() {
   return render_view_host_;
 }
 
+void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
+    const std::string& message) {
+  DevToolsAgentHostImpl::DispatchOnInspectorBackend(message);
+}
+
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
   msg->set_routing_id(render_view_host_->GetRoutingID());
   render_view_host_->Send(msg);

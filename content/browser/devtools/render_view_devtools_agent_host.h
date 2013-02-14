@@ -17,9 +17,8 @@
 
 namespace content {
 
-class RenderViewHost;
-
 class DevToolsAgentHostRvhObserver;
+class RenderViewHost;
 
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -40,6 +39,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   // DevTooolsAgentHost overrides.
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
+
+  // DevToolsAgentHostImpl overrides.
+  virtual void DispatchOnInspectorBackend(const std::string& message) OVERRIDE;
 
   // DevToolsAgentHostImpl implementation.
   virtual void SendMessageToAgent(IPC::Message* msg) OVERRIDE;

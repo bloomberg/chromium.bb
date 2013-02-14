@@ -72,7 +72,7 @@ bool DevToolsManagerImpl::DispatchOnInspectorBackend(
     return false;
   DevToolsAgentHostImpl* agent_host_impl =
       static_cast<DevToolsAgentHostImpl*>(agent_host);
-  agent_host_impl->DipatchOnInspectorBackend(message);
+  agent_host_impl->DispatchOnInspectorBackend(message);
   return true;
 }
 
