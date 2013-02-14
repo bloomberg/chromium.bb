@@ -95,6 +95,7 @@ var QuicView = (function() {
     tablePrinter.addHeaderCell('Peer address');
     tablePrinter.addHeaderCell('GUID');
     tablePrinter.addHeaderCell('Active streams');
+    tablePrinter.addHeaderCell('Total streams');
 
     for (var i = 0; i < quicSessions.length; i++) {
       var session = quicSessions[i];
@@ -108,6 +109,7 @@ var QuicView = (function() {
       tablePrinter.addCell(session.peer_address);
       tablePrinter.addCell(session.guid);
       tablePrinter.addCell(session.open_streams);
+      tablePrinter.addCell(session.total_streams);
     }
     return tablePrinter;
   }
