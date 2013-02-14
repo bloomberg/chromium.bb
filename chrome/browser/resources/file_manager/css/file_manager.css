@@ -90,12 +90,12 @@ body.loaded {
   -webkit-box-pack: end;
   -webkit-margin-start: 6px;
   display: -webkit-box;
-  height: 20px;
 }
 
 #butter-bar .actions a {
   color: rgb(17, 85, 204);
   cursor: pointer;
+  vertical-align: middle;
 }
 
 #butter-bar .actions a.x {
@@ -104,17 +104,13 @@ body.loaded {
     url('../images/files/ui/close_bar.png') 1x,
     url('../images/files/ui/2x/close_bar.png') 2x);
   display: inline-block;
-  height: 12px;
-  padding: 4px 2px;
-  width: 12px;
+  height: 35px;  /* #butter-bar .content's min-height. */
+  margin-right: -12px;
+  width: 35px;
 }
 
-#butter-bar .actions a:first-child {
-  margin-left: 2px;
-}
-
-#butter-bar .actions a:last-child {
-  margin-right: -2px;  /* Overlap the padding with butter-bar padding. */
+#butter-bar .actions a.x:first-child {
+  margin-left: -6px;
 }
 
 #butter-bar.error {
