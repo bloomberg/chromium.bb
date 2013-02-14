@@ -27,6 +27,7 @@ class DropTargetEvent;
 
 namespace content {
 class OverscrollNavigationOverlay;
+class ShadowWindow;
 class WebContentsViewDelegate;
 class WebContentsImpl;
 class WebDragDestDelegate;
@@ -172,6 +173,9 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
 
   scoped_ptr<aura::Window> window_;
+
+  // The window that shows the screenshot of the history page during an
+  // overscroll navigation gesture.
   scoped_ptr<aura::Window> overscroll_window_;
 
   scoped_ptr<WindowObserver> window_observer_;
@@ -192,6 +196,10 @@ class CONTENT_EXPORT WebContentsViewAura
   // this pointer should never be dereferenced.  We only use it for comparing
   // pointers.
   void* current_rvh_for_drag_;
+
+  // The container for the content-window. The doc for ShadowWindow explains its
+  // lifetime and ownership.
+  ShadowWindow* content_container_;
 
   bool overscroll_change_brightness_;
 
