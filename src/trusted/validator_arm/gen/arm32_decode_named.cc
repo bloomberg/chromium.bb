@@ -2791,7 +2791,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SADD16_instance_;
+    return SADD16_cccc01100001nnnndddd11110001mmmm_case_0_SADD16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2800,7 +2800,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SASX_instance_;
+    return SASX_cccc01100001nnnndddd11110011mmmm_case_0_SASX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2809,7 +2809,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000040 /* op2(7:5)=010 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SSAX_instance_;
+    return SSAX_cccc01100001nnnndddd11110101mmmm_case_0_SSAX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2818,7 +2818,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000060 /* op2(7:5)=011 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SSSUB16_instance_;
+    return SSSUB16_cccc01100001nnnndddd11110111mmmm_case_0_SSSUB16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2827,7 +2827,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SADD8_instance_;
+    return SADD8_cccc01100001nnnndddd11111001mmmm_case_0_SADD8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2836,7 +2836,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SSUB8_instance_;
+    return SSUB8_cccc01100001nnnndddd11111111mmmm_case_0_SSUB8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2845,7 +2845,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QADD16_instance_;
+    return QADD16_cccc01100010nnnndddd11110001mmmm_case_0_QADD16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2854,7 +2854,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QASX_instance_;
+    return QASX_cccc01100010nnnndddd11110011mmmm_case_0_QASX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2863,7 +2863,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000040 /* op2(7:5)=010 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QSAX_instance_;
+    return QSAX_cccc01100010nnnndddd11110101mmmm_case_0_QSAX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2872,7 +2872,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000060 /* op2(7:5)=011 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QSUB16_instance_;
+    return QSUB16_cccc01100010nnnndddd11110111mmmm_case_0_QSUB16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2881,7 +2881,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QADD8_instance_;
+    return QADD8_cccc01100010nnnndddd11111001mmmm_case_0_QADD8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2890,7 +2890,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QSUB8_instance_;
+    return QSUB8_cccc01100010nnnndddd11111111mmmm_case_0_QSUB8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2899,7 +2899,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SHADD16_instance_;
+    return SHADD16_cccc01100011nnnndddd11110001mmmm_case_0_SHADD16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2908,7 +2908,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SHASX_instance_;
+    return SHASX_cccc01100011nnnndddd11110011mmmm_case_0_SHASX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2917,7 +2917,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000040 /* op2(7:5)=010 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SHSAX_instance_;
+    return SHSAX_cccc01100011nnnndddd11110101mmmm_case_0_SHSAX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2926,7 +2926,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000060 /* op2(7:5)=011 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SHSUB16_instance_;
+    return SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0_SHSUB16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2935,7 +2935,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SHADD8_instance_;
+    return SHADD8_cccc01100011nnnndddd11111001mmmm_case_0_SHADD8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2944,7 +2944,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_SHSUB8_instance_;
+    return SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0_SHSUB8_instance_;
   }
 
   if (true) {

@@ -146,79 +146,7 @@ class Binary3RegisterOpAltBNoCondUpdates_PKH
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
 
-class Binary3RegisterOpAltBNoCondUpdates_QADD16
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_QADD8
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_QASX
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_QSAX
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_QSUB16
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_QSUB8
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SADD16
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SADD8
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SASX
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
 class Binary3RegisterOpAltBNoCondUpdates_SEL
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SHADD16
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SHADD8
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SHASX
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SHSAX
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SHSUB16
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SHSUB8
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SSAX
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SSSUB16
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_SSUB8
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
 
@@ -918,8 +846,20 @@ class PreloadRegisterPairOp_PLI_register
     : public PreloadRegisterPairOp {
 };
 
+class QADD16_cccc01100010nnnndddd11110001mmmm_case_0_QADD16
+    : public QADD16_cccc01100010nnnndddd11110001mmmm_case_0 {
+};
+
+class QADD8_cccc01100010nnnndddd11111001mmmm_case_0_QADD8
+    : public QADD8_cccc01100010nnnndddd11111001mmmm_case_0 {
+};
+
 class QADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD
     : public QADD_cccc00010000nnnndddd00000101mmmm_case_0 {
+};
+
+class QASX_cccc01100010nnnndddd11110011mmmm_case_0_QASX
+    : public QASX_cccc01100010nnnndddd11110011mmmm_case_0 {
 };
 
 class QDADD_cccc00010100nnnndddd00000101mmmm_case_0_QDADD
@@ -928,6 +868,18 @@ class QDADD_cccc00010100nnnndddd00000101mmmm_case_0_QDADD
 
 class QDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB
     : public QDSUB_cccc00010110nnnndddd00000101mmmm_case_0 {
+};
+
+class QSAX_cccc01100010nnnndddd11110101mmmm_case_0_QSAX
+    : public QSAX_cccc01100010nnnndddd11110101mmmm_case_0 {
+};
+
+class QSUB16_cccc01100010nnnndddd11110111mmmm_case_0_QSUB16
+    : public QSUB16_cccc01100010nnnndddd11110111mmmm_case_0 {
+};
+
+class QSUB8_cccc01100010nnnndddd11111111mmmm_case_0_QSUB8
+    : public QSUB8_cccc01100010nnnndddd11111111mmmm_case_0 {
 };
 
 class QSUB_cccc00010010nnnndddd00000101mmmm_case_0_QSUB
@@ -962,6 +914,18 @@ class RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0_RSC_
     : public RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0 {
 };
 
+class SADD16_cccc01100001nnnndddd11110001mmmm_case_0_SADD16
+    : public SADD16_cccc01100001nnnndddd11110001mmmm_case_0 {
+};
+
+class SADD8_cccc01100001nnnndddd11111001mmmm_case_0_SADD8
+    : public SADD8_cccc01100001nnnndddd11111001mmmm_case_0 {
+};
+
+class SASX_cccc01100001nnnndddd11110011mmmm_case_0_SASX
+    : public SASX_cccc01100001nnnndddd11110011mmmm_case_0 {
+};
+
 class SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0_SBC_register
     : public SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0 {
 };
@@ -976,6 +940,30 @@ class SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0_SBFX
 
 class SEV_cccc0011001000001111000000000100_case_0_SEV
     : public SEV_cccc0011001000001111000000000100_case_0 {
+};
+
+class SHADD16_cccc01100011nnnndddd11110001mmmm_case_0_SHADD16
+    : public SHADD16_cccc01100011nnnndddd11110001mmmm_case_0 {
+};
+
+class SHADD8_cccc01100011nnnndddd11111001mmmm_case_0_SHADD8
+    : public SHADD8_cccc01100011nnnndddd11111001mmmm_case_0 {
+};
+
+class SHASX_cccc01100011nnnndddd11110011mmmm_case_0_SHASX
+    : public SHASX_cccc01100011nnnndddd11110011mmmm_case_0 {
+};
+
+class SHSAX_cccc01100011nnnndddd11110101mmmm_case_0_SHSAX
+    : public SHSAX_cccc01100011nnnndddd11110101mmmm_case_0 {
+};
+
+class SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0_SHSUB16
+    : public SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0 {
+};
+
+class SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0_SHSUB8
+    : public SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0 {
 };
 
 class SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0_SMLABB_SMLABT_SMLATB_SMLATT
@@ -996,6 +984,18 @@ class SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_0_SMULBB
 
 class SMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0_SMULWB_SMULWT
     : public SMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0 {
+};
+
+class SSAX_cccc01100001nnnndddd11110101mmmm_case_0_SSAX
+    : public SSAX_cccc01100001nnnndddd11110101mmmm_case_0 {
+};
+
+class SSSUB16_cccc01100001nnnndddd11110111mmmm_case_0_SSSUB16
+    : public SSSUB16_cccc01100001nnnndddd11110111mmmm_case_0 {
+};
+
+class SSUB8_cccc01100001nnnndddd11111111mmmm_case_0_SSUB8
+    : public SSUB8_cccc01100001nnnndddd11111111mmmm_case_0 {
 };
 
 class STREXB_cccc00011100nnnndddd11111001tttt_case_0_STREXB
@@ -3401,114 +3401,6 @@ class NamedBinary3RegisterOpAltBNoCondUpdates_PKH
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_PKH);
 };
 
-class NamedBinary3RegisterOpAltBNoCondUpdates_QADD16
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QADD16()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QADD16")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QADD16 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QADD16);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_QADD8
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QADD8()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QADD8")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QADD8 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QADD8);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_QASX
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QASX()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QASX")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QASX decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QASX);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_QSAX
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QSAX()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QSAX")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QSAX decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QSAX);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_QSUB16
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QSUB16()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QSUB16")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QSUB16 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QSUB16);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_QSUB8
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QSUB8()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QSUB8")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QSUB8 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QSUB8);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SADD16
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SADD16()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SADD16")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SADD16 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SADD16);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SADD8
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SADD8()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SADD8")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SADD8 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SADD8);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SASX
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SASX()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SASX")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SASX decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SASX);
-};
-
 class NamedBinary3RegisterOpAltBNoCondUpdates_SEL
     : public NamedClassDecoder {
  public:
@@ -3519,114 +3411,6 @@ class NamedBinary3RegisterOpAltBNoCondUpdates_SEL
  private:
   nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SEL decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SEL);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SHADD16
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SHADD16()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SHADD16")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SHADD16 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SHADD16);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SHADD8
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SHADD8()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SHADD8")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SHADD8 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SHADD8);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SHASX
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SHASX()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SHASX")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SHASX decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SHASX);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SHSAX
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SHSAX()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SHSAX")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SHSAX decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SHSAX);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SHSUB16
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SHSUB16()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SHSUB16")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SHSUB16 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SHSUB16);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SHSUB8
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SHSUB8()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SHSUB8")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SHSUB8 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SHSUB8);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SSAX
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SSAX()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SSAX")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SSAX decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SSAX);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SSSUB16
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SSSUB16()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SSSUB16")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SSSUB16 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SSSUB16);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_SSUB8
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_SSUB8()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates SSUB8")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_SSUB8 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_SSUB8);
 };
 
 class NamedBinary3RegisterOpAltBNoCondUpdates_SXTAB
@@ -5717,6 +5501,30 @@ class NamedPreloadRegisterPairOp_PLI_register
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedPreloadRegisterPairOp_PLI_register);
 };
 
+class NamedQADD16_cccc01100010nnnndddd11110001mmmm_case_0_QADD16
+    : public NamedClassDecoder {
+ public:
+  NamedQADD16_cccc01100010nnnndddd11110001mmmm_case_0_QADD16()
+    : NamedClassDecoder(decoder_, "QADD16_cccc01100010nnnndddd11110001mmmm_case_0 QADD16")
+  {}
+
+ private:
+  nacl_arm_dec::QADD16_cccc01100010nnnndddd11110001mmmm_case_0_QADD16 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQADD16_cccc01100010nnnndddd11110001mmmm_case_0_QADD16);
+};
+
+class NamedQADD8_cccc01100010nnnndddd11111001mmmm_case_0_QADD8
+    : public NamedClassDecoder {
+ public:
+  NamedQADD8_cccc01100010nnnndddd11111001mmmm_case_0_QADD8()
+    : NamedClassDecoder(decoder_, "QADD8_cccc01100010nnnndddd11111001mmmm_case_0 QADD8")
+  {}
+
+ private:
+  nacl_arm_dec::QADD8_cccc01100010nnnndddd11111001mmmm_case_0_QADD8 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQADD8_cccc01100010nnnndddd11111001mmmm_case_0_QADD8);
+};
+
 class NamedQADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD
     : public NamedClassDecoder {
  public:
@@ -5727,6 +5535,18 @@ class NamedQADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD
  private:
   nacl_arm_dec::QADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedQADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD);
+};
+
+class NamedQASX_cccc01100010nnnndddd11110011mmmm_case_0_QASX
+    : public NamedClassDecoder {
+ public:
+  NamedQASX_cccc01100010nnnndddd11110011mmmm_case_0_QASX()
+    : NamedClassDecoder(decoder_, "QASX_cccc01100010nnnndddd11110011mmmm_case_0 QASX")
+  {}
+
+ private:
+  nacl_arm_dec::QASX_cccc01100010nnnndddd11110011mmmm_case_0_QASX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQASX_cccc01100010nnnndddd11110011mmmm_case_0_QASX);
 };
 
 class NamedQDADD_cccc00010100nnnndddd00000101mmmm_case_0_QDADD
@@ -5751,6 +5571,42 @@ class NamedQDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB
  private:
   nacl_arm_dec::QDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedQDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB);
+};
+
+class NamedQSAX_cccc01100010nnnndddd11110101mmmm_case_0_QSAX
+    : public NamedClassDecoder {
+ public:
+  NamedQSAX_cccc01100010nnnndddd11110101mmmm_case_0_QSAX()
+    : NamedClassDecoder(decoder_, "QSAX_cccc01100010nnnndddd11110101mmmm_case_0 QSAX")
+  {}
+
+ private:
+  nacl_arm_dec::QSAX_cccc01100010nnnndddd11110101mmmm_case_0_QSAX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQSAX_cccc01100010nnnndddd11110101mmmm_case_0_QSAX);
+};
+
+class NamedQSUB16_cccc01100010nnnndddd11110111mmmm_case_0_QSUB16
+    : public NamedClassDecoder {
+ public:
+  NamedQSUB16_cccc01100010nnnndddd11110111mmmm_case_0_QSUB16()
+    : NamedClassDecoder(decoder_, "QSUB16_cccc01100010nnnndddd11110111mmmm_case_0 QSUB16")
+  {}
+
+ private:
+  nacl_arm_dec::QSUB16_cccc01100010nnnndddd11110111mmmm_case_0_QSUB16 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQSUB16_cccc01100010nnnndddd11110111mmmm_case_0_QSUB16);
+};
+
+class NamedQSUB8_cccc01100010nnnndddd11111111mmmm_case_0_QSUB8
+    : public NamedClassDecoder {
+ public:
+  NamedQSUB8_cccc01100010nnnndddd11111111mmmm_case_0_QSUB8()
+    : NamedClassDecoder(decoder_, "QSUB8_cccc01100010nnnndddd11111111mmmm_case_0 QSUB8")
+  {}
+
+ private:
+  nacl_arm_dec::QSUB8_cccc01100010nnnndddd11111111mmmm_case_0_QSUB8 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQSUB8_cccc01100010nnnndddd11111111mmmm_case_0_QSUB8);
 };
 
 class NamedQSUB_cccc00010010nnnndddd00000101mmmm_case_0_QSUB
@@ -5849,6 +5705,42 @@ class NamedRSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedRSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0_RSC_register_shifted_register);
 };
 
+class NamedSADD16_cccc01100001nnnndddd11110001mmmm_case_0_SADD16
+    : public NamedClassDecoder {
+ public:
+  NamedSADD16_cccc01100001nnnndddd11110001mmmm_case_0_SADD16()
+    : NamedClassDecoder(decoder_, "SADD16_cccc01100001nnnndddd11110001mmmm_case_0 SADD16")
+  {}
+
+ private:
+  nacl_arm_dec::SADD16_cccc01100001nnnndddd11110001mmmm_case_0_SADD16 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSADD16_cccc01100001nnnndddd11110001mmmm_case_0_SADD16);
+};
+
+class NamedSADD8_cccc01100001nnnndddd11111001mmmm_case_0_SADD8
+    : public NamedClassDecoder {
+ public:
+  NamedSADD8_cccc01100001nnnndddd11111001mmmm_case_0_SADD8()
+    : NamedClassDecoder(decoder_, "SADD8_cccc01100001nnnndddd11111001mmmm_case_0 SADD8")
+  {}
+
+ private:
+  nacl_arm_dec::SADD8_cccc01100001nnnndddd11111001mmmm_case_0_SADD8 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSADD8_cccc01100001nnnndddd11111001mmmm_case_0_SADD8);
+};
+
+class NamedSASX_cccc01100001nnnndddd11110011mmmm_case_0_SASX
+    : public NamedClassDecoder {
+ public:
+  NamedSASX_cccc01100001nnnndddd11110011mmmm_case_0_SASX()
+    : NamedClassDecoder(decoder_, "SASX_cccc01100001nnnndddd11110011mmmm_case_0 SASX")
+  {}
+
+ private:
+  nacl_arm_dec::SASX_cccc01100001nnnndddd11110011mmmm_case_0_SASX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSASX_cccc01100001nnnndddd11110011mmmm_case_0_SASX);
+};
+
 class NamedSBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0_SBC_register
     : public NamedClassDecoder {
  public:
@@ -5895,6 +5787,78 @@ class NamedSEV_cccc0011001000001111000000000100_case_0_SEV
  private:
   nacl_arm_dec::SEV_cccc0011001000001111000000000100_case_0_SEV decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedSEV_cccc0011001000001111000000000100_case_0_SEV);
+};
+
+class NamedSHADD16_cccc01100011nnnndddd11110001mmmm_case_0_SHADD16
+    : public NamedClassDecoder {
+ public:
+  NamedSHADD16_cccc01100011nnnndddd11110001mmmm_case_0_SHADD16()
+    : NamedClassDecoder(decoder_, "SHADD16_cccc01100011nnnndddd11110001mmmm_case_0 SHADD16")
+  {}
+
+ private:
+  nacl_arm_dec::SHADD16_cccc01100011nnnndddd11110001mmmm_case_0_SHADD16 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSHADD16_cccc01100011nnnndddd11110001mmmm_case_0_SHADD16);
+};
+
+class NamedSHADD8_cccc01100011nnnndddd11111001mmmm_case_0_SHADD8
+    : public NamedClassDecoder {
+ public:
+  NamedSHADD8_cccc01100011nnnndddd11111001mmmm_case_0_SHADD8()
+    : NamedClassDecoder(decoder_, "SHADD8_cccc01100011nnnndddd11111001mmmm_case_0 SHADD8")
+  {}
+
+ private:
+  nacl_arm_dec::SHADD8_cccc01100011nnnndddd11111001mmmm_case_0_SHADD8 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSHADD8_cccc01100011nnnndddd11111001mmmm_case_0_SHADD8);
+};
+
+class NamedSHASX_cccc01100011nnnndddd11110011mmmm_case_0_SHASX
+    : public NamedClassDecoder {
+ public:
+  NamedSHASX_cccc01100011nnnndddd11110011mmmm_case_0_SHASX()
+    : NamedClassDecoder(decoder_, "SHASX_cccc01100011nnnndddd11110011mmmm_case_0 SHASX")
+  {}
+
+ private:
+  nacl_arm_dec::SHASX_cccc01100011nnnndddd11110011mmmm_case_0_SHASX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSHASX_cccc01100011nnnndddd11110011mmmm_case_0_SHASX);
+};
+
+class NamedSHSAX_cccc01100011nnnndddd11110101mmmm_case_0_SHSAX
+    : public NamedClassDecoder {
+ public:
+  NamedSHSAX_cccc01100011nnnndddd11110101mmmm_case_0_SHSAX()
+    : NamedClassDecoder(decoder_, "SHSAX_cccc01100011nnnndddd11110101mmmm_case_0 SHSAX")
+  {}
+
+ private:
+  nacl_arm_dec::SHSAX_cccc01100011nnnndddd11110101mmmm_case_0_SHSAX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSHSAX_cccc01100011nnnndddd11110101mmmm_case_0_SHSAX);
+};
+
+class NamedSHSUB16_cccc01100011nnnndddd11110111mmmm_case_0_SHSUB16
+    : public NamedClassDecoder {
+ public:
+  NamedSHSUB16_cccc01100011nnnndddd11110111mmmm_case_0_SHSUB16()
+    : NamedClassDecoder(decoder_, "SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0 SHSUB16")
+  {}
+
+ private:
+  nacl_arm_dec::SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0_SHSUB16 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSHSUB16_cccc01100011nnnndddd11110111mmmm_case_0_SHSUB16);
+};
+
+class NamedSHSUB8_cccc01100011nnnndddd11111111mmmm_case_0_SHSUB8
+    : public NamedClassDecoder {
+ public:
+  NamedSHSUB8_cccc01100011nnnndddd11111111mmmm_case_0_SHSUB8()
+    : NamedClassDecoder(decoder_, "SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0 SHSUB8")
+  {}
+
+ private:
+  nacl_arm_dec::SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0_SHSUB8 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSHSUB8_cccc01100011nnnndddd11111111mmmm_case_0_SHSUB8);
 };
 
 class NamedSMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0_SMLABB_SMLABT_SMLATB_SMLATT
@@ -5955,6 +5919,42 @@ class NamedSMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0_SMULWB_SMULWT
  private:
   nacl_arm_dec::SMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0_SMULWB_SMULWT decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedSMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0_SMULWB_SMULWT);
+};
+
+class NamedSSAX_cccc01100001nnnndddd11110101mmmm_case_0_SSAX
+    : public NamedClassDecoder {
+ public:
+  NamedSSAX_cccc01100001nnnndddd11110101mmmm_case_0_SSAX()
+    : NamedClassDecoder(decoder_, "SSAX_cccc01100001nnnndddd11110101mmmm_case_0 SSAX")
+  {}
+
+ private:
+  nacl_arm_dec::SSAX_cccc01100001nnnndddd11110101mmmm_case_0_SSAX decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSSAX_cccc01100001nnnndddd11110101mmmm_case_0_SSAX);
+};
+
+class NamedSSSUB16_cccc01100001nnnndddd11110111mmmm_case_0_SSSUB16
+    : public NamedClassDecoder {
+ public:
+  NamedSSSUB16_cccc01100001nnnndddd11110111mmmm_case_0_SSSUB16()
+    : NamedClassDecoder(decoder_, "SSSUB16_cccc01100001nnnndddd11110111mmmm_case_0 SSSUB16")
+  {}
+
+ private:
+  nacl_arm_dec::SSSUB16_cccc01100001nnnndddd11110111mmmm_case_0_SSSUB16 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSSSUB16_cccc01100001nnnndddd11110111mmmm_case_0_SSSUB16);
+};
+
+class NamedSSUB8_cccc01100001nnnndddd11111111mmmm_case_0_SSUB8
+    : public NamedClassDecoder {
+ public:
+  NamedSSUB8_cccc01100001nnnndddd11111111mmmm_case_0_SSUB8()
+    : NamedClassDecoder(decoder_, "SSUB8_cccc01100001nnnndddd11111111mmmm_case_0 SSUB8")
+  {}
+
+ private:
+  nacl_arm_dec::SSUB8_cccc01100001nnnndddd11111111mmmm_case_0_SSUB8 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSSUB8_cccc01100001nnnndddd11111111mmmm_case_0_SSUB8);
 };
 
 class NamedSTREXB_cccc00011100nnnndddd11111001tttt_case_0_STREXB
