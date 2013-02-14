@@ -4929,6 +4929,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE" desc="Titlebar of the extension or app permissions prompt window">
         Confirm Permissions
       </message>
+      <message name="IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_TITLE" desc="Titlebar of the extension or app permissions review window">
+        Current Permissions
+      </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to install a particular extension or app.">
         Add "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
@@ -4949,6 +4952,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
       <message name="IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING" desc="First bold line in the content area of the extension or app permissions prompt. Asks the user if they want to grant the permissions to the particular extension or app.">
         "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has requested additional permissions.
+      </message>
+      <message name="IDS_EXTENSION_POST_INSTALL_PERMISSIONS_PROMPT_HEADING" desc="First bold line in the content area of the extension or app permissions prompt. Shows the user the permissions a particular extension or app has.">
+        <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>
       </message>
 
       <!-- Extension alerts. -->
@@ -4987,6 +4993,10 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO" desc="Second line in the content area of the extension or app permissions prompt. Note that the exact wording is important. This should mean that the extension _wants to_ access the listed privileges, but not necessarily that it will or needs to. This message appeared because the user must approve new permissions of the extension or app.">
         It could:
       </message>
+      <message name="IDS_EXTENSION_PROMPT_CAN_ACCESS" desc="Second line in the content area of the extension or app permissions view dialog. Note that the exact wording is important. This should mean that the extension _can now_ access the listed privileges, because it has already been installed. This message appeared because the user must approve new permissions of the extension or app.">
+        It can:
+      </message>
+
       <message name="IDS_EXTENSION_PERMISSION_LINE" desc="Template for item in list of privileges that an extension or app has">
         • <ph name="PERMISSION">$1<ex>Access your data on all websites</ex></ph>
       </message>
@@ -5454,8 +5464,11 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
           Reload (Ctrl+R)
         </message>
       </if>
-      <message name="IDS_EXTENSIONS_OPTIONS_LINK" desc="The button text for the options button.">
+      <message name="IDS_EXTENSIONS_OPTIONS_LINK" desc="The link text for the Options link.">
         Options
+      </message>
+      <message name="IDS_EXTENSIONS_PERMISSIONS_LINK" desc="The link text for the Permissions link.">
+        Permissions
       </message>
       <message name="IDS_EXTENSIONS_ACTIVITY_LINK" desc="The link for showing extension activity.">
         Activity

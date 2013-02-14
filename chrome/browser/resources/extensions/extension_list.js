@@ -150,7 +150,7 @@ cr.define('options', function() {
         fileAccess.hidden = false;
       }
 
-      // The 'Options' checkbox.
+      // The 'Options' link.
       if (extension.enabled && extension.optionsUrl) {
         var options = node.querySelector('.options-link');
         options.addEventListener('click', function(e) {
@@ -159,6 +159,13 @@ cr.define('options', function() {
         });
         options.hidden = false;
       }
+
+      // The 'Permissions' link.
+      var permissions = node.querySelector('.permissions-link');
+      permissions.addEventListener('click', function(e) {
+        chrome.send('extensionSettingsPermissions', [extension.id]);
+        e.preventDefault();
+      });
 
       if (extension.allow_activity) {
         var activity = node.querySelector('.activity-link');

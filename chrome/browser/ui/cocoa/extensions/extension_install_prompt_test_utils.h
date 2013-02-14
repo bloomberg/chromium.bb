@@ -40,6 +40,9 @@ gfx::Image LoadInstallPromptIcon();
 ExtensionInstallPrompt::Prompt BuildExtensionInstallPrompt(
     extensions::Extension* extension);
 
+ExtensionInstallPrompt::Prompt BuildExtensionPostInstallPermissionsPrompt(
+    extensions::Extension* extension);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_INSTALL_PROMPT_TEST_UTILS_H_

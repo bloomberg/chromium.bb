@@ -73,4 +73,13 @@ ExtensionInstallPrompt::Prompt BuildExtensionInstallPrompt(
   return prompt;
 }
 
+ExtensionInstallPrompt::Prompt BuildExtensionPostInstallPermissionsPrompt(
+    Extension* extension) {
+  ExtensionInstallPrompt::Prompt prompt(
+      ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT);
+  prompt.set_extension(extension);
+  prompt.set_icon(LoadInstallPromptIcon());
+  return prompt;
+}
+
 }  // namespace chrome

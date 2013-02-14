@@ -186,8 +186,15 @@ void DrawBulletInFrame(NSRect frame) {
 - (void)awakeFromNib {
   // Set control labels.
   [titleField_ setStringValue:base::SysUTF16ToNSString(prompt_->GetHeading())];
-  [okButton_ setTitle:base::SysUTF16ToNSString(
-      prompt_->GetAcceptButtonLabel())];
+  NSRect okButtonRect;
+  if (prompt_->HasAcceptButtonLabel()) {
+    [okButton_ setTitle:base::SysUTF16ToNSString(
+        prompt_->GetAcceptButtonLabel())];
+  } else {
+    [okButton_ removeFromSuperview];
+    okButtonRect = [okButton_ frame];
+    okButton_ = nil;
+  }
   [cancelButton_ setTitle:prompt_->HasAbortButtonLabel() ?
       base::SysUTF16ToNSString(prompt_->GetAbortButtonLabel()) :
       l10n_util::GetNSString(IDS_CANCEL)];
@@ -218,11 +225,21 @@ void DrawBulletInFrame(NSRect frame) {
 
   // Resize |okButton_| and |cancelButton_| to fit the button labels, but keep
   // them right-aligned.
-  NSSize buttonDelta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:okButton_];
-  if (buttonDelta.width) {
-    [okButton_ setFrame:NSOffsetRect([okButton_ frame], -buttonDelta.width, 0)];
-    [cancelButton_ setFrame:NSOffsetRect([cancelButton_ frame],
-                                         -buttonDelta.width, 0)];
+  NSSize buttonDelta;
+  if (okButton_) {
+    buttonDelta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:okButton_];
+    if (buttonDelta.width) {
+      [okButton_ setFrame:NSOffsetRect([okButton_ frame],
+                                       -buttonDelta.width, 0)];
+      [cancelButton_ setFrame:NSOffsetRect([cancelButton_ frame],
+                                           -buttonDelta.width, 0)];
+    }
+  } else {
+    // Make |cancelButton_| right-aligned in the absence of |okButton_|.
+    NSRect cancelButtonRect = [cancelButton_ frame];
+    cancelButtonRect.origin.x =
+        NSMaxX(okButtonRect) - NSWidth(cancelButtonRect);
+    [cancelButton_ setFrame:cancelButtonRect];
   }
   buttonDelta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:cancelButton_];
   if (buttonDelta.width) {
