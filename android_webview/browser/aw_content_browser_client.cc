@@ -24,20 +24,25 @@
 
 namespace {
 
-class DummyAccessTokenStore : public content::AccessTokenStore {
+class AwAccessTokenStore : public content::AccessTokenStore {
  public:
-  DummyAccessTokenStore() { }
+  AwAccessTokenStore() { }
 
+  // content::AccessTokenStore implementation
   virtual void LoadAccessTokens(
-      const LoadAccessTokensCallbackType& request) OVERRIDE { }
+      const LoadAccessTokensCallbackType& request) OVERRIDE {
+    AccessTokenStore::AccessTokenSet access_token_set;
+    // AccessTokenSet and net::URLRequestContextGetter not used on Android,
+    // but Run needs to be called to finish the geolocation setup.
+    request.Run(access_token_set, NULL);
+  }
+  virtual void SaveAccessToken(const GURL& server_url,
+                               const string16& access_token) OVERRIDE { }
 
  private:
-  virtual ~DummyAccessTokenStore() { }
+  virtual ~AwAccessTokenStore() { }
 
-  virtual void SaveAccessToken(
-      const GURL& server_url, const string16& access_token) OVERRIDE { }
-
-  DISALLOW_COPY_AND_ASSIGN(DummyAccessTokenStore);
+  DISALLOW_COPY_AND_ASSIGN(AwAccessTokenStore);
 };
 
 }
@@ -326,8 +331,7 @@ net::NetLog* AwContentBrowserClient::GetNetLog() {
 }
 
 content::AccessTokenStore* AwContentBrowserClient::CreateAccessTokenStore() {
-  // TODO(boliu): Implement as part of geolocation code.
-  return new DummyAccessTokenStore();
+  return new AwAccessTokenStore();
 }
 
 bool AwContentBrowserClient::IsFastShutdownPossible() {

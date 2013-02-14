@@ -862,33 +862,52 @@ public class AwContents {
         mContentsClient.onReceivedHttpAuthRequest(handler, host, realm);
     }
 
-    private static class ChromiumGeolocationCallback implements GeolocationPermissions.Callback {
-        final int mRenderProcessId;
-        final int mRenderViewId;
-        final int mBridgeId;
-        final String mRequestingFrame;
+    private class AwGeolocationCallback implements GeolocationPermissions.Callback {
+        private final AwGeolocationPermissions mGeolocationPermissions;
 
-        private ChromiumGeolocationCallback(int renderProcessId, int renderViewId, int bridgeId,
-                String requestingFrame) {
-            mRenderProcessId = renderProcessId;
-            mRenderViewId = renderViewId;
-            mBridgeId = bridgeId;
-            mRequestingFrame = requestingFrame;
+        private AwGeolocationCallback(AwGeolocationPermissions geolocationPermissions) {
+            mGeolocationPermissions = geolocationPermissions;
         }
 
         @Override
-        public void invoke(String origin, boolean allow, boolean retain) {
-            // TODO(kristianm): Implement callback handling
+        public void invoke(final String origin, final boolean allow, final boolean retain) {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (retain) {
+                        if (allow) {
+                            mGeolocationPermissions.allow(origin);
+                        } else {
+                            mGeolocationPermissions.deny(origin);
+                        }
+                    }
+                    nativeInvokeGeolocationCallback(mNativeAwContents, allow, origin);
+                }
+            });
         }
     }
 
     @CalledByNative
-    private void onGeolocationPermissionsShowPrompt(int renderProcessId, int renderViewId,
-            int bridgeId, String requestingFrame) {
-        // TODO(kristianm): Check with GeolocationPermissions if origin already has a policy set
-        mContentsClient.onGeolocationPermissionsShowPrompt(GURLUtils.getOrigin(requestingFrame),
-                new ChromiumGeolocationCallback(renderProcessId, renderViewId, bridgeId,
-                        requestingFrame));
+    private void onGeolocationPermissionsShowPrompt(String origin) {
+        AwGeolocationPermissions permissions = AwGeolocationPermissions.getInstance();
+        // Reject if geoloaction is disabled, or the origin has a retained deny
+        if (!mSettings.getGeolocationEnabled()) {
+            nativeInvokeGeolocationCallback(mNativeAwContents, false, origin);
+            return;
+        }
+        // Allow if the origin has a retained allow
+        if (permissions.hasOrigin(origin)) {
+            nativeInvokeGeolocationCallback(mNativeAwContents, permissions.isOriginAllowed(origin),
+                    origin);
+            return;
+        }
+        mContentsClient.onGeolocationPermissionsShowPrompt(
+                origin, new AwGeolocationCallback(permissions));
+    }
+
+    @CalledByNative
+    private void onGeolocationPermissionsHidePrompt() {
+        mContentsClient.onGeolocationPermissionsHidePrompt();
     }
 
     @CalledByNative
@@ -1084,4 +1103,7 @@ public class AwContents {
     private native Picture nativeCapturePicture(int nativeAwContents);
     private native void nativeEnableOnNewPicture(int nativeAwContents, boolean enabled,
             boolean invalidationOnly);
+
+    private native void nativeInvokeGeolocationCallback(
+            int nativeAwContents, boolean value, String requestingFrame);
 }

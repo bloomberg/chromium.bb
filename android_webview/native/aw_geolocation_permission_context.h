@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_AW_GEOLOCATION_PERMISSION_CONTEXT_H_
 #define ANDROID_WEBVIEW_NATIVE_AW_GEOLOCATION_PERMISSION_CONTEXT_H_
 
-#include "base/callback_forward.h"
 #include "content/public/browser/geolocation_permission_context.h"
 
 class GURL;
@@ -29,13 +28,6 @@ class AwGeolocationPermissionContext :
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame) OVERRIDE;
-
-  void InvokeCallback(
-      int render_process_id,
-      int render_view_id,
-      int bridge_id,
-      const GURL& requesting_frame,
-      bool value);
 
  protected:
   virtual ~AwGeolocationPermissionContext();

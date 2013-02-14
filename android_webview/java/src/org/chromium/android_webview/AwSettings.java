@@ -26,6 +26,7 @@ public class AwSettings {
     private boolean mAllowFileUrlAccess = true;
     private int mCacheMode = WebSettings.LOAD_DEFAULT;
     private boolean mShouldFocusFirstNode = true;
+    private boolean mGeolocationEnabled = true;
 
     public AwSettings(Context context) {
         mContext = context;
@@ -135,6 +136,26 @@ public class AwSettings {
     public boolean shouldFocusFirstNode() {
         synchronized(mAwSettingsLock) {
             return mShouldFocusFirstNode;
+        }
+    }
+
+    /**
+     * See {@link android.webkit.WebSettings#setGeolocationEnabled}.
+     */
+    public void setGeolocationEnabled(boolean flag) {
+        synchronized (mAwSettingsLock) {
+            if (mGeolocationEnabled != flag) {
+                mGeolocationEnabled = flag;
+            }
+        }
+    }
+
+    /**
+     * @return Returns if geolocation is currently enabled.
+     */
+    boolean getGeolocationEnabled() {
+        synchronized (mAwSettingsLock) {
+            return mGeolocationEnabled;
         }
     }
 }

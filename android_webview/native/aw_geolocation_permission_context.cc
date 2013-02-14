@@ -10,7 +10,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "googleurl/src/gurl.h"
 
 namespace android_webview {
 
@@ -25,16 +24,14 @@ AwGeolocationPermissionContext::RequestGeolocationPermissionOnUIThread(
     const GURL& requesting_frame,
     base::Callback<void(bool)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  const content::RenderViewHost* host =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(host);
-  AwContents* aw_contents = AwContents::FromWebContents(web_contents);
-  aw_contents->OnGeolocationShowPrompt(
-      render_process_id,
-      render_view_id,
-      bridge_id,
-      requesting_frame);
+
+  AwContents* aw_contents =
+      AwContents::FromID(render_process_id, render_view_id);
+  if (!aw_contents) {
+    callback.Run(false);
+    return;
+  }
+  aw_contents->ShowGeolocationPrompt(requesting_frame, callback);
 }
 
 void
@@ -70,7 +67,12 @@ AwGeolocationPermissionContext::CancelGeolocationPermissionRequestOnUIThread(
     int bridge_id,
     const GURL& requesting_frame) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  // TODO(kristianm): Implement this
+
+  AwContents* aw_contents =
+      AwContents::FromID(render_process_id, render_view_id);
+  if (aw_contents) {
+    aw_contents->HideGeolocationPrompt(requesting_frame);
+  }
 }
 
 void
@@ -89,15 +91,6 @@ AwGeolocationPermissionContext::CancelGeolocationPermissionRequest(
           render_view_id,
           bridge_id,
           requesting_frame));
-}
-
-void InvokeCallback(
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool value) {
-  // TODO(kristianm): Implement this
 }
 
 }  // namespace android_webview

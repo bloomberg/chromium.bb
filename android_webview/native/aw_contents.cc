@@ -727,20 +727,88 @@ bool RegisterAwContents(JNIEnv* env) {
   return RegisterNativesImpl(env) >= 0;
 }
 
-void AwContents::OnGeolocationShowPrompt(int render_process_id,
-                                       int render_view_id,
-                                       int bridge_id,
-                                       const GURL& requesting_frame) {
+namespace {
+
+void ShowGeolocationPromptHelperTask(const JavaObjectWeakGlobalRef& java_ref,
+                                     const GURL& origin) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_requesting_frame(
-      ConvertUTF8ToJavaString(env, requesting_frame.spec()));
-  Java_AwContents_onGeolocationPermissionsShowPrompt(env,
-      java_ref_.get(env).obj(), render_process_id, render_view_id, bridge_id,
-      j_requesting_frame.obj());
+  ScopedJavaLocalRef<jobject> j_ref = java_ref.get(env);
+  if (j_ref.obj()) {
+    ScopedJavaLocalRef<jstring> j_origin(
+        ConvertUTF8ToJavaString(env, origin.spec()));
+    Java_AwContents_onGeolocationPermissionsShowPrompt(env,
+                                                       j_ref.obj(),
+                                                       j_origin.obj());
+  }
 }
 
-void AwContents::OnGeolocationHidePrompt() {
-  // TODO(kristianm): Implement this
+void ShowGeolocationPromptHelper(const JavaObjectWeakGlobalRef& java_ref,
+                                 const GURL& origin) {
+  JNIEnv* env = AttachCurrentThread();
+  if (java_ref.get(env).obj()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&ShowGeolocationPromptHelperTask,
+                   java_ref,
+                   origin));
+  }
+}
+
+} // anonymous namespace
+
+void AwContents::ShowGeolocationPrompt(const GURL& requesting_frame,
+                                       base::Callback<void(bool)> callback) {
+  GURL origin = requesting_frame.GetOrigin();
+  bool show_prompt = pending_geolocation_prompts_.empty();
+  pending_geolocation_prompts_.push_back(OriginCallback(origin, callback));
+  if (show_prompt) {
+    ShowGeolocationPromptHelper(java_ref_, origin);
+  }
+}
+
+// Invoked from Java
+void AwContents::InvokeGeolocationCallback(JNIEnv* env,
+                                           jobject obj,
+                                           jboolean value,
+                                           jstring origin) {
+  GURL callback_origin(base::android::ConvertJavaStringToUTF16(env, origin));
+  if (callback_origin.GetOrigin() ==
+      pending_geolocation_prompts_.front().first) {
+    pending_geolocation_prompts_.front().second.Run(value);
+    pending_geolocation_prompts_.pop_front();
+    if (!pending_geolocation_prompts_.empty()) {
+      ShowGeolocationPromptHelper(java_ref_,
+                                  pending_geolocation_prompts_.front().first);
+    }
+  }
+}
+
+void AwContents::HideGeolocationPrompt(const GURL& origin) {
+  bool removed_current_outstanding_callback = false;
+  std::list<OriginCallback>::iterator it = pending_geolocation_prompts_.begin();
+  while (it != pending_geolocation_prompts_.end()) {
+    if ((*it).first == origin.GetOrigin()) {
+      if (it == pending_geolocation_prompts_.begin()) {
+        removed_current_outstanding_callback = true;
+      }
+      it = pending_geolocation_prompts_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  if (removed_current_outstanding_callback) {
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> j_ref = java_ref_.get(env);
+    if (j_ref.obj()) {
+      Java_AwContents_onGeolocationPermissionsHidePrompt(env, j_ref.obj());
+    }
+    if (!pending_geolocation_prompts_.empty()) {
+      ShowGeolocationPromptHelper(java_ref_,
+                            pending_geolocation_prompts_.front().first);
+    }
+  }
 }
 
 jint AwContents::FindAllSync(JNIEnv* env, jobject obj, jstring search_string) {

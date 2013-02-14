@@ -6,7 +6,9 @@
 #define ANDROID_WEBVIEW_NATIVE_AW_CONTENTS_H_
 
 #include <jni.h>
+#include <list>
 #include <string>
+#include <utility>
 
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/browser/icon_helper.h"
@@ -14,6 +16,7 @@
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/android/jni_helper.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -131,11 +134,12 @@ class AwContents : public FindHelper::Listener,
                           jboolean invalidation_only);
 
   // Geolocation API support
-  void OnGeolocationShowPrompt(int render_process_id,
-                             int render_view_id,
-                             int bridge_id,
-                             const GURL& requesting_frame);
-  void OnGeolocationHidePrompt();
+  void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);
+  void HideGeolocationPrompt(const GURL& origin);
+  void InvokeGeolocationCallback(JNIEnv* env,
+                                 jobject obj,
+                                 jboolean value,
+                                 jstring origin);
 
   // Find-in-page API and related methods.
   jint FindAllSync(JNIEnv* env, jobject obj, jstring search_string);
@@ -186,6 +190,13 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<FindHelper> find_helper_;
   scoped_ptr<IconHelper> icon_helper_;
   scoped_ptr<content::WebContents> pending_contents_;
+
+  // GURL is supplied by the content layer as requesting frame.
+  // Callback is supplied by the content layer, and is invoked with the result
+  // from the permission prompt.
+  typedef std::pair<const GURL, base::Callback<void(bool)> > OriginCallback;
+  // The first element in the list is always the currently pending request.
+  std::list<OriginCallback> pending_geolocation_prompts_;
 
   // Compositor-specific state.
   scoped_ptr<content::Compositor> compositor_;
