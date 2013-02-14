@@ -420,11 +420,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdySerializedFrame* SerializeWindowUpdate(
       const SpdyWindowUpdateIR& window_update) const;
 
-  // Creates an instance of SpdyCredentialControlFrame.  The CREDENTIAL
+  // Creates and serializes a CREDENTIAL frame.  The CREDENTIAL
   // frame is used to send a client certificate to the server when
   // request more than one origin are sent over the same SPDY session.
-  SpdyCredentialControlFrame* CreateCredentialFrame(
-      const SpdyCredential& credential) const;
+  SpdyFrame* CreateCredentialFrame(const SpdyCredential& credential) const;
   SpdySerializedFrame* SerializeCredential(
       const SpdyCredentialIR& credential) const;
 
@@ -433,7 +432,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   static bool ParseSettings(const SpdySettingsControlFrame* frame,
                             SettingsMap* settings);
 
-  // Given a SpdyCredentialControlFrame's payload, extract the credential.
+  // Given a CREDENTIAL frame's payload, extract the credential.
   // Returns true on successful parse, false otherwise.
   // TODO(hkhalil): Implement CREDENTIAL frame parsing in SpdyFramer
   // and eliminate this method.

@@ -611,7 +611,7 @@ SpdySynStreamControlFrame* SpdySession::CreateSynStream(
   return syn_frame.release();
 }
 
-SpdyCredentialControlFrame* SpdySession::CreateCredentialFrame(
+SpdyFrame* SpdySession::CreateCredentialFrame(
     const std::string& origin,
     SSLClientCertType type,
     const std::string& key,
@@ -633,7 +633,7 @@ SpdyCredentialControlFrame* SpdySession::CreateCredentialFrame(
     return NULL;
 
   DCHECK(buffered_spdy_framer_.get());
-  scoped_ptr<SpdyCredentialControlFrame> credential_frame(
+  scoped_ptr<SpdyFrame> credential_frame(
       buffered_spdy_framer_->CreateCredentialFrame(credential));
 
   if (net_log().IsLoggingAllEvents()) {

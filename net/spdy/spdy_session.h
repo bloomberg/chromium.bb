@@ -215,11 +215,11 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       const SpdyHeaderBlock& headers);
 
   // Write a CREDENTIAL frame to the session.
-  SpdyCredentialControlFrame* CreateCredentialFrame(const std::string& origin,
-                                                    SSLClientCertType type,
-                                                    const std::string& key,
-                                                    const std::string& cert,
-                                                    RequestPriority priority);
+  SpdyFrame* CreateCredentialFrame(const std::string& origin,
+                                   SSLClientCertType type,
+                                   const std::string& key,
+                                   const std::string& cert,
+                                   RequestPriority priority);
 
   // Write a HEADERS frame to the stream.
   SpdyHeadersControlFrame* CreateHeadersFrame(SpdyStreamId stream_id,

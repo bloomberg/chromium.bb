@@ -115,7 +115,7 @@ SpdyFrame* SpdyStream::ProduceNextFrame() {
     std::string origin = GetUrl().GetOrigin().spec();
     DCHECK(origin[origin.length() - 1] == '/');
     origin.erase(origin.length() - 1);  // Trim trailing slash.
-    SpdyCredentialControlFrame* frame = session_->CreateCredentialFrame(
+    SpdyFrame* frame = session_->CreateCredentialFrame(
         origin, domain_bound_cert_type_, domain_bound_private_key_,
         domain_bound_cert_, priority_);
     return frame;

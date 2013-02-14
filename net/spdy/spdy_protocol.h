@@ -497,16 +497,6 @@ struct SpdySettingsControlFrameBlock : SpdyFrameBlock {
   // Variable data here.
 };
 
-// TODO(avd): remove this struct
-// A CREDENTIAL Control Frame structure.
-struct SpdyCredentialControlFrameBlock : SpdyFrameBlock {
-  uint16 slot_;
-  uint32 proof_len_;
-  // Variable data here.
-  // proof data
-  // for each certificate: unit32 certificate_len + certificate_data[i]
-};
-
 // A HEADERS Control Frame structure.
 struct SpdyHeadersControlFrameBlock : SpdyFrameBlock {
   SpdyStreamId stream_id_;
@@ -1062,25 +1052,6 @@ class SpdySettingsControlFrame : public SpdyControlFrame {
     return static_cast<SpdySettingsControlFrameBlock*>(frame_);
   }
   DISALLOW_COPY_AND_ASSIGN(SpdySettingsControlFrame);
-};
-
-class SpdyCredentialControlFrame : public SpdyControlFrame {
- public:
-  SpdyCredentialControlFrame() : SpdyControlFrame(size()) {}
-  SpdyCredentialControlFrame(char* data, bool owns_buffer)
-      : SpdyControlFrame(data, owns_buffer) {}
-
-  const char* payload() const {
-    return reinterpret_cast<const char*>(block()) + SpdyFrame::kHeaderSize;
-  }
-
-  static size_t size() { return sizeof(SpdyCredentialControlFrameBlock); }
-
- private:
-  const struct SpdyCredentialControlFrameBlock* block() const {
-    return static_cast<SpdyCredentialControlFrameBlock*>(frame_);
-  }
-  DISALLOW_COPY_AND_ASSIGN(SpdyCredentialControlFrame);
 };
 
 // A HEADERS frame.

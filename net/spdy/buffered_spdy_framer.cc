@@ -273,7 +273,7 @@ SpdyFrame* BufferedSpdyFramer::CreateWindowUpdate(
   return spdy_framer_.CreateWindowUpdate(stream_id, delta_window_size);
 }
 
-SpdyCredentialControlFrame* BufferedSpdyFramer::CreateCredentialFrame(
+SpdyFrame* BufferedSpdyFramer::CreateCredentialFrame(
     const SpdyCredential& credential) const {
   return spdy_framer_.CreateCredentialFrame(credential);
 }

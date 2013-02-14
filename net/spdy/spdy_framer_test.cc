@@ -823,11 +823,12 @@ TEST_P(SpdyFramerTest, ParseCredentialFrameData) {
       'a',  'l',  ' ',  'c',
       'e',  'r',  't',
     };
-    SpdyCredentialControlFrame frame(reinterpret_cast<char*>(kFrameData),
-                                     false);
+    SpdyFrame frame(reinterpret_cast<char*>(kFrameData), false);
     SpdyCredential credential;
-    EXPECT_TRUE(SpdyFramer::ParseCredentialData(frame.payload(), frame.length(),
-                                                &credential));
+    EXPECT_TRUE(SpdyFramer::ParseCredentialData(
+        frame.data() + framer.GetControlFrameMinimumSize(),
+        frame.length(),
+        &credential));
     EXPECT_EQ(3u, credential.slot);
     EXPECT_EQ("proof", credential.proof);
     EXPECT_EQ("a cert", credential.certs.front());

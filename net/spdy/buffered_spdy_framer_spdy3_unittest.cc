@@ -110,7 +110,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               int delta_window_size) OVERRIDE {
   }
-  void OnCredential(const SpdyCredentialControlFrame& frame) {}
+  void OnCredential(const SpdyFrame& frame) {}
 
   // Convenience function which runs a framer simulation with particular input.
   void SimulateInFramer(const unsigned char* input, size_t size) {

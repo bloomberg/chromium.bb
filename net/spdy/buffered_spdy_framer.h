@@ -172,7 +172,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   SpdyFrame* CreateWindowUpdate(
       SpdyStreamId stream_id,
       uint32 delta_window_size) const;
-  SpdyCredentialControlFrame* CreateCredentialFrame(
+  SpdyFrame* CreateCredentialFrame(
       const SpdyCredential& credential) const;
   SpdyDataFrame* CreateDataFrame(SpdyStreamId stream_id,
                                  const char* data,

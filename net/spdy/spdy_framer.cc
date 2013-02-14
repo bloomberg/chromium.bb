@@ -1692,7 +1692,7 @@ SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(
 }
 
 // TODO(hkhalil): Gut with SpdyCredential removal.
-SpdyCredentialControlFrame* SpdyFramer::CreateCredentialFrame(
+SpdyFrame* SpdyFramer::CreateCredentialFrame(
     const SpdyCredential& credential) const {
   SpdyCredentialIR credential_ir(credential.slot);
   credential_ir.set_proof(credential.proof);
@@ -1701,8 +1701,7 @@ SpdyCredentialControlFrame* SpdyFramer::CreateCredentialFrame(
        ++cert) {
     credential_ir.AddCertificate(*cert);
   }
-  return reinterpret_cast<SpdyCredentialControlFrame*>(
-      SerializeCredential(credential_ir));
+  return SerializeCredential(credential_ir);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeCredential(
