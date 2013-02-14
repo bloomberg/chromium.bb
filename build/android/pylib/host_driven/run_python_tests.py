@@ -118,9 +118,9 @@ def _GetTestModules(python_test_root, is_official_build):
   # By default run all python tests under pythonDrivenTests.
   python_test_file_list = []
   for root, _, files in os.walk(python_test_root):
-    if (root.endswith('pythonDrivenTests')
-        or (is_official_build
-            and root.endswith('pythonDrivenTests/official'))):
+    if (root.endswith('host_driven_tests') or
+        root.endswith('pythonDrivenTests') or
+        (is_official_build and root.endswith('pythonDrivenTests/official'))):
       python_test_file_list += _GetPythonFiles(root, files)
   python_test_file_list.sort()
 

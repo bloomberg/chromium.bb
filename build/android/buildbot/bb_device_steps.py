@@ -36,24 +36,27 @@ CHROME_SRC = constants.CHROME_DIR
 #   test_apk: apk to run tests on.
 #   test_data: data folder in format destination:source.
 I_TEST = collections.namedtuple('InstrumentationTest', [
-    'name', 'apk', 'apk_package', 'test_apk', 'test_data'])
+    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'host_driven_root'])
 
 INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
     I_TEST('ContentShell',
            'ContentShell.apk',
            'org.chromium.content_shell_apk',
            'ContentShellTest',
-           'content:content/test/data/android/device_files'),
+           'content:content/test/data/android/device_files',
+           None),
     I_TEST('ChromiumTestShell',
            'ChromiumTestShell.apk',
            'org.chromium.chrome.testshell',
            'ChromiumTestShellTest',
-           'chrome:chrome/test/data/android/device_files'),
+           'chrome:chrome/test/data/android/device_files',
+           constants.CHROMIUM_TEST_SHELL_HOST_DRIVEN_DIR),
     I_TEST('AndroidWebView',
            'AndroidWebView.apk',
            'org.chromium.android_webview',
            'AndroidWebViewTest',
-           'webview:android_webview/test/data/device_files'),
+           'webview:android_webview/test/data/device_files',
+           None),
     ])
 
 VALID_TESTS = set(['ui', 'unit', 'webkit', 'webkit_layout'])
@@ -171,6 +174,8 @@ def RunInstrumentationSuite(options, test):
   if options.upload_to_flakiness_server:
     args.append('--flakiness-dashboard-server=%s' %
                 constants.UPSTREAM_FLAKINESS_SERVER)
+  if test.host_driven_root:
+    args.append('--python_test_root=%s' % test.host_driven_root)
 
   RunCmd(['build/android/run_instrumentation_tests.py'] + args)
 
