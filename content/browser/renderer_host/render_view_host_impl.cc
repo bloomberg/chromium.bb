@@ -1786,6 +1786,16 @@ void RenderViewHostImpl::UpdateFrameTree(
                                    frame_tree_));
 }
 
+void RenderViewHostImpl::SetAccessibilityLayoutCompleteCallbackForTesting(
+    const base::Closure& callback) {
+  accessibility_layout_callback_ = callback;
+}
+
+void RenderViewHostImpl::SetAccessibilityLoadCompleteCallbackForTesting(
+    const base::Closure& callback) {
+  accessibility_load_callback_ = callback;
+}
+
 void RenderViewHostImpl::UpdateWebkitPreferences(
     const webkit_glue::WebPreferences& prefs) {
   Send(new ViewMsg_UpdateWebPreferences(GetRoutingID(), prefs));
@@ -1892,17 +1902,11 @@ void RenderViewHostImpl::OnAccessibilityNotifications(
       accessibility_tree_ = param.acc_tree;
     }
 
-    NotificationType dst_type;
-    if (src_type == AccessibilityNotificationLoadComplete)
-      dst_type = NOTIFICATION_ACCESSIBILITY_LOAD_COMPLETE;
-    else if (src_type == AccessibilityNotificationLayoutComplete)
-      dst_type = NOTIFICATION_ACCESSIBILITY_LAYOUT_COMPLETE;
-    else
-      dst_type = NOTIFICATION_ACCESSIBILITY_OTHER;
-    NotificationService::current()->Notify(
-          dst_type,
-          Source<RenderViewHost>(this),
-          NotificationService::NoDetails());
+    if (src_type == AccessibilityNotificationLayoutComplete) {
+      accessibility_layout_callback_.Run();
+    } else if (src_type == AccessibilityNotificationLoadComplete) {
+      accessibility_load_callback_.Run();
+    }
   }
 
   Send(new AccessibilityMsg_Notifications_ACK(GetRoutingID()));

@@ -250,21 +250,6 @@ enum NotificationType {
   // the RenderViewHost, and the details is a DomOperationNotificationDetails.
   NOTIFICATION_DOM_OPERATION_RESPONSE,
 
-  // Indicates that the render view host has received a "load complete"
-  // accessibility notification. The source is the RenderViewHost,
-  // the details are not used.
-  NOTIFICATION_ACCESSIBILITY_LOAD_COMPLETE,
-
-  // Indicates that the render view host has received a "layout complete"
-  // accessibility notification. The source is the RenderViewHost,
-  // the details are not used.
-  NOTIFICATION_ACCESSIBILITY_LAYOUT_COMPLETE,
-
-  // Indicates that the render view host has received an accessibility
-  // notification. other than the ones covered above.
-  // The source is the RenderViewHost, the details are not used.
-  NOTIFICATION_ACCESSIBILITY_OTHER,
-
   // Child Processes ---------------------------------------------------------
 
   // This notification is sent when a child process host has connected to a
