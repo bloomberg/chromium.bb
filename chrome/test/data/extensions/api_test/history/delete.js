@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // History api test for Chrome.
-// browser_tests.exe --gtest_filter=HistoryExtensionApiTest.Delete
+// browser_tests.exe --gtest_filter=HistoryApiTest.Delete
 
 // runHistoryTestFns is defined in ./common.js .
 runHistoryTestFns([

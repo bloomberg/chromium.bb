@@ -91,6 +91,7 @@ class HistoryFunction : public AsyncExtensionFunction {
   virtual void Run() OVERRIDE;
 
   bool ValidateUrl(const std::string& url_string, GURL* url);
+  bool VerifyDeleteAllowed();
   base::Time GetTime(double ms_from_epoch);
 };
 

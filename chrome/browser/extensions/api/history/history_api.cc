@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/experimental_history.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
@@ -55,6 +57,8 @@ const char kOnVisitRemoved[] = "history.onVisitRemoved";
 
 const char kInvalidIdError[] = "History item id is invalid.";
 const char kInvalidUrlError[] = "Url is invalid.";
+const char kDeleteProhibitedError[] = "Browsing history is not allowed to be "
+                                      "deleted.";
 
 double MilliSecondsFromTime(const base::Time& time) {
   return 1000 * time.ToDoubleT();
@@ -242,6 +246,15 @@ bool HistoryFunction::ValidateUrl(const std::string& url_string, GURL* url) {
   return true;
 }
 
+bool HistoryFunction::VerifyDeleteAllowed() {
+  PrefService* prefs = profile()->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
+    error_ = kDeleteProhibitedError;
+    return false;
+  }
+  return true;
+}
+
 base::Time HistoryFunction::GetTime(double ms_from_epoch) {
   // The history service has seconds resolution, while javascript Date() has
   // milliseconds resolution.
@@ -421,6 +434,9 @@ bool HistoryDeleteUrlFunction::RunImpl() {
   scoped_ptr<DeleteUrl::Params> params(DeleteUrl::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
+  if (!VerifyDeleteAllowed())
+    return false;
+
   GURL url;
   if (!ValidateUrl(params->details.url, &url))
     return false;
@@ -437,6 +453,9 @@ bool HistoryDeleteUrlFunction::RunImpl() {
 bool HistoryDeleteRangeFunction::RunAsyncImpl() {
   scoped_ptr<DeleteRange::Params> params(DeleteRange::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (!VerifyDeleteAllowed())
+    return false;
 
   base::Time start_time = GetTime(params->range.start_time);
   base::Time end_time = GetTime(params->range.end_time);
@@ -461,6 +480,9 @@ void HistoryDeleteRangeFunction::DeleteComplete() {
 }
 
 bool HistoryDeleteAllFunction::RunAsyncImpl() {
+  if (!VerifyDeleteAllowed())
+    return false;
+
   std::set<GURL> restrict_urls;
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile(),
