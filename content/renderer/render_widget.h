@@ -543,6 +543,9 @@ class CONTENT_EXPORT RenderWidget
   // Are we currently handling an input event?
   bool handling_input_event_;
 
+  // Are we currently handling an ime event?
+  bool handling_ime_event_;
+
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.
   bool closing_;

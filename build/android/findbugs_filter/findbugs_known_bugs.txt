@@ -72,7 +72,6 @@ M D SF: Switch statement found in org.chromium.chrome.browser.ChromeBrowserProvi
 M D SF: Switch statement found in org.chromium.chrome.browser.database.SQLiteCursor.fillWindow(int, CursorWindow) where default case is missing  At SQLiteCursor.java
 M D SF: Switch statement found in org.chromium.content.browser.ContentSettings$EventHandler$1.handleMessage(Message) where default case is missing  At ContentSettings.java
 M D SF: Switch statement found in org.chromium.content.browser.HandleView.onTouchEvent(MotionEvent) where default case is missing  At HandleView.java
-M D SF: Switch statement found in org.chromium.content.browser.ImeAdapter$AdapterInputConnection.performEditorAction(int) where default case is missing  At ImeAdapter.java
 M D SF: Switch statement found in org.chromium.content.browser.third_party.GestureDetector.onTouchEvent(MotionEvent) where default case is missing  At GestureDetector.java
 M D ST: Write to static field org.chromium.content.app.SandboxedProcessService.sContext from instance method org.chromium.content.app.SandboxedProcessService.onCreate()  At SandboxedProcessService.java
 M D ST: Write to static field org.chromium.content.browser.ContentSettings.sAppCachePathIsSet from instance method org.chromium.content.browser.ContentSettings.setAppCachePath(String)  At ContentSettings.java

@@ -29,11 +29,8 @@ public class ImeTest extends ContentShellTestBase {
             "<input id=\"input_text\" type=\"text\" />" +
             "</form></body></html>");
 
-    /*
     @MediumTest
     @Feature({"TextInput", "Main"})
-    */
-    @DisabledTest
     public void testKeyboardDismissedAfterClickingGo() throws Throwable {
         launchContentShellWithUrl(DATA_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
@@ -74,14 +71,11 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(0, connection.mSelectionEnd);
         assertEquals(-1, connection.mCompositionStart);
         assertEquals(-1, connection.mCompositionEnd);
-        assertWaitForKeyboardStatus(true);
+        assertWaitForKeyboardStatus(false);
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput", "Main"})
-    */
-    @DisabledTest
     public void testGetTextUpdatesAfterEnteringText() throws Throwable {
         launchContentShellWithUrl(DATA_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());

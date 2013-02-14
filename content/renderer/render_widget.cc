@@ -146,6 +146,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       needs_repainting_on_restore_(false),
       has_focus_(false),
       handling_input_event_(false),
+      handling_ime_event_(false),
       closing_(false),
       is_swapped_out_(swapped_out),
       input_method_is_active_(false),
@@ -1357,9 +1358,7 @@ void RenderWidget::willBeginCompositorFrame() {
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
-#if !defined(OS_ANDROID)
   UpdateTextInputState(DO_NOT_SHOW_IME);
-#endif  // OS_ANDROID
   UpdateSelectionBounds();
 
   WillInitiatePaint();
@@ -1577,6 +1576,8 @@ void RenderWidget::OnImeSetComposition(
     int selection_start, int selection_end) {
   if (!webwidget_)
     return;
+  DCHECK(!handling_ime_event_);
+  handling_ime_event_ = true;
   if (webwidget_->setComposition(
       text, WebVector<WebCompositionUnderline>(underlines),
       selection_start, selection_end)) {
@@ -1611,13 +1612,16 @@ void RenderWidget::OnImeSetComposition(
     }
     UpdateCompositionInfo(range, std::vector<gfx::Rect>());
   }
+  handling_ime_event_ = false;
+  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 void RenderWidget::OnImeConfirmComposition(
     const string16& text, const ui::Range& replacement_range) {
   if (!webwidget_)
     return;
-
+  DCHECK(!handling_ime_event_);
+  handling_ime_event_ = true;
   handling_input_event_ = true;
   webwidget_->confirmComposition(text);
   handling_input_event_ = false;
@@ -1630,6 +1634,8 @@ void RenderWidget::OnImeConfirmComposition(
     range.set_end(location + length);
   }
   UpdateCompositionInfo(range, std::vector<gfx::Rect>());
+  handling_ime_event_ = false;
+  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 // This message causes the renderer to render an image of the
@@ -1855,6 +1861,8 @@ static bool IsDateTimeInput(ui::TextInputType type) {
 
 
 void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
+  if (handling_ime_event_)
+    return;
   bool show_ime_if_needed = (show_ime == SHOW_IME_IF_NEEDED);
   if (!show_ime_if_needed && !input_method_is_active_)
     return;

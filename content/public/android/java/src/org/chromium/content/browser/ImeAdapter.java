@@ -531,13 +531,6 @@ class ImeAdapter {
                 getInputMethodManager().updateSelection(mInternalView,
                         selectionStart, selectionEnd, compositionStart, compositionEnd);
             }
-
-            // When WebKit changes the editable field, both the start and the end positions for
-            // the composition will be set to -1. In this case we have to call restart input
-            // for the IME to update its state.
-            if (textUnchanged && compositionStart == -1 && compositionEnd == -1) {
-                restartInput();
-            }
         }
 
         @Override
@@ -556,22 +549,17 @@ class ImeAdapter {
 
         @Override
         public boolean performEditorAction(int actionCode) {
-            switch (actionCode) {
-                case EditorInfo.IME_ACTION_NEXT:
-                    restartInput();
-                    // Send TAB key event
-                    long timeStampMs = System.currentTimeMillis();
-                    mImeAdapter.sendSyntheticKeyEvent(
-                            sEventTypeRawKeyDown, timeStampMs, KeyEvent.KEYCODE_TAB, 0);
-                    return true;
-                case EditorInfo.IME_ACTION_GO:
-                case EditorInfo.IME_ACTION_SEARCH:
-                    mImeAdapter.dismissInput(true);
-                    break;
+            if (actionCode == EditorInfo.IME_ACTION_NEXT) {
+                restartInput();
+                // Send TAB key event
+                long timeStampMs = System.currentTimeMillis();
+                mImeAdapter.sendSyntheticKeyEvent(
+                        sEventTypeRawKeyDown, timeStampMs, KeyEvent.KEYCODE_TAB, 0);
+            } else {
+                mImeAdapter.sendKeyEventWithKeyCode(KeyEvent.KEYCODE_ENTER,
+                        KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
+                        | KeyEvent.FLAG_EDITOR_ACTION);
             }
-            mImeAdapter.sendKeyEventWithKeyCode(KeyEvent.KEYCODE_ENTER,
-                    KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
-                    | KeyEvent.FLAG_EDITOR_ACTION);
             return true;
         }
 
@@ -737,6 +725,16 @@ class ImeAdapter {
                         | InputType.TYPE_NUMBER_VARIATION_NORMAL;
                 outAttrs.imeOptions |= EditorInfo.IME_ACTION_NEXT;
             }
+
+            Editable editable = getEditable();
+            int selectionStart = Selection.getSelectionStart(editable);
+            int selectionEnd = Selection.getSelectionEnd(editable);
+            if (selectionStart < 0 || selectionEnd < 0) {
+                selectionStart = editable.length();
+                selectionEnd = selectionStart;
+            }
+            outAttrs.initialSelStart = selectionStart;
+            outAttrs.initialSelEnd = selectionEnd;
         }
     }
 

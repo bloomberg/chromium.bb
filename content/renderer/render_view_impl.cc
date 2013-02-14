@@ -1450,7 +1450,11 @@ void RenderViewImpl::OnUnselect() {
 }
 
 void RenderViewImpl::OnSetEditableSelectionOffsets(int start, int end) {
+  DCHECK(!handling_ime_event_);
+  handling_ime_event_ = true;
   webview()->setEditableSelectionOffsets(start, end);
+  handling_ime_event_ = false;
+  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 void RenderViewImpl::OnSetCompositionFromExistingText(
@@ -1458,13 +1462,21 @@ void RenderViewImpl::OnSetCompositionFromExistingText(
     const std::vector<WebKit::WebCompositionUnderline>& underlines) {
   if (!webview())
     return;
+  DCHECK(!handling_ime_event_);
+  handling_ime_event_ = true;
   webview()->setCompositionFromExistingText(start, end, underlines);
+  handling_ime_event_ = false;
+  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 void RenderViewImpl::OnExtendSelectionAndDelete(int before, int after) {
   if (!webview())
     return;
+  DCHECK(!handling_ime_event_);
+  handling_ime_event_ = true;
   webview()->extendSelectionAndDelete(before, after);
+  handling_ime_event_ = false;
+  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 void RenderViewImpl::OnSelectRange(const gfx::Point& start,
