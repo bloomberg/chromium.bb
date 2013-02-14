@@ -2107,7 +2107,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00000000 /* op1(19:16)=xx00 */ &&
       (inst.Bits() & 0x0000FD00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
-    return Unary1RegisterUse_MSR_register_instance_;
+    return MSR_register_cccc00010010mm00111100000000nnnn_case_0_MSR_register_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2155,7 +2155,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00000000 /* op(22:21)=x0 */ &&
       (inst.Bits() & 0x000F0D0F)  ==
           0x000F0000 /* $pattern(31:0)=xxxxxxxxxxxx1111xxxx00x0xxxx0000 */) {
-    return Unary1RegisterSet_MRS_instance_;
+    return MRS_cccc00010r001111dddd000000000000_case_0_MRS_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2186,7 +2186,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00200000 /* op(22:21)=01 */ &&
       (inst.Bits() & 0x000FFF00)  ==
           0x000FFF00 /* $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx */) {
-    return BranchToRegister_Bx_instance_;
+    return Bx_cccc000100101111111111110001mmmm_case_0_Bx_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2195,7 +2195,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x000F0F00)  ==
           0x000F0F00 /* $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx */) {
-    return Unary2RegisterOpNotRmIsPc_CLZ_instance_;
+    return CLZ_cccc000101101111dddd11110001mmmm_case_0_CLZ_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2213,7 +2213,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00200000 /* op(22:21)=01 */ &&
       (inst.Bits() & 0x000FFF00)  ==
           0x000FFF00 /* $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx */) {
-    return BranchToRegister_BLX_register_instance_;
+    return BLX_register_cccc000100101111111111110011mmmm_case_0_BLX_register_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==
@@ -2234,7 +2234,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
           0x00000070 /* op2(6:4)=111 */ &&
       (inst.Bits() & 0x00600000)  ==
           0x00200000 /* op(22:21)=01 */) {
-    return BreakPointAndConstantPoolHead_BKPT_instance_;
+    return BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0_BKPT_instance_;
   }
 
   if ((inst.Bits() & 0x00000070)  ==

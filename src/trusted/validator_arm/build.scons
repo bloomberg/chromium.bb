@@ -133,6 +133,7 @@ BASELINE_GEN_TABLES = [
     "halfword_multiply_and_multiply_accumulate",
     "synchronization_primitives",
     "msr_immediate_and_hints",
+    "miscellaneous_instructions",
     ]
 
 # Verify that BASELINE_TEST_TABLES and BASELINE_GEN_TABLES don't intersect.
