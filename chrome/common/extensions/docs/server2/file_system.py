@@ -36,10 +36,10 @@ class FileSystem(object):
     """
     raise NotImplementedError()
 
-  def ReadSingle(self, path):
+  def ReadSingle(self, path, binary=False):
     """Reads a single file from the FileSystem.
     """
-    return self.Read([path]).Get()[path]
+    return self.Read([path], binary=binary).Get()[path]
 
   # TODO(cduvall): Allow Stat to take a list of paths like Read.
   def Stat(self, path):

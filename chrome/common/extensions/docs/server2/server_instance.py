@@ -29,7 +29,8 @@ class ServerInstance(object):
     """Fetch a resource in the 'static' directory.
     """
     try:
-      result = self._cache.GetFromFile(STATIC_DIR_PREFIX + '/' + path)
+      result = self._cache.GetFromFile(STATIC_DIR_PREFIX + '/' + path,
+                                       binary='/images/' in path)
     except FileNotFoundError:
       return None
     base, ext = os.path.splitext(path)

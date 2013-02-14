@@ -81,8 +81,11 @@ class CompiledFileSystem(object):
       all_files.extend(self._RecursiveList([dir_ + f for f in files]))
     return all_files
 
-  def GetFromFile(self, path):
-    """Calls |populate_function| on the contents of the file at |path|.
+  def GetFromFile(self, path, binary=False):
+    """Calls |populate_function| on the contents of the file at |path|.  If
+    |binary| is True then the file will be read as binary - but this will only
+    apply for the first time the file is fetched; if already cached, |binary|
+    will be ignored.
     """
     version = self._file_system.Stat(path).version
     cache_entry = self._object_store.Get(self._MakeKey(path),
@@ -90,8 +93,9 @@ class CompiledFileSystem(object):
                                          time=0).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
       return cache_entry._cache_data
-    cache_data = self._populate_function(path,
-                                         self._file_system.ReadSingle(path))
+    cache_data = self._populate_function(
+        path,
+        self._file_system.ReadSingle(path, binary=binary))
     self._object_store.Set(self._MakeKey(path),
                            _CacheEntry(cache_data, version),
                            object_store.FILE_SYSTEM_CACHE,
