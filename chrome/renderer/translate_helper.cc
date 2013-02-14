@@ -142,26 +142,6 @@ void TranslateHelper::CancelPendingTranslation() {
   target_lang_.clear();
 }
 
-// static
-bool TranslateHelper::IsPageTranslatable(WebDocument* document) {
-  std::vector<WebElement> meta_elements;
-  webkit_glue::GetMetaElementsWithAttribute(document,
-                                            ASCIIToUTF16("name"),
-                                            ASCIIToUTF16("google"),
-                                            &meta_elements);
-  std::vector<WebElement>::const_iterator iter;
-  for (iter = meta_elements.begin(); iter != meta_elements.end(); ++iter) {
-    WebString attribute = iter->getAttribute("value");
-    if (attribute.isNull())  // We support both 'value' and 'content'.
-      attribute = iter->getAttribute("content");
-    if (attribute.isNull())
-      continue;
-    if (LowerCaseEqualsASCII(attribute, "notranslate"))
-      return false;
-  }
-  return true;
-}
-
 #if defined(ENABLE_LANGUAGE_DETECTION)
 // static
 std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
@@ -194,17 +174,6 @@ std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, protected:
 //
-// static
-void TranslateHelper::ConvertLanguageCodeSynonym(std::string* code) {
-  // Apply liner search here because number of items in the list is just four.
-  for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
-    if (code->compare(kLanguageCodeSynonyms[i].from) == 0) {
-      *code = std::string(kLanguageCodeSynonyms[i].to);
-      break;
-    }
-  }
-}
-
 bool TranslateHelper::IsTranslateLibAvailable() {
   bool lib_available = false;
   if (!ExecuteScriptAndGetBoolResult(
@@ -272,6 +241,37 @@ bool TranslateHelper::DontDelayTasks() {
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, private:
 //
+// static
+void TranslateHelper::ConvertLanguageCodeSynonym(std::string* code) {
+  // Apply liner search here because number of items in the list is just four.
+  for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
+    if (code->compare(kLanguageCodeSynonyms[i].from) == 0) {
+      *code = std::string(kLanguageCodeSynonyms[i].to);
+      break;
+    }
+  }
+}
+
+// static
+bool TranslateHelper::IsPageTranslatable(WebDocument* document) {
+  std::vector<WebElement> meta_elements;
+  webkit_glue::GetMetaElementsWithAttribute(document,
+                                            ASCIIToUTF16("name"),
+                                            ASCIIToUTF16("google"),
+                                            &meta_elements);
+  std::vector<WebElement>::const_iterator iter;
+  for (iter = meta_elements.begin(); iter != meta_elements.end(); ++iter) {
+    WebString attribute = iter->getAttribute("value");
+    if (attribute.isNull())  // We support both 'value' and 'content'.
+      attribute = iter->getAttribute("content");
+    if (attribute.isNull())
+      continue;
+    if (LowerCaseEqualsASCII(attribute, "notranslate"))
+      return false;
+  }
+  return true;
+}
+
 bool TranslateHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TranslateHelper, message)

@@ -1602,6 +1602,7 @@
         'renderer/spellchecker/spellcheck_provider_test.h',
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
+        'renderer/translate_helper_unittest.cc',
         'service/cloud_print/cloud_print_helpers_unittest.cc',
         'service/cloud_print/cloud_print_token_store_unittest.cc',
         'service/cloud_print/cloud_print_url_fetcher_unittest.cc',

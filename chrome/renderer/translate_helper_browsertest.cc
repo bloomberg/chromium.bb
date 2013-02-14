@@ -29,10 +29,6 @@ class TestTranslateHelper : public TranslateHelper {
     OnTranslatePage(page_id, translate_script, source_lang, target_lang);
   }
 
-  void ConvertLanguageCodeSynonym(std::string* code) {
-    TranslateHelper::ConvertLanguageCodeSynonym(code);
-  }
-
   MOCK_METHOD0(IsTranslateLibAvailable, bool());
   MOCK_METHOD0(IsTranslateLibReady, bool());
   MOCK_METHOD0(HasTranslationFinished, bool());
@@ -44,9 +40,9 @@ class TestTranslateHelper : public TranslateHelper {
   DISALLOW_COPY_AND_ASSIGN(TestTranslateHelper);
 };
 
-class TranslateHelperTest : public ChromeRenderViewTest {
+class TranslateHelperBrowserTest : public ChromeRenderViewTest {
  public:
-  TranslateHelperTest() : translate_helper_(NULL) {}
+  TranslateHelperBrowserTest() : translate_helper_(NULL) {}
 
  protected:
   virtual void SetUp() {
@@ -86,7 +82,7 @@ class TranslateHelperTest : public ChromeRenderViewTest {
 
 // Tests that the browser gets notified of the translation failure if the
 // translate library fails/times-out during initialization.
-TEST_F(TranslateHelperTest, TranslateLibNeverReady) {
+TEST_F(TranslateHelperBrowserTest, TranslateLibNeverReady) {
   // We make IsTranslateLibAvailable true so we don't attempt to inject the
   // library.
   EXPECT_CALL(*translate_helper_, IsTranslateLibAvailable())
@@ -111,7 +107,7 @@ TEST_F(TranslateHelperTest, TranslateLibNeverReady) {
 
 // Tests that the browser gets notified of the translation success when the
 // translation succeeds.
-TEST_F(TranslateHelperTest, TranslateSuccess) {
+TEST_F(TranslateHelperBrowserTest, TranslateSuccess) {
   // We make IsTranslateLibAvailable true so we don't attempt to inject the
   // library.
   EXPECT_CALL(*translate_helper_, IsTranslateLibAvailable())
@@ -154,7 +150,7 @@ TEST_F(TranslateHelperTest, TranslateSuccess) {
 
 // Tests that the browser gets notified of the translation failure when the
 // translation fails.
-TEST_F(TranslateHelperTest, TranslateFailure) {
+TEST_F(TranslateHelperBrowserTest, TranslateFailure) {
   // We make IsTranslateLibAvailable true so we don't attempt to inject the
   // library.
   EXPECT_CALL(*translate_helper_, IsTranslateLibAvailable())
@@ -190,7 +186,7 @@ TEST_F(TranslateHelperTest, TranslateFailure) {
 
 // Tests that when the browser translate a page for which the language is
 // undefined we query the translate element to get the language.
-TEST_F(TranslateHelperTest, UndefinedSourceLang) {
+TEST_F(TranslateHelperBrowserTest, UndefinedSourceLang) {
   // We make IsTranslateLibAvailable true so we don't attempt to inject the
   // library.
   EXPECT_CALL(*translate_helper_, IsTranslateLibAvailable())
@@ -229,7 +225,7 @@ TEST_F(TranslateHelperTest, UndefinedSourceLang) {
 
 // Tests that starting a translation while a similar one is pending does not
 // break anything.
-TEST_F(TranslateHelperTest, MultipleSimilarTranslations) {
+TEST_F(TranslateHelperBrowserTest, MultipleSimilarTranslations) {
   // We make IsTranslateLibAvailable true so we don't attempt to inject the
   // library.
   EXPECT_CALL(*translate_helper_, IsTranslateLibAvailable())
@@ -270,7 +266,7 @@ TEST_F(TranslateHelperTest, MultipleSimilarTranslations) {
 }
 
 // Tests that starting a translation while a different one is pending works.
-TEST_F(TranslateHelperTest, MultipleDifferentTranslations) {
+TEST_F(TranslateHelperBrowserTest, MultipleDifferentTranslations) {
   EXPECT_CALL(*translate_helper_, IsTranslateLibAvailable())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(true));
@@ -305,27 +301,6 @@ TEST_F(TranslateHelperTest, MultipleDifferentTranslations) {
   EXPECT_EQ(original_lang, received_original_lang);
   EXPECT_EQ(new_target_lang, received_target_lang);
   EXPECT_EQ(TranslateErrors::NONE, error);
-}
-
-// Tests that synonym language code is converted to one used in supporting list.
-TEST_F(TranslateHelperTest, LanguageCodeSynonyms) {
-  std::string language;
-
-  language = std::string("nb");
-  translate_helper_->ConvertLanguageCodeSynonym(&language);
-  EXPECT_EQ(0, language.compare("no"));
-
-  language = std::string("he");
-  translate_helper_->ConvertLanguageCodeSynonym(&language);
-  EXPECT_EQ(0, language.compare("iw"));
-
-  language = std::string("jv");
-  translate_helper_->ConvertLanguageCodeSynonym(&language);
-  EXPECT_EQ(0, language.compare("jw"));
-
-  language = std::string("fil");
-  translate_helper_->ConvertLanguageCodeSynonym(&language);
-  EXPECT_EQ(0, language.compare("tl"));
 }
 
 // Tests that we send the right translate language message for a page and that
