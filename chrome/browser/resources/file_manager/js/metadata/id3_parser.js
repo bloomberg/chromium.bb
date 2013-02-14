@@ -18,7 +18,7 @@ Id3Parser.prototype = {__proto__: MetadataParser.prototype};
  * @private
  * @param {ByteReader} reader - reader to use.
  * @param {int} length - bytes to read.
- * @return {int}
+ * @return {int}  //TODO(JSDOC).
  */
 Id3Parser.readSynchSafe_ = function(reader, length) {
   var rv = 0;
@@ -42,6 +42,7 @@ Id3Parser.readSynchSafe_ = function(reader, length) {
  *
  * @private
  * @param {ByteReader} reader - reader to use.
+ * @return {int}  //TODO(JSDOC).
  * @return {int}
  */
 Id3Parser.readUInt24_ = function(reader) {

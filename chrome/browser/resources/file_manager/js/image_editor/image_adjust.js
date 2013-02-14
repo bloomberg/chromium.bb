@@ -171,7 +171,7 @@ ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
 
 /**
  * TODO(JSDOC)
- * @return {boolean}  //TODO(JSDOC)
+ * @return {boolean}  //TODO(JSDOC).
  */
 ImageEditor.Mode.Autofix.prototype.isApplicable = function() {
   return this.getImageView().hasValidImage() &&
