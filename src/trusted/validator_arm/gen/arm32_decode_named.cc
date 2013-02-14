@@ -1568,14 +1568,14 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_halfword_multiply_and_mu
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00600000)  ==
           0x00000000 /* op1(22:21)=00 */) {
-    return Binary4RegisterDualOp_SMLABB_SMLABT_SMLATB_SMLATT_instance_;
+    return SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0_SMLABB_SMLABT_SMLATB_SMLATT_instance_;
   }
 
   if ((inst.Bits() & 0x00600000)  ==
           0x00200000 /* op1(22:21)=01 */ &&
       (inst.Bits() & 0x00000020)  ==
           0x00000000 /* op(5)=0 */) {
-    return Binary4RegisterDualOp_SMLAWB_SMLAWT_instance_;
+    return SMLAWB_SMLAWT_cccc00010010ddddaaaammmm1x00nnnn_case_0_SMLAWB_SMLAWT_instance_;
   }
 
   if ((inst.Bits() & 0x00600000)  ==
@@ -1584,19 +1584,19 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_halfword_multiply_and_mu
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary3RegisterOpAltA_SMULWB_SMULWT_instance_;
+    return SMULWB_SMULWT_cccc00010010dddd0000mmmm1x10nnnn_case_0_SMULWB_SMULWT_instance_;
   }
 
   if ((inst.Bits() & 0x00600000)  ==
           0x00400000 /* op1(22:21)=10 */) {
-    return Binary4RegisterDualResult_SMLALBB_SMLALBT_SMLALTB_SMLALTT_instance_;
+    return SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_0_SMLALBB_SMLALBT_SMLALTB_SMLALTT_instance_;
   }
 
   if ((inst.Bits() & 0x00600000)  ==
           0x00600000 /* op1(22:21)=11 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary3RegisterOpAltA_SMULBB_SMULBT_SMULTB_SMULTT_instance_;
+    return SMULBB_SMULBT_SMULTB_SMULTT_cccc00010110dddd0000mmmm1xx0nnnn_case_0_SMULBB_SMULBT_SMULTB_SMULTT_instance_;
   }
 
   // Catch any attempt to fall through...
