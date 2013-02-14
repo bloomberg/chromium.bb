@@ -69,8 +69,9 @@ void SelectFileDialog::SetFactory(ui::SelectFileDialogFactory* factory) {
 }
 
 // static
-SelectFileDialog* SelectFileDialog::Create(Listener* listener,
-                                           ui::SelectFilePolicy* policy) {
+scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
+    Listener* listener,
+    ui::SelectFilePolicy* policy) {
   if (dialog_factory_) {
     SelectFileDialog* dialog = dialog_factory_->Create(listener, policy);
     if (dialog)

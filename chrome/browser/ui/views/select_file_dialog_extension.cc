@@ -87,8 +87,6 @@ scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(int32 tab_id) {
 /////////////////////////////////////////////////////////////////////////////
 
 // TODO(jamescook): Move this into a new file shell_dialogs_chromeos.cc
-// TODO(jamescook): Change all instances of SelectFileDialog::Create to return
-// scoped_refptr<SelectFileDialog> as object is ref-counted.
 // static
 SelectFileDialogExtension* SelectFileDialogExtension::Create(
     Listener* listener,
