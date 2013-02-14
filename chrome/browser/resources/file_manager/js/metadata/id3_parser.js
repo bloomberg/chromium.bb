@@ -55,6 +55,7 @@ Id3Parser.readUInt24_ = function(reader) {
  * @param {ByteReader} reader reader to use.
  * @param {int} encoding string encoding.
  * @param {int} size maximum string size. Actual result may be shorter.
+ * @return {string}  // TODO(JSDOC).
  */
 Id3Parser.prototype.readString_ = function(reader, encoding, size) {
   switch (encoding) {
