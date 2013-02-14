@@ -122,6 +122,7 @@ const char kDriveConnectionTypeOnline[] = "online";
  */
 const char kDriveConnectionReasonNotReady[] = "not_ready";
 const char kDriveConnectionReasonNoNetwork[] = "no_network";
+const char kDriveConnectionReasonNoService[] = "no_service";
 
 // Unescape rules used for parsing query parameters.
 const net::UnescapeRule::Type kUnescapeRuleForQueryParameters =
@@ -3082,16 +3083,20 @@ bool GetDriveConnectionStateFunction::RunImpl() {
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
 
-  bool ready = system_service->drive_service()->CanStartOperation();
+  bool ready = system_service &&
+      system_service->drive_service()->CanStartOperation();
   bool is_connection_cellular =
       net::NetworkChangeNotifier::IsConnectionCellular(
           net::NetworkChangeNotifier::GetConnectionType());
+
   if (net::NetworkChangeNotifier::IsOffline() || !ready) {
     type_string = kDriveConnectionTypeOffline;
     if (net::NetworkChangeNotifier::IsOffline())
       reasons->AppendString(kDriveConnectionReasonNoNetwork);
     if (!ready)
       reasons->AppendString(kDriveConnectionReasonNotReady);
+    if (!system_service)
+      reasons->AppendString(kDriveConnectionReasonNoService);
   } else if (
       is_connection_cellular &&
       profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular)) {

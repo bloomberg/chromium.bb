@@ -126,8 +126,9 @@ var DriveConnectionType = {
  * @enum {string}
  */
 var DriveConnectionReason = {
-  NOT_READY: 'not_ready',  // Drive is not ready or authentication is failed.
+  NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
   NO_NETWORK: 'no_network',  // Network connection is unavailable.
+  NO_SERVICE: 'no_service'   // Drive service is unavailable.
 };
 
 /**
@@ -1644,8 +1645,8 @@ DialogType.isModal = function(type) {
       done();
     });
 
-    chrome.fileBrowserPrivate.getDriveConnectionState(function(networkState) {
-      self.networkState_ = networkState;
+    chrome.fileBrowserPrivate.getDriveConnectionState(function(state) {
+      self.driveConnectionState_ = state;
       done();
     });
   };
@@ -1654,13 +1655,13 @@ DialogType.isModal = function(type) {
     var self = this;
     this.updateNetworkStateAndPreferences_(function() {
       var drive = self.preferences_;
-      var network = self.networkState_;
+      var connection = self.driveConnectionState_;
 
       self.initDateTimeFormatters_();
       self.refreshCurrentDirectoryMetadata_();
 
       self.directoryModel_.setDriveEnabled(self.isDriveEnabled());
-      self.directoryModel_.setDriveOffline(network.type == 'offline');
+      self.directoryModel_.setDriveOffline(connection.type == 'offline');
 
       if (drive.cellularDisabled)
         self.syncButton.setAttribute('checked', '');
@@ -1677,7 +1678,7 @@ DialogType.isModal = function(type) {
       else
         self.hostedButton.removeAttribute('checked');
 
-      switch (network.type) {
+      switch (connection.type) {
         case DriveConnectionType.ONLINE:
           self.dialogContainer_.removeAttribute('connection');
           break;
@@ -1694,14 +1695,14 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * Get the metered status of network.
+   * Get the metered status of Drive connection.
    *
    * @return {boolean} Returns true if drive should limit the traffic because
    * the connection is metered and the 'disable-sync-on-metered' setting is
    * enabled. Otherwise, returns false.
    */
   FileManager.prototype.isDriveOnMeteredConnection = function() {
-    return this.networkState_.type == DriveConnectionType.METERED;
+    return this.driveConnectionState_.type == DriveConnectionType.METERED;
   };
 
   /**
@@ -1711,7 +1712,7 @@ DialogType.isModal = function(type) {
    * returns false.
    */
   FileManager.prototype.isDriveOffline = function() {
-    return this.networkState_.type == DriveConnectionType.OFFLINE;
+    return this.driveConnectionState_.type == DriveConnectionType.OFFLINE;
   };
 
   FileManager.prototype.isDriveEnabled = function() {
