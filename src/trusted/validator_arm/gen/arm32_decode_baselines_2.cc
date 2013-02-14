@@ -860,10 +860,9 @@ uses(Instruction inst) const {
 // STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0:
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//    baseline: Forbidden,
+//    baseline: STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0,
 //    pattern: cccc110pudw0nnnnddddcccciiiiiiii,
 //    rule: STC,
 //    safety: [true => FORBIDDEN],
@@ -2940,10 +2939,9 @@ uses(Instruction inst) const {
 // SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0:
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//    baseline: Forbidden,
+//    baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: SVC_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //    pattern: cccc1111iiiiiiiiiiiiiiiiiiiiiiii,
 //    rule: SVC,
 //    safety: [true => FORBIDDEN],
@@ -6058,10 +6056,9 @@ uses(Instruction inst) const {
 // Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0:
 //
 //   {actual: Actual_Unnamed_case_1,
-//    baseline: Undefined,
+//    baseline: Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: Unnamed_cccc1100000xnnnnxxxxccccxxxoxxxx_case_0,
 //    pattern: cccc1100000xnnnnxxxxccccxxxoxxxx,
 //    safety: [true => UNDEFINED],
 //    true: true,

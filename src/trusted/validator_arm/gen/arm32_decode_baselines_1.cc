@@ -1625,10 +1625,9 @@ uses(Instruction inst) const {
 // CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0:
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//    baseline: Forbidden,
+//    baseline: CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: CDP_cccc1110oooonnnnddddccccooo0mmmm_case_0,
 //    pattern: cccc1110oooonnnnddddccccooo0mmmm,
 //    rule: CDP,
 //    safety: [true => FORBIDDEN],
@@ -2647,10 +2646,9 @@ uses(Instruction inst) const {
 // LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0:
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//    baseline: Forbidden,
+//    baseline: LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: LDC_immediate_cccc110pudw1nnnnddddcccciiiiiiii_case_0,
 //    pattern: cccc110pudw1nnnnddddcccciiiiiiii,
 //    rule: LDC_immediate,
 //    safety: [true => FORBIDDEN],
@@ -2685,10 +2683,9 @@ uses(Instruction inst) const {
 // LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0:
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//    baseline: Forbidden,
+//    baseline: LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: LDC_literal_cccc110pudw11111ddddcccciiiiiiii_case_0,
 //    pattern: cccc110pudw11111ddddcccciiiiiiii,
 //    rule: LDC_literal,
 //    safety: [true => FORBIDDEN],
@@ -5833,10 +5830,9 @@ uses(Instruction inst) const {
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5TE,
-//    baseline: Forbidden,
+//    baseline: MCRR_cccc11000100ttttttttccccoooommmm_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: MCRR_cccc11000100ttttttttccccoooommmm_case_0,
 //    pattern: cccc11000100ttttttttccccoooommmm,
 //    rule: MCRR,
 //    safety: [true => FORBIDDEN],
@@ -5871,10 +5867,9 @@ uses(Instruction inst) const {
 // MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0:
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//    baseline: Forbidden,
+//    baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: MCR_cccc1110ooo0nnnnttttccccooo1mmmm_case_0,
 //    pattern: cccc1110ooo0nnnnttttccccooo1mmmm,
 //    rule: MCR,
 //    safety: [true => FORBIDDEN],
@@ -6446,10 +6441,9 @@ uses(Instruction inst) const {
 // MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0:
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//    baseline: Forbidden,
+//    baseline: MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: MRC_cccc1110ooo1nnnnttttccccooo1mmmm_case_0,
 //    pattern: cccc1110ooo1nnnnttttccccooo1mmmm,
 //    rule: MRC,
 //    safety: [true => FORBIDDEN],
@@ -6524,10 +6518,9 @@ uses(Instruction inst) const {
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
 //    arch: v5TE,
-//    baseline: Forbidden,
+//    baseline: MRRC_cccc11000101ttttttttccccoooommmm_case_0,
 //    constraints: ,
 //    defs: {},
-//    generated_baseline: MRRC_cccc11000101ttttttttccccoooommmm_case_0,
 //    pattern: cccc11000101ttttttttccccoooommmm,
 //    rule: MRRC,
 //    safety: [true => FORBIDDEN],
