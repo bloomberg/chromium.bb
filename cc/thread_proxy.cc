@@ -1176,9 +1176,10 @@ void ThreadProxy::renewTreePriority()
     if (m_smoothnessTakesPriorityExpirationTime > base::TimeTicks::Now())
         priority = SMOOTHNESS_TAKES_PRIORITY;
 
-    // New content always takes priority when we have an active tree with
-    // evicted resources.
-    if (m_layerTreeHostImpl->activeTree()->ContentsTexturesPurged())
+    // New content always takes priority when the active tree has
+    // evicted resources or there is an invalid viewport size.
+    if (m_layerTreeHostImpl->activeTree()->ContentsTexturesPurged() ||
+        m_layerTreeHostImpl->activeTree()->ViewportSizeInvalid())
         priority = NEW_CONTENT_TAKES_PRIORITY;
 
     m_layerTreeHostImpl->setTreePriority(priority);

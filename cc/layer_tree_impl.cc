@@ -27,6 +27,7 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       max_page_scale_factor_(0),
       scrolling_layer_id_from_previous_tree_(0),
       contents_textures_purged_(false),
+      viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
       needs_full_tree_sync_(true) {
 }
@@ -103,6 +104,11 @@ void LayerTreeImpl::pushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->SetContentsTexturesPurged();
   else
     target_tree->ResetContentsTexturesPurged();
+
+  if (ViewportSizeInvalid())
+    target_tree->SetViewportSizeInvalid();
+  else
+    target_tree->ResetViewportSizeInvalid();
 
   if (hud_layer())
     target_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(
@@ -343,6 +349,20 @@ void LayerTreeImpl::SetContentsTexturesPurged() {
 
 void LayerTreeImpl::ResetContentsTexturesPurged() {
   contents_textures_purged_ = false;
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
+}
+
+bool LayerTreeImpl::ViewportSizeInvalid() const {
+  return viewport_size_invalid_;
+}
+
+void LayerTreeImpl::SetViewportSizeInvalid() {
+  viewport_size_invalid_ = true;
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
+}
+
+void LayerTreeImpl::ResetViewportSizeInvalid() {
+  viewport_size_invalid_ = false;
   layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
 }
 

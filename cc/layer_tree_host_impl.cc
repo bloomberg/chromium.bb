@@ -234,6 +234,10 @@ bool LayerTreeHostImpl::canDraw()
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw empty viewport");
         return false;
     }
+    if (m_activeTree->ViewportSizeInvalid()) {
+        TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw viewport size recently changed");
+        return false;
+    }
     if (!m_renderer) {
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw no renderer");
         return false;
@@ -1101,6 +1105,9 @@ void LayerTreeHostImpl::setViewportSize(const gfx::Size& layoutViewportSize, con
 {
     if (layoutViewportSize == m_layoutViewportSize && deviceViewportSize == m_deviceViewportSize)
         return;
+
+    if (pendingTree() && m_deviceViewportSize != deviceViewportSize)
+        activeTree()->SetViewportSizeInvalid();
 
     m_layoutViewportSize = layoutViewportSize;
     m_deviceViewportSize = deviceViewportSize;

@@ -179,6 +179,12 @@ class CC_EXPORT LayerTreeImpl {
   void SetContentsTexturesPurged();
   void ResetContentsTexturesPurged();
 
+  // Set on the active tree when the viewport size recently changed
+  // and the active tree's size is now out of date.
+  bool ViewportSizeInvalid() const;
+  void SetViewportSizeInvalid();
+  void ResetViewportSizeInvalid();
+
   // Useful for debug assertions, probably shouldn't be used for anything else.
   Proxy* proxy() const;
 
@@ -211,6 +217,7 @@ protected:
   LayerList render_surface_layer_list_;
 
   bool contents_textures_purged_;
+  bool viewport_size_invalid_;
   bool needs_update_draw_properties_;
 
   // In impl-side painting mode, this is true when the tree may contain
