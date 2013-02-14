@@ -422,14 +422,6 @@ class CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0_CMP_
     : public CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0 {
 };
 
-class CondDecoder_NOP
-    : public CondDecoder {
-};
-
-class CondDecoder_YIELD
-    : public CondDecoder {
-};
-
 class CondVfpOp_VABS
     : public CondVfpOp {
 };
@@ -502,6 +494,10 @@ class CondVfpOp_VSUB_floating_point
     : public CondVfpOp {
 };
 
+class DBG_cccc001100100000111100001111iiii_case_0_DBG
+    : public DBG_cccc001100100000111100001111iiii_case_0 {
+};
+
 class DataBarrier_DMB
     : public DataBarrier {
 };
@@ -524,26 +520,6 @@ class EOR_register_cccc0000001snnnnddddiiiiitt0mmmm_case_0_EOR_register
 
 class EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0_EOR_register_shifted_register
     : public EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0 {
-};
-
-class Forbidden_DBG
-    : public Forbidden {
-};
-
-class Forbidden_MSR_immediate
-    : public Forbidden {
-};
-
-class Forbidden_SEV
-    : public Forbidden {
-};
-
-class Forbidden_WFE
-    : public Forbidden {
-};
-
-class Forbidden_WFI
-    : public Forbidden {
 };
 
 class Forbidden_BLX_immediate
@@ -862,6 +838,14 @@ class MOV_register_cccc0001101s0000dddd00000000mmmm_case_0_MOV_register
     : public MOV_register_cccc0001101s0000dddd00000000mmmm_case_0 {
 };
 
+class MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0_MSR_immediate
+    : public MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0 {
+};
+
+class MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0_MSR_immediate
+    : public MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0 {
+};
+
 class MVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0_MVN_register
     : public MVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0 {
 };
@@ -886,10 +870,6 @@ class MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single
     : public MoveDoubleVfpRegisterOp {
 };
 
-class MoveImmediate12ToApsr_MSR_immediate
-    : public MoveImmediate12ToApsr {
-};
-
 class MoveVfpRegisterOp_VMOV_between_ARM_core_register_and_single_precision_register
     : public MoveVfpRegisterOp {
 };
@@ -900,6 +880,10 @@ class MoveVfpRegisterOpWithTypeSel_MOVE_scalar_to_ARM_core_register
 
 class MoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar
     : public MoveVfpRegisterOpWithTypeSel {
+};
+
+class NOP_cccc0011001000001111000000000000_case_0_NOP
+    : public NOP_cccc0011001000001111000000000000_case_0 {
 };
 
 class ORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0_ORR_register
@@ -984,6 +968,10 @@ class SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0_SBC_register
 
 class SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0_SBC_register_shifted_register
     : public SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0 {
+};
+
+class SEV_cccc0011001000001111000000000100_case_0_SEV
+    : public SEV_cccc0011001000001111000000000100_case_0 {
 };
 
 class SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0_SMLABB_SMLABT_SMLATB_SMLATT
@@ -1200,6 +1188,10 @@ class Unary2RegisterSatImmedShiftedOp_USAT16
 
 class Undefined_None
     : public Undefined {
+};
+
+class Unnamed_case_0_None
+    : public Unnamed_case_0 {
 };
 
 class Unpredictable_None
@@ -1868,6 +1860,18 @@ class VfpMrsOp_VMRS
 
 class VfpUsesRegOp_VMSR
     : public VfpUsesRegOp {
+};
+
+class WFE_cccc0011001000001111000000000010_case_0_WFE
+    : public WFE_cccc0011001000001111000000000010_case_0 {
+};
+
+class WFI_cccc0011001000001111000000000011_case_0_WFI
+    : public WFI_cccc0011001000001111000000000011_case_0 {
+};
+
+class YIELD_cccc0011001000001111000000000001_case_0_YIELD
+    : public YIELD_cccc0011001000001111000000000001_case_0 {
 };
 
 class Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1_ADC_immediate
@@ -4225,30 +4229,6 @@ class NamedCMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0_CMP_register_shifted_register);
 };
 
-class NamedCondDecoder_NOP
-    : public NamedClassDecoder {
- public:
-  NamedCondDecoder_NOP()
-    : NamedClassDecoder(decoder_, "CondDecoder NOP")
-  {}
-
- private:
-  nacl_arm_dec::CondDecoder_NOP decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondDecoder_NOP);
-};
-
-class NamedCondDecoder_YIELD
-    : public NamedClassDecoder {
- public:
-  NamedCondDecoder_YIELD()
-    : NamedClassDecoder(decoder_, "CondDecoder YIELD")
-  {}
-
- private:
-  nacl_arm_dec::CondDecoder_YIELD decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondDecoder_YIELD);
-};
-
 class NamedCondVfpOp_VABS
     : public NamedClassDecoder {
  public:
@@ -4465,6 +4445,18 @@ class NamedCondVfpOp_VSUB_floating_point
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondVfpOp_VSUB_floating_point);
 };
 
+class NamedDBG_cccc001100100000111100001111iiii_case_0_DBG
+    : public NamedClassDecoder {
+ public:
+  NamedDBG_cccc001100100000111100001111iiii_case_0_DBG()
+    : NamedClassDecoder(decoder_, "DBG_cccc001100100000111100001111iiii_case_0 DBG")
+  {}
+
+ private:
+  nacl_arm_dec::DBG_cccc001100100000111100001111iiii_case_0_DBG decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDBG_cccc001100100000111100001111iiii_case_0_DBG);
+};
+
 class NamedDataBarrier_DMB
     : public NamedClassDecoder {
  public:
@@ -4535,66 +4527,6 @@ class NamedEOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0
  private:
   nacl_arm_dec::EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0_EOR_register_shifted_register decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedEOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0_EOR_register_shifted_register);
-};
-
-class NamedForbidden_DBG
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_DBG()
-    : NamedClassDecoder(decoder_, "Forbidden DBG")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_DBG decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_DBG);
-};
-
-class NamedForbidden_MSR_immediate
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_MSR_immediate()
-    : NamedClassDecoder(decoder_, "Forbidden MSR_immediate")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_MSR_immediate decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_MSR_immediate);
-};
-
-class NamedForbidden_SEV
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_SEV()
-    : NamedClassDecoder(decoder_, "Forbidden SEV")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_SEV decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_SEV);
-};
-
-class NamedForbidden_WFE
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_WFE()
-    : NamedClassDecoder(decoder_, "Forbidden WFE")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_WFE decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_WFE);
-};
-
-class NamedForbidden_WFI
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_WFI()
-    : NamedClassDecoder(decoder_, "Forbidden WFI")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_WFI decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_WFI);
 };
 
 class NamedForbidden_BLX_immediate
@@ -5545,6 +5477,30 @@ class NamedMOV_register_cccc0001101s0000dddd00000000mmmm_case_0_MOV_register
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMOV_register_cccc0001101s0000dddd00000000mmmm_case_0_MOV_register);
 };
 
+class NamedMSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0_MSR_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedMSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0_MSR_immediate()
+    : NamedClassDecoder(decoder_, "MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0 MSR_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0_MSR_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0_MSR_immediate);
+};
+
+class NamedMSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0_MSR_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedMSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0_MSR_immediate()
+    : NamedClassDecoder(decoder_, "MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0 MSR_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0_MSR_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0_MSR_immediate);
+};
+
 class NamedMVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0_MVN_register
     : public NamedClassDecoder {
  public:
@@ -5617,18 +5573,6 @@ class NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_s
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers);
 };
 
-class NamedMoveImmediate12ToApsr_MSR_immediate
-    : public NamedClassDecoder {
- public:
-  NamedMoveImmediate12ToApsr_MSR_immediate()
-    : NamedClassDecoder(decoder_, "MoveImmediate12ToApsr MSR_immediate")
-  {}
-
- private:
-  nacl_arm_dec::MoveImmediate12ToApsr_MSR_immediate decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveImmediate12ToApsr_MSR_immediate);
-};
-
 class NamedMoveVfpRegisterOp_VMOV_between_ARM_core_register_and_single_precision_register
     : public NamedClassDecoder {
  public:
@@ -5663,6 +5607,18 @@ class NamedMoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar
  private:
   nacl_arm_dec::MoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveVfpRegisterOpWithTypeSel_VMOV_ARM_core_register_to_scalar);
+};
+
+class NamedNOP_cccc0011001000001111000000000000_case_0_NOP
+    : public NamedClassDecoder {
+ public:
+  NamedNOP_cccc0011001000001111000000000000_case_0_NOP()
+    : NamedClassDecoder(decoder_, "NOP_cccc0011001000001111000000000000_case_0 NOP")
+  {}
+
+ private:
+  nacl_arm_dec::NOP_cccc0011001000001111000000000000_case_0_NOP decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedNOP_cccc0011001000001111000000000000_case_0_NOP);
 };
 
 class NamedORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0_ORR_register
@@ -5915,6 +5871,18 @@ class NamedSBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0
  private:
   nacl_arm_dec::SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0_SBC_register_shifted_register decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedSBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0_SBC_register_shifted_register);
+};
+
+class NamedSEV_cccc0011001000001111000000000100_case_0_SEV
+    : public NamedClassDecoder {
+ public:
+  NamedSEV_cccc0011001000001111000000000100_case_0_SEV()
+    : NamedClassDecoder(decoder_, "SEV_cccc0011001000001111000000000100_case_0 SEV")
+  {}
+
+ private:
+  nacl_arm_dec::SEV_cccc0011001000001111000000000100_case_0_SEV decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSEV_cccc0011001000001111000000000100_case_0_SEV);
 };
 
 class NamedSMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0_SMLABB_SMLABT_SMLATB_SMLATT
@@ -6563,6 +6531,18 @@ class NamedUndefined_None
  private:
   nacl_arm_dec::Undefined_None decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUndefined_None);
+};
+
+class NamedUnnamed_case_0_None
+    : public NamedClassDecoder {
+ public:
+  NamedUnnamed_case_0_None()
+    : NamedClassDecoder(decoder_, "Unnamed_case_0 None")
+  {}
+
+ private:
+  nacl_arm_dec::Unnamed_case_0_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnnamed_case_0_None);
 };
 
 class NamedUnpredictable_None
@@ -8567,6 +8547,42 @@ class NamedVfpUsesRegOp_VMSR
  private:
   nacl_arm_dec::VfpUsesRegOp_VMSR decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVfpUsesRegOp_VMSR);
+};
+
+class NamedWFE_cccc0011001000001111000000000010_case_0_WFE
+    : public NamedClassDecoder {
+ public:
+  NamedWFE_cccc0011001000001111000000000010_case_0_WFE()
+    : NamedClassDecoder(decoder_, "WFE_cccc0011001000001111000000000010_case_0 WFE")
+  {}
+
+ private:
+  nacl_arm_dec::WFE_cccc0011001000001111000000000010_case_0_WFE decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedWFE_cccc0011001000001111000000000010_case_0_WFE);
+};
+
+class NamedWFI_cccc0011001000001111000000000011_case_0_WFI
+    : public NamedClassDecoder {
+ public:
+  NamedWFI_cccc0011001000001111000000000011_case_0_WFI()
+    : NamedClassDecoder(decoder_, "WFI_cccc0011001000001111000000000011_case_0 WFI")
+  {}
+
+ private:
+  nacl_arm_dec::WFI_cccc0011001000001111000000000011_case_0_WFI decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedWFI_cccc0011001000001111000000000011_case_0_WFI);
+};
+
+class NamedYIELD_cccc0011001000001111000000000001_case_0_YIELD
+    : public NamedClassDecoder {
+ public:
+  NamedYIELD_cccc0011001000001111000000000001_case_0_YIELD()
+    : NamedClassDecoder(decoder_, "YIELD_cccc0011001000001111000000000001_case_0 YIELD")
+  {}
+
+ private:
+  nacl_arm_dec::YIELD_cccc0011001000001111000000000001_case_0_YIELD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedYIELD_cccc0011001000001111000000000001_case_0_YIELD);
 };
 
 class NamedActual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1_ADC_immediate

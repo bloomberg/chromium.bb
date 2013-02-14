@@ -3343,12 +3343,11 @@ class Unnamed_1111011xxx11xxxxxxxxxxxxxxx0xxxx_case_0
 // Unnamed_case_0:
 //
 //   {actual: Actual_BLX_immediate_1111101hiiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//    baseline: Forbidden,
+//    baseline: Unnamed_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {},
 //    fields: [cond(31:28)],
-//    generated_baseline: Unnamed_case_0,
 //    safety: [true => FORBIDDEN],
 //    true: true,
 //    uses: {}}
