@@ -59,6 +59,7 @@ using content::WebContents;
 - (void)showDevToolsContainer;
 - (void)hideDevToolsContainer;
 - (void)updateDevToolsSplitPosition;
+- (void)updateDevToolsViewFrame;
 @end
 
 
@@ -129,6 +130,8 @@ using content::WebContents;
 
 - (void)setTopContentOffset:(CGFloat)offset {
   [splitView_ setTopContentOffset:offset];
+  if ([[splitView_ subviews] count] > 1)
+    [self updateDevToolsViewFrame];
 }
 
 - (void)showDevToolsContainer {
@@ -141,20 +144,14 @@ using content::WebContents;
   // VIEW_ID_DEV_TOOLS_DOCKED here.
   NSView* devToolsView = devToolsContents->GetNativeView();
   view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
+  [devToolsView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
   NSRect containerRect = NSMakeRect(0, 0, 100, 100);
   scoped_nsobject<NSView> devToolsContainerView(
       [[NSView alloc] initWithFrame:containerRect]);
-
-  NSRect devToolsRect = containerRect;
-  if (devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT) {
-    devToolsRect.size.height -= [splitView_ topContentOffset];
-  }
-  [devToolsView setFrame:devToolsRect];
-  [devToolsView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-
   [devToolsContainerView addSubview:devToolsView];
   [splitView_ addSubview:devToolsContainerView];
+  [self updateDevToolsViewFrame];
 
   BOOL isVertical = devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT;
   [splitView_ setVertical:isVertical];
@@ -198,6 +195,14 @@ using content::WebContents;
   [devToolsView setFrame:devToolsFrame];
 
   [splitView_ adjustSubviews];
+}
+
+- (void)updateDevToolsViewFrame {
+  NSView* devToolsView = devToolsWindow_->web_contents()->GetNativeView();
+  NSRect devToolsRect = [[devToolsView superview] bounds];
+  if (devToolsWindow_->dock_side() == DEVTOOLS_DOCK_SIDE_RIGHT)
+    devToolsRect.size.height -= [splitView_ topContentOffset];
+  [devToolsView setFrame:devToolsRect];
 }
 
 // NSSplitViewDelegate protocol.

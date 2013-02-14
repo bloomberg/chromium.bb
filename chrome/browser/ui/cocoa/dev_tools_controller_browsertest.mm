@@ -107,4 +107,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsControllerTest, WebViewLayout) {
 
   EXPECT_EQ(height - offset, NSHeight([web_view bounds]));
   EXPECT_EQ(0, NSMinY([web_view bounds]));
+
+  // Update the offset and verify that the view is resized.
+  CGFloat new_offset = 25;
+  [controller() setTopContentOffset:new_offset];
+  EXPECT_EQ(height - new_offset, NSHeight([web_view bounds]));
+  EXPECT_EQ(0, NSMinY([web_view bounds]));
 }
