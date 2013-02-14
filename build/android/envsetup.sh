@@ -113,6 +113,17 @@ if [ $? -ne 0 ]; then
   return 1
 fi
 
+if [[ -n "$JAVA_HOME" && -x "$JAVA_HOME/bin/java" ]]; then
+  "$JAVA_HOME/bin/java" -version 2>&1 | grep -qs "Java HotSpot"
+  if [ $? -ne 0 ]; then
+    echo "If JAVA_HOME is defined then it must refer to the install location"
+    echo "of the Oracle Java SDK."
+    echo "Refer to the \"Install prerequisites\" section here:"
+    echo "https://code.google.com/p/chromium/wiki/AndroidBuildInstructions"
+    return 1
+  fi
+fi
+
 # Workaround for valgrind build
 if [[ -n "$CHROME_ANDROID_VALGRIND_BUILD" ]]; then
 # arm_thumb=0 is a workaround for https://bugs.kde.org/show_bug.cgi?id=270709
