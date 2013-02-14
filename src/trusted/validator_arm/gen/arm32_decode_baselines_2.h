@@ -538,14 +538,13 @@ class STC_cccc110pudw0nnnnddddcccciiiiiiii_case_0
 //    W: W(21),
 //    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
-//    baseline: StoreRegisterList,
+//    baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
 //    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
-//    generated_baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
 //    register_list: register_list(15:0),
 //    registers: RegisterList(register_list),
@@ -585,14 +584,13 @@ class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    W: W(21),
 //    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
-//    baseline: StoreRegisterList,
+//    baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
 //    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
-//    generated_baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    pattern: cccc100100w0nnnnrrrrrrrrrrrrrrrr,
 //    register_list: register_list(15:0),
 //    registers: RegisterList(register_list),
@@ -632,14 +630,13 @@ class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    W: W(21),
 //    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
-//    baseline: StoreRegisterList,
+//    baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
 //    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
-//    generated_baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
 //    register_list: register_list(15:0),
 //    registers: RegisterList(register_list),
@@ -679,14 +676,13 @@ class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0
 //    W: W(21),
 //    actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //    base: Rn,
-//    baseline: StoreRegisterList,
+//    baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rn
 //         if wback
 //         else None},
 //    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
-//    generated_baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //    pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
 //    register_list: register_list(15:0),
 //    registers: RegisterList(register_list),

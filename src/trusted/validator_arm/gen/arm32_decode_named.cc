@@ -522,42 +522,42 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_branch_branch_with_link_
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x03D00000)  ==
           0x00000000 /* op(25:20)=0000x0 */) {
-    return StoreRegisterList_STMDA_STMED_instance_;
+    return STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDA_STMED_instance_;
   }
 
   if ((inst.Bits() & 0x03D00000)  ==
           0x00100000 /* op(25:20)=0000x1 */) {
-    return LoadRegisterList_LDMDA_LDMFA_instance_;
+    return LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDA_LDMFA_instance_;
   }
 
   if ((inst.Bits() & 0x03D00000)  ==
           0x00800000 /* op(25:20)=0010x0 */) {
-    return StoreRegisterList_STM_STMIA_STMEA_instance_;
+    return STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0_STM_STMIA_STMEA_instance_;
   }
 
   if ((inst.Bits() & 0x03D00000)  ==
           0x00900000 /* op(25:20)=0010x1 */) {
-    return LoadRegisterList_LDM_LDMIA_LDMFD_instance_;
+    return LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0_LDM_LDMIA_LDMFD_instance_;
   }
 
   if ((inst.Bits() & 0x03D00000)  ==
           0x01000000 /* op(25:20)=0100x0 */) {
-    return StoreRegisterList_STMDB_STMFD_instance_;
+    return STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDB_STMFD_instance_;
   }
 
   if ((inst.Bits() & 0x03D00000)  ==
           0x01100000 /* op(25:20)=0100x1 */) {
-    return LoadRegisterList_LDMDB_LDMEA_instance_;
+    return LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDB_LDMEA_instance_;
   }
 
   if ((inst.Bits() & 0x03D00000)  ==
           0x01800000 /* op(25:20)=0110x0 */) {
-    return StoreRegisterList_STMIB_STMFA_instance_;
+    return STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0_STMIB_STMFA_instance_;
   }
 
   if ((inst.Bits() & 0x03D00000)  ==
           0x01900000 /* op(25:20)=0110x1 */) {
-    return LoadRegisterList_LDMIB_LDMED_instance_;
+    return LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMIB_LDMED_instance_;
   }
 
   if ((inst.Bits() & 0x02500000)  ==
@@ -585,12 +585,12 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_branch_branch_with_link_
 
   if ((inst.Bits() & 0x03000000)  ==
           0x02000000 /* op(25:20)=10xxxx */) {
-    return BranchImmediate24_B_instance_;
+    return B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0_B_instance_;
   }
 
   if ((inst.Bits() & 0x03000000)  ==
           0x03000000 /* op(25:20)=11xxxx */) {
-    return BranchImmediate24_BL_BLX_immediate_instance_;
+    return BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0_BL_BLX_immediate_instance_;
   }
 
   // Catch any attempt to fall through...

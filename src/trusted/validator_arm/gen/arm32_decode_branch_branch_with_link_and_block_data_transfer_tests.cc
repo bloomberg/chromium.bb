@@ -41,13 +41,12 @@ namespace nacl_arm_test {
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -63,11 +62,11 @@ namespace nacl_arm_test {
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class StoreRegisterListTesterCase0
-    : public LoadStoreRegisterListTester {
+class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
+    : public Arm32DecoderTester {
  public:
-  StoreRegisterListTesterCase0(const NamedClassDecoder& decoder)
-    : LoadStoreRegisterListTester(decoder) {}
+  STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -75,7 +74,7 @@ class StoreRegisterListTesterCase0
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreRegisterListTesterCase0
+bool STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -89,14 +88,14 @@ bool StoreRegisterListTesterCase0
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreRegisterListTesterCase0
+bool STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rn  ==
@@ -134,13 +133,12 @@ bool StoreRegisterListTesterCase0
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -155,11 +153,11 @@ bool StoreRegisterListTesterCase0
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadRegisterListTesterCase1
-    : public LoadStoreRegisterListTester {
+class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
+    : public Arm32DecoderTester {
  public:
-  LoadRegisterListTesterCase1(const NamedClassDecoder& decoder)
-    : LoadStoreRegisterListTester(decoder) {}
+  LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -167,7 +165,7 @@ class LoadRegisterListTesterCase1
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadRegisterListTesterCase1
+bool LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -181,14 +179,14 @@ bool LoadRegisterListTesterCase1
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadRegisterListTesterCase1
+bool LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rn  ==
@@ -226,13 +224,12 @@ bool LoadRegisterListTesterCase1
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -248,11 +245,11 @@ bool LoadRegisterListTesterCase1
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class StoreRegisterListTesterCase2
-    : public LoadStoreRegisterListTester {
+class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
+    : public Arm32DecoderTester {
  public:
-  StoreRegisterListTesterCase2(const NamedClassDecoder& decoder)
-    : LoadStoreRegisterListTester(decoder) {}
+  STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -260,7 +257,7 @@ class StoreRegisterListTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreRegisterListTesterCase2
+bool STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -274,14 +271,14 @@ bool StoreRegisterListTesterCase2
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreRegisterListTesterCase2
+bool STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rn  ==
@@ -319,13 +316,12 @@ bool StoreRegisterListTesterCase2
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100010w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -340,11 +336,11 @@ bool StoreRegisterListTesterCase2
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadRegisterListTesterCase3
-    : public LoadStoreRegisterListTester {
+class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
+    : public Arm32DecoderTester {
  public:
-  LoadRegisterListTesterCase3(const NamedClassDecoder& decoder)
-    : LoadStoreRegisterListTester(decoder) {}
+  LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -352,7 +348,7 @@ class LoadRegisterListTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadRegisterListTesterCase3
+bool LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -366,14 +362,14 @@ bool LoadRegisterListTesterCase3
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadRegisterListTesterCase3
+bool LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rn  ==
@@ -411,13 +407,12 @@ bool LoadRegisterListTesterCase3
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100100w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -433,11 +428,11 @@ bool LoadRegisterListTesterCase3
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class StoreRegisterListTesterCase4
-    : public LoadStoreRegisterListTester {
+class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
+    : public Arm32DecoderTester {
  public:
-  StoreRegisterListTesterCase4(const NamedClassDecoder& decoder)
-    : LoadStoreRegisterListTester(decoder) {}
+  STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -445,7 +440,7 @@ class StoreRegisterListTesterCase4
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreRegisterListTesterCase4
+bool STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -459,14 +454,14 @@ bool StoreRegisterListTesterCase4
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreRegisterListTesterCase4
+bool STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rn  ==
@@ -504,13 +499,12 @@ bool StoreRegisterListTesterCase4
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -525,11 +519,11 @@ bool StoreRegisterListTesterCase4
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadRegisterListTesterCase5
-    : public LoadStoreRegisterListTester {
+class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
+    : public Arm32DecoderTester {
  public:
-  LoadRegisterListTesterCase5(const NamedClassDecoder& decoder)
-    : LoadStoreRegisterListTester(decoder) {}
+  LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -537,7 +531,7 @@ class LoadRegisterListTesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadRegisterListTesterCase5
+bool LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -551,14 +545,14 @@ bool LoadRegisterListTesterCase5
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadRegisterListTesterCase5
+bool LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rn  ==
@@ -596,13 +590,12 @@ bool LoadRegisterListTesterCase5
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -618,11 +611,11 @@ bool LoadRegisterListTesterCase5
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class StoreRegisterListTesterCase6
-    : public LoadStoreRegisterListTester {
+class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
+    : public Arm32DecoderTester {
  public:
-  StoreRegisterListTesterCase6(const NamedClassDecoder& decoder)
-    : LoadStoreRegisterListTester(decoder) {}
+  STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -630,7 +623,7 @@ class StoreRegisterListTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreRegisterListTesterCase6
+bool STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -644,14 +637,14 @@ bool StoreRegisterListTesterCase6
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreRegisterListTesterCase6
+bool STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rn  ==
@@ -689,13 +682,12 @@ bool StoreRegisterListTesterCase6
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -710,11 +702,11 @@ bool StoreRegisterListTesterCase6
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadRegisterListTesterCase7
-    : public LoadStoreRegisterListTester {
+class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7
+    : public Arm32DecoderTester {
  public:
-  LoadRegisterListTesterCase7(const NamedClassDecoder& decoder)
-    : LoadStoreRegisterListTester(decoder) {}
+  LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -722,7 +714,7 @@ class LoadRegisterListTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadRegisterListTesterCase7
+bool LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -736,14 +728,14 @@ bool LoadRegisterListTesterCase7
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadRegisterListTesterCase7
+bool LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: Rn  ==
@@ -891,11 +883,10 @@ bool ForbiddenCondDecoderTesterCase10
 // op(25:20)=10xxxx
 //    = {Pc: 15,
 //       actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//       baseline: BranchImmediate24,
+//       baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Pc},
 //       fields: [imm24(23:0)],
-//       generated_baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
@@ -905,11 +896,11 @@ bool ForbiddenCondDecoderTesterCase10
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
 //       uses: {Pc}}
-class BranchImmediate24TesterCase11
-    : public BranchImmediate24Tester {
+class B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
+    : public Arm32DecoderTester {
  public:
-  BranchImmediate24TesterCase11(const NamedClassDecoder& decoder)
-    : BranchImmediate24Tester(decoder) {}
+  B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -917,7 +908,7 @@ class BranchImmediate24TesterCase11
                                  const NamedClassDecoder& decoder);
 };
 
-bool BranchImmediate24TesterCase11
+bool B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -931,14 +922,14 @@ bool BranchImmediate24TesterCase11
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return BranchImmediate24Tester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool BranchImmediate24TesterCase11
+bool B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(BranchImmediate24Tester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: true => MAY_BE_SAFE
@@ -955,11 +946,10 @@ bool BranchImmediate24TesterCase11
 //    = {Lr: 14,
 //       Pc: 15,
 //       actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//       baseline: BranchImmediate24,
+//       baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Pc, Lr},
 //       fields: [imm24(23:0)],
-//       generated_baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
@@ -969,11 +959,11 @@ bool BranchImmediate24TesterCase11
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
 //       uses: {Pc}}
-class BranchImmediate24TesterCase12
-    : public BranchImmediate24Tester {
+class BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
+    : public Arm32DecoderTester {
  public:
-  BranchImmediate24TesterCase12(const NamedClassDecoder& decoder)
-    : BranchImmediate24Tester(decoder) {}
+  BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -981,7 +971,7 @@ class BranchImmediate24TesterCase12
                                  const NamedClassDecoder& decoder);
 };
 
-bool BranchImmediate24TesterCase12
+bool BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -995,14 +985,14 @@ bool BranchImmediate24TesterCase12
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return BranchImmediate24Tester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool BranchImmediate24TesterCase12
+bool BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(BranchImmediate24Tester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: true => MAY_BE_SAFE
@@ -1028,13 +1018,12 @@ bool BranchImmediate24TesterCase12
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1050,12 +1039,12 @@ bool BranchImmediate24TesterCase12
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class StoreRegisterListTester_Case0
-    : public StoreRegisterListTesterCase0 {
+class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case0
+    : public STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0 {
  public:
-  StoreRegisterListTester_Case0()
-    : StoreRegisterListTesterCase0(
-      state_.StoreRegisterList_STMDA_STMED_instance_)
+  STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case0()
+    : STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase0(
+      state_.STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDA_STMED_instance_)
   {}
 };
 
@@ -1066,13 +1055,12 @@ class StoreRegisterListTester_Case0
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1087,12 +1075,12 @@ class StoreRegisterListTester_Case0
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadRegisterListTester_Case1
-    : public LoadRegisterListTesterCase1 {
+class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case1
+    : public LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1 {
  public:
-  LoadRegisterListTester_Case1()
-    : LoadRegisterListTesterCase1(
-      state_.LoadRegisterList_LDMDA_LDMFA_instance_)
+  LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case1()
+    : LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase1(
+      state_.LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDA_LDMFA_instance_)
   {}
 };
 
@@ -1103,13 +1091,12 @@ class LoadRegisterListTester_Case1
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1125,12 +1112,12 @@ class LoadRegisterListTester_Case1
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class StoreRegisterListTester_Case2
-    : public StoreRegisterListTesterCase2 {
+class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case2
+    : public STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2 {
  public:
-  StoreRegisterListTester_Case2()
-    : StoreRegisterListTesterCase2(
-      state_.StoreRegisterList_STM_STMIA_STMEA_instance_)
+  STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case2()
+    : STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase2(
+      state_.STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0_STM_STMIA_STMEA_instance_)
   {}
 };
 
@@ -1141,13 +1128,12 @@ class StoreRegisterListTester_Case2
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100010w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1162,12 +1148,12 @@ class StoreRegisterListTester_Case2
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadRegisterListTester_Case3
-    : public LoadRegisterListTesterCase3 {
+class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case3
+    : public LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3 {
  public:
-  LoadRegisterListTester_Case3()
-    : LoadRegisterListTesterCase3(
-      state_.LoadRegisterList_LDM_LDMIA_LDMFD_instance_)
+  LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case3()
+    : LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase3(
+      state_.LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0_LDM_LDMIA_LDMFD_instance_)
   {}
 };
 
@@ -1178,13 +1164,12 @@ class LoadRegisterListTester_Case3
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100100w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1200,12 +1185,12 @@ class LoadRegisterListTester_Case3
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class StoreRegisterListTester_Case4
-    : public StoreRegisterListTesterCase4 {
+class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case4
+    : public STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4 {
  public:
-  StoreRegisterListTester_Case4()
-    : StoreRegisterListTesterCase4(
-      state_.StoreRegisterList_STMDB_STMFD_instance_)
+  STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case4()
+    : STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase4(
+      state_.STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDB_STMFD_instance_)
   {}
 };
 
@@ -1216,13 +1201,12 @@ class StoreRegisterListTester_Case4
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1237,12 +1221,12 @@ class StoreRegisterListTester_Case4
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadRegisterListTester_Case5
-    : public LoadRegisterListTesterCase5 {
+class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case5
+    : public LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5 {
  public:
-  LoadRegisterListTester_Case5()
-    : LoadRegisterListTesterCase5(
-      state_.LoadRegisterList_LDMDB_LDMEA_instance_)
+  LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case5()
+    : LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase5(
+      state_.LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDB_LDMEA_instance_)
   {}
 };
 
@@ -1253,13 +1237,12 @@ class LoadRegisterListTester_Case5
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1275,12 +1258,12 @@ class LoadRegisterListTester_Case5
 //       small_imm_base_wb: wback,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
-class StoreRegisterListTester_Case6
-    : public StoreRegisterListTesterCase6 {
+class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case6
+    : public STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6 {
  public:
-  StoreRegisterListTester_Case6()
-    : StoreRegisterListTesterCase6(
-      state_.StoreRegisterList_STMIB_STMFA_instance_)
+  STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case6()
+    : STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0TesterCase6(
+      state_.STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0_STMIB_STMFA_instance_)
   {}
 };
 
@@ -1291,13 +1274,12 @@ class StoreRegisterListTester_Case6
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1312,12 +1294,12 @@ class StoreRegisterListTester_Case6
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadRegisterListTester_Case7
-    : public LoadRegisterListTesterCase7 {
+class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case7
+    : public LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7 {
  public:
-  LoadRegisterListTester_Case7()
-    : LoadRegisterListTesterCase7(
-      state_.LoadRegisterList_LDMIB_LDMED_instance_)
+  LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case7()
+    : LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0TesterCase7(
+      state_.LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMIB_LDMED_instance_)
   {}
 };
 
@@ -1369,11 +1351,10 @@ class ForbiddenCondDecoderTester_Case10
 // op(25:20)=10xxxx
 //    = {Pc: 15,
 //       actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//       baseline: BranchImmediate24,
+//       baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Pc},
 //       fields: [imm24(23:0)],
-//       generated_baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
@@ -1383,12 +1364,12 @@ class ForbiddenCondDecoderTester_Case10
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
 //       uses: {Pc}}
-class BranchImmediate24Tester_Case11
-    : public BranchImmediate24TesterCase11 {
+class B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case11
+    : public B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11 {
  public:
-  BranchImmediate24Tester_Case11()
-    : BranchImmediate24TesterCase11(
-      state_.BranchImmediate24_B_instance_)
+  B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case11()
+    : B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase11(
+      state_.B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0_B_instance_)
   {}
 };
 
@@ -1396,11 +1377,10 @@ class BranchImmediate24Tester_Case11
 //    = {Lr: 14,
 //       Pc: 15,
 //       actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//       baseline: BranchImmediate24,
+//       baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Pc, Lr},
 //       fields: [imm24(23:0)],
-//       generated_baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
@@ -1410,12 +1390,12 @@ class BranchImmediate24Tester_Case11
 //       safety: [true => MAY_BE_SAFE],
 //       true: true,
 //       uses: {Pc}}
-class BranchImmediate24Tester_Case12
-    : public BranchImmediate24TesterCase12 {
+class BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case12
+    : public BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12 {
  public:
-  BranchImmediate24Tester_Case12()
-    : BranchImmediate24TesterCase12(
-      state_.BranchImmediate24_BL_BLX_immediate_instance_)
+  BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case12()
+    : BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0TesterCase12(
+      state_.BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0_BL_BLX_immediate_instance_)
   {}
 };
 
@@ -1435,13 +1415,12 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1458,8 +1437,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreRegisterListTester_Case0_TestCase0) {
-  StoreRegisterListTester_Case0 baseline_tester;
+       STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case0_TestCase0) {
+  STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case0 baseline_tester;
   NamedActual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_STMDA_STMED actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc100000w0nnnnrrrrrrrrrrrrrrrr");
@@ -1472,13 +1451,12 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1494,8 +1472,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadRegisterListTester_Case1_TestCase1) {
-  LoadRegisterListTester_Case1 baseline_tester;
+       LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case1_TestCase1) {
+  LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case1 baseline_tester;
   NamedActual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_LDMDA_LDMFA actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc100000w1nnnnrrrrrrrrrrrrrrrr");
@@ -1508,13 +1486,12 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1531,8 +1508,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreRegisterListTester_Case2_TestCase2) {
-  StoreRegisterListTester_Case2 baseline_tester;
+       STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case2_TestCase2) {
+  STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case2 baseline_tester;
   NamedActual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_STM_STMIA_STMEA actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc100010w0nnnnrrrrrrrrrrrrrrrr");
@@ -1545,13 +1522,12 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100010w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1567,8 +1543,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadRegisterListTester_Case3_TestCase3) {
-  LoadRegisterListTester_Case3 baseline_tester;
+       LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case3_TestCase3) {
+  LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case3 baseline_tester;
   NamedActual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_LDM_LDMIA_LDMFD actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc100010w1nnnnrrrrrrrrrrrrrrrr");
@@ -1581,13 +1557,12 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100100w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1604,8 +1579,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreRegisterListTester_Case4_TestCase4) {
-  StoreRegisterListTester_Case4 baseline_tester;
+       STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case4_TestCase4) {
+  STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case4 baseline_tester;
   NamedActual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_STMDB_STMFD actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc100100w0nnnnrrrrrrrrrrrrrrrr");
@@ -1618,13 +1593,12 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1640,8 +1614,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadRegisterListTester_Case5_TestCase5) {
-  LoadRegisterListTester_Case5 baseline_tester;
+       LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case5_TestCase5) {
+  LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case5 baseline_tester;
   NamedActual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_LDMDB_LDMEA actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc100100w1nnnnrrrrrrrrrrrrrrrr");
@@ -1654,13 +1628,12 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: StoreRegisterList,
+//       baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: {Rn
 //            if wback
 //            else None},
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1677,8 +1650,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: Union({Rn}, registers),
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreRegisterListTester_Case6_TestCase6) {
-  StoreRegisterListTester_Case6 baseline_tester;
+       STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case6_TestCase6) {
+  STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case6 baseline_tester;
   NamedActual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1_STMIB_STMFA actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc100110w0nnnnrrrrrrrrrrrrrrrr");
@@ -1691,13 +1664,12 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1,
 //       base: Rn,
-//       baseline: LoadRegisterList,
+//       baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       constraints: ,
 //       defs: Union({Rn
 //            if wback
 //            else None}, registers),
 //       fields: [W(21), Rn(19:16), register_list(15:0)],
-//       generated_baseline: LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0,
 //       pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
 //       register_list: register_list(15:0),
 //       registers: RegisterList(register_list),
@@ -1713,8 +1685,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadRegisterListTester_Case7_TestCase7) {
-  LoadRegisterListTester_Case7 baseline_tester;
+       LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case7_TestCase7) {
+  LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0Tester_Case7 baseline_tester;
   NamedActual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1_LDMIB_LDMED actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc100110w1nnnnrrrrrrrrrrrrrrrr");
@@ -1759,11 +1731,10 @@ TEST_F(Arm32DecoderStateTests,
 // op(25:20)=10xxxx
 //    = {Pc: 15,
 //       actual: Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//       baseline: BranchImmediate24,
+//       baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Pc},
 //       fields: [imm24(23:0)],
-//       generated_baseline: B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
@@ -1774,8 +1745,8 @@ TEST_F(Arm32DecoderStateTests,
 //       true: true,
 //       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
-       BranchImmediate24Tester_Case11_TestCase11) {
-  BranchImmediate24Tester_Case11 baseline_tester;
+       B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case11_TestCase11) {
+  B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case11 baseline_tester;
   NamedActual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1_B actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc1010iiiiiiiiiiiiiiiiiiiiiiii");
@@ -1785,11 +1756,10 @@ TEST_F(Arm32DecoderStateTests,
 //    = {Lr: 14,
 //       Pc: 15,
 //       actual: Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1,
-//       baseline: BranchImmediate24,
+//       baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       constraints: ,
 //       defs: {Pc, Lr},
 //       fields: [imm24(23:0)],
-//       generated_baseline: BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0,
 //       imm24: imm24(23:0),
 //       imm32: SignExtend(imm24:'00'(1:0), 32),
 //       pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
@@ -1800,8 +1770,8 @@ TEST_F(Arm32DecoderStateTests,
 //       true: true,
 //       uses: {Pc}}
 TEST_F(Arm32DecoderStateTests,
-       BranchImmediate24Tester_Case12_TestCase12) {
-  BranchImmediate24Tester_Case12 baseline_tester;
+       BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case12_TestCase12) {
+  BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0Tester_Case12 baseline_tester;
   NamedActual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1_BL_BLX_immediate actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc1011iiiiiiiiiiiiiiiiiiiiiiii");

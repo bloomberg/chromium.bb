@@ -82,6 +82,14 @@ class BLX_register_cccc000100101111111111110011mmmm_case_0_BLX_register
     : public BLX_register_cccc000100101111111111110011mmmm_case_0 {
 };
 
+class BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0_BL_BLX_immediate
+    : public BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0 {
+};
+
+class B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0_B
+    : public B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0 {
+};
+
 class Binary2RegisterImmediateOp_ADC_immediate
     : public Binary2RegisterImmediateOp {
 };
@@ -160,14 +168,6 @@ class BinaryRegisterImmediateTest_CMP_immediate
 
 class BinaryRegisterImmediateTest_TEQ_immediate
     : public BinaryRegisterImmediateTest {
-};
-
-class BranchImmediate24_B
-    : public BranchImmediate24 {
-};
-
-class BranchImmediate24_BL_BLX_immediate
-    : public BranchImmediate24 {
 };
 
 class Bx_cccc000100101111111111110001mmmm_case_0_Bx
@@ -470,6 +470,22 @@ class InstructionBarrier_ISB
     : public InstructionBarrier {
 };
 
+class LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDA_LDMFA
+    : public LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0 {
+};
+
+class LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDB_LDMEA
+    : public LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0 {
+};
+
+class LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMIB_LDMED
+    : public LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0 {
+};
+
+class LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0_LDM_LDMIA_LDMFD
+    : public LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0 {
+};
+
 class LDREXB_cccc00011101nnnntttt111110011111_case_0_LDREXB
     : public LDREXB_cccc00011101nnnntttt111110011111_case_0 {
 };
@@ -568,22 +584,6 @@ class LoadRegisterImm8Op_LDRSB_literal
 
 class LoadRegisterImm8Op_LDRSH_literal
     : public LoadRegisterImm8Op {
-};
-
-class LoadRegisterList_LDMDA_LDMFA
-    : public LoadRegisterList {
-};
-
-class LoadRegisterList_LDMDB_LDMEA
-    : public LoadRegisterList {
-};
-
-class LoadRegisterList_LDMIB_LDMED
-    : public LoadRegisterList {
-};
-
-class LoadRegisterList_LDM_LDMIA_LDMFD
-    : public LoadRegisterList {
 };
 
 class LoadVectorRegister_VLDR
@@ -922,6 +922,22 @@ class SSUB8_cccc01100001nnnndddd11111111mmmm_case_0_SSUB8
     : public SSUB8_cccc01100001nnnndddd11111111mmmm_case_0 {
 };
 
+class STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDA_STMED
+    : public STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0 {
+};
+
+class STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDB_STMFD
+    : public STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0 {
+};
+
+class STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0_STMIB_STMFA
+    : public STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0 {
+};
+
+class STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0_STM_STMIA_STMEA
+    : public STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0 {
+};
+
 class STREXB_cccc00011100nnnndddd11111001tttt_case_0_STREXB
     : public STREXB_cccc00011100nnnndddd11111001tttt_case_0 {
 };
@@ -1004,22 +1020,6 @@ class Store3RegisterImm5Op_STR_register
 
 class Store3RegisterOp_STRH_register
     : public Store3RegisterOp {
-};
-
-class StoreRegisterList_STMDA_STMED
-    : public StoreRegisterList {
-};
-
-class StoreRegisterList_STMDB_STMFD
-    : public StoreRegisterList {
-};
-
-class StoreRegisterList_STMIB_STMFA
-    : public StoreRegisterList {
-};
-
-class StoreRegisterList_STM_STMIA_STMEA
-    : public StoreRegisterList {
 };
 
 class StoreVectorRegister_VSTR
@@ -3209,6 +3209,30 @@ class NamedBLX_register_cccc000100101111111111110011mmmm_case_0_BLX_register
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBLX_register_cccc000100101111111111110011mmmm_case_0_BLX_register);
 };
 
+class NamedBL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0_BL_BLX_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedBL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0_BL_BLX_immediate()
+    : NamedClassDecoder(decoder_, "BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0 BL_BLX_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0_BL_BLX_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0_BL_BLX_immediate);
+};
+
+class NamedB_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0_B
+    : public NamedClassDecoder {
+ public:
+  NamedB_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0_B()
+    : NamedClassDecoder(decoder_, "B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0 B")
+  {}
+
+ private:
+  nacl_arm_dec::B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0_B decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedB_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0_B);
+};
+
 class NamedBinary2RegisterImmediateOp_ADC_immediate
     : public NamedClassDecoder {
  public:
@@ -3447,30 +3471,6 @@ class NamedBinaryRegisterImmediateTest_TEQ_immediate
  private:
   nacl_arm_dec::BinaryRegisterImmediateTest_TEQ_immediate decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinaryRegisterImmediateTest_TEQ_immediate);
-};
-
-class NamedBranchImmediate24_B
-    : public NamedClassDecoder {
- public:
-  NamedBranchImmediate24_B()
-    : NamedClassDecoder(decoder_, "BranchImmediate24 B")
-  {}
-
- private:
-  nacl_arm_dec::BranchImmediate24_B decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBranchImmediate24_B);
-};
-
-class NamedBranchImmediate24_BL_BLX_immediate
-    : public NamedClassDecoder {
- public:
-  NamedBranchImmediate24_BL_BLX_immediate()
-    : NamedClassDecoder(decoder_, "BranchImmediate24 BL_BLX_immediate")
-  {}
-
- private:
-  nacl_arm_dec::BranchImmediate24_BL_BLX_immediate decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBranchImmediate24_BL_BLX_immediate);
 };
 
 class NamedBx_cccc000100101111111111110001mmmm_case_0_Bx
@@ -4373,6 +4373,54 @@ class NamedInstructionBarrier_ISB
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedInstructionBarrier_ISB);
 };
 
+class NamedLDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDA_LDMFA
+    : public NamedClassDecoder {
+ public:
+  NamedLDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDA_LDMFA()
+    : NamedClassDecoder(decoder_, "LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0 LDMDA_LDMFA")
+  {}
+
+ private:
+  nacl_arm_dec::LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDA_LDMFA decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDA_LDMFA);
+};
+
+class NamedLDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDB_LDMEA
+    : public NamedClassDecoder {
+ public:
+  NamedLDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDB_LDMEA()
+    : NamedClassDecoder(decoder_, "LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0 LDMDB_LDMEA")
+  {}
+
+ private:
+  nacl_arm_dec::LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDB_LDMEA decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMDB_LDMEA);
+};
+
+class NamedLDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMIB_LDMED
+    : public NamedClassDecoder {
+ public:
+  NamedLDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMIB_LDMED()
+    : NamedClassDecoder(decoder_, "LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0 LDMIB_LDMED")
+  {}
+
+ private:
+  nacl_arm_dec::LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMIB_LDMED decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0_LDMIB_LDMED);
+};
+
+class NamedLDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0_LDM_LDMIA_LDMFD
+    : public NamedClassDecoder {
+ public:
+  NamedLDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0_LDM_LDMIA_LDMFD()
+    : NamedClassDecoder(decoder_, "LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0 LDM_LDMIA_LDMFD")
+  {}
+
+ private:
+  nacl_arm_dec::LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0_LDM_LDMIA_LDMFD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0_LDM_LDMIA_LDMFD);
+};
+
 class NamedLDREXB_cccc00011101nnnntttt111110011111_case_0_LDREXB
     : public NamedClassDecoder {
  public:
@@ -4671,54 +4719,6 @@ class NamedLoadRegisterImm8Op_LDRSH_literal
  private:
   nacl_arm_dec::LoadRegisterImm8Op_LDRSH_literal decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegisterImm8Op_LDRSH_literal);
-};
-
-class NamedLoadRegisterList_LDMDA_LDMFA
-    : public NamedClassDecoder {
- public:
-  NamedLoadRegisterList_LDMDA_LDMFA()
-    : NamedClassDecoder(decoder_, "LoadRegisterList LDMDA_LDMFA")
-  {}
-
- private:
-  nacl_arm_dec::LoadRegisterList_LDMDA_LDMFA decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegisterList_LDMDA_LDMFA);
-};
-
-class NamedLoadRegisterList_LDMDB_LDMEA
-    : public NamedClassDecoder {
- public:
-  NamedLoadRegisterList_LDMDB_LDMEA()
-    : NamedClassDecoder(decoder_, "LoadRegisterList LDMDB_LDMEA")
-  {}
-
- private:
-  nacl_arm_dec::LoadRegisterList_LDMDB_LDMEA decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegisterList_LDMDB_LDMEA);
-};
-
-class NamedLoadRegisterList_LDMIB_LDMED
-    : public NamedClassDecoder {
- public:
-  NamedLoadRegisterList_LDMIB_LDMED()
-    : NamedClassDecoder(decoder_, "LoadRegisterList LDMIB_LDMED")
-  {}
-
- private:
-  nacl_arm_dec::LoadRegisterList_LDMIB_LDMED decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegisterList_LDMIB_LDMED);
-};
-
-class NamedLoadRegisterList_LDM_LDMIA_LDMFD
-    : public NamedClassDecoder {
- public:
-  NamedLoadRegisterList_LDM_LDMIA_LDMFD()
-    : NamedClassDecoder(decoder_, "LoadRegisterList LDM_LDMIA_LDMFD")
-  {}
-
- private:
-  nacl_arm_dec::LoadRegisterList_LDM_LDMIA_LDMFD decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegisterList_LDM_LDMIA_LDMFD);
 };
 
 class NamedLoadVectorRegister_VLDR
@@ -5729,6 +5729,54 @@ class NamedSSUB8_cccc01100001nnnndddd11111111mmmm_case_0_SSUB8
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedSSUB8_cccc01100001nnnndddd11111111mmmm_case_0_SSUB8);
 };
 
+class NamedSTMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDA_STMED
+    : public NamedClassDecoder {
+ public:
+  NamedSTMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDA_STMED()
+    : NamedClassDecoder(decoder_, "STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0 STMDA_STMED")
+  {}
+
+ private:
+  nacl_arm_dec::STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDA_STMED decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSTMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDA_STMED);
+};
+
+class NamedSTMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDB_STMFD
+    : public NamedClassDecoder {
+ public:
+  NamedSTMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDB_STMFD()
+    : NamedClassDecoder(decoder_, "STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0 STMDB_STMFD")
+  {}
+
+ private:
+  nacl_arm_dec::STMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDB_STMFD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSTMDB_STMFD_cccc100100w0nnnnrrrrrrrrrrrrrrrr_case_0_STMDB_STMFD);
+};
+
+class NamedSTMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0_STMIB_STMFA
+    : public NamedClassDecoder {
+ public:
+  NamedSTMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0_STMIB_STMFA()
+    : NamedClassDecoder(decoder_, "STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0 STMIB_STMFA")
+  {}
+
+ private:
+  nacl_arm_dec::STMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0_STMIB_STMFA decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSTMIB_STMFA_cccc100110w0nnnnrrrrrrrrrrrrrrrr_case_0_STMIB_STMFA);
+};
+
+class NamedSTM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0_STM_STMIA_STMEA
+    : public NamedClassDecoder {
+ public:
+  NamedSTM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0_STM_STMIA_STMEA()
+    : NamedClassDecoder(decoder_, "STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0 STM_STMIA_STMEA")
+  {}
+
+ private:
+  nacl_arm_dec::STM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0_STM_STMIA_STMEA decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSTM_STMIA_STMEA_cccc100010w0nnnnrrrrrrrrrrrrrrrr_case_0_STM_STMIA_STMEA);
+};
+
 class NamedSTREXB_cccc00011100nnnndddd11111001tttt_case_0_STREXB
     : public NamedClassDecoder {
  public:
@@ -5979,54 +6027,6 @@ class NamedStore3RegisterOp_STRH_register
  private:
   nacl_arm_dec::Store3RegisterOp_STRH_register decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedStore3RegisterOp_STRH_register);
-};
-
-class NamedStoreRegisterList_STMDA_STMED
-    : public NamedClassDecoder {
- public:
-  NamedStoreRegisterList_STMDA_STMED()
-    : NamedClassDecoder(decoder_, "StoreRegisterList STMDA_STMED")
-  {}
-
- private:
-  nacl_arm_dec::StoreRegisterList_STMDA_STMED decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreRegisterList_STMDA_STMED);
-};
-
-class NamedStoreRegisterList_STMDB_STMFD
-    : public NamedClassDecoder {
- public:
-  NamedStoreRegisterList_STMDB_STMFD()
-    : NamedClassDecoder(decoder_, "StoreRegisterList STMDB_STMFD")
-  {}
-
- private:
-  nacl_arm_dec::StoreRegisterList_STMDB_STMFD decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreRegisterList_STMDB_STMFD);
-};
-
-class NamedStoreRegisterList_STMIB_STMFA
-    : public NamedClassDecoder {
- public:
-  NamedStoreRegisterList_STMIB_STMFA()
-    : NamedClassDecoder(decoder_, "StoreRegisterList STMIB_STMFA")
-  {}
-
- private:
-  nacl_arm_dec::StoreRegisterList_STMIB_STMFA decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreRegisterList_STMIB_STMFA);
-};
-
-class NamedStoreRegisterList_STM_STMIA_STMEA
-    : public NamedClassDecoder {
- public:
-  NamedStoreRegisterList_STM_STMIA_STMEA()
-    : NamedClassDecoder(decoder_, "StoreRegisterList STM_STMIA_STMEA")
-  {}
-
- private:
-  nacl_arm_dec::StoreRegisterList_STM_STMIA_STMEA decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreRegisterList_STM_STMIA_STMEA);
 };
 
 class NamedStoreVectorRegister_VSTR
