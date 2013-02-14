@@ -49,7 +49,7 @@ class NET_EXPORT_PRIVATE SpdyFrameReader {
   bool ReadUInt32(uint32* result);
 
   // Reads a 31-bit unsigned integer into the given output parameter. This is
-  // equivelant to ReadUInt32() above except that the highest-order bit is
+  // equivalent to ReadUInt32() above except that the highest-order bit is
   // discarded.
   // Forwards the internal iterater (by 4B) on success.
   // Returns true on success, false otherwise.

@@ -69,7 +69,7 @@ bool SpdyFrameReader::ReadUInt31(uint32* result) {
 
   // Zero out highest-order bit.
   if (success) {
-    *result &= kStreamIdMask;
+    *result &= 0x7fffffff;
   }
 
   return success;
