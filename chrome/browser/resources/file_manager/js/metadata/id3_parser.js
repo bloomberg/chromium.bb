@@ -176,7 +176,6 @@ Id3Parser.prototype.readAPIC_ = function(reader, majorVersion, frame, end) {
  *
  * @private
  * @param {ByteReader} reader  reader to use.
- * @param {number} majorVersion  //TODO(JSDOC).
  * @return {Object} frame read.
  */
 Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
