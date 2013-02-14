@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -860,7 +861,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
     } else {
       DecoratedTextfield* field = new DecoratedTextfield(
           input.autofilled_value,
-          ASCIIToUTF16(input.placeholder_text),
+          l10n_util::GetStringUTF16(input.placeholder_text_rid),
           this);
       textfields->insert(std::make_pair(&input, field));
       layout->AddView(field);

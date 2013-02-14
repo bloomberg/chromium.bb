@@ -169,32 +169,43 @@ void AutofillDialogControllerImpl::Show() {
   }
 
   const DetailInput kEmailInputs[] = {
-    { 1, EMAIL_ADDRESS, "Email address" },
+    { 1, EMAIL_ADDRESS, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
   };
 
   const DetailInput kCCInputs[] = {
-    { 2, CREDIT_CARD_NUMBER, "Card number" },
+    { 2, CREDIT_CARD_NUMBER, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
     { 3, CREDIT_CARD_EXP_MONTH },
     { 3, CREDIT_CARD_EXP_4_DIGIT_YEAR },
-    { 3, CREDIT_CARD_VERIFICATION_CODE, "CVC" },
-    { 4, CREDIT_CARD_NAME, "Cardholder name" },
+    { 3, CREDIT_CARD_VERIFICATION_CODE, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC },
+    { 4, CREDIT_CARD_NAME, IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
   };
 
   const DetailInput kBillingInputs[] = {
-    { 5, ADDRESS_HOME_LINE1, "Street address", "billing" },
-    { 6, ADDRESS_HOME_LINE2, "Street address (optional)", "billing" },
-    { 7, ADDRESS_HOME_CITY, "City", "billing" },
-    { 8, ADDRESS_HOME_STATE, "State", "billing" },
-    { 8, ADDRESS_HOME_ZIP, "ZIP code", "billing", 0.5 },
+    { 5, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
+      "billing" },
+    { 6, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
+      "billing" },
+    { 7, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
+      "billing" },
+    // TODO(estade): state is supposed to be a combobox.
+    { 8, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "billing" },
+    { 8, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
+      "billing", 0.5 },
   };
 
   const DetailInput kShippingInputs[] = {
-    { 9, NAME_FULL, "Full name", "shipping" },
-    { 10, ADDRESS_HOME_LINE1, "Street address", "shipping" },
-    { 11, ADDRESS_HOME_LINE2, "Street address (optional)", "shipping" },
-    { 12, ADDRESS_HOME_CITY, "City", "shipping" },
-    { 13, ADDRESS_HOME_STATE, "State", "shipping" },
-    { 13, ADDRESS_HOME_ZIP, "ZIP code", "shipping", 0.5 },
+    { 9, NAME_FULL, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME,
+      "shipping" },
+    { 10, ADDRESS_HOME_LINE1, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1,
+      "shipping" },
+    { 11, ADDRESS_HOME_LINE2, IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2,
+      "shipping" },
+    { 12, ADDRESS_HOME_CITY, IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY,
+      "shipping" },
+    // TODO(estade): state is supposed to be a combobox.
+    { 13, ADDRESS_HOME_STATE, IDS_AUTOFILL_FIELD_LABEL_STATE, "shipping" },
+    { 13, ADDRESS_HOME_ZIP, IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE,
+      "shipping", 0.5 },
   };
 
   FilterInputs(form_structure_,

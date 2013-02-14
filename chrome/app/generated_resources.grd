@@ -10936,6 +10936,38 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Expiration date
       </message>
 
+      <!-- requestAutocomplete field labels. -->
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL" desc="The placeholder/label text for email in the requestAutocomplete dialog.">
+        Email address
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER" desc="The placeholder/label text for credit card number in the requestAutocomplete dialog.">
+        Card number
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC" desc="The placeholder/label text for credit card verification code in the requestAutocomplete dialog.">
+        CVC
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME" desc="The placeholder/label text for cardholder full name in the requestAutocomplete dialog.">
+        Cardholder name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME" desc="The placeholder/label text for addressee full name in the requestAutocomplete dialog.">
+        Name
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1" desc="The placeholder/label text for address line 1 in the requestAutocomplete dialog.">
+        Street address
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2" desc="The placeholder/label text for address line 2 in the requestAutocomplete dialog.">
+        Street address (optional)
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY" desc="The placeholder/label text for locality (city) in the requestAutocomplete dialog.">
+        City
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE" desc="The placeholder/label text for ZIP/postal code in the requestAutocomplete dialog.">
+        ZIP code
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER" desc="The placeholder/label text for phone number in the requestAutocomplete dialog.">
+        Phone number
+      </message>
+
       <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link on the Autofill dialog.">
         About Autofill
       </message>

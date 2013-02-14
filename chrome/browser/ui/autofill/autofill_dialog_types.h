@@ -25,8 +25,8 @@ struct DetailInput {
   // kBillingInputs.
   int row_id;
   AutofillFieldType type;
-  // TODO(estade): remove this, do l10n.
-  const char* placeholder_text;
+  // Placeholder text resource ID.
+  int placeholder_text_rid;
   // The section suffix that the field must have to match up to this input.
   const char* section_suffix;
   // A number between 0 and 1.0 that describes how much of the horizontal space
