@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_INSTANT_INSTANT_SERVICE_FACTORY_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
@@ -13,8 +14,7 @@ class InstantService;
 class Profile;
 class ProfileKeyedService;
 
-// Singleton that owns all InstantServices and associates them with
-// Profiles.
+// Singleton that owns all InstantServices and associates them with Profiles.
 class InstantServiceFactory : public ProfileKeyedServiceFactory {
  public:
   // Returns the InstantService for |profile|.
@@ -22,15 +22,13 @@ class InstantServiceFactory : public ProfileKeyedServiceFactory {
 
   static InstantServiceFactory* GetInstance();
 
-  static ProfileKeyedService* BuildInstanceFor(Profile* profile);
-
  private:
   friend struct DefaultSingletonTraits<InstantServiceFactory>;
 
   InstantServiceFactory();
   virtual ~InstantServiceFactory();
 
-  // ProfileKeyedServiceFactory:
+  // Overridden from ProfileKeyedServiceFactory:
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;

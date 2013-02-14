@@ -22,11 +22,7 @@ void InstantService::AddInstantProcess(int process_id) {
 }
 
 bool InstantService::IsInstantProcess(int process_id) const {
-  return process_ids_.count(process_id) != 0;
-}
-
-int InstantService::GetInstantProcessCount() const {
-  return process_ids_.size();
+  return process_ids_.find(process_id) != process_ids_.end();
 }
 
 void InstantService::Shutdown() {

@@ -169,15 +169,10 @@ void BrowserInstantController::ReplaceWebContentsAt(
     int index,
     scoped_ptr<content::WebContents> new_contents) {
   DCHECK_NE(TabStripModel::kNoTab, index);
-  content::WebContents* old_contents =
-      browser_->tab_strip_model()->GetWebContentsAt(index);
-  // TabStripModel takes ownership of |new_contents|.
-  browser_->tab_strip_model()->ReplaceWebContentsAt(
-      index, new_contents.release());
-  // TODO(samarth): use scoped_ptr instead of comments to document ownership
-  // transfer.
-  // InstantUnloadHandler takes ownership of |old_contents|.
-  instant_unload_handler_.RunUnloadListenersOrDestroy(old_contents, index);
+  scoped_ptr<content::WebContents> old_contents(browser_->tab_strip_model()->
+      ReplaceWebContentsAt(index, new_contents.release()));
+  instant_unload_handler_.RunUnloadListenersOrDestroy(old_contents.Pass(),
+                                                      index);
 }
 
 void BrowserInstantController::SetInstantSuggestion(

@@ -12,42 +12,43 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-// WebContentsDelegate implementation. This owns the WebContents supplied to the
-// constructor.
 class InstantUnloadHandler::WebContentsDelegateImpl
     : public content::WebContentsDelegate {
  public:
   WebContentsDelegateImpl(InstantUnloadHandler* handler,
-                          content::WebContents* contents,
+                          scoped_ptr<content::WebContents> contents,
                           int index)
       : handler_(handler),
-        contents_(contents),
+        contents_(contents.Pass()),
         index_(index) {
-    contents->SetDelegate(this);
+    contents_->SetDelegate(this);
+    contents_->GetRenderViewHost()->FirePageBeforeUnload(false);
   }
 
-  // content::WebContentsDelegate overrides:
+  // Overridden from content::WebContentsDelegate:
+  virtual void CloseContents(content::WebContents* source) OVERRIDE {
+    DCHECK_EQ(contents_, source);
+    // Remove ourselves as the delegate, so that CloseContents() won't be
+    // called twice, leading to double deletion (http://crbug.com/155848).
+    contents_->SetDelegate(NULL);
+    handler_->Destroy(this);
+  }
+
   virtual void WillRunBeforeUnloadConfirm() OVERRIDE {
-    content::WebContents* contents = contents_.release();
-    contents->SetDelegate(NULL);
-    handler_->Activate(this, contents, index_);
+    contents_->SetDelegate(NULL);
+    handler_->Activate(this, contents_.Pass(), index_);
   }
 
   virtual bool ShouldSuppressDialogs() OVERRIDE {
-    return true;  // Return true so dialogs are suppressed.
-  }
-
-  virtual void CloseContents(content::WebContents* source) OVERRIDE {
-    contents_->SetDelegate(NULL);
-    handler_->Destroy(this);
+    return true;
   }
 
  private:
   InstantUnloadHandler* const handler_;
   scoped_ptr<content::WebContents> contents_;
 
-  // The index |contents_| was originally at. If we add the tab back we add it
-  // at this index.
+  // The tab strip index |contents_| was originally at. If we add the tab back
+  // to the tabstrip, we add it at this index.
   const int index_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDelegateImpl);
@@ -61,7 +62,7 @@ InstantUnloadHandler::~InstantUnloadHandler() {
 }
 
 void InstantUnloadHandler::RunUnloadListenersOrDestroy(
-    content::WebContents* contents,
+    scoped_ptr<content::WebContents> contents,
     int index) {
   DCHECK(!contents->GetDelegate());
 
@@ -71,27 +72,25 @@ void InstantUnloadHandler::RunUnloadListenersOrDestroy(
     // get here from BrowserInstantController::TabDeactivated, other tab
     // observers may still expect to interact with the tab before the event has
     // finished propagating.
-    MessageLoop::current()->DeleteSoon(FROM_HERE, contents);
+    MessageLoop::current()->DeleteSoon(FROM_HERE, contents.release());
     return;
   }
 
-  // Tab has before unload listener. Install a delegate and fire the before
-  // unload listener.
-  delegates_.push_back(new WebContentsDelegateImpl(this, contents, index));
-  contents->GetRenderViewHost()->FirePageBeforeUnload(false);
+  // Tab has beforeunload listeners. Install a delegate to run them.
+  delegates_.push_back(
+      new WebContentsDelegateImpl(this, contents.Pass(), index));
 }
 
 void InstantUnloadHandler::Activate(WebContentsDelegateImpl* delegate,
-                                    content::WebContents* contents,
+                                    scoped_ptr<content::WebContents> contents,
                                     int index) {
-  chrome::NavigateParams params(browser_, contents);
-  params.disposition = NEW_FOREGROUND_TAB;
-  params.tabstrip_index = index;
-
   // Remove (and delete) the delegate.
   Destroy(delegate);
 
   // Add the tab back in.
+  chrome::NavigateParams params(browser_, contents.release());
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.tabstrip_index = index;
   chrome::Navigate(&params);
 }
 
