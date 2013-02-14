@@ -134,11 +134,23 @@ class CONTENT_EXPORT IndexedDBDispatcher
       bool key_only,
       WebKit::WebIDBCallbacks* callbacks);
 
-  void RequestIDBDatabasePut(
+  void RequestIDBDatabasePutOld(
       int32 ipc_database_id,
       int64 transaction_id,
       int64 object_store_id,
       WebKit::WebVector<unsigned char>* value,
+      const IndexedDBKey& key,
+      WebKit::WebIDBDatabase::PutMode put_mode,
+      WebKit::WebIDBCallbacks* callbacks,
+      const WebKit::WebVector<long long>& index_ids,
+      const WebKit::WebVector<WebKit::WebVector<
+          WebKit::WebIDBKey> >& index_keys);
+
+  void RequestIDBDatabasePut(
+      int32 ipc_database_id,
+      int64 transaction_id,
+      int64 object_store_id,
+      const WebKit::WebData& value,
       const IndexedDBKey& key,
       WebKit::WebIDBDatabase::PutMode put_mode,
       WebKit::WebIDBCallbacks* callbacks,

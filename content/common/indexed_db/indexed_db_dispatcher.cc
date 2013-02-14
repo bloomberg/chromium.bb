@@ -18,6 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 
 using WebKit::WebDOMStringList;
+using WebKit::WebData;
 using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
@@ -387,7 +388,7 @@ void IndexedDBDispatcher::RequestIDBDatabaseGet(
 }
 
 
-void IndexedDBDispatcher::RequestIDBDatabasePut(
+void IndexedDBDispatcher::RequestIDBDatabasePutOld(
     int32 ipc_database_id,
     int64 transaction_id,
     int64 object_store_id,
@@ -399,7 +400,7 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
     const WebKit::WebVector<WebKit::WebVector<
       WebKit::WebIDBKey> >& index_keys) {
   ResetCursorPrefetchCaches();
-  IndexedDBHostMsg_DatabasePut_Params params;
+  IndexedDBHostMsg_DatabasePutOld_Params params;
   init_params(params, callbacks);
   params.ipc_database_id = ipc_database_id;
   params.transaction_id = transaction_id;
@@ -407,6 +408,43 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
 
   COMPILE_ASSERT(sizeof(params.value[0]) == sizeof((*value)[0]), Cant_copy);
   params.value.assign(value->data(), value->data() + value->size());
+  params.key = key;
+  params.put_mode = put_mode;
+
+  COMPILE_ASSERT(sizeof(params.index_ids[0]) ==
+                 sizeof(index_ids[0]), Cant_copy);
+  params.index_ids.assign(index_ids.data(),
+                          index_ids.data() + index_ids.size());
+
+  params.index_keys.resize(index_keys.size());
+  for (size_t i = 0; i < index_keys.size(); ++i) {
+      params.index_keys[i].resize(index_keys[i].size());
+      for (size_t j = 0; j < index_keys[i].size(); ++j) {
+          params.index_keys[i][j] = IndexedDBKey(index_keys[i][j]);
+      }
+  }
+  Send(new IndexedDBHostMsg_DatabasePutOld(params));
+}
+
+void IndexedDBDispatcher::RequestIDBDatabasePut(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id,
+    const WebData& value,
+    const IndexedDBKey& key,
+    WebIDBDatabase::PutMode put_mode,
+    WebIDBCallbacks* callbacks,
+    const WebVector<long long>& index_ids,
+    const WebVector<WebKit::WebVector<
+      WebIDBKey> >& index_keys) {
+  ResetCursorPrefetchCaches();
+  IndexedDBHostMsg_DatabasePut_Params params;
+  init_params(params, callbacks);
+  params.ipc_database_id = ipc_database_id;
+  params.transaction_id = transaction_id;
+  params.object_store_id = object_store_id;
+
+  params.value.assign(value.data(), value.data() + value.size());
   params.key = key;
   params.put_mode = put_mode;
 

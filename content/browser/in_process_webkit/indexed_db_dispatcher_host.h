@@ -23,17 +23,12 @@ struct IndexedDBHostMsg_DatabaseCreateTransaction_Params;
 struct IndexedDBHostMsg_DatabaseDeleteRange_Params;
 struct IndexedDBHostMsg_DatabaseGet_Params;
 struct IndexedDBHostMsg_DatabaseOpenCursor_Params;
+struct IndexedDBHostMsg_DatabasePutOld_Params;
 struct IndexedDBHostMsg_DatabasePut_Params;
 struct IndexedDBHostMsg_DatabaseSetIndexKeys_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
 struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
-struct IndexedDBHostMsg_IndexCount_Params;
-struct IndexedDBHostMsg_IndexOpenCursor_Params;
-struct IndexedDBHostMsg_ObjectStoreCount_Params;
-struct IndexedDBHostMsg_ObjectStoreCreateIndex_Params;
-struct IndexedDBHostMsg_ObjectStoreOpenCursor_Params;
-struct IndexedDBHostMsg_ObjectStorePut_Params;
 
 namespace WebKit {
 class WebIDBCursor;
@@ -136,6 +131,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnDestroyed(int32 ipc_database_id);
 
     void OnGet(const IndexedDBHostMsg_DatabaseGet_Params& params);
+    void OnPutOld(const IndexedDBHostMsg_DatabasePutOld_Params& params);
     void OnPut(const IndexedDBHostMsg_DatabasePut_Params& params);
     void OnSetIndexKeys(
         const IndexedDBHostMsg_DatabaseSetIndexKeys_Params& params);

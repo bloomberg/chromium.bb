@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
@@ -36,6 +37,7 @@
 
 using webkit_database::DatabaseUtil;
 using WebKit::WebDOMStringList;
+using WebKit::WebData;
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBCursor;
@@ -346,6 +348,7 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePutOld, OnPutOld)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPut)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexKeys,
                         OnSetIndexKeys)
@@ -464,8 +467,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
                 params.key_range, params.key_only, callbacks.release());
 }
 
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
-    const IndexedDBHostMsg_DatabasePut_Params& params) {
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutOld(
+    const IndexedDBHostMsg_DatabasePutOld_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
   WebIDBDatabase* database = parent_->GetOrTerminateProcess(
@@ -487,6 +490,35 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
   database->put(host_transaction_id,
                 params.object_store_id,
                 &value, params.key,
+                params.put_mode, callbacks.release(),
+                params.index_ids,
+                params.index_keys);
+  TransactionIDToSizeMap* map =
+      &parent_->database_dispatcher_host_->transaction_size_map_;
+  // Size can't be big enough to overflow because it represents the
+  // actual bytes passed through IPC.
+  (*map)[host_transaction_id] += params.value.size();
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
+    const IndexedDBHostMsg_DatabasePut_Params& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, params.ipc_database_id);
+  if (!database)
+    return;
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<WebIDBKey>(parent_, params.ipc_thread_id,
+                                        params.ipc_response_id));
+  // Be careful with empty vectors.
+  WebData value;
+  if (params.value.size())
+      value.assign(&params.value.front(), params.value.size());
+  int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
+  database->put(host_transaction_id,
+                params.object_store_id,
+                value, params.key,
                 params.put_mode, callbacks.release(),
                 params.index_ids,
                 params.index_keys);

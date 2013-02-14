@@ -8,6 +8,7 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/public/common/serialized_script_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 
@@ -21,7 +22,7 @@ namespace content {
 TEST(IndexedDBDispatcherTest, DISABLED_ValueSizeTest) {
   string16 data;
   data.resize(kMaxIDBValueSizeInBytes / sizeof(char16) + 1, 'x');
-  WebKit::WebVector<unsigned char> value;
+  const WebKit::WebData value;
   const int32 ipc_dummy_id = -1;
   const int64 transaction_id = 1;
   const int64 object_store_id = 2;
@@ -34,7 +35,7 @@ TEST(IndexedDBDispatcherTest, DISABLED_ValueSizeTest) {
         ipc_dummy_id,
         transaction_id,
         object_store_id,
-        &value,
+        value,
         key,
         WebKit::WebIDBDatabase::AddOrUpdate,
         static_cast<WebKit::WebIDBCallbacks*>(NULL),
