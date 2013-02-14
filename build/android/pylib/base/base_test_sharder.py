@@ -11,6 +11,10 @@ from pylib.base.test_result import TestResults
 from pylib.forwarder import Forwarder
 
 
+# Number of times we retry a test suite in case of failure.
+NUM_RETRIES = 3
+
+
 def _ShardedTestRunnable(test):
   """Standalone function needed by multiprocessing.Pool."""
   log_format = '[' + test.device + '] # %(asctime)-15s: %(message)s'
@@ -54,7 +58,7 @@ class BaseTestSharder(object):
     # We should differentiate between these. Otherwise, blindly retrying tests
     # might mask test/product flakiness. For type 2, we should follow the
     # general chrome best practices.
-    self.retries = len(self.attached_devices)
+    self.retries = NUM_RETRIES
     self.tests = []
     self.build_type = build_type
 
