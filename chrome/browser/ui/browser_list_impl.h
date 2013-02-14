@@ -60,12 +60,6 @@ class BrowserListImpl {
     return last_active_browsers_.rend();
   }
 
-  // Returns true if at least one incognito window is open.
-  bool IsIncognitoWindowOpen() const;
-
-  // Returns true if at least one incognito window is open for |profile|.
-  bool IsIncognitoWindowOpenForProfile(Profile* profile) const;
-
  private:
   BrowserListImpl();
   ~BrowserListImpl();

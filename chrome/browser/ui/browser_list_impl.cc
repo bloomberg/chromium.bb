@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -18,11 +17,6 @@
 
 // #include "build/build_config.h"
 // #include "base/prefs/pref_service.h"
-
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
 
 namespace chrome {
 
@@ -115,32 +109,6 @@ Browser* BrowserListImpl::GetLastActive() const {
   if (!last_active_browsers_.empty())
     return *(last_active_browsers_.rbegin());
   return NULL;
-}
-
-bool BrowserListImpl::IsIncognitoWindowOpen() const {
-  for (BrowserListImpl::const_iterator i = BrowserListImpl::begin();
-       i != BrowserListImpl::end(); ++i) {
-    if ((*i)->profile()->IsOffTheRecord())
-      return true;
-  }
-  return false;
-}
-
-bool BrowserListImpl::IsIncognitoWindowOpenForProfile(Profile* profile) const {
-#if defined(OS_CHROMEOS)
-  // In ChromeOS, we assume that the default profile is always valid, so if
-  // we are in guest mode, keep the OTR profile active so it won't be deleted.
-  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
-    return true;
-#endif
-  for (BrowserListImpl::const_iterator i = BrowserListImpl::begin();
-       i != BrowserListImpl::end(); ++i) {
-    if ((*i)->profile()->IsSameProfile(profile) &&
-        (*i)->profile()->IsOffTheRecord()) {
-      return true;
-    }
-  }
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

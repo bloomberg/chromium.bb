@@ -38,10 +38,12 @@ class BrowserList {
   // Closes all browsers for |profile| across all desktops.
   static void CloseAllBrowsersWithProfile(Profile* profile);
 
-  // Returns true if at least one incognito session is active.
+  // Returns true if at least one incognito session is active across all
+  // desktops.
   static bool IsOffTheRecordSessionActive();
 
-  // Returns true if at least one incognito session is active for |profile|.
+  // Returns true if at least one incognito session is active for |profile|
+  // across all desktops.
   static bool IsOffTheRecordSessionActiveForProfile(Profile* profile);
 };
 

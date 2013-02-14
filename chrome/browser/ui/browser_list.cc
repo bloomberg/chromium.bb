@@ -12,6 +12,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using content::WebContents;
 
 namespace {
@@ -73,10 +77,26 @@ void BrowserList::SetLastActive(Browser* browser) {
 
 // static
 bool BrowserList::IsOffTheRecordSessionActive() {
-  return GetNativeList()->IsIncognitoWindowOpen();
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->profile()->IsOffTheRecord())
+      return true;
+  }
+  return false;
 }
 
 // static
 bool BrowserList::IsOffTheRecordSessionActiveForProfile(Profile* profile) {
-  return GetNativeList()->IsIncognitoWindowOpenForProfile(profile);
+  #if defined(OS_CHROMEOS)
+  // In ChromeOS, we assume that the default profile is always valid, so if
+  // we are in guest mode, keep the OTR profile active so it won't be deleted.
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    return true;
+#endif
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (it->profile()->IsSameProfile(profile) &&
+        it->profile()->IsOffTheRecord()) {
+      return true;
+    }
+  }
+  return false;
 }
