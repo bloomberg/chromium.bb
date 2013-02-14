@@ -811,7 +811,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
-#if defined(OS_WIN) && defined(USE_ASH)
+#if defined(OS_WIN) && defined(USE_ASH) && !defined(NDEBUG)
   if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
       chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH)
     command_updater_.UpdateCommandEnabled(IDC_TOGGLE_ASH_DESKTOP, true);

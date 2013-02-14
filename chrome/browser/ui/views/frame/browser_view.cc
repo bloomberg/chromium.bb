@@ -2354,15 +2354,6 @@ void BrowserView::LoadAccelerators() {
         accelerator, ui::AcceleratorManager::kNormalPriority, this);
   }
 #endif
-#if defined(OS_WIN) && defined(USE_AURA)
-    if (base::win::GetVersion() < base::win::VERSION_WIN8) {
-      ui::Accelerator accelerator(ui::VKEY_A,
-                                  ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
-      accelerator_table_[accelerator] = IDC_TOGGLE_ASH_DESKTOP;
-      focus_manager->RegisterAccelerator(
-          accelerator, ui::AcceleratorManager::kNormalPriority, this);
-    }
-#endif
 }
 
 int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {

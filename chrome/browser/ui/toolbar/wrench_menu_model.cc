@@ -464,7 +464,7 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
     AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
   }
-#if defined(USE_ASH)
+#if !defined(NDEBUG) && defined(USE_ASH)
   if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
       chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH) {
     AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP,
