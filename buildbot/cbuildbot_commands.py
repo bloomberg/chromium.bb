@@ -1445,3 +1445,15 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
   cmd += [chrome_root]
   cros_build_lib.RunCommandWithRetries(constants.SYNC_RETRIES, cmd,
                                        cwd=build_root)
+
+
+def PatchChrome(chrome_root, patch, subdir):
+  """Apply a patch to Chrome.
+
+   Args:
+     chrome_root: The directory where chrome is stored.
+     patch: Rietveld issue number to apply.
+     subdir: Subdirectory to apply patch in.
+  """
+  cmd = ['apply_issue', '-i', patch]
+  cros_build_lib.RunCommand(cmd, cwd=os.path.join(chrome_root, subdir))

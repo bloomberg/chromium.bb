@@ -1045,6 +1045,19 @@ class SyncChromeStage(bs.BuilderStage):
                         **kwargs)
 
 
+class PatchChromeStage(bs.BuilderStage):
+  """Stage that applies Chrome patches if needed."""
+
+  option_name = 'rietveld_patches'
+
+  def _PerformStage(self):
+    for patch in ' '.join(self._options.rietveld_patches).split():
+      patch, colon, subdir = patch.partition(':')
+      if not colon:
+        subdir = 'src'
+      commands.PatchChrome(self._options.chrome_root, patch, subdir)
+
+
 class BuildTargetStage(BoardSpecificBuilderStage):
   """This stage builds Chromium OS for a target.
 

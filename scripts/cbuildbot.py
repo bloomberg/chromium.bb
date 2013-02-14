@@ -383,6 +383,7 @@ class SimpleBuilder(Builder):
       self._RunStage(stages.UprevStage, boards=[], enter_chroot=False)
       self._RunStage(stages.BuildBoardStage, [constants.CHROOT_BUILDER_BOARD])
       self._RunStage(stages.SyncChromeStage)
+      self._RunStage(stages.PatchChromeStage)
       self._RunStage(stages.SDKPackageStage)
       self._RunStage(stages.SDKTestStage)
       self._RunStage(stages.UploadPrebuiltsStage,
@@ -394,6 +395,7 @@ class SimpleBuilder(Builder):
       self._RunStage(stages.BuildBoardStage)
       self._RunStage(stages.UprevStage)
       self._RunStage(stages.SyncChromeStage)
+      self._RunStage(stages.PatchChromeStage)
 
       configs = self.build_config['board_specific_configs']
       for board in self.build_config['boards']:
@@ -614,6 +616,8 @@ def _RunBuildStagesWrapper(options, build_config):
     chrome_src = 'chrome-src-internal' if internal else 'chrome-src'
     options.chrome_root = os.path.join(options.cache_dir, 'distfiles', 'target',
                                        chrome_src)
+  elif options.rietveld_patches:
+    cros_build_lib.Die('This builder does not support rietveld patches.')
 
   target = DistributedBuilder if IsDistributedBuilder() else SimpleBuilder
   buildbot = target(options, build_config)
@@ -773,6 +777,12 @@ def _CreateParser():
                            help=("Space-separated list of short-form Gerrit "
                                  "Change-Id's or change numbers to patch. "
                                  "Please prepend '*' to internal Change-Id's"))
+  parser.add_remote_option('-G', '--rietveld-patches', action='extend',
+                           default=[], type='string',
+                           metavar="'id1[:subdir1]...idN[:subdirN]'",
+                           help=("Space-separated list of short-form Rietveld "
+                                 "issue numbers to patch. If no subdir is "
+                                 "specified, the src directory is used."))
   parser.add_option('-l', '--list', action='store_true', dest='list',
                     default=False,
                     help=('List the suggested trybot configs to use.  Use '
@@ -983,7 +993,8 @@ def _FinishParsing(options, args):
         'Chrome rev must not be %s if chrome_version is not set.'
         % constants.CHROME_REV_SPEC)
 
-  patches = bool(options.gerrit_patches or options.local_patches)
+  patches = bool(options.gerrit_patches or options.local_patches or
+                 options.rietveld_patches)
   if options.remote:
     if options.local:
       cros_build_lib.Die('Cannot specify both --remote and --local')
