@@ -219,10 +219,13 @@ void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   ASSERT_TRUE(http_server.BlockUntilStarted());
   ASSERT_TRUE(ws_server.BlockUntilStarted());
 
+  std::string host = ws_server.host_port_pair().HostForURL();
   uint16_t port = ws_server.host_port_pair().port();
   RunTestURL(GetTestURL(http_server,
                         test_case,
-                        StringPrintf("websocket_port=%d", port)));
+                        StringPrintf("websocket_host=%s&websocket_port=%d",
+                                     host.c_str(),
+                                     port)));
 }
 
 void PPAPITestBase::RunTestIfAudioOutputAvailable(

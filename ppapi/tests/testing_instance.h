@@ -90,6 +90,7 @@ pp::InstancePrivate {
 
   int ssl_server_port() { return ssl_server_port_; }
 
+  const std::string& websocket_host() { return websocket_host_; }
   int websocket_port() { return websocket_port_; }
 
   // Posts a message to the test page to eval() the script.
@@ -165,6 +166,9 @@ pp::InstancePrivate {
 
   // SSL server port.
   int ssl_server_port_;
+
+  // WebSocket host.
+  std::string websocket_host_;
 
   // WebSocket port.
   int websocket_port_;

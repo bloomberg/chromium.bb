@@ -52,6 +52,8 @@ bool TestingInstance::Init(uint32_t argc,
         nacl_mode_ = true;
     } else if (std::strcmp(argn[i], "protocol") == 0) {
       protocol_ = argv[i];
+    } else if (std::strcmp(argn[i], "websocket_host") == 0) {
+      websocket_host_ = argv[i];
     } else if (std::strcmp(argn[i], "websocket_port") == 0) {
       websocket_port_ = atoi(argv[i]);
     } else if (std::strcmp(argn[i], "ssl_server_port") == 0) {

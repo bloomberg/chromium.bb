@@ -33,11 +33,14 @@ function AppendFrame(testcase, i) {
 
   var frame = document.createElement("IFRAME");
   var mode = ExtractSearchParameter("mode");
+  var websocket_host = ExtractSearchParameter("websocket_host");
   var websocket_port = ExtractSearchParameter("websocket_port");
   var ssl_server_port = ExtractSearchParameter("ssl_server_port");
   var src = "?testcase=" + testcase;
   if (mode == "nacl")
     src += "&mode=nacl";
+  if (websocket_host != "")
+    src += "&websocket_host=" + websocket_host;
   if (websocket_port != "")
     src += "&websocket_port=" + websocket_port;
   if (ssl_server_port != "")
@@ -249,6 +252,9 @@ onload = function() {
     obj.setAttribute("id", "plugin");
     obj.setAttribute("testcase", testcase);
     obj.setAttribute("protocol", window.location.protocol);
+    var websocket_host = ExtractSearchParameter("websocket_host");
+    if (websocket_host != "")
+      obj.setAttribute("websocket_host", websocket_host);
     var websocket_port = ExtractSearchParameter("websocket_port");
     if (websocket_port != "")
       obj.setAttribute("websocket_port", websocket_port);
