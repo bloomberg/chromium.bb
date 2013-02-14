@@ -4147,36 +4147,36 @@ init_egl(struct display *d)
 
 	d->dpy = eglGetDisplay(d->display);
 	if (!eglInitialize(d->dpy, &major, &minor)) {
-		fprintf(stderr, "failed to initialize display\n");
+		fprintf(stderr, "failed to initialize EGL\n");
 		return -1;
 	}
 
 	if (!eglBindAPI(api)) {
-		fprintf(stderr, "failed to bind api EGL_OPENGL_API\n");
+		fprintf(stderr, "failed to bind EGL client API\n");
 		return -1;
 	}
 
 	if (!eglChooseConfig(d->dpy, argb_cfg_attribs,
 			     &d->argb_config, 1, &n) || n != 1) {
-		fprintf(stderr, "failed to choose argb config\n");
+		fprintf(stderr, "failed to choose argb EGL config\n");
 		return -1;
 	}
 
 	d->argb_ctx = eglCreateContext(d->dpy, d->argb_config,
 				       EGL_NO_CONTEXT, context_attribs);
 	if (d->argb_ctx == NULL) {
-		fprintf(stderr, "failed to create context\n");
+		fprintf(stderr, "failed to create EGL context\n");
 		return -1;
 	}
 
 	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->argb_ctx)) {
-		fprintf(stderr, "failed to make context current\n");
+		fprintf(stderr, "failed to make EGL context current\n");
 		return -1;
 	}
 
 	d->argb_device = cairo_egl_device_create(d->dpy, d->argb_ctx);
 	if (cairo_device_status(d->argb_device) != CAIRO_STATUS_SUCCESS) {
-		fprintf(stderr, "failed to get cairo egl argb device\n");
+		fprintf(stderr, "failed to get cairo EGL argb device\n");
 		return -1;
 	}
 
@@ -4260,7 +4260,7 @@ display_create(int argc, char *argv[])
 
 	d->display = wl_display_connect(NULL);
 	if (d->display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
+		fprintf(stderr, "failed to connect to Wayland display: %m\n");
 		free(d);
 		return NULL;
 	}
@@ -4289,7 +4289,9 @@ display_create(int argc, char *argv[])
 	wl_registry_add_listener(d->registry, &registry_listener, d);
 	wl_display_dispatch(d->display);
 #ifdef HAVE_CAIRO_EGL
-	init_egl(d);
+	if (init_egl(d) < 0)
+		fprintf(stderr, "EGL does not seem to work, "
+			"falling back to software rendering and wl_shm.\n");
 #endif
 
 	create_cursors(d);
