@@ -5,6 +5,7 @@
  */
 
 #include <setjmp.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -140,19 +141,7 @@ void Attempt(const char *str, void (WINAPI *start_fn)(void *), int sig) {
   }
   NaClThreadJoin(&thread);
 
-  switch(sig) {
-    /*
-     * There are inconsistences between POSIX implementations on which errors
-     * return SIGSEGV vs SIGBUS, so we allow either one.
-     */
-    case 10:
-    case 11:
-      if ((11 == g_SigFound) || (10 == g_SigFound)) return;
-
-    /* Otherwise look for an exact match */
-    default:
-      if (sig == g_SigFound) return;
-  }
+  if (sig == g_SigFound) return;
 
   /* If we have not matched, then print an error and exit. */
   printf("Error: Got signal %d, while expecting %d.\n", g_SigFound, sig);
@@ -171,6 +160,18 @@ enum NaClSignalResult Handler(int signal_number, void *ctx) {
 
 #define ATTEMPT(x,sig) Attempt(#x,x,sig)
 int main(int argc, const char *argv[]) {
+  /*
+   * There are inconsistencies between POSIX implementations on which errors
+   * return SIGSEGV vs SIGBUS.
+   */
+#if NACL_OSX
+  const int kAccessViolationOnMappedPageSignal = SIGBUS;
+#else
+  const int kAccessViolationOnMappedPageSignal = SIGSEGV;
+#endif
+  const int kAccessUnmappedPageSignal = SIGSEGV;
+  const int kDivideByZeroSignal = SIGFPE;
+
   int none1, none2;
   int sigHandler;
   UNREFERENCED_PARAMETER(argc);
@@ -193,10 +194,10 @@ int main(int argc, const char *argv[]) {
     exit(-1);
   }
 
-  ATTEMPT(Exec_RW, 11);
-  ATTEMPT(Write_RX, 11);
-  ATTEMPT(ReadWriteUnmapped, 11);
-  ATTEMPT(DivZero, 8);
+  ATTEMPT(Exec_RW, kAccessViolationOnMappedPageSignal);
+  ATTEMPT(Write_RX, kAccessViolationOnMappedPageSignal);
+  ATTEMPT(ReadWriteUnmapped, kAccessUnmappedPageSignal);
+  ATTEMPT(DivZero, kDivideByZeroSignal);
 
   if (0 == NaClSignalHandlerRemove(sigHandler)) {
     printf("Failed to unload 'sigHandler' handler.\n");
