@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -921,9 +920,11 @@ bool WrenchMenu::IsCommandEnabled(int id) const {
 
   const Entry& entry = id_to_entry_.find(id)->second;
   int command_id = entry.first->GetCommandIdAt(entry.second);
-  // The items representing the cut menu (cut/copy/paste) are always enabled.
-  // The child views of these items enabled state updates appropriately.
-  return command_id == IDC_CUT || entry.first->IsEnabledAt(entry.second);
+  // The items representing the cut menu (cut/copy/paste) and zoom menu
+  // (increment/decrement/reset) are always enabled. The child views of these
+  // items enabled state updates appropriately.
+  return command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
+      entry.first->IsEnabledAt(entry.second);
 }
 
 void WrenchMenu::ExecuteCommand(int id, int mouse_event_flags) {
