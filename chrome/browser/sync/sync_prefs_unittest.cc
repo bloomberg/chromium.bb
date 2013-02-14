@@ -4,8 +4,10 @@
 
 #include "chrome/browser/sync/sync_prefs.h"
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,6 +23,8 @@ using ::testing::StrictMock;
 class SyncPrefsTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kHistoryEnableFullHistorySync);
     SyncPrefs::RegisterUserPrefs(&pref_service_,
                                  pref_service_.registry());
   }
@@ -40,6 +44,8 @@ syncer::ModelTypeSet GetUserVisibleTypes() {
   user_visible_types.Remove(syncer::DICTIONARY);
   user_visible_types.Remove(syncer::EXTENSION_SETTINGS);
   user_visible_types.Remove(syncer::SEARCH_ENGINES);
+  user_visible_types.Remove(syncer::SESSIONS);
+  user_visible_types.Remove(syncer::HISTORY_DELETE_DIRECTIVES);
   return user_visible_types;
 }
 
@@ -119,13 +125,12 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
     if (it.Get() == syncer::EXTENSIONS) {
       expected_preferred_types.Put(syncer::EXTENSION_SETTINGS);
     }
-    if (it.Get() == syncer::SESSIONS) {
+    if (it.Get() == syncer::TYPED_URLS) {
       expected_preferred_types.Put(syncer::HISTORY_DELETE_DIRECTIVES);
+      expected_preferred_types.Put(syncer::SESSIONS);
     }
-    // TODO(akalin): Remove this when history delete directives are
-    // registered by default.
-    if (it.Get() == syncer::HISTORY_DELETE_DIRECTIVES) {
-      expected_preferred_types.Clear();
+    if (it.Get() == syncer::PROXY_TABS) {
+      expected_preferred_types.Put(syncer::SESSIONS);
     }
     sync_prefs.SetPreferredDataTypes(user_types, preferred_types);
     EXPECT_TRUE(expected_preferred_types.Equals(

@@ -28,6 +28,7 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::NIGORI,               //  Listed for completeness.
   syncer::DEVICE_INFO,          //  Listed for completeness.
   syncer::EXPERIMENTS,          //  Listed for completeness.
+  syncer::PROXY_TABS,           //  Listed for completeness.
   syncer::BOOKMARKS,            //  UI thread datatypes.
   syncer::PREFERENCES,
   syncer::PRIORITY_PREFERENCES,

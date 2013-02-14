@@ -341,7 +341,7 @@ ModelTypeSet ControlTypes() {
 
 ModelTypeSet ProxyTypes() {
   ModelTypeSet set;
-  // TODO(zea): add a TABS type here.
+  set.Put(PROXY_TABS);
   return set;
 }
 
@@ -400,6 +400,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Priority Preferences";
     case DICTIONARY:
       return "Dictionary";
+    case PROXY_TABS:
+      return "Tabs";
     default:
       break;
   }
@@ -477,6 +479,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return PRIORITY_PREFERENCES;
   else if (model_type_string == "Dictionary")
     return DICTIONARY;
+  else if (model_type_string == "Tabs")
+    return PROXY_TABS;
   else
     NOTREACHED() << "No known model type corresponding to "
                  << model_type_string << ".";
@@ -559,6 +563,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_priority_preferences";
     case DICTIONARY:
       return "google_chrome_dictionary";
+    case PROXY_TABS:
+      return std::string();
     default:
       break;
   }

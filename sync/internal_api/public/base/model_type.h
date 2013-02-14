@@ -49,6 +49,11 @@ enum ModelType {
   // can be represented in the protocol using a specific Message type in the
   // EntitySpecifics protocol buffer.
   //
+  // WARNING: Modifying the order of these types or inserting a new type above
+  // these will affect numerous histograms that rely on the enum values being
+  // consistent. When adding a new type, add it to the end of the user model
+  // types section, but before the proxy types.
+  //
   // A bookmark folder or a bookmark URL object.
   BOOKMARKS,
   FIRST_USER_MODEL_TYPE = BOOKMARKS,  // Declared 2nd, for debugger prettiness.
@@ -62,7 +67,6 @@ enum ModelType {
   AUTOFILL_PROFILE,
   // An autofill folder or an autofill object.
   AUTOFILL,
-
   // A themes folder or a themes object.
   THEMES,
   // A typed_url folder or a typed_url object.
@@ -87,8 +91,22 @@ enum ModelType {
   SYNCED_NOTIFICATIONS,
   // Custom spelling dictionary.
   DICTIONARY,
-  LAST_USER_MODEL_TYPE = DICTIONARY,
 
+  // ---- Proxy types ----
+  // Proxy types are excluded from the sync protocol, but are still considered
+  // real user types. By convention, we prefix them with 'PROXY_' to distinguish
+  // them from normal protocol types.
+
+  // Tab sync. This is a placeholder type, so that Sessions can be implicitly
+  // enabled for history sync and tabs sync.
+  PROXY_TABS,
+
+  FIRST_PROXY_TYPE = PROXY_TABS,
+  LAST_PROXY_TYPE = PROXY_TABS,
+
+  LAST_USER_MODEL_TYPE = PROXY_TABS,
+
+  // ---- Control Types ----
   // An object representing a set of Nigori keys.
   NIGORI,
   FIRST_CONTROL_MODEL_TYPE = NIGORI,

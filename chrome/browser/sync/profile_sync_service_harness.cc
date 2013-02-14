@@ -32,12 +32,28 @@
 
 using syncer::sessions::SyncSessionSnapshot;
 
+namespace {
+
 // TODO(rsimha): Remove the following lines once crbug.com/91863 is fixed.
 // The amount of time for which we wait for a live sync operation to complete.
 static const int kLiveSyncOperationTimeoutMs = 45000;
 
 // The amount of time we wait for test cases that verify exponential backoff.
 static const int kExponentialBackoffVerificationTimeoutMs = 60000;
+
+syncer::ModelTypeSet GetUserVisibleTypes() {
+  syncer::ModelTypeSet user_visible_types(syncer::UserTypes());
+  user_visible_types.Remove(syncer::APP_NOTIFICATIONS);
+  user_visible_types.Remove(syncer::APP_SETTINGS);
+  user_visible_types.Remove(syncer::AUTOFILL_PROFILE);
+  user_visible_types.Remove(syncer::EXTENSION_SETTINGS);
+  user_visible_types.Remove(syncer::SEARCH_ENGINES);
+  user_visible_types.Remove(syncer::SESSIONS);
+  user_visible_types.Remove(syncer::HISTORY_DELETE_DIRECTIVES);
+  return user_visible_types;
+}
+
+}
 
 // Simple class to implement a timeout using PostDelayedTask.  If it is not
 // aborted before picked up by a message queue, then it asserts with the message
@@ -948,6 +964,7 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
     return true;
   }
 
+  synced_datatypes.RetainAll(GetUserVisibleTypes());
   synced_datatypes.Remove(datatype);
   service()->OnUserChoseDatatypes(false, synced_datatypes);
   if (AwaitFullSyncCompletion("Datatype reconfiguration.")) {
