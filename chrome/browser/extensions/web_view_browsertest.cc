@@ -252,7 +252,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/shim")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
+// http://crbug.com/176122: This test is flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_ShimSrcAttribute DISABLED_ShimSrcAttribute
+#else
+#define MAYBE_ShimSrcAttribute ShimSrcAttribute
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_ShimSrcAttribute) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/src_attribute"))
       << message_;
 }
