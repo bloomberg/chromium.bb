@@ -112,7 +112,7 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
 }
 
 void MenuItemView::ChildPreferredSizeChanged(View* child) {
-  pref_size_.SetSize(0, 0);
+  invalidate_dimensions();
   PreferredSizeChanged();
 }
 
@@ -378,7 +378,7 @@ SubmenuView* MenuItemView::GetSubmenu() const {
 
 void MenuItemView::SetTitle(const string16& title) {
   title_ = title;
-  pref_size_.SetSize(0, 0);  // Triggers preferred size recalculation.
+  invalidate_dimensions();  // Triggers preferred size recalculation.
 }
 
 void MenuItemView::SetSelected(bool selected) {
@@ -428,9 +428,16 @@ void MenuItemView::OnPaint(gfx::Canvas* canvas) {
 }
 
 gfx::Size MenuItemView::GetPreferredSize() {
-  if (pref_size_.IsEmpty())
-    pref_size_ = CalculatePreferredSize();
-  return pref_size_;
+  const MenuItemDimensions& dimensions(GetDimensions());
+  return gfx::Size(dimensions.standard_width + dimensions.children_width,
+                   dimensions.height);
+}
+
+const MenuItemView::MenuItemDimensions& MenuItemView::GetDimensions() {
+  if (!is_dimensions_valid())
+    dimensions_ = CalculateDimensions();
+  DCHECK(is_dimensions_valid());
+  return dimensions_;
 }
 
 MenuController* MenuItemView::GetMenuController() {
@@ -564,8 +571,7 @@ void MenuItemView::SetMargins(int top_margin, int bottom_margin) {
   top_margin_ = top_margin;
   bottom_margin_ = bottom_margin;
 
-  // invalidate GetPreferredSize() cache
-  pref_size_.SetSize(0,0);
+  invalidate_dimensions();
 }
 
 const MenuConfig& MenuItemView::GetMenuConfig() const {
@@ -935,7 +941,7 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
   return gfx::Size(width, height);
 }
 
-MenuItemView::MenuItemDimensions MenuItemView::GetPreferredDimensions() {
+MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() {
   gfx::Size child_size = GetChildPreferredSize();
 
   MenuItemDimensions dimensions;
@@ -983,12 +989,6 @@ MenuItemView::MenuItemDimensions MenuItemView::GetPreferredDimensions() {
   dimensions.height = std::max(dimensions.height,
       GetMenuConfig().item_min_height);
   return dimensions;
-}
-
-gfx::Size MenuItemView::CalculatePreferredSize() {
-  MenuItemView::MenuItemDimensions dimensions = GetPreferredDimensions();
-  return gfx::Size(dimensions.standard_width + dimensions.children_width,
-                   dimensions.height);
 }
 
 string16 MenuItemView::GetAcceleratorText() {

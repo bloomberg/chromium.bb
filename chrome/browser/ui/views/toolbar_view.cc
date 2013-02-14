@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/toolbar_view.h"
 
+#include "base/debug/trace_event.h"
 #include "base/i18n/number_formatting.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
@@ -418,6 +419,7 @@ bool ToolbarView::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
 
 void ToolbarView::OnMenuButtonClicked(views::View* source,
                                       const gfx::Point& point) {
+  TRACE_EVENT0("ui::views", "ToolbarView::OnMenuButtonClicked");
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
 
   bool use_new_menu = false;

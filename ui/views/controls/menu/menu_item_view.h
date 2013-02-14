@@ -115,6 +115,12 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // The data structure which is used for the menu size
   struct MenuItemDimensions {
+    MenuItemDimensions()
+        : standard_width(0),
+          children_width(0),
+          accelerator_width(0),
+          height(0) {}
+
     // Width of everything except the accelerator and children views.
     int standard_width;
     // The width of all contained views of the item.
@@ -123,12 +129,6 @@ class VIEWS_EXPORT MenuItemView : public View {
     int accelerator_width;
     // The height of the menu item.
     int height;
-
-    MenuItemDimensions()
-        : standard_width(0),
-          children_width(0),
-          accelerator_width(0),
-          height(0) {}
   };
 
   // Constructor for use with the top level menu item. This menu is never
@@ -282,7 +282,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Return the preferred dimensions of the item in pixel.
-  MenuItemDimensions GetPreferredDimensions();
+  const MenuItemDimensions& GetDimensions();
 
   // Returns the object responsible for controlling showing the menu.
   MenuController* GetMenuController();
@@ -423,8 +423,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the accelerator text.
   string16 GetAcceleratorText();
 
-  // Calculates the preferred size.
-  gfx::Size CalculatePreferredSize();
+  // Calculates and returns the MenuItemDimensions.
+  MenuItemDimensions CalculateDimensions();
 
   // Used by MenuController to cache the menu position in use by the
   // active menu.
@@ -447,6 +447,9 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns true if the menu has items with a checkbox or a radio button.
   bool HasChecksOrRadioButtons() const;
+
+  void invalidate_dimensions() { dimensions_.height = 0; }
+  bool is_dimensions_valid() const { return dimensions_.height > 0; }
 
   // The delegate. This is only valid for the root menu item. You shouldn't
   // use this directly, instead use GetDelegate() which walks the tree as
@@ -506,9 +509,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Preferred height of menu items. Reset every time a menu is run.
   static int pref_menu_height_;
 
-  // Previously calculated preferred size to reduce GetStringWidth calls in
-  // GetPreferredSize.
-  gfx::Size pref_size_;
+  // Cached dimensions. This is cached as text sizing calculations are quite
+  // costly.
+  MenuItemDimensions dimensions_;
 
   // Removed items to be deleted in ChildrenChanged().
   std::vector<View*> removed_items_;

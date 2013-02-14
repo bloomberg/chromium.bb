@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/widget.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -337,6 +338,7 @@ bool Widget::RequiresNonClientView(InitParams::Type type) {
 }
 
 void Widget::Init(const InitParams& in_params) {
+  TRACE_EVENT0("views", "Widget::Init");
   InitParams params = in_params;
 
   is_top_level_ = params.top_level ||
@@ -562,6 +564,7 @@ void Widget::CloseNow() {
 }
 
 void Widget::Show() {
+  TRACE_EVENT0("views", "Widget::Show");
   if (non_client_view_) {
 #if defined(OS_MACOSX)
     // On the Mac the FullScreenBookmarkBar test is different then for any other

@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/menu/menu_host.h"
 
+#include "base/debug/trace_event.h"
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -37,6 +38,7 @@ void MenuHost::InitMenuHost(Widget* parent,
                             const gfx::Rect& bounds,
                             View* contents_view,
                             bool do_capture) {
+  TRACE_EVENT0("views", "MenuHost::InitMenuHost");
   Widget::InitParams params(Widget::InitParams::TYPE_MENU);
   const MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();

@@ -134,8 +134,8 @@ gfx::Size SubmenuView::GetPreferredSize() {
       continue;
     if (child->id() == MenuItemView::kMenuItemViewID) {
       MenuItemView* menu = static_cast<MenuItemView*>(child);
-      MenuItemView::MenuItemDimensions dimensions =
-          menu->GetPreferredDimensions();
+      const MenuItemView::MenuItemDimensions& dimensions =
+          menu->GetDimensions();
       max_simple_width = std::max(
           max_simple_width, dimensions.standard_width);
       max_accelerator_width_ =
@@ -307,8 +307,6 @@ void SubmenuView::ShowAt(Widget* parent,
     host_ = new MenuHost(this);
     // Force construction of the scroll view container.
     GetScrollViewContainer();
-    // Make sure the first row is visible.
-    ScrollRectToVisible(gfx::Rect(gfx::Size(1, 1)));
     host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture);
   }
 
