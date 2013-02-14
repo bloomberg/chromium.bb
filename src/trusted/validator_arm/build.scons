@@ -129,6 +129,7 @@ BASELINE_GEN_TABLES = [
     "data_processing_and_miscellaneous_instructions",
     "data_processing_register",
     "data_processing_register_shifted_register",
+    "data_processing_immediate",
     "saturating_addition_and_subtraction",
     "halfword_multiply_and_multiply_accumulate",
     "synchronization_primitives",
