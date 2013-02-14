@@ -33,6 +33,8 @@ def run(command, filter=None):
 def main():
   vs_install_dir = sys.argv[1]
   outdir = sys.argv[2]
+  if "x64" in sys.argv[2]:
+    vs_install_dir = os.path.join(vs_install_dir, 'amd64')
   output_lib = os.path.join(outdir, 'libcmt.lib')
   shutil.copyfile(os.path.join(vs_install_dir, 'libcmt.lib'), output_lib)
   shutil.copyfile(os.path.join(vs_install_dir, 'libcmt.pdb'),
