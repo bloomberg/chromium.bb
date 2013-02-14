@@ -1896,9 +1896,9 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
     return 0;
   }
 
-  // Workaround for Thinkpad mousewheel driver. We get mouse wheel/scroll
-  // messages even if we are not in the foreground. So here we check if
-  // we have any owned popup windows in the foreground and dismiss them.
+  // We get mouse wheel/scroll messages even if we are not in the foreground.
+  // So here we check if we have any owned popup windows in the foreground and
+  // dismiss them.
   if (m_hWnd != GetForegroundWindow()) {
     HWND toplevel_hwnd = ::GetAncestor(m_hWnd, GA_ROOT);
     EnumThreadWindows(

@@ -116,6 +116,21 @@ BOOL CALLBACK ShowWindowsCallback(HWND window, LPARAM param) {
     SetParent(window, parent);
   return TRUE;
 }
+
+// A callback function for EnumThreadWindows to enumerate and dismiss
+// any owned popup windows.
+BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
+  const HWND toplevel_hwnd = reinterpret_cast<HWND>(arg);
+
+  if (::IsWindowVisible(window)) {
+    const HWND owner = ::GetWindow(window, GW_OWNER);
+    if (toplevel_hwnd == owner) {
+      ::PostMessage(window, WM_CANCELMODE, 0, 0);
+    }
+  }
+
+  return TRUE;
+}
 #endif
 
 void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event,
@@ -1574,6 +1589,19 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   if (event->type() == ui::ET_MOUSEWHEEL) {
+#if defined(OS_WIN)
+    // We get mouse wheel/scroll messages even if we are not in the foreground.
+    // So here we check if we have any owned popup windows in the foreground and
+    // dismiss them.
+    aura::RootWindow* root_window = window_->GetRootWindow();
+    if (root_window) {
+      HWND parent = root_window->GetAcceleratedWidget();
+      HWND toplevel_hwnd = ::GetAncestor(parent, GA_ROOT);
+      EnumThreadWindows(GetCurrentThreadId(),
+                        DismissOwnedPopups,
+                        reinterpret_cast<LPARAM>(toplevel_hwnd));
+    }
+#endif
     WebKit::WebMouseWheelEvent mouse_wheel_event =
         MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent*>(event));
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
