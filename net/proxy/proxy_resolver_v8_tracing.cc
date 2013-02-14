@@ -1053,10 +1053,11 @@ ProxyResolverV8Tracing::~ProxyResolverV8Tracing() {
   CHECK(!set_pac_script_job_);
   CHECK_EQ(0, num_outstanding_callbacks_);
 
-  // Join the worker thread.
-  // See http://crbug.com/69710.
+  // Join the worker thread. See http://crbug.com/69710. Note that we call
+  // Stop() here instead of simply clearing thread_ since there may be pending
+  // callbacks on the worker thread which want to dereference thread_.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  thread_.reset();
+  thread_->Stop();
 }
 
 int ProxyResolverV8Tracing::GetProxyForURL(const GURL& url,
