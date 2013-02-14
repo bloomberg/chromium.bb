@@ -1036,7 +1036,7 @@ input.rename {
 
 /* Text label in a table header. */
 .table-header-label {
-  margin: 5px 10px 0 9px;
+  line-height: 27px;
 }
 
 .table-row-cell > * {
@@ -1063,13 +1063,11 @@ input.rename {
 }
 
 #select-all-checkbox {
-  -webkit-margin-end: 11px;
-  -webkit-margin-start: 1px;
+  -webkit-margin-end: 7px;
+  -webkit-margin-start: 2px;
   margin-bottom: 0;
   margin-top: 0;
-  /* 1px below text */
-  position: relative;
-  top: 1px;
+  vertical-align: middle;
 }
 
 #list-container li.table-row:hover .file-checkbox,
