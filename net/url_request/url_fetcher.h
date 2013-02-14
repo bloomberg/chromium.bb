@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
@@ -28,7 +27,6 @@ namespace net {
 class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
-class UploadDataStream;
 class URLFetcherDelegate;
 class URLRequestContextGetter;
 class URLRequestStatus;
@@ -126,15 +124,9 @@ class NET_EXPORT URLFetcher {
   static void SetIgnoreCertificateRequests(bool ignored);
 
   // Sets data only needed by POSTs.  All callers making POST requests should
-  // call one of the SetUploadData* methods before the request is started.
-  // |upload_content_type| is the MIME type of the content, while
-  // |upload_content| is the data to be sent.
-  virtual void SetUploadDataStream(
-      const std::string& upload_content_type,
-      scoped_ptr<UploadDataStream> upload_content) = 0;
-
-  // Convenience method for setting upload data from a string.
-  // (the Content-Length header value will be set to the length of this data).
+  // call this before the request is started.  |upload_content_type| is the MIME
+  // type of the content, while |upload_content| is the data to be sent (the
+  // Content-Length header value will be set to the length of this data).
   virtual void SetUploadData(const std::string& upload_content_type,
                              const std::string& upload_content) = 0;
 

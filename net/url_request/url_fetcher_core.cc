@@ -281,6 +281,7 @@ URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
       buffer_(new IOBuffer(kBufferSize)),
       url_request_data_key_(NULL),
       was_fetched_via_proxy_(false),
+      upload_content_set_(false),
       is_chunked_upload_(false),
       was_cancelled_(false),
       response_destination_(STRING),
@@ -331,44 +332,29 @@ void URLFetcherCore::Stop() {
 void URLFetcherCore::SetUploadData(const std::string& upload_content_type,
                                    const std::string& upload_content) {
   DCHECK(!is_chunked_upload_);
-  DCHECK(!upload_content_);
+  DCHECK(!upload_content_set_);
+  DCHECK(upload_content_.empty());
   DCHECK(upload_content_type_.empty());
 
   // Empty |upload_content_type| is allowed iff the |upload_content| is empty.
   DCHECK(upload_content.empty() || !upload_content_type.empty());
 
   upload_content_type_ = upload_content_type;
-  scoped_ptr<UploadElementReader> reader(
-      UploadOwnedBytesElementReader::CreateWithString(upload_content));
-  upload_content_.reset(UploadDataStream::CreateWithReader(reader.Pass(), 0));
-}
-
-void URLFetcherCore::SetUploadDataStream(
-    const std::string& upload_content_type,
-    scoped_ptr<UploadDataStream> upload_content) {
-  DCHECK(!is_chunked_upload_);
-  DCHECK(!upload_content_);
-  DCHECK(upload_content_type_.empty());
-
-  // Empty |upload_content_type| is not allowed here, because it is impossible
-  // to ensure non-empty |upload_content| as it may not be initialized yet.
-  DCHECK(!upload_content_type.empty());
-
-  upload_content_type_ = upload_content_type;
-  upload_content_ = upload_content.Pass();
+  upload_content_ = upload_content;
+  upload_content_set_ = true;
 }
 
 void URLFetcherCore::SetChunkedUpload(const std::string& content_type) {
   DCHECK(is_chunked_upload_ ||
          (upload_content_type_.empty() &&
-          !upload_content_));
+          upload_content_.empty()));
 
   // Empty |content_type| is not allowed here, because it is impossible
   // to ensure non-empty upload content as it is not yet supplied.
   DCHECK(!content_type.empty());
 
   upload_content_type_ = content_type;
-  upload_content_.reset();
+  upload_content_.clear();
   is_chunked_upload_ = true;
 }
 
@@ -751,17 +737,24 @@ void URLFetcherCore::StartURLRequest() {
     case URLFetcher::PUT:
     case URLFetcher::PATCH:
       // Upload content must be set.
-      DCHECK(is_chunked_upload_ || upload_content_);
+      DCHECK(is_chunked_upload_ || upload_content_set_);
 
       request_->set_method(
           request_type_ == URLFetcher::POST ? "POST" :
           request_type_ == URLFetcher::PUT ? "PUT" : "PATCH");
+      extra_request_headers_.SetHeader(HttpRequestHeaders::kContentType,
+                                       upload_content_type_);
       if (!upload_content_type_.empty()) {
         extra_request_headers_.SetHeader(HttpRequestHeaders::kContentType,
                                          upload_content_type_);
       }
-      if (upload_content_)
-        request_->set_upload(upload_content_.Pass());
+      if (!upload_content_.empty()) {
+        scoped_ptr<UploadElementReader> reader(new UploadBytesElementReader(
+            upload_content_.data(), upload_content_.size()));
+        request_->set_upload(make_scoped_ptr(
+            UploadDataStream::CreateWithReader(reader.Pass(), 0)));
+      }
+
       current_upload_bytes_ = -1;
       // TODO(kinaba): http://crbug.com/118103. Implement upload callback in the
       //  layer and avoid using timer here.
@@ -1026,13 +1019,8 @@ void URLFetcherCore::InformDelegateUploadProgress() {
     if (current_upload_bytes_ != current) {
       current_upload_bytes_ = current;
       int64 total = -1;
-      if (!is_chunked_upload_) {
-        total = static_cast<int64>(request_->GetUploadProgress().size());
-        // Total may be zero if the UploadDataStream::Init has not been called
-        // yet.  Don't send the upload progress until the size is initialized.
-        if (!total)
-          return;
-      }
+      if (!is_chunked_upload_)
+        total = static_cast<int64>(upload_content_.size());
       delegate_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(

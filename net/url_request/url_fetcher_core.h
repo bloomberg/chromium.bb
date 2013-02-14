@@ -61,8 +61,6 @@ class URLFetcherCore
 
   // For POST requests, set |content_type| to the MIME type of the
   // content and set |content| to the data to upload.
-  void SetUploadDataStream(const std::string& upload_content_type,
-                           scoped_ptr<UploadDataStream> upload_content);
   void SetUploadData(const std::string& upload_content_type,
                      const std::string& upload_content);
   void SetChunkedUpload(const std::string& upload_content_type);
@@ -335,7 +333,8 @@ class URLFetcherCore
   bool was_fetched_via_proxy_;
   HostPortPair socket_address_;
 
-  scoped_ptr<UploadDataStream> upload_content_;  // HTTP POST payload
+  bool upload_content_set_;          // SetUploadData has been called
+  std::string upload_content_;       // HTTP POST payload
   std::string upload_content_type_;  // MIME type of POST payload
   std::string referrer_;             // HTTP Referer header value
   bool is_chunked_upload_;           // True if using chunked transfer encoding

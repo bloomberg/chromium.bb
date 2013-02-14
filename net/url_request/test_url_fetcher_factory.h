@@ -81,9 +81,6 @@ class TestURLFetcher : public URLFetcher {
   virtual ~TestURLFetcher();
 
   // URLFetcher implementation
-  virtual void SetUploadDataStream(
-      const std::string& upload_content_type,
-      scoped_ptr<UploadDataStream> upload_content) OVERRIDE;
   virtual void SetUploadData(const std::string& upload_content_type,
                              const std::string& upload_content) OVERRIDE;
   virtual void SetChunkedUpload(
@@ -148,11 +145,6 @@ class TestURLFetcher : public URLFetcher {
   // Unique ID in our factory.
   int id() const { return id_; }
 
-  // Returns the data stream uploaded on this URLFetcher.
-  const UploadDataStream* upload_data_stream() const {
-    return upload_data_stream_.get();
-  }
-
   // Returns the data uploaded on this URLFetcher.
   const std::string& upload_data() const { return upload_data_; }
 
@@ -194,7 +186,6 @@ class TestURLFetcher : public URLFetcher {
   URLFetcherDelegate* delegate_;
   DelegateForTests* delegate_for_tests_;
   std::string upload_data_;
-  scoped_ptr<UploadDataStream> upload_data_stream_;
   std::list<std::string> chunks_;
   bool did_receive_last_chunk_;
 
