@@ -168,6 +168,24 @@ bool ManagedUserService::UserMayLoad(const extensions::Extension* extension,
       extension_service->GetInstalledExtension(extension->id()))
     return true;
 
+  if (extension) {
+    bool was_installed_by_default = extension->was_installed_by_default();
+#ifdef OS_CHROMEOS
+    // On Chrome OS all external sources are controlled by us so it means that
+    // they are "default". Method was_installed_by_default returns false because
+    // extensions creation flags are ignored in case of default extensions with
+    // update URL(the flags aren't passed to OnExternalExtensionUpdateUrlFound).
+    // TODO(dpolukhin): remove this Chrome OS specific code as soon as creation
+    // flags are not ignored.
+    was_installed_by_default =
+        extensions::Manifest::IsExternalLocation(extension->location());
+#endif
+    if (extension->location() == extensions::Manifest::COMPONENT ||
+        was_installed_by_default) {
+      return true;
+    }
+  }
+
   if (error)
     *error = tmp_error;
   return false;

@@ -406,6 +406,13 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = base::FilePath(FILE_PATH_LITERAL(kDefaultAppOrderFileName));
       break;
 #endif
+#if defined(ENABLE_MANAGED_USERS)
+    case chrome::DIR_MANAGED_USERS_DEFAULT_APPS:
+      if (!PathService::Get(chrome::DIR_EXTERNAL_EXTENSIONS, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("managed_users"));
+      break;
+#endif
     // The following are only valid in the development environment, and
     // will fail if executed from an installed executable (because the
     // generated path won't exist).
