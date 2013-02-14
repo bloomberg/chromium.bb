@@ -12,5 +12,6 @@ chromeos-base/libchrome_crypto
 media-libs/mesa
 
 # Temporary (Feb 11, 2013) blacklist of this until we can move the
-# kernel source to be public.
+# kernel and u-boot source to be public.
+sys-boot/puppy-u-boot
 sys-kernel/puppy-kernel
