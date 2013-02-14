@@ -4546,56 +4546,56 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_synchronization_primitiv
           0x00800000 /* op(23:20)=1000 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreExclusive3RegisterOp_STREX_instance_;
+    return STREX_cccc00011000nnnndddd11111001tttt_case_0_STREX_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00900000 /* op(23:20)=1001 */ &&
       (inst.Bits() & 0x00000F0F)  ==
           0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadExclusive2RegisterOp_LDREX_instance_;
+    return LDREX_cccc00011001nnnntttt111110011111_case_0_LDREX_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00A00000 /* op(23:20)=1010 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreExclusive3RegisterDoubleOp_STREXD_instance_;
+    return STREXD_cccc00011010nnnndddd11111001tttt_case_0_STREXD_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00B00000 /* op(23:20)=1011 */ &&
       (inst.Bits() & 0x00000F0F)  ==
           0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadExclusive2RegisterDoubleOp_LDREXD_instance_;
+    return LDREXD_cccc00011011nnnntttt111110011111_case_0_LDREXD_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00C00000 /* op(23:20)=1100 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreExclusive3RegisterOp_STREXB_instance_;
+    return STREXB_cccc00011100nnnndddd11111001tttt_case_0_STREXB_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00D00000 /* op(23:20)=1101 */ &&
       (inst.Bits() & 0x00000F0F)  ==
           0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadExclusive2RegisterOp_LDREXB_instance_;
+    return LDREXB_cccc00011101nnnntttt111110011111_case_0_LDREXB_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00E00000 /* op(23:20)=1110 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreExclusive3RegisterOp_STREXH_instance_;
+    return STREXH_cccc00011110nnnndddd11111001tttt_case_0_STREXH_instance_;
   }
 
   if ((inst.Bits() & 0x00F00000)  ==
           0x00F00000 /* op(23:20)=1111 */ &&
       (inst.Bits() & 0x00000F0F)  ==
           0x00000F0F /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111 */) {
-    return LoadExclusive2RegisterOp_STREXH_instance_;
+    return STREXH_cccc00011111nnnntttt111110011111_case_0_STREXH_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
