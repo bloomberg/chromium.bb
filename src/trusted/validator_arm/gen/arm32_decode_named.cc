@@ -2969,7 +2969,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UADD16_instance_;
+    return UADD16_cccc01100101nnnndddd11110001mmmm_case_0_UADD16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2978,7 +2978,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UASX_instance_;
+    return UASX_cccc01100101nnnndddd11110011mmmm_case_0_UASX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2987,7 +2987,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000040 /* op2(7:5)=010 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_USAX_instance_;
+    return USAX_cccc01100101nnnndddd11110101mmmm_case_0_USAX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -2996,7 +2996,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000060 /* op2(7:5)=011 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_USUB16_instance_;
+    return USUB16_cccc01100101nnnndddd11110111mmmm_case_0_USUB16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3005,7 +3005,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UADD8_instance_;
+    return UADD8_cccc01100101nnnndddd11111001mmmm_case_0_UADD8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3014,7 +3014,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_USUB8_instance_;
+    return USUB8_cccc01100101nnnndddd11111111mmmm_case_0_USUB8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3023,7 +3023,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UQADD16_instance_;
+    return UQADD16_cccc01100110nnnndddd11110001mmmm_case_0_UQADD16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3032,7 +3032,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UQASX_instance_;
+    return UQASX_cccc01100110nnnndddd11110011mmmm_case_0_UQASX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3041,7 +3041,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000040 /* op2(7:5)=010 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UQSAX_instance_;
+    return UQSAX_cccc01100110nnnndddd11110101mmmm_case_0_UQSAX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3050,7 +3050,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000060 /* op2(7:5)=011 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UQSUB16_instance_;
+    return UQSUB16_cccc01100110nnnndddd11110111mmmm_case_0_UQSUB16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3059,7 +3059,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UQADD8_instance_;
+    return UQADD8_cccc01100110nnnndddd11111001mmmm_case_0_UQADD8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3068,7 +3068,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UQSUB8_instance_;
+    return UQSUB8_cccc01100110nnnndddd11111111mmmm_case_0_UQSUB8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3077,7 +3077,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UHADD16_instance_;
+    return UHADD16_cccc01100111nnnndddd11110001mmmm_case_0_UHADD16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3086,7 +3086,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000020 /* op2(7:5)=001 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UHASX_instance_;
+    return UHASX_cccc01100111nnnndddd11110011mmmm_case_0_UHASX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3095,7 +3095,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000040 /* op2(7:5)=010 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UHSAX_instance_;
+    return UHSAX_cccc01100111nnnndddd11110101mmmm_case_0_UHSAX_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3104,7 +3104,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000060 /* op2(7:5)=011 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UHSUB16_instance_;
+    return UHSUB16_cccc01100111nnnndddd11110111mmmm_case_0_UHSUB16_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3113,7 +3113,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UHADD8_instance_;
+    return UHADD8_cccc01100111nnnndddd11111001mmmm_case_0_UHADD8_instance_;
   }
 
   if ((inst.Bits() & 0x00300000)  ==
@@ -3122,7 +3122,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
           0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_UHSUB8_instance_;
+    return UHSUB8_cccc01100111nnnndddd11111111mmmm_case_0_UHSUB8_instance_;
   }
 
   if (true) {

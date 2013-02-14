@@ -136,6 +136,7 @@ BASELINE_GEN_TABLES = [
     "miscellaneous_instructions",
     "media_instructions",
     "parallel_addition_and_subtraction_signed",
+    "parallel_addition_and_subtraction_unsigned",
     ]
 
 # Verify that BASELINE_TEST_TABLES and BASELINE_GEN_TABLES don't intersect.
