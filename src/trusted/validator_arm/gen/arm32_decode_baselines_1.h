@@ -2582,57 +2582,6 @@ class LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0
       LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0);
 };
 
-// LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0:
-//
-//   {P: P(24),
-//    Pc: 15,
-//    Rt: Rt(15:12),
-//    U: U(23),
-//    W: W(21),
-//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
-//    add: U(23)=1,
-//    base: Pc,
-//    baseline: LoadRegisterImm8Op,
-//    cond: cond(31:28),
-//    constraints: ,
-//    defs: {Rt},
-//    fields: [cond(31:28),
-//      P(24),
-//      U(23),
-//      W(21),
-//      Rt(15:12),
-//      imm4H(11:8),
-//      imm4L(3:0)],
-//    generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
-//    imm32: ZeroExtend(imm4H:imm4L, 32),
-//    imm4H: imm4H(11:8),
-//    imm4L: imm4L(3:0),
-//    is_literal_load: true,
-//    pattern: cccc0001u1011111ttttiiii1111iiii,
-//    rule: LDRSB_literal,
-//    safety: [P(24)=0 &&
-//         W(21)=1 => DECODER_ERROR,
-//      P  ==
-//            W => UNPREDICTABLE,
-//      Rt  ==
-//            Pc => UNPREDICTABLE],
-//    true: true,
-//    uses: {Pc}}
-class LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0
-     : public ClassDecoder {
- public:
-  LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0()
-     : ClassDecoder() {}
-  virtual Register base_address_register(Instruction i) const;
-  virtual RegisterList defs(Instruction inst) const;
-  virtual bool is_literal_load(Instruction i) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0);
-};
-
 // LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0:
 //
 //   {None: 32,
@@ -2763,6 +2712,57 @@ class LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0);
+};
+
+// LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0:
+//
+//   {P: P(24),
+//    Pc: 15,
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
+//    add: U(23)=1,
+//    base: Pc,
+//    baseline: LoadRegisterImm8Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    generated_baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    is_literal_load: true,
+//    pattern: cccc0001u1011111ttttiiii1111iiii,
+//    rule: LDRSH_literal,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      P  ==
+//            W => UNPREDICTABLE,
+//      Rt  ==
+//            Pc => UNPREDICTABLE],
+//    true: true,
+//    uses: {Pc}}
+class LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0
+     : public ClassDecoder {
+ public:
+  LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0);
 };
 
 // LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0:

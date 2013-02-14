@@ -4613,98 +4613,6 @@ uses(Instruction inst) const {
    Add(Register(15));
 }
 
-// LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0:
-//
-//   {P: P(24),
-//    Pc: 15,
-//    Rt: Rt(15:12),
-//    U: U(23),
-//    W: W(21),
-//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
-//    add: U(23)=1,
-//    base: Pc,
-//    baseline: LoadRegisterImm8Op,
-//    cond: cond(31:28),
-//    constraints: ,
-//    defs: {Rt},
-//    fields: [cond(31:28),
-//      P(24),
-//      U(23),
-//      W(21),
-//      Rt(15:12),
-//      imm4H(11:8),
-//      imm4L(3:0)],
-//    generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
-//    imm32: ZeroExtend(imm4H:imm4L, 32),
-//    imm4H: imm4H(11:8),
-//    imm4L: imm4L(3:0),
-//    is_literal_load: true,
-//    pattern: cccc0001u1011111ttttiiii1111iiii,
-//    rule: LDRSB_literal,
-//    safety: [P(24)=0 &&
-//         W(21)=1 => DECODER_ERROR,
-//      P  ==
-//            W => UNPREDICTABLE,
-//      Rt  ==
-//            Pc => UNPREDICTABLE],
-//    true: true,
-//    uses: {Pc}}
-Register LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
-base_address_register(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // base: '15'
-  return Register(15);
-}
-
-RegisterList LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{inst(15:12)}'
-  return RegisterList().
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
-}
-
-bool LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
-is_literal_load(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // is_literal_load: 'true'
-  return true;
-}
-
-SafetyLevel LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // inst(24)=0 &&
-  //       inst(21)=1 => DECODER_ERROR
-  if (((inst.Bits() & 0x01000000)  ==
-          0x00000000) &&
-       ((inst.Bits() & 0x00200000)  ==
-          0x00200000))
-    return DECODER_ERROR;
-
-  // inst(21)  ==
-  //          inst(24) => UNPREDICTABLE
-  if (((((inst.Bits() & 0x01000000) >> 24)) == (((inst.Bits() & 0x00200000) >> 21))))
-    return UNPREDICTABLE;
-
-  // 15  ==
-  //          inst(15:12) => UNPREDICTABLE
-  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
-    return UNPREDICTABLE;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{15}'
-  return RegisterList().
-   Add(Register(15));
-}
-
 // LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0:
 //
 //   {None: 32,
@@ -4979,6 +4887,98 @@ uses(Instruction inst) const {
   // uses: '{inst(19:16)}'
   return RegisterList().
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0:
+//
+//   {P: P(24),
+//    Pc: 15,
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    actual: Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1,
+//    add: U(23)=1,
+//    base: Pc,
+//    baseline: LoadRegisterImm8Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    generated_baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    is_literal_load: true,
+//    pattern: cccc0001u1011111ttttiiii1111iiii,
+//    rule: LDRSH_literal,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      P  ==
+//            W => UNPREDICTABLE,
+//      Rt  ==
+//            Pc => UNPREDICTABLE],
+//    true: true,
+//    uses: {Pc}}
+Register LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '15'
+  return Register(15);
+}
+
+RegisterList LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+bool LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: 'true'
+  return true;
+}
+
+SafetyLevel LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // inst(21)  ==
+  //          inst(24) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x01000000) >> 24)) == (((inst.Bits() & 0x00200000) >> 21))))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
 }
 
 // LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0:

@@ -1839,10 +1839,10 @@ bool Load2RegisterImm8OpTesterCase14
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
-//       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
+//       generated_baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
 //       is_literal_load: true,
 //       pattern: cccc0001u1011111ttttiiii1111iiii,
-//       rule: LDRSB_literal,
+//       rule: LDRSH_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
@@ -2570,10 +2570,10 @@ class Load2RegisterImm8OpTester_Case14
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
-//       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
+//       generated_baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
 //       is_literal_load: true,
 //       pattern: cccc0001u1011111ttttiiii1111iiii,
-//       rule: LDRSB_literal,
+//       rule: LDRSH_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
@@ -2587,7 +2587,7 @@ class LoadRegisterImm8OpTester_Case15
  public:
   LoadRegisterImm8OpTester_Case15()
     : LoadRegisterImm8OpTesterCase15(
-      state_.LoadRegisterImm8Op_LDRSB_literal_instance_)
+      state_.LoadRegisterImm8Op_LDRSH_literal_instance_)
   {}
 };
 
@@ -3232,10 +3232,10 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       defs: {Rt},
 //       fields: [P(24), W(21), Rt(15:12)],
-//       generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
+//       generated_baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
 //       is_literal_load: true,
 //       pattern: cccc0001u1011111ttttiiii1111iiii,
-//       rule: LDRSB_literal,
+//       rule: LDRSH_literal,
 //       safety: [P(24)=0 &&
 //            W(21)=1 => DECODER_ERROR,
 //         P  ==
@@ -3247,7 +3247,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        LoadRegisterImm8OpTester_Case15_TestCase15) {
   LoadRegisterImm8OpTester_Case15 baseline_tester;
-  NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal actual;
+  NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSH_literal actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0001u1011111ttttiiii1111iiii");
 }

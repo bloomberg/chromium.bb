@@ -3871,13 +3871,13 @@ class Actual_LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_1
 //      Rt(15:12),
 //      imm4H(11:8),
 //      imm4L(3:0)],
-//    generated_baseline: LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
+//    generated_baseline: LDRSH_literal_cccc0001u1011111ttttiiii1111iiii_case_0,
 //    imm32: ZeroExtend(imm4H:imm4L, 32),
 //    imm4H: imm4H(11:8),
 //    imm4L: imm4L(3:0),
 //    is_literal_load: true,
 //    pattern: cccc0001u1011111ttttiiii1111iiii,
-//    rule: LDRSB_literal,
+//    rule: LDRSH_literal,
 //    safety: [P(24)=0 &&
 //         W(21)=1 => DECODER_ERROR,
 //      P  ==

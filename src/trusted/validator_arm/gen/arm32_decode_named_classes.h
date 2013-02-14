@@ -822,6 +822,10 @@ class LoadRegisterImm8Op_LDRSB_literal
     : public LoadRegisterImm8Op {
 };
 
+class LoadRegisterImm8Op_LDRSH_literal
+    : public LoadRegisterImm8Op {
+};
+
 class LoadRegisterList_LDMDA_LDMFA
     : public LoadRegisterList {
 };
@@ -2363,6 +2367,10 @@ class Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRH_literal
 };
 
 class Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal
+    : public Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1 {
+};
+
+class Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSH_literal
     : public Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1 {
 };
 
@@ -5415,6 +5423,18 @@ class NamedLoadRegisterImm8Op_LDRSB_literal
  private:
   nacl_arm_dec::LoadRegisterImm8Op_LDRSB_literal decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegisterImm8Op_LDRSB_literal);
+};
+
+class NamedLoadRegisterImm8Op_LDRSH_literal
+    : public NamedClassDecoder {
+ public:
+  NamedLoadRegisterImm8Op_LDRSH_literal()
+    : NamedClassDecoder(decoder_, "LoadRegisterImm8Op LDRSH_literal")
+  {}
+
+ private:
+  nacl_arm_dec::LoadRegisterImm8Op_LDRSH_literal decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegisterImm8Op_LDRSH_literal);
 };
 
 class NamedLoadRegisterList_LDMDA_LDMFA
@@ -10047,6 +10067,18 @@ class NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_lit
  private:
   nacl_arm_dec::Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSB_literal);
+};
+
+class NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSH_literal
+    : public NamedClassDecoder {
+ public:
+  NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSH_literal()
+    : NamedClassDecoder(decoder_, "Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1 LDRSH_literal")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSH_literal decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_1_LDRSH_literal);
 };
 
 class NamedActual_LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_1_LDRH_register

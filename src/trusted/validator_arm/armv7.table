@@ -960,7 +960,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                                    rule := LDRSH_immediate;
 | "        "          1111      = *LdrRtImm
                                    pattern := cccc0001u1011111ttttiiii1111iiii;
-                                   rule := LDRSB_literal;
+                                   rule := LDRSH_literal;
 +--
 
 # Table omitted: extra_load_store_instructions_unpriviledged (See section A5.2.9)

@@ -1438,6 +1438,17 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store_instruc
   }
 
   if ((inst.Bits() & 0x00000060)  ==
+          0x00000040 /* op2(6:5)=10 */ &&
+      (inst.Bits() & 0x00500000)  ==
+          0x00500000 /* op1(24:20)=xx1x1 */ &&
+      (inst.Bits() & 0x000F0000)  ==
+          0x000F0000 /* Rn(19:16)=1111 */ &&
+      (inst.Bits() & 0x01200000)  ==
+          0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
+    return LoadRegisterImm8Op_LDRSB_literal_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000060)  ==
           0x00000060 /* op2(6:5)=11 */ &&
       (inst.Bits() & 0x00500000)  ==
           0x00000000 /* op1(24:20)=xx0x0 */ &&
@@ -1471,15 +1482,15 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store_instruc
     return Load2RegisterImm8Op_LDRSH_immediate_instance_;
   }
 
-  if ((inst.Bits() & 0x00000040)  ==
-          0x00000040 /* op2(6:5)=1x */ &&
+  if ((inst.Bits() & 0x00000060)  ==
+          0x00000060 /* op2(6:5)=11 */ &&
       (inst.Bits() & 0x00500000)  ==
           0x00500000 /* op1(24:20)=xx1x1 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x000F0000 /* Rn(19:16)=1111 */ &&
       (inst.Bits() & 0x01200000)  ==
           0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return LoadRegisterImm8Op_LDRSB_literal_instance_;
+    return LoadRegisterImm8Op_LDRSH_literal_instance_;
   }
 
   // Catch any attempt to fall through...
