@@ -3134,28 +3134,28 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_saturating_addition_and_
           0x00000000 /* op(22:21)=00 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QADD_instance_;
+    return QADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD_instance_;
   }
 
   if ((inst.Bits() & 0x00600000)  ==
           0x00200000 /* op(22:21)=01 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QSUB_instance_;
+    return QSUB_cccc00010010nnnndddd00000101mmmm_case_0_QSUB_instance_;
   }
 
   if ((inst.Bits() & 0x00600000)  ==
           0x00400000 /* op(22:21)=10 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QDADD_instance_;
+    return QDADD_cccc00010100nnnndddd00000101mmmm_case_0_QDADD_instance_;
   }
 
   if ((inst.Bits() & 0x00600000)  ==
           0x00600000 /* op(22:21)=11 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
-    return Binary3RegisterOpAltBNoCondUpdates_QDSUB_instance_;
+    return QDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB_instance_;
   }
 
   // Catch any attempt to fall through...

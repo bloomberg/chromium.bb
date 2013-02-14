@@ -853,18 +853,6 @@ class NamedQADD8_cccc01100010nnnndddd11111001mmmm_case_0
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedQADD8_cccc01100010nnnndddd11111001mmmm_case_0);
 };
 
-class NamedQADD_cccc00010000nnnndddd00000101mmmm_case_0
-    : public NamedClassDecoder {
- public:
-  NamedQADD_cccc00010000nnnndddd00000101mmmm_case_0()
-    : NamedClassDecoder(decoder_, "QADD_cccc00010000nnnndddd00000101mmmm_case_0")
-  {}
-
- private:
-  nacl_arm_dec::QADD_cccc00010000nnnndddd00000101mmmm_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQADD_cccc00010000nnnndddd00000101mmmm_case_0);
-};
-
 class NamedQASX_cccc01100010nnnndddd11110011mmmm_case_0
     : public NamedClassDecoder {
  public:
@@ -875,30 +863,6 @@ class NamedQASX_cccc01100010nnnndddd11110011mmmm_case_0
  private:
   nacl_arm_dec::QASX_cccc01100010nnnndddd11110011mmmm_case_0 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedQASX_cccc01100010nnnndddd11110011mmmm_case_0);
-};
-
-class NamedQDADD_cccc00010100nnnndddd00000101mmmm_case_0
-    : public NamedClassDecoder {
- public:
-  NamedQDADD_cccc00010100nnnndddd00000101mmmm_case_0()
-    : NamedClassDecoder(decoder_, "QDADD_cccc00010100nnnndddd00000101mmmm_case_0")
-  {}
-
- private:
-  nacl_arm_dec::QDADD_cccc00010100nnnndddd00000101mmmm_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQDADD_cccc00010100nnnndddd00000101mmmm_case_0);
-};
-
-class NamedQDSUB_cccc00010110nnnndddd00000101mmmm_case_0
-    : public NamedClassDecoder {
- public:
-  NamedQDSUB_cccc00010110nnnndddd00000101mmmm_case_0()
-    : NamedClassDecoder(decoder_, "QDSUB_cccc00010110nnnndddd00000101mmmm_case_0")
-  {}
-
- private:
-  nacl_arm_dec::QDSUB_cccc00010110nnnndddd00000101mmmm_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQDSUB_cccc00010110nnnndddd00000101mmmm_case_0);
 };
 
 class NamedQSAX_cccc01100010nnnndddd11110101mmmm_case_0
@@ -935,18 +899,6 @@ class NamedQSUB8_cccc01100010nnnndddd11111111mmmm_case_0
  private:
   nacl_arm_dec::QSUB8_cccc01100010nnnndddd11111111mmmm_case_0 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedQSUB8_cccc01100010nnnndddd11111111mmmm_case_0);
-};
-
-class NamedQSUB_cccc00010010nnnndddd00000101mmmm_case_0
-    : public NamedClassDecoder {
- public:
-  NamedQSUB_cccc00010010nnnndddd00000101mmmm_case_0()
-    : NamedClassDecoder(decoder_, "QSUB_cccc00010010nnnndddd00000101mmmm_case_0")
-  {}
-
- private:
-  nacl_arm_dec::QSUB_cccc00010010nnnndddd00000101mmmm_case_0 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQSUB_cccc00010010nnnndddd00000101mmmm_case_0);
 };
 
 class NamedRBIT_cccc011011111111dddd11110011mmmm_case_0

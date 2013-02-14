@@ -154,10 +154,6 @@ class Binary3RegisterOpAltBNoCondUpdates_PKH
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
 
-class Binary3RegisterOpAltBNoCondUpdates_QADD
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
 class Binary3RegisterOpAltBNoCondUpdates_QADD16
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
@@ -170,19 +166,7 @@ class Binary3RegisterOpAltBNoCondUpdates_QASX
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
 
-class Binary3RegisterOpAltBNoCondUpdates_QDADD
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_QDSUB
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
 class Binary3RegisterOpAltBNoCondUpdates_QSAX
-    : public Binary3RegisterOpAltBNoCondUpdates {
-};
-
-class Binary3RegisterOpAltBNoCondUpdates_QSUB
     : public Binary3RegisterOpAltBNoCondUpdates {
 };
 
@@ -968,6 +952,22 @@ class PreloadRegisterPairOp_PLD_PLDW_register
 
 class PreloadRegisterPairOp_PLI_register
     : public PreloadRegisterPairOp {
+};
+
+class QADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD
+    : public QADD_cccc00010000nnnndddd00000101mmmm_case_0 {
+};
+
+class QDADD_cccc00010100nnnndddd00000101mmmm_case_0_QDADD
+    : public QDADD_cccc00010100nnnndddd00000101mmmm_case_0 {
+};
+
+class QDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB
+    : public QDSUB_cccc00010110nnnndddd00000101mmmm_case_0 {
+};
+
+class QSUB_cccc00010010nnnndddd00000101mmmm_case_0_QSUB
+    : public QSUB_cccc00010010nnnndddd00000101mmmm_case_0 {
 };
 
 class ROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0_ROR_immediate
@@ -3413,18 +3413,6 @@ class NamedBinary3RegisterOpAltBNoCondUpdates_PKH
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_PKH);
 };
 
-class NamedBinary3RegisterOpAltBNoCondUpdates_QADD
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QADD()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QADD")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QADD decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QADD);
-};
-
 class NamedBinary3RegisterOpAltBNoCondUpdates_QADD16
     : public NamedClassDecoder {
  public:
@@ -3461,30 +3449,6 @@ class NamedBinary3RegisterOpAltBNoCondUpdates_QASX
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QASX);
 };
 
-class NamedBinary3RegisterOpAltBNoCondUpdates_QDADD
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QDADD()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QDADD")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QDADD decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QDADD);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_QDSUB
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QDSUB()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QDSUB")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QDSUB decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QDSUB);
-};
-
 class NamedBinary3RegisterOpAltBNoCondUpdates_QSAX
     : public NamedClassDecoder {
  public:
@@ -3495,18 +3459,6 @@ class NamedBinary3RegisterOpAltBNoCondUpdates_QSAX
  private:
   nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QSAX decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QSAX);
-};
-
-class NamedBinary3RegisterOpAltBNoCondUpdates_QSUB
-    : public NamedClassDecoder {
- public:
-  NamedBinary3RegisterOpAltBNoCondUpdates_QSUB()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltBNoCondUpdates QSUB")
-  {}
-
- private:
-  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates_QSUB decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltBNoCondUpdates_QSUB);
 };
 
 class NamedBinary3RegisterOpAltBNoCondUpdates_QSUB16
@@ -5859,6 +5811,54 @@ class NamedPreloadRegisterPairOp_PLI_register
  private:
   nacl_arm_dec::PreloadRegisterPairOp_PLI_register decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedPreloadRegisterPairOp_PLI_register);
+};
+
+class NamedQADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD
+    : public NamedClassDecoder {
+ public:
+  NamedQADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD()
+    : NamedClassDecoder(decoder_, "QADD_cccc00010000nnnndddd00000101mmmm_case_0 QADD")
+  {}
+
+ private:
+  nacl_arm_dec::QADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQADD_cccc00010000nnnndddd00000101mmmm_case_0_QADD);
+};
+
+class NamedQDADD_cccc00010100nnnndddd00000101mmmm_case_0_QDADD
+    : public NamedClassDecoder {
+ public:
+  NamedQDADD_cccc00010100nnnndddd00000101mmmm_case_0_QDADD()
+    : NamedClassDecoder(decoder_, "QDADD_cccc00010100nnnndddd00000101mmmm_case_0 QDADD")
+  {}
+
+ private:
+  nacl_arm_dec::QDADD_cccc00010100nnnndddd00000101mmmm_case_0_QDADD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQDADD_cccc00010100nnnndddd00000101mmmm_case_0_QDADD);
+};
+
+class NamedQDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB
+    : public NamedClassDecoder {
+ public:
+  NamedQDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB()
+    : NamedClassDecoder(decoder_, "QDSUB_cccc00010110nnnndddd00000101mmmm_case_0 QDSUB")
+  {}
+
+ private:
+  nacl_arm_dec::QDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQDSUB_cccc00010110nnnndddd00000101mmmm_case_0_QDSUB);
+};
+
+class NamedQSUB_cccc00010010nnnndddd00000101mmmm_case_0_QSUB
+    : public NamedClassDecoder {
+ public:
+  NamedQSUB_cccc00010010nnnndddd00000101mmmm_case_0_QSUB()
+    : NamedClassDecoder(decoder_, "QSUB_cccc00010010nnnndddd00000101mmmm_case_0 QSUB")
+  {}
+
+ private:
+  nacl_arm_dec::QSUB_cccc00010010nnnndddd00000101mmmm_case_0_QSUB decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedQSUB_cccc00010010nnnndddd00000101mmmm_case_0_QSUB);
 };
 
 class NamedROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0_ROR_immediate
