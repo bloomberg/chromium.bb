@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tabs/tab_utils.h"
 
+#include "chrome/browser/media/audio_stream_indicator.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "content/public/browser/render_process_host.h"
@@ -32,6 +33,12 @@ bool ShouldShowRecordingIndicator(content::WebContents* contents) {
   // still show the recording indicator.
   return indicator->IsCapturingUserMedia(render_process_id, render_view_id) ||
          indicator->IsBeingMirrored(render_process_id, render_view_id);
+}
+
+bool ShouldShowAudioIndicator(content::WebContents* contents) {
+  AudioStreamIndicator* audio_indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()->GetAudioStreamIndicator();
+  return audio_indicator->IsPlayingAudio(contents);
 }
 
 }  // namespace chrome

@@ -13,6 +13,8 @@
 #include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/common/media/audio_messages.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/media_observer.h"
 #include "media/audio/shared_memory_util.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
@@ -332,6 +334,9 @@ void AudioRendererHost::OnAssociateStreamWithProducer(int stream_id,
   if (entry->render_view_id == render_view_id)
     return;
 
+  // TODO(miu): Merge "AssociateWithProducer" message into "CreateStream"
+  // message so AudioRendererHost can assume a simpler "render_view_id is set
+  // once" scheme. http://crbug.com/166779
   if (mirroring_manager_) {
     mirroring_manager_->RemoveDiverter(
         render_process_id_, entry->render_view_id, entry->controller);
@@ -355,6 +360,13 @@ void AudioRendererHost::OnPlayStream(int stream_id) {
   entry->controller->Play();
   if (media_internals_)
     media_internals_->OnSetAudioStreamPlaying(this, stream_id, true);
+
+  MediaObserver* media_observer =
+      GetContentClient()->browser()->GetMediaObserver();
+  if (media_observer) {
+    media_observer->OnAudioStreamPlayingChanged(
+        render_process_id_, entry->render_view_id, stream_id, true);
+  }
 }
 
 void AudioRendererHost::OnPauseStream(int stream_id) {
@@ -369,6 +381,13 @@ void AudioRendererHost::OnPauseStream(int stream_id) {
   entry->controller->Pause();
   if (media_internals_)
     media_internals_->OnSetAudioStreamPlaying(this, stream_id, false);
+
+  MediaObserver* media_observer =
+      GetContentClient()->browser()->GetMediaObserver();
+  if (media_observer) {
+    media_observer->OnAudioStreamPlayingChanged(
+        render_process_id_, entry->render_view_id, stream_id, false);
+  }
 }
 
 void AudioRendererHost::OnFlushStream(int stream_id) {
@@ -393,8 +412,10 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
 
   AudioEntry* entry = LookupById(stream_id);
 
-  if (entry)
-    CloseAndDeleteStream(entry);
+  if (!entry)
+    return;
+
+  CloseAndDeleteStream(entry);
 }
 
 void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
@@ -412,6 +433,14 @@ void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
   entry->controller->SetVolume(volume);
   if (media_internals_)
     media_internals_->OnSetAudioStreamVolume(this, stream_id, volume);
+
+  MediaObserver* media_observer =
+      GetContentClient()->browser()->GetMediaObserver();
+  if (media_observer) {
+    bool playing = volume > 0;
+    media_observer->OnAudioStreamPlayingChanged(
+        render_process_id_, entry->render_view_id, stream_id, playing);
+  }
 }
 
 void AudioRendererHost::SendErrorMessage(int32 stream_id) {
@@ -431,6 +460,12 @@ void AudioRendererHost::DeleteEntries() {
 void AudioRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  MediaObserver* media_observer =
+      GetContentClient()->browser()->GetMediaObserver();
+  if (media_observer) {
+    media_observer->OnAudioStreamPlayingChanged(
+        render_process_id_, entry->render_view_id, entry->stream_id, false);
+  }
   if (!entry->pending_close) {
     if (mirroring_manager_) {
       mirroring_manager_->RemoveDiverter(

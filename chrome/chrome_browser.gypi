@@ -1013,6 +1013,8 @@
         'browser/managed_mode/managed_user_service.h',
         'browser/managed_mode/managed_user_service_factory.cc',
         'browser/managed_mode/managed_user_service_factory.h',
+        'browser/media/audio_stream_indicator.cc',
+        'browser/media/audio_stream_indicator.h',
         'browser/media/media_capture_devices_dispatcher.cc',
         'browser/media/media_capture_devices_dispatcher.h',
         'browser/media/media_stream_capture_indicator.cc',

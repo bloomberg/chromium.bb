@@ -34,6 +34,11 @@ class MockMediaObserver : public MediaObserver {
                void(int render_process_id, int render_view_id,
                     const MediaStreamDevice& device,
                     const MediaRequestState state));
+  MOCK_METHOD4(OnAudioStreamPlayingChanged,
+               void(int render_process_id,
+                    int render_view_id,
+                    int stream_id,
+                    bool playing));
 };
 
 class MockMediaInternals : public MediaInternals {
