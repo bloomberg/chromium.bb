@@ -414,12 +414,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                        int route_id,
                        const std::string& frame_tree);
 
-  // Set accessibility callbacks.
-  void SetAccessibilityLayoutCompleteCallbackForTesting(
-      const base::Closure& callback);
-  void SetAccessibilityLoadCompleteCallbackForTesting(
-      const base::Closure& callback);
-
   void set_save_accessibility_tree_for_testing(bool save) {
     save_accessibility_tree_for_testing_ = save;
   }
@@ -657,10 +651,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // ExecuteJavascriptInWebFrameCallbackResult and their corresponding
   // callbacks.
   std::map<int, JavascriptResultCallback> javascript_callbacks_;
-
-  // Accessibility callbacks.
-  base::Closure accessibility_layout_callback_;
-  base::Closure accessibility_load_callback_;
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;
