@@ -86,7 +86,7 @@ class DisplayView : public ash::internal::ActionableView {
   string16 GetExternalDisplayName() {
 #if defined(USE_X11)
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-    int64 internal_display_id = display_manager->internal_display_id();
+    int64 internal_display_id = gfx::Display::InternalDisplayId();
     int64 primary_display_id =
         gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
 

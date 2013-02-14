@@ -301,7 +301,7 @@ void DisplayController::InitPrimaryDisplay() {
     int y = primary_candidate->bounds_in_pixel().y();
     for (int i = 1; i < count; ++i) {
       const gfx::Display* display = display_manager->GetDisplayAt(i);
-      if (display_manager->IsInternalDisplayId(display->id())) {
+      if (display->IsInternal()) {
         primary_candidate = display;
         break;
       } else if (display->bounds_in_pixel().y() < y) {

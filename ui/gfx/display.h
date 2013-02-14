@@ -101,6 +101,13 @@ class UI_EXPORT Display {
   // True if the display contains valid display id.
   bool is_valid() const { return id_ != kInvalidDisplayID; }
 
+  // True if the display corresponds to internal panel.
+  bool IsInternal() const;
+
+  // Gets/Sets an id of display corresponding to internal panel.
+  static int64 InternalDisplayId();
+  static void SetInternalDisplayId(int64 internal_display_id);
+
   static const int64 kInvalidDisplayID;
 
  private:
