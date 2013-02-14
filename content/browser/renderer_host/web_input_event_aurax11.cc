@@ -145,9 +145,17 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
   webkit_event.hasPreciseScrollingDeltas = true;
   webkit_event.deltaX = event->x_offset();
+  if (event->x_offset_ordinal() != 0.f && event->x_offset() != 0.f) {
+    webkit_event.accelerationRatioX =
+        event->x_offset_ordinal() / event->x_offset();
+  }
   webkit_event.wheelTicksX = webkit_event.deltaX / kPixelsPerTick;
   webkit_event.deltaY = event->y_offset();
   webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
+  if (event->y_offset_ordinal() != 0.f && event->y_offset() != 0.f) {
+    webkit_event.accelerationRatioY =
+        event->y_offset_ordinal() / event->y_offset();
+  }
 
   return webkit_event;
 }

@@ -114,6 +114,16 @@ bool IsLastTouchEvent(const WebKit::WebTouchEvent& touch) {
           touch.touches[0].state == WebKit::WebTouchPoint::StateCancelled);
 }
 
+float GetUnacceleratedDelta(float accelerated_delta, float acceleration_ratio) {
+  return accelerated_delta * acceleration_ratio;
+}
+
+float GetAccelerationRatio(float accelerated_delta, float unaccelerated_delta) {
+  if (unaccelerated_delta == 0.f || accelerated_delta == 0.f)
+    return 1.f;
+  return unaccelerated_delta / accelerated_delta;
+}
+
 }  // namespace
 
 
@@ -966,10 +976,24 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
     } else {
       WebMouseWheelEvent* last_wheel_event =
           &coalesced_mouse_wheel_events_.back();
+      float unaccelerated_x =
+          GetUnacceleratedDelta(last_wheel_event->deltaX,
+                                last_wheel_event->accelerationRatioX) +
+          GetUnacceleratedDelta(wheel_event.deltaX,
+                                wheel_event.accelerationRatioX);
+      float unaccelerated_y =
+          GetUnacceleratedDelta(last_wheel_event->deltaY,
+                                last_wheel_event->accelerationRatioY) +
+          GetUnacceleratedDelta(wheel_event.deltaY,
+                                wheel_event.accelerationRatioY);
       last_wheel_event->deltaX += wheel_event.deltaX;
       last_wheel_event->deltaY += wheel_event.deltaY;
       last_wheel_event->wheelTicksX += wheel_event.wheelTicksX;
       last_wheel_event->wheelTicksY += wheel_event.wheelTicksY;
+      last_wheel_event->accelerationRatioX =
+          GetAccelerationRatio(last_wheel_event->deltaX, unaccelerated_x);
+      last_wheel_event->accelerationRatioY =
+          GetAccelerationRatio(last_wheel_event->deltaY, unaccelerated_y);
       DCHECK_GE(wheel_event.timeStampSeconds,
                 last_wheel_event->timeStampSeconds);
       last_wheel_event->timeStampSeconds = wheel_event.timeStampSeconds;

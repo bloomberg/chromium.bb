@@ -171,8 +171,10 @@ void OverscrollController::ProcessEventForOverscroll(
     case WebKit::WebInputEvent::MouseWheel: {
       const WebKit::WebMouseWheelEvent& wheel =
           static_cast<const WebKit::WebMouseWheelEvent&>(event);
-      if (wheel.hasPreciseScrollingDeltas)
-        ProcessOverscroll(wheel.deltaX, wheel.deltaY);
+      if (wheel.hasPreciseScrollingDeltas) {
+        ProcessOverscroll(wheel.deltaX * wheel.accelerationRatioX,
+                          wheel.deltaY * wheel.accelerationRatioY);
+      }
       break;
     }
     case WebKit::WebInputEvent::GestureScrollUpdate: {
