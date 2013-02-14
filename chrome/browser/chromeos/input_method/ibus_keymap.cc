@@ -6,6 +6,7 @@
 
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
+#include <X11/XF86keysym.h>
 
 namespace chromeos {
 namespace input_method {
@@ -16,24 +17,34 @@ std::string GetIBusKey(int keyval) {
     case XK_Escape:
       return "Esc";
     case XK_F1:
+    case XF86XK_Back:
       return "HistoryBack";
     case XK_F2:
+    case XF86XK_Forward:
       return "HistoryForward";
     case XK_F3:
+    case XF86XK_Reload:
       return "BrowserRefresh";
     case XK_F4:
+    case XF86XK_LaunchB:
       return "ChromeOSFullscreen";  // TODO: Check this value
     case XK_F5:
+    case XF86XK_LaunchA:
       return "ChromeOSSwitchWindow";  // TODO: Check this value
     case XK_F6:
+    case XF86XK_MonBrightnessDown:
       return "BrightnessDown";
     case XK_F7:
+    case XF86XK_KbdBrightnessUp:
       return "BrightnessUp";
     case XK_F8:
+    case XF86XK_AudioMute:
       return "AudioVolumeMute";
     case XK_F9:
+    case XF86XK_AudioLowerVolume:
       return "AudioVolumeDown";
     case XK_F10:
+    case XF86XK_AudioRaiseVolume:
       return "AudioVolumeUp";
     case XK_BackSpace:
       return "Backspace";
