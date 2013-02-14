@@ -7,6 +7,7 @@
 # chrome/common/extensions/OWNERS
 # chrome/renderer/extensions/OWNERS
 # chrome/renderer/resources/extensions/OWNERS
+# extensions/OWNERS
 aa@chromium.org
 asargent@chromium.org
 benwells@chromium.org
