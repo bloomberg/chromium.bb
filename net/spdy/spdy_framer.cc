@@ -1020,8 +1020,10 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
     stream_id = reinterpret_cast<const SpdySynStreamControlFrame*>(
         &control_frame)->stream_id();
   } else if (control_frame.type() == SYN_REPLY) {
-    stream_id = reinterpret_cast<const SpdySynReplyControlFrame*>(
-        &control_frame)->stream_id();
+    SpdyFrameReader reader(current_frame_buffer_.get(), current_frame_len_);
+    reader.Seek(SpdyFrame::kHeaderSize);  // Seek past frame header.
+    bool read_successful = reader.ReadUInt31(&stream_id);
+    DCHECK(read_successful);
   } else if (control_frame.type() == HEADERS) {
     stream_id = reinterpret_cast<const SpdyHeadersControlFrame*>(
         &control_frame)->stream_id();
@@ -1808,12 +1810,10 @@ bool SpdyFramer::GetFrameBoundaries(const SpdyFrame& frame,
         }
         break;
       case SYN_REPLY:
-        {
-          *header_length = GetSynReplyMinimumSize();
-          *payload_length = frame.length() -
-              (*header_length - GetControlFrameMinimumSize());
-          *payload = frame.data() + *header_length;
-        }
+        *header_length = GetSynReplyMinimumSize();
+        *payload_length = frame.length() -
+            (*header_length - GetControlFrameMinimumSize());
+        *payload = frame.data() + *header_length;
         break;
       case HEADERS:
         {

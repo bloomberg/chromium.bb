@@ -44,7 +44,6 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(8u, SpdyDataFrame::size());
   EXPECT_EQ(8u, SpdyControlFrame::kHeaderSize);
   EXPECT_EQ(18u, SpdySynStreamControlFrame::size());
-  EXPECT_EQ(12u, SpdySynReplyControlFrame::size());
   EXPECT_EQ(16u, SpdyRstStreamControlFrame::size());
   EXPECT_EQ(12u, SpdySettingsControlFrame::size());
   EXPECT_EQ(12u, SpdyPingControlFrame::size());

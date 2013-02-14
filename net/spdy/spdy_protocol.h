@@ -491,11 +491,6 @@ struct SpdySynStreamControlFrameBlock : SpdyFrameBlock {
   uint8 credential_slot_;
 };
 
-// A SYN_REPLY Control Frame structure.
-struct SpdySynReplyControlFrameBlock : SpdyFrameBlock {
-  SpdyStreamId stream_id_;
-};
-
 // A RST_STREAM Control Frame structure.
 struct SpdyRstStreamControlFrameBlock : SpdyFrameBlock {
   SpdyStreamId stream_id_;
@@ -1052,49 +1047,6 @@ class SpdySynStreamControlFrame : public SpdyControlFrame {
     return static_cast<SpdySynStreamControlFrameBlock*>(frame_);
   }
   DISALLOW_COPY_AND_ASSIGN(SpdySynStreamControlFrame);
-};
-
-// A SYN_REPLY frame.
-class SpdySynReplyControlFrame : public SpdyControlFrame {
- public:
-  SpdySynReplyControlFrame() : SpdyControlFrame(size()) {}
-  SpdySynReplyControlFrame(char* data, bool owns_buffer)
-      : SpdyControlFrame(data, owns_buffer) {}
-
-  SpdyStreamId stream_id() const {
-    return ntohl(block()->stream_id_) & kStreamIdMask;
-  }
-
-  int header_block_len() const {
-    size_t header_block_len = length() - (size() - SpdyFrame::kHeaderSize);
-    // SPDY 2 had 2 bytes of unused space preceeding the header block.
-    if (version() < 3) {
-      header_block_len -= 2;
-    }
-    return header_block_len;
-  }
-
-  const char* header_block() const {
-    const char* header_block = reinterpret_cast<const char*>(block()) + size();
-    // SPDY 2 had 2 bytes of unused space preceeding the header block.
-    if (version() < 3) {
-      header_block += 2;
-    }
-    return header_block;
-  }
-
-  // Returns the size of the SpdySynReplyControlFrameBlock structure.
-  // Note: this is not the size of the SpdySynReplyControlFrame class.
-  static size_t size() { return sizeof(SpdySynReplyControlFrameBlock); }
-
- private:
-  const struct SpdySynReplyControlFrameBlock* block() const {
-    return static_cast<SpdySynReplyControlFrameBlock*>(frame_);
-  }
-  struct SpdySynReplyControlFrameBlock* mutable_block() {
-    return static_cast<SpdySynReplyControlFrameBlock*>(frame_);
-  }
-  DISALLOW_COPY_AND_ASSIGN(SpdySynReplyControlFrame);
 };
 
 // A RST_STREAM frame.
