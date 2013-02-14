@@ -23,9 +23,10 @@ FakeAudioOutputStream::FakeAudioOutputStream(AudioManagerBase* manager,
     : audio_manager_(manager),
       callback_(NULL),
       audio_bus_(AudioBus::Create(params)),
-      frames_per_millisecond_(
-          params.sample_rate() / static_cast<float>(
-              base::Time::kMillisecondsPerSecond)) {
+      buffer_duration_(base::TimeDelta::FromMicroseconds(
+          params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
+          static_cast<float>(params.sample_rate()))) {
+  audio_bus_->Zero();
 }
 
 FakeAudioOutputStream::~FakeAudioOutputStream() {
@@ -40,6 +41,7 @@ bool FakeAudioOutputStream::Open() {
 void FakeAudioOutputStream::Start(AudioSourceCallback* callback)  {
   DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
   callback_ = callback;
+  next_read_time_ = base::Time::Now();
   on_more_data_cb_.Reset(base::Bind(
       &FakeAudioOutputStream::OnMoreDataTask, base::Unretained(this)));
   audio_manager_->GetMessageLoop()->PostTask(
@@ -68,15 +70,20 @@ void FakeAudioOutputStream::OnMoreDataTask() {
   DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
   DCHECK(callback_);
 
-  audio_bus_->Zero();
-  int frames_received = callback_->OnMoreData(
-      audio_bus_.get(), AudioBuffersState());
+  callback_->OnMoreData(audio_bus_.get(), AudioBuffersState());
 
-  // Calculate our sleep duration for simulated playback.  Sleep for at least
-  // one millisecond so we don't spin the CPU.
+  // Need to account for time spent here due to the cost of OnMoreData() as well
+  // as the imprecision of PostDelayedTask().
+  base::Time now = base::Time::Now();
+  base::TimeDelta delay = next_read_time_ + buffer_duration_ - now;
+
+  // If we're behind, find the next nearest ontime interval.
+  if (delay < base::TimeDelta())
+    delay += buffer_duration_ * (-delay / buffer_duration_ + 1);
+  next_read_time_ = now + delay;
+
   audio_manager_->GetMessageLoop()->PostDelayedTask(
-      FROM_HERE, on_more_data_cb_.callback(), base::TimeDelta::FromMilliseconds(
-          std::max(1.0f, frames_received / frames_per_millisecond_)));
+      FROM_HERE, on_more_data_cb_.callback(), delay);
 }
 
 }  // namespace media

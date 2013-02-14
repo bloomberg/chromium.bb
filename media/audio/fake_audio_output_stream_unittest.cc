@@ -13,19 +13,21 @@
 
 namespace media {
 
+static const int kTestCallbacks = 5;
+
 class FakeAudioOutputStreamTest : public testing::Test {
  public:
   FakeAudioOutputStreamTest()
       : audio_manager_(AudioManager::Create()),
         params_(
-            AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_STEREO, 8000, 8, 128),
+            AudioParameters::AUDIO_FAKE, CHANNEL_LAYOUT_STEREO, 44100, 8, 128),
         source_(params_.channels(), 200.0, params_.sample_rate()),
         done_(false, false) {
     stream_ = audio_manager_->MakeAudioOutputStream(AudioParameters(params_));
     CHECK(stream_);
 
-    time_between_callbacks_ = base::TimeDelta::FromMilliseconds(
-        params_.frames_per_buffer() * base::Time::kMillisecondsPerSecond /
+    time_between_callbacks_ = base::TimeDelta::FromMicroseconds(
+        params_.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
         static_cast<float>(params_.sample_rate()));
   }
 
@@ -64,11 +66,10 @@ class FakeAudioOutputStreamTest : public testing::Test {
     if (source_.callbacks() < callbacks) {
       audio_manager_->GetMessageLoop()->PostDelayedTask(FROM_HERE, base::Bind(
           &FakeAudioOutputStreamTest::TimeCallbacksOnAudioThread,
-          base::Unretained(this), callbacks), time_between_callbacks_);
+          base::Unretained(this), callbacks), time_between_callbacks_ / 2);
     } else {
-      audio_manager_->GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
-          &FakeAudioOutputStreamTest::EndTest, base::Unretained(this),
-          callbacks));
+      end_time_ = base::Time::Now();
+      EndTest(callbacks);
     }
   }
 
@@ -88,6 +89,7 @@ class FakeAudioOutputStreamTest : public testing::Test {
   SineWaveAudioSource source_;
   base::WaitableEvent done_;
   base::Time start_time_;
+  base::Time end_time_;
   base::TimeDelta time_between_callbacks_;
 
  private:
@@ -105,36 +107,41 @@ TEST_F(FakeAudioOutputStreamTest, FakeStreamBasicCallback) {
 
 // Ensure the time between callbacks is sane.
 TEST_F(FakeAudioOutputStreamTest, TimeBetweenCallbacks) {
-  static const int kTestCallbacks = 5;
-
   audio_manager_->GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
       &FakeAudioOutputStreamTest::TimeCallbacksOnAudioThread,
       base::Unretained(this), kTestCallbacks));
 
-  // Let the loop run for a second or two then issue Stop() / Start().
-  audio_manager_->GetMessageLoop()->PostDelayedTask(FROM_HERE, base::Bind(
-      &FakeAudioOutputStreamTest::StopStartOnAudioThread,
-      base::Unretained(this)), time_between_callbacks_);
-
   done_.Wait();
 
-  base::TimeDelta elapsed = base::Time::Now() - start_time_;
-
   // There are only (kTestCallbacks - 1) intervals between kTestCallbacks.
-  float actual_time_between_callbacks_ms =
-      elapsed.InMillisecondsF() / (kTestCallbacks - 1);
-  float expected_time_between_callbacks_ms =
-      time_between_callbacks_.InMillisecondsF();
+  base::TimeDelta actual_time_between_callbacks =
+      (end_time_ - start_time_) / (kTestCallbacks - 1);
 
   // Ensure callback time is no faster than the expected time between callbacks.
-  EXPECT_GE(actual_time_between_callbacks_ms,
-            expected_time_between_callbacks_ms);
+  EXPECT_TRUE(actual_time_between_callbacks >= time_between_callbacks_);
 
   // Softly check if the callback time is no slower than twice the expected time
   // between callbacks.  Since this test runs on the bots we can't be too strict
   // with the bounds.
-  if (actual_time_between_callbacks_ms > 2 * expected_time_between_callbacks_ms)
+  if (actual_time_between_callbacks > 2 * time_between_callbacks_)
     LOG(ERROR) << "Time between fake audio callbacks is too large!";
+}
+
+// Ensure Start()/Stop() on the stream doesn't generate too many callbacks.  See
+// http://crbug.com/159049
+TEST_F(FakeAudioOutputStreamTest, StartStopClearsCallbacks) {
+  audio_manager_->GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
+      &FakeAudioOutputStreamTest::TimeCallbacksOnAudioThread,
+      base::Unretained(this), kTestCallbacks));
+
+  // Issue a Stop() / Start() in between expected callbacks to maximize the
+  // chance of catching the FakeAudioOutputStream doing the wrong thing.
+  audio_manager_->GetMessageLoop()->PostDelayedTask(FROM_HERE, base::Bind(
+      &FakeAudioOutputStreamTest::StopStartOnAudioThread,
+      base::Unretained(this)), time_between_callbacks_ / 2);
+
+  // EndTest() will ensure the proper number of callbacks have occurred.
+  done_.Wait();
 }
 
 }  // namespace media

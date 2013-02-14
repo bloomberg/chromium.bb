@@ -7,6 +7,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 
@@ -42,7 +43,8 @@ class MEDIA_EXPORT FakeAudioOutputStream : public AudioOutputStream {
   AudioManagerBase* audio_manager_;
   AudioSourceCallback* callback_;
   scoped_ptr<AudioBus> audio_bus_;
-  float frames_per_millisecond_;
+  base::TimeDelta buffer_duration_;
+  base::Time next_read_time_;
 
   // Used to post delayed tasks to the AudioThread that we can cancel.
   base::CancelableClosure on_more_data_cb_;
