@@ -8,7 +8,7 @@ m4_define([wayland_version],
 
 AC_INIT([wayland],
         [wayland_version],
-        [https://bugs.freedesktop.org/enter_bug.cgi?product=wayland],
+        [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=wayland&version=1.0.90],
         [wayland],
         [http://wayland.freedesktop.org/])
 
