@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "chrome/browser/ui/views/chrome_views_export.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 // This contains the list of accelerators for the Aura implementation.
@@ -19,10 +20,10 @@ struct AcceleratorMapping {
 };
 
 // The list of accelerators.
-extern const AcceleratorMapping kAcceleratorMap[];
+CHROME_VIEWS_EXPORT extern const AcceleratorMapping kAcceleratorMap[];
 
 // The numbers of elements in kAcceleratorMap.
-extern const size_t kAcceleratorMapLength;
+CHROME_VIEWS_EXPORT extern const size_t kAcceleratorMapLength;
 
 }  // namespace chrome
 

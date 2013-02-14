@@ -17,6 +17,7 @@
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
         'cert_logger_proto',
+        'chrome_browser_ui_views.gyp:browser_ui_views',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -1370,8 +1371,6 @@
         'browser/ui/view_ids.h',
         'browser/ui/views/about_ipc_dialog.cc',
         'browser/ui/views/about_ipc_dialog.h',
-        'browser/ui/views/accelerator_table.cc',
-        'browser/ui/views/accelerator_table.h',
         'browser/ui/views/accessibility/accessibility_event_router_views.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views.h',
         'browser/ui/views/accessibility/invert_bubble_view.cc',
