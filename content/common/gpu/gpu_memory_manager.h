@@ -29,9 +29,9 @@ class CONTENT_EXPORT GpuMemoryManager :
     public base::SupportsWeakPtr<GpuMemoryManager> {
  public:
 #if defined(OS_ANDROID)
-  enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
-#else
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 1 };
+#else
+  enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
 #endif
   enum ScheduleManageTime {
     // Add a call to Manage to the thread's message loop immediately.
