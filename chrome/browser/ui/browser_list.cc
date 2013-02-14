@@ -72,6 +72,16 @@ void BrowserList::SetLastActive(Browser* browser) {
 }
 
 // static
+BrowserList::const_reverse_iterator BrowserList::begin_last_active() {
+  return GetNativeList()->begin_last_active();
+}
+
+// static
+BrowserList::const_reverse_iterator BrowserList::end_last_active() {
+  return GetNativeList()->end_last_active();
+}
+
+// static
 bool BrowserList::IsOffTheRecordSessionActive() {
   return GetNativeList()->IsIncognitoWindowOpen();
 }

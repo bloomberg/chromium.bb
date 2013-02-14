@@ -11,10 +11,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list_impl.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "ui/gfx/screen.h"
@@ -113,16 +112,9 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     if (browser_ && browser_->window() && !browser_->window()->IsPanel()) {
       window = browser_->window();
     } else {
-      // This code is only ran on the native desktop (on the ash desktop,
-      // GetBoundsOverrideAsh should take over below before this is reached).
-      // TODO(gab): This code should go in a native desktop specific window
-      // sizer as part of fixing crbug.com/175812.
-      const chrome::BrowserListImpl* native_browser_list =
-          chrome::BrowserListImpl::GetInstance(
-              chrome::HOST_DESKTOP_TYPE_NATIVE);
-      for (chrome::BrowserListImpl::const_reverse_iterator it =
-               native_browser_list->begin_last_active();
-           it != native_browser_list->end_last_active(); ++it) {
+      BrowserList::const_reverse_iterator it = BrowserList::begin_last_active();
+      BrowserList::const_reverse_iterator end = BrowserList::end_last_active();
+      for (; (it != end); ++it) {
         Browser* last_active = *it;
         if (last_active && last_active->is_type_tabbed()) {
           window = last_active->window();

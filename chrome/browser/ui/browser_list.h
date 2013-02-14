@@ -20,6 +20,7 @@ class BrowserListObserver;
 class BrowserList {
  public:
   typedef std::vector<Browser*> BrowserVector;
+  typedef BrowserVector::const_reverse_iterator const_reverse_iterator;
 
   // Adds and removes browsers from the list they are associated with. The
   // browser object should be valid BEFORE these calls (for the benefit of
@@ -37,6 +38,13 @@ class BrowserList {
 
   // Closes all browsers for |profile| across all desktops.
   static void CloseAllBrowsersWithProfile(Profile* profile);
+
+  // Returns iterated access to list of open browsers ordered by when
+  // they were last active. The underlying data structure is a vector
+  // and we push_back on recent access so a reverse iterator gives the
+  // latest accessed browser first.
+  static const_reverse_iterator begin_last_active();
+  static const_reverse_iterator end_last_active();
 
   // Returns true if at least one incognito session is active.
   static bool IsOffTheRecordSessionActive();
