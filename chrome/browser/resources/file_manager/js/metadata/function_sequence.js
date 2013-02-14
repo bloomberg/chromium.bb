@@ -6,6 +6,7 @@
  * @constructor
  * @class FunctionSequence to invoke steps in sequence
  *
+ * @param {string} name                //TODO(JSDOC).
  * @param {Array} steps                array of functions to invoke in sequence.
  * @param {Object} logger              logger.
  * @param {Function} callback          callback to invoke on success.
@@ -82,6 +83,7 @@ FunctionSequence.prototype.finish_ = function() {
  * cases should be used nextStep function, which is defined in closure and thus
  * has access to internal variables of functionsequence.
  * @private
+ * @param {...} var_args  //TODO(JSDOC).
  */
 FunctionSequence.prototype.nextStep_ = function(var_args) {
   if (this.failed_) {
@@ -105,6 +107,7 @@ FunctionSequence.prototype.nextStep_ = function(var_args) {
 
 /**
  * This function should be called only once on start, so start sequence pipeline
+ * @param {...} var_args  //TODO(JSDOC).
  */
 FunctionSequence.prototype.start = function(var_args) {
   if (this.started) {
@@ -120,6 +123,8 @@ FunctionSequence.prototype.start = function(var_args) {
 /**
  * Add Function object mimics to FunctionSequence
  * @private
+ * @param {*} obj  //TODO(JSDOC).
+ * @param {Array.*} args  /TODO(JSDOC).
  */
 FunctionSequence.prototype.apply_ = function(obj, args) {
   this.start.apply(this, args);
