@@ -66,6 +66,10 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Captures the latest available picture pile synchronously.
   void CapturePictureSync();
 
+  // Sets the zoom level for text only. Used in layout modes other than
+  // Text Autosizing.
+  void SetTextZoomLevel(double level);
+
  private:
   // content::WebContentsObserver implementation.
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;

@@ -59,6 +59,11 @@ IPC_MESSAGE_ROUTED1(AwViewMsg_EnableCapturePictureCallback,
 // This message blocks the browser process on the renderer until complete.
 IPC_SYNC_MESSAGE_ROUTED0_0(AwViewMsg_CapturePictureSync)
 
+// Sets the zoom level for text only. Used in layout modes other than
+// Text Autosizing.
+IPC_MESSAGE_ROUTED1(AwViewMsg_SetTextZoomLevel,
+                    double /* zoom_level */)
+
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.

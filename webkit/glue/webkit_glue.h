@@ -120,6 +120,10 @@ WEBKIT_GLUE_EXPORT void ConfigureURLRequestForReferrerPolicy(
 // computed inside the sandbox and thus its not always accurate.
 WEBKIT_GLUE_EXPORT size_t MemoryUsageKB();
 
+// Converts from zoom factor (zoom percent / 100) to zoom level, where 0 means
+// no zoom, positive numbers mean zoom in, negatives mean zoom out.
+WEBKIT_GLUE_EXPORT double ZoomFactorToZoomLevel(double factor);
+
 }  // namespace webkit_glue
 
 #endif  // WEBKIT_GLUE_WEBKIT_GLUE_H_

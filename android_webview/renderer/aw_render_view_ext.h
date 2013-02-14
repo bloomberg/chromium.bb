@@ -53,6 +53,8 @@ class AwRenderViewExt : public content::RenderViewObserver,
 
   void OnCapturePictureSync();
 
+  void OnSetTextZoomLevel(double zoom_level);
+
   // WebKit::WebPermissionClient implementation.
   virtual bool allowImage(WebKit::WebFrame* frame,
                           bool enabledPerSettings,

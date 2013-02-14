@@ -803,7 +803,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
     // This class provides helper methods for testing of settings related to
     // the text autosizing feature.
-    abstract class AwSettingsTextAutosizingTestHelper<T> extends AwSettingsTestHelper<T> {
+    abstract class AwSettingsTextAutosizingTestHelper<T>
+            extends AwSettingsWithSettingsTestHelper<T> {
         protected static final float PARAGRAPH_FONT_SIZE = 14.0f;
 
         AwSettingsTextAutosizingTestHelper(
@@ -895,7 +896,54 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 AwContents awContents,
                 TestAwContentsClient contentViewClient) throws Throwable {
             super(awContents, contentViewClient);
-            // See b/7873666.
+            mInitialActualFontSize = getActualFontSize();
+        }
+
+        @Override
+        protected Integer getAlteredValue() {
+            return INITIAL_TEXT_ZOOM * 2;
+        }
+
+        @Override
+        protected Integer getInitialValue() {
+            return INITIAL_TEXT_ZOOM;
+        }
+
+        @Override
+        protected Integer getCurrentValue() {
+            return mContentSettings.getTextZoom();
+        }
+
+        @Override
+        protected void setCurrentValue(Integer value) {
+            mContentSettings.setTextZoom(value);
+            mAwSettings.setTextZoom(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Integer value) throws Throwable {
+            final float actualFontSize = getActualFontSize();
+            // Ensure that actual vs. initial font size ratio is similar to actual vs. initial
+            // text zoom values ratio.
+            final float ratiosDelta = Math.abs(
+                (actualFontSize / mInitialActualFontSize) -
+                (value / (float)INITIAL_TEXT_ZOOM));
+            assertTrue(
+                "|(" + actualFontSize + " / " + mInitialActualFontSize + ") - (" +
+                value + " / " + INITIAL_TEXT_ZOOM + ")| = " + ratiosDelta,
+                ratiosDelta <= 0.2f);
+        }
+    }
+
+    class AwSettingsTextZoomAutosizingTestHelper
+            extends AwSettingsTextAutosizingTestHelper<Integer> {
+        private static final int INITIAL_TEXT_ZOOM = 100;
+        private final float mInitialActualFontSize;
+
+        AwSettingsTextZoomAutosizingTestHelper(
+                AwContents awContents,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(awContents, contentViewClient);
             mContentSettings.setLayoutAlgorithm(LayoutAlgorithm.TEXT_AUTOSIZING);
             // The initial font size can be adjusted by font autosizer depending on the page's
             // viewport width.
@@ -920,6 +968,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         @Override
         protected void setCurrentValue(Integer value) {
             mContentSettings.setTextZoom(value);
+            // This is to verify that AwSettings will not affect font boosting by Autosizer.
+            mAwSettings.setTextZoom(-1);
         }
 
         @Override
@@ -1801,6 +1851,15 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         runPerViewSettingsTest(
             new AwSettingsTextZoomTestHelper(views.getContents0(), views.getClient0()),
             new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testTextZoomAutosizingWithTwoViews() throws Throwable {
+        ViewPair views = createViews();
+        runPerViewSettingsTest(
+            new AwSettingsTextZoomAutosizingTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsTextZoomAutosizingTestHelper(views.getContents1(), views.getClient1()));
     }
 
     @SmallTest

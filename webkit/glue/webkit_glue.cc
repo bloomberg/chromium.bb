@@ -372,4 +372,8 @@ size_t MemoryUsageKB() {
 }
 #endif
 
+double ZoomFactorToZoomLevel(double factor) {
+  return WebView::zoomFactorToZoomLevel(factor);
+}
+
 } // namespace webkit_glue

@@ -9,6 +9,9 @@ import android.content.pm.PackageManager;
 import android.os.Process;
 import android.webkit.WebSettings;
 
+import org.chromium.base.JNINamespace;
+import org.chromium.base.ThreadUtils;
+
 /**
  * Stores Android WebView specific settings that does not need to be synced to WebKit.
  * Use {@link org.chromium.content.browser.ContentSettings} for WebKit settings.
@@ -16,6 +19,7 @@ import android.webkit.WebSettings;
  * Methods in this class can be called from any thread, including threads created by
  * the client of WebView.
  */
+@JNINamespace("android_webview")
 public class AwSettings {
     // Lock to protect all settings.
     private final Object mAwSettingsLock = new Object();
@@ -28,12 +32,22 @@ public class AwSettings {
     private boolean mShouldFocusFirstNode = true;
     private boolean mGeolocationEnabled = true;
 
-    public AwSettings(Context context) {
+    // The native side of this object.
+    private int mNativeAwSettings = 0;
+
+    public AwSettings(Context context, int nativeWebContents) {
         mContext = context;
         mBlockNetworkLoads = mContext.checkPermission(
                 android.Manifest.permission.INTERNET,
                 Process.myPid(),
                 Process.myUid()) != PackageManager.PERMISSION_GRANTED;
+        mNativeAwSettings = nativeInit(nativeWebContents);
+        assert mNativeAwSettings != 0;
+    }
+
+    public void destroy() {
+        nativeDestroy(mNativeAwSettings);
+        mNativeAwSettings = 0;
     }
 
     /**
@@ -131,6 +145,22 @@ public class AwSettings {
     }
 
     /**
+     * Sets the text zoom of the page in percent. This kind of zooming is
+     * only applicable when Text Autosizing is turned off. Passing -1 will
+     * reset the zoom to the default value.
+     */
+    public void setTextZoom(final int textZoom) {
+        // There is no need to lock, because the native code doesn't
+        // read anything from the Java side.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                nativeSetTextZoom(mNativeAwSettings, textZoom);
+            }
+        });
+    }
+
+    /**
      * See {@link android.webkit.WebSettings#setNeedInitialFocus}.
      */
     public boolean shouldFocusFirstNode() {
@@ -158,4 +188,16 @@ public class AwSettings {
             return mGeolocationEnabled;
         }
     }
+
+    public void setWebContents(int nativeWebContents) {
+        nativeSetWebContents(mNativeAwSettings, nativeWebContents);
+    }
+
+    private native int nativeInit(int webContentsPtr);
+
+    private native void nativeDestroy(int nativeAwSettings);
+
+    private native void nativeSetWebContents(int nativeAwSettings, int nativeWebContents);
+
+    private native void nativeSetTextZoom(int nativeAwSettings, int textZoom);
 }

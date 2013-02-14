@@ -285,8 +285,12 @@ void ContentSettings::SyncToNativeImpl() {
       Java_ContentSettings_getTextAutosizingEnabled(env, obj);
 
   int text_size_percent = env->GetIntField(obj, field_ids_->text_size_percent);
-  prefs.font_scale_factor = text_size_percent / 100.0f;
-  prefs.force_enable_zoom = text_size_percent >= 130;
+  if (prefs.text_autosizing_enabled) {
+    prefs.font_scale_factor = text_size_percent / 100.0f;
+    prefs.force_enable_zoom = text_size_percent >= 130;
+  } else {
+    prefs.force_enable_zoom = false;
+  }
 
   ScopedJavaLocalRef<jstring> str(
       env, static_cast<jstring>(

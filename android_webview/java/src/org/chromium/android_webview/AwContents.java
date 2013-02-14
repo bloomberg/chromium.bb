@@ -255,8 +255,9 @@ public class AwContents {
         mContentsClient = contentsClient;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
+        int nativeWebContents = nativeGetWebContents(mNativeAwContents);
         mContentViewCore.initialize(containerView, internalAccessAdapter,
-                nativeGetWebContents(mNativeAwContents),
+                nativeWebContents,
                 new AwNativeWindow(mContainerView.getContext()),
                 isAccessFromFileURLsGrantedByDefault);
         mContentViewCore.setContentViewClient(mContentsClient);
@@ -264,7 +265,7 @@ public class AwContents {
         mContentViewCore.setContentSizeChangeListener(mLayoutSizer);
         mContentsClient.installWebContentsObserver(mContentViewCore);
 
-        mSettings = new AwSettings(mContentViewCore.getContext());
+        mSettings = new AwSettings(mContentViewCore.getContext(), nativeWebContents);
         setIoThreadClient(new IoThreadClientImpl());
         setInterceptNavigationDelegate(new InterceptNavigationDelegateImpl());
 
@@ -299,6 +300,8 @@ public class AwContents {
 
     public void destroy() {
         mContentViewCore.destroy();
+        // The native part of AwSettings isn't needed for the IoThreadClient instance.
+        mSettings.destroy();
         // We explicitly do not null out the mContentViewCore reference here
         // because ContentViewCore already has code to deal with the case
         // methods are called on it after it's been destroyed, and other
@@ -481,6 +484,8 @@ public class AwContents {
         nativeSetWebContents(mNativeAwContents, newWebContentsPtr);
         nativeSetIoThreadClient(mNativeAwContents, mIoThreadClient);
         nativeSetInterceptNavigationDelegate(mNativeAwContents, mInterceptNavigationDelegate);
+
+        mSettings.setWebContents(newWebContentsPtr);
 
         // Finally poke the new ContentViewCore with the size of the container view and show it.
         if (mContainerView.getWidth() != 0 || mContainerView.getHeight() != 0) {

@@ -68,6 +68,10 @@ class AwContents : public FindHelper::Listener,
              jobject web_contents_delegate);
   virtual ~AwContents();
 
+  AwRenderViewHostExt* render_view_host_ext() {
+    return render_view_host_ext_.get();
+  }
+
   void DrawGL(AwDrawGLInfo* draw_info);
   bool DrawSW(JNIEnv* env,
               jobject obj,

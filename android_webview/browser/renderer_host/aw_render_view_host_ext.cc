@@ -70,6 +70,11 @@ void AwRenderViewHostExt::EnableCapturePictureCallback(bool enabled) {
       web_contents()->GetRoutingID(), enabled));
 }
 
+void AwRenderViewHostExt::SetTextZoomLevel(double level) {
+  DCHECK(CalledOnValidThread());
+  Send(new AwViewMsg_SetTextZoomLevel(web_contents()->GetRoutingID(), level));
+}
+
 void AwRenderViewHostExt::RenderViewGone(base::TerminationStatus status) {
   DCHECK(CalledOnValidThread());
   for (std::map<int, DocumentHasImagesResult>::iterator pending_req =
