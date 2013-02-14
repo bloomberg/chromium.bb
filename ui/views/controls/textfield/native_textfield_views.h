@@ -272,6 +272,9 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   // modified character, i.e., modifiers took effect when generating this char.
   static bool ShouldInsertChar(char16 ch, int flags);
 
+  // Platform specific gesture event handling.
+  void PlatformGestureEventHandling(const ui::GestureEvent* event);
+
   // The parent textfield, the owner of this object.
   Textfield* textfield_;
 

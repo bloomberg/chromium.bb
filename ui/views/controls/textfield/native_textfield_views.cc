@@ -45,6 +45,10 @@
 #include "ui/base/cursor/cursor.h"
 #endif
 
+#if defined(OS_WIN) && defined(USE_AURA)
+#include "base/win/win_util.h"
+#endif
+
 namespace {
 
 // Default "system" color for text cursor.
@@ -157,22 +161,23 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
         SchedulePaint();
       OnAfterUserAction();
       event->SetHandled();
-      return;
+      break;
     case ui::ET_GESTURE_DOUBLE_TAP:
       SelectAll(false);
       event->SetHandled();
-      return;
+      break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       OnBeforeUserAction();
       if (MoveCursorTo(event->location(), true))
         SchedulePaint();
       OnAfterUserAction();
       event->SetHandled();
-      return;
-    default:
       break;
+    default:
+      View::OnGestureEvent(event);
+      return;
   }
-  View::OnGestureEvent(event);
+  PlatformGestureEventHandling(event);
 }
 
 bool NativeTextfieldViews::OnKeyPressed(const ui::KeyEvent& event) {
@@ -1315,6 +1320,14 @@ bool NativeTextfieldViews::ShouldInsertChar(char16 ch, int flags) {
   // flag that we don't care about.
   return ((ch >= 0x20 && ch < 0x7F) || ch > 0x9F) &&
       (flags & ~(ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN)) != ui::EF_ALT_DOWN;
+}
+
+void NativeTextfieldViews::PlatformGestureEventHandling(
+    const ui::GestureEvent* event) {
+#if defined(OS_WIN) && defined(USE_AURA)
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN && !textfield_->read_only())
+    base::win::DisplayVirtualKeyboard();
+#endif
 }
 
 }  // namespace views
