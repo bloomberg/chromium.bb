@@ -168,6 +168,8 @@
         'ext/lazy_pixel_ref.cc',
         'ext/lazy_pixel_ref.h',
         'ext/SkThread_chrome.cc',
+        'ext/paint_simplifier.cc',
+        'ext/paint_simplifier.h',
         'ext/platform_canvas.cc',
         'ext/platform_canvas.h',
         'ext/platform_device.cc',
