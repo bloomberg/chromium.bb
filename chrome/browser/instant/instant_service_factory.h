@@ -32,7 +32,6 @@ class InstantServiceFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory:
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
 

@@ -121,8 +121,7 @@ class TemplateURLRef {
   static std::string DisplayURLToURLRef(const string16& display_url);
 
   // If this TemplateURLRef is valid and contains one search term, this returns
-  // the scheme/host/path of the URL, otherwise this returns an empty string.
-  const std::string& GetScheme() const;
+  // the host/path of the URL, otherwise this returns an empty string.
   const std::string& GetHost() const;
   const std::string& GetPath() const;
 
@@ -252,9 +251,8 @@ class TemplateURLRef {
   // into the string, and may be empty.
   mutable Replacements replacements_;
 
-  // Scheme, host, path, key and location of the search term. These are only set
-  // if the url contains one search term.
-  mutable std::string scheme_;
+  // Host, path, key and location of the search term. These are only set if the
+  // url contains one search term.
   mutable std::string host_;
   mutable std::string path_;
   mutable std::string search_term_key_;
@@ -492,13 +490,6 @@ class TemplateURL {
   // TODO(beaudoin): Rename this to reflect that it really checks for an
   // InstantExtended capable URL.
   bool HasSearchTermsReplacementKey(const GURL& url) const;
-
-  // Returns true if the specified |url| matches the search, alternates, or
-  // instant url in scheme, domain, and path.  In addition, the search term
-  // replacement key must be present in the |url|.
-  // This predicate is used for site isolation purposes, so has security
-  // implications.  Seek security review if changing it.
-  bool IsInstantURL(const GURL& url);
 
  private:
   friend class TemplateURLService;

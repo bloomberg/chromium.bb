@@ -112,37 +112,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
   EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
 }
 
-// Test that Instant works when the URL is set via a TemplateURL (as opposed to
-// --instant-url).
-IN_PROC_BROWSER_TEST_F(InstantTest, SetWithTemplateURL) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstantUsingTemplateURL());
-
-  // Explicitly unfocus the omnibox.
-  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
-
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
-  EXPECT_FALSE(omnibox()->model()->has_focus());
-
-  // Delete any existing preview.
-  instant()->overlay_.reset();
-  EXPECT_FALSE(instant()->GetPreviewContents());
-
-  // Refocus the omnibox. The InstantController should've preloaded Instant.
-  FocusOmniboxAndWaitForInstantSupport();
-
-  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
-  EXPECT_TRUE(omnibox()->model()->has_focus());
-
-  content::WebContents* preview_tab = instant()->GetPreviewContents();
-  EXPECT_TRUE(preview_tab);
-
-  // Check that the page supports Instant, but it isn't showing.
-  EXPECT_TRUE(instant()->overlay_->supports_instant());
-  EXPECT_FALSE(instant()->IsPreviewingSearchResults());
-  EXPECT_TRUE(instant()->model()->mode().is_default());
-}
-
 // Flakes on Windows and Mac: http://crbug.com/170677
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_OnChangeEvent DISABLED_OnChangeEvent

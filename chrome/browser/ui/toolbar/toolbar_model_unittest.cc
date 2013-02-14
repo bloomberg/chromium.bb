@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/instant/instant_service.h"
+#include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 
@@ -126,6 +129,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   void ResetDefaultTemplateURL() {
     TemplateURLData data;
     data.SetURL("http://google.com/search?q={searchTerms}");
+    data.instant_url = "http://does/not/exist";
     data.search_terms_replacement_key = "{google:instantExtendedEnabledKey}";
     TemplateURL* search_template_url = new TemplateURL(profile(), data);
     TemplateURLService* template_url_service =
@@ -157,6 +161,13 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
     browser()->OpenURL(OpenURLParams(
         url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
         false));
+
+    // Query terms replacement requires that the renderer process be a
+    // recognized Instant renderer. Fake it.
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(profile());
+    int process_id = contents->GetRenderProcessHost()->GetID();
+    instant_service->AddInstantProcess(process_id);
 
     ToolbarModel* toolbar_model = browser()->toolbar_model();
 

@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
-
-class OmniboxEditModel;
 
 namespace content {
 class WebContents;
@@ -41,17 +40,18 @@ class SearchTabHelper : public content::NotificationObserver,
   // the notification system and shouldn't call this method.
   void NavigationEntryUpdated();
 
+ private:
+  friend class content::WebContentsUserData<SearchTabHelper>;
+
+  explicit SearchTabHelper(content::WebContents* web_contents);
+
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- private:
-  explicit SearchTabHelper(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<SearchTabHelper>;
-
-  // Sets the mode of the model based on |url|.
-  void UpdateModelBasedOnURL(const GURL& url);
+  // Sets the mode of the model based on the current URL of web_contents().
+  void UpdateModel();
 
   // Returns the web contents associated with the tab that owns this helper.
   const content::WebContents* web_contents() const;

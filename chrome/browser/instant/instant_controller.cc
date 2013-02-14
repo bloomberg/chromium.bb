@@ -21,6 +21,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -164,10 +165,6 @@ bool IsContentsFrom(const InstantPage* page,
 }
 
 }  // namespace
-
-// static
-const char* InstantController::kLocalOmniboxPopupURL =
-    "chrome://local-omnibox-popup/local-omnibox-popup.html";
 
 InstantController::InstantController(chrome::BrowserInstantController* browser,
                                      bool extended_enabled)
@@ -392,7 +389,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
     // to a backup loader.
     if (extended_enabled_ && !overlay_->supports_instant() &&
         !overlay_->IsUsingLocalPreview() && browser_->GetActiveWebContents()) {
-      CreateOverlay(kLocalOmniboxPopupURL, browser_->GetActiveWebContents());
+      CreateOverlay(chrome::search::kLocalOmniboxPopupURL,
+                    browser_->GetActiveWebContents());
     }
 
     overlay_->Update(extended_enabled_ ? user_text : full_text,
@@ -1128,7 +1126,7 @@ bool InstantController::EnsureOverlayIsCurrent(bool ignore_blacklist) {
   if (!GetInstantURL(profile, ignore_blacklist, &instant_url)) {
     // If we are in extended mode, fallback to the local popup.
     if (extended_enabled_)
-      instant_url = kLocalOmniboxPopupURL;
+      instant_url = chrome::search::kLocalOmniboxPopupURL;
     else
       return false;
   }
@@ -1296,7 +1294,7 @@ bool InstantController::GetInstantURL(Profile* profile,
   instant_url->clear();
 
   if (extended_enabled_ && use_local_preview_only_) {
-    *instant_url = kLocalOmniboxPopupURL;
+    *instant_url = chrome::search::kLocalOmniboxPopupURL;
     return true;
   }
 

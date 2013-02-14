@@ -8,11 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
@@ -40,26 +36,6 @@ using content::NavigationEntry;
 using content::SSLStatus;
 using content::WebContents;
 
-namespace {
-
-// Coerces an instant URL to look like a regular search URL so we can extract
-// query terms from the URL.
-GURL ConvertInstantURLToSearchURL(const GURL& instant_url,
-                                  const TemplateURL& template_url) {
-  GURL search_url(template_url.url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(string16())));
-  const std::string& scheme = search_url.scheme();
-  const std::string& host = search_url.host();
-  const std::string& port = search_url.port();
-  GURL::Replacements replacements;
-  replacements.SetSchemeStr(scheme);
-  replacements.SetHostStr(host);
-  replacements.SetPortStr(port);
-  return instant_url.ReplaceComponents(replacements);
-}
-
-}  // namespace
-
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate)
     : delegate_(delegate),
       input_in_progress_(false) {
@@ -72,7 +48,8 @@ ToolbarModelImpl::~ToolbarModelImpl() {
 string16 ToolbarModelImpl::GetText(
     bool display_search_urls_as_search_terms) const {
   if (display_search_urls_as_search_terms) {
-    string16 search_terms = TryToExtractSearchTermsFromURL();
+    string16 search_terms =
+        chrome::search::GetSearchTerms(delegate_->GetActiveWebContents());
     if (!search_terms.empty())
       return search_terms;
   }
@@ -104,7 +81,8 @@ GURL ToolbarModelImpl::GetURL() const {
 }
 
 bool ToolbarModelImpl::WouldReplaceSearchURLWithSearchTerms() const {
-  return !TryToExtractSearchTermsFromURL().empty();
+  const content::WebContents* contents = delegate_->GetActiveWebContents();
+  return !chrome::search::GetSearchTerms(contents).empty();
 }
 
 bool ToolbarModelImpl::ShouldDisplayURL() const {
@@ -234,35 +212,6 @@ NavigationController* ToolbarModelImpl::GetNavigationController() const {
   // to the window).
   WebContents* current_tab = delegate_->GetActiveWebContents();
   return current_tab ? &current_tab->GetController() : NULL;
-}
-
-string16 ToolbarModelImpl::TryToExtractSearchTermsFromURL() const {
-  GURL url = GetURL();
-  Profile* profile = GetProfile();
-
-  // Ensure query extraction is enabled and query URL is HTTPS.
-  if (!profile || !chrome::search::IsQueryExtractionEnabled(profile) ||
-      !url.SchemeIs(chrome::kHttpsScheme))
-    return string16();
-
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-
-  TemplateURL* template_url = template_url_service->GetDefaultSearchProvider();
-  if (!template_url)
-    return string16();
-
-  // Coerce URLs set via --instant-url to look like a regular search URL so we
-  // can extract search terms from them.
-  if (chrome::search::IsForcedInstantURL(url))
-    url = ConvertInstantURLToSearchURL(url, *template_url);
-
-  if (!template_url->HasSearchTermsReplacementKey(url))
-    return string16();
-
-  string16 result;
-  template_url->ExtractSearchTermsFromURL(url, &result);
-  return result;
 }
 
 Profile* ToolbarModelImpl::GetProfile() const {

@@ -120,8 +120,12 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputShowsOverlay) {
   EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
 }
 
+// TODO(sreeram): Enable this test once @mathp's CL lands:
+//     https://codereview.chromium.org/12179025/
+//
 // Test that omnibox text is correctly set when overlay is committed with Enter.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponEnterCommit) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       DISABLED_OmniboxTextUponEnterCommit) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
@@ -145,9 +149,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponEnterCommit) {
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
 }
 
+// TODO(sreeram): Enable this test once @mathp's CL lands:
+//     https://codereview.chromium.org/12179025/
+//
 // Test that omnibox text is correctly set when overlay is committed with focus
 // lost.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxTextUponFocusLostCommit) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       DISABLED_OmniboxTextUponFocusLostCommit) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
@@ -304,18 +312,21 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, InputOnNTPDoesntShowOverlay) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
-  // Prior to setup no render process is dedicated to Instant.
+  // Prior to setup, Instant has an overlay with a failed "google.com" load in
+  // it, which is rendered in the dedicated Instant renderer process.
+  //
+  // TODO(sreeram): Fix this up when we stop doing crazy things on init.
   InstantService* instant_service =
         InstantServiceFactory::GetForProfile(browser()->profile());
   ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
-  EXPECT_EQ(0, instant_service->GetInstantProcessCount());
+  EXPECT_EQ(1, instant_service->GetInstantProcessCount());
 
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
-  // Now there should be a registered Instant render process.
-  EXPECT_LT(0, instant_service->GetInstantProcessCount());
+  // The registered Instant render process should still exist.
+  EXPECT_EQ(1, instant_service->GetInstantProcessCount());
 
   // And the Instant overlay and ntp should live inside it.
   content::WebContents* preview = instant()->GetPreviewContents();

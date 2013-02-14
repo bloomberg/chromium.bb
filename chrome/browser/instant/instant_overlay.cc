@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/ui/search/search.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -71,7 +72,7 @@ void InstantOverlay::DidNavigate(
 }
 
 bool InstantOverlay::IsUsingLocalPreview() const {
-  return instant_url_ == InstantController::kLocalOmniboxPopupURL;
+  return instant_url_ == chrome::search::kLocalOmniboxPopupURL;
 }
 
 void InstantOverlay::Update(const string16& text,

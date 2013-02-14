@@ -416,11 +416,6 @@ std::string TemplateURLRef::DisplayURLToURLRef(
   return UTF16ToUTF8(result);
 }
 
-const std::string& TemplateURLRef::GetScheme() const {
-  ParseIfNecessary();
-  return scheme_;
-}
-
 const std::string& TemplateURLRef::GetHost() const {
   ParseIfNecessary();
   return host_;
@@ -524,7 +519,6 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(const GURL& url,
 
 void TemplateURLRef::InvalidateCachedValues() const {
   supports_replacements_ = valid_ = parsed_ = false;
-  scheme_.clear();
   host_.clear();
   path_.clear();
   search_term_key_.clear();
@@ -691,7 +685,6 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
                                search_terms_data.GoogleBaseSuggestURLValue());
 
   search_term_key_.clear();
-  scheme_.clear();
   host_.clear();
   path_.clear();
   search_term_key_location_ = url_parse::Parsed::REF;
@@ -707,7 +700,6 @@ void TemplateURLRef::ParseHostAndSearchTermKey(
   search_term_key_ = query_key.empty() ? ref_key : query_key;
   search_term_key_location_ = query_key.empty() ?
       url_parse::Parsed::REF : url_parse::Parsed::QUERY;
-  scheme_ = url.scheme();
   host_ = url.host();
   path_ = url.path();
 }
@@ -875,34 +867,6 @@ bool TemplateURL::HasSearchTermsReplacementKey(const GURL& url) const {
       }
     }
   }
-  return false;
-}
-
-bool TemplateURL::IsInstantURL(const GURL& url) {
-  // If the url matches the Instant ref, there's no need to
-  // check the replacement-key parameter, since we know this
-  // is instant.
-  // TODO(dhollowa): http://crbug.com/170390.  Consolidate Instant URL checks.
-  TemplateURLRef ref(this, TemplateURLRef::INSTANT);
-  GURL instant_url(ref.ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(string16())));
-  if (instant_url.scheme() == url.scheme() &&
-      instant_url.host() == url.host() &&
-      instant_url.path() == url.path())
-    return true;
-
-  // Anything else requires the existence of the replacement-key.
-  if (!HasSearchTermsReplacementKey(url))
-    return false;
-
-  for (size_t i = 0; i < URLCount(); ++i) {
-    TemplateURLRef ref(this, i);
-    if (ref.GetScheme() == url.scheme() &&
-        ref.GetHost() == url.host() &&
-        ref.GetPath() == url.path())
-      return true;
-  }
-
   return false;
 }
 

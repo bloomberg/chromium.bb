@@ -48,7 +48,6 @@ class InstantTestBase : public InProcessBrowserTest {
 
  protected:
   void SetupInstant();
-  void SetupInstantUsingTemplateURL();
 
   InstantController* instant() {
     return browser()->instant_controller()->instant();

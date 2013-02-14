@@ -83,23 +83,21 @@ void BrowserInstantController::RegisterUserPrefs(
   registry->RegisterBooleanPref(prefs::kInstantEnabled, false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
 
-  search::InstantExtendedDefault instant_extended_default_setting =
-      search::GetInstantExtendedDefaultSetting();
-
-  bool instant_extended_value = true;
-  switch (instant_extended_default_setting) {
-    case search::INSTANT_FORCE_ON:
+  bool instant_extended_default = true;
+  switch (search::GetInstantExtendedDefaultSetting()) {
+    case search::INSTANT_DEFAULT_ON:
+      instant_extended_default = true;
       break;
     case search::INSTANT_USE_EXISTING:
-      instant_extended_value = prefs->GetBoolean(prefs::kInstantEnabled);
+      instant_extended_default = prefs->GetBoolean(prefs::kInstantEnabled);
       break;
-    case search::INSTANT_FORCE_OFF:
-      instant_extended_value = false;
+    case search::INSTANT_DEFAULT_OFF:
+      instant_extended_default = false;
       break;
   }
 
   registry->RegisterBooleanPref(prefs::kInstantExtendedEnabled,
-                                instant_extended_value,
+                                instant_extended_default,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
 }
 

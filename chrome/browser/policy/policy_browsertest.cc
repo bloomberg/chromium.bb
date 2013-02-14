@@ -31,6 +31,8 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/instant/instant_service.h"
+#include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -76,6 +78,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
@@ -791,12 +794,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   MakeRequestFail make_request_fail("search.example");
 
-  chrome::search::EnableInstantExtendedAPIForTesting();
+  chrome::search::EnableQueryExtractionForTesting();
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
   const string16 kKeyword(ASCIIToUTF16("testsearch"));
   const std::string kSearchURL("https://www.google.com/search?q={searchTerms}");
+  const std::string kInstantURL("http://does/not/exist");
   const std::string kAlternateURL0(
       "https://www.google.com/search#q={searchTerms}");
   const std::string kAlternateURL1("https://www.google.com/#q={searchTerms}");
@@ -810,6 +814,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   ASSERT_TRUE(default_search);
   EXPECT_NE(kKeyword, default_search->keyword());
   EXPECT_NE(kSearchURL, default_search->url());
+  EXPECT_NE(kInstantURL, default_search->instant_url());
   EXPECT_FALSE(
     default_search->alternate_urls().size() == 2 &&
     default_search->alternate_urls()[0] == kAlternateURL0 &&
@@ -823,6 +828,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
                POLICY_SCOPE_USER, base::Value::CreateStringValue(kKeyword));
   policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL));
+  policies.Set(key::kDefaultSearchProviderInstantURL, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateStringValue(kInstantURL));
   base::ListValue* alternate_urls = new base::ListValue();
   alternate_urls->AppendString(kAlternateURL0);
   alternate_urls->AppendString(kAlternateURL1);
@@ -836,9 +843,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   ASSERT_TRUE(default_search);
   EXPECT_EQ(kKeyword, default_search->keyword());
   EXPECT_EQ(kSearchURL, default_search->url());
+  EXPECT_EQ(kInstantURL, default_search->instant_url());
   EXPECT_EQ(2U, default_search->alternate_urls().size());
   EXPECT_EQ(kAlternateURL0, default_search->alternate_urls()[0]);
   EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
+
+  // Query terms replacement requires that the renderer process be a recognized
+  // Instant renderer. Fake it.
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  instant_service->AddInstantProcess(browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderProcessHost()->GetID());
 
   // Verify that searching from the omnibox does search term replacement with
   // first URL pattern.

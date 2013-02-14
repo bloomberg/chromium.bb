@@ -142,8 +142,6 @@ TEST_F(OmniboxViewMacTest, TabToAutocomplete) {
 }
 
 TEST_F(OmniboxViewMacTest, SetInstantSuggestion) {
-  chrome::search::EnableInstantExtendedAPIForTesting();
-
   const NSRect frame = NSMakeRect(0, 0, 50, 30);
   scoped_nsobject<AutocompleteTextField> field(
       [[AutocompleteTextField alloc] initWithFrame:frame]);

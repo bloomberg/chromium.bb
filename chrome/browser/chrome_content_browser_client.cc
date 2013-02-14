@@ -63,8 +63,6 @@
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
@@ -73,6 +71,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -407,66 +406,22 @@ int GetCrashSignalFD(const CommandLine& command_line) {
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
-// TODO(dhollowa): http://crbug.com/170390 This test exists in different places
-// in Chrome.  Follow-up to consolidate these various Instant URL checks.
-// Returns true if |url| has the same scheme, host, and path as the instant URL
-// set via --instant-url.
-bool IsForcedInstantURL(const GURL& url) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kInstantURL)) {
-    GURL instant_url(command_line->GetSwitchValueASCII(switches::kInstantURL));
-    if (url.scheme() == instant_url.scheme() &&
-        url.host() == instant_url.host() &&
-        url.path() == instant_url.path()) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Determines whether the |url| is an Instant url for the default search
-// provider (set for the |profile|).
-// Also returns true if an Instant "effective url" (see below) is passed in.
-bool IsInstantURL(const GURL& url, Profile* profile) {
-  // Handle the command-line URL.
-  if (IsForcedInstantURL(url))
-    return true;
-
-  // A URL of this form has already be determined to be an Instant url,
-  // this is its "effective url".  So trivially return true.
-  if (url.SchemeIs(chrome::kChromeSearchScheme))
-    return true;
-
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  if (!template_url_service)
-    return false;
-
-  TemplateURL* template_url = template_url_service->GetDefaultSearchProvider();
-  if (!template_url)
-    return false;
-
-  if (template_url->instant_url().empty())
-    return false;
-
-  return template_url->IsInstantURL(url);
-}
-
-// Transforms the input |url| into its "effective url". The returned url
+// Transforms the input |url| into its "effective URL". The returned URL
 // facilitates grouping process-per-site. The |url| is transformed, for
 // example, from
 //
 //   https://www.google.com/search?espv=1&q=tractors
 //
-// to the effective url
+// to the effective URL
 //
 //   chrome-search://www.google.com/search?espv=1&q=tractors
 //
 // Notice the scheme change.
-// If the input is already an effective url then that same url is
-// returned.
-GURL GetEffectiveInstantURL(const GURL& url, Profile* profile) {
-  CHECK(IsInstantURL(url, profile)) << "Error granting Instant access.";
+//
+// If the input is already an effective URL then that same URL is returned.
+GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
+  CHECK(chrome::search::ShouldAssignURLToInstantRenderer(url, profile))
+      << "Error granting Instant access.";
 
   if (url.SchemeIs(chrome::kChromeSearchScheme))
     return url;
@@ -728,10 +683,10 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
   if (!profile)
     return url;
 
-  // If the input |url| is an Instant url, make its effective url distinct from
-  // other urls on the search provider's domain.
-  if (IsInstantURL(url, profile))
-    return GetEffectiveInstantURL(url, profile);
+  // If the input |url| should be assigned to the Instant renderer, make its
+  // effective URL distinct from other URLs on the search provider's domain.
+  if (chrome::search::ShouldAssignURLToInstantRenderer(url, profile))
+    return GetEffectiveURLForInstant(url, profile);
 
   // If the input |url| is part of an installed app, the effective URL is an
   // extension URL with the ID of that extension as the host. This has the
@@ -767,7 +722,7 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   if (!profile)
     return false;
 
-  if (IsInstantURL(effective_url, profile))
+  if (chrome::search::ShouldAssignURLToInstantRenderer(effective_url, profile))
     return true;
 
   if (!effective_url.SchemeIs(extensions::kExtensionScheme))
@@ -865,7 +820,7 @@ bool ChromeContentBrowserClient::IsSuitableHost(
       InstantServiceFactory::GetForProfile(profile);
   if (instant_service &&
       instant_service->IsInstantProcess(process_host->GetID()))
-    return IsInstantURL(site_url, profile);
+    return chrome::search::ShouldAssignURLToInstantRenderer(site_url, profile);
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -955,7 +910,8 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
 
   // Remember the ID of the Instant process to signal the renderer process
   // on startup in |AppendExtraCommandLineSwitches| below.
-  if (IsInstantURL(site_instance->GetSiteURL(), profile)) {
+  if (chrome::search::ShouldAssignURLToInstantRenderer(
+          site_instance->GetSiteURL(), profile)) {
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(profile);
     if (instant_service)

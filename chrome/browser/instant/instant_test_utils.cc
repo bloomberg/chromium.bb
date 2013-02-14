@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -52,16 +51,6 @@ void InstantTestModelObserver::PreviewStateChanged(const InstantModel& model) {
 // InstantTestBase -----------------------------------------------------------
 
 void InstantTestBase::SetupInstant() {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kInstantURL, instant_url_.spec());
-  SetupInstantUsingTemplateURL();
-
-  // TODO(shishir): Fix this ugly hack.
-  instant()->SetInstantEnabled(false, true);
-  instant()->SetInstantEnabled(true, false);
-}
-
-void InstantTestBase::SetupInstantUsingTemplateURL() {
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
   ui_test_utils::WaitForTemplateURLServiceToLoad(service);
@@ -77,7 +66,12 @@ void InstantTestBase::SetupInstantUsingTemplateURL() {
   TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
   service->Add(template_url);  // Takes ownership of |template_url|.
   service->SetDefaultSearchProvider(template_url);
+
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, true);
+
+  // TODO(shishir): Fix this ugly hack.
+  instant()->SetInstantEnabled(false, true);
+  instant()->SetInstantEnabled(true, false);
 }
 
 void InstantTestBase::KillInstantRenderView() {

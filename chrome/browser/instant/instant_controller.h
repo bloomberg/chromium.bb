@@ -67,9 +67,6 @@ class WebContents;
 // InstantController is owned by Browser via BrowserInstantController.
 class InstantController : public InstantPage::Delegate {
  public:
-  // The URL for the local omnibox popup.
-  static const char* kLocalOmniboxPopupURL;
-
   InstantController(chrome::BrowserInstantController* browser,
                     bool extended_enabled);
   virtual ~InstantController();
