@@ -40,6 +40,7 @@ class WebContents;
 namespace autofill {
 
 class AutofillDialogView;
+class DataModelWrapper;
 
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
@@ -149,10 +150,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual void OnPersonalDataChanged() OVERRIDE;
 
  private:
-  // Determines whether |input| and |field| match.
-  typedef base::Callback<bool(const DetailInput& input,
-                              const AutofillField& field)> InputFieldComparator;
-
   // Refresh wallet items immediately if there's no refresh currently in
   // progress, otherwise wait until the current refresh completes.
   void ScheduleRefreshWalletItems();
@@ -179,6 +176,11 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // address info. Incomplete profiles will not be displayed in the dropdown
   // menu.
   bool IsCompleteProfile(const AutofillProfile& profile);
+
+  // Creates a DataModelWrapper item for the item that's checked in the
+  // suggestion model for |section|. This may represent Autofill
+  // data or Wallet data, depending on whether Wallet is currently enabled.
+  scoped_ptr<DataModelWrapper> CreateWrapper(DialogSection section);
 
   // Fills in |section|-related fields in |output_| according to the state of
   // |view_|.

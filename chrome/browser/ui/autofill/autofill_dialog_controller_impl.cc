@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "chrome/common/form_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -378,24 +380,51 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
   if (section == SECTION_EMAIL)
     return model->GetLabelAt(model->checked_item());
 
-  if (section == SECTION_CC) {
+  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
+  return wrapper->GetDisplayText();
+}
+
+scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
+    DialogSection section) {
+  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  std::string item_key = model->GetItemKeyAt(model->checked_item());
+  scoped_ptr<DataModelWrapper> wrapper;
+  if (item_key.empty())
+    return wrapper.Pass();
+
+  if (CanPayWithWallet()) {
+    int index;
+    bool success = !base::StringToInt(item_key, &index);
+    DCHECK(success);
+
+    if (section == SECTION_CC) {
+      wrapper.reset(
+          new WalletInstrumentWrapper(wallet_items_->instruments()[index]));
+    } else {
+      wrapper.reset(
+          new WalletAddressWrapper(wallet_items_->addresses()[index]));
+    }
+  } else if (section == SECTION_CC) {
     CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
-    return card->TypeAndLastFourDigits();
+    DCHECK(card);
+    wrapper.reset(new AutofillCreditCardWrapper(card));
+  } else {
+    // Calculate the variant by looking at how many items come from the same
+    // FormGroup. TODO(estade): add a test for this.
+    size_t variant = 0;
+    for (int i = model->checked_item() - 1; i >= 0; --i) {
+      if (model->GetItemKeyAt(i) == item_key)
+        variant++;
+      else
+        break;
+    }
+
+    AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
+    DCHECK(profile);
+    wrapper.reset(new AutofillDataModelWrapper(profile, variant));
   }
 
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
-  AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
-  string16 comma = ASCIIToUTF16(", ");
-  string16 label = profile->GetInfo(NAME_FULL, app_locale) +
-      comma + profile->GetInfo(ADDRESS_HOME_LINE1, app_locale);
-  string16 address2 = profile->GetInfo(ADDRESS_HOME_LINE2, app_locale);
-  if (!address2.empty())
-    label += comma + address2;
-  label += ASCIIToUTF16("\n") +
-      profile->GetInfo(ADDRESS_HOME_CITY, app_locale) + comma +
-      profile->GetInfo(ADDRESS_HOME_STATE, app_locale) + ASCIIToUTF16(" ") +
-      profile->GetInfo(ADDRESS_HOME_ZIP, app_locale);
-  return label;
+  return wrapper.Pass();
 }
 
 gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
@@ -403,13 +432,11 @@ gfx::Image AutofillDialogControllerImpl::SuggestionIconForSection(
   if (section != SECTION_CC)
     return gfx::Image();
 
-  std::string item_key =
-      suggested_cc_.GetItemKeyAt(suggested_cc_.checked_item());
-  if (item_key.empty())
+  scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
+  if (!model.get())
     return gfx::Image();
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
-  return rb.GetImageNamed(card->IconResourceId());
+
+  return model->GetIcon();
 }
 
 void AutofillDialogControllerImpl::EditClickedForSection(
@@ -424,14 +451,8 @@ void AutofillDialogControllerImpl::EditClickedForSection(
 
     (*inputs)[0].autofilled_value = model->GetLabelAt(model->checked_item());
   } else {
-    std::string guid = model->GetItemKeyAt(model->checked_item());
-    DCHECK(!guid.empty());
-
-    FormGroup* form_group = section == SECTION_CC ?
-        static_cast<FormGroup*>(GetManager()->GetCreditCardByGUID(guid)) :
-        static_cast<FormGroup*>(GetManager()->GetProfileByGUID(guid));
-    DCHECK(form_group);
-    FillInputFromFormGroup(form_group, inputs);
+    scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
+    model->FillInputs(inputs);
   }
 
   section_editing_state_[section] = true;
@@ -720,6 +741,8 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
   WalletRequestCompleted(true);
 
   if (items_changed) {
+    GenerateSuggestionsModels();
+    view_->ModelChanged();
     view_->UpdateAccountChooser();
     view_->UpdateNotificationArea();
   }
@@ -830,6 +853,8 @@ void AutofillDialogControllerImpl::WalletRequestCompleted(bool success) {
   if (!success) {
     had_wallet_error_ = true;
     wallet_items_.reset();
+    GenerateSuggestionsModels();
+    view_->ModelChanged();
     view_->UpdateAccountChooser();
     view_->UpdateNotificationArea();
     return;
@@ -845,30 +870,49 @@ void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
   suggested_email_.Reset();
   suggested_shipping_.Reset();
 
-  PersonalDataManager* manager = GetManager();
-  const std::vector<CreditCard*>& cards = manager->credit_cards();
-  for (size_t i = 0; i < cards.size(); ++i) {
-    suggested_cc_.AddKeyedItem(cards[i]->guid(), cards[i]->Label());
-  }
-
-  const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    if (!IsCompleteProfile(*profiles[i]))
-      continue;
-
-    // Add all email addresses.
-    std::vector<string16> values;
-    profiles[i]->GetMultiInfo(EMAIL_ADDRESS, app_locale, &values);
-    for (size_t j = 0; j < values.size(); ++j) {
-      if (!values[j].empty())
-        suggested_email_.AddKeyedItem(profiles[i]->guid(), values[j]);
+  if (CanPayWithWallet()) {
+    if (wallet_items_.get()) {
+      // TODO(estade): seems we need to hardcode the email address.
+      // TODO(estade): CC and billing need to be combined into one section,
+      // and suggestions added here.
+      const std::vector<wallet::Address*>& addresses =
+          wallet_items_->addresses();
+      for (size_t i = 0; i < addresses.size(); ++i) {
+        suggested_billing_.AddKeyedItem(base::IntToString(i),
+                                        addresses[i]->DisplayName());
+        suggested_shipping_.AddKeyedItem(base::IntToString(i),
+                                         addresses[i]->DisplayName());
+      }
+    }
+  } else {
+    PersonalDataManager* manager = GetManager();
+    const std::vector<CreditCard*>& cards = manager->credit_cards();
+    for (size_t i = 0; i < cards.size(); ++i) {
+      suggested_cc_.AddKeyedItem(cards[i]->guid(), cards[i]->Label());
     }
 
-    // Don't add variants for addresses: the email variants are handled above,
-    // name is part of credit card and we'll just ignore phone number variants.
-    suggested_billing_.AddKeyedItem(profiles[i]->guid(), profiles[i]->Label());
-    suggested_shipping_.AddKeyedItem(profiles[i]->guid(), profiles[i]->Label());
+    const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
+    const std::string app_locale = AutofillCountry::ApplicationLocale();
+    for (size_t i = 0; i < profiles.size(); ++i) {
+      if (!IsCompleteProfile(*profiles[i]))
+        continue;
+
+      // Add all email addresses.
+      std::vector<string16> values;
+      profiles[i]->GetMultiInfo(EMAIL_ADDRESS, app_locale, &values);
+      for (size_t j = 0; j < values.size(); ++j) {
+        if (!values[j].empty())
+          suggested_email_.AddKeyedItem(profiles[i]->guid(), values[j]);
+      }
+
+      // Don't add variants for addresses: the email variants are handled above,
+      // name is part of credit card and we'll just ignore phone number
+      // variants.
+      suggested_billing_.AddKeyedItem(profiles[i]->guid(),
+                                      profiles[i]->Label());
+      suggested_shipping_.AddKeyedItem(profiles[i]->guid(),
+                                       profiles[i]->Label());
+    }
   }
 
   suggested_email_.AddKeyedItem(
@@ -902,25 +946,12 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     DialogSection section,
     const InputFieldComparator& compare) {
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
-  std::string guid = model->GetItemKeyAt(model->checked_item());
-  PersonalDataManager* manager = GetManager();
-  if (!guid.empty() && !section_editing_state_[section]) {
-    FormGroup* form_group = section == SECTION_CC ?
-        static_cast<FormGroup*>(manager->GetCreditCardByGUID(guid)) :
-        static_cast<FormGroup*>(manager->GetProfileByGUID(guid));
-    DCHECK(form_group);
-
-    // Calculate the variant by looking at how many items come from the same
-    // FormGroup. TODO(estade): add a test for this.
-    size_t variant = 0;
-    for (int i = model->checked_item() - 1; i >= 0; --i) {
-      if (model->GetItemKeyAt(i) == guid)
-        variant++;
-      else
-        break;
-    }
-
-    FillFormStructureForSection(*form_group, variant, section, compare);
+  std::string item_key = model->GetItemKeyAt(model->checked_item());
+  if (!item_key.empty() && !section_editing_state_[section]) {
+    scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
+    // Only fill in data that is associated with this section.
+    const DetailInputs& inputs = RequestedFieldsForSection(section);
+    model->FillFormStructure(inputs, compare, &form_structure_);
 
     // CVC needs special-casing because the CreditCard class doesn't store
     // or handle them.
@@ -928,6 +959,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       SetCvcResult(view_->GetCvc());
   } else {
     // The user manually input data.
+    PersonalDataManager* manager = GetManager();
     DetailOutputMap output;
     view_->GetUserInput(section, &output);
 

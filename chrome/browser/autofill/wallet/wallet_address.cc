@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/wallet/wallet_address.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace wallet {
@@ -62,6 +63,37 @@ scoped_ptr<base::DictionaryValue> Address::ToDictionaryWithoutID() const {
   return dict.Pass();
 }
 
+string16 Address::DisplayName() const {
+  // TODO(estade): improve this stub implementation.
+  return UTF8ToUTF16(recipient_name() + ", " + address_line_1());
+}
+
+string16 Address::GetInfo(AutofillFieldType type) const {
+  switch (type) {
+    case NAME_FULL:
+      return UTF8ToUTF16(recipient_name());
+
+    case ADDRESS_HOME_LINE1:
+      return UTF8ToUTF16(address_line_1());
+
+    case ADDRESS_HOME_LINE2:
+      return UTF8ToUTF16(address_line_2());
+
+    case ADDRESS_HOME_CITY:
+      return UTF8ToUTF16(locality_name());
+
+    case ADDRESS_HOME_STATE:
+      return UTF8ToUTF16(admin_area_name());
+
+    case ADDRESS_HOME_ZIP:
+      return UTF8ToUTF16(postal_code_number());
+
+    // TODO(estade): implement more.
+    default:
+      NOTREACHED();
+      return string16();
+  }
+}
 
 scoped_ptr<Address>
     Address::CreateAddressWithID(const base::DictionaryValue& dictionary) {

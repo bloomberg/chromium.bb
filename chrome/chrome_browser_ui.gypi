@@ -219,6 +219,8 @@
         'browser/ui/autofill/autofill_popup_controller_impl.h',
         'browser/ui/autofill/autofill_popup_delegate.h',
         'browser/ui/autofill/autofill_popup_view.h',
+        'browser/ui/autofill/data_model_wrapper.cc',
+        'browser/ui/autofill/data_model_wrapper.h',
         'browser/ui/autofill/tab_autofill_manager_delegate.cc',
         'browser/ui/autofill/tab_autofill_manager_delegate.h',
         'browser/ui/auto_login_info_bar_delegate.cc',

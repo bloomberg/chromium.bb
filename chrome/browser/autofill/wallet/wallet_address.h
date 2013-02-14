@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
+#include "chrome/browser/autofill/field_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -86,6 +88,13 @@ class Address {
   // Newly created addresses will not have an associated |object_id_| and are
   // sent to the server in a slightly different format.
   scoped_ptr<base::DictionaryValue> ToDictionaryWithoutID() const;
+
+  // Returns a string that summarizes this address, suitable for display to
+  // the user.
+  string16 DisplayName() const;
+
+  // Returns data appropriate for |type|.
+  string16 GetInfo(AutofillFieldType type) const;
 
   // Returns an empty scoped_ptr if input is invalid or a valid address that is
   // selectable for Google Wallet use.

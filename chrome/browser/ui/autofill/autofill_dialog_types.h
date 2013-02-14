@@ -8,9 +8,12 @@
 #include <map>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+class AutofillField;
 
 namespace autofill {
 
@@ -33,6 +36,10 @@ struct DetailInput {
   // input.
   string16 autofilled_value;
 };
+
+// Determines whether |input| and |field| match.
+typedef base::Callback<bool(const DetailInput& input,
+                            const AutofillField& field)> InputFieldComparator;
 
 // Sections of the dialog --- all fields that may be shown to the user fit under
 // one of these sections.
