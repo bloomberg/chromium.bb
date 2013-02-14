@@ -222,7 +222,7 @@ void UploadFileElementReader::OnReadCompleted(
     int result) {
   file_stream_.swap(file_stream);
   if (result > 0) {
-    DCHECK_GE(static_cast<int>(bytes_remaining_), result);
+    DCHECK_GE(bytes_remaining_, static_cast<uint64>(result));
     bytes_remaining_ -= result;
   }
   if (!callback.is_null())
@@ -281,7 +281,7 @@ int UploadFileElementReaderSync::Read(IOBuffer* buf,
   const int result = ReadInternal(buf, buf_length, BytesRemaining(),
                                   file_stream_.get());
   if (result > 0) {
-    DCHECK_GE(static_cast<int>(bytes_remaining_), result);
+    DCHECK_GE(bytes_remaining_, static_cast<uint64>(result));
     bytes_remaining_ -= result;
   }
   return result;
