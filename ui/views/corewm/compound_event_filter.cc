@@ -243,7 +243,8 @@ void CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
 
 void CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   FilterTouchEvent(event);
-  if (!event->handled() && event->type() == ui::ET_TOUCH_PRESSED) {
+  if (!event->handled() && event->type() == ui::ET_TOUCH_PRESSED &&
+      !aura::Env::GetInstance()->is_mouse_button_down()) {
     SetMouseEventsEnableStateOnEvent(
         static_cast<aura::Window*>(event->target()), event, false);
   }
