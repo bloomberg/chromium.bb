@@ -117,7 +117,7 @@ class MmapWrapper {
  public:
   MmapWrapper() : is_set_(false) {}
   ~MmapWrapper() {
-    if (base_ != NULL) {
+    if (is_set_ && base_ != NULL) {
       assert(size_ > 0);
       munmap(base_, size_);
     }
@@ -129,6 +129,7 @@ class MmapWrapper {
   }
   void release() {
     assert(is_set_);
+    is_set_ = false;
     base_ = NULL;
     size_ = 0;
   }
