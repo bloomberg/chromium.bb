@@ -60,6 +60,9 @@ class WindowController {
   virtual base::DictionaryValue* CreateWindowValueWithTabs(
       const extensions::Extension* extension) const = 0;
 
+  virtual base::DictionaryValue* CreateTabValue(
+      const extensions::Extension* extension, int tab_index) const = 0;
+
   // Returns false if the window is in a state where closing the window is not
   // permitted and sets |reason| if not NULL.
   virtual bool CanClose(Reason* reason) const = 0;

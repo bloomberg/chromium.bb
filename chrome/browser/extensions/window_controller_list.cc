@@ -52,14 +52,21 @@ void WindowControllerList::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+WindowController* WindowControllerList::FindWindowById(int id) const {
+  for (ControllerList::const_iterator iter = windows().begin();
+       iter != windows().end(); ++iter) {
+    if ((*iter)->GetWindowId() == id)
+      return *iter;
+  }
+  return NULL;
+}
+
 WindowController* WindowControllerList::FindWindowForFunctionById(
     const UIThreadExtensionFunction* function,
     int id) const {
-  for (ControllerList::const_iterator iter = windows().begin();
-       iter != windows().end(); ++iter) {
-    if (function->CanOperateOnWindow(*iter) && (*iter)->GetWindowId() == id)
-      return *iter;
-  }
+  WindowController* controller = FindWindowById(id);
+  if (controller && function->CanOperateOnWindow(controller))
+    return controller;
   return NULL;
 }
 

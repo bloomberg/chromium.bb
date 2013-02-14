@@ -5,8 +5,10 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
@@ -32,6 +35,25 @@ using content::NavigationEntry;
 using content::WebContents;
 using extensions::APIPermission;
 using extensions::Extension;
+
+namespace {
+
+extensions::WindowController* GetShellWindowController(
+    const WebContents* contents) {
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  extensions::ShellWindowRegistry* registry =
+      extensions::ShellWindowRegistry::Get(profile);
+  if (!registry)
+    return NULL;
+  ShellWindow* shell_window =
+      registry->GetShellWindowForRenderViewHost(contents->GetRenderViewHost());
+  if (!shell_window)
+    return NULL;
+  return extensions::WindowControllerList::GetInstance()->
+      FindWindowById(shell_window->session_id().id());
+}
+
+}  // namespace
 
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
@@ -63,6 +85,13 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
     TabStripModel* tab_strip,
     int tab_index,
     const Extension* extension) {
+  // If we have a matching ShellWindow with a controller, get the tab value
+  // from its controller instead.
+  extensions::WindowController* controller = GetShellWindowController(contents);
+  if (controller &&
+      (!extension || controller->IsVisibleToExtension(extension))) {
+    return controller->CreateTabValue(extension, tab_index);
+  }
   DictionaryValue *result = CreateTabValue(contents, tab_strip, tab_index);
   ScrubTabValueForExtension(contents, extension, result);
   return result;
@@ -87,6 +116,12 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index) {
+  // If we have a matching ShellWindow with a controller, get the tab value
+  // from its controller instead.
+  extensions::WindowController* controller = GetShellWindowController(contents);
+  if (controller)
+    return controller->CreateTabValue(NULL, tab_index);
+
   if (!tab_strip)
     ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index);
 

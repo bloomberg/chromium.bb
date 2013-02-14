@@ -468,6 +468,8 @@
         'browser/extensions/app_sync_bundle.h',
         'browser/extensions/app_sync_data.cc',
         'browser/extensions/app_sync_data.h',
+        'browser/extensions/app_window_contents.cc',
+        'browser/extensions/app_window_contents.h',
         'browser/extensions/blacklist.cc',
         'browser/extensions/blacklist.h',
         'browser/extensions/blocked_actions.cc',
@@ -741,6 +743,12 @@
             'browser/extensions/api/terminal/terminal_extension_helper.h',
             'browser/extensions/api/terminal/terminal_private_api.cc',
             'browser/extensions/api/terminal/terminal_private_api.h',
+          ],
+        }],
+        ['use_ash==1', {
+          'sources': [
+            'browser/extensions/api/tabs/ash_panel_contents.cc',
+            'browser/extensions/api/tabs/ash_panel_contents.h',
           ],
         }],
         ['enable_extensions==0', {
