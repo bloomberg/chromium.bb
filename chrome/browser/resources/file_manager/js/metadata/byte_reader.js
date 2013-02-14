@@ -49,6 +49,10 @@ ByteReader.SEEK_END = 2;
  * Throw an error if (0 > pos >= end) or if (pos + size > end).
  *
  * Static utility function.
+ *
+ * @param {number} pos  //TODO(JSDOC).
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number} end  //TODO(JSDOC).
  */
 ByteReader.validateRead = function(pos, size, end) {
   if (pos < 0 || pos >= end)
@@ -63,6 +67,11 @@ ByteReader.validateRead = function(pos, size, end) {
  *
  * This is a static utility function.  There is a member function with the
  * same name which side-effects the current read position.
+ *
+ * @param {DataView} dataView  //TODO(JSDOC).
+ * @param {number} pos  //TODO(JSDOC).
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.readString = function(dataView, pos, size, opt_end) {
@@ -81,6 +90,11 @@ ByteReader.readString = function(dataView, pos, size, opt_end) {
  *
  * This is a static utility function.  There is a member function with the
  * same name which side-effects the current read position.
+ *
+ * @param {DataView} dataView  //TODO(JSDOC).
+ * @param {number} pos  //TODO(JSDOC).
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.readNullTerminatedString = function(dataView, pos, size, opt_end) {
@@ -102,6 +116,12 @@ ByteReader.readNullTerminatedString = function(dataView, pos, size, opt_end) {
  *
  * This is a static utility function.  There is a member function with the
  * same name which side-effects the current read position.
+ *
+ * @param {DataView} dataView  //TODO(JSDOC).
+ * @param {number} pos  //TODO(JSDOC).
+ * @param {boolean} bom  //TODO(JSDOC).
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.readNullTerminatedStringUTF16 = function(
@@ -142,6 +162,11 @@ ByteReader.base64Alphabet_ =
  *
  * This is a static utility function.  There is a member function with the
  * same name which side-effects the current read position.
+ *
+ * @param {DataView} dataView  //TODO(JSDOC).
+ * @param {number} pos  //TODO(JSDOC).
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.readBase64 = function(dataView, pos, size, opt_end) {
@@ -187,6 +212,11 @@ ByteReader.readBase64 = function(dataView, pos, size, opt_end) {
  *
  * This is a static utility function.  There is a member function with the
  * same name which side-effects the current read position.
+ *
+ * @param {DataView} dataView  //TODO(JSDOC).
+ * @param {number} pos  //TODO(JSDOC).
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.readImage = function(dataView, pos, size, opt_end) {
@@ -213,6 +243,8 @@ ByteReader.readImage = function(dataView, pos, size, opt_end) {
 
 /**
  * Return true if the requested number of bytes can be read from the buffer.
+ *
+ * @param {number} size  //TODO(JSDOC).
  * @return {boolean}  //TODO(JSDOC).
  */
 ByteReader.prototype.canRead = function(size) {
@@ -245,6 +277,7 @@ ByteReader.prototype.beof = function() {
 
 /**
  * Set the expected byte ordering for future reads.
+ * @param {number} order  //TODO(JSDOC).
  */
 ByteReader.prototype.setByteOrder = function(order) {
   this.littleEndian_ = order == ByteReader.LITTLE_ENDIAN;
@@ -256,6 +289,9 @@ ByteReader.prototype.setByteOrder = function(order) {
  *
  * You may optionally pass opt_end to override what is considered to be the
  * end of the buffer.
+ *
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  */
 ByteReader.prototype.validateRead = function(size, opt_end) {
   if (typeof opt_end == 'undefined')
@@ -306,6 +342,9 @@ ByteReader.prototype.readScalar = function(width, opt_signed, opt_end) {
  *
  * Adjusts the current position on success.  Throws an exception if the
  * read would go past the end of the buffer.
+ *
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.prototype.readString = function(size, opt_end) {
@@ -320,6 +359,9 @@ ByteReader.prototype.readString = function(size, opt_end) {
  *
  * Adjusts the current position on success.  Throws an exception if the
  * read would go past the end of the buffer.
+ *
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.prototype.readNullTerminatedString = function(size, opt_end) {
@@ -344,6 +386,10 @@ ByteReader.prototype.readNullTerminatedString = function(size, opt_end) {
  *
  * Adjusts the current position on success.  Throws an exception if the
  * read would go past the end of the buffer.
+ *
+ * @param {boolean} bom  //TODO(JSDOC).
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.prototype.readNullTerminatedStringUTF16 =
@@ -373,6 +419,10 @@ ByteReader.prototype.readNullTerminatedStringUTF16 =
  *
  * Adjusts the current position on success.  Throws an exception if the
  * read would go past the end of the buffer.
+ *
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
+ * @param {function(new:Array.<*>)=} opt_arrayConstructor  //TODO(JSDOC).
  * @return {Array.<*>}  //TODO(JSDOC).
  */
 ByteReader.prototype.readSlice = function(size, opt_end,
@@ -393,6 +443,9 @@ ByteReader.prototype.readSlice = function(size, opt_end,
  *
  * Adjusts the current position on success.  Throws an exception if the
  * read would go past the end of the buffer.
+ *
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.prototype.readBase64 = function(size, opt_end) {
@@ -406,6 +459,9 @@ ByteReader.prototype.readBase64 = function(size, opt_end) {
  *
  * Adjusts the current position on success.  Throws an exception if the
  * read would go past the end of the buffer.
+ *
+ * @param {number} size  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  * @return {string}  //TODO(JSDOC).
  */
 ByteReader.prototype.readImage = function(size, opt_end) {
@@ -416,6 +472,10 @@ ByteReader.prototype.readImage = function(size, opt_end) {
 
 /**
  * Seek to a give position relative to opt_seekStart.
+ *
+ * @param {number} pos  //TODO(JSDOC).
+ * @param {number=} opt_seekStart  //TODO(JSDOC).
+ * @param {number=} opt_end  //TODO(JSDOC).
  */
 ByteReader.prototype.seek = function(pos, opt_seekStart, opt_end) {
   opt_end = opt_end || this.view_.byteLength;
@@ -440,6 +500,9 @@ ByteReader.prototype.seek = function(pos, opt_seekStart, opt_end) {
  * position.
  *
  * Recover the current position with a call to seekPop.
+ *
+ * @param {number} pos  //TODO(JSDOC).
+ * @param {number=} opt_seekStart  //TODO(JSDOC).
  */
 ByteReader.prototype.pushSeek = function(pos, opt_seekStart) {
   var oldPos = this.pos_;
