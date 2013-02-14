@@ -539,6 +539,7 @@ void WorkspaceManager::ShowOrHideDesktopBackground(
     bool show) const {
   WorkspaceAnimationDetails details;
   details.direction = show ? WORKSPACE_ANIMATE_UP : WORKSPACE_ANIMATE_DOWN;
+  details.duration = duration;
 
   switch (reason) {
     case SWITCH_WORKSPACE_CYCLER:
@@ -546,7 +547,11 @@ void WorkspaceManager::ShowOrHideDesktopBackground(
       // opacity. Do not do any further animation.
       break;
     case SWITCH_MAXIMIZED_OR_RESTORED:
-      // Do not do any animations.
+      // FadeDesktop() fades the desktop background by animating the opacity of
+      // a black window immediately above the desktop background. Set the
+      // workspace as animated to delay hiding the desktop background by
+      // |duration|.
+      details.animate = true;
       break;
     case SWITCH_INITIAL:
       details.animate = true;
