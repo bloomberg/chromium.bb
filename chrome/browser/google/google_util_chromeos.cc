@@ -21,7 +21,7 @@ namespace chromeos {
 namespace {
 
 // Path to file that stores the RLZ brand code on ChromeOS.
-const char kRLZBrandFilePath[] =
+const base::FilePath::CharType kRLZBrandFilePath[] =
     FILE_PATH_LITERAL("/opt/oem/etc/BRAND_CODE");
 
 // Reads the brand code from file |kRLZBrandFilePath|.

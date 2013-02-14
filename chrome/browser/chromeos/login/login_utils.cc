@@ -117,7 +117,8 @@ const char kGuestUserName[] = "";
 
 #if defined(ENABLE_RLZ)
 // Flag file that disables RLZ tracking, when present.
-const char kRLZDisabledFlagName[] = FILE_PATH_LITERAL(".rlz_disabled");
+const base::FilePath::CharType kRLZDisabledFlagName[] =
+    FILE_PATH_LITERAL(".rlz_disabled");
 
 base::FilePath GetRlzDisabledFlagPath() {
   return file_util::GetHomeDir().Append(kRLZDisabledFlagName);

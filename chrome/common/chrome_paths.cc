@@ -84,7 +84,7 @@ const base::FilePath::CharType kGTalkPluginFileName[] =
 #if defined(OS_LINUX)
 // The path to the external extension <id>.json files.
 // /usr/share seems like a good choice, see: http://www.pathname.com/fhs/
-const char kFilepathSinglePrefExtensions[] =
+const base::FilePath::CharType kFilepathSinglePrefExtensions[] =
 #if defined(GOOGLE_CHROME_BUILD)
     FILE_PATH_LITERAL("/usr/share/google-chrome/extensions");
 #else
@@ -93,7 +93,7 @@ const char kFilepathSinglePrefExtensions[] =
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS)
-const char kDefaultAppOrderFileName[] =
+const base::FilePath::CharType kDefaultAppOrderFileName[] =
 #if defined(GOOGLE_CHROME_BUILD)
     FILE_PATH_LITERAL("/usr/share/google-chrome/default_app_order.json");
 #else
@@ -403,7 +403,7 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("custom_wallpapers"));
       break;
     case chrome::FILE_DEFAULT_APP_ORDER:
-      cur = base::FilePath(FILE_PATH_LITERAL(kDefaultAppOrderFileName));
+      cur = base::FilePath(kDefaultAppOrderFileName);
       break;
 #endif
 #if defined(ENABLE_MANAGED_USERS)
@@ -475,7 +475,7 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
 #if defined(OS_LINUX)
     case chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS: {
-      cur = base::FilePath(FILE_PATH_LITERAL(kFilepathSinglePrefExtensions));
+      cur = base::FilePath(kFilepathSinglePrefExtensions);
       break;
     }
 #endif
