@@ -255,7 +255,7 @@ TEST_F(BufferedSpdyFramerSpdy3Test, ReadHeadersHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(3, true);
-  scoped_ptr<SpdyHeadersControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateHeaders(1,                        // stream_id
                            CONTROL_FLAG_NONE,
                            true,                    // compress

@@ -165,10 +165,10 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   SpdyFrame* CreateGoAway(
       SpdyStreamId last_accepted_stream_id,
       SpdyGoAwayStatus status) const;
-  SpdyHeadersControlFrame* CreateHeaders(SpdyStreamId stream_id,
-                                         SpdyControlFlags flags,
-                                         bool compressed,
-                                         const SpdyHeaderBlock* headers);
+  SpdyFrame* CreateHeaders(SpdyStreamId stream_id,
+                           SpdyControlFlags flags,
+                           bool compressed,
+                           const SpdyHeaderBlock* headers);
   SpdyFrame* CreateWindowUpdate(
       SpdyStreamId stream_id,
       uint32 delta_window_size) const;

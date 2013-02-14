@@ -403,13 +403,13 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                           SpdyGoAwayStatus status) const;
   SpdySerializedFrame* SerializeGoAway(const SpdyGoAwayIR& goaway) const;
 
-  // Creates an instance of SpdyHeadersControlFrame. The HEADERS frame is used
+  // Creates and serializes a HEADERS frame. The HEADERS frame is used
   // for sending additional headers outside of a SYN_STREAM/SYN_REPLY. The
   // arguments are the same as for CreateSynReply.
-  SpdyHeadersControlFrame* CreateHeaders(SpdyStreamId stream_id,
-                                         SpdyControlFlags flags,
-                                         bool compressed,
-                                         const SpdyHeaderBlock* headers);
+  SpdyFrame* CreateHeaders(SpdyStreamId stream_id,
+                           SpdyControlFlags flags,
+                           bool compressed,
+                           const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeHeaders(const SpdyHeadersIR& headers);
 
   // Creates and serializes a WINDOW_UPDATE frame. The WINDOW_UPDATE

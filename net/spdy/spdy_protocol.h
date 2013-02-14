@@ -497,11 +497,6 @@ struct SpdySettingsControlFrameBlock : SpdyFrameBlock {
   // Variable data here.
 };
 
-// A HEADERS Control Frame structure.
-struct SpdyHeadersControlFrameBlock : SpdyFrameBlock {
-  SpdyStreamId stream_id_;
-};
-
 #pragma pack(pop)
 
 class SpdyFrame;
@@ -1052,41 +1047,6 @@ class SpdySettingsControlFrame : public SpdyControlFrame {
     return static_cast<SpdySettingsControlFrameBlock*>(frame_);
   }
   DISALLOW_COPY_AND_ASSIGN(SpdySettingsControlFrame);
-};
-
-// A HEADERS frame.
-class SpdyHeadersControlFrame : public SpdyControlFrame {
- public:
-  SpdyHeadersControlFrame() : SpdyControlFrame(size()) {}
-  SpdyHeadersControlFrame(char* data, bool owns_buffer)
-      : SpdyControlFrame(data, owns_buffer) {}
-
-  SpdyStreamId stream_id() const {
-    return ntohl(block()->stream_id_) & kStreamIdMask;
-  }
-
-  // The number of bytes in the header block beyond the frame header length.
-  int header_block_len() const {
-    size_t header_block_len = length() - (size() - SpdyFrame::kHeaderSize);
-    // SPDY 2 had 2 bytes of unused space preceeding the header block.
-    if (version() < 3) {
-      header_block_len -= 2;
-    }
-    return header_block_len;
-  }
-
-  // Returns the size of the SpdyHeadersControlFrameBlock structure.
-  // Note: this is not the size of the SpdyHeadersControlFrame class.
-  static size_t size() { return sizeof(SpdyHeadersControlFrameBlock); }
-
- private:
-  const struct SpdyHeadersControlFrameBlock* block() const {
-    return static_cast<SpdyHeadersControlFrameBlock*>(frame_);
-  }
-  struct SpdyHeadersControlFrameBlock* mutable_block() {
-    return static_cast<SpdyHeadersControlFrameBlock*>(frame_);
-  }
-  DISALLOW_COPY_AND_ASSIGN(SpdyHeadersControlFrame);
 };
 
 }  // namespace net

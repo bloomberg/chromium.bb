@@ -45,7 +45,6 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(8u, SpdyControlFrame::kHeaderSize);
   EXPECT_EQ(18u, SpdySynStreamControlFrame::size());
   EXPECT_EQ(12u, SpdySettingsControlFrame::size());
-  EXPECT_EQ(12u, SpdyHeadersControlFrame::size());
   EXPECT_EQ(4u, sizeof(FlagsAndLength));
   EXPECT_EQ(1, SYN_STREAM);
   EXPECT_EQ(2, SYN_REPLY);
@@ -100,15 +99,6 @@ TEST_P(SpdyProtocolTest, ControlFrameStructs) {
   syn_frame->set_associated_stream_id(999u);
   EXPECT_EQ(123u, syn_frame->stream_id());
   EXPECT_EQ(999u, syn_frame->associated_stream_id());
-
-  scoped_ptr<SpdyHeadersControlFrame> headers_frame(
-      framer.CreateHeaders(123, CONTROL_FLAG_NONE, false, &headers));
-  EXPECT_EQ(framer.protocol_version(), headers_frame->version());
-  EXPECT_TRUE(headers_frame->is_control_frame());
-  EXPECT_EQ(HEADERS, headers_frame->type());
-  EXPECT_EQ(123u, headers_frame->stream_id());
-  EXPECT_EQ(IsSpdy2() ? 2 : 4, headers_frame->header_block_len());
-  EXPECT_EQ(0, headers_frame->flags());
 }
 
 TEST_P(SpdyProtocolTest, TestDataFrame) {

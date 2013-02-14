@@ -135,13 +135,13 @@ class SpdyFramerTestUtil {
       if (fin) {
         flags &= CONTROL_FLAG_FIN;
       }
-      scoped_ptr<SpdyHeadersControlFrame> frame(
+      scoped_ptr<SpdyFrame> frame(
           framer.CreateHeaders(stream_id,
                                static_cast<SpdyControlFlags>(flags),
                                false,
                                &null_headers));
       ResetBuffer();
-      memcpy(buffer_.get(), frame->data(), SpdyHeadersControlFrame::size());
+      memcpy(buffer_.get(), frame->data(), framer.GetHeadersMinimumSize());
       size_ += SpdySynStreamControlFrame::size();
     }
 
@@ -152,13 +152,13 @@ class SpdyFramerTestUtil {
       if (fin) {
         flags &= CONTROL_FLAG_FIN;
       }
-      scoped_ptr<SpdyHeadersControlFrame> frame(
+      scoped_ptr<SpdyFrame> frame(
           framer.CreateHeaders(stream_id,
                                static_cast<SpdyControlFlags>(flags),
                                false,
                                &null_headers));
       ResetBuffer();
-      memcpy(buffer_.get(), frame->data(), SpdyHeadersControlFrame::size());
+      memcpy(buffer_.get(), frame->data(), framer.GetHeadersMinimumSize());
       size_ += SpdySynStreamControlFrame::size();
     }
 
@@ -2491,7 +2491,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyHeadersControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateHeaders(1,                     // stream_id
                            CONTROL_FLAG_NONE,
                            true,                  // compress
@@ -2518,7 +2518,7 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlockWithHalfClose) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyHeadersControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateHeaders(1,                     // stream_id
                            CONTROL_FLAG_FIN,
                            true,                  // compress

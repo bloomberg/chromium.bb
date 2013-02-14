@@ -259,7 +259,7 @@ SpdyFrame* BufferedSpdyFramer::CreateGoAway(
   return spdy_framer_.CreateGoAway(last_accepted_stream_id, status);
 }
 
-SpdyHeadersControlFrame* BufferedSpdyFramer::CreateHeaders(
+SpdyFrame* BufferedSpdyFramer::CreateHeaders(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
     bool compressed,

@@ -644,7 +644,7 @@ SpdyFrame* SpdySession::CreateCredentialFrame(
   return credential_frame.release();
 }
 
-SpdyHeadersControlFrame* SpdySession::CreateHeadersFrame(
+SpdyFrame* SpdySession::CreateHeadersFrame(
     SpdyStreamId stream_id,
     const SpdyHeaderBlock& headers,
     SpdyControlFlags flags) {
@@ -654,7 +654,7 @@ SpdyHeadersControlFrame* SpdySession::CreateHeadersFrame(
   CHECK_EQ(stream->stream_id(), stream_id);
 
   // Create a HEADER frame.
-  scoped_ptr<SpdyHeadersControlFrame> frame(
+  scoped_ptr<SpdyFrame> frame(
       buffered_spdy_framer_->CreateHeaders(stream_id, flags, true, &headers));
 
   if (net_log().IsLoggingAllEvents()) {

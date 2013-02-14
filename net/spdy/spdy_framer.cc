@@ -674,11 +674,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       frame_size_without_variable_data = GetSynReplyMinimumSize();
       break;
     case HEADERS:
-      frame_size_without_variable_data = SpdyHeadersControlFrame::size();
-      // SPDY 2 had two bytes of unused space preceeding payload.
-      if (spdy_version_ < 3) {
-        frame_size_without_variable_data += 2;
-      }
+      frame_size_without_variable_data = GetHeadersMinimumSize();
       break;
     case SETTINGS:
       frame_size_without_variable_data = SpdySettingsControlFrame::size();
@@ -965,6 +961,8 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
         CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
       case SYN_REPLY:
+      case HEADERS:
+        // SYN_REPLY and HEADERS are the same, save for the visitor call.
         {
           SpdyFrameReader reader(current_frame_buffer_.get(),
                                  current_frame_len_);
@@ -981,17 +979,11 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
             reader.Seek(2);
           }
           DCHECK(reader.IsDoneReading());
-          visitor_->OnSynReply(stream_id, (flags & CONTROL_FLAG_FIN) != 0);
-        }
-        CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
-        break;
-      case HEADERS:
-        {
-          SpdyHeadersControlFrame* headers_frame =
-              reinterpret_cast<SpdyHeadersControlFrame*>(&control_frame);
-          visitor_->OnHeaders(
-              headers_frame->stream_id(),
-              (headers_frame->flags() & CONTROL_FLAG_FIN) != 0);
+          if (control_frame.type() == SYN_REPLY) {
+            visitor_->OnSynReply(stream_id, (flags & CONTROL_FLAG_FIN) != 0);
+          } else {
+            visitor_->OnHeaders(stream_id, (flags & CONTROL_FLAG_FIN) != 0);
+          }
         }
         CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
@@ -1019,14 +1011,12 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
   if (control_frame.type() == SYN_STREAM) {
     stream_id = reinterpret_cast<const SpdySynStreamControlFrame*>(
         &control_frame)->stream_id();
-  } else if (control_frame.type() == SYN_REPLY) {
+  } else if (control_frame.type() == SYN_REPLY ||
+             control_frame.type() == HEADERS) {
     SpdyFrameReader reader(current_frame_buffer_.get(), current_frame_len_);
     reader.Seek(SpdyFrame::kHeaderSize);  // Seek past frame header.
     bool read_successful = reader.ReadUInt31(&stream_id);
     DCHECK(read_successful);
-  } else if (control_frame.type() == HEADERS) {
-    stream_id = reinterpret_cast<const SpdyHeadersControlFrame*>(
-        &control_frame)->stream_id();
   } else {
     LOG(DFATAL) << "Unhandled frame type in ProcessControlFrameHeaderBlock.";
   }
@@ -1624,7 +1614,7 @@ SpdySerializedFrame* SpdyFramer::SerializeGoAway(
   return builder.take();
 }
 
-SpdyHeadersControlFrame* SpdyFramer::CreateHeaders(
+SpdyFrame* SpdyFramer::CreateHeaders(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
     bool compressed,
@@ -1637,12 +1627,11 @@ SpdyHeadersControlFrame* SpdyFramer::CreateHeaders(
   // TODO(hkhalil): Avoid copy here.
   *(headers.GetMutableNameValueBlock()) = *header_block;
 
-  scoped_ptr<SpdyHeadersControlFrame> headers_frame(
-      reinterpret_cast<SpdyHeadersControlFrame*>(SerializeHeaders(headers)));
+  scoped_ptr<SpdyControlFrame> headers_frame(
+      reinterpret_cast<SpdyControlFrame*>(SerializeHeaders(headers)));
   if (compressed) {
-    return reinterpret_cast<SpdyHeadersControlFrame*>(
-        CompressControlFrame(*headers_frame.get(),
-                             headers.GetMutableNameValueBlock()));
+    return CompressControlFrame(*headers_frame.get(),
+                                headers.GetMutableNameValueBlock());
   }
   return headers_frame.release();
 }
@@ -1835,25 +1824,16 @@ bool SpdyFramer::GetFrameBoundaries(const SpdyFrame& frame,
         }
         break;
       case SYN_REPLY:
+      case HEADERS:
+        // It is okay to conflate HEADERS and SYN_REPLY here since they are
+        // identical in structure. The following DCHECK_EQ should politely club
+        // the developer over the head should this assertion change without the
+        // code below changing as well.
+        DCHECK_EQ(GetSynReplyMinimumSize(), GetHeadersMinimumSize());
         *header_length = GetSynReplyMinimumSize();
         *payload_length = frame.length() -
             (*header_length - GetControlFrameMinimumSize());
         *payload = frame.data() + *header_length;
-        break;
-      case HEADERS:
-        {
-          const SpdyHeadersControlFrame& headers_frame =
-              reinterpret_cast<const SpdyHeadersControlFrame&>(frame);
-          frame_size = SpdyHeadersControlFrame::size();
-          *payload_length = headers_frame.header_block_len();
-          *header_length = frame_size;
-          *payload = frame.data() + *header_length;
-          // SPDY 2 had two bytes of unused space preceeding payload.
-          if (spdy_version_ < 3) {
-            *header_length += 2;
-            *payload += 2;
-          }
-        }
         break;
       default:
         // TODO(mbelshe): set an error?
