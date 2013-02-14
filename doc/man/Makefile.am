@@ -12,15 +12,14 @@ MANPAGES_ALIASES = \
 XML_FILES = \
 	${patsubst %.1,%.xml,${patsubst %.3,%.xml,${patsubst %.5,%.xml,${patsubst %.7,%.xml,$(MANPAGES)}}}}
 CLEANFILES =
-EXTRA_DIST =
-man_MANS =
+EXTRA_DIST = $(XML_FILES)
 
 if HAVE_XSLTPROC
 if HAVE_MANPAGES_STYLESHEET
 
 CLEANFILES += $(MANPAGES) $(MANPAGES_ALIASES)
-EXTRA_DIST += $(MANPAGES) $(MANPAGES_ALIASES) $(XML_FILES)
-man_MANS += $(MANPAGES) $(MANPAGES_ALIASES)
+EXTRA_DIST += $(MANPAGES) $(MANPAGES_ALIASES)
+dist_man_MANS = $(MANPAGES) $(MANPAGES_ALIASES)
 
 XSLTPROC_FLAGS = \
 	--stringparam man.authors.section.enabled 0 \
