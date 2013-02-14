@@ -36,7 +36,7 @@ const int kMinTimeBetweenAttemptsSec = 3;
 const int kRequestTimeoutSec = 10;
 
 // Delay before portal detection caused by changes in proxy settings.
-const int kProxyChangeDelayMs = 500;
+const int kProxyChangeDelayMs = 1000;
 
 // Delay between consecutive portal checks for a network in lazy mode.
 // TODO (ygorshenin@): use exponential backoff or normally distributed
@@ -354,12 +354,11 @@ void NetworkPortalDetector::OnPortalDetectionCompleted(
   state.response_code = results.response_code;
   switch (results.result) {
     case captive_portal::RESULT_NO_RESPONSE:
-      if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
-        state.status = CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
-        SetCaptivePortalState(active_network, state);
-      } else if (attempt_count_ >= kMaxRequestAttempts) {
-        // Take into account shill's detection results.
-        if (active_network->restricted_pool()) {
+      if (attempt_count_ >= kMaxRequestAttempts) {
+        if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+          state.status = CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
+        } else if (active_network->restricted_pool()) {
+          // Take into account shill's detection results.
           state.status = CAPTIVE_PORTAL_STATUS_PORTAL;
           LOG(WARNING) << "Network " << active_network->unique_id() << " "
                        << "is marked as "

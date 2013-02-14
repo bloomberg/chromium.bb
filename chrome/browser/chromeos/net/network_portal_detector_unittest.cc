@@ -424,10 +424,29 @@ TEST_F(NetworkPortalDetectorTest, AllAttemptsFailed) {
 
 TEST_F(NetworkPortalDetectorTest, ProxyAuthRequired) {
   ASSERT_TRUE(is_state_idle());
+  set_min_time_between_attempts(base::TimeDelta());
 
   SetConnected(wifi1_network());
   CompleteURLFetch(net::OK, 407, NULL);
+  ASSERT_EQ(1, attempt_count());
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN, -1,
+                   wifi1_network());
 
+  // To run CaptivePortalDetector::DetectCaptivePortal().
+  MessageLoop::current()->RunUntilIdle();
+
+  CompleteURLFetch(net::OK, 407, NULL);
+  ASSERT_EQ(2, attempt_count());
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN, -1,
+                   wifi1_network());
+
+  // To run CaptivePortalDetector::DetectCaptivePortal().
+  MessageLoop::current()->RunUntilIdle();
+
+  CompleteURLFetch(net::OK, 407, NULL);
+  ASSERT_EQ(3, attempt_count());
   ASSERT_TRUE(is_state_idle());
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED, 407,
