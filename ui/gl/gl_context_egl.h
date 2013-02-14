@@ -34,6 +34,7 @@ class GLContextEGL : public GLContext {
   virtual void SetSwapInterval(int interval) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
   virtual bool WasAllocatedUsingRobustnessExtension() OVERRIDE;
+  virtual bool GetTotalGpuMemory(size_t* bytes) OVERRIDE;
 
  protected:
   virtual ~GLContextEGL();

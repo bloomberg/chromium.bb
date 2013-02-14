@@ -169,8 +169,6 @@ class CONTENT_EXPORT GpuMemoryManager :
     return bytes_default_per_client_;
   }
 
-  // Get a reasonable memory limit from a viewport's surface area.
-  static uint64 CalcAvailableFromViewportArea(int viewport_area);
   static uint64 CalcAvailableFromGpuTotal(uint64 total_gpu_memory);
 
   // Send memory usage stats to the browser process.

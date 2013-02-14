@@ -226,10 +226,6 @@ class GpuMemoryManagerTest : public testing::Test {
     return GpuMemoryManager::CalcAvailableFromGpuTotal(bytes);
   }
 
-  uint64 CalcAvailableFromViewportArea(int viewport_area) {
-    return GpuMemoryManager::CalcAvailableFromViewportArea(viewport_area);
-  }
-
   uint64 CalcAvailableClamped(uint64 bytes) {
     bytes = std::max(bytes, memmgr_.GetDefaultAvailableGpuMemory());
     bytes = std::min(bytes, memmgr_.GetMaximumTotalGpuMemory());
@@ -518,16 +514,6 @@ TEST_F(GpuMemoryManagerTest, TestUpdateAvailableGpuMemory) {
              stub2(&memmgr_, GenerateUniqueSurfaceId(), false),
              stub3(&memmgr_, GenerateUniqueSurfaceId(), true),
              stub4(&memmgr_, GenerateUniqueSurfaceId(), false);
-
-#if defined(OS_ANDROID)
-  // We use the largest visible surface size to calculate the limit
-  stub1.SetSurfaceSize(gfx::Size(1024, 512)); // Surface size
-  stub2.SetSurfaceSize(gfx::Size(2048, 512)); // Larger but not visible.
-  stub3.SetSurfaceSize(gfx::Size(512, 512));  // Visible but smaller.
-  stub4.SetSurfaceSize(gfx::Size(512, 512));  // Not visible and smaller.
-  Manage();
-  uint64 bytes_expected = CalcAvailableFromViewportArea(1024*512);
-#else
   // We take the lowest GPU's total memory as the limit
   uint64 expected = 400 * 1024 * 1024;
   stub1.SetTotalGpuMemory(expected); // GPU Memory
@@ -536,7 +522,6 @@ TEST_F(GpuMemoryManagerTest, TestUpdateAvailableGpuMemory) {
   stub4.SetTotalGpuMemory(expected + 1024 * 1024); // Not visible and larger.
   Manage();
   uint64 bytes_expected = CalcAvailableFromGpuTotal(expected);
-#endif
   EXPECT_EQ(GetAvailableGpuMemory(), CalcAvailableClamped(bytes_expected));
 }
 

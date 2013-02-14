@@ -182,4 +182,12 @@ GLContextEGL::~GLContextEGL() {
   Destroy();
 }
 
+#if !defined(OS_ANDROID)
+bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
+  DCHECK(bytes);
+  *bytes = 0;
+  return false;
+}
+#endif
+
 }  // namespace gfx

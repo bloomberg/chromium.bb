@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/sys_info.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_context_stub.h"
@@ -30,6 +31,42 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   if (!context->Initialize(compatible_surface, gpu_preference))
     return NULL;
   return context;
+}
+
+bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
+  DCHECK(bytes);
+  *bytes = 0;
+  // We can't query available GPU memory from the system on Android,
+  // but the dalvik heap size give us a good estimate of available
+  // GPU memory on a wide range of devices.
+  //
+  // The heap size tends to be about 1/4 of total ram on higher end
+  // devices, so we use 1/2 of that by default. For example both the
+  // Nexus 4/10 have 2GB of ram and 512MB Dalvik heap size. For lower
+  // end devices, 1/2 of the heap size can be too high, but this
+  // correlates well with having a small heap-growth-limit. So for
+  // devices with less ram, we factor in the growth limit.
+  //
+  // This is the result of the calculation below:
+  // Droid DNA 1080P  128MB
+  // Nexus S           56MB
+  // Galaxy Nexus     112MB
+  // Nexus 4/10       256MB
+  // Xoom              88MB
+  size_t dalvik_limit = 0;
+  if (!dalvik_limit) {
+    size_t heap_size   = static_cast<size_t>(base::SysInfo::DalvikHeapSizeMB());
+    // TODO(epenner): Use real heap-growth-limit when it is available.
+    size_t heap_growth = (heap_size / 2);
+    size_t limit = 0;
+    if (heap_size >= 350)
+        limit = heap_size / 2;
+    else
+        limit = (heap_size + (heap_growth * 2)) / 4;
+    dalvik_limit = limit * 1024 * 1024;
+  }
+  *bytes = dalvik_limit;
+  return true;
 }
 
 }
