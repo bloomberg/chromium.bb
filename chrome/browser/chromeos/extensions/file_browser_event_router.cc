@@ -673,9 +673,7 @@ void FileBrowserEventRouter::ShowRemovableDeviceInFileManager(
       chromeos::ScreenLocker::default_screen_locker())
     return;
 
-  // To enable Photo Import call file_manager_util::OpenActionChoiceDialog
-  // instead.
-  file_manager_util::ViewRemovableDrive(base::FilePath(mount_path));
+  file_manager_util::OpenActionChoiceDialog(FilePath(mount_path));
 }
 
 void FileBrowserEventRouter::OnDiskAdded(
