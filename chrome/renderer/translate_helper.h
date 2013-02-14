@@ -66,7 +66,11 @@ class TranslateHelper : public content::RenderViewObserver {
   virtual bool DontDelayTasks();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeTypoCorrection);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeSynonyms);
+
+  // Correct language code if it contains well-known mistakes.
+  static void CorrectLanguageCodeTypo(std::string* code);
 
   // Convert language code to the one used in server supporting list.
   static void ConvertLanguageCodeSynonym(std::string* code);

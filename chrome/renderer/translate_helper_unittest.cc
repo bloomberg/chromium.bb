@@ -8,6 +8,26 @@
 
 typedef testing::Test TranslateHelperTest;
 
+// Tests that well-known language code typos are fixed.
+TEST_F(TranslateHelperTest, LanguageCodeTypoCorrection) {
+  std::string language;
+
+  // Strip the second and later codes.
+  language = std::string("ja,en");
+  TranslateHelper::CorrectLanguageCodeTypo(&language);
+  EXPECT_EQ("ja", language);
+
+  // Replace dash with hyphen.
+  language = std::string("ja_JP");
+  TranslateHelper::CorrectLanguageCodeTypo(&language);
+  EXPECT_EQ("ja-JP", language);
+
+  // Correct wrong cases.
+  language = std::string("JA-jp");
+  TranslateHelper::CorrectLanguageCodeTypo(&language);
+  EXPECT_EQ("ja-JP", language);
+}
+
 // Tests that synonym language code is converted to one used in supporting list.
 TEST_F(TranslateHelperTest, LanguageCodeSynonyms) {
   std::string language;

@@ -93,26 +93,7 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   // relevant for things like langauge textbooks).  This distinction
   // shouldn't affect translation.
   std::string language = document.contentLanguage().utf8();
-  size_t coma_index = language.find(',');
-  if (coma_index != std::string::npos) {
-    // There are more than 1 language specified, just keep the first one.
-    language = language.substr(0, coma_index);
-  }
-  TrimWhitespaceASCII(language, TRIM_ALL, &language);
-
-  // An underscore instead of a dash is a frequent mistake.
-  size_t underscore_index = language.find('_');
-  if (underscore_index != std::string::npos)
-    language[underscore_index] = '-';
-
-  // Change everything up to a dash to lower-case and everything after to upper.
-  size_t dash_index = language.find('-');
-  if (dash_index != std::string::npos) {
-    language = StringToLowerASCII(language.substr(0, dash_index)) +
-        StringToUpperASCII(language.substr(dash_index));
-  } else {
-    language = StringToLowerASCII(language);
-  }
+  CorrectLanguageCodeTypo(&language);
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
   if (language.empty()) {
@@ -242,7 +223,35 @@ bool TranslateHelper::DontDelayTasks() {
 // TranslateHelper, private:
 //
 // static
+void TranslateHelper::CorrectLanguageCodeTypo(std::string* code) {
+  DCHECK(code);
+
+  size_t coma_index = code->find(',');
+  if (coma_index != std::string::npos) {
+    // There are more than 1 language specified, just keep the first one.
+    *code = code->substr(0, coma_index);
+  }
+  TrimWhitespaceASCII(*code, TRIM_ALL, code);
+
+  // An underscore instead of a dash is a frequent mistake.
+  size_t underscore_index = code->find('_');
+  if (underscore_index != std::string::npos)
+    (*code)[underscore_index] = '-';
+
+  // Change everything up to a dash to lower-case and everything after to upper.
+  size_t dash_index = code->find('-');
+  if (dash_index != std::string::npos) {
+    *code = StringToLowerASCII(code->substr(0, dash_index)) +
+        StringToUpperASCII(code->substr(dash_index));
+  } else {
+    *code = StringToLowerASCII(*code);
+  }
+}
+
+// static
 void TranslateHelper::ConvertLanguageCodeSynonym(std::string* code) {
+  DCHECK(code);
+
   // Apply liner search here because number of items in the list is just four.
   for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
     if (code->compare(kLanguageCodeSynonyms[i].from) == 0) {
