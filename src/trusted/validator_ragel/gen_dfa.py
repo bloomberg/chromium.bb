@@ -746,9 +746,77 @@ def SplitByteNonByte(instruction):
   assert last_byte % 2 == 0
   instr2.opcodes[len(main_opcode_part) - 1] = hex(last_byte | 1)
 
-  # TODO(shcherbina): att-show-memory-suffix-b
+  # TODO(shcherbina): att-show-name-suffix-b
 
   return [instr1, instr2]
+
+
+def SplitVYZ(bitness, instruction):
+  """Split instruction into versions with 16/32/64-bit operand sizes.
+
+  Actual operand size is determined by the following table:
+                            z     y     v
+    rex.W=0, data16        16    32    16
+    rex.W=0, no data16     32    32    32
+    rex.W=1                32    64    64    (this row is only for 64-bit mode)
+
+  When we only have a subset of 'z', 'y', 'v' operands and some rows are
+  indistinguishable, we don't produce ones with redundant prefixes.
+
+  Args:
+    bitness: 32 or 64.
+    instruction: instruction.
+
+  Returns:
+    List of one to three instructions with specific operand sizes.
+  """
+  assert bitness in [32, 64]
+
+  instr1 = copy.deepcopy(instruction)
+  instr2 = copy.deepcopy(instruction)
+  instr3 = copy.deepcopy(instruction)
+
+  z_present = False
+  y_present = False
+  v_present = False
+
+  for i, operand in enumerate(instruction.operands):
+    if operand.size == 'z':
+      instr1.operands[i].size = 'w'
+      instr2.operands[i].size = 'd'
+      instr3.operands[i].size = 'd'
+      z_present = True
+    elif operand.size == 'y':
+      instr1.operands[i].size = 'd'
+      instr2.operands[i].size = 'd'
+      instr3.operands[i].size = 'q'
+      y_present = True
+    elif operand.size == 'v':
+      instr1.operands[i].size = 'w'
+      instr2.operands[i].size = 'd'
+      instr3.operands[i].size = 'q'
+      v_present = True
+
+  if not z_present and not y_present and not v_present:
+    return [instruction]
+
+  assert 'data16' not in instruction.required_prefixes
+  instr1.required_prefixes.append('data16')
+  instr1.rex.w_set = False
+  instr2.rex.w_set = False
+  instr3.rex.w_set = True
+
+  result = []
+  if z_present or v_present:
+    result.append(instr1)
+  result.append(instr2)
+  if (bitness == 64 and
+      (y_present or v_present) and
+      Attribute('norexw') not in instruction.attributes):
+    result.append(instr3)
+  return result
+
+  # TODO(shcherbina): att-show-name-suffix-...
 
 
 def ParseDefFile(filename):
