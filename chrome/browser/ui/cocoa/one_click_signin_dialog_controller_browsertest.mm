@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/one_click_signin_dialog_controller.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/one_click_signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -80,9 +80,9 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninDialogControllerTest, Close) {
 
 // Test that clicking the learn more link opens a new window.
 IN_PROC_BROWSER_TEST_F(OneClickSigninDialogControllerTest, LearnMore) {
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   [controller_->view_controller() textView:nil
                              clickedOnLink:nil
                                    atIndex:0];
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 }

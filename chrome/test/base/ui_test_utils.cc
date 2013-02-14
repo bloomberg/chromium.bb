@@ -530,7 +530,7 @@ BrowserAddedObserver::~BrowserAddedObserver() {
 Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
   notification_observer_.Wait();
   // Ensure that only a single new browser has appeared.
-  EXPECT_EQ(original_browsers_.size() + 1, BrowserList::size());
+  EXPECT_EQ(original_browsers_.size() + 1, chrome::GetTotalBrowserCount());
   return GetBrowserNotInSet(original_browsers_);
 }
 

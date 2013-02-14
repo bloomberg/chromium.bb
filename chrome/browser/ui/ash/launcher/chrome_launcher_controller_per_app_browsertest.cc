@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_app.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -857,7 +857,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
     WindowedAppDoesNotAddToBrowser) {
   // Get the number of items in the browser menu.
   size_t items = NumberOfDetectedLauncherBrowsers();
-  size_t running_browser = BrowserList::size();
+  size_t running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(0u, items);
   EXPECT_EQ(0u, running_browser);
 
@@ -865,13 +865,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
 
   // No new browser should get detected, even though one more is running.
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers());
-  EXPECT_EQ(++running_browser, BrowserList::size());
+  EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
   LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
 
   // A new browser should get detected and one more should be running.
   EXPECT_GE(NumberOfDetectedLauncherBrowsers(), 1u);
-  EXPECT_EQ(++running_browser, BrowserList::size());
+  EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 }
 
 

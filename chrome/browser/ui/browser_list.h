@@ -38,9 +38,6 @@ class BrowserList {
   // Closes all browsers for |profile| across all desktops.
   static void CloseAllBrowsersWithProfile(Profile* profile);
 
-  static bool empty();
-  static size_t size();
-
   // Returns iterated access to list of open browsers ordered by when
   // they were last active. The underlying data structure is a vector
   // and we push_back on recent access so a reverse iterator gives the

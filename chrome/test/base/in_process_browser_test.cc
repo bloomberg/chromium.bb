@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -371,11 +371,11 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   content::RunAllPendingInMessageLoop();
 
   QuitBrowsers();
-  CHECK(BrowserList::empty());
+  CHECK(native_browser_list->empty());
 }
 
 void InProcessBrowserTest::QuitBrowsers() {
-  if (BrowserList::empty())
+  if (chrome::GetTotalBrowserCount() == 0)
     return;
 
   // Invoke AttemptExit on a running message loop.

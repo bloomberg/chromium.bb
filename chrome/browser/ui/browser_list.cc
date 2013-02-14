@@ -57,16 +57,6 @@ void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
 }
 
 // static
-bool BrowserList::empty() {
-  return GetNativeList()->empty();
-}
-
-// static
-size_t BrowserList::size() {
-  return GetNativeList()->size();
-}
-
-// static
 void BrowserList::SetLastActive(Browser* browser) {
   chrome::BrowserListImpl::GetInstance(browser->host_desktop_type())->
       SetLastActive(browser);
