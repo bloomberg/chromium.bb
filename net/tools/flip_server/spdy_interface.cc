@@ -449,7 +449,7 @@ size_t SpdySM::SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers) {
                     headers.response_reason_phrase().as_string();
   block["version"] = headers.response_version().as_string();
 
-  SpdySynReplyControlFrame* fsrcf = buffered_spdy_framer_->CreateSynReply(
+  SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynReply(
       stream_id, CONTROL_FLAG_NONE, true, &block);
   size_t df_size = fsrcf->length() + SpdyFrame::kHeaderSize;
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));

@@ -154,15 +154,15 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                                              SpdyControlFlags flags,
                                              bool compressed,
                                              const SpdyHeaderBlock* headers);
-  SpdySynReplyControlFrame* CreateSynReply(SpdyStreamId stream_id,
-                                           SpdyControlFlags flags,
-                                           bool compressed,
-                                           const SpdyHeaderBlock* headers);
+  SpdyFrame* CreateSynReply(SpdyStreamId stream_id,
+                            SpdyControlFlags flags,
+                            bool compressed,
+                            const SpdyHeaderBlock* headers);
   SpdyRstStreamControlFrame* CreateRstStream(SpdyStreamId stream_id,
                                              SpdyRstStreamStatus status) const;
   SpdySettingsControlFrame* CreateSettings(const SettingsMap& values) const;
   SpdyPingControlFrame* CreatePingFrame(uint32 unique_id) const;
-  SpdyGoAwayControlFrame* CreateGoAway(
+  SpdyFrame* CreateGoAway(
       SpdyStreamId last_accepted_stream_id,
       SpdyGoAwayStatus status) const;
   SpdyHeadersControlFrame* CreateHeaders(SpdyStreamId stream_id,

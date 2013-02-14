@@ -2168,7 +2168,7 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
       0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00,
     };
-    scoped_ptr<SpdyGoAwayControlFrame> frame(framer.CreateGoAway(0, GOAWAY_OK));
+    scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(0, GOAWAY_OK));
     CompareFrame(kDescription,
                  *frame,
                  IsSpdy2() ? kV2FrameData : kV3FrameData,
@@ -2466,7 +2466,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynReplyHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdySynReplyControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynReply(1,                     // stream_id
                             CONTROL_FLAG_NONE,
                             true,                  // compress
@@ -2680,19 +2680,33 @@ TEST_P(SpdyFramerTest, DecompressCorruptHeaderBlock) {
 TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
   // Create a GoAway frame that has a few extra bytes at the end.
   // We create enough overhead to overflow the framer's control frame buffer.
-  size_t overhead = SpdyFramer::kControlFrameBufferSize;
+  ASSERT_GE(254u, SpdyFramer::kControlFrameBufferSize);
+  const unsigned char length =  1 + SpdyFramer::kControlFrameBufferSize;
+  const unsigned char kV2FrameData[] = {
+    0x80, spdy_version_, 0x00, 0x07,
+    0x00, 0x00, 0x00, length,
+    0x00, 0x00, 0x00, 0x00,
+  };
+  const unsigned char kV3FrameData[] = {
+    0x80, spdy_version_, 0x00, 0x07,
+    0x00, 0x00, 0x00, length,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+  };
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyGoAwayControlFrame> goaway(framer.CreateGoAway(1, GOAWAY_OK));
-  goaway->set_length(goaway->length() + overhead);
-  string pad('A', overhead);
+  const size_t pad_length = length + SpdyFrame::kHeaderSize -
+      (IsSpdy2() ? sizeof(kV2FrameData) : sizeof(kV3FrameData));
+  string pad('A', pad_length);
   TestSpdyVisitor visitor(spdy_version_);
 
-  visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(goaway->data()),
-      goaway->length() - overhead + SpdyControlFrame::kHeaderSize);
+  if (IsSpdy2()) {
+    visitor.SimulateInFramer(kV2FrameData, sizeof(kV2FrameData));
+  } else {
+    visitor.SimulateInFramer(kV3FrameData, sizeof(kV3FrameData));
+  }
   visitor.SimulateInFramer(
       reinterpret_cast<const unsigned char*>(pad.c_str()),
-      overhead);
+      pad.length());
 
   EXPECT_EQ(1, visitor.error_count_);  // This generated an error.
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,

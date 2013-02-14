@@ -523,12 +523,6 @@ struct SpdyCredentialControlFrameBlock : SpdyFrameBlock {
   // for each certificate: unit32 certificate_len + certificate_data[i]
 };
 
-// A GOAWAY Control Frame structure.
-struct SpdyGoAwayControlFrameBlock : SpdyFrameBlock {
-  SpdyStreamId last_accepted_stream_id_;
-  SpdyGoAwayStatus status_;
-};
-
 // A HEADERS Control Frame structure.
 struct SpdyHeadersControlFrameBlock : SpdyFrameBlock {
   SpdyStreamId stream_id_;
@@ -1214,42 +1208,6 @@ class SpdyCredentialControlFrame : public SpdyControlFrame {
     return static_cast<SpdyCredentialControlFrameBlock*>(frame_);
   }
   DISALLOW_COPY_AND_ASSIGN(SpdyCredentialControlFrame);
-};
-
-class SpdyGoAwayControlFrame : public SpdyControlFrame {
- public:
-  SpdyGoAwayControlFrame() : SpdyControlFrame(size()) {}
-  SpdyGoAwayControlFrame(char* data, bool owns_buffer)
-      : SpdyControlFrame(data, owns_buffer) {}
-
-  SpdyStreamId last_accepted_stream_id() const {
-    return ntohl(block()->last_accepted_stream_id_) & kStreamIdMask;
-  }
-
-  SpdyGoAwayStatus status() const {
-    if (version() < 3) {
-      LOG(DFATAL) << "Attempted to access status of SPDY 2 GOAWAY.";
-      return GOAWAY_INVALID;
-    } else {
-      uint32 status = ntohl(block()->status_);
-      if (status >= GOAWAY_NUM_STATUS_CODES) {
-        return GOAWAY_INVALID;
-      } else {
-        return static_cast<SpdyGoAwayStatus>(status);
-      }
-    }
-  }
-
-  static size_t size() { return sizeof(SpdyGoAwayControlFrameBlock); }
-
- private:
-  const struct SpdyGoAwayControlFrameBlock* block() const {
-    return static_cast<SpdyGoAwayControlFrameBlock*>(frame_);
-  }
-  struct SpdyGoAwayControlFrameBlock* mutable_block() {
-    return static_cast<SpdyGoAwayControlFrameBlock*>(frame_);
-  }
-  DISALLOW_COPY_AND_ASSIGN(SpdyGoAwayControlFrame);
 };
 
 // A HEADERS frame.

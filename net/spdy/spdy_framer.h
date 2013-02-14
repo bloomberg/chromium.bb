@@ -368,16 +368,16 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                              const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeSynStream(const SpdySynStreamIR& syn_stream);
 
-  // Create a SpdySynReplyControlFrame.
+  // Create a SYN_REPLY SpdyFrame.
   // |stream_id| is the stream for this frame.
   // |flags| is the flags to use with the data.
   //    To mark this frame as the last frame, enable CONTROL_FLAG_FIN.
   // |compressed| specifies whether the frame should be compressed.
   // |headers| is the header block to include in the frame.
-  SpdySynReplyControlFrame* CreateSynReply(SpdyStreamId stream_id,
-                                           SpdyControlFlags flags,
-                                           bool compressed,
-                                           const SpdyHeaderBlock* headers);
+  SpdyFrame* CreateSynReply(SpdyStreamId stream_id,
+                            SpdyControlFlags flags,
+                            bool compressed,
+                            const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeSynReply(const SpdySynReplyIR& syn_reply);
 
   SpdyRstStreamControlFrame* CreateRstStream(SpdyStreamId stream_id,
@@ -395,12 +395,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyPingControlFrame* CreatePingFrame(uint32 unique_id) const;
   SpdySerializedFrame* SerializePing(const SpdyPingIR& ping) const;
 
-  // Creates an instance of SpdyGoAwayControlFrame. The GOAWAY frame is used
+  // Creates and serializes a GOAWAY frame. The GOAWAY frame is used
   // prior to the shutting down of the TCP connection, and includes the
   // stream_id of the last stream the sender of the frame is willing to process
   // to completion.
-  SpdyGoAwayControlFrame* CreateGoAway(SpdyStreamId last_accepted_stream_id,
-                                       SpdyGoAwayStatus status) const;
+  SpdyFrame* CreateGoAway(SpdyStreamId last_accepted_stream_id,
+                          SpdyGoAwayStatus status) const;
   SpdySerializedFrame* SerializeGoAway(const SpdyGoAwayIR& goaway) const;
 
   // Creates an instance of SpdyHeadersControlFrame. The HEADERS frame is used
@@ -590,6 +590,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Set the error code and moves the framer into the error state.
   void set_error(SpdyError error);
+
+  size_t GoAwaySize() const;
 
   // Given a frame, breakdown the variable payload length, the static header
   // header length, and variable payload pointer.

@@ -671,11 +671,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       break;
     case SYN_REPLY:
       syn_frame_processed_ = true;
-      frame_size_without_variable_data = SpdySynReplyControlFrame::size();
-      // SPDY 2 had two bytes of unused space preceeding payload.
-      if (spdy_version_ < 3) {
-        frame_size_without_variable_data += 2;
-      }
+      frame_size_without_variable_data = GetSynReplyMinimumSize();
       break;
     case HEADERS:
       frame_size_without_variable_data = SpdyHeadersControlFrame::size();
@@ -970,11 +966,22 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
         break;
       case SYN_REPLY:
         {
-          SpdySynReplyControlFrame* syn_reply_frame =
-              reinterpret_cast<SpdySynReplyControlFrame*>(&control_frame);
-          visitor_->OnSynReply(
-              syn_reply_frame->stream_id(),
-              (syn_reply_frame->flags() & CONTROL_FLAG_FIN) != 0);
+          SpdyFrameReader reader(current_frame_buffer_.get(),
+                                 current_frame_len_);
+          reader.Seek(4);  // Seek past control bit, type and version.
+          uint8 flags;
+          bool successful_read = reader.ReadUInt8(&flags);
+          DCHECK(successful_read);
+          reader.Seek(3);  // Seek past length.
+          SpdyStreamId stream_id = kInvalidStream;
+          successful_read = reader.ReadUInt31(&stream_id);
+          DCHECK(successful_read);
+          if (protocol_version() < 3) {
+            // SPDY 2 had two unused bytes here. Seek past them.
+            reader.Seek(2);
+          }
+          DCHECK(reader.IsDoneReading());
+          visitor_->OnSynReply(stream_id, (flags & CONTROL_FLAG_FIN) != 0);
         }
         CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
@@ -1194,15 +1201,28 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
           }
           break;
         case GOAWAY: {
-            SpdyGoAwayControlFrame* go_away_frame =
-                reinterpret_cast<SpdyGoAwayControlFrame*>(&control_frame);
-            if (spdy_version_ < 3) {
-              visitor_->OnGoAway(go_away_frame->last_accepted_stream_id(),
-                                 GOAWAY_OK);
-            } else {
-              visitor_->OnGoAway(go_away_frame->last_accepted_stream_id(),
-                                 go_away_frame->status());
+            SpdyFrameReader reader(current_frame_buffer_.get(),
+                                   current_frame_len_);
+            reader.Seek(GetControlFrameMinimumSize());  // Skip frame header.
+            SpdyStreamId last_accepted_stream_id = kInvalidStream;
+            bool successful_read = reader.ReadUInt32(&last_accepted_stream_id);
+            DCHECK(successful_read);
+            SpdyGoAwayStatus status = GOAWAY_OK;
+            if (spdy_version_ >= 3) {
+              uint32 status_raw = GOAWAY_OK;
+              successful_read = reader.ReadUInt32(&status_raw);
+              DCHECK(successful_read);
+              if (status_raw > static_cast<uint32>(GOAWAY_INVALID) &&
+                  status_raw < static_cast<uint32>(GOAWAY_NUM_STATUS_CODES)) {
+                status = static_cast<SpdyGoAwayStatus>(status_raw);
+              } else {
+                // TODO(hkhalil): Probably best to OnError here, depending on
+                // our interpretation of the spec. Keeping with existing liberal
+                // behavior for now.
+              }
             }
+            DCHECK(reader.IsDoneReading());
+            visitor_->OnGoAway(last_accepted_stream_id, status);
           }
           break;
         default:
@@ -1434,7 +1454,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   return builder.take();
 }
 
-SpdySynReplyControlFrame* SpdyFramer::CreateSynReply(
+SpdyFrame* SpdyFramer::CreateSynReply(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
     bool compressed,
@@ -1446,12 +1466,10 @@ SpdySynReplyControlFrame* SpdyFramer::CreateSynReply(
   // TODO(hkhalil): Avoid copy here.
   *(syn_reply.GetMutableNameValueBlock()) = *headers;
 
-  scoped_ptr<SpdySynReplyControlFrame> reply_frame(
-      reinterpret_cast<SpdySynReplyControlFrame*>(SerializeSynReply(
-          syn_reply)));
+  scoped_ptr<SpdyControlFrame> reply_frame(
+      reinterpret_cast<SpdyControlFrame*>(SerializeSynReply(syn_reply)));
   if (compressed) {
-    return reinterpret_cast<SpdySynReplyControlFrame*>(
-        CompressControlFrame(*reply_frame.get(), headers));
+    return CompressControlFrame(*reply_frame.get(), headers);
   }
   return reply_frame.release();
 }
@@ -1559,11 +1577,11 @@ SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
   return builder.take();
 }
 
-SpdyGoAwayControlFrame* SpdyFramer::CreateGoAway(
+SpdyFrame* SpdyFramer::CreateGoAway(
     SpdyStreamId last_accepted_stream_id,
     SpdyGoAwayStatus status) const {
   SpdyGoAwayIR goaway(last_accepted_stream_id, status);
-  return reinterpret_cast<SpdyGoAwayControlFrame*>(SerializeGoAway(goaway));
+  return SerializeGoAway(goaway);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeGoAway(
@@ -1791,17 +1809,10 @@ bool SpdyFramer::GetFrameBoundaries(const SpdyFrame& frame,
         break;
       case SYN_REPLY:
         {
-          const SpdySynReplyControlFrame& syn_frame =
-              reinterpret_cast<const SpdySynReplyControlFrame&>(frame);
-          frame_size = SpdySynReplyControlFrame::size();
-          *payload_length = syn_frame.header_block_len();
-          *header_length = frame_size;
+          *header_length = GetSynReplyMinimumSize();
+          *payload_length = frame.length() -
+              (*header_length - GetControlFrameMinimumSize());
           *payload = frame.data() + *header_length;
-          // SPDY 2 had two bytes of unused space preceeding payload.
-          if (spdy_version_ < 3) {
-            *header_length += 2;
-            *payload += 2;
-          }
         }
         break;
       case HEADERS:

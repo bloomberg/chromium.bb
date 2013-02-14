@@ -107,7 +107,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   }
 
   void OnRstStream(const SpdyRstStreamControlFrame& frame) {}
-  void OnGoAway(const SpdyGoAwayControlFrame& frame) {}
+  void OnGoAway(const SpdyFrame& frame) {}
   void OnPing(const SpdyPingControlFrame& frame) {}
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               int delta_window_size) OVERRIDE {
@@ -233,7 +233,7 @@ TEST_F(BufferedSpdyFramerSpdy2Test, ReadSynReplyHeaderBlock) {
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
   BufferedSpdyFramer framer(2, true);
-  scoped_ptr<SpdySynReplyControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynReply(1,                        // stream_id
                             CONTROL_FLAG_NONE,
                             true,                     // compress

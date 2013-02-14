@@ -229,7 +229,7 @@ SpdySynStreamControlFrame* BufferedSpdyFramer::CreateSynStream(
                                       headers);
 }
 
-SpdySynReplyControlFrame* BufferedSpdyFramer::CreateSynReply(
+SpdyFrame* BufferedSpdyFramer::CreateSynReply(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
     bool compressed,
@@ -253,7 +253,7 @@ SpdyPingControlFrame* BufferedSpdyFramer::CreatePingFrame(
   return spdy_framer_.CreatePingFrame(unique_id);
 }
 
-SpdyGoAwayControlFrame* BufferedSpdyFramer::CreateGoAway(
+SpdyFrame* BufferedSpdyFramer::CreateGoAway(
     SpdyStreamId last_accepted_stream_id,
     SpdyGoAwayStatus status) const {
   return spdy_framer_.CreateGoAway(last_accepted_stream_id, status);
