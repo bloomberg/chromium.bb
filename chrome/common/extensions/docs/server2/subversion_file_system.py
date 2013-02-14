@@ -32,7 +32,7 @@ class _AsyncFetchFuture(object):
       elif path.endswith('/'):
         self._value[path] = self._ListDir(result.content)
       elif not self._binary:
-        self._value[path] = file_system._ProcessFileData(result.content, path)
+        self._value[path] = file_system._ToUnicode(result.content)
       else:
         self._value[path] = result.content
     if self._error is not None:

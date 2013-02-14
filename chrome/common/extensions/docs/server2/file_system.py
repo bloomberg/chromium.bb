@@ -15,9 +15,7 @@ class StatInfo(object):
     self.version = version
     self.child_versions = child_versions
 
-def _ProcessFileData(data, path):
-  if os.path.splitext(path)[-1] not in ['.js', '.html', '.json']:
-    return data
+def _ToUnicode(data):
   try:
     return unicode(data, 'utf-8')
   except:
