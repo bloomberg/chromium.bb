@@ -42,8 +42,6 @@ enum NotificationPriority {
   MAX_PRIORITY = 2,
 };
 
-UI_EXPORT NotificationType StringToNotificationType(std::string& string_type);
-
 }  // namespace notifications
 
 }  // namespace ui

@@ -7,7 +7,7 @@ var Galore = Galore || {};
 Galore.NOTIFICATIONS = [
   {
     name: 'Simple Notifications',
-    type: 'simple',
+    templateType: 'simple',
     notifications: [
       {
         iconUrl: '$@/images/man1-$%x$%.jpg',
@@ -33,16 +33,16 @@ Galore.NOTIFICATIONS = [
   },
   {
     name: 'Basic Notifications',
-    type: 'base',
+    templateType: 'basic',
     notifications: [
       {
         iconUrl: '$@/images/man1-$%x$%.jpg',
         title: 'Althe Frazon',
         message: 'Lorem ipsum',
-        buttonOneIconUrl: '$@/images/call-16x16.jpg',
-        buttonOneTitle: 'Call',
-        buttonTwoIconUrl: '$@/images/send-16x16.jpg',
-        buttonTwoTitle: 'Send Email'
+        buttons: [
+          {title: 'Call', iconUrl: '$@/images/call-16x16.jpg'},
+          {title: 'Send Email', iconUrl: '$@/images/send-16x16.jpg'},
+        ]
       },
       {
         iconUrl: '$@/images/woman1-$%x$%.jpg',
@@ -93,7 +93,7 @@ Galore.NOTIFICATIONS = [
   },
   {
     name: 'Image Notifications',
-    type: 'image',
+    templateType: 'image',
     notifications: [
       {
         iconUrl: '$@/images/woman3-$%x$%.jpg',
@@ -106,8 +106,10 @@ Galore.NOTIFICATIONS = [
         title: 'Notification #$#: Daffodils!',
         message: 'Narcissus',
         imageUrl: '$@/images/image1-300x225.jpg',
-        buttonOneTitle: 'Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing',
-        buttonTwoTitle: 'Elit Sed Do'
+        buttons: [
+          {title: 'Lorem Ipsum Dolor Sit Amet Consectetur Adipisicing'},
+          {title: 'Elit Sed Do'},
+        ]
       },
       {
         iconUrl: '$@/images/flower2-$%x$%.jpg',
@@ -131,7 +133,7 @@ Galore.NOTIFICATIONS = [
   },
   {
     name: 'List Notifications',
-    type: 'multiple',
+    templateType: 'list',
     notifications: [
       {
         iconUrl: '$@/images/inbox-00-$%x$%.png',
@@ -144,8 +146,9 @@ Galore.NOTIFICATIONS = [
           {title: 'Kelly Seiken', message: 'Ut labore et dolore magna aliqua'},
           {title: 'Maricia Rilari', message: 'Ut enim ad minim veniam'}
         ],
-        buttonOneIconUrl: '$@/images/send-16x16.png',
-        buttonOneTitle: 'Send Message'
+        buttons: [
+          {title: 'Send Message', iconUrl: '$@/images/send-16x16.png'}
+        ]
       },
       {
         iconUrl: '$@/images/inbox-01-$%x$%.png',

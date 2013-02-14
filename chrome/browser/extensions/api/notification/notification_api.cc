@@ -17,7 +17,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
-#include "ui/notifications/notification_types.h"
 
 namespace extensions {
 
@@ -117,11 +116,31 @@ NotificationApiFunction::NotificationApiFunction() {
 NotificationApiFunction::~NotificationApiFunction() {
 }
 
+ui::notifications::NotificationType
+NotificationApiFunction::MapApiTemplateTypeToType(
+    api::experimental_notification::TemplateType type) {
+  switch (type) {
+    case api::experimental_notification::TEMPLATE_TYPE_NONE:
+    case api::experimental_notification::TEMPLATE_TYPE_SIMPLE:
+      return ui::notifications::NOTIFICATION_TYPE_SIMPLE;
+    case api::experimental_notification::TEMPLATE_TYPE_BASIC:
+      return ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT;
+    case api::experimental_notification::TEMPLATE_TYPE_IMAGE:
+      return ui::notifications::NOTIFICATION_TYPE_IMAGE;
+    case api::experimental_notification::TEMPLATE_TYPE_LIST:
+      return ui::notifications::NOTIFICATION_TYPE_MULTIPLE;
+    default:
+      // Gracefully handle newer application code that is running on an older
+      // runtime that doesn't recognize the requested template.
+      return ui::notifications::NOTIFICATION_TYPE_BASE_FORMAT;
+  }
+}
+
 void NotificationApiFunction::CreateNotification(
     const std::string& id,
     api::experimental_notification::NotificationOptions* options) {
-  ui::notifications::NotificationType type =
-      ui::notifications::StringToNotificationType(options->type);
+  ui::notifications::NotificationType type = MapApiTemplateTypeToType(
+      options->template_type);
   GURL icon_url(UTF8ToUTF16(options->icon_url));
   string16 title(UTF8ToUTF16(options->title));
   string16 message(UTF8ToUTF16(options->message));
@@ -132,27 +151,29 @@ void NotificationApiFunction::CreateNotification(
   if (options->priority.get())
     optional_fields->SetInteger(ui::notifications::kPriorityKey,
                                 *options->priority);
-  if (options->timestamp.get())
+  if (options->event_time.get())
     optional_fields->SetString(ui::notifications::kTimestampKey,
-                               *options->timestamp);
-  if (options->unread_count.get())
-    optional_fields->SetInteger(ui::notifications::kUnreadCountKey,
-                                *options->unread_count);
-  if (options->button_one_title.get())
-    optional_fields->SetString(ui::notifications::kButtonOneTitleKey,
-                               UTF8ToUTF16(*options->button_one_title));
-  if (options->button_one_icon_url.get())
-    optional_fields->SetString(ui::notifications::kButtonOneIconUrlKey,
-                               UTF8ToUTF16(*options->button_one_icon_url));
-  // TODO(dharcourt): Fail if:
-  //  (options->button_two_title.get() || options->button_two_icon_url.get()) &&
-  //  !(options->button_one_title.get() || options->button_one_icon_url.get())
-  if (options->button_two_title.get())
-    optional_fields->SetString(ui::notifications::kButtonTwoTitleKey,
-                               UTF8ToUTF16(*options->button_two_title));
-  if (options->button_two_icon_url.get())
-    optional_fields->SetString(ui::notifications::kButtonTwoIconUrlKey,
-                               UTF8ToUTF16(*options->button_two_icon_url));
+                               *options->event_time);
+  if (options->buttons.get()) {
+    if (options->buttons->size() > 0) {
+      linked_ptr<api::experimental_notification::NotificationButton> button =
+          (*options->buttons)[0];
+      optional_fields->SetString(ui::notifications::kButtonOneTitleKey,
+                                 UTF8ToUTF16(button->title));
+      if (button->icon_url.get())
+        optional_fields->SetString(ui::notifications::kButtonOneIconUrlKey,
+                                   UTF8ToUTF16(*button->icon_url));
+    }
+    if (options->buttons->size() > 1) {
+      linked_ptr<api::experimental_notification::NotificationButton> button =
+          (*options->buttons)[1];
+      optional_fields->SetString(ui::notifications::kButtonTwoTitleKey,
+                                 UTF8ToUTF16(button->title));
+      if (button->icon_url.get())
+        optional_fields->SetString(ui::notifications::kButtonTwoIconUrlKey,
+                                   UTF8ToUTF16(*button->icon_url));
+    }
+  }
   if (options->expanded_message.get())
     optional_fields->SetString(ui::notifications::kExpandedMessageKey,
                                UTF8ToUTF16(*options->expanded_message));

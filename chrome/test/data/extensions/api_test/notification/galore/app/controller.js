@@ -33,10 +33,10 @@ Galore.controller = {
     Galore.NOTIFICATIONS.forEach(function (type) {
       type.notifications.forEach(function (options) {
         this.view.addNotificationButton(
-            type.type,
+            type.templateType,
             type.name,
             this.replace_(options.iconUrl, this.BUTTON_IMAGE_SIZE),
-            this.notify_.bind(this, type.type, options));
+            this.notify_.bind(this, type.templateType, options));
       }, this);
     }, this);
   },
@@ -67,7 +67,7 @@ Galore.controller = {
 
   /** @private */
   expand_: function(options, type, priority) {
-    var expanded = {type: type, priority: priority};
+    var expanded = {templateType: type, priority: priority};
     Object.keys(options).forEach(function (key) {
       expanded[key] = this.replace_(options[key], this.NOTIFICATION_ICON_SIZE);
     }, this);
@@ -76,11 +76,21 @@ Galore.controller = {
 
   /** @private */
   replace_: function(option, size) {
-    var replaced = option;
-    if (typeof replaced === 'string') {
-      replaced = replaced.replace(/\$#/g, this.counter);
+    var replaced;
+    if (typeof option === 'string') {
+      replaced = option.replace(/\$#/g, this.counter);
       replaced = replaced.replace(/\$@/g, this.prefix);
       replaced = replaced.replace(/\$%/g, size);
+    } else if (Array.isArray(option)) {
+      replaced = [];
+      option.forEach(function(element) {
+        replaced.push(this.replace_(element, size));
+      }, this);
+    } else {
+      replaced = {};
+      Object.keys(option).forEach(function (key) {
+        replaced[key] = this.replace_(option[key], size);
+      }, this);
     }
     return replaced;
   },

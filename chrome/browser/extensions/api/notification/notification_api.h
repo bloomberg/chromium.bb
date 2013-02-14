@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_NOTIFICATION_NOTIFICATION_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_NOTIFICATION_NOTIFICATION_API_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/experimental_notification.h"
-
-#include <string>
+#include "ui/notifications/notification_types.h"
 
 namespace extensions {
 
@@ -30,6 +31,9 @@ class NotificationApiFunction : public ApiFunction {
 
   // UITHreadExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+
+  ui::notifications::NotificationType MapApiTemplateTypeToType(
+      api::experimental_notification::TemplateType type);
 };
 
 class NotificationCreateFunction : public NotificationApiFunction {

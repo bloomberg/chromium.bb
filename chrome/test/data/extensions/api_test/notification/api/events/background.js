@@ -25,7 +25,7 @@ var testBasicEvents = function() {
   notification.onDisplayed.addListener(onDisplayed);
 
   var options = {
-    type: "base",
+    templateType: "basic",
     iconUrl: "http://www.google.com/intl/en/chrome/assets/" +
         "common/images/chrome_logo_2x.png",
     title: "Attention!",

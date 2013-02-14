@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
         notification_function,
         "[\"\", "  // Empty string: ask API to generate ID
         "{"
-        "\"type\": \"simple\","
+        "\"templateType\": \"simple\","
         "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
         "common/images/chrome_logo_2x.png\","
         "\"title\": \"Attention!\","
@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
         notification_function,
         "[\"" + notification_id + "\", "
         "{"
-        "\"type\": \"simple\","
+        "\"templateType\": \"simple\","
         "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
         "common/images/chrome_logo_2x.png\","
         "\"title\": \"Attention!\","
@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestIdUsage) {
         notification_function,
         "[\"xxxxxxxxxxxx\", "
         "{"
-        "\"type\": \"simple\","
+        "\"templateType\": \"simple\","
         "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
         "common/images/chrome_logo_2x.png\","
         "\"title\": \"!\","
@@ -165,18 +165,22 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestBaseFormatNotification) {
       notification_create_function,
       "[\"\", "
       "{"
-      "\"type\": \"base\","
+      "\"templateType\": \"basic\","
       "\"iconUrl\": \"http://www.google.com/intl/en/chrome/assets/"
       "common/images/chrome_logo_2x.png\","
       "\"title\": \"Attention!\","
       "\"message\": \"Check out Cirque du Soleil\","
       "\"priority\": 1,"
-      "\"timestamp\": \"Tue, 15 Nov 1994 12:45:26 GMT\","
-      "\"secondIconUrl\": \"http://www.google.com/logos/2012/"
-      "Day-Of-The-Dead-12-hp.jpg\","
-      "\"unreadCount\": 42,"
-      "\"buttonOneTitle\": \"Up\","
-      "\"buttonTwoTitle\": \"Down\","
+      "\"eventTime\": \"Tue, 15 Nov 1994 12:45:26 GMT\","
+      "\"buttons\": ["
+      "  {"
+      "   \"title\": \"Up\","
+      "   \"iconUrl\":\"http://www.google.com/logos/2012/\""
+      "  },"
+      "  {"
+      "   \"title\": \"Down\""  // note: no iconUrl
+      "  }"
+      "],"
       "\"expandedMessage\": \"This is a longer expanded message.\","
       "\"imageUrl\": \"http://www.google.com/logos/2012/election12-hp.jpg\""
       "}]",
@@ -201,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
       notification_create_function,
       "[\"\", "
       "{"
-      "\"type\": \"multiple\","
+      "\"templateType\": \"list\","
       "\"iconUrl\": \"https://code.google.com/p/chromium/logo\","
       "\"title\": \"Multiple Item Notification Title\","
       "\"message\": \"Multiple item notification message.\","
@@ -218,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(NotificationApiTest, TestMultipleItemNotification) {
       " \"message\": \"I saw Frank steal a sandwich :-)\"}"
       "],"
       "\"priority\": 1,"
-      "\"timestamp\": \"Fri, 16 Nov 2012 01:17:15 GMT\""
+      "\"eventTime\": \"Fri, 16 Nov 2012 01:17:15 GMT\""
       "}]",
       browser(), utils::NONE));
   // TODO(dharcourt): [...], items = [{title: foo, message: bar}, ...], [...]

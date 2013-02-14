@@ -22,20 +22,6 @@ const char kItemsKey[] = "items";
 const char kItemTitleKey[] = "title";
 const char kItemMessageKey[] = "message";
 
-const char kSimpleType[] = "simple";
-const char kBaseFormatType[] = "base";
-const char kImageType[] = "image";
-const char kMultipleType[] = "multiple";
-
-NotificationType StringToNotificationType(std::string& string_type) {
-  // In case of unrecognized string, fall back to most common type.
-  return (string_type == kSimpleType) ? NOTIFICATION_TYPE_SIMPLE :
-         (string_type == kBaseFormatType) ? NOTIFICATION_TYPE_BASE_FORMAT :
-         (string_type == kImageType) ? NOTIFICATION_TYPE_IMAGE :
-         (string_type == kMultipleType) ? NOTIFICATION_TYPE_MULTIPLE :
-         NOTIFICATION_TYPE_SIMPLE;
-}
-
 }  // namespace notifications
 
 }  // namespace ui
