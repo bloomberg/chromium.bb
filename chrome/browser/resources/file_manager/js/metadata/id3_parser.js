@@ -256,7 +256,7 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
          * Reads last 128 bytes of file in bytebuffer,
          * which passes further.
          * In last 128 bytes should be placed ID3v1 tag if available.
-         * @param file - file which bytes to read.
+         * @param {File} file File which bytes to read.
          */
         function readTail(file) {
           util.readFileBytes(file, file.size - 128, file.size,
@@ -265,8 +265,8 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
 
         /**
          * Attempts to extract ID3v1 tag from 128 bytes long ByteBuffer
-         * @param file file which tags are being extracted.
-         *        Could be used for logging purposes.
+         * @param {File} file File which tags are being extracted. Could be used
+         *     for logging purposes.
          * @param {ByteReader} reader ByteReader of 128 bytes.
          */
         function extractId3v1(file, reader) {
@@ -310,8 +310,9 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
 
         /**
          * Check if passed array of 10 bytes contains ID3 header.
-         * @param file to check and continue reading if ID3 metadata found.
-         * @param {ByteReader} reader reader to fill with stream bytes.
+         * @param {File} file File to check and continue reading if ID3
+         *     metadata found
+         * @param {ByteReader} reader Reader to fill with stream bytes.
          */
         function checkId3v2(file, reader) {
           if (reader.readString(3) == 'ID3') {
@@ -331,8 +332,8 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
 
         /**
          * Extracts all ID3v2 frames from given bytebuffer.
-         * @param file being parsed.
-         * @param {ByteReader} reader to use for metadata extraction.
+         * @param {File} file File being parsed.
+         * @param {ByteReader} reader Reader to use for metadata extraction.
          */
         function extractFrames(file, reader) {
           var id3v2 = metadata.id3v2;

@@ -51,8 +51,8 @@ FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
  * Error handling function, which traces current error step, stops sequence
  * advancing and fires error callback.
  *
+ * @param {string} err Error message
  * @private
- * @param err error message.
  */
 FunctionSequence.prototype.onError_ = function(err) {
   this.logger.vlog('Failed step: ' + this.steps_[this.currentStepIdx_].name +

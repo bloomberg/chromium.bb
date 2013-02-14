@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 /**
- * @constructor
  * @class FunctionSequence to invoke steps in sequence
  *
  * @param {string} name  //TODO(JSDOC).
- * @param steps             array of functions to invoke in parallel.
+ * @param {Array.<function>} steps Array of functions to invoke in parallel.
  * @param {Object} logger  //TODO(JSDOC).
- * @param callback          callback to invoke on success.
- * @param failureCallback   callback to invoke on failure.
+ * @param {function()} callback Callback to invoke on success.
+ * @param {function(string)} failureCallback Callback to invoke on failure.
+ * @constructor
  */
 function FunctionParallel(name, steps, logger, callback, failureCallback) {
   // Private variables hidden in closure
@@ -33,8 +33,8 @@ function FunctionParallel(name, steps, logger, callback, failureCallback) {
 /**
  * Error handling function, which fires error callback.
  *
+ * @param {string} err Error message
  * @private
- * @param err error message.
  */
 FunctionParallel.prototype.onError_ = function(err) {
   if (!this.failed_) {
@@ -47,6 +47,7 @@ FunctionParallel.prototype.onError_ = function(err) {
  * Advances to next step. This method should not be used externally. In external
  * cases should be used nextStep function, which is defined in closure and thus
  * has access to internal variables of functionsequence.
+ *
  * @private
  */
 FunctionParallel.prototype.nextStep_ = function() {
