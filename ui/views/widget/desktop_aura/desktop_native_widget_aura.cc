@@ -578,12 +578,6 @@ void DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
 
 void DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(window_->IsVisible());
-  if (event->type() == ui::ET_MOUSEWHEEL) {
-    native_widget_delegate_->OnMouseEvent(event);
-    if (event->handled())
-      return;
-  }
-
   native_widget_delegate_->OnMouseEvent(event);
 }
 
