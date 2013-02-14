@@ -5,43 +5,11 @@
 [
   {
     "namespace": "experimental.accessibility",
+    "compiler_options": {
+      "implemented_in": "chrome/browser/accessibility/accessibility_extension_api.h"
+    },
     "nodoc": true,
     "types": [
-      {
-        "id": "AccessibilityObject",
-        "type": "object",
-        "description": "Parent class for accessibility information about an object.",
-        "properties": {
-          "type": {
-            "type": "string",
-            "description": "The type of this object, which determines the contents of 'details'.",
-            "enum": ["button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "slider", "tab", "textbox", "window"]
-          },
-          "name": {
-            "type": "string",
-            "description": "The localized name of the object, like OK or Password. Do not rely on an exact string match because the text will be in the user's language and may change in the future."
-          },
-          "context": {
-            "type": "string",
-            "description": "The localized name of the context for the object, like the name of the surrounding toolbar or group of controls.",
-            "optional": true
-          },
-          "details": {
-            "description": "Other details like the state, depending on the type of object.",
-            "optional": true,
-            "choices": [
-              { "$ref": "CheckboxDetails" },
-              { "$ref": "ComboBoxDetails" },
-              { "$ref": "MenuDetails" },
-              { "$ref": "MenuItemDetails" },
-              { "$ref": "RadioButtonDetails" },
-              { "$ref": "SliderDetails" },
-              { "$ref": "TabDetails" },
-              { "$ref": "TextBoxDetails" }
-            ]
-          }
-        }
-      },
       {
         "id": "CheckboxDetails",
         "type": "object",
@@ -133,6 +101,41 @@
           "message": {
             "type": "string",
             "description": "The message the alert is showing."
+          }
+        }
+      },
+      {
+        "id": "AccessibilityObject",
+        "type": "object",
+        "description": "Parent class for accessibility information about an object.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of this object, which determines the contents of 'details'.",
+            "enum": ["button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "slider", "tab", "textbox", "window"]
+          },
+          "name": {
+            "type": "string",
+            "description": "The localized name of the object, like OK or Password. Do not rely on an exact string match because the text will be in the user's language and may change in the future."
+          },
+          "context": {
+            "type": "string",
+            "description": "The localized name of the context for the object, like the name of the surrounding toolbar or group of controls.",
+            "optional": true
+          },
+          "details": {
+            "description": "Other details like the state, depending on the type of object.",
+            "optional": true,
+            "choices": [
+              { "$ref": "CheckboxDetails" },
+              { "$ref": "ComboBoxDetails" },
+              { "$ref": "MenuDetails" },
+              { "$ref": "MenuItemDetails" },
+              { "$ref": "RadioButtonDetails" },
+              { "$ref": "SliderDetails" },
+              { "$ref": "TabDetails" },
+              { "$ref": "TextBoxDetails" }
+            ]
           }
         }
       }

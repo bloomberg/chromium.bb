@@ -55,8 +55,8 @@ class TopSitesExtensionTest : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(TopSitesExtensionTest, GetTopSites) {
-  scoped_refptr<GetTopSitesFunction> get_top_sites_function(
-      new GetTopSitesFunction());
+  scoped_refptr<TopSitesGetFunction> get_top_sites_function(
+      new TopSitesGetFunction());
   // Without a callback the function will not generate a result.
   get_top_sites_function->set_has_callback(true);
 

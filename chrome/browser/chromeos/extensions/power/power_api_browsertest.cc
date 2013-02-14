@@ -17,7 +17,6 @@ using ::testing::_;
 using ::testing::Return;
 
 namespace extensions {
-namespace power {
 
 class PowerApiTest : public InProcessBrowserTest {
  public:
@@ -84,14 +83,14 @@ class PowerApiTest : public InProcessBrowserTest {
   }
 
   void RequestKeepAwake(scoped_refptr<Extension> extension) {
-    scoped_refptr<RequestKeepAwakeFunction> function(
-        new RequestKeepAwakeFunction);
+    scoped_refptr<PowerRequestKeepAwakeFunction> function(
+        new PowerRequestKeepAwakeFunction);
     RunFunctionAndExpectPass(function.get(), extension);
   }
 
   void ReleaseKeepAwake(scoped_refptr<Extension> extension) {
-    scoped_refptr<ReleaseKeepAwakeFunction> function(
-        new ReleaseKeepAwakeFunction);
+    scoped_refptr<PowerReleaseKeepAwakeFunction> function(
+        new PowerReleaseKeepAwakeFunction);
     RunFunctionAndExpectPass(function.get(), extension);
   }
 
@@ -159,5 +158,4 @@ IN_PROC_BROWSER_TEST_F(PowerApiTest, RequestMultipleAndReleaseAll) {
 
 // TODO(rkc): Add another test to verify a Request->Release->Request scenario.
 
-}  // namespace power
 }  // namespace extensions

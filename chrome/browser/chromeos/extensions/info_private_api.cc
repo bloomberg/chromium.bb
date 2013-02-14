@@ -41,13 +41,13 @@ const char kPropertyOwner[] = "isOwner";
 
 }  // namespace
 
-GetChromeosInfoFunction::GetChromeosInfoFunction() {
+ChromeosInfoPrivateGetFunction::ChromeosInfoPrivateGetFunction() {
 }
 
-GetChromeosInfoFunction::~GetChromeosInfoFunction() {
+ChromeosInfoPrivateGetFunction::~ChromeosInfoPrivateGetFunction() {
 }
 
-bool GetChromeosInfoFunction::RunImpl() {
+bool ChromeosInfoPrivateGetFunction::RunImpl() {
   ListValue* list = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &list));
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
@@ -63,7 +63,7 @@ bool GetChromeosInfoFunction::RunImpl() {
   return true;
 }
 
-base::Value* GetChromeosInfoFunction::GetValue(
+base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     const std::string& property_name) {
   if (property_name == kPropertyHWID) {
     std::string hwid;

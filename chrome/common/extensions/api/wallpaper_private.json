@@ -5,6 +5,10 @@
 [
   {
     "namespace":"wallpaperPrivate",
+    "compiler_options": {
+      "implemented_in": "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
+    },
+    "platforms": ["chromeos"],
     "nodoc": "true",
     "functions": [
       {

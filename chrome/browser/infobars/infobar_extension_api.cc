@@ -31,7 +31,7 @@ const char kHeight[] = "height";
 
 }  // namespace
 
-bool ShowInfoBarFunction::RunImpl() {
+bool InfobarsShowFunction::RunImpl() {
   DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 

@@ -9,6 +9,7 @@
     "functions": [
       {
         "name": "install",
+        "nocompile": true,
         "description": "Installs the extension corresponding to the given id",
         "parameters": [
           {

@@ -5,6 +5,9 @@
 [
   {
     "namespace": "echoPrivate",
+    "compiler_options": {
+      "implemented_in": "chrome/browser/chromeos/extensions/echo_private_api.h"
+    },
     "nodoc": true,
     "platforms": ["chromeos"],
     "types": [],

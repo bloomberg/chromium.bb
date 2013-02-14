@@ -27,15 +27,16 @@ class TerminalPrivateFunction : public AsyncExtensionFunction {
 };
 
 // Opens new terminal process. Returns the new process id.
-class OpenTerminalProcessFunction : public TerminalPrivateFunction {
+class TerminalPrivateOpenTerminalProcessFunction
+    : public TerminalPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.openTerminalProcess",
                              TERMINALPRIVATE_OPENTERMINALPROCESS)
 
-  OpenTerminalProcessFunction();
+  TerminalPrivateOpenTerminalProcessFunction();
 
  protected:
-  virtual ~OpenTerminalProcessFunction();
+  virtual ~TerminalPrivateOpenTerminalProcessFunction();
 
   // TerminalPrivateFunction:
   virtual bool RunTerminalFunction() OVERRIDE;
@@ -48,13 +49,13 @@ class OpenTerminalProcessFunction : public TerminalPrivateFunction {
 };
 
 // Send input to the terminal process specified by the pid sent as an argument.
-class SendInputToTerminalProcessFunction : public TerminalPrivateFunction {
+class TerminalPrivateSendInputFunction : public TerminalPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.sendInput",
                              TERMINALPRIVATE_SENDINPUT)
 
  protected:
-  virtual ~SendInputToTerminalProcessFunction();
+  virtual ~TerminalPrivateSendInputFunction();
 
   // TerminalPrivateFunction:
   virtual bool RunTerminalFunction() OVERRIDE;
@@ -65,13 +66,14 @@ class SendInputToTerminalProcessFunction : public TerminalPrivateFunction {
 };
 
 // Closes terminal process with given pid.
-class CloseTerminalProcessFunction : public TerminalPrivateFunction {
+class TerminalPrivateCloseTerminalProcessFunction
+    : public TerminalPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.closeTerminalProcess",
                              TERMINALPRIVATE_CLOSETERMINALPROCESS)
 
  protected:
-  virtual ~CloseTerminalProcessFunction();
+  virtual ~TerminalPrivateCloseTerminalProcessFunction();
 
   virtual bool RunTerminalFunction() OVERRIDE;
 
@@ -81,13 +83,13 @@ class CloseTerminalProcessFunction : public TerminalPrivateFunction {
 };
 
 // Called by extension when terminal size changes.
-class OnTerminalResizeFunction : public TerminalPrivateFunction {
+class TerminalPrivateOnTerminalResizeFunction : public TerminalPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.onTerminalResize",
                              TERMINALPRIVATE_ONTERMINALRESIZE)
 
  protected:
-  virtual ~OnTerminalResizeFunction();
+  virtual ~TerminalPrivateOnTerminalResizeFunction();
 
   virtual bool RunTerminalFunction() OVERRIDE;
 

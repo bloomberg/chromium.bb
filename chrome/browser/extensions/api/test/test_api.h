@@ -33,12 +33,12 @@ class TestNotifyPassFunction : public TestExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class TestFailFunction : public TestExtensionFunction {
+class TestNotifyFailFunction : public TestExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("test.notifyFail", UNKNOWN)
 
  protected:
-  virtual ~TestFailFunction();
+  virtual ~TestNotifyFailFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

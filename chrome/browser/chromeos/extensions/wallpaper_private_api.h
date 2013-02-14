@@ -12,13 +12,13 @@
 #include "ui/gfx/image/image_skia.h"
 
 // Wallpaper manager strings.
-class WallpaperStringsFunction : public SyncExtensionFunction {
+class WallpaperPrivateGetStringsFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getStrings",
                              WALLPAPERPRIVATE_GETSTRINGS)
 
  protected:
-  virtual ~WallpaperStringsFunction() {}
+  virtual ~WallpaperPrivateGetStringsFunction() {}
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -49,15 +49,16 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) = 0;
 };
 
-class WallpaperSetWallpaperIfExistFunction : public WallpaperFunctionBase {
+class WallpaperPrivateSetWallpaperIfExistFunction
+    : public WallpaperFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setWallpaperIfExist",
                              WALLPAPERPRIVATE_SETWALLPAPERIFEXIST)
 
-  WallpaperSetWallpaperIfExistFunction();
+  WallpaperPrivateSetWallpaperIfExistFunction();
 
  protected:
-  virtual ~WallpaperSetWallpaperIfExistFunction();
+  virtual ~WallpaperPrivateSetWallpaperIfExistFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -81,15 +82,15 @@ class WallpaperSetWallpaperIfExistFunction : public WallpaperFunctionBase {
 
 };
 
-class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
+class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setWallpaper",
                              WALLPAPERPRIVATE_SETWALLPAPER)
 
-  WallpaperSetWallpaperFunction();
+  WallpaperPrivateSetWallpaperFunction();
 
  protected:
-  virtual ~WallpaperSetWallpaperFunction();
+  virtual ~WallpaperPrivateSetWallpaperFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -124,15 +125,16 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
-class WallpaperSetCustomWallpaperFunction : public WallpaperFunctionBase {
+class WallpaperPrivateSetCustomWallpaperFunction
+    : public WallpaperFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setCustomWallpaper",
                              WALLPAPERPRIVATE_SETCUSTOMWALLPAPER)
 
-  WallpaperSetCustomWallpaperFunction();
+  WallpaperPrivateSetCustomWallpaperFunction();
 
  protected:
-  virtual ~WallpaperSetCustomWallpaperFunction();
+  virtual ~WallpaperPrivateSetCustomWallpaperFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -150,43 +152,45 @@ class WallpaperSetCustomWallpaperFunction : public WallpaperFunctionBase {
   std::string image_data_;
 };
 
-class WallpaperMinimizeInactiveWindowsFunction : public AsyncExtensionFunction {
+class WallpaperPrivateMinimizeInactiveWindowsFunction
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.minimizeInactiveWindows",
                              WALLPAPERPRIVATE_MINIMIZEINACTIVEWINDOWS)
 
-  WallpaperMinimizeInactiveWindowsFunction();
+  WallpaperPrivateMinimizeInactiveWindowsFunction();
 
  protected:
-  virtual ~WallpaperMinimizeInactiveWindowsFunction();
+  virtual ~WallpaperPrivateMinimizeInactiveWindowsFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
-class WallpaperRestoreMinimizedWindowsFunction : public AsyncExtensionFunction {
+class WallpaperPrivateRestoreMinimizedWindowsFunction
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.restoreMinimizedWindows",
                              WALLPAPERPRIVATE_RESTOREMINIMIZEDWINDOWS)
 
-  WallpaperRestoreMinimizedWindowsFunction();
+  WallpaperPrivateRestoreMinimizedWindowsFunction();
 
  protected:
-  virtual ~WallpaperRestoreMinimizedWindowsFunction();
+  virtual ~WallpaperPrivateRestoreMinimizedWindowsFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
-class WallpaperGetThumbnailFunction : public AsyncExtensionFunction {
+class WallpaperPrivateGetThumbnailFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getThumbnail",
                              WALLPAPERPRIVATE_GETTHUMBNAIL)
 
-  WallpaperGetThumbnailFunction();
+  WallpaperPrivateGetThumbnailFunction();
 
  protected:
-  virtual ~WallpaperGetThumbnailFunction();
+  virtual ~WallpaperPrivateGetThumbnailFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -212,15 +216,15 @@ class WallpaperGetThumbnailFunction : public AsyncExtensionFunction {
   base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
-class WallpaperSaveThumbnailFunction : public AsyncExtensionFunction {
+class WallpaperPrivateSaveThumbnailFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.saveThumbnail",
                              WALLPAPERPRIVATE_SAVETHUMBNAIL)
 
-  WallpaperSaveThumbnailFunction();
+  WallpaperPrivateSaveThumbnailFunction();
 
  protected:
-  virtual ~WallpaperSaveThumbnailFunction();
+  virtual ~WallpaperPrivateSaveThumbnailFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -240,14 +244,15 @@ class WallpaperSaveThumbnailFunction : public AsyncExtensionFunction {
   base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
-class WallpaperGetOfflineWallpaperListFunction : public AsyncExtensionFunction {
+class WallpaperPrivateGetOfflineWallpaperListFunction
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getOfflineWallpaperList",
                              WALLPAPERPRIVATE_GETOFFLINEWALLPAPERLIST)
-  WallpaperGetOfflineWallpaperListFunction();
+  WallpaperPrivateGetOfflineWallpaperListFunction();
 
  protected:
-  virtual ~WallpaperGetOfflineWallpaperListFunction();
+  virtual ~WallpaperPrivateGetOfflineWallpaperListFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

@@ -7,8 +7,8 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-class ShowInfoBarFunction : public SyncExtensionFunction {
-  virtual ~ShowInfoBarFunction() {}
+class InfobarsShowFunction : public SyncExtensionFunction {
+  virtual ~InfobarsShowFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("experimental.infobars.show",
                              EXPERIMENTAL_INFOBARS_SHOW)

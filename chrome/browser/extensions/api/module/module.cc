@@ -12,11 +12,11 @@
 
 namespace extensions {
 
-ExtensionPrefs* SetUpdateUrlDataFunction::extension_prefs() {
+ExtensionPrefs* ExtensionSetUpdateUrlDataFunction::extension_prefs() {
   return profile()->GetExtensionService()->extension_prefs();
 }
 
-bool SetUpdateUrlDataFunction::RunImpl() {
+bool ExtensionSetUpdateUrlDataFunction::RunImpl() {
   std::string data;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &data));
 
@@ -24,7 +24,7 @@ bool SetUpdateUrlDataFunction::RunImpl() {
   return true;
 }
 
-bool IsAllowedIncognitoAccessFunction::RunImpl() {
+bool ExtensionIsAllowedIncognitoAccessFunction::RunImpl() {
   ExtensionService* ext_service = profile()->GetExtensionService();
   const Extension* extension = GetExtension();
 
@@ -33,7 +33,7 @@ bool IsAllowedIncognitoAccessFunction::RunImpl() {
   return true;
 }
 
-bool IsAllowedFileSchemeAccessFunction::RunImpl() {
+bool ExtensionIsAllowedFileSchemeAccessFunction::RunImpl() {
   ExtensionService* ext_service = profile()->GetExtensionService();
   const Extension* extension = GetExtension();
 

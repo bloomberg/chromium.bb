@@ -9,6 +9,7 @@ from code import Code
 from datetime import datetime
 from model import Property, PropertyType, Type
 import os
+import re
 
 CHROMIUM_LICENSE = (
 """// Copyright (c) %d The Chromium Authors. All rights reserved.
@@ -31,7 +32,7 @@ def Classname(s):
   eg experimental.downloads -> Experimental_Downloads
   updateAll -> UpdateAll.
   """
-  return '_'.join([x[0].upper() + x[1:] for x in s.split('.')])
+  return '_'.join([x[0].upper() + x[1:] for x in re.split('\W', s)])
 
 def GetAsFundamentalValue(type_, src, dst):
   """Returns the C++ code for retrieving a fundamental type from a

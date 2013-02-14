@@ -19,51 +19,51 @@ namespace extensions {
 class MediaPlayerEventRouter;
 
 // Implements the chrome.mediaPlayerPrivate.play method.
-class PlayMediaplayerFunction : public SyncExtensionFunction {
+class MediaPlayerPrivatePlayFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.play", MEDIAPLAYERPRIVATE_PLAY)
 
  protected:
-  virtual ~PlayMediaplayerFunction() {}
+  virtual ~MediaPlayerPrivatePlayFunction() {}
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the chrome.mediaPlayerPrivate.getPlaylist method.
-class GetPlaylistMediaplayerFunction : public SyncExtensionFunction {
+class MediaPlayerPrivateGetPlaylistFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.getPlaylist",
                              MEDIAPLAYERPRIVATE_GETPLAYLIST)
 
  protected:
-  virtual ~GetPlaylistMediaplayerFunction() {}
+  virtual ~MediaPlayerPrivateGetPlaylistFunction() {}
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the chrome.mediaPlayerPrivate.setWindowHeight method.
-class SetWindowHeightMediaplayerFunction : public SyncExtensionFunction {
+class MediaPlayerPrivateSetWindowHeightFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.setWindowHeight",
                              MEDIAPLAYERPRIVATE_SETWINDOWHEIGHT)
 
  protected:
-  virtual ~SetWindowHeightMediaplayerFunction() {}
+  virtual ~MediaPlayerPrivateSetWindowHeightFunction() {}
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the chrome.mediaPlayerPrivate.closeWindow method.
-class CloseWindowMediaplayerFunction : public SyncExtensionFunction {
+class MediaPlayerPrivateCloseWindowFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.closeWindow",
                              MEDIAPLAYERPRIVATE_CLOSEWINDOW)
 
  protected:
-  virtual ~CloseWindowMediaplayerFunction() {}
+  virtual ~MediaPlayerPrivateCloseWindowFunction() {}
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

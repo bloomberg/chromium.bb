@@ -18,7 +18,7 @@ static const char kPropertyPosition[] = "position";
 
 namespace extensions {
 
-bool PlayMediaplayerFunction::RunImpl() {
+bool MediaPlayerPrivatePlayFunction::RunImpl() {
   if (args_->GetSize() < 2) {
     return false;
   }
@@ -60,7 +60,7 @@ static ListValue* GetPlaylistItems() {
   return result;
 }
 
-bool GetPlaylistMediaplayerFunction::RunImpl() {
+bool MediaPlayerPrivateGetPlaylistFunction::RunImpl() {
   DictionaryValue* result = new DictionaryValue();
   MediaPlayer* player = MediaPlayer::GetInstance();
 
@@ -73,7 +73,7 @@ bool GetPlaylistMediaplayerFunction::RunImpl() {
 
 // TODO(kaznacheev): rename the API method to adjustWindowHeight here and in
 // media_player_private.json.
-bool SetWindowHeightMediaplayerFunction::RunImpl() {
+bool MediaPlayerPrivateSetWindowHeightFunction::RunImpl() {
   int height_diff;
   if (!args_->GetInteger(0, &height_diff))
     return false;
@@ -81,7 +81,7 @@ bool SetWindowHeightMediaplayerFunction::RunImpl() {
   return true;
 }
 
-bool CloseWindowMediaplayerFunction::RunImpl() {
+bool MediaPlayerPrivateCloseWindowFunction::RunImpl() {
   MediaPlayer::GetInstance()->CloseWindow();
   return true;
 }

@@ -344,14 +344,10 @@ void ExtensionAPI::InitDefaultConfiguration() {
   CHECK(unloaded_schemas_.empty());
   RegisterSchema("app", ReadFromResource(
       IDR_EXTENSION_API_JSON_APP));
-  RegisterSchema("bookmarkManagerPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_BOOKMARKMANAGERPRIVATE));
   RegisterSchema("browserAction", ReadFromResource(
       IDR_EXTENSION_API_JSON_BROWSERACTION));
   RegisterSchema("browsingData", ReadFromResource(
       IDR_EXTENSION_API_JSON_BROWSINGDATA));
-  RegisterSchema("chromeosInfoPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_CHROMEOSINFOPRIVATE));
   RegisterSchema("commands", ReadFromResource(
       IDR_EXTENSION_API_JSON_COMMANDS));
   RegisterSchema("declarativeContent", ReadFromResource(
@@ -360,16 +356,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST));
   RegisterSchema("devtools", ReadFromResource(
       IDR_EXTENSION_API_JSON_DEVTOOLS));
-  RegisterSchema("experimental.accessibility", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY));
-  RegisterSchema("experimental.app", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP));
-  RegisterSchema("experimental.infobars", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS));
   RegisterSchema("experimental.input.virtualKeyboard", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD));
-  RegisterSchema("experimental.power", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_POWER));
   RegisterSchema("experimental.processes", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES));
   RegisterSchema("experimental.rlz", ReadFromResource(
@@ -378,60 +366,32 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_RUNTIME));
   RegisterSchema("experimental.speechInput", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT));
-  RegisterSchema("extension", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXTENSION));
   RegisterSchema("fileBrowserHandler", ReadFromResource(
       IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER));
   RegisterSchema("fileBrowserPrivate", ReadFromResource(
       IDR_EXTENSION_API_JSON_FILEBROWSERPRIVATE));
-  RegisterSchema("idle", ReadFromResource(
-      IDR_EXTENSION_API_JSON_IDLE));
   RegisterSchema("input.ime", ReadFromResource(
       IDR_EXTENSION_API_JSON_INPUT_IME));
   RegisterSchema("inputMethodPrivate", ReadFromResource(
       IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE));
-  RegisterSchema("managedModePrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_MANAGEDMODEPRIVATE));
-  RegisterSchema("mediaPlayerPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_MEDIAPLAYERPRIVATE));
-  RegisterSchema("metricsPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_METRICSPRIVATE));
-  RegisterSchema("echoPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_ECHOPRIVATE));
-  RegisterSchema("omnibox", ReadFromResource(
-      IDR_EXTENSION_API_JSON_OMNIBOX));
   RegisterSchema("pageAction", ReadFromResource(
       IDR_EXTENSION_API_JSON_PAGEACTION));
   RegisterSchema("pageActions", ReadFromResource(
       IDR_EXTENSION_API_JSON_PAGEACTIONS));
-  RegisterSchema("permissions", ReadFromResource(
-      IDR_EXTENSION_API_JSON_PERMISSIONS));
   RegisterSchema("privacy", ReadFromResource(
       IDR_EXTENSION_API_JSON_PRIVACY));
   RegisterSchema("proxy", ReadFromResource(
       IDR_EXTENSION_API_JSON_PROXY));
   RegisterSchema("scriptBadge", ReadFromResource(
       IDR_EXTENSION_API_JSON_SCRIPTBADGE));
-  RegisterSchema("systemPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_SYSTEMPRIVATE));
-  RegisterSchema("terminalPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_TERMINALPRIVATE));
-  RegisterSchema("test", ReadFromResource(
-      IDR_EXTENSION_API_JSON_TEST));
-  RegisterSchema("topSites", ReadFromResource(
-      IDR_EXTENSION_API_JSON_TOPSITES));
   RegisterSchema("ttsEngine", ReadFromResource(
       IDR_EXTENSION_API_JSON_TTSENGINE));
   RegisterSchema("tts", ReadFromResource(
       IDR_EXTENSION_API_JSON_TTS));
   RegisterSchema("types", ReadFromResource(
       IDR_EXTENSION_API_JSON_TYPES));
-  RegisterSchema("wallpaperPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_WALLPAPERPRIVATE));
   RegisterSchema("webRequestInternal", ReadFromResource(
       IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL));
-  RegisterSchema("webSocketProxyPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_WEBSOCKETPROXYPRIVATE));
   RegisterSchema("webstore", ReadFromResource(
       IDR_EXTENSION_API_JSON_WEBSTORE));
   RegisterSchema("webstorePrivate", ReadFromResource(

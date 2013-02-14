@@ -6,6 +6,10 @@
   {
     "namespace": "mediaPlayerPrivate",
     "nodoc": "true",
+    "compiler_options": {
+      "implemented_in": "chrome/browser/chromeos/extensions/media_player_api.h"
+    },
+    "platforms": ["chromeos"],
     "types": [
       {
         "id": "Playlist",

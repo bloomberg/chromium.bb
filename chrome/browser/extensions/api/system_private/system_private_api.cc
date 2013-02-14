@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/system/system_api.h"
+#include "chrome/browser/extensions/api/system_private/system_private_api.h"
 
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
@@ -61,7 +61,7 @@ void DispatchEvent(const std::string& event_name, base::Value* argument) {
 
 namespace extensions {
 
-bool GetIncognitoModeAvailabilityFunction::RunImpl() {
+bool SystemPrivateGetIncognitoModeAvailabilityFunction::RunImpl() {
   PrefService* prefs = profile_->GetPrefs();
   int value = prefs->GetInteger(prefs::kIncognitoModeAvailability);
   EXTENSION_FUNCTION_VALIDATE(
@@ -71,7 +71,7 @@ bool GetIncognitoModeAvailabilityFunction::RunImpl() {
   return true;
 }
 
-bool GetUpdateStatusFunction::RunImpl() {
+bool SystemPrivateGetUpdateStatusFunction::RunImpl() {
   std::string state;
   double download_progress = 0;
 #if defined(OS_CHROMEOS)

@@ -11,13 +11,13 @@ namespace extensions {
 
 class ExtensionPrefs;
 
-class SetUpdateUrlDataFunction : public SyncExtensionFunction {
+class ExtensionSetUpdateUrlDataFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extension.setUpdateUrlData",
                              EXTENSION_SETUPDATEURLDATA)
 
  protected:
-  virtual ~SetUpdateUrlDataFunction() {}
+  virtual ~ExtensionSetUpdateUrlDataFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -26,25 +26,26 @@ class SetUpdateUrlDataFunction : public SyncExtensionFunction {
   ExtensionPrefs* extension_prefs();
 };
 
-class IsAllowedIncognitoAccessFunction : public SyncExtensionFunction {
+class ExtensionIsAllowedIncognitoAccessFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extension.isAllowedIncognitoAccess",
                              EXTENSION_ISALLOWEDINCOGNITOACCESS)
 
  protected:
-  virtual ~IsAllowedIncognitoAccessFunction() {}
+  virtual ~ExtensionIsAllowedIncognitoAccessFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class IsAllowedFileSchemeAccessFunction : public SyncExtensionFunction {
+class ExtensionIsAllowedFileSchemeAccessFunction
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extension.isAllowedFileSchemeAccess",
                              EXTENSION_ISALLOWEDFILESCHEMEACCESS)
 
  protected:
-  virtual ~IsAllowedFileSchemeAccessFunction() {}
+  virtual ~ExtensionIsAllowedFileSchemeAccessFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

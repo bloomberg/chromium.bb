@@ -11,14 +11,14 @@
 
 namespace extensions {
 
-class GetTopSitesFunction : public AsyncExtensionFunction {
+class TopSitesGetFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("topSites.get", TOPSITES_GET)
 
-  GetTopSitesFunction();
+  TopSitesGetFunction();
 
  protected:
-  virtual ~GetTopSitesFunction();
+  virtual ~TopSitesGetFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -27,7 +27,7 @@ class GetTopSitesFunction : public AsyncExtensionFunction {
   void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);
 
   // For callbacks may be run after destruction.
-  base::WeakPtrFactory<GetTopSitesFunction> weak_ptr_factory_;
+  base::WeakPtrFactory<TopSitesGetFunction> weak_ptr_factory_;
 };
 
 }  // namespace extensions

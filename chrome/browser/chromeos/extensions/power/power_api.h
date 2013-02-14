@@ -8,35 +8,33 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 namespace extensions {
-namespace power {
 
 // Implementation of the chrome.experimental.power.requestKeepAwake API.
-class RequestKeepAwakeFunction : public SyncExtensionFunction {
+class PowerRequestKeepAwakeFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("experimental.power.requestKeepAwake",
                              EXPERIMENTAL_POWER_REQUESTKEEPAWAKE)
 
  protected:
-  virtual ~RequestKeepAwakeFunction() {}
+  virtual ~PowerRequestKeepAwakeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implementation of the chrome.experimental.power.releaseKeepAwake API.
-class ReleaseKeepAwakeFunction : public SyncExtensionFunction {
+class PowerReleaseKeepAwakeFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("experimental.power.releaseKeepAwake",
                              EXPERIMENTAL_POWER_RELEASEKEEPAWAKE)
 
  protected:
-  virtual ~ReleaseKeepAwakeFunction() {}
+  virtual ~PowerReleaseKeepAwakeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-}  // namespace power
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_POWER_POWER_API_H_

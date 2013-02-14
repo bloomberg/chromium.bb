@@ -53,9 +53,9 @@ bool TestNotifyPassFunction::RunImpl() {
   return true;
 }
 
-TestFailFunction::~TestFailFunction() {}
+TestNotifyFailFunction::~TestNotifyFailFunction() {}
 
-bool TestFailFunction::RunImpl() {
+bool TestNotifyFailFunction::RunImpl() {
   std::string message;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
   content::NotificationService::current()->Notify(

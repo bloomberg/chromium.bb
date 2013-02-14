@@ -8,12 +8,12 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 
-class GetRegistrationCodeFunction : public AsyncExtensionFunction {
+class EchoPrivateGetRegistrationCodeFunction : public SyncExtensionFunction {
  public:
-  GetRegistrationCodeFunction();
+  EchoPrivateGetRegistrationCodeFunction();
 
  protected:
-  virtual ~GetRegistrationCodeFunction();
+  virtual ~EchoPrivateGetRegistrationCodeFunction();
   virtual bool RunImpl() OVERRIDE;
 
  private:
@@ -22,12 +22,12 @@ class GetRegistrationCodeFunction : public AsyncExtensionFunction {
                              ECHOPRIVATE_GETREGISTRATIONCODE)
 };
 
-class GetOobeTimestampFunction : public AsyncExtensionFunction {
+class EchoPrivateGetOobeTimestampFunction : public AsyncExtensionFunction {
  public:
-  GetOobeTimestampFunction();
+  EchoPrivateGetOobeTimestampFunction();
 
  protected:
-  virtual ~GetOobeTimestampFunction();
+  virtual ~EchoPrivateGetOobeTimestampFunction();
   virtual bool RunImpl() OVERRIDE;
 
  private:
@@ -36,12 +36,13 @@ class GetOobeTimestampFunction : public AsyncExtensionFunction {
                              ECHOPRIVATE_GETOOBETIMESTAMP)
 };
 
-class CheckAllowRedeemOffersFunction : public AsyncExtensionFunction {
+class EchoPrivateCheckAllowRedeemOffersFunction
+    : public AsyncExtensionFunction {
  public:
-  CheckAllowRedeemOffersFunction();
+  EchoPrivateCheckAllowRedeemOffersFunction();
 
  protected:
-  virtual ~CheckAllowRedeemOffersFunction();
+  virtual ~EchoPrivateCheckAllowRedeemOffersFunction();
   virtual bool RunImpl() OVERRIDE;
 
  private:

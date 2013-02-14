@@ -6,7 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
-#include "chrome/browser/extensions/system/system_api.h"
+#include "chrome/browser/extensions/api/system_private/system_private_api.h"
 #include "content/public/browser/user_metrics.h"
 
 namespace {

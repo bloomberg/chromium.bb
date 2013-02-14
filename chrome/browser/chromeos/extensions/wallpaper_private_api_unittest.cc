@@ -26,24 +26,26 @@ class WallpaperPrivateApiUnittest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateApiUnittest);
 };
 
-class TestMinimizeFunction : public WallpaperMinimizeInactiveWindowsFunction {
+class TestMinimizeFunction
+    : public WallpaperPrivateMinimizeInactiveWindowsFunction {
  public:
   TestMinimizeFunction() {}
 
   virtual bool RunImpl() OVERRIDE {
-    return WallpaperMinimizeInactiveWindowsFunction::RunImpl();
+    return WallpaperPrivateMinimizeInactiveWindowsFunction::RunImpl();
   }
 
  protected:
   virtual ~TestMinimizeFunction() {}
 };
 
-class TestRestoreFunction : public WallpaperRestoreMinimizedWindowsFunction {
+class TestRestoreFunction
+    : public WallpaperPrivateRestoreMinimizedWindowsFunction {
  public:
   TestRestoreFunction() {}
 
   virtual bool RunImpl() OVERRIDE {
-    return WallpaperRestoreMinimizedWindowsFunction::RunImpl();
+    return WallpaperPrivateRestoreMinimizedWindowsFunction::RunImpl();
   }
  protected:
   virtual ~TestRestoreFunction() {}

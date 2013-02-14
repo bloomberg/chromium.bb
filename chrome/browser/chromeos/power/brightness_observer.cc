@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/power_button_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/extensions/system/system_api.h"
+#include "chrome/browser/extensions/api/system_private/system_private_api.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 

@@ -4,6 +4,10 @@
 [
   {
     "namespace": "experimental.power",
+    "compiler_options": {
+      "implemented_in": "chrome/browser/chromeos/extensions/power/power_api.h"
+    },
+    "platforms": ["chromeos"],
     "types": [],
     "functions": [
       {

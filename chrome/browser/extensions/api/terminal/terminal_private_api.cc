@@ -75,11 +75,13 @@ bool TerminalPrivateFunction::RunImpl() {
   return RunTerminalFunction();
 }
 
-OpenTerminalProcessFunction::OpenTerminalProcessFunction() : command_(NULL) {}
+TerminalPrivateOpenTerminalProcessFunction::
+    TerminalPrivateOpenTerminalProcessFunction() : command_(NULL) {}
 
-OpenTerminalProcessFunction::~OpenTerminalProcessFunction() {}
+TerminalPrivateOpenTerminalProcessFunction::
+    ~TerminalPrivateOpenTerminalProcessFunction() {}
 
-bool OpenTerminalProcessFunction::RunTerminalFunction() {
+bool TerminalPrivateOpenTerminalProcessFunction::RunTerminalFunction() {
   if (args_->GetSize() != 1)
     return false;
 
@@ -95,11 +97,12 @@ bool OpenTerminalProcessFunction::RunTerminalFunction() {
 
   // Registry lives on FILE thread.
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&OpenTerminalProcessFunction::OpenOnFileThread, this));
+      base::Bind(&TerminalPrivateOpenTerminalProcessFunction::OpenOnFileThread,
+                 this));
   return true;
 }
 
-void OpenTerminalProcessFunction::OpenOnFileThread() {
+void TerminalPrivateOpenTerminalProcessFunction::OpenOnFileThread() {
   DCHECK(command_);
 
   ProcessProxyRegistry* registry = ProcessProxyRegistry::Get();
@@ -111,17 +114,18 @@ void OpenTerminalProcessFunction::OpenOnFileThread() {
   }
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&OpenTerminalProcessFunction::RespondOnUIThread, this, pid));
+      base::Bind(&TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread,
+                 this, pid));
 }
 
-SendInputToTerminalProcessFunction::~SendInputToTerminalProcessFunction() {}
+TerminalPrivateSendInputFunction::~TerminalPrivateSendInputFunction() {}
 
-void OpenTerminalProcessFunction::RespondOnUIThread(pid_t pid) {
+void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(pid_t pid) {
   SetResult(new base::FundamentalValue(pid));
   SendResponse(true);
 }
 
-bool SendInputToTerminalProcessFunction::RunTerminalFunction() {
+bool TerminalPrivateSendInputFunction::RunTerminalFunction() {
   if (args_->GetSize() != 2)
     return false;
 
@@ -132,28 +136,29 @@ bool SendInputToTerminalProcessFunction::RunTerminalFunction() {
 
   // Registry lives on the FILE thread.
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&SendInputToTerminalProcessFunction::SendInputOnFileThread,
+      base::Bind(&TerminalPrivateSendInputFunction::SendInputOnFileThread,
                  this, pid, text));
   return true;
 }
 
-void SendInputToTerminalProcessFunction::SendInputOnFileThread(pid_t pid,
+void TerminalPrivateSendInputFunction::SendInputOnFileThread(pid_t pid,
     const std::string& text) {
   bool success = ProcessProxyRegistry::Get()->SendInput(pid, text);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&SendInputToTerminalProcessFunction::RespondOnUIThread, this,
+      base::Bind(&TerminalPrivateSendInputFunction::RespondOnUIThread, this,
       success));
 }
 
-void SendInputToTerminalProcessFunction::RespondOnUIThread(bool success) {
+void TerminalPrivateSendInputFunction::RespondOnUIThread(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }
 
-CloseTerminalProcessFunction::~CloseTerminalProcessFunction() {}
+TerminalPrivateCloseTerminalProcessFunction::
+    ~TerminalPrivateCloseTerminalProcessFunction() {}
 
-bool CloseTerminalProcessFunction::RunTerminalFunction() {
+bool TerminalPrivateCloseTerminalProcessFunction::RunTerminalFunction() {
   if (args_->GetSize() != 1)
     return false;
   pid_t pid;
@@ -162,27 +167,30 @@ bool CloseTerminalProcessFunction::RunTerminalFunction() {
 
   // Registry lives on the FILE thread.
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CloseTerminalProcessFunction::CloseOnFileThread, this, pid));
+      base::Bind(&TerminalPrivateCloseTerminalProcessFunction::
+                 CloseOnFileThread, this, pid));
 
   return true;
 }
 
-void CloseTerminalProcessFunction::CloseOnFileThread(pid_t pid) {
+void TerminalPrivateCloseTerminalProcessFunction::CloseOnFileThread(pid_t pid) {
   bool success = ProcessProxyRegistry::Get()->CloseProcess(pid);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&CloseTerminalProcessFunction::RespondOnUIThread, this,
-      success));
+      base::Bind(&TerminalPrivateCloseTerminalProcessFunction::
+                 RespondOnUIThread, this, success));
 }
 
-void CloseTerminalProcessFunction::RespondOnUIThread(bool success) {
+void TerminalPrivateCloseTerminalProcessFunction::RespondOnUIThread(
+    bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }
 
-OnTerminalResizeFunction::~OnTerminalResizeFunction() {}
+TerminalPrivateOnTerminalResizeFunction::
+    ~TerminalPrivateOnTerminalResizeFunction() {}
 
-bool OnTerminalResizeFunction::RunTerminalFunction() {
+bool TerminalPrivateOnTerminalResizeFunction::RunTerminalFunction() {
   if (args_->GetSize() != 3)
     return false;
 
@@ -200,23 +208,23 @@ bool OnTerminalResizeFunction::RunTerminalFunction() {
 
   // Registry lives on the FILE thread.
   content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&OnTerminalResizeFunction::OnResizeOnFileThread, this, pid,
-                 width, height));
+      base::Bind(&TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread,
+                 this, pid, width, height));
 
   return true;
 }
 
-void OnTerminalResizeFunction::OnResizeOnFileThread(pid_t pid,
+void TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread(pid_t pid,
                                                     int width, int height) {
   bool success = ProcessProxyRegistry::Get()->OnTerminalResize(pid,
                                                                width, height);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnTerminalResizeFunction::RespondOnUIThread, this,
-      success));
+      base::Bind(&TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread,
+                 this, success));
 }
 
-void OnTerminalResizeFunction::RespondOnUIThread(bool success) {
+void TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread(bool success) {
   SetResult(new base::FundamentalValue(success));
   SendResponse(true);
 }

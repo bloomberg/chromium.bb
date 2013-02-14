@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/metrics/metrics.h"
+#include "chrome/browser/extensions/api/metrics_private/metrics_private_api.h"
 
 #include <algorithm>
 
@@ -19,7 +19,7 @@ const size_t kMaxBuckets = 10000; // We don't ever want more than these many
                                   // and would cause crazy memory usage
 } // namespace
 
-bool MetricsRecordUserActionFunction::RunImpl() {
+bool MetricsPrivateRecordUserActionFunction::RunImpl() {
   std::string name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
@@ -67,7 +67,7 @@ bool MetricsHistogramHelperFunction::RecordValue(
   return true;
 }
 
-bool MetricsRecordValueFunction::RunImpl() {
+bool MetricsPrivateRecordValueFunction::RunImpl() {
   int sample;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &sample));
 
@@ -91,35 +91,35 @@ bool MetricsRecordValueFunction::RunImpl() {
   return RecordValue(name, histogram_type, min, max, buckets, sample);
 }
 
-bool MetricsRecordPercentageFunction::RunImpl() {
+bool MetricsPrivateRecordPercentageFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
   return RecordValue(name, base::LINEAR_HISTOGRAM, 1, 101, 102, sample);
 }
 
-bool MetricsRecordCountFunction::RunImpl() {
+bool MetricsPrivateRecordCountFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
   return RecordValue(name, base::HISTOGRAM, 1, 1000000, 50, sample);
 }
 
-bool MetricsRecordSmallCountFunction::RunImpl() {
+bool MetricsPrivateRecordSmallCountFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
   return RecordValue(name, base::HISTOGRAM, 1, 100, 50, sample);
 }
 
-bool MetricsRecordMediumCountFunction::RunImpl() {
+bool MetricsPrivateRecordMediumCountFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
   return RecordValue(name, base::HISTOGRAM, 1, 10000, 50, sample);
 }
 
-bool MetricsRecordTimeFunction::RunImpl() {
+bool MetricsPrivateRecordTimeFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
@@ -127,7 +127,7 @@ bool MetricsRecordTimeFunction::RunImpl() {
   return RecordValue(name, base::HISTOGRAM, 1, kTenSecMs, 50, sample);
 }
 
-bool MetricsRecordMediumTimeFunction::RunImpl() {
+bool MetricsPrivateRecordMediumTimeFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));
@@ -135,7 +135,7 @@ bool MetricsRecordMediumTimeFunction::RunImpl() {
   return RecordValue(name, base::HISTOGRAM, 1, kThreeMinMs, 50, sample);
 }
 
-bool MetricsRecordLongTimeFunction::RunImpl() {
+bool MetricsPrivateRecordLongTimeFunction::RunImpl() {
   std::string name;
   int sample;
   EXTENSION_FUNCTION_VALIDATE(GetNameAndSample(&name, &sample));

@@ -21,16 +21,17 @@
 
 using content::BrowserThread;
 
-GetRegistrationCodeFunction::GetRegistrationCodeFunction() {
-}
+EchoPrivateGetRegistrationCodeFunction::
+    EchoPrivateGetRegistrationCodeFunction() {}
 
-GetRegistrationCodeFunction::~GetRegistrationCodeFunction() {
-}
+EchoPrivateGetRegistrationCodeFunction::
+    ~EchoPrivateGetRegistrationCodeFunction() {}
 
-void GetRegistrationCodeFunction::GetRegistrationCode(const std::string& type) {
+void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
+    const std::string& type) {
   if (!chromeos::KioskModeSettings::Get()->is_initialized()) {
     chromeos::KioskModeSettings::Get()->Initialize(base::Bind(
-        &GetRegistrationCodeFunction::GetRegistrationCode,
+        &EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode,
         base::Unretained(this),
         type));
     return;
@@ -56,26 +57,27 @@ void GetRegistrationCodeFunction::GetRegistrationCode(const std::string& type) {
   SendResponse(true);
 }
 
-bool GetRegistrationCodeFunction::RunImpl() {
+bool EchoPrivateGetRegistrationCodeFunction::RunImpl() {
   std::string type;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &type));
   GetRegistrationCode(type);
   return true;
 }
 
-GetOobeTimestampFunction::GetOobeTimestampFunction() {
+EchoPrivateGetOobeTimestampFunction::EchoPrivateGetOobeTimestampFunction() {
 }
 
-GetOobeTimestampFunction::~GetOobeTimestampFunction() {
+EchoPrivateGetOobeTimestampFunction::~EchoPrivateGetOobeTimestampFunction() {
 }
 
-bool GetOobeTimestampFunction::RunImpl() {
+bool EchoPrivateGetOobeTimestampFunction::RunImpl() {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
-          &GetOobeTimestampFunction::GetOobeTimestampOnFileThread, this),
+          &EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileThread,
+          this),
       base::Bind(
-          &GetOobeTimestampFunction::SendResponse, this));
+          &EchoPrivateGetOobeTimestampFunction::SendResponse, this));
   return true;
 }
 
@@ -83,7 +85,7 @@ bool GetOobeTimestampFunction::RunImpl() {
 // The timestamp is used to determine when the user first activates the device.
 // If we can get the timestamp info, return it as yyyy-mm-dd, otherwise, return
 // an empty string.
-bool GetOobeTimestampFunction::GetOobeTimestampOnFileThread() {
+bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   const char kOobeTimestampFile[] = "/home/chronos/.oobe_completed";
@@ -101,16 +103,19 @@ bool GetOobeTimestampFunction::GetOobeTimestampOnFileThread() {
   return true;
 }
 
-CheckAllowRedeemOffersFunction::CheckAllowRedeemOffersFunction() {
+EchoPrivateCheckAllowRedeemOffersFunction::
+    EchoPrivateCheckAllowRedeemOffersFunction() {
 }
 
-CheckAllowRedeemOffersFunction::~CheckAllowRedeemOffersFunction() {
+EchoPrivateCheckAllowRedeemOffersFunction::
+    ~EchoPrivateCheckAllowRedeemOffersFunction() {
 }
 
-void CheckAllowRedeemOffersFunction::CheckAllowRedeemOffers() {
+void EchoPrivateCheckAllowRedeemOffersFunction::CheckAllowRedeemOffers() {
   chromeos::CrosSettingsProvider::TrustedStatus status =
       chromeos::CrosSettings::Get()->PrepareTrustedValues(
-          base::Bind(&CheckAllowRedeemOffersFunction::CheckAllowRedeemOffers,
+          base::Bind(&EchoPrivateCheckAllowRedeemOffersFunction::
+                     CheckAllowRedeemOffers,
                      base::Unretained(this)));
   if (status == chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
@@ -127,7 +132,7 @@ void CheckAllowRedeemOffersFunction::CheckAllowRedeemOffers() {
 // Check the enterprise policy kAllowRedeemChromeOsRegistrationOffers flag
 // value. This policy is used to control whether user can redeem offers using
 // enterprise device.
-bool CheckAllowRedeemOffersFunction::RunImpl() {
+bool EchoPrivateCheckAllowRedeemOffersFunction::RunImpl() {
   CheckAllowRedeemOffers();
   return true;
 }

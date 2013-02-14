@@ -7,23 +7,23 @@
 #include "chrome/browser/chromeos/extensions/power/power_api_manager.h"
 
 namespace extensions {
-namespace power {
 
-bool RequestKeepAwakeFunction::RunImpl() {
-  PowerApiManager* power_api_manager = PowerApiManager::GetInstance();
+bool PowerRequestKeepAwakeFunction::RunImpl() {
+  power::PowerApiManager* power_api_manager =
+      power::PowerApiManager::GetInstance();
   power_api_manager->AddExtensionLock(extension_id());
 
   SetResult(base::Value::CreateBooleanValue(true));
   return true;
 }
 
-bool ReleaseKeepAwakeFunction::RunImpl() {
-  PowerApiManager* power_api_manager = PowerApiManager::GetInstance();
+bool PowerReleaseKeepAwakeFunction::RunImpl() {
+  power::PowerApiManager* power_api_manager =
+      power::PowerApiManager::GetInstance();
   power_api_manager->RemoveExtensionLock(extension_id());
 
   SetResult(base::Value::CreateBooleanValue(true));
   return true;
 }
 
-}  // namespace power
 }  // namespace extensions

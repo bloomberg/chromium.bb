@@ -240,17 +240,17 @@ bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut) {
   return true;
 }
 
-bool CopyBookmarkManagerFunction::RunImpl() {
+bool BookmarkManagerPrivateCopyFunction::RunImpl() {
   return CopyOrCut(false);
 }
 
-bool CutBookmarkManagerFunction::RunImpl() {
+bool BookmarkManagerPrivateCutFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
   return CopyOrCut(true);
 }
 
-bool PasteBookmarkManagerFunction::RunImpl() {
+bool BookmarkManagerPrivatePasteFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
@@ -279,7 +279,7 @@ bool PasteBookmarkManagerFunction::RunImpl() {
   return true;
 }
 
-bool CanPasteBookmarkManagerFunction::RunImpl() {
+bool BookmarkManagerPrivateCanPasteFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
@@ -293,7 +293,7 @@ bool CanPasteBookmarkManagerFunction::RunImpl() {
   return true;
 }
 
-bool SortChildrenBookmarkManagerFunction::RunImpl() {
+bool BookmarkManagerPrivateSortChildrenFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
@@ -306,7 +306,7 @@ bool SortChildrenBookmarkManagerFunction::RunImpl() {
   return true;
 }
 
-bool BookmarkManagerGetStringsFunction::RunImpl() {
+bool BookmarkManagerPrivateGetStringsFunction::RunImpl() {
   DictionaryValue* localized_strings = new DictionaryValue();
 
   localized_strings->SetString("title",
@@ -389,7 +389,7 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
   return true;
 }
 
-bool StartDragBookmarkManagerFunction::RunImpl() {
+bool BookmarkManagerPrivateStartDragFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
@@ -413,7 +413,7 @@ bool StartDragBookmarkManagerFunction::RunImpl() {
   }
 }
 
-bool DropBookmarkManagerFunction::RunImpl() {
+bool BookmarkManagerPrivateDropFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -470,7 +470,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
   }
 }
 
-bool GetSubtreeBookmarkManagerFunction::RunImpl() {
+bool BookmarkManagerPrivateGetSubtreeFunction::RunImpl() {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* node;
   int64 id;
@@ -500,7 +500,7 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
   return true;
 }
 
-bool CanEditBookmarkManagerFunction::RunImpl() {
+bool BookmarkManagerPrivateCanEditFunction::RunImpl() {
   PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
   SetResult(new base::FundamentalValue(
       prefs->GetBoolean(prefs::kEditBookmarksEnabled)));
@@ -512,7 +512,7 @@ bool RecordLaunchBookmarkFunction::RunImpl() {
   return true;
 }
 
-bool CanOpenNewWindowsBookmarkFunction::RunImpl() {
+bool BookmarkManagerPrivateCanOpenNewWindowsFunction::RunImpl() {
   bool can_open_new_windows = true;
 
 #if defined(OS_WIN)

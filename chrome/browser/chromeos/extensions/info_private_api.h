@@ -16,12 +16,12 @@ class Value;
 
 namespace extensions {
 
-class GetChromeosInfoFunction : public AsyncExtensionFunction {
+class ChromeosInfoPrivateGetFunction : public AsyncExtensionFunction {
  public:
-  GetChromeosInfoFunction();
+  ChromeosInfoPrivateGetFunction();
 
  protected:
-  virtual ~GetChromeosInfoFunction();
+  virtual ~ChromeosInfoPrivateGetFunction();
 
   virtual bool RunImpl() OVERRIDE;
 

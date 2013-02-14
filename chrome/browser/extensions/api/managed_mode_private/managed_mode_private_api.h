@@ -5,8 +5,8 @@
 // Defines the Chrome Extensions Managed Mode API relevant classes to realize
 // the API as specified in the extension API JSON.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_MANAGED_MODE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_MANAGED_MODE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_PRIVATE_MANAGED_MODE_PRIVATE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_PRIVATE_MANAGED_MODE_PRIVATE_API_H_
 
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
@@ -32,24 +32,24 @@ class ManagedModeEventRouter {
   DISALLOW_COPY_AND_ASSIGN(ManagedModeEventRouter);
 };
 
-class GetManagedModeFunction : public SyncExtensionFunction {
+class ManagedModePrivateGetFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("managedModePrivate.get", MANAGEDMODEPRIVATE_GET)
 
  protected:
-  virtual ~GetManagedModeFunction();
+  virtual ~ManagedModePrivateGetFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class EnterManagedModeFunction : public AsyncExtensionFunction {
+class ManagedModePrivateEnterFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("managedModePrivate.enter",
                              MANAGEDMODEPRIVATE_ENTER)
 
  protected:
-  virtual ~EnterManagedModeFunction();
+  virtual ~ManagedModePrivateEnterFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -60,25 +60,25 @@ class EnterManagedModeFunction : public AsyncExtensionFunction {
 };
 
 
-class GetPolicyFunction : public SyncExtensionFunction {
+class ManagedModePrivateGetPolicyFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("managedModePrivate.getPolicy",
                              MANAGEDMODEPRIVATE_GETPOLICY)
 
  protected:
-  virtual ~GetPolicyFunction();
+  virtual ~ManagedModePrivateGetPolicyFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SetPolicyFunction : public SyncExtensionFunction {
+class ManagedModePrivateSetPolicyFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("managedModePrivate.setPolicy",
                              MANAGEDMODEPRIVATE_SETPOLICY)
 
  protected:
-  virtual ~SetPolicyFunction();
+  virtual ~ManagedModePrivateSetPolicyFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -119,4 +119,4 @@ class ManagedModeAPI : public ProfileKeyedAPI,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_MANAGED_MODE_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_MANAGED_MODE_PRIVATE_MANAGED_MODE_PRIVATE_API_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_METRICS_METRICS_H_
-#define CHROME_BROWSER_EXTENSIONS_API_METRICS_METRICS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_METRICS_PRIVATE_METRICS_PRIVATE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_METRICS_PRIVATE_METRICS_PRIVATE_API_H_
 
 #include <string>
 
@@ -12,13 +12,13 @@
 
 namespace extensions {
 
-class MetricsRecordUserActionFunction : public SyncExtensionFunction {
+class MetricsPrivateRecordUserActionFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordUserAction",
                              METRICSPRIVATE_RECORDUSERACTION)
 
  protected:
-  virtual ~MetricsRecordUserActionFunction() {}
+  virtual ~MetricsPrivateRecordUserActionFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -34,97 +34,104 @@ class MetricsHistogramHelperFunction : public SyncExtensionFunction {
                            int sample);
 };
 
-class MetricsRecordValueFunction : public MetricsHistogramHelperFunction {
+class MetricsPrivateRecordValueFunction
+    : public MetricsHistogramHelperFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordValue",
                              METRICSPRIVATE_RECORDVALUE)
 
  protected:
-  virtual ~MetricsRecordValueFunction() {}
+  virtual ~MetricsPrivateRecordValueFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class MetricsRecordPercentageFunction : public MetricsHistogramHelperFunction {
+class MetricsPrivateRecordPercentageFunction
+    : public MetricsHistogramHelperFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordPercentage",
                              METRICSPRIVATE_RECORDPERCENTAGE)
 
  protected:
-  virtual ~MetricsRecordPercentageFunction() {}
+  virtual ~MetricsPrivateRecordPercentageFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class MetricsRecordCountFunction : public MetricsHistogramHelperFunction {
+class MetricsPrivateRecordCountFunction
+    : public MetricsHistogramHelperFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordCount",
                              METRICSPRIVATE_RECORDCOUNT)
 
  protected:
-  virtual ~MetricsRecordCountFunction() {}
+  virtual ~MetricsPrivateRecordCountFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class MetricsRecordSmallCountFunction : public MetricsHistogramHelperFunction {
+class MetricsPrivateRecordSmallCountFunction
+    : public MetricsHistogramHelperFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordSmallCount",
                              METRICSPRIVATE_RECORDSMALLCOUNT)
 
  protected:
-  virtual ~MetricsRecordSmallCountFunction() {}
+  virtual ~MetricsPrivateRecordSmallCountFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class MetricsRecordMediumCountFunction : public MetricsHistogramHelperFunction {
+class MetricsPrivateRecordMediumCountFunction
+    : public MetricsHistogramHelperFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordMediumCount",
                              METRICSPRIVATE_RECORDMEDIUMCOUNT)
 
  protected:
-  virtual ~MetricsRecordMediumCountFunction() {}
+  virtual ~MetricsPrivateRecordMediumCountFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class MetricsRecordTimeFunction : public MetricsHistogramHelperFunction {
+class MetricsPrivateRecordTimeFunction : public MetricsHistogramHelperFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordTime",
                              METRICSPRIVATE_RECORDTIME)
 
  protected:
-  virtual ~MetricsRecordTimeFunction() {}
+  virtual ~MetricsPrivateRecordTimeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class MetricsRecordMediumTimeFunction : public MetricsHistogramHelperFunction {
+class MetricsPrivateRecordMediumTimeFunction
+    : public MetricsHistogramHelperFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordMediumTime",
                              METRICSPRIVATE_RECORDMEDIUMTIME)
 
  protected:
-  virtual ~MetricsRecordMediumTimeFunction() {}
+  virtual ~MetricsPrivateRecordMediumTimeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class MetricsRecordLongTimeFunction : public MetricsHistogramHelperFunction {
+class MetricsPrivateRecordLongTimeFunction
+    : public MetricsHistogramHelperFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordLongTime",
                              METRICSPRIVATE_RECORDLONGTIME)
 
  protected:
-  virtual ~MetricsRecordLongTimeFunction() {}
+  virtual ~MetricsPrivateRecordLongTimeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -132,4 +139,4 @@ class MetricsRecordLongTimeFunction : public MetricsHistogramHelperFunction {
 
 } // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_METRICS_METRICS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_METRICS_PRIVATE_METRICS_PRIVATE_API_H_

@@ -5,6 +5,9 @@
 [
   {
     "namespace": "experimental.infobars",
+    "compiler_options": {
+      "implemented_in": "chrome/browser/infobars/infobar_extension_api.h"
+    },
     "dependencies": [ "windows" ],
     "types": [],
     "functions": [

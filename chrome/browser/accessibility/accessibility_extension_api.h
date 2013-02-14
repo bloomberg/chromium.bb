@@ -71,8 +71,9 @@ class ExtensionAccessibilityEventRouter : public content::NotificationObserver {
 // API function that enables or disables accessibility support.  Event
 // listeners are only installed when accessibility support is enabled, to
 // minimize the impact.
-class SetAccessibilityEnabledFunction : public SyncExtensionFunction {
-  virtual ~SetAccessibilityEnabledFunction() {}
+class AccessibilitySetAccessibilityEnabledFunction
+    : public SyncExtensionFunction {
+  virtual ~AccessibilitySetAccessibilityEnabledFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
       "experimental.accessibility.setAccessibilityEnabled",
@@ -80,8 +81,8 @@ class SetAccessibilityEnabledFunction : public SyncExtensionFunction {
 };
 
 // API function that returns the most recent focused control.
-class GetFocusedControlFunction : public SyncExtensionFunction {
-  virtual ~GetFocusedControlFunction() {}
+class AccessibilityGetFocusedControlFunction : public SyncExtensionFunction {
+  virtual ~AccessibilityGetFocusedControlFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
       "experimental.accessibility.getFocusedControl",
@@ -89,8 +90,8 @@ class GetFocusedControlFunction : public SyncExtensionFunction {
 };
 
 // API function that returns alerts being shown on the give tab.
-class GetAlertsForTabFunction : public SyncExtensionFunction {
-  virtual ~GetAlertsForTabFunction() {}
+class AccessibilityGetAlertsForTabFunction : public SyncExtensionFunction {
+  virtual ~AccessibilityGetAlertsForTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION(
       "experimental.accessibility.getAlertsForTab",

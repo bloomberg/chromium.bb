@@ -4,7 +4,7 @@
 
 // Implementation of the Chrome Extensions Managed Mode API.
 
-#include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
+#include "chrome/browser/extensions/api/managed_mode_private/managed_mode_private_api.h"
 
 #include <string>
 
@@ -67,9 +67,9 @@ void ManagedModeEventRouter::OnInManagedModeChanged() {
   event_router->BroadcastEvent(event.Pass());
 }
 
-GetManagedModeFunction::~GetManagedModeFunction() { }
+ManagedModePrivateGetFunction::~ManagedModePrivateGetFunction() { }
 
-bool GetManagedModeFunction::RunImpl() {
+bool ManagedModePrivateGetFunction::RunImpl() {
   bool in_managed_mode = ManagedMode::IsInManagedMode();
 
   scoped_ptr<DictionaryValue> result(new DictionaryValue);
@@ -78,25 +78,25 @@ bool GetManagedModeFunction::RunImpl() {
   return true;
 }
 
-EnterManagedModeFunction::~EnterManagedModeFunction() { }
+ManagedModePrivateEnterFunction::~ManagedModePrivateEnterFunction() { }
 
-bool EnterManagedModeFunction::RunImpl() {
+bool ManagedModePrivateEnterFunction::RunImpl() {
   ManagedMode::EnterManagedMode(
       profile(),
-      base::Bind(&EnterManagedModeFunction::SendResult, this));
+      base::Bind(&ManagedModePrivateEnterFunction::SendResult, this));
   return true;
 }
 
-void EnterManagedModeFunction::SendResult(bool success) {
+void ManagedModePrivateEnterFunction::SendResult(bool success) {
   scoped_ptr<DictionaryValue> result(new DictionaryValue);
   result->SetBoolean(kEnterSuccessKey, success);
   SetResult(result.release());
   SendResponse(true);
 }
 
-GetPolicyFunction::~GetPolicyFunction() { }
+ManagedModePrivateGetPolicyFunction::~ManagedModePrivateGetPolicyFunction() { }
 
-bool GetPolicyFunction::RunImpl() {
+bool ManagedModePrivateGetPolicyFunction::RunImpl() {
   std::string key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &key));
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -109,9 +109,9 @@ bool GetPolicyFunction::RunImpl() {
   return true;
 }
 
-SetPolicyFunction::~SetPolicyFunction() { }
+ManagedModePrivateSetPolicyFunction::~ManagedModePrivateSetPolicyFunction() { }
 
-bool SetPolicyFunction::RunImpl() {
+bool ManagedModePrivateSetPolicyFunction::RunImpl() {
   std::string key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &key));
   base::Value* value = NULL;

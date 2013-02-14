@@ -12,23 +12,23 @@
 
 namespace extensions {
 
-GetTopSitesFunction::GetTopSitesFunction()
+TopSitesGetFunction::TopSitesGetFunction()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
 
-GetTopSitesFunction::~GetTopSitesFunction() {}
+TopSitesGetFunction::~TopSitesGetFunction() {}
 
-bool GetTopSitesFunction::RunImpl() {
+bool TopSitesGetFunction::RunImpl() {
   history::TopSites* ts = profile()->GetTopSites();
   if (!ts)
     return false;
 
   ts->GetMostVisitedURLs(
-      base::Bind(&GetTopSitesFunction::OnMostVisitedURLsAvailable,
+      base::Bind(&TopSitesGetFunction::OnMostVisitedURLsAvailable,
                  weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 
-void GetTopSitesFunction::OnMostVisitedURLsAvailable(
+void TopSitesGetFunction::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& data) {
   scoped_ptr<base::ListValue> pages_value(new ListValue);
   for (size_t i = 0; i < data.size(); i++) {

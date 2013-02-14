@@ -5,33 +5,34 @@
 // This extension API contains system-wide preferences and functions that shall
 // be only available to component extensions.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SYSTEM_SYSTEM_API_H_
-#define CHROME_BROWSER_EXTENSIONS_SYSTEM_SYSTEM_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_PRIVATE_SYSTEM_PRIVATE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_PRIVATE_SYSTEM_PRIVATE_API_H_
 
 #include "chrome/browser/extensions/extension_function.h"
 
 namespace extensions {
 
-class GetIncognitoModeAvailabilityFunction : public SyncExtensionFunction {
+class SystemPrivateGetIncognitoModeAvailabilityFunction
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemPrivate.getIncognitoModeAvailability",
                              SYSTEMPRIVATE_GETINCOGNITOMODEAVAILABILITY)
 
  protected:
-  virtual ~GetIncognitoModeAvailabilityFunction() {}
+  virtual ~SystemPrivateGetIncognitoModeAvailabilityFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
 // API function which returns the status of system update.
-class GetUpdateStatusFunction : public SyncExtensionFunction {
+class SystemPrivateGetUpdateStatusFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemPrivate.getUpdateStatus",
                              SYSTEMPRIVATE_GETUPDATESTATUS)
 
  protected:
-  virtual ~GetUpdateStatusFunction() {}
+  virtual ~SystemPrivateGetUpdateStatusFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -51,4 +52,4 @@ void DispatchWokeUpEvent();
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SYSTEM_SYSTEM_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_PRIVATE_SYSTEM_PRIVATE_API_H_
