@@ -1371,10 +1371,12 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
   items.push_back(new ChromeLauncherAppMenuItem(
       l10n_util::GetStringFUTF16(IDS_LAUNCHER_CHROME_BROWSER_NAME,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)), NULL));
+  const chrome::BrowserListImpl* ash_browser_list =
+      chrome::BrowserListImpl::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
   int index = 1;
-  for (BrowserList::const_reverse_iterator it =
-           BrowserList::begin_last_active();
-       it != BrowserList::end_last_active(); ++it, ++index) {
+  for (chrome::BrowserListImpl::const_reverse_iterator it =
+           ash_browser_list->begin_last_active();
+       it != ash_browser_list->end_last_active(); ++it, ++index) {
     Browser* browser = *it;
     if (browser->is_type_tabbed())
       found_tabbed_browser = true;
