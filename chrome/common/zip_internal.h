@@ -5,6 +5,10 @@
 #ifndef CHROME_COMMON_ZIP_INTERNAL_H_
 #define CHROME_COMMON_ZIP_INTERNAL_H_
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include <string>
 
 #if defined(USE_SYSTEM_MINIZIP)
@@ -27,6 +31,11 @@ unzFile OpenForUnzipping(const std::string& file_name_utf8);
 #if defined(OS_POSIX)
 // Opens the file referred to by |zip_fd| for unzipping.
 unzFile OpenFdForUnzipping(int zip_fd);
+#endif
+
+#if defined(OS_WIN)
+// Opens the file referred to by |zip_handle| for unzipping.
+unzFile OpenHandleForUnzipping(HANDLE zip_handle);
 #endif
 
 // Creates a custom unzFile object which reads data from the specified string.

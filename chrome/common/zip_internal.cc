@@ -117,6 +117,22 @@ void FillFdOpenFileFunc(zlib_filefunc_def* pzlib_filefunc_def, int fd) {
 }
 #endif  // defined(OS_POSIX)
 
+#if defined(OS_WIN)
+// Callback function for zlib that opens a file stream from a Windows handle.
+void* HandleOpenFileFunc(void* opaque, const char* filename, int mode) {
+  WIN32FILE_IOWIN file_ret;
+  file_ret.hf = static_cast<HANDLE>(opaque);
+  file_ret.error = 0;
+  if (file_ret.hf == INVALID_HANDLE_VALUE)
+    return NULL;
+
+  void* ret = malloc(sizeof(WIN32FILE_IOWIN));
+  if (ret != NULL)
+    *(static_cast<WIN32FILE_IOWIN*>(ret)) = file_ret;
+  return ret;
+}
+#endif
+
 // A struct that contains data required for zlib functions to extract files from
 // a zip archive stored in memory directly. The following I/O API functions
 // expect their opaque parameters refer to this struct.
@@ -235,6 +251,16 @@ unzFile OpenFdForUnzipping(int zip_fd) {
   zlib_filefunc_def zip_funcs;
   FillFdOpenFileFunc(&zip_funcs, zip_fd);
   // Passing dummy "fd" filename to zlib.
+  return unzOpen2("fd", &zip_funcs);
+}
+#endif
+
+#if defined(OS_WIN)
+unzFile OpenHandleForUnzipping(HANDLE zip_handle) {
+  zlib_filefunc_def zip_funcs;
+  fill_win32_filefunc(&zip_funcs);
+  zip_funcs.zopen_file = HandleOpenFileFunc;
+  zip_funcs.opaque = zip_handle;
   return unzOpen2("fd", &zip_funcs);
 }
 #endif

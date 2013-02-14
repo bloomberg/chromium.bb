@@ -18,12 +18,14 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/sandboxed_zip_analyzer.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/zip_reader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
@@ -50,36 +52,9 @@ const char DownloadProtectionService::kDownloadRequestUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/download";
 
 namespace {
-bool IsArchiveFile(const base::FilePath& file) {
-  return file.MatchesExtension(FILE_PATH_LITERAL(".zip"));
-}
-
-bool IsBinaryFile(const base::FilePath& file) {
-  return (
-      // Executable extensions for MS Windows.
-      file.MatchesExtension(FILE_PATH_LITERAL(".bas")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".bat")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".cab")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".cmd")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".com")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".exe")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".hta")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".msi")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".pif")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".reg")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".scr")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".vb")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".vbs")) ||
-      // Chrome extensions and android APKs are also reported.
-      file.MatchesExtension(FILE_PATH_LITERAL(".crx")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".apk")) ||
-      // Archives _may_ contain binaries, we'll check in ExtractFileFeatures.
-      IsArchiveFile(file));
-}
-
 ClientDownloadRequest::DownloadType GetDownloadType(
     const base::FilePath& file) {
-  DCHECK(IsBinaryFile(file));
+  DCHECK(download_protection_util::IsBinaryFile(file));
   if (file.MatchesExtension(FILE_PATH_LITERAL(".apk")))
     return ClientDownloadRequest::ANDROID_APK;
   else if (file.MatchesExtension(FILE_PATH_LITERAL(".crx")))
@@ -352,7 +327,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         pingback_enabled_(service_->enabled()),
         finished_(false),
         type_(ClientDownloadRequest::WIN_EXECUTABLE),
-        ALLOW_THIS_IN_INITIALIZER_LIST(timeout_weakptr_factory_(this)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weakptr_factory_(this)),
         start_time_(base::TimeTicks::Now()) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
@@ -388,12 +363,13 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     // Compute features from the file contents. Note that we record histograms
     // based on the result, so this runs regardless of whether the pingbacks
-    // are enabled.  Since we do blocking I/O, offload this to a worker thread.
-    // The task does not need to block shutdown.
-    BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
-        FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::ExtractFileFeatures, this),
-        base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+    // are enabled.
+    if (info_.target_file.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
+      StartExtractZipFeatures();
+    } else {
+      DCHECK(!download_protection_util::IsArchiveFile(info_.target_file));
+      StartExtractSignatureFeatures();
+    }
   }
 
   // Start a timeout to cancel the request if it takes too long.
@@ -408,7 +384,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&CheckClientDownloadRequest::Cancel,
-                   timeout_weakptr_factory_.GetWeakPtr()),
+                   weakptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(
             service_->download_request_timeout_ms()));
   }
@@ -496,7 +472,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       *reason = REASON_INVALID_URL;
       return false;
     }
-    if (!IsBinaryFile(info.target_file)) {
+    if (!download_protection_util::IsBinaryFile(info.target_file)) {
       *reason = REASON_NOT_BINARY_FILE;
       return false;
     }
@@ -512,21 +488,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
-  void ExtractFileFeatures() {
-    // If we're checking an archive file, look to see if there are any
-    // executables inside.  If not, we will skip the pingback for this
-    // download.
-    if (info_.target_file.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
-      ExtractZipFeatures();
-      if (!info_.zipped_executable) {
-        RecordImprovedProtectionStats(REASON_ARCHIVE_WITHOUT_BINARIES);
-        PostFinishTask(SAFE);
-        return;
-      }
-    } else {
-      DCHECK(!IsArchiveFile(info_.target_file));
-      ExtractSignatureFeatures();
-    }
+  void OnFileFeatureExtractionDone() {
+    // This can run in any thread, since it just posts more messages.
 
     // TODO(noelutz): DownloadInfo should also contain the IP address of
     // every URL in the redirect chain.  We also should check whether the
@@ -545,6 +508,16 @@ class DownloadProtectionService::CheckClientDownloadRequest
         base::Bind(&CheckClientDownloadRequest::StartTimeout, this));
   }
 
+  void StartExtractSignatureFeatures() {
+    // Since we do blocking I/O, offload this to a worker thread.
+    // The task does not need to block shutdown.
+    BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+        FROM_HERE,
+        base::Bind(&CheckClientDownloadRequest::ExtractSignatureFeatures,
+                   this),
+        base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  }
+
   void ExtractSignatureFeatures() {
     base::TimeTicks start_time = base::TimeTicks::Now();
     signature_util_->CheckSignature(info_.local_file, &signature_info_);
@@ -557,44 +530,44 @@ class DownloadProtectionService::CheckClientDownloadRequest
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed);
     UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractSignatureFeaturesTime",
                         base::TimeTicks::Now() - start_time);
+
+    OnFileFeatureExtractionDone();
   }
 
-  void ExtractZipFeatures() {
-    base::TimeTicks start_time = base::TimeTicks::Now();
-    zip::ZipReader reader;
-    bool zip_file_has_archive = false;
-    if (reader.Open(info_.local_file)) {
-      for (; reader.HasMore(); reader.AdvanceToNextEntry()) {
-        if (!reader.OpenCurrentEntryInZip()) {
-          VLOG(1) << "Failed to open current entry in zip file: "
-                  << info_.local_file.value();
-          continue;
-        }
-        const base::FilePath& file = reader.current_entry_info()->file_path();
-        if (IsBinaryFile(file)) {
-          // Don't consider an archived archive to be executable, but record
-          // a histogram.
-          if (IsArchiveFile(file)) {
-            zip_file_has_archive = true;
-          } else {
-            VLOG(2) << "Downloaded a zipped executable: "
-                    << info_.local_file.value();
-            info_.zipped_executable = true;
-            break;
-          }
-        } else {
-          VLOG(3) << "Ignoring non-binary file: " << file.value();
-        }
-      }
+  void StartExtractZipFeatures() {
+    zip_analysis_start_time_ = base::TimeTicks::Now();
+    // We give the zip analyzer a weak pointer to this object.  Since the
+    // analyzer is refcounted, it might outlive the request.
+    analyzer_ = new SandboxedZipAnalyzer(
+        info_.local_file,
+        base::Bind(&CheckClientDownloadRequest::OnZipAnalysisFinished,
+                   weakptr_factory_.GetWeakPtr()));
+    analyzer_->Start();
+  }
+
+  void OnZipAnalysisFinished(const zip_analyzer::Results& results) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (results.success) {
+      info_.zipped_executable = results.has_executable;
+      VLOG(1) << "Zip analysis finished for " << info_.local_file.value()
+              << ", has_executable=" << results.has_executable
+              << " has_archive=" << results.has_archive;
     } else {
-      VLOG(1) << "Failed to open zip file: " << info_.local_file.value();
+      VLOG(1) << "Zip analysis failed for " << info_.local_file.value();
     }
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
                           info_.zipped_executable);
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasArchiveButNoExecutable",
-                          zip_file_has_archive && !info_.zipped_executable);
+                          results.has_archive && !info_.zipped_executable);
     UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractZipFeaturesTime",
-                        base::TimeTicks::Now() - start_time);
+                        base::TimeTicks::Now() - zip_analysis_start_time_);
+
+    if (!info_.zipped_executable) {
+      RecordImprovedProtectionStats(REASON_ARCHIVE_WITHOUT_BINARIES);
+      PostFinishTask(SAFE);
+      return;
+    }
+    OnFileFeatureExtractionDone();
   }
 
   void CheckWhitelists() {
@@ -793,9 +766,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   const bool pingback_enabled_;
   scoped_ptr<net::URLFetcher> fetcher_;
+  scoped_refptr<SandboxedZipAnalyzer> analyzer_;
+  base::TimeTicks zip_analysis_start_time_;
   bool finished_;
   ClientDownloadRequest::DownloadType type_;
-  base::WeakPtrFactory<CheckClientDownloadRequest> timeout_weakptr_factory_;
+  base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
   base::TimeTicks start_time_;  // Used for stats.
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);

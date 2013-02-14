@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/platform_file.h"
 #include "base/time.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
@@ -82,11 +83,9 @@ class ZipReader {
   // success.
   bool Open(const base::FilePath& zip_file_path);
 
-#if defined(OS_POSIX)
-  // Opens the zip file referred to by the file descriptor |zip_fd|.
+  // Opens the zip file referred to by the platform file |zip_fd|.
   // Returns true on success.
-  bool OpenFromFd(int zip_fd);
-#endif
+  bool OpenFromPlatformFile(base::PlatformFile zip_fd);
 
   // Opens the zip data stored in |data|. This class uses a weak reference to
   // the given sring while extracting files, i.e. the caller should keep the

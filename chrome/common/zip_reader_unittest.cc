@@ -4,19 +4,15 @@
 
 #include "chrome/common/zip_reader.h"
 
-#if defined(OS_POSIX)
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#endif
-
 #include <set>
 #include <string>
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/md5.h"
 #include "base/path_service.h"
+#include "base/platform_file.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
@@ -26,41 +22,45 @@
 
 namespace {
 
-#if defined(OS_POSIX)
-// Wrap file descriptors in a class so that we don't leak them in tests.
-class FdWrapper {
+// Wrap PlatformFiles in a class so that we don't leak them in tests.
+class PlatformFileWrapper {
  public:
   typedef enum {
     READ_ONLY,
     READ_WRITE
   } AccessMode;
 
-  FdWrapper(const base::FilePath& file, AccessMode mode) : fd_(-1) {
+  PlatformFileWrapper(const base::FilePath& file, AccessMode mode)
+      : file_(base::kInvalidPlatformFileValue) {
     switch (mode) {
-    case READ_ONLY:
-      fd_ = open(file.value().c_str(), O_RDONLY);
-      break;
-    case READ_WRITE:
-      fd_ = open(file.value().c_str(),
-                 O_RDWR | O_CREAT,
-                 S_IRUSR | S_IWUSR);
-      break;
-    default:
-      NOTREACHED();
+      case READ_ONLY:
+        file_ = base::CreatePlatformFile(file,
+                                         base::PLATFORM_FILE_OPEN |
+                                         base::PLATFORM_FILE_READ,
+                                         NULL, NULL);
+        break;
+      case READ_WRITE:
+        file_ = base::CreatePlatformFile(file,
+                                         base::PLATFORM_FILE_CREATE_ALWAYS |
+                                         base::PLATFORM_FILE_READ |
+                                         base::PLATFORM_FILE_WRITE,
+                                         NULL, NULL);
+        break;
+      default:
+        NOTREACHED();
     }
     return;
   }
 
-  ~FdWrapper() {
-    close(fd_);
+  ~PlatformFileWrapper() {
+    base::ClosePlatformFile(file_);
   }
 
-  int fd() { return fd_; }
+  base::PlatformFile platform_file() { return file_; }
 
  private:
-  int fd_;
+  base::PlatformFile file_;
 };
-#endif
 
 }   // namespace
 
@@ -124,13 +124,12 @@ TEST_F(ZipReaderTest, Open_ValidZipFile) {
   ASSERT_TRUE(reader.Open(test_zip_file_));
 }
 
-#if defined(OS_POSIX)
-TEST_F(ZipReaderTest, Open_ValidZipFd) {
+TEST_F(ZipReaderTest, Open_ValidZipPlatformFile) {
   ZipReader reader;
-  FdWrapper zip_fd_wrapper(test_zip_file_, FdWrapper::READ_ONLY);
-  ASSERT_TRUE(reader.OpenFromFd(zip_fd_wrapper.fd()));
+  PlatformFileWrapper zip_fd_wrapper(test_zip_file_,
+                                     PlatformFileWrapper::READ_ONLY);
+  ASSERT_TRUE(reader.OpenFromPlatformFile(zip_fd_wrapper.platform_file()));
 }
-#endif
 
 TEST_F(ZipReaderTest, Open_NonExistentFile) {
   ZipReader reader;
@@ -160,14 +159,14 @@ TEST_F(ZipReaderTest, Iteration) {
   EXPECT_EQ(test_zip_contents_, actual_contents);
 }
 
-#if defined(OS_POSIX)
 // Open the test zip file from a file descriptor, iterate through its contents,
 // and compare that they match the expected contents.
-TEST_F(ZipReaderTest, FdIteration) {
+TEST_F(ZipReaderTest, PlatformFileIteration) {
   std::set<base::FilePath> actual_contents;
   ZipReader reader;
-  FdWrapper zip_fd_wrapper(test_zip_file_, FdWrapper::READ_ONLY);
-  ASSERT_TRUE(reader.OpenFromFd(zip_fd_wrapper.fd()));
+  PlatformFileWrapper zip_fd_wrapper(test_zip_file_,
+                                     PlatformFileWrapper::READ_ONLY);
+  ASSERT_TRUE(reader.OpenFromPlatformFile(zip_fd_wrapper.platform_file()));
   while (reader.HasMore()) {
     ASSERT_TRUE(reader.OpenCurrentEntryInZip());
     actual_contents.insert(reader.current_entry_info()->file_path());
@@ -179,7 +178,6 @@ TEST_F(ZipReaderTest, FdIteration) {
   EXPECT_EQ(test_zip_contents_.size(), actual_contents.size());
   EXPECT_EQ(test_zip_contents_, actual_contents);
 }
-#endif
 
 TEST_F(ZipReaderTest, LocateAndOpenEntry_ValidFile) {
   std::set<base::FilePath> actual_contents;
@@ -218,11 +216,11 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryToFilePath_RegularFile) {
   EXPECT_LT(static_cast<size_t>(internal::kZipBufSize), output.size());
 }
 
-#if defined(OS_POSIX)
-TEST_F(ZipReaderTest, FdExtractCurrentEntryToFilePath_RegularFile) {
+TEST_F(ZipReaderTest, PlatformFileExtractCurrentEntryToFilePath_RegularFile) {
   ZipReader reader;
-  FdWrapper zip_fd_wrapper(test_zip_file_, FdWrapper::READ_ONLY);
-  ASSERT_TRUE(reader.OpenFromFd(zip_fd_wrapper.fd()));
+  PlatformFileWrapper zip_fd_wrapper(test_zip_file_,
+                                     PlatformFileWrapper::READ_ONLY);
+  ASSERT_TRUE(reader.OpenFromPlatformFile(zip_fd_wrapper.platform_file()));
   base::FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
   ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
   ASSERT_TRUE(reader.ExtractCurrentEntryToFilePath(
@@ -239,15 +237,17 @@ TEST_F(ZipReaderTest, FdExtractCurrentEntryToFilePath_RegularFile) {
   EXPECT_LT(static_cast<size_t>(internal::kZipBufSize), output.size());
 }
 
-TEST_F(ZipReaderTest, FdExtractCurrentEntryToFd_RegularFile) {
+#if defined(OS_POSIX)
+TEST_F(ZipReaderTest, PlatformFileExtractCurrentEntryToFd_RegularFile) {
   ZipReader reader;
-  FdWrapper zip_fd_wrapper(test_zip_file_, FdWrapper::READ_ONLY);
-  ASSERT_TRUE(reader.OpenFromFd(zip_fd_wrapper.fd()));
+  PlatformFileWrapper zip_fd_wrapper(test_zip_file_,
+                                     PlatformFileWrapper::READ_ONLY);
+  ASSERT_TRUE(reader.OpenFromPlatformFile(zip_fd_wrapper.platform_file()));
   base::FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
   base::FilePath out_path = test_dir_.AppendASCII("quux.txt");
-  FdWrapper out_fd_w(out_path, FdWrapper::READ_WRITE);
+  PlatformFileWrapper out_fd_w(out_path, PlatformFileWrapper::READ_WRITE);
   ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
-  ASSERT_TRUE(reader.ExtractCurrentEntryToFd(out_fd_w.fd()));
+  ASSERT_TRUE(reader.ExtractCurrentEntryToFd(out_fd_w.platform_file()));
   // Read the output file and compute the MD5.
   std::string output;
   ASSERT_TRUE(file_util::ReadFileToString(test_dir_.AppendASCII("quux.txt"),

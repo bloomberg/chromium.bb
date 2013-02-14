@@ -14,8 +14,10 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/update_manifest.h"
+#include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "printing/pdf_render_settings.h"
@@ -47,6 +49,12 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Results)
   IPC_STRUCT_TRAITS_MEMBER(list)
   IPC_STRUCT_TRAITS_MEMBER(daystart_elapsed_seconds)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(safe_browsing::zip_analyzer::Results)
+  IPC_STRUCT_TRAITS_MEMBER(success)
+  IPC_STRUCT_TRAITS_MEMBER(has_executable)
+  IPC_STRUCT_TRAITS_MEMBER(has_archive)
 IPC_STRUCT_TRAITS_END()
 
 //------------------------------------------------------------------------------
@@ -108,6 +116,16 @@ IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_CreateZipFile,
                      std::vector<base::FilePath> /* src_relative_paths */,
                      base::FileDescriptor /* dest_fd */)
 #endif  // defined(OS_CHROMEOS)
+
+// Requests the utility process to respond with a
+// ChromeUtilityHostMsg_ProcessStarted message once it has started.  This may
+// be used if the host process needs a handle to the running utility process.
+IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_StartupPing)
+
+// Tells the utility process to analyze a zip file for malicious download
+// protection.
+IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
+                     IPC::PlatformFileForTransit /* zip_file */)
 
 //------------------------------------------------------------------------------
 // Utility process host messages:
@@ -194,3 +212,11 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_CreateZipFile_Succeeded)
 // Reply when an error occured in creating the zip file.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_CreateZipFile_Failed)
 #endif  // defined(OS_CHROMEOS)
+
+// Reply when the utility process has started.
+IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_ProcessStarted)
+
+// Reply when a zip file has been analyzed for malicious download protection.
+IPC_MESSAGE_CONTROL1(
+    ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished,
+    safe_browsing::zip_analyzer::Results)

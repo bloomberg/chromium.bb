@@ -90,18 +90,20 @@ bool ZipReader::Open(const base::FilePath& zip_file_path) {
   return OpenInternal();
 }
 
-#if defined(OS_POSIX)
-bool ZipReader::OpenFromFd(const int zip_fd) {
+bool ZipReader::OpenFromPlatformFile(base::PlatformFile zip_fd) {
   DCHECK(!zip_file_);
 
+#if defined(OS_POSIX)
   zip_file_ = internal::OpenFdForUnzipping(zip_fd);
+#elif defined(OS_WIN)
+  zip_file_ = internal::OpenHandleForUnzipping(zip_fd);
+#endif
   if (!zip_file_) {
     return false;
   }
 
   return OpenInternal();
 }
-#endif
 
 bool ZipReader::OpenFromString(const std::string& data) {
   zip_file_ = internal::PreprareMemoryForUnzipping(data);

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "content/public/utility/content_utility_client.h"
+#include "ipc/ipc_platform_file.h"
 #include "printing/pdf_render_settings.h"
 
 class Importer;
@@ -85,6 +86,9 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 #endif   // defined(OS_WIN)
 
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
+  void OnStartupPing();
+  void OnAnalyzeZipFileForDownloadProtection(
+      IPC::PlatformFileForTransit zip_file);
 
   scoped_ptr<ProfileImportHandler> import_handler_;
 };

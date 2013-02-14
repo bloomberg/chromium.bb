@@ -28,6 +28,7 @@
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
+#include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "chrome/common/zip.h"
 #include "chrome/utility/profile_import_handler.h"
@@ -119,6 +120,9 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_StartupPing, OnStartupPing)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
+                        OnAnalyzeZipFileForDownloadProtection)
 
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CreateZipFile, OnCreateZipFile)
@@ -476,6 +480,21 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(
         printer_name));
   }
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+}
+
+void ChromeContentUtilityClient::OnStartupPing() {
+  Send(new ChromeUtilityHostMsg_ProcessStarted);
+  // Don't release the process, we assume further messages are on the way.
+}
+
+void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
+    IPC::PlatformFileForTransit zip_file) {
+  safe_browsing::zip_analyzer::Results results;
+  safe_browsing::zip_analyzer::AnalyzeZipFile(
+      IPC::PlatformFileForTransitToPlatformFile(zip_file), &results);
+  Send(new ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished(
+      results));
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 

@@ -1735,6 +1735,8 @@
         'browser/safe_browsing/safe_browsing_tab_observer.h',
         'browser/safe_browsing/safe_browsing_util.cc',
         'browser/safe_browsing/safe_browsing_util.h',
+        'browser/safe_browsing/sandboxed_zip_analyzer.cc',
+        'browser/safe_browsing/sandboxed_zip_analyzer.h',
         'browser/safe_browsing/signature_util_posix.cc',
         'browser/safe_browsing/signature_util_win.cc',
         'browser/safe_browsing/signature_util.h',
