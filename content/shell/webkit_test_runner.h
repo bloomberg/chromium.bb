@@ -87,12 +87,7 @@ class WebKitTestRunner : public RenderViewObserver,
   void CaptureDump();
   void CaptureTextDump();
   void CaptureImageDump();
-  SkCanvas* GetCanvas();
-  void PaintRect(const WebKit::WebRect& rect);
-  void PaintInvalidatedRegion();
-  void DisplayRepaintMask();
 
-  scoped_ptr<SkCanvas> canvas_;
   scoped_ptr<WebKit::WebContextMenuData> last_context_menu_data_;
   base::FilePath current_working_directory_;
 

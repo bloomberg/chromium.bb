@@ -491,38 +491,9 @@ void WebKitTestRunner::CaptureTextDump() {
 }
 
 void WebKitTestRunner::CaptureImageDump() {
-  SkBitmap snapshot;
-  PaintInvalidatedRegion();
-  CopyCanvasToBitmap(GetCanvas(), &snapshot);
-
-  SkAutoLockPixels snapshot_lock(snapshot);
-  base::MD5Digest digest;
-#if defined(OS_ANDROID)
-  // On Android, pixel layout is RGBA, however, other Chrome platforms use BGRA.
-  const uint8_t* raw_pixels =
-      reinterpret_cast<const uint8_t*>(snapshot.getPixels());
-  size_t snapshot_size = snapshot.getSize();
-  scoped_array<uint8_t> reordered_pixels(new uint8_t[snapshot_size]);
-  for (size_t i = 0; i < snapshot_size; i += 4) {
-    reordered_pixels[i] = raw_pixels[i + 2];
-    reordered_pixels[i + 1] = raw_pixels[i + 1];
-    reordered_pixels[i + 2] = raw_pixels[i];
-    reordered_pixels[i + 3] = raw_pixels[i + 3];
-  }
-  base::MD5Sum(reordered_pixels.get(), snapshot_size, &digest);
-#else
-  base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
-#endif
-  std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
-
-  if (actual_pixel_hash == expected_pixel_hash_) {
-    SkBitmap empty_image;
-    Send(new ShellViewHostMsg_ImageDump(
-        routing_id(), actual_pixel_hash, empty_image));
-    return;
-  }
+  SkBitmap empty_image;
   Send(new ShellViewHostMsg_ImageDump(
-      routing_id(), actual_pixel_hash, snapshot));
+      routing_id(), expected_pixel_hash_, empty_image));
 }
 
 void WebKitTestRunner::OnSetTestConfiguration(
@@ -536,71 +507,6 @@ void WebKitTestRunner::OnSetTestConfiguration(
   layout_test_timeout_ = layout_test_timeout;
   allow_external_pages_ = allow_external_pages;
   expected_pixel_hash_ = expected_pixel_hash;
-}
-
-SkCanvas* WebKitTestRunner::GetCanvas() {
-  WebView* view = render_view()->GetWebView();
-  const WebSize& size = view->size();
-  float device_scale_factor = view->deviceScaleFactor();
-  int width = std::ceil(device_scale_factor * size.width);
-  int height = std::ceil(device_scale_factor * size.height);
-
-  if (canvas_ &&
-      canvas_->getDeviceSize().width() == width &&
-      canvas_->getDeviceSize().height() == height) {
-    return canvas_.get();
-  }
-  canvas_.reset(skia::CreatePlatformCanvas(
-      size.width, size.height, true, 0, skia::RETURN_NULL_ON_FAILURE));
-  return canvas_.get();
-}
-
-void WebKitTestRunner::PaintRect(const WebRect& rect) {
-  WebView* view = render_view()->GetWebView();
-  float device_scale_factor = view->deviceScaleFactor();
-  int scaled_x = device_scale_factor * rect.x;
-  int scaled_y = device_scale_factor * rect.y;
-  int scaled_width = std::ceil(device_scale_factor * rect.width);
-  int scaled_height = std::ceil(device_scale_factor * rect.height);
-  // TODO(jochen): Verify that the scaling is correct once the HiDPI tests
-  // actually work.
-  WebRect device_rect(scaled_x, scaled_y, scaled_width, scaled_height);
-  view->paint(webkit_glue::ToWebCanvas(GetCanvas()), device_rect);
-}
-
-void WebKitTestRunner::PaintInvalidatedRegion() {
-  WebView* view = render_view()->GetWebView();
-  view->animate(0.0);
-  view->layout();
-  const WebSize& widget_size = view->size();
-  WebRect client_rect(0, 0, widget_size.width, widget_size.height);
-
-  // Paint the canvas if necessary. Allow painting to generate extra rects
-  // for the first two calls. This is necessary because some WebCore rendering
-  // objects update their layout only when painted.
-  for (int i = 0; i < 3; ++i) {
-    // Make sure that paint_rect is always inside the RenderView's visible
-    // area.
-    WebRect paint_rect = proxy_->paintRect();
-    int left = std::max(paint_rect.x, client_rect.x);
-    int top = std::max(paint_rect.y, client_rect.y);
-    int right = std::min(paint_rect.x + paint_rect.width,
-                         client_rect.x + client_rect.width);
-    int bottom = std::min(paint_rect.y + paint_rect.height,
-                          client_rect.y + client_rect.height);
-    WebRect rect;
-    if (left < right && top < bottom)
-      rect = WebRect(left, top, right - left, bottom - top);
-    proxy_->setPaintRect(WebRect());
-    if (rect.isEmpty())
-      continue;
-    PaintRect(rect);
-  }
-  CHECK(proxy_->paintRect().isEmpty());
-}
-
-void WebKitTestRunner::DisplayRepaintMask() {
-  GetCanvas()->drawARGB(167, 0, 0, 0);
 }
 
 }  // namespace content
