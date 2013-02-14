@@ -126,10 +126,10 @@ void SelectFileDialogExtension::ListenerDestroyed() {
 }
 
 void SelectFileDialogExtension::ExtensionDialogClosing(
-    ExtensionDialog* dialog) {
+    ExtensionDialog* /*dialog*/) {
   profile_ = NULL;
   owner_window_ = NULL;
-  // Release our reference to the dialog to allow it to close.
+  // Release our reference to the underlying dialog to allow it to close.
   extension_dialog_ = NULL;
   PendingDialog::GetInstance()->Remove(tab_id_);
   // Actually invoke the appropriate callback on our listener.

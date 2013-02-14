@@ -8,27 +8,63 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
+namespace {
+
+const int32 kDefaultTabId = 0;
+
+}  // namespace
+
+// Must be a class so it can be a friend of SelectFileDialogExtension.
 class SelectFileDialogExtensionTest : public testing::Test {
  public:
+  SelectFileDialogExtensionTest() {}
+  virtual ~SelectFileDialogExtensionTest() {}
+
   static SelectFileDialogExtension* CreateDialog(
-      ui::SelectFileDialog::Listener* listener,
-      int32 tab_id) {
+      ui::SelectFileDialog::Listener* listener) {
     SelectFileDialogExtension* dialog = new SelectFileDialogExtension(listener,
                                                                       NULL);
     // Simulate the dialog opening.
-    EXPECT_FALSE(SelectFileDialogExtension::PendingExists(tab_id));
-    dialog->AddPending(tab_id);
-    EXPECT_TRUE(SelectFileDialogExtension::PendingExists(tab_id));
+    EXPECT_FALSE(SelectFileDialogExtension::PendingExists(kDefaultTabId));
+    dialog->AddPending(kDefaultTabId);
+    EXPECT_TRUE(SelectFileDialogExtension::PendingExists(kDefaultTabId));
     return dialog;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SelectFileDialogExtensionTest);
 };
 
-// Client of a FileManagerDialog that deletes itself whenever the dialog
-// is closed.
+// Test listener for a SelectFileDialog.
+class TestListener : public ui::SelectFileDialog::Listener {
+ public:
+  TestListener() : selected_(false), file_index_(-1) {}
+  virtual ~TestListener() {}
+
+  bool selected() const { return selected_; }
+  int file_index() const { return file_index_; }
+
+  // ui::SelectFileDialog::Listener implementation
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE {
+    selected_ = true;
+    file_index_ = index;
+  }
+
+ private:
+  bool selected_;
+  int file_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestListener);
+};
+
+// Client of a SelectFileDialog that deletes itself whenever the dialog
+// is closed. This is a common pattern in UI code.
 class SelfDeletingClient : public ui::SelectFileDialog::Listener {
  public:
-  explicit SelfDeletingClient(int32 tab_id) {
-    dialog_ = SelectFileDialogExtensionTest::CreateDialog(this, tab_id);
+  SelfDeletingClient() {
+    dialog_ = SelectFileDialogExtensionTest::CreateDialog(this);
   }
 
   virtual ~SelfDeletingClient() {
@@ -40,7 +76,8 @@ class SelfDeletingClient : public ui::SelectFileDialog::Listener {
 
   // ui::SelectFileDialog::Listener implementation
   virtual void FileSelected(const base::FilePath& path,
-                            int index, void* params) OVERRIDE {
+                            int index,
+                            void* params) OVERRIDE {
     delete this;
   }
 
@@ -48,13 +85,38 @@ class SelfDeletingClient : public ui::SelectFileDialog::Listener {
   scoped_refptr<SelectFileDialogExtension> dialog_;
 };
 
+TEST_F(SelectFileDialogExtensionTest, FileSelected) {
+  const int kFileIndex = 5;
+  scoped_ptr<TestListener> listener(new TestListener);
+  scoped_refptr<SelectFileDialogExtension> dialog =
+      CreateDialog(listener.get());
+  // Simulate selecting a file.
+  ui::SelectedFileInfo info;
+  SelectFileDialogExtension::OnFileSelected(kDefaultTabId, info, kFileIndex);
+  // Simulate closing the dialog so the listener gets invoked.
+  dialog->ExtensionDialogClosing(NULL);
+  EXPECT_TRUE(listener->selected());
+  EXPECT_EQ(kFileIndex, listener->file_index());
+}
+
+TEST_F(SelectFileDialogExtensionTest, FileSelectionCanceled) {
+  scoped_ptr<TestListener> listener(new TestListener);
+  scoped_refptr<SelectFileDialogExtension> dialog =
+      CreateDialog(listener.get());
+  // Simulate cancelling the dialog.
+  SelectFileDialogExtension::OnFileSelectionCanceled(kDefaultTabId);
+  // Simulate closing the dialog so the listener gets invoked.
+  dialog->ExtensionDialogClosing(NULL);
+  EXPECT_FALSE(listener->selected());
+  EXPECT_EQ(-1, listener->file_index());
+}
+
 TEST_F(SelectFileDialogExtensionTest, SelfDeleting) {
-  const int32 kTabId = 123;
-  SelfDeletingClient* client = new SelfDeletingClient(kTabId);
+  SelfDeletingClient* client = new SelfDeletingClient();
   // Ensure we don't crash or trip an Address Sanitizer warning about
   // use-after-free.
   ui::SelectedFileInfo file_info;
-  SelectFileDialogExtension::OnFileSelected(kTabId, file_info, 0);
+  SelectFileDialogExtension::OnFileSelected(kDefaultTabId, file_info, 0);
   // Simulate closing the dialog so the listener gets invoked.
   client->dialog()->ExtensionDialogClosing(NULL);
 }
