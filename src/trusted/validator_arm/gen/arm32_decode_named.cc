@@ -1507,57 +1507,57 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_floating_point_data_proc
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00000000 /* opc1(23:20)=0x00 */) {
-    return CondVfpOp_VMLA_VMLS_floating_point_instance_;
+    return VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0_VMLA_VMLS_floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00100000 /* opc1(23:20)=0x01 */) {
-    return CondVfpOp_VNMLA_VNMLS_instance_;
+    return VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0_VNMLA_VNMLS_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00200000 /* opc1(23:20)=0x10 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */) {
-    return CondVfpOp_VMUL_floating_point_instance_;
+    return VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0_VMUL_floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00200000 /* opc1(23:20)=0x10 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_VNMUL_instance_;
+    return VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0_VNMUL_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00300000 /* opc1(23:20)=0x11 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */) {
-    return CondVfpOp_VADD_floating_point_instance_;
+    return VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0_VADD_floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00300000 /* opc1(23:20)=0x11 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_VSUB_floating_point_instance_;
+    return VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0_VSUB_floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00800000 /* opc1(23:20)=1x00 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */) {
-    return CondVfpOp_VDIV_instance_;
+    return VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0_VDIV_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00900000 /* opc1(23:20)=1x01 */) {
-    return CondVfpOp_VFNMA_VFNMS_instance_;
+    return VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0_VFNMA_VFNMS_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==
           0x00A00000 /* opc1(23:20)=1x10 */) {
-    return CondVfpOp_VFMA_VFMS_instance_;
+    return VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0_VFMA_VFMS_instance_;
   }
 
   if ((inst.Bits() & 0x00B00000)  ==

@@ -4088,7 +4088,7 @@ class VADD_floating_point_A1_111100100d0snnnndddd1101nqm0mmmm_case_0
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -4105,7 +4105,6 @@ class VADD_floating_point_A1_111100100d0snnnndddd1101nqm0mmmm_case_0
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -5885,7 +5884,7 @@ class VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -5902,7 +5901,6 @@ class VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -6220,7 +6218,7 @@ class VFMA_A1_111100100d00nnnndddd1100nqm1mmmm_case_0
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv4,
-//    baseline: CondVfpOp,
+//    baseline: VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -6238,7 +6236,6 @@ class VFMA_A1_111100100d00nnnndddd1100nqm1mmmm_case_0
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -6330,7 +6327,7 @@ class VFMS_A1_111100100d10nnnndddd1100nqm1mmmm_case_0
 //    Vn: Vn(19:16),
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    arch: VFPv4,
-//    baseline: CondVfpOp,
+//    baseline: VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -6347,7 +6344,6 @@ class VFMS_A1_111100100d10nnnndddd1100nqm1mmmm_case_0
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,

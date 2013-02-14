@@ -1608,7 +1608,7 @@ class VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0
 //    add: op(6)=0,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -1626,7 +1626,6 @@ class VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_0
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -2994,7 +2993,7 @@ class VMUL_floating_point_A1_111100110d0snnnndddd1101nqm1mmmm_case_0
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -3011,7 +3010,6 @@ class VMUL_floating_point_A1_111100110d0snnnndddd1101nqm1mmmm_case_0
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -3404,7 +3402,7 @@ class VNEG_cccc11101d110001dddd101s01m0mmmm_case_0
 //    Vn: Vn(19:16),
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -3421,7 +3419,6 @@ class VNEG_cccc11101d110001dddd101s01m0mmmm_case_0
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -3461,7 +3458,7 @@ class VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0
 //    Vn: Vn(19:16),
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -3477,7 +3474,6 @@ class VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -8192,7 +8188,7 @@ class VSUB_floating_point_A1_111100100d1snnnndddd1101nqm0mmmm_case_0
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -8209,7 +8205,6 @@ class VSUB_floating_point_A1_111100100d1snnnndddd1101nqm0mmmm_case_0
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,

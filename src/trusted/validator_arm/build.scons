@@ -141,6 +141,7 @@ BASELINE_GEN_TABLES = [
     "signed_multiply_signed_and_unsigned_divide",
     "branch_branch_with_link_and_block_data_transfer",
     "coprocessor_instructions_and_supervisor_call",
+    "floating_point_data_processing_instructions",
     ]
 
 # Verify that BASELINE_TEST_TABLES and BASELINE_GEN_TABLES don't intersect.

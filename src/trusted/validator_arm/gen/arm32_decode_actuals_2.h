@@ -2213,7 +2213,7 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -2230,7 +2230,6 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -2253,7 +2252,7 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -2270,7 +2269,6 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VDIV_cccc11101d00nnnndddd101sn0m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -2293,7 +2291,7 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv4,
-//    baseline: CondVfpOp,
+//    baseline: VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -2311,7 +2309,6 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -2335,7 +2332,7 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    arch: VFPv4,
-//    baseline: CondVfpOp,
+//    baseline: VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -2352,7 +2349,6 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -2378,7 +2374,7 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //    add: op(6)=0,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -2396,7 +2392,6 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMLA_VMLS_floating_point_cccc11100d00nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -2420,7 +2415,7 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -2437,7 +2432,6 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -2461,7 +2455,7 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -2478,7 +2472,6 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //      op(6),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VNMLA_VNMLS_cccc11100d01nnnndddd101snom0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -2505,7 +2498,7 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //    Vn: Vn(19:16),
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -2521,7 +2514,6 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -2545,7 +2537,7 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //    actual: Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: D:Vd
@@ -2562,7 +2554,6 @@ class Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1
 //      N(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
