@@ -390,9 +390,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdySettingsControlFrame* CreateSettings(const SettingsMap& values) const;
   SpdySerializedFrame* SerializeSettings(const SpdySettingsIR& settings) const;
 
-  // Creates an instance of SpdyPingControlFrame. The unique_id is used to
+  // Creates and serializes a PING frame. The unique_id is used to
   // identify the ping request/response.
-  SpdyPingControlFrame* CreatePingFrame(uint32 unique_id) const;
+  SpdyFrame* CreatePingFrame(uint32 unique_id) const;
   SpdySerializedFrame* SerializePing(const SpdyPingIR& ping) const;
 
   // Creates and serializes a GOAWAY frame. The GOAWAY frame is used

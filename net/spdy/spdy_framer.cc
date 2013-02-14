@@ -1183,9 +1183,14 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
       // Use frame-specific handlers.
       switch (control_frame.type()) {
         case PING: {
-            SpdyPingControlFrame* ping_frame =
-                reinterpret_cast<SpdyPingControlFrame*>(&control_frame);
-            visitor_->OnPing(ping_frame->unique_id());
+            SpdyFrameReader reader(current_frame_buffer_.get(),
+                                   current_frame_len_);
+            reader.Seek(GetControlFrameMinimumSize());  // Skip frame header.
+            SpdyPingId id = 0;
+            bool successful_read = reader.ReadUInt32(&id);
+            DCHECK(successful_read);
+            DCHECK(reader.IsDoneReading());
+            visitor_->OnPing(id);
           }
           break;
         case WINDOW_UPDATE: {
@@ -1574,9 +1579,9 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   return builder.take();
 }
 
-SpdyPingControlFrame* SpdyFramer::CreatePingFrame(uint32 unique_id) const {
+SpdyFrame* SpdyFramer::CreatePingFrame(uint32 unique_id) const {
   SpdyPingIR ping(unique_id);
-  return reinterpret_cast<SpdyPingControlFrame*>(SerializePing(ping));
+  return SerializePing(ping);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {

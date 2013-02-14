@@ -248,7 +248,7 @@ SpdySettingsControlFrame* BufferedSpdyFramer::CreateSettings(
   return spdy_framer_.CreateSettings(values);
 }
 
-SpdyPingControlFrame* BufferedSpdyFramer::CreatePingFrame(
+SpdyFrame* BufferedSpdyFramer::CreatePingFrame(
     uint32 unique_id) const {
   return spdy_framer_.CreatePingFrame(unique_id);
 }

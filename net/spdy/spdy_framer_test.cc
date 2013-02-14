@@ -2151,7 +2151,7 @@ TEST_P(SpdyFramerTest, CreatePingFrame) {
         0x00, 0x00, 0x00, 0x04,
         0x12, 0x34, 0x56, 0x78,
     };
-    scoped_ptr<SpdyPingControlFrame> frame(framer.CreatePingFrame(0x12345678u));
+    scoped_ptr<SpdyFrame> frame(framer.CreatePingFrame(0x12345678u));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
   }
 }

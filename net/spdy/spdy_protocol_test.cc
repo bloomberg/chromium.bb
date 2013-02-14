@@ -46,7 +46,6 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(18u, SpdySynStreamControlFrame::size());
   EXPECT_EQ(16u, SpdyRstStreamControlFrame::size());
   EXPECT_EQ(12u, SpdySettingsControlFrame::size());
-  EXPECT_EQ(12u, SpdyPingControlFrame::size());
   EXPECT_EQ(12u, SpdyHeadersControlFrame::size());
   EXPECT_EQ(4u, sizeof(FlagsAndLength));
   EXPECT_EQ(1, SYN_STREAM);
@@ -113,17 +112,6 @@ TEST_P(SpdyProtocolTest, ControlFrameStructs) {
   rst_frame->set_status(net::RST_STREAM_INVALID_STREAM);
   EXPECT_EQ(net::RST_STREAM_INVALID_STREAM, rst_frame->status());
   EXPECT_EQ(0, rst_frame->flags());
-
-  const uint32 kUniqueId = 1234567u;
-  const uint32 kUniqueId2 = 31415926u;
-  scoped_ptr<SpdyPingControlFrame> ping_frame(
-      framer.CreatePingFrame(kUniqueId));
-  EXPECT_EQ(framer.protocol_version(), ping_frame->version());
-  EXPECT_TRUE(ping_frame->is_control_frame());
-  EXPECT_EQ(PING, ping_frame->type());
-  EXPECT_EQ(kUniqueId, ping_frame->unique_id());
-  ping_frame->set_unique_id(kUniqueId2);
-  EXPECT_EQ(kUniqueId2, ping_frame->unique_id());
 
   scoped_ptr<SpdyHeadersControlFrame> headers_frame(
       framer.CreateHeaders(123, CONTROL_FLAG_NONE, false, &headers));

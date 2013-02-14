@@ -503,11 +503,6 @@ struct SpdySettingsControlFrameBlock : SpdyFrameBlock {
   // Variable data here.
 };
 
-// A PING Control Frame structure.
-struct SpdyPingControlFrameBlock : SpdyFrameBlock {
-  uint32 unique_id_;
-};
-
 // TODO(avd): remove this struct
 // A CREDENTIAL Control Frame structure.
 struct SpdyCredentialControlFrameBlock : SpdyFrameBlock {
@@ -1110,31 +1105,6 @@ class SpdySettingsControlFrame : public SpdyControlFrame {
     return static_cast<SpdySettingsControlFrameBlock*>(frame_);
   }
   DISALLOW_COPY_AND_ASSIGN(SpdySettingsControlFrame);
-};
-
-class SpdyPingControlFrame : public SpdyControlFrame {
- public:
-  SpdyPingControlFrame() : SpdyControlFrame(size()) {}
-  SpdyPingControlFrame(char* data, bool owns_buffer)
-      : SpdyControlFrame(data, owns_buffer) {}
-
-  uint32 unique_id() const {
-    return ntohl(block()->unique_id_);
-  }
-
-  void set_unique_id(uint32 unique_id) {
-    mutable_block()->unique_id_ = htonl(unique_id);
-  }
-
-  static size_t size() { return sizeof(SpdyPingControlFrameBlock); }
-
- private:
-  const struct SpdyPingControlFrameBlock* block() const {
-    return static_cast<SpdyPingControlFrameBlock*>(frame_);
-  }
-  struct SpdyPingControlFrameBlock* mutable_block() {
-    return static_cast<SpdyPingControlFrameBlock*>(frame_);
-  }
 };
 
 class SpdyCredentialControlFrame : public SpdyControlFrame {

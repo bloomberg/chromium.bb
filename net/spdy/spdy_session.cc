@@ -1827,7 +1827,7 @@ void SpdySession::SendPrefacePing() {
 
 void SpdySession::WritePingFrame(uint32 unique_id) {
   DCHECK(buffered_spdy_framer_.get());
-  scoped_ptr<SpdyPingControlFrame> ping_frame(
+  scoped_ptr<SpdyFrame> ping_frame(
       buffered_spdy_framer_->CreatePingFrame(unique_id));
   QueueFrame(ping_frame.release(), HIGHEST);
 
