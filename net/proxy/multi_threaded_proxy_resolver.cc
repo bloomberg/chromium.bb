@@ -5,6 +5,7 @@
 #include "net/proxy/multi_threaded_proxy_resolver.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
@@ -20,20 +21,6 @@
 //               testing bogus scripts.
 
 namespace net {
-
-namespace {
-
-class PurgeMemoryTask : public base::RefCountedThreadSafe<PurgeMemoryTask> {
- public:
-  explicit PurgeMemoryTask(ProxyResolver* resolver) : resolver_(resolver) {}
-  void PurgeMemory() { resolver_->PurgeMemory(); }
- private:
-  friend class base::RefCountedThreadSafe<PurgeMemoryTask>;
-  ~PurgeMemoryTask() {}
-  ProxyResolver* resolver_;
-};
-
-}  // namespace
 
 // An "executor" is a job-runner for PAC requests. It encapsulates a worker
 // thread and a synchronous ProxyResolver (which will be operated on said
@@ -384,10 +371,10 @@ void MultiThreadedProxyResolver::Executor::Destroy() {
 }
 
 void MultiThreadedProxyResolver::Executor::PurgeMemory() {
-  scoped_refptr<PurgeMemoryTask> helper(new PurgeMemoryTask(resolver_.get()));
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&PurgeMemoryTask::PurgeMemory, helper.get()));
+      base::Bind(&ProxyResolver::PurgeMemory,
+                 base::Unretained(resolver_.get())));
 }
 
 MultiThreadedProxyResolver::Executor::~Executor() {
