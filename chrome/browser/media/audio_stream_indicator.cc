@@ -64,7 +64,7 @@ void AudioStreamIndicator::UpdateWebContentsStatusOnUIThread(
   } else {
     std::map<RenderViewId, std::set<int> >::iterator it =
         audio_streams_.find(id);
-    if (it != audio_streams_.end())
+    if (it == audio_streams_.end())
       return;
 
     it->second.erase(stream_id);
