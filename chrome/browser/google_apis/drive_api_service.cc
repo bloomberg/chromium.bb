@@ -447,13 +447,31 @@ void DriveAPIService::RemoveResourceFromDirectory(
           callback));
 }
 
-void DriveAPIService::InitiateUpload(
-    const InitiateUploadParams& params,
+void DriveAPIService::InitiateUploadNewFile(
+    const FilePath& drive_file_path,
+    const std::string& content_type,
+    int64 content_length,
+    const GURL& parent_upload_url,
+    const std::string& title,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(kochi): Implement this.
+  // TODO(hidehiko): Implement this.
+  NOTREACHED();
+}
+
+void DriveAPIService::InitiateUploadExistingFile(
+    const FilePath& drive_file_path,
+    const std::string& content_type,
+    int64 content_length,
+    const GURL& upload_url,
+    const std::string& etag,
+    const InitiateUploadCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
   NOTREACHED();
 }
 

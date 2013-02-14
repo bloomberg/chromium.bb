@@ -408,43 +408,56 @@ void GDataWapiService::RemoveResourceFromDirectory(
                                                resource_id));
 }
 
-void GDataWapiService::InitiateUpload(
-    const InitiateUploadParams& params,
+void GDataWapiService::InitiateUploadNewFile(
+    const FilePath& drive_file_path,
+    const std::string& content_type,
+    int64 content_length,
+    const GURL& parent_upload_url,
+    const std::string& title,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (params.upload_location.is_empty()) {
+  if (parent_upload_url.is_empty()) {
     callback.Run(HTTP_BAD_REQUEST, GURL());
     return;
   }
 
-  // TODO(hidehiko): Remove this if-statement by splitting the InitiateUpload
-  // method into two InitiateUploadNewFile and InitiateUploadExistingFile.
-  if (params.upload_mode == UPLOAD_NEW_FILE) {
-    runner_->StartOperationWithRetry(
-        new InitiateUploadNewFileOperation(
-            operation_registry(),
-            url_request_context_getter_,
-            callback,
-            params.drive_file_path,
-            params.content_type,
-            params.content_length,
-            params.upload_location,  // Here, upload_location has parent's URL.
-            params.title));
-  } else {
-    DCHECK_EQ(params.upload_mode, UPLOAD_EXISTING_FILE);
-    runner_->StartOperationWithRetry(
-        new InitiateUploadExistingFileOperation(
-            operation_registry(),
-            url_request_context_getter_,
-            callback,
-            params.drive_file_path,
-            params.content_type,
-            params.content_length,
-            params.upload_location,  // Here, upload_location has file's URL.
-            params.etag));
+  runner_->StartOperationWithRetry(
+      new InitiateUploadNewFileOperation(operation_registry(),
+                                         url_request_context_getter_,
+                                         callback,
+                                         drive_file_path,
+                                         content_type,
+                                         content_length,
+                                         parent_upload_url,
+                                         title));
+}
+
+void GDataWapiService::InitiateUploadExistingFile(
+    const FilePath& drive_file_path,
+    const std::string& content_type,
+    int64 content_length,
+    const GURL& upload_url,
+    const std::string& etag,
+    const InitiateUploadCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (upload_url.is_empty()) {
+    callback.Run(HTTP_BAD_REQUEST, GURL());
+    return;
   }
+
+  runner_->StartOperationWithRetry(
+      new InitiateUploadExistingFileOperation(operation_registry(),
+                                              url_request_context_getter_,
+                                              callback,
+                                              drive_file_path,
+                                              content_type,
+                                              content_length,
+                                              upload_url,
+                                              etag));
 }
 
 void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,

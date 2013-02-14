@@ -232,10 +232,31 @@ class DriveServiceInterface {
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback) = 0;
 
-  // Initiates uploading of a document/file.
+  // Initiates uploading of a new document/file.
+  // |content_type| and |content_length| should be the ones of the file to be
+  // uploaded.
   // |callback| must not be null.
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) = 0;
+  // TODO(hidehiko): Replace |parent_upload_url| by resource id.
+  virtual void InitiateUploadNewFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& parent_upload_url,
+      const std::string& title,
+      const InitiateUploadCallback& callback) = 0;
+
+  // Initiates uploading of an existing document/file.
+  // |content_type| and |content_length| should be the ones of the file to be
+  // uploaded.
+  // |callback| must not be null.
+  // TODO(hidehiko): Replace |upload_url| by resource id.
+  virtual void InitiateUploadExistingFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& upload_url,
+      const std::string& etag,
+      const InitiateUploadCallback& callback) = 0;
 
   // Resumes uploading of a document/file on the calling thread.
   // |callback| must not be null.

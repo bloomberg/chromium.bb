@@ -119,8 +119,20 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& directory_name,
       const GetResourceEntryCallback& callback) OVERRIDE;
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) OVERRIDE;
+  virtual void InitiateUploadNewFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& parent_upload_url,
+      const std::string& title,
+      const InitiateUploadCallback& callback) OVERRIDE;
+  virtual void InitiateUploadExistingFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& upload_url,
+      const std::string& etag,
+      const InitiateUploadCallback& callback) OVERRIDE;
   virtual void ResumeUpload(const ResumeUploadParams& params,
                             const UploadRangeCallback& callback) OVERRIDE;
   virtual void GetUploadStatus(

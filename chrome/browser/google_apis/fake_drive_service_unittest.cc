@@ -1042,21 +1042,18 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
   EXPECT_FALSE(resource_entry);
 }
 
-TEST_F(FakeDriveServiceTest, InitiateUpload_Offline) {
+TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  fake_service_.InitiateUpload(
-      InitiateUploadParams(
-          UPLOAD_NEW_FILE,
-          "new file.foo",
-          "test/foo",
-          13,
-          GURL("https://1_folder_resumable_create_media_link"),
-          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
-          "etag_ignored"),
+  fake_service_.InitiateUploadNewFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+      "test/foo",
+      13,
+      GURL("https://1_folder_resumable_create_media_link"),
+      "new file.foo",
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
                  &upload_location));
@@ -1066,20 +1063,17 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_Offline) {
   EXPECT_TRUE(upload_location.is_empty());
 }
 
-TEST_F(FakeDriveServiceTest, InitiateUpload_NotFound) {
+TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  fake_service_.InitiateUpload(
-      InitiateUploadParams(
-          UPLOAD_NEW_FILE,
-          "new file.foo",
-          "test/foo",
-          13,
-          GURL("https://non_existent"),
-          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
-          "etag_ignored"),
+  fake_service_.InitiateUploadNewFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+      "test/foo",
+      13,
+      GURL("https://non_existent"),
+      "new file.foo",
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
                  &upload_location));
@@ -1089,20 +1083,17 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_NotFound) {
   EXPECT_TRUE(upload_location.is_empty());
 }
 
-TEST_F(FakeDriveServiceTest, InitiateUpload_NewFile) {
+TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  fake_service_.InitiateUpload(
-      InitiateUploadParams(
-          UPLOAD_NEW_FILE,
-          "new file.foo",
-          "test/foo",
-          13,
-          GURL("https://1_folder_resumable_create_media_link"),
-          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
-          "etag_ignored"),
+  fake_service_.InitiateUploadNewFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+      "test/foo",
+      13,
+      GURL("https://1_folder_resumable_create_media_link"),
+      "new file.foo",
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
                  &upload_location));
@@ -1114,20 +1105,58 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_NewFile) {
             upload_location);
 }
 
-TEST_F(FakeDriveServiceTest, InitiateUpload_WrongETag) {
+TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUploadExistingFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+      "test/foo",
+      13,
+      GURL("https://1_folder_resumable_create_media_link"),
+      "",  // etag
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_TRUE(upload_location.is_empty());
+}
+
+TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  fake_service_.InitiateUpload(
-      InitiateUploadParams(
-          UPLOAD_EXISTING_FILE,
-          "name_ignored",
-          "text/plain",
-          13,
-          GURL("https://2_file_link_resumable_create_media"),
-          base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
-          "invalid_etag"),
+  fake_service_.InitiateUploadExistingFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+      "test/foo",
+      13,
+      GURL("https://non_existent"),
+      "",  // etag
+      base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
+                 &error,
+                 &upload_location));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+  EXPECT_TRUE(upload_location.is_empty());
+}
+
+TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_location;
+  fake_service_.InitiateUploadExistingFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+      "text/plain",
+      13,
+      GURL("https://2_file_link_resumable_create_media"),
+      "invalid_etag",
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
                  &upload_location));
@@ -1142,15 +1171,12 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  fake_service_.InitiateUpload(
-      InitiateUploadParams(
-          UPLOAD_EXISTING_FILE,
-          "name_ignored",
-          "text/plain",
-          13,
-          GURL("https://2_file_link_resumable_create_media"),
-          base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
-          "\"HhMOFgxXHit7ImBr\""),
+  fake_service_.InitiateUploadExistingFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+      "text/plain",
+      13,
+      GURL("https://2_file_link_resumable_create_media"),
+      "\"HhMOFgxXHit7ImBr\"",
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
                  &upload_location));
@@ -1166,15 +1192,12 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  fake_service_.InitiateUpload(
-      InitiateUploadParams(
-          UPLOAD_NEW_FILE,
-          "new file.foo",
-          "test/foo",
-          15,
-          GURL("https://1_folder_resumable_create_media_link"),
-          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
-          "etag_ignored"),
+  fake_service_.InitiateUploadNewFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+      "test/foo",
+      15,
+      GURL("https://1_folder_resumable_create_media_link"),
+      "new file.foo",
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
                  &upload_location));
@@ -1209,15 +1232,12 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  fake_service_.InitiateUpload(
-      InitiateUploadParams(
-          UPLOAD_NEW_FILE,
-          "new file.foo",
-          "test/foo",
-          15,
-          GURL("https://1_folder_resumable_create_media_link"),
-          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
-          "etag_ignored"),
+  fake_service_.InitiateUploadNewFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+      "test/foo",
+      15,
+      GURL("https://1_folder_resumable_create_media_link"),
+      "new file.foo",
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
                  &upload_location));
@@ -1247,15 +1267,12 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  fake_service_.InitiateUpload(
-      InitiateUploadParams(
-          UPLOAD_EXISTING_FILE,
-          "name_ignored",
-          "text/plain",
-          15,
-          GURL("https://2_file_link_resumable_create_media"),
-          base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
-          "\"HhMOFgxXHit7ImBr\""),
+  fake_service_.InitiateUploadExistingFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
+      "text/plain",
+      15,
+      GURL("https://2_file_link_resumable_create_media"),
+      "\"HhMOFgxXHit7ImBr\"",
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
                  &upload_location));
@@ -1301,15 +1318,12 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
-  fake_service_.InitiateUpload(
-      InitiateUploadParams(
-          UPLOAD_NEW_FILE,
-          "new file.foo",
-          "test/foo",
-          15,
-          GURL("https://1_folder_resumable_create_media_link"),
-          base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
-          "etag_ignored"),
+  fake_service_.InitiateUploadNewFile(
+      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
+      "test/foo",
+      15,
+      GURL("https://1_folder_resumable_create_media_link"),
+      "new file.foo",
       base::Bind(&test_util::CopyResultsFromInitiateUploadCallback,
                  &error,
                  &upload_location));

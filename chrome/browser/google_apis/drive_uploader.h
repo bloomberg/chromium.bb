@@ -86,14 +86,14 @@ class DriveUploader : public DriveUploaderInterface {
   virtual ~DriveUploader();
 
   // DriveUploaderInterface overrides.
-  virtual void UploadNewFile(const GURL& upload_location,
+  virtual void UploadNewFile(const GURL& parent_upload_url,
                              const base::FilePath& drive_file_path,
                              const base::FilePath& local_file_path,
                              const std::string& title,
                              const std::string& content_type,
                              const UploadCompletionCallback& callback) OVERRIDE;
   virtual void UploadExistingFile(
-      const GURL& upload_location,
+      const GURL& upload_url,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
@@ -102,14 +102,34 @@ class DriveUploader : public DriveUploaderInterface {
 
  private:
   struct UploadFileInfo;
+  typedef base::Callback<void(scoped_ptr<UploadFileInfo> upload_file_info)>
+      StartInitiateUploadCallback;
 
   // Starts uploading a file with |upload_file_info|.
-  void StartUploadFile(scoped_ptr<UploadFileInfo> upload_file_info);
+  void StartUploadFile(
+      scoped_ptr<UploadFileInfo> upload_file_info,
+      const StartInitiateUploadCallback& start_initiate_upload_callback);
 
   // net::FileStream::Open completion callback. The result of the file open
   // operation is passed as |result|, and the size is stored in |file_size|.
-  void OpenCompletionCallback(scoped_ptr<UploadFileInfo> upload_file_info,
-                              int64 file_size);
+  void OpenCompletionCallback(
+      scoped_ptr<UploadFileInfo> upload_file_info,
+      const StartInitiateUploadCallback& start_initiate_upload_callback,
+      int64 file_size);
+
+  // Starts to initate the new file uploading.
+  // Upon completion, OnUploadLocationReceived should be called.
+  void StartInitiateUploadNewFile(
+      const GURL& parent_upload_url,
+      const std::string& title,
+      scoped_ptr<UploadFileInfo> upload_file_info);
+
+  // Starts to initate the existing file uploading.
+  // Upon completion, OnUploadLocationReceived should be called.
+  void StartInitiateUploadExistingFile(
+      const GURL& upload_url,
+      const std::string& etag,
+      scoped_ptr<UploadFileInfo> upload_file_info);
 
   // DriveService callback for InitiateUpload.
   void OnUploadLocationReceived(scoped_ptr<UploadFileInfo> upload_file_info,

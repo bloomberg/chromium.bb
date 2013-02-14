@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "googleurl/src/gurl.h"
@@ -258,43 +257,6 @@ class GetDataOperation : public UrlFetchOperationBase {
 
 
 //=========================== InitiateUploadOperation ==========================
-
-// Struct for passing params needed for DriveServiceInterface::InitiateUpload()
-// calls.
-//
-// When uploading a new file (UPLOAD_NEW_FILE):
-// - |title| should be set.
-// - |upload_location| should be the upload_url() of the parent directory.
-//   (resumable-create-media URL)
-// - |etag| is ignored.
-//
-// When updating an existing file (UPLOAD_EXISTING_FILE):
-// - |title| should be empty
-// - |upload_location| should be the upload_url() of the existing file.
-//   (resumable-edit-media URL)
-// - If |etag| should be empty or should match the etag() of the destination
-//   file.
-// TODO(hidehiko): Get rid of this struct by splitting the method
-// InitiateUpload into two methods, InitiateUploadNewFile and
-// InitiateUploadExistingFile.
-struct InitiateUploadParams {
-  InitiateUploadParams(UploadMode upload_mode,
-                       const std::string& title,
-                       const std::string& content_type,
-                       int64 content_length,
-                       const GURL& upload_location,
-                       const base::FilePath& drive_file_path,
-                       const std::string& etag);
-  ~InitiateUploadParams();
-
-  const UploadMode upload_mode;
-  const std::string title;
-  const std::string content_type;
-  const int64 content_length;
-  const GURL upload_location;
-  const base::FilePath drive_file_path;
-  const std::string etag;
-};
 
 // Callback type for DocumentServiceInterface::InitiateUpload.
 typedef base::Callback<void(GDataErrorCode error,

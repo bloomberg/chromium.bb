@@ -374,26 +374,6 @@ void GetDataOperation::RunCallbackOnSuccess(GDataErrorCode fetch_error_code,
 
 //========================= InitiateUploadOperationBase ========================
 
-InitiateUploadParams::InitiateUploadParams(
-    UploadMode upload_mode,
-    const std::string& title,
-    const std::string& content_type,
-    int64 content_length,
-    const GURL& upload_location,
-    const base::FilePath& drive_file_path,
-    const std::string& etag)
-    : upload_mode(upload_mode),
-      title(title),
-      content_type(content_type),
-      content_length(content_length),
-      upload_location(upload_location),
-      drive_file_path(drive_file_path),
-      etag(etag) {
-}
-
-InitiateUploadParams::~InitiateUploadParams() {
-}
-
 InitiateUploadOperationBase::InitiateUploadOperationBase(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,

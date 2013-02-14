@@ -67,20 +67,38 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
  private:
   // DriveServiceInterface overrides.
   // Handles a request for obtaining an upload location URL.
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) OVERRIDE {
+  virtual void InitiateUploadNewFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& parent_upload_url,
+      const std::string& title,
+      const InitiateUploadCallback& callback) OVERRIDE {
+    EXPECT_EQ(kTestDocumentTitle, title);
+    EXPECT_EQ(kTestMimeType, content_type);
     const int64 expected_size = expected_upload_content_.size();
+    EXPECT_EQ(expected_size, content_length);
+    EXPECT_EQ(GURL(kTestInitialUploadURL), parent_upload_url);
 
-    // Verify that the expected parameters are passed.
-    if (params.upload_mode == UPLOAD_NEW_FILE)
-      EXPECT_EQ(kTestDocumentTitle, params.title);
-    else
-      EXPECT_EQ("", params.title);
-    EXPECT_EQ(kTestMimeType, params.content_type);
-    EXPECT_EQ(expected_size, params.content_length);
-    EXPECT_EQ(GURL(kTestInitialUploadURL), params.upload_location);
+    // Calls back the upload URL for subsequent ResumeUpload operations.
+    // InitiateUpload is an asynchronous function, so don't callback directly.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadURL)));
+  }
 
-    if (!params.etag.empty() && params.etag != kTestETag) {
+  virtual void InitiateUploadExistingFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& upload_url,
+      const std::string& etag,
+      const InitiateUploadCallback& callback) OVERRIDE {
+    EXPECT_EQ(kTestMimeType, content_type);
+    const int64 expected_size = expected_upload_content_.size();
+    EXPECT_EQ(expected_size, content_length);
+    EXPECT_EQ(GURL(kTestInitialUploadURL), upload_url);
+
+    if (!etag.empty() && etag != kTestETag) {
       MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(callback, HTTP_PRECONDITION, GURL()));
       return;
@@ -152,8 +170,24 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
 // Mock DriveService that returns a failure at InitiateUpload().
 class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   // Returns error.
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) OVERRIDE {
+  virtual void InitiateUploadNewFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& parent_upload_url,
+      const std::string& title,
+      const InitiateUploadCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
+  }
+
+  virtual void InitiateUploadExistingFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& upload_url,
+      const std::string& etag,
+      const InitiateUploadCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
   }
@@ -168,8 +202,24 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
 // Mock DriveService that returns a failure at ResumeUpload().
 class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   // Succeeds and returns an upload location URL.
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) OVERRIDE {
+  virtual void InitiateUploadNewFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& parent_upload_url,
+      const std::string& title,
+      const InitiateUploadCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(callback, HTTP_SUCCESS, GURL(kTestInitialUploadURL)));
+  }
+
+  virtual void InitiateUploadExistingFile(
+      const FilePath& drive_file_path,
+      const std::string& content_type,
+      int64 content_length,
+      const GURL& upload_url,
+      const std::string& etag,
+      const InitiateUploadCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestInitialUploadURL)));
   }
