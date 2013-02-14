@@ -492,6 +492,48 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
+    class AwSettingsDatabaseTestHelper extends AwSettingsTestHelper<Boolean> {
+        private static final String NO_DATABASE = "No database";
+        private static final String HAS_DATABASE = "Has database";
+
+        AwSettingsDatabaseTestHelper(
+                AwContents awContents,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(awContents, contentViewClient, true);
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mContentSettings.getDatabaseEnabled();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mContentSettings.setDatabaseEnabled(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            // It seems accessing the database through a data scheme is not
+            // supported, and fails with a DOM exception (likely a cross-domain
+            // violation).
+            loadUrlSync(UrlUtils.getTestFileUrl("webview/database_access.html"));
+            assertEquals(
+                value == ENABLED ? HAS_DATABASE : NO_DATABASE,
+                getTitleOnUiThread());
+        }
+    }
+
     class AwSettingsUniversalAccessFromFilesTestHelper extends AwSettingsTestHelper<Boolean> {
         // TODO(mnaganov): Change to "Exception" once
         // https://bugs.webkit.org/show_bug.cgi?id=43504 is fixed.
@@ -1514,6 +1556,44 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         runPerViewSettingsTest(
             new AwSettingsDomStorageEnabledTestHelper(views.getContents0(), views.getClient0()),
             new AwSettingsDomStorageEnabledTestHelper(views.getContents1(), views.getClient1()));
+    }
+
+    // Ideally, these three tests below should be combined into one, or tested using
+    // runPerViewSettingsTest. However, it seems the database setting cannot be toggled
+    // once set. Filed b/8186497.
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testDatabaseInitialValue() throws Throwable {
+        TestAwContentsClient client = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(client);
+        final AwContents awContents = testContainerView.getAwContents();
+        AwSettingsDatabaseTestHelper helper = new AwSettingsDatabaseTestHelper(awContents, client);
+        helper.ensureSettingHasInitialValue();
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testDatabaseEnabled() throws Throwable {
+        TestAwContentsClient client = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(client);
+        final AwContents awContents = testContainerView.getAwContents();
+        AwSettingsDatabaseTestHelper helper = new AwSettingsDatabaseTestHelper(awContents, client);
+        helper.setAlteredSettingValue();
+        helper.ensureSettingHasAlteredValue();
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testDatabaseDisabled() throws Throwable {
+        TestAwContentsClient client = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(client);
+        final AwContents awContents = testContainerView.getAwContents();
+        AwSettingsDatabaseTestHelper helper = new AwSettingsDatabaseTestHelper(awContents, client);
+        helper.setInitialSettingValue();
+        helper.ensureSettingHasInitialValue();
     }
 
     @SmallTest

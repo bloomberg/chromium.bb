@@ -90,6 +90,7 @@ public class ContentSettings {
     private PluginState mPluginState = PluginState.OFF;
     private boolean mAppCacheEnabled = false;
     private boolean mDomStorageEnabled = false;
+    private boolean mDatabaseEnabled = false;
     private boolean mUseWideViewport = false;
 
     // Not accessed by the native side.
@@ -1122,6 +1123,33 @@ public class ContentSettings {
     }
 
     /**
+     * Sets whether the WebSQL storage API is enabled. The default value is false.
+     *
+     * @param flag true if the ContentView should use the WebSQL storage API
+     */
+    public void setDatabaseEnabled(boolean flag) {
+        assert mCanModifySettings;
+        synchronized (mContentSettingsLock) {
+            if (mDatabaseEnabled != flag) {
+                mDatabaseEnabled = flag;
+                mEventHandler.syncSettingsLocked();
+            }
+        }
+    }
+
+    /**
+     * Gets whether the WebSQL Storage APIs are enabled.
+     *
+     * @return true if the WebSQL Storage APIs are enabled
+     * @see #setDatabaseEnabled
+     */
+    public boolean getDatabaseEnabled() {
+       synchronized (mContentSettingsLock) {
+           return mDatabaseEnabled;
+       }
+    }
+
+    /**
      * Set the default text encoding name to use when decoding html pages.
      * @param encoding The text encoding name.
      */
@@ -1187,6 +1215,7 @@ public class ContentSettings {
         setPluginState(settings.getPluginState());
         setAppCacheEnabled(settings.mAppCacheEnabled);
         setDomStorageEnabled(settings.getDomStorageEnabled());
+        setDatabaseEnabled(settings.getDatabaseEnabled());
         setSupportZoom(settings.supportZoom());
         setBuiltInZoomControls(settings.getBuiltInZoomControls());
         setDisplayZoomControls(settings.getDisplayZoomControls());
