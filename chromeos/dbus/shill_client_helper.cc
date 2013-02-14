@@ -35,6 +35,12 @@ ShillClientHelper::~ShillClientHelper() {
 
 void ShillClientHelper::AddPropertyChangedObserver(
     ShillPropertyChangedObserver* observer) {
+  // Excecute all the pending MonitorPropertyChanged calls.
+  for (size_t i = 0; i < interfaces_to_be_monitored_.size(); ++i) {
+    MonitorPropertyChangedInternal(interfaces_to_be_monitored_[i]);
+  }
+  interfaces_to_be_monitored_.clear();
+
   observer_list_.AddObserver(observer);
 }
 
@@ -44,6 +50,17 @@ void ShillClientHelper::RemovePropertyChangedObserver(
 }
 
 void ShillClientHelper::MonitorPropertyChanged(
+    const std::string& interface_name) {
+  if (observer_list_.size() > 0) {
+    // Effectively monitor the PropertyChanged now.
+    MonitorPropertyChangedInternal(interface_name);
+  } else {
+    // Delay the ConnectToSignal until an observer is added.
+    interfaces_to_be_monitored_.push_back(interface_name);
+  }
+}
+
+void ShillClientHelper::MonitorPropertyChangedInternal(
     const std::string& interface_name) {
   // We are not using dbus::PropertySet to monitor PropertyChanged signal
   // because the interface is not "org.freedesktop.DBus.Properties".

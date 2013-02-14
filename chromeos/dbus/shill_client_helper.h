@@ -72,7 +72,9 @@ class ShillClientHelper {
   // Removes an |observer| of the PropertyChanged signal.
   void RemovePropertyChangedObserver(ShillPropertyChangedObserver* observer);
 
-  // Starts monitoring PropertyChanged signal.
+  // Starts monitoring PropertyChanged signal. If there aren't observers for the
+  // PropertyChanged signal, the actual monitoring will be delayed until the
+  // first observer is added.
   void MonitorPropertyChanged(const std::string& interface_name);
 
   // Calls a method without results.
@@ -125,6 +127,9 @@ class ShillClientHelper {
                                        const base::Value& value);
 
  private:
+  // Starts monitoring PropertyChanged signal.
+  void MonitorPropertyChangedInternal(const std::string& interface_name);
+
   // Handles the result of signal connection setup.
   void OnSignalConnected(const std::string& interface,
                          const std::string& signal,
@@ -180,6 +185,7 @@ class ShillClientHelper {
   PropertyChangedHandler property_changed_handler_;
   ObserverList<ShillPropertyChangedObserver, true /* check_empty */>
       observer_list_;
+  std::vector<std::string> interfaces_to_be_monitored_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
