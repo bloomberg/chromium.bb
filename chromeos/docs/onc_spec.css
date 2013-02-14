@@ -27,6 +27,22 @@
   margin-left: 1em;
 }
 
+.rule {
+  display: block;
+  border-style:solid;
+  border-width:2px;
+}
+
+.rule_id {
+  background: rgb(220,220,220);
+  border-style:none solid solid none;
+  border-width:2px;
+}
+
+.rule_id:before {
+  content: "Rule ";
+}
+
 .snippet {
   font-family: monospace;
 }
