@@ -33,7 +33,7 @@ class DesktopResizerWin : public DesktopResizer {
   static bool IsResizeSupported();
 
   // Calls EnumDisplaySettingsEx() for the primary monitor.
-  // Returns a DEVMODE with no fields if |mode_number| does not exist.
+  // Returns false if |mode_number| does not exist.
   static bool GetPrimaryDisplayMode(
       DWORD mode_number, DWORD flags, DEVMODE* mode);
 
@@ -44,7 +44,7 @@ class DesktopResizerWin : public DesktopResizer {
   // Returns the width & height of |mode|, or 0x0 if they are missing.
   static SkISize GetModeSize(const DEVMODE& mode);
 
-  std::map<SkISize, DEVMODE> modes_;
+  std::map<SkISize, DEVMODE> best_mode_for_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopResizerWin);
 };
@@ -70,14 +70,14 @@ std::list<SkISize> DesktopResizerWin::GetSupportedSizes(
 
   // Enumerate the sizes to return, and where there are multiple modes of
   // the same size, store the one most closely matching the current mode
-  // in |modes_|.
+  // in |best_mode_for_size_|.
   DEVMODE current_mode;
   if (!GetPrimaryDisplayMode(ENUM_CURRENT_SETTINGS, 0, &current_mode) ||
       !IsModeValid(current_mode))
     return std::list<SkISize>();
 
   std::list<SkISize> sizes;
-  modes_.clear();
+  best_mode_for_size_.clear();
   for (DWORD i = 0; ; ++i) {
     DEVMODE candidate_mode;
     if (!GetPrimaryDisplayMode(i, EDS_ROTATEDMODE, &candidate_mode))
@@ -91,30 +91,43 @@ std::list<SkISize> DesktopResizerWin::GetSupportedSizes(
     if (candidate_mode.dmBitsPerPel != current_mode.dmBitsPerPel)
       continue;
 
-    // If there is an existing mode of the same dimensions, prefer the
-    // one with the higher frequency.
+    // If there are multiple modes with the same dimensions:
+    // - Prefer the modes which match the current rotation.
+    // - Among those, prefer modes which match the current frequency.
+    // - Otherwise, prefer modes with a higher frequency.
     SkISize candidate_size = GetModeSize(candidate_mode);
-    if (modes_.count(candidate_size) != 0) {
-      DEVMODE existing_mode = modes_[candidate_size];
-      if (existing_mode.dmDisplayFrequency >
-          candidate_mode.dmDisplayFrequency)
+    if (best_mode_for_size_.count(candidate_size) != 0) {
+      DEVMODE best_mode = best_mode_for_size_[candidate_size];
+
+      if ((candidate_mode.dmDisplayOrientation !=
+           current_mode.dmDisplayOrientation) &&
+          (best_mode.dmDisplayOrientation ==
+           current_mode.dmDisplayOrientation)) {
         continue;
+      }
+
+      if ((candidate_mode.dmDisplayFrequency !=
+           current_mode.dmDisplayFrequency) &&
+          (best_mode.dmDisplayFrequency >=
+           candidate_mode.dmDisplayFrequency)) {
+        continue;
+      }
     } else {
       // If we haven't seen this size before, add it to those we return.
       sizes.push_back(candidate_size);
     }
 
-    modes_[candidate_size] = candidate_mode;
+    best_mode_for_size_[candidate_size] = candidate_mode;
   }
 
   return sizes;
 }
 
 void DesktopResizerWin::SetSize(const SkISize& size) {
-  if (modes_.count(size) == 0)
+  if (best_mode_for_size_.count(size) == 0)
     return;
 
-  DEVMODE new_mode = modes_[size];
+  DEVMODE new_mode = best_mode_for_size_[size];
   DWORD result = ChangeDisplaySettings(&new_mode, CDS_FULLSCREEN);
   if (result != DISP_CHANGE_SUCCESSFUL)
     LOG(ERROR) << "SetSize failed: " << result;
