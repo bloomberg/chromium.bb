@@ -8,10 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/nacl_syscalls.h>
 #include <unistd.h>
 
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 
@@ -201,11 +201,9 @@ void test_crash_in_syscall(void) {
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=trusted_segfault\n");
   /*
-   * Cause a crash inside a NaCl syscall.  This is based on
-   * tests/signal_handler/crash_in_syscall.c.
-   * TODO(mseaborn): Add a specific testing syscall for this purpose.
+   * Cause a crash inside a NaCl syscall.
    */
-  imc_recvmsg(0, (struct NaClImcMsgHdr *) 0x1000, 0);
+  NACL_SYSCALL(test_crash)(NACL_TEST_CRASH_MEMORY);
   /* Should not reach here. */
   _exit(1);
 }

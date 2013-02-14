@@ -30,7 +30,7 @@ env.AddNodeToTestSuite(
 
 exception_crash_test = env.ComponentProgram(
     'exception_crash_test', ['exception_crash_test.c'],
-    EXTRA_LIBS=['${NONIRT_LIBS}', 'imc_syscalls'])
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 for subtest in ('test_bad_handler',
                 'test_stack_outside_sandbox',
