@@ -35,19 +35,11 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidRequestShowContextMenu(
-      WebKit::WebFrame* frame,
-      const WebKit::WebContextMenuData& data) OVERRIDE;
 
   // WebTestDelegate implementation.
-  virtual void clearContextMenuData();
   virtual void clearEditCommand();
-  virtual void fillSpellingSuggestionList(
-      const WebKit::WebString& word,
-      WebKit::WebVector<WebKit::WebString>* suggestions);
   virtual void setEditCommand(const std::string& name,
                               const std::string& value);
-  virtual WebKit::WebContextMenuData* lastContextMenuData() const;
   virtual void setGamepadData(const WebKit::WebGamepads& gamepads);
   virtual void printMessage(const std::string& message);
   virtual void postTask(::WebTestRunner::WebTask* task);
@@ -63,6 +55,55 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual ::WebTestRunner::WebPreferences* preferences();
   virtual void applyPreferences();
   virtual std::string makeURLErrorDescription(const WebKit::WebURLError& error);
+  virtual void setClientWindowRect(const WebKit::WebRect& rect);
+  virtual void showDevTools();
+  virtual void closeDevTools();
+  virtual void evaluateInWebInspector(long call_id, const std::string& script);
+  virtual void clearAllDatabases();
+  virtual void setDatabaseQuota(int quota);
+  virtual void setDeviceScaleFactor(float factor);
+  virtual void setFocus(bool focus);
+  virtual void setAcceptAllCookies(bool accept);
+  virtual std::string pathToLocalResource(const std::string& resource);
+  virtual void setLocale(const std::string& locale);
+  virtual void setDeviceOrientation(WebKit::WebDeviceOrientation& orientation);
+  virtual void didAcquirePointerLock();
+  virtual void didNotAcquirePointerLock();
+  virtual void didLosePointerLock();
+  virtual void setPointerLockWillRespondAsynchronously();
+  virtual void setPointerLockWillFailSynchronously();
+  virtual int numberOfPendingGeolocationPermissionRequests();
+  virtual void setGeolocationPermission(bool allowed);
+  virtual void setMockGeolocationPosition(double latitude,
+                                          double longitude,
+                                          double precision);
+  virtual void setMockGeolocationPositionUnavailableError(
+      const std::string& message);
+  virtual void addMockSpeechInputResult(const std::string& result,
+                                        double confidence,
+                                        const std::string& language);
+  virtual void setMockSpeechInputDumpRect(bool dump_rect);
+  virtual void addMockSpeechRecognitionResult(const std::string& transcript,
+                                              double confidence);
+  virtual void setMockSpeechRecognitionError(const std::string& error,
+                                             const std::string& message);
+  virtual bool wasMockSpeechRecognitionAborted();
+  virtual void testFinished();
+  virtual void testTimedOut();
+  virtual bool isBeingDebugged();
+  virtual int layoutTestTimeout();
+  virtual void closeRemainingWindows();
+  virtual int navigationEntryCount();
+  virtual int windowCount();
+  virtual void goToOffset(int offset);
+  virtual void reload();
+  virtual void loadURLForFrame(const WebKit::WebURL& url,
+                               const std::string& frame_name);
+  virtual bool allowExternalPages();
+  virtual void captureHistoryForWindow(
+      size_t windowIndex,
+      WebKit::WebVector<WebKit::WebHistoryItem>* history,
+      size_t* currentEntryIndex);
 
   void Reset();
   void NotifyDone();
@@ -88,7 +129,8 @@ class WebKitTestRunner : public RenderViewObserver,
   void CaptureTextDump();
   void CaptureImageDump();
 
-  scoped_ptr<WebKit::WebContextMenuData> last_context_menu_data_;
+  static int window_count_;
+
   base::FilePath current_working_directory_;
 
   ::WebTestRunner::WebTestProxyBase* proxy_;

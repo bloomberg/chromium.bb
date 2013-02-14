@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/base64.h"
+#include "base/debug/debugger.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -33,6 +34,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -47,6 +49,7 @@
 using WebKit::Platform;
 using WebKit::WebContextMenuData;
 using WebKit::WebDevToolsAgent;
+using WebKit::WebDeviceOrientation;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
@@ -158,23 +161,20 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 
 }  // namespace
 
+// static
+int WebKitTestRunner::window_count_ = 0;
+
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view) {
   Reset();
+  ++window_count_;
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
+  --window_count_;
 }
 
 // WebTestDelegate  -----------------------------------------------------------
-
-void WebKitTestRunner::clearContextMenuData() {
-  last_context_menu_data_.reset();
-}
-
-WebContextMenuData* WebKitTestRunner::lastContextMenuData() const {
-  return last_context_menu_data_.get();
-}
 
 void WebKitTestRunner::clearEditCommand() {
   render_view()->ClearEditCommands();
@@ -183,17 +183,6 @@ void WebKitTestRunner::clearEditCommand() {
 void WebKitTestRunner::setEditCommand(const std::string& name,
                                       const std::string& value) {
   render_view()->SetEditCommandForNextKeyEvent(name, value);
-}
-
-void WebKitTestRunner::fillSpellingSuggestionList(
-    const WebString& word, WebVector<WebString>* suggestions) {
-  if (word == WebString::fromUTF8("wellcome")) {
-      WebVector<WebString> result(suggestions->size() + 1);
-      for (size_t i = 0; i < suggestions->size(); ++i)
-        result[i] = (*suggestions)[i];
-      result[suggestions->size()] = WebString::fromUTF8("welcome");
-      suggestions->swap(result);
-  }
 }
 
 void WebKitTestRunner::setGamepadData(const WebGamepads& gamepads) {
@@ -327,6 +316,214 @@ std::string WebKitTestRunner::makeURLErrorDescription(
       domain.c_str(), code, error.unreachableURL.spec().data());
 }
 
+void WebKitTestRunner::setClientWindowRect(const WebRect& rect) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setClientWindowRect"));
+}
+
+void WebKitTestRunner::showDevTools() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "showDevTools"));
+}
+
+void WebKitTestRunner::closeDevTools() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "closeDevTools"));
+}
+
+void WebKitTestRunner::evaluateInWebInspector(long call_id,
+                                              const std::string& script) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "evaluateInWebInspector"));
+}
+
+void WebKitTestRunner::clearAllDatabases() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "clearAllDatabases"));
+}
+
+void WebKitTestRunner::setDatabaseQuota(int quota) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setDatabaseQuota"));
+}
+
+void WebKitTestRunner::setDeviceScaleFactor(float factor) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setDeviceScaleFactor"));
+}
+
+void WebKitTestRunner::setFocus(bool focus) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setFocus"));
+}
+
+void WebKitTestRunner::setAcceptAllCookies(bool accept) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setAcceptAllCookies"));
+}
+
+std::string WebKitTestRunner::pathToLocalResource(const std::string& resource) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "pathToLocalResource"));
+  return std::string();
+}
+
+void WebKitTestRunner::setLocale(const std::string& locale) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setLocale"));
+}
+
+void WebKitTestRunner::setDeviceOrientation(WebDeviceOrientation& orientation) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setDeviceOrientation"));
+}
+
+void WebKitTestRunner::didAcquirePointerLock() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "didAcquirePointerLock"));
+}
+
+void WebKitTestRunner::didNotAcquirePointerLock() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "didNotAcquirePointerLock"));
+}
+
+void WebKitTestRunner::didLosePointerLock() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "didLosePointerLock"));
+}
+
+void WebKitTestRunner::setPointerLockWillRespondAsynchronously() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(),
+      "WebKitTestRunner",
+      "setPointerLockWillRespondAsynchronously"));
+}
+
+void WebKitTestRunner::setPointerLockWillFailSynchronously() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setPointerLockWillFailSynchronously"));
+}
+
+int WebKitTestRunner::numberOfPendingGeolocationPermissionRequests() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(),
+      "WebKitTestRunner",
+      "numberOfPendingGeolocationPermissionRequests"));
+  return 0;
+}
+
+void WebKitTestRunner::setGeolocationPermission(bool allowed) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setGeolocationPermission"));
+}
+
+void WebKitTestRunner::setMockGeolocationPosition(double latitude,
+                                                  double longitude,
+                                                  double precision) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setMockGeolocationPosition"));
+}
+
+void WebKitTestRunner::setMockGeolocationPositionUnavailableError(
+    const std::string& message) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(),
+      "WebKitTestRunner",
+      "setMockGeolocationPositionUnavailableError"));
+}
+
+void WebKitTestRunner::addMockSpeechInputResult(const std::string& result,
+                                                double confidence,
+                                                const std::string& language) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "addMockSpeechInputResult"));
+}
+
+void WebKitTestRunner::setMockSpeechInputDumpRect(bool dump_rect) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setMockSpeechInputDumpRect"));
+}
+
+void WebKitTestRunner::addMockSpeechRecognitionResult(
+    const std::string& transcript,
+    double confidence) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "addMockSpeechRecognitionResult"));
+}
+
+void WebKitTestRunner::setMockSpeechRecognitionError(
+    const std::string& error,
+    const std::string& message) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "setMockSpeechRecognitionError"));
+}
+
+bool WebKitTestRunner::wasMockSpeechRecognitionAborted() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "wasMockSpeechRecognitionAborted"));
+  return false;
+}
+
+void WebKitTestRunner::testFinished() {
+  CaptureDump();
+}
+
+void WebKitTestRunner::testTimedOut() {
+  Send(new ShellViewHostMsg_TestFinished(routing_id(), true));
+}
+
+bool WebKitTestRunner::isBeingDebugged() {
+  return base::debug::BeingDebugged();
+}
+
+int WebKitTestRunner::layoutTestTimeout() {
+  return layout_test_timeout_;
+}
+
+void WebKitTestRunner::closeRemainingWindows() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "closeRemainingWindows"));
+}
+
+int WebKitTestRunner::navigationEntryCount() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "navigationEntryCount"));
+  return 0;
+}
+
+int WebKitTestRunner::windowCount() {
+  return window_count_;
+}
+
+void WebKitTestRunner::goToOffset(int offset) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "goToOffset"));
+}
+
+void WebKitTestRunner::reload() {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "reload"));
+}
+
+void WebKitTestRunner::loadURLForFrame(const WebURL& url,
+                             const std::string& frame_name) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "loadURLForFrame"));
+}
+
+bool WebKitTestRunner::allowExternalPages() {
+  return allow_external_pages_;
+}
+
+void WebKitTestRunner::captureHistoryForWindow(
+    size_t windowIndex,
+    WebVector<WebKit::WebHistoryItem>* history,
+    size_t* currentEntryIndex) {
+  Send(new ShellViewHostMsg_NotImplemented(
+      routing_id(), "WebKitTestRunner", "captureHistoryForWindow"));
+}
+
 // RenderViewObserver  --------------------------------------------------------
 
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
@@ -341,12 +538,6 @@ void WebKitTestRunner::DidFinishLoad(WebFrame* frame) {
     }
     load_finished_ = true;
   }
-}
-
-void WebKitTestRunner::DidRequestShowContextMenu(
-    WebFrame* frame,
-    const WebContextMenuData& data) {
-  last_context_menu_data_.reset(new WebContextMenuData(data));
 }
 
 bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {

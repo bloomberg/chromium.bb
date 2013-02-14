@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/debugger.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -53,6 +54,11 @@ ShellContentRendererClient::~ShellContentRendererClient() {
 
 void ShellContentRendererClient::RenderThreadStarted() {
   shell_observer_.reset(new ShellRenderProcessObserver());
+#if defined(OS_MACOSX)
+  // We need to call this once before the sandbox was initialized to cache the
+  // value.
+  base::debug::BeingDebugged();
+#endif
 }
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
