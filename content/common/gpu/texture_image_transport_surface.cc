@@ -114,10 +114,7 @@ bool TextureImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
     return true;
   }
 
-  if (!context_.get()) {
-    DCHECK(helper_->stub());
-    context_ = helper_->stub()->decoder()->GetGLContext();
-  }
+  context_ = context;
 
   if (!fbo_id_) {
     glGenFramebuffersEXT(1, &fbo_id_);
