@@ -4287,7 +4287,12 @@ display_create(int argc, char *argv[])
 
 	d->registry = wl_display_get_registry(d->display);
 	wl_registry_add_listener(d->registry, &registry_listener, d);
-	wl_display_dispatch(d->display);
+
+	if (wl_display_dispatch(d->display) < 0) {
+		fprintf(stderr, "Failed to process Wayland connection: %m\n");
+		return NULL;
+	}
+
 #ifdef HAVE_CAIRO_EGL
 	if (init_egl(d) < 0)
 		fprintf(stderr, "EGL does not seem to work, "
