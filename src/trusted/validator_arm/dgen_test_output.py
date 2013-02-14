@@ -1081,7 +1081,9 @@ def _decoder_restricted_to_tables(decoder, tables):
 def _generate_test_patterns_with_baseline_tests(
     decoder, values, out, baseline_test_tables):
   _generate_test_patterns(decoder, values, out, False)
-  _generate_test_patterns(
+  # Don't add baseline tests unless it is possible to have baseline tests.
+  if baseline_test_tables:
+    _generate_test_patterns(
       _decoder_restricted_to_tables(decoder, baseline_test_tables),
       values, out, True)
 

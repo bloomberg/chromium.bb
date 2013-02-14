@@ -120,7 +120,6 @@ ACTUAL_GEN_TABLES = ["ARMv7",
 # switch tables over to using automatically generated baselines, as they
 # pass the appropriate tests.
 BASELINE_TEST_TABLES = [
-  "data_processing_register",
   ]
 
 # The list of tables in armv7.table that should use the automatically generated,
@@ -128,6 +127,7 @@ BASELINE_TEST_TABLES = [
 # testing, as baselines pass the appropriate tests.
 BASELINE_GEN_TABLES = [
     "data_processing_and_miscellaneous_instructions",
+    "data_processing_register",
     "data_processing_register_shifted_register",
     ]
 
