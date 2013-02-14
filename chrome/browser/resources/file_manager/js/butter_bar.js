@@ -12,10 +12,10 @@ var MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
 /**
  * Butter bar is shown on top of the file list and is used to show the copy
  * progress and other messages.
- * @constructor
  * @param {HTMLElement} dialogDom FileManager top-level div.
  * @param {FileCopyManagerWrapper} copyManager The copy manager.
  * @param {MetadataCache} metadataCache The metadata cache.
+ * @constructor
  */
 function ButterBar(dialogDom, copyManager, metadataCache) {
   this.dialogDom_ = dialogDom;
@@ -96,9 +96,9 @@ ButterBar.prototype.show = function(message, opt_options) {
 
 /**
  * Show error message in butter bar.
- * @private
  * @param {string} message Message.
  * @param {object} opt_options Same as in show().
+ * @private
  */
 ButterBar.prototype.showError_ = function(message, opt_options) {
   this.show(message, opt_options);
@@ -107,9 +107,9 @@ ButterBar.prototype.showError_ = function(message, opt_options) {
 
 /**
  * Set message and/or progress.
- * @private
  * @param {string} message Message.
  * @param {object} opt_options Same as in show().
+ * @private
  */
 ButterBar.prototype.update_ = function(message, opt_options) {
   if (!opt_options)
@@ -204,8 +204,8 @@ ButterBar.prototype.clearHideTimeout_ = function() {
 };
 
 /**
- * @private
  * @return {string?} The type of operation.
+ * @private
  */
 ButterBar.prototype.transferType_ = function() {
   var progress = this.progress_;
@@ -251,8 +251,8 @@ ButterBar.prototype.showProgress_ = function() {
 
 /**
  * 'copy-progress' event handler. Show progress or an appropriate message.
- * @private
  * @param {cr.Event} event A 'copy-progress' event from FileCopyManager.
+ * @private
  */
 ButterBar.prototype.onCopyProgress_ = function(event) {
   // Delete operation has higher priority.
@@ -353,8 +353,8 @@ ButterBar.prototype.forceDeleteAndHide = function() {
 
 /**
  * 'delete' event handler. Shows information about deleting files.
- * @private
  * @param {cr.Event} event A 'delete' event from FileCopyManager.
+ * @private
  */
 ButterBar.prototype.onDelete_ = function(event) {
   if (event.id != this.deleteTaskId_) return;

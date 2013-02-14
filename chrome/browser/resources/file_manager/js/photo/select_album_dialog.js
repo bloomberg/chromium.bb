@@ -9,8 +9,9 @@
  * Operates on a list of objects representing albums: { name, url, create }.
  * If user chooses to create a new album, result will be a fake album with
  * |create == true|.
- * @constructor
+ *
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
+ * @constructor
  */
 function SelectAlbumDialog(parentNode) {
   this.parentNode_ = parentNode;

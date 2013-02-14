@@ -7,10 +7,10 @@
  * Supports undo/redo.
  * Command execution is asynchronous (callback-based).
  *
- * @constructor
  * @param {Document} document Document to create canvases in.
  * @param {HTMLCanvasElement} canvas The canvas with the original image.
  * @param {function(callback)} saveFunction Function to save the image.
+ * @constructor
  */
 function CommandQueue(document, canvas, saveFunction) {
   this.document_ = document;
@@ -218,8 +218,8 @@ CommandQueue.prototype.redo = function() {
  * Command object encapsulates an operation on an image and a way to visualize
  * its result.
  *
- * @constructor
  * @param {string} name Command name.
+ * @constructor
  */
 function Command(name) {
   this.name_ = name;

@@ -11,13 +11,13 @@ var SHORT_RESCAN_INTERVAL = 100;
 /**
  * Data model of the file manager.
  *
- * @constructor
  * @param {DirectoryEntry} root File system root.
  * @param {boolean} singleSelection True if only one file could be selected
  *                                  at the time.
  * @param {MetadataCache} metadataCache The metadata cache service.
  * @param {VolumeManager} volumeManager The volume manager.
  * @param {boolean} isDriveEnabled True if DRIVE enabled (initial value).
+ * @constructor
  */
 function DirectoryModel(root, singleSelection,
                         metadataCache, volumeManager, isDriveEnabled) {
@@ -47,8 +47,8 @@ function DirectoryModel(root, singleSelection,
 
   /**
    * A map root.fullPath -> currentDirectory.fullPath.
-   * @private
    * @type {Object.<string, string>}
+   * @private
    */
   this.currentDirByRoot_ = {};
 
@@ -240,8 +240,8 @@ DirectoryModel.prototype.getCurrentDirPath = function() {
 };
 
 /**
- * @private
  * @return {Array.<string>} File paths of selected files.
+ * @private
  */
 DirectoryModel.prototype.getSelectedPaths_ = function() {
   var indexes = this.fileListSelection_.selectedIndexes;
@@ -255,8 +255,8 @@ DirectoryModel.prototype.getSelectedPaths_ = function() {
 };
 
 /**
- * @private
  * @param {Array.<string>} value List of file paths of selected files.
+ * @private
  */
 DirectoryModel.prototype.setSelectedPaths_ = function(value) {
   var indexes = [];
@@ -282,8 +282,8 @@ DirectoryModel.prototype.setSelectedPaths_ = function(value) {
 };
 
 /**
- * @private
  * @return {string} Lead item file path.
+ * @private
  */
 DirectoryModel.prototype.getLeadPath_ = function() {
   var index = this.fileListSelection_.leadIndex;
@@ -291,8 +291,8 @@ DirectoryModel.prototype.getLeadPath_ = function() {
 };
 
 /**
- * @private
  * @param {string} value The name of new lead index.
+ * @private
  */
 DirectoryModel.prototype.setLeadPath_ = function(value) {
   var fileList = this.getFileList();
@@ -394,10 +394,10 @@ DirectoryModel.prototype.rescan = function() {
  *
  * This should be used when changing directory or initiating a new search.
  *
- * @private
  * @param {DirectoryContentes} newDirContents New DirectoryContents instance to
  *     replace currentDirContents_.
  * @param {Function} opt_callback Called on success.
+ * @private
  */
 DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
                                                   opt_callback) {
@@ -431,10 +431,10 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
  * Perform a directory contents scan. Should be called only from rescan() and
  * clearAndScan_().
  *
- * @private
  * @param {DirectoryContents} dirContents DirectoryContents instance on which
  *     the scan will be run.
  * @param {function} successCallback Callback on success.
+ * @private
  */
 DirectoryModel.prototype.scan_ = function(dirContents, successCallback) {
   var self = this;
@@ -480,8 +480,8 @@ DirectoryModel.prototype.scan_ = function(dirContents, successCallback) {
 };
 
 /**
- * @private
  * @param {DirectoryContents} dirContents DirectoryContents instance.
+ * @private
  */
 DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
   cr.dispatchSimpleEvent(this, 'begin-update-files');
@@ -554,9 +554,9 @@ DirectoryModel.prototype.onEntryChanged = function(name) {
 };
 
 /**
- * @private
  * @param {string} name Filename.
  * @return {number} The index in the fileList.
+ * @private
  */
 DirectoryModel.prototype.findIndexByName_ = function(name) {
   var fileList = this.getFileList();
@@ -707,8 +707,8 @@ DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
 };
 
 /**
- * @private
  * @return {Entry} Directory entry of the root selected in rootsList.
+ * @private
  */
 DirectoryModel.prototype.getSelectedRootDirEntry_ = function() {
   return this.rootsList_.item(this.rootsListSelection_.selectedIndex);
@@ -726,8 +726,8 @@ DirectoryModel.prototype.onBeforeRootChange_ = function(event) {
 
 /**
  * Handler for root item being clicked.
- * @private
  * @param {Event} event The event.
+ * @private
  */
 DirectoryModel.prototype.onRootChange_ = function(event) {
   var newRootDir = this.getSelectedRootDirEntry_();
@@ -754,9 +754,9 @@ DirectoryModel.prototype.changeRoot = function(path) {
 };
 
 /**
- * @private
  * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
  * @param {function} opt_callback Executed if the directory loads successfully.
+ * @private
  */
 DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
                                                                 opt_callback) {
@@ -781,11 +781,11 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  * Dispatches the 'directory-changed' event when the directory is successfully
  * changed.
  *
- * @private
  * @param {boolean} initial True if it comes from setupPath and
  *                          false if caused by an user action.
  * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
  * @param {function} opt_callback Executed if the directory loads successfully.
+ * @private
  */
 DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
                                                           opt_callback) {
@@ -991,8 +991,8 @@ DirectoryModel.prototype.selectIndex = function(index) {
 
 /**
  * Get root entries asynchronously.
- * @private
  * @param {function(Array.<Entry>)} callback Called when roots are resolved.
+ * @private
  */
 DirectoryModel.prototype.resolveRoots_ = function(callback) {
   var groups = {
@@ -1288,10 +1288,10 @@ DirectoryModel.prototype.removeFilter = function(name) {
 
 
 /**
- * @constructor
  * @param {DirectoryEntry} root Root entry.
  * @param {DirectoryModel} directoryModel Model to watch.
  * @param {VolumeManager} volumeManager Manager to watch.
+ * @constructor
  */
 function FileWatcher(root, directoryModel, volumeManager) {
   this.root_ = root;

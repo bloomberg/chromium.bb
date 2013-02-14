@@ -1055,7 +1055,7 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
  * Stop the slideshow.
  * @param {Event} opt_event Event.
  * @private
-   */
+ */
 SlideMode.prototype.stopSlideshow_ = function(opt_event) {
   if (!this.isSlideshowOn_())
     return;

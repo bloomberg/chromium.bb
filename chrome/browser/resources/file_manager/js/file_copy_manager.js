@@ -291,9 +291,9 @@ FileCopyManager.prototype.getStatus = function() {
 /**
  * Send an event to all the FileManager windows.
  *
- * @private
  * @param {string} eventName Event name.
  * @param {Object} eventArgs An object with arbitrary event parameters.
+ * @private
  */
 FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
   if (this.cancelRequested_)
@@ -341,9 +341,9 @@ FileCopyManager.prototype.log_ = function() {
 /**
  * Dispatch a simple copy-progress event with reason and optional err data.
  *
- * @private
  * @param {string} reason Event type.
  * @param {FileCopyManager.Error} opt_err Error.
+ * @private
  */
 FileCopyManager.prototype.sendProgressEvent_ = function(reason, opt_err) {
   var event = {};
@@ -416,8 +416,8 @@ FileCopyManager.prototype.doCancel_ = function() {
  * Used internally to check if a cancel has been requested, and handle
  * it if so.
  *
- * @private
  * @return {boolean} If canceled.
+ * @private
  */
 FileCopyManager.prototype.maybeCancel_ = function() {
   if (!this.cancelRequested_)
@@ -617,9 +617,9 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
 /**
  * Service all entries in the next copy task.
  *
- * @private
  * @param {Function} successCallback On success.
  * @param {Function} errorCallback On error.
+ * @private
  */
 FileCopyManager.prototype.serviceNextTask_ = function(
     successCallback, errorCallback) {
@@ -684,10 +684,10 @@ FileCopyManager.prototype.serviceNextTask_ = function(
  * Service the next entry in a given task.
  * TODO(olege): Refactor this method into a separate class.
  *
- * @private
  * @param {FileManager.Task} task A task.
  * @param {Function} successCallback On success.
  * @param {Function} errorCallback On error.
+ * @private
  */
 FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     task, successCallback, errorCallback) {

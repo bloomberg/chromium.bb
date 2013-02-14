@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * @constructor
  * @class FunctionSequence to invoke steps in sequence
  *
  * @param {string} name                //TODO(JSDOC).
@@ -11,6 +10,7 @@
  * @param {Object} logger              logger.
  * @param {Function} callback          callback to invoke on success.
  * @param {Function} failureCallback   callback to invoke on failure.
+ * @constructor
  */
 function FunctionSequence(name, steps, logger, callback, failureCallback) {
   // Private variables hidden in closure
@@ -51,7 +51,7 @@ FunctionSequence.prototype.setFailureCallback = function(failureCallback) {
  * Error handling function, which traces current error step, stops sequence
  * advancing and fires error callback.
  *
- * @param {string} err Error message
+ * @param {string} err Error message.
  * @private
  */
 FunctionSequence.prototype.onError_ = function(err) {

@@ -176,7 +176,7 @@ ImageEditor.prototype.canUndo = function() {
   return this.commandQueue_ && this.commandQueue_.canUndo();
 };
 
-  /**
+/**
  * Undo the recently executed command.
  */
 ImageEditor.prototype.undo = function() {
@@ -1034,9 +1034,9 @@ ImageEditor.Toolbar.prototype.show = function(on) {
 
 /** A prompt panel for the editor.
  *
- * @constructor
  * @param {HTMLElement} container Container element.
  * @param {function} displayStringFunction A formatting function.
+ * @constructor
  */
 ImageEditor.Prompt = function(container, displayStringFunction) {
   this.container_ = container;

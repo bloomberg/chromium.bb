@@ -681,13 +681,13 @@ MediaControls.Slider.prototype.onInputDrag_ = function(on) {
 /**
  * Create a customized slider with animated thumb movement.
  *
- * @constructor
  * @param {HTMLElement} container The containing div element.
  * @param {number} value Initial value [0..1].
  * @param {number} range Number of distinct slider positions to be supported.
  * @param {function(number)} onChange Value change handler.
  * @param {function(boolean)} onDrag Drag begin/end handler.
  * @param {function(number):string} formatFunction Value formatting function.
+ * @constructor
  */
 MediaControls.AnimatedSlider = function(
     container, value, range, onChange, onDrag, formatFunction) {
@@ -735,13 +735,13 @@ MediaControls.AnimatedSlider.prototype.setValueToUI_ = function(value) {
  *
  * The time value is shown above the slider bar at the mouse position.
  *
- * @constructor
  * @param {HTMLElement} container The containing div element.
  * @param {number} value Initial value [0..1].
  * @param {number} range Number of distinct slider positions to be supported.
  * @param {function(number)} onChange Value change handler.
  * @param {function(boolean)} onDrag Drag begin/end handler.
  * @param {function(number):string} formatFunction Value formatting function.
+ * @constructor
  */
 MediaControls.PreciseSlider = function(
     container, value, range, onChange, onDrag, formatFunction) {
@@ -751,6 +751,7 @@ MediaControls.PreciseSlider = function(
 
   /**
    * @type {function(number):string}
+   * @private
    */
   this.valueToString_ = null;
 

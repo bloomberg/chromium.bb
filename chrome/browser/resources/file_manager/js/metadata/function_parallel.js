@@ -33,7 +33,7 @@ function FunctionParallel(name, steps, logger, callback, failureCallback) {
 /**
  * Error handling function, which fires error callback.
  *
- * @param {string} err Error message
+ * @param {string} err Error message.
  * @private
  */
 FunctionParallel.prototype.onError_ = function(err) {
@@ -62,8 +62,8 @@ FunctionParallel.prototype.nextStep_ = function() {
  * @param {...} var_args  //TODO(JSDOC).
  */
 FunctionParallel.prototype.start = function(var_args) {
-  this.logger.vlog('Starting [' + this.steps_.length + '] parallel tasks with '
-                    + arguments.length + ' argument(s)');
+  this.logger.vlog('Starting [' + this.steps_.length + '] parallel tasks ' +
+                   'with ' + arguments.length + ' argument(s)');
   if (this.logger.verbose) {
     for (var j = 0; j < arguments.length; j++) {
       this.logger.vlog(arguments[j]);

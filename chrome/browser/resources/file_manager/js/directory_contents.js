@@ -223,9 +223,9 @@ DirectoryContents.prototype.lastChunkReceived = function() {
  *
  * This is called by the table code before a sort happens, so that we can
  * go fetch data for the sort field that we may not have yet.
- * @private
  * @param {string} field Sort field.
  * @param {function} callback Called when done.
+ * @private
  */
 DirectoryContents.prototype.prepareSort_ = function(field, callback) {
   this.prefetchMetadata(this.fileList_.slice(), callback);
@@ -347,8 +347,8 @@ DirectoryContentsBasic.prototype.readNextChunk = function() {
 };
 
 /**
- * @private
  * @param {Array.<Entry>} entries File list.
+ * @private
  */
 DirectoryContentsBasic.prototype.onChunkComplete_ = function(entries) {
   if (this.scanCancelled_)

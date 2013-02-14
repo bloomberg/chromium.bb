@@ -4,10 +4,11 @@
 
 /**
  * The overlay displaying the image.
- * @constructor
+ *
  * @param {HTMLElement} container The container element.
  * @param {Viewport} viewport The viewport.
  * @param {MetadataCache} metadataCache The metadataCache.
+ * @constructor
  */
 function ImageView(container, viewport, metadataCache) {
   this.container_ = container;
@@ -36,7 +37,9 @@ function ImageView(container, viewport, metadataCache) {
 
   /**
    * The element displaying the current content.
+   *
    * @type {HTMLCanvasElement|HTMLVideoElement}
+   * @private
    */
   this.screenImage_ = null;
 
@@ -770,8 +773,8 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
 /**
  * Generic cache with a limited capacity and LRU eviction.
  *
- * @constructor
  * @param {number} capacity Maximum number of cached item.
+ * @constructor
  */
 ImageView.Cache = function(capacity) {
   this.capacity_ = capacity;
@@ -850,6 +853,7 @@ ImageView.Cache.prototype.renameItem = function(oldId, newId) {
 
 /**
  * Disposes an object.
+ *
  * @param {object} item The item object.
  * @private
  */
@@ -867,6 +871,7 @@ ImageView.Cache.prototype.deleteItem_ = function(item) {
 
 /**
  * Base class for effects.
+ *
  * @param {number} duration Duration in ms.
  * @param {string} opt_timing CSS transition timing function name.
  * @constructor

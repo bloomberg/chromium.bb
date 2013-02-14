@@ -17,9 +17,9 @@ window.onerror = function() { JSErrorCount++ };
  * dialogs, as well as the full screen file manager application (though the
  * latter is not yet implemented).
  *
- * @constructor
  * @param {HTMLElement} dialogDom The DOM node containing the prototypical
  *     dialog UI.
+ * @constructor
  */
 function FileManager(dialogDom) {
   this.dialogDom_ = dialogDom;

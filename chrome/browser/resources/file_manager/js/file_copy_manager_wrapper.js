@@ -7,8 +7,8 @@ var fileCopyManagerWrapper = null;
 /**
  * While FileCopyManager is run in the background page, this class is used to
  * communicate with it.
- * @constructor
  * @param {DirectoryEntry} root Root directory entry.
+ * @constructor
  */
 function FileCopyManagerWrapper(root) {
   this.root_ = root;

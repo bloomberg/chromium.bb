@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 /**
- * @constructor
  * @extends cr.EventTarget
  * @param {HTMLDivElement} div Div container for breadcrumbs.
+ * @constructor
  */
 function BreadcrumbsController(div) {
   this.bc_ = div;
@@ -188,8 +188,8 @@ BreadcrumbsController.prototype.hide = function() {
 
 /**
  * Handle a click event on a breadcrumb element.
- * @private
  * @param {Event} event The click event.
+ * @private
  */
 BreadcrumbsController.prototype.onClick_ = function(event) {
   var path = this.getTargetPath(event);

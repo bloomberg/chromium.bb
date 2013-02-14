@@ -99,7 +99,6 @@ AppWindowWrapper.prototype.launch = function(appState) {
  *
  * @param {string} url App window content url.
  * @param {object|function} options Options object or a function to return it.
- *
  * @constructor
  */
 function SingletonAppWindowWrapper(url, options) {

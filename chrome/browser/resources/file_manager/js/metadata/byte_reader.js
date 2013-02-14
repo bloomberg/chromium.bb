@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @constructor
+ * @param {ArrayBuffer} arrayBuffer  //TODO(JSDOC).
+ * @param {number=} opt_offset  //TODO(JSDOC).
+ * @param {number=} opt_length  //TODO(JSDOC).
+ */
 function ByteReader(arrayBuffer, opt_offset, opt_length) {
   opt_offset = opt_offset || 0;
   opt_length = opt_length || (arrayBuffer.byteLength - opt_offset);
@@ -11,7 +17,7 @@ function ByteReader(arrayBuffer, opt_offset, opt_length) {
   this.setByteOrder(ByteReader.BIG_ENDIAN);
 }
 
-// Static const and methods.
+// Static constants and methods.
 
 /**
  * Intel, 0x1234 is [0x34, 0x12]

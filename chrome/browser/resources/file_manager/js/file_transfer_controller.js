@@ -11,10 +11,10 @@
 var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
 
 /**
- * @constructor
  * @param {HTMLDocument} doc Owning document.
  * @param {FileCopyManager} copyManager Copy manager instance.
  * @param {DirectoryModel} directoryModel Directory model instance.
+ * @constructor
  */
 function FileTransferController(doc,
                                 copyManager,
