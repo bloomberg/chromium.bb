@@ -8,9 +8,7 @@
   'variables': {
     'COMMAND_TESTER': '<(DEPTH)/native_client/tools/command_tester.py',
     'common_sources': [
-      'nacl_imc_c.cc',
       'nacl_imc_common.cc',
-      'nacl_imc.h',
       'nacl_imc_c.h',
     ],
     'conditions': [
@@ -82,7 +80,7 @@
             'nso_target': 'libimc.so',
             'build_glibc': 1,
             'build_newlib': 1,
-            'sources': ['nacl_imc_c.cc', 'nacl_imc_common.cc', 'nacl/nacl_imc.cc'],
+            'sources': ['nacl_imc_common.cc', 'nacl/nacl_imc.cc'],
           },
           'dependencies': [
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',

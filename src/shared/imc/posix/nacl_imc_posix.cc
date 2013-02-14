@@ -28,7 +28,6 @@
 
 #include "native_client/src/include/atomic_ops.h"
 
-#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 
@@ -56,8 +55,6 @@ void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func) {
   g_create_memory_object_func = func;
 }
 
-namespace nacl {
-
 #if NACL_ANDROID
 #define ASHMEM_DEVICE "/dev/ashmem"
 
@@ -77,11 +74,11 @@ static int AshmemCreateRegion(size_t size) {
 }
 #endif
 
-bool WouldBlock() {
-  return (errno == EAGAIN) ? true : false;
+int NaClWouldBlock(void) {
+  return errno == EAGAIN;
 }
 
-int GetLastErrorString(char* buffer, size_t length) {
+int NaClGetLastErrorString(char* buffer, size_t length) {
 #if NACL_LINUX && !NACL_ANDROID
   // Note some Linux distributions provide only GNU version of strerror_r().
   if (buffer == NULL || length == 0) {
@@ -145,7 +142,7 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
 }
 #endif
 
-Handle CreateMemoryObject(size_t length, bool executable) {
+NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
   if (0 == length) {
     return -1;
   }
@@ -188,9 +185,9 @@ Handle CreateMemoryObject(size_t length, bool executable) {
 #endif  // !NACL_ANDROID
 }
 
-void* Map(struct NaClDescEffector* effp,
-          void* start, size_t length, int prot, int flags,
-          Handle memory, off_t offset) {
+void* NaClMap(struct NaClDescEffector* effp,
+              void* start, size_t length, int prot, int flags,
+              NaClHandle memory, off_t offset) {
   UNREFERENCED_PARAMETER(effp);
 
   static const int kPosixProt[] = {
@@ -205,20 +202,18 @@ void* Map(struct NaClDescEffector* effp,
   };
 
   int adjusted = 0;
-  if (flags & kMapShared) {
+  if (flags & NACL_MAP_SHARED) {
     adjusted |= MAP_SHARED;
   }
-  if (flags & kMapPrivate) {
+  if (flags & NACL_MAP_PRIVATE) {
     adjusted |= MAP_PRIVATE;
   }
-  if (flags & kMapFixed) {
+  if (flags & NACL_MAP_FIXED) {
     adjusted |= MAP_FIXED;
   }
   return mmap(start, length, kPosixProt[prot & 7], adjusted, memory, offset);
 }
 
-int Unmap(void* start, size_t length) {
+int NaClUnmap(void* start, size_t length) {
   return munmap(start, length);
 }
-
-}  // namespace nacl

@@ -7,7 +7,7 @@
 
 // NaCl inter-module communication primitives.
 
-#include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -59,7 +59,6 @@
 #include <algorithm>
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
-namespace nacl {
 
 namespace {
 
@@ -69,7 +68,7 @@ namespace {
 // blemish that replaces the older, buggier workaround.
 const int kRecvMsgRetries = 8;
 
-// The maximum number of IOVec elements sent by SendDatagram(). Plus one for
+// The maximum number of NaClIOVec elements sent by SendDatagram(). Plus one for
 // NaClInternalHeader with the descriptor data bytes.
 const size_t kIovLengthMax = NACL_ABI_IMC_IOVEC_MAX + 1;
 
@@ -140,14 +139,14 @@ bool IgnoreSIGPIPE() {
 
 // We keep these no-op implementations of SocketAddress-based
 // functions so that sigpipe_test continues to link.
-Handle BoundSocket(const SocketAddress* address) {
+NaClHandle NaClBoundSocket(const NaClSocketAddress* address) {
   UNREFERENCED_PARAMETER(address);
   NaClLog(LOG_FATAL, "BoundSocket(): Not used on OSX\n");
   return -1;
 }
 
-int SendDatagramTo(const MessageHeader* message, int flags,
-                   const SocketAddress* name) {
+int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
+                       const NaClSocketAddress* name) {
   UNREFERENCED_PARAMETER(message);
   UNREFERENCED_PARAMETER(flags);
   UNREFERENCED_PARAMETER(name);
@@ -155,7 +154,7 @@ int SendDatagramTo(const MessageHeader* message, int flags,
   return -1;
 }
 
-int SocketPair(Handle pair[2]) {
+int NaClSocketPair(NaClHandle pair[2]) {
   int result = socketpair(AF_UNIX, SOCK_STREAM, 0, pair);
   if (result == 0) {
 #if SIGPIPE_ALT_FIX
@@ -180,11 +179,12 @@ int SocketPair(Handle pair[2]) {
   return result;
 }
 
-int Close(Handle handle) {
+int NaClClose(NaClHandle handle) {
   return close(handle);
 }
 
-int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
+int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
+                     int flags) {
   struct msghdr msg;
   struct iovec vec[kIovLengthMax + 1];
   unsigned char buf[CMSG_SPACE_KHANDLE_COUNT_MAX_INTS];
@@ -192,36 +192,36 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
 
   (void) flags;  /* BUG(shiki): unused parameter */
 
-  assert(CMSG_SPACE(kHandleCountMax * sizeof(int))
+  assert(CMSG_SPACE(NACL_HANDLE_COUNT_MAX * sizeof(int))
          <= CMSG_SPACE_KHANDLE_COUNT_MAX_INTS);
 
   /*
    * The following assert was an earlier attempt to remember/check the
-   * assumption that our struct IOVec -- which we must define to be
+   * assumption that our struct NaClIOVec -- which we must define to be
    * cross platform -- is compatible with struct iovec on *x systems.
-   * The length field of IOVec was switched to be uint32_t at oen point
+   * The length field of NaClIOVec was switched to be uint32_t at oen point
    * to use concrete types, which introduced a problem on 64-bit systems.
    *
    * Clearly, the assert does not check a strong-enough condition,
    * since structure padding would make the two sizes the same.
    *
-  assert(sizeof(struct iovec) == sizeof(IOVec));
+  assert(sizeof(struct iovec) == sizeof(NaClIOVec));
    *
    * Don't do this again!
    */
 
-  if (!MessageSizeIsValid(message)) {
+  if (!NaClMessageSizeIsValid(message)) {
     errno = EMSGSIZE;
     return -1;
   }
 
-  if (kHandleCountMax < message->handle_count ||
+  if (NACL_HANDLE_COUNT_MAX < message->handle_count ||
       kIovLengthMax < message->iov_length) {
     errno = EMSGSIZE;
     return -1;
   }
 
-  memmove(&vec[1], message->iov, sizeof(IOVec) * message->iov_length);
+  memmove(&vec[1], message->iov, sizeof(NaClIOVec) * message->iov_length);
 
   msg.msg_name = 0;
   msg.msg_namelen = 0;
@@ -262,15 +262,16 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   return result - sizeof header;
 }
 
-int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
+int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
+                        int flags) {
   struct msghdr msg;
   struct iovec vec[kIovLengthMax];
   unsigned char buf[CMSG_SPACE_KHANDLE_COUNT_MAX_INTS];
 
-  assert(CMSG_SPACE(kHandleCountMax * sizeof(int))
+  assert(CMSG_SPACE(NACL_HANDLE_COUNT_MAX * sizeof(int))
          <= CMSG_SPACE_KHANDLE_COUNT_MAX_INTS);
 
-  if (kHandleCountMax < message->handle_count ||
+  if (NACL_HANDLE_COUNT_MAX < message->handle_count ||
       kIovLengthMax < message->iov_length) {
     errno = EMSGSIZE;
     return -1;
@@ -278,20 +279,20 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
 
   /*
    * The following assert was an earlier attempt to remember/check the
-   * assumption that our struct IOVec -- which we must define to be
+   * assumption that our struct NaClIOVec -- which we must define to be
    * cross platform -- is compatible with struct iovec on *x systems.
-   * The length field of IOVec was switched to be uint32_t at oen point
+   * The length field of NaClIOVec was switched to be uint32_t at oen point
    * to use concrete types, which introduced a problem on 64-bit systems.
    *
    * Clearly, the assert does not check a strong-enough condition,
    * since structure padding would make the two sizes the same.
    *
-  assert(sizeof(struct iovec) == sizeof(IOVec));
+  assert(sizeof(struct iovec) == sizeof(NaClIOVec));
    *
    * Don't do this again!
    */
 
-  if (!MessageSizeIsValid(message)) {
+  if (!NaClMessageSizeIsValid(message)) {
     errno = EMSGSIZE;
     return -1;
   }
@@ -316,7 +317,7 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   int retry_count;
   for (retry_count = 0; retry_count < kRecvMsgRetries; ++retry_count) {
     if (0 != (count = recvmsg(handle, &msg,
-                              (flags & kDontWait) ? MSG_DONTWAIT : 0))) {
+                              (flags & NACL_DONT_WAIT) ? MSG_DONTWAIT : 0))) {
       break;
     }
   }
@@ -353,7 +354,7 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   // OS X seems not to set the MSG_CTRUNC flag in msg.msg_flags as we expect,
   // and we don't rely on it.
   if (message->handle_count < header.handle_count) {
-    message->flags |= kHandlesTruncated;
+    message->flags |= NACL_HANDLES_TRUNCATED;
   }
 
   if (header.message_bytes == 0) {
@@ -361,7 +362,7 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   }
 
   // Update message->iov to receive just message_bytes.
-  memmove(vec, message->iov, sizeof(IOVec) * message->iov_length);
+  memmove(vec, message->iov, sizeof(NaClIOVec) * message->iov_length);
   msg.msg_iov = vec;
   msg.msg_iovlen = message->iov_length;
   size_t buffer_bytes = 0;
@@ -376,7 +377,7 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
     }
   }
   if (buffer_bytes < header.message_bytes) {
-    message->flags |= kMessageTruncated;
+    message->flags |= NACL_MESSAGE_TRUNCATED;
   }
 
   // Receive the sent data.
@@ -405,10 +406,8 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
       if (!SkipFile(handle, header.message_bytes - count)) {
         return -1;
       }
-      message->flags |= kMessageTruncated;
+      message->flags |= NACL_MESSAGE_TRUNCATED;
     }
   }
   return count;
 }
-
-}  // namespace nacl

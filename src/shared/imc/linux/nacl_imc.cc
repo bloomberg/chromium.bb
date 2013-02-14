@@ -7,7 +7,7 @@
 
 // NaCl inter-module communication primitives.
 
-#include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -21,8 +21,6 @@
 #include <sys/un.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
-
-namespace nacl {
 
 namespace {
 
@@ -48,14 +46,14 @@ size_t GetRights(struct msghdr* msg, int* fdv) {
 
 // We keep these no-op implementations of SocketAddress-based
 // functions so that sigpipe_test continues to link.
-Handle BoundSocket(const SocketAddress* address) {
+NaClHandle NaClBoundSocket(const NaClSocketAddress* address) {
   UNREFERENCED_PARAMETER(address);
   NaClLog(LOG_FATAL, "BoundSocket(): Not used on Linux\n");
   return -1;
 }
 
-int SendDatagramTo(const MessageHeader* message, int flags,
-                   const SocketAddress* name) {
+int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
+                       const NaClSocketAddress* name) {
   UNREFERENCED_PARAMETER(message);
   UNREFERENCED_PARAMETER(flags);
   UNREFERENCED_PARAMETER(name);
@@ -63,7 +61,7 @@ int SendDatagramTo(const MessageHeader* message, int flags,
   return -1;
 }
 
-int SocketPair(Handle pair[2]) {
+int NaClSocketPair(NaClHandle pair[2]) {
   // The read operation for a SOCK_SEQPACKET socket returns zero when the
   // remote peer closed the connection unlike a SOCK_DGRAM socket. Note
   // SOCK_SEQPACKET was introduced with Linux 2.6.4.
@@ -74,15 +72,16 @@ int SocketPair(Handle pair[2]) {
   return rv;
 }
 
-int Close(Handle handle) {
+int NaClClose(NaClHandle handle) {
   return close(handle);
 }
 
-int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
+int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
+                     int flags) {
   struct msghdr msg;
-  unsigned char buf[CMSG_SPACE(kHandleCountMax * sizeof(int))];
+  unsigned char buf[CMSG_SPACE(NACL_HANDLE_COUNT_MAX * sizeof(int))];
 
-  if (kHandleCountMax < message->handle_count) {
+  if (NACL_HANDLE_COUNT_MAX < message->handle_count) {
     errno = EMSGSIZE;
     return -1;
   }
@@ -96,12 +95,12 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
    * Clearly, the assert does not check a strong-enough condition,
    * since structure padding would make the two sizes the same.
    *
-  assert(sizeof(struct iovec) == sizeof(IOVec));
+  assert(sizeof(struct iovec) == sizeof(NaClIOVec));
    *
    * Don't do this again!
    */
 
-  if (!MessageSizeIsValid(message)) {
+  if (!NaClMessageSizeIsValid(message)) {
     errno = EMSGSIZE;
     return -1;
   }
@@ -127,14 +126,15 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   }
   msg.msg_flags = 0;
   return sendmsg(handle, &msg,
-                 MSG_NOSIGNAL | ((flags & kDontWait) ? MSG_DONTWAIT : 0));
+                 MSG_NOSIGNAL | ((flags & NACL_DONT_WAIT) ? MSG_DONTWAIT : 0));
 }
 
-int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
+int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
+                        int flags) {
   struct msghdr msg;
-  unsigned char buf[CMSG_SPACE(kHandleCountMax * sizeof(int))];
+  unsigned char buf[CMSG_SPACE(NACL_HANDLE_COUNT_MAX * sizeof(int))];
 
-  if (kHandleCountMax < message->handle_count) {
+  if (NACL_HANDLE_COUNT_MAX < message->handle_count) {
     errno = EMSGSIZE;
     return -1;
   }
@@ -144,7 +144,7 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   /*
    * Make sure we cannot receive more than 2**32-1 bytes.
    */
-  if (!MessageSizeIsValid(message)) {
+  if (!NaClMessageSizeIsValid(message)) {
     errno = EMSGSIZE;
     return -1;
   }
@@ -160,17 +160,15 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   }
   msg.msg_flags = 0;
   message->flags = 0;
-  int count = recvmsg(handle, &msg, (flags & kDontWait) ? MSG_DONTWAIT : 0);
+  int count = recvmsg(handle, &msg, (flags & NACL_DONT_WAIT) ? MSG_DONTWAIT : 0);
   if (0 <= count) {
     message->handle_count = GetRights(&msg, message->handles);
     if (msg.msg_flags & MSG_TRUNC) {
-      message->flags |= kMessageTruncated;
+      message->flags |= NACL_MESSAGE_TRUNCATED;
     }
     if (msg.msg_flags & MSG_CTRUNC) {
-      message->flags |= kHandlesTruncated;
+      message->flags |= NACL_HANDLES_TRUNCATED;
     }
   }
   return count;
 }
-
-}  // namespace nacl

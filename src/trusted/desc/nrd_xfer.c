@@ -361,7 +361,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     }
 
     kern_msg_hdr.handles = kern_handle;
-    kern_msg_hdr.handle_count = sys_handles;
+    kern_msg_hdr.handle_count = (uint32_t) sys_handles;
   }
 
   NaClLog(4, "Invoking LowLevelSendMsg, flags 0x%x\n", flags);

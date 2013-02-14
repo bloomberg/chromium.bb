@@ -20,23 +20,20 @@
 
 #include "native_client/src/include/portability.h"
 
-#include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
-namespace nacl {
 
-bool MessageSizeIsValid(const MessageHeader *message) {
+int NaClMessageSizeIsValid(const NaClMessageHeader *message) {
   size_t cur_bytes = 0;
   static size_t const kMax = static_cast<size_t>(~static_cast<uint32_t>(0));
   /* we assume that sizeof(uint32_t) <= sizeof(size_t) */
 
   for (size_t ix = 0; ix < message->iov_length; ++ix) {
     if (kMax - cur_bytes < message->iov[ix].length) {
-      return false;
+      return 0;
     }
     cur_bytes += message->iov[ix].length;  /* no overflow is possible */
   }
-  return true;
+  return 1;
 }
-
-}  // namespace nacl

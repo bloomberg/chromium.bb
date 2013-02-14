@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-// Test that SIGPIPE is not raised when using nacl::SendDatagram or
-// nacl::SendDatagramTo when the peer has been closed for various
+// Test that SIGPIPE is not raised when using NaClSendDatagram or
+// NaClSendDatagramTo when the peer has been closed for various
 // flavors of sockets.
 
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
-#include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -41,7 +41,7 @@ std::vector<int> gTestSequence;
  * NB: this uses rand() and thus is not thread-safe.  However, this is
  * only used in the main thread.
  */
-void PickRandomSocketAddress(nacl::SocketAddress *addr) {
+void PickRandomSocketAddress(NaClSocketAddress *addr) {
   static const char alphabet[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #if !NACL_WINDOWS
@@ -59,10 +59,10 @@ void PickRandomSocketAddress(nacl::SocketAddress *addr) {
     srand(GETPID());
     seeded = 1;
   }
-  for (int i = 0; i < nacl::kPathMax - 1; ++i) {
+  for (int i = 0; i < NACL_PATH_MAX - 1; ++i) {
     addr->path[i] = alphabet[rand() % (sizeof alphabet - 1)];
   }
-  addr->path[nacl::kPathMax - 1] = '\0';
+  addr->path[NACL_PATH_MAX - 1] = '\0';
   printf("PickRandomSocketAddress: returning %s\n", addr->path);
 }
 
@@ -70,7 +70,7 @@ void PickRandomSocketAddress(nacl::SocketAddress *addr) {
 void MyPerror(nacl::string s) {
   char error_msg[512];
   int err = errno;
-  if (0 == nacl::GetLastErrorString(error_msg, sizeof error_msg)) {
+  if (0 == NaClGetLastErrorString(error_msg, sizeof error_msg)) {
     printf("%s: %s\n", s.c_str(), error_msg);
   } else {
     printf("%s: errno %d\n", s.c_str(), err);
@@ -102,11 +102,11 @@ void ApplyInt(std::vector<int> *result, std::vector<nacl::string> const &vs) {
 }
 
 struct TestState {
-  nacl::SocketAddress cli_addr;
-  nacl::SocketAddress srv_addr;
-  nacl::Handle cli_sock;
-  nacl::Handle srv_sock;
-  nacl::Handle pair[2];
+  NaClSocketAddress cli_addr;
+  NaClSocketAddress srv_addr;
+  NaClHandle cli_sock;
+  NaClHandle srv_sock;
+  NaClHandle pair[2];
 
   bool new_sock_only;  // false to run only the single thread/socket
                        // tests, true to do the complement
@@ -130,16 +130,16 @@ struct TestState {
 
 TestState::TestState(std::vector<int> *seqp, bool nso, int reps,
                      int out_rep)
-    : cli_sock(nacl::kInvalidHandle),
-      srv_sock(nacl::kInvalidHandle),
+    : cli_sock(NACL_INVALID_HANDLE),
+      srv_sock(NACL_INVALID_HANDLE),
       new_sock_only(nso),
       repetitions(reps),
       outer_rep(out_rep),
       test_sequence(seqp),
       errors(-1),
       cur_test(-1) {
-  pair[0] = nacl::kInvalidHandle;
-  pair[1] = nacl::kInvalidHandle;
+  pair[0] = NACL_INVALID_HANDLE;
+  pair[1] = NACL_INVALID_HANDLE;
   NaClXMutexCtor(&mu);
   NaClXCondVarCtor(&cv);
 }
@@ -147,22 +147,22 @@ TestState::TestState(std::vector<int> *seqp, bool nso, int reps,
 int TestState::Init() {
   if (kPlatformUsesBoundSockets) {
     PickRandomSocketAddress(&cli_addr);
-    cli_sock = nacl::BoundSocket(&cli_addr);
-    if (nacl::kInvalidHandle == cli_sock) {
+    cli_sock = NaClBoundSocket(&cli_addr);
+    if (NACL_INVALID_HANDLE == cli_sock) {
       MyPerror("BoundSocket");
       printf("ERROR: No client socket\n");
       return 1;
     }
     PickRandomSocketAddress(&srv_addr);
-    srv_sock = nacl::BoundSocket(&srv_addr);
-    if (nacl::kInvalidHandle == srv_sock) {
+    srv_sock = NaClBoundSocket(&srv_addr);
+    if (NACL_INVALID_HANDLE == srv_sock) {
       MyPerror("BoundSocket");
       printf("ERROR: No server socket\n");
       return 1;
     }
   }
 
-  if (-1 == nacl::SocketPair(pair)) {
+  if (-1 == NaClSocketPair(pair)) {
     MyPerror("SocketPair");
     printf("ERROR: no socket pair\n");
     return 1;
@@ -180,18 +180,18 @@ int TestState::Init() {
 
 
 TestState::~TestState() {
-  if (nacl::kInvalidHandle != cli_sock) {
-    printf("nacl::Close(%d)\n", cli_sock);
-    (void) nacl::Close(cli_sock);
+  if (NACL_INVALID_HANDLE != cli_sock) {
+    printf("NaClClose(%d)\n", cli_sock);
+    (void) NaClClose(cli_sock);
   }
-  if (nacl::kInvalidHandle != srv_sock) {
-    printf("nacl::Close(%d)\n", srv_sock);
-    (void) nacl::Close(srv_sock);
+  if (NACL_INVALID_HANDLE != srv_sock) {
+    printf("NaClClose(%d)\n", srv_sock);
+    (void) NaClClose(srv_sock);
   }
   for (int i = 0; i < 2; ++i) {
-    if (nacl::kInvalidHandle != pair[i]) {
-      printf("nacl::Close(%d)\n", pair[i]);
-      (void) nacl::Close(pair[i]);
+    if (NACL_INVALID_HANDLE != pair[i]) {
+      printf("NaClClose(%d)\n", pair[i]);
+      (void) NaClClose(pair[i]);
     }
   }
   (void) NaClCondVarDtor(&cv);
@@ -201,22 +201,22 @@ TestState::~TestState() {
 
 int SendDescriptor(TestState *tsp, int mode) {
   int errors(0);
-  nacl::MessageHeader hdr;
-  nacl::Handle xfer[2];
+  NaClMessageHeader hdr;
+  NaClHandle xfer[2];
   hdr.iov = NULL;
   hdr.iov_length = 0;
   hdr.handle_count = 1;
   hdr.handles = xfer;
       // &tsp->pair[0];   // bug w/ OSX, kernel oops
-      // &tsp->cli_sock;  // bug w/ bound sockets, eager nacl::Close unlink
-  if (-1 == nacl::SocketPair(xfer)) {  // an otherwise unused nacl::Handle.
+      // &tsp->cli_sock;  // bug w/ bound sockets, eager NaClClose unlink
+  if (-1 == NaClSocketPair(xfer)) {  // an otherwise unused NaClHandle.
     ++errors;
-    printf("SendDescriptr: could not create (unused) nacl::SocketPair\n");
+    printf("SendDescriptr: could not create (unused) NaClSocketPair\n");
     return errors;
   }
-  if (-1 == nacl::Close(xfer[1])) {
+  if (-1 == NaClClose(xfer[1])) {
     ++errors;
-    printf("SendDescriptor: could not nacl::Close the unused"
+    printf("SendDescriptor: could not NaClClose the unused"
            " end of SocketPair\n");
     return errors;
   }
@@ -227,12 +227,12 @@ int SendDescriptor(TestState *tsp, int mode) {
   switch (mode) {
     case 0: {
       op = "SendDatagramTo";
-      result = nacl::SendDatagramTo(&hdr, 0, &tsp->srv_addr);
+      result = NaClSendDatagramTo(&hdr, 0, &tsp->srv_addr);
       break;
     }
     case 1: {
       op = "SendDatagram";
-      result = nacl::SendDatagram(tsp->pair[1], &hdr, 0);
+      result = NaClSendDatagram(tsp->pair[1], &hdr, 0);
       break;
     }
     default: {
@@ -253,17 +253,17 @@ int SendDescriptor(TestState *tsp, int mode) {
   } else {
     printf("SendDescriptor: OK\n");
   }
-  nacl::Close(xfer[0]);
+  NaClClose(xfer[0]);
   return errors;
 }
 
 
 int ReceiveDescriptor(TestState *tsp, int mode) {
   int errors(0);
-  nacl::MessageHeader hdr;
-  nacl::IOVec vec;
+  NaClMessageHeader hdr;
+  NaClIOVec vec;
   char buffer[512];
-  nacl::Handle handle[8];
+  NaClHandle handle[8];
   int nbytes(-1);
   printf("ReceiverThread: receive a handle, mode %d\n", mode);
   vec.base = buffer;
@@ -275,11 +275,11 @@ int ReceiveDescriptor(TestState *tsp, int mode) {
   hdr.flags = 0;
   switch (mode) {
     case 0: {
-      nbytes = nacl::ReceiveDatagram(tsp->srv_sock, &hdr, 0);
+      nbytes = NaClReceiveDatagram(tsp->srv_sock, &hdr, 0);
       break;
     }
     case 1: {
-      nbytes = nacl::ReceiveDatagram(tsp->pair[0], &hdr, 0);
+      nbytes = NaClReceiveDatagram(tsp->pair[0], &hdr, 0);
       break;
     }
     default: {
@@ -330,7 +330,7 @@ int ReceiveDescriptor(TestState *tsp, int mode) {
         continue;
       }
       printf("close(%d)\n", hdr.handles[i]);
-      if (-1 == nacl::Close(hdr.handles[i])) {
+      if (-1 == NaClClose(hdr.handles[i])) {
         MyPerror("ReceiverThread, Close");
         printf("ERROR: Close on received handle failed\n");
         ++errors;
@@ -348,8 +348,8 @@ int ReceiveDescriptor(TestState *tsp, int mode) {
 
 int SendData(TestState *tsp, int mode) {
   int errors(0);
-  nacl::MessageHeader hdr;
-  nacl::IOVec vec;
+  NaClMessageHeader hdr;
+  NaClIOVec vec;
   int nbytes(-1);
   vec.base = tsp->msg_buffer;
   vec.length = tsp->msg_len;
@@ -363,12 +363,12 @@ int SendData(TestState *tsp, int mode) {
   switch (mode) {
     case 0: {
       op = "SendDatagramTo";
-      nbytes = nacl::SendDatagramTo(&hdr, 0, &tsp->srv_addr);
+      nbytes = NaClSendDatagramTo(&hdr, 0, &tsp->srv_addr);
       break;
     }
     case 1: {
       op = "SendDatagram";
-      nbytes = nacl::SendDatagram(tsp->pair[1], &hdr, 0);
+      nbytes = NaClSendDatagram(tsp->pair[1], &hdr, 0);
     } break;
     default: {
       printf("ERROR: Illegal test mode\n");
@@ -396,10 +396,9 @@ int SendData(TestState *tsp, int mode) {
 
 int ReceiveData(TestState *tsp, int mode) {
   int errors(0);
-  nacl::MessageHeader hdr;
-  nacl::IOVec vec;
-
-  nacl::Handle handle[8];
+  NaClMessageHeader hdr;
+  NaClIOVec vec;
+  NaClHandle handle[8];
   int nbytes(-1);
   printf("ReceiverThread: receive data, mode %d\n", mode);
   char recv_buf[1024];
@@ -413,11 +412,11 @@ int ReceiveData(TestState *tsp, int mode) {
   hdr.flags = 0;
   switch (mode) {
     case 0: {
-      nbytes = nacl::ReceiveDatagram(tsp->srv_sock, &hdr, 0);
+      nbytes = NaClReceiveDatagram(tsp->srv_sock, &hdr, 0);
       break;
     }
     case 1: {
-      nbytes = nacl::ReceiveDatagram(tsp->pair[0], &hdr, 0);
+      nbytes = NaClReceiveDatagram(tsp->pair[0], &hdr, 0);
       break;
     }
     default: {
@@ -472,7 +471,7 @@ int ReceiveData(TestState *tsp, int mode) {
         continue;
       }
       printf("close(%d)\n", hdr.handles[i]);
-      if (-1 == nacl::Close(hdr.handles[i])) {
+      if (-1 == NaClClose(hdr.handles[i])) {
         MyPerror("ReceiverThread, Close");
         printf("ERROR: Close on received handle failed\n");
         ++errors;
@@ -489,8 +488,8 @@ int ReceiveData(TestState *tsp, int mode) {
 
 int SendDataNoPeer(TestState *tsp, int mode) {
   int errors(0);
-  nacl::MessageHeader hdr;
-  nacl::IOVec vec;
+  NaClMessageHeader hdr;
+  NaClIOVec vec;
   int nbytes(-1);
   vec.base = tsp->msg_buffer;
   vec.length = tsp->msg_len;
@@ -502,12 +501,12 @@ int SendDataNoPeer(TestState *tsp, int mode) {
   switch (mode) {
     case 0: {
       op = "SendDatagramTo";
-      nbytes = nacl::SendDatagramTo(&hdr, 0, &tsp->srv_addr);
+      nbytes = NaClSendDatagramTo(&hdr, 0, &tsp->srv_addr);
       break;
     }
     case 1: {
       op = "SendDatagram";
-      nbytes = nacl::SendDatagram(tsp->pair[1], &hdr, 0);
+      nbytes = NaClSendDatagram(tsp->pair[1], &hdr, 0);
       break;
     }
     default: {
@@ -793,12 +792,12 @@ int TestNaClSocket(int rep_count) {
   errors += tstate.errors;
 
   // now close server side and attempt to send again.
-  printf("nacl::Close(%d)\n", tstate.srv_sock);
-  (void) nacl::Close(tstate.srv_sock);
-  tstate.srv_sock = nacl::kInvalidHandle;
-  printf("nacl::Close(%d)\n", tstate.pair[0]);
-  (void) nacl::Close(tstate.pair[0]);
-  tstate.pair[0] = nacl::kInvalidHandle;
+  printf("NaClClose(%d)\n", tstate.srv_sock);
+  (void) NaClClose(tstate.srv_sock);
+  tstate.srv_sock = NACL_INVALID_HANDLE;
+  printf("NaClClose(%d)\n", tstate.pair[0]);
+  (void) NaClClose(tstate.pair[0]);
+  tstate.pair[0] = NACL_INVALID_HANDLE;
 
   if (kPlatformUsesBoundSockets) {
     printf("Sending a datagram to an address with closed bound socket.\n");

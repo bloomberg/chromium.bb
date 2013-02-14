@@ -9,7 +9,6 @@
 
 #include <windows.h>
 
-#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -23,27 +22,25 @@
 void NaClSetCreateMemoryObjectFunc(NaClCreateMemoryObjectFunc func) {
 }
 
-namespace nacl {
-
-Handle CreateMemoryObject(size_t length, bool executable) {
-  if (length % kMapPageSize) {
+NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
+  if (length % NACL_MAP_PAGESIZE) {
     SetLastError(ERROR_INVALID_PARAMETER);
-    return kInvalidHandle;
+    return NACL_INVALID_HANDLE;
   }
-  Handle memory = CreateFileMapping(
+  NaClHandle memory = CreateFileMapping(
       INVALID_HANDLE_VALUE,
       NULL,
       executable ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE,
       static_cast<DWORD>(static_cast<unsigned __int64>(length) >> 32),
       static_cast<DWORD>(length & 0xFFFFFFFF), NULL);
-  return (memory == NULL) ? kInvalidHandle : memory;
+  return (memory == NULL) ? NACL_INVALID_HANDLE : memory;
 }
 
 // TODO(mseaborn): Reduce duplication between this function and
 // NaClHostDescMap().
-void* Map(struct NaClDescEffector* effp,
-          void* start, size_t length, int prot, int flags,
-          Handle memory, off_t offset) {
+void* NaClMap(struct NaClDescEffector* effp,
+              void* start, size_t length, int prot, int flags,
+              NaClHandle memory, off_t offset) {
   static DWORD prot_to_access[] = {
     0,  // NACL_ABI_PROT_NONE is not accepted: see below.
     FILE_MAP_READ,
@@ -62,21 +59,21 @@ void* Map(struct NaClDescEffector* effp,
     // MapViewOfFileEx(), unlike in Unix.
     NaClLog(LOG_INFO, "nacl::Map: PROT_NONE not supported\n");
     SetLastError(ERROR_INVALID_PARAMETER);
-    return kMapFailed;
+    return NACL_MAP_FAILED;
   }
 
-  if (!(flags & (kMapShared | kMapPrivate))) {
+  if (!(flags & (NACL_MAP_SHARED | NACL_MAP_PRIVATE))) {
     SetLastError(ERROR_INVALID_PARAMETER);
-    return kMapFailed;
+    return NACL_MAP_FAILED;
   }
 
   // Convert prot to the desired access type for MapViewOfFileEx().
   DWORD desired_access = prot_to_access[prot & 0x7];
-  if (flags & kMapPrivate) {
+  if (flags & NACL_MAP_PRIVATE) {
     desired_access = FILE_MAP_COPY;
   }
 
-  CHECK((flags & kMapFixed) != 0);
+  CHECK((flags & NACL_MAP_FIXED) != 0);
   for (size_t chunk_offset = 0;
        chunk_offset < length;
        chunk_offset += NACL_MAP_PAGESIZE) {
@@ -96,10 +93,8 @@ void* Map(struct NaClDescEffector* effp,
   return start;
 }
 
-int Unmap(void* start, size_t length) {
+int NaClUnmap(void* start, size_t length) {
   // TODO(shiki): Try from start to start + length
   UnmapViewOfFile(start);
   return 0;
 }
-
-}  // namespace nacl

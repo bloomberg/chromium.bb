@@ -110,9 +110,6 @@ typedef struct NaClIOVec {
  * and should cause a quick death if ever violated, since NaCl startup
  * code involves the use of descriptor passing through the affected
  * code.)
- *
- * TODO(bsy,ncbray): Constants are duplicated between this file and
- * nacl_imc.h and refactoring is needed to clean these files up.
  */
 #define CMSG_SPACE_KHANDLE_COUNT_MAX_INTS (8 * 4 + 16)
 
@@ -127,9 +124,9 @@ typedef struct NaClIOVec {
 /* Message header used by NaClSendDatagram() and NaClReceiveDatagram() */
 typedef struct NaClMessageHeader {
   NaClIOVec*  iov;            /* scatter/gather array */
-  size_t      iov_length;     /* number of elements in iov */
+  uint32_t    iov_length;     /* number of elements in iov */
   NaClHandle* handles;        /* array of handles to be transferred */
-  size_t      handle_count;   /* number of handles in handles */
+  uint32_t    handle_count;   /* number of handles in handles */
   int         flags;
 } NaClMessageHeader;
 
@@ -215,6 +212,12 @@ int NaClSendDatagramTo(const NaClMessageHeader* message,
 
 int NaClReceiveDatagram(NaClHandle socket, NaClMessageHeader* message,
                         int flags);
+
+/*
+ * Message size validator.  The ABI requires that the data size must
+ * be less than 2**32 bytes.
+ */
+int NaClMessageSizeIsValid(const NaClMessageHeader *message);
 
 /*
  * Type of function supplied to NaClSetCreateMemoryObjectFunc().  Such

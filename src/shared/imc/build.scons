@@ -11,7 +11,6 @@ if env.Bit('linux') and not env.Bit('android'):
 
 nacl_imc_inputs = [
     'nacl_imc_common.cc',
-    'nacl_imc_c.cc',
 ]
 
 if env.Bit('windows'):
