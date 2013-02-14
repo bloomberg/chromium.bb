@@ -202,17 +202,17 @@ void RecordDiscrepancyWithShill(
     const NetworkPortalDetector::CaptivePortalStatus status) {
   if (network->online()) {
     UMA_HISTOGRAM_ENUMERATION(
-        "CaptivePortal.OOBE.DiscrepancyWithShill.Online",
+        "CaptivePortal.OOBE.DiscrepancyWithShill_Online",
         status,
         NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
   } else if (network->restricted_pool()) {
     UMA_HISTOGRAM_ENUMERATION(
-        "CaptivePortal.OOBE.DiscrepancyWithShill.RestrictedPool",
+        "CaptivePortal.OOBE.DiscrepancyWithShill_RestrictedPool",
         status,
         NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
-        "CaptivePortal.OOBE.DiscrepancyWithShill.Offline",
+        "CaptivePortal.OOBE.DiscrepancyWithShill_Offline",
         status,
         NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
   }
