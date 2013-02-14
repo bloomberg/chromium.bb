@@ -56,7 +56,7 @@ const syncer::ModelType kUserSelectableTypes[] = {
   syncer::EXTENSIONS,
   syncer::PASSWORDS,
   syncer::PREFERENCES,
-  syncer::PROXY_TABS,
+  syncer::SESSIONS,
   syncer::THEMES,
   syncer::TYPED_URLS
 };
@@ -102,7 +102,7 @@ std::string GetConfiguration(const DictionaryValue* extra_values,
   result.SetBoolean("extensionsSynced", types.Has(syncer::EXTENSIONS));
   result.SetBoolean("passwordsSynced", types.Has(syncer::PASSWORDS));
   result.SetBoolean("preferencesSynced", types.Has(syncer::PREFERENCES));
-  result.SetBoolean("tabsSynced", types.Has(syncer::PROXY_TABS));
+  result.SetBoolean("sessionsSynced", types.Has(syncer::SESSIONS));
   result.SetBoolean("themesSynced", types.Has(syncer::THEMES));
   result.SetBoolean("typedUrlsSynced", types.Has(syncer::TYPED_URLS));
   std::string args;
@@ -201,7 +201,7 @@ void CheckConfigDataTypeArguments(DictionaryValue* dictionary,
   CheckBool(dictionary, "extensionsSynced", types.Has(syncer::EXTENSIONS));
   CheckBool(dictionary, "passwordsSynced", types.Has(syncer::PASSWORDS));
   CheckBool(dictionary, "preferencesSynced", types.Has(syncer::PREFERENCES));
-  CheckBool(dictionary, "tabsSynced", types.Has(syncer::PROXY_TABS));
+  CheckBool(dictionary, "sessionsSynced", types.Has(syncer::SESSIONS));
   CheckBool(dictionary, "themesSynced", types.Has(syncer::THEMES));
   CheckBool(dictionary, "typedUrlsSynced", types.Has(syncer::TYPED_URLS));
 }
@@ -1120,7 +1120,7 @@ TEST_P(SyncSetupHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "extensionsRegistered", true);
   CheckBool(dictionary, "passwordsRegistered", true);
   CheckBool(dictionary, "preferencesRegistered", true);
-  CheckBool(dictionary, "tabsRegistered", true);
+  CheckBool(dictionary, "sessionsRegistered", true);
   CheckBool(dictionary, "themesRegistered", true);
   CheckBool(dictionary, "typedUrlsRegistered", true);
   CheckBool(dictionary, "showPassphrase", false);

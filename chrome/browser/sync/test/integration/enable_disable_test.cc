@@ -57,25 +57,17 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
     ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(it.Get()));
 
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    // SESSIONS is lumped together with PROXY_TABS and
-    // HISTORY_DELETE_DIRECTIVES.
-    if (it.Get() == syncer::AUTOFILL_PROFILE || it.Get() == syncer::SESSIONS) {
+    if (it.Get() == syncer::AUTOFILL_PROFILE) {
       continue;
     }
 
-    if (!syncer::ProxyTypes().Has(it.Get())) {
-      ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()))
-          << syncer::ModelTypeToString(it.Get());
-    }
+    ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()))
+        << syncer::ModelTypeToString(it.Get());
 
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
     if (it.Get() == syncer::AUTOFILL) {
       ASSERT_TRUE(DoesTopLevelNodeExist(user_share,
                                         syncer::AUTOFILL_PROFILE));
-    } else if (it.Get() == syncer::HISTORY_DELETE_DIRECTIVES ||
-               it.Get() == syncer::PROXY_TABS) {
-      ASSERT_TRUE(DoesTopLevelNodeExist(user_share,
-                                        syncer::SESSIONS));
     }
   }
 
@@ -101,9 +93,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   // Make sure all top-level nodes exist first.
   for (syncer::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
-    if (!syncer::ProxyTypes().Has(it.Get())) {
-      ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()));
-    }
+    ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()));
   }
 
   for (syncer::ModelTypeSet::Iterator it = registered_types.First();
@@ -111,9 +101,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
     ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(it.Get()));
 
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    // SESSIONS is lumped together with PROXY_TABS and
-    // HISTORY_DELETE_DIRECTIVES.
-    if (it.Get() == syncer::AUTOFILL_PROFILE || it.Get() == syncer::SESSIONS) {
+    if (it.Get() == syncer::AUTOFILL_PROFILE) {
       continue;
     }
 
@@ -127,10 +115,6 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
     if (it.Get() == syncer::AUTOFILL) {
       ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
                                          syncer::AUTOFILL_PROFILE));
-    } else if (it.Get() == syncer::HISTORY_DELETE_DIRECTIVES ||
-               it.Get() == syncer::PROXY_TABS) {
-      ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
-                                         syncer::SESSIONS));
     }
   }
 

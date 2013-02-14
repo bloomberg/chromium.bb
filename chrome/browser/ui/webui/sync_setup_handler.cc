@@ -78,7 +78,7 @@ const char* kDataTypeNames[] = {
   "extensions",
   "passwords",
   "preferences",
-  "tabs",
+  "sessions",
   "themes",
   "typedUrls"
 };
@@ -90,7 +90,7 @@ const syncer::ModelType kDataTypes[] = {
   syncer::EXTENSIONS,
   syncer::PASSWORDS,
   syncer::PREFERENCES,
-  syncer::PROXY_TABS,
+  syncer::SESSIONS,
   syncer::THEMES,
   syncer::TYPED_URLS
 };

@@ -269,7 +269,7 @@ cr.define('options', function() {
         'extensionsSynced': syncAll || $('extensions-checkbox').checked,
         'typedUrlsSynced': syncAll || $('typed-urls-checkbox').checked,
         'appsSynced': syncAll || $('apps-checkbox').checked,
-        'tabsSynced': syncAll || $('tabs-checkbox').checked,
+        'sessionsSynced': syncAll || $('sessions-checkbox').checked,
         'encryptAllData': encryptAllData,
         'usePassphrase': usePassphrase,
         'isGooglePassphrase': googlePassphrase,
@@ -370,11 +370,11 @@ cr.define('options', function() {
       } else {
         $('apps-item').hidden = true;
       }
-      if (args.tabsRegistered) {
-        $('tabs-checkbox').checked = args.tabsSynced;
-        $('tabs-item').hidden = false;
+      if (args.sessionsRegistered) {
+        $('sessions-checkbox').checked = args.sessionsSynced;
+        $('sessions-item').hidden = false;
       } else {
-        $('tabs-item').hidden = true;
+        $('sessions-item').hidden = true;
       }
 
       this.setCheckboxesToKeepEverythingSynced_(args.syncAllDataTypes);

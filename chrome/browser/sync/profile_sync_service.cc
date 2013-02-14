@@ -1333,7 +1333,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
     syncer::EXTENSIONS,
     syncer::PASSWORDS,
     syncer::PREFERENCES,
-    syncer::PROXY_TABS,
+    syncer::SESSIONS,
     syncer::SYNCED_NOTIFICATIONS,
     syncer::THEMES,
     syncer::TYPED_URLS
@@ -1347,13 +1347,13 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
     browser_sync::user_selectable_type::EXTENSIONS,
     browser_sync::user_selectable_type::PASSWORDS,
     browser_sync::user_selectable_type::PREFERENCES,
-    browser_sync::user_selectable_type::PROXY_TABS,
+    browser_sync::user_selectable_type::SESSIONS,
     browser_sync::user_selectable_type::SYNCED_NOTIFICATIONS,
     browser_sync::user_selectable_type::THEMES,
     browser_sync::user_selectable_type::TYPED_URLS
   };
 
-  COMPILE_ASSERT(24 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
+  COMPILE_ASSERT(23 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
   COMPILE_ASSERT(arraysize(model_types) ==
                  browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT,
                  UpdateCustomConfigHistogram);
@@ -1393,8 +1393,7 @@ void ProfileSyncService::RefreshSpareBootstrapToken(
 }
 #endif
 
-void ProfileSyncService::OnUserChoseDatatypes(
-    bool sync_everything,
+void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
     syncer::ModelTypeSet chosen_types) {
   if (!backend_.get() && !HasUnrecoverableError()) {
     NOTREACHED();

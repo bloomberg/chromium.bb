@@ -99,9 +99,6 @@
       case ::syncer::DICTIONARY: \
         PER_DATA_TYPE_MACRO("Dictionary"); \
         break; \
-      case ::syncer::PROXY_TABS :\
-        PER_DATA_TYPE_MACRO("Tabs"); \
-        break; \
       default: \
         NOTREACHED() << "Unknown datatype " \
                      << ::syncer::ModelTypeToString(datatype);  \

@@ -581,7 +581,6 @@ DictionaryValue* GetUpdatesMessageToValue(
   SET_INT32(batch_size);
   SET_REP(from_progress_marker, DataTypeProgressMarkerToValue);
   SET_BOOL(streaming);
-  SET_BOOL(need_encryption_key);
   SET_BOOL(create_mobile_bookmarks_folder);
   return value;
 }
@@ -739,7 +738,6 @@ base::DictionaryValue* ClientConfigParamsToValue(
     const sync_pb::ClientConfigParams& proto) {
   DictionaryValue* value = new DictionaryValue();
   SET_INT32_REP(enabled_type_ids);
-  SET_BOOL(tabs_datatype_enabled);
   return value;
 }
 

@@ -48,7 +48,6 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     datatypes.push_back(syncer::PREFERENCES);
     datatypes.push_back(syncer::SEARCH_ENGINES);
     datatypes.push_back(syncer::SESSIONS);
-    datatypes.push_back(syncer::PROXY_TABS);
     datatypes.push_back(syncer::THEMES);
     datatypes.push_back(syncer::TYPED_URLS);
     return datatypes;
