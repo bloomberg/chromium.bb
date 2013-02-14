@@ -3,7 +3,7 @@ What is Wayland
 Wayland is a project to define a protocol for a compositor to talk to
 its clients as well as a library implementation of the protocol.  The
 compositor can be a standalone display server running on Linux kernel
-modesetting and evdev input devices, an X applications, or a wayland
+modesetting and evdev input devices, an X application, or a wayland
 client itself.  The clients can be traditional applications, X servers
 (rootless or fullscreen) or other display servers.
 
@@ -19,7 +19,7 @@ themselves, typically through cairo or OpenGL.
 
 The weston compositor is a reference implementation of a wayland
 compositor and the weston repository also includes a few example
-clients clients.
+clients.
 
 Building the wayland libraries is fairly simple, aside from libffi,
 they don't have many dependencies:
