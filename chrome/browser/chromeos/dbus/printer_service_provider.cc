@@ -4,12 +4,13 @@
 
 #include "chrome/browser/chromeos/dbus/printer_service_provider.h"
 
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -38,7 +39,7 @@ enum PrinterServiceEvent {
 
 // TODO(vitalybuka): update URL with more relevant information.
 const char kCloudPrintLearnUrl[] =
-    "http://www.google.com/landing/cloudprint/index.html?vendor=%s&product=%s";
+    "https://www.google.com/landing/cloudprint/index.html";
 
 void ActivateContents(Browser* browser, content::WebContents* contents) {
   browser->tab_strip_model()->ActivateTabAt(
@@ -55,22 +56,20 @@ Browser* ActivateAndGetBrowserForUrl(GURL url) {
   return NULL;
 }
 
-void FindOrOpenCloudPrintPage(const std::string& vendor,
-                              const std::string& product) {
+void FindOrOpenCloudPrintPage(const std::string& /* vendor */,
+                              const std::string& /* product */) {
   UMA_HISTOGRAM_ENUMERATION("PrinterService.PrinterServiceEvent", PRINTER_ADDED,
                             PRINTER_SERVICE_EVENT_MAX);
-  if (!chromeos::UserManager::Get()->IsUserLoggedIn())
+  if (!ash::Shell::GetInstance()->delegate()->IsSessionStarted() ||
+      ash::Shell::GetInstance()->delegate()->IsScreenLocked()) {
     return;
+  }
 
   Profile* profile = ProfileManager::GetLastUsedProfile();
   if (!profile)
     return;
 
-  // Escape param just in case. Usually vendor and model should be just integer.
-  GURL url(
-      base::StringPrintf(kCloudPrintLearnUrl,
-                         net::EscapeQueryParamValue(vendor, true).c_str(),
-                         net::EscapeQueryParamValue(product, true).c_str()));
+  GURL url(kCloudPrintLearnUrl);
 
   Browser* browser = ActivateAndGetBrowserForUrl(url);
   if (!browser) {
