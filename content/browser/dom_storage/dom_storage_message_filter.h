@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebStorageArea.h"
 #include "webkit/dom_storage/dom_storage_context.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
