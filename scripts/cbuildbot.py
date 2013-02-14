@@ -241,6 +241,10 @@ class Builder(object):
       vp_file = sync_instance.SaveValidationPool()
       args += ['--validation_pool', vp_file]
 
+    # Reset the cache dir so that the child will calculate it automatically.
+    if not self.options.cache_dir_specified:
+      commandline.BaseParser.ConfigureCacheDir(None)
+
     # Re-run the command in the buildroot.
     # Finally, be generous and give the invoked cbuildbot 30s to shutdown
     # when something occurs.  It should exit quicker, but the sigterm may
@@ -680,9 +684,7 @@ def _CheckChromeRevOption(_option, _opt_str, value, parser):
   parser.values.chrome_rev = value
 
 
-def FindCacheDir(parser, options):
-  if constants.SHARED_CACHE_ENVVAR in os.environ:
-    return commandline.OptionParser.FindCacheDir(parser, options)
+def FindCacheDir(_parser, _options):
   return None
 
 
@@ -1041,14 +1043,15 @@ def _PostParseCheck(parser, options, args):
       raise Exception('Could not find repo checkout at %s!'
                       % options.sourceroot)
 
-  # Ensure we have a workable cachedir from this point forward.
+  # Because the default cache dir depends on other options, FindCacheDir
+  # always returns None, and we setup the default here.
   if options.cache_dir is None:
     # Note, options.sourceroot is set regardless of the path
     # actually existing.
-    if os.path.exists(options.sourceroot):
-      options.cache_dir = os.path.join(options.sourceroot, '.cache')
-    elif options.buildroot is not None:
+    if options.buildroot is not None:
       options.cache_dir = os.path.join(options.buildroot, '.cache')
+    elif os.path.exists(options.sourceroot):
+      options.cache_dir = os.path.join(options.sourceroot, '.cache')
     else:
       options.cache_dir = parser.FindCacheDir(parser, options)
     options.cache_dir = os.path.abspath(options.cache_dir)
