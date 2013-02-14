@@ -1219,7 +1219,7 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
                                    current_frame_len_);
             reader.Seek(GetControlFrameMinimumSize());  // Skip frame header.
             SpdyStreamId last_accepted_stream_id = kInvalidStream;
-            bool successful_read = reader.ReadUInt32(&last_accepted_stream_id);
+            bool successful_read = reader.ReadUInt31(&last_accepted_stream_id);
             DCHECK(successful_read);
             SpdyGoAwayStatus status = GOAWAY_OK;
             if (spdy_version_ >= 3) {

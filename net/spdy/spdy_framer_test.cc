@@ -3559,4 +3559,34 @@ TEST_P(SpdyFramerTest, SettingsFlagsAndId) {
   EXPECT_EQ(kWireFormat, id_and_flags.GetWireFormat(spdy_version_));
 }
 
+// Tests handling of a GOAWAY frame with out-of-bounds stream ID.
+TEST_P(SpdyFramerTest, GoAwayStreamIdBounds) {
+  const unsigned char kV2FrameData[] = {
+    0x80, spdy_version_, 0x00, 0x07,
+    0x00, 0x00, 0x00, 0x04,
+    0xff, 0xff, 0xff, 0xff,
+  };
+  const unsigned char kV3FrameData[] = {
+    0x80, spdy_version_, 0x00, 0x07,
+    0x00, 0x00, 0x00, 0x08,
+    0xff, 0xff, 0xff, 0xff,
+    0x00, 0x00, 0x00, 0x00,
+  };
+
+  testing::StrictMock<net::test::MockVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  EXPECT_CALL(visitor, OnGoAway(0x7fffffff, GOAWAY_OK));
+  if (IsSpdy2()) {
+    framer.ProcessInput(reinterpret_cast<const char*>(kV2FrameData),
+                        arraysize(kV2FrameData));
+  } else {
+    framer.ProcessInput(reinterpret_cast<const char*>(kV3FrameData),
+                        arraysize(kV3FrameData));
+  }
+  EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+}
+
 }  // namespace net
