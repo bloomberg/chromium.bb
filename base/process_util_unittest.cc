@@ -380,6 +380,40 @@ TEST_F(ProcessUtilTest, SetProcessBackgroundedSelf) {
   EXPECT_EQ(old_priority, new_priority);
 }
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+TEST_F(ProcessUtilTest, GetSystemMemoryInfo) {
+  base::SystemMemoryInfoKB info;
+  EXPECT_TRUE(base::GetSystemMemoryInfo(&info));
+
+  // Ensure each field received a value.
+  EXPECT_GT(info.total, 0);
+  EXPECT_GT(info.free, 0);
+  EXPECT_GT(info.buffers, 0);
+  EXPECT_GT(info.cached, 0);
+  EXPECT_GT(info.active_anon, 0);
+  EXPECT_GT(info.inactive_anon, 0);
+  EXPECT_GT(info.active_file, 0);
+  EXPECT_GT(info.inactive_file, 0);
+
+  // All the values should be less than the total amount of memory.
+  EXPECT_LT(info.free, info.total);
+  EXPECT_LT(info.buffers, info.total);
+  EXPECT_LT(info.cached, info.total);
+  EXPECT_LT(info.active_anon, info.total);
+  EXPECT_LT(info.inactive_anon, info.total);
+  EXPECT_LT(info.active_file, info.total);
+  EXPECT_LT(info.inactive_file, info.total);
+
+#if defined(OS_CHROMEOS)
+  // Chrome OS exposes shmem.
+  EXPECT_GT(info.shmem, 0);
+  EXPECT_LT(info.shmem, info.total);
+  // Chrome unit tests are not run on actual Chrome OS hardware, so gem_objects
+  // and gem_size cannot be tested here.
+#endif
+}
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
 // TODO(estade): if possible, port these 2 tests.
 #if defined(OS_WIN)
 TEST_F(ProcessUtilTest, EnableLFH) {
