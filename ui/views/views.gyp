@@ -689,11 +689,6 @@
             '../../base/allocator/allocator.gyp:allocator',
           ],
         }],
-        ['use_aura==0 and OS=="win"', {
-          'sources/': [
-            ['exclude', 'controls/combobox/native_combobox_views_unittest.cc'],
-          ],
-        }],
         [ 'use_aura==1', {
           'dependencies': [
             '../aura/aura.gyp:aura_test_support',
