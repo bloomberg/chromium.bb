@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <queue>
 #include <set>
 #include <string>
 #include <vector>
@@ -14,11 +15,11 @@
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/async_file_test_helper.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/isolated_file_util.h"
 #include "webkit/fileapi/local_file_system_operation.h"
@@ -34,6 +35,8 @@ using file_util::FileEnumerator;
 namespace fileapi {
 
 namespace {
+
+typedef AsyncFileTestHelper::FileEntryList FileEntryList;
 
 // Used in IsolatedFileUtilTest::SimulateDropFiles().
 // Random root paths in which we create each file/directory of the
@@ -51,12 +54,41 @@ base::FilePath GetTopLevelPath(const base::FilePath& path) {
   return base::FilePath(components[0]);
 }
 
-bool IsDirectoryEmpty(FileSystemOperationContext* context,
-                      FileSystemFileUtil* file_util,
-                      const FileSystemURL& url) {
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum =
-      file_util->CreateFileEnumerator(context, url, false /* recursive */);
-  return file_enum->Next().empty();
+bool IsDirectoryEmpty(FileSystemContext* context, const FileSystemURL& url) {
+  FileEntryList entries;
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            AsyncFileTestHelper::ReadDirectory(context, url, &entries));
+  return entries.empty();
+}
+
+FileSystemURL GetEntryURL(FileSystemContext* file_system_context,
+                          const FileSystemURL& dir,
+                          const FilePath::StringType& name) {
+  return file_system_context->CreateCrackedFileSystemURL(
+      dir.origin(),
+      dir.mount_type(),
+      dir.virtual_path().Append(name));
+}
+
+FilePath GetRelativeVirtualPath(const FileSystemURL& root,
+                                const FileSystemURL& url) {
+  if (root.virtual_path().empty())
+    return url.virtual_path();
+  FilePath relative;
+  const bool success = root.virtual_path().AppendRelativePath(
+      url.virtual_path(), &relative);
+  DCHECK(success);
+  return relative;
+}
+
+FileSystemURL GetOtherURL(FileSystemContext* file_system_context,
+                          const FileSystemURL& root,
+                          const FileSystemURL& other_root,
+                          const FileSystemURL& url) {
+  return file_system_context->CreateCrackedFileSystemURL(
+      other_root.origin(),
+      other_root.mount_type(),
+      other_root.virtual_path().Append(GetRelativeVirtualPath(root, url)));
 }
 
 }  // namespace
@@ -65,8 +97,7 @@ bool IsDirectoryEmpty(FileSystemOperationContext* context,
 // IsolatedFileUtil.
 class IsolatedFileUtilTest : public testing::Test {
  public:
-  IsolatedFileUtilTest()
-      : other_file_util_helper_(GURL("http://foo/"), kFileSystemTypeTest) {}
+  IsolatedFileUtilTest() {}
 
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -85,15 +116,11 @@ class IsolatedFileUtilTest : public testing::Test {
         partition_dir_.path(),
         CreateAllowFileAccessOptions());
 
-    // For cross-FileUtil copy/move tests.
-    other_file_util_helper_.SetUp(file_system_context_);
-
     isolated_context()->AddReference(filesystem_id_);
   }
 
   virtual void TearDown() {
     isolated_context()->RemoveReference(filesystem_id_);
-    other_file_util_helper_.TearDown();
   }
 
  protected:
@@ -107,14 +134,12 @@ class IsolatedFileUtilTest : public testing::Test {
     return file_system_context_.get();
   }
   FileSystemFileUtil* file_util() const { return file_util_.get(); }
-  FileSystemFileUtil* other_file_util() const {
-    return other_file_util_helper_.file_util();
-  }
   std::string filesystem_id() const { return filesystem_id_; }
 
-  base::FilePath GetTestCasePlatformPath(const base::FilePath::StringType& path) {
-    return toplevel_root_map_[GetTopLevelPath(base::FilePath(path))].Append(path).
-        NormalizePathSeparators();
+  base::FilePath GetTestCasePlatformPath(
+      const base::FilePath::StringType& path) {
+    return toplevel_root_map_[GetTopLevelPath(base::FilePath(path))]
+        .Append(path).NormalizePathSeparators();
   }
 
   base::FilePath GetTestCaseLocalPath(const base::FilePath& path) {
@@ -133,31 +158,28 @@ class IsolatedFileUtilTest : public testing::Test {
         virtual_path);
   }
 
-  FileSystemURL GetOtherFileSystemURL(const base::FilePath& path) {
-    return other_file_util_helper_.CreateURL(GetTestCaseLocalPath(path));
+  FileSystemURL GetOtherFileSystemURL(const base::FilePath& path) const {
+    return file_system_context()->CreateCrackedFileSystemURL(
+        GURL("http://example.com"),
+        kFileSystemTypeTemporary,
+        FilePath().AppendASCII("dest").Append(path));
   }
 
-  void VerifyFilesHaveSameContent(FileSystemFileUtil* file_util1,
-                                  FileSystemFileUtil* file_util2,
-                                  const FileSystemURL& url1,
+  void VerifyFilesHaveSameContent(const FileSystemURL& url1,
                                   const FileSystemURL& url2) {
-    scoped_ptr<FileSystemOperationContext> context;
-
     // Get the file info for url1.
     base::PlatformFileInfo info1;
-    base::FilePath platform_path1;
-    context.reset(new FileSystemOperationContext(file_system_context()));
+    FilePath platform_path1;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
-              file_util1->GetFileInfo(context.get(), url1,
-                                      &info1, &platform_path1));
+              AsyncFileTestHelper::GetMetadata(
+                  file_system_context(), url1, &info1, &platform_path1));
 
     // Get the file info for url2.
     base::PlatformFileInfo info2;
     base::FilePath platform_path2;
-    context.reset(new FileSystemOperationContext(file_system_context()));
     ASSERT_EQ(base::PLATFORM_FILE_OK,
-              file_util2->GetFileInfo(context.get(), url2,
-                                      &info2, &platform_path2));
+              AsyncFileTestHelper::GetMetadata(
+                  file_system_context(), url2, &info2, &platform_path2));
 
     // See if file info matches with the other one.
     EXPECT_EQ(info1.is_directory, info2.is_directory);
@@ -171,48 +193,57 @@ class IsolatedFileUtilTest : public testing::Test {
     EXPECT_EQ(content1, content2);
   }
 
-  void VerifyDirectoriesHaveSameContent(FileSystemFileUtil* file_util1,
-                                        FileSystemFileUtil* file_util2,
-                                        const FileSystemURL& root1,
+  void VerifyDirectoriesHaveSameContent(const FileSystemURL& root1,
                                         const FileSystemURL& root2) {
-    scoped_ptr<FileSystemOperationContext> context;
     base::FilePath root_path1 = root1.path();
     base::FilePath root_path2 = root2.path();
 
-    context.reset(new FileSystemOperationContext(file_system_context()));
-    scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum1 =
-        file_util1->CreateFileEnumerator(context.get(), root1,
-                                         true /* recursive */);
+    FileEntryList entries;
+    std::queue<FileSystemURL> directories;
 
-    base::FilePath current;
+    directories.push(root1);
     std::set<base::FilePath> file_set1;
-    while (!(current = file_enum1->Next()).empty()) {
-      if (file_enum1->IsDirectory())
-        continue;
-      base::FilePath relative;
-      root_path1.AppendRelativePath(current, &relative);
-      file_set1.insert(relative);
+    while (!directories.empty()) {
+      FileSystemURL dir = directories.front();
+      directories.pop();
+
+      ASSERT_EQ(base::PLATFORM_FILE_OK,
+                AsyncFileTestHelper::ReadDirectory(
+                    file_system_context(), dir, &entries));
+      for (size_t i = 0; i < entries.size(); ++i) {
+        FileSystemURL url = GetEntryURL(file_system_context(),
+                                        dir, entries[i].name);
+        if (entries[i].is_directory) {
+          directories.push(url);
+          continue;
+        }
+        file_set1.insert(GetRelativeVirtualPath(root1, url));
+      }
     }
 
-    context.reset(new FileSystemOperationContext(file_system_context()));
-    scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum2 =
-        file_util2->CreateFileEnumerator(context.get(), root2,
-                                         true /* recursive */);
+    directories.push(root2);
+    while (!directories.empty()) {
+      FileSystemURL dir = directories.front();
+      directories.pop();
 
-    while (!(current = file_enum2->Next()).empty()) {
-      base::FilePath relative;
-      root_path2.AppendRelativePath(current, &relative);
-      FileSystemURL url1 = root1.WithPath(root_path1.Append(relative));
-      FileSystemURL url2 = root2.WithPath(root_path2.Append(relative));
-      if (file_enum2->IsDirectory()) {
-        FileSystemOperationContext context1(file_system_context());
-        FileSystemOperationContext context2(file_system_context());
-        EXPECT_EQ(IsDirectoryEmpty(&context1, file_util1, url1),
-                  IsDirectoryEmpty(&context2, file_util2, url2));
-        continue;
+      ASSERT_EQ(base::PLATFORM_FILE_OK,
+                AsyncFileTestHelper::ReadDirectory(
+                    file_system_context(), dir, &entries));
+      for (size_t i = 0; i < entries.size(); ++i) {
+        FileSystemURL url2 = GetEntryURL(file_system_context(),
+                                         dir, entries[i].name);
+        FileSystemURL url1 = GetOtherURL(file_system_context(),
+                                         root2, root1, url2);
+        if (entries[i].is_directory) {
+          directories.push(url2);
+          EXPECT_EQ(IsDirectoryEmpty(file_system_context(), url1),
+                    IsDirectoryEmpty(file_system_context(), url2));
+          continue;
+        }
+        base::FilePath relative = GetRelativeVirtualPath(root2, url2);
+        EXPECT_TRUE(file_set1.find(relative) != file_set1.end());
+        VerifyFilesHaveSameContent(url1, url2);
       }
-      EXPECT_TRUE(file_set1.find(relative) != file_set1.end());
-      VerifyFilesHaveSameContent(file_util1, file_util2, url1, url2);
     }
   }
 
@@ -255,7 +286,6 @@ class IsolatedFileUtilTest : public testing::Test {
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<base::FilePath, base::FilePath> toplevel_root_map_;
   scoped_ptr<IsolatedFileUtil> file_util_;
-  LocalFileSystemTestOriginHelper other_file_util_helper_;
   DISALLOW_COPY_AND_ASSIGN(IsolatedFileUtilTest);
 };
 
@@ -336,7 +366,8 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
                  << ": " << test_case.path);
 
     // Read entries in the directory to construct the expected results map.
-    typedef std::map<base::FilePath::StringType, base::FileUtilProxy::Entry> EntryMap;
+    typedef std::map<base::FilePath::StringType,
+                     base::FileUtilProxy::Entry> EntryMap;
     EntryMap expected_entry_map;
 
     FileEnumerator file_enum(
@@ -356,11 +387,10 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
 
     // Perform ReadDirectory in the isolated filesystem.
     FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
-    std::vector<base::FileUtilProxy::Entry> entries;
-    FileSystemOperationContext context(file_system_context());
+    FileEntryList entries;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
-              FileUtilHelper::ReadDirectory(
-                  &context, file_util(), url, &entries));
+              AsyncFileTestHelper::ReadDirectory(
+                  file_system_context(), url, &entries));
 
     EXPECT_EQ(expected_entry_map.size(), entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
@@ -392,82 +422,71 @@ TEST_F(IsolatedFileUtilTest, GetLocalFilePathTest) {
 }
 
 TEST_F(IsolatedFileUtilTest, CopyOutFileTest) {
-  scoped_ptr<FileSystemOperationContext> context(
-      new FileSystemOperationContext(file_system_context()));
-  FileSystemURL root_url = GetFileSystemURL(base::FilePath());
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
-      file_util()->CreateFileEnumerator(context.get(),
-                                        root_url,
-                                        true /* recursive */));
-  base::FilePath current;
-  while (!(current = file_enum->Next()).empty()) {
-    if (file_enum->IsDirectory())
-      continue;
+  FileSystemURL src_root = GetFileSystemURL(base::FilePath());
+  FileSystemURL dest_root = GetOtherFileSystemURL(base::FilePath());
 
-    SCOPED_TRACE(testing::Message() << "Testing file copy "
-                 << current.value());
+  FileEntryList entries;
+  std::queue<FileSystemURL> directories;
+  directories.push(src_root);
 
-    FileSystemURL src_url = root_url.WithPath(current);
-    FileSystemURL dest_url = GetOtherFileSystemURL(current);
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            AsyncFileTestHelper::CreateDirectory(file_system_context(),
+                                                 dest_root));
 
-    // Create the parent directory of the destination.
-    context.reset(new FileSystemOperationContext(file_system_context()));
+  while (!directories.empty()) {
+    FileSystemURL dir = directories.front();
+    directories.pop();
     ASSERT_EQ(base::PLATFORM_FILE_OK,
-              other_file_util()->CreateDirectory(
-                  context.get(),
-                  GetOtherFileSystemURL(current.DirName()),
-                  false /* exclusive */,
-                  true /* recursive */));
+              AsyncFileTestHelper::ReadDirectory(file_system_context(),
+                                                 dir, &entries));
+    for (size_t i = 0; i < entries.size(); ++i) {
+      FileSystemURL src_url = GetEntryURL(file_system_context(),
+                                          dir, entries[i].name);
+      FileSystemURL dest_url = GetOtherURL(file_system_context(),
+                                           src_root, dest_root, src_url);
 
-    context.reset(new FileSystemOperationContext(file_system_context()));
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
-              FileUtilHelper::Copy(
-                  context.get(),
-                  file_util(), other_file_util(),
-                  src_url, dest_url));
-
-    VerifyFilesHaveSameContent(file_util(), other_file_util(),
-                               src_url, dest_url);
+      if (entries[i].is_directory) {
+        ASSERT_EQ(base::PLATFORM_FILE_OK,
+                  AsyncFileTestHelper::CreateDirectory(file_system_context(),
+                                                       dest_url));
+        directories.push(src_url);
+        continue;
+      }
+      SCOPED_TRACE(testing::Message() << "Testing file copy "
+                   << src_url.path().value());
+      ASSERT_EQ(base::PLATFORM_FILE_OK,
+                AsyncFileTestHelper::Copy(file_system_context(),
+                                          src_url, dest_url));
+      VerifyFilesHaveSameContent(src_url, dest_url);
+    }
   }
 }
 
 TEST_F(IsolatedFileUtilTest, CopyOutDirectoryTest) {
-  scoped_ptr<FileSystemOperationContext> context(
-      new FileSystemOperationContext(file_system_context()));
-  FileSystemURL root_url = GetFileSystemURL(base::FilePath());
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
-      file_util()->CreateFileEnumerator(context.get(),
-                                        root_url,
-                                        false /* recursive */));
-  base::FilePath current;
-  while (!(current = file_enum->Next()).empty()) {
-    if (!file_enum->IsDirectory())
+  FileSystemURL src_root = GetFileSystemURL(base::FilePath());
+  FileSystemURL dest_root = GetOtherFileSystemURL(base::FilePath());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            AsyncFileTestHelper::CreateDirectory(file_system_context(),
+                                                 dest_root));
+
+  FileEntryList entries;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            AsyncFileTestHelper::ReadDirectory(file_system_context(),
+                                               src_root, &entries));
+  for (size_t i = 0; i < entries.size(); ++i) {
+    if (!entries[i].is_directory)
       continue;
-
-    SCOPED_TRACE(testing::Message() << "Testing directory copy "
-                 << current.value());
-
-    FileSystemURL src_url = root_url.WithPath(current);
-    FileSystemURL dest_url = GetOtherFileSystemURL(current);
-
-    // Create the parent directory of the destination.
-    context.reset(new FileSystemOperationContext(file_system_context()));
+    FileSystemURL src_url = GetEntryURL(file_system_context(),
+                                        src_root, entries[i].name);
+    FileSystemURL dest_url = GetOtherURL(file_system_context(),
+                                         src_root, dest_root, src_url);
+    SCOPED_TRACE(testing::Message() << "Testing file copy "
+                 << src_url.path().value());
     ASSERT_EQ(base::PLATFORM_FILE_OK,
-              other_file_util()->CreateDirectory(
-                  context.get(),
-                  GetOtherFileSystemURL(current.DirName()),
-                  false /* exclusive */,
-                  true /* recursive */));
-
-    context.reset(new FileSystemOperationContext(file_system_context()));
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
-              FileUtilHelper::Copy(
-                  context.get(),
-                  file_util(), other_file_util(),
-                  src_url, dest_url));
-
-    VerifyDirectoriesHaveSameContent(file_util(), other_file_util(),
-                                     src_url, dest_url);
+              AsyncFileTestHelper::Copy(file_system_context(),
+                                        src_url, dest_url));
+    VerifyDirectoriesHaveSameContent(src_url, dest_url);
   }
 }
 
