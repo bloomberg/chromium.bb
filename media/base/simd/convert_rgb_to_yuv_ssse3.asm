@@ -243,7 +243,7 @@
 ;                                           uint8* y,
 ;                                           uint8* u,
 ;                                           uint8* v,
-;                                           int width);
+;                                           ptrdiff_t width);
 ;
 %define SYMBOL          ConvertARGBToYUVRow_SSSE3
 %define PIXELSIZE       4
@@ -256,7 +256,7 @@
 ;                                          uint8* y,
 ;                                          uint8* u,
 ;                                          uint8* v,
-;                                          int width);
+;                                          ptrdiff_t width);
 ;
 %define SYMBOL          ConvertRGBToYUVRow_SSSE3
 %define PIXELSIZE       3
@@ -269,7 +269,7 @@
 ;                                            uint8* y,
 ;                                            uint8* u,
 ;                                            uint8* v,
-;                                            int width);
+;                                            ptrdiff_t width);
 ;
 %define SYMBOL          ConvertARGBToYUVEven_SSSE3
 %define PIXELSIZE       4
@@ -282,7 +282,7 @@
 ;                                           uint8* y,
 ;                                           uint8* u,
 ;                                           uint8* v,
-;                                           int width);
+;                                           ptrdiff_t width);
 ;
 %define SYMBOL          ConvertARGBToYUVOdd_SSSE3
 %define PIXELSIZE       4
@@ -295,7 +295,7 @@
 ;                                           uint8* y,
 ;                                           uint8* u,
 ;                                           uint8* v,
-;                                           int width);
+;                                           ptrdiff_t width);
 ;
 %define SYMBOL          ConvertRGBToYUVEven_SSSE3
 %define PIXELSIZE       3
@@ -308,7 +308,7 @@
 ;                                          uint8* y,
 ;                                          uint8* u,
 ;                                          uint8* v,
-;                                          int width);
+;                                          ptrdiff_t width);
 ;
 %define SYMBOL          ConvertRGBToYUVOdd_SSSE3
 %define PIXELSIZE       3

@@ -59,70 +59,78 @@ void ConvertYUVToRGB32_MMX(const uint8* yplane,
 // Assembly functions are declared without namespace.
 extern "C" {
 
+// We use ptrdiff_t instead of int for yasm routine parameters to portably
+// sign-extend int. On Win64, MSVC does not sign-extend the value in the stack
+// home of int function parameters, and yasm routines are unaware of this lack
+// of extension and fault.  ptrdiff_t is portably sign-extended and fixes this
+// issue on at least Win64.  The C-equivalent RowProc versions' prototypes
+// include the same change to ptrdiff_t to reuse the typedefs.
+
 typedef void (*ConvertYUVToRGB32RowProc)(const uint8*,
                                           const uint8*,
                                           const uint8*,
                                           uint8*,
-                                          int);
+                                          ptrdiff_t);
+
 typedef void (*ScaleYUVToRGB32RowProc)(const uint8*,
                                        const uint8*,
                                        const uint8*,
                                        uint8*,
-                                       int,
-                                       int);
+                                       ptrdiff_t,
+                                       ptrdiff_t);
 
 void ConvertYUVToRGB32Row_C(const uint8* yplane,
                             const uint8* uplane,
                             const uint8* vplane,
                             uint8* rgbframe,
-                            int width);
+                            ptrdiff_t width);
 
 void ConvertYUVToRGB32Row_MMX(const uint8* yplane,
                               const uint8* uplane,
                               const uint8* vplane,
                               uint8* rgbframe,
-                              int width);
+                              ptrdiff_t width);
 
 void ConvertYUVToRGB32Row_SSE(const uint8* yplane,
                               const uint8* uplane,
                               const uint8* vplane,
                               uint8* rgbframe,
-                              int width);
+                              ptrdiff_t width);
 
 void ScaleYUVToRGB32Row_C(const uint8* y_buf,
                           const uint8* u_buf,
                           const uint8* v_buf,
                           uint8* rgb_buf,
-                          int width,
-                          int source_dx);
+                          ptrdiff_t width,
+                          ptrdiff_t source_dx);
 
 void ScaleYUVToRGB32Row_MMX(const uint8* y_buf,
                             const uint8* u_buf,
                             const uint8* v_buf,
                             uint8* rgb_buf,
-                            int width,
-                            int source_dx);
+                            ptrdiff_t width,
+                            ptrdiff_t source_dx);
 
 void ScaleYUVToRGB32Row_SSE(const uint8* y_buf,
                             const uint8* u_buf,
                             const uint8* v_buf,
                             uint8* rgb_buf,
-                            int width,
-                            int source_dx);
+                            ptrdiff_t width,
+                            ptrdiff_t source_dx);
 
 void ScaleYUVToRGB32Row_SSE2_X64(const uint8* y_buf,
                                  const uint8* u_buf,
                                  const uint8* v_buf,
                                  uint8* rgb_buf,
-                                 int width,
-                                 int source_dx);
+                                 ptrdiff_t width,
+                                 ptrdiff_t source_dx);
 
 void LinearScaleYUVToRGB32Row_C(const uint8* y_buf,
                                 const uint8* u_buf,
                                 const uint8* v_buf,
                                 uint8* rgb_buf,
-                                int width,
-                                int source_dx);
+                                ptrdiff_t width,
+                                ptrdiff_t source_dx);
 
 void LinearScaleYUVToRGB32RowWithRange_C(const uint8* y_buf,
                                          const uint8* u_buf,
@@ -136,22 +144,22 @@ void LinearScaleYUVToRGB32Row_MMX(const uint8* y_buf,
                                   const uint8* u_buf,
                                   const uint8* v_buf,
                                   uint8* rgb_buf,
-                                  int width,
-                                  int source_dx);
+                                  ptrdiff_t width,
+                                  ptrdiff_t source_dx);
 
 void LinearScaleYUVToRGB32Row_SSE(const uint8* y_buf,
                                   const uint8* u_buf,
                                   const uint8* v_buf,
                                   uint8* rgb_buf,
-                                  int width,
-                                  int source_dx);
+                                  ptrdiff_t width,
+                                  ptrdiff_t source_dx);
 
 void LinearScaleYUVToRGB32Row_MMX_X64(const uint8* y_buf,
                                       const uint8* u_buf,
                                       const uint8* v_buf,
                                       uint8* rgb_buf,
-                                      int width,
-                                      int source_dx);
+                                      ptrdiff_t width,
+                                      ptrdiff_t source_dx);
 
 }  // extern "C"
 

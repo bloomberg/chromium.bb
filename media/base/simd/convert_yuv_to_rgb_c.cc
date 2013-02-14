@@ -45,7 +45,7 @@ void ConvertYUVToRGB32Row_C(const uint8* y_buf,
                             const uint8* u_buf,
                             const uint8* v_buf,
                             uint8* rgb_buf,
-                            int width) {
+                            ptrdiff_t width) {
   for (int x = 0; x < width; x += 2) {
     uint8 u = u_buf[x >> 1];
     uint8 v = v_buf[x >> 1];
@@ -67,8 +67,8 @@ void ScaleYUVToRGB32Row_C(const uint8* y_buf,
                           const uint8* u_buf,
                           const uint8* v_buf,
                           uint8* rgb_buf,
-                          int width,
-                          int source_dx) {
+                          ptrdiff_t width,
+                          ptrdiff_t source_dx) {
   int x = 0;
   for (int i = 0; i < width; i += 2) {
     int y = y_buf[x >> 16];
@@ -89,8 +89,8 @@ void LinearScaleYUVToRGB32Row_C(const uint8* y_buf,
                                 const uint8* u_buf,
                                 const uint8* v_buf,
                                 uint8* rgb_buf,
-                                int width,
-                                int source_dx) {
+                                ptrdiff_t width,
+                                ptrdiff_t source_dx) {
   // Avoid point-sampling for down-scaling by > 2:1.
   int source_x = 0;
   if (source_dx >= 0x20000)

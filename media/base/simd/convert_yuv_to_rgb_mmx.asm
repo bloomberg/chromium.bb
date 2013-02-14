@@ -17,6 +17,6 @@
 ;                                          const uint8* u_buf,
 ;                                          const uint8* v_buf,
 ;                                          uint8* rgb_buf,
-;                                          int width);
+;                                          ptrdiff_t width);
 %define SYMBOL ConvertYUVToRGB32Row_MMX
 %include "convert_yuv_to_rgb_mmx.inc"
