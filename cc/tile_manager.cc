@@ -180,10 +180,11 @@ TileManager::TileManager(
     bool use_cheapness_estimator)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
-      raster_worker_pool_(RasterWorkerPool::Create(num_raster_threads)),
+      raster_worker_pool_(RasterWorkerPool::Create(this, num_raster_threads)),
       manage_tiles_pending_(false),
       manage_tiles_call_count_(0),
       bytes_pending_set_pixels_(0),
+      has_performed_uploads_since_last_flush_(false),
       ever_exceeded_memory_budget_(false),
       record_rendering_stats_(false),
       use_cheapness_estimator_(use_cheapness_estimator) {
@@ -538,6 +539,16 @@ bool TileManager::HasPendingWorkScheduled(WhichTree tree) const {
   return false;
 }
 
+void TileManager::DidFinishDispatchingWorkerPoolCompletionCallbacks() {
+  // If a flush is needed, do it now before starting to dispatch more tasks.
+  if (has_performed_uploads_since_last_flush_) {
+    resource_pool_->resource_provider()->shallowFlushIfSupported();
+    has_performed_uploads_since_last_flush_ = false;
+  }
+
+  DispatchMoreTasks();
+}
+
 void TileManager::AssignGpuMemoryToTiles() {
   TRACE_EVENT0("cc", "TileManager::AssignGpuMemoryToTiles");
   size_t unreleasable_bytes = 0;
@@ -749,8 +760,6 @@ void TileManager::OnImageDecodeTaskCompleted(
       }
     }
   }
-
-  DispatchMoreTasks();
 }
 
 scoped_ptr<ResourcePool::Resource> TileManager::PrepareTileForRaster(
@@ -838,7 +847,8 @@ void TileManager::OnRasterCompleted(
     managed_tile_state.can_be_freed = false;
 
     resource_pool_->resource_provider()->beginSetPixels(resource->id());
-    resource_pool_->resource_provider()->shallowFlushIfSupported();
+    has_performed_uploads_since_last_flush_ = true;
+
     managed_tile_state.resource = resource.Pass();
 
     bytes_pending_set_pixels_ += tile->bytes_consumed_if_allocated();
@@ -858,7 +868,6 @@ void TileManager::OnRasterTaskCompleted(
     int manage_tiles_call_count_when_dispatched) {
   OnRasterCompleted(tile, resource.Pass(),
                     manage_tiles_call_count_when_dispatched);
-  DispatchMoreTasks();
 }
 
 void TileManager::DidFinishTileInitialization(Tile* tile) {

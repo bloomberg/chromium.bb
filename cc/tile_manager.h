@@ -17,6 +17,7 @@
 #include "cc/rendering_stats.h"
 #include "cc/resource_pool.h"
 #include "cc/tile_priority.h"
+#include "cc/worker_pool.h"
 
 namespace cc {
 class RasterWorkerPool;
@@ -102,7 +103,7 @@ class CC_EXPORT ManagedTileState {
 // should no longer have any memory assigned to them. Tile objects are "owned"
 // by layers; they automatically register with the manager when they are
 // created, and unregister from the manager when they are deleted.
-class CC_EXPORT TileManager {
+class CC_EXPORT TileManager : public WorkerPoolClient {
  public:
   TileManager(TileManagerClient* client,
               ResourceProvider *resource_provider,
@@ -128,7 +129,12 @@ class CC_EXPORT TileManager {
   void GetRenderingStats(RenderingStats* stats);
   bool HasPendingWorkScheduled(WhichTree tree) const;
 
-  const MemoryHistory::Entry& memory_stats_from_last_assign() const { return memory_stats_from_last_assign_; }
+  const MemoryHistory::Entry& memory_stats_from_last_assign() const {
+    return memory_stats_from_last_assign_;
+  }
+
+  // Overridden from WorkerPoolClient:
+  virtual void DidFinishDispatchingWorkerPoolCompletionCallbacks() OVERRIDE;
 
  protected:
   // Methods called by Tile
@@ -158,7 +164,8 @@ class CC_EXPORT TileManager {
   void DispatchOneImageDecodeTask(
       scoped_refptr<Tile> tile, skia::LazyPixelRef* pixel_ref);
   void OnImageDecodeTaskCompleted(
-      scoped_refptr<Tile> tile, uint32_t pixel_ref_id);
+      scoped_refptr<Tile> tile,
+      uint32_t pixel_ref_id);
   bool CanDispatchRasterTask(Tile* tile);
   scoped_ptr<ResourcePool::Resource> PrepareTileForRaster(Tile* tile);
   void DispatchOneRasterTask(scoped_refptr<Tile> tile);
@@ -216,6 +223,7 @@ class CC_EXPORT TileManager {
   typedef std::queue<scoped_refptr<Tile> > TileQueue;
   TileQueue tiles_with_pending_set_pixels_;
   size_t bytes_pending_set_pixels_;
+  bool has_performed_uploads_since_last_flush_;
   bool ever_exceeded_memory_budget_;
   MemoryHistory::Entry memory_stats_from_last_assign_;
 

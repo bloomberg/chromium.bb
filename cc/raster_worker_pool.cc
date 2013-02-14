@@ -23,6 +23,7 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
   virtual void Run(RenderingStats* rendering_stats) OVERRIDE {
     task_.Run(picture_pile_.get(), rendering_stats);
+    base::subtle::Release_Store(&completed_, 1);
   }
 
  private:
@@ -32,8 +33,9 @@ class RasterWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
 }  // namespace
 
-RasterWorkerPool::RasterWorkerPool(size_t num_threads)
-    : WorkerPool(num_threads) {
+RasterWorkerPool::RasterWorkerPool(
+    WorkerPoolClient* client, size_t num_threads)
+    : WorkerPool(client, num_threads) {
 }
 
 RasterWorkerPool::~RasterWorkerPool() {
