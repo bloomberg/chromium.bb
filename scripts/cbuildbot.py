@@ -223,15 +223,11 @@ class Builder(object):
     args = stages.BootstrapStage.FilterArgsForTargetCbuildbot(
         self.options.buildroot, constants.PATH_TO_CBUILDBOT, self.options)
 
-    # Re-write paths to use absolute paths.
+    # Specify a buildroot explicitly (just in case, for local trybot).
     # Suppress any timeout options given from the commandline in the
     # invoked cbuildbot; our timeout will enforce it instead.
     args += ['--resume', '--timeout', '0', '--notee', '--nocgroups',
              '--buildroot', os.path.abspath(self.options.buildroot)]
-
-    if self.options.chrome_root:
-      args += ['--chrome_root',
-               os.path.abspath(self.options.chrome_root)]
 
     if stages.ManifestVersionedSyncStage.manifest_manager:
       ver = stages.ManifestVersionedSyncStage.manifest_manager.current_version
@@ -608,6 +604,16 @@ def _RunBuildStagesWrapper(options, build_config):
     svn_url = gclient.GetBaseURLs()[0]
     options.chrome_version = gclient.GetTipOfTrunkSvnRevision(svn_url)
     options.chrome_rev = constants.CHROME_REV_SPEC
+
+  options.managed_chrome = (chrome_rev != constants.CHROME_REV_LOCAL and
+      (not build_config['usepkg_build_packages'] or chrome_rev))
+
+  if options.managed_chrome:
+    # Tell Chrome to fetch the source locally.
+    internal = constants.USE_CHROME_INTERNAL in (build_config['useflags'] or [])
+    chrome_src = 'chrome-src-internal' if internal else 'chrome-src'
+    options.chrome_root = os.path.join(options.cache_dir, 'distfiles', 'target',
+                                       chrome_src)
 
   target = DistributedBuilder if IsDistributedBuilder() else SimpleBuilder
   buildbot = target(options, build_config)

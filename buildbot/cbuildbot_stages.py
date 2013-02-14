@@ -1013,7 +1013,6 @@ class UprevStage(bs.BuilderStage):
       chrome_atom_to_build = commands.MarkChromeAsStable(
           self._build_root, self._target_manifest_branch,
           self._chrome_rev, self._boards,
-          chrome_root=self._options.chrome_root,
           chrome_version=self._options.chrome_version)
 
     # Perform other uprevs.
@@ -1031,20 +1030,19 @@ class UprevStage(bs.BuilderStage):
 class SyncChromeStage(bs.BuilderStage):
   """Stage that syncs Chrome sources if needed."""
 
+  option_name = 'managed_chrome'
+
   def _PerformStage(self):
-    # Only sync Chrome if we'll definitely need the source.
-    if (self._chrome_rev != constants.CHROME_REV_LOCAL and
-        (self._chrome_rev or not self._build_config['usepkg_build_packages'])):
-      kwargs = {}
-      if self._chrome_rev == constants.CHROME_REV_SPEC:
-        kwargs['revision'] = self._options.chrome_version
-      else:
-        cpv = portage_utilities.BestVisible(constants.CHROME_CP,
-                                            buildroot=self._build_root)
-        kwargs['tag'] = cpv.version_no_rev.partition('_')[0]
-      useflags = self._build_config['useflags'] or []
-      commands.SyncChrome(self._build_root, self._options.cache_dir, useflags,
-                          **kwargs)
+    kwargs = {}
+    if self._chrome_rev == constants.CHROME_REV_SPEC:
+      kwargs['revision'] = self._options.chrome_version
+    else:
+      cpv = portage_utilities.BestVisible(constants.CHROME_CP,
+                                          buildroot=self._build_root)
+      kwargs['tag'] = cpv.version_no_rev.partition('_')[0]
+    useflags = self._build_config['useflags'] or []
+    commands.SyncChrome(self._build_root, self._options.chrome_root, useflags,
+                        **kwargs)
 
 
 class BuildTargetStage(BoardSpecificBuilderStage):
@@ -1153,6 +1151,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
                    usepkg=self._build_config['usepkg_build_packages'],
                    nowithdebug=self._build_config['nowithdebug'],
                    packages=self._build_config['packages'],
+                   chrome_root=self._options.chrome_root,
                    extra_env=self._env)
 
     # Build images and autotest tarball in parallel.

@@ -779,7 +779,6 @@ class UprevStageTest(AbstractStageTest):
         self.TARGET_MANIFEST_BRANCH,
         self.options.chrome_rev,
         self._boards,
-        chrome_root=None,
         chrome_version=None).AndReturn(chrome_atom)
 
     self.mox.ReplayAll()
@@ -795,7 +794,6 @@ class UprevStageTest(AbstractStageTest):
         self.TARGET_MANIFEST_BRANCH,
         self.options.chrome_rev,
         self._boards,
-        chrome_root=None,
         chrome_version=None)
 
     sys.exit(0)
@@ -833,7 +831,6 @@ class UprevStageTest(AbstractStageTest):
         self.TARGET_MANIFEST_BRANCH,
         self.options.chrome_rev,
         self._boards,
-        chrome_root=None,
         chrome_version=None).AndReturn(None)
 
     commands.UprevPackages(self.build_root, self._boards, [], enter_chroot=True)
@@ -937,6 +934,7 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     commands.Build(self.build_root,
                    self._current_board,
                    build_autotest=True,
+                   chrome_root=None,
                    usepkg=True,
                    skip_toolchain_update=False,
                    nowithdebug=False,
@@ -976,6 +974,7 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
                    self._current_board,
                    build_autotest=mox.IgnoreArg(),
                    usepkg=mox.IgnoreArg(),
+                   chrome_root=None,
                    skip_toolchain_update=mox.IgnoreArg(),
                    nowithdebug=mox.IgnoreArg(),
                    packages=mox.IgnoreArg(),
@@ -1008,6 +1007,7 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     commands.Build(self.build_root,
                    self._current_board,
                    build_autotest=True,
+                   chrome_root=None,
                    usepkg=True,
                    skip_toolchain_update=False,
                    nowithdebug=True,
@@ -1059,6 +1059,7 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     commands.Build(self.build_root,
                    self._current_board,
                    build_autotest=True,
+                   chrome_root=None,
                    usepkg=True,
                    skip_toolchain_update=False,
                    nowithdebug=False,

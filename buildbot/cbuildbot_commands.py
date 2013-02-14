@@ -593,16 +593,11 @@ def MarkChromeAsStable(buildroot,
                        tracking_branch,
                        chrome_rev,
                        boards,
-                       chrome_root=None,
                        chrome_version=None):
   """Returns the portage atom for the revved chrome ebuild - see man emerge."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   extra_env = None
   chroot_args = None
-  if chrome_root:
-    chroot_args = ['--chrome_root=%s' % chrome_root]
-    assert chrome_rev == constants.CHROME_REV_LOCAL, (
-        'Cannot rev non-local with a chrome_root')
 
   command = ['../../chromite/bin/cros_mark_chrome_as_stable',
              '--tracking_branch=%s' % tracking_branch,
@@ -1427,12 +1422,12 @@ def GetChromeLKGM(svn_revision):
   return cros_build_lib.RunCommandCaptureOutput(svn_cmd).output.strip()
 
 
-def SyncChrome(build_root, cache_dir, useflags, tag=None, revision=None):
+def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
   """Sync chrome.
 
   Args:
     build_root: The root of the chromium os checkout.
-    cache_dir: The directory where the cbuildbot cache is stored.
+    chrome_root: The directory where chrome is stored.
     useflags: Array of use flags.
     tag: If supplied, the Chrome tag to sync.
     revision: If supplied, the Chrome revision to sync.
@@ -1447,7 +1442,6 @@ def SyncChrome(build_root, cache_dir, useflags, tag=None, revision=None):
   cmd += ['--pdf'] if constants.USE_CHROME_PDF in useflags else []
   cmd += ['--tag', tag] if tag is not None else []
   cmd += ['--revision', revision] if revision is not None else []
-  chrome_src = 'chrome-src-internal' if internal else 'chrome-src'
-  cmd += [os.path.join(cache_dir, 'distfiles', 'target', chrome_src)]
+  cmd += [chrome_root]
   cros_build_lib.RunCommandWithRetries(constants.SYNC_RETRIES, cmd,
                                        cwd=build_root)
