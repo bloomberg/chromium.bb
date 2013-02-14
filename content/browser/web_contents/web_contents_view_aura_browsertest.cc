@@ -192,13 +192,15 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
 };
 
+// Disabled OverscrollNavigation tests because they started failing after the
+// 142795->142840 webkit roll (http://crbug.com/176266).
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       OverscrollNavigation) {
+                       DISABLED_OverscrollNavigation) {
   TestOverscrollNavigation(false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       OverscrollNavigationWithTouchHandler) {
+                       DISABLED_OverscrollNavigationWithTouchHandler) {
   TestOverscrollNavigation(true);
 }
 
