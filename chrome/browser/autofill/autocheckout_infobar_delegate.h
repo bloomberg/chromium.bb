@@ -14,11 +14,13 @@
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
 
-class AutocheckoutManager;
-
 namespace content {
 struct LoadCommittedDetails;
 }
+
+namespace autofill {
+
+class AutocheckoutManager;
 
 // An InfoBar delegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission.
@@ -87,5 +89,7 @@ class AutocheckoutInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(AutocheckoutInfoBarDelegate);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOCHECKOUT_INFOBAR_DELEGATE_H_

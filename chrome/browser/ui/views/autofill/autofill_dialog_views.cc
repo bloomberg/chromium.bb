@@ -494,6 +494,16 @@ void AutofillDialogViews::ModelChanged() {
   }
 }
 
+void AutofillDialogViews::SubmitForTesting() {
+  if (Accept())
+    Hide();
+}
+
+void AutofillDialogViews::CancelForTesting() {
+  if (Cancel())
+    Hide();
+}
+
 string16 AutofillDialogViews::GetWindowTitle() const {
   return controller_->DialogTitle();
 }

@@ -55,9 +55,10 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   // helpers may rely on that.
   SessionTabHelper::CreateForWebContents(contents);
 
-  TabAutofillManagerDelegate::CreateForWebContents(contents);
+  autofill::TabAutofillManagerDelegate::CreateForWebContents(contents);
   AutofillManager::CreateForWebContentsAndDelegate(
-      contents, TabAutofillManagerDelegate::FromWebContents(contents));
+      contents,
+      autofill::TabAutofillManagerDelegate::FromWebContents(contents));
   AutofillExternalDelegate::CreateForWebContentsAndManager(
       contents, AutofillManager::FromWebContents(contents));
   AutofillManager::FromWebContents(contents)->SetExternalDelegate(

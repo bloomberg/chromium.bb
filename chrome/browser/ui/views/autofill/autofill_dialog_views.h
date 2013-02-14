@@ -77,6 +77,8 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void HideSignIn() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
+  virtual void SubmitForTesting() OVERRIDE;
+  virtual void CancelForTesting() OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;

@@ -23,6 +23,7 @@ class Rect;
 class RectF;
 }
 
+class AutofillMetrics;
 class FormStructure;
 class GURL;
 class InfoBarService;
@@ -33,6 +34,13 @@ class ProfileSyncServiceBase;
 struct FormData;
 
 namespace autofill {
+
+enum DialogType {
+  // Autofill dialog for the Autocheckout feature.
+  DIALOG_TYPE_AUTOCHECKOUT,
+  // Autofill dialog for the requestAutocomplete feature.
+  DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
+};
 
 // A delegate interface that needs to be supplied to AutofillManager
 // by the embedder.
@@ -93,6 +101,8 @@ class AutofillManagerDelegate {
       const FormData& form,
       const GURL& source_url,
       const content::SSLStatus& ssl_status,
+      const AutofillMetrics& metric_logger,
+      DialogType dialog_type,
       const base::Callback<void(const FormStructure*)>& callback) = 0;
 
   // Called when the dialog for request autocomplete closes.

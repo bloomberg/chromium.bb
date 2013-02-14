@@ -782,9 +782,10 @@ void AutofillManager::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
     const content::SSLStatus& ssl_status,
+    autofill::DialogType dialog_type,
     const base::Callback<void(const FormStructure*)>& callback) {
   manager_delegate_->ShowRequestAutocompleteDialog(
-      form, source_url, ssl_status, callback);
+      form, source_url, ssl_status, *metric_logger_, dialog_type, callback);
 }
 
 void AutofillManager::RequestAutocompleteDialogClosed() {
@@ -835,7 +836,9 @@ void AutofillManager::OnRequestAutocomplete(
 
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutofillManager::ReturnAutocompleteData, this);
-  ShowRequestAutocompleteDialog(form, frame_url, ssl_status, callback);
+  ShowRequestAutocompleteDialog(
+      form, frame_url, ssl_status,
+      autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE, callback);
 }
 
 void AutofillManager::ReturnAutocompleteResult(

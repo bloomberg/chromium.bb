@@ -102,10 +102,10 @@ class AutofillExternalDelegateUnitTest
  private:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
-    TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+    autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
     autofill_manager_ = new MockAutofillManager(
         web_contents(),
-        TabAutofillManagerDelegate::FromWebContents(web_contents()));
+        autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()));
     external_delegate_.reset(
         new testing::NiceMock<MockAutofillExternalDelegate>(
             web_contents(),

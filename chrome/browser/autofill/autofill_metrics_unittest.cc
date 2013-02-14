@@ -262,7 +262,7 @@ class TestAutofillManager : public AutofillManager {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
 
-class TestAutocheckoutManager : public AutocheckoutManager {
+class TestAutocheckoutManager : public autofill::AutocheckoutManager {
  public:
   explicit TestAutocheckoutManager(AutofillManager* autofill_manager)
       : AutocheckoutManager(autofill_manager) {
@@ -335,11 +335,11 @@ void AutofillMetricsTest::SetUp() {
 
   ChromeRenderViewHostTestHarness::SetUp();
   io_thread_.StartIOThread();
-  TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+  autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
   personal_data_.SetBrowserContext(profile);
   autofill_manager_ = new TestAutofillManager(
       web_contents(),
-      TabAutofillManagerDelegate::FromWebContents(web_contents()),
+      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()),
       &personal_data_);
 
   file_thread_.Start();
@@ -389,7 +389,7 @@ AutofillMetricsTest::CreateAutocheckoutDelegate(
               LogAutocheckoutInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
   GURL url("www.google.com");
   content::SSLStatus ssl_status;
-  return AutocheckoutInfoBarDelegate::Create(
+  return autofill::AutocheckoutInfoBarDelegate::Create(
       *metric_logger,
       url,
       ssl_status,

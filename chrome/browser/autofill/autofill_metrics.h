@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/autofill/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/field_types.h"
 
 namespace base {
@@ -25,6 +26,12 @@ class AutofillMetrics {
     // http://is.gd/whatwg_autocomplete
     FILLABLE_FORM_CONTAINS_TYPE_HINTS,
     NUM_DEVELOPER_ENGAGEMENT_METRICS
+  };
+
+  // The action the user took to dismiss a dialog.
+  enum DialogDismissalAction {
+    DIALOG_ACCEPTED = 0,  // The user accepted, i.e. confirmed, the dialog.
+    DIALOG_CANCELED       // The user canceled out of the dialog.
   };
 
   enum InfoBarMetric {
@@ -157,6 +164,16 @@ class AutofillMetrics {
   virtual void LogUserHappinessMetric(UserHappinessMetric metric) const;
 
   virtual void LogAutocheckoutInfoBarMetric(InfoBarMetric metric) const;
+
+  // This should be called when the requestAutocomplete dialog, invoked by the
+  // |requester|, is closed.  |duration| should be the time elapsed between the
+  // dialog being shown and it being closed.  |dismissal_action| should indicate
+  // whether the user dismissed the dialog by submitting the form data or by
+  // cancelling.
+  virtual void LogRequestAutocompleteUiDuration(
+      const base::TimeDelta& duration,
+      autofill::DialogType dialog_type,
+      DialogDismissalAction dismissal_action) const;
 
   // This should be called when a form that has been Autofilled is submitted.
   // |duration| should be the time elapsed between form load and submission.

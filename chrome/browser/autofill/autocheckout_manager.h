@@ -23,10 +23,6 @@ class GURL;
 struct FormData;
 struct FormFieldData;
 
-namespace autofill {
-struct WebElementDescriptor;
-}
-
 namespace content {
 struct SSLStatus;
 }
@@ -34,6 +30,8 @@ struct SSLStatus;
 namespace gfx {
 class RectF;
 }
+
+namespace autofill {
 
 class AutocheckoutManager {
  public:
@@ -46,7 +44,7 @@ class AutocheckoutManager {
 
   // Sets |page_meta_data_| with the meta data for the current page.
   void OnLoadedPageMetaData(
-      scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data);
+      scoped_ptr<AutocheckoutPageMetaData> page_meta_data);
 
   // Called when a page containing forms is loaded.
   void OnFormsSeen();
@@ -92,7 +90,7 @@ class AutocheckoutManager {
   scoped_ptr<CreditCard> credit_card_;
 
   // Autocheckout specific page meta data.
-  scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data_;
+  scoped_ptr<AutocheckoutPageMetaData> page_meta_data_;
 
   // Whether or not the Autocheckout bubble has been displayed to the user for
   // the current forms. Ensures the Autocheckout bubble is only shown to a
@@ -103,5 +101,7 @@ class AutocheckoutManager {
 
   DISALLOW_COPY_AND_ASSIGN(AutocheckoutManager);
 };
+
+}  // namespace autofill
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOCHECKOUT_MANAGER_H_

@@ -11,6 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
+#include "base/time.h"
+#include "chrome/browser/autofill/autofill_manager_delegate.h"
+#include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -56,6 +59,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const FormData& form_structure,
       const GURL& source_url,
       const content::SSLStatus& ssl_status,
+      const AutofillMetrics& metric_logger,
+      const DialogType dialog_type,
       const base::Callback<void(const FormStructure*)>& callback);
   virtual ~AutofillDialogControllerImpl();
 
@@ -148,6 +153,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // PersonalDataManagerObserver implementation.
   virtual void OnPersonalDataChanged() OVERRIDE;
+
+ protected:
+  // Exposed for testing.
+  AutofillDialogView* view() { return view_.get(); }
 
  private:
   // Refresh wallet items immediately if there's no refresh currently in
@@ -296,6 +305,11 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // A NotificationRegistrar for tracking the completion of sign-in.
   content::NotificationRegistrar registrar_;
+
+  // For logging UMA metrics.
+  const AutofillMetrics& metric_logger_;
+  base::Time dialog_shown_timestamp_;
+  DialogType dialog_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

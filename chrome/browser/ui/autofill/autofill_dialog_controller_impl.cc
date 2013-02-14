@@ -128,6 +128,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     const FormData& form,
     const GURL& source_url,
     const content::SSLStatus& ssl_status,
+    const AutofillMetrics& metric_logger,
+    DialogType dialog_type,
     const base::Callback<void(const FormStructure*)>& callback)
     : profile_(Profile::FromBrowserContext(contents->GetBrowserContext())),
       contents_(contents),
@@ -142,7 +144,9 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
-      section_showing_popup_(SECTION_BILLING) {
+      section_showing_popup_(SECTION_BILLING),
+      metric_logger_(metric_logger),
+      dialog_type_(dialog_type) {
   // TODO(estade): |this| should observe PersonalDataManager.
   // TODO(estade): remove duplicates from |form|?
 
@@ -157,6 +161,8 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
 }
 
 void AutofillDialogControllerImpl::Show() {
+  dialog_shown_timestamp_ = base::Time::Now();
+
   bool has_types = false;
   bool has_sections = false;
   form_structure_.ParseFieldTypesFromAutocompleteAttributes(&has_types,
@@ -596,6 +602,13 @@ void AutofillDialogControllerImpl::ViewClosed(DialogAction action) {
   } else {
     callback_.Run(NULL);
   }
+
+  AutofillMetrics::DialogDismissalAction metric =
+      action == ACTION_SUBMIT ?
+          AutofillMetrics::DIALOG_ACCEPTED :
+          AutofillMetrics::DIALOG_CANCELED;
+  metric_logger_.LogRequestAutocompleteUiDuration(
+      base::Time::Now() - dialog_shown_timestamp_, dialog_type_, metric);
 
   delete this;
 }

@@ -160,17 +160,30 @@ int GetFieldTypeGroupMetric(const AutofillFieldType field_type,
 void LogUMAHistogramEnumeration(const std::string& name,
                                 int sample,
                                 int boundary_value) {
-  // We can't use the UMA_HISTOGRAM_ENUMERATION macro here because the histogram
-  // name can vary over the duration of the program.
-  // Note that this leaks memory; that is expected behavior.
-  base::HistogramBase* counter =
+  // Note: This leaks memory, which is expected behavior.
+  base::HistogramBase* histogram =
       base::LinearHistogram::FactoryGet(
           name,
           1,
           boundary_value,
           boundary_value + 1,
           base::HistogramBase::kUmaTargetedHistogramFlag);
-  counter->Add(sample);
+  histogram->Add(sample);
+}
+
+// A version of the UMA_HISTOGRAM_LONG_TIMES macro that allows the |name|
+// to vary over the program's runtime.
+void LogUMAHistogramLongTimes(const std::string& name,
+                              const base::TimeDelta& duration) {
+  // Note: This leaks memory, which is expected behavior.
+  base::HistogramBase* histogram =
+      base::Histogram::FactoryTimeGet(
+          name,
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromHours(1),
+          50,
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->AddTime(duration);
 }
 
 // Logs a type quality metric.  The primary histogram name is constructed based
@@ -266,6 +279,36 @@ void AutofillMetrics::LogAutocheckoutInfoBarMetric(InfoBarMetric metric) const {
 
   UMA_HISTOGRAM_ENUMERATION("Autofill.AutocheckoutInfoBar", metric,
                             NUM_INFO_BAR_METRICS);
+}
+
+void AutofillMetrics::LogRequestAutocompleteUiDuration(
+    const base::TimeDelta& duration,
+    autofill::DialogType dialog_type,
+    DialogDismissalAction dismissal_action) const {
+  std::string prefix;
+  switch (dialog_type) {
+    case autofill::DIALOG_TYPE_AUTOCHECKOUT:
+      prefix = "Autocheckout";
+      break;
+
+    case autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE:
+      prefix = "RequestAutocomplete";
+      break;
+  }
+
+  std::string suffix;
+  switch (dismissal_action) {
+    case DIALOG_ACCEPTED:
+      suffix = "Submit";
+      break;
+
+    case DIALOG_CANCELED:
+      suffix = "Cancel";
+      break;
+  }
+
+  LogUMAHistogramLongTimes(prefix + ".UiDuration", duration);
+  LogUMAHistogramLongTimes(prefix + ".UiDuration." + suffix, duration);
 }
 
 void AutofillMetrics::LogDeveloperEngagementMetric(

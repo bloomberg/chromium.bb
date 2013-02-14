@@ -63,6 +63,12 @@ class AutofillDialogView {
   // Called when the active suggestions data model changed.
   virtual void ModelChanged() = 0;
 
+  // Simulates the user pressing 'Submit' to accept the dialog.
+  virtual void SubmitForTesting() = 0;
+
+  // Simulates the user pressing 'Cancel' to abort the dialog.
+  virtual void CancelForTesting() = 0;
+
   // Factory function to create the dialog (implemented once per view
   // implementation). |controller| will own the created dialog.
   static AutofillDialogView* Create(AutofillDialogController* controller);

@@ -123,6 +123,7 @@ class AutofillManager : public content::WebContentsObserver,
       const FormData& form,
       const GURL& source_url,
       const content::SSLStatus& ssl_status,
+      autofill::DialogType dialog_type,
       const base::Callback<void(const FormStructure*)>& callback);
 
   // Happens when the autocomplete dialog runs its callback when being closed.
@@ -192,7 +193,7 @@ class AutofillManager : public content::WebContentsObserver,
   }
 
   // Exposed for testing.
-  AutocheckoutManager* autocheckout_manager() {
+  autofill::AutocheckoutManager* autocheckout_manager() {
     return &autocheckout_manager_;
   }
 
@@ -370,7 +371,7 @@ class AutofillManager : public content::WebContentsObserver,
   AutocompleteHistoryManager autocomplete_history_manager_;
 
   // Handles autocheckout flows.
-  AutocheckoutManager autocheckout_manager_;
+  autofill::AutocheckoutManager autocheckout_manager_;
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;

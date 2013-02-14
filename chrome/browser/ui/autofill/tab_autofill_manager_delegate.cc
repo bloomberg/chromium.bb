@@ -22,7 +22,9 @@
 #include "content/public/common/password_form.h"
 #include "ui/gfx/rect.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabAutofillManagerDelegate);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::TabAutofillManagerDelegate);
+
+namespace autofill {
 
 TabAutofillManagerDelegate::TabAutofillManagerDelegate(
     content::WebContents* web_contents)
@@ -97,6 +99,8 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     const FormData& form,
     const GURL& source_url,
     const content::SSLStatus& ssl_status,
+    const AutofillMetrics& metric_logger,
+    DialogType dialog_type,
     const base::Callback<void(const FormStructure*)>& callback) {
   HideRequestAutocompleteDialog();
 
@@ -105,6 +109,8 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
                                                  form,
                                                  source_url,
                                                  ssl_status,
+                                                 metric_logger,
+                                                 dialog_type,
                                                  callback);
   autofill_dialog_controller_->Show();
 }
@@ -130,3 +136,5 @@ void TabAutofillManagerDelegate::DidNavigateMainFrame(
   // through the autocheckout flow (when the behavior is more fleshed out).
   HideRequestAutocompleteDialog();
 }
+
+}  // namespace autofill

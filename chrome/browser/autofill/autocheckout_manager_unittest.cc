@@ -23,10 +23,11 @@
 
 using content::BrowserThread;
 
+namespace autofill {
+
 namespace {
 
-typedef Tuple2<std::vector<FormData>,
-               autofill::WebElementDescriptor> AutofillParam;
+typedef Tuple2<std::vector<FormData>, WebElementDescriptor> AutofillParam;
 
 FormFieldData BuildFieldWithValue(
     const std::string& autocomplete_attribute,
@@ -158,7 +159,7 @@ scoped_ptr<FormStructure> FakeUserSubmittedFormStructure() {
   return form_structure.Pass();
 }
 
-class TestAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
+class TestAutofillManagerDelegate : public AutofillManagerDelegate {
  public:
   explicit TestAutofillManagerDelegate(
       content::BrowserContext* browser_context)
@@ -202,7 +203,7 @@ class TestAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& bounds,
       const content::PasswordForm& form,
-      autofill::PasswordGenerator* generator) OVERRIDE {
+      PasswordGenerator* generator) OVERRIDE {
   }
 
   virtual void ShowAutocheckoutBubble(
@@ -216,6 +217,8 @@ class TestAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
       const FormData& form,
       const GURL& source_url,
       const content::SSLStatus& ssl_status,
+      const AutofillMetrics& metric_logger,
+      DialogType dialog_type,
       const base::Callback<void(const FormStructure*)>& callback) OVERRIDE {
     callback.Run(user_supplied_data_.get());
   }
@@ -238,7 +241,7 @@ class TestAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
 class TestAutofillManager : public AutofillManager {
  public:
   explicit TestAutofillManager(content::WebContents* contents,
-                               autofill::AutofillManagerDelegate* delegate)
+                               AutofillManagerDelegate* delegate)
       : AutofillManager(contents, delegate, NULL) {
   }
 
@@ -306,10 +309,9 @@ TEST_F(AutocheckoutManagerTest, TestFillForms) {
       FakeUserSubmittedFormStructure());
 
   // Set up page meta data.
-  scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data(
-      new autofill::AutocheckoutPageMetaData());
-  page_meta_data->proceed_element_descriptor.reset(
-      new autofill::WebElementDescriptor());
+  scoped_ptr<AutocheckoutPageMetaData> page_meta_data(
+      new AutocheckoutPageMetaData());
+  page_meta_data->proceed_element_descriptor.reset(new WebElementDescriptor());
   autocheckout_manager_->OnLoadedPageMetaData(page_meta_data.Pass());
 
   GURL frame_url;
@@ -369,3 +371,5 @@ TEST_F(AutocheckoutManagerTest, TestFillForms) {
   EXPECT_TRUE(filled_forms[0].fields[1].is_checked);
   EXPECT_EQ(ASCIIToUTF16("female"), filled_forms[0].fields[1].value);
 }
+
+}  // namespace autofill

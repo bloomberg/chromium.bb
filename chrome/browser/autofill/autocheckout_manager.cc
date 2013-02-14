@@ -68,6 +68,8 @@ FormData BuildAutocheckoutFormData() {
 
 }  // namespace
 
+namespace autofill {
+
 AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
     : autofill_manager_(autofill_manager),
       autocheckout_bubble_shown_(false),
@@ -113,7 +115,7 @@ void AutocheckoutManager::FillForms() {
 }
 
 void AutocheckoutManager::OnLoadedPageMetaData(
-    scoped_ptr<autofill::AutocheckoutPageMetaData> page_meta_data) {
+    scoped_ptr<AutocheckoutPageMetaData> page_meta_data) {
   page_meta_data_ = page_meta_data.Pass();
 }
 
@@ -148,8 +150,9 @@ void AutocheckoutManager::ShowAutocheckoutDialog(
   base::Callback<void(const FormStructure*)> callback =
       base::Bind(&AutocheckoutManager::ReturnAutocheckoutData,
                  weak_ptr_factory_.GetWeakPtr());
-  autofill_manager_->delegate()->ShowRequestAutocompleteDialog(
-      BuildAutocheckoutFormData(), frame_url, ssl_status, callback);
+  autofill_manager_->ShowRequestAutocompleteDialog(
+      BuildAutocheckoutFormData(), frame_url, ssl_status,
+      DIALOG_TYPE_AUTOCHECKOUT, callback);
 }
 
 bool AutocheckoutManager::IsStartOfAutofillableFlow() const {
@@ -230,3 +233,5 @@ void AutocheckoutManager::SetValue(const AutofillField& field,
   else
     profile_->FillFormField(field, 0, field_to_fill);
 }
+
+}  // namespace autofill
