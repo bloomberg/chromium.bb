@@ -1,52 +1,32 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 
+#include "base/command_line.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "grit/ui_strings.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/text_utils.h"
-#include "ui/gfx/transform.h"
-#include "ui/views/background.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/custom_button.h"
-#include "ui/views/controls/button/text_button.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_config.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
 // Constants defining the visual attributes of selection handles
 const int kSelectionHandleRadius = 10;
-const int kSelectionHandleCursorHeight = 10;
 const int kSelectionHandleAlpha = 0x7F;
 const SkColor kSelectionHandleColor =
-    SkColorSetA(SK_ColorBLUE, kSelectionHandleAlpha);
+    SkColorSetA(SK_ColorBLACK, kSelectionHandleAlpha);
 
 // The minimum selection size to trigger selection controller.
 const int kMinSelectionSize = 4;
 
-const int kContextMenuCommands[] = {IDS_APP_CUT,
-                                    IDS_APP_COPY,
-// TODO(varunjain): PASTE is acting funny due to some gtk clipboard issue.
-// Uncomment the following when that is fixed.
-//                                    IDS_APP_PASTE,
-                                    IDS_APP_DELETE,
-                                    IDS_APP_SELECT_ALL};
-const int kContextMenuPadding = 2;
 const int kContextMenuTimoutMs = 1000;
-const int kContextMenuVerticalOffset = 25;
+const int kContextMenuVerticalOffset = 5;
 
 // Convenience struct to represent a circle shape.
 struct Circle {
@@ -56,12 +36,13 @@ struct Circle {
 };
 
 // Creates a widget to host SelectionHandleView.
-views::Widget* CreateTouchSelectionPopupWidget() {
+views::Widget* CreateTouchSelectionPopupWidget(gfx::NativeView context) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.can_activate = false;
   params.transparent = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.context = context;
   widget->Init(params);
   return widget;
 }
@@ -90,9 +71,11 @@ namespace views {
 // A View that displays the text selection handle.
 class TouchSelectionControllerImpl::SelectionHandleView : public View {
  public:
-  explicit SelectionHandleView(TouchSelectionControllerImpl* controller)
-      : controller_(controller) {
-    widget_.reset(CreateTouchSelectionPopupWidget());
+  explicit SelectionHandleView(TouchSelectionControllerImpl* controller,
+                               gfx::NativeView context)
+      : controller_(controller),
+        cursor_height_(0) {
+    widget_.reset(CreateTouchSelectionPopupWidget(context));
     widget_->SetContentsView(this);
     widget_->SetAlwaysOnTop(true);
 
@@ -105,30 +88,30 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     Circle circle = {kSelectionHandleRadius, gfx::Point(kSelectionHandleRadius,
-                     kSelectionHandleRadius + kSelectionHandleCursorHeight),
+                     kSelectionHandleRadius + cursor_height_),
                      kSelectionHandleColor};
     PaintCircle(circle, canvas);
     canvas->DrawLine(gfx::Point(kSelectionHandleRadius, 0),
-        gfx::Point(kSelectionHandleRadius, kSelectionHandleCursorHeight),
+        gfx::Point(kSelectionHandleRadius, cursor_height_),
         kSelectionHandleColor);
   }
 
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
-    controller_->dragging_handle_ = this;
-    return true;
-  }
-
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
-    controller_->SelectionHandleDragged(event.location());
-    return true;
-  }
-
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
-    controller_->dragging_handle_ = NULL;
-  }
-
-  virtual void OnMouseCaptureLost() OVERRIDE {
-    controller_->dragging_handle_ = NULL;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    event->SetHandled();
+    switch (event->type()) {
+      case ui::ET_GESTURE_SCROLL_BEGIN:
+        controller_->dragging_handle_ = this;
+        break;
+      case ui::ET_GESTURE_SCROLL_UPDATE:
+        controller_->SelectionHandleDragged(event->location());
+        break;
+      case ui::ET_GESTURE_SCROLL_END:
+      case ui::ET_GESTURE_END:
+        controller_->dragging_handle_ = NULL;
+        break;
+      default:
+        break;
+    }
   }
 
   virtual void SetVisible(bool visible) OVERRIDE {
@@ -144,13 +127,18 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(2 * kSelectionHandleRadius,
-                     2 * kSelectionHandleRadius + kSelectionHandleCursorHeight);
+                     2 * kSelectionHandleRadius + cursor_height_);
   }
 
-  void SetScreenPosition(const gfx::Point& position) {
-    gfx::Rect widget_bounds(position.x() - kSelectionHandleRadius, position.y(),
+  bool IsWidgetVisible() const {
+    return widget_->IsVisible();
+  }
+
+  void SetSelectionRectInScreen(const gfx::Rect& rect) {
+    cursor_height_ = rect.height();
+    gfx::Rect widget_bounds(rect.x() - kSelectionHandleRadius, rect.y(),
         2 * kSelectionHandleRadius,
-        2 * kSelectionHandleRadius + kSelectionHandleCursorHeight);
+        2 * kSelectionHandleRadius + cursor_height_);
     widget_->SetBounds(widget_bounds);
   }
 
@@ -161,194 +149,65 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
  private:
   scoped_ptr<Widget> widget_;
   TouchSelectionControllerImpl* controller_;
+  int cursor_height_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectionHandleView);
-};
-
-class ContextMenuButtonBackground : public Background {
- public:
-  ContextMenuButtonBackground() {}
-
-  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
-    CustomButton::ButtonState state = static_cast<CustomButton*>(view)->state();
-    SkColor background_color, border_color;
-    if (state == CustomButton::STATE_NORMAL) {
-      background_color = SkColorSetARGB(102, 255, 255, 255);
-      border_color = SkColorSetARGB(36, 0, 0, 0);
-    } else {
-      background_color = SkColorSetARGB(13, 0, 0, 0);
-      border_color = SkColorSetARGB(72, 0, 0, 0);
-    }
-    int w = view->width();
-    int h = view->height();
-    canvas->FillRect(gfx::Rect(1, 1, w - 2, h - 2), background_color);
-    canvas->FillRect(gfx::Rect(2, 0, w - 4, 1), border_color);
-    canvas->FillRect(gfx::Rect(1, 1, 1, 1), border_color);
-    canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border_color);
-    canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border_color);
-    canvas->FillRect(gfx::Rect(2, h - 1, w - 4, 1), border_color);
-    canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border_color);
-    canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border_color);
-    canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border_color);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContextMenuButtonBackground);
-};
-
-// A View that displays the touch context menu.
-class TouchSelectionControllerImpl::TouchContextMenuView
-    : public ButtonListener,
-      public View {
- public:
-  explicit TouchContextMenuView(TouchSelectionControllerImpl* controller)
-      : controller_(controller) {
-    widget_.reset(CreateTouchSelectionPopupWidget());
-    widget_->SetContentsView(this);
-    widget_->SetAlwaysOnTop(true);
-
-    // We are owned by the TouchSelectionController.
-    set_owned_by_client();
-    SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, kContextMenuPadding,
-        kContextMenuPadding, kContextMenuPadding));
-  }
-
-  virtual ~TouchContextMenuView() {
-  }
-
-  virtual void SetVisible(bool visible) OVERRIDE {
-    // We simply show/hide the container widget.
-    if (visible != widget_->IsVisible()) {
-      if (visible)
-        widget_->Show();
-      else
-        widget_->Hide();
-    }
-    View::SetVisible(visible);
-  }
-
-  void SetScreenPosition(const gfx::Point& position) {
-    RefreshButtonsAndSetWidgetPosition(position);
-  }
-
-  gfx::Point GetScreenPosition() {
-    return widget_->GetClientAreaBoundsInScreen().origin();
-  }
-
-  void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
-    // TODO(varunjain): the following color scheme is copied from
-    // menu_scroll_view_container.cc. Figure out how to consolidate the two
-    // pieces of code.
-#if defined(OS_CHROMEOS)
-    static const SkColor kGradientColors[2] = {
-        SK_ColorWHITE,
-        SkColorSetRGB(0xF0, 0xF0, 0xF0)
-    };
-
-    static const SkScalar kGradientPoints[2] = {
-        SkIntToScalar(0),
-        SkIntToScalar(1)
-    };
-
-    SkPoint points[2];
-    points[0].iset(0, 0);
-    points[1].iset(0, height());
-
-    skia::RefPtr<SkShader> shader = skia::AdoptRef(
-        SkGradientShader::CreateLinear(
-            points, kGradientColors, kGradientPoints,
-            arraysize(kGradientPoints),
-            SkShader::kRepeat_TileMode));
-    DCHECK(shader);
-
-    SkPaint paint;
-    paint.setShader(shader.get());
-
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-
-    canvas->DrawRect(GetLocalBounds(), paint);
-#else
-    canvas->DrawColor(SkColorSetRGB(210, 225, 246),
-                                   SkXfermode::kSrc_Mode);
-#endif
-  }
-
-  // Overridden from ButtonListener:
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE {
-    controller_->ExecuteCommand(sender->tag());
-  }
-
- private:
-  // Queries the client view for what elements to show in the menu and sizes
-  // the menu appropriately.
-  void RefreshButtonsAndSetWidgetPosition(const gfx::Point& position) {
-    RemoveAllChildViews(true);
-    int total_width = 0;
-    int height = 0;
-    for (size_t i = 0; i < arraysize(kContextMenuCommands); i++) {
-      int command_id = kContextMenuCommands[i];
-      if (controller_->IsCommandIdEnabled(command_id)) {
-        TextButton* button = new TextButton(this, gfx::RemoveAcceleratorChar(
-            l10n_util::GetStringUTF16(command_id), '&', NULL, NULL));
-        button->set_focusable(true);
-        button->set_request_focus_on_press(false);
-        button->SetEnabledColor(MenuConfig::instance().text_color);
-        button->set_background(new ContextMenuButtonBackground());
-        button->set_alignment(TextButton::ALIGN_CENTER);
-        button->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-            ui::ResourceBundle::LargeFont));
-        button->set_tag(command_id);
-        AddChildView(button);
-        gfx::Size button_size = button->GetPreferredSize();
-        total_width += button_size.width() + kContextMenuPadding;
-        if (height < button_size.height())
-          height = button_size.height();
-      }
-    }
-    gfx::Rect widget_bounds(position.x() - total_width / 2,
-                            position.y() - height,
-                            total_width,
-                            height);
-    gfx::Rect monitor_bounds = gfx::Screen::GetNativeScreen()->
-        GetDisplayNearestPoint(position).bounds();
-    widget_->SetBounds(widget_bounds.AdjustToFit(monitor_bounds));
-    Layout();
-  }
-
-  scoped_ptr<Widget> widget_;
-  TouchSelectionControllerImpl* controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchContextMenuView);
 };
 
 TouchSelectionControllerImpl::TouchSelectionControllerImpl(
     ui::TouchEditable* client_view)
     : client_view_(client_view),
-      selection_handle_1_(new SelectionHandleView(this)),
-      selection_handle_2_(new SelectionHandleView(this)),
-      context_menu_(new TouchContextMenuView(this)),
+      client_widget_(NULL),
+      selection_handle_1_(new SelectionHandleView(this,
+                          client_view->GetNativeView())),
+      selection_handle_2_(new SelectionHandleView(this,
+                          client_view->GetNativeView())),
+      context_menu_(NULL),
       dragging_handle_(NULL) {
+  client_widget_ = Widget::GetWidgetForNativeView(
+      client_view_->GetNativeView());
+  client_widget_->AddObserver(this);
 }
 
 TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
+  HideContextMenu();
+  if (client_widget_)
+    client_widget_->RemoveObserver(this);
 }
 
-void TouchSelectionControllerImpl::SelectionChanged(const gfx::Point& p1,
-                                                    const gfx::Point& p2) {
-  gfx::Point screen_pos_1(p1);
+void TouchSelectionControllerImpl::SelectionChanged() {
+  gfx::Rect r1, r2;
+  client_view_->GetSelectionEndPoints(&r1, &r2);
+  gfx::Point screen_pos_1(r1.origin());
   client_view_->ConvertPointToScreen(&screen_pos_1);
-  gfx::Point screen_pos_2(p2);
+  gfx::Point screen_pos_2(r2.origin());
   client_view_->ConvertPointToScreen(&screen_pos_2);
+  gfx::Rect screen_rect_1(screen_pos_1, r1.size());
+  gfx::Rect screen_rect_2(screen_pos_2, r2.size());
 
+  if (client_view_->DrawsHandles()) {
+    UpdateContextMenu(r1.origin(), r2.origin());
+    return;
+  }
   if (dragging_handle_) {
     // We need to reposition only the selection handle that is being dragged.
     // The other handle stays the same. Also, the selection handle being dragged
     // will always be at the end of selection, while the other handle will be at
     // the start.
-    dragging_handle_->SetScreenPosition(screen_pos_2);
+    dragging_handle_->SetSelectionRectInScreen(screen_rect_2);
+
+    // The non-dragging-handle might have recently become visible.
+    SelectionHandleView* non_dragging_handle =
+        dragging_handle_ == selection_handle_1_.get()?
+            selection_handle_2_.get() : selection_handle_1_.get();
+    if (client_view_->GetBounds().Contains(r1.origin())) {
+      non_dragging_handle->SetSelectionRectInScreen(screen_rect_1);
+      non_dragging_handle->SetVisible(true);
+    } else {
+      non_dragging_handle->SetVisible(false);
+    }
   } else {
-    UpdateContextMenu(p1, p2);
+    UpdateContextMenu(r1.origin(), r2.origin());
 
     // Check if there is any selection at all.
     if (IsEmptySelection(screen_pos_2, screen_pos_1)) {
@@ -357,26 +216,20 @@ void TouchSelectionControllerImpl::SelectionChanged(const gfx::Point& p1,
       return;
     }
 
-    if (client_view_->GetBounds().Contains(p1)) {
-      selection_handle_1_->SetScreenPosition(screen_pos_1);
+    if (client_view_->GetBounds().Contains(r1.origin())) {
+      selection_handle_1_->SetSelectionRectInScreen(screen_rect_1);
       selection_handle_1_->SetVisible(true);
     } else {
       selection_handle_1_->SetVisible(false);
     }
 
-    if (client_view_->GetBounds().Contains(p2)) {
-      selection_handle_2_->SetScreenPosition(screen_pos_2);
+    if (client_view_->GetBounds().Contains(r2.origin())) {
+      selection_handle_2_->SetSelectionRectInScreen(screen_rect_2);
       selection_handle_2_->SetVisible(true);
     } else {
       selection_handle_2_->SetVisible(false);
     }
   }
-}
-
-void TouchSelectionControllerImpl::ClientViewLostFocus() {
-  selection_handle_1_->SetVisible(false);
-  selection_handle_2_->SetVisible(false);
-  HideContextMenu();
 }
 
 void TouchSelectionControllerImpl::SelectionHandleDragged(
@@ -423,21 +276,44 @@ void TouchSelectionControllerImpl::ExecuteCommand(int command_id) {
   client_view_->ExecuteCommand(command_id);
 }
 
+void TouchSelectionControllerImpl::OpenContextMenu() {
+  gfx::Point anchor = context_menu_->anchor_point();
+  HideContextMenu();
+  client_view_->OpenContextMenu(anchor);
+}
+
+void TouchSelectionControllerImpl::OnMenuClosed(TouchEditingMenuView* menu) {
+  if (menu == context_menu_)
+    context_menu_ = NULL;
+}
+
+void TouchSelectionControllerImpl::OnWidgetClosing(Widget* widget) {
+  DCHECK_EQ(client_widget_, widget);
+  client_widget_ = NULL;
+}
+
+void TouchSelectionControllerImpl::OnWidgetBoundsChanged(
+    Widget* widget,
+    const gfx::Rect& new_bounds) {
+  DCHECK_EQ(client_widget_, widget);
+  HideContextMenu();
+  SelectionChanged();
+}
+
 void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   // Get selection end points in client_view's space.
-  gfx::Point p1(kSelectionHandleRadius, 0);
-  ConvertPointToClientView(selection_handle_1_.get(), &p1);
-  gfx::Point p2(kSelectionHandleRadius, 0);
-  ConvertPointToClientView(selection_handle_2_.get(), &p2);
+  gfx::Rect r1, r2;
+  client_view_->GetSelectionEndPoints(&r1, &r2);
 
   // if selection is completely inside the view, we display the context menu
   // in the middle of the end points on the top. Else, we show the menu on the
   // top border of the view in the center.
   gfx::Point menu_pos;
   gfx::Rect client_bounds = client_view_->GetBounds();
-  if (client_bounds.Contains(p1) && client_bounds.Contains(p2)) {
-    menu_pos.set_x((p1.x() + p2.x()) / 2);
-    menu_pos.set_y(std::min(p1.y(), p2.y()) - kContextMenuVerticalOffset);
+  if (client_bounds.Contains(r1.origin()) &&
+      client_bounds.Contains(r2.origin())) {
+    menu_pos.set_x((r1.origin().x() + r2.origin().x()) / 2);
+    menu_pos.set_y(std::min(r1.y(), r2.y()) - kContextMenuVerticalOffset);
   } else {
     menu_pos.set_x(client_bounds.x() + client_bounds.width() / 2);
     menu_pos.set_y(client_bounds.y());
@@ -445,8 +321,9 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
 
   client_view_->ConvertPointToScreen(&menu_pos);
 
-  context_menu_->SetScreenPosition(menu_pos);
-  context_menu_->SetVisible(true);
+  DCHECK(!context_menu_);
+  context_menu_ = new TouchEditingMenuView(this, menu_pos,
+      client_view_->GetNativeView());
 }
 
 void TouchSelectionControllerImpl::UpdateContextMenu(const gfx::Point& p1,
@@ -465,7 +342,9 @@ void TouchSelectionControllerImpl::UpdateContextMenu(const gfx::Point& p1,
 }
 
 void TouchSelectionControllerImpl::HideContextMenu() {
-  context_menu_->SetVisible(false);
+  if (context_menu_)
+    context_menu_->Close();
+  context_menu_ = NULL;
   context_menu_timer_.Stop();
 }
 
@@ -485,13 +364,17 @@ bool TouchSelectionControllerImpl::IsSelectionHandle2Visible() {
   return selection_handle_2_->visible();
 }
 
-}  // namespace views
-
-namespace ui {
-
-TouchSelectionController* TouchSelectionController::create(
-    TouchEditable* client_view) {
-  return new views::TouchSelectionControllerImpl(client_view);
+ViewsTouchSelectionControllerFactory::ViewsTouchSelectionControllerFactory() {
 }
 
-}  // namespace ui
+ui::TouchSelectionController* ViewsTouchSelectionControllerFactory::create(
+    ui::TouchEditable* client_view) {
+#if defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTouchEditing))
+    return new views::TouchSelectionControllerImpl(client_view);
+#endif
+  return NULL;
+}
+
+}  // namespace views

@@ -20,6 +20,9 @@ const char kEnableNewDialogStyle[] = "enable-new-dialog-style";
 
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 
+// Enables controls that support touch base text editing.
+const char kEnableTouchEditing[] = "enable-touch-editing";
+
 // Enables the Views textfield on Windows.
 const char kEnableViewsTextfield[] = "enable-views-textfield";
 
