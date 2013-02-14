@@ -361,7 +361,6 @@ void PictureLayerTiling::UpdateTilePriorities(
     int current_source_frame_number,
     double current_frame_time,
     bool store_screen_space_quads_on_tiles) {
-  TRACE_EVENT0("cc", "PictureLayerTiling::UpdateTilePriorities");
   if (ContentRect().IsEmpty())
     return;
 

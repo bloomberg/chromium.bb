@@ -80,6 +80,9 @@ scoped_ptr<base::Value> TileResolutionAsValue(
   case HIGH_RESOLUTION:
     return scoped_ptr<base::Value>(base::Value::CreateStringValue(
         "HIGH_RESOLUTION"));
+  case NON_IDEAL_RESOLUTION:
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+        "NON_IDEAL_RESOLUTION"));
   default:
     DCHECK(false) << "Unrecognized TileResolution value";
     return scoped_ptr<base::Value>(base::Value::CreateStringValue(
