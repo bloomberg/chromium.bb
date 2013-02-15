@@ -102,6 +102,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1_instance_()
   , Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1_instance_()
   , Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1_instance_()
+  , Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_instance_()
   , Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1_instance_()
   , Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1_instance_()
   , Actual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_1_instance_()
@@ -120,10 +121,12 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1_instance_()
   , Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1_instance_()
   , Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1_instance_()
+  , Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_instance_()
   , Actual_VMRS_cccc111011110001tttt101000010000_case_1_instance_()
   , Actual_VMSR_cccc111011100001tttt101000010000_case_1_instance_()
   , Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1_instance_()
   , Actual_VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_1_instance_()
+  , Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_instance_()
   , Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1_instance_()
   , Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1_instance_()
   , Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_instance_()
@@ -150,9 +153,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , ForbiddenCondDecoder_instance_()
   , PermanentlyUndefined_instance_()
   , Undefined_instance_()
-  , Vector1RegisterImmediate_BIT_instance_()
-  , Vector1RegisterImmediate_MOV_instance_()
-  , Vector1RegisterImmediate_MVN_instance_()
   , VectorLoadSingle1AllLanes_instance_()
   , VectorLoadSingle2AllLanes_instance_()
   , VectorLoadSingle3AllLanes_instance_()
@@ -2460,40 +2460,40 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_1imm(
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00000D00)  ==
           0x00000900 /* cmode(11:8)=10x1 */) {
-    return Vector1RegisterImmediate_BIT_instance_;
+    return Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000900)  ==
           0x00000100 /* cmode(11:8)=0xx1 */) {
-    return Vector1RegisterImmediate_BIT_instance_;
+    return Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000000 /* op(5)=0 */ &&
       (inst.Bits() & 0x00000D00)  ==
           0x00000800 /* cmode(11:8)=10x0 */) {
-    return Vector1RegisterImmediate_MOV_instance_;
+    return Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000000 /* op(5)=0 */ &&
       (inst.Bits() & 0x00000900)  ==
           0x00000000 /* cmode(11:8)=0xx0 */) {
-    return Vector1RegisterImmediate_MOV_instance_;
+    return Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000000 /* op(5)=0 */ &&
       (inst.Bits() & 0x00000C00)  ==
           0x00000C00 /* cmode(11:8)=11xx */) {
-    return Vector1RegisterImmediate_MOV_instance_;
+    return Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000E00 /* cmode(11:8)=1110 */) {
-    return Vector1RegisterImmediate_MOV_instance_;
+    return Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
@@ -2507,21 +2507,21 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_1imm(
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000D00)  ==
           0x00000800 /* cmode(11:8)=10x0 */) {
-    return Vector1RegisterImmediate_MVN_instance_;
+    return Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000C00 /* cmode(11:8)=110x */) {
-    return Vector1RegisterImmediate_MVN_instance_;
+    return Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000020)  ==
           0x00000020 /* op(5)=1 */ &&
       (inst.Bits() & 0x00000900)  ==
           0x00000000 /* cmode(11:8)=0xx0 */) {
-    return Vector1RegisterImmediate_MVN_instance_;
+    return Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

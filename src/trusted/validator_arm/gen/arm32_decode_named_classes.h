@@ -3258,6 +3258,14 @@ class Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1_VSUB_integer
     : public Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1 {
 };
 
+class Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VBIC_immediate
+    : public Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1 {
+};
+
+class Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VORR_immediate
+    : public Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1 {
+};
+
 class Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1_VCNT
     : public Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1 {
 };
@@ -3378,6 +3386,10 @@ class Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_regist
     : public Actual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1 {
 };
 
+class Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_VMOV_immediate_A1
+    : public Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1 {
+};
+
 class Actual_VMRS_cccc111011110001tttt101000010000_case_1_VMRS
     : public Actual_VMRS_cccc111011110001tttt101000010000_case_1 {
 };
@@ -3392,6 +3404,10 @@ class Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1_VMULL_p
 
 class Actual_VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_1_VMUL_polynomial_A1
     : public Actual_VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_1 {
+};
+
+class Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VMVN_immediate
+    : public Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1 {
 };
 
 class Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1_VPADD_floating_point
@@ -13305,6 +13321,30 @@ class NamedActual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1_VSUB_inte
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1_VSUB_integer);
 };
 
+class NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VBIC_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VBIC_immediate()
+    : NamedClassDecoder(decoder_, "Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1 VBIC_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VBIC_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VBIC_immediate);
+};
+
+class NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VORR_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VORR_immediate()
+    : NamedClassDecoder(decoder_, "Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1 VORR_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VORR_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VORR_immediate);
+};
+
 class NamedActual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1_VCNT
     : public NamedClassDecoder {
  public:
@@ -13665,6 +13705,18 @@ class NamedActual_VMOV_between_two_ARM_core_registers_and_two_single_precision_r
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers_cccc1100010otttttttt101000m1mmmm_case_1_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers);
 };
 
+class NamedActual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_VMOV_immediate_A1
+    : public NamedClassDecoder {
+ public:
+  NamedActual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_VMOV_immediate_A1()
+    : NamedClassDecoder(decoder_, "Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1 VMOV_immediate_A1")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_VMOV_immediate_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_1_VMOV_immediate_A1);
+};
+
 class NamedActual_VMRS_cccc111011110001tttt101000010000_case_1_VMRS
     : public NamedClassDecoder {
  public:
@@ -13711,6 +13763,18 @@ class NamedActual_VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_1_VMU
  private:
   nacl_arm_dec::Actual_VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_1_VMUL_polynomial_A1 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_1_VMUL_polynomial_A1);
+};
+
+class NamedActual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VMVN_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedActual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VMVN_immediate()
+    : NamedClassDecoder(decoder_, "Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1 VMVN_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VMVN_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1_VMVN_immediate);
 };
 
 class NamedActual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1_VPADD_floating_point

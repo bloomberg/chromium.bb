@@ -1749,7 +1749,7 @@ SafetyLevel Vector1RegisterImmediate_MOV::safety(Instruction i) const {
 
 // Vector1RegisterImmediate_BIT
 SafetyLevel Vector1RegisterImmediate_BIT::safety(Instruction i) const {
-  if (((cmode.value(i) & 0x1) == 0) || ((cmode.value(i) & 0x6) == 6))
+  if (((cmode.value(i) & 0x1) == 0) || ((cmode.value(i) & 0xC) == 0xC))
     return DECODER_ERROR;
   SafetyLevel level = Vector1RegisterImmediate::safety(i);
   if (MAY_BE_SAFE != level) return level;

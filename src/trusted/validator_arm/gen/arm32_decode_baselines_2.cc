@@ -7299,6 +7299,7 @@ uses(Instruction inst) const {
 //   {D: D(22),
 //    Q: Q(6),
 //    Vd: Vd(15:12),
+//    actual: Actual_VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector1RegisterImmediate_BIT,
 //    cmode: cmode(11:8),
