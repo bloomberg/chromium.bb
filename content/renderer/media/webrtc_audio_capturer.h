@@ -170,8 +170,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // Reconfigures the capturer with a new buffer size and capture parameters.
   // Must be called without holding the lock. Returns true on success.
-  bool Reconfigure(int sample_rate, media::AudioParameters::Format format,
-                   media::ChannelLayout channel_layout);
+  bool Reconfigure(int sample_rate, media::ChannelLayout channel_layout);
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;

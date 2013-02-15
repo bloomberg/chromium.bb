@@ -68,13 +68,15 @@ class WebRtcAudioCapturer::ConfiguredBuffer :
   ConfiguredBuffer() {}
 
   bool Initialize(int sample_rate,
-                  media::AudioParameters::Format format,
                   media::ChannelLayout channel_layout) {
     int buffer_size = GetBufferSizeForSampleRate(sample_rate);
     if (!buffer_size) {
       DLOG(ERROR) << "Unsupported sample-rate: " << sample_rate;
       return false;
     }
+
+    media::AudioParameters::Format format =
+        media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
 
     // bits_per_sample is always 16 for now.
     int bits_per_sample = 16;
@@ -106,10 +108,9 @@ scoped_refptr<WebRtcAudioCapturer> WebRtcAudioCapturer::CreateCapturer() {
 }
 
 bool WebRtcAudioCapturer::Reconfigure(int sample_rate,
-                                      media::AudioParameters::Format format,
                                       media::ChannelLayout channel_layout) {
   scoped_refptr<ConfiguredBuffer> new_buffer(new ConfiguredBuffer());
-  if (!new_buffer->Initialize(sample_rate, format, channel_layout))
+  if (!new_buffer->Initialize(sample_rate, channel_layout))
     return false;
 
   SinkList sinks;
@@ -132,9 +133,6 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!sinks_.empty());
   DVLOG(1) << "WebRtcAudioCapturer::Initialize()";
-
-  media::AudioParameters::Format format =
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
 
   DVLOG(1) << "Audio input hardware channel layout: " << channel_layout;
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputChannelLayout",
@@ -162,7 +160,7 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
     return false;
   }
 
-  if (!Reconfigure(sample_rate, format, channel_layout))
+  if (!Reconfigure(sample_rate, channel_layout))
     return false;
 
   // Create and configure the default audio capturing source. The |source_|
@@ -227,7 +225,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
     current_buffer = buffer_;
   }
 
-  const bool no_default_audio_source_exists = !current_buffer->buffer();
+  const bool no_default_audio_source_exists = !current_buffer;
 
   // Detach the old source from normal recording or perform first-time
   // initialization if Initialize() has never been called. For the second
@@ -241,8 +239,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
     // Dispatch the new parameters both to the sink(s) and to the new source.
     // The idea is to get rid of any dependency of the microphone parameters
     // which would normally be used by default.
-    if (!Reconfigure(sample_rate, current_buffer->params().format(),
-                     channel_layout)) {
+    if (!Reconfigure(sample_rate, channel_layout)) {
       return;
     } else {
       // The buffer has been reconfigured.  Update |current_buffer|.

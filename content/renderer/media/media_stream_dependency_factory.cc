@@ -20,6 +20,7 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamTrack.h"
@@ -30,6 +31,40 @@
 #endif
 
 namespace content {
+
+// Constant constraint keys which disables all audio constraints.
+// Only used in combination with WebAudio sources.
+struct {
+  const char* key;
+  const char* value;
+} const kWebAudioConstraints[] = {
+  {webrtc::MediaConstraintsInterface::kEchoCancellation,
+   webrtc::MediaConstraintsInterface::kValueFalse},
+  {webrtc::MediaConstraintsInterface::kAutoGainControl,
+   webrtc::MediaConstraintsInterface::kValueFalse},
+  {webrtc::MediaConstraintsInterface::kNoiseSuppression,
+   webrtc::MediaConstraintsInterface::kValueFalse},
+  {webrtc::MediaConstraintsInterface::kHighpassFilter,
+   webrtc::MediaConstraintsInterface::kValueFalse},
+};
+
+class WebAudioConstraints : public RTCMediaConstraints {
+ public:
+  WebAudioConstraints()
+      : RTCMediaConstraints(WebKit::WebMediaConstraints()) {
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWebAudioConstraints); ++i) {
+      webrtc::MediaConstraintsInterface::Constraint constraint;
+      constraint.key = kWebAudioConstraints[i].key;
+      constraint.value = kWebAudioConstraints[i].value;
+
+      DVLOG(1) << "WebAudioConstraints: " << constraint.key
+               << " : " <<  constraint.value;
+      mandatory_.push_back(constraint);
+    }
+  }
+
+  virtual ~WebAudioConstraints() {};
+};
 
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  public:
@@ -285,34 +320,28 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
       // audio stream to each PeerConnection separately.  But currently WebRTC
       // is only able to handle a global audio stream sent to ALL peers.
 
-      // TODO(henrika): Refactor and utilize audio constraints. Audio
-      // constraints are passed via LocalAudioSource.
-      if (CreateWebAudioSource(&source)) {
-        scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
-            CreateLocalAudioTrack(UTF16ToUTF8(audio_tracks[i].id()),
-                                  NULL));
-        native_stream->AddTrack(audio_track);
-        audio_track->set_enabled(audio_tracks[i].isEnabled());
-      } else {
-        DLOG(WARNING) << "Failed to create WebAudio source";
+      // Create a special source where default WebAudio constraints are used.
+      if (!CreateWebAudioSource(&source)) {
+        LOG(ERROR) << "Failed to create WebAudio source";
+        continue;
       }
-    } else {
-        MediaStreamSourceExtraData* source_data =
-            static_cast<MediaStreamSourceExtraData*>(source.extraData());
-
-        if (!source_data) {
-          // TODO(perkj): Implement support for sources from
-          // remote MediaStreams.
-          NOTIMPLEMENTED();
-          continue;
-        }
-
-        scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
-            CreateLocalAudioTrack(UTF16ToUTF8(audio_tracks[i].id()),
-                                  source_data->local_audio_source()));
-        native_stream->AddTrack(audio_track);
-        audio_track->set_enabled(audio_tracks[i].isEnabled());
     }
+
+    MediaStreamSourceExtraData* source_data =
+        static_cast<MediaStreamSourceExtraData*>(source.extraData());
+
+    if (!source_data) {
+      // TODO(perkj): Implement support for sources from
+      // remote MediaStreams.
+      NOTIMPLEMENTED();
+      continue;
+    }
+
+    scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+        CreateLocalAudioTrack(UTF16ToUTF8(audio_tracks[i].id()),
+                              source_data->local_audio_source()));
+    native_stream->AddTrack(audio_track);
+    audio_track->set_enabled(audio_tracks[i].isEnabled());
   }
 
   // Add video tracks.
@@ -455,12 +484,25 @@ bool MediaStreamDependencyFactory::CreateWebAudioSource(
   if (!capturer)
     return false;
 
-  // TODO(henrika): life-time handling is not perfect here; there is room
-  // for improvements.
+  // Set up the source and ensure that WebAudio is driving things instead of
+  // a microphone.
+
   scoped_refptr<WebAudioCapturerSource>
       webaudio_capturer_source(new WebAudioCapturerSource(capturer));
-  source->setExtraData(new content::MediaStreamSourceExtraData(
-      webaudio_capturer_source));
+  MediaStreamSourceExtraData* source_data =
+      new content::MediaStreamSourceExtraData(webaudio_capturer_source);
+
+  // Create a LocalAudioSource object which holds audio options.
+  // Use audio constraints where all values are false, i.e., disable
+  // echo cancellation, automatic gain control, noise suppression and
+  // high-pass filter. SetLocalAudioSource() affects core audio parts in
+  // third_party/Libjingle.
+  WebAudioConstraints webaudio_audio_constraints_all_false;
+  source_data->SetLocalAudioSource(
+      CreateLocalAudioSource(&webaudio_audio_constraints_all_false));
+  source->setExtraData(source_data);
+
+  // Replace the default source with WebAudio as source instead.
   source->addAudioConsumer(webaudio_capturer_source);
 
   return true;
