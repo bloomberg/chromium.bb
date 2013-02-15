@@ -289,10 +289,6 @@ SpdyPriority BufferedSpdyFramer::GetHighestPriority() const {
   return spdy_framer_.GetHighestPriority();
 }
 
-bool BufferedSpdyFramer::IsCompressible(const SpdyFrame& frame) const {
-  return spdy_framer_.IsCompressible(frame);
-}
-
 void BufferedSpdyFramer::InitHeaderStreaming(SpdyStreamId stream_id) {
   memset(header_buffer_, 0, kHeaderBufferSize);
   header_buffer_used_ = 0;

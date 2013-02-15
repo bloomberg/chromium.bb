@@ -179,7 +179,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                                  uint32 len,
                                  SpdyDataFlags flags);
   SpdyPriority GetHighestPriority() const;
-  bool IsCompressible(const SpdyFrame& frame) const;
 
   int frames_received() const { return frames_received_; }
 

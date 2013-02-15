@@ -466,9 +466,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Returned frame must be freed with "delete".
   SpdyFrame* DuplicateFrame(const SpdyFrame& frame);
 
-  // Returns true if a frame could be compressed.
-  bool IsCompressible(const SpdyFrame& frame) const;
-
   // For ease of testing and experimentation we can tweak compression on/off.
   void set_enable_compression(bool value) {
     enable_compression_ = value;

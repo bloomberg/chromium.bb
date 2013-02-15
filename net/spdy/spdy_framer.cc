@@ -2032,22 +2032,6 @@ SpdyFrame* SpdyFramer::DuplicateFrame(const SpdyFrame& frame) {
   return new_frame;
 }
 
-bool SpdyFramer::IsCompressible(const SpdyFrame& frame) const {
-  // The important frames to compress are those which contain large
-  // amounts of compressible data - namely the headers in the SYN_STREAM
-  // and SYN_REPLY.
-  if (frame.is_control_frame()) {
-    const SpdyControlFrame& control_frame =
-        reinterpret_cast<const SpdyControlFrame&>(frame);
-    return control_frame.type() == SYN_STREAM ||
-        control_frame.type() == SYN_REPLY ||
-        control_frame.type() == HEADERS;
-  }
-
-  // We don't compress Data frames.
-  return false;
-}
-
 void SpdyFramer::SerializeNameValueBlock(
     SpdyFrameBuilder* builder,
     const SpdyFrameWithNameValueBlockIR& frame) const {
