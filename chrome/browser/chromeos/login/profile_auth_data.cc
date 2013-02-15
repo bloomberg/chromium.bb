@@ -158,6 +158,7 @@ void ProfileAuthDataTransferer::OnGetCookiesToTransfer(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   got_cookies_ = true;
+  cookies_to_transfer_ = cookies_to_transfer;
   MaybeDoCookieAndCertTransfer();
 }
 
