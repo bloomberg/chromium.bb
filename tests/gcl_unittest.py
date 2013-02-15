@@ -37,7 +37,7 @@ class GclTestsBase(SuperMoxTestBase):
   def tearDown(self):
     gcl.CODEREVIEW_SETTINGS = self.old_review_settings
 
-  def fakeChange(self, files=None):
+  def fakeChange(self, files=None):  # pylint: disable=R0201
     if files == None:
       files = [('A', 'aa'), ('M', 'bb')]
 
@@ -57,6 +57,11 @@ class GclTestsBase(SuperMoxTestBase):
     change_info._closed = False
     change_info._deleted = False
     change_info._comments_added = []
+
+    class RpcServer(object):
+      def get_issue_properties(self, *_):  # pylint: disable=R0201
+        return { 'patchsets': [1337] }
+    change_info.RpcServer = RpcServer
 
     def AddComment(comment):
       # pylint: disable=W0212
@@ -595,7 +600,7 @@ class CMDCommitUnittest(GclTestsBase):
     self.assertTrue(change_info._closed)
     self.assertEqual(
         change_info._comments_added,
-        ["Committed manually as r12345 (presubmit successful)."])
+        ["Committed patchset #1 manually as r12345 (presubmit successful)."])
 
 
 if __name__ == '__main__':

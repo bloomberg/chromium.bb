@@ -1045,7 +1045,9 @@ def CMDcommit(change_info, args):
       elif revision:
         change_info.description += "\nCommitted: " + revision
       change_info.CloseIssue()
-      comment = "Committed manually as r%s" % revision
+      props = change_info.RpcServer().get_issue_properties(change_info.issue)
+      patch_num = len(props['patchsets'])
+      comment = "Committed patchset #%d manually as r%s" % (patch_num, revision)
       comment += ' (presubmit successful).' if not bypassed else '.'
       change_info.AddComment(comment)
   return 0
@@ -1111,7 +1113,7 @@ def CMDchange(args):
                 "---Repository Root: " + change_info.GetLocalRoot() + "\n"
                 "---Paths in this changelist (" + change_info.name + "):\n")
   separator2 = "\n\n---Paths modified but not in any changelist:\n\n"
-  
+
   text = (description + separator1 + '\n' +
           '\n'.join([f[0] + f[1] for f in change_info.GetFiles()]))
 
