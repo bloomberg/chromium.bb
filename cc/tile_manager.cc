@@ -689,7 +689,7 @@ void TileManager::GatherPixelRefsForTile(Tile* tile) {
   if (managed_state.need_to_gather_pixel_refs) {
     base::TimeTicks gather_begin_time;
     if (record_rendering_stats_)
-      gather_begin_time = base::TimeTicks::Now();
+      gather_begin_time = base::TimeTicks::HighResNow();
     tile->picture_pile()->GatherPixelRefs(
         tile->content_rect_,
         tile->contents_scale_,
@@ -698,7 +698,7 @@ void TileManager::GatherPixelRefsForTile(Tile* tile) {
     if (record_rendering_stats_) {
       rendering_stats_.totalImageGatheringCount++;
       rendering_stats_.totalImageGatheringTime +=
-          base::TimeTicks::Now() - gather_begin_time;
+          base::TimeTicks::HighResNow() - gather_begin_time;
     }
   }
 }
@@ -933,7 +933,7 @@ void TileManager::PerformRaster(uint8* buffer,
 
   base::TimeTicks begin_time;
   if (stats)
-    begin_time = base::TimeTicks::Now();
+    begin_time = base::TimeTicks::HighResNow();
 
   int64 total_pixels_rasterized = 0;
   picture_pile->Raster(&canvas, rect, contents_scale,
@@ -942,7 +942,7 @@ void TileManager::PerformRaster(uint8* buffer,
   if (stats) {
     stats->totalPixelsRasterized += total_pixels_rasterized;
 
-    base::TimeTicks end_time = base::TimeTicks::Now();
+    base::TimeTicks end_time = base::TimeTicks::HighResNow();
     base::TimeDelta duration = end_time - begin_time;
     stats->totalRasterizeTime += duration;
     UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.PictureRasterTimeMS",
@@ -977,12 +977,12 @@ void TileManager::RunImageDecodeTask(skia::LazyPixelRef* pixel_ref,
   TRACE_EVENT0("cc", "TileManager::RunImageDecodeTask");
   base::TimeTicks decode_begin_time;
   if (stats)
-    decode_begin_time = base::TimeTicks::Now();
+    decode_begin_time = base::TimeTicks::HighResNow();
   pixel_ref->Decode();
   if (stats) {
     stats->totalDeferredImageDecodeCount++;
     stats->totalDeferredImageDecodeTime +=
-        base::TimeTicks::Now() - decode_begin_time;
+        base::TimeTicks::HighResNow() - decode_begin_time;
   }
 }
 
