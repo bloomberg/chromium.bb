@@ -248,8 +248,14 @@ FingerprintDataLoader::FingerprintDataLoader(
 
   // Load GPU data if needed.
   if (!gpu_data_manager_->IsCompleteGpuInfoAvailable()) {
+    // TODO(isherman): Investigating http://crbug.com/174296
+    LOG(WARNING) << "Loading GPU data.";
+
     gpu_data_manager_->AddObserver(this);
     gpu_data_manager_->RequestCompleteGpuInfoIfNeeded();
+  } else {
+    // TODO(isherman): Investigating http://crbug.com/174296
+    LOG(WARNING) << "GPU data already loaded.";
   }
 
   // Load plugin data.
@@ -265,8 +271,11 @@ FingerprintDataLoader::~FingerprintDataLoader() {
 }
 
 void FingerprintDataLoader::OnGpuInfoUpdate() {
-  if (!gpu_data_manager_->IsCompleteGpuInfoAvailable())
+  if (!gpu_data_manager_->IsCompleteGpuInfoAvailable()) {
+    // TODO(isherman): Investigating http://crbug.com/174296
+    LOG(WARNING) << "OnGpuInfoUpdate() called without complete GPU info.";
     return;
+  }
 
   // TODO(isherman): Investigating http://crbug.com/174296
   LOG(WARNING) << "Loaded GPU data.";
@@ -300,6 +309,16 @@ void FingerprintDataLoader::OnGotPlugins(
 }
 
 void FingerprintDataLoader::MaybeFillFingerprint() {
+  // TODO(isherman): Investigating http://crbug.com/174296
+  LOG(WARNING) << "GPU data: "
+               << (gpu_data_manager_->IsCompleteGpuInfoAvailable() ?
+                       "loaded" :
+                       "waiting");
+  LOG(WARNING) << "Fonts: "
+               << (fonts_ ? "loaded" : "waiting");
+  LOG(WARNING) << "Plugins: "
+               << (has_loaded_plugins_ ? "loaded" : "waiting");
+
   // If all of the data has been loaded, fill the fingerprint and clean up.
   if (gpu_data_manager_->IsCompleteGpuInfoAvailable() &&
       fonts_ &&
