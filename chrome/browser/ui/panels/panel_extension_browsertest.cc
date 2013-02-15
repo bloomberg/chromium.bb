@@ -90,9 +90,11 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, PanelAppIcon) {
   EXPECT_EQ(panel::kPanelAppIconSize, app_icon.height());
 
   // Then verify on the native panel level.
+#if !defined(OS_WIN) || !defined(USE_AURA)
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
   EXPECT_TRUE(native_panel_testing->VerifyAppIcon());
+#endif
 
   panel->Close();
 }
