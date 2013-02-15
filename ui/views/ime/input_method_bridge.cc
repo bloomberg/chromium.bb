@@ -13,8 +13,10 @@
 namespace views {
 
 InputMethodBridge::InputMethodBridge(internal::InputMethodDelegate* delegate,
-                                     ui::InputMethod* host)
+                                     ui::InputMethod* host,
+                                     bool shared_input_method)
     : host_(host),
+      shared_input_method_(shared_input_method),
       context_focused_(false) {
   DCHECK(host_);
   set_delegate(delegate);
@@ -34,7 +36,8 @@ void InputMethodBridge::OnFocus() {
 
   // Ask the system-wide IME to send all TextInputClient messages to |this|
   // object.
-  host_->SetFocusedTextInputClient(this);
+  if (shared_input_method_ || !host_->GetTextInputClient())
+    host_->SetFocusedTextInputClient(this);
 
   // TODO(yusukes): We don't need to call OnTextInputTypeChanged() once we move
   // text input type tracker code to ui::InputMethodBase.

@@ -27,8 +27,11 @@ class View;
 class InputMethodBridge : public InputMethodBase,
                           public ui::TextInputClient {
  public:
+  // |shared_input_method| indicates if |host| is shared among other top level
+  // widgets.
   InputMethodBridge(internal::InputMethodDelegate* delegate,
-                    ui::InputMethod* host);
+                    ui::InputMethod* host,
+                    bool shared_input_method);
   virtual ~InputMethodBridge();
 
   // Overridden from InputMethod:
@@ -80,6 +83,9 @@ class InputMethodBridge : public InputMethodBase,
   gfx::Rect ConvertRectToFocusedView(const gfx::Rect& rect);
 
   ui::InputMethod* const host_;
+
+  const bool shared_input_method_;
+
   bool context_focused_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodBridge);

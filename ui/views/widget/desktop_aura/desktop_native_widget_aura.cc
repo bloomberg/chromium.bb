@@ -246,7 +246,7 @@ bool DesktopNativeWidgetAura::HasCapture() const {
 
 InputMethod* DesktopNativeWidgetAura::CreateInputMethod() {
   ui::InputMethod* host = input_method_event_filter_->input_method();
-  return new InputMethodBridge(this, host);
+  return new InputMethodBridge(this, host, false);
 }
 
 internal::InputMethodDelegate*
