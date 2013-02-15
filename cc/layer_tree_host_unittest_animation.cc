@@ -133,14 +133,20 @@ class LayerTreeHostAnimationTestAddAnimation :
       num_animates_++;
       return;
     }
-    EXPECT_LT(0, start_time_);
-    EXPECT_TRUE(received_animation_started_notification_);
-    endTest();
+
+    if (received_animation_started_notification_) {
+      EXPECT_LT(0, start_time_);
+      endTest();
+    }
   }
 
   virtual void notifyAnimationStarted(double wall_clock_time) OVERRIDE {
     received_animation_started_notification_ = true;
     start_time_ = wall_clock_time;
+    if (num_animates_) {
+      EXPECT_LT(0, start_time_);
+      endTest();
+    }
   }
 
   virtual void afterTest() OVERRIDE {}
@@ -349,7 +355,8 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents :
         m_layerTreeHost->rootLayer()->layerAnimationController();
     Animation* animation =
         controller->getAnimation(0, Animation::Opacity);
-    controller->removeAnimation(animation->id());
+    if (animation)
+      controller->removeAnimation(animation->id());
     endTest();
   }
 
