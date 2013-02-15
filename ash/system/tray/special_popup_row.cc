@@ -22,9 +22,8 @@ namespace {
 
 const int kIconPaddingLeft = 5;
 const int kSpecialPopupRowHeight = 55;
-const int kBorderHeight = 3;
-const SkColor kBorderGradientDark = SkColorSetRGB(0xae, 0xae, 0xae);
-const SkColor kBorderGradientLight = SkColorSetRGB(0xe8, 0xe8, 0xe8);
+const int kBorderHeight = 1;
+const SkColor kBorderColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 
 views::View* CreatePopupHeaderButtonsContainer() {
   views::View* view = new views::View;
@@ -34,41 +33,15 @@ views::View* CreatePopupHeaderButtonsContainer() {
   return view;
 }
 
-class SpecialPopupRowBorder : public views::Border {
- public:
-  SpecialPopupRowBorder()
-      : painter_(views::Painter::CreateVerticalGradient(kBorderGradientDark,
-                                                        kBorderGradientLight)) {
-  }
-
-  virtual ~SpecialPopupRowBorder() {}
-
- private:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE {
-    views::Painter::PaintPainterAt(canvas, painter_.get(),
-        gfx::Rect(gfx::Size(view.width(), kBorderHeight)));
-  }
-
-  virtual gfx::Insets GetInsets() const OVERRIDE {
-    return gfx::Insets(kBorderHeight, 0, 0, 0);
-  }
-
-  scoped_ptr<views::Painter> painter_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpecialPopupRowBorder);
-};
-
 }  // namespace
 
 SpecialPopupRow::SpecialPopupRow()
     : content_(NULL),
       button_container_(NULL) {
-  views::Background* background = views::Background::CreateBackgroundPainter(
-      true, views::Painter::CreateVerticalGradient(kHeaderBackgroundColorLight,
-                                                   kHeaderBackgroundColorDark));
-  background->SetNativeControlColor(kHeaderBackgroundColorDark);
-  set_background(background);
-  set_border(new SpecialPopupRowBorder);
+  set_background(views::Background::CreateSolidBackground(
+      kHeaderBackgroundColor));
+  set_border(views::Border::CreateSolidSidedBorder(
+      kBorderHeight, 0, 0, 0, kBorderColor));
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 }

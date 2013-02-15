@@ -334,6 +334,7 @@ bool SystemTrayBubble::ShouldShowLauncher() const {
 }
 
 void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
+  std::vector<views::View*> item_views;
   for (size_t i = 0; i < items_.size(); ++i) {
     views::View* view = NULL;
     switch (bubble_type_) {
@@ -347,14 +348,17 @@ void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
         view = items_[i]->CreateNotificationView(login_status);
         break;
     }
-    if (view) {
-      // For default view, draw bottom border for each item, except the last
-      // 2 items, which are the bottom header row and the one just above it.
-      bool is_default_bubble = bubble_type_ == BUBBLE_TYPE_DEFAULT;
-      bubble_view_->AddChildView(new TrayPopupItemContainer(
-          view, is_default_bubble,
-          is_default_bubble && (i < items_.size() - 2)));
-    }
+    if (view)
+      item_views.push_back(view);
+  }
+
+  bool is_default_bubble = bubble_type_ == BUBBLE_TYPE_DEFAULT;
+  for (size_t i = 0; i < item_views.size(); ++i) {
+    // For default view, draw bottom border for each item, except the last
+    // 2 items, which are the bottom header row and the one just above it.
+    bubble_view_->AddChildView(new TrayPopupItemContainer(
+        item_views[i], is_default_bubble,
+        is_default_bubble && (i < item_views.size() - 2)));
   }
 }
 

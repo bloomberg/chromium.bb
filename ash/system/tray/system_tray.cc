@@ -370,7 +370,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       init_params.max_height = default_bubble_height_;
       init_params.arrow_color = kBackgroundColor;
     } else {
-      init_params.arrow_color = kHeaderBackgroundColorDark;
+      init_params.arrow_color = kHeaderBackgroundColor;
     }
     init_params.arrow_offset = arrow_offset;
     // For Volume and Brightness we don't want to show an arrow when

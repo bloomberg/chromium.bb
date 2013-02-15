@@ -45,8 +45,7 @@ extern const SkColor kPublicAccountBackgroundColor;
 extern const SkColor kPublicAccountUserCardTextColor;
 extern const SkColor kPublicAccountUserCardNameColor;
 
-extern const SkColor kHeaderBackgroundColorLight;
-extern const SkColor kHeaderBackgroundColorDark;
+extern const SkColor kHeaderBackgroundColor;
 
 extern const SkColor kBorderDarkColor;
 extern const SkColor kBorderLightColor;

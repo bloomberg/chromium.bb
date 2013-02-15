@@ -40,13 +40,12 @@ const int kTrayRoundedBorderRadius = 2;
 const int kTrayBarButtonWidth = 39;
 
 const SkColor kBackgroundColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
-const SkColor kHoverBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
+const SkColor kHoverBackgroundColor = SkColorSetRGB(0xf3, 0xf3, 0xf3);
 const SkColor kPublicAccountBackgroundColor = SkColorSetRGB(0xf8, 0xe5, 0xb6);
 const SkColor kPublicAccountUserCardTextColor = SkColorSetRGB(0x66, 0x66, 0x66);
 const SkColor kPublicAccountUserCardNameColor = SK_ColorBLACK;
 
-const SkColor kHeaderBackgroundColorLight = SkColorSetRGB(0xf1, 0xf1, 0xf1);
-const SkColor kHeaderBackgroundColorDark = SkColorSetRGB(0xe7, 0xe7, 0xe7);
+const SkColor kHeaderBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 
 const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 const SkColor kBorderLightColor = SkColorSetRGB(0xeb, 0xeb, 0xeb);
