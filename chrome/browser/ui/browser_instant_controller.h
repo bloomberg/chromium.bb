@@ -96,13 +96,9 @@ class BrowserInstantController : public content::NotificationObserver,
   // Invoked by |browser_| when the active tab is about to be deactivated.
   void TabDeactivated(content::WebContents* contents);
 
-  // Invoked by |BrowserWindow| during layout to set content height which is
-  // used as theme area height, i.e. the height of the area that the entire
-  // theme background image should fill up.
-  void SetContentHeight(int height);
-
-  // Invoked by |instant_| to update theme information for preview.
-  void UpdateThemeInfoForPreview();
+  // Invoked by |instant_| or |browser_| to update theme information for NTP.
+  // Set |parse_theme_info| to true to force re-parsing of theme information.
+  void UpdateThemeInfo(bool parse_theme_info);
 
   // Invoked by the InstantController when it wants to open a URL.
   void OpenURLInCurrentTab(const GURL& url, content::PageTransition transition);
@@ -127,9 +123,6 @@ class BrowserInstantController : public content::NotificationObserver,
   // Helper for handling theme change.
   void OnThemeChanged(ThemeService* theme_service);
 
-  // Helper for handling theme area height change.
-  void OnThemeAreaHeightChanged(int height);
-
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.
   void ReplaceWebContentsAt(int index,
@@ -143,7 +136,6 @@ class BrowserInstantController : public content::NotificationObserver,
   // Theme-related data for NTP preview to adopt themes.
   bool initialized_theme_info_;  // True if theme_info_ has been initialized.
   ThemeBackgroundInfo theme_info_;
-  int theme_area_height_;
 
   PrefChangeRegistrar profile_pref_registrar_;
 

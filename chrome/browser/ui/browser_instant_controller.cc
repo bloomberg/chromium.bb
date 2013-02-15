@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -43,8 +44,7 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
       instant_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                chrome::search::IsInstantExtendedAPIEnabled(profile())),
       instant_unload_handler_(browser),
-      initialized_theme_info_(false),
-      theme_area_height_(0) {
+      initialized_theme_info_(false) {
   profile_pref_registrar_.Init(profile()->GetPrefs());
   profile_pref_registrar_.Add(
       GetInstantPrefName(profile()),
@@ -208,15 +208,10 @@ void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
   instant_.TabDeactivated(contents);
 }
 
-void BrowserInstantController::SetContentHeight(int height) {
-  OnThemeAreaHeightChanged(height);
-}
-
-void BrowserInstantController::UpdateThemeInfoForPreview() {
-  // Update theme background info and theme area height.
-  // Initialize |theme_info| if necessary.
-  // |OnThemeChanged| also updates theme area height if necessary.
-  if (!initialized_theme_info_)
+void BrowserInstantController::UpdateThemeInfo(bool parse_theme_info) {
+  // Update theme background info.
+  // Initialize or re-parse |theme_info| if necessary.
+  if (!initialized_theme_info_ || parse_theme_info)
     OnThemeChanged(ThemeServiceFactory::GetForProfile(profile()));
   else
     OnThemeChanged(NULL);
@@ -251,7 +246,7 @@ void BrowserInstantController::ModeChanged(const search::Mode& old_mode,
                                            const search::Mode& new_mode) {
   // If mode is now |NTP|, send theme-related information to instant.
   if (new_mode.is_ntp())
-    UpdateThemeInfoForPreview();
+    UpdateThemeInfo(false);
 
   instant_.SearchModeChanged(old_mode, new_mode);
 }
@@ -301,12 +296,19 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
       }
 
       // Set theme background image vertical alignment.
-      if (alignment & ThemeService::ALIGN_TOP)
+      if (alignment & ThemeService::ALIGN_TOP) {
         theme_info_.image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_TOP;
-      else if (alignment & ThemeService::ALIGN_BOTTOM)
+#if !defined(OS_ANDROID)
+        // A detached bookmark bar will draw the top part of a top-aligned theme
+        // image as its background, so offset the image by the bar height.
+        if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED)
+          theme_info_.image_top_offset = -chrome::kNTPBookmarkBarHeight;
+#endif  // !defined(OS_ANDROID)
+      } else if (alignment & ThemeService::ALIGN_BOTTOM) {
         theme_info_.image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_BOTTOM;
-      else // ALIGN_CENTER
+      } else {  // ALIGN_CENTER
         theme_info_.image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_CENTER;
+      }
 
       // Set theme background image tiling.
       int tiling = 0;
@@ -339,28 +341,8 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
 
   DCHECK(initialized_theme_info_);
 
-  if (browser_->search_model()->mode().is_ntp()) {
+  if (browser_->search_model()->mode().is_ntp())
     instant_.ThemeChanged(theme_info_);
-
-    // Theme area height is only sent to preview for non-top-aligned images;
-    // new theme may have a different alignment that requires preview to know
-    // theme area height.
-    OnThemeAreaHeightChanged(theme_area_height_);
-  }
-}
-
-void BrowserInstantController::OnThemeAreaHeightChanged(int height) {
-  theme_area_height_ = height;
-
-  // Notify preview only if mode is |NTP| and theme background image is not top-
-  // aligned; top-aligned images don't need theme area height to determine which
-  // part of the image overlay should draw, 'cos the origin is top-left.
-  if (!browser_->search_model()->mode().is_ntp() ||
-      theme_info_.theme_id.empty() ||
-      theme_info_.image_vertical_alignment == THEME_BKGRND_IMAGE_ALIGN_TOP) {
-    return;
-  }
-  instant_.ThemeAreaHeightChanged(theme_area_height_);
 }
 
 }  // namespace chrome

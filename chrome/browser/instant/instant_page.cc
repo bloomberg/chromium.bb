@@ -77,10 +77,6 @@ void InstantPage::SendThemeBackgroundInfo(
   Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));
 }
 
-void InstantPage::SendThemeAreaHeight(int height) {
-  Send(new ChromeViewMsg_SearchBoxThemeAreaHeightChanged(routing_id(), height));
-}
-
 void InstantPage::SetDisplayInstantResults(bool display_instant_results) {
   Send(new ChromeViewMsg_SearchBoxSetDisplayInstantResults(
       routing_id(), display_instant_results));

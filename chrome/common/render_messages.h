@@ -199,6 +199,7 @@ IPC_STRUCT_TRAITS_BEGIN(ThemeBackgroundInfo)
   IPC_STRUCT_TRAITS_MEMBER(theme_id)
   IPC_STRUCT_TRAITS_MEMBER(image_horizontal_alignment)
   IPC_STRUCT_TRAITS_MEMBER(image_vertical_alignment)
+  IPC_STRUCT_TRAITS_MEMBER(image_top_offset)
   IPC_STRUCT_TRAITS_MEMBER(image_tiling)
   IPC_STRUCT_TRAITS_MEMBER(image_height)
 IPC_STRUCT_TRAITS_END()
@@ -325,9 +326,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeChanged,
                     ThemeBackgroundInfo /* value */)
-
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxThemeAreaHeightChanged,
-                    int /* height */)
 
 IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFontInformation,
                     string16 /* omnibox_font */,

@@ -267,12 +267,9 @@ if (!chrome.embeddedSearch) {
 
   chrome.embeddedSearch.newTabPage = new function() {
     native function GetThemeBackgroundInfo();
-    native function GetThemeAreaHeight();
 
     this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);
-    this.__defineGetter__('themeAreaHeight', GetThemeAreaHeight);
 
-    this.onthemeareaheightchange = null;
     this.onthemechange = null;
   };
 

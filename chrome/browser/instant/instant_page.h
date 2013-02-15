@@ -149,9 +149,6 @@ class InstantPage : public content::WebContentsObserver {
   // Tells the page about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
 
-  // Tells the page about the current theme area height.
-  void SendThemeAreaHeight(int height);
-
   // Tells the page whether it is allowed to display Instant results.
   void SetDisplayInstantResults(bool display_instant_results);
 

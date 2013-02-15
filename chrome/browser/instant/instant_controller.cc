@@ -805,18 +805,6 @@ void InstantController::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
     instant_tab_->SendThemeBackgroundInfo(theme_info);
 }
 
-void InstantController::ThemeAreaHeightChanged(int height) {
-  if (!extended_enabled_)
-    return;
-
-  if (overlay_)
-    overlay_->SendThemeAreaHeight(height);
-  if (ntp_)
-    ntp_->SendThemeAreaHeight(height);
-  if (instant_tab_)
-    instant_tab_->SendThemeAreaHeight(height);
-}
-
 void InstantController::SwappedOverlayContents() {
   model_.SetPreviewContents(GetPreviewContents());
 }
@@ -864,7 +852,7 @@ void InstantController::InstantPageRenderViewCreated(
     return;
 
   // Update theme info so that the page picks it up.
-  browser_->UpdateThemeInfoForPreview();
+  browser_->UpdateThemeInfo(false);
 
   // Ensure the searchbox API has the correct initial state.
   if (IsContentsFrom(overlay(), contents)) {
@@ -1181,7 +1169,7 @@ void InstantController::ResetInstantTab() {
       instant_tab_.reset(new InstantTab(this));
       instant_tab_->Init(active_tab);
       // Update theme info for this tab.
-      browser_->UpdateThemeInfoForPreview();
+      browser_->UpdateThemeInfo(false);
       instant_tab_->SetDisplayInstantResults(instant_enabled_);
       instant_tab_->SetMarginSize(start_margin_, end_margin_);
       instant_tab_->InitializeFonts();

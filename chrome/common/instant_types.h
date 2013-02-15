@@ -144,6 +144,10 @@ struct ThemeBackgroundInfo {
   // is valid.
   ThemeBackgroundImageAlignment image_vertical_alignment;
 
+  // The theme background image top offset is only valid if
+  // |image_vertical_alignment| is |THEME_BKGRND_IMAGE_ALIGN_TOP|.
+  int image_top_offset;
+
   // The theme background image tiling is only valid if |theme_id| is valid.
   ThemeBackgroundImageTiling image_tiling;
 

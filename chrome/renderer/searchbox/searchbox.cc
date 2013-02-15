@@ -20,7 +20,6 @@ SearchBox::SearchBox(content::RenderView* render_view)
       end_margin_(0),
       last_results_base_(0),
       is_key_capture_enabled_(false),
-      theme_area_height_(0),
       display_instant_results_(false),
       omnibox_font_size_(0) {
 }
@@ -104,10 +103,6 @@ const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
   return theme_info_;
 }
 
-int SearchBox::GetThemeAreaHeight() {
-  return theme_area_height_;
-}
-
 bool SearchBox::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchBox, message)
@@ -130,8 +125,6 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnKeyCaptureChange)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeChanged,
                         OnThemeChanged)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxThemeAreaHeightChanged,
-                        OnThemeAreaHeightChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxFontInformation,
                         OnFontInformationReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -263,14 +256,6 @@ void SearchBox::OnThemeChanged(const ThemeBackgroundInfo& theme_info) {
   }
 }
 
-void SearchBox::OnThemeAreaHeightChanged(int height) {
-  theme_area_height_ = height;
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    extensions_v8::SearchBoxExtension::DispatchThemeAreaHeightChange(
-        render_view()->GetWebView()->mainFrame());
-  }
-}
-
 double SearchBox::GetZoom() const {
   WebKit::WebView* web_view = render_view()->GetWebView();
   if (web_view) {
@@ -299,7 +284,6 @@ void SearchBox::Reset() {
   autocomplete_results_.clear();
   is_key_capture_enabled_ = false;
   theme_info_ = ThemeBackgroundInfo();
-  theme_area_height_ = 0;
   // Don't reset display_instant_results_ to prevent clearing it on committed
   // results pages in extended mode. Otherwise resetting it is a no-op because
   // a new loader is created when it changes; see crbug.com/164662.

@@ -2175,6 +2175,11 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
 
   bookmark_bar_state_ = state;
 
+  // Inform NTP page of change in bookmark bar state, so that it can adjust the
+  // theme image top offset if necessary.
+  if (instant_controller_)
+    instant_controller_->UpdateThemeInfo(true);
+
   if (!window_)
     return;  // This is called from the constructor when window_ is NULL.
 

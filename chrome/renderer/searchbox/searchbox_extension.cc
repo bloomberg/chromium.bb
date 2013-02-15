@@ -187,16 +187,6 @@ static const char kDispatchThemeChangeEventScript[] =
     "  true;"
     "}";
 
-static const char kDispatchThemeAreaHeightChangeEventScript[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.newTabPage.onthemeareaheightchange &&"
-    "    typeof window.chrome.embeddedSearch.newTabPage.onthemeareaheightchange"
-    "        == 'function') {"
-    "  window.chrome.embeddedSearch.newTabPage.onthemeareaheightchange();"
-    "  true;"
-    "}";
-
 static const char kDispatchMarginChangeEventScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -273,13 +263,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Call only when overlay is showing NTP page.
   static v8::Handle<v8::Value> GetThemeBackgroundInfo(
       const v8::Arguments& args);
-
-  // Gets the theme area height that the entire theme background image should
-  // fill up.
-  // Call only when overlay is showing NTP page and GetThemeBackgroundInfo
-  // returns a non-empty image_url and an image_vertical_alignment that is not
-  // "top".
-  static v8::Handle<v8::Value> GetThemeAreaHeight(const v8::Arguments& args);
 
   // Gets whether the browser is capturing key strokes.
   static v8::Handle<v8::Value> IsKeyCaptureEnabled(const v8::Arguments& args);
@@ -361,8 +344,6 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetDisplayInstantResults);
   if (name->Equals(v8::String::New("GetThemeBackgroundInfo")))
     return v8::FunctionTemplate::New(GetThemeBackgroundInfo);
-  if (name->Equals(v8::String::New("GetThemeAreaHeight")))
-    return v8::FunctionTemplate::New(GetThemeAreaHeight);
   if (name->Equals(v8::String::New("IsKeyCaptureEnabled")))
     return v8::FunctionTemplate::New(IsKeyCaptureEnabled);
   if (name->Equals(v8::String::New("GetFont")))
@@ -606,12 +587,16 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
     info->Set(v8::String::New("imageHorizontalAlignment"),
               UTF8ToV8String(alignment));
 
-    // The theme background image vertical alignment is one of "top", "bottom",
-    // "center".
+    // The theme background image vertical alignment is one of "bottom",
+    // "center" or, for top-aligned image, "top" or "$x px" where $x is an
+    // integer to offset top of image by.
     // This is the vertical component of the CSS "background-position" format.
     // Value is only valid if |image_url| is not empty.
     if (theme_info.image_vertical_alignment == THEME_BKGRND_IMAGE_ALIGN_TOP) {
-      alignment = kCSSBackgroundPositionTop;
+      if (theme_info.image_top_offset != 0)
+        alignment = base::IntToString(theme_info.image_top_offset) + "px";
+      else
+        alignment = kCSSBackgroundPositionTop;
     } else if (theme_info.image_vertical_alignment ==
                    THEME_BKGRND_IMAGE_ALIGN_BOTTOM) {
       alignment = kCSSBackgroundPositionBottom;
@@ -648,17 +633,6 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
   }
 
   return info;
-}
-
-// static
-v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetThemeAreaHeight(
-    const v8::Arguments& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return v8::Undefined();
-
-  DVLOG(1) << render_view << " GetThemeAreaHeight: "
-           << SearchBox::Get(render_view)->GetThemeAreaHeight();
-  return v8::Int32::New(SearchBox::Get(render_view)->GetThemeAreaHeight());
 }
 
 // static
@@ -958,12 +932,6 @@ void SearchBoxExtension::DispatchMarginChange(WebKit::WebFrame* frame) {
 // static
 void SearchBoxExtension::DispatchThemeChange(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchThemeChangeEventScript);
-}
-
-// static
-void SearchBoxExtension::DispatchThemeAreaHeightChange(
-    WebKit::WebFrame* frame) {
-  Dispatch(frame, kDispatchThemeAreaHeightChangeEventScript);
 }
 
 }  // namespace extensions_v8

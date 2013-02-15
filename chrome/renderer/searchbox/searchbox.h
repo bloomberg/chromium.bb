@@ -66,7 +66,6 @@ class SearchBox : public content::RenderViewObserver,
   const InstantAutocompleteResult*
       GetAutocompleteResultWithId(size_t restricted_id) const;
   const ThemeBackgroundInfo& GetThemeBackgroundInfo();
-  int GetThemeAreaHeight();
 
  private:
   // Overridden from content::RenderViewObserver:
@@ -112,7 +111,6 @@ class SearchBox : public content::RenderViewObserver,
   std::vector<InstantAutocompleteResult> last_autocomplete_results_;
   bool is_key_capture_enabled_;
   ThemeBackgroundInfo theme_info_;
-  int theme_area_height_;
   bool display_instant_results_;
   string16 omnibox_font_;
   size_t omnibox_font_size_;

@@ -153,9 +153,6 @@ class InstantController : public InstantPage::Delegate {
   // The theme has changed. Pass the message to the preview page.
   void ThemeChanged(const ThemeBackgroundInfo& theme_info);
 
-  // The theme area height has changed. Pass the message to the preview page.
-  void ThemeAreaHeightChanged(int height);
-
   // Called when someone else swapped in a different contents in the |overlay_|.
   void SwappedOverlayContents();
 
