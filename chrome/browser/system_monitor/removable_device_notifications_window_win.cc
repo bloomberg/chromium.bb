@@ -85,8 +85,11 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
   std::string unique_id;
   string16 name;
   bool removable;
-  if (!GetDeviceInfo(path, &location, &unique_id, &name, &removable))
+  uint64 total_size_in_bytes;
+  if (!GetDeviceInfo(path, &location, &unique_id, &name, &removable,
+                     &total_size_in_bytes)) {
     return false;
+  }
 
   // To compute the device id, the device type is needed.  For removable
   // devices, that requires knowing if there's a DCIM directory, which would
@@ -123,9 +126,8 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
 }
 
 uint64 RemovableDeviceNotificationsWindowWin::GetStorageSize(
-    const std::string& location) const {
-  NOTIMPLEMENTED();
-  return 0ULL;
+    const FilePath::StringType& location) const {
+  return volume_mount_watcher_->GetStorageSize(location);
 }
 
 bool RemovableDeviceNotificationsWindowWin::GetMTPStorageInfoFromDeviceId(
@@ -165,12 +167,14 @@ LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProc(
 
 bool RemovableDeviceNotificationsWindowWin::GetDeviceInfo(
     const base::FilePath& device_path, string16* device_location,
-    std::string* unique_id, string16* name, bool* removable) const {
+    std::string* unique_id, string16* name, bool* removable,
+    uint64* total_size_in_bytes) const {
   // TODO(kmadhusu) Implement PortableDeviceWatcherWin::GetDeviceInfo()
   // function when we have the functionality to add a sub directory of
   // portable device as a media gallery.
   return volume_mount_watcher_->GetDeviceInfo(device_path, device_location,
-                                              unique_id, name, removable);
+                                              unique_id, name, removable,
+                                              total_size_in_bytes);
 }
 
 void RemovableDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,

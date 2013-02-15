@@ -54,9 +54,17 @@ bool IsLogicalVolumeStructure(LPARAM data) {
          broadcast_hdr->dbch_devicetype == DBT_DEVTYP_VOLUME;
 }
 
+// Gets the total volume of the |mount_point| in bytes.
+uint64 GetVolumeSize(const string16& mount_point) {
+  ULARGE_INTEGER total;
+  if (!GetDiskFreeSpaceExW(mount_point.c_str(), NULL, &total, NULL))
+    return 0;
+  return total.QuadPart;
+}
+
 // Gets mass storage device information given a |device_path|. On success,
-// returns true and fills in |device_location|, |unique_id|, |name|, and
-// |removable|.
+// returns true and fills in |device_location|, |unique_id|, |name|,
+// |removable|, and |total_size_in_bytes|.
 // The following msdn blog entry is helpful for understanding disk volumes
 // and how they are treated in Windows:
 // http://blogs.msdn.com/b/adioltean/archive/2005/04/16/408947.aspx.
@@ -64,7 +72,8 @@ bool GetDeviceDetails(const base::FilePath& device_path,
                       string16* device_location,
                       std::string* unique_id,
                       string16* name,
-                      bool* removable) {
+                      bool* removable,
+                      uint64* volume_size) {
   string16 mount_point;
   if (!GetVolumePathName(device_path.value().c_str(),
                          WriteInto(&mount_point, kMaxPathBufLen),
@@ -77,6 +86,9 @@ bool GetDeviceDetails(const base::FilePath& device_path,
 
   if (device_location)
     *device_location = mount_point;
+
+  if (volume_size)
+    *volume_size = GetVolumeSize(mount_point);
 
   if (unique_id) {
     string16 guid;
@@ -94,8 +106,20 @@ bool GetDeviceDetails(const base::FilePath& device_path,
     *unique_id = UTF16ToUTF8(guid);
   }
 
-  if (name)
-    *name = device_path.LossyDisplayName();
+  if (name) {
+    // NOTE: experimentally, this function returns false if there is no volume
+    // name set.
+    string16 volume_label;
+    GetVolumeInformationW(device_path.value().c_str(),
+                          WriteInto(&volume_label, kMaxPathBufLen),
+                          kMaxPathBufLen, NULL, NULL, NULL, NULL, 0);
+
+    // TODO(gbillock): if volume_label.empty(), get the vendor/model information
+    // for the volume.
+
+    *name = !volume_label.empty() ? volume_label
+                                  : device_path.LossyDisplayName();
+  }
 
   return true;
 }
@@ -212,14 +236,16 @@ void VolumeMountWatcherWin::AddDevicesOnUIThread(
 void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
     const base::FilePath& device_path,
     base::Callback<bool(const base::FilePath&, string16*, std::string*,
-                        string16*, bool*)> get_device_details_callback,
+                        string16*, bool*, uint64*)> get_device_details_callback,
     base::WeakPtr<chrome::VolumeMountWatcherWin> volume_watcher) {
   string16 device_location;
   std::string unique_id;
   string16 device_name;
   bool removable;
+  uint64 total_size_in_bytes;
   if (!get_device_details_callback.Run(device_path, &device_location,
-                                       &unique_id, &device_name, &removable)) {
+                                       &unique_id, &device_name, &removable,
+                                       &total_size_in_bytes)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
         &chrome::VolumeMountWatcherWin::DeviceCheckComplete,
         volume_watcher, device_path));
@@ -239,6 +265,7 @@ void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
   info.unique_id = unique_id;
   info.name = device_name;
   info.removable = removable;
+  info.total_size_in_bytes = total_size_in_bytes;
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &chrome::VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread,
@@ -251,10 +278,9 @@ void VolumeMountWatcherWin::DeviceCheckComplete(
   pending_device_checks_.erase(device_path);
 }
 
-
 bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
     string16* device_location, std::string* unique_id, string16* name,
-    bool* removable) const {
+    bool* removable, uint64* total_size_in_bytes) const {
   base::FilePath path(device_path);
   MountPointDeviceMetadataMap::const_iterator iter =
       device_metadata_.find(path.value());
@@ -267,14 +293,31 @@ bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
   // synchronously get the device info.
   if (iter == device_metadata_.end()) {
     return get_device_details_callback_.Run(device_path, device_location,
-                                            unique_id, name, removable);
+                                            unique_id, name, removable,
+                                            total_size_in_bytes);
   }
 
-  *device_location = iter->second.location;
-  *unique_id = iter->second.unique_id;
-  *name = iter->second.name;
-  *removable = iter->second.removable;
+  if (device_location)
+    *device_location = iter->second.location;
+  if (unique_id)
+    *unique_id = iter->second.unique_id;
+  if (name)
+    *name = iter->second.name;
+  if (removable)
+    *removable = iter->second.removable;
+  if (total_size_in_bytes)
+    *total_size_in_bytes = iter->second.total_size_in_bytes;
+
   return true;
+}
+
+uint64 VolumeMountWatcherWin::GetStorageSize(
+    const FilePath::StringType& mount_point) const {
+  MountPointDeviceMetadataMap::const_iterator iter =
+      device_metadata_.find(mount_point);
+  if (iter != device_metadata_.end())
+    return iter->second.total_size_in_bytes;
+  return 0;
 }
 
 void VolumeMountWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
@@ -316,7 +359,6 @@ VolumeMountWatcherWin::~VolumeMountWatcherWin() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-
 void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
     const base::FilePath& device_path,
     const MountPointInfo& info) {
@@ -331,7 +373,8 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
     return;
 
   if (notifications_) {
-    string16 display_name = GetDisplayNameForDevice(0, info.name);
+    string16 display_name =
+        GetDisplayNameForDevice(info.total_size_in_bytes, info.name);
     notifications_->ProcessAttach(info.device_id, display_name,
                                   device_path.value());
   }

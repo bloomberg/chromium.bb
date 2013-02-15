@@ -37,13 +37,19 @@ class VolumeMountWatcherWin {
   void Init();
 
   // Gets the information about the device mounted at |device_path|. On success,
-  // returns true and fills in |location|, |unique_id|, |name|, and |removable|.
+  // returns true and fills in |location|, |unique_id|, |name|, |removable|, and
+  // |total_size_in_bytes|.
   // Can block during startup while device info is still loading.
   virtual bool GetDeviceInfo(const base::FilePath& device_path,
                              string16* location,
                              std::string* unique_id,
                              string16* name,
-                             bool* removable) const;
+                             bool* removable,
+                             uint64* total_size_in_bytes) const;
+
+  // Returns the partition size of the given mount location. Returns 0 if the
+  // location is unknown.
+  uint64 GetStorageSize(const base::FilePath::StringType& mount_point) const;
 
   // Processes DEV_BROADCAST_VOLUME messages and triggers a
   // notification if appropriate.
@@ -60,6 +66,7 @@ class VolumeMountWatcherWin {
     std::string unique_id;
     string16 name;
     bool removable;
+    uint64 total_size_in_bytes;
   };
 
   // Handles mass storage device attach event on UI thread.
@@ -79,8 +86,9 @@ class VolumeMountWatcherWin {
 
   static void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
       const base::FilePath& device_path,
-      base::Callback<bool(const base::FilePath&, string16*, std::string*,
-                          string16*, bool*)> get_device_details_callback,
+      base::Callback<bool(const base::FilePath&, string16*,
+                          std::string*, string16*,
+                          bool*, uint64*)> get_device_details_callback,
       base::WeakPtr<chrome::VolumeMountWatcherWin> volume_watcher);
 
   // Mark that a device we started a metadata check for has completed.
@@ -96,7 +104,8 @@ class VolumeMountWatcherWin {
   base::Callback<std::vector<base::FilePath>(void)>
       get_attached_devices_callback_;
   base::Callback<
-      bool(const base::FilePath&, string16*, std::string*, string16*, bool*)>
+      bool(const base::FilePath&, string16*,
+           std::string*, string16*, bool*, uint64*)>
           get_device_details_callback_;
 
  private:

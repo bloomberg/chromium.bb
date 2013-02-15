@@ -38,7 +38,8 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
                                  string16* device_location,
                                  std::string* unique_id,
                                  string16* name,
-                                 bool* removable) {
+                                 bool* removable,
+                                 uint64* total_size_in_bytes) {
   if (device_path.value().length() != 3 || device_path.value()[0] < L'A' ||
       device_path.value()[0] > L'Z') {
     return false;
@@ -46,6 +47,8 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
 
   if (device_location)
     *device_location = device_path.value();
+  if (total_size_in_bytes)
+    *total_size_in_bytes = 1000000;
   if (unique_id) {
     *unique_id = "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
     (*unique_id)[11] = device_path.value()[0];
@@ -74,13 +77,15 @@ void TestVolumeMountWatcherWin::AddDeviceForTesting(
     const std::string& device_id,
     const std::string& unique_id,
     const string16& device_name,
-    bool removable) {
+    bool removable,
+    uint64 total_size_in_bytes) {
   VolumeMountWatcherWin::MountPointInfo info;
   info.device_id = device_id;
   info.location = device_path.value();
   info.unique_id = unique_id;
   info.name = device_name;
   info.removable = removable;
+  info.total_size_in_bytes = total_size_in_bytes;
   HandleDeviceAttachEventOnUIThread(device_path, info);
 }
 
@@ -108,13 +113,16 @@ void TestVolumeMountWatcherWin::ReleaseDeviceCheck() {
   device_check_complete_event_->Signal();
 }
 
-bool TestVolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
-                                              string16* device_location,
-                                              std::string* unique_id,
-                                              string16* name,
-                                              bool* removable) const {
+bool TestVolumeMountWatcherWin::GetDeviceInfo(
+    const base::FilePath& device_path,
+    string16* device_location,
+    std::string* unique_id,
+    string16* name,
+    bool* removable,
+    uint64* total_size_in_bytes) const {
   return VolumeMountWatcherWin::GetDeviceInfo(
-      device_path, device_location, unique_id, name, removable);
+      device_path, device_location, unique_id, name, removable,
+      total_size_in_bytes);
 }
 
 std::vector<base::FilePath> TestVolumeMountWatcherWin::GetAttachedDevices() {
@@ -126,9 +134,11 @@ bool TestVolumeMountWatcherWin::GetRawDeviceInfo(
     string16* device_location,
     std::string* unique_id,
     string16* name,
-    bool* removable) {
+    bool* removable,
+    uint64* total_size_in_bytes) {
   return GetMassStorageDeviceDetails(
-      device_path, device_location, unique_id, name, removable);
+      device_path, device_location, unique_id, name, removable,
+      total_size_in_bytes);
 }
 
 }  // namespace test

@@ -39,11 +39,13 @@ class RemovableDeviceNotificationsWindowWin
   virtual bool GetDeviceInfoForPath(
       const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
-  virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
   virtual bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
       string16* device_location,
       string16* storage_object_id) const OVERRIDE;
+
+  virtual uint64 GetStorageSize(
+      const base::FilePath::StringType& location) const OVERRIDE;
 
  private:
   class PortableDeviceNotifications;
@@ -58,12 +60,13 @@ class RemovableDeviceNotificationsWindowWin
 
   // Gets the removable storage information given a |device_path|. On success,
   // returns true and fills in |device_location|, |unique_id|, |name| and
-  // |removable|.
+  // |removable|, and |total_size_in_bytes|.
   bool GetDeviceInfo(const base::FilePath& device_path,
                      string16* device_location,
                      std::string* unique_id,
                      string16* name,
-                     bool* removable) const;
+                     bool* removable,
+                     uint64* total_size_in_bytes) const;
 
   static LRESULT CALLBACK WndProcThunk(HWND hwnd, UINT message, WPARAM wparam,
                                        LPARAM lparam);

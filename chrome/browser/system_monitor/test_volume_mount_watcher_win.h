@@ -31,7 +31,8 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
                            const std::string& device_id,
                            const std::string& unique_id,
                            const string16& device_name,
-                           bool removable);
+                           bool removable,
+                           uint64 total_size_in_bytes);
 
   void SetAttachedDevicesFake();
 
@@ -50,14 +51,16 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
                              string16* device_location,
                              std::string* unique_id,
                              string16* name,
-                             bool* removable) const OVERRIDE;
+                             bool* removable,
+                             uint64* total_size_in_bytes) const OVERRIDE;
   virtual std::vector<base::FilePath> GetAttachedDevices();
 
   bool GetRawDeviceInfo(const base::FilePath& device_path,
                         string16* device_location,
                         std::string* unique_id,
                         string16* name,
-                        bool* removable);
+                        bool* removable,
+                        uint64* total_size_in_bytes);
 
  private:
   std::vector<base::FilePath> devices_checked_;

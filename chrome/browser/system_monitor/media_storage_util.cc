@@ -119,7 +119,6 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
   }
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)  // Implies OS_CHROMEOS
 // For a device with |device_name| and a relative path |sub_folder|, construct
 // a display name. If |sub_folder| is empty, then just return |device_name|.
 string16 GetDisplayNameForSubFolder(const string16& device_name,
@@ -130,7 +129,6 @@ string16 GetDisplayNameForSubFolder(const string16& device_name,
           ASCIIToUTF16(" - ") +
           device_name);
 }
-#endif
 
 }  // namespace
 
@@ -310,7 +308,8 @@ bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
     }
 
     if (device_name) {
-#if defined(OS_MACOSX) || defined(OS_LINUX)  // Implies OS_CHROMEOS
+// OS_LINUX implies OS_CHROMEOS
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
       *device_name = GetDisplayNameForDevice(
           notifier->GetStorageSize(device_info.location),
           GetDisplayNameForSubFolder(device_info.name, sub_folder_path));

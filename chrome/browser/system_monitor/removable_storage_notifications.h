@@ -64,7 +64,8 @@ class RemovableStorageNotifications {
 
   // Returns the storage size of the device present at |location|. If the
   // device information is unavailable, returns zero.
-  virtual uint64 GetStorageSize(const std::string& location) const = 0;
+  virtual uint64 GetStorageSize(
+      const base::FilePath::StringType& location) const = 0;
 
 #if defined(OS_WIN)
   // Gets the MTP device storage information specified by |storage_device_id|.

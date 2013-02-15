@@ -23,7 +23,8 @@ class TestStorageNotifications : public RemovableStorageNotifications {
       StorageInfo* device_info) const OVERRIDE {
     return false;
   }
-  virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE {
+  virtual uint64 GetStorageSize(
+      const FilePath::StringType& location) const OVERRIDE {
     return 0;
   }
 

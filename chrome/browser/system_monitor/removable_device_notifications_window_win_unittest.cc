@@ -114,7 +114,7 @@ void RemovableDeviceNotificationsWindowWinTest::PreAttachDevices() {
     string16 device_name;
     bool removable;
     ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
-        *it, NULL, &unique_id, &device_name, &removable));
+        *it, NULL, &unique_id, &device_name, &removable, NULL));
     if (removable)
       expect_attach_calls++;
   }
@@ -160,7 +160,7 @@ void RemovableDeviceNotificationsWindowWinTest::
     bool removable;
     ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
         VolumeMountWatcherWin::DriveNumberToFilePath(*it),
-        NULL, NULL, NULL, &removable));
+        NULL, NULL, NULL, &removable, NULL));
     if (removable)
       expect_attach_calls++;
   }
@@ -191,7 +191,7 @@ void RemovableDeviceNotificationsWindowWinTest::
     bool removable;
     ASSERT_TRUE(volume_mount_watcher_->GetRawDeviceInfo(
         VolumeMountWatcherWin::DriveNumberToFilePath(*it), NULL, NULL,
-        NULL, &removable));
+        NULL, &removable, NULL));
     if (removable)
       expect_detach_calls++;
   }
@@ -276,7 +276,7 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttached) {
   bool removable;
   EXPECT_TRUE(window_->volume_mount_watcher()->GetDeviceInfo(
       base::FilePath(ASCIIToUTF16("F:\\")),
-      &location, &unique_id, &name, &removable));
+      &location, &unique_id, &name, &removable, NULL));
   EXPECT_EQ(ASCIIToUTF16("F:\\"), location);
   EXPECT_EQ("\\\\?\\Volume{F0000000-0000-0000-0000-000000000000}\\", unique_id);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), name);
@@ -434,21 +434,24 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest, DeviceInfoForPath) {
   string16 device_name;
   string16 location;
   bool removable;
+  uint64 total_size_in_bytes;
   ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
-      removable_device, &location, &unique_id, &device_name, &removable));
+      removable_device, &location, &unique_id, &device_name, &removable,
+      &total_size_in_bytes));
   EXPECT_TRUE(removable);
   std::string device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id);
   EXPECT_EQ(device_id, device_info.device_id);
   EXPECT_EQ(device_name, device_info.name);
   EXPECT_EQ(removable_device.value(), device_info.location);
+  EXPECT_EQ(1000000, total_size_in_bytes);
 
   // A fixed device.
   base::FilePath fixed_device(L"N:\\");
   EXPECT_TRUE(window_->GetDeviceInfoForPath(fixed_device, &device_info));
 
   ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
-      fixed_device, &location, &unique_id, &device_name, &removable));
+      fixed_device, &location, &unique_id, &device_name, &removable, NULL));
   EXPECT_FALSE(removable);
   device_id = MediaStorageUtil::MakeDeviceId(
       MediaStorageUtil::FIXED_MASS_STORAGE, unique_id);

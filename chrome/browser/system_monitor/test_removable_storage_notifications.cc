@@ -19,7 +19,7 @@ bool TestRemovableStorageNotifications::GetDeviceInfoForPath(
 }
 
 uint64 TestRemovableStorageNotifications::GetStorageSize(
-    const std::string& location) const {
+    const FilePath::StringType& location) const {
   return 0;
 }
 
