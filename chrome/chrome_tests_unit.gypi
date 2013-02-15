@@ -568,6 +568,7 @@
         'browser/chromeos/display/display_preferences_unittest.cc',
         'browser/chromeos/drive/drive_cache_metadata_unittest.cc',
         'browser/chromeos/drive/drive_cache_unittest.cc',
+        'browser/chromeos/drive/drive_download_handler_unittest.cc',
         'browser/chromeos/drive/drive_file_system_unittest.cc',
         'browser/chromeos/drive/drive_file_system_util_unittest.cc',
         'browser/chromeos/drive/drive_prefetcher_unittest.cc',
