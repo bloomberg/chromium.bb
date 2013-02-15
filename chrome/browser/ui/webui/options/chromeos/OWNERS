@@ -7,3 +7,7 @@ ivankr@chromium.org
 
 # Display options.
 mukai@chromium.org
+
+per-file internet_options_handler.*=stevenjb@chromium.org
+per-file internet_options_handler.*=gspencer@chromium.org
+per-file internet_options_handler.*=rkc@chromium.org

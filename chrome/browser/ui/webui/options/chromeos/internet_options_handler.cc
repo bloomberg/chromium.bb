@@ -1561,9 +1561,11 @@ void InternetOptionsHandler::SetCellularButtonsVisibility(
   } else {
     const chromeos::MobileConfig::Carrier* carrier =
         chromeos::MobileConfig::GetInstance()->GetCarrier(carrier_id);
-    if (carrier && carrier->show_portal_button()) {
-      // This will trigger BuyDataPlanCallback() so that
-      // chrome://mobilesetup/ will open carrier specific portal.
+    if (carrier && carrier->show_portal_button() && cellular->connected()) {
+      // This will trigger BuyDataPlanCallback() so that chrome://mobilesetup/
+      // will open carrier specific portal. If the cellular network is not
+      // connected, don't show the view account button since we don't have an
+      // active network to pull the account URL info from.
       dictionary->SetBoolean(kTagShowViewAccountButton, true);
     }
   }
