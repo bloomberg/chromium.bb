@@ -537,9 +537,9 @@ void ContentViewCoreImpl::OnSelectionBoundsChanged(
   if (obj.is_null())
     return;
   ScopedJavaLocalRef<jobject> anchor_rect(
-      java_object_->CreateJavaRect(env, params.anchor_rect, GetDpiScale()));
+      java_object_->CreateJavaRect(env, params.anchor_rect, 1.f));
   ScopedJavaLocalRef<jobject> focus_rect(
-      java_object_->CreateJavaRect(env, params.focus_rect, GetDpiScale()));
+      java_object_->CreateJavaRect(env, params.focus_rect, 1.f));
   Java_ContentViewCore_onSelectionBoundsChanged(env, obj.obj(),
                                                 anchor_rect.obj(),
                                                 params.anchor_dir,
@@ -553,7 +553,8 @@ void ContentViewCoreImpl::ShowPastePopup(int x, int y) {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_ContentViewCore_showPastePopup(env, obj.obj(), static_cast<jint>(x),
+  Java_ContentViewCore_showPastePopup(env, obj.obj(),
+                                      static_cast<jint>(x),
                                       static_cast<jint>(y));
 }
 

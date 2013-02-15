@@ -2332,10 +2332,8 @@ void RenderViewImpl::showContextMenu(
   gfx::Rect start_rect;
   gfx::Rect end_rect;
   GetSelectionBounds(&start_rect, &end_rect);
-  params.selection_start =
-      gfx::Point(start_rect.x(), start_rect.bottom()) + GetScrollOffset();
-  params.selection_end =
-      gfx::Point(end_rect.right(), end_rect.bottom()) + GetScrollOffset();
+  params.selection_start = gfx::Point(start_rect.x(), start_rect.bottom());
+  params.selection_end = gfx::Point(end_rect.right(), end_rect.bottom());
 #endif
 
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
