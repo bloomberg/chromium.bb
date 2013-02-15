@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/profiler_ui.h"
 #include "chrome/browser/ui/webui/quota_internals_ui.h"
+#include "chrome/browser/ui/webui/signin/profile_signin_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
@@ -339,6 +340,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url.host() == chrome::kChromeUIPolicyHost)
     return &NewWebUI<PolicyUI>;
+#endif
+
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+  if (url.host() == chrome::kChromeUIProfileSigninConfirmationHost)
+    return &NewWebUI<ProfileSigninConfirmationUI>;
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)

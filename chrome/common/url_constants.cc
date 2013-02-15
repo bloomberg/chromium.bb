@@ -58,6 +58,8 @@ const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
 const char kChromeUIPerformanceMonitorURL[] = "chrome://performance/";
 const char kChromeUIPluginsURL[] = "chrome://plugins/";
 const char kChromeUIPolicyURL[] = "chrome://policy/";
+const char kChromeUIProfileSigninConfirmationURL[] =
+    "chrome://profile-signin-confirmation/";
 const char kChromeUIPrintURL[] = "chrome://print/";
 const char kChromeUISessionFaviconURL[] = "chrome://session-favicon/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
@@ -175,6 +177,8 @@ const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIPerformanceMonitorHost[] = "performance";
 const char kChromeUIPluginsHost[] = "plugins";
 const char kChromeUIPolicyHost[] = "policy";
+const char kChromeUIProfileSigninConfirmationHost[] =
+    "profile-signin-confirmation";
 const char kChromeUIPredictorsHost[] = "predictors";
 const char kChromeUIPrintHost[] = "print";
 const char kChromeUIProfilerHost[] = "profiler";

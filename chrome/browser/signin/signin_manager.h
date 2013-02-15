@@ -257,7 +257,7 @@ class SigninManager : public GaiaAuthConsumer,
 
   // Helper function that loads policy with the passed CloudPolicyClient, then
   // completes the signin process.
-  void LoadPolicyWithCachedClient(scoped_ptr<policy::CloudPolicyClient> client);
+  void LoadPolicyWithCachedClient();
 
   // Callback invoked once a profile is created, so we can complete the
   // credentials transfer and load policy.

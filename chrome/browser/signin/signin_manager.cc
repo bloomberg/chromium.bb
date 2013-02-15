@@ -30,6 +30,8 @@
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -722,23 +724,25 @@ void SigninManager::OnRegisteredForPolicy(
 
   DVLOG(1) << "Policy registration succeeded: dm_token="
            << policy_client_->dm_token();
-  // TODO(dconnelly): Prompt user for whether they want to create a new profile
-  // or not (http://crbug.com/171236), and either call SignOut() if they cancel,
-  // TransferCredentialsToNewProfile() to create a new profile, or
-  // LoadPolicyWithCachedClient() if they want to sign in for the current
-  // profile.
-  // For now, just call LoadPolicyWithCachedClient() to immediately load policy
-  // into the current profile and finish signing in.
-  LoadPolicyWithCachedClient(policy_client_.Pass());
+
+  // Allow user to create a new profile before continuing with sign-in.
+  ProfileSigninConfirmationDialog::ShowDialog(
+      profile_,
+      possibly_invalid_username_,
+      base::Bind(&SigninManager::SignOut,
+                 weak_pointer_factory_.GetWeakPtr()),
+      base::Bind(&SigninManager::TransferCredentialsToNewProfile,
+                 weak_pointer_factory_.GetWeakPtr()),
+      base::Bind(&SigninManager::LoadPolicyWithCachedClient,
+                 weak_pointer_factory_.GetWeakPtr()));
 }
 
-void SigninManager::LoadPolicyWithCachedClient(
-    scoped_ptr<policy::CloudPolicyClient> client) {
-  DCHECK(client);
+void SigninManager::LoadPolicyWithCachedClient() {
+  DCHECK(policy_client_);
   policy::UserPolicySigninService* policy_service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   policy_service->FetchPolicyForSignedInUser(
-      client.Pass(),
+      policy_client_.Pass(),
       base::Bind(&SigninManager::OnPolicyFetchComplete,
                  weak_pointer_factory_.GetWeakPtr()));
 }
@@ -788,7 +792,8 @@ void SigninManager::CompleteSigninForNewProfile(
     signin_manager->possibly_invalid_username_ = possibly_invalid_username_;
     signin_manager->last_result_ = last_result_;
     signin_manager->temp_oauth_login_tokens_ = temp_oauth_login_tokens_;
-    signin_manager->LoadPolicyWithCachedClient(policy_client_.Pass());
+    signin_manager->policy_client_.reset(policy_client_.release());
+    signin_manager->LoadPolicyWithCachedClient();
     // Allow sync to start up if it is not overridden by policy.
     browser_sync::SyncPrefs prefs(profile->GetPrefs());
     prefs.SetSyncSetupCompleted();
