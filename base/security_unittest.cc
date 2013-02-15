@@ -37,20 +37,15 @@ Type HideValueFromCompiler(volatile Type value) {
   return value;
 }
 
-// Check that we can not allocate a memory range that cannot be indexed
-// via an int. This is used to mitigate vulnerabilities in libraries that use
-// int instead of size_t.
-// See crbug.com/169327.
-
-// - NO_TCMALLOC because we only patched tcmalloc
+// - NO_TCMALLOC (should be defined if we compile with linux_use_tcmalloc=0)
 // - ADDRESS_SANITIZER because it has its own memory allocator
-// - IOS does not seem to honor nothrow in new properly
+// - IOS does not use tcmalloc
 // - OS_MACOSX does not use tcmalloc
 #if !defined(NO_TCMALLOC) && !defined(ADDRESS_SANITIZER) && \
     !defined(OS_IOS) && !defined(OS_MACOSX)
-  #define ALLOC_TEST(function) function
+  #define TCMALLOC_TEST(function) function
 #else
-  #define ALLOC_TEST(function) DISABLED_##function
+  #define TCMALLOC_TEST(function) DISABLED_##function
 #endif
 
 // TODO(jln): switch to std::numeric_limits<int>::max() when we switch to
@@ -68,13 +63,28 @@ bool IsTcMallocBypassed() {
   return false;
 }
 
+bool CallocDiesOnOOM() {
+// The wrapper function in base/process_util_linux.cc that is used when we
+// compile without TCMalloc will just die on OOM instead of returning NULL.
+#if defined(OS_LINUX) && defined(NO_TCMALLOC)
+  return true;
+#else
+  return false;
+#endif
+}
+
 // Fake test that allow to know the state of TCMalloc by looking at bots.
-TEST(SecurityTest, ALLOC_TEST(IsTCMallocDynamicallyBypassed)) {
+TEST(SecurityTest, TCMALLOC_TEST(IsTCMallocDynamicallyBypassed)) {
   printf("Malloc is dynamically bypassed: %s\n",
          IsTcMallocBypassed() ? "yes." : "no.");
 }
 
-TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsMalloc)) {
+// The MemoryAllocationRestrictions* tests test that we can not allocate a
+// memory range that cannot be indexed via an int. This is used to mitigate
+// vulnerabilities in libraries that use int instead of size_t.  See
+// crbug.com/169327.
+
+TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsMalloc)) {
   if (!IsTcMallocBypassed()) {
     scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
         HideValueFromCompiler(malloc(kTooBigAllocSize))));
@@ -82,7 +92,7 @@ TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsMalloc)) {
   }
 }
 
-TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsCalloc)) {
+TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsCalloc)) {
   if (!IsTcMallocBypassed()) {
     scoped_ptr<char, base::FreeDeleter> ptr(static_cast<char*>(
         HideValueFromCompiler(calloc(kTooBigAllocSize, 1))));
@@ -90,7 +100,7 @@ TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsCalloc)) {
   }
 }
 
-TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsRealloc)) {
+TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsRealloc)) {
   if (!IsTcMallocBypassed()) {
     char* orig_ptr = static_cast<char*>(malloc(1));
     ASSERT_TRUE(orig_ptr);
@@ -106,7 +116,7 @@ typedef struct {
   char large_array[kTooBigAllocSize];
 } VeryLargeStruct;
 
-TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsNew)) {
+TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsNew)) {
   if (!IsTcMallocBypassed()) {
     scoped_ptr<VeryLargeStruct> ptr(
         HideValueFromCompiler(new (nothrow) VeryLargeStruct));
@@ -114,7 +124,7 @@ TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsNew)) {
   }
 }
 
-TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsNewArray)) {
+TEST(SecurityTest, TCMALLOC_TEST(MemoryAllocationRestrictionsNewArray)) {
   if (!IsTcMallocBypassed()) {
     scoped_ptr<char[]> ptr(
         HideValueFromCompiler(new (nothrow) char[kTooBigAllocSize]));
@@ -184,27 +194,32 @@ TEST(SecurityTest, DISABLE_ON_IOS_AND_WIN(NewOverflow)) {
 }
 #endif
 
+// Call calloc(), eventually free the memory and return whether or not
+// calloc() did succeed.
+bool CallocReturnsNull(size_t nmemb, size_t size) {
+  scoped_ptr<char, base::FreeDeleter> array_pointer(
+      static_cast<char*>(calloc(nmemb, size)));
+  // We need the call to HideValueFromCompiler(): we have seen LLVM
+  // optimize away the call to calloc() entirely and assume
+  // the pointer to not be NULL.
+  return HideValueFromCompiler(array_pointer.get()) == NULL;
+}
+
 // Test if calloc() can overflow. Disable on ASAN for now since the
-// overflow seems present there.
+// overflow seems present there (crbug.com/175554).
 TEST(SecurityTest, DISABLE_ON_ASAN(CallocOverflow)) {
   const size_t kArraySize = 4096;
   const size_t kMaxSizeT = numeric_limits<size_t>::max();
   const size_t kArraySize2 = kMaxSizeT / kArraySize + 10;
-  {
-    scoped_ptr<char> array_pointer(
-        static_cast<char*>(calloc(kArraySize, kArraySize2)));
-    // We need the call to HideValueFromCompiler(): we have seen LLVM
-    // optimize away the call to calloc() entirely and assume
-    // the pointer to not be NULL.
-    EXPECT_TRUE(HideValueFromCompiler(array_pointer.get()) == NULL);
-  }
-  {
-    scoped_ptr<char> array_pointer(
-        static_cast<char*>(calloc(kArraySize2, kArraySize)));
-    // We need the call to HideValueFromCompiler(): we have seen LLVM
-    // optimize away the call to calloc() entirely and assume
-    // the pointer to not be NULL.
-    EXPECT_TRUE(HideValueFromCompiler(array_pointer.get()) == NULL);
+  if (!CallocDiesOnOOM()) {
+    EXPECT_TRUE(CallocReturnsNull(kArraySize, kArraySize2));
+    EXPECT_TRUE(CallocReturnsNull(kArraySize2, kArraySize));
+  } else {
+    // It's also ok for calloc to just terminate the process.
+#if defined(GTEST_HAS_DEATH_TEST)
+    EXPECT_DEATH(CallocReturnsNull(kArraySize, kArraySize2), "");
+    EXPECT_DEATH(CallocReturnsNull(kArraySize2, kArraySize), "");
+#endif  // GTEST_HAS_DEATH_TEST
   }
 }
 
@@ -230,7 +245,7 @@ bool ArePointersToSameArea(void* ptr1, void* ptr2, size_t size) {
 }
 
 // Check if TCMalloc uses an underlying random memory allocator.
-TEST(SecurityTest, ALLOC_TEST(RandomMemoryAllocations)) {
+TEST(SecurityTest, TCMALLOC_TEST(RandomMemoryAllocations)) {
   if (IsTcMallocBypassed())
     return;
   size_t kPageSize = 4096;  // We support x86_64 only.
