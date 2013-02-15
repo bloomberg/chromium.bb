@@ -31,10 +31,10 @@ Modules/lookup.m win
 Modules/lookup.cpp win
 PCH/cxx11-lambdas.mm win
 SemaCXX/ast-print.cpp win
-SemaCXX/qualified-names-print.cpp win
 Analysis/Profiling/load-branch-weights-switches.ll win
-Tooling/clang-check-ast-dump.cpp win
 Analysis/Profiling/load-branch-weights-loops.ll win
 Analysis/Profiling/load-branch-weights-ifs.ll win
 Index/code-completion-skip-bodies.cpp win
 Sema/ast-print.c win
+Misc/ast-dump-templates.cpp win
+PCH/objc_stmts.m win
