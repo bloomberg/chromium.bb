@@ -261,6 +261,23 @@
         category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val, \
         arg2_name, arg2_val)
 
+// Similar to TRACE_EVENT_BEGINx but with a custom |at| timestamp provided.
+// - |id| is used to match the _BEGIN event with the _END event.
+//   Events are considered to match if their category, name and id values all
+//   match. |id| must either be a pointer or an integer value up to 64 bits. If
+//   it's a pointer, the bits will be xored with a hash of the process ID so
+//   that the same pointer on two different processes will not collide.
+#define TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(category, \
+        name, id, thread_id, timestamp) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_ASYNC_BEGIN, category, name, id, thread_id, \
+        timestamp, TRACE_EVENT_FLAG_NONE)
+#define TRACE_EVENT_COPY_BEGIN_WITH_ID_TID_AND_TIMESTAMP0( \
+        category, name, id, thread_id, timestamp) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_ASYNC_BEGIN, category, name, id, thread_id, \
+        timestamp, TRACE_EVENT_FLAG_COPY)
+
 // Records a single END event for "name" immediately. If the category
 // is not enabled, then this does nothing.
 // - category and name strings must have application lifetime (statics or
@@ -287,6 +304,23 @@
     INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_END, \
         category, name, TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val, \
         arg2_name, arg2_val)
+
+// Similar to TRACE_EVENT_ENDx but with a custom |at| timestamp provided.
+// - |id| is used to match the _BEGIN event with the _END event.
+//   Events are considered to match if their category, name and id values all
+//   match. |id| must either be a pointer or an integer value up to 64 bits. If
+//   it's a pointer, the bits will be xored with a hash of the process ID so
+//   that the same pointer on two different processes will not collide.
+#define TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(category, \
+        name, id, thread_id, timestamp) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_ASYNC_END, category, name, id, thread_id, timestamp, \
+        TRACE_EVENT_FLAG_NONE)
+#define TRACE_EVENT_COPY_END_WITH_ID_TID_AND_TIMESTAMP0( \
+        category, name, id, thread_id, timestamp) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_ASYNC_END, category, name, id, thread_id, timestamp, \
+        TRACE_EVENT_FLAG_COPY)
 
 // Records the value of a counter called "name" immediately. Value
 // must be representable as a 32 bit integer.
@@ -540,7 +574,6 @@
         category, name, id, TRACE_EVENT_FLAG_COPY, \
         arg1_name, arg1_val, arg2_name, arg2_val)
 
-
 // Implementation detail: trace event macros create temporary variables
 // to keep instrumentation overhead low. These macros give each temporary
 // variable a unique name based on the line number to prevent name collissions.
@@ -611,6 +644,24 @@
             phase, INTERNAL_TRACE_EVENT_UID(catstatic), \
             name, trace_event_trace_id.data(), trace_event_flags, \
             ##__VA_ARGS__); \
+      } \
+    } while (0)
+
+// Implementation detail: internal macro to create static category and add
+// event if the category is enabled.
+#define INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(phase, category, \
+        name, id, thread_id, timestamp, flags, ...) \
+    do { \
+      INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
+      if (*INTERNAL_TRACE_EVENT_UID(catstatic)) { \
+        unsigned char trace_event_flags = flags | TRACE_EVENT_FLAG_HAS_ID; \
+        trace_event_internal::TraceID trace_event_trace_id( \
+            id, &trace_event_flags); \
+        trace_event_internal::AddTraceEventWithThreadIdAndTimestamp( \
+            phase, INTERNAL_TRACE_EVENT_UID(catstatic), \
+            name, trace_event_trace_id.data(), \
+            thread_id, TimeTicks::FromInternalValue(timestamp), \
+            trace_event_flags, ##__VA_ARGS__); \
       } \
     } while (0)
 
@@ -793,37 +844,90 @@ static inline void SetTraceValue(const std::string& arg,
   *value = type_value.as_uint;
 }
 
-// These AddTraceEvent template functions are defined here instead of in the
-// macro, because the arg_values could be temporary objects, such as
-// std::string. In order to store pointers to the internal c_str and pass
-// through to the tracing API, the arg_values must live throughout
-// these procedures.
+// These AddTraceEvent and AddTraceEventWithThreadIdAndTimestamp template
+// functions are defined here instead of in the macro, because the arg_values
+// could be temporary objects, such as std::string. In order to store
+// pointers to the internal c_str and pass through to the tracing API,
+// the arg_values must live throughout these procedures.
 
-static inline void AddTraceEvent(char phase,
-                                const unsigned char* category_enabled,
-                                const char* name,
-                                unsigned long long id,
-                                unsigned char flags) {
-  TRACE_EVENT_API_ADD_TRACE_EVENT(
-      phase, category_enabled, name, id,
+static inline void AddTraceEventWithThreadIdAndTimestamp(char phase,
+    const unsigned char* category_enabled,
+    const char* name,
+    unsigned long long id,
+    int thread_id,
+    const base::TimeTicks& timestamp,
+    unsigned char flags) {
+  TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+      phase, category_enabled, name, id, thread_id, timestamp,
       kZeroNumArgs, NULL, NULL, NULL, flags);
 }
 
-template<class ARG1_TYPE>
 static inline void AddTraceEvent(char phase,
-                                const unsigned char* category_enabled,
-                                const char* name,
-                                unsigned long long id,
-                                unsigned char flags,
-                                const char* arg1_name,
-                                const ARG1_TYPE& arg1_val) {
+                                 const unsigned char* category_enabled,
+                                 const char* name,
+                                 unsigned long long id,
+                                 unsigned char flags) {
+  int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  AddTraceEventWithThreadIdAndTimestamp(phase, category_enabled, name, id,
+      thread_id, now, flags);
+}
+
+template<class ARG1_TYPE>
+static inline void AddTraceEventWithThreadIdAndTimestamp(char phase,
+    const unsigned char* category_enabled,
+    const char* name,
+    unsigned long long id,
+    int thread_id,
+    const base::TimeTicks& timestamp,
+    unsigned char flags,
+    const char* arg1_name,
+    const ARG1_TYPE& arg1_val) {
   const int num_args = 1;
   unsigned char arg_types[1];
   unsigned long long arg_values[1];
   SetTraceValue(arg1_val, &arg_types[0], &arg_values[0]);
-  TRACE_EVENT_API_ADD_TRACE_EVENT(
-      phase, category_enabled, name, id,
+  TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+      phase, category_enabled, name, id, thread_id, timestamp,
       num_args, &arg1_name, arg_types, arg_values, flags);
+}
+
+template<class ARG1_TYPE>
+static inline void AddTraceEvent(char phase,
+                                 const unsigned char* category_enabled,
+                                 const char* name,
+                                 unsigned long long id,
+                                 unsigned char flags,
+                                 const char* arg1_name,
+                                 const ARG1_TYPE& arg1_val) {
+  int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  AddTraceEventWithThreadIdAndTimestamp(phase, category_enabled, name, id,
+                                        thread_id, now, flags, arg1_name,
+                                        arg1_val);
+}
+
+template<class ARG1_TYPE, class ARG2_TYPE>
+static inline void AddTraceEventWithThreadIdAndTimestamp(char phase,
+    const unsigned char* category_enabled,
+    const char* name,
+    unsigned long long id,
+    int thread_id,
+    const base::TimeTicks& timestamp,
+    unsigned char flags,
+    const char* arg1_name,
+    const ARG1_TYPE& arg1_val,
+    const char* arg2_name,
+    const ARG2_TYPE& arg2_val) {
+  const int num_args = 2;
+  const char* arg_names[2] = { arg1_name, arg2_name };
+  unsigned char arg_types[2];
+  unsigned long long arg_values[2];
+  SetTraceValue(arg1_val, &arg_types[0], &arg_values[0]);
+  SetTraceValue(arg2_val, &arg_types[1], &arg_values[1]);
+  TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+      phase, category_enabled, name, id, thread_id, timestamp,
+      num_args, arg_names, arg_types, arg_values, flags);
 }
 
 template<class ARG1_TYPE, class ARG2_TYPE>
@@ -836,15 +940,11 @@ static inline void AddTraceEvent(char phase,
                                 const ARG1_TYPE& arg1_val,
                                 const char* arg2_name,
                                 const ARG2_TYPE& arg2_val) {
-  const int num_args = 2;
-  const char* arg_names[2] = { arg1_name, arg2_name };
-  unsigned char arg_types[2];
-  unsigned long long arg_values[2];
-  SetTraceValue(arg1_val, &arg_types[0], &arg_values[0]);
-  SetTraceValue(arg2_val, &arg_types[1], &arg_values[1]);
-  TRACE_EVENT_API_ADD_TRACE_EVENT(
-      phase, category_enabled, name, id,
-      num_args, arg_names, arg_types, arg_values, flags);
+  int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  AddTraceEventWithThreadIdAndTimestamp(phase, category_enabled, name, id,
+                                        thread_id, now, flags, arg1_name,
+                                        arg1_val, arg2_name, arg2_val);
 }
 
 // Used by TRACE_EVENTx macro. Do not use directly.
@@ -863,7 +963,6 @@ class TRACE_EVENT_API_CLASS_EXPORT TraceEndOnScopeClose {
     data_.name = name;
     p_data_ = &data_;
   }
-
 
  private:
   // Add the end event if the category is still enabled.

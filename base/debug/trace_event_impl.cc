@@ -20,6 +20,7 @@
 #include "base/sys_info.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -623,14 +624,33 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
 }
 
 void TraceLog::AddTraceEvent(char phase,
-                            const unsigned char* category_enabled,
-                            const char* name,
-                            unsigned long long id,
-                            int num_args,
-                            const char** arg_names,
-                            const unsigned char* arg_types,
-                            const unsigned long long* arg_values,
-                            unsigned char flags) {
+                             const unsigned char* category_enabled,
+                             const char* name,
+                             unsigned long long id,
+                             int num_args,
+                             const char** arg_names,
+                             const unsigned char* arg_types,
+                             const unsigned long long* arg_values,
+                             unsigned char flags) {
+  int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
+  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  AddTraceEventWithThreadIdAndTimestamp(phase, category_enabled, name, id,
+                                        thread_id, now, num_args, arg_names,
+                                        arg_types, arg_values, flags);
+}
+
+void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
+    char phase,
+    const unsigned char* category_enabled,
+    const char* name,
+    unsigned long long id,
+    int thread_id,
+    const TimeTicks& timestamp,
+    int num_args,
+    const char** arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    unsigned char flags) {
   DCHECK(name);
 
 #if defined(OS_ANDROID)
@@ -638,8 +658,9 @@ void TraceLog::AddTraceEvent(char phase,
                num_args, arg_names, arg_types, arg_values);
 #endif
 
-  TimeTicks now = TimeTicks::NowFromSystemTraceTime() - time_offset_;
+  TimeTicks now = timestamp - time_offset_;
   NotificationHelper notifier(this);
+
   {
     AutoLock lock(lock_);
     if (*category_enabled != CATEGORY_ENABLED)
@@ -647,9 +668,8 @@ void TraceLog::AddTraceEvent(char phase,
     if (logged_events_.size() >= kTraceEventBufferSize)
       return;
 
-    int thread_id = static_cast<int>(PlatformThread::CurrentId());
-
-    const char* new_name = PlatformThread::GetName();
+    const char* new_name = ThreadIdNameManager::GetInstance()->
+        GetName(thread_id);
     // Check if the thread name has been set or changed since the previous
     // call (if any), but don't bother if the new name is empty. Note this will
     // not detect a thread name change within the same char* buffer address: we
@@ -657,6 +677,7 @@ void TraceLog::AddTraceEvent(char phase,
     if (new_name != g_current_thread_name.Get().Get() &&
         new_name && *new_name) {
       g_current_thread_name.Get().Set(new_name);
+
       hash_map<int, std::string>::iterator existing_name =
           thread_names_.find(thread_id);
       if (existing_name == thread_names_.end()) {

@@ -258,14 +258,26 @@ class BASE_EXPORT TraceLog {
   // If |copy| is set, |name|, |arg_name1| and |arg_name2| will be deep copied
   // into the event; see "Memory scoping note" and TRACE_EVENT_COPY_XXX above.
   void AddTraceEvent(char phase,
-                    const unsigned char* category_enabled,
-                    const char* name,
-                    unsigned long long id,
-                    int num_args,
-                    const char** arg_names,
-                    const unsigned char* arg_types,
-                    const unsigned long long* arg_values,
-                    unsigned char flags);
+                     const unsigned char* category_enabled,
+                     const char* name,
+                     unsigned long long id,
+                     int num_args,
+                     const char** arg_names,
+                     const unsigned char* arg_types,
+                     const unsigned long long* arg_values,
+                     unsigned char flags);
+  void AddTraceEventWithThreadIdAndTimestamp(
+      char phase,
+      const unsigned char* category_enabled,
+      const char* name,
+      unsigned long long id,
+      int thread_id,
+      const TimeTicks& timestamp,
+      int num_args,
+      const char** arg_names,
+      const unsigned char* arg_types,
+      const unsigned long long* arg_values,
+      unsigned char flags);
   static void AddTraceEventEtw(char phase,
                                const char* name,
                                const void* id,
