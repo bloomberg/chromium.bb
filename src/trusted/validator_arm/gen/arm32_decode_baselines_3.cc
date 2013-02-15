@@ -2534,6 +2534,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -2563,7 +2564,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -2582,14 +2583,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -2619,6 +2620,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -2646,7 +2648,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -2665,14 +2667,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -2702,6 +2704,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -2731,7 +2734,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -2750,14 +2753,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -2787,6 +2790,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -2814,7 +2818,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -2833,14 +2837,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -3267,6 +3271,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -3294,7 +3299,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -3313,14 +3318,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -3350,6 +3355,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -3379,7 +3385,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -3398,14 +3404,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -3697,6 +3703,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -3724,7 +3731,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -3743,14 +3750,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -3780,6 +3787,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -3809,7 +3817,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -3828,14 +3836,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -5010,6 +5018,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -5037,7 +5046,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -5056,14 +5065,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -5159,6 +5168,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -5188,7 +5198,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -5207,14 +5217,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -5244,6 +5254,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8P,
 //    constraints: ,
@@ -5274,7 +5285,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=~00 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: false,
@@ -5293,14 +5304,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -5824,6 +5835,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -5851,7 +5863,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 RegisterList VORN_register_111100100d11nnnndddd0001nqm1mmmm_case_0::
@@ -5868,14 +5880,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -5973,6 +5985,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -6000,7 +6013,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 RegisterList VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0::
@@ -6017,14 +6030,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -6201,6 +6214,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32P,
 //    constraints: ,
@@ -6270,6 +6284,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDI,
 //    constraints: ,
@@ -6339,6 +6354,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32P,
 //    constraints: ,
@@ -6408,6 +6424,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDI,
 //    constraints: ,
@@ -6477,6 +6494,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32P,
 //    constraints: ,
@@ -6546,6 +6564,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDI,
 //    constraints: ,
@@ -7036,6 +7055,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -7065,7 +7085,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -7083,14 +7103,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -7349,6 +7369,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VQDMULH_A1_111100100dssnnnndddd1011nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI16_32,
 //    constraints: ,
@@ -7378,7 +7399,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      (size(21:20)=11 ||
 //         size(21:20)=00) => UNDEFINED],
 //    size: size(21:20),
@@ -7398,14 +7419,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -7935,6 +7956,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VQDMULH_A1_111100100dssnnnndddd1011nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI16_32,
 //    constraints: ,
@@ -7964,7 +7986,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      (size(21:20)=11 ||
 //         size(21:20)=00) => UNDEFINED],
 //    size: size(21:20),
@@ -7984,14 +8006,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -8024,6 +8046,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -8053,7 +8076,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -8071,14 +8094,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -8522,6 +8545,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -8551,7 +8575,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -8569,14 +8593,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -8803,6 +8827,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -8832,7 +8857,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -8850,14 +8875,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -9029,6 +9054,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -9056,7 +9082,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -9075,14 +9101,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -9346,6 +9372,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -9375,7 +9402,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -9394,14 +9421,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -9431,6 +9458,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -9460,7 +9488,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -9478,14 +9506,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -9772,6 +9800,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -9799,7 +9828,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -9818,14 +9847,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -10281,6 +10310,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -10310,7 +10340,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -10328,14 +10358,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -13001,6 +13031,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -13028,7 +13059,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -13047,14 +13078,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -13150,6 +13181,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -13179,7 +13211,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -13197,14 +13229,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 
@@ -13454,6 +13486,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -13483,7 +13516,7 @@ uses(Instruction inst) const {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -13502,14 +13535,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 

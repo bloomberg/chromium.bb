@@ -2758,7 +2758,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    baseline := VectorBinary3RegisterSameLengthDQ;
    # TODO(karl): Add vector defs/uses etc.
    regs := 1 if Q=0 else 2;
-   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED;
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED;
 *V3RSL_DQI *V3RSL_DQ
    # Works on 8, 16, 32, and 64-bit integers;
    # TODO(karl): Add vector defs/uses etc.
@@ -2768,20 +2768,20 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # Works on 16 and 32-bit integers.
    # TODO(karl): Add vector defs/uses etc.
    baseline := VectorBinary3RegisterSameLengthDQI16_32;
-   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED &
              (size=11 | size=00) => UNDEFINED;
 *V3RSL_DQI8_16_32 *V3RSL_DQI
    # Only works on 8, 16, and 32-bit integers.
    # TODO(karl): Add vector defs/uses etc.
    baseline := VectorBinary3RegisterSameLengthDQI8_16_32;
-   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED &
              size=11 => UNDEFINED;
 *V3RSL_DQI8P *V3RSL_DQI
    baseline := VectorBinary3RegisterSameLengthDQI8P;
    # TODO(karl): Add vector defs/uses etc.
    # Operates on 8-bit and polynomials.
    unsigned := false;
-   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED &
              size=~00 => UNDEFINED;
 *V3RSL32 *V3RSL  # Operates on 32-bit values.
    sz := size(0); op1_neg := size(1);
@@ -2792,7 +2792,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V3RSL32_DQ *V3RSL32  # Uses Q registers if Q=1, D registers otherwise.
    baseline := VectorBinary3RegisterSameLength32_DQ;
    # TODO(karl): Add vector defs/uses etc.
-   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
+   safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vm(0)=1) => UNDEFINED &
              sz=1 =>UNDEFINED;
 *V3RSL_DI *V3RSL  # double word (D registers) 8, 16, and 32 integers
    baseline := VectorBinary3RegisterSameLengthDI;

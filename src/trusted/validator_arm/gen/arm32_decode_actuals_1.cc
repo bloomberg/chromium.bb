@@ -5297,7 +5297,7 @@ uses(Instruction inst) const {
 //      inst(6)=1 &&
 //         (inst(15:12)(0)=1 ||
 //         inst(19:16)(0)=1 ||
-//         inst(15:12)(0)=1) => UNDEFINED],
+//         inst(3:0)(0)=1) => UNDEFINED],
 //    uses: {}}
 
 RegisterList Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1::
@@ -5314,14 +5314,14 @@ safety(Instruction inst) const {
   // inst(6)=1 &&
   //       (inst(15:12)(0)=1 ||
   //       inst(19:16)(0)=1 ||
-  //       inst(15:12)(0)=1) => UNDEFINED
+  //       inst(3:0)(0)=1) => UNDEFINED
   if (((inst.Bits() & 0x00000040)  ==
           0x00000040) &&
        ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
           0x00000001) ||
        ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
           0x00000001) ||
-       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
     return UNDEFINED;
 

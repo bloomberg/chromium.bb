@@ -3446,6 +3446,7 @@ class VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -3475,7 +3476,7 @@ class VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -3550,6 +3551,7 @@ class VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -3579,7 +3581,7 @@ class VABDL_integer_A2_1111001u1dssnnnndddd0111n0m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -3607,6 +3609,7 @@ class VABD_1111001u0dssnnnndddd0111nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -3634,7 +3637,7 @@ class VABD_1111001u0dssnnnndddd0111nqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -3804,6 +3807,7 @@ class VABS_cccc11101d110000dddd101s11m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -3831,7 +3835,7 @@ class VABS_cccc11101d110000dddd101s11m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -3859,6 +3863,7 @@ class VACGE_111100110dssnnnndddd1110nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -3886,7 +3891,7 @@ class VACGE_111100110dssnnnndddd1110nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -4015,6 +4020,7 @@ class VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -4042,7 +4048,7 @@ class VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -4122,6 +4128,7 @@ class VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -4151,7 +4158,7 @@ class VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -4178,6 +4185,7 @@ class VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -4205,7 +4213,7 @@ class VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 class VAND_register_111100100d00nnnndddd0001nqm1mmmm_case_0
@@ -4279,6 +4287,7 @@ class VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -4306,7 +4315,7 @@ class VBIC_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 class VBIC_register_111100100d01nnnndddd0001nqm1mmmm_case_0
@@ -4332,6 +4341,7 @@ class VBIC_register_111100100d01nnnndddd0001nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -4359,7 +4369,7 @@ class VBIC_register_111100100d01nnnndddd0001nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 class VBIF_111100110d11nnnndddd0001nqm1mmmm_case_0
@@ -4385,6 +4395,7 @@ class VBIF_111100110d11nnnndddd0001nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -4412,7 +4423,7 @@ class VBIF_111100110d11nnnndddd0001nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 class VBIT_111100110d10nnnndddd0001nqm1mmmm_case_0
@@ -4438,6 +4449,7 @@ class VBIT_111100110d10nnnndddd0001nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -4465,7 +4477,7 @@ class VBIT_111100110d10nnnndddd0001nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 class VBSL_111100110d01nnnndddd0001nqm1mmmm_case_0
@@ -4591,6 +4603,7 @@ class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -4620,7 +4633,7 @@ class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -4648,6 +4661,7 @@ class VCEQ_register_A1_111100110dssnnnndddd1000nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -4675,7 +4689,7 @@ class VCEQ_register_A1_111100110dssnnnndddd1000nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -4803,6 +4817,7 @@ class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -4832,7 +4847,7 @@ class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -4860,6 +4875,7 @@ class VCGE_register_A1_1111001u0dssnnnndddd0011nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -4887,7 +4903,7 @@ class VCGE_register_A1_1111001u0dssnnnndddd0011nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -5015,6 +5031,7 @@ class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -5044,7 +5061,7 @@ class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -5072,6 +5089,7 @@ class VCGT_register_A1_1111001u0dssnnnndddd0011nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -5099,7 +5117,7 @@ class VCGT_register_A1_1111001u0dssnnnndddd0011nqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -6044,6 +6062,7 @@ class VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -6071,7 +6090,7 @@ class VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 class VEOR_111100110d00nnnndddd0001nqm1mmmm_case_0
@@ -6147,6 +6166,7 @@ class VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMDv2,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -6174,7 +6194,7 @@ class VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -6257,6 +6277,7 @@ class VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMDv2,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -6284,7 +6305,7 @@ class VFMA_VFMS_cccc11101d10nnnndddd101snom0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -6365,6 +6386,7 @@ class VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -6394,7 +6416,7 @@ class VFNMA_VFNMS_cccc11101d01nnnndddd101snom0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -6422,6 +6444,7 @@ class VHADD_1111001u0dssnnnndddd0000nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -6451,7 +6474,7 @@ class VHADD_1111001u0dssnnnndddd0000nqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,

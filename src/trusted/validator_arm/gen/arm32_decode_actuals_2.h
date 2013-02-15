@@ -22,7 +22,7 @@ namespace nacl_arm_dec {
 //      inst(6)=1 &&
 //         (inst(15:12)(0)=1 ||
 //         inst(19:16)(0)=1 ||
-//         inst(15:12)(0)=1) => UNDEFINED],
+//         inst(3:0)(0)=1) => UNDEFINED],
 //    uses: {}}
 //
 // Baseline:
@@ -34,6 +34,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -61,7 +62,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -76,6 +77,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -103,7 +105,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -118,6 +120,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -145,7 +148,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -160,6 +163,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -187,7 +191,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -202,6 +206,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -229,7 +234,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -244,6 +249,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -271,7 +277,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -286,6 +292,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -313,7 +320,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -328,6 +335,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMDv2,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -355,7 +363,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -370,6 +378,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMDv2,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -397,7 +406,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -412,6 +421,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -439,7 +449,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -454,6 +464,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -481,7 +492,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -496,6 +507,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -523,7 +535,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -538,6 +550,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -565,7 +578,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -580,6 +593,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -607,7 +621,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -622,6 +636,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -649,7 +664,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -664,6 +679,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -691,7 +707,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -706,6 +722,7 @@ namespace nacl_arm_dec {
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -733,7 +750,7 @@ namespace nacl_arm_dec {
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -2585,7 +2602,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [inst(6)=1 &&
 //         (inst(15:12)(0)=1 ||
 //         inst(19:16)(0)=1 ||
-//         inst(15:12)(0)=1) => UNDEFINED],
+//         inst(3:0)(0)=1) => UNDEFINED],
 //    uses: {}}
 //
 // Baseline:
@@ -2597,6 +2614,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2626,7 +2644,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -2640,6 +2658,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2667,7 +2686,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 //
@@ -2680,6 +2699,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2707,7 +2727,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 //
@@ -2720,6 +2740,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2747,7 +2768,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 //
@@ -2760,6 +2781,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2787,7 +2809,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 //
@@ -2800,6 +2822,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2827,7 +2850,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 //
@@ -2840,6 +2863,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2867,7 +2891,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 //
@@ -2880,6 +2904,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2907,7 +2932,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 //
@@ -2920,6 +2945,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2947,7 +2973,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 //
@@ -2960,6 +2986,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -2989,7 +3016,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -3003,6 +3030,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -3032,7 +3060,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -3046,6 +3074,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -3075,7 +3104,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -3089,6 +3118,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -3118,7 +3148,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -3132,6 +3162,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -3161,7 +3192,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -3175,6 +3206,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -3204,7 +3236,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -3218,6 +3250,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -3247,7 +3280,7 @@ class Actual_VADD_floating_point_cccc11100d11nnnndddd101sn0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -7382,7 +7415,7 @@ class Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1
 //      inst(6)=1 &&
 //         (inst(15:12)(0)=1 ||
 //         inst(19:16)(0)=1 ||
-//         inst(15:12)(0)=1) => UNDEFINED],
+//         inst(3:0)(0)=1) => UNDEFINED],
 //    uses: {}}
 //
 // Baseline:
@@ -7394,6 +7427,7 @@ class Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8P,
 //    constraints: ,
@@ -7424,7 +7458,7 @@ class Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=~00 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: false,
@@ -7518,6 +7552,7 @@ class Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32P,
 //    constraints: ,
@@ -7557,6 +7592,7 @@ class Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32P,
 //    constraints: ,
@@ -7596,6 +7632,7 @@ class Actual_VMVN_immediate_1111001i1d000mmmddddcccc0q11mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32P,
 //    constraints: ,
@@ -7655,6 +7692,7 @@ class Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDI,
 //    constraints: ,
@@ -7692,6 +7730,7 @@ class Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDI,
 //    constraints: ,
@@ -7729,6 +7768,7 @@ class Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDI,
 //    constraints: ,
@@ -8066,7 +8106,7 @@ class Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1
 //      inst(6)=1 &&
 //         (inst(15:12)(0)=1 ||
 //         inst(19:16)(0)=1 ||
-//         inst(15:12)(0)=1) => UNDEFINED],
+//         inst(3:0)(0)=1) => UNDEFINED],
 //    uses: {}}
 //
 // Baseline:
@@ -8078,6 +8118,7 @@ class Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VQDMULH_A1_111100100dssnnnndddd1011nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI16_32,
 //    constraints: ,
@@ -8107,7 +8148,7 @@ class Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      (size(21:20)=11 ||
 //         size(21:20)=00) => UNDEFINED],
 //    size: size(21:20),
@@ -8123,6 +8164,7 @@ class Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VQDMULH_A1_111100100dssnnnndddd1011nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI16_32,
 //    constraints: ,
@@ -8152,7 +8194,7 @@ class Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      (size(21:20)=11 ||
 //         size(21:20)=00) => UNDEFINED],
 //    size: size(21:20),

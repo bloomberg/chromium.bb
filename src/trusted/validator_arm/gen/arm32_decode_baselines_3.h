@@ -1277,6 +1277,7 @@ class VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -1306,7 +1307,7 @@ class VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -1334,6 +1335,7 @@ class VMAX_1111001u0dssnnnndddd0110nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -1361,7 +1363,7 @@ class VMAX_1111001u0dssnnnndddd0110nqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -1389,6 +1391,7 @@ class VMAX_floating_point_111100100dssnnnndddd1111nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -1418,7 +1421,7 @@ class VMAX_floating_point_111100100dssnnnndddd1111nqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -1446,6 +1449,7 @@ class VMIN_1111001u0dssnnnndddd0110nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -1473,7 +1477,7 @@ class VMIN_1111001u0dssnnnndddd0110nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -1780,6 +1784,7 @@ class VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -1807,7 +1812,7 @@ class VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -1835,6 +1840,7 @@ class VMLA_floating_point_A1_111100100dpsnnnndddd1101nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -1864,7 +1870,7 @@ class VMLA_floating_point_A1_111100100dpsnnnndddd1101nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -2069,6 +2075,7 @@ class VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -2096,7 +2103,7 @@ class VMLS_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -2124,6 +2131,7 @@ class VMLS_floating_point_A1_111100100dpsnnnndddd1101nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -2153,7 +2161,7 @@ class VMLS_floating_point_A1_111100100dpsnnnndddd1101nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -2937,6 +2945,7 @@ class VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -2964,7 +2973,7 @@ class VMUL_by_scalar_A1_1111001q1dssnnnndddd100fn1m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -3044,6 +3053,7 @@ class VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -3073,7 +3083,7 @@ class VMUL_floating_point_cccc11100d10nnnndddd101sn0m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -3101,6 +3111,7 @@ class VMUL_integer_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VMUL_polynomial_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8P,
 //    constraints: ,
@@ -3131,7 +3142,7 @@ class VMUL_integer_A1_1111001u0dssnnnndddd1001nqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=~00 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: false,
@@ -3509,6 +3520,7 @@ class VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -3536,7 +3548,7 @@ class VNMUL_cccc11100d10nnnndddd101sn1m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 class VORN_register_111100100d11nnnndddd0001nqm1mmmm_case_0
@@ -3610,6 +3622,7 @@ class VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -3637,7 +3650,7 @@ class VORR_immediate_1111001i1d000mmmddddcccc0q01mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    uses: {}}
 class VORR_register_or_VMOV_register_A1_111100100d10nnnndddd0001nqm1mmmm_case_0
@@ -3765,6 +3778,7 @@ class VPADDL_111100111d11ss00dddd0010p1m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32P,
 //    constraints: ,
@@ -3817,6 +3831,7 @@ class VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDI,
 //    constraints: ,
@@ -3867,6 +3882,7 @@ class VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32P,
 //    constraints: ,
@@ -3919,6 +3935,7 @@ class VPMAX_111100110dssnnnndddd1111nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDI,
 //    constraints: ,
@@ -3969,6 +3986,7 @@ class VPMAX_1111001u0dssnnnndddd1010n0m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_floating_point_111100110d0snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32P,
 //    constraints: ,
@@ -4021,6 +4039,7 @@ class VPMIN_111100110dssnnnndddd1111nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDI,
 //    constraints: ,
@@ -4313,6 +4332,7 @@ class VQABS_111100111d11ss00dddd01110qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -4342,7 +4362,7 @@ class VQABS_111100111d11ss00dddd01110qm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -4537,6 +4557,7 @@ class VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VQDMULH_A1_111100100dssnnnndddd1011nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI16_32,
 //    constraints: ,
@@ -4566,7 +4587,7 @@ class VQDMLSL_A1_111100101dssnnnndddd0p11n1m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      (size(21:20)=11 ||
 //         size(21:20)=00) => UNDEFINED],
 //    size: size(21:20),
@@ -4943,6 +4964,7 @@ class VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VQDMULH_A1_111100100dssnnnndddd1011nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI16_32,
 //    constraints: ,
@@ -4972,7 +4994,7 @@ class VQRDMULH_1111001q1dssnnnndddd1101n1m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      (size(21:20)=11 ||
 //         size(21:20)=00) => UNDEFINED],
 //    size: size(21:20),
@@ -5001,6 +5023,7 @@ class VQRDMULH_A1_111100110dssnnnndddd1011nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -5030,7 +5053,7 @@ class VQRDMULH_A1_111100110dssnnnndddd1011nqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -5362,6 +5385,7 @@ class VQSHL_VQSHLU_immediate_1111001u1diiiiiidddd011plqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -5391,7 +5415,7 @@ class VQSHL_VQSHLU_immediate_1111001u1diiiiiidddd011plqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -5566,6 +5590,7 @@ class VQSHRUN_1111001u1diiiiiidddd100p00m1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -5595,7 +5620,7 @@ class VQSHRUN_1111001u1diiiiiidddd100p00m1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -5722,6 +5747,7 @@ class VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -5749,7 +5775,7 @@ class VRECPE_111100111d11ss11dddd010f0qm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -5936,6 +5962,7 @@ class VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -5965,7 +5992,7 @@ class VREV64_111100111d11ss00dddd000ppqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -5993,6 +6020,7 @@ class VRHADD_1111001u0dssnnnndddd0001nqm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -6022,7 +6050,7 @@ class VRHADD_1111001u0dssnnnndddd0001nqm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -6242,6 +6270,7 @@ class VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -6269,7 +6298,7 @@ class VRSQRTE_111100111d11ss11dddd010f1qm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -6615,6 +6644,7 @@ class VSHL_immediate_111100101diiiiiidddd0101lqm1mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -6644,7 +6674,7 @@ class VSHL_immediate_111100101diiiiiidddd0101lqm1mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -8132,6 +8162,7 @@ class VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLength32_DQ,
 //    constraints: ,
@@ -8159,7 +8190,7 @@ class VSUBL_VSUBW_1111001u1dssnnnndddd001pn0m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(0)=1 => UNDEFINED],
 //    size: size(21:20),
 //    sz: size(0),
@@ -8239,6 +8270,7 @@ class VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VADD_integer_111100100dssnnnndddd1000nqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQ,
 //    constraints: ,
@@ -8268,7 +8300,7 @@ class VSUB_floating_point_cccc11100d11nnnndddd101sn1m0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED],
+//         Vm(0)=1) => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
 //    uses: {}}
@@ -8446,6 +8478,7 @@ class VTRN_111100111d11ss10dddd00001qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8475,7 +8508,7 @@ class VTRN_111100111d11ss10dddd00001qm0mmmm_case_0
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,

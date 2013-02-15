@@ -8339,7 +8339,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //      inst(6)=1 &&
 //         (inst(15:12)(0)=1 ||
 //         inst(19:16)(0)=1 ||
-//         inst(15:12)(0)=1) => UNDEFINED],
+//         inst(3:0)(0)=1) => UNDEFINED],
 //    uses: {}}
 //
 // Baseline:
@@ -8351,6 +8351,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8380,7 +8381,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8395,6 +8396,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8424,7 +8426,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8439,6 +8441,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8468,7 +8471,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8483,6 +8486,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8512,7 +8516,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8527,6 +8531,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8556,7 +8561,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8571,6 +8576,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8600,7 +8606,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8615,6 +8621,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8644,7 +8651,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8659,6 +8666,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8688,7 +8696,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8703,6 +8711,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8732,7 +8741,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8747,6 +8756,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8776,7 +8786,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8791,6 +8801,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8820,7 +8831,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8835,6 +8846,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8864,7 +8876,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8879,6 +8891,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8908,7 +8921,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
@@ -8923,6 +8936,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VABA_1111001u0dssnnnndddd0111nqm1mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: VectorBinary3RegisterSameLengthDQI8_16_32,
 //    constraints: ,
@@ -8952,7 +8966,7 @@ class Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
 //    safety: [Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vn(0)=1 ||
-//         Vd(0)=1) => UNDEFINED,
+//         Vm(0)=1) => UNDEFINED,
 //      size(21:20)=11 => UNDEFINED],
 //    size: size(21:20),
 //    unsigned: U(24)=1,
