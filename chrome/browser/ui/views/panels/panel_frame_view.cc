@@ -24,9 +24,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include "base/win/scoped_gdi_object.h"
-#include "chrome/browser/ui/views/hwnd_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/path_win.h"
 #endif
@@ -75,6 +74,13 @@ const SkColor kMinimizeBorderDefaultColor = SkColorSetRGB(0xc9, 0xc9, 0xc9);
 
 // Color used to draw the title text under default theme.
 const SkColor kTitleTextDefaultColor = SkColorSetRGB(0xf9, 0xf9, 0xf9);
+
+// Color used to draw the divider line between the titlebar and the client area.
+#if defined(USE_AURA)
+const SkColor kDividerColor = SkColorSetRGB(0xb5, 0xb5, 0xb5);
+#else
+const SkColor kDividerColor = SkColorSetRGB(0x2a, 0x2c, 0x2c);
+#endif
 
 gfx::ImageSkia* CreateImageForColor(SkColor color) {
   gfx::Canvas canvas(gfx::Size(1, 1), ui::SCALE_FACTOR_100P, true);
@@ -249,6 +255,7 @@ const char PanelFrameView::kViewClassName[] =
 PanelFrameView::PanelFrameView(PanelView* panel_view)
     : is_frameless_(false),
       panel_view_(panel_view),
+      paint_state_(NOT_PAINTED),
       close_button_(NULL),
       minimize_button_(NULL),
       restore_button_(NULL),
@@ -308,7 +315,6 @@ void PanelFrameView::Init() {
   title_label_ = new views::Label(panel_view_->panel()->GetWindowTitle());
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetAutoColorReadabilityEnabled(false);
-  title_label_->SetFont(GetTitleFont());
   AddChildView(title_label_);
 }
 
@@ -338,10 +344,10 @@ void PanelFrameView::UpdateTitlebarMinimizeRestoreButtonVisibility() {
 void PanelFrameView::SetWindowCornerStyle(panel::CornerStyle corner_style) {
   corner_style_ = corner_style;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Changing the window region is going to force a paint. Only change the
   // window region if the region really differs.
-  HWND native_window = chrome::HWNDForWidget(panel_view_->window());
+  HWND native_window = panel_view_->GetNativePanelWindow();
   base::win::ScopedRegion current_region(::CreateRectRgn(0, 0, 0, 0));
   int current_region_result = ::GetWindowRgn(native_window, current_region);
 
@@ -562,7 +568,19 @@ void PanelFrameView::Layout() {
 }
 
 void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
-  UpdateControlStyles(GetPaintState());
+  // The font and color need to be updated depending on the panel's state.
+  PaintState paint_state;
+  if (panel_view_->panel()->IsDrawingAttention())
+    paint_state = PAINT_FOR_ATTENTION;
+  else if (bounds().height() <= panel::kMinimizedPanelHeight)
+    paint_state = PAINT_AS_MINIMIZED;
+  else if (panel_view_->IsPanelActive() &&
+           !panel_view_->force_to_paint_as_inactive())
+    paint_state = PAINT_AS_ACTIVE;
+  else
+    paint_state = PAINT_AS_INACTIVE;
+
+  UpdateControlStyles(paint_state);
   PaintFrameBackground(canvas);
   PaintFrameEdge(canvas);
 }
@@ -651,17 +669,6 @@ int PanelFrameView::BorderThickness() const {
   return is_frameless_ ? 0 : kNonAeroBorderThickness;
 }
 
-PanelFrameView::PaintState PanelFrameView::GetPaintState() const {
-  if (panel_view_->panel()->IsDrawingAttention())
-    return PAINT_FOR_ATTENTION;
-  if (bounds().height() <= panel::kMinimizedPanelHeight)
-    return PAINT_AS_MINIMIZED;
-  if (panel_view_->IsPanelActive() &&
-           !panel_view_->force_to_paint_as_inactive())
-    return PAINT_AS_ACTIVE;
-  return PAINT_AS_INACTIVE;
-}
-
 bool PanelFrameView::UsingDefaultTheme(PaintState paint_state) const {
   // No theme is provided for attention painting.
   if (paint_state == PAINT_FOR_ATTENTION)
@@ -720,7 +727,15 @@ const gfx::ImageSkia* PanelFrameView::GetThemedFrameBackground(
 }
 
 void PanelFrameView::UpdateControlStyles(PaintState paint_state) {
-  title_label_->SetEnabledColor(GetTitleColor(paint_state));
+  DCHECK(paint_state != NOT_PAINTED);
+
+  if (paint_state == paint_state_)
+    return;
+  paint_state_ = paint_state;
+
+  SkColor title_color = GetTitleColor(paint_state_);
+  title_label_->SetEnabledColor(title_color);
+  title_label_->SetFont(GetTitleFont());
 }
 
 void PanelFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
@@ -728,7 +743,7 @@ void PanelFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
   // Instead, we allow part of the inner content area be used to trigger the
   // mouse resizing.
   int titlebar_height = TitlebarHeight();
-  const gfx::ImageSkia* image = GetFrameBackground(GetPaintState());
+  const gfx::ImageSkia* image = GetFrameBackground(paint_state_);
   canvas->TileImageInt(*image, 0, 0, width(), titlebar_height);
 
   if (is_frameless_)
@@ -761,9 +776,9 @@ void PanelFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
 }
 
 void PanelFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
-#if defined(OS_WIN)
+#if !defined(USE_AURA)
   // Border is not needed when panel is not shown as minimized.
-  if (GetPaintState() != PAINT_AS_MINIMIZED)
+  if (paint_state_ != PAINT_AS_MINIMIZED)
     return;
 
   const gfx::ImageSkia& top_left_image = GetTopLeftCornerImage(corner_style_);

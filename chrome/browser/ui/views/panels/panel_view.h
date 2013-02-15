@@ -209,7 +209,7 @@ class PanelView : public NativePanel,
   // be restored properly when a drag ends.
   views::View* old_focused_view_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
   // Used to provide custom taskbar thumbnail for Windows 7 and later.
   scoped_ptr<TaskbarWindowThumbnailerWin> thumbnailer_;
 #endif
