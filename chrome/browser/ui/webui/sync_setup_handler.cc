@@ -1207,15 +1207,21 @@ void SyncSetupHandler::DidStopLoading(
   // since the user is doing something with it.  Disconnect and forget about it
   // before closing down the sync setup.
   // The one exception is the expected continue URL.  If the user lands there,
-  // this means sign in was successful.
+  // this means sign in was successful.  Ignore the source parameter in the
+  // continue URL since this user may have changed the state of the
+  // "Let me choose what to sync" checkbox.
   const GURL& url = active_gaia_signin_tab_->GetURL();
   const GURL continue_url =
       SyncPromoUI::GetNextPageURLForSyncPromoURL(
           SyncPromoUI::GetSyncPromoURL(GURL(),
                                        SyncPromoUI::SOURCE_SETTINGS,
                                        false));
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
 
-  if (url != continue_url && !gaia::IsGaiaSignonRealm(url.GetOrigin())) {
+  if (!gaia::IsGaiaSignonRealm(url.GetOrigin()) &&
+      url.ReplaceComponents(replacements) !=
+          continue_url.ReplaceComponents(replacements)) {
     content::WebContentsObserver::Observe(NULL);
     active_gaia_signin_tab_ = NULL;
     CloseSyncSetup();

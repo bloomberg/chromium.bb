@@ -99,14 +99,14 @@ struct StartSyncArgs {
                 const std::string& session_index,
                 const std::string& email,
                 const std::string& password,
-                bool last_minute_source_change)
+                bool force_same_tab_navigation)
       : profile(profile),
         browser(browser),
         auto_accept(auto_accept),
         session_index(session_index),
         email(email),
         password(password),
-        last_minute_source_change(last_minute_source_change) {
+        force_same_tab_navigation(force_same_tab_navigation) {
   }
 
   Profile* profile;
@@ -115,7 +115,7 @@ struct StartSyncArgs {
   std::string session_index;
   std::string email;
   std::string password;
-  bool last_minute_source_change;
+  bool force_same_tab_navigation;
 };
 
 // Start syncing with the given user information.
@@ -130,19 +130,18 @@ void StartSync(const StartSyncArgs& args,
   // The starter deletes itself once its done.
   new OneClickSigninSyncStarter(args.profile, args.browser, args.session_index,
                                 args.email, args.password, start_mode,
-                                /* force_same_tab_navigation */
-                                args.last_minute_source_change);
+                                args.force_same_tab_navigation);
 
   int action = one_click_signin::HISTOGRAM_MAX;
   switch (args.auto_accept) {
     case OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT:
-      action = one_click_signin::HISTOGRAM_AUTO_WITH_DEFAULTS;
-      break;
-    case OneClickSigninHelper::AUTO_ACCEPT_ACCEPTED:
       action =
           start_mode == OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS ?
               one_click_signin::HISTOGRAM_AUTO_WITH_DEFAULTS :
               one_click_signin::HISTOGRAM_AUTO_WITH_ADVANCED;
+      break;
+    case OneClickSigninHelper::AUTO_ACCEPT_ACCEPTED:
+      action = one_click_signin::HISTOGRAM_AUTO_WITH_DEFAULTS;
       break;
     case OneClickSigninHelper::AUTO_ACCEPT_NONE:
       action =
@@ -453,7 +452,7 @@ bool OneClickInfoBarDelegateImpl::Accept() {
                      StartSyncArgs(profile, browser,
                                    OneClickSigninHelper::AUTO_ACCEPT_NONE,
                                    session_index_, email_, password_,
-                                   false /* last_minute_source_change */)));
+                                   false /* force_same_tab_navigation */)));
   button_pressed_ = true;
   return true;
 }
@@ -953,15 +952,15 @@ void OneClickSigninHelper::DidStopLoading(
   if (email_.empty() || password_.empty())
     return;
 
-  // When the user use the firt-run, ntp, or hotdog menu to sign in, then have
+  // When the user uses the first-run, ntp, or hotdog menu to sign in, then have
   // the option of checking the the box "Let me choose what to sync".  When the
   // sign in process started, the source parameter in the continue URL may have
   // indicated one of the three options above.  However, once this box is
   // checked, the source parameter will indicate settings.  This will only be
-  // comminucated back to chrome when Gaia redirects to the continue URL, and
+  // communicated back to chrome when Gaia redirects to the continue URL, and
   // this is considered here a last minute change to the source.  See a little
   // further below for when this variable is set to true.
-  bool last_minute_source_change = false;
+  bool force_same_tab_navigation = false;
 
   if (SyncPromoUI::UseWebBasedSigninFlow()) {
     if (IsValidGaiaSigninRedirectOrResponseURL(url))
@@ -994,17 +993,20 @@ void OneClickSigninHelper::DidStopLoading(
         return;
       }
 
-      // In explicit sign ins, the user may have checked the box
+      // In explicit sign ins, the user may have changed the box
       // "Let me choose what to sync".  This is reflected as a change in the
       // source of the continue URL.  Make one last check of the current URL
-      // to see if there is a valid source and its set to settings.  If so,
-      // it overrides the current source.
+      // to see if there is a valid source.  If so, it overrides the
+      // current source.
+      //
+      // If the source was changed to SOURCE_SETTINGS, we want
+      // OneClickSigninSyncStarter to reuse the current tab to display the
+      // advanced configuration.
       SyncPromoUI::Source source =
           SyncPromoUI::GetSourceForSyncPromoURL(url);
-      if (source == SyncPromoUI::SOURCE_SETTINGS &&
-          source_ != SyncPromoUI::SOURCE_SETTINGS) {
-        source_ = SyncPromoUI::SOURCE_SETTINGS;
-        last_minute_source_change = true;
+      if (source != source_) {
+        source_ = source;
+        force_same_tab_navigation = source_ == SyncPromoUI::SOURCE_SETTINGS;
       }
     }
   }
@@ -1043,13 +1045,13 @@ void OneClickSigninHelper::DidStopLoading(
           base::Bind(&StartSync,
                      StartSyncArgs(profile, browser, auto_accept_,
                                    session_index_, email_, password_,
-                                   false /* last_minute_source_change */)));
+                                   false /* force_same_tab_navigation */)));
       break;
     case AUTO_ACCEPT_CONFIGURE:
       SigninManager::DisableOneClickSignIn(profile);
       StartSync(
           StartSyncArgs(profile, browser, auto_accept_, session_index_, email_,
-                        password_, false /* last_minute_source_change */),
+                        password_, false /* force_same_tab_navigation */),
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       break;
     case AUTO_ACCEPT_EXPLICIT: {
@@ -1071,19 +1073,19 @@ void OneClickSigninHelper::DidStopLoading(
                 &StartExplicitSync,
                 StartSyncArgs(profile, browser, auto_accept_,
                               session_index_, email_, password_,
-                              last_minute_source_change),
+                              force_same_tab_navigation),
                 contents,
                 start_mode));
       } else {
         StartExplicitSync(
             StartSyncArgs(profile, browser, auto_accept_, session_index_,
-                          email_, password_, last_minute_source_change),
+                          email_, password_, force_same_tab_navigation),
             contents,
             start_mode,
             IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_CANCEL_BUTTON);
       }
 
-      if (last_minute_source_change &&
+      if (source_ == SyncPromoUI::SOURCE_SETTINGS &&
           SyncPromoUI::GetSourceForSyncPromoURL(continue_url_) ==
           SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
         redirect_url_ = continue_url_;
