@@ -127,7 +127,7 @@ void SpellcheckService::GetSpellCheckLanguagesFromAcceptLanguages(
 // static
 bool SpellcheckService::SignalStatusEvent(
     SpellcheckService::EventType status_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!g_status_event)
     return false;
@@ -234,11 +234,8 @@ void SpellcheckService::AttachStatusEvent(base::WaitableEvent* status_event) {
 }
 
 // static
-SpellcheckService::EventType SpellcheckService::WaitStatusEvent() {
+SpellcheckService::EventType SpellcheckService::GetStatusEvent() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (g_status_event)
-    g_status_event->Wait();
   return g_status_type;
 }
 

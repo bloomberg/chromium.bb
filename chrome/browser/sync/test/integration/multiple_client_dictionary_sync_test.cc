@@ -25,8 +25,6 @@ IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, AddToOne) {
   ASSERT_TRUE(dictionary_helper::AddWord(0, "foo"));
   ASSERT_TRUE(GetClient(0)->AwaitGroupSyncCycleCompletion(clients()));
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
-
-  MessageLoop::current()->RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, AddSameToAll) {
@@ -39,8 +37,6 @@ IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, AddSameToAll) {
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
-
-  MessageLoop::current()->RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, AddDifferentToAll) {
@@ -54,8 +50,6 @@ IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, AddDifferentToAll) {
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
   ASSERT_EQ(num_clients(),
             static_cast<int>(dictionary_helper::GetDictionarySize(0)));
-
-  MessageLoop::current()->RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, Limit) {
@@ -101,6 +95,4 @@ IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, Limit) {
   // clients, because it has the same data as the sync server.
   ASSERT_EQ(chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS,
             dictionary_helper::GetDictionarySize(0));
-
-  MessageLoop::current()->RunUntilIdle();
 }

@@ -107,9 +107,8 @@ class SpellcheckService : public ProfileKeyedService,
   // Attaches an event so browser tests can listen the status events.
   static void AttachStatusEvent(base::WaitableEvent* status_event);
 
-  // Waits until a spellchecker updates its status. This function returns
-  // immediately when we do not set an event to |status_event_|.
-  static EventType WaitStatusEvent();
+  // Returns the status event type.
+  static EventType GetStatusEvent();
 
   // Pass all renderers some basic initialization information.
   void InitForAllRenderers();

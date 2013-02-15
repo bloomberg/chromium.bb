@@ -44,6 +44,4 @@ IN_PROC_BROWSER_TEST_F(DictionarySyncPerfTest, P0) {
   dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0UL, dictionary_helper::GetDictionarySize(1));
   SyncTimingHelper::PrintResult("dictionary", "remove_words", dt);
-
-  MessageLoop::current()->RunUntilIdle();
 }

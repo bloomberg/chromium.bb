@@ -28,6 +28,4 @@ IN_PROC_BROWSER_TEST_F(SingleClientDictionarySyncTest, Sanity) {
   ASSERT_TRUE(dictionary_helper::RemoveWord(0, word));
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Removed a word"));
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
-
-  MessageLoop::current()->RunUntilIdle();
 }

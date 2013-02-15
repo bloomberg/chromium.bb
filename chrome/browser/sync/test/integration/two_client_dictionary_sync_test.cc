@@ -49,8 +49,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Sanity) {
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
   ASSERT_EQ(words.size(), dictionary_helper::GetDictionarySize(0));
-
-  MessageLoop::current()->RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousAdd) {
@@ -63,8 +61,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousAdd) {
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
-
-  MessageLoop::current()->RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousRemove) {
@@ -83,8 +79,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousRemove) {
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
   ASSERT_EQ(0UL, dictionary_helper::GetDictionarySize(0));
-
-  MessageLoop::current()->RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, RemoveOnAAddOnB) {
@@ -103,8 +97,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, RemoveOnAAddOnB) {
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
-
-  MessageLoop::current()->RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, DisableSync) {
@@ -117,8 +109,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, DisableSync) {
   ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion("Added a word"));
   ASSERT_TRUE(dictionary_helper::DictionaryMatchesVerifier(0));
   ASSERT_FALSE(dictionary_helper::DictionaryMatchesVerifier(1));
-
-  MessageLoop::current()->RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Limit) {
@@ -156,6 +146,4 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Limit) {
   // The sync server and client #1 should have only "bar" set of words.
   ASSERT_EQ(chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS,
             dictionary_helper::GetDictionarySize(1));
-
-  MessageLoop::current()->RunUntilIdle();
 }
