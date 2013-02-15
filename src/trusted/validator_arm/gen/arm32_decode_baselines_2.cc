@@ -1546,7 +1546,7 @@ uses(Instruction inst) const {
 //         if index
 //         else Rn,
 //    base: Rn,
-//    baseline: Store2RegisterImm8DoubleOp,
+//    baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {base
@@ -1560,7 +1560,6 @@ uses(Instruction inst) const {
 //      Rt(15:12),
 //      imm4H(11:8),
 //      imm4L(3:0)],
-//    generated_baseline: STRD_immediate_cccc000pu1w0nnnnttttiiii1111iiii_case_0,
 //    imm32: ZeroExtend(imm4H:imm4L, 32),
 //    imm4H: imm4H(11:8),
 //    imm4L: imm4L(3:0),
@@ -1688,7 +1687,7 @@ uses(Instruction inst) const {
 //    actual: Actual_STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
-//    baseline: Store3RegisterDoubleOp,
+//    baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {base
@@ -1701,7 +1700,6 @@ uses(Instruction inst) const {
 //      Rn(19:16),
 //      Rt(15:12),
 //      Rm(3:0)],
-//    generated_baseline: STRD_register_cccc000pu0w0nnnntttt00001111mmmm_case_0,
 //    index: P(24)=1,
 //    pattern: cccc000pu0w0nnnntttt00001111mmmm,
 //    rule: STRD_register,
@@ -2195,7 +2193,7 @@ uses(Instruction inst) const {
 //         if index
 //         else Rn,
 //    base: Rn,
-//    baseline: Store2RegisterImm8Op,
+//    baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {base
@@ -2209,7 +2207,6 @@ uses(Instruction inst) const {
 //      Rt(15:12),
 //      imm4H(11:8),
 //      imm4L(3:0)],
-//    generated_baseline: STRH_immediate_cccc000pu1w0nnnnttttiiii1011iiii_case_0,
 //    imm32: ZeroExtend(imm4H:imm4L, 32),
 //    imm4H: imm4H(11:8),
 //    imm4L: imm4L(3:0),
@@ -2324,7 +2321,7 @@ uses(Instruction inst) const {
 //    actual: Actual_STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_1,
 //    add: U(23)=1,
 //    base: Rn,
-//    baseline: Store3RegisterOp,
+//    baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {base
@@ -2337,7 +2334,6 @@ uses(Instruction inst) const {
 //      Rn(19:16),
 //      Rt(15:12),
 //      Rm(3:0)],
-//    generated_baseline: STRH_register_cccc000pu0w0nnnntttt00001011mmmm_case_0,
 //    index: P(24)=1,
 //    pattern: cccc000pu0w0nnnntttt00001011mmmm,
 //    rule: STRH_register,
