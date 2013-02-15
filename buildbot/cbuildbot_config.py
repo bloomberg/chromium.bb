@@ -1028,11 +1028,6 @@ internal_paladin.add_config('link-paladin',
   paladin_builder_name='link paladin',
 )
 
-internal_paladin.add_config('kiev-paladin',
-  boards=['kiev'],
-  paladin_builder_name='kiev paladin',
-)
-
 internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
@@ -1139,11 +1134,6 @@ _release.add_config('link-release',
   prebuilts=False,
 )
 
-_release.add_config('kiev-release',
-  boards=['kiev'],
-  hw_tests=['bvt'],
-)
-
 _release.add_config('parrot-release',
   boards=['parrot'],
   hw_tests=['bvt'],
@@ -1216,7 +1206,6 @@ _depthcharge_release = _firmware_release.derive(useflags=['depthcharge'])
 
 _x86_firmware_boards = (
   'butterfly',
-  'kiev',
   'link',
   'lumpy',
   'parrot',
