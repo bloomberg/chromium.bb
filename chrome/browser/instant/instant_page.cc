@@ -41,9 +41,14 @@ void InstantPage::SetMarginSize(const int start, const int end) {
 }
 
 void InstantPage::InitializeFonts() {
+  // TODO(sail) Remove this once the Mac omnibox font size is updated.
+#if defined(OS_MACOSX)
+  ui::ResourceBundle::FontStyle font_style = ui::ResourceBundle::BaseFont;
+#else
+  ui::ResourceBundle::FontStyle font_style = ui::ResourceBundle::MediumFont;
+#endif
   const gfx::Font& omnibox_font =
-      ui::ResourceBundle::GetSharedInstance().GetFont(
-          ui::ResourceBundle::MediumFont);
+      ui::ResourceBundle::GetSharedInstance().GetFont(font_style);
   string16 omnibox_font_name = UTF8ToUTF16(omnibox_font.GetFontName());
   size_t omnibox_font_size = omnibox_font.GetFontSize();
   Send(new ChromeViewMsg_SearchBoxFontInformation(
