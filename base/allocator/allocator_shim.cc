@@ -73,8 +73,6 @@ bool je_malloc_init_hard();
 void* je_memalign(size_t a, size_t s);
 }
 
-extern "C" {
-
 // Call the new handler, if one has been set.
 // Returns true on successfully calling the handler, false otherwise.
 inline bool call_new_handler(bool nothrow) {
@@ -88,7 +86,8 @@ inline bool call_new_handler(bool nothrow) {
     nh = std::set_new_handler(0);
     (void) std::set_new_handler(nh);
   }
-#if (defined(__GNUC__) && !defined(__EXCEPTIONS)) || (defined(_HAS_EXCEPTIONS) && !_HAS_EXCEPTIONS)
+#if (defined(__GNUC__) && !defined(__EXCEPTIONS)) || \
+    (defined(_HAS_EXCEPTIONS) && !_HAS_EXCEPTIONS)
   if (!nh)
     return false;
   // Since exceptions are disabled, we don't really know if new_handler
@@ -99,7 +98,7 @@ inline bool call_new_handler(bool nothrow) {
   // If no new_handler is established, the allocation failed.
   if (!nh) {
     if (nothrow)
-      return 0;
+      return false;
     throw std::bad_alloc();
   }
   // Otherwise, try the new_handler.  If it returns, retry the
@@ -113,8 +112,10 @@ inline bool call_new_handler(bool nothrow) {
     return true;
   }
 #endif  // (defined(__GNUC__) && !defined(__EXCEPTIONS)) || (defined(_HAS_EXCEPTIONS) && !_HAS_EXCEPTIONS)
+  return false;
 }
 
+extern "C" {
 void* malloc(size_t size) __THROW {
   void* ptr;
   for (;;) {
