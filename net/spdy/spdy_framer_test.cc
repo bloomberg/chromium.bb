@@ -314,7 +314,7 @@ void CompareCharArraysWithHexError(
 class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                         public SpdyFramerDebugVisitorInterface {
  public:
-  static const size_t kDefaultHeaderBufferSize = 16 * 1024;
+  static const size_t kDefaultHeaderBufferSize = 16 * 1024 * 1024;
   static const size_t kDefaultCredentialBufferSize = 16 * 1024;
 
   explicit TestSpdyVisitor(int version)
@@ -530,8 +530,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     header_buffer_.reset(new char[header_buffer_size]);
   }
 
-  static size_t control_frame_buffer_max_size() {
-    return SpdyFramer::kMaxControlFrameSize;
+  size_t control_frame_buffer_max_size() const {
+     return framer_.GetControlFrameBufferMaxSize();
   }
 
   static size_t header_data_chunk_max_size() {
@@ -2542,8 +2542,9 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
   //                              ---                ---
   //                               26 bytes           32 bytes
   const size_t overhead = IsSpdy2() ? 26 : 32;
+  TestSpdyVisitor visitor(spdy_version_);
   const size_t big_value_size =
-      TestSpdyVisitor::control_frame_buffer_max_size() - overhead;
+      visitor.control_frame_buffer_max_size() - overhead;
   std::string big_value(big_value_size, 'x');
   headers["aa"] = big_value.c_str();
   SpdyFramer framer(spdy_version_);
@@ -2556,7 +2557,6 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
                              false,                 // compress
                              &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
-  TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
       control_frame->length() + SpdyControlFrame::kHeaderSize);
@@ -2573,8 +2573,9 @@ TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
   // See size calculation for test above. This is one byte larger, which
   // should exceed the control frame buffer capacity by that one byte.
   const size_t overhead = IsSpdy2() ? 25 : 31;
+  TestSpdyVisitor visitor(spdy_version_);
   const size_t kBigValueSize =
-      TestSpdyVisitor::control_frame_buffer_max_size() - overhead;
+      visitor.control_frame_buffer_max_size() - overhead;
   std::string big_value(kBigValueSize, 'x');
   headers["aa"] = big_value.c_str();
   SpdyFramer framer(spdy_version_);
@@ -2587,7 +2588,6 @@ TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
                              false,                 // compress
                              &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
-  TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
       control_frame->length() + SpdyControlFrame::kHeaderSize);

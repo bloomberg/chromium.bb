@@ -59,7 +59,6 @@ const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
 // largest control frame, which is SYN_STREAM. See GetSynStreamMinimumSize() for
 // calculation details.
 const size_t SpdyFramer::kControlFrameBufferSize = 18;
-const size_t SpdyFramer::kMaxControlFrameSize = 16 * 1024;
 
 #ifdef DEBUG_SPDY_STATE_CHANGES
 #define CHANGE_STATE(newstate)                                  \
@@ -652,7 +651,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
   remaining_control_payload_ = current_control_frame.length();
   const size_t total_frame_size =
       remaining_control_payload_ + SpdyFrame::kHeaderSize;
-  if (total_frame_size > kMaxControlFrameSize) {
+  if (total_frame_size > GetControlFrameBufferMaxSize()) {
     DLOG(WARNING) << "Received control frame with way too big of a payload: "
                   << total_frame_size;
     set_error(SPDY_CONTROL_PAYLOAD_TOO_LARGE);

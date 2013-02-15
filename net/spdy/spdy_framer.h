@@ -593,17 +593,19 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyControlFrame* CompressControlFrame(const SpdyControlFrame& frame,
                                          const SpdyHeaderBlock* headers);
 
+  // The maximum size of the control frames that we support.
+  // This limit is arbitrary. We can enforce it here or at the application
+  // layer. We chose the framing layer, but this can be changed (or removed)
+  // if necessary later down the line.
+  size_t GetControlFrameBufferMaxSize() const {
+     return (spdy_version_ == 2) ? 64 * 1024 : 16 * 1024 * 1024;
+  }
+
   // The size of the control frame buffer.
   // Since this is only used for control frame headers, the maximum control
   // frame header size (SYN_STREAM) is sufficient; all remaining control
   // frame data is streamed to the visitor.
   static const size_t kControlFrameBufferSize;
-
-  // The maximum size of the control frames that we support.
-  // This limit is arbitrary. We can enforce it here or at the application
-  // layer. We chose the framing layer, but this can be changed (or removed)
-  // if necessary later down the line.
-  static const size_t kMaxControlFrameSize;
 
   SpdyState state_;
   SpdyState previous_state_;
