@@ -20,6 +20,7 @@
 #include "cc/scrollbar_animation_controller_linear_fade.h"
 #include "cc/scrollbar_layer_impl.h"
 #include "ui/gfx/point_conversions.h"
+#include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -967,6 +968,28 @@ void LayerImpl::setVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
     m_verticalScrollbarLayer = scrollbarLayer;
     if (m_verticalScrollbarLayer)
         m_verticalScrollbarLayer->setScrollLayerId(id());
+}
+
+void LayerImpl::AsValueInto(base::DictionaryValue* dict) const
+{
+    dict->SetInteger("id", id());
+    dict->Set("bounds", MathUtil::asValue(bounds()).release());
+    dict->SetInteger("draws_content", drawsContent());
+
+    bool clipped;
+    gfx::QuadF layer_quad = MathUtil::mapQuad(
+        screenSpaceTransform(),
+        gfx::QuadF(gfx::Rect(contentBounds())),
+        clipped);
+    dict->Set("layer_quad", MathUtil::asValue(layer_quad).release());
+
+}
+
+scoped_ptr<base::Value> LayerImpl::AsValue() const
+{
+    scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+    AsValueInto(state.get());
+    return state.PassAs<base::Value>();
 }
 
 }  // namespace cc

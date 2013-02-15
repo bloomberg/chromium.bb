@@ -1736,6 +1736,7 @@ scoped_ptr<base::Value> LayerTreeHostImpl::frameStateAsValue() const
     state->Set("device_viewport_size", MathUtil::asValue(m_deviceViewportSize).release());
     if (m_tileManager)
         state->Set("tiles", m_tileManager->AllTilesAsValue().release());
+    state->Set("active_tree", activeTree()->AsValue().release());
     return state.PassAs<base::Value>();
 }
 

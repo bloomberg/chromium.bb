@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "cc/cc_export.h"
 #include "cc/draw_properties.h"
 #include "cc/input_handler.h"
@@ -309,6 +310,8 @@ public:
     virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl*);
     virtual void pushPropertiesTo(LayerImpl*);
 
+    virtual scoped_ptr<base::Value> AsValue() const;
+
 protected:
     LayerImpl(LayerTreeImpl* layerImpl, int);
 
@@ -319,6 +322,8 @@ protected:
 
     virtual void dumpLayerProperties(std::string*, int indent) const;
     static std::string indentString(int indent);
+
+    void AsValueInto(base::DictionaryValue* dict) const;
 
 private:
     void updateScrollbarPositions();

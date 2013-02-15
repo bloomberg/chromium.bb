@@ -300,4 +300,11 @@ void PictureLayerTilingSet::DidBecomeActive() {
     tilings_[i]->DidBecomeActive();
 }
 
+scoped_ptr<base::Value> PictureLayerTilingSet::AsValue() const {
+  scoped_ptr<base::ListValue> state(new base::ListValue());
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    state->Append(tilings_[i]->AsValue().release());
+  return state.PassAs<base::Value>();
+}
+
 }  // namespace cc

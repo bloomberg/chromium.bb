@@ -6,6 +6,7 @@
 #define CC_LAYER_TREE_IMPL_H_
 
 #include "base/hash_tables.h"
+#include "base/values.h"
 #include "cc/layer_impl.h"
 
 #if defined(COMPILER_GCC)
@@ -77,6 +78,7 @@ class CC_EXPORT LayerTreeImpl {
   const gfx::Size& layout_viewport_size() const;
   std::string layer_tree_as_text() const;
   DebugRectHistory* debug_rect_history() const;
+  scoped_ptr<base::Value> AsValue() const;
 
   // Other public methods
   // ---------------------------------------------------------------------------

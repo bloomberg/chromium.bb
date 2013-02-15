@@ -111,6 +111,8 @@ class CC_EXPORT PictureLayerTilingSet {
     Region::Iterator region_iter_;
   };
 
+  scoped_ptr<base::Value> AsValue() const;
+
  private:
   PictureLayerTilingClient* client_;
   gfx::Size layer_bounds_;

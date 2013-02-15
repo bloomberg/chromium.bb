@@ -144,6 +144,8 @@ class CC_EXPORT PictureLayerTiling {
   // also updates the pile on each tile to be the current client's pile.
   void DidBecomeActive();
 
+  scoped_ptr<base::Value> AsValue() const;
+
  protected:
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;

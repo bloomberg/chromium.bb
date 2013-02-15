@@ -472,4 +472,20 @@ AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
   return layer_tree_host_impl_->animationRegistrar();
 }
 
+scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
+  scoped_ptr<base::ListValue> state(new base::ListValue());
+  typedef LayerIterator<LayerImpl,
+                        std::vector<LayerImpl*>,
+                        RenderSurfaceImpl,
+                        LayerIteratorActions::BackToFront> LayerIteratorType;
+  LayerIteratorType end = LayerIteratorType::end(&render_surface_layer_list_);
+  for (LayerIteratorType it = LayerIteratorType::begin(
+           &render_surface_layer_list_); it != end; ++it) {
+    if (!it.representsItself())
+      continue;
+    state->Append((*it)->AsValue().release());
+  }
+  return state.PassAs<base::Value>();
+}
+
 } // namespace cc

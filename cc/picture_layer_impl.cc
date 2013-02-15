@@ -746,4 +746,13 @@ void PictureLayerImpl::getDebugBorderProperties(
   *width = DebugColors::TiledContentLayerBorderWidth(layerTreeImpl());
 }
 
+scoped_ptr<base::Value> PictureLayerImpl::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  LayerImpl::AsValueInto(state.get());
+
+  state->SetDouble("ideal_contents_scale", ideal_contents_scale_);
+  state->Set("tilings", tilings_->AsValue().release());
+  return state.PassAs<base::Value>();
+}
+
 }  // namespace cc

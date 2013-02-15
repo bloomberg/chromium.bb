@@ -68,6 +68,8 @@ public:
 
   virtual bool areVisibleResourcesReady() const OVERRIDE;
 
+  virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
+
 protected:
   PictureLayerImpl(LayerTreeImpl* treeImpl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);

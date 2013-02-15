@@ -530,4 +530,13 @@ void PictureLayerTiling::DidBecomeActive() {
   }
 }
 
+scoped_ptr<base::Value> PictureLayerTiling::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  state->SetInteger("num_tiles", tiles_.size());
+  state->SetDouble("content_scale", contents_scale_);
+  state->Set("content_bounds",
+             MathUtil::asValue(ContentRect().size()).release());
+  return state.PassAs<base::Value>();
+}
+
 }  // namespace cc
