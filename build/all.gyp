@@ -651,7 +651,6 @@
               'dependencies': [
                 '../chrome/chrome.gyp:chromedriver',
                 '../chrome/chrome.gyp:crash_service',
-                '../chrome/chrome.gyp:crash_service_win64',
                 '../chrome/chrome.gyp:performance_ui_tests',
                 '../chrome/chrome.gyp:policy_templates',
                 '../chrome/chrome.gyp:pyautolib',
@@ -660,7 +659,6 @@
                 '../chrome/installer/mini_installer.gyp:mini_installer',
                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                 '../courgette/courgette.gyp:courgette',
-                '../courgette/courgette.gyp:courgette64',
                 '../cloud_print/cloud_print.gyp:cloud_print',
                 '../remoting/remoting.gyp:remoting_webapp',
                 '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
@@ -671,6 +669,12 @@
                     '../pdf/pdf.gyp:pdf',
                   ],
                 }], # internal_pdf
+                ['target_arch=="ia32"', {
+                  'dependencies': [
+                    '../chrome/chrome.gyp:crash_service_win64',
+                    '../courgette/courgette.gyp:courgette64',
+                  ],
+                }],
                 ['component != "shared_library" and wix_exists == "True" and \
                     sas_dll_exists == "True"', {
                   'dependencies': [
@@ -723,6 +727,10 @@
             ['OS=="win"', {
               'dependencies': [
                 '../chrome/chrome.gyp:crash_service',
+              ],
+            }],
+            ['OS=="win" and target_arch=="ia32"', {
+              'dependencies': [
                 '../chrome/chrome.gyp:crash_service_win64',
               ],
             }],
