@@ -208,8 +208,12 @@ class InstalledBubbleContent : public views::View,
     }
 
     if (flavors_ & HOW_TO_MANAGE) {
-      manage_ = new views::Label(
-          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO));
+      manage_ = new views::Label(l10n_util::GetStringUTF16(
+#if defined(OS_CHROMEOS)
+          IDS_EXTENSION_INSTALLED_MANAGE_INFO_CHROMEOS));
+#else
+          IDS_EXTENSION_INSTALLED_MANAGE_INFO));
+#endif
       manage_->SetFont(font);
       manage_->SetMultiLine(true);
       manage_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
