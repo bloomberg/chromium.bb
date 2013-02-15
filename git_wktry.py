@@ -23,7 +23,7 @@ class ScopedTemporaryFile(object):
   def __enter__(self):
     return self._path
 
-  def __exit__(self, type, value, traceback):
+  def __exit__(self, _exc_type, _exc_value, _exc_traceback):
     try:
       os.remove(self._path)
     except OSError, e:
