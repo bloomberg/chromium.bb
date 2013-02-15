@@ -44,8 +44,53 @@ var HTTP_OK = 200;
  */
 var DEFAULT_POLLING_PERIOD_SECONDS = 300;  // 5 minutes
 
+var storage = chrome.storage.local;
+
 /**
- * Parse JSON response of the notifications server, show notifications and
+ * Show a notification and remember information associated with it.
+ * @param {Object} card Google Now card represented as a set of parameters for
+ *     showing a Chrome notification.
+ */
+function createNotification(card) {
+  var notificationId = card.notificationId;
+
+  // Fill the information about button actions for the notification. This is a
+  // map from the clicked area name to URL to open when the area is clicked. Any
+  // of the fields may be defined or undefined.
+  var actionUrls = {
+    message: card.messageUrl,
+    button0: card.buttonOneUrl,
+    button1: card.buttonTwoUrl
+  };
+
+  // TODO(vadimt): Reorganize server response to avoid deleting fields.
+  delete card.notificationId;
+  delete card.messageUrl;
+  delete card.buttonOneUrl;
+  delete card.buttonTwoUrl;
+
+  // Create a notification or quietly update if it already exists.
+  // TODO(vadimt): Implement deleting and non-quiet updates.
+  chrome.experimental.notification.create(
+      notificationId,
+      card,
+      function(assignedNotificationId) {
+        // Once the notification is created, store button actions for its ID.
+        storage.get('activeNotifications', function(items) {
+          // TODO(vadimt): Make sure that activeNotifications map cannot grow
+          // infinitely.
+          items.activeNotifications[assignedNotificationId] = actionUrls;
+          storage.set(
+              {activeNotifications: items.activeNotifications},
+              function() {
+                // TODO(vadimt): Analyze runtime.lastError.
+              });
+        });
+      });
+}
+
+/**
+ * Parse JSON response from the notification server, show notifications and
  * schedule next update.
  * @param {string} response Server response.
  */
@@ -69,13 +114,9 @@ function parseAndShowNotificationCards(response) {
     return;
   }
 
-  for (var i = 0; i != cards.length; ++i) {
+  for (var i = 0; i < cards.length; ++i) {
     try {
-      var card = cards[i];
-      // TODO(vadimt): Use URLs for buttons.
-      delete card.buttonOneIntent;
-      delete card.buttonTwoIntent;
-      chrome.experimental.notification.show(card, function(showInfo) {});
+      createNotification(cards[i]);
     } catch (error) {
       // TODO(vadimt): Report errors to the user.
       return;
@@ -148,15 +189,40 @@ function updateNotificationsCards() {
 }
 
 /**
-* Callback for chrome.experimental.notification.onClosed event.
-* @param {string} replaceId Replace ID of the notification.
-* @param {boolean} byUser Flag indicating whether the notification was closed by
-*     the user.
-*/
-function onNotificationClosed(replaceId, byUser) {
+ * Opens URL corresponsing to the clicked part of the notification.
+ * @param {string} notificationId Unique identifier of the notification.
+ * @param {string} area Name of the notification's clicked area.
+ */
+function onNotificationClicked(notificationId, area) {
+  storage.get('activeNotifications', function(items) {
+    var notificationActions = items.activeNotifications[notificationId] || {};
+    if (area in notificationActions) {
+      // Open URL specified for the clicked area.
+      // TODO(vadimt): Figure out whether to open link in a new tab etc.
+      chrome.windows.create({url: notificationActions[area]});
+    }
+  });
+}
+
+/**
+ * Callback for chrome.experimental.notification.onClosed event.
+ * @param {string} notificationId Unique identifier of the notification.
+ * @param {boolean} byUser Whether the notification was closed by the user.
+ */
+function onNotificationClosed(notificationId, byUser) {
+  // Remove button actions entry for notificationId.
+  storage.get('activeNotifications', function(items) {
+    delete items.activeNotifications[notificationId];
+    storage.set({activeNotifications: items.activeNotifications}, function() {
+      // TODO(vadimt): Analyze runtime.lastError.
+    });
+  });
+
   if (byUser) {
+    // TODO(vadimt): Analyze possible race conditions between request for cards
+    // and dismissal.
     // Send a dismiss request to the server.
-    var requestParameters = '?id=' + replaceId;
+    var requestParameters = '?id=' + notificationId;
     var request = new XMLHttpRequest();
     request.responseType = 'text';
     // TODO(vadimt): If the request fails, for example, because there is no
@@ -183,6 +249,10 @@ function scheduleNextUpdate(delaySeconds) {
  */
 function initialize() {
   updateNotificationsCards();
+
+  storage.set({activeNotifications: {}}, function() {
+    // TODO(vadimt): Analyze runtime.lastError.
+  });
 }
 
 chrome.runtime.onInstalled.addListener(function(details) {
@@ -197,5 +267,15 @@ chrome.runtime.onStartup.addListener(function() {
 chrome.alarms.onAlarm.addListener(function(alarm) {
   updateNotificationsCards();
 });
+
+chrome.experimental.notification.onClicked.addListener(
+    function(notificationId) {
+      onNotificationClicked(notificationId, 'message');
+    });
+
+chrome.experimental.notification.onButtonClicked.addListener(
+    function(notificationId, buttonIndex) {
+      onNotificationClicked(notificationId, 'button' + buttonIndex);
+    });
 
 chrome.experimental.notification.onClosed.addListener(onNotificationClosed);

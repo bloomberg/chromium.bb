@@ -10,7 +10,9 @@
     // them.
     "<all_urls>",
     "experimental",
-    "alarms"
+    "alarms",
+    "storage",
+    "tabs"
   ],
   "manifest_version": 2,
   "background": {
