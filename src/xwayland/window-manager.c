@@ -816,17 +816,13 @@ weston_wm_window_draw_decoration(void *data)
 
 	if (window->surface) {
 		pixman_region32_fini(&window->surface->pending.opaque);
-		pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
-					  width, height);
-
 		/* We leave an extra pixel around the X window area to
 		 * make sure we don't sample from the undefined alpha
 		 * channel when filtering. */
-		pixman_region32_intersect_rect(&window->surface->pending.opaque,
-					       &window->surface->pending.opaque,
-					       x - 1, y - 1,
-					       window->width + 2,
-					       window->height + 2);
+		pixman_region32_init_rect(&window->surface->pending.opaque, 
+					  x - 1, y - 1,
+					  window->width + 2,
+					  window->height + 2);
 		window->surface->geometry.dirty = 1;
 	}
 
