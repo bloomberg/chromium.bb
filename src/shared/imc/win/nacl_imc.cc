@@ -25,9 +25,7 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
 
-namespace {
-NaClBrokerDuplicateHandleFunc g_broker_duplicate_handle_func;
-}
+static NaClBrokerDuplicateHandleFunc g_broker_duplicate_handle_func;
 
 void NaClSetBrokerDuplicateHandleFunc(NaClBrokerDuplicateHandleFunc func) {
   g_broker_duplicate_handle_func = func;
@@ -49,27 +47,27 @@ NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
   }
 }
 
-namespace {
 // This prefix used to be appended to pipe names for pipes
 // created in BoundSocket. We keep it for backward compatibility.
 // TODO(gregoryd): implement versioning support
-const char kOldPipePrefix[] = "\\\\.\\pipe\\google-nacl-";
-const char kPipePrefix[] = "\\\\.\\pipe\\chrome.nacl.";
+static const char kOldPipePrefix[] = "\\\\.\\pipe\\google-nacl-";
+static const char kPipePrefix[] = "\\\\.\\pipe\\chrome.nacl.";
 
-const size_t kPipePrefixSize = sizeof kPipePrefix / sizeof kPipePrefix[0];
-const size_t kOldPipePrefixSize =
+static const size_t kPipePrefixSize =
+    sizeof kPipePrefix / sizeof kPipePrefix[0];
+static const size_t kOldPipePrefixSize =
     sizeof kOldPipePrefix / sizeof kOldPipePrefix[0];
 
-const int kPipePathMax = kPipePrefixSize + NACL_PATH_MAX + 1;
-const int kOutBufferSize = 4096;  // TBD
-const int kInBufferSize = 4096;   // TBD
-const int kDefaultTimeoutMilliSeconds = 1000;
+static const int kPipePathMax = kPipePrefixSize + NACL_PATH_MAX + 1;
+static const int kOutBufferSize = 4096;  // TBD
+static const int kInBufferSize = 4096;   // TBD
+static const int kDefaultTimeoutMilliSeconds = 1000;
 
 // ControlHeader::command
-const int kEchoRequest = 0;
-const int kEchoResponse = 1;
-const int kMessage = 2;
-const int kCancel = 3;   // Cancels Handle transfer operations
+static const int kEchoRequest = 0;
+static const int kEchoResponse = 1;
+static const int kMessage = 2;
+static const int kCancel = 3;   // Cancels Handle transfer operations
 
 struct ControlHeader {
   int command;
@@ -80,11 +78,11 @@ struct ControlHeader {
 
 // TODO(gregoryd): a similar function exists in Chrome's base, but we cannot
 // use it here since it cannot be built with scons.
-std::wstring ASCIIToWide(const char* ascii) {
+static std::wstring ASCIIToWide(const char* ascii) {
   return std::wstring(ascii, &ascii[strlen(ascii)]);
 }
 
-bool GetSocketName(const NaClSocketAddress* address, char* name) {
+static bool GetSocketName(const NaClSocketAddress* address, char* name) {
   if (address == NULL || !isprint(address->path[0])) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return false;
@@ -94,8 +92,8 @@ bool GetSocketName(const NaClSocketAddress* address, char* name) {
   return true;
 }
 
-bool GetSocketNameWithOldPrefix(const NaClSocketAddress* address,
-                                char* name) {
+static bool GetSocketNameWithOldPrefix(const NaClSocketAddress* address,
+                                       char* name) {
   if (address == NULL || !isprint(address->path[0])) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return false;
@@ -105,7 +103,7 @@ bool GetSocketNameWithOldPrefix(const NaClSocketAddress* address,
   return true;
 }
 
-int ReadAll(HANDLE handle, void* buffer, size_t length) {
+static int ReadAll(HANDLE handle, void* buffer, size_t length) {
   size_t count = 0;
   while (count < length) {
     DWORD len;
@@ -120,7 +118,7 @@ int ReadAll(HANDLE handle, void* buffer, size_t length) {
   return static_cast<int>(count);
 };
 
-int WriteAll(HANDLE handle, const void* buffer, size_t length) {
+static int WriteAll(HANDLE handle, const void* buffer, size_t length) {
   size_t count = 0;
   while (count < length) {
     DWORD len;
@@ -136,7 +134,7 @@ int WriteAll(HANDLE handle, const void* buffer, size_t length) {
   return static_cast<int>(count);
 };
 
-BOOL SkipFile(HANDLE handle, size_t length) {
+static BOOL SkipFile(HANDLE handle, size_t length) {
   while (0 < length) {
     char scratch[1024];
     size_t count = std::min(sizeof scratch, length);
@@ -148,7 +146,7 @@ BOOL SkipFile(HANDLE handle, size_t length) {
   return TRUE;
 }
 
-BOOL SkipHandles(HANDLE handle, size_t count) {
+static BOOL SkipHandles(HANDLE handle, size_t count) {
   while (0 < count) {
     uint64_t discard;
     if (ReadAll(handle, &discard, sizeof discard) != sizeof discard) {
@@ -159,8 +157,6 @@ BOOL SkipHandles(HANDLE handle, size_t count) {
   }
   return TRUE;
 }
-
-}  // namespace
 
 int NaClWouldBlock() {
   return GetLastError() == ERROR_PIPE_LISTENING;
@@ -408,10 +404,8 @@ int NaClSendDatagramTo(const NaClMessageHeader* message, int flags,
   return result;
 }
 
-namespace {
-
-int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
-                    int flags, bool bound_socket) {
+static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
+                           int flags, bool bound_socket) {
   ControlHeader header;
   int result = -1;
   bool dontPeek = false;
@@ -536,8 +530,6 @@ int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
   }
   return result;
 }
-
-}  // namespace
 
 int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
                         int flags) {

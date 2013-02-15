@@ -32,18 +32,14 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 
 
-namespace {
-
-const char kNaClTempPrefixVar[] = "NACL_TMPFS_PREFIX";
+static const char kNaClTempPrefixVar[] = "NACL_TMPFS_PREFIX";
 
 // The pathname or SHM-namespace prefixes for memory objects created
 // by CreateMemoryObject().
-const char kShmTempPrefix[] = "/tmp/google-nacl-shm-";
-const char kShmOpenPrefix[] = "/google-nacl-shm-";
+static const char kShmTempPrefix[] = "/tmp/google-nacl-shm-";
+static const char kShmOpenPrefix[] = "/google-nacl-shm-";
 
-NaClCreateMemoryObjectFunc g_create_memory_object_func = NULL;
-
-}  // namespace
+static NaClCreateMemoryObjectFunc g_create_memory_object_func = NULL;
 
 
 // Duplicate a file descriptor.

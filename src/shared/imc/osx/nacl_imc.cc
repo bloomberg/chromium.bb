@@ -60,17 +60,15 @@
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
 
-namespace {
-
 // The number of recvmsg retries to perform to determine --
 // heuristically, unfortunately -- if the remote end of the socketpair
 // had actually closed.  This is a (new) hacky workaround for an OSX
 // blemish that replaces the older, buggier workaround.
-const int kRecvMsgRetries = 8;
+static const int kRecvMsgRetries = 8;
 
 // The maximum number of NaClIOVec elements sent by SendDatagram(). Plus one for
 // NaClInternalHeader with the descriptor data bytes.
-const size_t kIovLengthMax = NACL_ABI_IMC_IOVEC_MAX + 1;
+static const size_t kIovLengthMax = NACL_ABI_IMC_IOVEC_MAX + 1;
 
 // The IMC datagram header followed by a message_bytes of data sent over the
 // a stream-oriented socket. We need to use stream-oriented socket for OS X
@@ -87,7 +85,7 @@ struct Header {
 // Gets an array of file descriptors stored in msg.
 // The fdv parameter must be an int array of kHandleCountMax elements.
 // GetRights() returns the number of file descriptors copied into fdv.
-size_t GetRights(struct msghdr* msg, int* fdv) {
+static size_t GetRights(struct msghdr* msg, int* fdv) {
   if (msg->msg_controllen == 0) {
     return 0;
   }
@@ -108,7 +106,7 @@ size_t GetRights(struct msghdr* msg, int* fdv) {
 // Skips the specified length of octets when reading from a handle. Skipped
 // octets are discarded.
 // On success, true is returned. On error, false is returned.
-bool SkipFile(int handle, size_t length) {
+static bool SkipFile(int handle, size_t length) {
   while (0 < length) {
     char scratch[1024];
     size_t count = std::min(sizeof scratch, length);
@@ -124,7 +122,7 @@ bool SkipFile(int handle, size_t length) {
 #if SIGPIPE_ALT_FIX
 // TODO(kbr): move this to an Init() function so it isn't called all
 // the time.
-bool IgnoreSIGPIPE() {
+static bool IgnoreSIGPIPE() {
   sigset_t mask;
   sigemptyset(&mask);
   struct sigaction sa;
@@ -134,8 +132,6 @@ bool IgnoreSIGPIPE() {
   return sigaction(SIGPIPE, &sa, NULL) == 0;
 }
 #endif
-
-}  // namespace
 
 // We keep these no-op implementations of SocketAddress-based
 // functions so that sigpipe_test continues to link.

@@ -22,12 +22,10 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 
-namespace {
-
 // Gets an array of file descriptors stored in msg.
 // The fdv parameter must be an int array of kHandleCountMax elements.
 // GetRights() returns the number of file descriptors copied into fdv.
-size_t GetRights(struct msghdr* msg, int* fdv) {
+static size_t GetRights(struct msghdr* msg, int* fdv) {
   size_t count = 0;
   for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(msg);
        cmsg != 0;
@@ -41,8 +39,6 @@ size_t GetRights(struct msghdr* msg, int* fdv) {
   }
   return count;
 }
-
-}  // namespace
 
 // We keep these no-op implementations of SocketAddress-based
 // functions so that sigpipe_test continues to link.
