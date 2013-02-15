@@ -133,6 +133,7 @@ const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
+const char kSettingsAppId[] = "ennkphjdgehloodpbhlhldgbnhmacadg";
 const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
 #if defined(OS_CHROMEOS)
 const char kChromeVoxExtensionPath[] =

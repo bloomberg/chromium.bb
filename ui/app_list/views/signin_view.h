@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 
 namespace app_list {
@@ -18,7 +19,8 @@ class SigninDelegate;
 // The SigninView is shown in the app list when the user needs to sign in.
 // It just shows a webview, which is prepared for signin by the signin delegate.
 class SigninView : public views::View,
-                   public views::ButtonListener {
+                   public views::ButtonListener,
+                   public views::LinkListener {
  public:
   SigninView(SigninDelegate* delegate, int width);
   virtual ~SigninView();
@@ -30,6 +32,12 @@ class SigninView : public views::View,
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
+
+  // views::LinkListener overrides:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  views::Link* learn_more_link_;
+  views::Link* settings_link_;
 
   SigninDelegate* delegate_;
 

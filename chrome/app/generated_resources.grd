@@ -15888,6 +15888,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher signin button text.">
       SIGN IN
     </message>
+    <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher signin learn more link text.">
+      Learn more
+    </message>
+    <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_LINK" desc="App launcher signin learn more URL.">
+      https://support.google.com/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=165139&amp;p=settings_sign_in
+    </message>
+    <message name="IDS_APP_LIST_SIGNIN_SETTINGS_TEXT" desc="App launcher signin settings link text.">
+      Settings
+    </message>
 
     <!-- chrome://diagnostics strings -->
     <if expr="pp_ifdef('chromeos')">

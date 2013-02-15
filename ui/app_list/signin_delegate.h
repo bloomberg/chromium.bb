@@ -21,10 +21,14 @@ class APP_LIST_EXPORT SigninDelegate {
 
   virtual bool NeedSignin() = 0;
   virtual void ShowSignin() = 0;
+  virtual void OpenLearnMore() = 0;
+  virtual void OpenSettings() = 0;
 
   virtual string16 GetSigninHeading() = 0;
   virtual string16 GetSigninText() = 0;
   virtual string16 GetSigninButtonText() = 0;
+  virtual string16 GetLearnMoreLinkText() = 0;
+  virtual string16 GetSettingsLinkText() = 0;
 
   void AddObserver(SigninDelegateObserver* observer);
   void RemoveObserver(SigninDelegateObserver* observer);

@@ -26,9 +26,13 @@ class ChromeSigninDelegate : public app_list::SigninDelegate,
   // Overridden from app_list::SigninDelegate:
   virtual bool NeedSignin() OVERRIDE;
   virtual void ShowSignin() OVERRIDE;
+  virtual void OpenLearnMore() OVERRIDE;
+  virtual void OpenSettings() OVERRIDE;
   virtual string16 GetSigninHeading() OVERRIDE;
   virtual string16 GetSigninText() OVERRIDE;
   virtual string16 GetSigninButtonText() OVERRIDE;
+  virtual string16 GetLearnMoreLinkText() OVERRIDE;
+  virtual string16 GetSettingsLinkText() OVERRIDE;
 
   // Overridden from SigninTracker::Observer:
   virtual void GaiaCredentialsValid() OVERRIDE;
