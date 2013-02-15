@@ -428,7 +428,9 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
   RunTest(url, "\"SUCCESS\"", false);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, CanOpenPopupAndRenderWith2DCanvas) {
+// crbug.com/176466
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
+                       DISABLED_CanOpenPopupAndRenderWith2DCanvas) {
   const base::FilePath url(FILE_PATH_LITERAL("canvas_popup.html"));
   RunTest(url, "\"SUCCESS\"", false);
 }
