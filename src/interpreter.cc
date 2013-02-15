@@ -93,7 +93,9 @@ std::string Interpreter::Encode() {
     root = log_->AddEncodeInfo(root);
 
   std::string out;
-  base::JSONWriter::Write(root, true, &out);
+  base::JSONWriter::WriteWithOptions(root,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &out);
   delete root;
   return out;
 }

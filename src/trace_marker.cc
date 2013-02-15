@@ -11,7 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <base/eintr_wrapper.h>  // for HANDLE_EINTR
+#include <base/posix/eintr_wrapper.h>  // for HANDLE_EINTR
 
 #include "gestures/include/logging.h"
 

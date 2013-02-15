@@ -85,7 +85,7 @@ void ActivityLog::LogPropChange(const PropChangeEntry& prop_change) {
 void ActivityLog::Dump(const char* filename) {
   string data = Encode();
   std::string fn(filename);
-  FilePath fp(fn);
+  base::FilePath fp(fn);
   file_util::WriteFile(fp, data.c_str(), data.size());
 }
 
@@ -365,7 +365,9 @@ string ActivityLog::Encode() {
   root = AddEncodeInfo(root);
 
   string out;
-  base::JSONWriter::Write(root, true, &out);
+  base::JSONWriter::WriteWithOptions(root,
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &out);
   delete root;
   return out;
 }

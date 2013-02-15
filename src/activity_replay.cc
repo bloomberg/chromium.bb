@@ -283,7 +283,9 @@ bool ActivityReplay::ParseFingerState(DictionaryValue* entry,
   if (!entry->GetInteger(ActivityLog::kKeyFingerStateTrackingId, &tr_id)) {
     Err("can't parse finger's tracking id");
     string json;
-    base::JSONWriter::Write(entry, true, &json);
+    base::JSONWriter::WriteWithOptions(entry,
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &json);
     Err("fs: %s", json.c_str());
     return false;
   }

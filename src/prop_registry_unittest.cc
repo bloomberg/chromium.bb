@@ -37,7 +37,7 @@ string ValueForProperty(const Property& prop) {
   DictionaryValue temp;
   temp.Set("tempkey", prop.NewValue());
   string ret;
-  base::JSONWriter::Write(&temp, false, &ret);
+  base::JSONWriter::Write(&temp, &ret);
   return ret;
 }
 

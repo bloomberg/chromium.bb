@@ -41,7 +41,7 @@ std::string LoggingFilterInterpreter::EncodeActivityLog() {
 void LoggingFilterInterpreter::Dump(const char* filename) {
   std::string data = Encode();
   std::string fn(filename);
-  FilePath fp(fn);
+  base::FilePath fp(fn);
   file_util::WriteFile(fp, data.c_str(), data.size());
 }
 }  // namespace gestures
