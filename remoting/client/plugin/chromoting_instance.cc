@@ -134,7 +134,7 @@ logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 // String sent in the "hello" message to the plugin to describe features.
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
-    "notifyClientDimensions pauseVideo pauseAudio";
+    "notifyClientDimensions notifyClientResolution pauseVideo pauseAudio";
 
 bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
                                           ClientConfig* config) {
@@ -332,15 +332,33 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
       return;
     }
     SendClipboardItem(mime_type, item);
-  } else if (method == "notifyClientDimensions") {
+  } else if (method == "notifyClientDimensions" ||
+             method == "notifyClientResolution") {
+    // notifyClientResolution's width and height are in pixels,
+    // notifyClientDimension's in DIPs, but since for the latter
+    // we assume 96dpi, DIPs and pixels are equivalent.
     int width = 0;
     int height = 0;
     if (!data->GetInteger("width", &width) ||
-        !data->GetInteger("height", &height)) {
-      LOG(ERROR) << "Invalid notifyClientDimensions.";
+        !data->GetInteger("height", &height) ||
+        width <= 0 || height <= 0) {
+      LOG(ERROR) << "Invalid " << method << ".";
       return;
     }
-    NotifyClientDimensions(width, height);
+
+    // notifyClientResolution requires that DPI be specified.
+    // For notifyClientDimensions we assume 96dpi.
+    int x_dpi = kDefaultDPI;
+    int y_dpi = kDefaultDPI;
+    if (method == "notifyClientResolution" &&
+        (!data->GetInteger("x_dpi", &x_dpi) ||
+         !data->GetInteger("y_dpi", &y_dpi) ||
+         x_dpi <= 0 || y_dpi <= 0)) {
+      LOG(ERROR) << "Invalid notifyClientResolution.";
+      return;
+    }
+
+    NotifyClientResolution(width, height, x_dpi, y_dpi);
   } else if (method == "pauseVideo") {
     bool pause = false;
     if (!data->GetBoolean("pause", &pause)) {
@@ -593,7 +611,10 @@ void ChromotingInstance::SendClipboardItem(const std::string& mime_type,
   host_connection_->clipboard_stub()->InjectClipboardEvent(event);
 }
 
-void ChromotingInstance::NotifyClientDimensions(int width, int height) {
+void ChromotingInstance::NotifyClientResolution(int width,
+                                                int height,
+                                                int x_dpi,
+                                                int y_dpi) {
   if (!IsConnected()) {
     return;
   }
@@ -601,12 +622,12 @@ void ChromotingInstance::NotifyClientDimensions(int width, int height) {
   protocol::ClientResolution client_resolution;
   client_resolution.set_width(width);
   client_resolution.set_height(height);
-  client_resolution.set_x_dpi(kDefaultDPI);
-  client_resolution.set_y_dpi(kDefaultDPI);
+  client_resolution.set_x_dpi(x_dpi);
+  client_resolution.set_y_dpi(y_dpi);
 
-  // Include the legacy width & height for use by older hosts.
-  client_resolution.set_dips_width(width);
-  client_resolution.set_dips_height(height);
+  // Include the legacy width & height in DIPs for use by older hosts.
+  client_resolution.set_dips_width((width * kDefaultDPI) / x_dpi);
+  client_resolution.set_dips_height((height * kDefaultDPI) / y_dpi);
 
   host_connection_->host_stub()->NotifyClientResolution(client_resolution);
 }
