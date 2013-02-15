@@ -41,11 +41,7 @@ using content::BrowserThread;
 
 namespace {
 
-#if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kAppListAppName[] = L"ChromeAppList";
-#else
-const wchar_t kAppListAppName[] = L"ChromiumAppList";
-#endif
+const wchar_t kAppListAppNameSuffix[] = L"AppList";
 
 // Helper function for ShellIntegration::GetAppId to generates profile id
 // from profile path. "profile_id" is composed of sanitized basenames of
@@ -83,6 +79,13 @@ string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   return profile_id;
 }
 
+string16 GetAppListAppName() {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  string16 app_name(dist->GetBaseAppId());
+  app_name.append(kAppListAppNameSuffix);
+  return app_name;
+}
+
 // Gets expected app id for given Chrome (based on |command_line| and
 // |is_per_user_install|).
 string16 GetExpectedAppId(const CommandLine& command_line,
@@ -102,7 +105,7 @@ string16 GetExpectedAppId(const CommandLine& command_line,
     app_name = UTF8ToUTF16(web_app::GenerateApplicationNameFromExtensionId(
         command_line.GetSwitchValueASCII(switches::kAppId)));
   } else if (command_line.HasSwitch(switches::kShowAppList)) {
-    app_name = kAppListAppName;
+    app_name = GetAppListAppName();
   } else {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     app_name = ShellUtil::GetBrowserModelId(dist, is_per_user_install);
@@ -339,8 +342,8 @@ string16 ShellIntegration::GetChromiumModelIdForProfile(
 
 string16 ShellIntegration::GetAppListAppModelIdForProfile(
     const base::FilePath& profile_path) {
-  return ShellIntegration::GetAppModelIdForProfile(kAppListAppName,
-                                                   profile_path);
+  return ShellIntegration::GetAppModelIdForProfile(
+      GetAppListAppName(), profile_path);
 }
 
 string16 ShellIntegration::GetChromiumIconLocation() {
