@@ -308,6 +308,8 @@ views::View* TraySms::CreateDetailedView(user::LoginStatus status) {
 
 views::View* TraySms::CreateNotificationView(user::LoginStatus status) {
   CHECK(notification_ == NULL);
+  if (detailed_)
+    return NULL;
   size_t index;
   std::string number, text;
   if (GetLatestMessage(&index, &number, &text))

@@ -168,6 +168,12 @@ Press any key to continue exploring.
   <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS" desc="Message for network connection error notification with details">
     Failed to connect to network '<ph name="name">$1<ex>GoogleGuest</ex></ph>': <ph name="details">$2<ex>Unrecognized error</ex></ph>
   </message>
+  <message name="IDS_NETWORK_ACTIVATION_ERROR_TITLE" desc="Title for network connection error notification">
+    Network Activation Error
+  </message>
+  <message name="IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION" desc="Message when attempting to activate a mobile network that requries a connection">
+    Activation of '<ph name="name">$1<ex>Generic Wireless</ex></ph>' requires a network connection.
+  </message>
   <message name="IDS_LOW_BATTERY_TITLE" desc="Title for low battery notification">
     Battery Low
   </message>

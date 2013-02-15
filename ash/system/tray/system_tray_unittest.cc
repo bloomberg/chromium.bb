@@ -232,12 +232,12 @@ TEST_F(SystemTrayTest, SystemTrayNotifications) {
   tray->ShowNotificationView(test_item);
   ASSERT_TRUE(test_item->notification_view() != NULL);
 
-  // Show the default view, ensure the notification view is destroyed.
+  // Show the default view, notification view should remain.
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
-  ASSERT_TRUE(test_item->notification_view() == NULL);
+  ASSERT_TRUE(test_item->notification_view() != NULL);
 
-  // Show the detailed view, ensure the notificaiton view is created again.
+  // Show the detailed view, ensure the notificaiton view remains.
   tray->ShowDetailedView(detailed_item, 0, false, BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(detailed_item->detailed_view() != NULL);

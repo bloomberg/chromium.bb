@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -50,9 +51,12 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/keyboard_overlay/keyboard_overlay_view.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -252,6 +256,28 @@ void ChromeShellDelegate::OpenCrosh() {
 
 void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {
 #if defined(OS_CHROMEOS)
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  const chromeos::CellularNetwork* cellular =
+      cros->FindCellularNetworkByPath(service_path);
+  if (cellular && cellular->activate_over_non_cellular_network() &&
+      (!cros->connected_network() || !cros->connected_network()->online())) {
+    chromeos::NetworkTechnology technology = cellular->network_technology();
+    ash::NetworkObserver::NetworkType network_type =
+        (technology == chromeos::NETWORK_TECHNOLOGY_LTE ||
+         technology == chromeos::NETWORK_TECHNOLOGY_LTE_ADVANCED)
+        ? ash::NetworkObserver::NETWORK_CELLULAR_LTE
+        : ash::NetworkObserver::NETWORK_CELLULAR;
+    ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
+        NULL,
+        ash::NetworkObserver::ERROR_CONNECT_FAILED,
+        network_type,
+        l10n_util::GetStringUTF16(IDS_NETWORK_ACTIVATION_ERROR_TITLE),
+        l10n_util::GetStringFUTF16(IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION,
+                                   UTF8ToUTF16((cellular->name()))),
+        std::vector<string16>());
+    return;
+  }
   MobileSetupDialog::Show(service_path);
 #endif
 }

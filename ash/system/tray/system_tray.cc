@@ -395,36 +395,16 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
 }
 
 void SystemTray::UpdateNotificationBubble() {
-  // Only show the notification buble if we have notifications and we are not
-  // showing the default bubble.
-  if (notification_items_.empty() ||
-      HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
+  // Only show the notification buble if we have notifications.
+  if (notification_items_.empty()) {
     DestroyNotificationBubble();
     return;
   }
   // Destroy the existing bubble before constructing a new one.
   notification_bubble_.reset();
   SystemTrayBubble* notification_bubble;
-  if (HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DETAILED)) {
-    // Skip notifications for any currently displayed detailed item.
-    std::vector<SystemTrayItem*> items;
-    for (std::vector<SystemTrayItem*>::iterator iter =
-             notification_items_.begin();
-         iter != notification_items_.end(); ++ iter) {
-      if (*iter != detailed_item_)
-        items.push_back(*iter);
-    }
-    if (items.empty()) {
-      DestroyNotificationBubble();
-      return;
-    }
-    notification_bubble = new SystemTrayBubble(
-        this, items, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION);
-  } else {
-    // Show all notifications.
-    notification_bubble = new SystemTrayBubble(
-        this, notification_items_, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION);
-  }
+  notification_bubble = new SystemTrayBubble(
+      this, notification_items_, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION);
   views::View* anchor;
   TrayBubbleView::AnchorType anchor_type;
   if (system_bubble_.get()) {
