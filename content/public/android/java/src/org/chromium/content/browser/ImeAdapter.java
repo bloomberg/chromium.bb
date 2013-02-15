@@ -406,7 +406,8 @@ class ImeAdapter {
         return true;
     }
 
-    private boolean setEditableSelectionOffsets(int start, int end) {
+    @VisibleForTesting
+    protected boolean setEditableSelectionOffsets(int start, int end) {
         if (mNativeImeAdapterAndroid == 0) {
             return false;
         }

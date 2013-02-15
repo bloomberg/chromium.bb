@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -1358,6 +1359,7 @@ void RenderViewImpl::OnCut() {
   if (!webview())
     return;
 
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Cut"));
 }
 
@@ -1365,6 +1367,7 @@ void RenderViewImpl::OnCopy() {
   if (!webview())
     return;
 
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Copy"),
                                             context_menu_node_);
 }
@@ -1389,6 +1392,7 @@ void RenderViewImpl::OnPaste() {
   if (!webview())
     return;
 
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Paste"));
 }
 
@@ -1396,6 +1400,7 @@ void RenderViewImpl::OnPasteAndMatchStyle() {
   if (!webview())
     return;
 
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("PasteAndMatchStyle"));
 }
@@ -1440,6 +1445,7 @@ void RenderViewImpl::OnSelectAll() {
   if (!webview())
     return;
 
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("SelectAll"));
 }
@@ -1448,10 +1454,12 @@ void RenderViewImpl::OnUnselect() {
   if (!webview())
     return;
 
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
 }
 
 void RenderViewImpl::OnSetEditableSelectionOffsets(int start, int end) {
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   DCHECK(!handling_ime_event_);
   handling_ime_event_ = true;
   webview()->setEditableSelectionOffsets(start, end);
@@ -1488,9 +1496,8 @@ void RenderViewImpl::OnSelectRange(const gfx::Point& start,
 
   Send(new ViewHostMsg_SelectRange_ACK(routing_id_));
 
-  handling_select_range_ = true;
+  base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->selectRange(start, end);
-  handling_select_range_ = false;
 }
 
 void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
@@ -2145,13 +2152,13 @@ void RenderViewImpl::didCancelCompositionOnSelectionChange() {
 
 void RenderViewImpl::didChangeSelection(bool is_empty_selection) {
   if (!handling_input_event_ && !handling_select_range_)
-      return;
-  handling_select_range_ = false;
+    return;
 
   if (is_empty_selection)
     selection_text_.clear();
 
   SyncSelectionIfRequired();
+  UpdateTextInputState(DO_NOT_SHOW_IME);
 }
 
 void RenderViewImpl::didExecuteCommand(const WebString& command_name) {
@@ -4765,7 +4772,6 @@ void RenderViewImpl::SyncSelectionIfRequired() {
     selection_text_offset_ = offset;
     selection_range_ = range;
     Send(new ViewHostMsg_SelectionChanged(routing_id_, text, offset, range));
-    UpdateTextInputState(DO_NOT_SHOW_IME);
   }
 }
 

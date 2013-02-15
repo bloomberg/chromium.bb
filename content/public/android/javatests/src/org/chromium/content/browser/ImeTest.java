@@ -4,22 +4,27 @@
 
 package org.chromium.content.browser;
 
+import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ImeAdapter.AdapterInputConnection;
-import org.chromium.content.browser.ImeAdapter.AdapterInputConnectionFactory;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content_shell.ContentShellTestBase;
+
+import java.util.concurrent.Callable;
 
 public class ImeTest extends ContentShellTestBase {
 
@@ -29,108 +34,198 @@ public class ImeTest extends ContentShellTestBase {
             "<input id=\"input_text\" type=\"text\" />" +
             "</form></body></html>");
 
-    @MediumTest
-    @Feature({"TextInput", "Main"})
-    public void testKeyboardDismissedAfterClickingGo() throws Throwable {
+    private TestAdapterInputConnection mConnection;
+    private ImeAdapter mImeAdapter;
+    private ContentView mContentView;
+    private TestCallbackHelperContainer mCallbackContainer;
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+
         launchContentShellWithUrl(DATA_URL);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
         getContentViewCore().setAdapterInputConnectionFactory(
                 new TestAdapterInputConnectionFactory());
 
-        final ContentView view = getActivity().getActiveContentView();
-        final TestCallbackHelperContainer viewClient =
-                new TestCallbackHelperContainer(view);
-        DOMUtils.clickNode(this, view, viewClient, "input_text");
+        mContentView = getActivity().getActiveContentView();
+        mCallbackContainer = new TestCallbackHelperContainer(mContentView);
+        DOMUtils.clickNode(this, mContentView, mCallbackContainer, "input_text");
         assertWaitForKeyboardStatus(true);
 
-        TestAdapterInputConnection connection =
-                (TestAdapterInputConnection) getAdapterInputConnection();
-        ImeAdapter adapter = getImeAdapter();
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        mImeAdapter = getImeAdapter();
 
-        assertWaitForSetEditableCallback(1, connection);
-        assertEquals("", connection.mText);
-        assertEquals(0, connection.mSelectionStart);
-        assertEquals(0, connection.mSelectionEnd);
-        assertEquals(-1, connection.mCompositionStart);
-        assertEquals(-1, connection.mCompositionEnd);
+        assertWaitForSetEditableCallback(1, mConnection);
+        assertEquals("", mConnection.mText);
+        assertEquals(0, mConnection.mSelectionStart);
+        assertEquals(0, mConnection.mSelectionEnd);
+        assertEquals(-1, mConnection.mCompositionStart);
+        assertEquals(-1, mConnection.mCompositionEnd);
+    }
 
-        adapter.checkCompositionQueueAndCallNative("hello", 1, false);
-        assertWaitForSetEditableCallback(2, connection);
-        assertEquals("hello", connection.mText);
-        assertEquals(5, connection.mSelectionStart);
-        assertEquals(5, connection.mSelectionEnd);
-        assertEquals(0, connection.mCompositionStart);
-        assertEquals(5, connection.mCompositionEnd);
+    @MediumTest
+    @Feature({"TextInput", "Main"})
+    public void testKeyboardDismissedAfterClickingGo() throws Throwable {
+        mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, false);
+        assertWaitForSetEditableCallback(2, mConnection);
+        assertEquals("hello", mConnection.mText);
+        assertEquals(5, mConnection.mSelectionStart);
+        assertEquals(5, mConnection.mSelectionEnd);
+        assertEquals(0, mConnection.mCompositionStart);
+        assertEquals(5, mConnection.mCompositionEnd);
 
-        performGo(getAdapterInputConnection(), viewClient);
+        performGo(getAdapterInputConnection(), mCallbackContainer);
 
-        assertWaitForSetEditableCallback(3, connection);
-        assertEquals("", connection.mText);
-        assertEquals(0, connection.mSelectionStart);
-        assertEquals(0, connection.mSelectionEnd);
-        assertEquals(-1, connection.mCompositionStart);
-        assertEquals(-1, connection.mCompositionEnd);
+        assertWaitForSetEditableCallback(3, mConnection);
+        assertEquals("", mConnection.mText);
+        assertEquals(0, mConnection.mSelectionStart);
+        assertEquals(0, mConnection.mSelectionEnd);
+        assertEquals(-1, mConnection.mCompositionStart);
+        assertEquals(-1, mConnection.mCompositionEnd);
         assertWaitForKeyboardStatus(false);
     }
 
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testGetTextUpdatesAfterEnteringText() throws Throwable {
-        launchContentShellWithUrl(DATA_URL);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+        mImeAdapter.checkCompositionQueueAndCallNative("h", 1, false);
+        assertWaitForSetEditableCallback(2, mConnection);
+        assertEquals("h", mConnection.mText);
+        assertEquals(1, mConnection.mSelectionStart);
+        assertEquals(1, mConnection.mSelectionEnd);
+        assertEquals(0, mConnection.mCompositionStart);
+        assertEquals(1, mConnection.mCompositionEnd);
 
-        getContentViewCore().setAdapterInputConnectionFactory(
-                new TestAdapterInputConnectionFactory());
+        mImeAdapter.checkCompositionQueueAndCallNative("he", 1, false);
+        assertWaitForSetEditableCallback(3, mConnection);
+        assertEquals("he", mConnection.mText);
+        assertEquals(2, mConnection.mSelectionStart);
+        assertEquals(2, mConnection.mSelectionEnd);
+        assertEquals(0, mConnection.mCompositionStart);
+        assertEquals(2, mConnection.mCompositionEnd);
 
-        final ContentView view = getActivity().getActiveContentView();
-        final TestCallbackHelperContainer viewClient =
-                new TestCallbackHelperContainer(view);
-        DOMUtils.clickNode(this, view, viewClient, "input_text");
-        assertWaitForKeyboardStatus(true);
+        mImeAdapter.checkCompositionQueueAndCallNative("hel", 1, false);
+        assertWaitForSetEditableCallback(4, mConnection);
+        assertEquals("hel", mConnection.mText);
+        assertEquals(3, mConnection.mSelectionStart);
+        assertEquals(3, mConnection.mSelectionEnd);
+        assertEquals(0, mConnection.mCompositionStart);
+        assertEquals(3, mConnection.mCompositionEnd);
 
-        TestAdapterInputConnection connection =
-                (TestAdapterInputConnection) getAdapterInputConnection();
-        ImeAdapter adapter = getImeAdapter();
+        mImeAdapter.checkCompositionQueueAndCallNative("hel", 1, true);
+        assertWaitForSetEditableCallback(5, mConnection);
+        assertEquals("hel", mConnection.mText);
+        assertEquals(3, mConnection.mSelectionStart);
+        assertEquals(3, mConnection.mSelectionEnd);
+        assertEquals(-1, mConnection.mCompositionStart);
+        assertEquals(-1, mConnection.mCompositionEnd);
+    }
 
-        assertWaitForSetEditableCallback(1, connection);
-        assertEquals("", connection.mText);
-        assertEquals(0, connection.mSelectionStart);
-        assertEquals(0, connection.mSelectionEnd);
-        assertEquals(-1, connection.mCompositionStart);
-        assertEquals(-1, connection.mCompositionEnd);
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testImeCopy() throws Exception {
+        mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
+        assertWaitForSetEditableCallback(2, mConnection);
+        assertEquals("hello", mConnection.mText);
+        assertEquals(5, mConnection.mSelectionStart);
+        assertEquals(5, mConnection.mSelectionEnd);
 
-        adapter.checkCompositionQueueAndCallNative("h", 1, false);
-        assertWaitForSetEditableCallback(2, connection);
-        assertEquals("h", connection.mText);
-        assertEquals(1, connection.mSelectionStart);
-        assertEquals(1, connection.mSelectionEnd);
-        assertEquals(0, connection.mCompositionStart);
-        assertEquals(1, connection.mCompositionEnd);
+        mImeAdapter.setEditableSelectionOffsets(2, 5);
+        assertWaitForSetEditableCallback(3, mConnection);
+        assertEquals("hello", mConnection.mText);
+        assertEquals(2, mConnection.mSelectionStart);
+        assertEquals(5, mConnection.mSelectionEnd);
 
-        adapter.checkCompositionQueueAndCallNative("he", 1, false);
-        assertWaitForSetEditableCallback(3, connection);
-        assertEquals("he", connection.mText);
-        assertEquals(2, connection.mSelectionStart);
-        assertEquals(2, connection.mSelectionEnd);
-        assertEquals(0, connection.mCompositionStart);
-        assertEquals(2, connection.mCompositionEnd);
+        mImeAdapter.copy();
+        assertClipboardContents(getActivity(), "llo");
+    }
 
-        adapter.checkCompositionQueueAndCallNative("hel", 1, false);
-        assertWaitForSetEditableCallback(4, connection);
-        assertEquals("hel", connection.mText);
-        assertEquals(3, connection.mSelectionStart);
-        assertEquals(3, connection.mSelectionEnd);
-        assertEquals(0, connection.mCompositionStart);
-        assertEquals(3, connection.mCompositionEnd);
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testImeCut() throws Exception {
+        mImeAdapter.checkCompositionQueueAndCallNative("snarful", 1, true);
+        assertWaitForSetEditableCallback(2, mConnection);
+        assertEquals("snarful", mConnection.mText);
+        assertEquals(7, mConnection.mSelectionStart);
+        assertEquals(7, mConnection.mSelectionEnd);
 
-        adapter.checkCompositionQueueAndCallNative("hel", 1, true);
-        assertWaitForSetEditableCallback(5, connection);
-        assertEquals("hel", connection.mText);
-        assertEquals(3, connection.mSelectionStart);
-        assertEquals(3, connection.mSelectionEnd);
-        assertEquals(-1, connection.mCompositionStart);
-        assertEquals(-1, connection.mCompositionEnd);
+        mImeAdapter.setEditableSelectionOffsets(1, 5);
+        assertWaitForSetEditableCallback(3, mConnection);
+        assertEquals("snarful", mConnection.mText);
+        assertEquals(1, mConnection.mSelectionStart);
+        assertEquals(5, mConnection.mSelectionEnd);
+
+        mImeAdapter.cut();
+        assertWaitForSetEditableCallback(4, mConnection);
+        assertEquals("sul", mConnection.mText);
+        assertEquals(1, mConnection.mSelectionStart);
+        assertEquals(1, mConnection.mSelectionEnd);
+
+        assertClipboardContents(getActivity(), "narf");
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testImePaste() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ClipboardManager clipboardManager =
+                        (ClipboardManager) getActivity().getSystemService(
+                                Context.CLIPBOARD_SERVICE);
+                clipboardManager.setPrimaryClip(ClipData.newPlainText("blarg", "blarg"));
+            }
+        });
+
+        mImeAdapter.paste();
+        assertWaitForSetEditableCallback(2, mConnection);
+        assertEquals("blarg", mConnection.mText);
+        assertEquals(5, mConnection.mSelectionStart);
+        assertEquals(5, mConnection.mSelectionEnd);
+
+        mImeAdapter.setEditableSelectionOffsets(3, 5);
+        assertWaitForSetEditableCallback(3, mConnection);
+        assertEquals("blarg", mConnection.mText);
+        assertEquals(3, mConnection.mSelectionStart);
+        assertEquals(5, mConnection.mSelectionEnd);
+
+        mImeAdapter.paste();
+        assertWaitForSetEditableCallback(5, mConnection);
+        assertEquals("blablarg", mConnection.mText);
+        assertEquals(8, mConnection.mSelectionStart);
+        assertEquals(8, mConnection.mSelectionEnd);
+
+        mImeAdapter.paste();
+        assertWaitForSetEditableCallback(6, mConnection);
+        assertEquals("blablargblarg", mConnection.mText);
+        assertEquals(13, mConnection.mSelectionStart);
+        assertEquals(13, mConnection.mSelectionEnd);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testImeSelectAndUnSelectAll() throws Exception {
+        mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
+        assertWaitForSetEditableCallback(2, mConnection);
+        assertEquals("hello", mConnection.mText);
+        assertEquals(5, mConnection.mSelectionStart);
+        assertEquals(5, mConnection.mSelectionEnd);
+
+        mImeAdapter.selectAll();
+        assertWaitForSetEditableCallback(3, mConnection);
+        assertEquals("hello", mConnection.mText);
+        assertEquals(0, mConnection.mSelectionStart);
+        assertEquals(5, mConnection.mSelectionEnd);
+
+        mImeAdapter.unselect();
+        assertWaitForSetEditableCallback(4, mConnection);
+        assertEquals("", mConnection.mText);
+        assertEquals(0, mConnection.mSelectionStart);
+        assertEquals(0, mConnection.mSelectionEnd);
+
+        assertWaitForKeyboardStatus(false);
     }
 
     private void performGo(final AdapterInputConnection inputConnection,
@@ -145,7 +240,7 @@ public class ImeTest extends ContentShellTestBase {
                 });
     }
 
-    private void assertWaitForKeyboardStatus(final boolean show) throws Throwable {
+    private void assertWaitForKeyboardStatus(final boolean show) throws InterruptedException {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -155,11 +250,31 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private void assertWaitForSetEditableCallback(final int callbackNumber,
-            final TestAdapterInputConnection connection) throws Throwable {
+            final TestAdapterInputConnection connection) throws InterruptedException {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 return callbackNumber == connection.mSetEditableTextCallCounter;
+            }
+        }));
+    }
+
+    private void assertClipboardContents(final Activity activity, final String expectedContents)
+            throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        ClipboardManager clipboardManager =
+                                (ClipboardManager) activity.getSystemService(
+                                        Context.CLIPBOARD_SERVICE);
+                        ClipData clip = clipboardManager.getPrimaryClip();
+                        return clip != null && clip.getItemCount() == 1
+                                && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
+                    }
+                });
             }
         }));
     }

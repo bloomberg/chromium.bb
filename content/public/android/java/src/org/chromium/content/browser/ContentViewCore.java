@@ -254,6 +254,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private String mLastSelectedText;
     private boolean mSelectionEditable;
     private ActionMode mActionMode;
+    private boolean mUnselectAllOnActionModeDismiss;
 
     // Delegate that will handle GET downloads, and be notified of completion of POST downloads.
     private ContentViewDownloadDelegate mDownloadDelegate;
@@ -1790,13 +1791,14 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             @Override
             public void onDestroyActionMode() {
                 mActionMode = null;
-                mImeAdapter.unselect();
+                if (mUnselectAllOnActionModeDismiss) mImeAdapter.unselect();
                 getContentViewClient().onContextualActionBarHidden();
             }
         };
         mActionMode = mContainerView.startActionMode(
                 getContentViewClient().getSelectActionModeCallback(getContext(), actionHandler,
                         nativeIsIncognito(mNativeContentViewCore)));
+        mUnselectAllOnActionModeDismiss = true;
         if (mActionMode == null) {
             // There is no ActionMode, so remove the selection.
             mImeAdapter.unselect();
@@ -1985,6 +1987,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             updateHandleScreenPositions();
             mHasSelection = true;
         } else {
+            mUnselectAllOnActionModeDismiss = false;
             hideSelectActionBar();
             if (x1 != 0 && y1 != 0 && mSelectionEditable) {
                 // Selection is a caret, and a text field is focused.
