@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ipc/ipc_message_utils.h"
+
 #include "base/file_path.h"
 #include "ipc/ipc_message.h"
-#include "ipc/ipc_message_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace IPC;
-
+namespace IPC {
 namespace {
 
 // Tests nesting of messages as parameters to other messages.
@@ -71,3 +71,4 @@ TEST(IPCMessageUtilsTest, ParameterValidation) {
 }
 
 }  // namespace
+}  // namespace IPC
