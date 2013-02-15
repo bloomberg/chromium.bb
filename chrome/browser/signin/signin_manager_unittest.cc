@@ -654,3 +654,13 @@ TEST_F(SigninManagerTest, SignInWithOAuthChallengeOtp) {
   EXPECT_EQ(1U, google_login_success_.size());
   EXPECT_EQ(1U, google_login_failure_.size());
 }
+
+TEST_F(SigninManagerTest, SignOutWhileProhibited) {
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  manager_->SetAuthenticatedUsername("user@gmail.com");
+  manager_->ProhibitSignout();
+  manager_->SignOut();
+  EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
+}

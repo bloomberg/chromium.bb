@@ -104,6 +104,10 @@ class UserPolicySigninService
   // Callback invoked when policy registration has finished.
   void OnRegistrationComplete();
 
+  // Helper routine which prohibits user signout if the user is registered for
+  // cloud policy.
+  void ProhibitSignoutIfNeeded();
+
   // Helper routines to (un)register for CloudPolicyService and
   // CloudPolicyClient notifications.
   void StartObserving();

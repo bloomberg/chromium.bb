@@ -46,11 +46,19 @@ void FakeSigninManager::StartSignInWithOAuth(const std::string& username,
 }
 
 void FakeSigninManager::SignOut() {
+  if (IsSignoutProhibited())
+    return;
   authenticated_username_.clear();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
+}
+
+void FakeSigninManager::ForceSignOut() {
+  // Allow signing out now.
+  prohibit_signout_ = false;
+  SignOut();
 }
 
 bool FakeSigninManager::AuthInProgress() const {

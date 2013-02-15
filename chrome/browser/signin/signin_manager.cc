@@ -196,6 +196,7 @@ bool SigninManager::IsAllowedUsername(const std::string& username,
 
 SigninManager::SigninManager()
     : profile_(NULL),
+      prohibit_signout_(false),
       had_two_factor_error_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this) {
@@ -544,6 +545,10 @@ void SigninManager::HandleAuthError(const GoogleServiceAuthError& error,
 
 void SigninManager::SignOut() {
   DCHECK(IsInitialized());
+  if (prohibit_signout_) {
+    DVLOG(1) << "Ignoring attempt to sign out while signout is prohibited";
+    return;
+  }
   if (authenticated_username_.empty() && !client_login_.get()) {
     // Clean up our transient data and exit if we aren't signed in (or in the
     // process of signing in). This avoids a perf regression from clearing out
@@ -892,6 +897,14 @@ void SigninManager::Shutdown() {
         signin_global_error_.get());
     signin_global_error_.reset();
   }
+}
+
+void SigninManager::ProhibitSignout() {
+  prohibit_signout_ = true;
+}
+
+bool SigninManager::IsSignoutProhibited() const {
+  return prohibit_signout_;
 }
 
 void SigninManager::OnGoogleServicesUsernamePatternChanged() {

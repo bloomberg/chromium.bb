@@ -110,8 +110,9 @@ class UserPolicySigninServiceTest : public testing::Test {
     EXPECT_CALL(*mock_store_, Load()).Times(AnyNumber());
     manager_.reset(new UserCloudPolicyManager(
         profile_.get(), scoped_ptr<UserCloudPolicyStore>(mock_store_)));
-    SigninManagerFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), FakeSigninManager::Build);
+    signin_manager_ = static_cast<FakeSigninManager*>(
+        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile_.get(), FakeSigninManager::Build));
 
     // Make sure the UserPolicySigninService is created.
     UserPolicySigninServiceFactory::GetForProfile(profile_.get());
@@ -246,6 +247,8 @@ class UserPolicySigninServiceTest : public testing::Test {
   content::TestBrowserThread io_thread_;
 
   net::TestURLFetcherFactory url_factory_;
+
+  FakeSigninManager* signin_manager_;
 
   // Used in conjunction with OnRegisterCompleted() to test client registration
   // callbacks.
@@ -623,8 +626,7 @@ TEST_F(UserPolicySigninServiceTest, FetchPolicySuccess) {
 TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
   TestSuccessfulSignin();
 
-  // Now sign out.
-  SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
+  signin_manager_->ForceSignOut();
   ASSERT_FALSE(manager_->core()->service());
 
   // Now sign in again.

@@ -408,6 +408,7 @@ void UserPolicySigninService::InitializeUserCloudPolicyManager(
   manager->Connect(g_browser_process->local_state(), client.Pass());
   DCHECK(manager->core()->service());
   StartObserving();
+  ProhibitSignoutIfNeeded();
 }
 
 void UserPolicySigninService::InitializeForSignedInUser() {
@@ -474,6 +475,8 @@ void UserPolicySigninService::OnInitializationCompleted(
     }
     RegisterCloudPolicyService(token);
   }
+  // If client is registered now, prohibit signout.
+  ProhibitSignoutIfNeeded();
 }
 
 void UserPolicySigninService::RegisterCloudPolicyService(
@@ -496,7 +499,17 @@ void UserPolicySigninService::RegisterCloudPolicyService(
 }
 
 void UserPolicySigninService::OnRegistrationComplete() {
+  ProhibitSignoutIfNeeded();
   registration_helper_.reset();
+}
+
+void UserPolicySigninService::ProhibitSignoutIfNeeded() {
+  if (GetManager()->IsClientRegistered()) {
+    DVLOG(1) << "User is registered for policy - prohibiting signout";
+    SigninManager* signin_manager =
+        SigninManagerFactory::GetForProfile(profile_);
+    signin_manager->ProhibitSignout();
+  }
 }
 
 void UserPolicySigninService::Shutdown() {

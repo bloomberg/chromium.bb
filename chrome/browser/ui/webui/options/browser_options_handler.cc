@@ -1083,14 +1083,8 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
   }
 
   // Signout is not allowed if the user has policy (crbug.com/172204).
-  bool signout_allowed = true;
-#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
-  policy::UserCloudPolicyManager* policy_manager =
-      policy::UserCloudPolicyManagerFactory::GetForProfile(profile);
-  if (policy_manager)
-    signout_allowed = !policy_manager->IsClientRegistered();
-#endif
-  sync_status->SetBoolean("signoutAllowed", signout_allowed);
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  sync_status->SetBoolean("signoutAllowed", !signin->IsSignoutProhibited());
   ProfileSyncService* service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
   sync_status->SetBoolean("syncSystemEnabled", !!service);
@@ -1101,7 +1095,6 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
 
   string16 status_label;
   string16 link_label;
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
   DCHECK(signin);
   bool status_has_error = sync_ui_util::GetStatusLabels(
       service, *signin, sync_ui_util::WITH_HTML, &status_label, &link_label) ==

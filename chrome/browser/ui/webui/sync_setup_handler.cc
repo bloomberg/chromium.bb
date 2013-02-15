@@ -1137,14 +1137,19 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
   // 3) Previously working credentials have expired.
   // 4) User is already signed in, but App Notifications needs to force another
   //    login so it can fetch an oauth token (passes force_login=true)
-  // 5) User clicks [Advanced Settings] button on options page while already
+  // 5) User is signed in, but has stopped sync via the google dashboard, and
+  //    signout is prohibited by policy so we need to force a re-auth.
+  // 6) User clicks [Advanced Settings] button on options page while already
   //    logged in.
-  // 6) One-click signin (credentials are already available, so should display
+  // 7) One-click signin (credentials are already available, so should display
   //    sync configure UI, not login UI).
-  // 7) ChromeOS re-enable after disabling sync.
+  // 8) ChromeOS re-enable after disabling sync.
   SigninManager* signin = GetSignin();
   if (force_login ||
       signin->GetAuthenticatedUsername().empty() ||
+#if !defined(OS_CHROMEOS)
+      (GetSyncService() && GetSyncService()->IsStartSuppressed()) ||
+#endif
       signin->signin_global_error()->HasBadge()) {
     // User is not logged in, or login has been specially requested - need to
     // display login UI (cases 1-4).

@@ -984,6 +984,9 @@ void ProfileSyncService::OnStopSyncingPermanently() {
   UpdateAuthErrorState(AuthError(AuthError::SERVICE_UNAVAILABLE));
   sync_prefs_.SetStartSuppressed(true);
   DisableForUser();
+  // If signout is allowed, signout the user on a dashboard clear.
+  if (!auto_start_enabled_)  // Skip signout on ChromeOS/Android.
+    signin_->SignOut();
 }
 
 void ProfileSyncService::OnPassphraseRequired(

@@ -126,7 +126,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
   if (signin.GetAuthenticatedUsername().empty())
     return PRE_SYNCED;
 
-  if (!service || service->IsManaged() || service->HasSyncSetupCompleted()) {
+  if (!service || service->IsManaged() || service->HasSyncSetupCompleted() ||
+      service->IsStartSuppressed()) {
     // The order or priority is going to be: 1. Unrecoverable errors.
     // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
 
