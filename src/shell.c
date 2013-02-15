@@ -2116,7 +2116,16 @@ static const struct wl_shell_interface shell_implementation = {
 static void
 handle_screensaver_sigchld(struct weston_process *proc, int status)
 {
+	struct desktop_shell *shell =
+		container_of(proc, struct desktop_shell, screensaver.process);
+	struct weston_output *output;
+
 	proc->pid = 0;
+
+	if (shell->locked)
+		wl_list_for_each(output, &shell->compositor->output_list, link)
+			if (output->set_dpms)
+				output->set_dpms(output, WESTON_DPMS_STANDBY);
 }
 
 static void
