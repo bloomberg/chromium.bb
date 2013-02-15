@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/extensions/set_icon_natives.h"
 
+#include <limits>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/extensions/request_sender.h"
@@ -13,6 +15,9 @@
 namespace {
 
 const char* kImageSizeKeys[] = { "19", "38" };
+const char kInvalidDimensions[] = "ImageData has invalid dimensions.";
+const char kInvalidData[] = "ImageData data length does not match dimensions.";
+const char kNoMemory[] = "Chrome was unable to initialize icon.";
 
 }  // namespace
 
@@ -20,28 +25,48 @@ namespace extensions {
 
 SetIconNatives::SetIconNatives(Dispatcher* dispatcher,
                                RequestSender* request_sender)
-    : ChromeV8Extension(dispatcher), request_sender_(request_sender) {
-  RouteFunction("SetIconCommon",
-                base::Bind(&SetIconNatives::SetIconCommon,
-                           base::Unretained(this)));
+    : ChromeV8Extension(dispatcher),
+      request_sender_(request_sender) {
+  RouteFunction(
+      "SetIconCommon",
+      base::Bind(&SetIconNatives::SetIconCommon, base::Unretained(this)));
 }
 
 bool SetIconNatives::ConvertImageDataToBitmapValue(
-    const v8::Local<v8::Object> image_data, Value** bitmap_value) {
+    const v8::Local<v8::Object> image_data,
+    Value** bitmap_value) {
   v8::Local<v8::Object> data =
       image_data->Get(v8::String::New("data"))->ToObject();
   int width = image_data->Get(v8::String::New("width"))->Int32Value();
   int height = image_data->Get(v8::String::New("height"))->Int32Value();
 
+  if (width <= 0 || height <= 0) {
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::New(kInvalidDimensions)));
+    return false;
+  }
+
+  // We need to be able to safely check |data_length| == 4 * width * height
+  // without overflowing below.
+  int max_width = (std::numeric_limits<int>::max() / 4) / height;
+  if (width > max_width) {
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::New(kInvalidDimensions)));
+    return false;
+  }
+
   int data_length = data->Get(v8::String::New("length"))->Int32Value();
   if (data_length != 4 * width * height) {
-    NOTREACHED() << "Invalid argument to setIcon. Expecting ImageData.";
+    v8::ThrowException(v8::Exception::Error(v8::String::New(kInvalidData)));
     return false;
   }
 
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  bitmap.allocPixels();
+  if (!bitmap.allocPixels()) {
+    v8::ThrowException(v8::Exception::Error(v8::String::New(kNoMemory)));
+    return false;
+  }
   bitmap.eraseARGB(0, 0, 0, 0);
 
   uint32_t* pixels = bitmap.getAddr32(0, 0);
