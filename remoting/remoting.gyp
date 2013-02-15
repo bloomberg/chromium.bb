@@ -154,6 +154,8 @@
       'webapp/manifest.json',
       'webapp/menu_button.css',
       'webapp/oauth2_callback.html',
+      'webapp/open_sans.css',
+      'webapp/open_sans.woff',
       'webapp/scale-to-fit.webp',
       'webapp/spinner.gif',
       'webapp/toolbar.css',
