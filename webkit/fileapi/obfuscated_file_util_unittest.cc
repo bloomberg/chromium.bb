@@ -1931,7 +1931,13 @@ TEST_F(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
   EXPECT_EQ(2, count);
 }
 
-TEST_F(ObfuscatedFileUtilTest, TestQuotaOnCopyFile) {
+// crbug.com/176470
+#if defined(OS_WIN) || defined(OS_ANDROID)
+#define MAYBE_TestQuotaOnCopyFile DISABLED_TestQuotaOnCopyFile
+#else
+#define MAYBE_TestQuotaOnCopyFile TestQuotaOnCopyFile
+#endif
+TEST_F(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnCopyFile) {
   FileSystemURL from_file(CreateURLFromUTF8("fromfile"));
   FileSystemURL obstacle_file(CreateURLFromUTF8("obstaclefile"));
   FileSystemURL to_file1(CreateURLFromUTF8("tofile1"));
