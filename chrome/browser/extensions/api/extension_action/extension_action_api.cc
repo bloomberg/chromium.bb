@@ -542,6 +542,8 @@ bool ExtensionActionHideFunction::RunExtensionAction() {
 }
 
 bool ExtensionActionSetIconFunction::RunExtensionAction() {
+  EXTENSION_FUNCTION_VALIDATE(details_);
+
   // setIcon can take a variant argument: either a dictionary of canvas
   // ImageData, or an icon index.
   base::DictionaryValue* canvas_set = NULL;
@@ -573,6 +575,7 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
 }
 
 bool ExtensionActionSetTitleFunction::RunExtensionAction() {
+  EXTENSION_FUNCTION_VALIDATE(details_);
   std::string title;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString("title", &title));
   extension_action_->SetTitle(tab_id_, title);
@@ -581,6 +584,7 @@ bool ExtensionActionSetTitleFunction::RunExtensionAction() {
 }
 
 bool ExtensionActionSetPopupFunction::RunExtensionAction() {
+  EXTENSION_FUNCTION_VALIDATE(details_);
   std::string popup_string;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString("popup", &popup_string));
 
@@ -594,6 +598,7 @@ bool ExtensionActionSetPopupFunction::RunExtensionAction() {
 }
 
 bool ExtensionActionSetBadgeTextFunction::RunExtensionAction() {
+  EXTENSION_FUNCTION_VALIDATE(details_);
   std::string badge_text;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString("text", &badge_text));
   extension_action_->SetBadgeText(tab_id_, badge_text);
@@ -602,8 +607,9 @@ bool ExtensionActionSetBadgeTextFunction::RunExtensionAction() {
 }
 
 bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
+  EXTENSION_FUNCTION_VALIDATE(details_);
   Value* color_value = NULL;
-  details_->Get("color", &color_value);
+  EXTENSION_FUNCTION_VALIDATE(details_->Get("color", &color_value));
   SkColor color = 0;
   if (color_value->IsType(Value::TYPE_LIST)) {
     ListValue* list = NULL;
