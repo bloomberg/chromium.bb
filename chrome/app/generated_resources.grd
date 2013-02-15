@@ -8693,6 +8693,23 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Report an issue
       </message>
 
+      <!-- Upgrade bubble messages -->
+      <message name="IDS_REINSTALL_APP" desc="Text for the button the user clicks to reinstall the app.">
+        Reinstall <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
+      </message>
+      <message name="IDS_LATER" desc="Text for the button the user clicks to be reminded of reinstalling the app later.">
+        Later
+      </message>
+      <message name="IDS_UPGRADE_BUBBLE_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option replacing Update required.">
+        <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Auto-update Error
+      </message>
+      <message name="IDS_UPGRADE_BUBBLE_TITLE" desc="Text for the title of the upgrade bubble view.">
+        <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> auto-update error
+      </message>
+      <message name="IDS_UPGRADE_BUBBLE_TEXT" desc="Text for the upgrade bubble view full description.">
+        <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> could not update itself to the latest version, so you are missing out on awesome new features and security fixes. You need to manually reinstall <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>.
+      </message>
+
       <!-- Print -->
       <message name="IDS_DEFAULT_PRINT_DOCUMENT_TITLE" desc="Default title for a print document">
         Untitled Document

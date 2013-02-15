@@ -190,6 +190,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // Shows the critical notification bubble against the wrench menu.
   void ShowCriticalNotification();
 
+  // Shows the outdated install notification bubble against the wrench menu.
+  void ShowOutdatedInstallNotification();
+
   // Updates the badge and the accessible name of the app menu (Wrench).
   void UpdateAppMenuState();
 

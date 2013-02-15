@@ -70,6 +70,20 @@ using content::HostZoomMap;
 using content::UserMetricsAction;
 using content::WebContents;
 
+namespace {
+// Conditionally return the update app menu item title based on upgrade detector
+// state.
+string16 GetUpgradeDialogMenuItemName() {
+  if (UpgradeDetector::GetInstance()->is_outdated_install()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_UPGRADE_BUBBLE_MENU_ITEM,
+        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  } else {
+    return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
+  }
+}
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // EncodingMenuModel
 
@@ -285,7 +299,7 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
                                         num_background_pages);
     }
     case IDC_UPGRADE_DIALOG:
-      return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
+      return GetUpgradeDialogMenuItemName();
     case IDC_SHOW_SIGNIN:
       return signin_ui_util::GetSigninMenuLabel(
           browser_->profile()->GetOriginalProfile());
@@ -568,7 +582,8 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
   }
 
   if (browser_defaults::kShowUpgradeMenuItem)
-    AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringUTF16(IDS_UPDATE_NOW));
+    AddItem(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName());
+
   AddItem(IDC_VIEW_INCOMPATIBILITIES, l10n_util::GetStringUTF16(
       IDS_VIEW_INCOMPATIBILITIES));
 

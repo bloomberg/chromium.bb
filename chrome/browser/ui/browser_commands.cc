@@ -52,12 +52,15 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -906,8 +909,15 @@ void ShowAvatarMenu(Browser* browser) {
 }
 
 void OpenUpdateChromeDialog(Browser* browser) {
-  content::RecordAction(UserMetricsAction("UpdateChrome"));
-  browser->window()->ShowUpdateChromeDialog();
+  if (UpgradeDetector::GetInstance()->is_outdated_install()) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_OUTDATED_INSTALL,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+  } else {
+    content::RecordAction(UserMetricsAction("UpdateChrome"));
+    browser->window()->ShowUpdateChromeDialog();
+  }
 }
 
 void ToggleSpeechInput(Browser* browser) {

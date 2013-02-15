@@ -1209,6 +1209,12 @@ const char kSilentLaunch[]                  = "silent-launch";
 // Simulates an update being available.
 const char kSimulateUpgrade[]               = "simulate-upgrade";
 
+// Simulates a critical update being available.
+const char kSimulateCriticalUpdate[]        = "simulate-critical-update";
+
+// Simulates that current version is outdated.
+const char kSimulateOutdated[]               = "simulate-outdated";
+
 // Replaces the buffered data source for <audio> and <video> with a simplified
 // resource loader that downloads the entire resource into memory.
 

@@ -752,6 +752,9 @@ enum NotificationType {
   // Sent when a critical update has been installed. No details are expected.
   NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
 
+  // Sent when the current install is outdated. No details are expected.
+  NOTIFICATION_OUTDATED_INSTALL,
+
   // Software incompatibility notifications ----------------------------------
 
   // Sent when Chrome has finished compiling the list of loaded modules (and

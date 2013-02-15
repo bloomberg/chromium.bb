@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/views/home_button.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -187,6 +188,10 @@ ToolbarView::ToolbarView(Browser* browser)
 
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                  content::NotificationService::AllSources());
+  if (OutdatedUpgradeBubbleView::IsAvailable()) {
+    registrar_.Add(this, chrome::NOTIFICATION_OUTDATED_INSTALL,
+                   content::NotificationService::AllSources());
+  }
 #if defined(OS_WIN)
   registrar_.Add(this, chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
                  content::NotificationService::AllSources());
@@ -548,6 +553,9 @@ void ToolbarView::Observe(int type,
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
       UpdateAppMenuState();
       break;
+    case chrome::NOTIFICATION_OUTDATED_INSTALL:
+      ShowOutdatedInstallNotification();
+      break;
 #if defined(OS_WIN)
     case chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED:
       ShowCriticalNotification();
@@ -886,6 +894,11 @@ void ToolbarView::ShowCriticalNotification() {
   views::BubbleDelegateView::CreateBubble(bubble_delegate);
   bubble_delegate->StartFade(true);
 #endif
+}
+
+void ToolbarView::ShowOutdatedInstallNotification() {
+  if (OutdatedUpgradeBubbleView::IsAvailable())
+    OutdatedUpgradeBubbleView::ShowBubble(app_menu_, browser_);
 }
 
 void ToolbarView::UpdateAppMenuState() {

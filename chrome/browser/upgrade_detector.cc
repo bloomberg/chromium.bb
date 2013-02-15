@@ -61,7 +61,7 @@ int UpgradeDetector::GetIconResourceID(UpgradeNotificationIconType type) {
 }
 
 UpgradeDetector::UpgradeDetector()
-    : is_critical_upgrade_(false),
+    : upgrade_available_(UPGRADE_AVAILABLE_NONE),
       critical_update_acknowledged_(false),
       upgrade_notification_stage_(UPGRADE_ANNOYANCE_NONE),
       notify_upgrade_(false) {
@@ -83,13 +83,25 @@ void UpgradeDetector::NotifyUpgradeRecommended() {
       content::Source<UpgradeDetector>(this),
       content::NotificationService::NoDetails());
 
-  if (is_critical_upgrade_) {
-    int idle_timer = UseTestingIntervals() ?
-        kIdleRepeatingTimerWait :
-        kIdleRepeatingTimerWait * 60;  // To minutes.
-    idle_check_timer_.Start(FROM_HERE,
-        base::TimeDelta::FromSeconds(idle_timer),
-        this, &UpgradeDetector::CheckIdle);
+  switch (upgrade_available_) {
+    case UPGRADE_NEEDED_OUTDATED_INSTALL: {
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_OUTDATED_INSTALL,
+          content::Source<UpgradeDetector>(this),
+          content::NotificationService::NoDetails());
+      break;
+    }
+    case UPGRADE_AVAILABLE_CRITICAL: {
+      int idle_timer = UseTestingIntervals() ?
+          kIdleRepeatingTimerWait :
+          kIdleRepeatingTimerWait * 60;  // To minutes.
+      idle_check_timer_.Start(FROM_HERE,
+          base::TimeDelta::FromSeconds(idle_timer),
+          this, &UpgradeDetector::CheckIdle);
+      break;
+    }
+    default:
+      break;
   }
 }
 

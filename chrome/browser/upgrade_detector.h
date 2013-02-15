@@ -49,8 +49,10 @@ class UpgradeDetector {
   // Whether the user should be notified about an upgrade.
   bool notify_upgrade() const { return notify_upgrade_; }
 
-  // Whether the upgrade is a critical upgrade (such as a zero-day update).
-  bool is_critical_update() const { return is_critical_upgrade_; }
+  // Whether the upgrade recommendation is due to Chrome being outdated.
+  bool is_outdated_install() const {
+    return upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL;
+  }
 
   // Notifify this object that the user has acknowledged the critical update
   // so we don't need to complain about it for now.
@@ -92,9 +94,18 @@ class UpgradeDetector {
     upgrade_notification_stage_ = stage;
   }
 
-  // True if a critical update to Chrome has been installed, such as a zero-day
-  // fix.
-  bool is_critical_upgrade_;
+  enum UpgradeAvailable {
+    // If no update is available and current install is recent enough.
+    UPGRADE_AVAILABLE_NONE,
+    // If a regular update is available.
+    UPGRADE_AVAILABLE_REGULAR,
+    // If a critical update to Chrome has been installed, such as a zero-day
+    // fix.
+    UPGRADE_AVAILABLE_CRITICAL,
+    // If no update to Chrome has been installed for more than the recommended
+    // time.
+    UPGRADE_NEEDED_OUTDATED_INSTALL,
+  } upgrade_available_;
 
   // Whether the user has acknowledged the critical update.
   bool critical_update_acknowledged_;
@@ -111,7 +122,8 @@ class UpgradeDetector {
   base::Time upgrade_detected_time_;
 
   // A timer to check to see if we've been idle for long enough to show the
-  // critical warning. Should only be set if |is_critical_upgrade_| is true.
+  // critical warning. Should only be set if |upgrade_available_| is
+  // UPGRADE_AVAILABLE_CRITICAL.
   base::RepeatingTimer<UpgradeDetector> idle_check_timer_;
 
   // The stage at which the annoyance level for upgrade notifications is at.
