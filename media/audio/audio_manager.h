@@ -48,10 +48,6 @@ class MEDIA_EXPORT AudioManager {
   // input device for this computer.
   virtual string16 GetAudioInputDeviceModel() = 0;
 
-  // Returns true if the platform specific audio input settings UI is known
-  // and can be shown.
-  virtual bool CanShowAudioInputSettings() = 0;
-
   // Opens the platform default audio input settings UI.
   // Note: This could invoke an external application/preferences pane, so
   // ideally must not be called from the UI thread or other time sensitive

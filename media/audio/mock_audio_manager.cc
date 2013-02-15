@@ -28,10 +28,6 @@ string16 MockAudioManager::GetAudioInputDeviceModel() {
   return string16();
 }
 
-bool MockAudioManager::CanShowAudioInputSettings() {
-  return false;
-}
-
 void MockAudioManager::ShowAudioInputSettings() {
 }
 

@@ -24,7 +24,6 @@ class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
   virtual bool HasAudioOutputDevices() OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual string16 GetAudioInputDeviceModel() OVERRIDE;
-  virtual bool CanShowAudioInputSettings() OVERRIDE;
   virtual void ShowAudioInputSettings() OVERRIDE;
   virtual void GetAudioInputDeviceNames(media::AudioDeviceNames* device_names)
       OVERRIDE;

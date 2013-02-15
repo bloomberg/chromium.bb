@@ -215,10 +215,6 @@ string16 AudioManagerWin::GetAudioInputDeviceModel() {
   return string16();
 }
 
-bool AudioManagerWin::CanShowAudioInputSettings() {
-  return true;
-}
-
 void AudioManagerWin::ShowAudioInputSettings() {
   std::wstring program;
   std::string argument;

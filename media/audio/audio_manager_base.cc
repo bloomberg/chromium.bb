@@ -273,10 +273,6 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
 #endif  // defined(OS_IOS)
 }
 
-bool AudioManagerBase::CanShowAudioInputSettings() {
-  return false;
-}
-
 void AudioManagerBase::ShowAudioInputSettings() {
 }
 

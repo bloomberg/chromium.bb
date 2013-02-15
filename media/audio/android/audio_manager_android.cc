@@ -36,10 +36,6 @@ bool AudioManagerAndroid::HasAudioInputDevices() {
   return true;
 }
 
-bool AudioManagerAndroid::CanShowAudioInputSettings() {
-  return false;
-}
-
 void AudioManagerAndroid::GetAudioInputDeviceNames(
     media::AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
