@@ -327,6 +327,21 @@ class ProxyResolverV8Tracing::Job
   uint8 metrics_num_unique_dns_;
   uint8 metrics_num_alerts_;
   uint8 metrics_num_errors_;
+
+  // The time that the latest execution took (time spent inside of
+  // ExecuteProxyResolver(), which includes time spent in bindings too).
+  // Written on the worker thread, read on the origin thread.
+  base::TimeDelta metrics_execution_time_;
+
+  // The cumulative time spent in ExecuteProxyResolver() that was ultimately
+  // discarded work.
+  // Written on the worker thread, read on the origin thread.
+  base::TimeDelta metrics_abandoned_execution_total_time_;
+
+  // The duration that the worker thread was blocked waiting on DNS results from
+  // the origin thread, when operating in nonblocking mode.
+  // Written on the worker thread, read on the origin thread.
+  base::TimeDelta metrics_nonblocking_dns_wait_total_time_;
 };
 
 ProxyResolverV8Tracing::Job::Job(ProxyResolverV8Tracing* parent)
@@ -515,37 +530,17 @@ void ProxyResolverV8Tracing::Job::RecordMetrics() const {
   // expectation is for requests to complete in non-blocking mode each time.
   // If they don't then something strange is happening, and the purpose of the
   // seprate statistics is to better understand that trend.
-  //
-  // The names of the non-blocking histograms and their meanings (the blocking
-  // mode versions additionally contain "BlockingDNSMode" in their name).
-  //
-  // * Net.ProxyResolver.TotalTime:
-  //   The total time that the proxy resolution took. This includes all the time
-  //   spent waiting for DNS, PAC script execution, and restarts.
-  //
-  // * Net.ProxyResolver.TotalTimeDNS:
-  //   The total time that proxy resolution spent waiting for DNS. This also
-  //   includes any queuing delays on the origin thread waiting for the DNS
-  //   result to be processed.
-  //
-  // * Net.ProxyResolver.NumRestarts:
-  //   The number of times that the PAC script execution was restarted.
-  //
-  // * Net.ProxyResolver.UniqueDNS:
-  //   The number of unique DNS hostnames that the PAC script tried to resolve.
-  //   The *Ex() versions of the bindings count separately.
-  //
-  // * Net.ProxyResolver.NumAlerts:
-  //   The number of times that alert() was called in the final execution of the
-  //   script.
-  //
-  // * Net.ProxyResolver.NumErrors:
-  //   The number of errors that were seen in the final execution of the script.
 #define UPDATE_HISTOGRAMS(base_name) \
   do {\
   UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTime", now - metrics_start_time_);\
   UMA_HISTOGRAM_MEDIUM_TIMES(base_name "TotalTimeDNS",\
                              metrics_dns_total_time_);\
+  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "ExecutionTime",\
+                             metrics_execution_time_);\
+  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "AbandonedExecutionTotalTime",\
+                             metrics_abandoned_execution_total_time_);\
+  UMA_HISTOGRAM_MEDIUM_TIMES(base_name "DnsWaitTotalTime",\
+                             metrics_nonblocking_dns_wait_total_time_);\
   UMA_HISTOGRAM_CUSTOM_COUNTS(\
       base_name "NumRestarts", metrics_num_executions_ - 1,\
       1, kMaxUniqueResolveDnsPerExec, kMaxUniqueResolveDnsPerExec);\
@@ -608,6 +603,9 @@ void ProxyResolverV8Tracing::Job::ExecuteNonBlocking() {
 
   int result = ExecuteProxyResolver();
 
+  if (abandoned_)
+    metrics_abandoned_execution_total_time_ += metrics_execution_time_;
+
   if (should_restart_with_blocking_dns_) {
     DCHECK(!blocking_dns_);
     DCHECK(abandoned_);
@@ -625,6 +623,8 @@ void ProxyResolverV8Tracing::Job::ExecuteNonBlocking() {
 
 int ProxyResolverV8Tracing::Job::ExecuteProxyResolver() {
   IncrementWithoutOverflow(&metrics_num_executions_);
+
+  base::TimeTicks start = base::TimeTicks::Now();
 
   JSBindings* prev_bindings = v8_resolver()->js_bindings();
   v8_resolver()->set_js_bindings(this);
@@ -650,6 +650,9 @@ int ProxyResolverV8Tracing::Job::ExecuteProxyResolver() {
   }
 
   v8_resolver()->set_js_bindings(prev_bindings);
+
+  metrics_execution_time_ = base::TimeTicks::Now() - start;
+
   return result;
 }
 
@@ -764,6 +767,8 @@ bool ProxyResolverV8Tracing::Job::PostDnsOperationAndWait(
     const std::string& host, ResolveDnsOperation op,
     bool* completed_synchronously) {
 
+  base::TimeTicks start = base::TimeTicks::Now();
+
   // Post the DNS request to the origin thread.
   DCHECK(!pending_dns_);
   metrics_pending_dns_start_ = base::TimeTicks::Now();
@@ -779,6 +784,9 @@ bool ProxyResolverV8Tracing::Job::PostDnsOperationAndWait(
 
   if (completed_synchronously)
     *completed_synchronously = pending_dns_completed_synchronously_;
+
+  if (!blocking_dns_)
+    metrics_nonblocking_dns_wait_total_time_ += base::TimeTicks::Now() - start;
 
   return true;
 }
