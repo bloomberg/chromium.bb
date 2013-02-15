@@ -28,6 +28,7 @@
 #include "net/disk_cache/experiments.h"
 #include "net/disk_cache/file.h"
 #include "net/disk_cache/mem_backend_impl.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 
 // This has to be defined before including histogram_macros.h from this file.
 #define NET_DISK_CACHE_BACKEND_IMPL_CC_
@@ -262,6 +263,7 @@ int CreateCacheBackend(net::CacheType type, const base::FilePath& path,
                        bool force, base::MessageLoopProxy* thread,
                        net::NetLog* net_log, Backend** backend,
                        const net::CompletionCallback& callback) {
+  // TODO(pasko): Separate out cache creation when landing cache tracer.
   DCHECK(!callback.is_null());
   if (type == net::MEMORY_CACHE) {
     *backend = MemBackendImpl::CreateBackend(max_bytes, net_log);
@@ -269,8 +271,13 @@ int CreateCacheBackend(net::CacheType type, const base::FilePath& path,
   }
   DCHECK(thread);
 
+#if defined(USE_SIMPLE_CACHE_BACKEND)
+  return SimpleBackendImpl::CreateBackend(path, force, max_bytes, type, kNone,
+                                          thread, net_log, backend, callback);
+#else
   return BackendImpl::CreateBackend(path, force, max_bytes, type, kNone, thread,
                                     net_log, backend, callback);
+#endif
 }
 
 // Returns the preferred maximum number of bytes for the cache given the
