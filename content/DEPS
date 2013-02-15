@@ -1,10 +1,6 @@
 # Do NOT add chrome to the list below.  We shouldn't be including files from
 # src/chrome in src/content.
 include_rules = [
-  "+cc",
-
-  "+crypto",
-
   # The subdirectories in content/ will manually allow their own include
   # directories in content/ so we disallow all of them.
   "-content",
@@ -15,6 +11,13 @@ include_rules = [
   "+content/shell",  # for content_browsertests
   "+content/test",
 
+  # content isn't tied to prefs so that other embedders are able to pick
+  # different ways of storing their preferences. Also, this is to avoid prefs
+  # being used as a parallel API to the Content API.
+  "-base/prefs",
+
+  "+cc",
+  "+crypto",
   "+grit/content_resources.h",
   "+grit/ui_resources.h",
   "+grit/webkit_chromium_resources.h",
