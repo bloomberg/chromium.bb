@@ -532,6 +532,10 @@ TEST_F(RTCPeerConnectionHandlerTest, OnIceGatheringChange) {
   pc_handler_->OnIceGatheringChange(new_state);
   EXPECT_EQ(WebRTCPeerConnectionHandlerClient::ICEGatheringStateComplete,
             mock_client_->ice_gathering_state());
+  // Check NULL candidate after ice gathering is completed.
+  EXPECT_EQ("", mock_client_->candidate_mid());
+  EXPECT_EQ(-1, mock_client_->candidate_mlineindex());
+  EXPECT_EQ("", mock_client_->candidate_sdp());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnAddAndOnRemoveStream) {

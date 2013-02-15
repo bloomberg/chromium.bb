@@ -662,9 +662,19 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
 // Called any time the IceGatheringState changes
 void RTCPeerConnectionHandler::OnIceGatheringChange(
     webrtc::PeerConnectionInterface::IceGatheringState new_state) {
+  if (new_state == webrtc::PeerConnectionInterface::kIceGatheringComplete) {
+    // If ICE gathering is completed, generate a NULL ICE candidate,
+    // to signal end of candidates.
+    WebKit::WebRTCICECandidate null_candidate;
+    client_->didGenerateICECandidate(null_candidate);
+    // Adding ice complete state to the tracker.
+    if (peer_connection_tracker_) {
+      peer_connection_tracker_->TrackOnIceComplete(this);
+    }
+  }
+
   WebKit::WebRTCPeerConnectionHandlerClient::ICEGatheringState state =
       GetWebKitIceGatheringState(new_state);
-  // TODO(perkj): Add new ice gathering state to the tracker.
   client_->didChangeICEGatheringState(state);
 }
 
