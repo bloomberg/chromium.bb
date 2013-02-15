@@ -1245,6 +1245,9 @@ void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
 
 void RenderWidgetHostImpl::RemoveKeyboardListener(
     KeyboardListener* listener) {
+  // Ensure that the element is actually in the list.
+  DCHECK(std::find(keyboard_listeners_.begin(), keyboard_listeners_.end(),
+                   listener) != keyboard_listeners_.end());
   keyboard_listeners_.remove(listener);
 }
 

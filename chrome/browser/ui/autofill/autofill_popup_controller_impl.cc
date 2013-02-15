@@ -104,7 +104,6 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       selected_line_(kNoSelection),
       delete_icon_hovered_(false),
       is_hiding_(false),
-      inform_delegate_of_destruction_(true),
       weak_ptr_factory_(this) {
 #if !defined(OS_ANDROID)
   subtext_font_ = name_font_.DeriveFont(kLabelFontSizeDelta);
@@ -171,8 +170,18 @@ void AutofillPopupControllerImpl::Show(
 }
 
 void AutofillPopupControllerImpl::Hide() {
-  inform_delegate_of_destruction_ = false;
-  HideInternal();
+  if (is_hiding_)
+    return;
+  is_hiding_ = true;
+
+  SetSelectedLine(kNoSelection);
+
+  delegate_->OnPopupHidden(this);
+
+  if (view_)
+    view_->Hide();
+  else
+    delete this;
 }
 
 bool AutofillPopupControllerImpl::HandleKeyPressEvent(
@@ -191,7 +200,7 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
       SetSelectedLine(names().size() - 1);
       return true;
     case ui::VKEY_ESCAPE:
-      HideInternal();
+      Hide();
       return true;
     case ui::VKEY_DELETE:
       return (event.modifiers & content::NativeWebKeyboardEvent::ShiftKey) &&
@@ -333,22 +342,6 @@ bool AutofillPopupControllerImpl::delete_icon_hovered() const {
   return delete_icon_hovered_;
 }
 
-void AutofillPopupControllerImpl::HideInternal() {
-  if (is_hiding_)
-    return;
-  is_hiding_ = true;
-
-  SetSelectedLine(kNoSelection);
-
-  if (inform_delegate_of_destruction_)
-    delegate_->OnPopupHidden(this);
-
-  if (view_)
-    view_->Hide();
-  else
-    delete this;
-}
-
 void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
   if (selected_line_ == selected_line)
     return;
@@ -437,7 +430,7 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
     delegate_->ClearPreviewedForm();
     UpdateBoundsAndRedrawPopup();
   } else {
-    HideInternal();
+    Hide();
   }
 
   return true;

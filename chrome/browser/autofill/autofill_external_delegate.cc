@@ -49,7 +49,8 @@ AutofillExternalDelegate::AutofillExternalDelegate(
       password_autofill_manager_(web_contents),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
-      has_shown_autofill_popup_for_current_edit_(false) {
+      has_shown_autofill_popup_for_current_edit_(false),
+      registered_keyboard_listener_with_(NULL) {
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
                  content::Source<content::WebContents>(web_contents));
@@ -206,14 +207,19 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
 
 void AutofillExternalDelegate::OnPopupShown(
     content::KeyboardListener* listener) {
-  if (web_contents_)
-    web_contents_->GetRenderViewHost()->AddKeyboardListener(listener);
+  if (web_contents_ && !registered_keyboard_listener_with_) {
+    registered_keyboard_listener_with_ = web_contents_->GetRenderViewHost();
+    registered_keyboard_listener_with_->AddKeyboardListener(listener);
+  }
 }
 
 void AutofillExternalDelegate::OnPopupHidden(
     content::KeyboardListener* listener) {
-  if (web_contents_)
+  if (web_contents_ && registered_keyboard_listener_with_ ==
+      web_contents_->GetRenderViewHost())
     web_contents_->GetRenderViewHost()->RemoveKeyboardListener(listener);
+
+  registered_keyboard_listener_with_ = NULL;
 }
 
 void AutofillExternalDelegate::DidSelectSuggestion(int identifier) {
@@ -278,10 +284,8 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
 }
 
 void AutofillExternalDelegate::HideAutofillPopup() {
-  if (controller_) {
+  if (controller_)
     controller_->Hide();
-    OnPopupHidden(controller_.get());
-  }
 }
 
 void AutofillExternalDelegate::Reset() {

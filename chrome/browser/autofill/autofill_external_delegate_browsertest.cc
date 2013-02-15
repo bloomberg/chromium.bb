@@ -19,12 +19,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
-
-using ::testing::AtLeast;
-using testing::_;
 
 namespace {
 
@@ -33,7 +29,8 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   explicit MockAutofillExternalDelegate(content::WebContents* web_contents)
       : AutofillExternalDelegate(
             web_contents,
-            AutofillManager::FromWebContents(web_contents)) {}
+            AutofillManager::FromWebContents(web_contents)),
+        popup_hidden_(true) {}
   ~MockAutofillExternalDelegate() {}
 
   virtual void DidSelectSuggestion(int unique_id) OVERRIDE {}
@@ -44,7 +41,29 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
     return controller();
   }
 
-  MOCK_METHOD0(HideAutofillPopup, void());
+  virtual void ApplyAutofillSuggestions(
+      const std::vector<string16>& autofill_values,
+      const std::vector<string16>& autofill_labels,
+      const std::vector<string16>& autofill_icons,
+      const std::vector<int>& autofill_unique_ids)  OVERRIDE {
+    popup_hidden_ = false;
+
+    AutofillExternalDelegate::ApplyAutofillSuggestions(autofill_values,
+                                                       autofill_labels,
+                                                       autofill_icons,
+                                                       autofill_unique_ids);
+  }
+
+  virtual void HideAutofillPopup() OVERRIDE {
+    popup_hidden_ = true;
+
+    AutofillExternalDelegate::HideAutofillPopup();
+  }
+
+  bool popup_hidden() const { return popup_hidden_; }
+
+ private:
+  bool popup_hidden_;
 };
 
 }  // namespace
@@ -80,9 +99,6 @@ class AutofillExternalDelegateBrowserTest
 
 IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
                        SwitchTabAndHideAutofillPopup) {
-  EXPECT_CALL(*autofill_external_delegate_,
-              HideAutofillPopup()).Times(AtLeast(1));
-
   autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   content::WindowedNotificationObserver observer(
@@ -92,29 +108,28 @@ IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   observer.Wait();
 
-  // The mock verifies that the call was made.
+  EXPECT_TRUE(autofill_external_delegate_->popup_hidden());
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillExternalDelegateBrowserTest,
                        TestPageNavigationHidingAutofillPopup) {
-  EXPECT_CALL(*autofill_external_delegate_,
-              HideAutofillPopup()).Times(AtLeast(1));
-
   autofill::GenerateTestAutofillPopup(autofill_external_delegate_.get());
+
+  EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
 
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
           &(web_contents_->GetController())));
   browser()->OpenURL(content::OpenURLParams(
-      GURL(chrome::kAboutBlankURL), content::Referrer(),
+      GURL(chrome::kChromeUIBookmarksURL), content::Referrer(),
       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   browser()->OpenURL(content::OpenURLParams(
       GURL(chrome::kChromeUIAboutURL), content::Referrer(),
       CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   observer.Wait();
 
-  // The mock verifies that the call was made.
+  EXPECT_TRUE(autofill_external_delegate_->popup_hidden());
 }
 
 // Tests that closing the widget does not leak any resources.  This test is

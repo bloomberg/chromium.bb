@@ -89,10 +89,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   virtual int selected_line() const OVERRIDE;
   virtual bool delete_icon_hovered() const OVERRIDE;
 
-  // Like Hide(), but doesn't invalidate |delegate_| (the delegate will still
-  // be informed of destruction).
-  void HideInternal();
-
   // Change which line is currently selected by the user.
   void SetSelectedLine(int selected_line);
 
@@ -209,9 +205,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 
   // True if |HideInternal| has already been called.
   bool is_hiding_;
-
-  // True if the delegate should be informed when |this| is destroyed.
-  bool inform_delegate_of_destruction_;
 
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
 };

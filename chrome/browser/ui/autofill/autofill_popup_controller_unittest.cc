@@ -223,9 +223,7 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
   // Remove the last entry. The popup should then be hidden since there are
   // no Autofill entries left.
   autofill_popup_controller_->SetSelectedLine(0);
-  // The controller self-deletes here, don't double delete.
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
-  autofill_popup_controller_ = NULL;
 }
 
 TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {

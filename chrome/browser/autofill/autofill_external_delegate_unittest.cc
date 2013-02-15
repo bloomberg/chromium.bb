@@ -118,6 +118,7 @@ class AutofillExternalDelegateUnitTest
     // AutofillManager is tied to the lifetime of the WebContents, so it must
     // be destroyed at the destruction of the WebContents.
     autofill_manager_ = NULL;
+    external_delegate_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
