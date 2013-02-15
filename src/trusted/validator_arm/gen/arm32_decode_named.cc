@@ -1656,7 +1656,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x00000000 /* op1(24:20)=xx0x0 */ &&
       (inst.Bits() & 0x01700000)  !=
           0x00200000 /* op1_repeated(24:20)=~0x010 */) {
-    return Store2RegisterImm12Op_STR_immediate_instance_;
+    return STR_immediate_cccc010pu0w0nnnnttttiiiiiiiiiiii_case_0_STR_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1667,7 +1667,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x000F0000 /* Rn(19:16)=~1111 */ &&
       (inst.Bits() & 0x01700000)  !=
           0x00300000 /* op1_repeated(24:20)=~0x011 */) {
-    return LdrImmediateOp_LDR_immediate_instance_;
+    return LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0_LDR_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1680,7 +1680,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x00300000 /* op1_repeated(24:20)=~0x011 */ &&
       (inst.Bits() & 0x01200000)  ==
           0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return Load2RegisterImm12Op_LDR_literal_instance_;
+    return LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0_LDR_literal_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1689,7 +1689,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x00400000 /* op1(24:20)=xx1x0 */ &&
       (inst.Bits() & 0x01700000)  !=
           0x00600000 /* op1_repeated(24:20)=~0x110 */) {
-    return Store2RegisterImm12Op_STRB_immediate_instance_;
+    return STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_0_STRB_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1700,7 +1700,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x000F0000 /* Rn(19:16)=~1111 */ &&
       (inst.Bits() & 0x01700000)  !=
           0x00700000 /* op1_repeated(24:20)=~0x111 */) {
-    return Load2RegisterImm12Op_LDRB_immediate_instance_;
+    return LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0_LDRB_immediate_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1713,7 +1713,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x00700000 /* op1_repeated(24:20)=~0x111 */ &&
       (inst.Bits() & 0x01200000)  ==
           0x01000000 /* $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return Load2RegisterImm12Op_LDRB_literal_instance_;
+    return LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0_LDRB_literal_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1760,7 +1760,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x00000000 /* B(4)=0 */ &&
       (inst.Bits() & 0x01700000)  !=
           0x00200000 /* op1_repeated(24:20)=~0x010 */) {
-    return Store3RegisterImm5Op_STR_register_instance_;
+    return STR_register_cccc011pd0w0nnnnttttiiiiitt0mmmm_case_0_STR_register_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1771,7 +1771,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x00000000 /* B(4)=0 */ &&
       (inst.Bits() & 0x01700000)  !=
           0x00300000 /* op1_repeated(24:20)=~0x011 */) {
-    return Load3RegisterImm5Op_LDR_register_instance_;
+    return LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0_LDR_register_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1782,7 +1782,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x00000000 /* B(4)=0 */ &&
       (inst.Bits() & 0x01700000)  !=
           0x00600000 /* op1_repeated(24:20)=~0x110 */) {
-    return Store3RegisterImm5Op_STRB_register_instance_;
+    return STRB_register_cccc011pu1w0nnnnttttiiiiitt0mmmm_case_0_STRB_register_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
@@ -1793,7 +1793,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_and_unsi
           0x00000000 /* B(4)=0 */ &&
       (inst.Bits() & 0x01700000)  !=
           0x00700000 /* op1_repeated(24:20)=~0x111 */) {
-    return Load3RegisterImm5Op_LDRB_register_instance_;
+    return LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0_LDRB_register_instance_;
   }
 
   // Catch any attempt to fall through...

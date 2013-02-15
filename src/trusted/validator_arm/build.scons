@@ -137,6 +137,7 @@ BASELINE_GEN_TABLES = [
     "synchronization_primitives",
     "msr_immediate_and_hints",
     "miscellaneous_instructions",
+    "load_store_word_and_unsigned_byte",
     "media_instructions",
     "parallel_addition_and_subtraction_signed",
     "parallel_addition_and_subtraction_unsigned",
