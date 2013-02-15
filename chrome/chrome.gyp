@@ -177,7 +177,8 @@
                 {
                   'destination': '<(PRODUCT_DIR)/extensions',
                   'files': [
-                    '>!@(ls browser/extensions/default_extensions/chromeos/cache/*)'
+                    '>!@(ls browser/extensions/default_extensions/chromeos/cache/*.crx)',
+                    '>!@(ls browser/extensions/default_extensions/chromeos/cache/*.json)'
                   ]
                 }
               ],
