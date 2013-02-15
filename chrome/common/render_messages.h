@@ -645,13 +645,13 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FocusedNodeTouched,
 
 // Suggest results -----------------------------------------------------------
 
-// Sent by the Instant preview to populate the omnibox with query suggestions.
+// Sent by Instant to populate the omnibox with query suggestions.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SetSuggestions,
                     int /* page_id */,
                     std::vector<InstantSuggestion> /* suggestions */)
 
-// Sent by the Instant preview indicating whether the page supports the Instant
-// API or not (http://dev.chromium.org/searchbox).
+// Sent by Instant to indicate whether the page supports the Instant API
+// (http://dev.chromium.org/searchbox).
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
                     int /* page_id */,
                     bool /* result */)
@@ -661,8 +661,8 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SearchBoxNavigate,
                     GURL /* destination */,
                     content::PageTransition /* transition */)
 
-// Sent by the Instant preview asking to show itself with the given height.
-IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_ShowInstantPreview,
+// Sent by the Instant overlay asking to show itself with the given height.
+IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_ShowInstantOverlay,
                     int /* page_id */,
                     InstantShownReason /* reason */,
                     int /* height */,

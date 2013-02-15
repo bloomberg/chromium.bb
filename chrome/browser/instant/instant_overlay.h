@@ -90,7 +90,7 @@ class InstantOverlay : public InstantPage,
   virtual bool ShouldProcessRenderViewGone() OVERRIDE;
   virtual bool ShouldProcessAboutToNavigateMainFrame() OVERRIDE;
   virtual bool ShouldProcessSetSuggestions() OVERRIDE;
-  virtual bool ShouldProcessShowInstantPreview() OVERRIDE;
+  virtual bool ShouldProcessShowInstantOverlay() OVERRIDE;
   virtual bool ShouldProcessNavigateToURL() OVERRIDE;
 
   // Overriden from InstantLoader::Delegate:

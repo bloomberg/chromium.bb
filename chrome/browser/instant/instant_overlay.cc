@@ -99,7 +99,7 @@ bool InstantOverlay::ShouldProcessSetSuggestions() {
   return true;
 }
 
-bool InstantOverlay::ShouldProcessShowInstantPreview() {
+bool InstantOverlay::ShouldProcessShowInstantOverlay() {
   return true;
 }
 

@@ -41,10 +41,10 @@ void SearchBox::SetSuggestions(
       render_view()->GetRoutingID(), render_view()->GetPageId(), suggestions));
 }
 
-void SearchBox::ShowInstantPreview(InstantShownReason reason,
+void SearchBox::ShowInstantOverlay(InstantShownReason reason,
                                    int height,
                                    InstantSizeUnits units) {
-  render_view()->Send(new ChromeViewHostMsg_ShowInstantPreview(
+  render_view()->Send(new ChromeViewHostMsg_ShowInstantOverlay(
       render_view()->GetRoutingID(), render_view()->GetPageId(), reason,
       height, units));
 }
@@ -122,8 +122,6 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnAutocompleteResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
                         OnUpOrDownKeyPressed)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxModeChanged,
-                        OnModeChanged)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
                         OnSetDisplayInstantResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxKeyCaptureChanged,
@@ -239,15 +237,6 @@ void SearchBox::OnKeyCaptureChange(bool is_key_capture_enabled) {
   }
 }
 
-void SearchBox::OnModeChanged(const chrome::search::Mode& mode) {
-  mode_ = mode;
-  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
-    DVLOG(1) << render_view() << " OnModeChanged";
-    extensions_v8::SearchBoxExtension::DispatchContextChange(
-        render_view()->GetWebView()->mainFrame());
-  }
-}
-
 void SearchBox::OnSetDisplayInstantResults(bool display_instant_results) {
   display_instant_results_ = display_instant_results;
 }
@@ -295,7 +284,6 @@ void SearchBox::Reset() {
   end_margin_ = 0;
   autocomplete_results_.clear();
   is_key_capture_enabled_ = false;
-  mode_ = chrome::search::Mode();
   theme_info_ = ThemeBackgroundInfo();
   theme_area_height_ = 0;
   // Don't reset display_instant_results_ to prevent clearing it on committed

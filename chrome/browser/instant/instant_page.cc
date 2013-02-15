@@ -63,10 +63,6 @@ void InstantPage::UpOrDownKeyPressed(int count) {
   Send(new ChromeViewMsg_SearchBoxUpOrDownKeyPressed(routing_id(), count));
 }
 
-void InstantPage::SearchModeChanged(const chrome::search::Mode& mode) {
-  Send(new ChromeViewMsg_SearchBoxModeChanged(routing_id(), mode));
-}
-
 void InstantPage::SendThemeBackgroundInfo(
     const ThemeBackgroundInfo& theme_info) {
   Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));
@@ -111,7 +107,7 @@ bool InstantPage::ShouldProcessSetSuggestions() {
   return false;
 }
 
-bool InstantPage::ShouldProcessShowInstantPreview() {
+bool InstantPage::ShouldProcessShowInstantOverlay() {
   return false;
 }
 
@@ -147,8 +143,8 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetSuggestions, OnSetSuggestions)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowInstantPreview,
-                        OnShowInstantPreview)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowInstantOverlay,
+                        OnShowInstantOverlay)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_StartCapturingKeyStrokes,
                         OnStartCapturingKeyStrokes);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_StopCapturingKeyStrokes,
@@ -200,14 +196,14 @@ void InstantPage::OnInstantSupportDetermined(int page_id,
     Observe(NULL);
 }
 
-void InstantPage::OnShowInstantPreview(int page_id,
+void InstantPage::OnShowInstantOverlay(int page_id,
                                        InstantShownReason reason,
                                        int height,
                                        InstantSizeUnits units) {
   if (contents()->IsActiveEntry(page_id)) {
     OnInstantSupportDetermined(page_id, true);
-    if (ShouldProcessShowInstantPreview())
-      delegate_->ShowInstantPreview(contents(), reason, height, units);
+    if (ShouldProcessShowInstantOverlay())
+      delegate_->ShowInstantOverlay(contents(), reason, height, units);
   }
 }
 

@@ -82,6 +82,7 @@ enum InstantSizeUnits {
 };
 
 // What the Instant page contains when it requests to be shown.
+// TODO(jered): Delete this.
 enum InstantShownReason {
   // Contents are not specified; the page wants to be shown unconditionally.
   // This is a stopgap to display in unexpected situations, and should not

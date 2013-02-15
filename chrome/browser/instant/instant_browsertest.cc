@@ -208,7 +208,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 
   // Check that the searchbox API values have been reset.
   std::string value;
-  EXPECT_TRUE(GetStringFromJS(preview_tab, "chrome.searchBox.value", &value));
+  EXPECT_TRUE(GetStringFromJS(preview_tab,
+                              "chrome.embeddedSearch.searchBox.value", &value));
   EXPECT_EQ("", value);
 
   // However, the page should've correctly received the committed query.
@@ -268,7 +269,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
 
   // Check that the searchbox API values have been reset.
   std::string value;
-  EXPECT_TRUE(GetStringFromJS(preview_tab, "chrome.searchBox.value", &value));
+  EXPECT_TRUE(GetStringFromJS(preview_tab,
+                              "chrome.embeddedSearch.searchBox.value", &value));
   EXPECT_EQ("", value);
 
   // However, the page should've correctly received the committed query.
@@ -912,7 +914,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
 
   // Check that the searchbox API values have been reset.
   std::string value;
-  EXPECT_TRUE(GetStringFromJS(preview_tab, "chrome.searchBox.value", &value));
+  EXPECT_TRUE(GetStringFromJS(preview_tab,
+                              "chrome.embeddedSearch.searchBox.value", &value));
   EXPECT_EQ("", value);
 
   // However, the page should've correctly received the committed query.

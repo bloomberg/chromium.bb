@@ -11,17 +11,19 @@ var suggestions = ["result 1", "result 2", "result 3"];
 var suggestion;
 
 function getApiHandle() {
-  if (window.navigator && window.navigator.searchBox)
-    return window.navigator.searchBox;
-  if (window.chrome && window.chrome.searchBox)
-    return window.chrome.searchBox;
+  if (window.navigator && window.navigator.embeddedSearch &&
+      window.navigator.embeddedSearch.searchBox)
+    return window.navigator.embeddedSearch.searchBox;
+  if (window.chrome && window.chrome.embeddedSearch &&
+      window.chrome.embeddedSearch.searchBox)
+    return window.chrome.embeddedSearch.searchBox;
   return null;
 }
 
 function handleNativeSuggestions() {
   onnativesuggestioncalls++;
   // Showing the loader at 100% height.
-  apiHandle.show(2 /* QUERY_SUGGESTIONS */);
+  apiHandle.showOverlay(2 /* QUERY_SUGGESTIONS */);
 }
 
 function handleSubmit() {

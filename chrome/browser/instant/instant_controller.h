@@ -111,7 +111,7 @@ class InstantController : public InstantPage::Delegate {
   // The preview WebContents. May be NULL. InstantController retains ownership.
   content::WebContents* GetPreviewContents() const;
 
-  // Returns true if the Instant preview is showing a search results preview.
+  // Returns true if the Instant overlay is showing a search results preview.
   bool IsPreviewingSearchResults() const;
 
   // If the preview is showing search results, commits the preview, calling
@@ -206,7 +206,7 @@ class InstantController : public InstantPage::Delegate {
   virtual void SetSuggestions(
       const content::WebContents* contents,
       const std::vector<InstantSuggestion>& suggestions) OVERRIDE;
-  virtual void ShowInstantPreview(
+  virtual void ShowInstantOverlay(
       const content::WebContents* contents,
       InstantShownReason reason,
       int height,

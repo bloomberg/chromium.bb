@@ -29,8 +29,8 @@ class SearchBox : public content::RenderViewObserver,
   // Sends ChromeViewHostMsg_SetSuggestions to the browser.
   void SetSuggestions(const std::vector<InstantSuggestion>& suggestions);
 
-  // Sends ChromeViewHostMsg_ShowInstantPreview to the browser.
-  void ShowInstantPreview(InstantShownReason reason,
+  // Sends ChromeViewHostMsg_ShowInstantOverlay to the browser.
+  void ShowInstantOverlay(InstantShownReason reason,
                           int height,
                           InstantSizeUnits units);
 
@@ -48,7 +48,6 @@ class SearchBox : public content::RenderViewObserver,
   size_t selection_start() const { return selection_start_; }
   size_t selection_end() const { return selection_end_; }
   int results_base() const { return results_base_; }
-  const chrome::search::Mode& mode() const { return mode_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
   bool display_instant_results() const { return display_instant_results_; }
   const string16& omnibox_font() const { return omnibox_font_; }
@@ -87,7 +86,6 @@ class SearchBox : public content::RenderViewObserver,
       const std::vector<InstantAutocompleteResult>& results);
   void OnUpOrDownKeyPressed(int count);
   void OnKeyCaptureChange(bool is_key_capture_enabled);
-  void OnModeChanged(const chrome::search::Mode& mode);
   void OnSetDisplayInstantResults(bool display_instant_results);
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
   void OnThemeAreaHeightChanged(int height);
@@ -112,7 +110,6 @@ class SearchBox : public content::RenderViewObserver,
   size_t last_results_base_;
   std::vector<InstantAutocompleteResult> last_autocomplete_results_;
   bool is_key_capture_enabled_;
-  chrome::search::Mode mode_;
   ThemeBackgroundInfo theme_info_;
   int theme_area_height_;
   bool display_instant_results_;

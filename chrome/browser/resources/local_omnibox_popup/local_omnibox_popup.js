@@ -134,10 +134,12 @@ function updateSelectedSuggestion(increment) {
  function getApiObjectHandle() {
   if (window.cideb)
     return window.cideb;
-  if (window.navigator && window.navigator.searchBox)
-    return window.navigator.searchBox;
-  if (window.chrome && window.chrome.searchBox)
-    return window.chrome.searchBox;
+  if (window.navigator && window.navigator.embeddedSearch &&
+      window.navigator.embeddedSearch.searchBox)
+    return window.navigator.embeddedSearch.searchBox;
+  if (window.chrome && window.chrome.embeddedSearch &&
+      window.chrome.embeddedSearch.searchBox)
+    return window.chrome.embeddedSearch.searchBox;
   return null;
 }
 
@@ -169,7 +171,8 @@ function handleNativeSuggestions() {
   }
 
   var height = getDropdownHeight();
-  apiHandle.show(2, height);
+  // TODO(jered): Remove deprecated "reason" argument.
+  apiHandle.showOverlay(2, height);
 }
 
 /**

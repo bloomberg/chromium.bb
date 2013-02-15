@@ -29,7 +29,7 @@ namespace {
 // The first token is always GroupN for some integer N, followed by a
 // space-delimited list of key:value pairs which correspond to these flags:
 const char kEmbeddedPageVersionFlagName[] = "espv";
-const int kEmbeddedPageVersionDefault = 1;
+const int kEmbeddedPageVersionDefault = 2;
 
 const char kInstantExtendedActivationName[] = "instant";
 const chrome::search::InstantExtendedDefault kInstantExtendedActivationDefault =

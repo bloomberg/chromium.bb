@@ -16,12 +16,6 @@
 
 class GURL;
 
-namespace chrome {
-namespace search {
-struct Mode;
-}
-}
-
 namespace content {
 class WebContents;
 }
@@ -65,9 +59,9 @@ class InstantPage : public content::WebContentsObserver {
         const content::WebContents* contents,
         const std::vector<InstantSuggestion>& suggestions) = 0;
 
-    // Called when the page wants to be shown. Usually in response to Update(),
-    // SendAutocompleteResults() or SearchModeChanged().
-    virtual void ShowInstantPreview(const content::WebContents* contents,
+    // Called when the page wants to be shown. Usually in response to Update()
+    // or SendAutocompleteResults().
+    virtual void ShowInstantOverlay(const content::WebContents* contents,
                                     InstantShownReason reason,
                                     int height,
                                     InstantSizeUnits units) = 0;
@@ -147,9 +141,6 @@ class InstantPage : public content::WebContentsObserver {
   // a repeat count, negative for moving up, positive for moving down.
   void UpOrDownKeyPressed(int count);
 
-  // Tells the page that the active tab's search mode has changed.
-  void SearchModeChanged(const chrome::search::Mode& mode);
-
   // Tells the page about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
 
@@ -179,7 +170,7 @@ class InstantPage : public content::WebContentsObserver {
   virtual bool ShouldProcessRenderViewGone();
   virtual bool ShouldProcessAboutToNavigateMainFrame();
   virtual bool ShouldProcessSetSuggestions();
-  virtual bool ShouldProcessShowInstantPreview();
+  virtual bool ShouldProcessShowInstantOverlay();
   virtual bool ShouldProcessStartCapturingKeyStrokes();
   virtual bool ShouldProcessStopCapturingKeyStrokes();
   virtual bool ShouldProcessNavigateToURL();
@@ -205,7 +196,7 @@ class InstantPage : public content::WebContentsObserver {
   void OnSetSuggestions(int page_id,
                         const std::vector<InstantSuggestion>& suggestions);
   void OnInstantSupportDetermined(int page_id, bool supports_instant);
-  void OnShowInstantPreview(int page_id,
+  void OnShowInstantOverlay(int page_id,
                             InstantShownReason reason,
                             int height,
                             InstantSizeUnits units);

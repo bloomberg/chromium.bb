@@ -17,34 +17,34 @@ var height = 0;
 var suggestion = [ { value: "query suggestion" } ];
 var behavior = "now";
 
-chrome.searchBox.onchange = function() {
+chrome.embeddedSearch.searchBox.onchange = function() {
   onchangecalls++;
-  value = chrome.searchBox.value;
-  verbatim = chrome.searchBox.verbatim;
-  chrome.searchBox.setSuggestions({
+  value = chrome.embeddedSearch.searchBox.value;
+  verbatim = chrome.embeddedSearch.searchBox.verbatim;
+  chrome.embeddedSearch.searchBox.setSuggestions({
     suggestions: suggestion,
     complete_behavior: behavior
   });
 };
 
-chrome.searchBox.onsubmit = function() {
+chrome.embeddedSearch.searchBox.onsubmit = function() {
   onsubmitcalls++;
-  value = chrome.searchBox.value;
-  verbatim = chrome.searchBox.verbatim;
+  value = chrome.embeddedSearch.searchBox.value;
+  verbatim = chrome.embeddedSearch.searchBox.verbatim;
 };
 
-chrome.searchBox.oncancel = function() {
+chrome.embeddedSearch.searchBox.oncancel = function() {
   oncancelcalls++;
-  value = chrome.searchBox.value;
-  verbatim = chrome.searchBox.verbatim;
+  value = chrome.embeddedSearch.searchBox.value;
+  verbatim = chrome.embeddedSearch.searchBox.verbatim;
 };
 
-chrome.searchBox.onresize = function() {
+chrome.embeddedSearch.searchBox.onresize = function() {
   onresizecalls++;
-  height = chrome.searchBox.height;
+  height = chrome.embeddedSearch.searchBox.height;
 };
 
-if (chrome.searchBox.value != "")
-  chrome.searchBox.onchange();
+if (chrome.embeddedSearch.searchBox.value != "")
+  chrome.embeddedSearch.searchBox.onchange();
 
 </script></body></html>

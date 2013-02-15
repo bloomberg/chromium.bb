@@ -725,9 +725,6 @@ void InstantController::SearchModeChanged(
   if (!new_mode.is_search_suggestions())
     HideOverlay();
 
-  if (overlay_)
-    overlay_->SearchModeChanged(new_mode);
-
   ResetInstantTab();
 }
 
@@ -851,7 +848,6 @@ void InstantController::InstantPageRenderViewCreated(
   // Ensure the searchbox API has the correct initial state.
   if (IsContentsFrom(overlay(), contents)) {
     overlay_->SetDisplayInstantResults(instant_enabled_);
-    overlay_->SearchModeChanged(search_mode_);
     overlay_->KeyCaptureChanged(
         omnibox_focus_state_ == OMNIBOX_FOCUS_INVISIBLE);
     overlay_->SetMarginSize(start_margin_, end_margin_);
@@ -1032,7 +1028,7 @@ void InstantController::SetSuggestions(
     ShowOverlay(INSTANT_SHOWN_QUERY_SUGGESTIONS, 100, INSTANT_SIZE_PERCENT);
 }
 
-void InstantController::ShowInstantPreview(const content::WebContents* contents,
+void InstantController::ShowInstantOverlay(const content::WebContents* contents,
                                            InstantShownReason reason,
                                            int height,
                                            InstantSizeUnits units) {
