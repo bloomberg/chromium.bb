@@ -39,7 +39,7 @@ namespace nacl_arm_test {
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -111,7 +111,7 @@ bool VectorBinary2RegisterShiftAmount_ITesterCase0
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -183,7 +183,7 @@ bool VectorBinary2RegisterShiftAmount_ITesterCase1
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -255,7 +255,7 @@ bool VectorBinary2RegisterShiftAmount_ITesterCase2
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -327,7 +327,7 @@ bool VectorBinary2RegisterShiftAmount_ITesterCase3
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -402,7 +402,7 @@ bool VectorBinary2RegisterShiftAmount_ITesterCase4
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -477,7 +477,7 @@ bool VectorBinary2RegisterShiftAmount_ITesterCase5
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -549,7 +549,7 @@ bool VectorBinary2RegisterShiftAmount_ITesterCase6
 
 // A(11:8)=1000 & U(24)=0 & B(6)=0 & L(7)=0
 //    = {Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64R,
+//       actual: Actual_VRSHRN_111100101diiiiiidddd100001m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
 //       defs: {},
@@ -618,7 +618,7 @@ bool VectorBinary2RegisterShiftAmount_N16_32_64RTesterCase7
 
 // A(11:8)=1000 & U(24)=0 & B(6)=1 & L(7)=0
 //    = {Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64R,
+//       actual: Actual_VRSHRN_111100101diiiiiidddd100001m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
 //       defs: {},
@@ -688,7 +688,7 @@ bool VectorBinary2RegisterShiftAmount_N16_32_64RTesterCase8
 // A(11:8)=1000 & U(24)=1 & B(6)=0 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -769,7 +769,7 @@ bool VectorBinary2RegisterShiftAmount_N16_32_64RSTesterCase9
 // A(11:8)=1000 & U(24)=1 & B(6)=1 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -850,7 +850,7 @@ bool VectorBinary2RegisterShiftAmount_N16_32_64RSTesterCase10
 // A(11:8)=1001 & U(24)=0 & B(6)=0 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -931,7 +931,7 @@ bool VectorBinary2RegisterShiftAmount_N16_32_64RSTesterCase11
 // A(11:8)=1001 & U(24)=0 & B(6)=1 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -1012,7 +1012,7 @@ bool VectorBinary2RegisterShiftAmount_N16_32_64RSTesterCase12
 // A(11:8)=1001 & U(24)=1 & B(6)=0 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -1093,7 +1093,7 @@ bool VectorBinary2RegisterShiftAmount_N16_32_64RSTesterCase13
 // A(11:8)=1001 & U(24)=1 & B(6)=1 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -1173,7 +1173,7 @@ bool VectorBinary2RegisterShiftAmount_N16_32_64RSTesterCase14
 
 // A(11:8)=1010 & B(6)=0 & L(7)=0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary2RegisterShiftAmount_E8_16_32L,
+//       actual: Actual_VSHLL_A1_or_VMOVL_1111001u1diiiiiidddd101000m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_E8_16_32L,
 //       constraints: ,
 //       defs: {},
@@ -1243,7 +1243,7 @@ bool VectorBinary2RegisterShiftAmount_E8_16_32LTesterCase15
 //       U: U(24),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_ILS,
+//       actual: Actual_VQSHL_VQSHLU_immediate_1111001u1diiiiiidddd011plqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_ILS,
 //       constraints: ,
 //       defs: {},
@@ -1324,7 +1324,7 @@ bool VectorBinary2RegisterShiftAmount_ILSTesterCase16
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_CVT,
+//       actual: Actual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_CVT,
 //       constraints: ,
 //       defs: {},
@@ -1409,7 +1409,7 @@ bool VectorBinary2RegisterShiftAmount_CVTTesterCase17
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1437,7 +1437,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case0
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1465,7 +1465,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case1
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1493,7 +1493,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case2
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1521,7 +1521,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case3
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1549,7 +1549,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case4
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1577,7 +1577,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case5
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1602,7 +1602,7 @@ class VectorBinary2RegisterShiftAmount_ITester_Case6
 
 // A(11:8)=1000 & U(24)=0 & B(6)=0 & L(7)=0
 //    = {Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64R,
+//       actual: Actual_VRSHRN_111100101diiiiiidddd100001m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
 //       defs: {},
@@ -1624,7 +1624,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case7
 
 // A(11:8)=1000 & U(24)=0 & B(6)=1 & L(7)=0
 //    = {Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64R,
+//       actual: Actual_VRSHRN_111100101diiiiiidddd100001m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
 //       defs: {},
@@ -1647,7 +1647,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case8
 // A(11:8)=1000 & U(24)=1 & B(6)=0 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -1674,7 +1674,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case9
 // A(11:8)=1000 & U(24)=1 & B(6)=1 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -1701,7 +1701,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case10
 // A(11:8)=1001 & U(24)=0 & B(6)=0 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -1728,7 +1728,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case11
 // A(11:8)=1001 & U(24)=0 & B(6)=1 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -1755,7 +1755,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case12
 // A(11:8)=1001 & U(24)=1 & B(6)=0 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -1782,7 +1782,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case13
 // A(11:8)=1001 & U(24)=1 & B(6)=1 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -1808,7 +1808,7 @@ class VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case14
 
 // A(11:8)=1010 & B(6)=0 & L(7)=0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary2RegisterShiftAmount_E8_16_32L,
+//       actual: Actual_VSHLL_A1_or_VMOVL_1111001u1diiiiiidddd101000m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_E8_16_32L,
 //       constraints: ,
 //       defs: {},
@@ -1834,7 +1834,7 @@ class VectorBinary2RegisterShiftAmount_E8_16_32LTester_Case15
 //       U: U(24),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_ILS,
+//       actual: Actual_VQSHL_VQSHLU_immediate_1111001u1diiiiiidddd011plqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_ILS,
 //       constraints: ,
 //       defs: {},
@@ -1864,7 +1864,7 @@ class VectorBinary2RegisterShiftAmount_ILSTester_Case16
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_CVT,
+//       actual: Actual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_CVT,
 //       constraints: ,
 //       defs: {},
@@ -1902,7 +1902,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1918,8 +1918,10 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_ITester_Case0_TestCase0) {
-  VectorBinary2RegisterShiftAmount_ITester_Case0 tester;
-  tester.Test("1111001u1diiiiiidddd0000lqm1mmmm");
+  VectorBinary2RegisterShiftAmount_ITester_Case0 baseline_tester;
+  NamedActual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1_VSHR actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd0000lqm1mmmm");
 }
 
 // A(11:8)=0001
@@ -1927,7 +1929,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1943,8 +1945,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_ITester_Case1_TestCase1) {
-  VectorBinary2RegisterShiftAmount_ITester_Case1 tester;
-  tester.Test("1111001u1diiiiiidddd0001lqm1mmmm");
+  VectorBinary2RegisterShiftAmount_ITester_Case1 baseline_tester;
+  NamedActual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1_VSRA actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd0001lqm1mmmm");
 }
 
 // A(11:8)=0010
@@ -1952,7 +1956,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1968,8 +1972,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_ITester_Case2_TestCase2) {
-  VectorBinary2RegisterShiftAmount_ITester_Case2 tester;
-  tester.Test("1111001u1diiiiiidddd0010lqm1mmmm");
+  VectorBinary2RegisterShiftAmount_ITester_Case2 baseline_tester;
+  NamedActual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1_VRSHR actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd0010lqm1mmmm");
 }
 
 // A(11:8)=0011
@@ -1977,7 +1983,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -1993,8 +1999,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_ITester_Case3_TestCase3) {
-  VectorBinary2RegisterShiftAmount_ITester_Case3 tester;
-  tester.Test("1111001u1diiiiiidddd0011lqm1mmmm");
+  VectorBinary2RegisterShiftAmount_ITester_Case3 baseline_tester;
+  NamedActual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1_VRSRA actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd0011lqm1mmmm");
 }
 
 // A(11:8)=0100 & U(24)=1
@@ -2002,7 +2010,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -2018,8 +2026,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_ITester_Case4_TestCase4) {
-  VectorBinary2RegisterShiftAmount_ITester_Case4 tester;
-  tester.Test("111100111diiiiiidddd0100lqm1mmmm");
+  VectorBinary2RegisterShiftAmount_ITester_Case4 baseline_tester;
+  NamedActual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1_VSRI actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100111diiiiiidddd0100lqm1mmmm");
 }
 
 // A(11:8)=0101 & U(24)=0
@@ -2027,7 +2037,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -2043,8 +2053,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_ITester_Case5_TestCase5) {
-  VectorBinary2RegisterShiftAmount_ITester_Case5 tester;
-  tester.Test("111100101diiiiiidddd0101lqm1mmmm");
+  VectorBinary2RegisterShiftAmount_ITester_Case5 baseline_tester;
+  NamedActual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1_VSHL_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100101diiiiiidddd0101lqm1mmmm");
 }
 
 // A(11:8)=0101 & U(24)=1
@@ -2052,7 +2064,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_I,
+//       actual: Actual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_I,
 //       constraints: ,
 //       defs: {},
@@ -2068,13 +2080,15 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_ITester_Case6_TestCase6) {
-  VectorBinary2RegisterShiftAmount_ITester_Case6 tester;
-  tester.Test("111100111diiiiiidddd0101lqm1mmmm");
+  VectorBinary2RegisterShiftAmount_ITester_Case6 baseline_tester;
+  NamedActual_VRSHR_1111001u1diiiiiidddd0010lqm1mmmm_case_1_VSLI actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100111diiiiiidddd0101lqm1mmmm");
 }
 
 // A(11:8)=1000 & U(24)=0 & B(6)=0 & L(7)=0
 //    = {Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64R,
+//       actual: Actual_VRSHRN_111100101diiiiiidddd100001m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
 //       defs: {},
@@ -2087,13 +2101,15 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case7_TestCase7) {
-  VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case7 tester;
-  tester.Test("111100101diiiiiidddd100000m1mmmm");
+  VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case7 baseline_tester;
+  NamedActual_VRSHRN_111100101diiiiiidddd100001m1mmmm_case_1_VSHRN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100101diiiiiidddd100000m1mmmm");
 }
 
 // A(11:8)=1000 & U(24)=0 & B(6)=1 & L(7)=0
 //    = {Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64R,
+//       actual: Actual_VRSHRN_111100101diiiiiidddd100001m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64R,
 //       constraints: ,
 //       defs: {},
@@ -2106,14 +2122,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case8_TestCase8) {
-  VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case8 tester;
-  tester.Test("111100101diiiiiidddd100001m1mmmm");
+  VectorBinary2RegisterShiftAmount_N16_32_64RTester_Case8 baseline_tester;
+  NamedActual_VRSHRN_111100101diiiiiidddd100001m1mmmm_case_1_VRSHRN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100101diiiiiidddd100001m1mmmm");
 }
 
 // A(11:8)=1000 & U(24)=1 & B(6)=0 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -2130,14 +2148,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case9_TestCase9) {
-  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case9 tester;
-  tester.Test("1111001u1diiiiiidddd100p00m1mmmm");
+  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case9 baseline_tester;
+  NamedActual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1_VQRSHRUN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd100p00m1mmmm");
 }
 
 // A(11:8)=1000 & U(24)=1 & B(6)=1 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -2154,14 +2174,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case10_TestCase10) {
-  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case10 tester;
-  tester.Test("1111001u1diiiiiidddd100p01m1mmmm");
+  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case10 baseline_tester;
+  NamedActual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1_VQRSHRUN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd100p01m1mmmm");
 }
 
 // A(11:8)=1001 & U(24)=0 & B(6)=0 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -2178,14 +2200,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case11_TestCase11) {
-  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case11 tester;
-  tester.Test("1111001u1diiiiiidddd100p00m1mmmm");
+  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case11 baseline_tester;
+  NamedActual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1_VQSHRN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd100p00m1mmmm");
 }
 
 // A(11:8)=1001 & U(24)=0 & B(6)=1 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -2202,14 +2226,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case12_TestCase12) {
-  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case12 tester;
-  tester.Test("1111001u1diiiiiidddd100p01m1mmmm");
+  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case12 baseline_tester;
+  NamedActual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1_VQRSHRN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd100p01m1mmmm");
 }
 
 // A(11:8)=1001 & U(24)=1 & B(6)=0 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -2226,14 +2252,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case13_TestCase13) {
-  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case13 tester;
-  tester.Test("1111001u1diiiiiidddd100p00m1mmmm");
+  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case13 baseline_tester;
+  NamedActual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1_VQSHRUN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd100p00m1mmmm");
 }
 
 // A(11:8)=1001 & U(24)=1 & B(6)=1 & L(7)=0
 //    = {U: U(24),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_N16_32_64RS,
+//       actual: Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_N16_32_64RS,
 //       constraints: ,
 //       defs: {},
@@ -2250,13 +2278,15 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case14_TestCase14) {
-  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case14 tester;
-  tester.Test("1111001u1diiiiiidddd100p01m1mmmm");
+  VectorBinary2RegisterShiftAmount_N16_32_64RSTester_Case14 baseline_tester;
+  NamedActual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1_VQRSHRN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd100p01m1mmmm");
 }
 
 // A(11:8)=1010 & B(6)=0 & L(7)=0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary2RegisterShiftAmount_E8_16_32L,
+//       actual: Actual_VSHLL_A1_or_VMOVL_1111001u1diiiiiidddd101000m1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_E8_16_32L,
 //       constraints: ,
 //       defs: {},
@@ -2269,8 +2299,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_E8_16_32LTester_Case15_TestCase15) {
-  VectorBinary2RegisterShiftAmount_E8_16_32LTester_Case15 tester;
-  tester.Test("1111001u1diiiiiidddd101000m1mmmm");
+  VectorBinary2RegisterShiftAmount_E8_16_32LTester_Case15 baseline_tester;
+  NamedActual_VSHLL_A1_or_VMOVL_1111001u1diiiiiidddd101000m1mmmm_case_1_VSHLL_A1_or_VMOVL actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd101000m1mmmm");
 }
 
 // A(11:8)=011x
@@ -2279,7 +2311,7 @@ TEST_F(Arm32DecoderStateTests,
 //       U: U(24),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_ILS,
+//       actual: Actual_VQSHL_VQSHLU_immediate_1111001u1diiiiiidddd011plqm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_ILS,
 //       constraints: ,
 //       defs: {},
@@ -2298,15 +2330,17 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_ILSTester_Case16_TestCase16) {
-  VectorBinary2RegisterShiftAmount_ILSTester_Case16 tester;
-  tester.Test("1111001u1diiiiiidddd011plqm1mmmm");
+  VectorBinary2RegisterShiftAmount_ILSTester_Case16 baseline_tester;
+  NamedActual_VQSHL_VQSHLU_immediate_1111001u1diiiiiidddd011plqm1mmmm_case_1_VQSHL_VQSHLU_immediate actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd011plqm1mmmm");
 }
 
 // A(11:8)=111x & L(7)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
 //       Vm: Vm(3:0),
-//       actual: VectorBinary2RegisterShiftAmount_CVT,
+//       actual: Actual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_1,
 //       baseline: VectorBinary2RegisterShiftAmount_CVT,
 //       constraints: ,
 //       defs: {},
@@ -2323,8 +2357,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterShiftAmount_CVTTester_Case17_TestCase17) {
-  VectorBinary2RegisterShiftAmount_CVTTester_Case17 tester;
-  tester.Test("1111001u1diiiiiidddd111p0qm1mmmm");
+  VectorBinary2RegisterShiftAmount_CVTTester_Case17 baseline_tester;
+  NamedActual_VCVT_between_floating_point_and_fixed_point_1111001u1diiiiiidddd111p0qm1mmmm_case_1_VCVT_between_floating_point_and_fixed_point actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1diiiiiidddd111p0qm1mmmm");
 }
 
 }  // namespace nacl_arm_test
