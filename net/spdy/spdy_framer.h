@@ -349,7 +349,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                 size_t header_length,
                                 SpdyHeaderBlock* block) const;
 
-  // Create a SpdySynStreamControlFrame.
+  // Creates and serializes a SYN_STREAM frame.
   // |stream_id| is the id for this stream.
   // |associated_stream_id| is the associated stream id for this stream.
   // |priority| is the priority (GetHighestPriority()-GetLowestPriority) for
@@ -359,13 +359,13 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   //    To mark this frame as the last frame, enable CONTROL_FLAG_FIN.
   // |compressed| specifies whether the frame should be compressed.
   // |headers| is the header block to include in the frame.
-  SpdySynStreamControlFrame* CreateSynStream(SpdyStreamId stream_id,
-                                             SpdyStreamId associated_stream_id,
-                                             SpdyPriority priority,
-                                             uint8 credential_slot,
-                                             SpdyControlFlags flags,
-                                             bool compressed,
-                                             const SpdyHeaderBlock* headers);
+  SpdyFrame* CreateSynStream(SpdyStreamId stream_id,
+                             SpdyStreamId associated_stream_id,
+                             SpdyPriority priority,
+                             uint8 credential_slot,
+                             SpdyControlFlags flags,
+                             bool compressed,
+                             const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeSynStream(const SpdySynStreamIR& syn_stream);
 
   // Create a SYN_REPLY SpdyFrame.

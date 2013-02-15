@@ -432,7 +432,7 @@ size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
   }
   CopyHeaders(block, headers);
 
-  SpdySynStreamControlFrame* fsrcf = buffered_spdy_framer_->CreateSynStream(
+  SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynStream(
       stream_id, 0, 0, 0, CONTROL_FLAG_NONE, true, &block);
   size_t df_size = fsrcf->length() + SpdyFrame::kHeaderSize;
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));

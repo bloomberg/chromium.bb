@@ -55,8 +55,10 @@ const int SpdyFramer::kMinSpdyVersion = 2;
 const int SpdyFramer::kMaxSpdyVersion = 3;
 const SpdyStreamId SpdyFramer::kInvalidStream = -1;
 const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
-const size_t SpdyFramer::kControlFrameBufferSize =
-    sizeof(SpdySynStreamControlFrameBlock);
+// The size of the control frame buffer. Must be >= the minimum size of the
+// largest control frame, which is SYN_STREAM. See GetSynStreamMinimumSize() for
+// calculation details.
+const size_t SpdyFramer::kControlFrameBufferSize = 18;
 const size_t SpdyFramer::kMaxControlFrameSize = 16 * 1024;
 
 #ifdef DEBUG_SPDY_STATE_CHANGES
@@ -667,7 +669,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
   switch (current_control_frame.type()) {
     case SYN_STREAM:
       syn_frame_processed_ = true;
-      frame_size_without_variable_data = SpdySynStreamControlFrame::size();
+      frame_size_without_variable_data = GetSynStreamMinimumSize();
       break;
     case SYN_REPLY:
       syn_frame_processed_ = true;
@@ -947,16 +949,50 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
     switch (control_frame.type()) {
       case SYN_STREAM:
         {
-          SpdySynStreamControlFrame* syn_stream_frame =
-              reinterpret_cast<SpdySynStreamControlFrame*>(&control_frame);
-          // TODO(hkhalil): Check that invalid flag bits are unset?
+          SpdyFrameReader reader(current_frame_buffer_.get(),
+                                 current_frame_len_);
+          reader.Seek(4);  // Seek past control bit, type and version.
+
+          uint8 flags;
+          bool successful_read = reader.ReadUInt8(&flags);
+          DCHECK(successful_read);
+
+          reader.Seek(3);  // Seek past length.
+
+          SpdyStreamId stream_id = kInvalidStream;
+          successful_read = reader.ReadUInt31(&stream_id);
+          DCHECK(successful_read);
+
+          SpdyStreamId associated_to_stream_id = kInvalidStream;
+          successful_read = reader.ReadUInt31(&associated_to_stream_id);
+          DCHECK(successful_read);
+
+          SpdyPriority priority = 0;
+          successful_read = reader.ReadUInt8(&priority);
+          DCHECK(successful_read);
+          if (protocol_version() < 3) {
+            priority = priority >> 6;
+          } else {
+            priority = priority >> 5;
+          }
+
+          uint8 slot = 0;
+          if (protocol_version() < 3) {
+            // SPDY 2 had an unused byte here. Seek past it.
+            reader.Seek(1);
+          } else {
+            successful_read = reader.ReadUInt8(&slot);
+            DCHECK(successful_read);
+          }
+
+          DCHECK(reader.IsDoneReading());
           visitor_->OnSynStream(
-              syn_stream_frame->stream_id(),
-              syn_stream_frame->associated_stream_id(),
-              syn_stream_frame->priority(),
-              syn_stream_frame->credential_slot(),
-              (syn_stream_frame->flags() & CONTROL_FLAG_FIN) != 0,
-              (syn_stream_frame->flags() & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
+              stream_id,
+              associated_to_stream_id,
+              priority,
+              slot,
+              (flags & CONTROL_FLAG_FIN) != 0,
+              (flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
         }
         CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
@@ -1008,13 +1044,13 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
 
   bool processed_successfully = true;
   SpdyStreamId stream_id = kInvalidStream;
-  if (control_frame.type() == SYN_STREAM) {
-    stream_id = reinterpret_cast<const SpdySynStreamControlFrame*>(
-        &control_frame)->stream_id();
-  } else if (control_frame.type() == SYN_REPLY ||
-             control_frame.type() == HEADERS) {
+  if (control_frame.type() == SYN_STREAM ||
+      control_frame.type() == SYN_REPLY ||
+      control_frame.type() == HEADERS) {
+    // The logic for all three of the aforementioned frame types is identical,
+    // since the stream id is the first field in the frame after the header.
     SpdyFrameReader reader(current_frame_buffer_.get(), current_frame_len_);
-    reader.Seek(SpdyFrame::kHeaderSize);  // Seek past frame header.
+    reader.Seek(GetControlFrameMinimumSize());  // Seek past frame header.
     bool read_successful = reader.ReadUInt31(&stream_id);
     DCHECK(read_successful);
   } else {
@@ -1414,7 +1450,7 @@ bool SpdyFramer::ParseCredentialData(const char* data, size_t len,
   return true;
 }
 
-SpdySynStreamControlFrame* SpdyFramer::CreateSynStream(
+SpdyFrame* SpdyFramer::CreateSynStream(
     SpdyStreamId stream_id,
     SpdyStreamId associated_stream_id,
     SpdyPriority priority,
@@ -1433,12 +1469,10 @@ SpdySynStreamControlFrame* SpdyFramer::CreateSynStream(
   // TODO(hkhalil): Avoid copy here.
   *(syn_stream.GetMutableNameValueBlock()) = *headers;
 
-  scoped_ptr<SpdySynStreamControlFrame> syn_frame(
-      reinterpret_cast<SpdySynStreamControlFrame*>(
-          SerializeSynStream(syn_stream)));
+  scoped_ptr<SpdyControlFrame> syn_frame(
+      reinterpret_cast<SpdyControlFrame*>(SerializeSynStream(syn_stream)));
   if (compressed) {
-    return reinterpret_cast<SpdySynStreamControlFrame*>(
-        CompressControlFrame(*syn_frame.get(), headers));
+    return CompressControlFrame(*syn_frame.get(), headers);
   }
   return syn_frame.release();
 }
@@ -1815,11 +1849,9 @@ bool SpdyFramer::GetFrameBoundaries(const SpdyFrame& frame,
     switch (control_frame.type()) {
       case SYN_STREAM:
         {
-          const SpdySynStreamControlFrame& syn_frame =
-              reinterpret_cast<const SpdySynStreamControlFrame&>(frame);
-          frame_size = SpdySynStreamControlFrame::size();
-          *payload_length = syn_frame.header_block_len();
-          *header_length = frame_size;
+          *header_length = GetSynStreamMinimumSize();
+          *payload_length = frame.length() -
+              (*header_length - GetControlFrameMinimumSize());
           *payload = frame.data() + *header_length;
         }
         break;

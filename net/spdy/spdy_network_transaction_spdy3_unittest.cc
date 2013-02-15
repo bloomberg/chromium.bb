@@ -25,6 +25,7 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_util_spdy3.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/platform_test.h"
@@ -631,8 +632,8 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, GetAtEachPriority) {
     scoped_ptr<SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, p));
     MockWrite writes[] = { CreateMockWrite(*req) };
 
-    const int spdy_prio = reinterpret_cast<SpdySynStreamControlFrame*>(
-        req.get())->priority();
+    SpdyPriority spdy_prio = 0;
+    EXPECT_TRUE(GetSpdyPriority(3, *req, &spdy_prio));
     // this repeats the RequestPriority-->SpdyPriority mapping from
     // SpdyFramer::ConvertRequestPriorityToSpdyPriority to make
     // sure it's being done right.

@@ -1570,6 +1570,8 @@
         'spdy/spdy_stream_spdy2_unittest.cc',
         'spdy/spdy_stream_test_util.cc',
         'spdy/spdy_stream_test_util.h',
+        'spdy/spdy_test_util_common.cc',
+        'spdy/spdy_test_util_common.h',
         'spdy/spdy_test_util_spdy3.cc',
         'spdy/spdy_test_util_spdy3.h',
         'spdy/spdy_test_util_spdy2.cc',

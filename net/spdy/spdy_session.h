@@ -207,7 +207,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Send the SYN frame for |stream_id|. This also sends PING message to check
   // the status of the connection.
-  SpdySynStreamControlFrame* CreateSynStream(
+  SpdyFrame* CreateSynStream(
       SpdyStreamId stream_id,
       RequestPriority priority,
       uint8 credential_slot,

@@ -43,7 +43,6 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(8u, SpdyFrame::kHeaderSize);
   EXPECT_EQ(8u, SpdyDataFrame::size());
   EXPECT_EQ(8u, SpdyControlFrame::kHeaderSize);
-  EXPECT_EQ(18u, SpdySynStreamControlFrame::size());
   EXPECT_EQ(12u, SpdySettingsControlFrame::size());
   EXPECT_EQ(4u, sizeof(FlagsAndLength));
   EXPECT_EQ(1, SYN_STREAM);
@@ -77,28 +76,6 @@ TEST_P(SpdyProtocolTest, DataFrameStructs) {
   SpdyDataFrame data_frame;
   data_frame.set_stream_id(12345);
   EXPECT_EQ(12345u, data_frame.stream_id());
-}
-
-TEST_P(SpdyProtocolTest, ControlFrameStructs) {
-  SpdyFramer framer(spdy_version_);
-  SpdyHeaderBlock headers;
-
-  const uint8 credential_slot = IsSpdy2() ? 0 : 5;
-
-  scoped_ptr<SpdySynStreamControlFrame> syn_frame(framer.CreateSynStream(
-      123, 456, 2, credential_slot, CONTROL_FLAG_FIN, false, &headers));
-  EXPECT_EQ(framer.protocol_version(), syn_frame->version());
-  EXPECT_TRUE(syn_frame->is_control_frame());
-  EXPECT_EQ(SYN_STREAM, syn_frame->type());
-  EXPECT_EQ(123u, syn_frame->stream_id());
-  EXPECT_EQ(456u, syn_frame->associated_stream_id());
-  EXPECT_EQ(2u, syn_frame->priority());
-  EXPECT_EQ(credential_slot, syn_frame->credential_slot());
-  EXPECT_EQ(IsSpdy2() ? 2 : 4, syn_frame->header_block_len());
-  EXPECT_EQ(1u, syn_frame->flags());
-  syn_frame->set_associated_stream_id(999u);
-  EXPECT_EQ(123u, syn_frame->stream_id());
-  EXPECT_EQ(999u, syn_frame->associated_stream_id());
 }
 
 TEST_P(SpdyProtocolTest, TestDataFrame) {
@@ -241,42 +218,6 @@ TEST_P(SpdyProtocolDeathTest, TestDataFrame) {
 #endif
 #endif
   EXPECT_EQ(0, frame.flags());
-}
-
-TEST_P(SpdyProtocolDeathTest, TestSpdyControlFrameStreamId) {
-  SpdyControlFrame frame_store(SpdySynStreamControlFrame::size());
-  memset(frame_store.data(), '1', SpdyControlFrame::kHeaderSize);
-  SpdySynStreamControlFrame* frame =
-      reinterpret_cast<SpdySynStreamControlFrame*>(&frame_store);
-
-  // Set the stream ID to various values.
-  frame->set_stream_id(0);
-  EXPECT_EQ(0u, frame->stream_id());
-  EXPECT_FALSE(frame->is_control_frame());
-  frame->set_stream_id(kStreamIdMask);
-  EXPECT_EQ(kStreamIdMask, frame->stream_id());
-  EXPECT_FALSE(frame->is_control_frame());
-}
-
-TEST_P(SpdyProtocolDeathTest, TestSpdyControlFrameVersion) {
-  const unsigned int kVersionMask = 0x7fff;
-  SpdyControlFrame frame(SpdySynStreamControlFrame::size());
-  memset(frame.data(), '1', SpdyControlFrame::kHeaderSize);
-
-  // Set the version to various values, and make sure it does not affect the
-  // type.
-  frame.set_type(SYN_STREAM);
-  frame.set_version(0);
-  EXPECT_EQ(0, frame.version());
-  EXPECT_TRUE(frame.is_control_frame());
-  EXPECT_EQ(SYN_STREAM, frame.type());
-
-  SpdySynStreamControlFrame* syn_stream =
-      reinterpret_cast<SpdySynStreamControlFrame*>(&frame);
-  syn_stream->set_stream_id(~0 & kVersionMask);
-  EXPECT_EQ(~0 & kVersionMask, syn_stream->stream_id());
-  EXPECT_TRUE(frame.is_control_frame());
-  EXPECT_EQ(SYN_STREAM, frame.type());
 }
 
 TEST_P(SpdyProtocolDeathTest, TestSpdyControlFrameType) {

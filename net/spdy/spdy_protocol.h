@@ -483,14 +483,6 @@ struct SpdyFrameBlock {
   FlagsAndLength flags_length_;
 };
 
-// A SYN_STREAM Control Frame structure.
-struct SpdySynStreamControlFrameBlock : SpdyFrameBlock {
-  SpdyStreamId stream_id_;
-  SpdyStreamId associated_stream_id_;
-  SpdyPriority priority_;
-  uint8 credential_slot_;
-};
-
 // A SETTINGS Control Frame structure.
 struct SpdySettingsControlFrameBlock : SpdyFrameBlock {
   uint32 num_entries_;
@@ -948,73 +940,6 @@ class SpdyControlFrame : public SpdyFrame {
     return frame_;
   }
   DISALLOW_COPY_AND_ASSIGN(SpdyControlFrame);
-};
-
-// A SYN_STREAM frame.
-class SpdySynStreamControlFrame : public SpdyControlFrame {
- public:
-  SpdySynStreamControlFrame() : SpdyControlFrame(size()) {}
-  SpdySynStreamControlFrame(char* data, bool owns_buffer)
-      : SpdyControlFrame(data, owns_buffer) {}
-
-  SpdyStreamId stream_id() const {
-    return ntohl(block()->stream_id_) & kStreamIdMask;
-  }
-
-  void set_stream_id(SpdyStreamId id) {
-    mutable_block()->stream_id_ = htonl(id & kStreamIdMask);
-  }
-
-  SpdyStreamId associated_stream_id() const {
-    return ntohl(block()->associated_stream_id_) & kStreamIdMask;
-  }
-
-  void set_associated_stream_id(SpdyStreamId id) {
-    mutable_block()->associated_stream_id_ = htonl(id & kStreamIdMask);
-  }
-
-  SpdyPriority priority() const {
-    if (version() < 3) {
-      return (block()->priority_ & kSpdy2PriorityMask) >> 6;
-    } else {
-      return (block()->priority_ & kSpdy3PriorityMask) >> 5;
-    }
-  }
-
-  uint8 credential_slot() const {
-    if (version() < 3) {
-      return 0;
-    } else {
-      return block()->credential_slot_;
-    }
-  }
-
-  void set_credential_slot(uint8 credential_slot) {
-    DCHECK_LE(3, version());
-    mutable_block()->credential_slot_ = credential_slot;
-  }
-
-  // The number of bytes in the header block beyond the frame header length.
-  int header_block_len() const {
-    return length() - (size() - SpdyFrame::kHeaderSize);
-  }
-
-  const char* header_block() const {
-    return reinterpret_cast<const char*>(block()) + size();
-  }
-
-  // Returns the size of the SpdySynStreamControlFrameBlock structure.
-  // Note: this is not the size of the SpdySynStreamControlFrame class.
-  static size_t size() { return sizeof(SpdySynStreamControlFrameBlock); }
-
- private:
-  const struct SpdySynStreamControlFrameBlock* block() const {
-    return static_cast<SpdySynStreamControlFrameBlock*>(frame_);
-  }
-  struct SpdySynStreamControlFrameBlock* mutable_block() {
-    return static_cast<SpdySynStreamControlFrameBlock*>(frame_);
-  }
-  DISALLOW_COPY_AND_ASSIGN(SpdySynStreamControlFrame);
 };
 
 class SpdySettingsControlFrame : public SpdyControlFrame {

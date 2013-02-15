@@ -207,7 +207,7 @@ TEST_F(BufferedSpdyFramerSpdy2Test, ReadSynStreamHeaderBlock) {
   headers["aa"] = "vv";
   headers["bb"] = "ww";
   BufferedSpdyFramer framer(2, true);
-  scoped_ptr<SpdySynStreamControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynStream(1,                        // stream_id
                              0,                        // associated_stream_id
                              1,                        // priority

@@ -216,7 +216,7 @@ bool BufferedSpdyFramer::HasError() {
   return spdy_framer_.HasError();
 }
 
-SpdySynStreamControlFrame* BufferedSpdyFramer::CreateSynStream(
+SpdyFrame* BufferedSpdyFramer::CreateSynStream(
     SpdyStreamId stream_id,
     SpdyStreamId associated_stream_id,
     SpdyPriority priority,

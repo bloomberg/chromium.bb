@@ -125,7 +125,7 @@ SpdyFrame* SpdyStream::ProduceNextFrame() {
 
     SpdyControlFlags flags =
         has_upload_data_ ? CONTROL_FLAG_NONE : CONTROL_FLAG_FIN;
-    SpdySynStreamControlFrame* frame = session_->CreateSynStream(
+    SpdyFrame* frame = session_->CreateSynStream(
         stream_id_, priority_, slot_, flags, *request_);
     send_time_ = base::TimeTicks::Now();
     return frame;

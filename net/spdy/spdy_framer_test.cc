@@ -115,7 +115,7 @@ class SpdyFramerTestUtil {
       if (unidirectional) {
         flags &= CONTROL_FLAG_UNIDIRECTIONAL;
       }
-      scoped_ptr<SpdySynStreamControlFrame> frame(
+      scoped_ptr<SpdyFrame> frame(
           framer.CreateSynStream(stream_id,
                                  associated_stream_id,
                                  priority,
@@ -124,8 +124,8 @@ class SpdyFramerTestUtil {
                                  false,
                                  &null_headers));
       ResetBuffer();
-      memcpy(buffer_.get(), frame->data(), SpdySynStreamControlFrame::size());
-      size_ += SpdySynStreamControlFrame::size();
+      memcpy(buffer_.get(), frame->data(), framer.GetSynStreamMinimumSize());
+      size_ += framer.GetSynStreamMinimumSize();
     }
 
     virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE {
@@ -142,7 +142,7 @@ class SpdyFramerTestUtil {
                                &null_headers));
       ResetBuffer();
       memcpy(buffer_.get(), frame->data(), framer.GetHeadersMinimumSize());
-      size_ += SpdySynStreamControlFrame::size();
+      size_ += framer.GetSynStreamMinimumSize();
     }
 
     virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE {
@@ -159,7 +159,7 @@ class SpdyFramerTestUtil {
                                &null_headers));
       ResetBuffer();
       memcpy(buffer_.get(), frame->data(), framer.GetHeadersMinimumSize());
-      size_ += SpdySynStreamControlFrame::size();
+      size_ += framer.GetSynStreamMinimumSize();
     }
 
     virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
@@ -576,11 +576,26 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   SpdyCredential credential_;
 };
 
+// Retrieves serialized headers from SYN_STREAM frame.
+// Does not check that the given frame is a SYN_STREAM.
+base::StringPiece GetSerializedHeaders(const SpdyFrame* frame,
+                                       const SpdyFramer& framer) {
+  return base::StringPiece(
+      frame->data() + framer.GetSynStreamMinimumSize(),
+      frame->length() + framer.GetControlFrameMinimumSize() -
+      framer.GetSynStreamMinimumSize());
+}
+
+}  // namespace test
+
 }  // namespace net
 
-using test::CompareCharArraysWithHexError;
-using test::SpdyFramerTestUtil;
-using test::TestSpdyVisitor;
+using net::test::CompareCharArraysWithHexError;
+using net::test::SpdyFramerTestUtil;
+using net::test::TestSpdyVisitor;
+using net::test::GetSerializedHeaders;
+
+namespace net {
 
 TEST(SpdyFrameBuilderTest, WriteLimits) {
   SpdyFrameBuilder builder(1, DATA_FLAG_NONE, kLengthMask + 8);
@@ -688,7 +703,7 @@ TEST_P(SpdyFramerTest, HeaderBlockInBuffer) {
   SpdyFramer framer(spdy_version_);
 
   // Encode the header block into a SynStream frame.
-  scoped_ptr<SpdySynStreamControlFrame> frame(
+  scoped_ptr<SpdyFrame> frame(
       framer.CreateSynStream(1,  // stream id
                              0,  // associated stream id
                              1,  // priority
@@ -697,9 +712,10 @@ TEST_P(SpdyFramerTest, HeaderBlockInBuffer) {
                              false,  // compress
                              &headers));
   EXPECT_TRUE(frame.get() != NULL);
-  string serialized_headers(frame->header_block(), frame->header_block_len());
+  base::StringPiece serialized_headers =
+      GetSerializedHeaders(frame.get(), framer);
   SpdyHeaderBlock new_headers;
-  EXPECT_TRUE(framer.ParseHeaderBlockInBuffer(serialized_headers.c_str(),
+  EXPECT_TRUE(framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
                                               serialized_headers.size(),
                                               &new_headers));
 
@@ -716,7 +732,7 @@ TEST_P(SpdyFramerTest, UndersizedHeaderBlockInBuffer) {
   SpdyFramer framer(spdy_version_);
 
   // Encode the header block into a SynStream frame.
-  scoped_ptr<SpdySynStreamControlFrame> frame(
+  scoped_ptr<SpdyFrame> frame(
       framer.CreateSynStream(1,  // stream id
                              0,  // associated stream id
                              1,  // priority
@@ -726,9 +742,10 @@ TEST_P(SpdyFramerTest, UndersizedHeaderBlockInBuffer) {
                              &headers));
   EXPECT_TRUE(frame.get() != NULL);
 
-  string serialized_headers(frame->header_block(), frame->header_block_len());
+  base::StringPiece serialized_headers =
+      GetSerializedHeaders(frame.get(), framer);
   SpdyHeaderBlock new_headers;
-  EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(serialized_headers.c_str(),
+  EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
                                                serialized_headers.size() - 2,
                                                &new_headers));
 }
@@ -758,13 +775,12 @@ TEST_P(SpdyFramerTest, OutOfOrderHeaders) {
   frame.WriteUInt32ToOffset(4, frame.length() - SpdyFrame::kHeaderSize);
 
   SpdyHeaderBlock new_headers;
-  scoped_ptr<SpdyFrame> control_frame(frame.take());
-  SpdySynStreamControlFrame syn_frame(control_frame->data(), false);
-  string serialized_headers(syn_frame.header_block(),
-                            syn_frame.header_block_len());
   SpdyFramer framer(spdy_version_);
   framer.set_enable_compression(false);
-  EXPECT_TRUE(framer.ParseHeaderBlockInBuffer(serialized_headers.c_str(),
+  scoped_ptr<SpdyFrame> control_frame(frame.take());
+  base::StringPiece serialized_headers =
+      GetSerializedHeaders(control_frame.get(), framer);
+  EXPECT_TRUE(framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
                                               serialized_headers.size(),
                                               &new_headers));
 }
@@ -866,14 +882,13 @@ TEST_P(SpdyFramerTest, DuplicateHeader) {
   frame.WriteUInt32ToOffset(4, frame.length() - SpdyFrame::kHeaderSize);
 
   SpdyHeaderBlock new_headers;
-  scoped_ptr<SpdyFrame> control_frame(frame.take());
-  SpdySynStreamControlFrame syn_frame(control_frame->data(), false);
-  string serialized_headers(syn_frame.header_block(),
-                            syn_frame.header_block_len());
   SpdyFramer framer(spdy_version_);
   framer.set_enable_compression(false);
+  scoped_ptr<SpdyFrame> control_frame(frame.take());
+  base::StringPiece serialized_headers =
+      GetSerializedHeaders(control_frame.get(), framer);
   // This should fail because duplicate headers are verboten by the spec.
-  EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(serialized_headers.c_str(),
+  EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
                                                serialized_headers.size(),
                                                &new_headers));
 }
@@ -900,13 +915,12 @@ TEST_P(SpdyFramerTest, MultiValueHeader) {
   frame.WriteUInt32ToOffset(4, frame.length() - SpdyFrame::kHeaderSize);
 
   SpdyHeaderBlock new_headers;
-  scoped_ptr<SpdyFrame> control_frame(frame.take());
-  SpdySynStreamControlFrame syn_frame(control_frame->data(), false);
-  string serialized_headers(syn_frame.header_block(),
-                            syn_frame.header_block_len());
   SpdyFramer framer(spdy_version_);
   framer.set_enable_compression(false);
-  EXPECT_TRUE(framer.ParseHeaderBlockInBuffer(serialized_headers.c_str(),
+  scoped_ptr<SpdyFrame> control_frame(frame.take());
+  base::StringPiece serialized_headers =
+      GetSerializedHeaders(control_frame.get(), framer);
+  EXPECT_TRUE(framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
                                               serialized_headers.size(),
                                               &new_headers));
   EXPECT_TRUE(new_headers.find("name") != new_headers.end());
@@ -926,7 +940,7 @@ TEST_P(SpdyFramerTest, BasicCompression) {
   SpdyFramer framer(spdy_version_);
   framer.set_debug_visitor(visitor.get());
   framer.set_enable_compression(true);
-  scoped_ptr<SpdySynStreamControlFrame> frame1(
+  scoped_ptr<SpdyFrame> frame1(
       framer.CreateSynStream(1,  // stream id
                              0,  // associated stream id
                              1,  // priority
@@ -949,7 +963,7 @@ TEST_P(SpdyFramerTest, BasicCompression) {
     EXPECT_EQ(117u, visitor->last_compressed_size_);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   }
-  scoped_ptr<SpdySynStreamControlFrame> frame2(
+  scoped_ptr<SpdyFrame> frame2(
       framer.CreateSynStream(1,  // stream id
                              0,  // associated stream id
                              1,  // priority
@@ -994,7 +1008,7 @@ TEST_P(SpdyFramerTest, BasicCompression) {
 
   // Expect frames 3 to be the same as a uncompressed frame created
   // from scratch.
-  scoped_ptr<SpdySynStreamControlFrame> uncompressed_frame(
+  scoped_ptr<SpdyFrame> uncompressed_frame(
       framer.CreateSynStream(1,  // stream id
                              0,  // associated stream id
                              1,  // priority
@@ -1021,7 +1035,7 @@ TEST_P(SpdyFramerTest, CompressEmptyHeaders) {
 
   SpdyFramer framer(spdy_version_);
   framer.set_enable_compression(true);
-  scoped_ptr<SpdySynStreamControlFrame> frame1(
+  scoped_ptr<SpdyFrame> frame1(
       framer.CreateSynStream(1,  // stream id
                              0,  // associated stream id
                              1,  // priority
@@ -1313,7 +1327,7 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   block[kHeader1] = kValue1;
   block[kHeader2] = kValue2;
   SpdyControlFlags flags(CONTROL_FLAG_NONE);
-  scoped_ptr<SpdySynStreamControlFrame> syn_frame_1(
+  scoped_ptr<SpdyFrame> syn_frame_1(
       send_framer.CreateSynStream(1,  // stream id
                                   0,  // associated stream id
                                   0,  // priority
@@ -1325,7 +1339,7 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
 
   // SYN_STREAM #2
   block[kHeader3] = kValue3;
-  scoped_ptr<SpdySynStreamControlFrame> syn_frame_2(
+  scoped_ptr<SpdyFrame> syn_frame_2(
       send_framer.CreateSynStream(3,  // stream id
                                   0,  // associated stream id
                                   0,  // priority
@@ -1337,8 +1351,8 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
 
   // Now start decompressing
   scoped_ptr<SpdyFrame> decompressed;
-  scoped_ptr<SpdySynStreamControlFrame> syn_frame;
-  scoped_ptr<string> serialized_headers;
+  scoped_ptr<SpdyFrame> syn_frame;
+  base::StringPiece serialized_headers;
   SpdyHeaderBlock decompressed_headers;
 
   // Decompress SYN_STREAM #1
@@ -1348,11 +1362,9 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   EXPECT_TRUE(decompressed->is_control_frame());
   EXPECT_EQ(SYN_STREAM,
             reinterpret_cast<SpdyControlFrame*>(decompressed.get())->type());
-  syn_frame.reset(new SpdySynStreamControlFrame(decompressed->data(), false));
-  serialized_headers.reset(new string(syn_frame->header_block(),
-                                      syn_frame->header_block_len()));
-  EXPECT_TRUE(recv_framer.ParseHeaderBlockInBuffer(serialized_headers->c_str(),
-                                                   serialized_headers->size(),
+  serialized_headers = GetSerializedHeaders(decompressed.get(), send_framer);
+  EXPECT_TRUE(recv_framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
+                                                   serialized_headers.size(),
                                                    &decompressed_headers));
   EXPECT_EQ(2u, decompressed_headers.size());
   EXPECT_EQ(kValue1, decompressed_headers[kHeader1]);
@@ -1365,12 +1377,10 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   EXPECT_TRUE(decompressed->is_control_frame());
   EXPECT_EQ(SYN_STREAM,
             reinterpret_cast<SpdyControlFrame*>(decompressed.get())->type());
-  syn_frame.reset(new SpdySynStreamControlFrame(decompressed->data(), false));
-  serialized_headers.reset(new string(syn_frame->header_block(),
-                                      syn_frame->header_block_len()));
+  serialized_headers = GetSerializedHeaders(decompressed.get(), send_framer);
   decompressed_headers.clear();
-  EXPECT_TRUE(recv_framer.ParseHeaderBlockInBuffer(serialized_headers->c_str(),
-                                                   serialized_headers->size(),
+  EXPECT_TRUE(recv_framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
+                                                   serialized_headers.size(),
                                                    &decompressed_headers));
   EXPECT_EQ(3u, decompressed_headers.size());
   EXPECT_EQ(kValue1, decompressed_headers[kHeader1]);
@@ -1641,7 +1651,7 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
       0x00, 0x00, 0x03, 'b',
       'a',  'r'
     };
-    scoped_ptr<SpdySynStreamControlFrame> frame(
+    scoped_ptr<SpdyFrame> frame(
         framer.CreateSynStream(1,  // stream id
                                0,  // associated stream id
                                framer.GetLowestPriority(),
@@ -2448,7 +2458,7 @@ TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
   headers["aa"] = "vv";
   headers["bb"] = "ww";
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdySynStreamControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynStream(1,                     // stream_id
                              0,                     // associated_stream_id
                              1,                     // priority
@@ -2558,7 +2568,7 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
   std::string big_value(big_value_size, 'x');
   headers["aa"] = big_value.c_str();
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdySynStreamControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynStream(1,                     // stream_id
                              0,                     // associated_stream_id
                              1,                     // priority
@@ -2589,7 +2599,7 @@ TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
   std::string big_value(kBigValueSize, 'x');
   headers["aa"] = big_value.c_str();
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdySynStreamControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynStream(1,                     // stream_id
                              0,                     // associated_stream_id
                              1,                     // priority
@@ -2622,7 +2632,7 @@ TEST_P(SpdyFramerTest, ControlFrameMuchTooLarge) {
   std::string big_value(big_value_size, 'x');
   headers["aa"] = big_value.c_str();
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdySynStreamControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynStream(1,                     // stream_id
                              0,                     // associated_stream_id
                              1,                     // priority
@@ -2664,7 +2674,7 @@ TEST_P(SpdyFramerTest, DecompressCorruptHeaderBlock) {
   // Construct a SYN_STREAM control frame without compressing the header block,
   // and have the framer try to decompress it. This will cause the framer to
   // deal with a decompression error.
-  scoped_ptr<SpdySynStreamControlFrame> control_frame(
+  scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynStream(1,                     // stream_id
                              0,                     // associated_stream_id
                              1,                     // priority
@@ -3532,12 +3542,12 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
   framer.set_visitor(&visitor);
 
   EXPECT_CALL(visitor, OnControlFrameCompressed(_, _));
-  scoped_ptr<SpdySynStreamControlFrame>
+  scoped_ptr<SpdyFrame>
       frame(framer.CreateSynStream(1, 0, 1, 0, CONTROL_FLAG_NONE, true,
                                    &headers));
   // Adjust size to remove the name/value block.
   frame->set_length(
-      SpdySynStreamControlFrame::size() - SpdyFrame::kHeaderSize);
+      framer.GetSynStreamMinimumSize() - framer.GetControlFrameMinimumSize());
 
   EXPECT_CALL(visitor, OnSynStream(1, 0, 1, 0, false, false));
   EXPECT_CALL(visitor, OnControlFrameHeaderData(1, NULL, 0));

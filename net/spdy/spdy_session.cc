@@ -576,7 +576,7 @@ int SpdySession::GetProtocolVersion() const {
   return buffered_spdy_framer_->protocol_version();
 }
 
-SpdySynStreamControlFrame* SpdySession::CreateSynStream(
+SpdyFrame* SpdySession::CreateSynStream(
     SpdyStreamId stream_id,
     RequestPriority priority,
     uint8 credential_slot,
@@ -589,7 +589,7 @@ SpdySynStreamControlFrame* SpdySession::CreateSynStream(
   SendPrefacePingIfNoneInFlight();
 
   DCHECK(buffered_spdy_framer_.get());
-  scoped_ptr<SpdySynStreamControlFrame> syn_frame(
+  scoped_ptr<SpdyFrame> syn_frame(
       buffered_spdy_framer_->CreateSynStream(
           stream_id, 0,
           ConvertRequestPriorityToSpdyPriority(priority, GetProtocolVersion()),
