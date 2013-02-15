@@ -2,6 +2,16 @@ Current Status as of Feb 11, 2013
 
 
 Upstream cherry-picks:
+<upstream in progress> - Win64 AVX change to not use redzone in
+  libavcodec/x86/h264_deblock.asm.
+  TODO(wolenetz): Upstream version of this patch needs to change
+  the cglobal stack to be 0x10 on WIN64, 0 on Unix64, -0x50 on 32bit.
+  -0x50 means 0x50 but doesn't allocate a stack pointer, saving a
+  register and one instruction faster on function entry (for stack
+  ptr loading) and one faster on exit (for stack ptr restore).  On
+  next merge (m27), bring in this behavior to Chrome.  For now, we're
+  not sure if Chrome ffmpeg currently understands -0x50, so the interim
+  patch in Chrome ffmpeg uses (+)0x50 for 32bit.
 <upstream in progress> - Win64 AVX alignment fix in x86inc.asm's
   WIN64_RESTORE_XMM_INTERNAL.
   TODO(rbultje): Fix may already be in ffmpeg HEAD, though code is
