@@ -807,6 +807,8 @@ void RecordLastRunAppBundlePath() {
   } else if (action == @selector(toggleConfirmToQuit:)) {
     [self updateConfirmToQuitPrefMenuItem:static_cast<NSMenuItem*>(item)];
     enable = YES;
+  } else if (action == @selector(executeApplication:)) {
+    enable = YES;
   }
   return enable;
 }
@@ -931,12 +933,6 @@ void RecordLastRunAppBundlePath() {
       break;
     case IDC_OPTIONS:
       [self showPreferences:sender];
-      break;
-    default:
-      // Background Applications use dynamic values that must be less than the
-      // smallest value among the predefined IDC_* labels.
-      if ([sender tag] < IDC_MinimumLabelValue)
-        [self executeApplication:sender];
       break;
   }
 }
@@ -1287,7 +1283,7 @@ void RecordLastRunAppBundlePath() {
           l10n_util::GetNSStringWithFixup(IDS_BACKGROUND_APPS_MAC);
       scoped_nsobject<NSMenu> appMenu([[NSMenu alloc] initWithTitle:menuStr]);
       for (extensions::ExtensionList::const_iterator cursor =
-            applications.begin();
+               applications.begin();
            cursor != applications.end();
            ++cursor, ++position) {
         DCHECK_EQ(applications.GetPosition(*cursor), position);
@@ -1295,18 +1291,19 @@ void RecordLastRunAppBundlePath() {
             base::SysUTF16ToNSString(UTF8ToUTF16((*cursor)->name()));
         scoped_nsobject<NSMenuItem> appItem([[NSMenuItem alloc]
             initWithTitle:itemStr
-                   action:@selector(commandFromDock:)
+                   action:@selector(executeApplication:)
             keyEquivalent:@""]);
         [appItem setTarget:self];
         [appItem setTag:position];
         [appMenu addItem:appItem];
       }
+
       scoped_nsobject<NSMenuItem> appMenuItem([[NSMenuItem alloc]
           initWithTitle:menuStr
-                 action:@selector(commandFromDock:)
+                 action:@selector(executeApplication:)
           keyEquivalent:@""]);
       [appMenuItem setTarget:self];
-      [appMenuItem setTag:position];
+      [appMenuItem setTag:IDC_VIEW_BACKGROUND_PAGES];
       [appMenuItem setSubmenu:appMenu];
       [dockMenu addItem:appMenuItem];
     }
