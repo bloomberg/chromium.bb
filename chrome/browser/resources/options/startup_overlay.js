@@ -60,7 +60,7 @@ cr.define('options', function() {
 
       var suggestionList = new cr.ui.AutocompleteList();
       suggestionList.autoExpands = true;
-      suggestionList.suggestionUpdateRequestCallback =
+      suggestionList.requestSuggestions =
           this.requestAutocompleteSuggestions_.bind(this);
       $('startup-overlay').appendChild(suggestionList);
       this.autocompleteList_ = suggestionList;

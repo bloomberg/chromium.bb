@@ -88,21 +88,6 @@ cr.define('cr.ui', function() {
      */
     textFieldInputHandler_: null,
 
-    /**
-     * A function to call when new suggestions are needed.
-     * @type {Function}
-     * @private
-     */
-    suggestionUpdateRequestCallback_: null,
-
-    /**
-     * A function to call when a suggestion is
-     * selected. setInputValueToSelectedUrl_ is used by default.
-     * @type {Function}
-     * @private
-     */
-    suggestionSelectedCallback_: null,
-
     /** @override */
     decorate: function() {
       List.prototype.decorate.call(this);
@@ -113,12 +98,12 @@ cr.define('cr.ui', function() {
       this.textFieldKeyHandler_ = this.handleAutocompleteKeydown_.bind(this);
       var self = this;
       this.textFieldInputHandler_ = function(e) {
-        if (self.suggestionUpdateRequestCallback_)
-          self.suggestionUpdateRequestCallback_(self.targetInput_.value);
+        self.requestSuggestions(self.targetInput_.value);
       };
-      this.suggestionSelectedCallback_ =
-          this.setInputValueToSelectedUrl_.bind(this);
-      this.addEventListener('change', this.suggestionSelectedCallback_);
+      this.addEventListener('change', function(e) {
+        if (self.selectedItem)
+          self.handleSelectedSuggestion(self.selectedItem);
+      });
       // Start hidden; adding suggestions will unhide.
       this.hidden = true;
     },
@@ -138,25 +123,35 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * A function to call when the attached input field's contents change.
-     * The function should take one string argument, which will be the text
-     * to autocomplete from.
-     * @type {Function}
+     * Requests new suggestions. Called when new suggestions are needed.
+     * @param {string} query the text to autocomplete from.
      */
-    set suggestionUpdateRequestCallback(callback) {
-      this.suggestionUpdateRequestCallback_ = callback;
+    requestSuggestions: function(query) {
     },
 
     /**
-     * A function to call when a suggestion is selected.
-     * The function should take one change Event argument, which is raised
-     * when a suggestion is selected.
-     * @type {Function}
+     * Handles the Enter keydown event.
+     * By default, clears and hides the autocomplete popup. Note that the
+     * keydown event bubbles up, so the input field can handle the event.
      */
-    set suggestionSelectedCallback(callback) {
-      this.removeEventListener('change', this.suggestionSelectedCallback_);
-      this.suggestionSelectedCallback_ = callback;
-      this.addEventListener('change', this.suggestionSelectedCallback_);
+    handleEnterKeydown: function() {
+      this.suggestions = [];
+    },
+
+    /**
+     * Handles the selected suggestion. Called when a suggestion is selected.
+     * By default, sets the target input element's value to the 'url' field
+     * of the selected suggestion.
+     * @param {Event} event The change event.
+     */
+    handleSelectedSuggestion : function(selectedSuggestion) {
+      var input = this.targetInput_;
+      if (!input)
+        return;
+      input.value = selectedSuggestion['url'];
+      // Programatically change the value won't trigger a change event, but
+      // clients are likely to want to know when changes happen, so fire one.
+      cr.dispatchSimpleEvent(input, 'change', true);
     },
 
     /**
@@ -195,13 +190,16 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Makes sure that the suggestion list matches the width of the input it is.
-     * attached to. Should be called any time the input is resized.
+     * Makes sure that the suggestion list matches the width and the position
+     * of the input it is attached to. Should be called any time the input is
+     * resized.
      */
-    syncWidthToInput: function() {
+    syncWidthAndPositionToInput: function() {
       var input = this.targetInput_;
-      if (input)
+      if (input) {
         this.style.width = input.getBoundingClientRect().width + 'px';
+        cr.ui.positionPopupAroundElement(input, this, cr.ui.AnchorType.BELOW);
+      }
     },
 
     /**
@@ -229,9 +227,9 @@ cr.define('cr.ui', function() {
           break;
         case 'Enter':
           // If the user has already selected an item using the arrow keys then
-          // presses Enter, clear the suggestions but also keep
-          // |handled| = false, so the input field can handle the event as well.
-          this.suggestions = [];
+          // presses Enter, keep |handled| = false, so the input field can
+          // handle the event as well.
+          this.handleEnterKeydown();
           break;
         case 'Up':
         case 'Down':
@@ -247,22 +245,6 @@ cr.define('cr.ui', function() {
         event.preventDefault();
         event.stopPropagation();
       }
-    },
-
-    /**
-     * Sets the target input element's value to the 'url' field of the
-     * selected item.
-     * @param {Event} event The change event.
-     * @private
-     */
-    setInputValueToSelectedUrl_ : function(event) {
-      var input = this.targetInput_;
-      if (!input || !this.selectedItem)
-        return;
-      input.value = this.selectedItem['url'];
-      // Programatically change the value won't trigger a change event, but
-      // clients are likely to want to know when changes happen, so fire one.
-      cr.dispatchSimpleEvent(input, 'change', true);
     },
   };
 

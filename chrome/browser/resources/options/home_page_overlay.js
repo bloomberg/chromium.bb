@@ -53,7 +53,7 @@ cr.define('options', function() {
 
       var suggestionList = new cr.ui.AutocompleteList();
       suggestionList.autoExpands = true;
-      suggestionList.suggestionUpdateRequestCallback =
+      suggestionList.requestSuggestions =
           this.requestAutocompleteSuggestions_.bind(this);
       $('home-page-overlay').appendChild(suggestionList);
       this.autocompleteList_ = suggestionList;
@@ -65,10 +65,10 @@ cr.define('options', function() {
         self.autocompleteList_.detach();
       });
 
-      // Text fields may change widths when the window changes size, so make
-      // sure the suggestion list stays in sync.
+      // Text fields may change widths and positions when the window changes
+      // size, so make sure the suggestion list stays in sync.
       window.addEventListener('resize', function() {
-        self.autocompleteList_.syncWidthToInput();
+        self.autocompleteList_.syncWidthAndPositionToInput();
       });
     },
 
