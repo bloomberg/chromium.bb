@@ -88,6 +88,12 @@
 #include "win8/util/win8_util.h"
 #endif  // OS_WIN
 
+#if defined(USE_ASH)
+#include "ash/ash_switches.h"
+#include "chrome/browser/extensions/api/tabs/ash_panel_contents.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
+#endif
+
 namespace Get = extensions::api::windows::Get;
 namespace GetAll = extensions::api::windows::GetAll;
 namespace GetCurrent = extensions::api::windows::GetCurrent;
@@ -531,15 +537,8 @@ bool WindowsCreateFunction::RunImpl() {
     }
 
     // Initialize default window bounds according to window type.
-    // In ChromiumOS the default popup bounds is 0x0 which indicates default
-    // window sizes in PanelBrowserView. In other OSs use the same default
-    // bounds as windows.
-#if !defined(OS_CHROMEOS)
     if (Browser::TYPE_TABBED == window_type ||
         Browser::TYPE_POPUP == window_type) {
-#else
-    if (Browser::TYPE_TABBED == window_type) {
-#endif
       // Try to position the new browser relative to its originating
       // browser window. The call offsets the bounds by kWindowTilePixels
       // (defined in WindowSizer to be 10).
@@ -594,8 +593,28 @@ bool WindowsCreateFunction::RunImpl() {
     }
   }
 
-#if !defined(OS_CHROMEOS)
   if (window_type == Browser::TYPE_PANEL) {
+#if defined(OS_CHROMEOS)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePanels) &&
+        PanelManager::ShouldUsePanels(extension_id)) {
+      ShellWindow::CreateParams create_params;
+      create_params.window_type = ShellWindow::WINDOW_TYPE_PANEL;
+      create_params.bounds = window_bounds;
+      create_params.minimum_size = window_bounds.size();
+      create_params.maximum_size = window_bounds.size();
+      ShellWindow* shell_window =
+          new ShellWindow(window_profile, GetExtension());
+      AshPanelContents* ash_panel_contents = new AshPanelContents(shell_window);
+      shell_window->Init(urls[0], ash_panel_contents, create_params);
+      SetResult(ash_panel_contents->GetExtensionWindowController()->
+                CreateWindowValueWithTabs(GetExtension()));
+      // Add the panel to the shell window registry so that it shows up in
+      // the launcher and as an active render process.
+      extensions::ShellWindowRegistry::Get(window_profile)->AddShellWindow(
+          shell_window);
+      return true;
+    }
+#else
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
     // Note: Panels ignore all but the first url provided.
@@ -612,8 +631,8 @@ bool WindowsCreateFunction::RunImpl() {
         panel->extension_window_controller()->CreateWindowValueWithTabs(
             GetExtension()));
     return true;
-  }
 #endif
+  }
 
   // Create a new BrowserWindow.
   chrome::HostDesktopType host_desktop_type = chrome::GetActiveDesktop();

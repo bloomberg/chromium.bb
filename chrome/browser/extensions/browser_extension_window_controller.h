@@ -24,6 +24,8 @@ class BrowserExtensionWindowController : public extensions::WindowController {
   virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValueWithTabs(
       const extensions::Extension* extension) const OVERRIDE;
+  virtual base::DictionaryValue* CreateTabValue(
+      const extensions::Extension* extension, int tab_index) const OVERRIDE;
   virtual bool CanClose(Reason* reason) const OVERRIDE;
   virtual void SetFullscreenMode(bool is_fullscreen,
                                  const GURL& extension_url) const OVERRIDE;

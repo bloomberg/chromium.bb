@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
