@@ -135,10 +135,12 @@ ExtensionInstallDialog::ExtensionInstallDialog(
       prompt.HasAbortButtonLabel() ?
           UTF16ToUTF8(prompt.GetAbortButtonLabel()).c_str() : GTK_STOCK_CANCEL,
       GTK_RESPONSE_CLOSE);
-  gtk_dialog_add_button(
-      GTK_DIALOG(dialog_),
-      UTF16ToUTF8(prompt.GetAcceptButtonLabel()).c_str(),
-      GTK_RESPONSE_ACCEPT);
+  if (prompt.HasAcceptButtonLabel()) {
+    gtk_dialog_add_button(
+        GTK_DIALOG(dialog_),
+        UTF16ToUTF8(prompt.GetAcceptButtonLabel()).c_str(),
+        GTK_RESPONSE_ACCEPT);
+  }
 #if !GTK_CHECK_VERSION(2, 22, 0)
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog_), FALSE);
 #endif
