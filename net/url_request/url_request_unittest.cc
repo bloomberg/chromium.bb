@@ -2725,8 +2725,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting3) {
 // Tests that we can handle when a network request was canceled while we were
 // waiting for the network delegate.
 // Part 4: Request is cancelled while waiting for OnAuthRequired callback.
-// Disabled: crbug.com/158130.
-TEST_F(URLRequestTestHTTP, DISABLED_NetworkDelegateCancelWhileWaiting4) {
+TEST_F(URLRequestTestHTTP, NetworkDelegateCancelWhileWaiting4) {
   ASSERT_TRUE(test_server_.Start());
 
   TestDelegate d;
