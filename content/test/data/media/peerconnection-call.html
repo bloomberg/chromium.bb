@@ -105,17 +105,8 @@
       // When |secondDataChannel| receive a message, send a message back.  
       secondDataChannel.onmessage = function(event) {
         expectEquals(event.data, sendDataString);
-        // TODO(perkj): Currently we sometimes can't send a message here since
-        // the the |dataChannel.readyState| has not transitioned to open yet.
-        // http://code.google.com/p/webrtc/issues/detail?id=1262         
-        if (secondDataChannel.readyState == "open") {
-          secondDataChannel.send(sendDataString);
-        } else {
-          secondDataChannel.onopen = function(event) {
-            expectEquals('open', secondDataChannel.readyState);
-            secondDataChannel.send(sendDataString);                   
-          }
-        }
+        expectEquals('open', secondDataChannel.readyState);                
+        secondDataChannel.send(sendDataString);        
       }
     }
   }
