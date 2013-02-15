@@ -190,6 +190,12 @@ void MessageCenterNotificationManager::NotificationRemoved(
 
 void MessageCenterNotificationManager::ShowSettings(
     const std::string& notification_id) {
+  // The per-message-center Settings button passes an empty string.
+  if (notification_id.empty()) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
   ProfileNotification* profile_notification =
       FindProfileNotification(notification_id);
   Browser* browser =
