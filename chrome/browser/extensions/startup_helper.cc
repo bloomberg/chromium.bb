@@ -13,7 +13,10 @@
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 
@@ -27,7 +30,10 @@ void PrintPackExtensionMessage(const std::string& message) {
 
 namespace extensions {
 
-StartupHelper::StartupHelper() : pack_job_succeeded_(false) {}
+StartupHelper::StartupHelper() : pack_job_succeeded_(false) {
+  ManifestHandler::Register(extension_manifest_keys::kDefaultLocale,
+                            make_linked_ptr(new DefaultLocaleHandler));
+}
 
 void StartupHelper::OnPackSuccess(
     const base::FilePath& crx_path,
