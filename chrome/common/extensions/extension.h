@@ -25,7 +25,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
-#include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 #include "chrome/common/extensions/user_script.h"
 #include "extensions/common/install_warning.h"
@@ -53,6 +52,7 @@ FORWARD_DECLARE_TEST(TabStripModelTest, Apps);
 
 namespace extensions {
 struct ActionInfo;
+class APIPermissionSet;
 class PermissionSet;
 
 // Represents a Chrome extension.
@@ -529,6 +529,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const PermissionSet* required_permission_set() const {
     return required_permission_set_.get();
   }
+  // Returns the temporary APIPermissionSet used in initialization.
+  // (NULL after initialization is completed.)
+  APIPermissionSet* initial_api_permissions() {
+    return initial_api_permissions_.get();
+  }
   // Appends |new_warning[s]| to install_warnings_.
   void AddInstallWarning(const InstallWarning& new_warning);
   void AddInstallWarnings(const std::vector<InstallWarning>& new_warnings);
@@ -642,8 +647,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The following are helpers for InitFromValue to load various features of the
   // extension from the manifest.
 
-  bool LoadAppIsolation(const APIPermissionSet& api_permissions,
-                        string16* error);
+  bool LoadAppIsolation(string16* error);
 
   bool LoadRequiredFeatures(string16* error);
   bool LoadName(string16* error);
@@ -658,8 +662,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadLaunchContainer(string16* error);
   bool LoadLaunchURL(string16* error);
 
-  bool LoadSharedFeatures(const APIPermissionSet& api_permissions,
-                          string16* error);
+  bool LoadSharedFeatures(string16* error);
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
   bool LoadIcons(string16* error);
@@ -671,22 +674,15 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadOfflineEnabled(string16* error);
   bool LoadBackgroundScripts(string16* error);
   bool LoadBackgroundScripts(const std::string& key, string16* error);
-  bool LoadBackgroundPage(const APIPermissionSet& api_permissions,
-                          string16* error);
+  bool LoadBackgroundPage(string16* error);
   bool LoadBackgroundPage(const std::string& key,
-                          const APIPermissionSet& api_permissions,
                           string16* error);
-  bool LoadBackgroundPersistent(
-      const APIPermissionSet& api_permissions,
-      string16* error);
-  bool LoadBackgroundAllowJSAccess(
-      const APIPermissionSet& api_permissions,
-      string16* error);
-  bool LoadExtensionFeatures(APIPermissionSet* api_permissions,
-                             string16* error);
+  bool LoadBackgroundPersistent(string16* error);
+  bool LoadBackgroundAllowJSAccess(string16* error);
+  bool LoadExtensionFeatures(string16* error);
   bool LoadContentScripts(string16* error);
   bool LoadBrowserAction(string16* error);
-  bool LoadSystemIndicator(APIPermissionSet* api_permissions, string16* error);
+  bool LoadSystemIndicator(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
   bool LoadIncognitoMode(string16* error);
   bool LoadContentSecurityPolicy(string16* error);
@@ -729,7 +725,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Checks whether the host |pattern| is allowed for this extension, given API
   // permissions |permissions|.
   bool CanSpecifyHostPermission(const URLPattern& pattern,
-      const APIPermissionSet& permissions) const;
+                                const APIPermissionSet& permissions) const;
 
   bool CheckMinimumChromeVersion(string16* error) const;
 
@@ -776,6 +772,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The extension runtime data.
   mutable base::Lock runtime_data_lock_;
   mutable RuntimeData runtime_data_;
+
+  // The API permission set; used during extension initialization.
+  // Cleared after permissions are finalized by SetActivePermissions.
+  scoped_ptr<APIPermissionSet> initial_api_permissions_;
 
   // The set of permissions the extension can request at runtime.
   scoped_refptr<const PermissionSet> optional_permission_set_;

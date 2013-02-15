@@ -39,6 +39,7 @@
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_handler_helpers.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/user_script.h"
@@ -1406,18 +1407,18 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (is_app() && !LoadAppFeatures(error))
     return false;
 
-  APIPermissionSet api_permissions;
+  initial_api_permissions_.reset(new APIPermissionSet);
   URLPatternSet host_permissions;
   if (!ParsePermissions(keys::kPermissions,
                         error,
-                        &api_permissions,
+                        initial_api_permissions_.get(),
                         &host_permissions)) {
     return false;
   }
 
   // Check for any permissions that are optional only.
-  for (APIPermissionSet::const_iterator i = api_permissions.begin();
-      i != api_permissions.end(); ++i) {
+  for (APIPermissionSet::const_iterator i = initial_api_permissions_->begin();
+       i != initial_api_permissions_->end(); ++i) {
     if ((*i)->info()->must_be_optional()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kPermissionMustBeOptional, (*i)->info()->name());
@@ -1429,9 +1430,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
   // app.window API to platform apps, with no dependency on any permissions.
   // See http://crbug.com/120069.
   if (is_platform_app()) {
-    api_permissions.insert(APIPermission::kAppCurrentWindowInternal);
-    api_permissions.insert(APIPermission::kAppRuntime);
-    api_permissions.insert(APIPermission::kAppWindow);
+    initial_api_permissions_->insert(APIPermission::kAppCurrentWindowInternal);
+    initial_api_permissions_->insert(APIPermission::kAppRuntime);
+    initial_api_permissions_->insert(APIPermission::kAppWindow);
   }
 
   APIPermissionSet optional_api_permissions;
@@ -1443,18 +1444,18 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
   }
 
-  if (ContainsManifestForbiddenPermission(api_permissions, error) ||
+  if (ContainsManifestForbiddenPermission(*initial_api_permissions_, error) ||
       ContainsManifestForbiddenPermission(optional_api_permissions, error)) {
     return false;
   }
 
-  if (!LoadAppIsolation(api_permissions, error))
+  if (!LoadAppIsolation(error))
     return false;
 
-  if (!LoadSharedFeatures(api_permissions, error))
+  if (!LoadSharedFeatures(error))
     return false;
 
-  if (!LoadExtensionFeatures(&api_permissions, error))
+  if (!LoadExtensionFeatures(error))
     return false;
 
   if (!LoadManagedModeFeatures(error))
@@ -1468,17 +1469,17 @@ bool Extension::InitFromValue(int flags, string16* error) {
   finished_parsing_manifest_ = true;
 
   runtime_data_.SetActivePermissions(new PermissionSet(
-      this, api_permissions, host_permissions));
+      this, *initial_api_permissions_, host_permissions));
   required_permission_set_ = new PermissionSet(
-      this, api_permissions, host_permissions);
+      this, *initial_api_permissions_, host_permissions);
   optional_permission_set_ = new PermissionSet(
       optional_api_permissions, optional_host_permissions, URLPatternSet());
+  initial_api_permissions_.reset();
 
   return true;
 }
 
-bool Extension::LoadAppIsolation(const APIPermissionSet& api_permissions,
-                                 string16* error) {
+bool Extension::LoadAppIsolation(string16* error) {
   // Platform apps always get isolated storage.
   if (is_platform_app()) {
     is_storage_isolated_ = true;
@@ -1487,7 +1488,8 @@ bool Extension::LoadAppIsolation(const APIPermissionSet& api_permissions,
 
   // Other apps only get it if it is requested _and_ experimental APIs are
   // enabled.
-  if (!api_permissions.count(APIPermission::kExperimental) || !is_app())
+  if (!initial_api_permissions()->count(APIPermission::kExperimental)
+      || !is_app())
     return true;
 
   Value* tmp_isolation = NULL;
@@ -1808,9 +1810,7 @@ bool Extension::LoadLaunchURL(string16* error) {
   return true;
 }
 
-bool Extension::LoadSharedFeatures(
-    const APIPermissionSet& api_permissions,
-    string16* error) {
+bool Extension::LoadSharedFeatures(string16* error) {
   if (!LoadDescription(error) ||
       !LoadIcons(error) ||
       !ManifestHandler::ParseExtension(this, error) ||
@@ -1821,9 +1821,9 @@ bool Extension::LoadSharedFeatures(
       !LoadOfflineEnabled(error) ||
       // LoadBackgroundScripts() must be called before LoadBackgroundPage().
       !LoadBackgroundScripts(error) ||
-      !LoadBackgroundPage(api_permissions, error) ||
-      !LoadBackgroundPersistent(api_permissions, error) ||
-      !LoadBackgroundAllowJSAccess(api_permissions, error))
+      !LoadBackgroundPage(error) ||
+      !LoadBackgroundPersistent(error) ||
+      !LoadBackgroundAllowJSAccess(error))
     return false;
 
   return true;
@@ -2147,27 +2147,21 @@ bool Extension::LoadBackgroundScripts(const std::string& key, string16* error) {
   return true;
 }
 
-bool Extension::LoadBackgroundPage(
-    const APIPermissionSet& api_permissions,
-    string16* error) {
+bool Extension::LoadBackgroundPage(string16* error) {
   if (is_platform_app()) {
-    return LoadBackgroundPage(
-        keys::kPlatformAppBackgroundPage, api_permissions, error);
+    return LoadBackgroundPage(keys::kPlatformAppBackgroundPage, error);
   }
 
-  if (!LoadBackgroundPage(keys::kBackgroundPage, api_permissions, error))
+  if (!LoadBackgroundPage(keys::kBackgroundPage, error))
     return false;
   if (background_url_.is_empty()) {
     return LoadBackgroundPage(
-        keys::kBackgroundPageLegacy, api_permissions, error);
+        keys::kBackgroundPageLegacy, error);
   }
   return true;
 }
 
-bool Extension::LoadBackgroundPage(
-    const std::string& key,
-    const APIPermissionSet& api_permissions,
-    string16* error) {
+bool Extension::LoadBackgroundPage(const std::string& key, string16* error) {
   base::Value* background_page_value = NULL;
   if (!manifest_->Get(key, &background_page_value))
     return true;
@@ -2188,7 +2182,7 @@ bool Extension::LoadBackgroundPage(
     background_url_ = GURL(background_str);
 
     // Make sure "background" permission is set.
-    if (!api_permissions.count(APIPermission::kBackground)) {
+    if (!initial_api_permissions()->count(APIPermission::kBackground)) {
       *error = ASCIIToUTF16(errors::kBackgroundPermissionNeeded);
       return false;
     }
@@ -2212,9 +2206,7 @@ bool Extension::LoadBackgroundPage(
   return true;
 }
 
-bool Extension::LoadBackgroundPersistent(
-    const APIPermissionSet& api_permissions,
-    string16* error) {
+bool Extension::LoadBackgroundPersistent(string16* error) {
   if (is_platform_app()) {
     background_page_is_persistent_ = false;
     return true;
@@ -2237,9 +2229,7 @@ bool Extension::LoadBackgroundPersistent(
   return true;
 }
 
-bool Extension::LoadBackgroundAllowJSAccess(
-    const APIPermissionSet& api_permissions,
-    string16* error) {
+bool Extension::LoadBackgroundAllowJSAccess(string16* error) {
   Value* allow_js_access = NULL;
   if (!manifest_->Get(keys::kBackgroundAllowJsAccess, &allow_js_access))
     return true;
@@ -2253,14 +2243,13 @@ bool Extension::LoadBackgroundAllowJSAccess(
   return true;
 }
 
-bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
-                                      string16* error) {
+bool Extension::LoadExtensionFeatures(string16* error) {
   if (manifest_->HasKey(keys::kConvertedFromUserScript))
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
                           &converted_from_user_script_);
 
   if (!LoadContentScripts(error) ||
-      !LoadSystemIndicator(api_permissions, error) ||
+      !LoadSystemIndicator(error) ||
       !LoadIncognitoMode(error) ||
       !LoadContentSecurityPolicy(error))
     return false;
@@ -2298,8 +2287,7 @@ bool Extension::LoadContentScripts(string16* error) {
   return true;
 }
 
-bool Extension::LoadSystemIndicator(APIPermissionSet* api_permissions,
-                                    string16* error) {
+bool Extension::LoadSystemIndicator(string16* error) {
   if (!manifest_->HasKey(keys::kSystemIndicator)) {
     // There was no manifest entry for the system indicator.
     return true;
@@ -2321,7 +2309,7 @@ bool Extension::LoadSystemIndicator(APIPermissionSet* api_permissions,
 
   // Because the manifest was successfully parsed, auto-grant the permission.
   // TODO(dewittj) Add this for all extension action APIs.
-  api_permissions->insert(APIPermission::kSystemIndicator);
+  initial_api_permissions()->insert(APIPermission::kSystemIndicator);
 
   return true;
 }
