@@ -175,10 +175,9 @@
             ['OS=="linux" and chromeos==1 and branding=="Chrome"', {
               'copies': [
                 {
-                  'destination': '<(PRODUCT_DIR)/extensions',
+                  'destination': '<(PRODUCT_DIR)',
                   'files': [
-                    '>!@(ls browser/extensions/default_extensions/chromeos/cache/*.crx)',
-                    '>!@(ls browser/extensions/default_extensions/chromeos/cache/*.json)'
+                    'browser/extensions/default_extensions/chromeos/extensions/'
                   ]
                 }
               ],
