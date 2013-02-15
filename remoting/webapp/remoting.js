@@ -365,5 +365,9 @@ function getTabType_(callback) {
       chrome.windows.get(tab.windowId, null, windowCallback);
     }
   };
-  chrome.tabs.getCurrent(tabCallback);
+  if (chrome.tabs) {
+    chrome.tabs.getCurrent(tabCallback);
+  } else {
+    console.error('chome.tabs is not available.');
+  }
 }
