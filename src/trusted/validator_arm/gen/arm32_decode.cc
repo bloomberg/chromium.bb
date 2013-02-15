@@ -96,6 +96,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1_instance_()
   , Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1_instance_()
   , Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1_instance_()
+  , Actual_VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_1_instance_()
+  , Actual_VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_1_instance_()
   , Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_instance_()
   , Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_instance_()
   , Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_instance_()
@@ -110,6 +112,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_instance_()
   , Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_instance_()
   , Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1_instance_()
+  , Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1_instance_()
   , Deprecated_instance_()
   , Forbidden_instance_()
   , ForbiddenCondDecoder_instance_()
@@ -144,8 +147,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , VectorBinary3RegisterDifferentLength_I8_16_32_instance_()
   , VectorBinary3RegisterDifferentLength_I8_16_32L_instance_()
   , VectorBinary3RegisterDifferentLength_P8_instance_()
-  , VectorBinary3RegisterImmOp_instance_()
-  , VectorBinary3RegisterLookupOp_instance_()
   , VectorBinary3RegisterSameLength32P_instance_()
   , VectorBinary3RegisterSameLength32_DQ_instance_()
   , VectorBinary3RegisterSameLengthDI_instance_()
@@ -165,7 +166,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , VectorLoadStoreSingle2_instance_()
   , VectorLoadStoreSingle3_instance_()
   , VectorLoadStoreSingle4_instance_()
-  , VectorUnary2RegisterDup_instance_()
   , not_implemented_()
 {}
 
@@ -308,7 +308,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
           0x00B00000 /* A(23:19)=1x11x */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* C(7:4)=xxx0 */) {
-    return VectorBinary3RegisterImmOp_instance_;
+    return Actual_VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01000000)  ==
@@ -319,7 +319,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
           0x00000C00 /* B(11:8)=1100 */ &&
       (inst.Bits() & 0x00000090)  ==
           0x00000000 /* C(7:4)=0xx0 */) {
-    return VectorUnary2RegisterDup_instance_;
+    return Actual_VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01000000)  ==
@@ -330,7 +330,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
           0x00000800 /* B(11:8)=10xx */ &&
       (inst.Bits() & 0x00000010)  ==
           0x00000000 /* C(7:4)=xxx0 */) {
-    return VectorBinary3RegisterLookupOp_instance_;
+    return Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01000000)  ==

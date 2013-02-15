@@ -8345,6 +8345,7 @@ class VSWP_111100111d11ss10dddd00000qm0mmmm_case_0
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
 //    Vn: Vn(19:16),
+//    actual: Actual_VTBL_VTBX_111100111d11nnnndddd10ccnpm0mmmm_case_1,
 //    baseline: VectorBinary3RegisterLookupOp,
 //    constraints: ,
 //    d: D:Vd,
