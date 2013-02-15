@@ -55,6 +55,9 @@ bool InputTypeMatchesFieldType(const DetailInput& input,
            input.type == CREDIT_CARD_EXP_MONTH;
   }
 
+  if (field.type() == CREDIT_CARD_TYPE)
+    return input.type == CREDIT_CARD_NUMBER;
+
   return input.type == field.type();
 }
 

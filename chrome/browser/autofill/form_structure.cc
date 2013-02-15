@@ -196,6 +196,9 @@ AutofillFieldType FieldTypeFromAutocompleteType(
   if (autocomplete_type == "cc-csc")
     return CREDIT_CARD_VERIFICATION_CODE;
 
+  if (autocomplete_type == "cc-type")
+    return CREDIT_CARD_TYPE;
+
   if (autocomplete_type == "tel")
     return PHONE_HOME_WHOLE_NUMBER;
 
