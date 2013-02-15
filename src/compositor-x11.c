@@ -487,25 +487,32 @@ x11_output_wait_for_map(struct x11_compositor *c, struct x11_output *output)
 	xcb_map_notify_event_t *map_notify;
 	xcb_configure_notify_event_t *configure_notify;
 	xcb_generic_event_t *event;
-	int mapped = 0;
+	int mapped = 0, configured = 0;
 	uint8_t response_type;
 
 	/* This isn't the nicest way to do this.  Ideally, we could
-	 * just go back to the main loop and once we get the map
+	 * just go back to the main loop and once we get the configure
 	 * notify, we add the output to the compositor.  While we do
 	 * support output hotplug, we can't start up with no outputs.
-	 * We could add the output and then resize once we get the map
-	 * notify, but we don't want to start up and immediately
-	 * resize the output. */
+	 * We could add the output and then resize once we get the
+	 * configure notify, but we don't want to start up and
+	 * immediately resize the output.
+	 *
+	 * Also, some window managers don't give us our final
+	 * fullscreen size before map_notify, so if we don't get a
+	 * configure_notify before map_notify, we just wait for the
+	 * first one and hope that's our size. */
 
 	xcb_flush(c->conn);
 
-	while (!mapped) {
+	while (!mapped || !configured) {
 		event = xcb_wait_for_event(c->conn);
 		response_type = event->response_type & ~0x80;
 
 		switch (response_type) {
 		case XCB_MAP_NOTIFY:
+			fprintf(stderr, "got XCB_MAP_NOTIFY\n");
+
 			map_notify = (xcb_map_notify_event_t *) event;
 			if (map_notify->window == output->window)
 				mapped = 1;
@@ -515,8 +522,13 @@ x11_output_wait_for_map(struct x11_compositor *c, struct x11_output *output)
 			configure_notify =
 				(xcb_configure_notify_event_t *) event;
 
+			fprintf(stderr, "got XCB_CONFIGURE_NOTIFY %dx%d\n",
+				configure_notify->width,
+				configure_notify->height);
+
 			output->mode.width = configure_notify->width;
 			output->mode.height = configure_notify->height;
+			configured = 1;
 			break;
 		}
 	}
