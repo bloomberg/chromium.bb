@@ -76,6 +76,10 @@ void PictureLayerImpl::pushPropertiesTo(LayerImpl* base_layer) {
   pile_ = PicturePileImpl::Create();
   pile_->set_slow_down_raster_scale_factor(
       layerTreeImpl()->debug_state().slowDownRasterScaleFactor);
+
+  layer_impl->raster_page_scale_ = raster_page_scale_;
+  layer_impl->raster_device_scale_ = raster_device_scale_;
+  layer_impl->raster_source_scale_ = raster_source_scale_;
 }
 
 
@@ -386,8 +390,13 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
 
 void PictureLayerImpl::SyncFromActiveLayer() {
   DCHECK(layerTreeImpl()->IsPendingTree());
-  if (!drawsContent())
+
+  if (!drawsContent()) {
+    raster_page_scale_ = 0;
+    raster_device_scale_ = 0;
+    raster_source_scale_ = 0;
     return;
+  }
 
   // If there is an active tree version of this layer, get a copy of its
   // tiles.  This needs to be done last, after setting invalidation and the
@@ -397,6 +406,10 @@ void PictureLayerImpl::SyncFromActiveLayer() {
 }
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
+  raster_page_scale_ = other->raster_page_scale_;
+  raster_device_scale_ = other->raster_device_scale_;
+  raster_source_scale_ = other->raster_source_scale_;
+
   tilings_->CloneAll(*other->tilings_, invalidation_);
   DCHECK(bounds() == tilings_->LayerBounds());
 
