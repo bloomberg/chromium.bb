@@ -158,6 +158,9 @@ class MasterPreferences {
   //
   bool GetExtensionsBlock(base::DictionaryValue** extensions) const;
 
+  // Returns the variations seed entry from the master prefs.
+  std::string GetVariationsSeed() const;
+
   // Returns true iff the master preferences were successfully read from a file.
   bool read_from_file() const {
     return preferences_read_from_file_;

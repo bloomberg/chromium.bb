@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "googleurl/src/gurl.h"
@@ -312,6 +313,12 @@ std::vector<GURL> MasterPreferences::GetFirstRunTabs() const {
 bool MasterPreferences::GetExtensionsBlock(DictionaryValue** extensions) const {
   return master_dictionary_->GetDictionary(
       master_preferences::kExtensionsBlock, extensions);
+}
+
+std::string MasterPreferences::GetVariationsSeed() const {
+  std::string variations_seed;
+  master_dictionary_->GetString(prefs::kVariationsSeed, &variations_seed);
+  return variations_seed;
 }
 
 // static

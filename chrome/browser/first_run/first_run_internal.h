@@ -54,8 +54,8 @@ bool CopyPrefFile(const base::FilePath& user_data_dir,
 
 // Sets up master preferences by preferences passed by installer.
 void SetupMasterPrefsFromInstallPrefs(
-    MasterPrefs* out_prefs,
-    installer::MasterPreferences* install_prefs);
+    const installer::MasterPreferences& install_prefs,
+    MasterPrefs* out_prefs);
 
 void SetShowWelcomePagePrefIfNeeded(
     installer::MasterPreferences* install_prefs);

@@ -948,6 +948,19 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
     if (do_first_run_tasks_) {
       AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
+
+      // Store the initial VariationsService seed in local state, if it exists
+      // in master prefs.
+      if (!master_prefs_->variations_seed.empty()) {
+        local_state_->SetString(prefs::kVariationsSeed,
+                                master_prefs_->variations_seed);
+        // Set the variation seed date to the current system time. If the user's
+        // clock is incorrect, this may cause some field trial expiry checks to
+        // not do the right thing until the next seed update from the server,
+        // when this value will be updated.
+        local_state_->SetInt64(prefs::kVariationsSeedDate,
+                               base::Time::Now().ToInternalValue());
+      }
     } else if (parsed_command_line().HasSwitch(switches::kNoFirstRun)) {
       // Create the First Run beacon anyways if --no-first-run was passed on the
       // command line.

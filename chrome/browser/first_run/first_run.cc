@@ -250,10 +250,10 @@ bool CopyPrefFile(const base::FilePath& user_data_dir,
 }
 
 void SetupMasterPrefsFromInstallPrefs(
-    MasterPrefs* out_prefs,
-    installer::MasterPreferences* install_prefs) {
+    const installer::MasterPreferences& install_prefs,
+    MasterPrefs* out_prefs) {
   bool value = false;
-  if (install_prefs->GetBool(
+  if (install_prefs.GetBool(
           installer::master_preferences::kDistroImportSearchPref, &value)) {
     if (value) {
       out_prefs->do_import_items |= importer::SEARCH_ENGINES;
@@ -266,12 +266,12 @@ void SetupMasterPrefsFromInstallPrefs(
   // Otherwise, wait until the user has completed first run to set it, so the
   // user is guaranteed to see the bubble iff he or she has completed the first
   // run process.
-  if (install_prefs->GetBool(
+  if (install_prefs.GetBool(
           installer::master_preferences::kDistroSuppressFirstRunBubble,
           &value) && value)
     SetShowFirstRunBubblePref(FIRST_RUN_BUBBLE_SUPPRESS);
 
-  if (install_prefs->GetBool(
+  if (install_prefs.GetBool(
           installer::master_preferences::kDistroImportHistoryPref,
           &value)) {
     if (value) {
@@ -282,10 +282,10 @@ void SetupMasterPrefsFromInstallPrefs(
   }
 
   std::string not_used;
-  out_prefs->homepage_defined = install_prefs->GetString(
+  out_prefs->homepage_defined = install_prefs.GetString(
       prefs::kHomePage, &not_used);
 
-  if (install_prefs->GetBool(
+  if (install_prefs.GetBool(
           installer::master_preferences::kDistroImportHomePagePref,
           &value)) {
     if (value) {
@@ -296,7 +296,7 @@ void SetupMasterPrefsFromInstallPrefs(
   }
 
   // Bookmarks are never imported unless specifically turned on.
-  if (install_prefs->GetBool(
+  if (install_prefs.GetBool(
           installer::master_preferences::kDistroImportBookmarksPref,
           &value)) {
     if (value)
@@ -305,17 +305,19 @@ void SetupMasterPrefsFromInstallPrefs(
       out_prefs->dont_import_items |= importer::FAVORITES;
   }
 
-  if (install_prefs->GetBool(
+  if (install_prefs.GetBool(
           installer::master_preferences::kMakeChromeDefaultForUser,
           &value) && value) {
     out_prefs->make_chrome_default = true;
   }
 
-  if (install_prefs->GetBool(
+  if (install_prefs.GetBool(
           installer::master_preferences::kSuppressFirstRunDefaultBrowserPrompt,
           &value) && value) {
     out_prefs->suppress_first_run_default_browser_prompt = true;
   }
+
+  out_prefs->variations_seed = install_prefs.GetVariationsSeed();
 }
 
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs){
@@ -595,8 +597,7 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
 
   DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
 
-  internal::SetupMasterPrefsFromInstallPrefs(out_prefs,
-      install_prefs.get());
+  internal::SetupMasterPrefsFromInstallPrefs(*install_prefs, out_prefs);
 
   internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
   internal::SetDefaultBrowser(install_prefs.get());
