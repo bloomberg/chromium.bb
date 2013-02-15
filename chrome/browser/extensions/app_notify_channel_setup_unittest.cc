@@ -176,7 +176,8 @@ class AppNotifyChannelSetupTest : public testing::Test {
  public:
   AppNotifyChannelSetupTest() : ui_thread_(BrowserThread::UI, &message_loop_),
                                 db_thread_(BrowserThread::DB),
-                                ui_(new TestUI()) {
+                                ui_(new TestUI()),
+                                factory_(NULL) {
   }
 
   virtual ~AppNotifyChannelSetupTest() {}

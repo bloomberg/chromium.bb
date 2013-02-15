@@ -363,7 +363,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
-  net::FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory(NULL);
   // HTTP request will fail.
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(), "", false);
@@ -390,7 +390,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   ClientDownloadResponse response;
   response.set_verdict(ClientDownloadResponse::SAFE);
-  net::FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory(NULL);
   // Empty response means SAFE.
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
@@ -488,7 +488,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
   ClientDownloadResponse response;
   response.set_verdict(ClientDownloadResponse::DANGEROUS);
-  net::FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory(NULL);
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
@@ -520,7 +520,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   ClientDownloadResponse response;
   response.set_verdict(ClientDownloadResponse::SAFE);
-  net::FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory(NULL);
   // Empty response means SAFE.
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),
@@ -625,7 +625,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
   // DownloadProtectionService::IsSupportedDownload() will return false
   // for crx downloads.
   response.set_verdict(ClientDownloadResponse::DANGEROUS);
-  net::FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory(NULL);
   // Empty response means SAFE.
   factory.SetFakeResponse(
       DownloadProtectionService::GetDownloadRequestUrl(),

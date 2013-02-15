@@ -65,7 +65,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
                                                       &msg_loop_));
 
-    factory_.reset(new net::FakeURLFetcherFactory());
+    factory_.reset(new net::FakeURLFetcherFactory(NULL));
 
     browser_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                          &msg_loop_));

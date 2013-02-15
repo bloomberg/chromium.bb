@@ -272,58 +272,57 @@ void TestURLFetcherFactory::SetDelegateForTests(
   delegate_for_tests_ = delegate_for_tests;
 }
 
-// This class is used by the FakeURLFetcherFactory below.
-class FakeURLFetcher : public TestURLFetcher {
- public:
-  // Normal URL fetcher constructor but also takes in a pre-baked response.
-  FakeURLFetcher(const GURL& url,
-                 URLFetcherDelegate* d,
-                 const std::string& response_data, bool success)
-      : TestURLFetcher(0, url, d),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-    set_status(URLRequestStatus(
-        success ? URLRequestStatus::SUCCESS : URLRequestStatus::FAILED,
-        0));
-    set_response_code(success ? 200 : 500);
-    SetResponseString(response_data);
-  }
+FakeURLFetcher::FakeURLFetcher(const GURL& url,
+                               URLFetcherDelegate* d,
+                               const std::string& response_data,
+                               bool success)
+    : TestURLFetcher(0, url, d),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+  set_status(URLRequestStatus(
+      success ? URLRequestStatus::SUCCESS : URLRequestStatus::FAILED,
+      0));
+  set_response_code(success ? 200 : 500);
+  SetResponseString(response_data);
+}
 
-  // Start the request.  This will call the given delegate asynchronously
-  // with the pre-baked response as parameter.
-  virtual void Start() OVERRIDE {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeURLFetcher::RunDelegate, weak_factory_.GetWeakPtr()));
-  }
+FakeURLFetcher::~FakeURLFetcher() {}
 
-  virtual const GURL& GetURL() const OVERRIDE {
-    return TestURLFetcher::GetOriginalURL();
-  }
+void FakeURLFetcher::Start() {
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeURLFetcher::RunDelegate, weak_factory_.GetWeakPtr()));
+}
 
- private:
-  virtual ~FakeURLFetcher() {
-  }
+void FakeURLFetcher::RunDelegate() {
+  delegate()->OnURLFetchComplete(this);
+}
 
-  // This is the method which actually calls the delegate that is passed in the
-  // constructor.
-  void RunDelegate() {
-    delegate()->OnURLFetchComplete(this);
-  }
-
-  base::WeakPtrFactory<FakeURLFetcher> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeURLFetcher);
-};
-
-FakeURLFetcherFactory::FakeURLFetcherFactory()
-    : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      default_factory_(NULL) {
+const GURL& FakeURLFetcher::GetURL() const {
+  return TestURLFetcher::GetOriginalURL();
 }
 
 FakeURLFetcherFactory::FakeURLFetcherFactory(
     URLFetcherFactory* default_factory)
     : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      creator_(base::Bind(&DefaultFakeURLFetcherCreator)),
       default_factory_(default_factory) {
+}
+
+FakeURLFetcherFactory::FakeURLFetcherFactory(
+    URLFetcherFactory* default_factory,
+    const FakeURLFetcherCreator& creator)
+    : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      creator_(creator),
+      default_factory_(default_factory) {
+}
+
+scoped_ptr<FakeURLFetcher> FakeURLFetcherFactory::DefaultFakeURLFetcherCreator(
+      const GURL& url,
+      URLFetcherDelegate* delegate,
+      const std::string& response,
+      bool success) {
+  return scoped_ptr<FakeURLFetcher>(new FakeURLFetcher(url, delegate,
+                                                       response, success));
 }
 
 FakeURLFetcherFactory::~FakeURLFetcherFactory() {}
@@ -343,7 +342,11 @@ URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
       return default_factory_->CreateURLFetcher(id, url, request_type, d);
     }
   }
-  return new FakeURLFetcher(url, d, it->second.first, it->second.second);
+
+  scoped_ptr<FakeURLFetcher> fake_fetcher =
+      creator_.Run(url, d, it->second.first, it->second.second);
+  // TODO: Make URLFetcherFactory::CreateURLFetcher return a scoped_ptr
+  return fake_fetcher.release();
 }
 
 void FakeURLFetcherFactory::SetFakeResponse(const std::string& url,

@@ -10,7 +10,11 @@
 #include <string>
 #include <utility>
 
+#include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_request_headers.h"
@@ -255,6 +259,47 @@ class TestURLFetcherFactory : public URLFetcherFactory,
 //
 // We assume that the thread that is calling Start() on the URLFetcher object
 // has a message loop running.
+
+// FakeURLFetcher can be used to create a URLFetcher that will emit a fake
+// response when started. This class can be used in place of an actual
+// URLFetcher.
+//
+// Example usage:
+//  FakeURLFetcher fake_fetcher("http://a.com", some_delegate,
+//                              "<html><body>hello world</body></html>",
+//                              true);
+//
+// // Will schedule a call to some_delegate->OnURLFetchComplete(&fake_fetcher).
+// fake_fetcher.Start();
+class FakeURLFetcher : public TestURLFetcher {
+ public:
+  // Normal URL fetcher constructor but also takes in a pre-baked response.
+  FakeURLFetcher(const GURL& url,
+                 URLFetcherDelegate* d,
+                 const std::string& response_data, bool success);
+
+  // Start the request.  This will call the given delegate asynchronously
+  // with the pre-baked response as parameter.
+  virtual void Start() OVERRIDE;
+
+  virtual const GURL& GetURL() const OVERRIDE;
+
+  virtual ~FakeURLFetcher();
+
+ private:
+  // This is the method which actually calls the delegate that is passed in the
+  // constructor.
+  void RunDelegate();
+
+  base::WeakPtrFactory<FakeURLFetcher> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeURLFetcher);
+};
+
+
+// FakeURLFetcherFactory is a factory for FakeURLFetcher objects. When
+// instantiated, it sets itself up as the default URLFetcherFactory. Fake
+// responses for given URLs can be set using SetFakeResponse.
 //
 // This class is not thread-safe.  You should not call SetFakeResponse or
 // ClearFakeResponse at the same time you call CreateURLFetcher.  However, it is
@@ -277,14 +322,38 @@ class TestURLFetcherFactory : public URLFetcherFactory,
 //
 //  SomeService service;
 //  service.Run();  // Will eventually request these two URLs.
-
 class FakeURLFetcherFactory : public URLFetcherFactory,
                               public ScopedURLFetcherFactory {
  public:
-  FakeURLFetcherFactory();
-  // FakeURLFetcherFactory that will delegate creating URLFetcher for unknown
-  // url to the given factory.
+  // Parameters to FakeURLFetcherCreator: url, delegate, response_data, success
+  // |url| URL for instantiated FakeURLFetcher
+  // |delegate| Delegate for FakeURLFetcher
+  // |response_data| response data for FakeURLFetcher
+  // |success| bool indicating response code. true = 200 and false = 500.
+  // These argument should by default be used in instantiating FakeURLFetcher
+  // as follows: new FakeURLFetcher(url, delegate, response_data, success)
+  typedef base::Callback<scoped_ptr<FakeURLFetcher>(
+      const GURL&,
+      URLFetcherDelegate*,
+      const std::string&,
+      bool)> FakeURLFetcherCreator;
+
+  // |default_factory|, which can be NULL, is a URLFetcherFactory that
+  // will be used to construct a URLFetcher in case the URL being created
+  // has no pre-baked response. If it is NULL, a URLFetcherImpl will be
+  // created in this case.
   explicit FakeURLFetcherFactory(URLFetcherFactory* default_factory);
+
+  // |default_factory|, which can be NULL, is a URLFetcherFactory that
+  // will be used to construct a URLFetcher in case the URL being created
+  // has no pre-baked response. If it is NULL, a URLFetcherImpl will be
+  // created in this case.
+  // |creator| is a callback that returns will be called to create a
+  // FakeURLFetcher if a response is found to a given URL. It can be
+  // set to MakeFakeURLFetcher.
+  FakeURLFetcherFactory(URLFetcherFactory* default_factory,
+                        const FakeURLFetcherCreator& creator);
+
   virtual ~FakeURLFetcherFactory();
 
   // If no fake response is set for the given URL this method will delegate the
@@ -309,10 +378,16 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
   void ClearFakeResponses();
 
  private:
+  const FakeURLFetcherCreator creator_;
   typedef std::map<GURL, std::pair<std::string, bool> > FakeResponseMap;
   FakeResponseMap fake_responses_;
-  URLFetcherFactory* default_factory_;
+  URLFetcherFactory* const default_factory_;
 
+  static scoped_ptr<FakeURLFetcher> DefaultFakeURLFetcherCreator(
+      const GURL& url,
+      URLFetcherDelegate* delegate,
+      const std::string& response,
+      bool success);
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
 };
 
