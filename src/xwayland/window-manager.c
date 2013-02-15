@@ -828,8 +828,10 @@ weston_wm_window_draw_decoration(void *data)
 					       window->width + 2,
 					       window->height + 2);
 		window->surface->geometry.dirty = 1;
+	}
 
-		pixman_region32_init_rect(&window->surface->input,
+	if (window->surface && !window->fullscreen) {
+		pixman_region32_init_rect(&window->surface->pending.input,
 					  t->margin, t->margin,
 					  width - 2 * t->margin,
 					  height - 2 * t->margin);
