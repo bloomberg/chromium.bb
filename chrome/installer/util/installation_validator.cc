@@ -258,6 +258,7 @@ void InstallationValidator::ValidateInstallAppCommand(
   std::set<string16> flags_exp;
   flags_exp.insert(google_update::kRegSendsPingsField);
   flags_exp.insert(google_update::kRegWebAccessibleField);
+  flags_exp.insert(google_update::kRegRunAsUserField);
   ValidateAppCommandFlags(ctx, app_cmd, flags_exp, name, is_valid);
 }
 

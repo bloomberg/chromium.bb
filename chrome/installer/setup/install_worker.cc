@@ -241,6 +241,7 @@ void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
     AppCommand cmd(cmd_line.GetCommandLineString());
     cmd.set_sends_pings(true);
     cmd.set_is_web_accessible(true);
+    cmd.set_is_run_as_user(true);
     cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
   }
 }
@@ -326,6 +327,7 @@ void AddQuickEnableApplicationLauncherWorkItems(
     AppCommand cmd(cmd_line.GetCommandLineString());
     cmd.set_sends_pings(true);
     cmd.set_is_web_accessible(true);
+    cmd.set_is_run_as_user(true);
     cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
   }
 }
@@ -1656,7 +1658,6 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
     AppCommand cmd(cmd_line.GetCommandLineString());
     cmd.set_sends_pings(true);
     cmd.set_is_web_accessible(true);
-    cmd.set_is_run_as_user(true);
     cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
   }
 }
