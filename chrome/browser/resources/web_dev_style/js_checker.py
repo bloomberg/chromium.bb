@@ -86,6 +86,7 @@ class JSChecker(object):
     resources = self.input_api.PresubmitLocalPath()
     dirs = (
         path.join(resources, 'extensions'),
+        path.join(resources, 'file_manager'),
         path.join(resources, 'help'),
         path.join(resources, 'history'),
         path.join(resources, 'memory_internals'),
