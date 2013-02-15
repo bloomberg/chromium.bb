@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_split.h"
 #include "content/public/common/content_paths.h"
 
 namespace {

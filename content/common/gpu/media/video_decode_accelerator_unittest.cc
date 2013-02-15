@@ -32,7 +32,7 @@
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringize_macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"

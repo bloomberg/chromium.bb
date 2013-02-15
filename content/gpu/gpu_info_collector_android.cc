@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/strings/string_split.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/android/device_display_info.h"
 

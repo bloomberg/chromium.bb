@@ -15,7 +15,7 @@
 #include "base/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/string_split.h"
+#include "base/strings/string_split.h"
 #include "base/sync_socket.h"
 #include "base/time.h"
 #include "content/common/child_process.h"
