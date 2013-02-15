@@ -47,10 +47,8 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     const PageRanges& ranges) {
   ResetSettings();
 
-  if (!job_settings.GetBoolean(kSettingHeaderFooterEnabled,
-                               &settings_.display_header_footer)) {
-    NOTREACHED();
-  }
+  job_settings.GetBoolean(kSettingHeaderFooterEnabled,
+                          &settings_.display_header_footer);
 
   int margin_type = DEFAULT_MARGINS;
   if (!job_settings.GetInteger(kSettingMarginsType, &margin_type) ||
@@ -58,7 +56,7 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
        margin_type != NO_MARGINS &&
        margin_type != CUSTOM_MARGINS &&
        margin_type != PRINTABLE_AREA_MARGINS)) {
-    NOTREACHED();
+    margin_type = DEFAULT_MARGINS;
   }
   settings_.margin_type = static_cast<MarginType>(margin_type);
 
@@ -79,16 +77,10 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
   PrintingContext::Result result = UpdatePrinterSettings(job_settings, ranges);
   PrintSettingsInitializer::InitHeaderFooterStrings(job_settings, &settings_);
 
-  if (!job_settings.GetBoolean(kSettingShouldPrintBackgrounds,
-                               &settings_.should_print_backgrounds)) {
-    NOTREACHED();
-  }
-
-  if (!job_settings.GetBoolean(kSettingShouldPrintSelectionOnly,
-                               &settings_.selection_only)) {
-    NOTREACHED();
-  }
-
+  job_settings.GetBoolean(kSettingShouldPrintBackgrounds,
+                          &settings_.should_print_backgrounds);
+  job_settings.GetBoolean(kSettingShouldPrintSelectionOnly,
+                          &settings_.selection_only);
   return result;
 }
 
