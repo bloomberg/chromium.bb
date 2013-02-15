@@ -111,8 +111,7 @@ scoped_ptr<SyncSessionJob> SyncSessionJob::CloneFromLocation(
 scoped_ptr<sessions::SyncSession> SyncSessionJob::CloneSession() const {
   return scoped_ptr<sessions::SyncSession>(
       new sessions::SyncSession(session_->context(),
-          session_->delegate(), session_->source(), session_->routing_info(),
-          session_->workers()));
+          session_->delegate(), session_->source()));
 }
 
 bool SyncSessionJob::is_canary() const {

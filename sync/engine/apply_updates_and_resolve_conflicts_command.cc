@@ -37,7 +37,7 @@ ApplyUpdatesAndResolveConflictsCommand::GetGroupsToChange(
   for (FullModelTypeSet::Iterator it =
            server_types_with_unapplied_updates.First(); it.Good(); it.Inc()) {
     groups_with_unapplied_updates.insert(
-        GetGroupForModelType(it.Get(), session.routing_info()));
+        GetGroupForModelType(it.Get(), session.context()->routing_info()));
   }
 
   return groups_with_unapplied_updates;
@@ -56,7 +56,7 @@ SyncerError ApplyUpdatesAndResolveConflictsCommand::ModelChangingExecuteImpl(
   FullModelTypeSet server_type_restriction;
   for (FullModelTypeSet::Iterator it =
            server_types_with_unapplied_updates.First(); it.Good(); it.Inc()) {
-    if (GetGroupForModelType(it.Get(), session->routing_info()) ==
+    if (GetGroupForModelType(it.Get(), session->context()->routing_info()) ==
         status->group_restriction()) {
       server_type_restriction.Put(it.Get());
     }
@@ -73,7 +73,7 @@ SyncerError ApplyUpdatesAndResolveConflictsCommand::ModelChangingExecuteImpl(
   // First set of update application passes.
   UpdateApplicator applicator(
       dir->GetCryptographer(&trans),
-      session->routing_info(),
+      session->context()->routing_info(),
       status->group_restriction());
   applicator.AttemptApplications(&trans, handles);
   status->increment_num_updates_applied_by(applicator.updates_applied());
@@ -97,7 +97,7 @@ SyncerError ApplyUpdatesAndResolveConflictsCommand::ModelChangingExecuteImpl(
 
     UpdateApplicator conflict_applicator(
         dir->GetCryptographer(&trans),
-        session->routing_info(),
+        session->context()->routing_info(),
         status->group_restriction());
     conflict_applicator.AttemptApplications(&trans, handles);
 

@@ -45,8 +45,8 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* ModelTypeInvalidationMapToValue(
 
 // Coalesce |update| into |original|, overwriting only when |update| has
 // a non-empty payload.
-SYNC_EXPORT_PRIVATE void CoalesceStates(ModelTypeInvalidationMap* original,
-                                        const ModelTypeInvalidationMap& update);
+SYNC_EXPORT_PRIVATE void CoalesceStates(
+    const ModelTypeInvalidationMap& update, ModelTypeInvalidationMap* original);
 
 }  // namespace syncer
 

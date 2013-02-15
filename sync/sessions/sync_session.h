@@ -97,9 +97,7 @@ class SYNC_EXPORT_PRIVATE SyncSession {
 
   SyncSession(SyncSessionContext* context,
               Delegate* delegate,
-              const SyncSourceInfo& source,
-              const ModelSafeRoutingInfo& routing_info,
-              const std::vector<ModelSafeWorker*>& workers);
+              const SyncSourceInfo& source);
   ~SyncSession();
 
   // Builds a thread-safe and read-only copy of the current session state.
@@ -114,20 +112,9 @@ class SYNC_EXPORT_PRIVATE SyncSession {
   // See SERVER_RETURN_* in the SyncerError enum for values.
   bool DidReachServer() const;
 
-  // Collects all state pertaining to how and why |s| originated and unions it
-  // with corresponding state in |this|, leaving |s| unchanged.  Allows |this|
-  // to take on the responsibilities |s| had (e.g. certain data types) in the
-  // next SyncShare operation using |this|, rather than needed two separate
-  // sessions.
-  void Coalesce(const SyncSession& session);
-
-  // Compares the routing_info_, workers and payload map with those passed in.
-  // Purges types from the above 3 which are not present in latest. Useful
-  // to update the sync session when the user has disabled some types from
-  // syncing.
-  void RebaseRoutingInfoWithLatest(
-      const ModelSafeRoutingInfo& routing_info,
-      const std::vector<ModelSafeWorker*>& workers);
+  // Overwrite the sync update source with the most recent and merge the
+  // type/state map.
+  void CoalesceSources(const SyncSourceInfo& source);
 
   // TODO(akalin): Split this into context() and mutable_context().
   SyncSessionContext* context() const { return context_; }
@@ -147,12 +134,7 @@ class SYNC_EXPORT_PRIVATE SyncSession {
     return &extensions_activity_;
   }
 
-  const std::vector<ModelSafeWorker*>& workers() const { return workers_; }
-  const ModelSafeRoutingInfo& routing_info() const { return routing_info_; }
   const SyncSourceInfo& source() const { return source_; }
-
-  // Returns the set of groups which have enabled types.
-  const std::set<ModelSafeGroup>& GetEnabledGroups() const;
 
  private:
   // Extend the encapsulation boundary to utilities for internal member
@@ -181,19 +163,6 @@ class SYNC_EXPORT_PRIVATE SyncSession {
 
   // Our controller for various status and error counters.
   scoped_ptr<StatusController> status_controller_;
-
-  // The set of active ModelSafeWorkers for the duration of this session.
-  // This can change if this session is Coalesce()'d with another.
-  std::vector<ModelSafeWorker*> workers_;
-
-  // The routing info for the duration of this session, dictating which
-  // datatypes should be synced and which workers should be used when working
-  // on those datatypes.
-  ModelSafeRoutingInfo routing_info_;
-
-  // The set of groups with enabled types.  Computed from
-  // |routing_info_|.
-  std::set<ModelSafeGroup> enabled_groups_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSession);
 };

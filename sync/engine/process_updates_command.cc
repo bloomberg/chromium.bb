@@ -45,7 +45,7 @@ std::set<ModelSafeGroup> ProcessUpdatesCommand::GetGroupsToChange(
   for (int i = 0; i < updates.entries().size(); i++) {
     groups_with_updates.insert(
         GetGroupForModelType(GetModelType(updates.entries(i)),
-                             session.routing_info()));
+                             session.context()->routing_info()));
   }
 
   return groups_with_updates;
@@ -119,7 +119,7 @@ SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
   int update_count = updates.entries().size();
 
   ModelTypeSet requested_types = GetRoutingInfoTypes(
-      session->routing_info());
+      session->context()->routing_info());
 
   DVLOG(1) << update_count << " entries to verify";
   for (int i = 0; i < update_count; i++) {
@@ -133,13 +133,12 @@ SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
     // TODO(tim): Don't allow access to objects in other ModelSafeGroups.
     // See crbug.com/121521 .
     ModelSafeGroup g = GetGroupForModelType(GetModelType(update),
-                                            session->routing_info());
+                                            session->context()->routing_info());
     if (g != status->group_restriction())
       continue;
 
-    VerifyResult verify_result = VerifyUpdate(&trans, update,
-                                              requested_types,
-                                              session->routing_info());
+    VerifyResult verify_result = VerifyUpdate(
+        &trans, update, requested_types, session->context()->routing_info());
     status->increment_num_updates_downloaded_by(1);
     if (!UpdateContainsNewVersion(&trans, update))
       status->increment_num_reflected_updates_downloaded_by(1);

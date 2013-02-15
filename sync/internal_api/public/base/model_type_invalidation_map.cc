@@ -56,8 +56,8 @@ DictionaryValue* ModelTypeInvalidationMapToValue(
   return value;
 }
 
-void CoalesceStates(ModelTypeInvalidationMap* original,
-                    const ModelTypeInvalidationMap& update) {
+void CoalesceStates(const ModelTypeInvalidationMap& update,
+                    ModelTypeInvalidationMap* original) {
   // TODO(dcheng): Where is this called? Do we need to add more clever logic for
   // handling ack_handle? We probably want to always use the "latest"
   // ack_handle, which might imply always using the one in update?

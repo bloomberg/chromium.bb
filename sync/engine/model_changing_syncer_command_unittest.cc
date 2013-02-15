@@ -28,7 +28,18 @@ class FakeModelChangingSyncerCommand : public ModelChangingSyncerCommand {
  protected:
   virtual std::set<ModelSafeGroup> GetGroupsToChange(
       const sessions::SyncSession& session) const OVERRIDE {
-    return session.GetEnabledGroups();
+    // This command doesn't actually make changes, so the empty set might be an
+    // appropriate response.  That would not be very interesting, so instead we
+    // return the set of groups with active types.
+    std::set<ModelSafeGroup> enabled_groups;
+    const ModelSafeRoutingInfo& routing_info =
+        session.context()->routing_info();
+    for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
+         it != routing_info.end(); ++it) {
+      enabled_groups.insert(it->second);
+    }
+    enabled_groups.insert(GROUP_PASSIVE);
+    return enabled_groups;
   }
 
   virtual SyncerError ModelChangingExecuteImpl(

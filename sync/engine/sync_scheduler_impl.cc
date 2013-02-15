@@ -279,12 +279,6 @@ void SyncSchedulerImpl::Start(Mode mode) {
 
     scoped_ptr<SyncSessionJob> pending(TakePendingJobForCurrentMode());
     if (pending.get()) {
-      // TODO(tim): We should be able to remove this...
-      scoped_ptr<SyncSession> session(CreateSyncSession(
-          pending->session()->source()));
-      // Also the routing info might have been changed since we cached the
-      // pending nudge. Update it by coalescing to the latest.
-      pending->mutable_session()->Coalesce(*session);
       SDVLOG(2) << "Executing pending job. Good luck!";
       DoSyncSessionJob(pending.Pass());
     }
@@ -293,9 +287,8 @@ void SyncSchedulerImpl::Start(Mode mode) {
 
 void SyncSchedulerImpl::SendInitialSnapshot() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  scoped_ptr<SyncSession> dummy(new SyncSession(session_context_, this,
-      SyncSourceInfo(), ModelSafeRoutingInfo(),
-      std::vector<ModelSafeWorker*>()));
+  scoped_ptr<SyncSession> dummy(new SyncSession(
+          session_context_, this, SyncSourceInfo()));
   SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
   event.snapshot = dummy->TakeSnapshot();
   session_context_->NotifyListeners(event);
@@ -304,7 +297,7 @@ void SyncSchedulerImpl::SendInitialSnapshot() {
 namespace {
 
 // Helper to extract the routing info corresponding to types in
-// |types| from |current_routes|.
+// |types_to_download| from |current_routes|.
 void BuildModelSafeParams(
     ModelTypeSet types_to_download,
     const ModelSafeRoutingInfo& current_routes,
@@ -338,7 +331,7 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
   BuildModelSafeParams(params.types_to_download,
                        params.routing_info,
                        &restricted_routes);
-  session_context_->set_routing_info(params.routing_info);
+  session_context_->set_routing_info(restricted_routes);
 
   // Only reconfigure if we have types to download.
   if (!params.types_to_download.Empty()) {
@@ -349,9 +342,7 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
         SyncSourceInfo(params.source,
                        ModelSafeRoutingInfoToInvalidationMap(
                            restricted_routes,
-                           std::string())),
-        restricted_routes,
-        session_context_->workers()));
+                           std::string()))));
     scoped_ptr<SyncSessionJob> job(new SyncSessionJob(
         SyncSessionJob::CONFIGURATION,
         TimeTicks::Now(),
@@ -512,7 +503,8 @@ void SyncSchedulerImpl::HandleSaveJobDecision(scoped_ptr<SyncSessionJob> job) {
     // logic in ScheduleNudgeImpl that takes the min of the two nudge start
     // times, because we're calling this function first.  Pull this out
     // into a function to coalesce + set start times and reuse.
-    pending_nudge_->mutable_session()->Coalesce(*(job->session()));
+    pending_nudge_->mutable_session()->CoalesceSources(
+        job->session()->source());
     return;
   }
 
@@ -648,7 +640,8 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
 
   if (pending_nudge_) {
     SDVLOG(2) << "Rescheduling pending nudge";
-    pending_nudge_->mutable_session()->Coalesce(*(job->session()));
+    pending_nudge_->mutable_session()->CoalesceSources(
+        job->session()->source());
     // Choose the start time as the earliest of the 2. Note that this means
     // if a nudge arrives with delay (e.g. kDefaultSessionsCommitDelaySeconds)
     // but a nudge is already scheduled to go out, we'll send the (tab) commit
@@ -759,11 +752,6 @@ bool SyncSchedulerImpl::DoSyncSessionJob(scoped_ptr<SyncSessionJob> job) {
       return false;
     }
     pending_nudge_ = NULL;
-
-    // Rebase the session with the latest model safe table and use it to purge
-    // and update any disabled or modified entries in the job.
-    job->mutable_session()->RebaseRoutingInfoWithLatest(
-        session_context_->routing_info(), session_context_->workers());
   }
 
   base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
@@ -1045,12 +1033,6 @@ void SyncSchedulerImpl::DoCanaryJob(scoped_ptr<SyncSessionJob> to_be_canary) {
       return;
     }
     DCHECK_EQ(pending_nudge_->session(), to_be_canary->session());
-    // TODO(tim): We should be able to remove this...
-    scoped_ptr<SyncSession> temp = CreateSyncSession(
-        to_be_canary->session()->source()).Pass();
-    // The routing info might have been changed since we cached the
-    // pending nudge. Update it by coalescing to the latest.
-    to_be_canary->mutable_session()->Coalesce(*(temp));
   }
   DoSyncSessionJob(to_be_canary.Pass());
 }
@@ -1085,8 +1067,7 @@ scoped_ptr<SyncSession> SyncSchedulerImpl::CreateSyncSession(
            << ModelSafeRoutingInfoToString(session_context_->routing_info());
 
   SyncSourceInfo info(source);
-  return scoped_ptr<SyncSession>(new SyncSession(session_context_, this, info,
-      session_context_->routing_info(), session_context_->workers()));
+  return scoped_ptr<SyncSession>(new SyncSession(session_context_, this, info));
 }
 
 void SyncSchedulerImpl::PollTimerCallback() {

@@ -64,9 +64,8 @@ class SyncSessionJobTest : public testing::Test {
   scoped_ptr<SyncSession> NewLocalSession() {
     sessions::SyncSourceInfo info(
         sync_pb::GetUpdatesCallerInfo::LOCAL, ModelTypeInvalidationMap());
-    return scoped_ptr<SyncSession>(new SyncSession(context_.get(),
-        &delegate_, info, context_->routing_info(),
-        context_->workers()));
+    return scoped_ptr<SyncSession>(
+        new SyncSession(context_.get(), &delegate_, info));
   }
 
   void GetWorkers(std::vector<ModelSafeWorker*>* out) const {
@@ -126,13 +125,9 @@ TEST_F(SyncSessionJobTest, Clone) {
   ExpectClonesBase(&job1, clone1.get());
   ExpectClonesBase(&job1, clone1_loc.get());
   EXPECT_NE(job1.session(), clone1->session());
-  EXPECT_EQ(job1.session()->routing_info(),
-            clone1->session()->routing_info());
   EXPECT_EQ(job1.from_location().ToString(),
             clone1->from_location().ToString());
   EXPECT_NE(job1.session(), clone1_loc->session());
-  EXPECT_EQ(job1.session()->routing_info(),
-            clone1_loc->session()->routing_info());
   EXPECT_EQ(from_here1.ToString(), clone1_loc->from_location().ToString());
 
   context()->set_routing_info(routes());
@@ -148,21 +143,15 @@ TEST_F(SyncSessionJobTest, Clone) {
   ExpectClonesBase(clone1.get(), clone2.get());
   ExpectClonesBase(clone1.get(), clone2_loc.get());
   EXPECT_NE(clone1->session(), clone2->session());
-  EXPECT_EQ(clone1->session()->routing_info(),
-            clone2->session()->routing_info());
   EXPECT_EQ(clone1->from_location().ToString(),
             clone2->from_location().ToString());
   EXPECT_NE(clone1->session(), clone2->session());
-  EXPECT_EQ(clone1->session()->routing_info(),
-            clone2->session()->routing_info());
   EXPECT_EQ(from_here2.ToString(), clone2_loc->from_location().ToString());
 
   clone1.reset();
   clone1_loc.reset();
   ExpectClonesBase(&job1, clone2.get());
   EXPECT_NE(job1.session(), clone2->session());
-  EXPECT_EQ(job1.session()->routing_info(),
-            clone2->session()->routing_info());
   EXPECT_EQ(job1.from_location().ToString(),
             clone2->from_location().ToString());
 }
@@ -191,7 +180,6 @@ TEST_F(SyncSessionJobTest, CloneAndAbandon) {
   ExpectClonesBase(&job1, clone1.get());
   EXPECT_FALSE(job1.session());
   EXPECT_EQ(session_ptr, clone1->session());
-  EXPECT_EQ(session_ptr->routing_info(), clone1->session()->routing_info());
 }
 
 // Tests interaction between Finish and sync cycle success / failure.
@@ -223,9 +211,8 @@ TEST_F(SyncSessionJobTest, FinishCallsReadyTask) {
   sessions::SyncSourceInfo info(
       sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
       ModelTypeInvalidationMap());
-  scoped_ptr<SyncSession> session(new SyncSession(context(),
-      delegate(), info, context()->routing_info(),
-      context()->workers()));
+  scoped_ptr<SyncSession> session(
+      new SyncSession(context(), delegate(), info));
 
   SyncSessionJob job1(SyncSessionJob::CONFIGURATION, TimeTicks::Now(),
       session.Pass(), params, FROM_HERE);

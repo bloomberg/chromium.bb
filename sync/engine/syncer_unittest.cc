@@ -174,15 +174,12 @@ class SyncerTest : public testing::Test,
 
   SyncSession* MakeSession() {
     ModelSafeRoutingInfo info;
-    std::vector<ModelSafeWorker*> workers;
     GetModelSafeRoutingInfo(&info);
-    GetWorkers(&workers);
     ModelTypeInvalidationMap invalidation_map =
         ModelSafeRoutingInfoToInvalidationMap(info, std::string());
     return new SyncSession(context_.get(), this,
         sessions::SyncSourceInfo(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
-                                 invalidation_map),
-        info, workers);
+                                 invalidation_map));
   }
 
 

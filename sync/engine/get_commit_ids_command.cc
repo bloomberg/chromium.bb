@@ -68,7 +68,7 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
                        &ready_unsynced_set);
 
   BuildCommitIds(session->write_transaction(),
-                 session->routing_info(),
+                 session->context()->routing_info(),
                  ready_unsynced_set);
 
   const vector<syncable::Id>& verified_commit_ids =

@@ -581,8 +581,8 @@ TEST_F(SyncSchedulerTest, NudgeWithStatesCoalescing) {
   ASSERT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
   ModelTypeInvalidationMap coalesced_types;
-  CoalesceStates(&coalesced_types, types1);
-  CoalesceStates(&coalesced_types, types2);
+  CoalesceStates(types1, &coalesced_types);
+  CoalesceStates(types2, &coalesced_types);
   EXPECT_THAT(coalesced_types, Eq(r.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
             r.snapshots[0].source().updates_source);

@@ -99,7 +99,7 @@ void BuildCommitCommand::AddExtensionsActivityToMessage(
 
 void BuildCommitCommand::AddClientConfigParamsToMessage(
     SyncSession* session, sync_pb::CommitMessage* message) {
-  const ModelSafeRoutingInfo& routing_info = session->routing_info();
+  const ModelSafeRoutingInfo& routing_info = session->context()->routing_info();
   sync_pb::ClientConfigParams* config_params = message->mutable_config_params();
   for (std::map<ModelType, ModelSafeGroup>::const_iterator iter =
           routing_info.begin(); iter != routing_info.end(); ++iter) {
@@ -147,7 +147,9 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
                             syncable::GET_BY_ID, id);
     CHECK(meta_entry.good());
 
-    DCHECK(0 != session->routing_info().count(meta_entry.GetModelType()))
+    DCHECK_NE(0UL,
+              session->context()->routing_info().count(
+                  meta_entry.GetModelType()))
         << "Committing change to datatype that's not actively enabled.";
 
     string name = meta_entry.Get(syncable::NON_UNIQUE_NAME);

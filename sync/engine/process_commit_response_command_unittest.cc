@@ -166,7 +166,7 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
 };
 
 TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
-  sessions::OrderedCommitSet commit_set(session()->routing_info());
+  sessions::OrderedCommitSet commit_set(session()->context()->routing_info());
   sync_pb::ClientToServerMessage request;
   sync_pb::ClientToServerResponse response;
 
@@ -244,7 +244,7 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
 // how this scenario used to fail, reversing the order for the second half
 // of the children.
 TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
-  sessions::OrderedCommitSet commit_set(session()->routing_info());
+  sessions::OrderedCommitSet commit_set(session()->context()->routing_info());
   sync_pb::ClientToServerMessage request;
   sync_pb::ClientToServerResponse response;
 
@@ -375,7 +375,7 @@ INSTANTIATE_TEST_CASE_P(ProcessCommitResponse,
 // happens to the extensions activity records.  Commits could fail or succeed,
 // depending on the test parameter.
 TEST_P(MixedResult, ExtensionActivity) {
-  sessions::OrderedCommitSet commit_set(session()->routing_info());
+  sessions::OrderedCommitSet commit_set(session()->context()->routing_info());
   sync_pb::ClientToServerMessage request;
   sync_pb::ClientToServerResponse response;
 

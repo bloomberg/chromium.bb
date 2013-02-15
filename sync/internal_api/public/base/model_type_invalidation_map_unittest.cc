@@ -57,7 +57,7 @@ TEST_F(ModelTypeInvalidationMapTest, CoalesceStates) {
   update[SESSIONS].payload = payload2;        // New.
   // Themes untouched.
 
-  CoalesceStates(&original, update);
+  CoalesceStates(update, &original);
   ASSERT_EQ(5U, original.size());
   EXPECT_EQ(empty_payload, original[BOOKMARKS].payload);
   EXPECT_EQ(payload1, original[PASSWORDS].payload);

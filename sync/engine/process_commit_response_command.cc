@@ -75,7 +75,7 @@ std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
   for (size_t i = 0; i < commit_set_.Size(); ++i) {
     groups_with_commits.insert(
         GetGroupForModelType(commit_set_.GetModelTypeAt(i),
-                             session.routing_info()));
+                             session.context()->routing_info()));
   }
 
   return groups_with_commits;

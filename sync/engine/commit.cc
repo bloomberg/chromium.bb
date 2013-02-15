@@ -144,7 +144,7 @@ SyncerError BuildAndPostCommitsImpl(Syncer* syncer,
 
 SyncerError BuildAndPostCommits(Syncer* syncer,
                                 sessions::SyncSession* session) {
-  sessions::OrderedCommitSet commit_set(session->routing_info());
+  sessions::OrderedCommitSet commit_set(session->context()->routing_info());
   SyncerError result = BuildAndPostCommitsImpl(syncer, session, &commit_set);
   if (result != SYNCER_OK) {
     ClearSyncingBits(session->context()->directory(), commit_set);

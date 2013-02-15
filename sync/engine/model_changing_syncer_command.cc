@@ -19,8 +19,8 @@ SyncerError ModelChangingSyncerCommand::ExecuteImpl(
 
   const std::set<ModelSafeGroup>& groups_to_change =
       GetGroupsToChange(*work_session_);
-  for (size_t i = 0; i < session->workers().size(); ++i) {
-    ModelSafeWorker* worker = work_session_->workers()[i];
+  for (size_t i = 0; i < session->context()->workers().size(); ++i) {
+    ModelSafeWorker* worker = session->context()->workers()[i];
     ModelSafeGroup group = worker->GetModelSafeGroup();
     // Skip workers whose group isn't active.
     if (groups_to_change.count(group) == 0u) {

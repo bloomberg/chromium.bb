@@ -68,7 +68,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   // Request updates for all enabled types.
   const ModelTypeSet enabled_types =
-      GetRoutingInfoTypes(session->routing_info());
+      GetRoutingInfoTypes(session->context()->routing_info());
   DVLOG(1) << "Getting updates for types "
            << ModelTypeSetToString(enabled_types);
   DCHECK(!enabled_types.Empty());
