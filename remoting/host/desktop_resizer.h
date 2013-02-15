@@ -19,9 +19,7 @@ class DesktopResizer {
   // Create a platform-specific DesktopResizer instance.
   static scoped_ptr<DesktopResizer> Create();
 
-  // Return the current size of the desktop. If resize is not supported, the
-  // implementation should return 0x0, in which case none of the other API
-  // methods will be called.
+  // Return the current size of the desktop.
   virtual SkISize GetCurrentSize() = 0;
 
   // Get the list of supported sizes, which should ideally include |preferred|.

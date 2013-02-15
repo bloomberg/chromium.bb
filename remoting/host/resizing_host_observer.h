@@ -37,7 +37,6 @@ class ResizingHostObserver : public HostStatusObserver {
   DesktopResizer* const desktop_resizer_;
   scoped_refptr<ChromotingHost> host_;
   SkISize original_size_;
-  SkISize previous_size_;
   std::string client_jid_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizingHostObserver);

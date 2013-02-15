@@ -15,8 +15,7 @@ ResizingHostObserver::ResizingHostObserver(
     DesktopResizer* desktop_resizer, ChromotingHost* host)
     : desktop_resizer_(desktop_resizer),
       host_(host),
-      original_size_(SkISize::Make(0, 0)),
-      previous_size_(SkISize::Make(0, 0)) {
+      original_size_(SkISize::Make(0, 0)) {
   if (host_ != NULL) {
     host_->AddStatusObserver(this);
   }
@@ -33,7 +32,6 @@ void ResizingHostObserver::OnClientAuthenticated(const std::string& jid) {
   // host currently supports
   DCHECK(client_jid_.empty());
   original_size_ = desktop_resizer_->GetCurrentSize();
-  previous_size_ = original_size_;
 }
 
 void ResizingHostObserver::OnClientDisconnected(const std::string& jid) {
@@ -130,16 +128,7 @@ void ResizingHostObserver::OnClientResolutionChanged(
     const std::string& jid,
     const SkISize& preferred_size,
     const SkIPoint& dpi) {
-  if (previous_size_.isZero() || preferred_size.isEmpty()) {
-    return;
-  }
-
-  // If the host desktop size changes other than via the resize-to-client
-  // mechanism, then set |previous_size_| to zero and give up. This is an
-  // indication that the user doesn't want resize-to-client.
-  SkISize current_size = desktop_resizer_->GetCurrentSize();
-  if (current_size != previous_size_) {
-    previous_size_ = SkISize::Make(0, 0);
+  if (preferred_size.isEmpty()) {
     return;
   }
 
@@ -158,9 +147,9 @@ void ResizingHostObserver::OnClientResolutionChanged(
       best_size = candidate_size;
     }
   }
-  previous_size_ = best_size.size();
-  if (previous_size_ != current_size)
-    desktop_resizer_->SetSize(previous_size_);
+  SkISize current_size = desktop_resizer_->GetCurrentSize();
+  if (best_size.size() != current_size)
+    desktop_resizer_->SetSize(best_size.size());
 }
 
 }  // namespace remoting
