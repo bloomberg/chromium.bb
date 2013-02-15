@@ -71,54 +71,28 @@ public:
   scoped_ptr<Unpacker> unpacker_;
 };
 
-// Crashes intermittently on Windows, see http://crbug.com/109238
-#if defined(OS_WIN)
-#define MAYBE_EmptyDefaultLocale DISABLED_EmptyDefaultLocale
-#else
-#define MAYBE_EmptyDefaultLocale EmptyDefaultLocale
-#endif
-TEST_F(UnpackerTest, MAYBE_EmptyDefaultLocale) {
+TEST_F(UnpackerTest, EmptyDefaultLocale) {
   SetupUnpacker("empty_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
 }
 
-// Crashes intermittently on Vista, see http://crbug.com/109385
-#if defined(OS_WIN)
-#define MAYBE_HasDefaultLocaleMissingLocalesFolder \
-  DISABLED_HasDefaultLocaleMissingLocalesFolder
-#else
-#define MAYBE_HasDefaultLocaleMissingLocalesFolder \
-  HasDefaultLocaleMissingLocalesFolder
-#endif
-TEST_F(UnpackerTest, MAYBE_HasDefaultLocaleMissingLocalesFolder) {
+TEST_F(UnpackerTest, HasDefaultLocaleMissingLocalesFolder) {
   SetupUnpacker("has_default_missing_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesTreeMissing),
             unpacker_->error_message());
 }
 
-// Crashes intermittently on Windows, see http://crbug.com/109238
-#if defined(OS_WIN)
-#define MAYBE_InvalidDefaultLocale DISABLED_InvalidDefaultLocale
-#else
-#define MAYBE_InvalidDefaultLocale InvalidDefaultLocale
-#endif
-TEST_F(UnpackerTest, MAYBE_InvalidDefaultLocale) {
+TEST_F(UnpackerTest, InvalidDefaultLocale) {
   SetupUnpacker("invalid_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kInvalidDefaultLocale),
             unpacker_->error_message());
 }
 
-// Crashes intermittently on Windows, see http://crbug.com/109738
-#if defined(OS_WIN)
-#define MAYBE_InvalidMessagesFile DISABLED_InvalidMessagesFile
-#else
-#define MAYBE_InvalidMessagesFile InvalidMessagesFile
-#endif
-TEST_F(UnpackerTest, MAYBE_InvalidMessagesFile) {
+TEST_F(UnpackerTest, InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
@@ -126,41 +100,21 @@ TEST_F(UnpackerTest, MAYBE_InvalidMessagesFile) {
         " Syntax error."))) << unpacker_->error_message();
 }
 
-// Crashes intermittently on Vista, see http://crbug.com/109238
-#if defined(OS_WIN)
-#define MAYBE_MissingDefaultData DISABLED_MissingDefaultData
-#else
-#define MAYBE_MissingDefaultData MissingDefaultData
-#endif
-TEST_F(UnpackerTest, MAYBE_MissingDefaultData) {
+TEST_F(UnpackerTest, MissingDefaultData) {
   SetupUnpacker("missing_default_data.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultMessages),
             unpacker_->error_message());
 }
 
-// Crashes intermittently on Vista, see http://crbug.com/109238
-#if defined(OS_WIN)
-#define MAYBE_MissingDefaultLocaleHasLocalesFolder \
-  DISABLED_MissingDefaultLocaleHasLocalesFolder
-#else
-#define MAYBE_MissingDefaultLocaleHasLocalesFolder \
-  MissingDefaultLocaleHasLocalesFolder
-#endif
-TEST_F(UnpackerTest, MAYBE_MissingDefaultLocaleHasLocalesFolder) {
+TEST_F(UnpackerTest, MissingDefaultLocaleHasLocalesFolder) {
   SetupUnpacker("missing_default_has_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultLocaleSpecified),
             unpacker_->error_message());
 }
 
-// Crashes intermittently on Vista, see http://crbug.com/109238
-#if defined(OS_WIN)
-#define MAYBE_MissingMessagesFile DISABLED_MissingMessagesFile
-#else
-#define MAYBE_MissingMessagesFile MissingMessagesFile
-#endif
-TEST_F(UnpackerTest, MAYBE_MissingMessagesFile) {
+TEST_F(UnpackerTest, MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
@@ -168,54 +122,28 @@ TEST_F(UnpackerTest, MAYBE_MissingMessagesFile) {
     ASCIIToUTF16("*_locales?en_US?messages.json")));
 }
 
-// Crashes intermittently on Vista, see http://crbug.com/109238
-#if defined(OS_WIN)
-#define MAYBE_NoLocaleData DISABLED_NoLocaleData
-#else
-#define MAYBE_NoLocaleData NoLocaleData
-#endif
-TEST_F(UnpackerTest, MAYBE_NoLocaleData) {
+TEST_F(UnpackerTest, NoLocaleData) {
   SetupUnpacker("no_locale_data.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(errors::kLocalesNoDefaultMessages),
             unpacker_->error_message());
 }
 
-// Crashes intermittently on Vista, see http://crbug.com/109238
-#if defined(OS_WIN)
-#define MAYBE_GoodL10n DISABLED_GoodL10n
-#else
-#define MAYBE_GoodL10n GoodL10n
-#endif
-TEST_F(UnpackerTest, MAYBE_GoodL10n) {
+TEST_F(UnpackerTest, GoodL10n) {
   SetupUnpacker("good_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
   ASSERT_EQ(2U, unpacker_->parsed_catalogs()->size());
 }
 
-// Crashes intermittently on Vista, see http://crbug.com/109238
-#if defined(OS_WIN)
-#define MAYBE_NoL10n DISABLED_NoL10n
-#else
-#define MAYBE_NoL10n NoL10n
-#endif
-TEST_F(UnpackerTest, MAYBE_NoL10n) {
+TEST_F(UnpackerTest, NoL10n) {
   SetupUnpacker("no_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
   EXPECT_EQ(0U, unpacker_->parsed_catalogs()->size());
 }
 
-// Disabled on Windows because it probably crashes intermittently as described
-// in <http://crbug.com/109238>. However, because the logic being testing here
-// is platform-independant, this test should still provide good coverage.
-#if defined(OS_WIN)
-#define MAYBE_UnzipDirectoryError DISABLED_UnzipDirectoryError
-#else
-#define MAYBE_UnzipDirectoryError UnzipDirectoryError
-#endif
-TEST_F(UnpackerTest, MAYBE_UnzipDirectoryError) {
+TEST_F(UnpackerTest, UnzipDirectoryError) {
   const char* kExpected = "Could not create directory for unzipping: ";
   SetupUnpacker("good_package.crx");
   base::FilePath path =
@@ -229,30 +157,14 @@ TEST_F(UnpackerTest, MAYBE_UnzipDirectoryError) {
                       << "\"";
 }
 
-// Disabled on Windows because it probably crashes intermittently as described
-// in <http://crbug.com/109238>. However, because the logic being testing here
-// is platform-independant, this test should still provide good coverage.
-#if defined(OS_WIN)
-#define MAYBE_UnzipError DISABLED_UnzipError
-#else
-#define MAYBE_UnzipError UnzipError
-#endif
-TEST_F(UnpackerTest, MAYBE_UnzipError) {
+TEST_F(UnpackerTest, UnzipError) {
   const char* kExpected = "Could not unzip extension";
   SetupUnpacker("bad_zip.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(ASCIIToUTF16(kExpected), unpacker_->error_message());
 }
 
-// Disabled on Windows because it probably crashes intermittently as described
-// in <http://crbug.com/109238>. However, because the logic being testing here
-// is platform-independant, this test should still provide good coverage.
-#if defined(OS_WIN)
-#define MAYBE_BadPathError DISABLED_BadPathError
-#else
-#define MAYBE_BadPathError BadPathError
-#endif
-TEST_F(UnpackerTest, MAYBE_BadPathError) {
+TEST_F(UnpackerTest, BadPathError) {
   const char* kExpected = "Illegal path (absolute or relative with '..'): ";
   SetupUnpacker("bad_path.crx");
   EXPECT_FALSE(unpacker_->Run());
@@ -264,15 +176,7 @@ TEST_F(UnpackerTest, MAYBE_BadPathError) {
 }
 
 
-// Disabled on Windows because it probably crashes intermittently as described
-// in <http://crbug.com/109238>. However, because the logic being testing here
-// is platform-independant, this test should still provide good coverage.
-#if defined(OS_WIN)
-#define MAYBE_ImageDecodingError DISABLED_ImageDecodingError
-#else
-#define MAYBE_ImageDecodingError ImageDecodingError
-#endif
-TEST_F(UnpackerTest, MAYBE_ImageDecodingError) {
+TEST_F(UnpackerTest, ImageDecodingError) {
   const char* kExpected = "Could not decode image: ";
   SetupUnpacker("bad_image.crx");
   EXPECT_FALSE(unpacker_->Run());
