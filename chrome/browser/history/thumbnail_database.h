@@ -58,6 +58,10 @@ class ThumbnailDatabase {
   static sql::InitStatus OpenDatabase(sql::Connection* db,
                                       const base::FilePath& db_name);
 
+  // Computes and records various metrics for the database. Should only be
+  // called once and only upon successful Init.
+  void ComputeDatabaseMetrics();
+
   // Transactions on the database.
   void BeginTransaction();
   void CommitTransaction();

@@ -235,6 +235,14 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
   return sql::INIT_OK;
 }
 
+void ThumbnailDatabase::ComputeDatabaseMetrics() {
+  sql::Statement favicon_count(
+      db_.GetCachedStatement(SQL_FROM_HERE, "SELECT COUNT(*) FROM favicons"));
+  UMA_HISTOGRAM_COUNTS_10000(
+      "History.NumFaviconsInDB",
+      favicon_count.Step() ? favicon_count.ColumnInt(0) : 0);
+}
+
 bool ThumbnailDatabase::InitThumbnailTable() {
   if (!db_.DoesTableExist("thumbnails")) {
     use_top_sites_ = true;

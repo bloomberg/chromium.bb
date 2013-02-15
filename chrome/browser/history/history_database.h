@@ -72,6 +72,10 @@ class HistoryDatabase : public DownloadDatabase,
   sql::InitStatus Init(const base::FilePath& history_name,
                        sql::ErrorDelegate* error_delegate);
 
+  // Computes and records various metrics for the database. Should only be
+  // called once and only upon successful Init.
+  void ComputeDatabaseMetrics(const base::FilePath& filename);
+
   // Call to set the mode on the database to exclusive. The default locking mode
   // is "normal" but we want to run in exclusive mode for slightly better
   // performance since we know nobody else is using the database. This is

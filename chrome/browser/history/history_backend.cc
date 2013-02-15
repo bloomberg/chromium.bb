@@ -19,6 +19,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -747,6 +748,14 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   if (!archived_db_->Init(archived_name)) {
     LOG(WARNING) << "Could not initialize the archived database.";
     archived_db_.reset();
+  }
+
+  // Generate the history and thumbnail database metrics only after performing
+  // any migration work.
+  if (base::RandInt(1, 100) == 50) {
+    // Only do this computation sometimes since it can be expensive.
+    db_->ComputeDatabaseMetrics(history_name);
+    thumbnail_db_->ComputeDatabaseMetrics();
   }
 
   // Tell the expiration module about all the nice databases we made. This must
