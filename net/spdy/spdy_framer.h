@@ -621,7 +621,18 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t remaining_control_header_;
 
   scoped_array<char> current_frame_buffer_;
-  size_t current_frame_len_;  // Number of bytes read into the current_frame_.
+  // Number of bytes read into the current_frame_buffer_.
+  size_t current_frame_buffer_length_;
+
+  // The type of the frame currently being read. Set to NUM_CONTROL_FRAME_TYPES
+  // if currently processing a DATA frame.
+  SpdyControlType current_frame_type_;
+
+  // The flags field of the frame currently being read.
+  uint8 current_frame_flags_;
+
+  // The length field of the frame currently being read.
+  uint32 current_frame_length_;
 
   // Scratch space for handling SETTINGS frames.
   // TODO(hkhalil): Unify memory for this scratch space with

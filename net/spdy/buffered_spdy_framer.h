@@ -180,6 +180,12 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                                  SpdyDataFlags flags);
   SpdyPriority GetHighestPriority() const;
 
+  // Returns the (minimum) size of control frames (sans variable-length
+  // portions).
+  size_t GetControlFrameMinimumSize() const {
+    return spdy_framer_.GetControlFrameMinimumSize();
+  }
+
   int frames_received() const { return frames_received_; }
 
  private:

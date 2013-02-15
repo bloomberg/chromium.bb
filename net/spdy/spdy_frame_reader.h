@@ -55,6 +55,11 @@ class NET_EXPORT_PRIVATE SpdyFrameReader {
   // Returns true on success, false otherwise.
   bool ReadUInt31(uint32* result);
 
+  // Reads a 24-bit unsigned integer into the given output parameter.
+  // Forwards the internal iterater (by 3B) on success.
+  // Returns true on success, false otherwise.
+  bool ReadUInt24(uint32* result);
+
   // Reads a string prefixed with 16-bit length into the given output parameter.
   //
   // NOTE: Does not copy but rather references strings in the underlying buffer.
