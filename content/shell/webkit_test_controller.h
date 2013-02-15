@@ -115,6 +115,8 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const webkit_glue::WebPreferences& prefs);
   void OnTestFinished(bool did_timeout);
+  void OnShowDevTools();
+  void OnCloseDevTools();
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);

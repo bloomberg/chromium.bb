@@ -322,19 +322,18 @@ void WebKitTestRunner::setClientWindowRect(const WebRect& rect) {
 }
 
 void WebKitTestRunner::showDevTools() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "showDevTools"));
+  Send(new ShellViewHostMsg_ShowDevTools(routing_id()));
 }
 
 void WebKitTestRunner::closeDevTools() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "closeDevTools"));
+  Send(new ShellViewHostMsg_CloseDevTools(routing_id()));
 }
 
 void WebKitTestRunner::evaluateInWebInspector(long call_id,
                                               const std::string& script) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "evaluateInWebInspector"));
+  WebDevToolsAgent* agent = render_view()->GetWebView()->devToolsAgent();
+  if (agent)
+    agent->evaluateInWebInspector(call_id, WebString::fromUTF8(script));
 }
 
 void WebKitTestRunner::clearAllDatabases() {

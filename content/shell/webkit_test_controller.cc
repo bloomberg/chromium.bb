@@ -246,6 +246,8 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
                         OnOverridePreferences)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinished, OnTestFinished)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ShowDevTools, OnShowDevTools)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseDevTools, OnCloseDevTools)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -387,6 +389,14 @@ void WebKitTestController::OnOverridePreferences(
     const webkit_glue::WebPreferences& prefs) {
   should_override_prefs_ = true;
   prefs_ = prefs;
+}
+
+void WebKitTestController::OnShowDevTools() {
+  main_window_->ShowDevTools();
+}
+
+void WebKitTestController::OnCloseDevTools() {
+  main_window_->CloseDevTools();
 }
 
 void WebKitTestController::OnNotImplemented(
