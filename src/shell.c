@@ -236,6 +236,9 @@ get_shell_surface(struct weston_surface *surface);
 static struct desktop_shell *
 shell_surface_get_shell(struct shell_surface *shsurf);
 
+static void
+surface_rotate(struct shell_surface *surface, struct wl_seat *seat);
+
 static bool
 shell_surface_is_top_fullscreen(struct shell_surface *shsurf)
 {
@@ -1232,6 +1235,9 @@ busy_cursor_grab_button(struct wl_pointer_grab *base,
 	if (shsurf && button == BTN_LEFT && state) {
 		activate(shsurf->shell, shsurf->surface, seat);
 		surface_move(shsurf, seat);
+	} else if (shsurf && button == BTN_RIGHT && state) {
+		activate(shsurf->shell, shsurf->surface, seat);
+		surface_rotate(shsurf, &seat->seat);
 	}
 }
 
@@ -2589,22 +2595,11 @@ static const struct wl_pointer_grab_interface rotate_grab_interface = {
 };
 
 static void
-rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
-	       void *data)
+surface_rotate(struct shell_surface *surface, struct wl_seat *seat)
 {
-	struct weston_surface *base_surface =
-		(struct weston_surface *) seat->pointer->focus;
-	struct shell_surface *surface;
 	struct rotate_grab *rotate;
 	float dx, dy;
 	float r;
-
-	if (base_surface == NULL)
-		return;
-
-	surface = get_shell_surface(base_surface);
-	if (!surface || surface->type == SHELL_SURFACE_FULLSCREEN)
-		return;
 
 	rotate = malloc(sizeof *rotate);
 	if (!rotate)
@@ -2634,6 +2629,24 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 
 	shell_grab_start(&rotate->base, &rotate_grab_interface, surface,
 			 seat->pointer, DESKTOP_SHELL_CURSOR_ARROW);
+}
+
+static void
+rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
+	       void *data)
+{
+	struct weston_surface *base_surface =
+		(struct weston_surface *) seat->pointer->focus;
+	struct shell_surface *surface;
+
+	if (base_surface == NULL)
+		return;
+
+	surface = get_shell_surface(base_surface);
+	if (!surface || surface->type == SHELL_SURFACE_FULLSCREEN)
+		return;
+
+	surface_rotate(surface, seat);
 }
 
 static void
