@@ -97,7 +97,7 @@ if sys.platform == 'win32':
 
   def GetShortPathName(long_path):
     """Returns the Windows short path equivalent for a 'long' path."""
-    assert isinstance(long_path, unicode)
+    assert isinstance(long_path, unicode), repr(long_path)
     # Adds '\\\\?\\' when given an absolute path so the MAX_PATH (260) limit is
     # not enforced.
     if os.path.isabs(long_path) and not long_path.startswith('\\\\?\\'):
