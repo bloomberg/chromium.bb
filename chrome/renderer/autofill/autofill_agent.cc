@@ -141,6 +141,7 @@ AutofillAgent::AutofillAgent(
       has_shown_autofill_popup_for_current_edit_(false),
       did_set_node_text_(false),
       autocheckout_click_in_progress_(false),
+      ignore_text_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   render_view->GetWebView()->setAutofillClient(this);
 }
@@ -289,6 +290,10 @@ void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
       render_view()->GetSSLStatusOfFrame(frame)));
 }
 
+void AutofillAgent::setIgnoreTextChanges(bool ignore) {
+  ignore_text_changes_ = ignore;
+}
+
 bool AutofillAgent::InputElementClicked(const WebInputElement& element,
                                         bool was_focused,
                                         bool is_focused) {
@@ -385,6 +390,9 @@ void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
 }
 
 void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
+  if (ignore_text_changes_)
+    return;
+
   if (did_set_node_text_) {
     did_set_node_text_ = false;
     return;

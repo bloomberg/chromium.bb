@@ -100,6 +100,7 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void didRequestAutocomplete(
       WebKit::WebFrame* frame,
       const WebKit::WebFormElement& form) OVERRIDE;
+  virtual void setIgnoreTextChanges(bool ignore) OVERRIDE;
 
   void OnSuggestionsReturned(int query_id,
                              const std::vector<string16>& values,
@@ -245,6 +246,11 @@ class AutofillAgent : public content::RenderViewObserver,
   // Used to signal that we need to watch for loading failures in an
   // Autocheckout flow.
   bool autocheckout_click_in_progress_;
+
+  // Whether or not to ignore text changes.  Useful for when we're committing
+  // a composition when we are defocusing the WebView and we don't want to
+  // trigger an autofill popup to show.
+  bool ignore_text_changes_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 
