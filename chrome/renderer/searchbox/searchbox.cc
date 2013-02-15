@@ -122,6 +122,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnAutocompleteResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
                         OnUpOrDownKeyPressed)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxCancelSelection,
+                        OnCancelSelection)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxSetDisplayInstantResults,
                         OnSetDisplayInstantResults)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxKeyCaptureChanged,
@@ -224,6 +226,18 @@ void SearchBox::OnUpOrDownKeyPressed(int count) {
     DVLOG(1) << render_view() << " OnKeyPress: " << count;
     extensions_v8::SearchBoxExtension::DispatchUpOrDownKeyPress(
         render_view()->GetWebView()->mainFrame(), count);
+  }
+}
+
+void SearchBox::OnCancelSelection(const string16& query) {
+  // TODO(sreeram): crbug.com/176101 The state reset below are somewhat wrong.
+  query_ = query;
+  verbatim_ = true;
+  selection_start_ = selection_end_ = query_.size();
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    DVLOG(1) << render_view() << " OnKeyPress ESC";
+    extensions_v8::SearchBoxExtension::DispatchEscKeyPress(
+        render_view()->GetWebView()->mainFrame());
   }
 }
 

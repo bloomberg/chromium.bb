@@ -588,11 +588,13 @@ void OmniboxViewViews::ApplyCaretVisibility() {
 
 void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     const string16& display_text,
-    bool save_original_selection) {
+    bool save_original_selection,
+    bool notify_text_changed) {
   if (save_original_selection)
     textfield_->GetSelectedRange(&saved_temporary_selection_);
 
-  SetWindowTextAndCaretPos(display_text, display_text.length(), false, true);
+  SetWindowTextAndCaretPos(display_text, display_text.length(), false,
+                           notify_text_changed);
 }
 
 bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
@@ -608,7 +610,6 @@ bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
 
 void OmniboxViewViews::OnRevertTemporaryText() {
   textfield_->SelectRange(saved_temporary_selection_);
-  TextChanged();
 }
 
 void OmniboxViewViews::OnBeforePossibleChange() {

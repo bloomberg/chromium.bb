@@ -108,6 +108,13 @@ class InstantController : public InstantPage::Delegate {
   // handled the key press.
   bool OnUpOrDownKeyPressed(int count);
 
+  // Called when the user has arrowed into the suggestions but wants to cancel,
+  // typically by pressing ESC. The omnibox text is expected to have been
+  // reverted to |full_text| by the OmniboxEditModel prior to calling this.
+  // |match| is the match reverted to.
+  void OnCancel(const AutocompleteMatch& match,
+                const string16& full_text);
+
   // The preview WebContents. May be NULL. InstantController retains ownership.
   content::WebContents* GetPreviewContents() const;
 

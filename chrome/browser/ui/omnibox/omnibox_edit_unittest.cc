@@ -49,7 +49,8 @@ class TestingOmniboxView : public OmniboxView {
   virtual void ApplyCaretVisibility() OVERRIDE {}
   virtual void OnTemporaryTextMaybeChanged(
       const string16& display_text,
-      bool save_original_selection) OVERRIDE {}
+      bool save_original_selection,
+      bool notify_text_changed) OVERRIDE {}
   virtual bool OnInlineAutocompleteTextMaybeChanged(
       const string16& display_text, size_t user_text_length) OVERRIDE {
     return false;

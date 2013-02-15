@@ -860,7 +860,8 @@ void OmniboxViewWin::InsertText(int position, const string16& text) {
 }
 
 void OmniboxViewWin::OnTemporaryTextMaybeChanged(const string16& display_text,
-                                                 bool save_original_selection) {
+                                                 bool save_original_selection,
+                                                 bool notify_text_changed) {
   if (save_original_selection)
     GetSelection(original_selection_);
 
@@ -872,7 +873,8 @@ void OmniboxViewWin::OnTemporaryTextMaybeChanged(const string16& display_text,
   // text and then arrowed to another entry with the same text, we'd still want
   // to move the caret.
   ScopedFreeze freeze(this, GetTextObjectModel());
-  SetWindowTextAndCaretPos(display_text, display_text.length(), false, true);
+  SetWindowTextAndCaretPos(display_text, display_text.length(), false,
+                           notify_text_changed);
 }
 
 bool OmniboxViewWin::OnInlineAutocompleteTextMaybeChanged(
@@ -898,7 +900,6 @@ bool OmniboxViewWin::OnInlineAutocompleteTextMaybeChanged(
 
 void OmniboxViewWin::OnRevertTemporaryText() {
   SetSelectionRange(original_selection_);
-  TextChanged();
 }
 
 void OmniboxViewWin::OnBeforePossibleChange() {

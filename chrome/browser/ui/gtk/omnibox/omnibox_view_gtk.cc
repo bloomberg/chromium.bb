@@ -573,14 +573,16 @@ void OmniboxViewGtk::UpdatePopup() {
 
 void OmniboxViewGtk::OnTemporaryTextMaybeChanged(
     const string16& display_text,
-    bool save_original_selection) {
+    bool save_original_selection,
+    bool notify_text_changed) {
   if (save_original_selection)
     saved_temporary_selection_ = GetSelection();
 
   StartUpdatingHighlightedText();
   SetWindowTextAndCaretPos(display_text, display_text.length(), false, false);
   FinishUpdatingHighlightedText();
-  TextChanged();
+  if (notify_text_changed)
+    TextChanged();
 }
 
 bool OmniboxViewGtk::OnInlineAutocompleteTextMaybeChanged(
@@ -601,7 +603,6 @@ void OmniboxViewGtk::OnRevertTemporaryText() {
   StartUpdatingHighlightedText();
   SetSelectedRange(saved_temporary_selection_);
   FinishUpdatingHighlightedText();
-  TextChanged();
 }
 
 void OmniboxViewGtk::OnBeforePossibleChange() {

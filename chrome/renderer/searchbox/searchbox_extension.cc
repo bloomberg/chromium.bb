@@ -155,6 +155,16 @@ static const char kDispatchUpOrDownKeyPressEventScript[] =
     "  true;"
     "}";
 
+// Takes one printf-style replaceable value: key_code.
+static const char kDispatchEscKeyPressEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onkeypress &&"
+    "    typeof window.chrome.searchBox.onkeypress == 'function') {"
+    "  window.chrome.searchBox.onkeypress({keyCode: %d});"
+    "  true;"
+    "}";
+
 static const char kDispatchKeyCaptureChangeScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -927,6 +937,12 @@ void SearchBoxExtension::DispatchUpOrDownKeyPress(WebKit::WebFrame* frame,
   Dispatch(frame, WebKit::WebString::fromUTF8(
       base::StringPrintf(kDispatchUpOrDownKeyPressEventScript, abs(count),
                          count < 0 ? ui::VKEY_UP : ui::VKEY_DOWN)));
+}
+
+// static
+void SearchBoxExtension::DispatchEscKeyPress(WebKit::WebFrame* frame) {
+  Dispatch(frame, WebKit::WebString::fromUTF8(
+      base::StringPrintf(kDispatchEscKeyPressEventScript, ui::VKEY_ESCAPE)));
 }
 
 // static

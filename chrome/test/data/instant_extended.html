@@ -61,11 +61,14 @@ function previousSuggestion() {
 function handleKeyPress(event) {
   var VKEY_UP = 0x26;
   var VKEY_DOWN = 0x28;
+  var VKEY_ESCAPE = 0x1B;
 
   if (event.keyCode == VKEY_DOWN) {
     nextSuggestion();
   } else if (event.keyCode == VKEY_UP) {
     previousSuggestion();
+  } else if (event.keyCode == VKEY_ESCAPE) {
+    suggestionIndex = -1;
   }
 }
 

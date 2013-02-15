@@ -141,6 +141,11 @@ class InstantPage : public content::WebContentsObserver {
   // a repeat count, negative for moving up, positive for moving down.
   void UpOrDownKeyPressed(int count);
 
+  // Tells the page that the user pressed Esc in the omnibox after having
+  // arrowed down in the suggestions. The page should reset the selection to
+  // the first suggestion. |user_text| is what the omnibox has been reset to.
+  void CancelSelection(const string16& user_text);
+
   // Tells the page about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
 

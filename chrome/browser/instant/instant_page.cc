@@ -68,6 +68,10 @@ void InstantPage::UpOrDownKeyPressed(int count) {
   Send(new ChromeViewMsg_SearchBoxUpOrDownKeyPressed(routing_id(), count));
 }
 
+void InstantPage::CancelSelection(const string16& user_text) {
+  Send(new ChromeViewMsg_SearchBoxCancelSelection(routing_id(), user_text));
+}
+
 void InstantPage::SendThemeBackgroundInfo(
     const ThemeBackgroundInfo& theme_info) {
   Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));

@@ -323,6 +323,8 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   void OnPopupBoundsChanged(const gfx::Rect& bounds);
 
  private:
+  friend class InstantTestBase;
+
   enum PasteState {
     NONE,           // Most recent edit was not a paste.
     PASTING,        // In the middle of doing a paste. We need this intermediate

@@ -507,6 +507,27 @@ bool InstantController::OnUpOrDownKeyPressed(int count) {
   return true;
 }
 
+void InstantController::OnCancel(const AutocompleteMatch& match,
+                                 const string16& full_text) {
+  if (!extended_enabled_)
+    return;
+
+  if (!instant_tab_ && !overlay_)
+    return;
+
+  // We manually reset the state here since the JS is not expected to do it.
+  // TODO(sreeram): Handle the case where user_text is now a URL
+  last_match_was_search_ = AutocompleteMatch::IsSearchType(match.type) &&
+                           !full_text.empty();
+  last_omnibox_text_ = full_text;
+  last_suggestion_ = InstantSuggestion();
+
+  if (instant_tab_)
+    instant_tab_->CancelSelection(full_text);
+  else
+    overlay_->CancelSelection(full_text);
+}
+
 content::WebContents* InstantController::GetPreviewContents() const {
   return overlay_ ? overlay_->contents() : NULL;
 }

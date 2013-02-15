@@ -314,6 +314,9 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxAutocompleteResults,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxUpOrDownKeyPressed,
                     int /* count */)
 
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxCancelSelection,
+                    string16 /* value */)
+
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxModeChanged,
                     chrome::search::Mode /* mode */)
 

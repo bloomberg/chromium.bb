@@ -85,6 +85,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnAutocompleteResults(
       const std::vector<InstantAutocompleteResult>& results);
   void OnUpOrDownKeyPressed(int count);
+  void OnCancelSelection(const string16& query);
   void OnKeyCaptureChange(bool is_key_capture_enabled);
   void OnSetDisplayInstantResults(bool display_instant_results);
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);

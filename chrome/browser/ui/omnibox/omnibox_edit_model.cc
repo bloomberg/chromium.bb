@@ -220,7 +220,7 @@ void OmniboxEditModel::SetInstantSuggestion(
       keyword_ = string16();
       is_keyword_hint_ = false;
       view_->OnTemporaryTextMaybeChanged(suggestion.text,
-                                         save_original_selection);
+                                         save_original_selection, true);
       break;
     }
   }
@@ -707,7 +707,7 @@ bool OmniboxEditModel::AcceptKeyword() {
   is_temporary_text_set_by_instant_ = false;
   view_->OnTemporaryTextMaybeChanged(
       DisplayTextFromUserText(CurrentMatch().fill_into_edit),
-      save_original_selection);
+      save_original_selection, true);
 
   content::RecordAction(UserMetricsAction("AcceptedKeywordHint"));
   return true;
@@ -797,7 +797,7 @@ void OmniboxEditModel::OnKillFocus() {
 }
 
 bool OmniboxEditModel::OnEscapeKeyPressed() {
-  if (has_temporary_text_ && !is_temporary_text_set_by_instant_) {
+  if (has_temporary_text_) {
     AutocompleteMatch match;
     InfoForCurrentSelection(&match, NULL);
     if (match.destination_url != original_url_) {
@@ -922,7 +922,7 @@ void OmniboxEditModel::OnPopupDataChanged(
       // right answer here :(
     }
     view_->OnTemporaryTextMaybeChanged(DisplayTextFromUserText(text),
-                                       save_original_selection);
+                                       save_original_selection, true);
     return;
   }
 
@@ -1178,9 +1178,28 @@ void OmniboxEditModel::RevertTemporaryText(bool revert_popup) {
   // The user typed something, then selected a different item.  Restore the
   // text they typed and change back to the default item.
   // NOTE: This purposefully does not reset paste_state_.
+  bool notify_instant = is_temporary_text_set_by_instant_;
   just_deleted_text_ = false;
   has_temporary_text_ = false;
   is_temporary_text_set_by_instant_ = false;
+
+  InstantController* instant = controller_->GetInstant();
+  if (instant && notify_instant) {
+    // Normally, popup_->ResetToDefaultMatch() will cause the view text to be
+    // updated. In Instant Extended mode however, the popup_ is not used, so it
+    // won't do anything. So, update the view ourselves. Even if Instant is not
+    // in extended mode (i.e., it's enabled in non-extended mode, or disabled
+    // altogether), this is okay to do, since the call to
+    // popup_->ResetToDefaultMatch() will just override whatever we do here.
+    //
+    // The two "false" arguments make sure that our shenanigans don't cause any
+    // previously saved selection to be erased nor OnChanged() to be called.
+    view_->OnTemporaryTextMaybeChanged(user_text_ + inline_autocomplete_text_,
+        false, false);
+    AutocompleteResult::const_iterator match(result().default_match());
+    instant->OnCancel(match != result().end() ? *match : AutocompleteMatch(),
+                      user_text_ + inline_autocomplete_text_);
+  }
   if (revert_popup)
     popup_->ResetToDefaultMatch();
   view_->OnRevertTemporaryText();

@@ -77,6 +77,8 @@ class InstantTestBase : public InProcessBrowserTest {
   bool ExecuteScript(const std::string& script) WARN_UNUSED_RESULT;
   bool CheckVisibilityIs(content::WebContents* contents,
                          bool expected) WARN_UNUSED_RESULT;
+  bool HasUserInputInProgress();
+  bool HasTemporaryText();
 
   GURL instant_url_;
 

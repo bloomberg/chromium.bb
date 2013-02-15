@@ -522,13 +522,15 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
 }
 
 void OmniboxViewMac::OnTemporaryTextMaybeChanged(const string16& display_text,
-                                                 bool save_original_selection) {
+                                                 bool save_original_selection,
+                                                 bool notify_text_changed) {
   if (save_original_selection)
     saved_temporary_selection_ = GetSelectedRange();
 
   suggest_text_length_ = 0;
   SetWindowTextAndCaretPos(display_text, display_text.size(), false, false);
-  model()->OnChanged();
+  if (notify_text_changed)
+    model()->OnChanged();
   [field_ clearUndoChain];
 }
 

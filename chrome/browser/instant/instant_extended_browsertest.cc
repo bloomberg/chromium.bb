@@ -54,6 +54,12 @@ class InstantExtendedTest : public InstantTestBase {
     // Wait for JavaScript to run the key handler by executing a blank script.
     EXPECT_TRUE(ExecuteScript(std::string()));
   }
+
+  void SendEscape() {
+    omnibox()->model()->OnEscapeKeyPressed();
+    // Wait for JavaScript to run the key handler by executing a blank script.
+    EXPECT_TRUE(ExecuteScript(std::string()));
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ExtendedModeIsOn) {
@@ -196,6 +202,58 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsWithArrowKeys) {
   EXPECT_EQ("result 1", GetOmniboxText());
   SendUpArrow();
   EXPECT_EQ("hello", GetOmniboxText());
+
+  // Ensure that the API's value is set correctly.
+  std::string result;
+  EXPECT_TRUE(GetStringFromJS(instant()->GetPreviewContents(),
+                              "window.chrome.searchBox.value",
+                              &result));
+  EXPECT_EQ("hello", result);
+
+  EXPECT_TRUE(HasUserInputInProgress());
+  // TODO(beaudoin): Figure out why this fails.
+  // EXPECT_FALSE(HasTemporaryText());
+
+
+  // Commit the search by pressing Enter.
+  // TODO(sreeram): Enable this check once @mathp's CL lands:
+  //     https://codereview.chromium.org/12179025/
+  // browser()->window()->GetLocationBar()->AcceptInput();
+  // EXPECT_EQ("hello", GetOmniboxText());
+}
+
+// This test simulates a search provider using the InstantExtended API to
+// navigate through the suggested results and hitting escape to get back to the
+// original user query.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NavigateSuggestionsAndHitEscape) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  SetOmniboxTextAndWaitForInstantToShow("hello");
+  EXPECT_EQ("hello", GetOmniboxText());
+
+  SendDownArrow();
+  EXPECT_EQ("result 1", GetOmniboxText());
+  SendDownArrow();
+  EXPECT_EQ("result 2", GetOmniboxText());
+  SendEscape();
+  EXPECT_EQ("hello", GetOmniboxText());
+
+  // Ensure that the API's value is set correctly.
+  std::string result;
+  EXPECT_TRUE(GetStringFromJS(instant()->GetPreviewContents(),
+                              "window.chrome.searchBox.value",
+                              &result));
+  EXPECT_EQ("hello", result);
+
+  EXPECT_TRUE(HasUserInputInProgress());
+  EXPECT_FALSE(HasTemporaryText());
+
+  // Commit the search by pressing Enter.
+  // TODO(sreeram): Enable this check once @mathp's CL lands:
+  //     https://codereview.chromium.org/12179025/
+  // browser()->window()->GetLocationBar()->AcceptInput();
+  // EXPECT_EQ("hello", GetOmniboxText());
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NTPIsPreloaded) {

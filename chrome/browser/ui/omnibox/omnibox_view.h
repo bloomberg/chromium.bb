@@ -106,7 +106,8 @@ class OmniboxView {
                            const string16& display_text,
                            bool update_popup);
 
-  // Sets the window text and the caret position.
+  // Sets the window text and the caret position. |notify_text_changed| is true
+  // if the model should be notified of the change.
   virtual void SetWindowTextAndCaretPos(const string16& text,
                                         size_t caret_pos,
                                         bool update_popup,
@@ -160,9 +161,11 @@ class OmniboxView {
   // Called when the temporary text in the model may have changed.
   // |display_text| is the new text to show; |save_original_selection| is true
   // when there wasn't previously a temporary text and thus we need to save off
-  // the user's existing selection.
+  // the user's existing selection. |notify_text_changed| is true if the model
+  // should be notified of the change.
   virtual void OnTemporaryTextMaybeChanged(const string16& display_text,
-                                           bool save_original_selection) = 0;
+                                           bool save_original_selection,
+                                           bool notify_text_changed) = 0;
 
   // Called when the inline autocomplete text in the model may have changed.
   // |display_text| is the new text to show; |user_text_length| is the length of

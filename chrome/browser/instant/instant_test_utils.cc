@@ -137,3 +137,11 @@ bool InstantTestBase::CheckVisibilityIs(content::WebContents* contents,
   return GetBoolFromJS(contents, "!document.webkitHidden", &actual) &&
       actual == expected;
 }
+
+bool InstantTestBase::HasUserInputInProgress() {
+  return omnibox()->model()->user_input_in_progress_;
+}
+
+bool InstantTestBase::HasTemporaryText() {
+  return omnibox()->model()->has_temporary_text_;
+}
