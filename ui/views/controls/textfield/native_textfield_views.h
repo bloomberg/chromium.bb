@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,10 +80,13 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   // ui::TouchEditable overrides:
   virtual void SelectRect(const gfx::Point& start,
                           const gfx::Point& end) OVERRIDE;
+  virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) OVERRIDE;
   virtual const gfx::Rect& GetBounds() OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void ConvertPointToScreen(gfx::Point* point) OVERRIDE;
   virtual void ConvertPointFromScreen(gfx::Point* point) OVERRIDE;
+  virtual bool DrawsHandles() OVERRIDE;
+  virtual void OpenContextMenu(const gfx::Point anchor) OVERRIDE;
 
   // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,

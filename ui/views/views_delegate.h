@@ -32,6 +32,7 @@ namespace views {
 
 class NativeWidget;
 class NonClientFrameView;
+class ViewsTouchSelectionControllerFactory;
 class View;
 class Widget;
 namespace internal {
@@ -49,7 +50,9 @@ class VIEWS_EXPORT ViewsDelegate {
   // The active ViewsDelegate used by the views system.
   static ViewsDelegate* views_delegate;
 
-  virtual ~ViewsDelegate() {}
+  ViewsDelegate();
+
+  virtual ~ViewsDelegate();
 
   // Saves the position, size and "show" state for the window with the
   // specified name.
@@ -106,6 +109,9 @@ class VIEWS_EXPORT ViewsDelegate {
   // Gives the platform a chance to modify the properties of a Widget.
   virtual void OnBeforeWidgetInit(Widget::InitParams* params,
                             internal::NativeWidgetDelegate* delegate) = 0;
+
+ private:
+  scoped_ptr<ViewsTouchSelectionControllerFactory> views_tsc_factory_;
 };
 
 }  // namespace views
