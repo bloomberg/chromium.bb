@@ -620,6 +620,17 @@ void RenderText::Draw(Canvas* canvas) {
     canvas->Restore();
 }
 
+void RenderText::DrawSelectedText(Canvas* canvas) {
+  EnsureLayout();
+  const std::vector<Rect> sel = GetSubstringBounds(selection());
+  for (size_t i = 0; i < sel.size(); ++i) {
+    canvas->Save();
+    canvas->ClipRect(sel[i]);
+    DrawVisualText(canvas);
+    canvas->Restore();
+  }
+}
+
 Rect RenderText::GetCursorBounds(const SelectionModel& caret,
                                  bool insert_mode) {
   EnsureLayout();

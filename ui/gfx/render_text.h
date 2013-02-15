@@ -275,6 +275,9 @@ class UI_EXPORT RenderText {
 
   void Draw(Canvas* canvas);
 
+  // Draw the selected text without a cursor or selection highlight.
+  void DrawSelectedText(Canvas* canvas);
+
   // Gets the SelectionModel from a visual point in local coordinates.
   virtual SelectionModel FindCursorPosition(const Point& point) = 0;
 
