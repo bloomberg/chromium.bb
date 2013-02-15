@@ -7,7 +7,7 @@ include_rules = [
   "+chrome/browser/extensions",
   "+chrome/browser/prefs",
   "+chrome/browser/profiles",
-  "+chrome/browser/ui",
+  "+chrome/browser/ui/host_desktop.h",
   "+chrome/common/chrome_notification_types.h",
   "+chrome/common/chrome_switches.h",
   "+chrome/common/extensions",
