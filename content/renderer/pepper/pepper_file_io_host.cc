@@ -61,6 +61,12 @@ class PlatformGeneralCallbackTranslator
     NOTREACHED();
   }
 
+  virtual void DidCreateSnapshotFile(
+      const base::PlatformFileInfo& file_info,
+      const base::FilePath& platform_path) OVERRIDE {
+    NOTREACHED();
+  }
+
   virtual void DidReadDirectory(
       const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more) OVERRIDE {

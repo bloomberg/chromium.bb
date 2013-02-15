@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_FILEAPI_FILEAPI_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_FILEAPI_FILEAPI_MESSAGE_FILTER_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -115,8 +116,12 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
   void OnSyncGetPlatformPath(const GURL& path,
                              base::FilePath* platform_path);
   void OnCreateSnapshotFile(int request_id,
-                            const GURL& blob_url,
                             const GURL& path);
+  void OnDidReceiveSnapshotFile(int request_id);
+
+  void OnCreateSnapshotFile_Deprecated(int request_id,
+                                       const GURL& blob_url,
+                                       const GURL& path);
 
   void OnStartBuildingBlob(const GURL& url);
   void OnAppendBlobDataItem(const GURL& url,
@@ -155,14 +160,21 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
                            base::PlatformFileError result);
   void DidCreateSnapshot(
       int request_id,
-      const base::Callback<void(const base::FilePath&)>& register_file_callback,
+      const fileapi::FileSystemURL& url,
       base::PlatformFileError result,
       const base::PlatformFileInfo& info,
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
+  void DidCreateSnapshot_Deprecated(
+      int request_id,
+      const base::Callback<void(const base::FilePath&)>& register_file_callback,
+      base::PlatformFileError result,
+      const base::PlatformFileInfo& info,
+      const base::FilePath& platform_path,
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
   // Registers the given file pointed by |virtual_path| and backed by
-  // |platform_path| as the |blob_url|.  Called by DidCreateSnapshot.
+  // |platform_path| as the |blob_url|.  Called by DidCreateSnapshot_Deprecated.
   void RegisterFileAsBlob(const GURL& blob_url,
                           const fileapi::FileSystemURL& url,
                           const base::FilePath& platform_path);
@@ -195,6 +207,11 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
   // Keep track of blob URLs registered in this process. Need to unregister
   // all of them when the renderer process dies.
   base::hash_set<std::string> blob_urls_;
+
+  // Used to keep snapshot files alive while a DidCreateSnapshot
+  // is being sent to the renderer.
+  std::map<int, scoped_refptr<webkit_blob::ShareableFileReference> >
+      in_transit_snapshot_files_;
 
   // Keep track of file system file URLs opened by OpenFile() in this process.
   // Need to close all of them when the renderer process dies.

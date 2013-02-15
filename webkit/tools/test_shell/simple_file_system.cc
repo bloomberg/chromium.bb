@@ -239,6 +239,19 @@ WebFileWriter* SimpleFileSystem::createFileWriter(
 }
 
 void SimpleFileSystem::createSnapshotFileAndReadMetadata(
+    const WebURL& path,
+    WebFileSystemCallbacks* callbacks) {
+  FileSystemURL url(file_system_context()->CrackURL(path));
+  if (!HasFilePermission(url, FILE_PERMISSION_READ)) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+    return;
+  }
+  GetNewOperation(url)->CreateSnapshotFile(
+      url, SnapshotFileHandler(callbacks));
+}
+
+// DEPRECATED
+void SimpleFileSystem::createSnapshotFileAndReadMetadata(
     const WebURL& blobURL,
     const WebURL& path,
     WebFileSystemCallbacks* callbacks) {
@@ -248,7 +261,7 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
     return;
   }
   GetNewOperation(url)->CreateSnapshotFile(
-      url, SnapshotFileHandler(blobURL, callbacks));
+      url, SnapshotFileHandler_Deprecated(blobURL, callbacks));
 }
 
 // static
@@ -307,9 +320,17 @@ SimpleFileSystem::DeleteFileSystemHandler(WebFileSystemCallbacks* callbacks) {
 }
 
 FileSystemOperation::SnapshotFileCallback
-SimpleFileSystem::SnapshotFileHandler(const GURL& blob_url,
-                                      WebFileSystemCallbacks* callbacks) {
+SimpleFileSystem::SnapshotFileHandler(
+    WebFileSystemCallbacks* callbacks) {
   return base::Bind(&SimpleFileSystem::DidCreateSnapshotFile,
+                    AsWeakPtr(), base::Unretained(callbacks));
+}
+
+FileSystemOperation::SnapshotFileCallback
+SimpleFileSystem::SnapshotFileHandler_Deprecated(
+    const GURL& blob_url,
+    WebFileSystemCallbacks* callbacks) {
+  return base::Bind(&SimpleFileSystem::DidCreateSnapshotFile_Deprecated,
                     AsWeakPtr(), blob_url, base::Unretained(callbacks));
 }
 
@@ -384,6 +405,26 @@ void SimpleFileSystem::DidDeleteFileSystem(
 }
 
 void SimpleFileSystem::DidCreateSnapshotFile(
+    WebFileSystemCallbacks* callbacks,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& info,
+    const base::FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  if (result == base::PLATFORM_FILE_OK) {
+    WebFileInfo web_file_info;
+    web_file_info.length = info.size;
+    web_file_info.modificationTime = info.last_modified.ToDoubleT();
+    web_file_info.type = info.is_directory ?
+        WebFileInfo::TypeDirectory : WebFileInfo::TypeFile;
+    web_file_info.platformPath =
+        webkit_base::FilePathToWebString(platform_path);
+    callbacks->didCreateSnapshotFile(web_file_info);
+  } else {
+    callbacks->didFail(fileapi::PlatformFileErrorToWebFileError(result));
+  }
+}
+
+void SimpleFileSystem::DidCreateSnapshotFile_Deprecated(
     const GURL& blob_url,
     WebFileSystemCallbacks* callbacks,
     base::PlatformFileError result,

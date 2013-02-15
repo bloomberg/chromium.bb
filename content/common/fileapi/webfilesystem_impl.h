@@ -60,9 +60,14 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
   virtual WebKit::WebFileWriter* createFileWriter(
       const WebKit::WebURL& path, WebKit::WebFileWriterClient*) OVERRIDE;
   virtual void createSnapshotFileAndReadMetadata(
+      const WebKit::WebURL& path,
+      WebKit::WebFileSystemCallbacks*);
+
+  // DEPRECATED variant being replaced by the above.
+  virtual void createSnapshotFileAndReadMetadata(
       const WebKit::WebURL& blobURL,
       const WebKit::WebURL& path,
-      WebKit::WebFileSystemCallbacks*) OVERRIDE;
+      WebKit::WebFileSystemCallbacks*);
 };
 
 }  // namespace content

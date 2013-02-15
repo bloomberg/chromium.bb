@@ -32,6 +32,11 @@ class WEBKIT_STORAGE_EXPORT FileSystemCallbackDispatcher {
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path) = 0;
 
+  // Callback to report information for a file and its actual file path.
+  virtual void DidCreateSnapshotFile(
+      const base::PlatformFileInfo& file_info,
+      const base::FilePath& platform_path) = 0;
+
   // Callback to report the contents of a directory. If the contents of
   // the given directory are reported in one batch, then |entries| will have
   // the list of all files/directories in the given directory, |has_more| will

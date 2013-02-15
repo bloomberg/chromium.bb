@@ -46,6 +46,15 @@ void WebFileSystemCallbackDispatcher::DidReadMetadata(
   callbacks_->didReadMetadata(web_file_info);
 }
 
+void WebFileSystemCallbackDispatcher::DidCreateSnapshotFile(
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& platform_path) {
+  WebFileInfo web_file_info;
+  webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
+  web_file_info.platformPath = webkit_base::FilePathToWebString(platform_path);
+  callbacks_->didCreateSnapshotFile(web_file_info);
+}
+
 void WebFileSystemCallbackDispatcher::DidReadDirectory(
     const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
   WebVector<WebFileSystemEntry> file_system_entries(entries.size());

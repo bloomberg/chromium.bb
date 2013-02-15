@@ -91,9 +91,14 @@ class FileSystemDispatcher : public IPC::Listener {
   // raw PlatformFile returned from OpenFile.
   bool NotifyCloseFile(const GURL& file_path);
 
-  bool CreateSnapshotFile(const GURL& blod_url,
-                          const GURL& file_path,
+  bool CreateSnapshotFile(const GURL& file_path,
                           fileapi::FileSystemCallbackDispatcher* dispatcher);
+
+  bool CreateSnapshotFile_Deprecated(
+      const GURL& blod_url,
+      const GURL& file_path,
+      fileapi::FileSystemCallbackDispatcher* dispatcher);
+
  private:
   // Message handlers.
   void OnDidOpenFileSystem(int request_id,
@@ -103,6 +108,9 @@ class FileSystemDispatcher : public IPC::Listener {
   void OnDidReadMetadata(int request_id,
                          const base::PlatformFileInfo& file_info,
                          const base::FilePath& platform_path);
+  void OnDidCreateSnapshotFile(int request_id,
+                               const base::PlatformFileInfo& file_info,
+                               const base::FilePath& platform_path);
   void OnDidReadDirectory(
       int request_id,
       const std::vector<base::FileUtilProxy::Entry>& entries,

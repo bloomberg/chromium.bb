@@ -28,6 +28,9 @@ class WebFileSystemCallbackDispatcher
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path) OVERRIDE;
+  virtual void DidCreateSnapshotFile(
+      const base::PlatformFileInfo& file_info,
+      const base::FilePath& platform_path) OVERRIDE;
   virtual void DidReadDirectory(
       const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more) OVERRIDE;

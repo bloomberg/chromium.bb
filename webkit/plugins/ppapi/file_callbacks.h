@@ -46,6 +46,9 @@ class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& file_info,
       const base::FilePath& unused);
+  virtual void DidCreateSnapshotFile(
+      const base::PlatformFileInfo& file_info,
+      const base::FilePath& path);
   virtual void DidReadDirectory(
       const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more);
   virtual void DidOpenFileSystem(const std::string&,

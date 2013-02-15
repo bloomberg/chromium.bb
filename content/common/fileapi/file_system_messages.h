@@ -35,6 +35,10 @@ IPC_MESSAGE_CONTROL3(FileSystemMsg_DidReadMetadata,
                      int /* request_id */,
                      base::PlatformFileInfo,
                      base::FilePath /* true platform path, where possible */)
+IPC_MESSAGE_CONTROL3(FileSystemMsg_DidCreateSnapshotFile,
+                     int /* request_id */,
+                     base::PlatformFileInfo,
+                     base::FilePath /* true platform path */)
 IPC_MESSAGE_CONTROL3(FileSystemMsg_DidReadDirectory,
                      int /* request_id */,
                      std::vector<base::FileUtilProxy::Entry> /* entries */,
@@ -143,11 +147,22 @@ IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFile,
 IPC_MESSAGE_CONTROL1(FileSystemHostMsg_NotifyCloseFile,
                      GURL /* file path */)
 
-// WebFileSystem::createSnapshotFileAndReadMetadata() message.
-IPC_MESSAGE_CONTROL3(FileSystemHostMsg_CreateSnapshotFile,
+// DEPRECATED
+IPC_MESSAGE_CONTROL3(FileSystemHostMsg_CreateSnapshotFile_Deprecated,
                      int /* request_id */,
                      GURL /* blob_url */,
                      GURL /* file_path */)
+
+// WebFileSystem::createSnapshotFileAndReadMetadata() message.
+IPC_MESSAGE_CONTROL2(FileSystemHostMsg_CreateSnapshotFile,
+                     int /* request_id */,
+                     GURL /* file_path */)
+
+// Renderers are expected to send this message after having processed
+// the FileSystemMsg_DidCreateSnapshotFile message. In particular,
+// after having created a BlobDataHandle backed by the snapshot file.
+IPC_MESSAGE_CONTROL1(FileSystemHostMsg_DidReceiveSnapshotFile,
+                     int /* request_id */)
 
 // For Pepper's URL loader.
 IPC_SYNC_MESSAGE_CONTROL1_1(FileSystemHostMsg_SyncGetPlatformPath,

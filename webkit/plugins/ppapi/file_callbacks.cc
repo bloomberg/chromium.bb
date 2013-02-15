@@ -62,6 +62,12 @@ void FileCallbacks::DidReadMetadata(
   callback_->Run(PP_OK);
 }
 
+void FileCallbacks::DidCreateSnapshotFile(
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& path) {
+  NOTREACHED();
+}
+
 void FileCallbacks::DidReadDirectory(
     const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
   NOTREACHED();
