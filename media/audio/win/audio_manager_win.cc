@@ -361,6 +361,7 @@ AudioParameters AudioManagerWin::GetPreferredLowLatencyOutputStreamParameters(
   int sample_rate = input_params.sample_rate();
   int bits_per_sample = input_params.bits_per_sample();
   ChannelLayout channel_layout = input_params.channel_layout();
+  int input_channels = input_params.input_channels();
   if (CoreAudioUtil::IsSupported()) {
     sample_rate = GetAudioHardwareSampleRate();
     bits_per_sample = 16;
@@ -369,7 +370,7 @@ AudioParameters AudioManagerWin::GetPreferredLowLatencyOutputStreamParameters(
 
   // TODO(dalecurtis): This should include hardware bits per channel eventually.
   return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
       sample_rate, bits_per_sample, GetAudioHardwareBufferSize());
 }
 
