@@ -90,6 +90,15 @@ PERFTOOLS_DLL_DECL void HeapProfilerStop();
  */
 PERFTOOLS_DLL_DECL void HeapProfilerDump(const char *reason);
 
+/* Dump a profile to a file now and store the dumped filename to
+ * "dumped_filename_buffer" which has a length of "filename_buffer_length"
+ * in addition to HeapProfilerDump().
+ */
+PERFTOOLS_DLL_DECL void HeapProfilerDumpWithFileName(
+    const char *reason,
+    char* dumped_filename_buffer,
+    int filename_buffer_length);
+
 /* Generate current heap profiling information.
  * Returns an empty string when heap profiling is not active.
  * The returned pointer is a '\0'-terminated string allocated using malloc()
