@@ -654,10 +654,13 @@ namespace shill {
 // Function names.
 const char kClearPropertiesFunction[] = "ClearProperties";
 const char kCompleteCellularActivationFunction[] = "CompleteCellularActivation";
+const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 const char kRefreshFunction[] = "Refresh";
 const char kResetFunction[] = "Reset";
 const char kSetCarrierFunction[] = "SetCarrier";
-const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
+const char kVerifyAndSignCredentialsFunction[] = "VerifyAndSignCredentials";
+const char kVerifyAndSignDataFunction[] = "VerifyAndSignData";
+const char kVerifyDestinationFunction[] = "VerifyDestination";
 
 // Device property names.
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
