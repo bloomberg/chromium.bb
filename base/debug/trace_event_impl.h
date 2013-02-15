@@ -209,7 +209,8 @@ class BASE_EXPORT TraceLog {
   bool IsEnabled() { return !!enable_count_; }
 
 #if defined(OS_ANDROID)
-  static void InitATrace();
+  void StartATrace();
+  void StopATrace();
 #endif
 
   // Enabled state listeners give a callback when tracing is enabled or

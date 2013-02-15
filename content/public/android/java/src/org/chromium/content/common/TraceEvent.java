@@ -37,6 +37,32 @@ public class TraceEvent {
         }
     }
 
+    static {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            try {
+                Class<?> systemPropertiesClass = Class.forName("android.os.SystemProperties");
+                Method addChangeCallbackMethod = systemPropertiesClass.getDeclaredMethod(
+                        "addChangeCallback", Runnable.class);
+                addChangeCallbackMethod.invoke(null, new Runnable() {
+                    @Override
+                    public void run() {
+                        setEnabledToMatchNative();
+                    }
+                });
+            } catch (ClassNotFoundException e) {
+                Log.e("TraceEvent", "init", e);
+            } catch (NoSuchMethodException e) {
+                Log.e("TraceEvent", "init", e);
+            } catch (IllegalArgumentException e) {
+                Log.e("TraceEvent", "init", e);
+            } catch (IllegalAccessException e) {
+                Log.e("TraceEvent", "init", e);
+            } catch (InvocationTargetException e) {
+                Log.e("TraceEvent", "init", e);
+            }
+        }
+    }
+
     /**
      * Calling this will cause enabled() to be updated to match that set on the native side.
      * The native library must be loaded before calling this method.
@@ -47,11 +73,22 @@ public class TraceEvent {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             try {
                 Class<?> traceClass = Class.forName("android.os.Trace");
-                Method m = traceClass.getDeclaredMethod("isTagEnabled", Long.TYPE);
-                Field f = traceClass.getField("TRACE_TAG_VIEW");
-                boolean atraceEnabled = (Boolean) m.invoke(traceClass, f.getLong(null));
-                if (atraceEnabled) nativeInitATrace();
-                enabled = enabled || atraceEnabled;
+                long traceTagView = traceClass.getField("TRACE_TAG_VIEW").getLong(null);
+                String propertyTraceTagEnableFlags = (String) traceClass.getField(
+                        "PROPERTY_TRACE_TAG_ENABLEFLAGS").get(null);
+
+                Class<?> systemPropertiesClass = Class.forName("android.os.SystemProperties");
+                Method systemPropertiesGetLongMethod = systemPropertiesClass.getDeclaredMethod(
+                        "getLong", String.class, Long.TYPE);
+                long enabledFlags = (Long) systemPropertiesGetLongMethod.invoke(
+                        null, propertyTraceTagEnableFlags, 0);
+                Log.d("TraceEvent", "New enabled flags: " + enabledFlags);
+                if ((enabledFlags & traceTagView) != 0) {
+                    nativeStartATrace();
+                    enabled = true;
+                } else {
+                    nativeStopATrace();
+                }
             } catch (ClassNotFoundException e) {
                 Log.e("TraceEvent", "setEnabledToMatchNative", e);
             } catch (NoSuchMethodException e) {
@@ -236,7 +273,8 @@ public class TraceEvent {
     }
 
     private static native boolean nativeTraceEnabled();
-    private static native void nativeInitATrace();
+    private static native void nativeStartATrace();
+    private static native void nativeStopATrace();
     private static native void nativeInstant(String name, String arg);
     private static native void nativeBegin(String name, String arg);
     private static native void nativeEnd(String name, String arg);

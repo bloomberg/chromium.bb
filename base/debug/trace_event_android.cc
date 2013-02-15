@@ -20,12 +20,21 @@ const char* kATraceMarkerFile = "/sys/kernel/debug/tracing/trace_marker";
 namespace base {
 namespace debug {
 
-// static
-void TraceLog::InitATrace() {
-  DCHECK(g_atrace_fd == -1);
-  g_atrace_fd = open(kATraceMarkerFile, O_WRONLY | O_APPEND);
-  if (g_atrace_fd == -1)
-    LOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
+void TraceLog::StartATrace() {
+  AutoLock lock(lock_);
+  if (g_atrace_fd == -1) {
+    g_atrace_fd = open(kATraceMarkerFile, O_WRONLY);
+    if (g_atrace_fd == -1)
+      LOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
+  }
+}
+
+void TraceLog::StopATrace() {
+  AutoLock lock(lock_);
+  if (g_atrace_fd != -1) {
+    close(g_atrace_fd);
+    g_atrace_fd = -1;
+  }
 }
 
 void TraceLog::SendToATrace(char phase,
@@ -91,6 +100,8 @@ void TraceLog::SendToATrace(char phase,
 void TraceLog::ApplyATraceEnabledFlag(unsigned char* category_enabled) {
   if (g_atrace_fd != -1)
     *category_enabled |= ATRACE_ENABLED;
+  else
+    *category_enabled &= ~ATRACE_ENABLED;
 }
 
 }  // namespace debug
