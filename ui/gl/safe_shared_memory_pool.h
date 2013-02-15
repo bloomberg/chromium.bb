@@ -73,9 +73,9 @@ class SafeSharedMemoryPool {
 
   // Track usage to diagnose crashes.
   int handles_consumed_;
-  int address_space_consumed_;
+  size_t address_space_consumed_;
   int max_handles_consumed_;
-  int max_address_space_consumed_;
+  size_t max_address_space_consumed_;
 
   base::Lock lock_;
 
