@@ -89,6 +89,7 @@ class CONTENT_EXPORT WebContentsImpl
       BrowserContext* browser_context,
       content::SiteInstance* site_instance,
       int routing_id,
+      WebContentsImpl* embedder_web_contents,
       WebContentsImpl* opener_web_contents,
       int guest_instance_id,
       const BrowserPluginHostMsg_CreateGuest_Params& params);

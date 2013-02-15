@@ -382,6 +382,7 @@ WebContentsImpl* WebContentsImpl::CreateGuest(
     BrowserContext* browser_context,
     SiteInstance* site_instance,
     int routing_id,
+    WebContentsImpl* embedder_web_contents,
     WebContentsImpl* opener_web_contents,
     int guest_instance_id,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
@@ -394,6 +395,7 @@ WebContentsImpl* WebContentsImpl::CreateGuest(
   new_contents->browser_plugin_guest_.reset(
     BrowserPluginGuest::Create(
         guest_instance_id,
+        embedder_web_contents,
         new_contents,
         params));
 

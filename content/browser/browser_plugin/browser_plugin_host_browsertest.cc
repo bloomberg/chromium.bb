@@ -106,9 +106,11 @@ class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
  public:
   virtual BrowserPluginGuest* CreateBrowserPluginGuest(
       int instance_id,
+      WebContentsImpl* embedder_web_contents,
       WebContentsImpl* web_contents,
       const BrowserPluginHostMsg_CreateGuest_Params& params) OVERRIDE {
     return new TestBrowserPluginGuest(instance_id,
+                                      embedder_web_contents,
                                       web_contents,
                                       params);
   }
@@ -160,10 +162,12 @@ class TestShortHangTimeoutGuestFactory : public TestBrowserPluginHostFactory {
  public:
   virtual BrowserPluginGuest* CreateBrowserPluginGuest(
       int instance_id,
+      WebContentsImpl* embedder_web_contents,
       WebContentsImpl* web_contents,
       const BrowserPluginHostMsg_CreateGuest_Params& params) OVERRIDE {
     BrowserPluginGuest* guest =
         new TestBrowserPluginGuest(instance_id,
+                                   embedder_web_contents,
                                    web_contents,
                                    params);
     guest->set_guest_hang_timeout_for_testing(TestTimeouts::tiny_timeout());

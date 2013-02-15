@@ -72,6 +72,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   static BrowserPluginGuest* Create(
       int instance_id,
+      WebContentsImpl* embedder_web_contents,
       WebContentsImpl* web_contents,
       const BrowserPluginHostMsg_CreateGuest_Params& params);
 
@@ -98,7 +99,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   }
 
   bool focused() const { return focused_; }
-  bool visible() const { return visible_; }
+  bool visible() const { return guest_visible_; }
   void clear_damage_buffer() { damage_buffer_.reset(); }
 
   void UpdateVisibility();
@@ -181,6 +182,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   friend class TestBrowserPluginGuest;
 
   BrowserPluginGuest(int instance_id,
+                     WebContentsImpl* embedder_web_contents,
                      WebContentsImpl* web_contents,
                      const BrowserPluginHostMsg_CreateGuest_Params& params);
 
@@ -311,7 +313,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   gfx::Rect guest_screen_rect_;
   base::TimeDelta guest_hang_timeout_;
   bool focused_;
-  bool visible_;
+  bool guest_visible_;
+  bool embedder_visible_;
   std::string name_;
   bool auto_size_enabled_;
   gfx::Size max_auto_size_;

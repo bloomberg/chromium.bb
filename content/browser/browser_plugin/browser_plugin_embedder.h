@@ -22,8 +22,6 @@
 
 #include <map>
 
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -47,8 +45,7 @@ class WebContentsImpl;
 // created when a renderer asks WebContents to navigate (for the first time) to
 // some guest. It gets destroyed when either the WebContents goes away or there
 // is a RenderViewHost swap in WebContents.
-class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
-                                             public NotificationObserver {
+class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
  public:
   typedef std::map<int, WebContents*> ContainerInstanceMap;
 
@@ -81,8 +78,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
     factory_ = factory;
   }
 
-  bool visible() const { return visible_; }
-
   // Returns the RenderViewHost at a point (|x|, |y|) asynchronously via
   // |callback|. We need a roundtrip to renderer process to get this
   // information.
@@ -96,11 +91,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // NotificationObserver method override.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
  private:
   friend class TestBrowserPluginEmbedder;
 
@@ -110,10 +100,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // Adds a new guest web_contents to the embedder (overridable in test).
   virtual void AddGuest(int instance_id, WebContents* guest_web_contents);
   void CleanUp();
-
-  // Called when visiblity of web_contents changes, so the embedder will
-  // show/hide its guest.
-  void WebContentsVisibilityChanged(bool visible);
 
   static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
 
@@ -135,14 +121,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   // Static factory instance (always NULL for non-test).
   static BrowserPluginHostFactory* factory_;
 
-  // A scoped container for notification registries.
-  NotificationRegistrar registrar_;
-
   // Contains guests' WebContents, mapping from their instance ids.
   ContainerInstanceMap guest_web_contents_by_instance_id_;
   RenderViewHost* render_view_host_;
-  // Tracks the visibility state of the embedder.
-  bool visible_;
   // Map that contains outstanding queries to |GetBrowserPluginAt|.
   // We need a roundtrip to renderer process to know the answer, therefore
   // storing these callbacks is required.
