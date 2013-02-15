@@ -209,6 +209,7 @@ void WorkerPool::SetRecordRenderingStats(bool record_rendering_stats) {
 
 void WorkerPool::GetRenderingStats(RenderingStats* stats) {
   stats->totalRasterizeTime = base::TimeDelta();
+  stats->totalRasterizeTimeForNowBinsOnPendingTree = base::TimeDelta();
   stats->totalPixelsRasterized = 0;
   stats->totalDeferredImageDecodeCount = 0;
   stats->totalDeferredImageDecodeTime = base::TimeDelta();
@@ -218,6 +219,8 @@ void WorkerPool::GetRenderingStats(RenderingStats* stats) {
     CHECK(worker->rendering_stats());
     stats->totalRasterizeTime +=
         worker->rendering_stats()->totalRasterizeTime;
+    stats->totalRasterizeTimeForNowBinsOnPendingTree +=
+        worker->rendering_stats()->totalRasterizeTimeForNowBinsOnPendingTree;
     stats->totalPixelsRasterized +=
         worker->rendering_stats()->totalPixelsRasterized;
     stats->totalDeferredImageDecodeCount +=

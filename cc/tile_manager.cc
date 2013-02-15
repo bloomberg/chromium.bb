@@ -950,6 +950,9 @@ void TileManager::PerformRaster(uint8* buffer,
     base::TimeTicks end_time = base::TimeTicks::HighResNow();
     base::TimeDelta duration = end_time - begin_time;
     stats->totalRasterizeTime += duration;
+    if (raster_task_metadata.is_tile_in_pending_tree_now_bin)
+      stats->totalRasterizeTimeForNowBinsOnPendingTree += duration;
+
     UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.PictureRasterTimeMS",
                                 duration.InMilliseconds(),
                                 0,

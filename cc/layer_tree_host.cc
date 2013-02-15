@@ -322,7 +322,9 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
     hostImpl->setDeviceScaleFactor(deviceScaleFactor());
     hostImpl->setDebugState(m_debugState);
-    hostImpl->savePaintTime(m_renderingStats.totalPaintTime);
+
+    if (m_debugState.continuousPainting)
+        hostImpl->savePaintTime(m_renderingStats.totalPaintTime, commitNumber());
 
     if (newImplTreeHasNoEvictedResources) {
         if (syncTree->ContentsTexturesPurged())

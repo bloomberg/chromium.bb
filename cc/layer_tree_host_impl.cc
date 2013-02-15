@@ -1023,6 +1023,12 @@ void LayerTreeHostImpl::activatePendingTree()
     m_client->onHasPendingTreeStateChanged(pendingTree());
     m_client->setNeedsRedrawOnImplThread();
     m_client->renewTreePriority();
+
+    if (m_tileManager && m_debugState.continuousPainting) {
+        RenderingStats stats;
+        m_tileManager->GetRenderingStats(&stats);
+        m_paintTimeCounter->SaveRasterizeTime(stats.totalRasterizeTimeForNowBinsOnPendingTree, m_activeTree->source_frame_number());
+    }
 }
 
 void LayerTreeHostImpl::setVisible(bool visible)
@@ -1768,15 +1774,19 @@ skia::RefPtr<SkPicture> LayerTreeHostImpl::capturePicture()
 
 void LayerTreeHostImpl::setDebugState(const LayerTreeDebugState& debugState)
 {
+    if (m_debugState.continuousPainting != debugState.continuousPainting)
+        m_paintTimeCounter->ClearHistory();
+
     m_debugState = debugState;
 
     if (m_tileManager)
         m_tileManager->SetRecordRenderingStats(m_debugState.recordRenderingStats());
 }
 
-void LayerTreeHostImpl::savePaintTime(const base::TimeDelta& totalPaintTime)
+void LayerTreeHostImpl::savePaintTime(const base::TimeDelta& totalPaintTime, int commitNumber)
 {
-    m_paintTimeCounter->SavePaintTime(totalPaintTime);
+    DCHECK(m_debugState.continuousPainting);
+    m_paintTimeCounter->SavePaintTime(totalPaintTime, commitNumber);
 }
 
 }  // namespace cc

@@ -36,9 +36,18 @@ class RingBuffer {
     return buffer_[BufferIndex(n)];
   }
 
-  void SaveToBuffer(T value) {
+  T& MutableReadBuffer(size_t n) {
+    DCHECK(IsFilledIndex(n));
+    return buffer_[BufferIndex(n)];
+  }
+
+  void SaveToBuffer(const T& value) {
     buffer_[BufferIndex(0)] = value;
     current_index_++;
+  }
+
+  void Clear() {
+    current_index_ = 0;
   }
 
  private:

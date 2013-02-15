@@ -30,6 +30,8 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
                           totalPaintTime.InSecondsF());
     enumerator->AddDouble("totalRasterizeTimeInSeconds",
                           totalRasterizeTime.InSecondsF());
+    enumerator->AddDouble("totalRasterizeTimeForNowBinsOnPendingTree",
+        totalRasterizeTimeForNowBinsOnPendingTree.InSecondsF());
     enumerator->AddDouble("totalCommitTimeInSeconds",
                           totalCommitTime.InSecondsF());
     enumerator->AddInt64("totalCommitCount", totalCommitCount);

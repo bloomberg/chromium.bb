@@ -218,7 +218,7 @@ public:
     void setDebugState(const LayerTreeDebugState& debugState);
     const LayerTreeDebugState& debugState() const { return m_debugState; }
 
-    void savePaintTime(const base::TimeDelta& totalPaintTime);
+    void savePaintTime(const base::TimeDelta& totalPaintTime, int commitNumber);
 
     class CC_EXPORT CullRenderPassesWithCachedTextures {
     public:

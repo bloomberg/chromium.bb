@@ -18,6 +18,7 @@ struct CC_EXPORT RenderingStats {
     int64 droppedFrameCount;
     base::TimeDelta totalPaintTime;
     base::TimeDelta totalRasterizeTime;
+    base::TimeDelta totalRasterizeTimeForNowBinsOnPendingTree;
     base::TimeDelta totalCommitTime;
     int64 totalCommitCount;
     int64 totalPixelsPainted;
