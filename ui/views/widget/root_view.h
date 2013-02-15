@@ -117,7 +117,6 @@ class VIEWS_EXPORT RootView : public View,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Vector2d CalculateOffsetToAncestorWithLayer(
       ui::Layer** layer_parent) OVERRIDE;
-  virtual View::DragInfo* GetDragInfo() OVERRIDE;
 
  private:
   friend class View;
@@ -138,14 +137,6 @@ class VIEWS_EXPORT RootView : public View,
   void SetMouseLocationAndFlags(const ui::MouseEvent& event);
 
   void DispatchEventToTarget(View* target, ui::Event* event);
-
-  // |view| is the view receiving |event|. This function sends the event to all
-  // the Views up the hierarchy that has |notify_enter_exit_on_child_| flag
-  // turned on, but does not contain |sibling|.
-  void NotifyEnterExitOfDescendant(const ui::MouseEvent& event,
-                                   ui::EventType type,
-                                   View* view,
-                                   View* sibling);
 
   // Overridden from ui::EventDispatcherDelegate:
   virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
