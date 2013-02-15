@@ -160,7 +160,10 @@ void DeviceLocalAccountPolicyStore::Validate(
       UserCloudPolicyValidator::Create(policy_response.Pass()));
   validator->ValidateUsername(account_id_);
   validator->ValidatePolicyType(dm_protocol::kChromePublicAccountPolicyType);
-  validator->ValidateAgainstCurrentPolicy(policy(), false);
+  validator->ValidateAgainstCurrentPolicy(
+      policy(),
+      CloudPolicyValidatorBase::TIMESTAMP_REQUIRED,
+      CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePayload();
   validator->ValidateSignature(*key->public_key(), false);
   validator.release()->StartValidation(callback);

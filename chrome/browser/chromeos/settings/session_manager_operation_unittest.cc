@@ -254,7 +254,10 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   policy::DeviceCloudPolicyValidator* validator =
       policy::DeviceCloudPolicyValidator::Create(policy_response.Pass());
   validator->ValidateUsername(policy_.policy_data().username());
-  validator->ValidateTimestamp(before, after, false);
+  validator->ValidateTimestamp(
+      before,
+      after,
+      policy::CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
   validator->ValidatePolicyType(policy::dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
   std::vector<uint8> public_key;

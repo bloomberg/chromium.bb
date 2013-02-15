@@ -36,8 +36,10 @@ class CloudPolicyValidatorTest : public testing::Test {
         timestamp_(base::Time::UnixEpoch() +
                    base::TimeDelta::FromMilliseconds(
                        PolicyBuilder::kFakeTimestamp)),
-        ignore_missing_timestamp_(false),
+        ignore_missing_timestamp_(CloudPolicyValidatorBase::TIMESTAMP_REQUIRED),
+        ignore_missing_dm_token_(CloudPolicyValidatorBase::DM_TOKEN_REQUIRED),
         allow_key_rotation_(true),
+        existing_dm_token_(PolicyBuilder::kFakeToken),
         file_thread_(content::BrowserThread::FILE, &loop_) {
     policy_.set_new_signing_key(PolicyBuilder::CreateTestNewSigningKey());
   }
@@ -68,7 +70,7 @@ class CloudPolicyValidatorTest : public testing::Test {
                                  ignore_missing_timestamp_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername);
     validator->ValidateDomain(PolicyBuilder::kFakeDomain);
-    validator->ValidateDMToken(PolicyBuilder::kFakeToken);
+    validator->ValidateDMToken(existing_dm_token_, ignore_missing_dm_token_);
     validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
     validator->ValidatePayload();
     validator->ValidateSignature(public_key, allow_key_rotation_);
@@ -90,9 +92,11 @@ class CloudPolicyValidatorTest : public testing::Test {
 
   MessageLoop loop_;
   base::Time timestamp_;
-  bool ignore_missing_timestamp_;
+  CloudPolicyValidatorBase::ValidateTimestampOption ignore_missing_timestamp_;
+  CloudPolicyValidatorBase::ValidateDMTokenOption ignore_missing_dm_token_;
   std::string signing_key_;
   bool allow_key_rotation_;
+  std::string existing_dm_token_;
 
   UserPolicyBuilder policy_;
 
@@ -113,6 +117,18 @@ TEST_F(CloudPolicyValidatorTest, SuccessfulRunValidation) {
   // Run validation immediately (no background tasks).
   validator->RunValidation();
   CheckSuccessfulValidation(validator.get());
+}
+
+TEST_F(CloudPolicyValidatorTest, SuccessfulRunValidationWithNoExistingDMToken) {
+  existing_dm_token_.clear();
+  Validate(Invoke(this, &CloudPolicyValidatorTest::CheckSuccessfulValidation));
+}
+
+TEST_F(CloudPolicyValidatorTest, SuccessfulRunValidationWithNoDMTokens) {
+  existing_dm_token_.clear();
+  policy_.policy_data().clear_request_token();
+  ignore_missing_dm_token_ = CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED;
+  Validate(Invoke(this, &CloudPolicyValidatorTest::CheckSuccessfulValidation));
 }
 
 TEST_F(CloudPolicyValidatorTest, UsernameCanonicalization) {
@@ -137,7 +153,7 @@ TEST_F(CloudPolicyValidatorTest, ErrorNoTimestamp) {
 }
 
 TEST_F(CloudPolicyValidatorTest, IgnoreMissingTimestamp) {
-  ignore_missing_timestamp_ = true;
+  ignore_missing_timestamp_ = CloudPolicyValidatorBase::TIMESTAMP_NOT_REQUIRED;
   policy_.policy_data().clear_timestamp();
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
 }
@@ -157,6 +173,22 @@ TEST_F(CloudPolicyValidatorTest, ErrorTimestampFromTheFuture) {
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorNoRequestToken) {
+  policy_.policy_data().clear_request_token();
+  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_WRONG_TOKEN));
+}
+
+TEST_F(CloudPolicyValidatorTest, ErrorNoRequestTokenNotRequired) {
+  // Even though DMTokens are not required, if the existing policy has a token,
+  // we should still generate an error if the new policy has none.
+  policy_.policy_data().clear_request_token();
+  ignore_missing_dm_token_ = CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED;
+  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_WRONG_TOKEN));
+}
+
+TEST_F(CloudPolicyValidatorTest, ErrorNoRequestTokenNoTokenPassed) {
+  // Mimic the first fetch of policy (no existing DM token) - should still
+  // complain about not having any DMToken.
+  existing_dm_token_.clear();
   policy_.policy_data().clear_request_token();
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_WRONG_TOKEN));
 }

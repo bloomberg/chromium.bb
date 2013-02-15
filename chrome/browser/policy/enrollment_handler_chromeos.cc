@@ -91,10 +91,11 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
               new em::PolicyFetchResponse(*policy))));
 
   validator->ValidateTimestamp(base::Time(), base::Time::NowFromSystemTime(),
-                               false);
+                               CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
   if (install_attributes_->IsEnterpriseDevice())
     validator->ValidateDomain(install_attributes_->GetDomain());
-  validator->ValidateDMToken(client->dm_token());
+  validator->ValidateDMToken(client->dm_token(),
+                             CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePolicyType(dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
   validator->ValidateInitialKey();

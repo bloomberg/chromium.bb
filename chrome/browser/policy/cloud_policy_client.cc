@@ -220,6 +220,7 @@ void CloudPolicyClient::OnRegisterCompleted(
   status_ = status;
   if (status == DM_STATUS_SUCCESS) {
     dm_token_ = response.register_response().device_management_token();
+    DVLOG(1) << "Client registration complete - DMToken = " << dm_token_;
 
     // Device mode is only relevant for device policy really, it's the
     // responsibility of the consumer of the field to check validity.

@@ -26,7 +26,10 @@ scoped_ptr<UserCloudPolicyValidator> UserCloudPolicyStoreBase::CreateValidator(
   UserCloudPolicyValidator* validator =
       UserCloudPolicyValidator::Create(policy.Pass());
   validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
-  validator->ValidateAgainstCurrentPolicy(policy_.get(), false);
+  validator->ValidateAgainstCurrentPolicy(
+      policy_.get(),
+      CloudPolicyValidatorBase::TIMESTAMP_REQUIRED,
+      CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePayload();
   return scoped_ptr<UserCloudPolicyValidator>(validator);
 }

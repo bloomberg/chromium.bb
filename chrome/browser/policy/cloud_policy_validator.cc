@@ -35,9 +35,10 @@ const uint8 kSignatureAlgorithm[] = {
 
 CloudPolicyValidatorBase::~CloudPolicyValidatorBase() {}
 
-void CloudPolicyValidatorBase::ValidateTimestamp(base::Time not_before,
-                                                 base::Time now,
-                                                 bool allow_missing_timestamp) {
+void CloudPolicyValidatorBase::ValidateTimestamp(
+    base::Time not_before,
+    base::Time now,
+    ValidateTimestampOption timestamp_option) {
   // Timestamp should be from the past. We allow for a 1-minute grace interval
   // to cover clock drift.
   validation_flags_ |= VALIDATE_TIMESTAMP;
@@ -46,7 +47,7 @@ void CloudPolicyValidatorBase::ValidateTimestamp(base::Time not_before,
   timestamp_not_after_ =
       ((now + base::TimeDelta::FromSeconds(kTimestampGraceIntervalSeconds)) -
           base::Time::UnixEpoch()).InMillisecondsRoundedUp();
-  allow_missing_timestamp_ = allow_missing_timestamp;
+  timestamp_option_ = timestamp_option;
 }
 
 void CloudPolicyValidatorBase::ValidateUsername(
@@ -61,9 +62,12 @@ void CloudPolicyValidatorBase::ValidateDomain(
   domain_ = gaia::CanonicalizeDomain(expected_domain);
 }
 
-void CloudPolicyValidatorBase::ValidateDMToken(const std::string& token) {
+void CloudPolicyValidatorBase::ValidateDMToken(
+    const std::string& token,
+    ValidateDMTokenOption dm_token_option) {
   validation_flags_ |= VALIDATE_TOKEN;
   token_ = token;
+  dm_token_option_ = dm_token_option;
 }
 
 void CloudPolicyValidatorBase::ValidatePolicyType(
@@ -90,7 +94,8 @@ void CloudPolicyValidatorBase::ValidateInitialKey() {
 
 void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
     const em::PolicyData* policy_data,
-    bool allow_missing_timestamp) {
+    ValidateTimestampOption timestamp_option,
+    ValidateDMTokenOption dm_token_option) {
   base::Time last_policy_timestamp;
   std::string expected_dm_token;
   if (policy_data) {
@@ -100,9 +105,8 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
     expected_dm_token = policy_data->request_token();
   }
   ValidateTimestamp(last_policy_timestamp, base::Time::NowFromSystemTime(),
-                    allow_missing_timestamp);
-  if (!expected_dm_token.empty())
-    ValidateDMToken(expected_dm_token);
+                    timestamp_option);
+  ValidateDMToken(expected_dm_token, dm_token_option);
 }
 
 CloudPolicyValidatorBase::CloudPolicyValidatorBase(
@@ -114,7 +118,8 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
       validation_flags_(0),
       timestamp_not_before_(0),
       timestamp_not_after_(0),
-      allow_missing_timestamp_(false),
+      timestamp_option_(TIMESTAMP_REQUIRED),
+      dm_token_option_(DM_TOKEN_REQUIRED),
       allow_key_rotation_(false) {}
 
 // static
@@ -235,7 +240,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckPolicyType() {
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
   if (!policy_data_->has_timestamp()) {
-    if (allow_missing_timestamp_) {
+    if (timestamp_option_ == TIMESTAMP_NOT_REQUIRED) {
       return VALIDATION_OK;
     } else {
       LOG(ERROR) << "Policy timestamp missing";
@@ -256,9 +261,17 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
 }
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckToken() {
-  if (!policy_data_->has_request_token() ||
-      policy_data_->request_token() != token_) {
-    LOG(ERROR) << "Invalid DM token " << policy_data_->request_token();
+  // Make sure the token matches the expected token (if any) and also
+  // make sure the token itself is valid (non-empty if DM_TOKEN_REQUIRED).
+  if (dm_token_option_ == DM_TOKEN_REQUIRED &&
+      (!policy_data_->has_request_token() ||
+       policy_data_->request_token().empty())) {
+    LOG(ERROR) << "Empty DM token encountered - expected: " << token_;
+    return VALIDATION_WRONG_TOKEN;
+  }
+  if (!token_.empty() && policy_data_->request_token() != token_) {
+    LOG(ERROR) << "Invalid DM token: " << policy_data_->request_token()
+               << " - expected: " << token_;
     return VALIDATION_WRONG_TOKEN;
   }
 
