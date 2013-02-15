@@ -1205,6 +1205,8 @@
         'browser/notifications/fake_balloon_view.h',
         'browser/notifications/message_center_notification_manager.cc',
         'browser/notifications/message_center_notification_manager.h',
+        'browser/notifications/message_center_settings_controller.cc',
+        'browser/notifications/message_center_settings_controller.h',
         'browser/notifications/notification.cc',
         'browser/notifications/notification.h',
         'browser/notifications/notification_delegate.cc',
@@ -2964,6 +2966,8 @@
           'sources!': [
             'browser/notifications/message_center_notification_manager.cc',
             'browser/notifications/message_center_notification_manager.h',
+            'browser/notifications/message_center_settings_controller.cc',
+            'browser/notifications/message_center_settings_controller.h',
           ],
         }],
         ['enable_managed_users!=1', {

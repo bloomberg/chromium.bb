@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_settings_view.h"
 
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_constants.h"
+#include "ui/message_center/notifier_settings_view_delegate.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -35,23 +36,23 @@ const int kMarginWidth = 16;
 class NotifierSettingsView::NotifierButton : public views::CustomButton,
                                              public views::ButtonListener {
  public:
-  NotifierButton(const NotifierSettingsView::Notifier& notifier,
-                 views::ButtonListener* listener)
+  NotifierButton(Notifier* notifier, views::ButtonListener* listener)
       : views::CustomButton(listener),
         notifier_(notifier),
         icon_view_(NULL),
         checkbox_(new views::Checkbox(string16())) {
+    DCHECK(notifier);
     SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, 0, 0, kSpaceInButtonComponents));
-    checkbox_->SetChecked(notifier.enabled);
+    checkbox_->SetChecked(notifier_->enabled);
     checkbox_->set_listener(this);
     AddChildView(checkbox_);
-    UpdateIconImage(notifier_.icon);
-    AddChildView(new views::Label(notifier.name));
+    UpdateIconImage(notifier_->icon);
+    AddChildView(new views::Label(notifier_->name));
   }
 
   void UpdateIconImage(const gfx::ImageSkia& icon) {
-    notifier_.icon = icon;
+    notifier_->icon = icon;
     if (icon.isNull()) {
       delete icon_view_;
       icon_view_ = NULL;
@@ -69,7 +70,7 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
 
   void SetChecked(bool checked) {
     checkbox_->SetChecked(checked);
-    notifier_.enabled = checked;
+    notifier_->enabled = checked;
   }
 
   bool checked() const {
@@ -77,11 +78,11 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
   }
 
   std::string id() const {
-    return notifier_.id;
+    return notifier_->id;
   }
 
-  const NotifierSettingsView::Notifier& notifier() const {
-    return notifier_;
+  const Notifier& notifier() const {
+    return *notifier_.get();
   }
 
  private:
@@ -96,26 +97,17 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
     CustomButton::NotifyClick(event);
   }
 
-  NotifierSettingsView::Notifier notifier_;
+  scoped_ptr<Notifier> notifier_;
   views::ImageView* icon_view_;
   views::Checkbox* checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifierButton);
 };
 
-NotifierSettingsView::Notifier::Notifier(
-    const std::string& id,
-    NotifierSettingsView::Notifier::NotifierType type,
-    const string16& name)
-    : id(id),
-      name(name),
-      enabled(true),
-      type(type) {
-}
-
 // static
-NotifierSettingsView* NotifierSettingsView::Create(Delegate* delegate,
-                                                   gfx::NativeView context) {
+NotifierSettingsView* NotifierSettingsView::Create(
+    NotifierSettingsViewDelegate* delegate,
+    gfx::NativeView context) {
   NotifierSettingsView* view = new NotifierSettingsView(delegate);
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -138,7 +130,8 @@ void NotifierSettingsView::UpdateIconImage(const std::string& id,
   }
 }
 
-NotifierSettingsView::NotifierSettingsView(Delegate* delegate)
+NotifierSettingsView::NotifierSettingsView(
+    NotifierSettingsViewDelegate* delegate)
     : delegate_(delegate) {
   DCHECK(delegate_);
 
@@ -157,7 +150,7 @@ NotifierSettingsView::NotifierSettingsView(Delegate* delegate)
   items->set_border(views::Border::CreateEmptyBorder(0, kMarginWidth, 0, 0));
   AddChildView(items);
 
-  std::vector<Notifier> notifiers;
+  std::vector<Notifier*> notifiers;
   delegate_->GetNotifierList(&notifiers);
   for (size_t i = 0; i < notifiers.size(); ++i) {
     NotifierButton* button = new NotifierButton(notifiers[i], this);
@@ -178,7 +171,8 @@ string16 NotifierSettingsView::GetWindowTitle() const {
 }
 
 void NotifierSettingsView::WindowClosing() {
-  delegate_->OnNotifierSettingsClosing(this);
+  if (delegate_)
+    delegate_->OnNotifierSettingsClosing();
 }
 
 views::View* NotifierSettingsView::GetContentsView() {
@@ -192,7 +186,8 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
   DCHECK(iter != buttons_.end());
 
   (*iter)->SetChecked(!(*iter)->checked());
-  delegate_->SetNotifierEnabled((*iter)->notifier(), (*iter)->checked());
+  if (delegate_)
+    delegate_->SetNotifierEnabled((*iter)->notifier(), (*iter)->checked());
 }
 
 }  // namespace message_center

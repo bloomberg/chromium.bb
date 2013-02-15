@@ -15,6 +15,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 
+class MessageCenterSettingsController;
 class Notification;
 class Profile;
 
@@ -126,6 +127,8 @@ class MessageCenterNotificationManager
   // Use a map by notification_id since this mapping is the most often used.
   typedef std::map<std::string, ProfileNotification*> NotificationMap;
   NotificationMap profile_notifications_;
+
+  scoped_ptr<MessageCenterSettingsController> settings_controller_;
 
   // Helpers that add/remove the notification from local map and MessageCenter.
   // They take ownership of profile_notification object.

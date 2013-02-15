@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -23,7 +24,8 @@
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center)
-  : message_center_(message_center) {
+  : message_center_(message_center),
+    settings_controller_(new MessageCenterSettingsController) {
   message_center_->SetDelegate(this);
 
 #if !defined(OS_CHROMEOS)
@@ -201,7 +203,7 @@ void MessageCenterNotificationManager::ShowSettings(
 
 void MessageCenterNotificationManager::ShowSettingsDialog(
     gfx::NativeView context) {
-  NOTIMPLEMENTED();
+  settings_controller_->ShowSettingsDialog(context);
 }
 
 void MessageCenterNotificationManager::OnClicked(
