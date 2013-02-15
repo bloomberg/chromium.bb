@@ -170,6 +170,10 @@ class GtkThemeService : public ThemeService {
   // Additionally frees the CairoCachedSurfaces.
   virtual void FreePlatformCaches() OVERRIDE;
 
+  // Gets the name of the current icon theme and passes it to our low level XDG
+  // integration.
+  void SetXDGIconTheme();
+
   // Extracts colors and tints from the GTK theme, both for the
   // ThemeService interface and the colors we send to webkit.
   void LoadGtkValues();

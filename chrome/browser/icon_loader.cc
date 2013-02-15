@@ -8,10 +8,6 @@
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(TOOLKIT_GTK)
-#include "base/nix/mime_util_xdg.h"
-#endif
-
 using content::BrowserThread;
 
 IconLoader::IconLoader(const IconGroupID& group, IconSize size,
@@ -28,11 +24,6 @@ IconLoader::~IconLoader() {
 
 void IconLoader::Start() {
   target_message_loop_ = base::MessageLoopProxy::current();
-
-#if defined(TOOLKIT_GTK)
-  // This call must happen on the UI thread before we can start loading icons.
-  base::nix::DetectGtkTheme();
-#endif
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&IconLoader::ReadIcon, this));

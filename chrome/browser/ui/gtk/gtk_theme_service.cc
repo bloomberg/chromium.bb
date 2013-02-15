@@ -11,6 +11,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/environment.h"
+#include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -628,6 +629,7 @@ void GtkThemeService::LoadThemePrefs() {
     ThemeService::LoadThemePrefs();
   }
 
+  SetXDGIconTheme();
   RebuildMenuIconSets();
 }
 
@@ -680,6 +682,15 @@ void GtkThemeService::OnStyleSet(GtkWidget* widget,
   }
 
   RebuildMenuIconSets();
+}
+
+void GtkThemeService::SetXDGIconTheme() {
+  gchar* gtk_theme_name;
+  g_object_get(gtk_settings_get_default(),
+               "gtk-icon-theme-name",
+               &gtk_theme_name, NULL);
+  base::nix::SetIconThemeName(gtk_theme_name);
+  g_free(gtk_theme_name);
 }
 
 void GtkThemeService::LoadGtkValues() {

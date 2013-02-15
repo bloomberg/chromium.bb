@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/nix/mime_util_xdg.h"
 #include "base/stl_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
@@ -291,6 +292,7 @@ Gtk2UI::Gtk2UI() {
   // TODO(erg): Be lazy about generating this data and connect it to the
   // style-set signal handler.
   LoadGtkValues();
+  SetXDGIconTheme();
 }
 
 Gtk2UI::~Gtk2UI() {
@@ -436,6 +438,15 @@ void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,
 
   if (theme_trough_color)
     *track_color = *theme_trough_color;
+}
+
+void Gtk2UI::SetXDGIconTheme() {
+  gchar* gtk_theme_name;
+  g_object_get(gtk_settings_get_default(),
+               "gtk-icon-theme-name",
+               &gtk_theme_name, NULL);
+  base::nix::SetIconThemeName(gtk_theme_name);
+  g_free(gtk_theme_name);
 }
 
 void Gtk2UI::LoadGtkValues() {
