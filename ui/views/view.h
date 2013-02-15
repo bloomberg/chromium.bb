@@ -73,6 +73,7 @@ class ScrollView;
 class Widget;
 
 namespace internal {
+class PostEventDispatchHandler;
 class RootView;
 }
 
@@ -1128,6 +1129,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 #endif
 
  private:
+  friend class internal::PostEventDispatchHandler;
   friend class internal::RootView;
   friend class FocusManager;
   friend class Widget;
@@ -1295,13 +1297,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool ProcessMousePressed(const ui::MouseEvent& event, DragInfo* drop_info);
   bool ProcessMouseDragged(const ui::MouseEvent& event, DragInfo* drop_info);
   void ProcessMouseReleased(const ui::MouseEvent& event);
-
-  // RootView will invoke this with incoming TouchEvents.
-  void ProcessTouchEvent(ui::TouchEvent* event);
-
-  // RootView will invoke this with incoming GestureEvents. This invokes
-  // OnGestureEvent.
-  void ProcessGestureEvent(ui::GestureEvent* event);
 
   // Accelerators --------------------------------------------------------------
 
@@ -1484,6 +1479,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Drag and drop -------------------------------------------------------------
 
   DragController* drag_controller_;
+
+  // Input  --------------------------------------------------------------------
+
+  scoped_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;
 
   // Accessibility -------------------------------------------------------------
 

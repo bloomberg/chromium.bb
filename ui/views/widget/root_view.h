@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "ui/base/events/event_dispatcher.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view.h"
@@ -37,7 +38,9 @@ namespace internal {
 //  TODO(beng): Clean up API further, make Widget a friend.
 //  TODO(sky): We don't really want to export this class.
 //
-class VIEWS_EXPORT RootView : public View, public FocusTraversable {
+class VIEWS_EXPORT RootView : public View,
+                              public FocusTraversable,
+                              public ui::EventDispatcherDelegate {
  public:
   static const char kViewClassName[];
 
@@ -133,6 +136,11 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // be applied to the point prior to calling this).
   void SetMouseLocationAndFlags(const ui::MouseEvent& event);
 
+  void DispatchEventToTarget(View* target, ui::Event* event);
+
+  // Overridden from ui::EventDispatcherDelegate:
+  virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
+
   //////////////////////////////////////////////////////////////////////////////
 
   // Tree operations -----------------------------------------------------------
@@ -186,6 +194,8 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // The View that contains this RootView. This is used when we have RootView
   // wrapped inside native components, and is used for the focus traversal.
   View* focus_traversable_parent_view_;
+
+  View* event_dispatch_target_;
 
   // Drag and drop -------------------------------------------------------------
 

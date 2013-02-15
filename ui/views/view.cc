@@ -93,6 +93,59 @@ const views::View* GetHierarchyRoot(const views::View* view) {
 
 namespace views {
 
+namespace internal {
+
+// This event handler receives events in the post-target phase and takes care of
+// the following:
+//   - Generates context menu, or initiates drag-and-drop, from gesture events.
+class PostEventDispatchHandler : public ui::EventHandler {
+ public:
+  explicit PostEventDispatchHandler(View* owner)
+      : owner_(owner),
+        touch_dnd_enabled_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTouchDragDrop)) {
+  }
+  virtual ~PostEventDispatchHandler() {}
+
+ private:
+  // Overridden from ui::EventHandler:
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    DCHECK_EQ(ui::EP_POSTTARGET, event->phase());
+    if (event->handled())
+      return;
+
+    if (touch_dnd_enabled_) {
+      if (event->type() == ui::ET_GESTURE_LONG_PRESS &&
+          (!owner_->drag_controller() ||
+           owner_->drag_controller()->CanStartDragForView(
+              owner_, event->location(), event->location()))) {
+        if (owner_->DoDrag(*event, event->location(),
+            ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)) {
+          event->StopPropagation();
+          return;
+        }
+      }
+    }
+
+    if (owner_->context_menu_controller() &&
+        (event->type() == ui::ET_GESTURE_LONG_PRESS ||
+         event->type() == ui::ET_GESTURE_LONG_TAP ||
+         event->type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
+      gfx::Point location(event->location());
+      View::ConvertPointToScreen(owner_, &location);
+      owner_->ShowContextMenu(location, true);
+      event->StopPropagation();
+    }
+  }
+
+  View* owner_;
+  bool touch_dnd_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(PostEventDispatchHandler);
+};
+
+}  // namespace internal
+
 // static
 ViewsDelegate* ViewsDelegate::views_delegate = NULL;
 
@@ -126,7 +179,10 @@ View::View()
       focusable_(false),
       accessibility_focusable_(false),
       context_menu_controller_(NULL),
-      drag_controller_(NULL) {
+      drag_controller_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(post_dispatch_handler_(
+          new internal::PostEventDispatchHandler(this))) {
+  AddPostTargetHandler(post_dispatch_handler_.get());
 }
 
 View::~View() {
@@ -868,6 +924,10 @@ bool View::OnMouseWheel(const ui::MouseWheelEvent& event) {
 }
 
 void View::OnKeyEvent(ui::KeyEvent* event) {
+  bool consumed = (event->type() == ui::ET_KEY_PRESSED) ? OnKeyPressed(*event) :
+                                                          OnKeyReleased(*event);
+  if (consumed)
+    event->StopPropagation();
 }
 
 void View::OnMouseEvent(ui::MouseEvent* event) {
@@ -1988,39 +2048,6 @@ void View::ProcessMouseReleased(const ui::MouseEvent& event) {
     OnMouseReleased(event);
   }
   // WARNING: we may have been deleted.
-}
-
-void View::ProcessTouchEvent(ui::TouchEvent* event) {
-  OnTouchEvent(event);
-}
-
-void View::ProcessGestureEvent(ui::GestureEvent* event) {
-  OnGestureEvent(event);
-  if (event->handled())
-    return;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTouchDragDrop)) {
-    if (event->type() == ui::ET_GESTURE_LONG_PRESS &&
-        (!drag_controller_ || drag_controller_->CanStartDragForView(
-            this, event->location(), event->location()))) {
-      if (DoDrag(*event, event->location(),
-          ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)) {
-        event->StopPropagation();
-        return;
-      }
-    }
-  }
-
-  if (context_menu_controller_ &&
-      (event->type() == ui::ET_GESTURE_LONG_PRESS ||
-       event->type() == ui::ET_GESTURE_LONG_TAP ||
-       event->type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
-    gfx::Point location(event->location());
-    ConvertPointToScreen(this, &location);
-    ShowContextMenu(location, true);
-    event->StopPropagation();
-  }
 }
 
 // Accelerators ----------------------------------------------------------------
