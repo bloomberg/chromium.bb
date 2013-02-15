@@ -32,8 +32,8 @@ namespace tray {
 
 class BluetoothDefaultView : public TrayItemMore {
  public:
-  explicit BluetoothDefaultView(SystemTrayItem* owner)
-      : TrayItemMore(owner, true) {
+  BluetoothDefaultView(SystemTrayItem* owner, bool show_more)
+      : TrayItemMore(owner, show_more) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToImageSkia());
     UpdateLabel();
@@ -362,7 +362,8 @@ views::View* TrayBluetooth::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayBluetooth::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == NULL);
-  default_ = new tray::BluetoothDefaultView(this);
+  default_ = new tray::BluetoothDefaultView(
+      this, status != user::LOGGED_IN_LOCKED);
   return default_;
 }
 
