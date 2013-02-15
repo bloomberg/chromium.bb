@@ -320,8 +320,8 @@ public class AwContents {
 
     public int getAwDrawGLViewContext() {
         // Using the native pointer as the returned viewContext. This is matched by the
-        // reinterpret_cast back to AwContents pointer in the native DrawGLFunction.
-        return mNativeAwContents;
+        // reinterpret_cast back to BrowserViewRenderer pointer in the native DrawGLFunction.
+        return nativeGetAwDrawGLViewContext(mNativeAwContents);
     }
 
     public boolean onPrepareDrawGL(Canvas canvas) {
@@ -998,38 +998,6 @@ public class AwContents {
         return null;
     }
 
-    /**
-     * Provides a Bitmap object with a given width and height used for auxiliary rasterization.
-     */
-    @CalledByNative
-    private static Bitmap createBitmap(int width, int height) {
-        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-    }
-
-    /**
-     * Draws a provided bitmap into a canvas.
-     * Used for convenience from the native side and other static helper methods.
-     */
-    @CalledByNative
-    private static void drawBitmapIntoCanvas(Bitmap bitmap, Canvas canvas) {
-        canvas.drawBitmap(bitmap, 0, 0, null);
-    }
-
-    /**
-     * Creates a new Picture that records drawing a provided bitmap.
-     * Will return an empty Picture if the Bitmap is null.
-     */
-    @CalledByNative
-    private static Picture recordBitmapIntoPicture(Bitmap bitmap) {
-        Picture picture = new Picture();
-        if (bitmap != null) {
-            Canvas recordingCanvas = picture.beginRecording(bitmap.getWidth(), bitmap.getHeight());
-            drawBitmapIntoCanvas(bitmap, recordingCanvas);
-            picture.endRecording();
-        }
-        return picture;
-    }
-
     @CalledByNative
     private void handleJsAlert(String url, String message, JsResultReceiver receiver) {
         mContentsClient.handleJsAlert(url, message, receiver);
@@ -1075,8 +1043,6 @@ public class AwContents {
 
     private native void nativeAddVisitedLinks(int nativeAwContents, String[] visitedLinks);
 
-    private native boolean nativeDrawSW(int nativeAwContents, Canvas canvas, int clipX, int clipY,
-            int clipW, int clipH);
     private native void nativeSetScrollForHWFrame(int nativeAwContents, int scrollX, int scrollY);
     private native int nativeFindAllSync(int nativeAwContents, String searchString);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
@@ -1105,6 +1071,9 @@ public class AwContents {
     private native void nativeSetWebContents(int nativeAwContents, int nativeNewWebContents);
     private native void nativeFocusFirstNode(int nativeAwContents);
 
+    private native boolean nativeDrawSW(int nativeAwContents, Canvas canvas, int clipX, int clipY,
+            int clipW, int clipH);
+    private native int nativeGetAwDrawGLViewContext(int nativeAwContents);
     private native Picture nativeCapturePicture(int nativeAwContents);
     private native void nativeEnableOnNewPicture(int nativeAwContents, boolean enabled,
             boolean invalidationOnly);
