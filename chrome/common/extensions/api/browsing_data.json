@@ -41,74 +41,74 @@
         }
       },
       {
-        "id": "DataTypes",
+        "id": "DataTypeSet",
         "type": "object",
-        "description": "An object whose properties specify which browsing data types are selected to be cleared.",
+        "description": "A set of data types. Missing data types are interpreted as <code>false</code>.",
         "properties": {
           "appcache": {
             "type": "boolean",
             "optional": true,
-            "description": "Should websites' appcaches be cleared?"
+            "description": "Websites' appcaches."
           },
           "cache": {
             "type": "boolean",
             "optional": true,
-            "description": "Should the browser's cache be cleared? Note: this clears the <em>entire</em> cache: it is not limited to the range you specify."
+            "description": "The browser's cache. Note: when removing data, this clears the <em>entire</em> cache: it is not limited to the range you specify."
           },
           "cookies": {
             "type": "boolean",
             "optional": true,
-            "description": "Should the browser's cookies be cleared?"
+            "description": "The browser's cookies."
           },
           "downloads": {
             "type": "boolean",
             "optional": true,
-            "description": "Should the browser's download list be cleared?"
+            "description": "The browser's download list."
           },
           "fileSystems": {
             "type": "boolean",
             "optional": true,
-            "description": "Should websites' file systems be cleared?"
+            "description": "Websites' file systems."
           },
           "formData": {
             "type": "boolean",
             "optional": true,
-            "description": "Should the browser's stored form data be cleared?"
+            "description": "The browser's stored form data."
           },
           "history": {
             "type": "boolean",
             "optional": true,
-            "description": "Should the browser's history be cleared?"
+            "description": "The browser's history."
           },
           "indexedDB": {
             "type": "boolean",
             "optional": true,
-            "description": "Should websites' IndexedDB data be cleared?"
+            "description": "Websites' IndexedDB data."
           },
           "localStorage": {
             "type": "boolean",
             "optional": true,
-            "description": "Should websites' local storage data be cleared?"
+            "description": "Websites' local storage data."
           },
           "serverBoundCertificates": {
             "type": "boolean",
             "optional": true,
-            "description": "Should server-bound certificates be removed?"
+            "description": "Server-bound certificates."
           },
           "pluginData": {
             "type": "boolean",
             "optional": true,
-            "description": "Should plugins' data be cleared?"
+            "description": "Plugins' data."
           },
           "passwords": {
             "type": "boolean",
             "optional": true,
-            "description": "Should the stored passwords be cleared?"
+            "description": "Stored passwords."
           },
           "webSQL": {
             "type": "boolean",
             "optional": true,
-            "description": "Should websites' WebSQL data be cleared?"
+            "description": "Websites' WebSQL data."
           }
         }
       }
@@ -116,7 +116,7 @@
     "functions": [
       {
         "name": "settings",
-        "description": "Reports which types of data are currently selected in the 'Clear browsing data' settings UI.",
+        "description": "Reports which types of data are currently selected in the 'Clear browsing data' settings UI.  Note: some of the data types included in this API are not available in the settings UI, and some UI settings control more than one data type listed here.",
         "type": "function",
         "parameters": [
           {
@@ -131,8 +131,12 @@
                     "$ref": "RemovalOptions"
                   },
                   "dataToRemove": {
-                    "$ref": "DataTypes",
-                    "description": "All of the types will be present in the result, set to true or false. Some of the data types included in this API are not available in the settings UI, and some UI settings control more than one data type listed here."
+                    "$ref": "DataTypeSet",
+                    "description": "All of the types will be present in the result, with values of <code>true</code> if they are both selected to be removed and permitted to be removed, otherwise <code>false</code>."
+                  },
+                  "dataRemovalPermitted": {
+                    "$ref": "DataTypeSet",
+                    "description": "All of the types will be present in the result, with values of <code>true</code> if they are permitted to be removed (e.g., by enterprise policy) and <code>false</code> if not."
                   }
                 }
               }
@@ -151,8 +155,8 @@
           },
           {
             "name": "dataToRemove",
-            "$ref": "DataTypes",
-            "description": "You may set as many or as few as you like in a single call; each is optional (defaulting to <code>false</code>)."
+            "$ref": "DataTypeSet",
+            "description": "The set of data types to remove."
           },
           {
             "name": "callback",

@@ -82,6 +82,10 @@ class BrowsingDataRemover : public content::NotificationObserver
     REMOVE_WEBSQL = 1 << 11,
     REMOVE_SERVER_BOUND_CERTS = 1 << 12,
     REMOVE_CONTENT_LICENSES = 1 << 13,
+    // The following flag is used only in tests. In normal usage, hosted app
+    // data is controlled by the REMOVE_COOKIES flag, applied to the
+    // protected-web origin.
+    REMOVE_HOSTED_APP_DATA_TESTONLY = 1 << 31,
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
     // storage, webSQL, and plugin data.

@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
-
 #include <string>
 
+#include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
@@ -14,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -41,13 +41,6 @@ const char kRemoveEverythingArguments[] = "[{\"since\": 1000}, {"
     "\"pluginData\": true, \"webSQL\": true"
     "}]";
 
-// The hosted-app-data pref and UI checkbox don't correspond to a separate
-// data type, but we need a way to pass that pref into the test function, so we
-// use an enum value guaranteed not to conflict with existing data types.
-// TODO(pamg): Update this to a newly created boundary value when the history-
-// deletion policy changes have landed.
-const int REMOVE_HOSTED_APP_DATA =
-    BrowsingDataRemover::REMOVE_CONTENT_LICENSES << 1;
 
 class ExtensionBrowsingDataTest : public InProcessBrowserTest,
                                   public content::NotificationObserver {
@@ -86,22 +79,29 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
 
   int GetAsMask(const DictionaryValue* dict, std::string path, int mask_value) {
     bool result;
-    EXPECT_TRUE(dict->GetBoolean(path, &result));
+    EXPECT_TRUE(dict->GetBoolean(path, &result)) << "for " << path;
     return result ? mask_value : 0;
   }
 
   void RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
-      const std::string& key,
+      const std::string& data_types,
       int expected_mask) {
     scoped_refptr<RemoveBrowsingDataFunction> function =
         new RemoveBrowsingDataFunction();
-    SCOPED_TRACE(key);
+    SCOPED_TRACE(data_types);
     EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
         function.get(),
-        std::string("[{\"since\": 1}, {\"") + key + "\": true}]",
+        std::string("[{\"since\": 1},") + data_types + "]",
         browser()));
     EXPECT_EQ(expected_mask, GetRemovalMask());
     EXPECT_EQ(UNPROTECTED_WEB, GetOriginSetMask());
+  }
+
+  void RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
+      const std::string& key,
+      int expected_mask) {
+    RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+        std::string("{\"") + key + "\": true}", expected_mask);
   }
 
   void RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
@@ -176,7 +176,8 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
     prefs->SetBoolean(prefs::kDeleteDownloadHistory,
         !!(data_type_flags & BrowsingDataRemover::REMOVE_DOWNLOADS));
     prefs->SetBoolean(prefs::kDeleteHostedAppsData,
-        !!(data_type_flags & REMOVE_HOSTED_APP_DATA));
+        !!(data_type_flags &
+           BrowsingDataRemover::REMOVE_HOSTED_APP_DATA_TESTONLY));
     prefs->SetBoolean(prefs::kDeletePasswords,
         !!(data_type_flags & BrowsingDataRemover::REMOVE_PASSWORDS));
     prefs->SetBoolean(prefs::kClearPluginLSODataEnabled,
@@ -190,14 +191,11 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
 
     base::DictionaryValue* result;
     EXPECT_TRUE(result_value->GetAsDictionary(&result));
+
     base::DictionaryValue* options;
     EXPECT_TRUE(result->GetDictionary("options", &options));
-    base::DictionaryValue* data_to_remove;
-    EXPECT_TRUE(result->GetDictionary("dataToRemove", &data_to_remove));
-
     base::DictionaryValue* origin_types;
     EXPECT_TRUE(options->GetDictionary("originTypes", &origin_types));
-
     int origin_set_mask = GetAsMask(origin_types, "unprotectedWeb",
                                     UNPROTECTED_WEB) |
                           GetAsMask(origin_types, "protectedWeb",
@@ -205,6 +203,8 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
                           GetAsMask(origin_types, "extension", EXTENSION);
     EXPECT_EQ(expected_origin_set_mask, origin_set_mask);
 
+    base::DictionaryValue* data_to_remove;
+    EXPECT_TRUE(result->GetDictionary("dataToRemove", &data_to_remove));
     int removal_mask = GetAsMask(data_to_remove, "appcache",
                                  BrowsingDataRemover::REMOVE_APPCACHE) |
                        GetAsMask(data_to_remove, "cache",
@@ -234,6 +234,24 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
     EXPECT_EQ(expected_removal_mask, removal_mask);
   }
 
+  // The kAllowDeletingBrowserHistory pref must be set to false before this
+  // is called.
+  void CheckRemovalPermitted(const std::string& data_types, bool permitted) {
+    scoped_refptr<RemoveBrowsingDataFunction> function =
+        new RemoveBrowsingDataFunction();
+    std::string args = "[{\"since\": 1}," + data_types + "]";
+
+    if (permitted) {
+      EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
+        function.get(), args, browser())) << " for " << args;
+    } else {
+      EXPECT_TRUE(
+          MatchPattern(RunFunctionAndReturnError(function, args, browser()),
+              extension_browsing_data_api_constants::kDeleteProhibitedError)) <<
+                  " for " << args;
+    }
+  }
+
  private:
   scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
   content::NotificationRegistrar registrar_;
@@ -254,6 +272,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
 
   EXPECT_EQ(base::Time(), GetBeginTime());
   EXPECT_EQ(-1, GetRemovalMask());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemovalProhibited) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
+
+  CheckRemovalPermitted("{\"appcache\": true}", true);
+  CheckRemovalPermitted("{\"cache\": true}", true);
+  CheckRemovalPermitted("{\"cookies\": true}", true);
+  CheckRemovalPermitted("{\"downloads\": true}", false);
+  CheckRemovalPermitted("{\"fileSystems\": true}", true);
+  CheckRemovalPermitted("{\"formData\": true}", true);
+  CheckRemovalPermitted("{\"history\": true}", false);
+  CheckRemovalPermitted("{\"indexedDB\": true}", true);
+  CheckRemovalPermitted("{\"localStorage\": true}", true);
+  CheckRemovalPermitted("{\"serverBoundCertificates\": true}", true);
+  CheckRemovalPermitted("{\"passwords\": true}", true);
+  CheckRemovalPermitted("{\"webSQL\": true}", true);
+
+  // The entire removal is prohibited if any part is.
+  CheckRemovalPermitted("{\"cache\": true, \"history\": true}", false);
+  CheckRemovalPermitted("{\"cookies\": true, \"downloads\": true}", false);
+
+  // If a prohibited type is not selected, the removal is OK.
+  CheckRemovalPermitted("{\"history\": false}", true);
+  CheckRemovalPermitted("{\"downloads\": false}", true);
+  CheckRemovalPermitted("{\"cache\": true, \"history\": false}", true);
+  CheckRemovalPermitted("{\"cookies\": true, \"downloads\": false}", true);
 }
 
 // Use-after-free, see http://crbug.com/116522
@@ -303,32 +349,87 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataOriginSetMask) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataRemovalMask) {
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "appcache", BrowsingDataRemover::REMOVE_APPCACHE);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "cache", BrowsingDataRemover::REMOVE_CACHE);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "cookies", BrowsingDataRemover::REMOVE_COOKIES);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "downloads", BrowsingDataRemover::REMOVE_DOWNLOADS);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "fileSystems", BrowsingDataRemover::REMOVE_FILE_SYSTEMS);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "formData", BrowsingDataRemover::REMOVE_FORM_DATA);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "history", BrowsingDataRemover::REMOVE_HISTORY);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "indexedDB", BrowsingDataRemover::REMOVE_INDEXEDDB);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "localStorage", BrowsingDataRemover::REMOVE_LOCAL_STORAGE);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "serverBoundCertificates",
       BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS);
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "passwords", BrowsingDataRemover::REMOVE_PASSWORDS);
   // We can't remove plugin data inside a test profile.
-  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+  RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "webSQL", BrowsingDataRemover::REMOVE_WEBSQL);
+}
+
+// Test an arbitrary combination of data types.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
+                       BrowsingDataRemovalMaskCombination) {
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+       "{\"appcache\": true, \"cookies\": true, \"history\": true}",
+       BrowsingDataRemover::REMOVE_APPCACHE |
+           BrowsingDataRemover::REMOVE_COOKIES |
+           BrowsingDataRemover::REMOVE_HISTORY);
+}
+
+// Make sure the remove() function accepts the format produced by settings().
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
+                       BrowsingDataRemovalInputFromSettings) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kDeleteCache, true);
+  prefs->SetBoolean(prefs::kDeleteBrowsingHistory, true);
+  prefs->SetBoolean(prefs::kDeleteDownloadHistory, true);
+  prefs->SetBoolean(prefs::kDeleteCookies, false);
+  prefs->SetBoolean(prefs::kDeleteFormData, false);
+  prefs->SetBoolean(prefs::kDeleteHostedAppsData, false);
+  prefs->SetBoolean(prefs::kDeletePasswords, false);
+  prefs->SetBoolean(prefs::kClearPluginLSODataEnabled, false);
+  int expected_mask = BrowsingDataRemover::REMOVE_CACHE |
+        BrowsingDataRemover::REMOVE_DOWNLOADS |
+        BrowsingDataRemover::REMOVE_HISTORY;
+  std::string json;
+  // Scoping for the traces.
+  {
+    scoped_refptr<BrowsingDataSettingsFunction> settings_function =
+        new BrowsingDataSettingsFunction();
+    SCOPED_TRACE("settings_json");
+    scoped_ptr<base::Value> result_value(RunFunctionAndReturnSingleResult(
+        settings_function.get(), std::string("[]"), browser()));
+
+    base::DictionaryValue* result;
+    EXPECT_TRUE(result_value->GetAsDictionary(&result));
+    base::DictionaryValue* data_to_remove;
+    EXPECT_TRUE(result->GetDictionary("dataToRemove", &data_to_remove));
+
+    JSONStringValueSerializer serializer(&json);
+    EXPECT_TRUE(serializer.Serialize(*data_to_remove));
+  }
+  {
+    scoped_refptr<RemoveBrowsingDataFunction> remove_function =
+        new RemoveBrowsingDataFunction();
+    SCOPED_TRACE("remove_json");
+    EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
+        remove_function.get(),
+        std::string("[{\"since\": 1},") + json + "]",
+        browser()));
+    EXPECT_EQ(expected_mask, GetRemovalMask());
+    EXPECT_EQ(UNPROTECTED_WEB, GetOriginSetMask());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, ShortcutFunctionRemovalMask) {
@@ -393,11 +494,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSiteData) {
   SetPrefsAndVerifySettings(BrowsingDataRemover::REMOVE_COOKIES,
                             UNPROTECTED_WEB,
                             site_data_no_plugins);
-  SetPrefsAndVerifySettings(REMOVE_HOSTED_APP_DATA,
-                           PROTECTED_WEB,
-                           site_data_no_plugins);
   SetPrefsAndVerifySettings(
-      BrowsingDataRemover::REMOVE_COOKIES | REMOVE_HOSTED_APP_DATA,
+      BrowsingDataRemover::REMOVE_HOSTED_APP_DATA_TESTONLY,
+      PROTECTED_WEB,
+      site_data_no_plugins);
+  SetPrefsAndVerifySettings(
+      BrowsingDataRemover::REMOVE_COOKIES |
+          BrowsingDataRemover::REMOVE_HOSTED_APP_DATA_TESTONLY,
       PROTECTED_WEB | UNPROTECTED_WEB,
       site_data_no_plugins);
   SetPrefsAndVerifySettings(
