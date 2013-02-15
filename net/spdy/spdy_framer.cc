@@ -1430,6 +1430,7 @@ SpdyFrame* SpdyFramer::CreateSynStream(
     bool compressed,
     const SpdyHeaderBlock* headers) {
   DCHECK_EQ(0, flags & ~CONTROL_FLAG_FIN & ~CONTROL_FLAG_UNIDIRECTIONAL);
+  DCHECK_EQ(enable_compression_, compressed);
 
   SpdySynStreamIR syn_stream(stream_id);
   syn_stream.set_associated_to_stream_id(associated_stream_id);
@@ -1440,11 +1441,7 @@ SpdyFrame* SpdyFramer::CreateSynStream(
   // TODO(hkhalil): Avoid copy here.
   *(syn_stream.GetMutableNameValueBlock()) = *headers;
 
-  scoped_ptr<SpdyControlFrame> syn_frame(
-      reinterpret_cast<SpdyControlFrame*>(SerializeSynStream(syn_stream)));
-  if (compressed) {
-    return CompressControlFrame(*syn_frame.get(), headers);
-  }
+  scoped_ptr<SpdyFrame> syn_frame(SerializeSynStream(syn_stream));
   return syn_frame.release();
 }
 
@@ -1460,8 +1457,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
 
   // The size of this frame, including variable-length name-value block.
   const size_t size = GetSynStreamMinimumSize()
-      + GetSerializedLength(protocol_version(),
-                            &(syn_stream.name_value_block()));
+      + GetSerializedLength(syn_stream.name_value_block());
 
   SpdyFrameBuilder builder(SYN_STREAM, flags, protocol_version(), size);
   builder.WriteUInt32(syn_stream.stream_id());
@@ -1476,6 +1472,9 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   DCHECK_EQ(GetSynStreamMinimumSize(), builder.length());
   SerializeNameValueBlock(&builder, syn_stream);
 
+  if (visitor_)
+    visitor_->OnSynStreamCompressed(size, builder.length());
+
   return builder.take();
 }
 
@@ -1485,17 +1484,14 @@ SpdyFrame* SpdyFramer::CreateSynReply(
     bool compressed,
     const SpdyHeaderBlock* headers) {
   DCHECK_EQ(0, flags & ~CONTROL_FLAG_FIN);
+  DCHECK_EQ(enable_compression_, compressed);
 
   SpdySynReplyIR syn_reply(stream_id);
   syn_reply.set_fin(flags & CONTROL_FLAG_FIN);
   // TODO(hkhalil): Avoid copy here.
   *(syn_reply.GetMutableNameValueBlock()) = *headers;
 
-  scoped_ptr<SpdyControlFrame> reply_frame(
-      reinterpret_cast<SpdyControlFrame*>(SerializeSynReply(syn_reply)));
-  if (compressed) {
-    return CompressControlFrame(*reply_frame.get(), headers);
-  }
+  scoped_ptr<SpdyFrame> reply_frame(SerializeSynReply(syn_reply));
   return reply_frame.release();
 }
 
@@ -1508,8 +1504,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
 
   // The size of this frame, including variable-length name-value block.
   size_t size = GetSynReplyMinimumSize()
-      + GetSerializedLength(protocol_version(),
-                            &(syn_reply.name_value_block()));
+      + GetSerializedLength(syn_reply.name_value_block());
 
   SpdyFrameBuilder builder(SYN_REPLY, flags, protocol_version(), size);
   builder.WriteUInt32(syn_reply.stream_id());
@@ -1625,18 +1620,14 @@ SpdyFrame* SpdyFramer::CreateHeaders(
     const SpdyHeaderBlock* header_block) {
   // Basically the same as CreateSynReply().
   DCHECK_EQ(0, flags & (!CONTROL_FLAG_FIN));
+  DCHECK_EQ(enable_compression_, compressed);
 
   SpdyHeadersIR headers(stream_id);
   headers.set_fin(flags & CONTROL_FLAG_FIN);
   // TODO(hkhalil): Avoid copy here.
   *(headers.GetMutableNameValueBlock()) = *header_block;
 
-  scoped_ptr<SpdyControlFrame> headers_frame(
-      reinterpret_cast<SpdyControlFrame*>(SerializeHeaders(headers)));
-  if (compressed) {
-    return CompressControlFrame(*headers_frame.get(),
-                                headers.GetMutableNameValueBlock());
-  }
+  scoped_ptr<SpdyFrame> headers_frame(SerializeHeaders(headers));
   return headers_frame.release();
 }
 
@@ -1649,8 +1640,7 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
 
   // The size of this frame, including variable-length name-value block.
   size_t size = GetHeadersMinimumSize()
-      + GetSerializedLength(protocol_version(),
-                            &(headers.name_value_block()));
+      + GetSerializedLength(headers.name_value_block());
 
   SpdyFrameBuilder builder(HEADERS, flags, protocol_version(), size);
   builder.WriteUInt32(headers.stream_id());
@@ -1660,7 +1650,6 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   DCHECK_EQ(GetHeadersMinimumSize(), builder.length());
 
   SerializeNameValueBlock(&builder, headers);
-  DCHECK_EQ(size, builder.length());
 
   return builder.take();
 }
@@ -1748,6 +1737,18 @@ SpdySerializedFrame* SpdyFramer::SerializeData(const SpdyDataIR& data) const {
   return builder.take();
 }
 
+size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock& headers) {
+  const size_t uncompressed_length =
+      GetSerializedLength(protocol_version(), &headers);
+  if (!enable_compression_) {
+    return uncompressed_length;
+  }
+  z_stream* compressor = GetHeaderCompressor();
+  // Since we'll be performing lots of flushes when compressing the data,
+  // zlib's lower bounds may be insufficient.
+  return 2 * deflateBound(compressor, uncompressed_length);
+}
+
 // The following compression setting are based on Brian Olson's analysis. See
 // https://groups.google.com/group/spdy-dev/browse_thread/thread/dfaf498542fac792
 // for more details.
@@ -1806,131 +1807,6 @@ z_stream* SpdyFramer::GetHeaderDecompressor() {
     return NULL;
   }
   return header_decompressor_.get();
-}
-
-bool SpdyFramer::GetFrameBoundaries(const SpdyFrame& frame,
-                                    int* payload_length,
-                                    int* header_length,
-                                    const char** payload) const {
-  size_t frame_size;
-  if (frame.is_control_frame()) {
-    const SpdyControlFrame& control_frame =
-        reinterpret_cast<const SpdyControlFrame&>(frame);
-    switch (control_frame.type()) {
-      case SYN_STREAM:
-        {
-          *header_length = GetSynStreamMinimumSize();
-          *payload_length = frame.length() -
-              (*header_length - GetControlFrameMinimumSize());
-          *payload = frame.data() + *header_length;
-        }
-        break;
-      case SYN_REPLY:
-      case HEADERS:
-        // It is okay to conflate HEADERS and SYN_REPLY here since they are
-        // identical in structure. The following DCHECK_EQ should politely club
-        // the developer over the head should this assertion change without the
-        // code below changing as well.
-        DCHECK_EQ(GetSynReplyMinimumSize(), GetHeadersMinimumSize());
-        *header_length = GetSynReplyMinimumSize();
-        *payload_length = frame.length() -
-            (*header_length - GetControlFrameMinimumSize());
-        *payload = frame.data() + *header_length;
-        break;
-      default:
-        // TODO(mbelshe): set an error?
-        return false;  // We can't compress this frame!
-    }
-  } else {
-    frame_size = SpdyFrame::kHeaderSize;
-    *header_length = frame_size;
-    *payload_length = frame.length();
-    *payload = frame.data() + SpdyFrame::kHeaderSize;
-  }
-  return true;
-}
-
-SpdyControlFrame* SpdyFramer::CompressControlFrame(
-    const SpdyControlFrame& frame,
-    const SpdyHeaderBlock* headers) {
-  z_stream* compressor = GetHeaderCompressor();
-  if (!compressor)
-    return NULL;
-
-  int payload_length;
-  int header_length;
-  const char* payload;
-
-  base::StatsCounter compressed_frames("spdy.CompressedFrames");
-  base::StatsCounter pre_compress_bytes("spdy.PreCompressSize");
-  base::StatsCounter post_compress_bytes("spdy.PostCompressSize");
-
-  if (!enable_compression_)
-    return reinterpret_cast<SpdyControlFrame*>(DuplicateFrame(frame));
-
-  if (!GetFrameBoundaries(frame, &payload_length, &header_length, &payload))
-    return NULL;
-
-  // Create an output frame.
-  int compressed_max_size = deflateBound(compressor, payload_length);
-  // Since we'll be performing lots of flushes when compressing the data,
-  // zlib's lower bounds may be insufficient.
-  compressed_max_size *= 2;
-
-  size_t new_frame_size = header_length + compressed_max_size;
-  if ((frame.type() == SYN_REPLY || frame.type() == HEADERS) &&
-      spdy_version_ < 3) {
-    new_frame_size += 2;
-  }
-  DCHECK_GE(new_frame_size, frame.length() + SpdyFrame::kHeaderSize);
-  scoped_ptr<SpdyControlFrame> new_frame(new SpdyControlFrame(new_frame_size));
-  memcpy(new_frame->data(), frame.data(),
-         frame.length() + SpdyFrame::kHeaderSize);
-
-  // TODO(phajdan.jr): Clean up after we no longer need
-  // to workaround http://crbug.com/139744.
-#if defined(USE_SYSTEM_ZLIB)
-  compressor->next_in = reinterpret_cast<Bytef*>(const_cast<char*>(payload));
-  compressor->avail_in = payload_length;
-#endif  // defined(USE_SYSTEM_ZLIB)
-  compressor->next_out = reinterpret_cast<Bytef*>(new_frame->data()) +
-                          header_length;
-  compressor->avail_out = compressed_max_size;
-  // TODO(phajdan.jr): Clean up after we no longer need
-  // to workaround http://crbug.com/139744.
-#if defined(USE_SYSTEM_ZLIB)
-  int rv = deflate(compressor, Z_SYNC_FLUSH);
-  if (rv != Z_OK) {  // How can we know that it compressed everything?
-    // This shouldn't happen, right?
-    LOG(WARNING) << "deflate failure: " << rv;
-    return NULL;
-  }
-#else  // !defined(USE_SYSTEM_ZLIB)
-  WriteHeaderBlockToZ(headers, compressor);
-#endif  // !defined(USE_SYSTEM_ZLIB)
-  int compressed_size = compressed_max_size - compressor->avail_out;
-
-  // We trust zlib. Also, we can't do anything about it.
-  // See http://www.zlib.net/zlib_faq.html#faq36
-  (void)VALGRIND_MAKE_MEM_DEFINED(new_frame->data() + header_length,
-                                  compressed_size);
-
-  new_frame->set_length(
-      header_length + compressed_size - SpdyFrame::kHeaderSize);
-
-  pre_compress_bytes.Add(payload_length);
-  post_compress_bytes.Add(new_frame->length());
-
-  compressed_frames.Increment();
-
-  if (visitor_)
-    visitor_->OnControlFrameCompressed(frame, *new_frame);
-
-  if (debug_visitor_ != NULL) {
-    debug_visitor_->OnCompressedHeaderBlock(payload_length, compressed_size);
-  }
-
-  return new_frame.release();
 }
 
 // Incrementally decompress the control frame's header block, feeding the
@@ -2031,7 +1907,7 @@ SpdyFrame* SpdyFramer::DuplicateFrame(const SpdyFrame& frame) {
   return new_frame;
 }
 
-void SpdyFramer::SerializeNameValueBlock(
+void SpdyFramer::SerializeNameValueBlockWithoutCompression(
     SpdyFrameBuilder* builder,
     const SpdyFrameWithNameValueBlockIR& frame) const {
   const SpdyNameValueBlock* name_value_block = &(frame.name_value_block());
@@ -2054,6 +1930,77 @@ void SpdyFramer::SerializeNameValueBlock(
       builder->WriteStringPiece32(it->first);
       builder->WriteStringPiece32(it->second);
     }
+  }
+}
+
+void SpdyFramer::SerializeNameValueBlock(
+    SpdyFrameBuilder* builder,
+    const SpdyFrameWithNameValueBlockIR& frame) {
+  if (!enable_compression_) {
+    return SerializeNameValueBlockWithoutCompression(builder, frame);
+  }
+
+  // First build an uncompressed version to be fed into the compressor.
+  const size_t uncompressed_len = GetSerializedLength(
+      protocol_version(), &(frame.name_value_block()));
+  SpdyFrameBuilder uncompressed_builder(uncompressed_len);
+  SerializeNameValueBlockWithoutCompression(&uncompressed_builder, frame);
+  scoped_ptr<SpdyFrame> uncompressed_payload(uncompressed_builder.take());
+
+  z_stream* compressor = GetHeaderCompressor();
+  if (!compressor) {
+    LOG(DFATAL) << "Could not obtain compressor.";
+    return;
+  }
+
+  base::StatsCounter compressed_frames("spdy.CompressedFrames");
+  base::StatsCounter pre_compress_bytes("spdy.PreCompressSize");
+  base::StatsCounter post_compress_bytes("spdy.PostCompressSize");
+
+  // Create an output frame.
+  // Since we'll be performing lots of flushes when compressing the data,
+  // zlib's lower bounds may be insufficient.
+  //
+  // TODO(akalin): Avoid the duplicate calculation with
+  // GetSerializedLength(const SpdyHeaderBlock&).
+  const int compressed_max_size =
+      2 * deflateBound(compressor, uncompressed_len);
+
+  // TODO(phajdan.jr): Clean up after we no longer need
+  // to workaround http://crbug.com/139744.
+#if defined(USE_SYSTEM_ZLIB)
+  compressor->next_in = reinterpret_cast<Bytef*>(uncompressed_payload->data());
+  compressor->avail_in = uncompressed_len;
+#endif  // defined(USE_SYSTEM_ZLIB)
+  compressor->next_out = reinterpret_cast<Bytef*>(
+      builder->GetWritableBuffer(compressed_max_size));
+  compressor->avail_out = compressed_max_size;
+
+  // TODO(phajdan.jr): Clean up after we no longer need
+  // to workaround http://crbug.com/139744.
+#if defined(USE_SYSTEM_ZLIB)
+  int rv = deflate(compressor, Z_SYNC_FLUSH);
+  if (rv != Z_OK) {  // How can we know that it compressed everything?
+    // This shouldn't happen, right?
+    LOG(WARNING) << "deflate failure: " << rv;
+    // TODO(akalin): Upstream this return.
+    return;
+  }
+#else
+  WriteHeaderBlockToZ(&frame.name_value_block(), compressor);
+#endif  // defined(USE_SYSTEM_ZLIB)
+
+  int compressed_size = compressed_max_size - compressor->avail_out;
+  builder->Seek(compressed_size);
+  builder->RewriteLength(*this);
+
+  pre_compress_bytes.Add(uncompressed_len);
+  post_compress_bytes.Add(compressed_size);
+
+  compressed_frames.Increment();
+
+  if (debug_visitor_ != NULL) {
+    debug_visitor_->OnCompressedHeaderBlock(uncompressed_len, compressed_size);
   }
 }
 

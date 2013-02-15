@@ -1551,6 +1551,7 @@
         'spdy/buffered_spdy_framer_spdy2_unittest.cc',
         'spdy/spdy_credential_builder_unittest.cc',
         'spdy/spdy_credential_state_unittest.cc',
+        'spdy/spdy_frame_builder_test.cc',
         'spdy/spdy_frame_reader_test.cc',
         'spdy/spdy_framer_test.cc',
         'spdy/spdy_header_block_unittest.cc',

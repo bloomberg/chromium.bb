@@ -16,6 +16,8 @@
 
 namespace net {
 
+class SpdyFramer;
+
 // This class provides facilities for basic binary value packing
 // into Spdy frames.
 //
@@ -39,12 +41,24 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // Initiailizes a SpdyFrameBuilder with a buffer of given size,
   // populated with a SPDY data frame header based on
   // |stream_id| and |flags|.
-  SpdyFrameBuilder(SpdyStreamId stream_id, SpdyDataFlags flags,  size_t size);
+  SpdyFrameBuilder(SpdyStreamId stream_id, SpdyDataFlags flags, size_t size);
 
   ~SpdyFrameBuilder();
 
   // Returns the size of the SpdyFrameBuilder's data.
   size_t length() const { return length_; }
+
+  // Returns a writeable buffer of given size in bytes, to be appended to the
+  // currently written frame. Does bounds checking on length but does not
+  // increment the underlying iterator. To do so, consumers should subsequently
+  // call Seek().
+  // In general, consumers should use Write*() calls instead of this.
+  // Returns NULL on failure.
+  char* GetWritableBuffer(size_t length);
+
+  // Seeks forward by the given number of bytes. Useful in conjunction with
+  // GetWriteableBuffer() above.
+  bool Seek(size_t length);
 
   // Takes the buffer from the SpdyFrameBuilder.
   SpdyFrame* take() {
@@ -73,34 +87,20 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   bool WriteStringPiece32(const base::StringPiece& value);
   bool WriteBytes(const void* data, uint32 data_len);
 
-  // Write an integer to a particular offset in the data buffer.
-  bool WriteUInt32ToOffset(int offset, uint32 value) {
-    value = htonl(value);
-    return WriteBytesToOffset(offset, &value, sizeof(value));
-  }
-
-  // Write to a particular offset in the data buffer.
-  bool WriteBytesToOffset(int offset, const void* data, uint32 data_len) {
-    if (offset + data_len > length_)
-      return false;
-    char *ptr = buffer_.get() + offset;
-    memcpy(ptr, data, data_len);
-    return true;
-  }
+  // Update (in-place) the length field in the frame being built to reflect the
+  // current actual length of bytes written to said frame through this builder.
+  // The framer parameter is used to determine version-specific location and
+  // size information of the length field to be written, and must be initialized
+  // with the correct version for the frame being written.
+  bool RewriteLength(const SpdyFramer& framer);
 
  protected:
   const char* end_of_payload() const { return buffer_.get() + length_; }
 
-  // Completes the write operation by padding the data with NULL bytes until it
-  // is padded. Should be paired with BeginWrite, but it does not necessarily
-  // have to be called after the data is written.
-  void EndWrite(char* dest, int length);
-
  private:
-  // Returns the location that the data should be written at, or NULL if there
-  // is not enough room. Call EndWrite with the returned offset and the given
-  // length to pad out for the next write.
-  char* BeginWrite(size_t length);
+  // Checks to make sure that there is an appropriate amount of space for a
+  // write of given size, in bytes.
+  bool CanWrite(size_t length) const;
 
   scoped_ptr<char[]> buffer_;
   size_t capacity_;  // Allocation size of payload (or -1 if buffer is const).

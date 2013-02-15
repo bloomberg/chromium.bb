@@ -593,7 +593,7 @@ SpdyFrame* SpdySession::CreateSynStream(
       buffered_spdy_framer_->CreateSynStream(
           stream_id, 0,
           ConvertRequestPriorityToSpdyPriority(priority, GetProtocolVersion()),
-          credential_slot, flags, true, &headers));
+          credential_slot, flags, enable_compression_, &headers));
 
   base::StatsCounter spdy_requests("spdy.requests");
   spdy_requests.Increment();
@@ -655,7 +655,8 @@ SpdyFrame* SpdySession::CreateHeadersFrame(
 
   // Create a HEADER frame.
   scoped_ptr<SpdyFrame> frame(
-      buffered_spdy_framer_->CreateHeaders(stream_id, flags, true, &headers));
+      buffered_spdy_framer_->CreateHeaders(
+          stream_id, flags, enable_compression_, &headers));
 
   if (net_log().IsLoggingAllEvents()) {
     bool fin = flags & CONTROL_FLAG_FIN;
@@ -1329,17 +1330,13 @@ void SpdySession::OnSetting(SpdySettingsIds id,
                  id, static_cast<SpdySettingsFlags>(flags), value));
 }
 
-void SpdySession::OnControlFrameCompressed(
-    const SpdyControlFrame& uncompressed_frame,
-    const SpdyControlFrame& compressed_frame) {
-  if (uncompressed_frame.type() == SYN_STREAM) {
-    int uncompressed_size = uncompressed_frame.length();
-    int compressed_size = compressed_frame.length();
-    // Make sure we avoid early decimal truncation.
-    int compression_pct = 100 - (100 * compressed_size) / uncompressed_size;
-    UMA_HISTOGRAM_PERCENTAGE("Net.SpdySynStreamCompressionPercentage",
-                             compression_pct);
-  }
+void SpdySession::OnSynStreamCompressed(
+    size_t uncompressed_size,
+    size_t compressed_size) {
+  // Make sure we avoid early decimal truncation.
+  int compression_pct = 100 - (100 * compressed_size) / uncompressed_size;
+  UMA_HISTOGRAM_PERCENTAGE("Net.SpdySynStreamCompressionPercentage",
+                           compression_pct);
 }
 
 

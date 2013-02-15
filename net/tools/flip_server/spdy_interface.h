@@ -94,10 +94,10 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   // and validated.
   virtual void OnSetting(SpdySettingsIds id,
                          uint8 flags,
-                         uint32 value) OVERRIDE {};
+                         uint32 value) OVERRIDE {}
 
   // Called when a PING frame has been parsed.
-  virtual void OnPing(uint32 unique_id) OVERRIDE {};
+  virtual void OnPing(uint32 unique_id) OVERRIDE {}
 
   // Called when a RST_STREAM frame has been parsed.
   virtual void OnRstStream(SpdyStreamId stream_id,
@@ -105,17 +105,17 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
 
   // Called when a GOAWAY frame has been parsed.
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                        SpdyGoAwayStatus status) OVERRIDE {};
+                        SpdyGoAwayStatus status) OVERRIDE {}
 
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              int delta_window_size) OVERRIDE {};
+                              int delta_window_size) OVERRIDE {}
 
   // Called after a control frame has been compressed to allow the visitor
   // to record compression statistics.
-  virtual void OnControlFrameCompressed(
-      const SpdyControlFrame& uncompressed_frame,
-      const SpdyControlFrame& compressed_frame) OVERRIDE {};
+  virtual void OnSynStreamCompressed(
+      size_t uncompressed_size,
+      size_t compressed_size) OVERRIDE {}
 
  public:
   virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;

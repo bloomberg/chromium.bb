@@ -79,9 +79,9 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 
   // Called after a control frame has been compressed to allow the visitor
   // to record compression statistics.
-  virtual void OnControlFrameCompressed(
-      const SpdyControlFrame& uncompressed_frame,
-      const SpdyControlFrame& compressed_frame) = 0;
+  virtual void OnSynStreamCompressed(
+      size_t uncompressed_size,
+      size_t compressed_size) = 0;
 
  protected:
   virtual ~BufferedSpdyFramerVisitorInterface() {}
@@ -133,11 +133,11 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                               int delta_window_size) OVERRIDE;
   virtual void OnDataFrameHeader(const SpdyDataFrame* frame) OVERRIDE;
 
-  // Called after a control frame has been compressed to allow the visitor
-  // to record compression statistics.
-  virtual void OnControlFrameCompressed(
-      const SpdyControlFrame& uncompressed_frame,
-      const SpdyControlFrame& compressed_frame) OVERRIDE;
+  // Called after a syn stream control frame has been compressed to
+  // allow the visitor to record compression statistics.
+  virtual void OnSynStreamCompressed(
+      size_t uncompressed_size,
+      size_t compressed_size) OVERRIDE;
 
   // SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);

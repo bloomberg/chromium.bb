@@ -53,9 +53,9 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
                         SpdyGoAwayStatus status) OVERRIDE {}
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               int delta_window_size) OVERRIDE {}
-  virtual void OnControlFrameCompressed(
-      const SpdyControlFrame& uncompressed_frame,
-      const SpdyControlFrame& compressed_frame) OVERRIDE {}
+  virtual void OnSynStreamCompressed(
+      size_t uncompressed_size,
+      size_t compressed_size) OVERRIDE {}
 
  private:
   SpdyPriority priority_;

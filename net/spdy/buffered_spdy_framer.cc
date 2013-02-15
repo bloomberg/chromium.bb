@@ -180,12 +180,11 @@ void BufferedSpdyFramer::OnWindowUpdate(SpdyStreamId stream_id,
   visitor_->OnWindowUpdate(stream_id, delta_window_size);
 }
 
-void BufferedSpdyFramer::OnControlFrameCompressed(
-    const SpdyControlFrame& uncompressed_frame,
-    const SpdyControlFrame& compressed_frame) {
-  visitor_->OnControlFrameCompressed(uncompressed_frame, compressed_frame);
+void BufferedSpdyFramer::OnSynStreamCompressed(
+    size_t uncompressed_size,
+    size_t compressed_size) {
+  visitor_->OnSynStreamCompressed(uncompressed_size, compressed_size);
 }
-
 
 int BufferedSpdyFramer::protocol_version() {
   return spdy_framer_.protocol_version();

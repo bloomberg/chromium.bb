@@ -217,9 +217,9 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // to record compression statistics.
   //
   // TODO(akalin): Upstream this function.
-  virtual void OnControlFrameCompressed(
-      const SpdyControlFrame& uncompressed_frame,
-      const SpdyControlFrame& compressed_frame) = 0;
+  virtual void OnSynStreamCompressed(
+      size_t uncompressed_size,
+      size_t compressed_size) = 0;
 };
 
 // Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting
@@ -304,7 +304,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                const SpdyHeaderBlock* headers);
 
   // Retrieve serialized length of SpdyHeaderBlock.
-  // TODO(hkhalil): Change to const reference instead of const pointer.
+  // TODO(hkhalil): Remove, or move to quic code.
   static size_t GetSerializedLength(const int spdy_version,
                                     const SpdyHeaderBlock* headers);
 
@@ -544,6 +544,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   void ProcessControlFrameHeader();
   bool ProcessSetting(const char* data);  // Always passed exactly 8 bytes.
 
+  // Retrieve serialized length of SpdyHeaderBlock. If compression is enabled, a
+  // maximum estimate is returned.
+  size_t GetSerializedLength(const SpdyHeaderBlock& headers);
+
   // Get (and lazily initialize) the ZLib state.
   z_stream* GetHeaderCompressor();
   z_stream* GetHeaderDecompressor();
@@ -575,23 +579,19 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   void WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
                            z_stream* out) const;
 
-  void SerializeNameValueBlock(
+  void SerializeNameValueBlockWithoutCompression(
       SpdyFrameBuilder* builder,
       const SpdyFrameWithNameValueBlockIR& frame) const;
+
+  // Compresses automatically according to enable_compression_.
+  void SerializeNameValueBlock(
+      SpdyFrameBuilder* builder,
+      const SpdyFrameWithNameValueBlockIR& frame);
 
   // Set the error code and moves the framer into the error state.
   void set_error(SpdyError error);
 
   size_t GoAwaySize() const;
-
-  // Given a frame, breakdown the variable payload length, the static header
-  // header length, and variable payload pointer.
-  bool GetFrameBoundaries(const SpdyFrame& frame, int* payload_length,
-                          int* header_length, const char** payload) const;
-
-  // Returns a new SpdyControlFrame with the compressed payload of |frame|.
-  SpdyControlFrame* CompressControlFrame(const SpdyControlFrame& frame,
-                                         const SpdyHeaderBlock* headers);
 
   // The maximum size of the control frames that we support.
   // This limit is arbitrary. We can enforce it here or at the application
