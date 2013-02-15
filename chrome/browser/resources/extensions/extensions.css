@@ -73,6 +73,10 @@ html.loading * {
   font-size: 1.25em;
 }
 
+html[dir=rtl] #footer-section {
+  background: url('chrome://theme/IDR_WEBSTORE_ICON_32') no-repeat right center;
+}
+
 #footer-section > a {
   -webkit-margin-start: 42px;
   line-height: 32px;
@@ -213,6 +217,10 @@ html[dir='rtl'] .extension-list-item {
 
 .extension-commands-config {
   float: right;
+}
+
+html[dir=rtl] .extension-commands-config {
+  float: left;
 }
 
 /* Overlays */
