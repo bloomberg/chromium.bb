@@ -108,9 +108,10 @@ HostContentSettingsMap::HostContentSettingsMap(
 void HostContentSettingsMap::RegisterExtensionService(
     ExtensionService* extension_service) {
   DCHECK(extension_service);
-#ifndef NDEBUG
-  DCHECK(!used_content_settings_providers_);
-#endif
+  // http://crbug.com/176315
+  // #ifndef NDEBUG
+  //   DCHECK(!used_content_settings_providers_);
+  // #endif
   DCHECK(!content_settings_providers_[INTERNAL_EXTENSION_PROVIDER]);
   DCHECK(!content_settings_providers_[CUSTOM_EXTENSION_PROVIDER]);
 
