@@ -125,8 +125,8 @@ class Panel : public BaseWindow,
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual void Show() OVERRIDE;
-  virtual void ShowInactive() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual void ShowInactive() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
