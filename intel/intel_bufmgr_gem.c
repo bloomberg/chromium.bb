@@ -1944,12 +1944,14 @@ aub_write_trace_block(drm_intel_bo *bo, uint32_t type, uint32_t subtype,
 
 	aub_out(bufmgr_gem,
 		CMD_AUB_TRACE_HEADER_BLOCK |
-		(5 - 2));
+		((bufmgr_gem->gen >= 8 ? 6 : 5) - 2));
 	aub_out(bufmgr_gem,
 		AUB_TRACE_MEMTYPE_GTT | type | AUB_TRACE_OP_DATA_WRITE);
 	aub_out(bufmgr_gem, subtype);
 	aub_out(bufmgr_gem, bo_gem->aub_offset + offset);
 	aub_out(bufmgr_gem, size);
+	if (bufmgr_gem->gen >= 8)
+		aub_out(bufmgr_gem, 0);
 	aub_write_bo_data(bo, offset, size);
 }
 
@@ -2034,12 +2036,14 @@ aub_build_dump_ringbuffer(drm_intel_bufmgr_gem *bufmgr_gem,
 	 */
 	aub_out(bufmgr_gem,
 		CMD_AUB_TRACE_HEADER_BLOCK |
-		(5 - 2));
+		((bufmgr_gem->gen >= 8 ? 6 : 5) - 2));
 	aub_out(bufmgr_gem,
 		AUB_TRACE_MEMTYPE_GTT | ring | AUB_TRACE_OP_COMMAND_WRITE);
 	aub_out(bufmgr_gem, 0); /* general/surface subtype */
 	aub_out(bufmgr_gem, bufmgr_gem->aub_offset);
 	aub_out(bufmgr_gem, ring_count * 4);
+	if (bufmgr_gem->gen >= 8)
+		aub_out(bufmgr_gem, 0);
 
 	/* FIXME: Need some flush operations here? */
 	aub_out_data(bufmgr_gem, ringbuffer, ring_count * 4);
@@ -2952,11 +2956,13 @@ drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable)
 	aub_out(bufmgr_gem, 0); /* comment len */
 
 	/* Set up the GTT. The max we can handle is 256M */
-	aub_out(bufmgr_gem, CMD_AUB_TRACE_HEADER_BLOCK | (5 - 2));
+	aub_out(bufmgr_gem, CMD_AUB_TRACE_HEADER_BLOCK | ((bufmgr_gem->gen >= 8 ? 6 : 5) - 2));
 	aub_out(bufmgr_gem, AUB_TRACE_MEMTYPE_NONLOCAL | 0 | AUB_TRACE_OP_DATA_WRITE);
 	aub_out(bufmgr_gem, 0); /* subtype */
 	aub_out(bufmgr_gem, 0); /* offset */
 	aub_out(bufmgr_gem, gtt_size); /* size */
+	if (bufmgr_gem->gen >= 8)
+		aub_out(bufmgr_gem, 0);
 	for (i = 0x000; i < gtt_size; i += 4, entry += 0x1000) {
 		aub_out(bufmgr_gem, entry);
 	}
