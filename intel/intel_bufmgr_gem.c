@@ -2028,8 +2028,14 @@ aub_build_dump_ringbuffer(drm_intel_bufmgr_gem *bufmgr_gem,
 
 	/* Make a ring buffer to execute our batchbuffer. */
 	memset(ringbuffer, 0, sizeof(ringbuffer));
-	ringbuffer[ring_count++] = AUB_MI_BATCH_BUFFER_START;
-	ringbuffer[ring_count++] = batch_buffer;
+	if (bufmgr_gem->gen >= 8) {
+		ringbuffer[ring_count++] = AUB_MI_BATCH_BUFFER_START | (3 - 2);
+		ringbuffer[ring_count++] = batch_buffer;
+		ringbuffer[ring_count++] = 0;
+	} else {
+		ringbuffer[ring_count++] = AUB_MI_BATCH_BUFFER_START;
+		ringbuffer[ring_count++] = batch_buffer;
+	}
 
 	/* Write out the ring.  This appears to trigger execution of
 	 * the ring in the simulator.
