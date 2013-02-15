@@ -197,6 +197,25 @@ class TestInstructionPrinter(unittest.TestCase):
         @operand0_jmp_to
         """.split())
 
+  def test_immediates(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse('adc =Ib &ab, 0x14')
+
+    printer.PrintInstructionWithoutModRM(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        0x14
+        @instruction_adc
+        @operands_count_is_2
+        @operand0_8bit
+        @operand1_8bit
+        @operand1_rax
+        imm8
+        @operand0_immediate
+        """.split())
+
   def test_no_modrm_with_rex(self):
     printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 64)
     instr = gen_dfa.Instruction.Parse(

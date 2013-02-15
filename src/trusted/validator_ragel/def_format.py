@@ -368,6 +368,7 @@ class OperandType(object):
   COUNTER = 'c'
 
   IMMEDIATE = 'I'
+  SECOND_IMMEDIATE = 'i'
 
   CONTROL_REGISTER = 'C'  # in ModRM.reg
   DEBUG_REGISTER = 'D'  # in ModRM.reg

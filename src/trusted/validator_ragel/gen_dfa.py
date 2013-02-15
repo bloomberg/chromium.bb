@@ -503,6 +503,36 @@ class InstructionPrinter(object):
       self._out.write('?')
     self._out.write('\n')
 
+  def _PrintImmediates(self, instruction):
+    """Print a machine that parses immediate operands (if present)."""
+    operand = instruction.FindOperand(def_format.OperandType.IMMEDIATE)
+    if operand is not None:
+      format = operand.GetFormat()
+      if format == '2bit':
+        assert False, 'not supported yet'
+      elif format == '8bit':
+        self._out.write('imm8\n')
+      elif format == '16bit':
+        self._out.write('imm16\n')
+      elif format == '32bit':
+        self._out.write('imm32\n')
+      elif format == '64bit':
+        self._out.write('imm64\n')
+      else:
+        assert False, format
+      self._PrintOperandSource(operand, 'immediate')
+
+    operand = instruction.FindOperand(def_format.OperandType.SECOND_IMMEDIATE)
+    if operand is not None:
+      format = operand.GetFormat()
+      if format == '8bit':
+        self._out.write('imm8n2\n')
+      elif format == '16bit':
+        self._out.write('imm16n2\n')
+      else:
+        assert False, format
+      self._PrintOperandSource(operand, 'second_immediate')
+
   def PrintInstructionWithoutModRM(self, instruction):
     assert not instruction.IsVexOrXop(), 'not supported yet'
     assert not instruction.HasModRM()
@@ -519,7 +549,7 @@ class InstructionPrinter(object):
     self._PrintSpuriousRexInfo(instruction)
     self._PrintImplicitOperandSources(instruction)
 
-    # TODO(shcherbina): print immediate args.
+    self._PrintImmediates(instruction)
 
     # Displacement encoded in the instruction.
     operand = instruction.FindOperand(def_format.OperandType.ABSOLUTE_DISP)
@@ -597,7 +627,7 @@ class InstructionPrinter(object):
 
     self._PrintSpuriousRexInfo(instruction)
 
-    # TODO(shcherbina): print immediate args.
+    self._PrintImmediates(instruction)
 
   def PrintInstructionWithModRMMemory(self, instruction, address_mode):
     """Print instruction that has memory access.
@@ -673,7 +703,7 @@ class InstructionPrinter(object):
 
     # TODO(shcherbina): @check_access when appropriate.
 
-    # TODO(shcherbina): print immediate args.
+    self._PrintImmediates(instruction)
 
 
 def InstructionToString(mode, bitness, instruction):
