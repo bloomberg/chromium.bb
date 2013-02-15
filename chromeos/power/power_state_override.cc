@@ -35,8 +35,7 @@ PowerStateOverride::PowerStateOverride(Mode mode)
                           PowerManagerClient::DISABLE_IDLE_BLANK);
       // fallthrough
     case BLOCK_SYSTEM_SUSPEND:
-      override_types_ |= (PowerManagerClient::DISABLE_IDLE_SUSPEND |
-                          PowerManagerClient::DISABLE_IDLE_LID_SUSPEND);
+      override_types_ |= PowerManagerClient::DISABLE_IDLE_SUSPEND;
       break;
     default:
       NOTREACHED() << "Unhandled mode " << mode;

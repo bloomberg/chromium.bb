@@ -105,7 +105,7 @@ class CHROMEOS_EXPORT PowerManagerClient {
     DISABLE_IDLE_DIM         = 1 << 0,  // Disable screen dimming on idle.
     DISABLE_IDLE_BLANK       = 1 << 1,  // Disable screen blanking on idle.
     DISABLE_IDLE_SUSPEND     = 1 << 2,  // Disable suspend on idle.
-    DISABLE_IDLE_LID_SUSPEND = 1 << 3,  // Disable suspend on lid closed.
+    DISABLE_LID_SUSPEND      = 1 << 3,  // Disable suspend on lid closed.
   };
 
   // Adds and removes the observer.

@@ -315,7 +315,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     protobuf.set_disable_idle_dim(overrides & DISABLE_IDLE_DIM);
     protobuf.set_disable_idle_blank(overrides & DISABLE_IDLE_BLANK);
     protobuf.set_disable_idle_suspend(overrides & DISABLE_IDLE_SUSPEND);
-    protobuf.set_disable_lid_suspend(overrides & DISABLE_IDLE_LID_SUSPEND);
+    protobuf.set_disable_lid_suspend(overrides & DISABLE_LID_SUSPEND);
 
     if (!writer.AppendProtoAsArrayOfBytes(protobuf)) {
       LOG(ERROR) << "Error calling "

@@ -57,11 +57,9 @@ TEST_F(PowerStateOverrideTest, AddAndRemoveOverrides) {
   const uint32 kDisplayOverrides =
       PowerManagerClient::DISABLE_IDLE_DIM |
       PowerManagerClient::DISABLE_IDLE_BLANK |
-      PowerManagerClient::DISABLE_IDLE_SUSPEND |
-      PowerManagerClient::DISABLE_IDLE_LID_SUSPEND;
+      PowerManagerClient::DISABLE_IDLE_SUSPEND;
   const uint32 kSystemOverrides =
-      PowerManagerClient::DISABLE_IDLE_SUSPEND |
-      PowerManagerClient::DISABLE_IDLE_LID_SUSPEND;
+      PowerManagerClient::DISABLE_IDLE_SUSPEND;
 
   // Block display sleep and pass a request ID to the callback.
   chromeos::PowerStateRequestIdCallback request_id_callback;

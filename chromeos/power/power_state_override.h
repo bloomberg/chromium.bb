@@ -26,8 +26,7 @@ class CHROMEOS_EXPORT PowerStateOverride
     // Also implies BLOCK_SYSTEM_SUSPEND.
     BLOCK_DISPLAY_SLEEP,
 
-    // Blocks the system from being suspended due to user inactivity or (in the
-    // case of a laptop) the lid being closed.
+    // Blocks the system from being suspended due to user inactivity.
     BLOCK_SYSTEM_SUSPEND,
   };
 
