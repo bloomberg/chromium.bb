@@ -867,8 +867,6 @@ int SpdySession::DoReadComplete(int result) {
         buffered_spdy_framer_->ProcessInput(data, result);
     result -= bytes_processed;
     data += bytes_processed;
-    if (buffered_spdy_framer_->state() == SpdyFramer::SPDY_DONE)
-      buffered_spdy_framer_->Reset();
   }
 
   if (IsConnected())

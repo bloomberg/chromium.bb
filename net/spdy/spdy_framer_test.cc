@@ -513,8 +513,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       size_t bytes_processed = framer_.ProcessInput(input_ptr, bytes_read);
       input_remaining -= bytes_processed;
       input_ptr += bytes_processed;
-      if (framer_.state() == SpdyFramer::SPDY_DONE)
-        framer_.Reset();
     }
   }
 
@@ -3044,8 +3042,6 @@ TEST_P(SpdyFramerTest, SizesTest) {
 TEST_P(SpdyFramerTest, StateToStringTest) {
   EXPECT_STREQ("ERROR",
                SpdyFramer::StateToString(SpdyFramer::SPDY_ERROR));
-  EXPECT_STREQ("DONE",
-               SpdyFramer::StateToString(SpdyFramer::SPDY_DONE));
   EXPECT_STREQ("AUTO_RESET",
                SpdyFramer::StateToString(SpdyFramer::SPDY_AUTO_RESET));
   EXPECT_STREQ("RESET",

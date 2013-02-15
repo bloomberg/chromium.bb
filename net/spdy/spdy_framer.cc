@@ -247,8 +247,6 @@ const char* SpdyFramer::StateToString(int state) {
   switch (state) {
     case SPDY_ERROR:
       return "ERROR";
-    case SPDY_DONE:
-      return "DONE";
     case SPDY_AUTO_RESET:
       return "AUTO_RESET";
     case SPDY_RESET:
@@ -371,7 +369,6 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
     previous_state_ = state_;
     switch (state_) {
       case SPDY_ERROR:
-      case SPDY_DONE:
         goto bottom;
 
       case SPDY_AUTO_RESET:

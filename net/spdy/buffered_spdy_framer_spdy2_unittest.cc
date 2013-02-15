@@ -131,8 +131,6 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
           buffered_spdy_framer_.ProcessInput(input_ptr, bytes_read);
       input_remaining -= bytes_processed;
       input_ptr += bytes_processed;
-      if (buffered_spdy_framer_.state() == SpdyFramer::SPDY_DONE)
-        buffered_spdy_framer_.Reset();
     }
   }
 
