@@ -258,8 +258,8 @@ PictureLayerTilingSet::Iterator::operator bool() const {
 
 void PictureLayerTilingSet::UpdateTilePriorities(
     WhichTree tree,
-    const gfx::Size& device_viewport,
-    const gfx::Rect viewport_in_content_space,
+    gfx::Size device_viewport,
+    gfx::Rect viewport_in_content_space,
     gfx::Size last_layer_bounds,
     gfx::Size current_layer_bounds,
     gfx::Size last_layer_content_bounds,
