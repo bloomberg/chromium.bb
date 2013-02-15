@@ -95,12 +95,20 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   std::string language = document.contentLanguage().utf8();
   CorrectLanguageCodeTypo(&language);
 
+  // Convert language code synonym firstly because sometime synonym code is in
+  // invalid format, e.g. 'fil'. After the conversion, make invalid code empty
+  // string.
+  ConvertLanguageCodeSynonym(&language);
+  ResetInvalidLanguageCode(&language);
+
 #if defined(ENABLE_LANGUAGE_DETECTION)
   if (language.empty()) {
     base::TimeTicks begin_time = base::TimeTicks::Now();
     language = DetermineTextLanguage(contents);
     UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
                                base::TimeTicks::Now() - begin_time);
+    // Apply synonym conversion here because CLD may return 'fil'.
+    ConvertLanguageCodeSynonym(&language);
   } else {
     VLOG(9) << "PageLanguageFromMetaTag: " << language;
   }
@@ -108,8 +116,6 @@ void TranslateHelper::PageCaptured(const string16& contents) {
   if (language.empty())
     return;
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
-
-  ConvertLanguageCodeSynonym(&language);
 
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
       routing_id(), language, IsPageTranslatable(&document)));
@@ -258,6 +264,17 @@ void TranslateHelper::ConvertLanguageCodeSynonym(std::string* code) {
       *code = std::string(kLanguageCodeSynonyms[i].to);
       break;
     }
+  }
+}
+
+// static
+void TranslateHelper::ResetInvalidLanguageCode(std::string* code) {
+  // Roughly check if the language code follows [a-z][a-z](-[A-Z][A-Z]).
+  size_t dash_index = code->find('-');
+  if (!(dash_index == 2 && code->size() == 5) &&
+      !(dash_index == std::string::npos && code->size() == 2)) {
+    // Reset |language| to ignore the invalid code.
+    *code = std::string();
   }
 }
 

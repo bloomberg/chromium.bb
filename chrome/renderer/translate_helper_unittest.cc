@@ -48,3 +48,32 @@ TEST_F(TranslateHelperTest, LanguageCodeSynonyms) {
   TranslateHelper::ConvertLanguageCodeSynonym(&language);
   EXPECT_EQ("tl", language);
 }
+
+// Tests that invalid language code is reset to empty string.
+TEST_F(TranslateHelperTest, ResetInvalidLanguageCode) {
+  std::string language;
+
+  language = std::string("ja");
+  TranslateHelper::ResetInvalidLanguageCode(&language);
+  EXPECT_EQ("ja", language);
+
+  language = std::string("ja-JP");
+  TranslateHelper::ResetInvalidLanguageCode(&language);
+  EXPECT_EQ("ja-JP", language);
+
+  // Invalid because of three characters before hyphen.
+  language = std::string("utf-8");
+  TranslateHelper::ResetInvalidLanguageCode(&language);
+  EXPECT_TRUE(language.empty());
+
+  // Invalid because of six characters after hyphen.
+  language = std::string("ja-YUKARI");
+  TranslateHelper::ResetInvalidLanguageCode(&language);
+  EXPECT_TRUE(language.empty());
+
+  // Invalid because of three characters.
+  language = std::string("YMO");
+  TranslateHelper::ResetInvalidLanguageCode(&language);
+  EXPECT_TRUE(language.empty());
+}
+
