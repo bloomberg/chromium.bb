@@ -37,7 +37,7 @@ namespace nacl_arm_test {
 // A(11:8)=0100 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -111,7 +111,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase0
 // A(11:8)=0100 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -184,7 +184,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase1
 
 // A(11:8)=0101
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -250,7 +250,7 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase2
 // A(11:8)=0110 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -324,7 +324,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase3
 // A(11:8)=0110 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -397,7 +397,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32_64TesterCase4
 
 // A(11:8)=0111
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -462,7 +462,7 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase5
 
 // A(11:8)=1100
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -527,7 +527,7 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase6
 
 // A(11:8)=1101 & U(24)=0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32L,
+//       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -601,7 +601,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase7
 // A(11:8)=1110
 //    = {U: U(24),
 //       Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_P8,
+//       actual: Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_P8,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -676,7 +676,7 @@ bool VectorBinary3RegisterDifferentLength_P8TesterCase8
 
 // A(11:8)=10x0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -741,7 +741,7 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32LTesterCase9
 
 // A(11:8)=10x1 & U(24)=0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32L,
+//       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -815,7 +815,7 @@ bool VectorBinary3RegisterDifferentLength_I16_32LTesterCase10
 // A(11:8)=000x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -891,7 +891,7 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase11
 // A(11:8)=001x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -972,7 +972,7 @@ bool VectorBinary3RegisterDifferentLength_I8_16_32TesterCase12
 // A(11:8)=0100 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -997,7 +997,7 @@ class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0
 // A(11:8)=0100 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1021,7 +1021,7 @@ class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case1
 
 // A(11:8)=0101
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1044,7 +1044,7 @@ class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2
 // A(11:8)=0110 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1069,7 +1069,7 @@ class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3
 // A(11:8)=0110 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1093,7 +1093,7 @@ class VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case4
 
 // A(11:8)=0111
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1115,7 +1115,7 @@ class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case5
 
 // A(11:8)=1100
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1137,7 +1137,7 @@ class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case6
 
 // A(11:8)=1101 & U(24)=0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32L,
+//       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1162,7 +1162,7 @@ class VectorBinary3RegisterDifferentLength_I16_32LTester_Case7
 // A(11:8)=1110
 //    = {U: U(24),
 //       Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_P8,
+//       actual: Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_P8,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1187,7 +1187,7 @@ class VectorBinary3RegisterDifferentLength_P8Tester_Case8
 
 // A(11:8)=10x0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1209,7 +1209,7 @@ class VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case9
 
 // A(11:8)=10x1 & U(24)=0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32L,
+//       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1234,7 +1234,7 @@ class VectorBinary3RegisterDifferentLength_I16_32LTester_Case10
 // A(11:8)=000x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1261,7 +1261,7 @@ class VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11
 // A(11:8)=001x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1297,7 +1297,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // A(11:8)=0100 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1312,14 +1312,16 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0_TestCase0) {
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0 tester;
-  tester.Test("111100101dssnnnndddd0100n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0 baseline_tester;
+  NamedActual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1_VADDHN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100101dssnnnndddd0100n0m0mmmm");
 }
 
 // A(11:8)=0100 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1334,13 +1336,15 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case1_TestCase1) {
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case1 tester;
-  tester.Test("111100111dssnnnndddd0100n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case1 baseline_tester;
+  NamedActual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1_VRADDHN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100111dssnnnndddd0100n0m0mmmm");
 }
 
 // A(11:8)=0101
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1353,14 +1357,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2_TestCase2) {
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2 tester;
-  tester.Test("1111001u1dssnnnndddd0101n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case2 baseline_tester;
+  NamedActual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1_VABAL_A2 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1dssnnnndddd0101n0m0mmmm");
 }
 
 // A(11:8)=0110 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1375,14 +1381,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3_TestCase3) {
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3 tester;
-  tester.Test("111100101dssnnnndddd0110n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case3 baseline_tester;
+  NamedActual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1_VSUBHN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100101dssnnnndddd0110n0m0mmmm");
 }
 
 // A(11:8)=0110 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32_64,
+//       actual: Actual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1397,13 +1405,15 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case4_TestCase4) {
-  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case4 tester;
-  tester.Test("111100111dssnnnndddd0110n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case4 baseline_tester;
+  NamedActual_VADDHN_111100101dssnnnndddd0100n0m0mmmm_case_1_VRSUBHN actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100111dssnnnndddd0110n0m0mmmm");
 }
 
 // A(11:8)=0111
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1416,13 +1426,15 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case5_TestCase5) {
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case5 tester;
-  tester.Test("1111001u1dssnnnndddd0111n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case5 baseline_tester;
+  NamedActual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1_VABDL_integer_A2 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1dssnnnndddd0111n0m0mmmm");
 }
 
 // A(11:8)=1100
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1435,13 +1447,15 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case6_TestCase6) {
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case6 tester;
-  tester.Test("1111001u1dssnnnndddd11p0n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case6 baseline_tester;
+  NamedActual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1_VMULL_integer_A2 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1dssnnnndddd11p0n0m0mmmm");
 }
 
 // A(11:8)=1101 & U(24)=0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32L,
+//       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1456,14 +1470,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I16_32LTester_Case7_TestCase7) {
-  VectorBinary3RegisterDifferentLength_I16_32LTester_Case7 tester;
-  tester.Test("111100101dssnnnndddd1101n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I16_32LTester_Case7 baseline_tester;
+  NamedActual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1_VQDMULL_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100101dssnnnndddd1101n0m0mmmm");
 }
 
 // A(11:8)=1110
 //    = {U: U(24),
 //       Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_P8,
+//       actual: Actual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_P8,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1479,13 +1495,15 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_P8Tester_Case8_TestCase8) {
-  VectorBinary3RegisterDifferentLength_P8Tester_Case8 tester;
-  tester.Test("1111001u1dssnnnndddd11p0n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_P8Tester_Case8 baseline_tester;
+  NamedActual_VMULL_polynomial_A2_1111001u1dssnnnndddd11p0n0m0mmmm_case_1_VMULL_polynomial_A2 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1dssnnnndddd11p0n0m0mmmm");
 }
 
 // A(11:8)=10x0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
+//       actual: Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1498,13 +1516,15 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case9_TestCase9) {
-  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case9 tester;
-  tester.Test("1111001u1dssnnnndddd10p0n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I8_16_32LTester_Case9 baseline_tester;
+  NamedActual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1_VMLAL_VMLSL_integer_A2 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1dssnnnndddd10p0n0m0mmmm");
 }
 
 // A(11:8)=10x1 & U(24)=0
 //    = {Vd: Vd(15:12),
-//       actual: VectorBinary3RegisterDifferentLength_I16_32L,
+//       actual: Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1519,14 +1539,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I16_32LTester_Case10_TestCase10) {
-  VectorBinary3RegisterDifferentLength_I16_32LTester_Case10 tester;
-  tester.Test("111100101dssnnnndddd10p1n0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I16_32LTester_Case10 baseline_tester;
+  NamedActual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1_VQDMLAL_VQDMLSL_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111100101dssnnnndddd10p1n0m0mmmm");
 }
 
 // A(11:8)=000x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1543,14 +1565,16 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11_TestCase11) {
-  VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11 tester;
-  tester.Test("1111001u1dssnnnndddd000pn0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case11 baseline_tester;
+  NamedActual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1_VADDL_VADDW actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1dssnnnndddd000pn0m0mmmm");
 }
 
 // A(11:8)=001x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
-//       actual: VectorBinary3RegisterDifferentLength_I8_16_32,
+//       actual: Actual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1,
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32,
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
@@ -1567,8 +1591,10 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {}}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case12_TestCase12) {
-  VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case12 tester;
-  tester.Test("1111001u1dssnnnndddd001pn0m0mmmm");
+  VectorBinary3RegisterDifferentLength_I8_16_32Tester_Case12 baseline_tester;
+  NamedActual_VADDL_VADDW_1111001u1dssnnnndddd000pn0m0mmmm_case_1_VSUBL_VSUBW actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111001u1dssnnnndddd001pn0m0mmmm");
 }
 
 }  // namespace nacl_arm_test
