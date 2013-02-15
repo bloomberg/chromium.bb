@@ -54,8 +54,6 @@ class PanelExtensionWindowController : public extensions::WindowController {
   virtual std::string GetWindowTypeText() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValueWithTabs(
       const extensions::Extension* extension) const OVERRIDE;
-  virtual base::DictionaryValue* CreateTabValue(
-      const extensions::Extension* extension, int tab_index) const OVERRIDE;
   virtual bool CanClose(Reason* reason) const OVERRIDE;
   virtual void SetFullscreenMode(bool is_fullscreen,
                                  const GURL& extension_url) const OVERRIDE;
@@ -92,47 +90,34 @@ PanelExtensionWindowController::CreateWindowValueWithTabs(
   base::DictionaryValue* result = CreateWindowValue();
 
   DCHECK(IsVisibleToExtension(extension));
-  DictionaryValue* tab_value = CreateTabValue(extension, 0);
-  if (tab_value) {
+  content::WebContents* web_contents = panel_->GetWebContents();
+  if (web_contents) {
+    DictionaryValue* tab_value = new DictionaryValue();
+    tab_value->SetInteger(extensions::tabs_constants::kIdKey,
+                          SessionID::IdForTab(web_contents));
+    tab_value->SetInteger(extensions::tabs_constants::kIndexKey, 0);
+    tab_value->SetInteger(extensions::tabs_constants::kWindowIdKey,
+                          SessionID::IdForWindowContainingTab(web_contents));
+    tab_value->SetString(
+        extensions::tabs_constants::kUrlKey, web_contents->GetURL().spec());
+    tab_value->SetString(extensions::tabs_constants::kStatusKey,
+         ExtensionTabUtil::GetTabStatusText(web_contents->IsLoading()));
+    tab_value->SetBoolean(
+        extensions::tabs_constants::kActiveKey, panel_->IsActive());
+    tab_value->SetBoolean(extensions::tabs_constants::kSelectedKey, true);
+    tab_value->SetBoolean(extensions::tabs_constants::kHighlightedKey, true);
+    tab_value->SetBoolean(extensions::tabs_constants::kPinnedKey, false);
+    tab_value->SetString(
+        extensions::tabs_constants::kTitleKey, web_contents->GetTitle());
+    tab_value->SetBoolean(
+        extensions::tabs_constants::kIncognitoKey,
+        web_contents->GetBrowserContext()->IsOffTheRecord());
+
     base::ListValue* tab_list = new ListValue();
     tab_list->Append(tab_value);
     result->Set(extensions::tabs_constants::kTabsKey, tab_list);
   }
   return result;
-}
-
-base::DictionaryValue* PanelExtensionWindowController::CreateTabValue(
-    const extensions::Extension* extension, int tab_index) const {
-  if (tab_index > 0)
-    return NULL;
-
-  content::WebContents* web_contents = panel_->GetWebContents();
-  if (!web_contents)
-    return NULL;
-
-  DCHECK(IsVisibleToExtension(extension));
-  DictionaryValue* tab_value = new DictionaryValue();
-  tab_value->SetInteger(extensions::tabs_constants::kIdKey,
-                        SessionID::IdForTab(web_contents));
-  tab_value->SetInteger(extensions::tabs_constants::kIndexKey, 0);
-  tab_value->SetInteger(extensions::tabs_constants::kWindowIdKey,
-                        SessionID::IdForWindowContainingTab(web_contents));
-  tab_value->SetString(
-      extensions::tabs_constants::kUrlKey, web_contents->GetURL().spec());
-  tab_value->SetString(extensions::tabs_constants::kStatusKey,
-                       ExtensionTabUtil::GetTabStatusText(
-                           web_contents->IsLoading()));
-  tab_value->SetBoolean(
-      extensions::tabs_constants::kActiveKey, panel_->IsActive());
-  tab_value->SetBoolean(extensions::tabs_constants::kSelectedKey, true);
-  tab_value->SetBoolean(extensions::tabs_constants::kHighlightedKey, true);
-  tab_value->SetBoolean(extensions::tabs_constants::kPinnedKey, false);
-  tab_value->SetString(
-      extensions::tabs_constants::kTitleKey, web_contents->GetTitle());
-  tab_value->SetBoolean(
-      extensions::tabs_constants::kIncognitoKey,
-      web_contents->GetBrowserContext()->IsOffTheRecord());
-  return tab_value;
 }
 
 bool PanelExtensionWindowController::CanClose(Reason* reason) const {
