@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(ActionBoxTest, DISABLED_BookmarkAPageTest) {
   ASSERT_FALSE(loc_bar->GetBookmarkStarVisibility());
 
   // Simulate an action box click and menu item selection.
-  chrome::ExecuteCommand(browser(), IDC_BOOKMARK_PAGE);
+  chrome::ExecuteCommand(browser(), IDC_BOOKMARK_PAGE_FROM_STAR);
 
   // Page is now bookmarked.
   ASSERT_TRUE(loc_bar->GetBookmarkStarVisibility());

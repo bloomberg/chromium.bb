@@ -1578,6 +1578,8 @@ void LocationBarViewGtk::UpdateStarIcon() {
   bool star_enabled = !toolbar_model_->GetInputInProgress() &&
                       edit_bookmarks_enabled_.GetValue();
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
+  command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
+                                         star_enabled);
   if (extensions::FeatureSwitch::action_box()->IsEnabled() && !starred_) {
     star_enabled = false;
   }
