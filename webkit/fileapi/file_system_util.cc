@@ -49,7 +49,10 @@ base::FilePath VirtualPath::BaseName(const base::FilePath& virtual_path) {
 }
 
 void VirtualPath::GetComponents(
-    const base::FilePath& path, std::vector<base::FilePath::StringType>* components) {
+    const base::FilePath& path,
+    std::vector<base::FilePath::StringType>* components) {
+  typedef base::FilePath::StringType StringType;
+
   DCHECK(components);
   if (!components)
     return;
@@ -57,20 +60,15 @@ void VirtualPath::GetComponents(
   if (path.value().empty())
     return;
 
-  std::vector<base::FilePath::StringType> ret_val;
-  base::FilePath current = path;
-  base::FilePath base;
-
-  // Due to the way things are implemented, base::FilePath::DirName works here,
-  // whereas base::FilePath::BaseName doesn't.
-  while (current != current.DirName()) {
-    base = BaseName(current);
-    ret_val.push_back(base.value());
-    current = current.DirName();
+  StringType::size_type begin = 0, end = 0;
+  while (begin < path.value().length() && end != StringType::npos) {
+    end = path.value().find_first_of(base::FilePath::kSeparators, begin);
+    StringType component = path.value().substr(
+        begin, end == StringType::npos ? StringType::npos : end - begin);
+    if (!component.empty() && component != base::FilePath::kCurrentDirectory)
+      components->push_back(component);
+    begin = end + 1;
   }
-
-  *components =
-      std::vector<base::FilePath::StringType>(ret_val.rbegin(), ret_val.rend());
 }
 
 FilePath::StringType VirtualPath::GetNormalizedFilePath(const FilePath& path) {

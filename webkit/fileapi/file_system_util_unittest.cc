@@ -106,6 +106,14 @@ TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
     { FILE_PATH_LITERAL("/foo/bar"),
       2,
       { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
+    { FILE_PATH_LITERAL("c:/bar"),
+      2,
+      { FILE_PATH_LITERAL("c:"), FILE_PATH_LITERAL("bar") } },
+#ifdef FILE_PATH_USES_WIN_SEPARATORS
+    { FILE_PATH_LITERAL("c:\\bar"),
+      2,
+      { FILE_PATH_LITERAL("c:"), FILE_PATH_LITERAL("bar") } },
+#endif
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     base::FilePath input = base::FilePath(test_cases[i].path);
