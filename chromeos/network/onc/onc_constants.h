@@ -19,6 +19,16 @@ enum ONCSource {
   ONC_SOURCE_USER_POLICY,
 };
 
+// These keys are used to augment the dictionary resulting from merging the
+// different settings and policies.
+CHROMEOS_EXPORT extern const char kAugmentationEffectiveSetting[];
+CHROMEOS_EXPORT extern const char kAugmentationUserPolicy[];
+CHROMEOS_EXPORT extern const char kAugmentationDevicePolicy[];
+CHROMEOS_EXPORT extern const char kAugmentationUserSetting[];
+CHROMEOS_EXPORT extern const char kAugmentationSharedSetting[];
+CHROMEOS_EXPORT extern const char kAugmentationUserEditable[];
+CHROMEOS_EXPORT extern const char kAugmentationDeviceEditable[];
+
 // This is no ONC key or value but used for logging only.
 // TODO(pneubeck): Remove.
 CHROMEOS_EXPORT extern const char kNetworkConfiguration[];
