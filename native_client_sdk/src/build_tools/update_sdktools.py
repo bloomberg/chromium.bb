@@ -19,12 +19,13 @@ any changes. Instead it modifies the manifest file in commondatastorage."""
 import collections
 import difflib
 import json
-from manifest_util import DownloadAndComputeHash
 import optparse
 import re
 import sys
-from update_nacl_manifest import RealDelegate
 import urllib2
+
+from manifest_util import DownloadAndComputeHash, DictToJSON
+from update_nacl_manifest import RealDelegate
 
 
 SDK_TOOLS_DESCRIPTION_FORMAT = 'Native Client SDK Tools, revision %d'
@@ -92,7 +93,7 @@ def UpdateManifestFileToRevision(filename, revision):
 
   manifest = JsonLoadFromString(manifest_string)
   UpdateManifest(manifest, revision)
-  new_manifest_string = json.dumps(manifest, indent=2)
+  new_manifest_string = DictToJSON(manifest)
 
   diff_string = ''.join(difflib.unified_diff(manifest_string.splitlines(1),
                                              new_manifest_string.splitlines(1)))
