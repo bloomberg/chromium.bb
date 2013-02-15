@@ -129,8 +129,9 @@ GURL GetVariationsServerURL() {
 
 }  // namespace
 
-VariationsService::VariationsService()
-    : variations_server_url_(GetVariationsServerURL()),
+VariationsService::VariationsService(PrefService* local_state)
+    : local_state_(local_state),
+      variations_server_url_(GetVariationsServerURL()),
       create_trials_from_seed_called_(false),
       resource_request_allowed_notifier_(
           new ResourceRequestAllowedNotifier) {
@@ -138,7 +139,8 @@ VariationsService::VariationsService()
 }
 
 VariationsService::VariationsService(ResourceRequestAllowedNotifier* notifier)
-    : variations_server_url_(GetVariationsServerURL()),
+    : local_state_(NULL),
+      variations_server_url_(GetVariationsServerURL()),
       create_trials_from_seed_called_(false),
       resource_request_allowed_notifier_(notifier) {
   resource_request_allowed_notifier_->Init(this);
@@ -147,14 +149,14 @@ VariationsService::VariationsService(ResourceRequestAllowedNotifier* notifier)
 VariationsService::~VariationsService() {
 }
 
-bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
+bool VariationsService::CreateTrialsFromSeed() {
   create_trials_from_seed_called_ = true;
 
   TrialsSeed seed;
-  if (!LoadTrialsSeedFromPref(local_prefs, &seed))
+  if (!LoadTrialsSeedFromPref(local_state_, &seed))
     return false;
 
-  const int64 date_value = local_prefs->GetInt64(prefs::kVariationsSeedDate);
+  const int64 date_value = local_state_->GetInt64(prefs::kVariationsSeedDate);
   const base::Time seed_date = base::Time::FromInternalValue(date_value);
   const base::Time build_time = base::GetBuildTime();
   // Use the build time for date checks if either the seed date is invalid or
@@ -216,7 +218,7 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-VariationsService* VariationsService::Create() {
+VariationsService* VariationsService::Create(PrefService* local_state) {
 // This is temporarily disabled for Android. See http://crbug.com/168224
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID)
   // Unless the URL was provided, unsupported builds should return NULL to
@@ -225,12 +227,12 @@ VariationsService* VariationsService::Create() {
           switches::kVariationsServerURL))
     return NULL;
 #endif
-  return new VariationsService;
+  return new VariationsService(local_state);
 }
 
 void VariationsService::DoActualFetch() {
   pending_seed_request_.reset(net::URLFetcher::Create(
-      variations_server_url_, net::URLFetcher::GET, this));
+      0, variations_server_url_, net::URLFetcher::GET, this));
   pending_seed_request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(
@@ -259,8 +261,7 @@ void VariationsService::FetchVariationsSeed() {
 void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(pending_seed_request_.get(), source);
   // The fetcher will be deleted when the request is handled.
-  scoped_ptr<const net::URLFetcher> request(
-      pending_seed_request_.release());
+  scoped_ptr<const net::URLFetcher> request(pending_seed_request_.release());
   if (request->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
     DVLOG(1) << "Variations server request failed.";
     return;
@@ -304,7 +305,7 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   bool success = request->GetResponseAsString(&seed_data);
   DCHECK(success);
 
-  StoreSeedData(seed_data, response_date, g_browser_process->local_state());
+  StoreSeedData(seed_data, response_date, local_state_);
 }
 
 void VariationsService::OnResourceRequestsAllowed() {

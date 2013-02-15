@@ -672,7 +672,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   chrome_variations::VariationsService* variations_service =
       browser_process_->variations_service();
   if (variations_service)
-    variations_service->CreateTrialsFromSeed(browser_process_->local_state());
+    variations_service->CreateTrialsFromSeed();
 
   const int64 install_date = local_state_->GetInt64(prefs::kInstallDate);
   // This must be called after the pref is initialized.
