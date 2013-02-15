@@ -35,10 +35,10 @@ void AppCacheTestHelper::OnGroupAndNewestCacheStored(
 void AppCacheTestHelper::AddGroupAndCache(AppCacheService* appcache_service,
                                           const GURL& manifest_url) {
   AppCacheGroup* appcache_group =
-      new AppCacheGroup(appcache_service,
+      new AppCacheGroup(appcache_service->storage(),
                         manifest_url,
                         ++group_id_);
-  AppCache* appcache = new AppCache(appcache_service,
+  AppCache* appcache = new AppCache(appcache_service->storage(),
                                     ++appcache_id_);
   AppCacheEntry entry(AppCacheEntry::MANIFEST,
                       ++response_id_);

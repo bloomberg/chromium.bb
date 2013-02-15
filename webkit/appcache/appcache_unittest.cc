@@ -16,10 +16,10 @@ class AppCacheTest : public testing::Test {
 TEST(AppCacheTest, CleanupUnusedCache) {
   MockAppCacheService service;
   AppCacheFrontendImpl frontend;
-  scoped_refptr<AppCache> cache(new AppCache(&service, 111));
+  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 111));
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group(
-      new AppCacheGroup(&service, GURL("http://blah/manifest"), 111));
+      new AppCacheGroup(service.storage(), GURL("http://blah/manifest"), 111));
   group->AddCache(cache);
 
   AppCacheHost host1(1, &frontend, &service);
@@ -34,7 +34,7 @@ TEST(AppCacheTest, CleanupUnusedCache) {
 
 TEST(AppCacheTest, AddModifyRemoveEntry) {
   MockAppCacheService service;
-  scoped_refptr<AppCache> cache(new AppCache(&service, 111));
+  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 111));
 
   EXPECT_TRUE(cache->entries().empty());
   EXPECT_EQ(0L, cache->cache_size());
@@ -79,7 +79,7 @@ TEST(AppCacheTest, AddModifyRemoveEntry) {
 TEST(AppCacheTest, InitializeWithManifest) {
   MockAppCacheService service;
 
-  scoped_refptr<AppCache> cache(new AppCache(&service, 1234));
+  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
   EXPECT_TRUE(cache->fallback_namespaces_.empty());
   EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
   EXPECT_FALSE(cache->online_whitelist_all_);
@@ -162,7 +162,7 @@ TEST(AppCacheTest, FindResponseForRequest) {
                 kInterceptNamespaceEntry));
 
   // Create a cache with some namespaces and entries.
-  scoped_refptr<AppCache> cache(new AppCache(&service, 1234));
+  scoped_refptr<AppCache> cache(new AppCache(service.storage(), 1234));
   cache->InitializeWithManifest(&manifest);
   cache->AddEntry(
       kFallbackEntryUrl1,
@@ -341,8 +341,8 @@ TEST(AppCacheTest, ToFromDatabaseRecords) {
     "*\r");
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, kManifestUrl, kGroupId);
-  scoped_refptr<AppCache> cache(new AppCache(&service, kCacheId));
+      new AppCacheGroup(service.storage(), kManifestUrl, kGroupId);
+  scoped_refptr<AppCache> cache(new AppCache(service.storage(), kCacheId));
   Manifest manifest;
   EXPECT_TRUE(
       ParseManifest(kManifestUrl, kData.c_str(), kData.length(), manifest));
@@ -377,7 +377,7 @@ TEST(AppCacheTest, ToFromDatabaseRecords) {
   cache = NULL;
 
   // Create a new AppCache and populate it with those records and verify.
-  cache = new AppCache(&service, kCacheId);
+  cache = new AppCache(service.storage(), kCacheId);
   cache->InitializeWithDatabaseRecords(
       cache_record, entries, intercepts,
       fallbacks, whitelists);

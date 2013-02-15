@@ -862,10 +862,10 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
   AppCache* MakeNewCache() {
     AppCache* cache = new AppCache(
-        mock_service_.get(), mock_storage()->NewCacheId());
+        mock_storage(), mock_storage()->NewCacheId());
     cache->set_complete(true);
     AppCacheGroup* group = new AppCacheGroup(
-        mock_service_.get(), GURL("http://blah/manifest"),
+        mock_storage(), GURL("http://blah/manifest"),
         mock_storage()->NewGroupId());
     group->AddCache(cache);
     return cache;

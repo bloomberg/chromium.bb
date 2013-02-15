@@ -508,7 +508,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
 
   // Proceed with update process. Section 6.9.4 steps 8-20.
   internal_state_ = DOWNLOADING;
-  inprogress_cache_ = new AppCache(service_,
+  inprogress_cache_ = new AppCache(service_->storage(),
                                    service_->storage()->NewCacheId());
   BuildUrlFileList(manifest);
   inprogress_cache_->InitializeWithManifest(&manifest);

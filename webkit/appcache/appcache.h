@@ -22,7 +22,7 @@ namespace appcache {
 
 class AppCacheGroup;
 class AppCacheHost;
-class AppCacheService;
+class AppCacheStorage;
 
 // Set of cached resources for an application. A cache exists as long as a
 // host is associated with it, the cache is in an appcache group or the
@@ -32,7 +32,7 @@ class WEBKIT_STORAGE_EXPORT AppCache : public base::RefCounted<AppCache> {
   typedef std::map<GURL, AppCacheEntry> EntryMap;
   typedef std::set<AppCacheHost*> AppCacheHosts;
 
-  AppCache(AppCacheService *service, int64 cache_id);
+  AppCache(AppCacheStorage* storage, int64 cache_id);
 
   int64 cache_id() const { return cache_id_; }
 
@@ -40,8 +40,6 @@ class WEBKIT_STORAGE_EXPORT AppCache : public base::RefCounted<AppCache> {
 
   bool is_complete() const { return is_complete_; }
   void set_complete(bool value) { is_complete_ = value; }
-
-  AppCacheService* service() const { return service_; }
 
   // Adds a new entry. Entry must not already be in cache.
   void AddEntry(const GURL& url, const AppCacheEntry& entry);
@@ -172,8 +170,8 @@ class WEBKIT_STORAGE_EXPORT AppCache : public base::RefCounted<AppCache> {
 
   int64 cache_size_;
 
-  // to notify service when cache is deleted
-  AppCacheService* service_;
+  // to notify storage when cache is deleted
+  AppCacheStorage* storage_;
 
   FRIEND_TEST_ALL_PREFIXES(AppCacheTest, InitializeWithManifest);
   FRIEND_TEST_ALL_PREFIXES(AppCacheTest, ToFromDatabaseRecords);

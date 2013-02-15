@@ -21,7 +21,7 @@ namespace appcache {
 
 class AppCache;
 class AppCacheHost;
-class AppCacheService;
+class AppCacheStorage;
 class AppCacheUpdateJob;
 class HostObserver;
 
@@ -44,7 +44,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheGroup
     DOWNLOADING,
   };
 
-  AppCacheGroup(AppCacheService* service, const GURL& manifest_url,
+  AppCacheGroup(AppCacheStorage* storage, const GURL& manifest_url,
                 int64 group_id);
 
   // Adds/removes an update observer, the AppCacheGroup does not take
@@ -138,8 +138,8 @@ class WEBKIT_STORAGE_EXPORT AppCacheGroup
   // Current update job for this group, if any.
   AppCacheUpdateJob* update_job_;
 
-  // Central service object.
-  AppCacheService* service_;
+  // Central storage object.
+  AppCacheStorage* storage_;
 
   // List of objects observing this group.
   ObserverList<UpdateObserver> observers_;

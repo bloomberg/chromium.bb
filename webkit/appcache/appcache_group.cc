@@ -35,7 +35,7 @@ class AppCacheGroup::HostObserver : public AppCacheHost::Observer {
   AppCacheGroup* group_;
 };
 
-AppCacheGroup::AppCacheGroup(AppCacheService* service,
+AppCacheGroup::AppCacheGroup(AppCacheStorage* storage,
                              const GURL& manifest_url,
                              int64 group_id)
     : group_id_(group_id),
@@ -45,9 +45,9 @@ AppCacheGroup::AppCacheGroup(AppCacheService* service,
       is_being_deleted_(false),
       newest_complete_cache_(NULL),
       update_job_(NULL),
-      service_(service),
+      storage_(storage),
       is_in_dtor_(false) {
-  service_->storage()->working_set()->AddGroup(this);
+  storage_->working_set()->AddGroup(this);
   host_observer_.reset(new HostObserver(this));
 }
 
@@ -63,9 +63,8 @@ AppCacheGroup::~AppCacheGroup() {
     delete update_job_;
   DCHECK_EQ(IDLE, update_status_);
 
-  service_->storage()->working_set()->RemoveGroup(this);
-  service_->storage()->DeleteResponses(
-      manifest_url_, newly_deletable_response_ids_);
+  storage_->working_set()->RemoveGroup(this);
+  storage_->DeleteResponses(manifest_url_, newly_deletable_response_ids_);
 }
 
 void AppCacheGroup::AddUpdateObserver(UpdateObserver* observer) {
@@ -129,8 +128,7 @@ void AppCacheGroup::RemoveCache(AppCache* cache) {
 
     if (!is_obsolete() && old_caches_.empty() &&
         !newly_deletable_response_ids_.empty()) {
-      service_->storage()->DeleteResponses(
-          manifest_url_, newly_deletable_response_ids_);
+      storage_->DeleteResponses(manifest_url_, newly_deletable_response_ids_);
       newly_deletable_response_ids_.clear();
     }
   }
@@ -139,7 +137,7 @@ void AppCacheGroup::RemoveCache(AppCache* cache) {
 void AppCacheGroup::AddNewlyDeletableResponseIds(
     std::vector<int64>* response_ids) {
   if (is_being_deleted() || (!is_obsolete() && old_caches_.empty())) {
-    service_->storage()->DeleteResponses(manifest_url_, *response_ids);
+    storage_->DeleteResponses(manifest_url_, *response_ids);
     response_ids->clear();
     return;
   }
@@ -161,7 +159,7 @@ void AppCacheGroup::StartUpdateWithNewMasterEntry(
     return;
 
   if (!update_job_)
-    update_job_ = new AppCacheUpdateJob(service_, this);
+    update_job_ = new AppCacheUpdateJob(storage_->service(), this);
 
   update_job_->StartUpdate(host, new_master_resource);
 

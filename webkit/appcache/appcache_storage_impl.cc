@@ -425,7 +425,7 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
     return;
   }
 
-  (*cache) = new AppCache(storage_->service_, cache_record_.cache_id);
+  (*cache) = new AppCache(storage_, cache_record_.cache_id);
   cache->get()->InitializeWithDatabaseRecords(
       cache_record_, entry_records_,
       intercept_namespace_records_,
@@ -445,7 +445,7 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
     }
   } else {
     (*group) = new AppCacheGroup(
-        storage_->service_, group_record_.manifest_url,
+        storage_, group_record_.manifest_url,
         group_record_.group_id);
     group->get()->set_creation_time(group_record_.creation_time);
     group->get()->AddCache(cache->get());
@@ -559,7 +559,7 @@ void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
       group = storage_->working_set_.GetGroup(manifest_url_);
       if (!group) {
         group = new AppCacheGroup(
-            storage_->service_, manifest_url_, storage_->NewGroupId());
+            storage_, manifest_url_, storage_->NewGroupId());
       }
     }
   }
@@ -1286,11 +1286,13 @@ void AppCacheStorageImpl::UpdateGroupLastAccessTimeTask::Run() {
 // AppCacheStorageImpl ---------------------------------------------------
 
 AppCacheStorageImpl::AppCacheStorageImpl(AppCacheService* service)
-    : AppCacheStorage(service), is_incognito_(false),
+    : AppCacheStorage(service),
+      is_incognito_(false),
       is_response_deletion_scheduled_(false),
       did_start_deleting_responses_(false),
       last_deletable_response_rowid_(0),
-      database_(NULL), is_disabled_(false),
+      database_(NULL),
+      is_disabled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
@@ -1408,7 +1410,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
   if (usage_map_.find(manifest_url.GetOrigin()) == usage_map_.end()) {
     // No need to query the database, return a new group immediately.
     scoped_refptr<AppCacheGroup> group(new AppCacheGroup(
-        service_, manifest_url, NewGroupId()));
+        service_->storage(), manifest_url, NewGroupId()));
     delegate->OnGroupLoaded(group, manifest_url);
     return;
   }

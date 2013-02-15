@@ -355,7 +355,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Make an 'unstored' cache for
     // us to load. The ctor should put it in the working set.
     int64 cache_id = storage()->NewCacheId();
-    scoped_refptr<AppCache> cache(new AppCache(service(), cache_id));
+    scoped_refptr<AppCache> cache(new AppCache(storage(), cache_id));
 
     // Conduct the test.
     storage()->LoadCache(cache_id, delegate());
@@ -473,8 +473,8 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and newest cache that
     // appear to be "unstored".
     group_ = new AppCacheGroup(
-        service(), kManifestUrl, storage()->NewGroupId());
-    cache_ = new AppCache(service(), storage()->NewCacheId());
+        storage(), kManifestUrl, storage()->NewGroupId());
+    cache_ = new AppCache(storage(), storage()->NewCacheId());
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 1,
                                               kDefaultEntrySize));
     // Hold a ref to the cache simulate the UpdateJob holding that ref,
@@ -522,7 +522,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
 
     // And a newest unstored complete cache.
-    cache2_ = new AppCache(service(), 2);
+    cache2_ = new AppCache(storage(), 2);
     cache2_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::MASTER, 1,
                                                kDefaultEntrySize + 100));
 
@@ -626,8 +626,8 @@ class AppCacheStorageImplTest : public testing::Test {
     // appear to be "unstored" and big enough to exceed the 5M limit.
     const int64 kTooBig = 10 * 1024 * 1024;  // 10M
     group_ = new AppCacheGroup(
-        service(), kManifestUrl, storage()->NewGroupId());
-    cache_ = new AppCache(service(), storage()->NewCacheId());
+        storage(), kManifestUrl, storage()->NewGroupId());
+    cache_ = new AppCache(storage(), storage()->NewCacheId());
     cache_->AddEntry(kManifestUrl,
                      AppCacheEntry(AppCacheEntry::MANIFEST, 1, kTooBig));
     // Hold a ref to the cache simulate the UpdateJob holding that ref,
@@ -1277,8 +1277,8 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheEntry default_entry(
         AppCacheEntry::EXPLICIT, cache_id + kDefaultEntryIdOffset,
         kDefaultEntrySize);
-    group_ = new AppCacheGroup(service(), manifest_url, group_id);
-    cache_ = new AppCache(service(), cache_id);
+    group_ = new AppCacheGroup(storage(), manifest_url, group_id);
+    cache_ = new AppCache(storage(), cache_id);
     cache_->AddEntry(kDefaultEntryUrl, default_entry);
     cache_->set_complete(true);
     group_->AddCache(cache_);

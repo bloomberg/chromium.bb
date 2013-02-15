@@ -123,8 +123,9 @@ class AppCacheServiceTest : public testing::Test {
 
     // Create a mock group, cache, and entry and stuff them into mock storage.
     scoped_refptr<AppCacheGroup> group(
-        new AppCacheGroup(service_.get(), kManifestUrl, kMockGroupId));
-    scoped_refptr<AppCache> cache(new AppCache(service_.get(), kMockCacheId));
+        new AppCacheGroup(service_->storage(), kManifestUrl, kMockGroupId));
+    scoped_refptr<AppCache> cache(
+        new AppCache(service_->storage(), kMockCacheId));
     cache->AddEntry(
         kManifestUrl,
         AppCacheEntry(AppCacheEntry::MANIFEST, kMockResponseId,

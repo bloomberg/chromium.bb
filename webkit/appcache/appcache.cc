@@ -11,19 +11,18 @@
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_interfaces.h"
-#include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_storage.h"
 
 namespace appcache {
 
-AppCache::AppCache(AppCacheService *service, int64 cache_id)
+AppCache::AppCache(AppCacheStorage* storage, int64 cache_id)
     : cache_id_(cache_id),
       owning_group_(NULL),
       online_whitelist_all_(false),
       is_complete_(false),
       cache_size_(0),
-      service_(service) {
-  service_->storage()->working_set()->AddCache(this);
+      storage_(storage) {
+  storage_->working_set()->AddCache(this);
 }
 
 AppCache::~AppCache() {
@@ -33,7 +32,7 @@ AppCache::~AppCache() {
     owning_group_->RemoveCache(this);
   }
   DCHECK(!owning_group_);
-  service_->storage()->working_set()->RemoveCache(this);
+  storage_->working_set()->RemoveCache(this);
 }
 
 void AppCache::UnassociateHost(AppCacheHost* host) {
