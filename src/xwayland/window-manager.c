@@ -827,6 +827,7 @@ weston_wm_window_draw_decoration(void *data)
 	}
 
 	if (window->surface && !window->fullscreen) {
+		pixman_region32_fini(&window->surface->pending.input);
 		pixman_region32_init_rect(&window->surface->pending.input,
 					  t->margin, t->margin,
 					  width - 2 * t->margin,
