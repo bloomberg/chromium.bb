@@ -2,12 +2,18 @@ include_rules = [
   "-android_webview",
   "+android_webview/browser",
   "+android_webview/common",
+  "+android_webview/public/browser",
+
+  "+cc",
 
   "+components/auto_login_parser",
   "+components/navigation_interception",
   "+components/visitedlink/browser",
 
   "+content/public/browser",
+
+  "+ui/gfx",
+  "+ui/gl",
 
   # Temporary until we bundle our own favicon. See
   # AwContentBrowserClient::GetDefaultFavicon

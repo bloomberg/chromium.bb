@@ -13,7 +13,6 @@
         '../../base/base.gyp:base_static',
         '../../components/components.gyp:web_contents_delegate_android',
         '../../skia/skia.gyp:skia',
-        '../../ui/gl/gl.gyp:gl',
         'android_webview_native_jni',
       ],
       'include_dirs': [
@@ -52,6 +51,8 @@
         'input_stream_impl.h',
         'intercepted_request_data_impl.cc',
         'intercepted_request_data_impl.h',
+        'java_browser_view_renderer_helper.cc',
+        'java_browser_view_renderer_helper.h',
         'js_result_handler.cc',
         'js_result_handler.h',
         'net_init_native_callback.cc',
@@ -82,6 +83,7 @@
           '../java/src/org/chromium/android_webview/AwSettings.java',
           '../java/src/org/chromium/android_webview/AwWebContentsDelegate.java',
           '../java/src/org/chromium/android_webview/InterceptedRequestData.java',
+          '../java/src/org/chromium/android_webview/JavaBrowserViewRendererHelper.java',
           '../java/src/org/chromium/android_webview/JsResultHandler.java',
       ],
       'variables': {

@@ -129,14 +129,9 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 AwRenderViewExt::AwRenderViewExt(content::RenderView* render_view)
     : content::RenderViewObserver(render_view) {
   render_view->GetWebView()->setPermissionClient(this);
-  // TODO(leandrogracia): remove when SW rendering uses Ubercompositor.
-  // Until then we need the callback enabled for SW mode invalidation.
-  // http://crbug.com/170086.
-  capture_picture_enabled_ = true;
 }
 
 AwRenderViewExt::~AwRenderViewExt() {
-  RendererPictureMap::GetInstance()->ClearRendererPicture(routing_id());
 }
 
 // static
@@ -149,10 +144,6 @@ bool AwRenderViewExt::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AwRenderViewExt, message)
     IPC_MESSAGE_HANDLER(AwViewMsg_DocumentHasImages, OnDocumentHasImagesRequest)
     IPC_MESSAGE_HANDLER(AwViewMsg_DoHitTest, OnDoHitTest)
-    IPC_MESSAGE_HANDLER(AwViewMsg_EnableCapturePictureCallback,
-                        OnEnableCapturePictureCallback)
-    IPC_MESSAGE_HANDLER(AwViewMsg_CapturePictureSync,
-                        OnCapturePictureSync)
     IPC_MESSAGE_HANDLER(AwViewMsg_SetTextZoomLevel, OnSetTextZoomLevel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -227,15 +218,6 @@ void AwRenderViewExt::FocusedNodeChanged(const WebKit::WebNode& node) {
   Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
 }
 
-void AwRenderViewExt::DidCommitCompositorFrame() {
-  if (!capture_picture_enabled_)
-    return;
-
-  skia::RefPtr<SkPicture> picture = render_view()->CapturePicture();
-  RendererPictureMap::GetInstance()->SetRendererPicture(routing_id(), picture);
-  Send(new AwViewHostMsg_PictureUpdated(routing_id()));
-}
-
 void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
   if (!render_view() || !render_view()->GetWebView())
     return;
@@ -255,15 +237,6 @@ void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
                       result.isContentEditable(),
                       &data);
   Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
-}
-
-void AwRenderViewExt::OnEnableCapturePictureCallback(bool enable) {
-  capture_picture_enabled_ = enable;
-}
-
-void AwRenderViewExt::OnCapturePictureSync() {
-  RendererPictureMap::GetInstance()->SetRendererPicture(
-      routing_id(), render_view()->CapturePicture());
 }
 
 void AwRenderViewExt::OnSetTextZoomLevel(double zoom_level) {

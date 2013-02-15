@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
 
@@ -28,9 +27,6 @@ class AwRenderViewExt : public content::RenderViewObserver,
  public:
   static void RenderViewCreated(content::RenderView* render_view);
 
-  // Required to be public by IPC_MESSAGE_HANDLER for sync messages.
-  using content::RenderViewObserver::Send;
-
  private:
   AwRenderViewExt(content::RenderView* render_view);
   virtual ~AwRenderViewExt();
@@ -40,15 +36,10 @@ class AwRenderViewExt : public content::RenderViewObserver,
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
-  virtual void DidCommitCompositorFrame() OVERRIDE;
 
   void OnDocumentHasImagesRequest(int id);
 
   void OnDoHitTest(int view_x, int view_y);
-
-  void OnEnableCapturePictureCallback(bool enable);
-
-  void OnCapturePictureSync();
 
   void OnSetTextZoomLevel(double zoom_level);
 

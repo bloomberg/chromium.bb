@@ -14,6 +14,7 @@
 #include "android_webview/native/cookie_manager.h"
 #include "android_webview/native/input_stream_impl.h"
 #include "android_webview/native/intercepted_request_data_impl.h"
+#include "android_webview/native/java_browser_view_renderer_helper.h"
 #include "android_webview/native/js_result_handler.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
@@ -32,6 +33,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "CookieManager", RegisterCookieManager },
   { "InterceptedRequestDataImpl", RegisterInterceptedRequestData },
   { "InputStream", RegisterInputStream },
+  { "JavaBrowserViewRendererHelper", RegisterJavaBrowserViewRendererHelper },
   { "JsResultHandler", RegisterJsResultHandler },
 };
 
