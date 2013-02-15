@@ -6,7 +6,8 @@
       "why": "Tests various keyframed animations.",
       "smoothness": {
         "action": "wait_action",
-        "duration": 5
+        "condition": "duration",
+        "seconds": 5
       }
     },
     {
@@ -14,7 +15,8 @@
       "why": "Tests various transitions.",
       "smoothness": {
         "action": "wait_action",
-        "duration": 5
+        "condition": "duration",
+        "seconds": 5
       }
     },
     {
@@ -22,15 +24,17 @@
       "why": "Login page is slow because of ineffecient transform operations",
       "smoothness": {
         "action": "wait_action",
-        "duration": 5
+        "condition": "duration",
+        "seconds": 5
       }
     },
     {
       "url": "file:///tough_animation_cases/transform_transition_js_block.html",
       "why": "JS execution blocks CSS transition unless initial transform is set",
       "smoothness": {
-        "action": "wait_interaction",
-        "duration": 5
+        "action": "wait_action",
+        "condition": "duration",
+        "seconds": 5
       }
     }
   ]
