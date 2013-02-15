@@ -580,6 +580,8 @@
         'browser/chromeos/drive/drive_test_util.h',
         'browser/chromeos/drive/drive_webapps_registry_unittest.cc',
         'browser/chromeos/drive/event_logger_unittest.cc',
+        'browser/chromeos/drive/fake_drive_file_system.cc',
+        'browser/chromeos/drive/fake_drive_file_system.h',
         'browser/chromeos/drive/fake_free_disk_space_getter.cc',
         'browser/chromeos/drive/fake_free_disk_space_getter.h',
         'browser/chromeos/drive/file_change_unittest.cc',
