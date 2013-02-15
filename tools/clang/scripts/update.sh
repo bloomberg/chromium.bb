@@ -96,7 +96,7 @@ function on_asan_mac_host {
     return 0
   fi
   # Chrome Mac ASan LKGR.
-  if [[ "${HOST}" == "mini11-a1.golo.chromium.org" ]]; then
+  if [[ "${HOST}" == "mini11-a1.chrome.corp.google.com" ]]; then
     return 0
   fi
   # mac_asan trybots.
