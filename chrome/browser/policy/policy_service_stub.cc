@@ -18,9 +18,9 @@ void PolicyServiceStub::AddObserver(PolicyDomain domain,
 void PolicyServiceStub::RemoveObserver(PolicyDomain domain,
                                        Observer* observer) {}
 
-void PolicyServiceStub::RegisterPolicyDomain(
-    PolicyDomain domain,
-    const std::set<std::string>& components) {}
+void PolicyServiceStub::RegisterPolicyNamespace(const PolicyNamespace& ns) {}
+
+void PolicyServiceStub::UnregisterPolicyNamespace(const PolicyNamespace& ns) {}
 
 const PolicyMap& PolicyServiceStub::GetPolicies(
     const PolicyNamespace& ns) const {

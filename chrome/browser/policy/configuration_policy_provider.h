@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
 
-#include <set>
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -68,13 +65,14 @@ class ConfigurationPolicyProvider {
   virtual void RemoveObserver(Observer* observer);
 
   // Notifies the provider that there is interest in loading policy for the
-  // listed components of the given |domain|. The list is complete; all the
-  // components that matter for the domain are included, and components not
-  // included can be discarded. The provider can ignore this information or use
-  // it to selectively load the corresponding policy from its sources.
-  virtual void RegisterPolicyDomain(
-      PolicyDomain domain,
-      const std::set<std::string>& component_ids);
+  // given namespace. The provider can ignore this information or use it
+  // to selectively load the corresponding policy from its sources.
+  // Each namespace may be registered several times; the provider should assume
+  // that there is an interested consumer until an unregister is made for each
+  // previous register.
+  virtual void RegisterPolicyNamespace(const PolicyNamespace& ns);
+
+  virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns);
 
  protected:
   // Subclasses must invoke this to update the policies currently served by
