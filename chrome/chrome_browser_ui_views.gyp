@@ -16,6 +16,8 @@
       'sources': [
         'browser/ui/views/accelerator_table.cc',
         'browser/ui/views/accelerator_table.h',
+        'browser/ui/views/event_utils.cc',
+        'browser/ui/views/event_utils.h',
       ],
     },
   ],
