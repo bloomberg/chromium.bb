@@ -143,6 +143,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Saves custom wallpaper to file, post task to generate thumbnail and updates
   // local state preferences.
   void SetCustomWallpaper(const std::string& username,
+                          const std::string& file,
                           ash::WallpaperLayout layout,
                           User::WallpaperType type,
                           const UserImage& wallpaper);

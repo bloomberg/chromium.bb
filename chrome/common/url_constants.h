@@ -235,7 +235,6 @@ extern const char kChromeUISimUnlockHost[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIUserImageHost[];
-extern const char kChromeUIWallpaperThumbnailHost[];
 
 extern const char kChromeUIMenu[];
 extern const char kChromeUINetworkMenu[];

@@ -240,7 +240,6 @@ const char kChromeUISimUnlockHost[] = "sim-unlock";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUIUserImageHost[] = "userimage";
-const char kChromeUIWallpaperThumbnailHost[] = "wallpaper-thumb";
 
 const char kChromeUIMenu[] = "menu";
 const char kChromeUINetworkMenu[] = "network-menu";

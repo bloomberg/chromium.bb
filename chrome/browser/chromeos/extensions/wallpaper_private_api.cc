@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -50,6 +51,9 @@ const char* kWallpaperLayoutArrays[] = {
     "TILE"
 };
 
+const char kOnlineSource[] = "ONLINE";
+const char kCustomSource[] = "CUSTOM";
+
 const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
 
 ash::WallpaperLayout GetLayoutEnum(const std::string& layout) {
@@ -81,17 +85,14 @@ bool SaveData(int key, const std::string& file_name, const std::string& data) {
 // not be found or failed to read file to string |data|. Note if the |file_name|
 // can not be found in the directory, return true with empty |data|. It is
 // expected that we may try to access file which did not saved yet.
-bool GetData(int key, const std::string& file_name, std::string* data) {
-  base::FilePath data_dir;
-  CHECK(PathService::Get(key, &data_dir));
+bool GetData(const FilePath& path, std::string* data) {
+  FilePath data_dir = path.DirName();
   if (!file_util::DirectoryExists(data_dir) &&
       !file_util::CreateDirectory(data_dir))
     return false;
 
-  base::FilePath file_path = data_dir.Append(file_name);
-
-  return !file_util::PathExists(file_path) ||
-         file_util::ReadFileToString(file_path, data);
+  return !file_util::PathExists(path) ||
+         file_util::ReadFileToString(path, data);
 }
 
 class WindowStateManager;
@@ -504,14 +505,60 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunImpl() {
 
 void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& wallpaper) {
+  chromeos::WallpaperManager* wallpaper_manager =
+      chromeos::WallpaperManager::Get();
   chromeos::UserImage::RawImage raw_image(image_data_.begin(),
                                           image_data_.end());
   chromeos::UserImage image(wallpaper, raw_image);
+  std::string file = base::Int64ToString(base::Time::Now().ToInternalValue());
+  FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
+      chromeos::kThumbnailWallpaperSubDir, email_, file);
+
+  sequence_token_ = BrowserThread::GetBlockingPool()->
+      GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      BrowserThread::GetBlockingPool()->
+          GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
+              base::SequencedWorkerPool::BLOCK_SHUTDOWN);
+
+  wallpaper.EnsureRepsForSupportedScaleFactors();
+  scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.DeepCopy());
+  // Generates thumbnail before call api function callback. We can then request
+  // thumbnail in the javascript callback.
+  task_runner->PostTask(FROM_HERE,
+      base::Bind(&WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail,
+                 this, thumbnail_path, base::Passed(&deep_copy)));
+
   // In the new wallpaper picker UI, we do not depend on WallpaperDelegate
   // to refresh thumbnail. Uses a null delegate here.
-  chromeos::WallpaperManager::Get()->SetCustomWallpaper(
-      email_, layout_, chromeos::User::CUSTOMIZED, image);
+  wallpaper_manager->SetCustomWallpaper(email_, file, layout_,
+                                        chromeos::User::CUSTOMIZED,
+                                        image);
   wallpaper_decoder_ = NULL;
+}
+
+void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
+    const FilePath& thumbnail_path, scoped_ptr<gfx::ImageSkia> image) {
+  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      sequence_token_));
+  chromeos::UserImage wallpaper(*image.get());
+  if (!file_util::PathExists(thumbnail_path.DirName()))
+    file_util::CreateDirectory(thumbnail_path.DirName());
+
+  chromeos::WallpaperManager::Get()->ResizeAndSaveWallpaper(
+      wallpaper,
+      thumbnail_path,
+      ash::WALLPAPER_LAYOUT_STRETCH,
+      ash::kWallpaperThumbnailWidth,
+      ash::kWallpaperThumbnailHeight);
+  BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated,
+            this));
+}
+
+void WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated() {
   SendResponse(true);
 }
 
@@ -548,10 +595,29 @@ WallpaperPrivateGetThumbnailFunction::~WallpaperPrivateGetThumbnailFunction() {
 }
 
 bool WallpaperPrivateGetThumbnailFunction::RunImpl() {
-  std::string url;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
-  EXTENSION_FUNCTION_VALIDATE(!url.empty());
-  std::string file_name = GURL(url).ExtractFileName();
+  std::string urlOrFile;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &urlOrFile));
+  EXTENSION_FUNCTION_VALIDATE(!urlOrFile.empty());
+
+  std::string source;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &source));
+  EXTENSION_FUNCTION_VALIDATE(!source.empty());
+
+  std::string file_name;
+  FilePath thumbnail_path;
+  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+  if (source == kOnlineSource) {
+    file_name = GURL(urlOrFile).ExtractFileName();
+    CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS,
+                           &thumbnail_path));
+    thumbnail_path = thumbnail_path.Append(file_name);
+  } else {
+    file_name = urlOrFile;
+    thumbnail_path = chromeos::WallpaperManager::Get()->
+        GetCustomWallpaperPath(chromeos::kThumbnailWallpaperSubDir, email,
+                               file_name);
+  }
+
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
   scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -560,7 +626,8 @@ bool WallpaperPrivateGetThumbnailFunction::RunImpl() {
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
   task_runner->PostTask(FROM_HERE,
-      base::Bind(&WallpaperPrivateGetThumbnailFunction::Get, this, file_name));
+      base::Bind(&WallpaperPrivateGetThumbnailFunction::Get, this,
+                 thumbnail_path));
   return true;
 }
 
@@ -583,11 +650,11 @@ void WallpaperPrivateGetThumbnailFunction::FileLoaded(
   SendResponse(true);
 }
 
-void WallpaperPrivateGetThumbnailFunction::Get(const std::string& file_name) {
+void WallpaperPrivateGetThumbnailFunction::Get(const FilePath& path) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
   std::string data;
-  if (GetData(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS, file_name, &data)) {
+  if (GetData(path, &data)) {
     if (data.empty()) {
       BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -602,7 +669,7 @@ void WallpaperPrivateGetThumbnailFunction::Get(const std::string& file_name) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperPrivateGetThumbnailFunction::Failure, this,
-                   file_name));
+                   path.BaseName().value()));
   }
 }
 
@@ -672,6 +739,12 @@ WallpaperPrivateGetOfflineWallpaperListFunction::
 }
 
 bool WallpaperPrivateGetOfflineWallpaperListFunction::RunImpl() {
+  std::string source;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &source));
+  EXTENSION_FUNCTION_VALIDATE(!source.empty());
+
+  std::string email = chromeos::UserManager::Get()->GetLoggedInUser()->email();
+
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
   scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -681,25 +754,40 @@ bool WallpaperPrivateGetOfflineWallpaperListFunction::RunImpl() {
 
   task_runner->PostTask(FROM_HERE,
       base::Bind(&WallpaperPrivateGetOfflineWallpaperListFunction::GetList,
-                 this));
+                 this, email, source));
   return true;
 }
 
-void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
+void WallpaperPrivateGetOfflineWallpaperListFunction::GetList(
+    const std::string& email,
+    const std::string& source) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       sequence_token_));
-  base::FilePath wallpaper_dir;
   std::vector<std::string> file_list;
-  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
-  if (file_util::DirectoryExists(wallpaper_dir)) {
-    file_util::FileEnumerator files(wallpaper_dir, false,
-                                    file_util::FileEnumerator::FILES);
-    for (base::FilePath current = files.Next(); !current.empty();
-         current = files.Next()) {
-      std::string file_name = current.BaseName().RemoveExtension().value();
-      // Do not add file name of small resolution wallpaper to the list.
-      if (!EndsWith(file_name, chromeos::kSmallWallpaperSuffix, true))
+  if (source == kOnlineSource) {
+    FilePath wallpaper_dir;
+    CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
+    if (file_util::DirectoryExists(wallpaper_dir)) {
+      file_util::FileEnumerator files(wallpaper_dir, false,
+                                      file_util::FileEnumerator::FILES);
+      for (FilePath current = files.Next(); !current.empty();
+           current = files.Next()) {
+        std::string file_name = current.BaseName().RemoveExtension().value();
+        // Do not add file name of small resolution wallpaper to the list.
+        if (!EndsWith(file_name, chromeos::kSmallWallpaperSuffix, true))
+          file_list.push_back(current.BaseName().value());
+      }
+    }
+  } else {
+    FilePath custom_thumbnails_dir = chromeos::WallpaperManager::Get()->
+        GetCustomWallpaperPath(chromeos::kThumbnailWallpaperSubDir, email, "");
+    if (file_util::DirectoryExists(custom_thumbnails_dir)) {
+      file_util::FileEnumerator files(custom_thumbnails_dir, false,
+                                      file_util::FileEnumerator::FILES);
+      for (FilePath current = files.Next(); !current.empty();
+           current = files.Next()) {
         file_list.push_back(current.BaseName().value());
+      }
     }
   }
   BrowserThread::PostTask(

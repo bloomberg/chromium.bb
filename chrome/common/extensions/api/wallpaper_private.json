@@ -91,7 +91,7 @@
           {
             "type": "string",
             "name": "layout",
-            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED"]
+            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
           },
           {
             "type": "function",
@@ -122,8 +122,13 @@
         "parameters": [
           {
             "type": "string",
-            "name": "url",
-            "description": "Wallpaper url."
+            "name": "urlOrFile",
+            "description": "URL of ONLINE wallpaper or file name of CUSTOM wallpaper"
+          },
+          {
+            "type": "string",
+            "name": "type",
+            "enum": [ "ONLINE", "CUSTOM" ]
           },
           {
             "type": "function",
@@ -171,6 +176,11 @@
         "description": "Get the list of file names of downloaded wallpapers.",
         "nodoc": "true",
         "parameters": [
+          {
+            "type": "string",
+            "name": "source",
+            "enum": [ "ONLINE", "CUSTOM" ]
+          },
           {
             "type": "function",
             "name": "callback",

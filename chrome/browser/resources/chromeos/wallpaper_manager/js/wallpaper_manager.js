@@ -207,7 +207,8 @@ function WallpaperManager(dialogDom) {
         'change', this.onWallpaperLayoutChanged_.bind(this));
     var self = this;
     window.addEventListener('offline', function() {
-      chrome.wallpaperPrivate.getOfflineWallpaperList(function(lists) {
+      chrome.wallpaperPrivate.getOfflineWallpaperList('ONLINE',
+                                                      function(lists) {
         if (!self.downloadedListMap_)
           self.downloadedListMap_ = {};
         for (var i = 0; i < lists.length; i++)
@@ -273,7 +274,8 @@ function WallpaperManager(dialogDom) {
       // If device is offline, gets the available offline wallpaper list first.
       // Wallpapers which are not in the list will display a grayscaled
       // thumbnail.
-      chrome.wallpaperPrivate.getOfflineWallpaperList(function(lists) {
+      chrome.wallpaperPrivate.getOfflineWallpaperList('ONLINE',
+                                                      function(lists) {
         if (!self.downloadedListMap_)
           self.downloadedListMap_ = {};
         for (var i = 0; i < lists.length; i++)

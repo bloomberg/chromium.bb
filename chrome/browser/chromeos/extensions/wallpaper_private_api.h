@@ -11,6 +11,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 
+namespace chromeos {
+class UserImage;
+}
+
 // Wallpaper manager strings.
 class WallpaperPrivateGetStringsFunction : public SyncExtensionFunction {
  public:
@@ -142,6 +146,14 @@ class WallpaperPrivateSetCustomWallpaperFunction
  private:
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
 
+  // Generates thumbnail of custom wallpaper. A simple STRETCH is used for
+  // generating thunbail.
+  void GenerateThumbnail(const FilePath& thumbnail_path,
+                         scoped_ptr<gfx::ImageSkia> image);
+
+  // Thumbnail is ready. Calls api function javascript callback.
+  void ThumbnailGenerated();
+
   // Layout of the downloaded wallpaper.
   ash::WallpaperLayout layout_;
 
@@ -150,6 +162,10 @@ class WallpaperPrivateSetCustomWallpaperFunction
 
   // String representation of downloaded wallpaper.
   std::string image_data_;
+
+  // Sequence token associated with wallpaper operations. Shared with
+  // WallpaperManager.
+  base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
 class WallpaperPrivateMinimizeInactiveWindowsFunction
@@ -207,9 +223,8 @@ class WallpaperPrivateGetThumbnailFunction : public AsyncExtensionFunction {
   // when requested wallpaper thumbnail loaded successfully.
   void FileLoaded(const std::string& data);
 
-  // Gets thumbnail with |file_name| from thumbnail directory. If |file_name|
-  // does not exist, call FileNotLoaded().
-  void Get(const std::string& file_name);
+  // Gets thumbnail from |path|. If |path| does not exist, call FileNotLoaded().
+  void Get(const FilePath& path);
 
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.
@@ -258,8 +273,8 @@ class WallpaperPrivateGetOfflineWallpaperListFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Enumerates the list of files in wallpaper directory.
-  void GetList();
+  // Enumerates the list of files in wallpaper directory of given |source|.
+  void GetList(const std::string& email, const std::string& source);
 
   // Sends the list of files to extension api caller. If no files or no
   // directory, sends empty list.

@@ -40,7 +40,7 @@ cr.define('wallpapers', function() {
       this.appendChild(imageEl);
 
       var self = this;
-      chrome.wallpaperPrivate.getThumbnail(this.dataItem.baseURL,
+      chrome.wallpaperPrivate.getThumbnail(this.dataItem.baseURL, 'ONLINE',
                                            function(data) {
         if (data) {
           var blob = new Blob([new Int8Array(data)], {'type' : 'image\/png'});

@@ -52,6 +52,16 @@ chrome.test.getConfig(function(config) {
                                                  'CENTER_CROPPED',
                                                  pass());
     },
+    function getCustomWallpaperThumbnail() {
+      chrome.wallpaperPrivate.getOfflineWallpaperList('CUSTOM',
+                                                      pass(function(lists) {
+        chrome.test.assertEq(1, lists.length);
+        chrome.wallpaperPrivate.getThumbnail(lists[0], 'CUSTOM',
+                                             pass(function(data) {
+          chrome.test.assertNoLastError();
+        }));
+      }));
+    },
     function setCustomJepgBadWallpaper() {
       var url = "http://a.com:PORT/files/extensions/api_test" +
           "/wallpaper_manager/test_bad.jpg";
@@ -82,7 +92,7 @@ chrome.test.getConfig(function(config) {
       var url = "http://a.com:PORT/files/extensions/api_test" +
           "/wallpaper_manager/test.jpg";
       url = url.replace(/PORT/, config.testServer.port);
-      chrome.wallpaperPrivate.getThumbnail(url, pass(function(data) {
+      chrome.wallpaperPrivate.getThumbnail(url, 'ONLINE', pass(function(data) {
         chrome.test.assertNoLastError();
         if (data) {
           chrome.test.fail('Thumbnail is not found. getThumbnail should not ' +
@@ -90,7 +100,8 @@ chrome.test.getConfig(function(config) {
         }
         chrome.wallpaperPrivate.saveThumbnail(url, wallpaper, pass(function() {
           chrome.test.assertNoLastError();
-          chrome.wallpaperPrivate.getThumbnail(url, pass(function(data) {
+          chrome.wallpaperPrivate.getThumbnail(url, 'ONLINE',
+                                               pass(function(data) {
             chrome.test.assertNoLastError();
             // Thumbnail should already be saved to thumbnail directory.
             chrome.test.assertEq(wallpaper, data);
@@ -99,7 +110,8 @@ chrome.test.getConfig(function(config) {
       }));
     },
     function getOfflineWallpaperList() {
-      chrome.wallpaperPrivate.getOfflineWallpaperList(pass(function(list) {
+      chrome.wallpaperPrivate.getOfflineWallpaperList('ONLINE',
+                                                      pass(function(list) {
         // We have previously saved test.jpg in wallpaper directory.
         chrome.test.assertEq('test.jpg', list[0]);
         // Saves the same wallpaper to wallpaper directory but name it as
@@ -108,7 +120,8 @@ chrome.test.getConfig(function(config) {
                                              'CENTER_CROPPED',
                                              'http://dummyurl/test1.jpg',
                                              pass(function() {
-          chrome.wallpaperPrivate.getOfflineWallpaperList(pass(function(list) {
+          chrome.wallpaperPrivate.getOfflineWallpaperList('ONLINE',
+                                                          pass(function(list) {
             chrome.test.assertEq('test.jpg', list[0]);
             chrome.test.assertEq('test1.jpg', list[1]);
           }));
