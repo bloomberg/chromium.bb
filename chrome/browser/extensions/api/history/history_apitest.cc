@@ -4,6 +4,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/history/history_service.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -52,6 +54,13 @@ IN_PROC_BROWSER_TEST_F(HistoryApiTest, DISABLED_TimedSearch) {
 #endif
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, MAYBE_Delete) {
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(HistoryApiTest, DeleteProhibited) {
+  browser()->profile()->GetPrefs()->
+      SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
+  ASSERT_TRUE(RunExtensionSubtest("history", "delete_prohibited.html")) <<
+      message_;
 }
 
 // See crbug.com/79074
