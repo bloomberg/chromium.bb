@@ -23,7 +23,6 @@ class PanelFrameView : public views::NonClientFrameView,
                        public chrome::TabIconViewModel {
  public:
   enum PaintState {
-    NOT_PAINTED,
     PAINT_AS_INACTIVE,
     PAINT_AS_ACTIVE,
     PAINT_AS_MINIMIZED,
@@ -46,7 +45,8 @@ class PanelFrameView : public views::NonClientFrameView,
 
   int BorderThickness() const;
 
-  PaintState paint_state() const { return paint_state_; }
+  PaintState GetPaintState() const;
+
   views::ImageButton* close_button() const { return close_button_; }
   views::ImageButton* minimize_button() const { return minimize_button_; }
   views::ImageButton* restore_button() const { return restore_button_; }
@@ -110,7 +110,6 @@ class PanelFrameView : public views::NonClientFrameView,
 
   bool is_frameless_;
   PanelView* panel_view_;
-  PaintState paint_state_;
   views::ImageButton* close_button_;
   views::ImageButton* minimize_button_;
   views::ImageButton* restore_button_;
