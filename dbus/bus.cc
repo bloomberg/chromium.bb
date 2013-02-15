@@ -189,7 +189,8 @@ Bus::Bus(const Options& options)
       shutdown_completed_(false),
       num_pending_watches_(0),
       num_pending_timeouts_(0),
-      address_(options.address) {
+      address_(options.address),
+      on_disconnected_closure_(options.disconnected_callback) {
   // This is safe to call multiple times.
   dbus_threads_init_default();
   // The origin message loop is unnecessary if the client uses synchronous
@@ -373,6 +374,14 @@ bool Bus::Connect() {
   return true;
 }
 
+void Bus::ClosePrivateConnection() {
+  // dbus_connection_close is blocking call.
+  AssertOnDBusThread();
+  DCHECK_EQ(PRIVATE, connection_type_)
+      << "non-private connection should not be closed";
+  dbus_connection_close(connection_);
+}
+
 void Bus::ShutdownAndBlock() {
   AssertOnDBusThread();
 
@@ -418,7 +427,7 @@ void Bus::ShutdownAndBlock() {
     RemoveMatch(kDisconnectedMatchRule, error.get());
 
     if (connection_type_ == PRIVATE)
-      dbus_connection_close(connection_);
+      ClosePrivateConnection();
     // dbus_connection_close() won't unref.
     dbus_connection_unref(connection_);
   }
@@ -870,6 +879,9 @@ void Bus::OnDispatchStatusChanged(DBusConnection* connection,
 
 void Bus::OnConnectionDisconnected(DBusConnection* connection) {
   AssertOnDBusThread();
+
+  if (!on_disconnected_closure_.is_null())
+    PostTaskToOriginThread(FROM_HERE, on_disconnected_closure_);
 
   if (!connection)
     return;
