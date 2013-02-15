@@ -83,7 +83,8 @@ AsyncResourceHandler::AsyncResourceHandler(
     int routing_id,
     net::URLRequest* request,
     ResourceDispatcherHostImpl* rdh)
-    : filter_(filter),
+    : ResourceMessageDelegate(request),
+      filter_(filter),
       routing_id_(routing_id),
       request_(request),
       rdh_(rdh),
@@ -92,20 +93,25 @@ AsyncResourceHandler::AsyncResourceHandler(
       did_defer_(false),
       sent_received_response_msg_(false),
       sent_first_data_msg_(false) {
-  // Set a back-pointer from ResourceRequestInfoImpl to |this|, so that the
-  // ResourceDispatcherHostImpl can send us IPC messages.
-  // TODO(darin): Implement an IPC message filter instead?
-  ResourceRequestInfoImpl::ForRequest(request_)->set_async_handler(this);
-
   InitializeResourceBufferConstants();
 }
 
 AsyncResourceHandler::~AsyncResourceHandler() {
-  // Cleanup back-pointer stored on the request info.
-  ResourceRequestInfoImpl::ForRequest(request_)->set_async_handler(NULL);
+}
+
+bool AsyncResourceHandler::OnMessageReceived(const IPC::Message& message,
+                                             bool* message_was_ok) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(AsyncResourceHandler, message, *message_was_ok)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_FollowRedirect, OnFollowRedirect)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_DataReceived_ACK, OnDataReceivedACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+  return handled;
 }
 
 void AsyncResourceHandler::OnFollowRedirect(
+    int request_id,
     bool has_new_first_party_for_cookies,
     const GURL& new_first_party_for_cookies) {
   if (!request_->status().is_success()) {
@@ -119,7 +125,7 @@ void AsyncResourceHandler::OnFollowRedirect(
   ResumeIfDeferred();
 }
 
-void AsyncResourceHandler::OnDataReceivedACK() {
+void AsyncResourceHandler::OnDataReceivedACK(int request_id) {
   --pending_data_count_;
 
   buffer_->RecycleLeastRecentlyAllocated();

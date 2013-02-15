@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 // IPC messages for resource loading.
+//
+// NOTE: All messages must send an |int request_id| as their first parameter.
 
 // Multiply-included message file, hence no include guard.
 #include "base/process.h"

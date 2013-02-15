@@ -45,7 +45,8 @@ void ResourceRequestInfo::AllocateForTesting(
           true,                              // allow_download
           false,                             // has_user_gesture
           WebKit::WebReferrerPolicyDefault,  // referrer_policy
-          context);                          // context
+          context,                           // context
+          false);                            // is_async
   info->AssociateWithRequest(request);
 }
 
@@ -94,9 +95,9 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool allow_download,
     bool has_user_gesture,
     WebKit::WebReferrerPolicy referrer_policy,
-    ResourceContext* context)
+    ResourceContext* context,
+    bool is_async)
     : cross_site_handler_(NULL),
-      async_handler_(NULL),
       process_type_(process_type),
       child_id_(child_id),
       route_id_(route_id),
@@ -114,7 +115,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       transition_type_(transition_type),
       memory_cost_(0),
       referrer_policy_(referrer_policy),
-      context_(context) {
+      context_(context),
+      is_async_(is_async) {
 }
 
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
@@ -198,7 +200,7 @@ bool ResourceRequestInfoImpl::GetAssociatedRenderView(
 }
 
 bool ResourceRequestInfoImpl::IsAsync() const {
-  return async_handler_ != NULL;
+  return is_async_;
 }
 
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {

@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/browser/loader/resource_handler.h"
+#include "content/browser/loader/resource_message_delegate.h"
 #include "googleurl/src/gurl.h"
 
 namespace net {
@@ -23,7 +24,8 @@ class SharedIOBuffer;
 
 // Used to complete an asynchronous resource request in response to resource
 // load events from the resource dispatcher host.
-class AsyncResourceHandler : public ResourceHandler {
+class AsyncResourceHandler : public ResourceHandler,
+                             public ResourceMessageDelegate {
  public:
   AsyncResourceHandler(ResourceMessageFilter* filter,
                        int routing_id,
@@ -31,10 +33,8 @@ class AsyncResourceHandler : public ResourceHandler {
                        ResourceDispatcherHostImpl* rdh);
   virtual ~AsyncResourceHandler();
 
-  // IPC message handlers:
-  void OnFollowRedirect(bool has_new_first_party_for_cookies,
-                        const GURL& new_first_party_for_cookies);
-  void OnDataReceivedACK();
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok) OVERRIDE;
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id,
@@ -64,6 +64,12 @@ class AsyncResourceHandler : public ResourceHandler {
                                 int bytes_downloaded) OVERRIDE;
 
  private:
+  // IPC message handlers:
+  void OnFollowRedirect(int request_id,
+                        bool has_new_first_party_for_cookies,
+                        const GURL& new_first_party_for_cookies);
+  void OnDataReceivedACK(int request_id);
+
   bool EnsureResourceBufferIsInitialized();
   void ResumeIfDeferred();
 

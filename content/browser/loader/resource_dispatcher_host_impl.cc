@@ -59,6 +59,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_constants.h"
+#include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "net/base/auth.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/load_flags.h"
@@ -788,16 +790,30 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ResourceHostMsg_SyncLoad, OnSyncLoad)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_ReleaseDownloadedFile,
                         OnReleaseDownloadedFile)
-    IPC_MESSAGE_HANDLER(ResourceHostMsg_DataReceived_ACK, OnDataReceivedACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DataDownloaded_ACK, OnDataDownloadedACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
-    IPC_MESSAGE_HANDLER(ResourceHostMsg_FollowRedirect, OnFollowRedirect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
+
+  if (!handled && IPC_MESSAGE_ID_CLASS(message.type()) == ResourceMsgStart) {
+    PickleIterator iter(message);
+    int request_id = -1;
+    bool ok = iter.ReadInt(&request_id);
+    DCHECK(ok);
+    GlobalRequestID id(filter_->child_id(), request_id);
+    DelegateMap::iterator it = delegate_map_.find(id);
+    if (it != delegate_map_.end()) {
+      ObserverList<ResourceMessageDelegate>::Iterator del_it(*it->second);
+      ResourceMessageDelegate* delegate;
+      while (!handled && (delegate = del_it.GetNext()) != NULL) {
+        handled = delegate->OnMessageReceived(message, message_was_ok);
+      }
+    }
+  }
 
   if (message.type() == ViewHostMsg_DidLoadResourceFromMemoryCache::ID) {
     // We just needed to peek at this message. We still want it to reach its
@@ -890,8 +906,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
     return;
   }
 
+  bool is_sync_load = sync_result != NULL;
   int load_flags =
-      BuildLoadFlagsForRequest(request_data, child_id, sync_result != NULL);
+      BuildLoadFlagsForRequest(request_data, child_id, is_sync_load);
 
   // Construct the request.
   scoped_ptr<net::URLRequest> new_request;
@@ -955,7 +972,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
           allow_download,
           request_data.has_user_gesture,
           request_data.referrer_policy,
-          resource_context);
+          resource_context,
+          !is_sync_load);
   extra_info->AssociateWithRequest(request);  // Request takes ownership.
 
   if (request->url().SchemeIs(chrome::kBlobScheme)) {
@@ -1049,16 +1067,6 @@ void ResourceDispatcherHostImpl::OnReleaseDownloadedFile(int request_id) {
   UnregisterDownloadedTempFile(filter_->child_id(), request_id);
 }
 
-void ResourceDispatcherHostImpl::OnDataReceivedACK(int request_id) {
-  ResourceLoader* loader = GetLoader(filter_->child_id(), request_id);
-  if (!loader)
-    return;
-
-  ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-  if (info->async_handler())
-    info->async_handler()->OnDataReceivedACK();
-}
-
 void ResourceDispatcherHostImpl::OnDataDownloadedACK(int request_id) {
   // TODO(michaeln): maybe throttle DataDownloaded messages
 }
@@ -1110,24 +1118,6 @@ void ResourceDispatcherHostImpl::OnCancelRequest(int request_id) {
   CancelRequest(filter_->child_id(), request_id, true);
 }
 
-void ResourceDispatcherHostImpl::OnFollowRedirect(
-    int request_id,
-    bool has_new_first_party_for_cookies,
-    const GURL& new_first_party_for_cookies) {
-  ResourceLoader* loader = GetLoader(filter_->child_id(), request_id);
-  if (!loader) {
-    DVLOG(1) << "OnFollowRedirect for invalid request";
-    return;
-  }
-
-  ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-  if (info->async_handler()) {
-    info->async_handler()->OnFollowRedirect(
-        has_new_first_party_for_cookies,
-        new_first_party_for_cookies);
-  }
-}
-
 ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
     int child_id,
     int route_id,
@@ -1149,7 +1139,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       download,  // allow_download
       false,     // has_user_gesture
       WebKit::WebReferrerPolicyDefault,
-      context);
+      context,
+      true);     // is_async
 }
 
 
@@ -1705,6 +1696,28 @@ ResourceLoader* ResourceDispatcherHostImpl::GetLoader(
 ResourceLoader* ResourceDispatcherHostImpl::GetLoader(int child_id,
                                                       int request_id) const {
   return GetLoader(GlobalRequestID(child_id, request_id));
+}
+
+void ResourceDispatcherHostImpl::RegisterResourceMessageDelegate(
+    const GlobalRequestID& id, ResourceMessageDelegate* delegate) {
+  DelegateMap::iterator it = delegate_map_.find(id);
+  if (it == delegate_map_.end()) {
+    it = delegate_map_.insert(
+        std::make_pair(id, new ObserverList<ResourceMessageDelegate>)).first;
+  }
+  it->second->AddObserver(delegate);
+}
+
+void ResourceDispatcherHostImpl::UnregisterResourceMessageDelegate(
+    const GlobalRequestID& id, ResourceMessageDelegate* delegate) {
+  DCHECK(ContainsKey(delegate_map_, id));
+  DelegateMap::iterator it = delegate_map_.find(id);
+  DCHECK(it->second->HasObserver(delegate));
+  it->second->RemoveObserver(delegate);
+  if (it->second->size() == 0) {
+    delete it->second;
+    delegate_map_.erase(it);
+  }
 }
 
 }  // namespace content

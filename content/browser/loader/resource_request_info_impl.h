@@ -22,7 +22,6 @@ class BlobData;
 }
 
 namespace content {
-class AsyncResourceHandler;
 class CrossSiteResourceHandler;
 class ResourceContext;
 struct GlobalRequestID;
@@ -56,7 +55,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool allow_download,
       bool has_user_gesture,
       WebKit::WebReferrerPolicy referrer_policy,
-      ResourceContext* context);
+      ResourceContext* context,
+      bool is_async);
   virtual ~ResourceRequestInfoImpl();
 
   // ResourceRequestInfo implementation:
@@ -91,14 +91,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     cross_site_handler_ = h;
   }
 
-  // AsyncResourceHandler for this request.  May be null.
-  AsyncResourceHandler* async_handler() {
-    return async_handler_;
-  }
-  void set_async_handler(AsyncResourceHandler* h) {
-    async_handler_ = h;
-  }
-
   // Identifies the type of process (renderer, plugin, etc.) making the request.
   ProcessType process_type() const {
     return process_type_;
@@ -130,7 +122,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
  private:
   // Non-owning, may be NULL.
   CrossSiteResourceHandler* cross_site_handler_;
-  AsyncResourceHandler* async_handler_;
 
   ProcessType process_type_;
   int child_id_;
@@ -151,6 +142,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   scoped_refptr<webkit_blob::BlobData> requested_blob_data_;
   WebKit::WebReferrerPolicy referrer_policy_;
   ResourceContext* context_;
+  bool is_async_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestInfoImpl);
 };

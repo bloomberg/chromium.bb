@@ -525,6 +525,8 @@
     'browser/loader/resource_loader.cc',
     'browser/loader/resource_loader_delegate.h',
     'browser/loader/resource_loader.h',
+    'browser/loader/resource_message_delegate.cc',
+    'browser/loader/resource_message_delegate.h',
     'browser/loader/resource_message_filter.cc',
     'browser/loader/resource_message_filter.h',
     'browser/loader/resource_request_info_impl.cc',
