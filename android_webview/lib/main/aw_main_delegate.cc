@@ -31,15 +31,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Set the command line to enable synchronous API compatibility.
   command_line->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
 
-  // TODO(leandrogracia): enable with the CapturePicture API support.
-  if (false) {
-    // Enable impl-side painting in the compositor.
-    command_line->AppendSwitch(switches::kForceCompositingMode);
-    command_line->AppendSwitch(switches::kEnableThreadedCompositing);
-    command_line->AppendSwitch(switches::kEnableDeferredImageDecoding);
-    command_line->AppendSwitch(cc::switches::kEnableImplSidePainting);
-  }
-
   return false;
 }
 

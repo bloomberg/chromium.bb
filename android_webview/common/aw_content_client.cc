@@ -5,6 +5,7 @@
 #include "android_webview/common/aw_content_client.h"
 
 #include "base/basictypes.h"
+#include "ipc/ipc_message.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/user_agent/user_agent_util.h"
@@ -33,6 +34,14 @@ base::StringPiece AwContentClient::GetDataResource(
   // Android WebView.
   return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
+}
+
+bool AwContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
+  // For legacy API support we perform a few browser -> renderer synchronous IPC
+  // messages that block the browser. However, the synchronous IPC replies might
+  // be dropped by the renderer during a swap out, deadlocking the browser.
+  // Because of this we should never drop any synchronous IPC replies.
+  return message->type() == IPC_REPLY_ID;
 }
 
 }  // namespace android_webview

@@ -52,6 +52,10 @@ ContentClient::ContentClient()
 ContentClient::~ContentClient() {
 }
 
+bool ContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
+  return false;
+}
+
 bool ContentClient::CanHandleWhileSwappedOut(const IPC::Message& message) {
   return false;
 }

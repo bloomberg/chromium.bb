@@ -190,6 +190,9 @@ class CONTENT_EXPORT RenderWidget
   // Close the underlying WebWidget.
   virtual void Close();
 
+  // Notifies about a compositor frame commit operation having finished.
+  virtual void DidCommitCompositorFrame();
+
   float filtered_time_per_frame() const {
     return filtered_time_per_frame_;
   }

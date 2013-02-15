@@ -1370,6 +1370,9 @@ void RenderWidget::didBecomeReadyForAdditionalInput() {
     Send(pending_input_event_ack_.release());
 }
 
+void RenderWidget::DidCommitCompositorFrame() {
+}
+
 void RenderWidget::didCommitAndDrawCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::didCommitAndDrawCompositorFrame");
   // Accelerated FPS tick for performance tests. See throughput_tests.cc.

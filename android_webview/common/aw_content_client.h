@@ -20,6 +20,7 @@ class AwContentClient : public content::ContentClient {
   virtual base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) const OVERRIDE;
+  virtual bool CanSendWhileSwappedOut(const IPC::Message* message) OVERRIDE;
 };
 
 }  // namespace android_webview

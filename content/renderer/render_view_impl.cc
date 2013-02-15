@@ -27,6 +27,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "cc/layer_tree_host.h"
 #include "cc/output_surface.h"
 #include "cc/switches.h"
 #include "content/common/appcache/appcache_dispatcher.h"
@@ -181,6 +182,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -6635,12 +6637,22 @@ bool RenderViewImpl::didTapMultipleTargets(
 
   return true;
 }
+
+skia::RefPtr<SkPicture> RenderViewImpl::CapturePicture() {
+  return compositor_ ? compositor_->layer_tree_host()->capturePicture() :
+      skia::RefPtr<SkPicture>();
+}
 #endif
 
 void RenderViewImpl::OnReleaseDisambiguationPopupDIB(
     TransportDIB::Handle dib_handle) {
   TransportDIB* dib = TransportDIB::CreateWithHandle(dib_handle);
   RenderProcess::current()->ReleaseTransportDIB(dib);
+}
+
+void RenderViewImpl::DidCommitCompositorFrame() {
+  RenderWidget::DidCommitCompositorFrame();
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidCommitCompositorFrame());
 }
 
 }  // namespace content

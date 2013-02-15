@@ -36,7 +36,9 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
       break;
   }
 
-  return false;
+  // Check with the embedder as well.
+  ContentClient* client = GetContentClient();
+  return client->CanSendWhileSwappedOut(msg);
 }
 
 bool SwappedOutMessages::CanHandleWhileSwappedOut(

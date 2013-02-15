@@ -9,9 +9,12 @@
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
+#include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 #include "ui/gfx/native_widget_types.h"
+
+class SkPicture;
 
 namespace webkit_glue {
 struct WebPreferences;
@@ -162,6 +165,15 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
   // Returns a collection of security info about |frame|.
   virtual SSLStatus GetSSLStatusOfFrame(WebKit::WebFrame* frame) const = 0;
+
+#if defined(OS_ANDROID)
+  // Returns a SkPicture with the full contents of the current frame as part of
+  // the legacy Android WebView capture picture API. As it involves playing back
+  // all the drawing commands of the current frame it can have an important
+  // performance impact and should not be used for other purposes.
+  // Requires enabling the impl-side painting feature in the compositor.
+  virtual skia::RefPtr<SkPicture> CapturePicture() = 0;
+#endif
 
  protected:
   virtual ~RenderView() {}
