@@ -136,6 +136,7 @@ function onClientStateChange_(oldState, newState) {
       showConnectError_(remoting.Error.MISSING_PLUGIN);
       break;
   }
+  remoting.clientSession.disconnect(false);
   remoting.clientSession.removePlugin();
   remoting.clientSession = null;
 }
@@ -158,10 +159,6 @@ function showConnectError_(errorTag) {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
-  }
-  if (remoting.clientSession) {
-    remoting.clientSession.disconnect(false);
-    remoting.clientSession = null;
   }
 }
 
