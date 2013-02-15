@@ -411,7 +411,7 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
 
   if (CanPayWithWallet()) {
     int index;
-    bool success = !base::StringToInt(item_key, &index);
+    bool success = base::StringToInt(item_key, &index);
     DCHECK(success);
 
     if (section == SECTION_CC) {
