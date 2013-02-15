@@ -18,6 +18,7 @@
 
 #if defined(SUPPORTED_OS)
 
+#include <linux/errno.h>
 #include <linux/filter.h>
 #include <linux/seccomp.h>
 #include <linux/types.h>
@@ -28,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/prctl.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 
 #define SyscallArg(n) (offsetof(struct seccomp_data, args[n]))
@@ -58,15 +60,30 @@ static void NaClSeccompBpfSigsysHandler(int nr, siginfo_t *info,
   int syscall;
   char buf[BUF_SIZE];
   int n;
+  char *filename;
+  int fatal = 1;
   UNREFERENCED_PARAMETER(nr);
   UNREFERENCED_PARAMETER(info);
 
   syscall = ctx->uc_mcontext.gregs[REG_SYSCALL];
-  n = snprintf(buf, BUF_SIZE,
-               "[SECCOMP BPF] Linux syscall %d is not allowed by the policy\n",
-               syscall);
+  switch (syscall) {
+    case SYS_open:
+      filename = (char *) ctx->uc_mcontext.gregs[REG_ARG0];
+      n = snprintf(buf, BUF_SIZE,
+                   "[SECCOMP BPF] Blocked open(\"%s\")\n", filename);
+      fatal = 0;
+      break;
+    default:
+      n = snprintf(buf, BUF_SIZE, "[SECCOMP BPF] "
+                   "Linux syscall %d is not allowed by the policy\n",
+                   syscall);
+      break;
+  }
   if (write(STDERR_FILENO, buf, n)) {}
-  _exit(255);
+  if (fatal) {
+    _exit(255);
+  }
+  ctx->uc_mcontext.gregs[REG_RESULT] = -EACCES;
 }
 
 static struct sock_filter filter[] = {
@@ -130,13 +147,6 @@ static struct sock_filter filter[] = {
   BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_socketcall, 0, 1),
   BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
 #endif
-
-  /*
-   * TODO(krasin): disable open(2). Currently, it's needed
-   * for open("/sys/devices/system/cpu/online") called by pthread_create.
-   */
-  BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_open, 0, 1),
-  BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
 
   BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_close, 0, 1),
   BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
