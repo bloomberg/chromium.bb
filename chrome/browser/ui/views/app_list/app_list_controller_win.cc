@@ -515,10 +515,12 @@ void AppListController::InitView(Profile* profile) {
 }
 
 void AppListController::PopulateViewFromProfile(Profile* profile) {
+#if !defined(USE_AURA)
   if (profile == profile_)
     return;
-  profile_ = profile;
+#endif
 
+  profile_ = profile;
   gfx::NativeWindow parent = NULL;
 
 #if !defined(USE_AURA)
