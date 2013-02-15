@@ -73,6 +73,48 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   virtual bool OnCanWrite() = 0;
 };
 
+// Interface which gets callbacks from the QuicConnection at interesting
+// points.  Implementations must not mutate the state of the connection
+// as a result of these callbacks.
+class QuicConnectionDebugVisitorInterface {
+ public:
+  virtual ~QuicConnectionDebugVisitorInterface() {}
+
+  // Called when a packet has been received, but before it is
+  // validated or parsed.
+  virtual void OnPacketReceived(const IPEndPoint& self_address,
+                                const IPEndPoint& peer_address,
+                                const QuicEncryptedPacket& packet) = 0;
+
+  // Called when the header of a packet has been parsed.
+  virtual void OnPacketHeader(const QuicPacketHeader& header) = 0;
+
+  // Called when a StreamFrame has been parsed.
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) = 0;
+
+  // Called when a AckFrame has been parsed.
+  virtual void OnAckFrame(const QuicAckFrame& frame) = 0;
+
+  // Called when a CongestionFeedbackFrame has been parsed.
+  virtual void OnCongestionFeedbackFrame(
+      const QuicCongestionFeedbackFrame& frame) = 0;
+
+  // Called when a RstStreamFrame has been parsed.
+  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) = 0;
+
+  // Called when a ConnectionCloseFrame has been parsed.
+  virtual void OnConnectionCloseFrame(
+      const QuicConnectionCloseFrame& frame) = 0;
+
+  // Called when a public reset packet has been received.
+  virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) = 0;
+
+  // Called after a packet has been successfully parsed which results
+  // in the revival of a packet via FEC.
+  virtual void OnRevivedPacket(const QuicPacketHeader& revived_header,
+                               base::StringPiece payload) = 0;
+};
+
 class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
  public:
   virtual ~QuicConnectionHelperInterface() {}
@@ -194,6 +236,9 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface,
   // Accessors
   void set_visitor(QuicConnectionVisitorInterface* visitor) {
     visitor_ = visitor;
+  }
+  void set_debug_visitor(QuicConnectionDebugVisitorInterface* debug_visitor) {
+    debug_visitor_ = debug_visitor;
   }
   const IPEndPoint& self_address() const { return self_address_; }
   const IPEndPoint& peer_address() const { return peer_address_; }
@@ -440,6 +485,7 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface,
   FecGroupMap group_map_;
 
   QuicConnectionVisitorInterface* visitor_;
+  QuicConnectionDebugVisitorInterface* debug_visitor_;
   QuicPacketCreator packet_creator_;
 
   // Network idle time before we kill of this connection.

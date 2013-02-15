@@ -98,6 +98,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       peer_least_packet_awaiting_ack_(0),
       handling_retransmission_timeout_(false),
       write_blocked_(false),
+      debug_visitor_(NULL),
       packet_creator_(guid_, &framer_),
       timeout_(QuicTime::Delta::FromMicroseconds(kDefaultTimeoutUs)),
       time_of_last_packet_(clock_->Now()),
@@ -183,6 +184,9 @@ void QuicConnection::OnPacket() {
 
 void QuicConnection::OnPublicResetPacket(
     const QuicPublicResetPacket& packet) {
+  if (debug_visitor_) {
+    debug_visitor_->OnPublicResetPacket(packet);
+  }
   CloseConnection(QUIC_PUBLIC_RESET, true);
 }
 
@@ -190,6 +194,9 @@ void QuicConnection::OnRevivedPacket() {
 }
 
 bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
+  if (debug_visitor_) {
+    debug_visitor_->OnPacketHeader(header);
+  }
   if (header.public_header.guid != guid_) {
     DLOG(INFO) << "Ignoring packet from unexpected GUID: "
                << header.public_header.guid << " instead of " << guid_;
@@ -222,10 +229,16 @@ void QuicConnection::OnFecProtectedPayload(StringPiece payload) {
 }
 
 void QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
+  if (debug_visitor_) {
+    debug_visitor_->OnStreamFrame(frame);
+  }
   last_stream_frames_.push_back(frame);
 }
 
 void QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
+  if (debug_visitor_) {
+    debug_visitor_->OnAckFrame(incoming_ack);
+  }
   DVLOG(1) << "Ack packet: " << incoming_ack;
 
   if (last_header_.packet_sequence_number <= largest_seen_packet_with_ack_) {
@@ -264,6 +277,9 @@ void QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
 
 void QuicConnection::OnCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback) {
+  if (debug_visitor_) {
+    debug_visitor_->OnCongestionFeedbackFrame(feedback);
+  }
   congestion_manager_.OnIncomingQuicCongestionFeedbackFrame(feedback);
 }
 
@@ -438,6 +454,9 @@ void QuicConnection::OnFecData(const QuicFecData& fec) {
 }
 
 void QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
+  if (debug_visitor_) {
+    debug_visitor_->OnRstStreamFrame(frame);
+  }
   DLOG(INFO) << "Stream reset with error "
              << QuicUtils::ErrorToString(frame.error_code);
   visitor_->OnRstStream(frame);
@@ -445,6 +464,9 @@ void QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
 
 void QuicConnection::OnConnectionCloseFrame(
     const QuicConnectionCloseFrame& frame) {
+  if (debug_visitor_) {
+    debug_visitor_->OnConnectionCloseFrame(frame);
+  }
   DLOG(INFO) << "Connection closed with error "
              << QuicUtils::ErrorToString(frame.error_code);
   CloseConnection(frame.error_code, true);
@@ -546,6 +568,9 @@ void QuicConnection::SendRstStream(QuicStreamId id,
 void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
                                       const IPEndPoint& peer_address,
                                       const QuicEncryptedPacket& packet) {
+  if (debug_visitor_) {
+    debug_visitor_->OnPacketReceived(self_address, peer_address, packet);
+  }
   last_packet_revived_ = false;
   last_size_ = packet.length();
   last_self_address_ = self_address;
@@ -942,6 +967,10 @@ void QuicConnection::MaybeProcessRevivedPacket() {
   delete group;
 
   last_packet_revived_ = true;
+  if (debug_visitor_) {
+    debug_visitor_->OnRevivedPacket(revived_header,
+                                    StringPiece(revived_payload, len));
+  }
   framer_.ProcessRevivedPacket(revived_header,
                                StringPiece(revived_payload, len));
 }
