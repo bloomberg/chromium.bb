@@ -45,16 +45,18 @@ fi
 
 usage() {
   cat <<EOF
-Usage: git-crup [-n|--dry-run] [--fetch] [-j|--jobs [jobs]]
+Usage: git-crup [-n|--dry-run] [--fetch|--sync] [-j|--jobs [jobs]]
     [--no-hooks] [<args to git-pull or git-fetch>]
 EOF
 }
 
 serial_update() {
   ( cd "$1"
-    $GIT_EXE $pull $pull_args -q origin | sed "s/^/[$1] /g"
-    if [ $? -ne 0 ]; then
-      return $?
+    if test -n "$toplevel_cmd"; then
+      $toplevel_cmd | sed "s/^/[$1] /g"
+      if [ $? -ne 0 ]; then
+        return $?
+      fi
     fi
     $GIT_EXE submodule --quiet sync
     $GIT_EXE ls-files -s | grep ^160000 | awk '{print $4}' |
@@ -93,6 +95,9 @@ while test $# -ne 0; do
     --fetch)
       pull=fetch
       ;;
+    --sync)
+      pull=
+      ;;
     --no-hooks|--nohooks)
       hooks=no
       ;;
@@ -124,11 +129,17 @@ else
   xargs_parallel=no
 fi
 
+if test -n "$pull"; then
+  toplevel_cmd="$GIT_EXE $pull $pull_args -q origin"
+else
+  toplevel_cmd=
+fi
+
 set -o pipefail
 if test "$xargs_parallel" = "yes"; then
   ( ls -d */.git | sed 's/\/\.git$//' |
    xargs $max_lines $replace_arg -P "$j" \
-      "$crup_runner" replace_arg $GIT_EXE $pull $pull_args -q origin |
+      "$crup_runner" replace_arg $toplevel_cmd |
    xargs $max_lines -P "$j" "$crup_runner" )
 else 
   ls -d */.git |

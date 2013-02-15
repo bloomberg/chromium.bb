@@ -1,5 +1,21 @@
 #!/bin/bash
 
+update_toplevel () {
+  # Don't "pull" if checkout is not on a named branch
+  if test "$2" = "pull" && ( ! git symbolic-ref HEAD >/dev/null 2>/dev/null ); then
+    first_args="$1 fetch"
+  else
+    first_args="$1 $2"
+  fi
+  shift 2
+  echo "[$solution] $first_args $@" 1>&2
+  $first_args $@ | sed "s/^/[$solution] /g" 1>&2
+  status=$?
+  if [ "$status" -ne 0 ]; then
+    exit $status
+  fi
+}
+
 set_target_os () {
   # Get the os we're building for.  On first run, this will be unset.
   target_os=$(git config target.os 2>/dev/null)
@@ -70,18 +86,9 @@ if [ "$solution" = "$1" ]; then
     exit 0
   fi
 
-  # Don't "pull" if checkout is not on a named branch
   shift
-  if test "$2" = "pull" && ( ! git symbolic-ref HEAD >/dev/null 2>/dev/null ); then
-    first_args="$1 fetch"
-  else
-    first_args="$1 $2"
-  fi
-  shift 2
-  $first_args $@ | sed "s/^/[$solution] /g" 1>&2
-  status=$?
-  if [ "$status" -ne 0 ]; then
-    exit $status
+  if test $# -ne 0; then
+    update_toplevel "$@"
   fi
 
   set_target_os
