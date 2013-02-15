@@ -37,9 +37,9 @@ class ParserTest(cros_test_lib.MockTempDirTestCase):
   def testNormal(self):
     """Tests that our example parser works normally."""
     with MockChromeSDKCommand(
-        ['--board', ChromeSDKMock.BOARD],
+        ['--board', SDKFetcherMock.BOARD],
         base_args=['--cache-dir', self.tempdir]) as bootstrap:
-      self.assertEquals(bootstrap.inst.options.board, ChromeSDKMock.BOARD)
+      self.assertEquals(bootstrap.inst.options.board, SDKFetcherMock.BOARD)
       self.assertEquals(bootstrap.inst.options.cache_dir, self.tempdir)
 
 
@@ -78,10 +78,10 @@ def _DependencyMockCtx(f):
   return new_f
 
 
-class ChromeSDKMock(partial_mock.PartialMock):
-  """Provides mocking functionality for ChromeSDK."""
+class SDKFetcherMock(partial_mock.PartialMock):
+  """Provides mocking functionality for SDKFetcher."""
 
-  TARGET = 'chromite.cros.commands.cros_chrome_sdk.ChromeSDK'
+  TARGET = 'chromite.cros.commands.cros_chrome_sdk.SDKFetcher'
   ATTRS = ('__init__', '_GetChromeLKGM', '_GetNewestManifestVersion',
            '_UpdateTarball', '_GetMetadata')
 
@@ -119,7 +119,7 @@ class ChromeSDKMock(partial_mock.PartialMock):
   def _target__init__(self, inst, *args, **kwargs):
     self.backup['__init__'](inst, *args, **kwargs)
     if not inst.cache_base.startswith('/tmp'):
-      raise AssertionError('For testing, ChromeSDK cache_dir needs to be a '
+      raise AssertionError('For testing, SDKFetcher cache_dir needs to be a '
                            'dir under /tmp')
 
   @_DependencyMockCtx
@@ -149,7 +149,7 @@ class ChromeSDKMock(partial_mock.PartialMock):
 class RunThroughTest(cros_test_lib.MockTempDirTestCase):
   """Run the script with most things mocked out."""
 
-  VERSION_KEY = (ChromeSDKMock.BOARD, ChromeSDKMock.VERSION,
+  VERSION_KEY = (SDKFetcherMock.BOARD, SDKFetcherMock.VERSION,
                  constants.CHROME_SYSROOT_TAR)
 
   FAKE_ENV = {
@@ -160,9 +160,9 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase):
   }
 
   def setUp(self):
-    self.sdk_mock = self.StartPatcher(ChromeSDKMock())
+    self.sdk_mock = self.StartPatcher(SDKFetcherMock())
     self.cmd_mock = MockChromeSDKCommand(
-        ['--board', ChromeSDKMock.BOARD, 'true'],
+        ['--board', SDKFetcherMock.BOARD, 'true'],
         base_args=['--cache-dir', self.tempdir])
     self.StartPatcher(self.cmd_mock)
     self.cmd_mock.UnMockAttr('Run')
@@ -181,9 +181,9 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase):
       self.assertTrue(r.Exists())
 
   def testSpecificComponent(self):
-    """Tests that ChromeSDK.Prepare() handles |components| param properly."""
-    sdk = cros_chrome_sdk.ChromeSDK(os.path.join(self.tempdir),
-                                    ChromeSDKMock.BOARD)
+    """Tests that SDKFetcher.Prepare() handles |components| param properly."""
+    sdk = cros_chrome_sdk.SDKFetcher(os.path.join(self.tempdir),
+                                    SDKFetcherMock.BOARD)
     components = [constants.BASE_IMAGE_TAR, constants.CHROME_SYSROOT_TAR]
     with sdk.Prepare(components=components) as ctx:
       for c in components:
@@ -212,11 +212,11 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
     self.gs_mock.SetDefaultCmdResult()
-    self.sdk_mock = self.StartPatcher(ChromeSDKMock(gs_mock=self.gs_mock))
+    self.sdk_mock = self.StartPatcher(SDKFetcherMock(gs_mock=self.gs_mock))
     self.sdk_mock.UnMockAttr('_GetChromeLKGM')
 
-    os.environ.pop(cros_chrome_sdk.SDK_VERSION_ENV, None)
-    self.sdk = cros_chrome_sdk.ChromeSDK(
+    os.environ.pop(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV, None)
+    self.sdk = cros_chrome_sdk.SDKFetcher(
         os.path.join(self.tempdir, 'cache'), self.BOARD)
 
   def testChromeVersion(self):
@@ -240,13 +240,13 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
 
   def testDefaultEnvBadBoard(self):
     """We don't use the version in the environment if board doesn't match."""
-    os.environ[cros_chrome_sdk.SDK_VERSION_ENV] = self.ENV_VERSION
+    os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = self.ENV_VERSION
     self.assertEquals(self.sdk.GetDefaultVersion(), self.sdk_mock.VERSION)
 
   def testDefaultEnvGoodBoard(self):
     """We use the version in the environment if board matches."""
-    os.environ[cros_chrome_sdk.SDK_VERSION_ENV] = self.ENV_VERSION
-    os.environ[cros_chrome_sdk.SDK_BOARD_ENV] = self.BOARD
+    os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = self.ENV_VERSION
+    os.environ[cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV] = self.BOARD
     self.assertEquals(self.sdk.GetDefaultVersion(), self.ENV_VERSION)
 
 

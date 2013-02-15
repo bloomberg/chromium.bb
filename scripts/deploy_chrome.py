@@ -215,8 +215,8 @@ def _CreateParser():
                     help='Skip all prompts (i.e., for disabling of rootfs '
                          'verification).  This may result in the target '
                          'machine being rebooted.')
-  parser.add_option('--board',
-                    default=os.environ.get(cros_chrome_sdk.SDK_BOARD_ENV),
+  sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
+  parser.add_option('--board', default=sdk_board_env,
                     help="The board the Chrome build is targeted for.  When in "
                          "a 'cros chrome-sdk' shell, defaults to the SDK "
                          "board.")
@@ -347,7 +347,7 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
   staging directory.
   """
   if options.build_dir:
-    sdk = cros_chrome_sdk.ChromeSDK(options.cache_dir, options.board)
+    sdk = cros_chrome_sdk.SDKFetcher(options.cache_dir, options.board)
     components = (sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_ENV_TAR)
     with sdk.Prepare(components=components) as ctx:
       env_path = os.path.join(ctx.key_map[constants.CHROME_ENV_TAR].path,

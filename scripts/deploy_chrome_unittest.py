@@ -214,7 +214,7 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
     self.common_flags = ['--build-dir', self.build_dir,
                          '--board=lumpy', '--staging-only', '--cache-dir',
                          self.tempdir]
-    self.sdk_mock = self.StartPatcher(cros_chrome_sdk_unittest.ChromeSDKMock())
+    self.sdk_mock = self.StartPatcher(cros_chrome_sdk_unittest.SDKFetcherMock())
     self.PatchObject(
         osutils, 'SourceEnvironment', autospec=True,
         return_value={'STRIP': 'x86_64-cros-linux-gnu-strip'})

@@ -21,28 +21,23 @@ from chromite.buildbot import constants
 
 
 COMMAND_NAME = 'chrome-sdk'
-SDK_VERSION_ENV = '%CHROME_SDK_VERSION'
-SDK_BOARD_ENV = '%CHROME_SDK_BOARD'
 
-class ChromeSDK(object):
-  """Functionality for fetching a Chrome SDK environment.
 
-  For the version of ChromeOS specified, the class downloads and caches:
+class SDKFetcher(object):
+  """Functionality for fetching an SDK environment.
 
-    1. A dev image of the specified ChromeOS version.
-    2. Generated scripts that are used to operate on the image.
-    3. A sysroot containing build dependencies of Chrome.
-    4. The required cross-compiler toolchain.
-    5. The Chrome ebuild environment.
+  For the version of ChromeOS specified, the class downloads and caches
+  SDK components.
   """
+  SDK_VERSION_ENV = '%SDK_VERSION'
+  SDK_BOARD_ENV = '%SDK_BOARD'
+
   SDKContext = collections.namedtuple('SDKContext', ['version', 'key_map'])
 
   TARBALL_CACHE = 'tarballs'
   MISC_CACHE = 'misc'
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
-  CONTENTS = (constants.BASE_IMAGE_TAR, constants.CHROME_SYSROOT_TAR,
-              constants.IMAGE_SCRIPTS_TAR, constants.CHROME_ENV_TAR)
 
   def __init__(self, cache_dir, board):
     """Initialize the class.
@@ -118,8 +113,8 @@ class ChromeSDK(object):
     Otherwise, use what we defaulted to last time.  If there was no last time,
     use the result of UpdateDefaultVersion().
     """
-    if os.environ.get(SDK_BOARD_ENV) == self.board:
-      sdk_version = os.environ.get(SDK_VERSION_ENV)
+    if os.environ.get(self.SDK_BOARD_ENV) == self.board:
+      sdk_version = os.environ.get(self.SDK_VERSION_ENV)
       if sdk_version is not None:
         return sdk_version
 
@@ -143,7 +138,7 @@ class ChromeSDK(object):
     return target
 
   @contextlib.contextmanager
-  def Prepare(self, version=None, components=None):
+  def Prepare(self, components, version=None):
     """Ensures the components of an SDK exist and are read-locked.
 
     For a given SDK version, pulls down missing components, and provides a
@@ -152,12 +147,11 @@ class ChromeSDK(object):
 
     Arguments:
       gs_ctx: GSContext object.
+      components: A list of specific components(tarballs) to prepare.
       version: The version to prepare.  If not set, uses the version returned by
         GetDefaultVersion().
-      components: A list of specific components(tarballs) to prepare, if
-        specified.  Otherwise, every tarball in the SDK will be prepared.
 
-    Yields: An ChromeSDK.SDKContext namedtuple object.  The attributes of the
+    Yields: An SDKFetcher.SDKContext namedtuple object.  The attributes of the
       object are:
 
       version: The version that was prepared.
@@ -166,24 +160,22 @@ class ChromeSDK(object):
     """
     if version is None:
       version = self.GetDefaultVersion()
+    components = list(components)
 
     key_map = {}
+    fetch_urls = {}
     version_base = os.path.join(self.gs_base, version)
 
-    metadata = self._GetMetadata(version)
-    fetch_urls = dict([(t, os.path.join(version_base, t))
-                       for t in self.CONTENTS])
-    key_tuple_map = {
-        self.TARGET_TOOLCHAIN_KEY: metadata['toolchain-tuple'][0],
-    }
-    for key, tc_tuple in key_tuple_map.iteritems():
-      fetch_urls[key] = os.path.join(
+    # Fetch toolchains from separate location.
+    if self.TARGET_TOOLCHAIN_KEY in components:
+      metadata = self._GetMetadata(version)
+      tc_tuple = metadata['toolchain-tuple'][0]
+      fetch_urls[self.TARGET_TOOLCHAIN_KEY] = os.path.join(
           'gs://', constants.SDK_GS_BUCKET,
           metadata['toolchain-url'] % {'target': tc_tuple})
+      components.remove(self.TARGET_TOOLCHAIN_KEY)
 
-    if components is not None:
-      fetch_urls = dict([(k, v) for k, v in fetch_urls.iteritems()
-                         if k in components])
+    fetch_urls.update((t, os.path.join(version_base, t)) for t in components)
     try:
       for key, url in fetch_urls.iteritems():
         cache_key = (self.board, version, key)
@@ -285,8 +277,8 @@ class ChromeSDKCommand(cros.CrosCommand):
 
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
 
-    os.environ[SDK_VERSION_ENV] = version
-    os.environ[SDK_BOARD_ENV] = board
+    os.environ[self.sdk.SDK_VERSION_ENV] = version
+    os.environ[self.sdk.SDK_BOARD_ENV] = board
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
     gyp_dict = chrome_util.ProcessGypDefines(env['GYP_DEFINES'])
@@ -345,18 +337,20 @@ class ChromeSDKCommand(cros.CrosCommand):
 
   def Run(self):
     """Perform the command."""
-    if os.environ.get(SDK_VERSION_ENV) is not None:
+    if os.environ.get(SDKFetcher.SDK_VERSION_ENV) is not None:
       cros_build_lib.Die('Already in an SDK shell.')
 
-    # Lazy initialize because ChromeSDK creates a GSContext() object in its
+    # Lazy initialize because SDKFetcher creates a GSContext() object in its
     # constructor, which may block on user input.
-    self.sdk = ChromeSDK(self.options.cache_dir, self.options.board)
+    self.sdk = SDKFetcher(self.options.cache_dir, self.options.board)
 
     prepare_version = self.options.version
     if self.options.update:
       prepare_version = self.sdk.UpdateDefaultVersion()
 
-    with self.sdk.Prepare(version=prepare_version) as ctx:
+    components = (self.sdk.TARGET_TOOLCHAIN_KEY, constants.CHROME_SYSROOT_TAR,
+                  constants.CHROME_ENV_TAR)
+    with self.sdk.Prepare(components, version=prepare_version) as ctx:
       env = self._SetupEnvironment(self.options.board, ctx.version, ctx.key_map)
       with self._GetRCFile(env, self.options.bashrc) as rcfile:
         bash_header = ['/bin/bash', '--noprofile', '--rcfile', rcfile]
