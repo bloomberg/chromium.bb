@@ -116,6 +116,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "advanced_simd_data_processing_instructions",
                      "simd_dp_3same",
                      "simd_dp_3diff",
+                     "simd_dp_2scalar",
                      ]
 
 # The list of tables in armv7.table that should test the automatically

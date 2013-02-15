@@ -107,6 +107,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_instance_()
   , Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_instance_()
   , Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_instance_()
+  , Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_instance_()
+  , Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_instance_()
+  , Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2_instance_()
   , Actual_VMOV_ARM_core_register_to_scalar_cccc11100ii0ddddtttt1011dii10000_case_1_instance_()
   , Actual_VMOV_between_ARM_core_register_and_single_precision_register_cccc1110000onnnntttt1010n0010000_case_1_instance_()
   , Actual_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_cccc1100010otttttttt101100m1mmmm_case_1_instance_()
@@ -145,9 +148,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Vector2RegisterMiscellaneous_V8_16_32_instance_()
   , Vector2RegisterMiscellaneous_V8_16_32I_instance_()
   , Vector2RegisterMiscellaneous_V8_16_32T_instance_()
-  , VectorBinary2RegisterScalar_F32_instance_()
-  , VectorBinary2RegisterScalar_I16_32_instance_()
-  , VectorBinary2RegisterScalar_I16_32L_instance_()
   , VectorBinary2RegisterShiftAmount_CVT_instance_()
   , VectorBinary2RegisterShiftAmount_E8_16_32L_instance_()
   , VectorBinary2RegisterShiftAmount_I_instance_()
@@ -2700,46 +2700,46 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2scalar(
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000900 /* A(11:8)=1001 */) {
-    return VectorBinary2RegisterScalar_F32_instance_;
+    return Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000A00 /* A(11:8)=1010 */) {
-    return VectorBinary2RegisterScalar_I16_32L_instance_;
+    return Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000B00 /* A(11:8)=1011 */ &&
       (inst.Bits() & 0x01000000)  ==
           0x00000000 /* U(24)=0 */) {
-    return VectorBinary2RegisterScalar_I16_32L_instance_;
+    return Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000F00)  ==
           0x00000D00 /* A(11:8)=1101 */) {
-    return VectorBinary2RegisterScalar_I16_32_instance_;
+    return Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2_instance_;
   }
 
   if ((inst.Bits() & 0x00000B00)  ==
           0x00000100 /* A(11:8)=0x01 */) {
-    return VectorBinary2RegisterScalar_F32_instance_;
+    return Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000B00)  ==
           0x00000200 /* A(11:8)=0x10 */) {
-    return VectorBinary2RegisterScalar_I16_32L_instance_;
+    return Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000B00)  ==
           0x00000300 /* A(11:8)=0x11 */ &&
       (inst.Bits() & 0x01000000)  ==
           0x00000000 /* U(24)=0 */) {
-    return VectorBinary2RegisterScalar_I16_32L_instance_;
+    return Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00000300)  ==
           0x00000000 /* A(11:8)=xx00 */) {
-    return VectorBinary2RegisterScalar_I16_32_instance_;
+    return Actual_VMLA_by_scalar_A1_1111001q1dssnnnndddd0p0fn1m0mmmm_case_2_instance_;
   }
 
   if (true) {
