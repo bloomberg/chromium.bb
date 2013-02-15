@@ -9,7 +9,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/string_split.h"
-#include "ui/aura/display_util.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
 
@@ -24,7 +23,7 @@ std::vector<gfx::Display> CreateDisplaysFromString(
   base::SplitString(specs, ',', &parts);
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter) {
-    displays.push_back(aura::CreateDisplayFromSpec(*iter));
+    displays.push_back(internal::CreateDisplayFromSpec(*iter));
   }
   return displays;
 }

@@ -21,8 +21,6 @@
 #include "chrome/browser/ui/ash/event_rewriter.h"
 #include "chrome/browser/ui/ash/screenshot_taker.h"
 #include "chrome/common/chrome_switches.h"
-#include "ui/aura/aura_switches.h"
-#include "ui/aura/display_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/compositor_setup.h"
@@ -57,12 +55,8 @@ bool ShouldInitiallyHideCursor() {
 #endif
 
 void OpenAsh() {
-  bool use_fullscreen = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAuraHostWindowUseFullscreen);
-
 #if defined(OS_CHROMEOS)
   if (base::chromeos::IsRunningOnChromeOS()) {
-    use_fullscreen = true;
     // Hides the cursor outside of the Aura root window. The cursor will be
     // drawn within the Aura root window, and it'll remain hidden after the
     // Aura window is closed.
@@ -73,9 +67,6 @@ void OpenAsh() {
   if (ShouldInitiallyHideCursor())
     ash::Shell::set_initially_hide_cursor(true);
 #endif
-
-  if (use_fullscreen)
-    aura::SetUseFullscreenHostWindow(true);
 
   // Its easier to mark all windows as persisting and exclude the ones we care
   // about (browser windows), rather than explicitly excluding certain windows.

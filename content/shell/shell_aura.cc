@@ -282,7 +282,7 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize();
   gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, new aura::TestScreen);
+      gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
   minimal_ash_ = new content::MinimalAsh(default_window_size);
 #else
   gfx::Screen::SetScreenInstance(

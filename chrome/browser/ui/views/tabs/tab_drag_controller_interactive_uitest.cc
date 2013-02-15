@@ -1017,7 +1017,7 @@ class DetachToBrowserInSeparateDisplayTabDragControllerTest
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("aura-host-window-size",
+    command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "0+0-250x250,251+0-250x250");
   }
 
@@ -1151,7 +1151,7 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     DetachToBrowserTabDragControllerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("aura-host-window-size",
+    command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "400x400,800x800*2");
   }
 
@@ -1250,7 +1250,7 @@ class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     TabDragControllerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("aura-host-window-size",
+    command_line->AppendSwitchASCII("ash-host-window-bounds",
                                     "0+0-250x250,251+0-250x250");
   }
 

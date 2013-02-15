@@ -73,6 +73,12 @@ const char kAshEnableOak[] = "ash-enable-oak";
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 
+// Sets a window size, optional position, and optional scale factor.
+// "1024x768" creates a window of size 1024x768.
+// "100+200-1024x768" positions the window at 100,200.
+// "1024x768*2" sets the scale factor to 2 for a high DPI display.
+const char kAshHostWindowBounds[] = "ash-host-window-bounds";
+
 // Enables immersive mode.
 const char kAshImmersiveMode[] = "ash-immersive-mode";
 

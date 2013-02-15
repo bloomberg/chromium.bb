@@ -42,7 +42,7 @@ AuraTestHelper::~AuraTestHelper() {
 void AuraTestHelper::SetUp() {
   setup_called_ = true;
   Env::GetInstance();
-  test_screen_.reset(new TestScreen());
+  test_screen_.reset(TestScreen::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
   root_window_.reset(test_screen_->CreateRootWindowForPrimaryDisplay());
 

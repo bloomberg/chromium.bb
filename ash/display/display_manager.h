@@ -163,8 +163,7 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   gfx::Display& FindDisplayForRootWindow(const aura::RootWindow* root);
   gfx::Display& FindDisplayForId(int64 id);
 
-  // Refer to |aura::DisplayManager::CreateDisplayFromSpec| API for
-  // the format of |spec|.
+  // Refer to |CreateDisplayFromSpec| API for the format of |spec|.
   void AddDisplayFromSpec(const std::string& spec);
 
   // Set the 1st display as an internal display and returns the display Id for
@@ -201,6 +200,16 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };
+
+// Creates a display from string spec. 100+200-1440x800 creates display
+// whose size is 1440x800 at the location (100, 200) in screen's coordinates.
+// The location can be omitted and be just "1440x800", which creates
+// display at the origin of the screen. An empty string creates
+// the display with default size.
+//  The device scale factor can be specified by "*", like "1280x780*2",
+// or will use the value of |gfx::Display::GetForcedDeviceScaleFactor()| if
+// --force-device-scale-factor is specified.
+ASH_EXPORT gfx::Display CreateDisplayFromSpec(const std::string& str);
 
 extern const aura::WindowProperty<int64>* const kDisplayIdKey;
 

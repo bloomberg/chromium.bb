@@ -112,10 +112,10 @@ int DemoMain() {
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
   aura::Env::GetInstance();
-  aura::TestScreen test_screen;
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &test_screen);
+  scoped_ptr<aura::TestScreen> test_screen(aura::TestScreen::Create());
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen.get());
   scoped_ptr<aura::RootWindow> root_window(
-      test_screen.CreateRootWindowForPrimaryDisplay());
+      test_screen->CreateRootWindowForPrimaryDisplay());
   scoped_ptr<DemoStackingClient> stacking_client(new DemoStackingClient(
       root_window.get()));
 

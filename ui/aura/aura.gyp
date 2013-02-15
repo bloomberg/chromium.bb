@@ -23,8 +23,6 @@
         'AURA_IMPLEMENTATION',
       ],
       'sources': [
-        'aura_switches.cc',
-        'aura_switches.h',
         'client/activation_change_observer.h',
         'client/activation_change_observer.cc',
         'client/activation_client.cc',
@@ -68,8 +66,6 @@
         'device_list_updater_aurax11.cc',
         'device_list_updater_aurax11.h',
         'dispatcher_win.cc',
-        'display_util.cc',
-        'display_util.h',
         'env.cc',
         'env.h',
         'env_observer.h',

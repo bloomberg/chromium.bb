@@ -40,10 +40,6 @@
 #include "ash/ash_switches.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/aura/aura_switches.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
 #endif

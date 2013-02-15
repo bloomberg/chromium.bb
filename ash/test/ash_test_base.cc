@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/screen_ash.h"
@@ -17,7 +18,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "content/public/test/web_contents_tester.h"
-#include "ui/aura/aura_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -85,7 +85,7 @@ void AshTestBase::SetUp() {
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAuraHostWindowSize, "1+1-800x600");
+      switches::kAshHostWindowBounds, "1+1-800x600");
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(true);
 #endif
