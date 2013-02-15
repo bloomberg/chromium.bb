@@ -141,6 +141,10 @@ class CONTENT_EXPORT RenderViewHostManager
                                    pending_and_current_web_ui_.get();
   }
 
+  // Sets the pending Web UI for the pending navigation, ensuring that the
+  // bindings are appropriate for the given NavigationEntry.
+  void SetPendingWebUI(const NavigationEntryImpl& entry);
+
   // Called when we want to instruct the renderer to navigate to the given
   // navigation entry. It may create a new RenderViewHost or re-use an existing
   // one. The RenderViewHost to navigate will be returned. Returns NULL if one

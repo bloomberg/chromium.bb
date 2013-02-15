@@ -21,6 +21,8 @@ static int GetUniqueIDInConstructor() {
 
 namespace content {
 
+int NavigationEntryImpl::kInvalidBindings = -1;
+
 NavigationEntry* NavigationEntry::Create() {
   return new NavigationEntryImpl();
 }
@@ -37,6 +39,7 @@ NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
 NavigationEntryImpl::NavigationEntryImpl()
     : unique_id_(GetUniqueIDInConstructor()),
       site_instance_(NULL),
+      bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
       update_virtual_url_with_url_(false),
       page_id_(-1),
@@ -59,6 +62,7 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
                                          bool is_renderer_initiated)
     : unique_id_(GetUniqueIDInConstructor()),
       site_instance_(instance),
+      bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
       url_(url),
       referrer_(referrer),
@@ -147,6 +151,13 @@ int32 NavigationEntryImpl::GetPageID() const {
 
 void NavigationEntryImpl::set_site_instance(SiteInstanceImpl* site_instance) {
   site_instance_ = site_instance;
+}
+
+void NavigationEntryImpl::SetBindings(int bindings) {
+  // Ensure this is set to a valid value, and that it stays the same once set.
+  CHECK_NE(bindings, kInvalidBindings);
+  CHECK(bindings_ == kInvalidBindings || bindings_ == bindings);
+  bindings_ = bindings;
 }
 
 const string16& NavigationEntryImpl::GetTitleForDisplay(
