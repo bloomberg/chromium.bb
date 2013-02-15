@@ -97,6 +97,12 @@ class AURA_EXPORT WindowObserver {
   // Called when a Window is about to be removed from a RootWindow.
   virtual void OnWindowRemovingFromRootWindow(Window* window) {}
 
+  // Called when a transient child is added to |window|.
+  virtual void OnAddTransientChild(Window* window, Window* transient) {}
+
+  // Called when a transient child is removed from |window|.
+  virtual void OnRemoveTransientChild(Window* window, Window* transient) {}
+
  protected:
   virtual ~WindowObserver() {}
 };

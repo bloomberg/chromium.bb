@@ -346,6 +346,13 @@ class RenderWidgetHostViewAura
 
   void SwapBuffersCompleted(const BufferPresentedParams& params);
 
+#if defined(OS_WIN)
+  // Sets the cutout rects from transient windows. These are rectangles that
+  // windowed NPAPI plugins shouldn't paint in. Overwrites any previous cutout
+  // rects.
+  void SetTransientRects(const std::vector<gfx::Rect>& rects);
+#endif
+
   // The model object.
   RenderWidgetHostImpl* host_;
 
@@ -473,6 +480,19 @@ class RenderWidgetHostViewAura
   // observer is not owned by the view, and must remove itself as an oberver
   // when it is being destroyed.
   PaintObserver* paint_observer_;
+
+#if defined(OS_WIN)
+  // The list of rectangles from transient windows over this view. Windowed
+  // NPAPI plugins shouldn't draw over them.
+  std::vector<gfx::Rect> transient_rects_;
+
+  typedef std::map<HWND, webkit::npapi::WebPluginGeometry> PluginWindowMoves;
+  // Contains information about each windowed plugin's clip and cutout rects (
+  // from the renderer). This is needed because when the transient windoiws
+  // over this view changes, we need this information in order to create a new
+  // region for the HWND.
+  PluginWindowMoves plugin_window_moves_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

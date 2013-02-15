@@ -29,6 +29,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -57,6 +58,7 @@
 
 #if defined(OS_WIN)
 #include "ui/base/win/hidden_window.h"
+#include "ui/gfx/gdi_util.h"
 #endif
 
 using gfx::RectToSkIRect;
@@ -110,10 +112,60 @@ BOOL CALLBACK ShowWindowsCallback(HWND window, LPARAM param) {
   RenderWidgetHostViewAura* widget =
       reinterpret_cast<RenderWidgetHostViewAura*>(param);
 
-  HWND parent =
-      widget->GetNativeView()->GetRootWindow()->GetAcceleratedWidget();
-  if (GetProp(window, kWidgetOwnerProperty) == widget)
+  if (GetProp(window, kWidgetOwnerProperty) == widget) {
+    HWND parent =
+        widget->GetNativeView()->GetRootWindow()->GetAcceleratedWidget();
     SetParent(window, parent);
+  }
+  return TRUE;
+}
+
+struct TransientRectsParams {
+  RenderWidgetHostViewAura* widget;
+  std::vector<gfx::Rect>* transient_rects;
+  std::map<HWND, webkit::npapi::WebPluginGeometry>* geometry;
+};
+
+BOOL CALLBACK SetTransientRectsCallback(HWND window, LPARAM param) {
+  TransientRectsParams* params = reinterpret_cast<TransientRectsParams*>(param);
+
+  if (GetProp(window, kWidgetOwnerProperty) == params->widget) {
+    HWND parent = params->widget->GetNativeView()->GetRootWindow()->
+        GetAcceleratedWidget();
+    POINT offset;
+    offset.x = offset.y = 0;
+    MapWindowPoints(window, parent, &offset, 1);
+
+    std::map<HWND, webkit::npapi::WebPluginGeometry>::iterator i =
+        params->geometry->begin();
+
+    while (i != params->geometry->end() &&
+           i->second.window != window &&
+           GetParent(i->second.window) != window) {
+      ++i;
+    }
+
+    if (i == params->geometry->end()) {
+      NOTREACHED();
+      return TRUE;
+    }
+
+    HRGN hrgn = CreateRectRgn(i->second.clip_rect.x(),
+                              i->second.clip_rect.y(),
+                              i->second.clip_rect.right(),
+                              i->second.clip_rect.bottom());
+    // We start with the cutout rects that came from the renderer, then add the
+    // ones that came from transient windows.
+    std::vector<gfx::Rect> cutout_rects = i->second.cutout_rects;
+    for (size_t i = 0; i < params->transient_rects->size(); ++i) {
+      gfx::Rect offset_cutout = (*params->transient_rects)[i];
+      offset_cutout.Offset(-offset.x, -offset.y);
+      cutout_rects.push_back(offset_cutout);
+    }
+    gfx::SubtractRectanglesFromRegion(hrgn, cutout_rects);
+    SetWindowRgn(window, hrgn, TRUE);
+    
+  }
   return TRUE;
 }
 
@@ -209,20 +261,105 @@ bool PointerEventActivates(const ui::Event& event) {
 // RenderWidgetHostViewAura.
 class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
  public:
-  explicit WindowObserver(RenderWidgetHostViewAura* view) : view_(view) {}
-  virtual ~WindowObserver() {}
+  explicit WindowObserver(RenderWidgetHostViewAura* view)
+      : view_(view),
+        top_level_(NULL) {}
+  virtual ~WindowObserver() {
+#if defined(OS_WIN)
+    StopObserving();
+#endif
+  }
 
   // Overridden from aura::WindowObserver:
   virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
-    view_->AddedToRootWindow();
+    if (window == view_->window_)
+      view_->AddedToRootWindow();
   }
 
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE {
-    view_->RemovingFromRootWindow();
+    if (window == view_->window_)
+      view_->RemovingFromRootWindow();
   }
+
+#if defined(OS_WIN)
+  virtual void OnWindowHierarchyChanged(
+      const aura::WindowObserver::HierarchyChangeParams& params) OVERRIDE {
+    aura::Window* top_level = GetToplevelWindow();
+    if (top_level == top_level_)
+      return;
+
+    StopObserving();
+    top_level_ = top_level;
+    if (top_level_)
+      top_level_->AddObserver(this);
+  }
+
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+    if (window == top_level_)
+      StopObserving();
+  }
+
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE {
+    if (window->transient_parent())
+      SendPluginCutoutRects();
+  }
+
+  virtual void OnWindowVisibilityChanged(aura::Window* window,
+                                         bool visible) OVERRIDE {
+    if (window->transient_parent())
+      SendPluginCutoutRects();
+  }
+
+  virtual void OnAddTransientChild(aura::Window* window,
+                                   aura::Window* transient) OVERRIDE {
+    transient->AddObserver(this);
+    // Just wait for the OnWindowBoundsChanged of the transient, since the size
+    // is not known now.
+  }
+
+  virtual void OnRemoveTransientChild(aura::Window* window,
+                                      aura::Window* transient) OVERRIDE {
+    transient->RemoveObserver(this);
+    SendPluginCutoutRects();
+  }
+
+  aura::Window* GetToplevelWindow() {
+    aura::RootWindow* root = view_->window_->GetRootWindow();
+    if (!root)
+      return NULL;
+    return aura::client::GetActivationClient(root)->GetToplevelWindow(
+        view_->window_);
+  }
+
+  void StopObserving() {
+    if (!top_level_)
+      return;
+
+    const aura::Window::Windows& transients = top_level_->transient_children();
+    for (size_t i = 0; i < transients.size(); ++i)
+      transients[i]->RemoveObserver(this);
+
+    top_level_->RemoveObserver(this);
+    top_level_ = NULL;
+  }
+
+  void SendPluginCutoutRects() {
+    std::vector<gfx::Rect> cutouts;
+    const aura::Window::Windows& transients = top_level_->transient_children();
+    for (size_t i = 0; i < transients.size(); ++i) {
+      if (transients[i]->IsVisible())
+        cutouts.push_back(transients[i]->GetBoundsInRootWindow());
+    }
+
+    view_->SetTransientRects(cutouts);
+  }
+#endif
 
  private:
   RenderWidgetHostViewAura* view_;
+  aura::Window* top_level_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserver);
 };
@@ -419,6 +556,7 @@ void RenderWidgetHostViewAura::WasShown() {
 #if defined(OS_WIN)
   LPARAM lparam = reinterpret_cast<LPARAM>(this);
   EnumChildWindows(ui::GetHiddenWindow(), ShowWindowsCallback, lparam);
+  window_observer_->SendPluginCutoutRects();
 #endif
 }
 
@@ -517,7 +655,18 @@ void RenderWidgetHostViewAura::MovePluginWindows(
     moves[i].clip_rect = clip;
 
     moves[i].window_rect.Offset(view_bounds.OffsetFromOrigin());
+
+    plugin_window_moves_[moves[i].window] = moves[i];
+
+    // transient_rects_ are relative to the root window. We want to convert them
+    // to be relative to the plugin window.
+    for (size_t j = 0; j < transient_rects_.size(); ++j) {
+      gfx::Rect offset_cutout = transient_rects_[j];
+      offset_cutout -= moves[i].window_rect.OffsetFromOrigin();
+      moves[i].cutout_rects.push_back(offset_cutout);
+    }
   }
+
   MovePluginWindowsHelper(parent, moves);
 
   // Make sure each plugin window (or its wrapper if it exists) has a pointer to
@@ -907,6 +1056,21 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
       compositor->AddObserver(this);
   }
 }
+
+#if defined(OS_WIN)
+void RenderWidgetHostViewAura::SetTransientRects(
+    const std::vector<gfx::Rect>& rects) {
+  transient_rects_ = rects;
+
+  HWND parent = window_->GetRootWindow()->GetAcceleratedWidget();
+  TransientRectsParams params;
+  params.widget = this;
+  params.transient_rects = &transient_rects_;
+  params.geometry = &plugin_window_moves_;
+  LPARAM lparam = reinterpret_cast<LPARAM>(&params);
+  EnumChildWindows(parent, SetTransientRectsCallback, lparam);
+}
+#endif
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params_in_pixel,

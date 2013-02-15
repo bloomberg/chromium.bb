@@ -406,6 +406,8 @@ void Window::AddTransientChild(Window* child) {
                    child) == transient_children_.end());
   transient_children_.push_back(child);
   child->transient_parent_ = this;
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnAddTransientChild(this, child));
 }
 
 void Window::RemoveTransientChild(Window* child) {
@@ -415,6 +417,8 @@ void Window::RemoveTransientChild(Window* child) {
   transient_children_.erase(i);
   if (child->transient_parent_ == this)
     child->transient_parent_ = NULL;
+  FOR_EACH_OBSERVER(WindowObserver, observers_,
+                    OnRemoveTransientChild(this, child));
 }
 
 Window* Window::GetChildById(int id) {
