@@ -217,7 +217,19 @@
         }, 
         {
           "input": "bohócsapkája", 
-          "output": "bo-hócsap-ká-ja"
+          "output": "bo-hóc-sap-ká-ja"
+        }, 
+        {
+          "input": "bohócság", 
+          "output": "bo-hóc-ság"
+        }, 
+        {
+          "input": "bohócszerű", 
+          "output": "bo-hóc-sze-rű"
+        }, 
+        {
+          "input": "bohócszerep", 
+          "output": "bo-hóc-sze-rep"
         }, 
         {
           "input": "bonbonmeggy", 
@@ -372,6 +384,10 @@
           "output": "édes-szesz-test-vér"
         }, 
         {
+          "input": "édességgyártók", 
+          "output": "édes-ség-gyár-tók"
+        }, 
+        {
           "input": "égésszabály", 
           "output": "égés-sza-bály"
         }, 
@@ -406,6 +422,10 @@
         {
           "input": "egyezség", 
           "output": "egyez-ség"
+        }, 
+        {
+          "input": "egyesszámban", 
+          "output": "egyesszám-ban"
         }, 
         {
           "input": "éhesszájat", 
@@ -1100,6 +1120,10 @@
           "output": "írás-sze-re-tet"
         }, 
         {
+          "input": "ismétlésszám", 
+          "output": "is-mét-lés-szám"
+        }, 
+        {
           "input": "irtásszél", 
           "output": "ir-tás-szél"
         }, 
@@ -1162,6 +1186,10 @@
         {
           "input": "dizájnnyelv", 
           "output": "di-zájnnyelv"
+        }, 
+        {
+          "input": "dizájnnyaklánc", 
+          "output": "di-zájn-nyak-lánc"
         }, 
         {
           "input": "kakasszó", 
@@ -1566,6 +1594,10 @@
         {
           "input": "lejtésszöge", 
           "output": "lej-tés-szö-ge"
+        }, 
+        {
+          "input": "lesszabály", 
+          "output": "les-sza-bály"
         }, 
         {
           "input": "lemezstúdió", 
@@ -2052,6 +2084,18 @@
           "output": "or-vos-szö-vet-ség"
         }, 
         {
+          "input": "óceánnyi", 
+          "output": "óce-án-nyi"
+        }, 
+        {
+          "input": "óceánnal", 
+          "output": "óce-án-nal"
+        }, 
+        {
+          "input": "óceánon", 
+          "output": "óce-á-non"
+        }, 
+        {
           "input": "óvodásszintű", 
           "output": "óvo-dás-szin-tű"
         }, 
@@ -2300,6 +2344,10 @@
           "output": "prog-gyak"
         }, 
         {
+          "input": "protonnyalábok", 
+          "output": "pro-ton-nya-lá-bok"
+        }, 
+        {
           "input": "pszichológusszövetség", 
           "output": "pszi-cho-ló-gus-szö-vet-ség"
         }, 
@@ -2542,6 +2590,10 @@
         {
           "input": "szalonnyelven", 
           "output": "sza-lon-nyel-ven"
+        }, 
+        {
+          "input": "szállodásszövetség", 
+          "output": "szál-lo-dás-szö-vet-ség"
         }, 
         {
           "input": "Szamosszeg", 
@@ -2800,6 +2852,10 @@
           "output": "tö-vis-szú-rás"
         }, 
         {
+          "input": "tőzeggyapot", 
+          "output": "tő-zeg-gya-pot"
+        }, 
+        {
           "input": "trichinnyavalya", 
           "output": "tri-chinnya-va-lya"
         }, 
@@ -2842,6 +2898,10 @@
         {
           "input": "ugrásszerűen", 
           "output": "ug-rás-sze-rű-en"
+        }, 
+        {
+          "input": "ugrásszögének", 
+          "output": "ug-rás-szö-gé-nek"
         }, 
         {
           "input": "újoncság", 
@@ -3082,6 +3142,10 @@
         {
           "input": "villamosszerű", 
           "output": "vil-la-mos-sze-rű"
+        }, 
+        {
+          "input": "visszaélésszerű", 
+          "output": "vissza-élés-sze-rű"
         }, 
         {
           "input": "virággyapjaikat", 

@@ -215,6 +215,10 @@
           "output": "binsenggyökér"
         }, 
         {
+          "input": "⠃⠊⠣⠝⠊⠱⠱⠡", 
+          "output": "biznisszé"
+        }, 
+        {
           "input": "⠃⠕⠓⠪⠉⠎⠁⠏⠅⠈⠚⠁", 
           "output": "bohócsapkája"
         }, 
@@ -371,6 +375,10 @@
           "output": "édesszesztestvér"
         }, 
         {
+          "input": "⠡⠙⠑⠎⠎⠡⠛⠹⠈⠗⠞⠪⠅", 
+          "output": "édességgyártók"
+        }, 
+        {
           "input": "⠡⠛⠡⠎⠱⠁⠃⠈⠸", 
           "output": "égésszabály"
         }, 
@@ -405,6 +413,10 @@
         {
           "input": "⠑⠹⠑⠣⠎⠡⠛", 
           "output": "egyezség"
+        }, 
+        {
+          "input": "⠑⠹⠑⠎⠱⠈⠍⠃⠁⠝", 
+          "output": "egyesszámban"
         }, 
         {
           "input": "⠡⠓⠑⠎⠱⠈⠚⠁⠞ ", 
@@ -451,8 +463,8 @@
           "output": "ellátásszerű"
         }, 
         {
-          "input": "⠑⠇⠇⠑⠝⠈⠇⠇⠈⠎⠱⠑⠅⠗⠡⠫", 
-          "output": "ellenállásszekrény"
+          "input": "⠑⠇⠇⠑⠝⠈⠇⠇⠈⠎⠱⠑⠅⠗⠡⠫⠂ ⠑⠇⠇⠑⠝⠈⠇⠇⠈⠎⠣⠪⠝⠁", 
+          "output": "ellenállásszekrény, ellenállászóna"
         }, 
         {
           "input": "⠑⠇⠇⠑⠝⠫⠊⠇⠁⠞⠅⠕⠣⠁⠞", 
@@ -1079,6 +1091,10 @@
           "output": "írásszeretet,"
         }, 
         {
+          "input": "⠊⠎⠍⠡⠞⠇⠡⠎⠱⠈⠍", 
+          "output": "ismétlésszám"
+        }, 
+        {
           "input": "⠊⠗⠞⠈⠎⠱⠡⠇", 
           "output": "irtásszél"
         }, 
@@ -1141,6 +1157,10 @@
         {
           "input": "⠙⠊⠣⠈⠚⠝⠫⠑⠇⠧", 
           "output": "dizájnnyelv"
+        }, 
+        {
+          "input": "⠙⠊⠣⠈⠚⠝⠫⠁⠅⠇⠈⠝⠉", 
+          "output": "dizájnnyaklánc"
         }, 
         {
           "input": "⠅⠁⠅⠁⠎⠱⠪", 
@@ -1549,6 +1569,10 @@
         {
           "input": "⠇⠑⠚⠞⠡⠎⠱⠟⠛⠑", 
           "output": "lejtésszöge"
+        }, 
+        {
+          "input": "⠇⠑⠎⠱⠁⠃⠈⠸", 
+          "output": "lesszabály"
         }, 
         {
           "input": "⠇⠑⠍⠑⠣⠎⠞⠬⠙⠊⠪", 
@@ -2039,6 +2063,10 @@
           "output": "orvosszövetség"
         }, 
         {
+          "input": "⠪⠉⠑⠈⠝⠫⠊", 
+          "output": "óceánnyi"
+        }, 
+        {
           "input": "⠪⠧⠕⠙⠈⠎⠱⠊⠝⠞⠾", 
           "output": "óvodásszintű"
         }, 
@@ -2287,6 +2315,10 @@
           "output": "proggyak"
         }, 
         {
+          "input": "⠏⠗⠕⠞⠕⠝⠫⠁⠇⠈⠃⠕⠅", 
+          "output": "protonnyalábok"
+        }, 
+        {
           "input": "⠏⠱⠊⠉⠓⠕⠇⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛", 
           "output": "pszichológusszövetség"
         }, 
@@ -2525,6 +2557,10 @@
         {
           "input": "⠱⠁⠇⠕⠝⠫⠑⠇⠧⠂ ⠱⠁⠇⠕⠝⠫⠑⠇⠧⠑⠝ ", 
           "output": "szalonnyelv, szalonnyelven "
+        }, 
+        {
+          "input": "⠱⠈⠇⠇⠕⠙⠈⠎⠱⠟⠧⠑⠞⠎⠡⠛", 
+          "output": "szállodásszövetség"
         }, 
         {
           "input": "⠨⠱⠁⠍⠕⠎⠱⠑⠛", 
@@ -2791,6 +2827,10 @@
           "output": "tövisszúrás"
         }, 
         {
+          "input": "⠞⠻⠣⠑⠛⠹⠁⠏⠕⠞", 
+          "output": "tőzeggyapot"
+        }, 
+        {
           "input": "⠞⠗⠊⠉⠓⠊⠝⠫⠁⠧⠁⠸⠁", 
           "output": "trichinnyavalya"
         }, 
@@ -2833,6 +2873,10 @@
         {
           "input": "⠥⠛⠗⠈⠎⠱⠑⠗⠾⠑⠝", 
           "output": "ugrásszerűen"
+        }, 
+        {
+          "input": "⠥⠛⠗⠈⠎⠱⠟⠛⠡⠝⠑⠅", 
+          "output": "ugrásszögének"
         }, 
         {
           "input": "⠬⠚⠕⠝⠉⠎⠈⠛", 
@@ -3073,6 +3117,10 @@
         {
           "input": "⠧⠊⠇⠇⠁⠝⠈⠎⠱⠑⠗⠾⠑⠝", 
           "output": "villanásszerűen"
+        }, 
+        {
+          "input": "⠧⠊⠱⠱⠁⠡⠇⠡⠎⠱⠑⠗⠾", 
+          "output": "visszaélésszerű"
         }, 
         {
           "input": "⠧⠊⠗⠈⠛⠹⠁⠏⠚⠁⠊⠅⠁⠞", 
@@ -3495,6 +3543,10 @@
           "output": "⠃⠊⠝⠎⠑⠝⠹⠹⠟⠅⠡⠗"
         }, 
         {
+          "input": "biznisszé", 
+          "output": "⠃⠊⠣⠝⠊⠱⠱⠡"
+        }, 
+        {
           "input": "bohócsapkája", 
           "output": "⠃⠕⠓⠪⠉⠎⠁⠏⠅⠈⠚⠁"
         }, 
@@ -3651,6 +3703,10 @@
           "output": "⠡⠙⠑⠎⠱⠑⠱⠞⠑⠎⠞⠧⠡⠗"
         }, 
         {
+          "input": "édességgyártók", 
+          "output": "⠡⠙⠑⠎⠎⠡⠛⠹⠈⠗⠞⠪⠅"
+        }, 
+        {
           "input": "égésszabály", 
           "output": "⠡⠛⠡⠎⠱⠁⠃⠈⠸"
         }, 
@@ -3685,6 +3741,10 @@
         {
           "input": "egyezség", 
           "output": "⠑⠹⠑⠣⠎⠡⠛"
+        }, 
+        {
+          "input": "egyesszámban", 
+          "output": "⠑⠹⠑⠎⠱⠈⠍⠃⠁⠝"
         }, 
         {
           "input": "éhesszájat ", 
@@ -3731,8 +3791,8 @@
           "output": "⠑⠇⠇⠈⠞⠈⠎⠱⠑⠗⠾"
         }, 
         {
-          "input": "ellenállásszekrény", 
-          "output": "⠑⠇⠇⠑⠝⠈⠇⠇⠈⠎⠱⠑⠅⠗⠡⠫"
+          "input": "ellenállásszekrény, ellenállászóna", 
+          "output": "⠑⠇⠇⠑⠝⠈⠇⠇⠈⠎⠱⠑⠅⠗⠡⠫⠂ ⠑⠇⠇⠑⠝⠈⠇⠇⠈⠎⠣⠪⠝⠁"
         }, 
         {
           "input": "ellennyilatkozat", 
@@ -4359,6 +4419,10 @@
           "output": "⠌⠗⠈⠎⠱⠑⠗⠑⠞⠑⠞⠂"
         }, 
         {
+          "input": "ismétlésszám", 
+          "output": "⠊⠎⠍⠡⠞⠇⠡⠎⠱⠈⠍"
+        }, 
+        {
           "input": "irtásszél", 
           "output": "⠊⠗⠞⠈⠎⠱⠡⠇"
         }, 
@@ -4421,6 +4485,10 @@
         {
           "input": "dizájnnyelv", 
           "output": "⠙⠊⠣⠈⠚⠝⠫⠑⠇⠧"
+        }, 
+        {
+          "input": "dizájnnyaklánc", 
+          "output": "⠙⠊⠣⠈⠚⠝⠫⠁⠅⠇⠈⠝⠉"
         }, 
         {
           "input": "kakasszó", 
@@ -4829,6 +4897,10 @@
         {
           "input": "lejtésszöge", 
           "output": "⠇⠑⠚⠞⠡⠎⠱⠟⠛⠑"
+        }, 
+        {
+          "input": "lesszabály", 
+          "output": "⠇⠑⠎⠱⠁⠃⠈⠸"
         }, 
         {
           "input": "lemezstúdió", 
@@ -5319,6 +5391,10 @@
           "output": "⠕⠗⠧⠕⠎⠱⠟⠧⠑⠞⠎⠡⠛"
         }, 
         {
+          "input": "óceánnyi", 
+          "output": "⠪⠉⠑⠈⠝⠫⠊"
+        }, 
+        {
           "input": "óvodásszintű", 
           "output": "⠪⠧⠕⠙⠈⠎⠱⠊⠝⠞⠾"
         }, 
@@ -5567,6 +5643,10 @@
           "output": "⠏⠗⠕⠛⠹⠁⠅"
         }, 
         {
+          "input": "protonnyalábok", 
+          "output": "⠏⠗⠕⠞⠕⠝⠫⠁⠇⠈⠃⠕⠅"
+        }, 
+        {
           "input": "pszichológusszövetség", 
           "output": "⠏⠱⠊⠉⠓⠕⠇⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛"
         }, 
@@ -5805,6 +5885,10 @@
         {
           "input": "szalonnyelv, szalonnyelven ", 
           "output": "⠱⠁⠇⠕⠝⠫⠑⠇⠧⠂ ⠱⠁⠇⠕⠝⠫⠑⠇⠧⠑⠝ "
+        }, 
+        {
+          "input": "szállodásszövetség", 
+          "output": "⠱⠈⠇⠇⠕⠙⠈⠎⠱⠟⠧⠑⠞⠎⠡⠛"
         }, 
         {
           "input": "Szamosszeg", 
@@ -6071,6 +6155,10 @@
           "output": "⠞⠟⠧⠊⠎⠱⠬⠗⠈⠎"
         }, 
         {
+          "input": "tőzeggyapot", 
+          "output": "⠞⠻⠣⠑⠛⠹⠁⠏⠕⠞"
+        }, 
+        {
           "input": "trichinnyavalya", 
           "output": "⠞⠗⠊⠉⠓⠊⠝⠫⠁⠧⠁⠸⠁"
         }, 
@@ -6113,6 +6201,10 @@
         {
           "input": "ugrásszerűen", 
           "output": "⠥⠛⠗⠈⠎⠱⠑⠗⠾⠑⠝"
+        }, 
+        {
+          "input": "ugrásszögének", 
+          "output": "⠥⠛⠗⠈⠎⠱⠟⠛⠡⠝⠑⠅"
         }, 
         {
           "input": "újoncság", 
@@ -6353,6 +6445,10 @@
         {
           "input": "villanásszerűen", 
           "output": "⠧⠊⠇⠇⠁⠝⠈⠎⠱⠑⠗⠾⠑⠝"
+        }, 
+        {
+          "input": "visszaélésszerű", 
+          "output": "⠧⠊⠱⠱⠁⠡⠇⠡⠎⠱⠑⠗⠾"
         }, 
         {
           "input": "virággyapjaikat", 

@@ -260,6 +260,11 @@ binsenggyökér
 testmode: backtranslate
 binsenggyökér
 
+biznisszé
+
+testmode: backtranslate
+biznisszé
+
 bohócsapkája
 
 testmode: backtranslate
@@ -455,6 +460,11 @@ testmode: backtranslate
 testmode: backtranslate
 édesszesztestvér
 
+édességgyártók
+
+testmode: backtranslate
+édességgyártók
+
 égésszabály
 
 testmode: backtranslate
@@ -499,6 +509,11 @@ egyezség
 
 testmode: backtranslate
 egyezség
+
+egyesszámban
+
+testmode: backtranslate
+egyesszámban
 
 éhesszájat 
 
@@ -555,10 +570,10 @@ ellátásszerű
 testmode: backtranslate
 ellátásszerű
 
-ellenállásszekrény
+ellenállásszekrény, ellenállászóna
 
 testmode: backtranslate
-ellenállásszekrény
+ellenállásszekrény, ellenállászóna
 
 ellennyilatkozat
 
@@ -1340,6 +1355,11 @@ testmode: backtranslate
 testmode: backtranslate
 írásszeretet,
 
+ismétlésszám
+
+testmode: backtranslate
+ismétlésszám
+
 irtásszél
 
 testmode: backtranslate
@@ -1419,6 +1439,11 @@ dizájnnyelv
 
 testmode: backtranslate
 dizájnnyelv
+
+dizájnnyaklánc
+
+testmode: backtranslate
+dizájnnyaklánc
 
 kakasszó
 
@@ -1929,6 +1954,11 @@ lejtésszöge
 
 testmode: backtranslate
 lejtésszöge
+
+lesszabály
+
+testmode: backtranslate
+lesszabály
 
 lemezstúdió
 
@@ -2540,6 +2570,11 @@ orvosszövetség
 testmode: backtranslate
 orvosszövetség
 
+óceánnyi
+
+testmode: backtranslate
+óceánnyi
+
 óvodásszintű
 
 testmode: backtranslate
@@ -2850,6 +2885,11 @@ proggyak
 testmode: backtranslate
 proggyak
 
+protonnyalábok
+
+testmode: backtranslate
+protonnyalábok
+
 pszichológusszövetség
 
 testmode: backtranslate
@@ -3149,6 +3189,11 @@ szalonnyelv, szalonnyelven
 
 testmode: backtranslate
 szalonnyelv, szalonnyelven 
+
+szállodásszövetség
+
+testmode: backtranslate
+szállodásszövetség
 
 Szamosszeg
 
@@ -3480,6 +3525,11 @@ tövisszúrás
 testmode: backtranslate
 tövisszúrás
 
+tőzeggyapot
+
+testmode: backtranslate
+tőzeggyapot
+
 trichinnyavalya
 
 testmode: backtranslate
@@ -3534,6 +3584,11 @@ ugrásszerűen
 
 testmode: backtranslate
 ugrásszerűen
+
+ugrásszögének
+
+testmode: backtranslate
+ugrásszögének
 
 újoncság
 
@@ -3834,6 +3889,11 @@ villanásszerűen
 
 testmode: backtranslate
 villanásszerűen
+
+visszaélésszerű
+
+testmode: backtranslate
+visszaélésszerű
 
 virággyapjaikat
 

@@ -193,6 +193,8 @@ partword világosság =	For example világossággyújtásra word
 partword virág =	For example virággyapjaikat word
 partword csillaggy 146-24-123-123-1-1245-1456	For example csillaggyárnak word
 partword hazugság 125-1-126-136-1245-234-4-1245	For example hazugsággyár word need this exception
+partword édesség =	For example édességgyártók word need this exception
+partword tőzeggy 2345-12456-126-15-1245-1456	For example tőzeggyapot, tőzeggyár words
 
 #ny, nny related exceptions
 #Following exception parts need marking nny letter pairs with single n and nny braille dot combinations
@@ -252,6 +254,9 @@ partword önnyom 12345-1345-1246-135-134	For example önnyomása, önnyomatú wo
 partword nnyilat 1345-1246-24-123-1-2345	For example sablonnyilatkozat word
 partword nnyelv 1345-1246-15-123-1236	For example ingyennyelvoktatás, mandarinnyelv, börtönnyelv, dizájnnyelven words need this exception
 partword szezonny 156-15-126-135-1345-1246	For example szezonnyitó word need this exception
+partword óceán =	For example óceánnyi word need this general exception
+partword dizájnny 145-24-126-4-245-1345-1246	For example dizájnnyaklánc word need this exception
+partword proton =	For example protonnyalábok word need this exception
 
 #ly related exceptions
 #This exception parts need marking ly letters with two single l and y letter combination
@@ -373,7 +378,7 @@ partword gásszim 1245-4-234-156-24-134
 partword gosszáz 1245-135-234-156-4-126
 partword tásszer 2345-4-234-156-15-1235	For example hivatásszerűen, ellátásszerű words need this exception
 partword lásszö 123-4-234-156-12345	For example állásszög, hajlásszög words need this exception
-partword állásszek 4-123-123-4-234-156-15-13	For example ellenállásszekrény word
+partword ellenállás =	For example ellenállásszekrény, ellenállászóna words
 partword vasszürk 1236-1-234-156-12356-1235-13	For example hamvasszürke word
 partword vasszőke 1236-1-234-156-12456-13-15	For example hamvasszőke word
 partword masszab 134-1-234-156-1-12
@@ -746,6 +751,13 @@ partword pszichológussz 1234-156-24-14-125-135-123-246-1245-136-234-156	For exa
 partword vízeséssz 1236-34-126-15-234-16-234-156	For example vízesésszerűen word need this exception
 partword közlekedéssz 13-12345-126-123-15-13-15-145-16-234-156	For example közlekedésszervezők word need this exception
 partword üstökössz 12356-234-2345-12345-13-12345-234-156	For example üstökösszerű word
+partword biznissz 12-24-126-1345-24-156-156	For example biznisszé word
+partword ugrássz 136-1245-1235-4-234-156	For example ugrásszögének word need this exception
+begword lesszabá 123-15-234-156-1-12-4	For example lesszabály word
+partword ismétléssz 24-234-134-16-2345-123-16-234-156	For example ismétlésszám word
+partword visszaéléssz 1236-24-156-156-1-16-123-16-234-156	For example visszaélésszerű word
+partword szállodássz 156-4-123-123-135-145-4-234-156	For example szállodásszövetség word need this exception
+begword egyessz 15-1456-15-234-156	For example egyesszám, egyesszámban word
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules

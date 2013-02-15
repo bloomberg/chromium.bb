@@ -160,6 +160,15 @@ testmode: hyphenate
 bohócsapkája
 
 testmode: hyphenate
+bohócság
+
+testmode: hyphenate
+bohócszerű
+
+testmode: hyphenate
+bohócszerep
+
+testmode: hyphenate
 bonbonmeggy
 
 testmode: hyphenate
@@ -274,6 +283,9 @@ testmode: hyphenate
 édesszesztestvér
 
 testmode: hyphenate
+édességgyártók
+
+testmode: hyphenate
 égésszabály
 
 testmode: hyphenate
@@ -299,6 +311,9 @@ egyenesszög
 
 testmode: hyphenate
 egyezség
+
+testmode: hyphenate
+egyesszámban
 
 testmode: hyphenate
 éhesszájat
@@ -820,6 +835,9 @@ testmode: hyphenate
 írásszeretet
 
 testmode: hyphenate
+ismétlésszám
+
+testmode: hyphenate
 irtásszél
 
 testmode: hyphenate
@@ -866,6 +884,9 @@ kabinnyomás
 
 testmode: hyphenate
 dizájnnyelv
+
+testmode: hyphenate
+dizájnnyaklánc
 
 testmode: hyphenate
 kakasszó
@@ -1169,6 +1190,9 @@ lejtésszög
 
 testmode: hyphenate
 lejtésszöge
+
+testmode: hyphenate
+lesszabály
 
 testmode: hyphenate
 lemezstúdió
@@ -1534,6 +1558,15 @@ testmode: hyphenate
 orvosszövetség
 
 testmode: hyphenate
+óceánnyi
+
+testmode: hyphenate
+óceánnal
+
+testmode: hyphenate
+óceánon
+
+testmode: hyphenate
 óvodásszintű
 
 testmode: hyphenate
@@ -1720,6 +1753,9 @@ testmode: hyphenate
 proggyak
 
 testmode: hyphenate
+protonnyalábok
+
+testmode: hyphenate
 pszichológusszövetség
 
 testmode: hyphenate
@@ -1901,6 +1937,9 @@ szalonnyelv
 
 testmode: hyphenate
 szalonnyelven
+
+testmode: hyphenate
+szállodásszövetség
 
 testmode: hyphenate
 Szamosszeg
@@ -2095,6 +2134,9 @@ testmode: hyphenate
 tövisszúrás
 
 testmode: hyphenate
+tőzeggyapot
+
+testmode: hyphenate
 trichinnyavalya
 
 testmode: hyphenate
@@ -2126,6 +2168,9 @@ udvaroncsereg
 
 testmode: hyphenate
 ugrásszerűen
+
+testmode: hyphenate
+ugrásszögének
 
 testmode: hyphenate
 újoncság
@@ -2306,6 +2351,9 @@ villamosszék
 
 testmode: hyphenate
 villamosszerű
+
+testmode: hyphenate
+visszaélésszerű
 
 testmode: hyphenate
 virággyapjaikat
