@@ -60,7 +60,6 @@ WalletItems::MaskedInstrument::MaskedInstrument(
     const std::string& last_four_digits,
     int expiration_month,
     int expiration_year,
-    const std::string& brand,
     scoped_ptr<Address> address,
     const WalletItems::MaskedInstrument::Status& status,
     const std::string& object_id)
@@ -70,7 +69,6 @@ WalletItems::MaskedInstrument::MaskedInstrument(
       last_four_digits_(last_four_digits),
       expiration_month_(expiration_month),
       expiration_year_(expiration_year),
-      brand_(brand),
       address_(address.Pass()),
       status_(status),
       object_id_(object_id) {
@@ -144,10 +142,6 @@ scoped_ptr<WalletItems::MaskedInstrument>
   if (!dictionary.GetInteger("expiration_year", &expiration_year))
     DVLOG(1) << "Response from Google Wallet missing expiration year";
 
-  std::string brand;
-  if (!dictionary.GetString("brand", &brand))
-    DVLOG(1) << "Response from Google Wallet missing brand";
-
   std::string descriptive_name;
   if (!dictionary.GetString("descriptive_name", &descriptive_name))
     DVLOG(1) << "Response from Google Wallet missing descriptive name";
@@ -158,7 +152,6 @@ scoped_ptr<WalletItems::MaskedInstrument>
                                                            last_four_digits,
                                                            expiration_month,
                                                            expiration_year,
-                                                           brand,
                                                            address.Pass(),
                                                            status,
                                                            object_id));
@@ -177,8 +170,6 @@ bool WalletItems::MaskedInstrument::operator==(
   if (expiration_month_ != other.expiration_month_)
     return false;
   if (expiration_year_ != other.expiration_year_)
-    return false;
-  if (brand_ != other.brand_)
     return false;
   if (address_.get()) {
     if (other.address_.get()) {

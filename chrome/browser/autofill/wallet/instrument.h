@@ -18,12 +18,8 @@ namespace wallet {
 class Address;
 
 // This class contains all the data necessary to save a new instrument to a
-// user's Google Wallet. In order to save a new instrument, the client must
-// first escrow the new instrument's sensitive information,
-// |primary_account_number_| and |card_verification_number_|, using
-// WalletClient::EscrowSensitiveInformation.  After escrowing those values, the
-// client can proceed to save the instrument using WalletClient::SaveInstrument
-// or WalletClient::SaveInstrumentAndAddress.
+// user's Google Wallet using WalletClient::SaveInstrument or
+// WalletClient::SaveInstrumentAndAddress.
 class Instrument {
  public:
   enum FormOfPayment {
@@ -74,8 +70,13 @@ class Instrument {
   // |expiration_year_| should be a 4-digit year.
   int expiration_year_;
 
+  // The payment network of the instrument, e.g. Visa.
   FormOfPayment form_of_payment_;
+
+  // The billing address of the instrument.
   scoped_ptr<Address> address_;
+
+  // The last four digits of |primary_account_number_|.
   std::string last_four_digits_;
 
   DISALLOW_COPY_AND_ASSIGN(Instrument);

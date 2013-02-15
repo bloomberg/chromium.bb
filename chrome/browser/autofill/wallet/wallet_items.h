@@ -75,7 +75,6 @@ class WalletItems {
     const std::string& last_four_digits() const { return last_four_digits_; }
     int expiration_month() const { return expiration_month_; }
     int expiration_year() const { return expiration_year_; }
-    const std::string& brand() const { return brand_; }
     const Address& address() const { return *address_; }
     const Status& status() const { return status_; }
     const std::string& object_id() const { return object_id_; }
@@ -90,20 +89,38 @@ class WalletItems {
                      const std::string& last_four_digits,
                      int expiration_month,
                      int expiration_year,
-                     const std::string& brand,
                      scoped_ptr<Address> address,
                      const Status& status,
                      const std::string& object_id);
+
+    // A user-provided description of the instrument. For example, "Google Visa
+    // Card".
     std::string descriptive_name_;
+
+    // The payment network of the instrument. For example, Visa.
     Type type_;
+
+    // |supported_currencies_| are ISO 4217 currency codes, e.g. USD.
     std::vector<std::string> supported_currencies_;
+
+    // The last four digits of the primary account number of the instrument.
     std::string last_four_digits_;
+
+    // |expiration month_| should be 1-12.
     int expiration_month_;
+
+    // |expiration_year_| should be a 4-digit year.
     int expiration_year_;
-    std::string brand_;
+
+    // The billing address for the instrument.
     scoped_ptr<Address> address_;
+
+    // The current status of the instrument. For example, expired or declined.
     Status status_;
+
+    // Externalized Online Wallet id for this instrument.
     std::string object_id_;
+
     DISALLOW_COPY_AND_ASSIGN(MaskedInstrument);
   };
 
@@ -134,7 +151,11 @@ class WalletItems {
     FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, LegalDocumentGetUrl);
     LegalDocument(const std::string& document_id,
                   const std::string& display_name);
+
+    // Externalized Online Wallet id for the document.
     std::string document_id_;
+
+    // User displayable name for the document.
     std::string display_name_;
     DISALLOW_COPY_AND_ASSIGN(LegalDocument);
   };
@@ -196,12 +217,26 @@ class WalletItems {
   // Actions that must be completed by the user before a FullWallet can be
   // issued to them by the Online Wallet service.
   std::vector<RequiredAction> required_actions_;
+
+  // The id for this transaction issued by Google.
   std::string google_transaction_id_;
+
+  // The id of the user's default instrument.
   std::string default_instrument_id_;
+
+  // The id of the user's default address.
   std::string default_address_id_;
+
+  // The externalized Gaia id of the user.
   std::string obfuscated_gaia_id_;
+
+  // The user's backing instruments.
   ScopedVector<MaskedInstrument> instruments_;
+
+  // The user's shipping addresses.
   ScopedVector<Address> addresses_;
+
+  // Legal documents the user must accept before using Online Wallet.
   ScopedVector<LegalDocument> legal_documents_;
 
   DISALLOW_COPY_AND_ASSIGN(WalletItems);

@@ -72,21 +72,35 @@ class FullWallet {
              scoped_ptr<Address> shipping_address,
              const std::vector<RequiredAction>& required_actions);
   void DecryptCardInfo(uint8* otp, size_t length);
+
+  // The expiration month of the proxy card. It should be 1-12.
   int expiration_month_;
+
+  // The expiration year of the proxy card. It should be a 4-digit year.
   int expiration_year_;
+
   // Primary account number (PAN). Its format is \d{16}.
   std::string pan_;
+
   // Card verification number (CVN). Its format is \d{3}.
   std::string cvn_;
+
   // Issuer identification number (IIN). Its format is \d{6}.
   std::string iin_;
+
   // Encrypted concatentation of CVN and PAN without IIN
   std::string encrypted_rest_;
+
+  // The billing address of the backing instrument.
   scoped_ptr<Address> billing_address_;
+
+  // The shipping address for the transaction.
   scoped_ptr<Address> shipping_address_;
+
   // Actions that must be completed by the user before a FullWallet can be
   // issued to them by the Online Wallet service.
   std::vector<RequiredAction> required_actions_;
+
   DISALLOW_COPY_AND_ASSIGN(FullWallet);
 };
 

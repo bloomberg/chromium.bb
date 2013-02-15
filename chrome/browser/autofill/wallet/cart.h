@@ -34,8 +34,10 @@ class Cart {
   // |total_price_| must be a formatted as a double with no more than two
   // decimals, e.g. 100.99
   std::string total_price_;
+
   // |currency_code_| must be one of the ISO 4217 currency codes, e.g. USD.
   std::string currency_code_;
+
   DISALLOW_COPY_AND_ASSIGN(Cart);
 };
 

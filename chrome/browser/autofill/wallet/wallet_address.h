@@ -23,7 +23,9 @@ namespace wallet {
 // code. See http://crbug.com/164463.
 
 // Address contains various address fields that have been populated from the
-// user's Online Wallet.
+// user's Online Wallet. It is loosely modeled as a subet of the OASIS
+// "extensible Address Language" (xAL); see
+// http://www.oasis-open.org/committees/ciq/download.shtml.
 class Address {
  public:
   Address();
@@ -110,15 +112,42 @@ class Address {
   bool operator!=(const Address& other) const;
 
  private:
+  // |country_name_code_| should be an ISO 3166-1-alpha-2 (two letter codes, as
+  // used in DNS). For example, "GB".
   std::string country_name_code_;
+
+  // The recipient's name. For example "John Doe".
   std::string recipient_name_;
+
+  // |address_line_1| and |address_line_2| correspond to the "AddressLine"
+  // elements in xAL, which are used to hold unstructured text.
   std::string address_line_1_;
   std::string address_line_2_;
+
+  // Locality.  This is something of a fuzzy term, but it generally refers to
+  // the city/town portion of an address.  In regions of the world where
+  // localities are not well defined or do not fit into this structure well
+  // (for example, Japan and China), leave locality_name empty and use
+  // |address_line_2|.
+  // Examples: US city, IT comune, UK post town.
   std::string locality_name_;
+
+  // Top-level administrative subdivision of this country.
+  // Examples: US state, IT region, UK constituent nation, JP prefecture.
   std::string administrative_area_name_;
+
+  // Despite the name, |postal_code_number_| values are frequently alphanumeric.
+  // Examples: "94043", "SW1W", "SW1W 9TQ".
   std::string postal_code_number_;
+
+  // A valid international phone number. If |phone_number_| is a user provided
+  // value, it should have been validated using libphonenumber by clients of
+  // this class before being set; see http://code.google.com/p/libphonenumber/.
   std::string phone_number_;
+
+  // Externalized Online Wallet id for this address.
   std::string object_id_;
+
   DISALLOW_COPY_AND_ASSIGN(Address);
 };
 

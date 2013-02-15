@@ -24,7 +24,6 @@ const char kMaskedInstrument[] =
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
-    "  \"brand\":\"brand\","
     "  \"billing_address\":"
     "  {"
     "    \"name\":\"name\","
@@ -51,7 +50,6 @@ const char kMaskedInstrumentMissingStatus[] =
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
-    "  \"brand\":\"brand\","
     "  \"billing_address\":"
     "  {"
     "    \"name\":\"name\","
@@ -76,7 +74,6 @@ const char kMaskedInstrumentMissingType[] =
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
-    "  \"brand\":\"brand\","
     "  \"billing_address\":"
     "  {"
     "    \"name\":\"name\","
@@ -102,7 +99,6 @@ const char kMaskedInstrumentMissingLastFourDigits[] =
     "  ],"
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
-    "  \"brand\":\"brand\","
     "  \"billing_address\":"
     "  {"
     "    \"name\":\"name\","
@@ -129,7 +125,6 @@ const char kMaskedInstrumentMissingAddress[] =
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
-    "  \"brand\":\"brand\","
     "  \"status\":\"VALID\","
     "  \"object_id\":\"object_id\""
     "}";
@@ -145,7 +140,6 @@ const char kMaskedInstrumentMalformedAddress[] =
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
-    "  \"brand\":\"brand\","
     "  \"billing_address\":"
     "  {"
     "    \"address1\":\"address1\","
@@ -170,7 +164,6 @@ const char kMaskedInstrumentMissingObjectId[] =
     "  \"last_four_digits\":\"last_four_digits\","
     "  \"expiration_month\":12,"
     "  \"expiration_year\":2012,"
-    "  \"brand\":\"brand\","
     "  \"billing_address\":"
     "  {"
     "    \"name\":\"name\","
@@ -243,7 +236,6 @@ const char kWalletItemsMissingGoogleTransactionId[] =
     "      \"last_four_digits\":\"last_four_digits\","
     "      \"expiration_month\":12,"
     "      \"expiration_year\":2012,"
-    "      \"brand\":\"brand\","
     "      \"billing_address\":"
     "      {"
     "        \"name\":\"name\","
@@ -306,7 +298,6 @@ const char kWalletItems[] =
     "      \"last_four_digits\":\"last_four_digits\","
     "      \"expiration_month\":12,"
     "      \"expiration_year\":2012,"
-    "      \"brand\":\"brand\","
     "      \"billing_address\":"
     "      {"
     "        \"name\":\"name\","
@@ -424,7 +415,6 @@ TEST_F(WalletItemsTest, CreateMaskedInstrument) {
       "last_four_digits",
       12,
       2012,
-      "brand",
       address.Pass(),
       WalletItems::MaskedInstrument::VALID,
       "object_id");
@@ -520,7 +510,6 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
                                         "last_four_digits",
                                         12,
                                         2012,
-                                        "brand",
                                         billing_address.Pass(),
                                         WalletItems::MaskedInstrument::VALID,
                                         "object_id"));
