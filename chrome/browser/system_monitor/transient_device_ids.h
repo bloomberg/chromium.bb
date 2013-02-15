@@ -29,6 +29,10 @@ class TransientDeviceIds {
   // be assigned.
   uint64 GetTransientIdForDeviceId(const std::string& device_id);
 
+  // Get the reverse mapping for a transient ID. Returns an empty string if the
+  // |transient_id| cannot be found.
+  const std::string DeviceIdFromTransientId(uint64 transient_id) const;
+
  private:
   typedef std::map<std::string, uint64> DeviceIdToTransientIdMap;
 

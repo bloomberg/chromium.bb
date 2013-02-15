@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
+#include "chrome/browser/system_monitor/removable_storage_notifications.h"
+#include "chrome/common/extensions/api/media_galleries_private.h"
 
 class Profile;
 
@@ -123,6 +125,25 @@ class MediaGalleriesPrivateRemoveAllGalleryWatchFunction
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
+};
+
+// Implements the chrome.mediaGalleriesPrivate.ejectDevice method.
+class MediaGalleriesPrivateEjectDeviceFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.ejectDevice",
+                             MEDIAGALLERIESPRIVATE_EJECTDEVICE);
+
+ protected:
+  virtual ~MediaGalleriesPrivateEjectDeviceFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Eject device request handler.
+  void HandleResponse(
+      chrome::RemovableStorageNotifications::EjectStatus status);
 };
 
 }  // namespace extensions

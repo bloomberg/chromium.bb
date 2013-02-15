@@ -18,6 +18,10 @@ class TestRemovableStorageNotifications
   TestRemovableStorageNotifications();
   virtual ~TestRemovableStorageNotifications();
 
+  // Will create a new testing implementation for browser tests,
+  // taking care to deal with the existing singleton correctly.
+  static TestRemovableStorageNotifications* CreateForBrowserTests();
+
   virtual bool GetDeviceInfoForPath(
       const base::FilePath& path,
       StorageInfo* device_info) const OVERRIDE;
@@ -41,6 +45,16 @@ class TestRemovableStorageNotifications
   void ProcessDetach(const std::string& id);
 
   virtual Receiver* receiver() const OVERRIDE;
+
+  virtual void EjectDevice(
+      const std::string& device_id,
+      base::Callback<void(RemovableStorageNotifications::EjectStatus)> callback)
+      OVERRIDE;
+
+  const std::string& ejected_device() const { return ejected_device_; }
+
+ private:
+  std::string ejected_device_;
 };
 
 }  // namespace test

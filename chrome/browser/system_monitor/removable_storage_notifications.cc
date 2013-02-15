@@ -91,6 +91,19 @@ uint64 RemovableStorageNotifications::GetTransientIdForDeviceId(
   return transient_device_ids_->GetTransientIdForDeviceId(device_id);
 }
 
+std::string RemovableStorageNotifications::GetDeviceIdForTransientId(
+    uint64 transient_id) const {
+  return transient_device_ids_->DeviceIdFromTransientId(transient_id);
+}
+
+void RemovableStorageNotifications::EjectDevice(
+    const std::string& device_id,
+    base::Callback<void(EjectStatus)> callback) {
+  // Platform-specific implementations will override this method to
+  // perform actual device ejection.
+  callback.Run(EJECT_FAILURE);
+}
+
 RemovableStorageNotifications::RemovableStorageNotifications()
     : observer_list_(new ObserverListThreadSafe<RemovableStorageObserver>()),
       transient_device_ids_(new TransientDeviceIds) {
@@ -101,7 +114,11 @@ RemovableStorageNotifications::RemovableStorageNotifications()
 }
 
 RemovableStorageNotifications::~RemovableStorageNotifications() {
-  DCHECK_EQ(this, g_removable_storage_notifications);
+  g_removable_storage_notifications = NULL;
+}
+
+// static
+void RemovableStorageNotifications::RemoveSingletonForTesting() {
   g_removable_storage_notifications = NULL;
 }
 

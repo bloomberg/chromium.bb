@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
-#include "chrome/common/extensions/api/media_galleries_private.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 
@@ -31,6 +30,8 @@ namespace RemoveGalleryWatch =
     extensions::api::media_galleries_private::RemoveGalleryWatch;
 namespace GetAllGalleryWatch =
     extensions::api::media_galleries_private::GetAllGalleryWatch;
+namespace EjectDevice =
+    extensions::api::media_galleries_private::EjectDevice;
 
 namespace {
 
@@ -291,6 +292,63 @@ bool MediaGalleriesPrivateRemoveAllGalleryWatchFunction::RunImpl() {
   state_tracker->RemoveAllGalleryWatchersForExtension(extension_id());
 #endif
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//              MediaGalleriesPrivateEjectDeviceFunction                     //
+///////////////////////////////////////////////////////////////////////////////
+
+MediaGalleriesPrivateEjectDeviceFunction::
+~MediaGalleriesPrivateEjectDeviceFunction() {
+}
+
+bool MediaGalleriesPrivateEjectDeviceFunction::RunImpl() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  scoped_ptr<EjectDevice::Params> params(EjectDevice::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  chrome::RemovableStorageNotifications* storage_notifications =
+      chrome::RemovableStorageNotifications::GetInstance();
+  std::string device_id_str =
+      storage_notifications->GetDeviceIdForTransientId(params->device_id);
+  if (device_id_str == "") {
+    HandleResponse(chrome::RemovableStorageNotifications::EJECT_NO_SUCH_DEVICE);
+    return true;
+  }
+
+  storage_notifications->EjectDevice(
+      device_id_str,
+      base::Bind(&MediaGalleriesPrivateEjectDeviceFunction::HandleResponse,
+                 base::Unretained(this)));
+
+  return true;
+}
+
+void MediaGalleriesPrivateEjectDeviceFunction::HandleResponse(
+    chrome::RemovableStorageNotifications::EjectStatus status) {
+
+  using extensions::api::media_galleries_private::
+      EJECT_DEVICE_RESULT_CODE_FAILURE;
+  using extensions::api::media_galleries_private::
+      EJECT_DEVICE_RESULT_CODE_IN_USE;
+  using extensions::api::media_galleries_private::
+      EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
+  using extensions::api::media_galleries_private::
+      EJECT_DEVICE_RESULT_CODE_SUCCESS;
+  using extensions::api::media_galleries_private::EjectDeviceResultCode;
+
+  EjectDeviceResultCode result = EJECT_DEVICE_RESULT_CODE_FAILURE;
+  if (status == chrome::RemovableStorageNotifications::EJECT_OK)
+    result = EJECT_DEVICE_RESULT_CODE_SUCCESS;
+  if (status == chrome::RemovableStorageNotifications::EJECT_IN_USE)
+    result = EJECT_DEVICE_RESULT_CODE_IN_USE;
+  if (status == chrome::RemovableStorageNotifications::EJECT_NO_SUCH_DEVICE)
+    result = EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
+
+  SetResult(base::StringValue::CreateStringValue(
+      api::media_galleries_private::ToString(result)));
+  SendResponse(true);
 }
 
 }  // namespace extensions

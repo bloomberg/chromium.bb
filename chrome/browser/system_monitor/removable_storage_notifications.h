@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_STORAGE_NOTIFICATIONS_H_
 #define CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_STORAGE_NOTIFICATIONS_H_
 
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/string16.h"
@@ -13,6 +14,7 @@
 class ChromeBrowserMainPartsLinux;
 class ChromeBrowserMainPartsMac;
 class MediaGalleriesPrivateApiTest;
+class MediaGalleriesPrivateEjectApiTest;
 
 namespace chrome {
 
@@ -51,6 +53,14 @@ class RemovableStorageNotifications {
     virtual void ProcessDetach(const std::string& id) = 0;
   };
 
+  // Status codes for the result of an EjectDevice() call.
+  enum EjectStatus {
+    EJECT_OK,
+    EJECT_IN_USE,
+    EJECT_NO_SUCH_DEVICE,
+    EJECT_FAILURE
+  };
+
   // Returns a pointer to an object owned by the BrowserMainParts, with lifetime
   // somewhat shorter than a process Singleton.
   static RemovableStorageNotifications* GetInstance();
@@ -86,16 +96,27 @@ class RemovableStorageNotifications {
   void RemoveObserver(RemovableStorageObserver* obs);
 
   uint64 GetTransientIdForDeviceId(const std::string& device_id);
+  std::string GetDeviceIdForTransientId(uint64 transient_id) const;
+
+  virtual void EjectDevice(
+      const std::string& device_id,
+      base::Callback<void(EjectStatus)> callback);
 
  protected:
   RemovableStorageNotifications();
   virtual ~RemovableStorageNotifications();
 
+  // Removes the existing singleton for testing.
+  // (So that a new one can be created.)
+  static void RemoveSingletonForTesting();
+
   // TODO(gbillock): Clean up ownerships and get rid of these friends.
   friend class ::ChromeBrowserMainPartsLinux;
   friend class ::ChromeBrowserMainPartsMac;
   friend class ::MediaGalleriesPrivateApiTest;
+  friend class ::MediaGalleriesPrivateEjectApiTest;
   friend class MediaFileSystemRegistryTest;
+  friend class TestRemovableStorageNotifications;
 
   virtual Receiver* receiver() const;
 

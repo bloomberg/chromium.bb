@@ -1,0 +1,13 @@
+{
+  "key": "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAMG39uDkFPedOCqcukEFRKMrE5HNmHZq1TXaLDekBXEZdnMVQRs/dDK5CUG+nSUru/Uu8vgCiFa24ZKNKXQWFigPaBhrInAbJrH9NiJMuItLh7YSR0Jmr72eP865f+a3qWPUVZW97bKFmbUEwBepXEQ1nDDdzBfc2fcHiMzLGaqjAgMBAAECgYEAt+n8DQ79iQhOpsYdXlWuEGt5LNfQg7xxp6r2h+zE7deKyT/IjCH2I6Hg0/YwI3YeAG0OZ7+fyRPfnM9AJ+JALShfL9ge9vegUXvVG22mYKGHEc4etdfujglD+K+L732h5WM5FDl9rNJEov82c9hGjtjpNrjIVdepL/YXy6ds7yECQQDvYUnNwFGoxDcDLeznLkWGzJK4txQuiVJbMOfN1Tf1MVtefyyAeDcvGm7GUph7wuj1ESZxxup1mqsAbmKoz5HHAkEAzysYcm755mXukz4tMHkUzp+S+k3B3gJq92kEO9ii+C5jhC20hgvQSvy5+alO3QuG/7t6MdRekARdCBM/j52gRQJBAN6x6oAwP4e66tbZXcCASowqOwD+yRa2B9jwOWZCyukfPro9o3/s1qHKfG2iH1tbq295wgMtI6e++QDQsJYNbLcCQGlw+cRkj3SgtMjkgIOHXPu9ZEVZhi7E9ERwguMi4++FTMldqd//60f/UXisn6MJ1vAaL5tlB6wtTFxrz5H9HDECQF0QkGJRW9Hi6brYOF+bIND3odcf78+rpfrPzTnAWhfkrDN5VbakqFWbhe61b7Qfn5HP9DZA6+bH6zGFistbmbs=",
+  "name": "media_galleries_private_api_eject",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Test for mediaGalleriesPrivate.eject function",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [ "mediaGalleriesPrivate" ]
+}

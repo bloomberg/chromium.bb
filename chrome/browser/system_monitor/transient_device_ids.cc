@@ -29,4 +29,14 @@ uint64 TransientDeviceIds::GetTransientIdForDeviceId(
   return id_map_[device_id];
 }
 
+const std::string TransientDeviceIds::DeviceIdFromTransientId(
+    uint64 transient_id) const {
+  for (DeviceIdToTransientIdMap::const_iterator iter = id_map_.begin();
+       iter != id_map_.end(); ++iter) {
+    if (iter->second == transient_id)
+      return iter->first;
+  }
+  return std::string();
+}
+
 }  // namespace chrome

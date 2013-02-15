@@ -12,6 +12,12 @@ TestRemovableStorageNotifications::TestRemovableStorageNotifications()
 
 TestRemovableStorageNotifications::~TestRemovableStorageNotifications() {}
 
+TestRemovableStorageNotifications*
+TestRemovableStorageNotifications::CreateForBrowserTests() {
+  RemovableStorageNotifications::RemoveSingletonForTesting();
+  return new TestRemovableStorageNotifications();
+}
+
 bool TestRemovableStorageNotifications::GetDeviceInfoForPath(
     const base::FilePath& path,
     StorageInfo* device_info) const {
@@ -46,6 +52,13 @@ void TestRemovableStorageNotifications::ProcessDetach(const std::string& id) {
 RemovableStorageNotifications::Receiver*
 TestRemovableStorageNotifications::receiver() const {
   return RemovableStorageNotifications::receiver();
+}
+
+void TestRemovableStorageNotifications::EjectDevice(
+    const std::string& device_id,
+    base::Callback<void(EjectStatus)> callback) {
+  ejected_device_ = device_id;
+  callback.Run(EJECT_OK);
 }
 
 }  // namespace test
