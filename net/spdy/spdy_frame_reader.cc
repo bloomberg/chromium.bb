@@ -75,24 +75,6 @@ bool SpdyFrameReader::ReadUInt31(uint32* result) {
   return success;
 }
 
-bool SpdyFrameReader::ReadUInt24(uint32* result) {
-  // Make sure that we have the whole uint24.
-  if (!CanRead(3)) {
-    OnFailure();
-    return false;
-  }
-
-  // Read into result.
-  *result = 0;
-  memcpy(reinterpret_cast<char*>(result) + 1, data_ + ofs_, 3);
-  *result = ntohl(*result);
-
-  // Iterate.
-  ofs_ += 3;
-
-  return true;
-}
-
 bool SpdyFrameReader::ReadStringPiece16(base::StringPiece* result) {
   // Read resultant length.
   uint16 result_len;
