@@ -21,6 +21,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/safe_shared_memory_pool.h"
 
 // TODO(epenner): Move thread priorities to base. (crbug.com/170549)
 #include <sys/resource.h>
@@ -77,29 +78,6 @@ void DoFullTexSubImage2D(const AsyncTexImage2DParams& tex_params, void* data) {
       tex_params.format, tex_params.type, data);
 }
 
-
-// We duplicate shared memory to avoid use-after-free issues. This could also
-// be solved by ref-counting something, or with a destruction callback. There
-// wasn't an obvious hook or ref-counted container, so for now we dup/mmap.
-SharedMemory* DuplicateSharedMemory(SharedMemory* shared_memory, uint32 size) {
-  // Duplicate the handle.
-  SharedMemoryHandle duped_shared_memory_handle;
-  if (!shared_memory->ShareToProcess(
-      base::GetCurrentProcessHandle(),
-      &duped_shared_memory_handle)) {
-    CHECK(false); // Diagnosing a crash.
-    return NULL;
-  }
-  scoped_ptr<SharedMemory> duped_shared_memory(
-      new SharedMemory(duped_shared_memory_handle, false));
-  // Map the shared memory into this process. This validates the size.
-  if (!duped_shared_memory->Map(size)) {
-    CHECK(false); // Diagnosing a crash.
-    return NULL;
-  }
-  return duped_shared_memory.release();
-}
-
 // Gets the address of the data from shared memory.
 void* GetAddress(SharedMemory* shared_memory, uint32 shm_data_offset) {
   // Memory bounds have already been validated, so there
@@ -140,9 +118,15 @@ class TransferThread : public base::Thread {
     context_ = NULL;
   }
 
+  SafeSharedMemoryPool* safe_shared_memory_pool() {
+      return &safe_shared_memory_pool_;
+  }
+
  private:
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
+
+  SafeSharedMemoryPool safe_shared_memory_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(TransferThread);
 };
@@ -153,6 +137,11 @@ base::LazyInstance<TransferThread>
 base::MessageLoopProxy* transfer_message_loop_proxy() {
   return g_transfer_thread.Pointer()->message_loop_proxy();
 }
+
+SafeSharedMemoryPool* safe_shared_memory_pool() {
+  return g_transfer_thread.Pointer()->safe_shared_memory_pool();
+}
+
 
 } // namespace
 
@@ -352,13 +341,13 @@ class AsyncPixelTransferDelegateAndroid
   static void PerformAsyncTexImage2D(
       TransferStateInternal* state,
       AsyncTexImage2DParams tex_params,
-      base::SharedMemory* shared_memory,
-      uint32 shared_memory_data_offset);
+      AsyncMemoryParams mem_params,
+      ScopedSafeSharedMemory* safe_shared_memory);
   static void PerformAsyncTexSubImage2D(
       TransferStateInternal* state,
       AsyncTexSubImage2DParams tex_params,
-      base::SharedMemory* shared_memory,
-      uint32 shared_memory_data_offset);
+      AsyncMemoryParams mem_params,
+      ScopedSafeSharedMemory* safe_shared_memory);
 
   // Returns true if a work-around was used.
   bool WorkAroundAsyncTexImage2D(
@@ -479,9 +468,10 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(
           &AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D,
           base::Unretained(state.get()),  // This is referenced in reply below.
           tex_params,
-          base::Owned(DuplicateSharedMemory(mem_params.shared_memory,
-                                            mem_params.shm_size)),
-          mem_params.shm_data_offset),
+          mem_params,
+          base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
+                                                 mem_params.shared_memory,
+                                                 mem_params.shm_size))),
       base::Bind(
           &AsyncPixelTransferDelegateAndroid::AsyncTexImage2DCompleted,
           AsWeakPtr(),
@@ -524,9 +514,10 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
           &AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D,
           base::Unretained(state.get()),  // This is referenced in reply below.
           tex_params,
-          base::Owned(DuplicateSharedMemory(mem_params.shared_memory,
-                                            mem_params.shm_size)),
-          mem_params.shm_data_offset),
+          mem_params,
+          base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
+                                                 mem_params.shared_memory,
+                                                 mem_params.shm_size))),
       base::Bind(
           &AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2DCompleted,
           AsWeakPtr(),
@@ -570,8 +561,8 @@ void SetGlParametersForEglImageTexture() {
 void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
     TransferStateInternal* state,
     AsyncTexImage2DParams tex_params,
-    base::SharedMemory* shared_memory,
-    uint32 shared_memory_data_offset) {
+    AsyncMemoryParams mem_params,
+    ScopedSafeSharedMemory* safe_shared_memory) {
   TRACE_EVENT2("gpu", "PerformAsyncTexImage",
                "width", tex_params.width,
                "height", tex_params.height);
@@ -580,7 +571,8 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
   DCHECK_EQ(0, tex_params.level);
   DCHECK_EQ(EGL_NO_IMAGE_KHR, state->egl_image_);
 
-  void* data = GetAddress(shared_memory, shared_memory_data_offset);
+  void* data = GetAddress(safe_shared_memory->shared_memory(),
+                          mem_params.shm_data_offset);
   {
     TRACE_EVENT0("gpu", "glTexImage2D no data");
     glGenTextures(1, &state->thread_texture_id_);
@@ -616,8 +608,8 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
 void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
     TransferStateInternal* state,
     AsyncTexSubImage2DParams tex_params,
-    base::SharedMemory* shared_memory,
-    uint32 shared_memory_data_offset) {
+    AsyncMemoryParams mem_params,
+    ScopedSafeSharedMemory* safe_shared_memory) {
   TRACE_EVENT2("gpu", "PerformAsyncTexSubImage2D",
                "width", tex_params.width,
                "height", tex_params.height);
@@ -626,7 +618,8 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
   DCHECK_NE(EGL_NO_IMAGE_KHR, state->egl_image_);
   DCHECK_EQ(0, tex_params.level);
 
-  void* data = GetAddress(shared_memory, shared_memory_data_offset);
+  void* data = GetAddress(safe_shared_memory->shared_memory(),
+                          mem_params.shm_data_offset);
 
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   if (!state->thread_texture_id_) {
@@ -692,7 +685,8 @@ bool AsyncPixelTransferDelegateAndroid::WorkAroundAsyncTexImage2D(
   // On imagination we allocate synchronously all the time, even
   // if the dimensions support fast uploads. This is for part a.)
   // above, so allocations occur on a different thread/context as uploads.
-  void* data = GetAddress(mem_params.shared_memory, mem_params.shm_data_offset);
+  void* data = GetAddress(mem_params.shared_memory,
+                          mem_params.shm_data_offset);
   SetGlParametersForEglImageTexture();
 
   {

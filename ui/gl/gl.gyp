@@ -97,6 +97,8 @@
         'gl_switches.h',
         'gpu_switching_manager.cc',
         'gpu_switching_manager.h',
+        'safe_shared_memory_pool.h',
+        'safe_shared_memory_pool.cc',
         'scoped_make_current.cc',
         'scoped_make_current.h',
         'gl_state_restorer.cc',
