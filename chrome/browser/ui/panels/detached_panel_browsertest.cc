@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   EXPECT_FALSE(panel_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel_testing->IsButtonVisible(panel::RESTORE_BUTTON));
 
-  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
+  EXPECT_EQ(panel::RESIZABLE_ALL, panel->CanResizeByMouse());
 
   EXPECT_EQ(panel::ALL_ROUNDED, panel_testing->GetWindowCornerStyle());
 

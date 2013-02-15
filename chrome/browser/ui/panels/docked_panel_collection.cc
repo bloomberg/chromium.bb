@@ -240,7 +240,7 @@ void DockedPanelCollection::DiscardSavedPanelPlacement() {
 panel::Resizability DockedPanelCollection::GetPanelResizability(
     const Panel* panel) const {
   return (panel->expansion_state() == Panel::EXPANDED) ?
-      panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM : panel::NOT_RESIZABLE;
+      panel::RESIZABLE_EXCEPT_BOTTOM : panel::NOT_RESIZABLE;
 }
 
 void DockedPanelCollection::OnPanelResizedByMouse(Panel* panel,

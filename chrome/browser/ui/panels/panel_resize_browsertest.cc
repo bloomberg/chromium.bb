@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
+#include "chrome/browser/ui/panels/stacked_panel_collection.h"
 
 class PanelResizeBrowserTest : public BasePanelBrowserTest {
  public:
@@ -26,6 +27,49 @@ class PanelResizeBrowserTest : public BasePanelBrowserTest {
     DCHECK(primary_screen_area.width() == 800);
     DCHECK(primary_screen_area.height() == 600);
   }
+
+  void ResizePanel(Panel* panel,
+                   panel::ResizingSides sides,
+                   const gfx::Vector2d& delta) {
+    PanelManager* panel_manager = PanelManager::GetInstance();
+    gfx::Rect bounds = panel->GetBounds();
+    gfx::Point mouse_location;
+    switch (sides) {
+      case panel::RESIZE_TOP_LEFT:
+        mouse_location = bounds.origin();
+        break;
+      case panel::RESIZE_TOP:
+        mouse_location.SetPoint(bounds.x() + bounds.width() / 2, bounds.y());
+        break;
+      case panel::RESIZE_TOP_RIGHT:
+        mouse_location.SetPoint(bounds.right(), bounds.y());
+        break;
+      case panel::RESIZE_LEFT:
+        mouse_location.SetPoint(bounds.x(), bounds.y() + bounds.height() / 2);
+        break;
+      case panel::RESIZE_RIGHT:
+        mouse_location.SetPoint(bounds.right(),
+                                bounds.y() + bounds.height() / 2);
+        break;
+      case panel::RESIZE_BOTTOM_LEFT:
+        mouse_location.SetPoint(bounds.x(), bounds.bottom());
+        break;
+      case panel::RESIZE_BOTTOM:
+        mouse_location.SetPoint(bounds.x() + bounds.width() / 2,
+                                bounds.bottom());
+        break;
+      case panel::RESIZE_BOTTOM_RIGHT:
+        mouse_location.SetPoint(bounds.right(), bounds.bottom());
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+    panel_manager->StartResizingByMouse(panel, mouse_location, sides);
+    mouse_location += delta;
+    panel_manager->ResizeByMouse(mouse_location);
+    panel_manager->EndResizingByMouse(false);
+  }
 };
 
 // http://crbug.com/175760; several panel tests failing regularly on mac.
@@ -38,8 +82,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_DockedPanelResizability) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanel("Panel");
 
-  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM,
-            panel->CanResizeByMouse());
+  EXPECT_EQ(panel::RESIZABLE_EXCEPT_BOTTOM, panel->CanResizeByMouse());
 
   gfx::Rect bounds = panel->GetBounds();
 
@@ -163,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeDetachedPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
 
-  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
+  EXPECT_EQ(panel::RESIZABLE_ALL, panel->CanResizeByMouse());
 
   gfx::Rect bounds = panel->GetBounds();
 
@@ -238,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest,
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
 
-  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
+  EXPECT_EQ(panel::RESIZABLE_ALL, panel->CanResizeByMouse());
 
   gfx::Rect bounds = panel->GetBounds();
 
@@ -360,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeAndCancel) {
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
   PanelResizeController* resize_controller = panel_manager->resize_controller();
 
-  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
+  EXPECT_EQ(panel::RESIZABLE_ALL, panel->CanResizeByMouse());
 
   gfx::Rect original_bounds = panel->GetBounds();
 
@@ -449,3 +492,128 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, MAYBE_ResizeDetachedPanelToTop) {
 
   panel_manager->CloseAll();
 }
+
+// TODO(jianli): to be enabled for other platforms when stacked panels are
+// supported.
+#if defined(OS_WIN)
+
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeStackedPanels) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create 3 stacked panels.
+  StackedPanelCollection* stack = panel_manager->CreateStack();
+  gfx::Rect panel1_initial_bounds = gfx::Rect(100, 50, 200, 150);
+  Panel* panel1 = CreateStackedPanel("1", panel1_initial_bounds, stack);
+  gfx::Rect panel2_initial_bounds = gfx::Rect(0, 0, 150, 100);
+  Panel* panel2 = CreateStackedPanel("2", panel2_initial_bounds, stack);
+  gfx::Rect panel3_initial_bounds = gfx::Rect(0, 0, 120, 110);
+  Panel* panel3 = CreateStackedPanel("3", panel3_initial_bounds, stack);
+  ASSERT_EQ(3, panel_manager->num_panels());
+  ASSERT_EQ(1, panel_manager->num_stacks());
+  ASSERT_EQ(3, stack->num_panels());
+
+  gfx::Rect panel1_expected_bounds(panel1_initial_bounds);
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  gfx::Rect panel2_expected_bounds(panel1_expected_bounds.x(),
+                                   panel1_expected_bounds.bottom(),
+                                   panel1_expected_bounds.width(),
+                                   panel2_initial_bounds.height());
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+  gfx::Rect panel3_expected_bounds(panel2_expected_bounds.x(),
+                                   panel2_expected_bounds.bottom(),
+                                   panel2_expected_bounds.width(),
+                                   panel3_initial_bounds.height());
+  EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
+
+  // Resize by the top-left corner of the top panel.
+  // Expect that the width of all stacked panels get increased by the same
+  // amount and the top panel also expands in height.
+  int top_resize_width = 15;
+  int top_resize_height = 10;
+  ResizePanel(panel1,
+              panel::RESIZE_TOP_LEFT,
+              gfx::Vector2d(-top_resize_width, -top_resize_height));
+  panel1_expected_bounds.SetRect(
+      panel1_expected_bounds.x() - top_resize_width,
+      panel1_expected_bounds.y() - top_resize_height,
+      panel1_expected_bounds.width() + top_resize_width,
+      panel1_expected_bounds.height() + top_resize_height);
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  panel2_expected_bounds.set_x(panel2_expected_bounds.x() - top_resize_width);
+  panel2_expected_bounds.set_width(
+      panel2_expected_bounds.width() + top_resize_width);
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+  panel3_expected_bounds.set_x(panel3_expected_bounds.x() - top_resize_width);
+  panel3_expected_bounds.set_width(
+      panel3_expected_bounds.width() + top_resize_width);
+  EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
+
+  // Resize by the bottom-right corner of the bottom panel.
+  // Expect that the width of all stacked panels get increased by the same
+  // amount and the bottom panel also shrinks in height.
+  int bottom_resize_width = 12;
+  int bottom_resize_height = 8;
+  ResizePanel(panel3,
+              panel::RESIZE_BOTTOM_RIGHT,
+              gfx::Vector2d(-bottom_resize_width, -bottom_resize_height));
+  panel1_expected_bounds.set_width(
+      panel1_expected_bounds.width() - bottom_resize_width);
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  panel2_expected_bounds.set_width(
+      panel2_expected_bounds.width() - bottom_resize_width);
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+  panel3_expected_bounds.set_width(
+      panel3_expected_bounds.width() - bottom_resize_width);
+  panel3_expected_bounds.set_height(
+      panel3_expected_bounds.height() - bottom_resize_height);
+  EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
+
+  // Resize by the bottom edge of the middle panel.
+  // Expect that the height of the middle panel increases and the height of
+  // the bottom panel decreases by the same amount.
+  int middle_resize_height = 5;
+  ResizePanel(panel2,
+              panel::RESIZE_BOTTOM,
+              gfx::Vector2d(0, middle_resize_height));
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  panel2_expected_bounds.set_height(
+      panel2_expected_bounds.height() + middle_resize_height);
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+  panel3_expected_bounds.set_y(
+      panel3_expected_bounds.y() + middle_resize_height);
+  panel3_expected_bounds.set_height(
+      panel3_expected_bounds.height() - middle_resize_height);
+  EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
+
+  // Collapse the middle panel.
+  panel2->Minimize();
+  WaitForBoundsAnimationFinished(panel2);
+  EXPECT_TRUE(panel2->IsMinimized());
+
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  panel2_expected_bounds.set_height(panel2->TitleOnlyHeight());
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+  panel3_expected_bounds.set_y(panel2_expected_bounds.bottom());
+  EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
+
+  // Resize by the bottom edge of the top panel.
+  // Expect that the height of the top panel increases and the height of
+  // the middle panel is not affected because it is collapsed.
+  top_resize_height = 18;
+  ResizePanel(panel1,
+              panel::RESIZE_BOTTOM,
+              gfx::Vector2d(0, top_resize_height));
+  panel1_expected_bounds.set_height(
+      panel1_expected_bounds.height() + top_resize_height);
+  EXPECT_EQ(panel1_expected_bounds, panel1->GetBounds());
+  panel2_expected_bounds.set_y(
+      panel2_expected_bounds.y() + top_resize_height);
+  EXPECT_EQ(panel2_expected_bounds, panel2->GetBounds());
+  panel3_expected_bounds.set_y(
+      panel3_expected_bounds.y() + top_resize_height);
+  EXPECT_EQ(panel3_expected_bounds, panel3->GetBounds());
+
+  panel_manager->CloseAll();
+}
+
+#endif

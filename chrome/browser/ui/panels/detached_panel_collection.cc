@@ -201,7 +201,7 @@ void DetachedPanelCollection::DiscardSavedPanelPlacement() {
 
 panel::Resizability DetachedPanelCollection::GetPanelResizability(
     const Panel* panel) const {
-  return panel::RESIZABLE_ALL_SIDES;
+  return panel::RESIZABLE_ALL;
 }
 
 void DetachedPanelCollection::OnPanelResizedByMouse(Panel* panel,

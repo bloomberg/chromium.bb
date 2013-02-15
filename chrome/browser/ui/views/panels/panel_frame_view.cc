@@ -209,6 +209,44 @@ const gfx::ImageSkia* GetMinimizeBackgroundDefaultImage() {
   return image;
 }
 
+int GetFrameEdgeHitTest(const gfx::Point& point,
+                        const gfx::Size& frame_size,
+                        int resize_area_size,
+                        panel::Resizability resizability) {
+  int x = point.x();
+  int y = point.y();
+  int width = frame_size.width();
+  int height = frame_size.height();
+  if (x < resize_area_size) {
+    if (y < resize_area_size && (resizability & panel::RESIZABLE_TOP_LEFT)) {
+      return HTTOPLEFT;
+    } else if (y >= height - resize_area_size &&
+              (resizability & panel::RESIZABLE_BOTTOM_LEFT)) {
+      return HTBOTTOMLEFT;
+    } else if (resizability & panel::RESIZABLE_LEFT) {
+      return HTLEFT;
+    }
+  } else if (x >= width - resize_area_size) {
+    if (y < resize_area_size && (resizability & panel::RESIZABLE_TOP_RIGHT)) {
+      return HTTOPRIGHT;
+    } else if (y >= height - resize_area_size &&
+              (resizability & panel::RESIZABLE_BOTTOM_RIGHT)) {
+      return HTBOTTOMRIGHT;
+    } else if (resizability & panel::RESIZABLE_RIGHT) {
+      return HTRIGHT;
+    }
+  }
+
+  if (y < resize_area_size && (resizability & panel::RESIZABLE_TOP)) {
+    return HTTOP;
+  } else if (y >= height - resize_area_size &&
+            (resizability & panel::RESIZABLE_BOTTOM)) {
+    return HTBOTTOM;
+  }
+
+  return HTNOWHERE;
+}
+
 }  // namespace
 
 const char PanelFrameView::kViewClassName[] =
@@ -371,21 +409,8 @@ int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // Check the frame first, as we allow a small area overlapping the contents
   // to be used for resize handles.
-  int frame_component = GetHTComponentForFrame(
-      point,
-      PanelView::kResizeInsideBoundsSize,
-      PanelView::kResizeInsideBoundsSize,
-      kResizeAreaCornerSize,
-      kResizeAreaCornerSize,
-      resizability != panel::NOT_RESIZABLE);
-
-  // The bottom edge and corners cannot be used to resize in some scenarios,
-  // i.e docked panels.
-  if (resizability == panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM &&
-      (frame_component == HTBOTTOM ||
-       frame_component == HTBOTTOMLEFT ||
-       frame_component == HTBOTTOMRIGHT))
-    frame_component = HTNOWHERE;
+  int frame_component = GetFrameEdgeHitTest(
+      point, size(), PanelView::kResizeInsideBoundsSize, resizability);
 
   if (frame_component != HTNOWHERE)
     return frame_component;
@@ -475,8 +500,9 @@ std::string PanelFrameView::GetClassName() const {
 }
 
 gfx::Size PanelFrameView::GetMinimumSize() {
-  // This makes the panel be able to shrink to very small, like minimized panel.
-  return gfx::Size();
+  // Only if the panel is minimized, it could be shruk to very small.
+  return panel_view_->panel()->IsMinimized() ? gfx::Size() :
+      panel_view_->panel()->min_size();
 }
 
 gfx::Size PanelFrameView::GetMaximumSize() {

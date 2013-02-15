@@ -66,8 +66,12 @@ void StackedPanelCollection::RefreshLayout() {
     y += bounds.height();
   }
 
+  UpdateNativeStackBounds();
+}
+
+void StackedPanelCollection::UpdateNativeStackBounds() {
   // Compute and apply the enclosing bounds.
-  gfx::Rect enclosing_bounds = top_panel->GetBounds();
+  gfx::Rect enclosing_bounds = top_panel()->GetBounds();
   enclosing_bounds.set_height(
       bottom_panel()->GetBounds().bottom() - enclosing_bounds.y());
   native_stack_->SetBounds(enclosing_bounds);
@@ -314,12 +318,81 @@ void StackedPanelCollection::DiscardSavedPanelPlacement() {
 
 panel::Resizability StackedPanelCollection::GetPanelResizability(
     const Panel* panel) const {
-  return (panel->expansion_state() == Panel::EXPANDED) ?
-      panel::RESIZABLE_ALL_SIDES : panel::NOT_RESIZABLE;
+  // The panel in the stack can be resized by the following rules:
+  // * If collapsed, it can only be resized by its left or right edge.
+  // * Otherwise, it can be resized by its left or right edge plus:
+  //   % top edge and corners, if it is at the top;
+  //   % bottom edge, if it is not at the bottom.
+  //   % bottom edge and corners, if it is at the bottom.
+  panel::Resizability resizability = static_cast<panel::Resizability>(
+      panel::RESIZABLE_LEFT | panel::RESIZABLE_RIGHT);
+  if (panel->IsMinimized())
+    return resizability;
+  if (panel == top_panel()) {
+    resizability = static_cast<panel::Resizability>(resizability |
+        panel::RESIZABLE_TOP | panel::RESIZABLE_TOP_LEFT |
+        panel::RESIZABLE_TOP_RIGHT);
+  }
+  if (panel == bottom_panel()) {
+    resizability = static_cast<panel::Resizability>(resizability |
+        panel::RESIZABLE_BOTTOM | panel::RESIZABLE_BOTTOM_LEFT |
+        panel::RESIZABLE_BOTTOM_RIGHT);
+  } else {
+    resizability = static_cast<panel::Resizability>(resizability |
+        panel::RESIZABLE_BOTTOM);
+  }
+  return resizability;
 }
 
 void StackedPanelCollection::OnPanelResizedByMouse(
-    Panel* panel, const gfx::Rect& new_bounds) {
+    Panel* resized_panel, const gfx::Rect& new_bounds) {
+  resized_panel->SetPanelBoundsInstantly(new_bounds);
+
+  // The delta x and width can be computed from the difference between
+  // the panel being resized and any other panel.
+  Panel* other_panel = resized_panel == top_panel() ? bottom_panel()
+                                                    : top_panel();
+  gfx::Rect other_bounds = other_panel->GetBounds();
+  int delta_x = new_bounds.x() - other_bounds.x();
+  int delta_width = new_bounds.width() - other_bounds.width();
+
+  gfx::Rect previous_bounds;
+  bool resized_panel_found = false;
+  bool panel_below_resized_panel_updated = false;
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); iter++) {
+    Panel* panel = *iter;
+    gfx::Rect bounds = panel->GetBounds();
+    if (panel == resized_panel) {
+      previous_bounds = bounds;
+      resized_panel_found = true;
+      continue;
+    }
+
+    bounds.set_x(bounds.x() + delta_x);
+    bounds.set_width(bounds.width() + delta_width);
+
+    // If the panel below the panel being resized is expanded, update its
+    // height to offset the height change of the panel being resized.
+    // For example, the stack has P1 and P2 (from top to bottom). P1's height
+    // is 100 and P2's height is 120. If P1's bottom increases by 10, P2's
+    // height needs to shrink by 10.
+    if (resized_panel_found) {
+      if (!panel_below_resized_panel_updated && !panel->IsMinimized()) {
+        int old_bottom = bounds.bottom();
+        bounds.set_y(previous_bounds.bottom());
+        bounds.set_height(old_bottom - bounds.y());
+      } else {
+        bounds.set_y(previous_bounds.bottom());
+      }
+      panel_below_resized_panel_updated = true;
+    }
+
+    panel->SetPanelBoundsInstantly(bounds);
+    previous_bounds = bounds;
+  }
+
+  UpdateNativeStackBounds();
 }
 
 bool StackedPanelCollection::HasPanel(Panel* panel) const {

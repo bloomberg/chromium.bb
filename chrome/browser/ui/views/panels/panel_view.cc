@@ -241,6 +241,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
       web_view_(NULL),
       always_on_top_(true),
       focused_(false),
+      user_resizing_(false),
       mouse_pressed_(false),
       mouse_dragging_state_(NO_DRAGGING),
       is_drawing_attention_(false),
@@ -699,10 +700,12 @@ void PanelView::DeleteDelegate() {
 }
 
 void PanelView::OnWindowBeginUserBoundsChange() {
+  user_resizing_ = true;
   panel_->OnPanelStartUserResizing();
 }
 
 void PanelView::OnWindowEndUserBoundsChange() {
+  user_resizing_ = false;
   panel_->OnPanelEndUserResizing();
 
   // No need to proceed with post-resizing update when there is no size change.
@@ -807,6 +810,12 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
   }
 
   panel()->OnActiveStateChanged(focused);
+}
+
+void PanelView::OnWidgetBoundsChanged(views::Widget* widget,
+                                      const gfx::Rect& new_bounds) {
+  if (user_resizing_)
+    panel()->collection()->OnPanelResizedByMouse(panel(), new_bounds);
 }
 
 bool PanelView::OnTitlebarMousePressed(const gfx::Point& mouse_location) {

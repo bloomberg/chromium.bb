@@ -463,60 +463,49 @@ bool PanelGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) const {
   if (panel::NOT_RESIZABLE == resizability)
     return false;
 
+  int width = bounds_.width();
+  int height = bounds_.height();
   if (x < kFrameBorderThickness) {
-    // Left edge.
-    if (y < kResizeAreaCornerSize - kTopResizeAdjust) {
+    if (y < kResizeAreaCornerSize - kTopResizeAdjust &&
+        (resizability & panel::RESIZABLE_TOP_LEFT)) {
       *edge = GDK_WINDOW_EDGE_NORTH_WEST;
-    } else if (y < bounds_.height() - kResizeAreaCornerSize) {
-      *edge = GDK_WINDOW_EDGE_WEST;
-    } else {
+      return true;
+    } else if (y >= height - kResizeAreaCornerSize &&
+              (resizability & panel::RESIZABLE_BOTTOM_LEFT)) {
       *edge = GDK_WINDOW_EDGE_SOUTH_WEST;
+      return true;
     }
-  } else if (x < bounds_.width() - kFrameBorderThickness) {
-    if (y < kFrameBorderThickness - kTopResizeAdjust) {
-      // Top edge.
-      if (x < kResizeAreaCornerSize) {
-        *edge = GDK_WINDOW_EDGE_NORTH_WEST;
-      } else if (x < bounds_.width() - kResizeAreaCornerSize) {
-        *edge = GDK_WINDOW_EDGE_NORTH;
-      } else {
-        *edge = GDK_WINDOW_EDGE_NORTH_EAST;
-      }
-    } else if (y < bounds_.height() - kFrameBorderThickness) {
-      // Ignore the middle content area.
-      return false;
-    } else {
-      // Bottom edge.
-      if (x < kResizeAreaCornerSize) {
-        *edge = GDK_WINDOW_EDGE_SOUTH_WEST;
-      } else if (x < bounds_.width() - kResizeAreaCornerSize) {
-        *edge = GDK_WINDOW_EDGE_SOUTH;
-      } else {
-        *edge = GDK_WINDOW_EDGE_SOUTH_EAST;
-      }
-    }
-  } else {
-    // Right edge.
-    if (y < kResizeAreaCornerSize - kTopResizeAdjust) {
+  } else if (x >= width - kFrameBorderThickness) {
+    if (y < kResizeAreaCornerSize - kTopResizeAdjust &&
+        (resizability & panel::RESIZABLE_TOP_RIGHT)) {
       *edge = GDK_WINDOW_EDGE_NORTH_EAST;
-    } else if (y < bounds_.height() - kResizeAreaCornerSize) {
-      *edge = GDK_WINDOW_EDGE_EAST;
-    } else {
+      return true;
+    } else if (y >= height - kResizeAreaCornerSize &&
+              (resizability & panel::RESIZABLE_BOTTOM_RIGHT)) {
       *edge = GDK_WINDOW_EDGE_SOUTH_EAST;
+      return true;
     }
   }
 
-  // Special handling if bottom edge is not resizable.
-  if (panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM == resizability) {
-    if (*edge == GDK_WINDOW_EDGE_SOUTH)
-      return FALSE;
-    if (*edge == GDK_WINDOW_EDGE_SOUTH_WEST)
-      *edge = GDK_WINDOW_EDGE_WEST;
-    else if (*edge == GDK_WINDOW_EDGE_SOUTH_EAST)
-      *edge = GDK_WINDOW_EDGE_EAST;
+  if (x < kFrameBorderThickness && (resizability & panel::RESIZABLE_LEFT)) {
+    *edge = GDK_WINDOW_EDGE_WEST;
+    return true;
+  } else if (x >= width - kFrameBorderThickness &&
+            (resizability & panel::RESIZABLE_RIGHT)) {
+    *edge = GDK_WINDOW_EDGE_EAST;
+    return true;
   }
 
-  return true;
+  if (y < kFrameBorderThickness && (resizability & panel::RESIZABLE_TOP)) {
+    *edge = GDK_WINDOW_EDGE_NORTH;
+    return true;
+  } else if (y >= height - kFrameBorderThickness &&
+            (resizability & panel::RESIZABLE_BOTTOM)) {
+    *edge = GDK_WINDOW_EDGE_SOUTH;
+    return true;
+  }
+
+  return false;
 }
 
 gfx::Image PanelGtk::GetFrameBackground() const {

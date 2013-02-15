@@ -103,6 +103,8 @@ class StackedPanelCollection : public PanelCollection {
 
   void UpdatePanelCornerStyle(Panel* panel);
 
+  void UpdateNativeStackBounds();
+
   PanelManager* panel_manager_;
 
   NativePanelStack* native_stack_;  // Weak, owns us.

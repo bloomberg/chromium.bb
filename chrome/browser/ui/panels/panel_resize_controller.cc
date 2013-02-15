@@ -48,9 +48,38 @@ void PanelResizeController::StartResizing(Panel* panel,
 
   panel::Resizability resizability = panel->CanResizeByMouse();
   DCHECK_NE(panel::NOT_RESIZABLE, resizability);
-  if (panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM == resizability &&
-      ResizingBottom(sides)) {
-    DLOG(WARNING) << "Resizing from bottom not allowed. Is this a test?";
+  panel::Resizability resizability_to_test;
+  switch (sides) {
+    case panel::RESIZE_TOP_LEFT:
+      resizability_to_test = panel::RESIZABLE_TOP_LEFT;
+      break;
+    case panel::RESIZE_TOP:
+      resizability_to_test = panel::RESIZABLE_TOP;
+      break;
+    case panel::RESIZE_TOP_RIGHT:
+      resizability_to_test = panel::RESIZABLE_TOP_RIGHT;
+      break;
+    case panel::RESIZE_LEFT:
+      resizability_to_test = panel::RESIZABLE_LEFT;
+      break;
+    case panel::RESIZE_RIGHT:
+      resizability_to_test = panel::RESIZABLE_RIGHT;
+      break;
+    case panel::RESIZE_BOTTOM_LEFT:
+      resizability_to_test = panel::RESIZABLE_BOTTOM_LEFT;
+      break;
+    case panel::RESIZE_BOTTOM:
+      resizability_to_test = panel::RESIZABLE_BOTTOM;
+      break;
+    case panel::RESIZE_BOTTOM_RIGHT:
+      resizability_to_test = panel::RESIZABLE_BOTTOM_RIGHT;
+      break;
+    default:
+      resizability_to_test = panel::NOT_RESIZABLE;
+      break;
+  }
+  if ((resizability & resizability_to_test) == 0) {
+    DLOG(WARNING) << "Resizing not allowed. Is this a test?";
     return;
   }
 
@@ -75,7 +104,6 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
                      mouse_location.x() - mouse_location_at_start_.x(), 0));
   }
   if (ResizingBottom(sides_resized_)) {
-    DCHECK_EQ(panel::RESIZABLE_ALL_SIDES, resizability);
     bounds.set_height(std::max(bounds_at_start_.height() +
                       mouse_location.y() - mouse_location_at_start_.y(), 0));
   }

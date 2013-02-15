@@ -303,8 +303,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   EXPECT_TRUE(panel2_testing->IsButtonVisible(panel::RESTORE_BUTTON));
   EXPECT_TRUE(panel3_testing->IsButtonVisible(panel::RESTORE_BUTTON));
 
-  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM,
-            panel1->CanResizeByMouse());
+  // Expanded panel cannot be resized at the bottom.
+  EXPECT_EQ(panel::RESIZABLE_EXCEPT_BOTTOM, panel1->CanResizeByMouse());
   EXPECT_EQ(panel::NOT_RESIZABLE, panel2->CanResizeByMouse());
   EXPECT_EQ(panel::NOT_RESIZABLE, panel3->CanResizeByMouse());
 

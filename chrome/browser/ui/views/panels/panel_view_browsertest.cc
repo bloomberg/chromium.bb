@@ -140,12 +140,14 @@ IN_PROC_BROWSER_TEST_F(PanelViewTest, CheckTitleOnlyHeight) {
   Panel* panel = CreatePanelWithBounds("PanelTest", bounds);
 
   // Change panel to title-only and check its height.
-  bounds.set_height(panel->TitleOnlyHeight());
-  panel->SetPanelBoundsInstantly(bounds);
+  panel->SetExpansionState(Panel::TITLE_ONLY);
+  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(panel->TitleOnlyHeight(), panel->GetBounds().height());
   EXPECT_EQ(0, GetPanelView(panel)->height()); // client area height.
+#if defined(OS_WIN) && !defined(USE_AURA)
   EXPECT_EQ(panel->TitleOnlyHeight(),
             GetPanelView(panel)->GetFrameView()->height());
+#endif
 
   panel->Close();
 }
@@ -159,8 +161,10 @@ IN_PROC_BROWSER_TEST_F(PanelViewTest, CheckMinimizedHeight) {
   panel->SetPanelBoundsInstantly(bounds);
   EXPECT_EQ(panel::kMinimizedPanelHeight, panel->GetBounds().height());
   EXPECT_EQ(0, GetPanelView(panel)->height()); // client area height.
+#if defined(OS_WIN) && !defined(USE_AURA)
   EXPECT_EQ(panel::kMinimizedPanelHeight,
             GetPanelView(panel)->GetFrameView()->height());
+#endif
 
   panel->Close();
 }

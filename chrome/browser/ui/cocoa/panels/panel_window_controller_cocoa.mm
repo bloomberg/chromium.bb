@@ -169,25 +169,39 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 
   NSPoint point = [self convertPoint:pointInWindow fromView:nil];
   BOOL flipped = [self isFlipped];
-  if (NSMouseInRect(point, leftCursorRect_, flipped))
-    return panel::RESIZE_LEFT;
-  if (NSMouseInRect(point, rightCursorRect_, flipped))
-    return panel::RESIZE_RIGHT;
-  if (NSMouseInRect(point, topCursorRect_, flipped))
-    return panel::RESIZE_TOP;
-  if (NSMouseInRect(point, topLeftCursorRect_, flipped))
-    return panel::RESIZE_TOP_LEFT;
-  if (NSMouseInRect(point, topRightCursorRect_, flipped))
-    return panel::RESIZE_TOP_RIGHT;
 
-  // Bottom edge is not always resizable.
-  if (panel::RESIZABLE_ALL_SIDES == resizability) {
-    if (NSMouseInRect(point, bottomCursorRect_, flipped))
-      return panel::RESIZE_BOTTOM;
-    if (NSMouseInRect(point, bottomLeftCursorRect_, flipped))
-      return panel::RESIZE_BOTTOM_LEFT;
-    if (NSMouseInRect(point, bottomRightCursorRect_, flipped))
-      return panel::RESIZE_BOTTOM_RIGHT;
+  if ((resizability & panel::RESIZABLE_TOP_LEFT) &&
+      NSMouseInRect(point, topLeftCursorRect_, flipped)) {
+    return panel::RESIZE_TOP_LEFT;
+  }
+  if ((resizability & panel::RESIZABLE_TOP_RIGHT) &&
+      NSMouseInRect(point, topRightCursorRect_, flipped)) {
+    return panel::RESIZE_TOP_RIGHT;
+  }
+  if ((resizability & panel::RESIZABLE_BOTTOM_LEFT) &&
+      NSMouseInRect(point, bottomLeftCursorRect_, flipped)) {
+    return panel::RESIZE_BOTTOM_LEFT;
+  }
+  if ((resizability & panel::RESIZABLE_BOTTOM_RIGHT) &&
+      NSMouseInRect(point, bottomRightCursorRect_, flipped)) {
+    return panel::RESIZE_BOTTOM_RIGHT;
+  }
+
+  if ((resizability & panel::RESIZABLE_LEFT) &&
+      NSMouseInRect(point, leftCursorRect_, flipped)) {
+    return panel::RESIZE_LEFT;
+  }
+  if ((resizability & panel::RESIZABLE_RIGHT) &&
+      NSMouseInRect(point, rightCursorRect_, flipped)) {
+    return panel::RESIZE_RIGHT;
+  }
+  if ((resizability & panel::RESIZABLE_TOP) &&
+      NSMouseInRect(point, topCursorRect_, flipped)) {
+    return panel::RESIZE_TOP;
+  }
+  if ((resizability & panel::RESIZABLE_BOTTOM) &&
+      NSMouseInRect(point, bottomCursorRect_, flipped)) {
+    return panel::RESIZE_BOTTOM;
   }
 
   return panel::RESIZE_NONE;
@@ -278,54 +292,68 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   NSRect bounds = [self bounds];
 
   // Left vertical edge.
-  leftCursorRect_ = NSMakeRect(NSMinX(bounds),
-                               NSMinY(bounds) + kWidthOfMouseResizeArea,
-                               kWidthOfMouseResizeArea,
-                               NSHeight(bounds) - 2 * kWidthOfMouseResizeArea);
-  [self addCursorRect:leftCursorRect_ cursor:eastWestCursor_];
+  if (resizability & panel::RESIZABLE_LEFT) {
+    leftCursorRect_ = NSMakeRect(
+        NSMinX(bounds),
+        NSMinY(bounds) + kWidthOfMouseResizeArea,
+        kWidthOfMouseResizeArea,
+        NSHeight(bounds) - 2 * kWidthOfMouseResizeArea);
+    [self addCursorRect:leftCursorRect_ cursor:eastWestCursor_];
+  }
 
   // Right vertical edge.
-  rightCursorRect_ = leftCursorRect_;
-  rightCursorRect_.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
-  [self addCursorRect:rightCursorRect_ cursor:eastWestCursor_];
+  if (resizability & panel::RESIZABLE_RIGHT) {
+    rightCursorRect_ = leftCursorRect_;
+    rightCursorRect_.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
+    [self addCursorRect:rightCursorRect_ cursor:eastWestCursor_];
+  }
 
   // Top horizontal edge.
-  topCursorRect_ = NSMakeRect(NSMinX(bounds) + kWidthOfMouseResizeArea,
-                              NSMaxY(bounds) - kWidthOfMouseResizeArea,
-                              NSWidth(bounds) - 2 * kWidthOfMouseResizeArea,
-                              kWidthOfMouseResizeArea);
-  [self addCursorRect:topCursorRect_ cursor:northSouthCursor_];
+  if (resizability & panel::RESIZABLE_TOP) {
+    topCursorRect_ = NSMakeRect(NSMinX(bounds) + kWidthOfMouseResizeArea,
+                                NSMaxY(bounds) - kWidthOfMouseResizeArea,
+                                NSWidth(bounds) - 2 * kWidthOfMouseResizeArea,
+                                kWidthOfMouseResizeArea);
+    [self addCursorRect:topCursorRect_ cursor:northSouthCursor_];
+  }
 
   // Top left corner.
-  topLeftCursorRect_ = NSMakeRect(NSMinX(bounds),
-                                  NSMaxY(bounds) - kWidthOfMouseResizeArea,
-                                  kWidthOfMouseResizeArea,
-                                  NSMaxY(bounds));
-  [self addCursorRect:topLeftCursorRect_ cursor:northWestSouthEastCursor_];
+  if (resizability & panel::RESIZABLE_TOP_LEFT) {
+    topLeftCursorRect_ = NSMakeRect(NSMinX(bounds),
+                                    NSMaxY(bounds) - kWidthOfMouseResizeArea,
+                                    kWidthOfMouseResizeArea,
+                                    NSMaxY(bounds));
+    [self addCursorRect:topLeftCursorRect_ cursor:northWestSouthEastCursor_];
+  }
 
   // Top right corner.
-  topRightCursorRect_ = topLeftCursorRect_;
-  topRightCursorRect_.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
-  [self addCursorRect:topRightCursorRect_ cursor:northEastSouthWestCursor_];
-
-  // Bottom edge is not always resizable.
-  if (panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM == resizability)
-    return;
+  if (resizability & panel::RESIZABLE_TOP_RIGHT) {
+    topRightCursorRect_ = topLeftCursorRect_;
+    topRightCursorRect_.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
+    [self addCursorRect:topRightCursorRect_ cursor:northEastSouthWestCursor_];
+  }
 
   // Bottom horizontal edge.
-  bottomCursorRect_ = topCursorRect_;
-  bottomCursorRect_.origin.y = NSMinY(bounds);
-  [self addCursorRect:bottomCursorRect_ cursor:northSouthCursor_];
+  if (resizability & panel::RESIZABLE_BOTTOM) {
+    bottomCursorRect_ = topCursorRect_;
+    bottomCursorRect_.origin.y = NSMinY(bounds);
+    [self addCursorRect:bottomCursorRect_ cursor:northSouthCursor_];
+  }
 
   // Bottom right corner.
-  bottomRightCursorRect_ = topRightCursorRect_;
-  bottomRightCursorRect_.origin.y = NSMinY(bounds);
-  [self addCursorRect:bottomRightCursorRect_ cursor:northWestSouthEastCursor_];
+  if (resizability & panel::RESIZABLE_BOTTOM_RIGHT) {
+    bottomRightCursorRect_ = topRightCursorRect_;
+    bottomRightCursorRect_.origin.y = NSMinY(bounds);
+    [self addCursorRect:bottomRightCursorRect_
+                 cursor:northWestSouthEastCursor_];
+  }
 
   // Bottom left corner.
-  bottomLeftCursorRect_ = bottomRightCursorRect_;
-  bottomLeftCursorRect_.origin.x = NSMinX(bounds);
-  [self addCursorRect:bottomLeftCursorRect_ cursor:northEastSouthWestCursor_];
+  if (resizability & panel::RESIZABLE_BOTTOM_LEFT) {
+    bottomLeftCursorRect_ = bottomRightCursorRect_;
+    bottomLeftCursorRect_.origin.x = NSMinX(bounds);
+    [self addCursorRect:bottomLeftCursorRect_ cursor:northEastSouthWestCursor_];
+  }
 }
 @end
 

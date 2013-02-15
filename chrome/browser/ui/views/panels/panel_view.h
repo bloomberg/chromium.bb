@@ -130,6 +130,8 @@ class PanelView : public NativePanel,
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
+  virtual void OnWidgetBoundsChanged(views::Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
@@ -176,6 +178,9 @@ class PanelView : public NativePanel,
 
   // Is the panel receiving the focus?
   bool focused_;
+
+  // True if the user is resizing the panel.
+  bool user_resizing_;
 
   // Is the mouse button currently down?
   bool mouse_pressed_;
