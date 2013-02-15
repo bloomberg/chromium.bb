@@ -341,7 +341,8 @@ class PipelineIntegrationTest
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),
         base::Bind(&PipelineIntegrationTest::OnBufferingState,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        base::Closure());
 
     message_loop_.Run();
   }
@@ -359,7 +360,8 @@ class PipelineIntegrationTest
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),
         base::Bind(&PipelineIntegrationTest::OnBufferingState,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        base::Closure());
 
     source->set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,
                                        base::Unretained(encrypted_media)));

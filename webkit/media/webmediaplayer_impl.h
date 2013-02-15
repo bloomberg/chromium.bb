@@ -311,13 +311,6 @@ class WebMediaPlayerImpl
   float playback_rate_;
   base::TimeDelta paused_time_;
 
-  // The duration passed to the last sourceSetDuration(). If
-  // sourceSetDuration() is never called or a sourceAppend() call or
-  // a sourceEndOfStream() call changes the pipeline duration, then this
-  // variable is set to < 0 to indicate that the pipeline duration represents
-  // the actual duration instead of a user specified value.
-  double user_specified_duration_;
-
   // Seek gets pending if another seek is in progress. Only last pending seek
   // will have effect.
   bool pending_seek_;

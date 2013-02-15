@@ -99,7 +99,8 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       QuitOnStatusCB(expected_status),
       base::Bind(&PipelineIntegrationTestBase::OnBufferingState,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      base::Closure());
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
@@ -123,7 +124,8 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path) {
       base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
                  base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnBufferingState,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      base::Closure());
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
 }

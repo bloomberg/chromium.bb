@@ -84,9 +84,13 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // it can accept a new segment.
   void Abort(const std::string& id);
 
+  // Returns the current presentation duration.
+  double GetDuration();
+  double GetDuration_Locked();
+
   // Notifies the demuxer that the duration of the media has changed to
   // |duration|.
-  void SetDuration(base::TimeDelta duration);
+  void SetDuration(double duration);
 
   // Sets a time |offset| to be applied to subsequent buffers appended to the
   // source buffer assicated with |id|. Returns true if the offset is set
@@ -162,7 +166,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // EndOfStream() is called.
   void DecreaseDurationIfNecessary();
 
-  // Sets |duration_| to |new_duration| and notifies |host_|.
+  // Sets |duration_| to |new_duration|, sets |user_specified_duration_| to -1
+  // and notifies |host_|.
   void UpdateDuration(base::TimeDelta new_duration);
 
   // Returns the ranges representing the buffered data in the demuxer.
@@ -185,6 +190,13 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   scoped_refptr<ChunkDemuxerStream> video_;
 
   base::TimeDelta duration_;
+
+  // The duration passed to the last SetDuration(). If
+  // SetDuration() is never called or an AppendData() call or
+  // a EndOfStream() call changes |duration_|, then this
+  // variable is set to < 0 to indicate that the |duration_| represents
+  // the actual duration instead of a user specified value.
+  double user_specified_duration_;
 
   typedef std::map<std::string, StreamParser*> StreamParserMap;
   StreamParserMap stream_parser_map_;

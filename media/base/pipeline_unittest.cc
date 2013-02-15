@@ -64,6 +64,7 @@ class CallbackHelper {
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD1(OnBufferingState, void(Pipeline::BufferingState));
+  MOCK_METHOD0(OnDurationChange, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CallbackHelper);
@@ -138,6 +139,7 @@ class PipelineTest : public ::testing::Test {
   typedef std::vector<MockDemuxerStream*> MockDemuxerStreamVector;
   void InitializeDemuxer(MockDemuxerStreamVector* streams,
                          const base::TimeDelta& duration) {
+    EXPECT_CALL(callbacks_, OnDurationChange());
     EXPECT_CALL(*demuxer_, Initialize(_, _))
         .WillOnce(DoAll(SetDemuxerProperties(duration),
                         RunCallback<1>(PIPELINE_OK)));
@@ -222,6 +224,8 @@ class PipelineTest : public ::testing::Test {
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnBufferingState,
+                   base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnDurationChange,
                    base::Unretained(&callbacks_)));
     message_loop_.RunUntilIdle();
   }
@@ -361,6 +365,8 @@ TEST_F(PipelineTest, NeverInitializes) {
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnBufferingState,
+                   base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnDurationChange,
                    base::Unretained(&callbacks_)));
   message_loop_.RunUntilIdle();
 
@@ -964,6 +970,8 @@ class PipelineTeardownTest : public PipelineTest {
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnBufferingState,
+                   base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnDurationChange,
                    base::Unretained(&callbacks_)));
     message_loop_.RunUntilIdle();
   }

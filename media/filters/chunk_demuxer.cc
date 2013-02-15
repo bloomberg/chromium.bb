@@ -575,7 +575,9 @@ ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
       host_(NULL),
       open_cb_(open_cb),
       need_key_cb_(need_key_cb),
-      log_cb_(log_cb) {
+      log_cb_(log_cb),
+      duration_(kNoTimestamp()),
+      user_specified_duration_(-1) {
   DCHECK(!open_cb_.is_null());
   DCHECK(!need_key_cb_.is_null());
 }
@@ -903,20 +905,67 @@ void ChunkDemuxer::Abort(const std::string& id) {
   source_info_map_[id].can_update_offset = true;
 }
 
-void ChunkDemuxer::SetDuration(base::TimeDelta duration) {
+double ChunkDemuxer::GetDuration() {
   base::AutoLock auto_lock(lock_);
-  DVLOG(1) << "SetDuration(" << duration.InSecondsF() << ")";
+  return GetDuration_Locked();
+}
 
-  if (duration == duration_)
+double ChunkDemuxer::GetDuration_Locked() {
+  lock_.AssertAcquired();
+  if (duration_ == kNoTimestamp())
+    return std::numeric_limits<double>::quiet_NaN();
+
+  // Return positive infinity if the resource is unbounded.
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
+  if (duration_ == kInfiniteDuration())
+    return std::numeric_limits<double>::infinity();
+
+  if (user_specified_duration_ >= 0)
+    return user_specified_duration_;
+
+  return duration_.InSecondsF();
+}
+
+void ChunkDemuxer::SetDuration(double duration) {
+  base::AutoLock auto_lock(lock_);
+  DVLOG(1) << "SetDuration(" << duration << ")";
+  DCHECK_GE(duration, 0);
+
+  if (duration == GetDuration_Locked())
     return;
 
-  UpdateDuration(duration);
+  // Compute & bounds check the TimeDelta representation of duration.
+  // This can be different if the value of |duration| doesn't fit the range or
+  // precision of base::TimeDelta.
+  base::TimeDelta min_duration = base::TimeDelta::FromInternalValue(1);
+  base::TimeDelta max_duration =
+      base::TimeDelta::FromInternalValue(kint64max - 1);
+  double min_duration_in_seconds = min_duration.InSecondsF();
+  double max_duration_in_seconds = max_duration.InSecondsF();
+
+  base::TimeDelta duration_td;
+  if (duration == std::numeric_limits<double>::infinity()) {
+    duration_td = media::kInfiniteDuration();
+  } else if (duration < min_duration_in_seconds) {
+    duration_td = min_duration;
+  } else if (duration > max_duration_in_seconds) {
+    duration_td = max_duration;
+  } else {
+    duration_td = base::TimeDelta::FromMicroseconds(
+        duration * base::Time::kMicrosecondsPerSecond);
+  }
+
+  DCHECK(duration_td > base::TimeDelta());
+
+  user_specified_duration_ = duration;
+  duration_ = duration_td;
+  host_->SetDuration(duration_);
 
   if (audio_)
-    audio_->OnSetDuration(duration);
+    audio_->OnSetDuration(duration_);
 
   if (video_)
-    video_->OnSetDuration(duration);
+    video_->OnSetDuration(duration_);
 }
 
 bool ChunkDemuxer::SetTimestampOffset(const std::string& id, TimeDelta offset) {
@@ -1065,7 +1114,7 @@ void ChunkDemuxer::OnStreamParserInitDone(bool success, TimeDelta duration) {
     return;
   }
 
-  if (duration != base::TimeDelta() && duration_ == base::TimeDelta())
+  if (duration != base::TimeDelta() && duration_ == kNoTimestamp())
     UpdateDuration(duration);
 
   // Wait until all streams have initialized.
@@ -1079,7 +1128,7 @@ void ChunkDemuxer::OnStreamParserInitDone(bool success, TimeDelta duration) {
   if (video_)
     video_->Seek(TimeDelta());
 
-  if (duration_ == TimeDelta())
+  if (duration_ == kNoTimestamp())
     duration_ = kInfiniteDuration();
 
   // The demuxer is now initialized after the |start_timestamp_| was set.
@@ -1238,6 +1287,7 @@ bool ChunkDemuxer::IsValidId(const std::string& source_id) const {
 
 void ChunkDemuxer::UpdateDuration(base::TimeDelta new_duration) {
   DCHECK(duration_ != new_duration);
+  user_specified_duration_ = -1;
   duration_ = new_duration;
   host_->SetDuration(new_duration);
 }

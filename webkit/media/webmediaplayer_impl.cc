@@ -4,6 +4,7 @@
 
 #include "webkit/media/webmediaplayer_impl.h"
 
+#include <algorithm>
 #include <limits>
 #include <string>
 #include <vector>
@@ -131,7 +132,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       paused_(true),
       seeking_(false),
       playback_rate_(0.0f),
-      user_specified_duration_(-1),
       pending_seek_(false),
       pending_seek_seconds_(0.0f),
       client_(client),
@@ -491,14 +491,25 @@ float WebMediaPlayerImpl::duration() const {
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return std::numeric_limits<float>::quiet_NaN();
 
-  double duration = user_specified_duration_;
-  if (duration < 0)
+  double duration;
+  if (chunk_demuxer_) {
+    duration = chunk_demuxer_->GetDuration();
+  } else {
     duration = GetPipelineDuration();
+  }
 
-  // Make sure super small durations don't get truncated to 0 by
-  // the double -> float conversion.
-  if (duration > 0.0 && duration < std::numeric_limits<float>::min())
-    return std::numeric_limits<float>::min();
+  // Make sure super small durations don't get truncated to 0 and
+  // large durations don't get converted to infinity by the double -> float
+  // conversion.
+  //
+  // TODO(acolwell): Remove when WebKit is changed to report duration as a
+  // double.
+  if (duration > 0.0 && duration < std::numeric_limits<double>::infinity()) {
+    duration = std::max(duration,
+                        static_cast<double>(std::numeric_limits<float>::min()));
+    duration = std::min(duration,
+                        static_cast<double>(std::numeric_limits<float>::max()));
+  }
 
   return static_cast<float>(duration);
 }
@@ -693,17 +704,9 @@ bool WebMediaPlayerImpl::sourceAppend(const WebKit::WebString& id,
                                       unsigned length) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  double old_duration = GetPipelineDuration();
   if (!chunk_demuxer_->AppendData(id.utf8().data(), data, length))
     return false;
 
-  double new_duration = GetPipelineDuration();
-  if (old_duration != new_duration) {
-    // Clear user specified duration since the AppendData() call caused
-    // the presentation duration to change.
-    user_specified_duration_ = -1;
-    OnDurationChange();
-  }
   return true;
 }
 
@@ -714,39 +717,7 @@ bool WebMediaPlayerImpl::sourceAbort(const WebKit::WebString& id) {
 
 void WebMediaPlayerImpl::sourceSetDuration(double new_duration) {
   DCHECK_GE(new_duration, 0);
-
-  if (user_specified_duration_ == new_duration)
-    return;
-
-  // Update |user_specified_duration_| so it reports exactly what the
-  // application specified.
-  user_specified_duration_ = new_duration;
-
-  // Compute & bounds check the duration actually sent to the ChunkDemuxer.
-  // This can be different than the value of |user_specified_duration_| if the
-  // value of |new_duration| doesn't fit the range or precision of
-  // base::TimeDelta.
-  base::TimeDelta min_duration = base::TimeDelta::FromInternalValue(1);
-  base::TimeDelta max_duration =
-      base::TimeDelta::FromInternalValue(kint64max - 1);
-  double min_duration_in_seconds = min_duration.InSecondsF();
-  double max_duration_in_seconds = max_duration.InSecondsF();
-
-  base::TimeDelta duration;
-  if (new_duration == std::numeric_limits<double>::infinity()) {
-    duration = media::kInfiniteDuration();
-  } else if (new_duration < min_duration_in_seconds) {
-    duration = min_duration;
-  } else if (new_duration > max_duration_in_seconds) {
-    duration = max_duration;
-  } else {
-    duration = base::TimeDelta::FromMicroseconds(
-        new_duration * base::Time::kMicrosecondsPerSecond);
-  }
-
-  DCHECK(duration > base::TimeDelta());
-  chunk_demuxer_->SetDuration(duration);
-  OnDurationChange();
+  chunk_demuxer_->SetDuration(new_duration);
 }
 
 void WebMediaPlayerImpl::sourceEndOfStream(
@@ -767,17 +738,8 @@ void WebMediaPlayerImpl::sourceEndOfStream(
       NOTIMPLEMENTED();
   }
 
-  double old_duration = GetPipelineDuration();
   if (!chunk_demuxer_->EndOfStream(pipeline_status))
     DVLOG(1) << "EndOfStream call failed.";
-
-  double new_duration = GetPipelineDuration();
-  if (old_duration != new_duration) {
-    // Clear user specified duration since the EndOfStream() call caused
-    // the presentation duration to change.
-    user_specified_duration_ = -1;
-    OnDurationChange();
-  }
 }
 
 bool WebMediaPlayerImpl::sourceSetTimestampOffset(const WebKit::WebString& id,
@@ -1170,7 +1132,8 @@ void WebMediaPlayerImpl::StartPipeline() {
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingState));
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingState),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChange));
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {

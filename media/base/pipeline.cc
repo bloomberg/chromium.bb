@@ -106,7 +106,8 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const base::Closure& ended_cb,
                      const PipelineStatusCB& error_cb,
                      const PipelineStatusCB& seek_cb,
-                     const BufferingStateCB& buffering_state_cb) {
+                     const BufferingStateCB& buffering_state_cb,
+                     const base::Closure& duration_change_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(!running_) << "Media pipeline is already running";
   DCHECK(!buffering_state_cb.is_null());
@@ -114,7 +115,7 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
   running_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::StartTask, this, base::Passed(&collection),
-      ended_cb, error_cb, seek_cb, buffering_state_cb));
+      ended_cb, error_cb, seek_cb, buffering_state_cb, duration_change_cb));
 }
 
 void Pipeline::Stop(const base::Closure& stop_cb) {
@@ -390,6 +391,8 @@ void Pipeline::SetDuration(TimeDelta duration) {
 
   base::AutoLock auto_lock(lock_);
   clock_->SetDuration(duration);
+  if (!duration_change_cb_.is_null())
+    duration_change_cb_.Run();
 }
 
 void Pipeline::SetTotalBytes(int64 total_bytes) {
@@ -723,7 +726,8 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
                          const base::Closure& ended_cb,
                          const PipelineStatusCB& error_cb,
                          const PipelineStatusCB& seek_cb,
-                         const BufferingStateCB& buffering_state_cb) {
+                         const BufferingStateCB& buffering_state_cb,
+                         const base::Closure& duration_change_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   CHECK_EQ(kCreated, state_)
       << "Media pipeline cannot be started more than once";
@@ -733,6 +737,7 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
   error_cb_ = error_cb;
   seek_cb_ = seek_cb;
   buffering_state_cb_ = buffering_state_cb;
+  duration_change_cb_ = duration_change_cb;
 
   StateTransitionTask(PIPELINE_OK);
 }

@@ -130,7 +130,7 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   media::PipelineStatusNotification note;
   (*pipeline)->Start(
       collection.Pass(), base::Closure(), media::PipelineStatusCB(),
-      note.Callback(), base::Bind(&OnBufferingState));
+      note.Callback(), base::Bind(&OnBufferingState), base::Closure());
 
   // Wait until the pipeline is fully initialized.
   note.Wait();
