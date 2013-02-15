@@ -72,6 +72,7 @@ class ActivityLog : public ProfileKeyedService,
 
   // Log a successful API call made by an extension.
   // This will create an APIAction for storage in the database.
+  // (Note: implemented as a wrapper for LogAPIActionInternal.)
   void LogAPIAction(const Extension* extension,
                     const std::string& name,    // e.g., tabs.get
                     const ListValue* args,      // the argument values e.g. 46
@@ -79,6 +80,7 @@ class ActivityLog : public ProfileKeyedService,
 
   // Log an event notification delivered to an extension.
   // This will create an APIAction for storage in the database.
+  // (Note: implemented as a wrapper for LogAPIActionInternal.)
   void LogEventAction(const Extension* extension,
                       const std::string& name,    // e.g., tabs.onUpdate
                       const ListValue* args,      // arguments to the callback
@@ -93,15 +95,14 @@ class ActivityLog : public ProfileKeyedService,
                         const std::string& extra);        // extra logging info
 
   // Log an interaction between an extension and a URL.
-  // This will create a UrlAction for storage in the database.
+  // This will create a DOMAction for storage in the database.
   // The technical message might be the list of content scripts that have been
   // injected, or the DOM API call; it's what's shown under "More".
-  void LogUrlAction(const Extension* extension,
-                    const UrlAction::UrlActionType verb,  // e.g., XHR
+  void LogDOMAction(const Extension* extension,
                     const GURL& url,                      // target URL
-                    const string16& url_title,            // title of the URL,
-                                                          // can be empty string
-                    const std::string& technical_message, // "More"
+                    const string16& url_title,            // title of the URL
+                    const std::string& api_call,          // api call
+                    const ListValue* args,                // arguments
                     const std::string& extra);            // extra logging info
 
   // An error has happened; we want to rollback and close the db.
@@ -113,6 +114,25 @@ class ActivityLog : public ProfileKeyedService,
 
   explicit ActivityLog(Profile* profile);
   virtual ~ActivityLog();
+
+  // We log callbacks and API calls very similarly, so we handle them the same
+  // way internally.
+  void LogAPIActionInternal(
+      const Extension* extension,
+      const std::string& api_call,
+      const ListValue* args,
+      const std::string& extra,
+      const APIAction::Type type);
+
+  // We log content script injection and DOM API calls using the same underlying
+  // mechanism, so they have the same internal logging structure.
+  void LogDOMActionInternal(const Extension* extension,
+                            const GURL& url,
+                            const string16& url_title,
+                            const std::string& api_call,
+                            const ListValue* args,
+                            const std::string& extra,
+                            DOMAction::DOMActionType verb);
 
   // TabHelper::ScriptExecutionObserver implementation.
   // Fires when a ContentScript is executed.

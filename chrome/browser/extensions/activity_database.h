@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/extensions/api_actions.h"
 #include "chrome/browser/extensions/blocked_actions.h"
-#include "chrome/browser/extensions/url_actions.h"
+#include "chrome/browser/extensions/dom_actions.h"
 #include "sql/connection.h"
 #include "sql/init_status.h"
 
@@ -35,8 +35,8 @@ class ActivityDatabase : public base::RefCountedThreadSafe<ActivityDatabase> {
   void Init(const base::FilePath& db_name);
   void LogInitFailure();
 
-  // Record a UrlAction in the database.
-  void RecordUrlAction(scoped_refptr<UrlAction> action);
+  // Record a DOMction in the database.
+  void RecordDOMAction(scoped_refptr<DOMAction> action);
 
   // Record a APIAction in the database.
   void RecordAPIAction(scoped_refptr<APIAction> action);

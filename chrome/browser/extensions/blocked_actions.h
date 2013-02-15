@@ -16,11 +16,18 @@ namespace extensions {
 class BlockedAction : public Action {
  public:
   static const char* kTableName;
-  static const char* kTableStructure;
+  static const char* kTableBasicFields;
+  static const char* kTableContentFields[];
 
+  // Create a new database table for storing BlockedActions, or update the
+  // schema if it is out of date. Any existing data is preserved.
+  static bool InitializeTable(sql::Connection* db);
+
+  // You must supply the id, time, api_call, and reason.
   BlockedAction(const std::string& extension_id,
                 const base::Time& time,
-                const std::string& blocked_action,    // the blocked API call
+                const std::string& api_call,          // the blocked API call
+                const std::string& args,              // the arguments
                 const std::string& reason,            // the reason it's blocked
                 const std::string& extra);            // any extra logging info
 
@@ -37,7 +44,8 @@ class BlockedAction : public Action {
   const std::string& extension_id() const { return extension_id_; }
   const base::Time& time() const { return time_; }
   const std::string& reason() const { return reason_; }
-  const std::string& blocked_action() const { return blocked_action_; }
+  const std::string& api_call() const { return api_call_; }
+  const std::string& args() const { return args_; }
   const std::string& extra() const { return extra_; }
 
  protected:
@@ -46,7 +54,8 @@ class BlockedAction : public Action {
  private:
   std::string extension_id_;
   base::Time time_;
-  std::string blocked_action_;
+  std::string api_call_;
+  std::string args_;
   std::string reason_;
   std::string extra_;
 

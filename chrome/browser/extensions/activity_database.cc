@@ -50,9 +50,8 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
 
   db_.Preload();
 
-  // Create the UrlAction database.
-  if (InitializeTable(UrlAction::kTableName, UrlAction::kTableStructure) !=
-      sql::INIT_OK)
+  // Create the DOMAction database.
+  if (!DOMAction::InitializeTable(&db_))
     return LogInitFailure();
 
   // Create the APIAction database.
@@ -60,8 +59,7 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
     return LogInitFailure();
 
   // Create the BlockedAction database.
-  if (InitializeTable(BlockedAction::kTableName, BlockedAction::kTableStructure)
-      != sql::INIT_OK)
+  if (!BlockedAction::InitializeTable(&db_))
     return LogInitFailure();
 
   sql::InitStatus stat = committer.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
@@ -73,19 +71,6 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
 
 void ActivityDatabase::LogInitFailure() {
   LOG(ERROR) << "Couldn't initialize the activity log database.";
-}
-
-sql::InitStatus ActivityDatabase::InitializeTable(const char* table_name,
-                                                  const char* table_structure) {
-  if (!db_.DoesTableExist(table_name)) {
-    char table_creator[1000];
-    base::snprintf(table_creator,
-                   arraysize(table_creator),
-                   "CREATE TABLE %s %s", table_name, table_structure);
-    if (!db_.Execute(table_creator))
-      return sql::INIT_FAILURE;
-  }
-  return sql::INIT_OK;
 }
 
 void ActivityDatabase::RecordAction(scoped_refptr<Action> action) {

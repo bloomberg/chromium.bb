@@ -18,6 +18,9 @@ namespace extensions {
 // the activity log.
 class Action : public base::RefCountedThreadSafe<Action> {
  public:
+  // Initialize the table for a given action type.
+  static bool InitializeTableInternal(sql::Connection* db);
+
   // Record the action in the database.
   virtual void Record(sql::Connection* db) = 0;
 
@@ -30,6 +33,13 @@ class Action : public base::RefCountedThreadSafe<Action> {
  protected:
   Action() {}
   virtual ~Action() {}
+
+  // Initialize the table for a given action type.
+  static bool InitializeTableInternal(sql::Connection* db,
+                                      const char* table_name,
+                                      const char* basic_fields,
+                                      const char* content_fields[],
+                                      const int num_content_fields);
 
  private:
   friend class base::RefCountedThreadSafe<Action>;

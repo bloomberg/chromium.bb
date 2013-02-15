@@ -24,9 +24,9 @@
 
 namespace {
 
-// Concatenate an API call with its arguments.
-std::string MakeCallSignature(const std::string& name, const ListValue* args) {
-  std::string call_signature = name + "(";
+// Concatenate arguments.
+std::string MakeArgList(const ListValue* args) {
+  std::string call_signature = "";
   ListValue::const_iterator it = args->begin();
   for (; it != args->end(); ++it) {
     std::string arg;
@@ -37,6 +37,13 @@ std::string MakeCallSignature(const std::string& name, const ListValue* args) {
       call_signature += arg;
     }
   }
+  return call_signature;
+}
+
+// Concatenate an API call with its arguments.
+std::string MakeCallSignature(const std::string& name, const ListValue* args) {
+  std::string call_signature = name + "(";
+  call_signature += MakeArgList(args);
   call_signature += ")";
   return call_signature;
 }
@@ -167,139 +174,162 @@ ActivityLog* ActivityLog::GetInstance(Profile* profile) {
 void ActivityLog::AddObserver(const Extension* extension,
                               ActivityLog::Observer* observer) {
   if (!IsLogEnabled()) return;
-  if (observers_.count(extension) == 0) {
+  if (observers_.count(extension) == 0)
     observers_[extension] = new ObserverListThreadSafe<Observer>;
-  }
   observers_[extension]->AddObserver(observer);
 }
 
 void ActivityLog::RemoveObserver(const Extension* extension,
                                  ActivityLog::Observer* observer) {
-  if (observers_.count(extension) == 1) {
+  if (observers_.count(extension) == 1)
     observers_[extension]->RemoveObserver(observer);
-  }
 }
 
-void ActivityLog::LogAPIAction(const Extension* extension,
-                               const std::string& name,
-                               const ListValue* args,
-                               const std::string& extra) {
-  if (!IsLogEnabled()) return;
+void ActivityLog::LogAPIActionInternal(const Extension* extension,
+                                       const std::string& api_call,
+                                       const ListValue* args,
+                                       const std::string& extra,
+                                       const APIAction::Type type) {
   std::string verb, manager;
-  bool matches = RE2::FullMatch(name, "(.*?)\\.(.*)", &manager, &verb);
+  bool matches = RE2::FullMatch(api_call, "(.*?)\\.(.*)", &manager, &verb);
   if (matches) {
-    std::string call_signature = MakeCallSignature(name, args);
     scoped_refptr<APIAction> action = new APIAction(
         extension->id(),
         base::Time::Now(),
-        APIAction::CALL,
+        type,
         APIAction::StringAsVerb(verb),
         APIAction::StringAsTarget(manager),
-        call_signature,
+        api_call,
+        MakeArgList(args),
         extra);
     ScheduleAndForget(&ActivityDatabase::RecordAction, action);
 
     // Display the action.
     ObserverMap::const_iterator iter = observers_.find(extension);
     if (iter != observers_.end()) {
-      iter->second->Notify(&Observer::OnExtensionActivity,
-                           extension,
-                           ActivityLog::ACTIVITY_EXTENSION_API_CALL,
-                           call_signature);
-    }
-    if (log_activity_to_stdout_) {
-      LOG(INFO) << action->PrettyPrintForDebug();
-    }
-  } else {
-    LOG(ERROR) << "Unknown API call! " << name;
-  }
-}
-
-void ActivityLog::LogEventAction(const Extension* extension,
-                                 const std::string& name,
-                                 const ListValue* args,
-                                 const std::string& extra) {
-  std::string verb, manager;
-  bool matches = RE2::FullMatch(name, "(.*?)\\.(.*)", &manager, &verb);
-  if (matches) {
-    std::string call_signature = MakeCallSignature(name, args);
-    scoped_refptr<APIAction> action = new APIAction(
-        extension->id(),
-        base::Time::Now(),
-        APIAction::EVENT_CALLBACK,
-        APIAction::StringAsVerb(verb),
-        APIAction::StringAsTarget(manager),
-        call_signature,
-        extra);
-    ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-
-    // Display the action.
-    ObserverMap::const_iterator iter = observers_.find(extension);
-    if (iter != observers_.end()) {
-      iter->second->Notify(&Observer::OnExtensionActivity,
-                           extension,
-                           ActivityLog::ACTIVITY_EVENT_DISPATCH,
-                           call_signature);
+      if (type == APIAction::CALL) {
+        iter->second->Notify(&Observer::OnExtensionActivity,
+                             extension,
+                             ActivityLog::ACTIVITY_EXTENSION_API_CALL,
+                             MakeCallSignature(api_call, args));
+      } else if (type == APIAction::EVENT_CALLBACK) {
+        iter->second->Notify(&Observer::OnExtensionActivity,
+                             extension,
+                             ActivityLog::ACTIVITY_EVENT_DISPATCH,
+                             MakeCallSignature(api_call, args));
+      }
     }
     if (log_activity_to_stdout_)
       LOG(INFO) << action->PrettyPrintForDebug();
   } else {
-    LOG(ERROR) << "Unknown event type! " << name;
+    LOG(ERROR) << "Unknown API call! " << api_call;
   }
 }
 
+// A wrapper around LogAPIActionInternal, but we know it's an API call.
+void ActivityLog::LogAPIAction(const Extension* extension,
+                               const std::string& api_call,
+                               const ListValue* args,
+                               const std::string& extra) {
+  if (!IsLogEnabled()) return;
+  LogAPIActionInternal(extension, api_call, args, extra, APIAction::CALL);
+}
+
+// A wrapper around LogAPIActionInternal, but we know it's actually an event
+// being fired and triggering extension code. Having the two separate methods
+// (LogAPIAction vs LogEventAction) lets us hide how we actually choose to
+// handle them. Right now they're being handled almost the same.
+void ActivityLog::LogEventAction(const Extension* extension,
+                                 const std::string& api_call,
+                                 const ListValue* args,
+                                 const std::string& extra) {
+  if (!IsLogEnabled()) return;
+  LogAPIActionInternal(extension,
+                       api_call,
+                       args,
+                       extra,
+                       APIAction::EVENT_CALLBACK);
+}
+
 void ActivityLog::LogBlockedAction(const Extension* extension,
-                                   const std::string& blocked_name,
+                                   const std::string& blocked_call,
                                    const ListValue* args,
                                    const char* reason,
                                    const std::string& extra) {
   if (!IsLogEnabled()) return;
-  std::string blocked_call = MakeCallSignature(blocked_name, args);
   scoped_refptr<BlockedAction> action = new BlockedAction(extension->id(),
                                                           base::Time::Now(),
                                                           blocked_call,
+                                                          MakeArgList(args),
                                                           std::string(reason),
                                                           extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
   // Display the action.
   ObserverMap::const_iterator iter = observers_.find(extension);
   if (iter != observers_.end()) {
+    std::string blocked_str = MakeCallSignature(blocked_call, args);
     iter->second->Notify(&Observer::OnExtensionActivity,
                          extension,
                          ActivityLog::ACTIVITY_EXTENSION_API_BLOCK,
-                         blocked_call);
+                         blocked_str);
   }
   if (log_activity_to_stdout_)
     LOG(INFO) << action->PrettyPrintForDebug();
 }
 
-void ActivityLog::LogUrlAction(const Extension* extension,
-                               const UrlAction::UrlActionType verb,
-                               const GURL& url,
-                               const string16& url_title,
-                               const std::string& technical_message,
-                               const std::string& extra) {
-  if (!IsLogEnabled()) return;
-  scoped_refptr<UrlAction> action = new UrlAction(
-    extension->id(),
-    base::Time::Now(),
-    verb,
-    url,
-    url_title,
-    technical_message,
-    extra);
+void ActivityLog::LogDOMActionInternal(const Extension* extension,
+                                       const GURL& url,
+                                       const string16& url_title,
+                                       const std::string& api_call,
+                                       const ListValue* args,
+                                       const std::string& extra,
+                                       DOMAction::DOMActionType verb) {
+  scoped_refptr<DOMAction> action = new DOMAction(
+      extension->id(),
+      base::Time::Now(),
+      verb,
+      url,
+      url_title,
+      api_call,
+      MakeArgList(args),
+      extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
 
   // Display the action.
   ObserverMap::const_iterator iter = observers_.find(extension);
   if (iter != observers_.end()) {
-    iter->second->Notify(&Observer::OnExtensionActivity,
-                         extension,
-                         ActivityLog::ACTIVITY_CONTENT_SCRIPT,
-                         action->PrettyPrintForDebug());
+    // TODO(felt): This is a kludge, planning to update this when new
+    // UI is in place.
+    if (verb == DOMAction::INSERTED) {
+      iter->second->Notify(&Observer::OnExtensionActivity,
+                           extension,
+                           ActivityLog::ACTIVITY_CONTENT_SCRIPT,
+                           action->PrettyPrintForDebug());
+    } else {
+      iter->second->Notify(&Observer::OnExtensionActivity,
+                           extension,
+                           ActivityLog::ACTIVITY_CONTENT_SCRIPT,
+                           MakeCallSignature(api_call, args));
+    }
   }
   if (log_activity_to_stdout_)
     LOG(INFO) << action->PrettyPrintForDebug();
+}
+
+void ActivityLog::LogDOMAction(const Extension* extension,
+                               const GURL& url,
+                               const string16& url_title,
+                               const std::string& api_call,
+                               const ListValue* args,
+                               const std::string& extra) {
+  if (!IsLogEnabled()) return;
+  LogDOMActionInternal(extension,
+                       url,
+                       url_title,
+                       api_call,
+                       args,
+                       extra,
+                       DOMAction::MODIFIED);
 }
 
 void ActivityLog::OnScriptsExecuted(
@@ -330,12 +360,15 @@ void ActivityLog::OnScriptsExecuted(
         ext_scripts_str += *it2;
         ext_scripts_str += " ";
       }
-      LogUrlAction(extension,
-                   UrlAction::INSERTED,
-                   on_url,
-                   web_contents->GetTitle(),
-                   ext_scripts_str,
-                   "");
+      scoped_ptr<ListValue> script_names(new ListValue());
+      script_names->Set(0, new StringValue(ext_scripts_str));
+      LogDOMActionInternal(extension,
+                           on_url,
+                           web_contents->GetTitle(),
+                           "",   // no api call here
+                           script_names.get(),
+                           "",   // no extras either
+                           DOMAction::INSERTED);
     }
   }
 }

@@ -46,7 +46,8 @@ class APIAction : public Action {
   };
 
   static const char* kTableName;
-  static const char* kTableStructure;
+  static const char* kTableBasicFields;
+  static const char* kTableContentFields[];
 
   // Create the database table for storing APIActions, or update the schema if
   // it is out of date.  Any existing data is preserved.
@@ -59,7 +60,8 @@ class APIAction : public Action {
             const Type type,              // e.g. "CALL"
             const Verb verb,              // e.g. "ADDED"
             const Target target,          // e.g. "BOOKMARK"
-            const std::string& api_call,  // full method signature incl args
+            const std::string& api_call,  // full method name
+            const std::string& args,      // the argument list
             const std::string& extra);    // any extra logging info
 
   // Record the action in the database.
@@ -75,6 +77,7 @@ class APIAction : public Action {
   const std::string& extension_id() const { return extension_id_; }
   const base::Time& time() const { return time_; }
   const std::string& api_call() const { return api_call_; }
+  const std::string& args() const { return args_; }
   std::string TypeAsString() const;
   std::string VerbAsString() const;
   std::string TargetAsString() const;
@@ -95,6 +98,7 @@ class APIAction : public Action {
   Verb verb_;
   Target target_;
   std::string api_call_;
+  std::string args_;
   std::string extra_;
 
   DISALLOW_COPY_AND_ASSIGN(APIAction);

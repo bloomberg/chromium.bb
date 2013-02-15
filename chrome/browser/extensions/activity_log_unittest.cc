@@ -24,7 +24,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
  public:
   ActivityLogTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        db_thread_(BrowserThread::DB),
+        db_thread_(BrowserThread::DB, MessageLoop::current()),
         file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
@@ -38,15 +38,9 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityUI);
     ActivityLog::RecomputeLoggingIsEnabled();
-    db_thread_.Start();
   }
 
   virtual ~ActivityLogTest() {
-    base::WaitableEvent done(false, false);
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-    done.Wait();
-    db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
   }
@@ -65,6 +59,8 @@ TEST_F(ActivityLogTest, Enabled) {
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
 }
 
+// Currently, this test basically just checks that nothing crashes.
+// Need to update it to verify the writes.
 TEST_F(ActivityLogTest, ConstructAndLog) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
   scoped_refptr<const Extension> extension =
@@ -76,20 +72,15 @@ TEST_F(ActivityLogTest, ConstructAndLog) {
           .Build();
   extension_service_->AddExtension(extension);
   scoped_ptr<ListValue> args(new ListValue());
-  for (int i = 0; i < 30; i++) {
-    // Run this a bunch of times and hope that if something goes wrong with
-    // threading, 30 times is enough to cause it to fail.
-    ASSERT_TRUE(ActivityLog::IsLogEnabled());
-    activity_log->LogAPIAction(extension,
-                               std::string("tabs.testMethod"),
-                               args.get(),
-                               "");
-  }
+  ASSERT_TRUE(ActivityLog::IsLogEnabled());
+  activity_log->LogAPIAction(extension,
+                             std::string("tabs.testMethod"),
+                             args.get(),
+                             "");
   // Need to ensure the writes were completed.
   // TODO(felt): Need to add an event in the ActivityLog/ActivityDb to check
-  // whether the writes have been completed, instead of waiting.
+  // whether the writes have been completed.
 #if 0
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(3));
   base::FilePath db_file = profile_->GetPath().Append(
       chrome::kExtensionActivityLogFilename);
   sql::Connection db;
@@ -97,13 +88,8 @@ TEST_F(ActivityLogTest, ConstructAndLog) {
   std::string sql_str = "SELECT * FROM " +
       std::string(APIAction::kTableName);
   sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
-  if (statement.Succeeded()) {
-    ASSERT_TRUE(statement.Step());
-  } else {
-    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(3));
-    sql::Statement statement2(db.GetUniqueStatement(sql_str.c_str()));
-    ASSERT_TRUE(statement2.Step());
-  }
+  ASSERT_TRUE(statement.Succeeded());
+  ASSERT_TRUE(statement.Step());
   ASSERT_EQ("CALL", statement.ColumnString(2));
   ASSERT_EQ("UNKNOWN_VERB", statement.ColumnString(3));
   ASSERT_EQ("TABS", statement.ColumnString(4));
