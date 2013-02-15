@@ -93,7 +93,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     for (int c = 0; c < child_count(); ++c) {
       if (c != 0)
         columns->AddPaddingColumn(0, kTraySpacing);
-      columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+      columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL,
                          0, /* resize percent */
                          views::GridLayout::USE_PREF, 0, 0);
     }
@@ -101,7 +101,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     for (int c = child_count() - 1; c >= 0; --c)
       layout->AddView(child_at(c));
   } else {
-    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                        0, /* resize percent */
                        views::GridLayout::USE_PREF, 0, 0);
     for (int c = child_count() - 1; c >= 0; --c) {
