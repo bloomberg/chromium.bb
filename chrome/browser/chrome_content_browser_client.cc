@@ -1099,6 +1099,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableBenchmarking,
       switches::kEnableCrxlessWebApps,
       switches::kEnableExperimentalExtensionApis,
+      switches::kEnableExperimentalFormFilling,
       switches::kEnableIPCFuzzing,
       switches::kEnableInteractiveAutocomplete,
       switches::kEnableNaCl,

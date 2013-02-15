@@ -63,6 +63,7 @@ class FormStructureTest {
 };
 
 TEST(FormStructureTest, FieldCount) {
+  scoped_ptr<FormStructure> form_structure;
   FormData form;
   form.method = ASCIIToUTF16("post");
 
@@ -82,13 +83,24 @@ TEST(FormStructureTest, FieldCount) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  FormStructure form_structure(form, std::string());
+  field.label = ASCIIToUTF16("address1");
+  field.name = ASCIIToUTF16("address1");
+  field.form_control_type = "text";
+  field.should_autocomplete = false;
+  form.fields.push_back(field);
 
-  // All fields are counted.
-  EXPECT_EQ(3U, form_structure.field_count());
+  // The render process sends all fields to browser including fields with
+  // autocomplete=off
+  form_structure.reset(new FormStructure(form, std::string()));
+  EXPECT_EQ(4U, form_structure->field_count());
+
+  // We expect the same count when autocheckout is enabled.
+  form_structure.reset(new FormStructure(form, "http://fake_url"));
+  EXPECT_EQ(4U, form_structure->field_count());
 }
 
 TEST(FormStructureTest, AutofillCount) {
+  scoped_ptr<FormStructure> form_structure;
   FormData form;
   form.method = ASCIIToUTF16("post");
 
@@ -113,11 +125,30 @@ TEST(FormStructureTest, AutofillCount) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  FormStructure form_structure(form, std::string());
-  form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-
   // Only text and select fields that are heuristically matched are counted.
-  EXPECT_EQ(1U, form_structure.autofill_count());
+  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
+  EXPECT_EQ(1U, form_structure->autofill_count());
+
+  // Add a field with should_autocomplete=false.
+  field.label = ASCIIToUTF16("address1");
+  field.name = ASCIIToUTF16("address1");
+  field.form_control_type = "text";
+  field.should_autocomplete = false;
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
+  // DetermineHeuristicTypes also assign field type for fields with
+  // autocomplete=off thus autofill_count includes them. This is a bug,
+  // and they should not be counted. See http://crbug.com/176432 for details.
+  // TODO(benquan): change it to EXPECT_EQ(1U, ... when the bug is fixed.
+  EXPECT_EQ(2U, form_structure->autofill_count());
+
+  // All fields should be counted when Autocheckout is enabled.
+  form_structure.reset(new FormStructure(form, "http://fake_url"));
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
+  EXPECT_EQ(2U, form_structure->autofill_count());
 }
 
 TEST(FormStructureTest, SourceURL) {
@@ -137,6 +168,12 @@ TEST(FormStructureTest, IsAutofillable) {
   form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
+  // When autocheckout is enabled, we enable autofill even the form has
+  // no fields
+  form_structure.reset(new FormStructure(form, "http://fake_url"));
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
+  EXPECT_TRUE(form_structure->IsAutofillable(true));
+
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
   field.form_control_type = "text";
@@ -155,6 +192,11 @@ TEST(FormStructureTest, IsAutofillable) {
   form_structure.reset(new FormStructure(form, std::string()));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_FALSE(form_structure->IsAutofillable(true));
+
+  // We do not limit to three text fields when autocheckout is enabled.
+  form_structure.reset(new FormStructure(form, "http://fake_url"));
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
+  EXPECT_TRUE(form_structure->IsAutofillable(true));
 
   // We now have three text fields, but only two auto-fillable fields.
   field.label = ASCIIToUTF16("First Name");
@@ -226,8 +268,14 @@ TEST(FormStructureTest, ShouldBeParsed) {
   checkable_field.form_control_type = "checkbox";
   form.fields.push_back(checkable_field);
 
+  // We have only one text field, should not be parsed.
   form_structure.reset(new FormStructure(form, std::string()));
   EXPECT_FALSE(form_structure->ShouldBeParsed(true));
+
+  // The form should be parsed for autocheckout even it has less than three
+  // text fields.
+  form_structure.reset(new FormStructure(form, "http://fake_url"));
+  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
 
   // We now have three text fields, though only two are auto-fillable.
   field.label = ASCIIToUTF16("First Name");
@@ -284,8 +332,13 @@ TEST(FormStructureTest, ShouldBeParsed) {
   EXPECT_TRUE(form_structure->ShouldBeParsed(true));
 
   form.fields[0].form_control_type = "select-one";
+  // Now, no text fields.
   form_structure.reset(new FormStructure(form, std::string()));
   EXPECT_FALSE(form_structure->ShouldBeParsed(true));
+
+  // It should be parsed when autocheckout is enabled.
+  form_structure.reset(new FormStructure(form, "http://fake_url"));
+  EXPECT_TRUE(form_structure->ShouldBeParsed(true));
 }
 
 TEST(FormStructureTest, HeuristicsContactInfo) {

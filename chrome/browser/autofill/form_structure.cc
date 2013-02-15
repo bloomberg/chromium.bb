@@ -226,7 +226,7 @@ AutofillFieldType FieldTypeFromAutocompleteType(
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form,
-                             std::string autocheckout_url_prefix)
+                             const std::string& autocheckout_url_prefix)
     : form_name_(form.name),
       source_url_(form.origin),
       target_url_(form.action),
@@ -241,7 +241,8 @@ FormStructure::FormStructure(const FormData& form,
   for (std::vector<FormFieldData>::const_iterator field =
            form.fields.begin();
        field != form.fields.end(); field++) {
-    // Skipping checkable elements when autocheckout is not enabled, else
+
+    // Skipping checkable elements when Autocheckout is not enabled, else
     // these fields will interfere with existing field signatures with Autofill
     // servers.
     if (!field->is_checkable || IsAutocheckoutEnabled()) {
@@ -380,12 +381,12 @@ bool FormStructure::EncodeQueryRequest(
 
   // autocheckout_url_prefix tells the Autofill server where the forms in the
   // request came from, and the the Autofill server checks internal status and
-  // decide to enable autocheckout or not and may return autocheckout related
+  // decide to enable Autocheckout or not and may return Autocheckout related
   // data in the response accordingly.
   // There is no page/frame level object associated with FormStructure that
   // we could extract URL prefix from. But, all the forms should come from the
-  // same frame, so they should have the same autocheckout URL prefix. Thus we
-  // use URL prefix from the first form with autocheckout enabled.
+  // same frame, so they should have the same Autocheckout URL prefix. Thus we
+  // use URL prefix from the first form with Autocheckout enabled.
   std::string autocheckout_url_prefix;
 
   // Some badly formatted web sites repeat forms - detect that and encode only
@@ -584,7 +585,7 @@ bool FormStructure::IsAutocheckoutEnabled() const {
 }
 
 size_t FormStructure::RequiredFillableFields() const {
-  return IsAutocheckoutEnabled()? 0 : kRequiredFillableFields;
+  return IsAutocheckoutEnabled() ? 0 : kRequiredFillableFields;
 }
 
 bool FormStructure::IsAutofillable(bool require_method_post) const {
@@ -617,14 +618,17 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
   if (target_url_.path() == "/search")
     return false;
 
-  // Make sure there as at least one text field.
-  bool has_text_field = false;
-  for (std::vector<AutofillField*>::const_iterator it = begin();
-       it != end() && !has_text_field; ++it) {
-    has_text_field |= (*it)->form_control_type != "select-one";
+  if (!IsAutocheckoutEnabled()) {
+    // Make sure there is at least one text field when Autocheckout is
+    // not enabled.
+    bool has_text_field = false;
+    for (std::vector<AutofillField*>::const_iterator it = begin();
+         it != end() && !has_text_field; ++it) {
+      has_text_field |= (*it)->form_control_type != "select-one";
+    }
+    if (!has_text_field)
+      return false;
   }
-  if (!has_text_field)
-    return false;
 
   return !require_method_post || (method_ == POST);
 }
@@ -963,7 +967,7 @@ bool FormStructure::EncodeFormRequest(
         encompassing_xml_element->AddElement(field_element);
       }
     } else {
-      // Skip putting checkable fields in the request if autocheckout is not
+      // Skip putting checkable fields in the request if Autocheckout is not
       // enabled.
       if (field->is_checkable && !IsAutocheckoutEnabled())
         continue;

@@ -49,7 +49,8 @@ class XmlElement;
 // in the fields along with additional information needed by Autofill.
 class FormStructure {
  public:
-  FormStructure(const FormData& form, std::string autocheckout_url_prefix);
+  FormStructure(const FormData& form,
+                const std::string& autocheckout_url_prefix);
   virtual ~FormStructure();
 
   // Runs several heuristics against the form fields to determine their possible

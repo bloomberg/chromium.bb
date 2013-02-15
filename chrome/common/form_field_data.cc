@@ -13,7 +13,7 @@ FormFieldData::FormFieldData()
       is_checked(false),
       is_checkable(false),
       is_focusable(false),
-      should_autocomplete(false) {
+      should_autocomplete(true) {
 }
 
 FormFieldData::~FormFieldData() {
