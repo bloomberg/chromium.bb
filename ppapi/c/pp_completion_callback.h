@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_completion_callback.idl modified Wed Nov  7 11:20:18 2012. */
+/* From pp_completion_callback.idl modified Mon Feb 11 15:42:11 2013. */
 
 #ifndef PPAPI_C_PP_COMPLETION_CALLBACK_H_
 #define PPAPI_C_PP_COMPLETION_CALLBACK_H_
@@ -257,7 +257,7 @@ PP_INLINE void PP_RunCompletionCallback(struct PP_CompletionCallback* cc,
  *
  * @return A <code>PP_CompletionCallback</code> structure.
  */
-PP_INLINE struct PP_CompletionCallback PP_BlockUntilComplete() {
+PP_INLINE struct PP_CompletionCallback PP_BlockUntilComplete(void) {
   return PP_MakeCompletionCallback(NULL, NULL);
 }
 

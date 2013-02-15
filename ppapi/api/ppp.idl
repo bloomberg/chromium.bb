@@ -77,7 +77,7 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
  * implementations in certain circumstances when Chrome does "fast shutdown"
  * of a web page.
  */
-PP_EXPORT void PPP_ShutdownModule();
+PP_EXPORT void PPP_ShutdownModule(void);
 /**
  * @}
  */

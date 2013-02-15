@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_touch_point.idl modified Fri Sep 21 10:18:48 2012. */
+/* From pp_touch_point.idl modified Mon Feb 11 15:42:54 2013. */
 
 #ifndef PPAPI_C_PP_TOUCH_POINT_H_
 #define PPAPI_C_PP_TOUCH_POINT_H_
@@ -75,7 +75,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_TouchPoint, 28);
  *
  * @return A <code>PP_TouchPoint</code> structure.
  */
-PP_INLINE struct PP_TouchPoint PP_MakeTouchPoint() {
+PP_INLINE struct PP_TouchPoint PP_MakeTouchPoint(void) {
   struct PP_TouchPoint result = { 0, {0, 0}, {0, 0}, 0, 0 };
   return result;
 }

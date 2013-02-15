@@ -159,7 +159,7 @@ struct PP_Var {
  *
  * @return A <code>PP_Var</code> structure.
  */
-PP_INLINE struct PP_Var PP_MakeUndefined() {
+PP_INLINE struct PP_Var PP_MakeUndefined(void) {
   struct PP_Var result = { PP_VARTYPE_UNDEFINED, 0, {PP_FALSE} };
   return result;
 }
@@ -170,7 +170,7 @@ PP_INLINE struct PP_Var PP_MakeUndefined() {
  *
  * @return A <code>PP_Var</code> structure,
  */
-PP_INLINE struct PP_Var PP_MakeNull() {
+PP_INLINE struct PP_Var PP_MakeNull(void) {
   struct PP_Var result = { PP_VARTYPE_NULL, 0, {PP_FALSE} };
   return result;
 }

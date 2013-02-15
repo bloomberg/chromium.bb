@@ -63,7 +63,7 @@ struct PP_TouchPoint {
  *
  * @return A <code>PP_TouchPoint</code> structure.
  */
-PP_INLINE struct PP_TouchPoint PP_MakeTouchPoint() {
+PP_INLINE struct PP_TouchPoint PP_MakeTouchPoint(void) {
   struct PP_TouchPoint result = { 0, {0, 0}, {0, 0}, 0, 0 };
   return result;
 }

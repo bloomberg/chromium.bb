@@ -230,7 +230,7 @@ PP_INLINE void PP_RunCompletionCallback(struct PP_CompletionCallback* cc,
  *
  * @return A <code>PP_CompletionCallback</code> structure.
  */
-PP_INLINE struct PP_CompletionCallback PP_BlockUntilComplete() {
+PP_INLINE struct PP_CompletionCallback PP_BlockUntilComplete(void) {
   return PP_MakeCompletionCallback(NULL, NULL);
 }
 

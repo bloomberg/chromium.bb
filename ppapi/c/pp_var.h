@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_var.idl modified Wed Dec 14 18:08:00 2011. */
+/* From pp_var.idl modified Mon Feb 11 15:41:10 2013. */
 
 #ifndef PPAPI_C_PP_VAR_H_
 #define PPAPI_C_PP_VAR_H_
@@ -168,7 +168,7 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Var, 16);
  *
  * @return A <code>PP_Var</code> structure.
  */
-PP_INLINE struct PP_Var PP_MakeUndefined() {
+PP_INLINE struct PP_Var PP_MakeUndefined(void) {
   struct PP_Var result = { PP_VARTYPE_UNDEFINED, 0, {PP_FALSE} };
   return result;
 }
@@ -179,7 +179,7 @@ PP_INLINE struct PP_Var PP_MakeUndefined() {
  *
  * @return A <code>PP_Var</code> structure,
  */
-PP_INLINE struct PP_Var PP_MakeNull() {
+PP_INLINE struct PP_Var PP_MakeNull(void) {
   struct PP_Var result = { PP_VARTYPE_NULL, 0, {PP_FALSE} };
   return result;
 }
