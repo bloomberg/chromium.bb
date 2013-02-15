@@ -577,7 +577,8 @@ void SelectFileDialogImpl::SelectFileImpl(
       return;
     }
   }
-  HWND owner = owning_window->GetRootWindow()->GetAcceleratedWidget();
+  HWND owner = owning_window
+               ? owning_window->GetRootWindow()->GetAcceleratedWidget() : NULL;
 #else
   HWND owner = owning_window;
 #endif
