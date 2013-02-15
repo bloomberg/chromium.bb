@@ -2157,6 +2157,25 @@
           'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
           'CharacterSet': '1',
         },
+        # Add the default import libs.
+        'msvs_settings':{
+          'VCLinkerTool': {
+            'AdditionalDependencies': [
+              'kernel32.lib',
+              'gdi32.lib',
+              'winspool.lib',
+              'comdlg32.lib',
+              'advapi32.lib',
+              'shell32.lib',
+              'ole32.lib',
+              'oleaut32.lib',
+              'user32.lib',
+              'uuid.lib',
+              'odbc32.lib',
+              'odbccp32.lib',
+            ],
+          },
+        },
       },
       'x86_Base': {
         'abstract': 1,
