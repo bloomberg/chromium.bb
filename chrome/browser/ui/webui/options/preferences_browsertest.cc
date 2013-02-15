@@ -173,7 +173,7 @@ void PreferencesBrowserTest::OnPreferenceChanged(const std::string& pref_name) {
 void PreferencesBrowserTest::SetUpInProcessBrowserTestFixture() {
   EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(policy_provider_, RegisterPolicyNamespace(_, _))
+  EXPECT_CALL(policy_provider_, RegisterPolicyDomain(_, _))
       .Times(AnyNumber());
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
       &policy_provider_);

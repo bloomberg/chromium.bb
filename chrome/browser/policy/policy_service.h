@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_POLICY_SERVICE_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -84,15 +85,15 @@ class PolicyService {
 
   virtual void RemoveObserver(PolicyDomain domain, Observer* observer) = 0;
 
-  // Registers a namespace at the policy service, signaling that there is
-  // interest in receiving policy for that namespace. Registrations can be
-  // stacked; each namespace remains registered until an unregister call is made
-  // for each previous register call.
-  // Registering a new namespace does not automatically trigger a policy reload;
-  // invoke RefreshPolicies() if an immediate reload is intended.
-  virtual void RegisterPolicyNamespace(const PolicyNamespace& ns) = 0;
-
-  virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) = 0;
+  // Registers the current components of the given policy |domain|, signaling
+  // that there is interest in receiving policy for them.
+  // |component_ids| is the current set of components for that |domain|, and
+  // replaces any previously registered set.
+  // The policy providers will try to load policy for these components, and may
+  // flush cached data for components that aren't registered anymore.
+  virtual void RegisterPolicyDomain(
+      PolicyDomain domain,
+      const std::set<std::string>& component_ids) = 0;
 
   virtual const PolicyMap& GetPolicies(const PolicyNamespace& ns) const = 0;
 

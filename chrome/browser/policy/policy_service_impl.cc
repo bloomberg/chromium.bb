@@ -74,14 +74,11 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
   }
 }
 
-void PolicyServiceImpl::RegisterPolicyNamespace(const PolicyNamespace& ns) {
+void PolicyServiceImpl::RegisterPolicyDomain(
+    PolicyDomain domain,
+    const std::set<std::string>& components) {
   for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
-    (*it)->RegisterPolicyNamespace(ns);
-}
-
-void PolicyServiceImpl::UnregisterPolicyNamespace(const PolicyNamespace& ns) {
-  for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
-    (*it)->UnregisterPolicyNamespace(ns);
+    (*it)->RegisterPolicyDomain(domain, components);
 }
 
 const PolicyMap& PolicyServiceImpl::GetPolicies(

@@ -18,24 +18,8 @@ class MockPolicyService : public PolicyService {
   MOCK_METHOD2(AddObserver, void(PolicyDomain, Observer*));
   MOCK_METHOD2(RemoveObserver, void(PolicyDomain, Observer*));
 
-  // vs2010 doesn't compile this:
-  // MOCK_METHOD1(RegisterPolicyNamespace, void(const PolicyNamespace&));
-  // MOCK_METHOD1(UnregisterPolicyNamespace, void(const PolicyNamespace&));
-
-  // Tests use these 2 mock methods instead:
-  MOCK_METHOD2(RegisterPolicyNamespace, void(PolicyDomain,
-                                             const std::string&));
-  MOCK_METHOD2(UnregisterPolicyNamespace, void(PolicyDomain,
-                                               const std::string&));
-
-  // And the overridden calls just forward to the new mock methods:
-  virtual void RegisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE {
-    RegisterPolicyNamespace(ns.domain, ns.component_id);
-  }
-
-  virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE {
-    UnregisterPolicyNamespace(ns.domain, ns.component_id);
-  }
+  MOCK_METHOD2(RegisterPolicyDomain, void(PolicyDomain,
+                                          const std::set<std::string>&));
 
   MOCK_CONST_METHOD1(GetPolicies, const PolicyMap&(const PolicyNamespace&));
   MOCK_CONST_METHOD1(IsInitializationComplete, bool(PolicyDomain domain));
