@@ -90,19 +90,19 @@ function on_asan_mac_host {
   if [[ "${OS}" != "Darwin" ]]; then
     return 1
   fi
-  HOST="$(uname -n)"
+  HOST="$(hostname -s)"
   # Chrome Mac ASan Builder.
-  if [[ "${HOST}" == "vm633-m1.golo.chromium.org" ]]; then
+  if [[ "${HOST}" == "vm633-m1" ]]; then
     return 0
   fi
   # Chrome Mac ASan LKGR.
-  if [[ "${HOST}" == "mini11-a1.chrome.corp.google.com" ]]; then
+  if [[ "${HOST}" == "mini11-a1" ]]; then
     return 0
   fi
   # mac_asan trybots.
   for num in $(jot - 600 655)
   do
-    if [[ "${HOST}" == "vm${num}-m4.golo.chromium.org" ]]; then
+    if [[ "${HOST}" == "vm${num}-m4" ]]; then
       return 0
     fi
   done
