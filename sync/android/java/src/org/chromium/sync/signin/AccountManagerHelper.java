@@ -36,7 +36,7 @@ public class AccountManagerHelper {
 
     private static final String TAG = "AccountManagerHelper";
 
-    private static final String GOOGLE_ACCOUNT_TYPE = "com.google";
+    public static final String GOOGLE_ACCOUNT_TYPE = "com.google";
 
     private static final Object lock = new Object();
 
@@ -267,6 +267,7 @@ public class AccountManagerHelper {
      * - Assumes that the account is a valid account.
      * - Should not be called on the main thread.
      */
+    @Deprecated
     public String getNewAuthToken(Account account, String authToken, String authTokenType) {
         // TODO(dsmyers): consider reimplementing using an AccountManager function with an
         // explicit timeout.
@@ -285,5 +286,21 @@ public class AccountManagerHelper {
             Log.w(TAG, "Auth token - IO exception", e);
         }
         return null;
+    }
+
+    /**
+     * Invalidates the old token (if non-null/non-empty) and asynchronously generates a new one.
+     *
+     * - Assumes that the account is a valid account.
+     */
+    public void getNewAuthTokenFromForeground(Account account, String authToken,
+                String authTokenType, GetAuthTokenCallback callback) {
+        if (authToken != null && !authToken.isEmpty()) {
+            mAccountManager.invalidateAuthToken(GOOGLE_ACCOUNT_TYPE, authToken);
+        }
+        AtomicInteger numTries = new AtomicInteger(0);
+        AtomicBoolean errorEncountered = new AtomicBoolean(false);
+        getAuthTokenAsynchronously(
+            account, authTokenType, callback, numTries, errorEncountered, null);
     }
 }
