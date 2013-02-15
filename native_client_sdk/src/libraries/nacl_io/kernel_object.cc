@@ -19,6 +19,19 @@
 #include "nacl_io/mount_node.h"
 #include "utils/auto_lock.h"
 
+KernelObject::MMapInfo::MMapInfo()
+    : addr(NULL),
+      length(0),
+      handle(NULL) {
+}
+
+KernelObject::MMapInfo::MMapInfo(void* addr, size_t length,
+                                 KernelHandle* handle)
+    : addr(addr),
+      length(length),
+      handle(handle) {
+}
+
 KernelObject::KernelObject() {
   pthread_mutex_init(&kernel_lock_, NULL);
   pthread_mutex_init(&process_lock_, NULL);
@@ -161,8 +174,8 @@ void KernelObject::FreeFD(int fd) {
   // Release the mount and handle since we no longer
   // track them with this FD.
   KernelHandle* handle = handle_map_[fd];
-  handle->mount_->Release();
   handle->Release();
+  handle->mount_->Release();
 
   handle_map_[fd] = NULL;
   free_fds_.push_back(fd);

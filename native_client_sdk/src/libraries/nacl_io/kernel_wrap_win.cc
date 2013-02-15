@@ -229,9 +229,45 @@ int _write(int fd, const void* buf, size_t nbyte) {
   return ki_write(fd, buf, nbyte);
 }
 
-int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
-  *nwrote = count;
+
+// "real" functions, i.e. the unwrapped original functions. On Windows we don't
+// wrap, so the real functions aren't accessible. In most cases, we just fail.
+
+int _real_close(int fd) {
+  return ENOSYS;
+}
+
+int _real_fstat(int fd, struct stat *buf) {
   return 0;
+}
+
+int _real_getdents(int fd, void* nacl_buf, size_t nacl_count, size_t *nread) {
+  return ENOSYS;
+}
+
+int _real_lseek(int fd, off_t offset, int whence, off_t* new_offset) {
+  return ENOSYS;
+}
+
+int _real_mkdir(const char* pathname, mode_t mode) {
+  return ENOSYS;
+}
+
+int _real_mmap(void** addr, size_t length, int prot, int flags, int fd,
+               off_t offset) {
+  return ENOSYS;
+}
+
+int _real_munmap(void* addr, size_t length) {
+  return ENOSYS;
+}
+
+int _real_open(const char* pathname, int oflag, mode_t cmode, int* newfd) {
+  return ENOSYS;
+}
+
+int _real_open_resource(const char* file, int* fd) {
+  return ENOSYS;
 }
 
 int _real_read(int fd, void *buf, size_t count, size_t *nread) {
@@ -239,7 +275,12 @@ int _real_read(int fd, void *buf, size_t count, size_t *nread) {
   return 0;
 }
 
-int _real_fstat(int fd, struct stat *buf) {
+int _real_rmdir(const char* pathname) {
+  return ENOSYS;
+}
+
+int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
+  *nwrote = count;
   return 0;
 }
 

@@ -92,6 +92,9 @@ endef
 #
 # $1 = Target Name
 # $2 = List of Sources
+# $3 = List of LIBS
+# $4 = List of DEPS
+# $5 = 1 => Don't add to NMF.
 #
 #
 GLIBC_REMAP:=
@@ -104,9 +107,13 @@ NMF_TARGETS+=$(OUTDIR)/$(1)_x86_64.so
 $(OUTDIR)/$(1)_x86_64.so : $(foreach src,$(2),$$(OUTDIR)/$(basename $(src))_x86_64.o) $(4)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter-out $(4),$$^) -shared -m64 $(LD_X86_64) $$(LD_FLAGS) $(foreach lib,$(3),-l$(lib)))
 
+ifneq (1,$(5))
 GLIBC_SO_LIST+=$(OUTDIR)/$(1)_x86_32.so $(OUTDIR)/$(1)_x86_64.so
 GLIBC_REMAP+=-n $(1)_x86_32.so,$(1).so
 GLIBC_REMAP+=-n $(1)_x86_64.so,$(1).so
+else
+all: $(OUTDIR)/$(1)_x86_32.so $(OUTDIR)/$(1)_x86_64.so
+endif
 endef
 
 

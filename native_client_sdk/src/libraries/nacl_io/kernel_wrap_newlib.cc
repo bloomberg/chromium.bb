@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <irt.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include "nacl_io/kernel_intercept.h"
 
@@ -32,6 +33,7 @@ EXTERN_C_BEGIN
 
 DECLARE_STRUCT(fdio)
 DECLARE_STRUCT(filename)
+DECLARE_STRUCT(memory)
 
 DECLARE(fdio, close)
 DECLARE(fdio, dup)
@@ -43,6 +45,8 @@ DECLARE(fdio, seek)
 DECLARE(fdio, write)
 DECLARE(filename, open)
 DECLARE(filename, stat)
+DECLARE(memory, mmap)
+DECLARE(memory, munmap)
 
 
 int access(const char* path, int amode) {
@@ -107,9 +111,25 @@ int mkdir(const char* path, mode_t mode) {
   return ki_mkdir(path, mode);
 }
 
+int WRAP(mmap)(void** addr, size_t length, int prot, int flags, int fd,
+               off_t offset) {
+  if (flags & MAP_ANONYMOUS)
+    return REAL(mmap)(addr, length, prot, flags, fd, offset);
+
+  *addr = ki_mmap(*addr, length, prot, flags, fd, offset);
+  return *addr == (void*)-1 ? errno : 0;
+}
+
 int mount(const char* source, const char* target, const char* filesystemtype,
           unsigned long mountflags, const void* data) {
   return ki_mount(source, target, filesystemtype, mountflags, data);
+}
+
+int WRAP(munmap)(void* addr, size_t length) {
+  // Always let the real munmap run on the address range. It is not an error if
+  // there are no mapped pages in that range.
+  ki_munmap(addr, length);
+  return REAL(munmap)(addr, length);
 }
 
 int WRAP(open)(const char* pathname, int oflag, mode_t cmode, int* newfd) {
@@ -164,17 +184,58 @@ int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
   return (signed_nwrote < 0) ? errno : 0;
 }
 
-int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
-  return REAL(write)(fd, buf, count, nwrote);
+
+// "real" functions, i.e. the unwrapped original functions.
+
+int _real_close(int fd) {
+  return REAL(close)(fd);
+}
+
+int _real_fstat(int fd, struct stat *buf) {
+  return REAL(fstat)(fd, buf);
+}
+
+int _real_getdents(int fd, dirent* nacl_buf, size_t nacl_count, size_t *nread) {
+  return REAL(getdents)(fd, nacl_buf, nacl_count, nread);
+}
+
+int _real_lseek(int fd, off_t offset, int whence, off_t* new_offset) {
+  return REAL(seek)(fd, offset, whence, new_offset);
+}
+
+int _real_mkdir(const char* pathname, mode_t mode) {
+  return ENOSYS;
+}
+
+int _real_mmap(void** addr, size_t length, int prot, int flags, int fd,
+               off_t offset) {
+  return REAL(mmap)(addr, length, prot, flags, fd, offset);
+}
+
+int _real_munmap(void* addr, size_t length) {
+  return REAL(munmap)(addr, length);
+}
+
+int _real_open(const char* pathname, int oflag, mode_t cmode, int* newfd) {
+  return REAL(open)(pathname, oflag, cmode, newfd);
+}
+
+int _real_open_resource(const char* file, int* fd) {
+  return ENOSYS;
 }
 
 int _real_read(int fd, void *buf, size_t count, size_t *nread) {
   return REAL(read)(fd, buf, count, nread);
 }
 
-int _real_fstat(int fd, struct stat *buf) {
-  return REAL(fstat)(fd, buf);
+int _real_rmdir(const char* pathname) {
+  return ENOSYS;
 }
+
+int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
+  return REAL(write)(fd, buf, count, nwrote);
+}
+
 
 void kernel_wrap_init() {
   static bool wrapped = false;
@@ -191,6 +252,8 @@ void kernel_wrap_init() {
     DO_WRAP(fdio, write);
     DO_WRAP(filename, open);
     DO_WRAP(filename, stat);
+    DO_WRAP(memory, mmap);
+    DO_WRAP(memory, munmap);
   }
 }
 

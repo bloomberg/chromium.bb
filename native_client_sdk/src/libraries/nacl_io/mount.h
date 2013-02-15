@@ -47,6 +47,10 @@ class Mount : public RefObject {
   // MountNode is created with a ref count of 1.
   virtual MountNode *Open(const Path& path, int o_flags) = 0;
 
+  // OpenResource is only used to read files from the NaCl NMF file. No mount
+  // except MountPassthrough should implement it.
+  virtual MountNode *OpenResource(const Path& path) { return NULL; }
+
   // Unlink, Mkdir, Rmdir will affect the both the RefCount
   // and the nlink number in the stat object.
   virtual int Unlink(const Path& path) = 0;

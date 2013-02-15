@@ -61,8 +61,11 @@ int _mkdir(const char* path);
 #else
 int mkdir(const char* path, mode_t mode) NOTHROW;
 #endif
+void* mmap(void* addr, size_t length, int prot, int flags, int fd,
+           off_t offset) NOTHROW;
 int mount(const char* source, const char* target, const char* filesystemtype,
           unsigned long mountflags, const void* data) NOTHROW;
+int munmap(void* addr, size_t length) NOTHROW;
 int NAME(open)(const char* path, int oflag, ...);
 read_ssize_t NAME(read)(int fd, void* buf, size_t nbyte);
 int remove(const char* path) NOTHROW;

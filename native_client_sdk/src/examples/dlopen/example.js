@@ -5,6 +5,7 @@
 // Called by the common.js module.
 function attachListeners() {
   document.querySelector('form').addEventListener('submit', askBall);
+  document.getElementById('reverse').addEventListener('click', reverseString);
 }
 
 // Called by the common.js module.
@@ -19,6 +20,15 @@ function askBall(event) {
   var query = questionEl.value;
   questionEl.value = '';
   document.getElementById('log').innerHTML += 'You asked:' + query + '<br>';
-  common.naclModule.postMessage('query');
+  common.naclModule.postMessage('eightball');
   event.preventDefault();
+}
+
+function reverseString(event) {
+  var questionEl = document.getElementById('question');
+  var query = questionEl.value;
+  questionEl.value = '';
+
+  document.getElementById('log').innerHTML += 'Reversing:' + query + '<br>';
+  common.naclModule.postMessage('reverse:' + query);
 }

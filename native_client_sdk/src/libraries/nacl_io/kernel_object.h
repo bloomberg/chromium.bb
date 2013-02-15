@@ -21,8 +21,18 @@ class Mount;
 // path resolution.
 class KernelObject {
  public:
+  struct MMapInfo {
+    MMapInfo();
+    MMapInfo(void* addr, size_t length, KernelHandle* handle);
+
+    void* addr;
+    size_t length;
+    KernelHandle* handle;
+  };
+
   typedef std::vector<KernelHandle*> HandleMap_t;
   typedef std::map<std::string, Mount*> MountMap_t;
+  typedef std::vector<MMapInfo> MMapInfoList_t;
 
   KernelObject();
   virtual ~KernelObject();
@@ -49,6 +59,7 @@ class KernelObject {
 
   HandleMap_t handle_map_;
   MountMap_t mounts_;
+  MMapInfoList_t mmap_info_list_;
 
   // Kernel lock protects kernel wide resources such as the mount table...
   pthread_mutex_t kernel_lock_;

@@ -13,6 +13,13 @@
       'SOURCES' : ['eightball.cc', 'eightball.h'],
       'CXXFLAGS': ['-fPIC'],
       'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
+    },
+    {
+      'NAME' : 'libreverse',
+      'TYPE' : 'so',
+      'SOURCES' : ['reverse.cc', 'reverse.h'],
+      'CXXFLAGS': ['-fPIC'],
+      'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': [

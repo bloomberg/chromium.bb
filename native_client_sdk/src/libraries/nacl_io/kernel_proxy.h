@@ -89,6 +89,13 @@ class KernelProxy : protected KernelObject {
   virtual int link(const char* oldpath, const char* newpath);
   virtual int symlink(const char* oldpath, const char* newpath);
 
+  virtual void* mmap(void* addr, size_t length, int prot, int flags, int fd,
+                     size_t offset);
+  virtual int munmap(void* addr, size_t length);
+
+  // NaCl-only function to read resources specified in the NMF file.
+  virtual int open_resource(const char* file);
+
 protected:
   MountFactoryMap_t factories_;
   int dev_;

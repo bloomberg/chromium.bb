@@ -42,6 +42,7 @@ TARGET=dlopen
 #
 DLOPEN_SRCS=dlopen.cc
 EIGHTBALL_SRCS=eightball.cc
+REVERSE_SRCS=reverse.cc
 
 
 #
@@ -57,7 +58,7 @@ EIGHTBALL_SRCS=eightball.cc
 # and the set we do not.  This example does not havea any additional library
 # dependencies.
 #
-DEPS=
+DEPS=nacl_io
 LIBS=$(DEPS) dl ppapi_cpp ppapi pthread
 
 
@@ -71,13 +72,20 @@ $(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
 #
 $(foreach src,$(DLOPEN_SRCS),$(eval $(call COMPILE_RULE,$(src))))
 $(foreach src,$(EIGHTBALL_SRCS),$(eval $(call COMPILE_RULE,$(src),-fPIC)))
+$(foreach src,$(REVERSE_SRCS),$(eval $(call COMPILE_RULE,$(src),-fPIC)))
+
+# NOTE: The 1 argument here builds libeightball, but prevents it from being
+# automatically included in the .nmf file (and therefore loaded at startup).
+# This is done to demonstrate that the shared library can be successfully
+# loaded from any location (in this example, the HTTP mount).
+$(eval $(call SO_RULE,libreverse,$(REVERSE_SRCS),,,1))
+
 
 #
 # Use the link macro for this target on the list of sources.
 #
 $(eval $(call SO_RULE,libeightball,$(EIGHTBALL_SRCS)))
 $(eval $(call LINK_RULE,$(TARGET),$(DLOPEN_SRCS),$(LIBS),$(DEPS)))
-
 
 #
 # Specify the NMF to be created with no additional arugments.

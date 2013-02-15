@@ -9,15 +9,19 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <string.h>
+#include <iterator>
 #include <string>
 
 #include "nacl_io/kernel_handle.h"
+#include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/mount_dev.h"
 #include "nacl_io/mount_html5fs.h"
 #include "nacl_io/mount_http.h"
 #include "nacl_io/mount_mem.h"
 #include "nacl_io/mount_node.h"
+#include "nacl_io/mount_passthrough.h"
+#include "nacl_io/osmman.h"
 #include "nacl_io/osstat.h"
 #include "nacl_io/path.h"
 #include "nacl_io/pepper_interface.h"
@@ -31,6 +35,7 @@
 // TODO(noelallen) : Grab/Redefine these in the kernel object once available.
 #define USR_ID 1002
 #define GRP_ID 1003
+
 
 
 KernelProxy::KernelProxy()
@@ -51,10 +56,12 @@ void KernelProxy::Init(PepperInterface* ppapi) {
   factories_["dev"] = MountDev::Create<MountDev>;
   factories_["html5fs"] = MountHtml5Fs::Create<MountHtml5Fs>;
   factories_["httpfs"] = MountHttp::Create<MountHttp>;
+  factories_["passthroughfs"] = MountPassthrough::Create<MountPassthrough>;
 
-  // Create memory mount at root
+  // Create passthrough mount at root
   StringMap_t smap;
-  mounts_["/"] = MountMem::Create<MountMem>(dev_++, smap, ppapi_);
+  mounts_["/"] = MountPassthrough::Create<MountPassthrough>(
+      dev_++, smap, ppapi_);
   mounts_["/dev"] = MountDev::Create<MountDev>(dev_++, smap, ppapi_);
 
   // Open the first three in order to get STDIN, STDOUT, STDERR
@@ -427,4 +434,109 @@ int KernelProxy::link(const char* oldpath, const char* newpath) {
 int KernelProxy::symlink(const char* oldpath, const char* newpath) {
   errno = EINVAL;
   return -1;
+}
+
+void* KernelProxy::mmap(void* addr, size_t length, int prot, int flags, int fd,
+                        size_t offset) {
+  // We shouldn't be getting anonymous mmaps here.
+  assert((flags & MAP_ANONYMOUS) == 0);
+  assert(fd != -1);
+
+  KernelHandle* handle = AcquireHandle(fd);
+
+  if (NULL == handle)
+    return MAP_FAILED;
+
+  void* new_addr;
+  {
+    AutoLock lock(&handle->lock_);
+    new_addr = handle->node_->MMap(addr, length, prot, flags, offset);
+    if (new_addr == MAP_FAILED) {
+      ReleaseHandle(handle);
+      return MAP_FAILED;
+    }
+  }
+
+  // Don't release the KernelHandle, it is now owned by the MMapInfo.
+  AutoLock lock(&process_lock_);
+  mmap_info_list_.push_back(MMapInfo(new_addr, length, handle));
+
+  return new_addr;
+}
+
+int KernelProxy::munmap(void* addr, size_t length) {
+  if (addr == NULL || length == 0) {
+    errno = EINVAL;
+    return -1;
+  }
+
+  MMapInfoList_t unmap_list;
+  {
+    AutoLock lock(&process_lock_);
+    int mmap_list_end = mmap_info_list_.size();
+    void* addr_end = static_cast<char*>(addr) + length;
+
+    for (int i = 0; i < mmap_list_end;) {
+      const MMapInfo& mmap_info = mmap_info_list_[i];
+      if (addr < static_cast<char*>(mmap_info.addr) + mmap_info.length &&
+          mmap_info.addr < addr_end)
+        // This memory area should be unmapped; swap it with the last entry in
+        // our list.
+        std::swap(mmap_info_list_[i], mmap_info_list_[--mmap_list_end]);
+      else
+        ++i;
+    }
+
+    int num_to_unmap =- mmap_info_list_.size() - mmap_list_end;
+    if (!num_to_unmap) {
+      // From the Linux mmap man page: "It is not an error if the indicated
+      // range does not contain any mapped pages."
+      return 0;
+    }
+
+    std::copy(mmap_info_list_.begin() + mmap_list_end, mmap_info_list_.end(),
+              std::back_inserter(unmap_list));
+
+    mmap_info_list_.resize(mmap_list_end);
+  }
+
+  // Unmap everything past the new end of the list.
+  for (int i = 0; i < unmap_list.size(); ++i) {
+    const MMapInfo& mmap_info = unmap_list[i];
+    KernelHandle* handle = mmap_info.handle;
+    assert(handle != NULL);
+
+    // Ignore the results from individual munmaps.
+    handle->node_->Munmap(mmap_info.addr, mmap_info.length);
+    ReleaseHandle(handle);
+  }
+
+  return 0;
+}
+
+int KernelProxy::open_resource(const char* path) {
+  Path rel;
+
+  Mount* mnt = AcquireMountAndPath(path, &rel);
+  if (mnt == NULL) return -1;
+
+  MountNode* node = mnt->OpenResource(rel);
+  if (node == NULL) {
+    node = mnt->Open(rel, O_RDONLY);
+    if (node == NULL) {
+      ReleaseMount(mnt);
+      return -1;
+    }
+  }
+
+  // OpenResource failed, try Open().
+
+  KernelHandle* handle = new KernelHandle(mnt, node, O_RDONLY);
+  int fd = AllocateFD(handle);
+  mnt->AcquireNode(node);
+
+  ReleaseHandle(handle);
+  ReleaseMount(mnt);
+
+  return fd;
 }

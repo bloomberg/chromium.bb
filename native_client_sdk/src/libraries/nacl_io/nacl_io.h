@@ -39,7 +39,7 @@ void nacl_io_init();
  *       pp::Module::Get()->get_browser_interface()
  */
 void nacl_io_init_ppapi(PP_Instance instance,
-                            PPB_GetInterface get_interface);
+                        PPB_GetInterface get_interface);
 
 
 /** Mount a new filesystem type.
@@ -93,6 +93,12 @@ void nacl_io_init_ppapi(PP_Instance instance,
  *           cookies are ignored in the response.
  *       All other key/value pairs are assumed to be headers to use with
  *       HTTP requests.
+ *
+ *   "passthroughfs": A filesystem that passes all requests through to the
+ *                    underlying NaCL calls. The primary use of this filesystem
+ *                    is to allow reading NMF resources.
+ *     source: Unused.
+ *     data: Unused.
  *
  *
  * @param[in] source Depends on the filesystem type. See above.

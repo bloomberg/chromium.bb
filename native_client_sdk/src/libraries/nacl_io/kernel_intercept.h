@@ -51,6 +51,10 @@ int ki_unlink(const char* path);
 int ki_access(const char* path, int amode);
 int ki_link(const char* oldpath, const char* newpath);
 int ki_symlink(const char* oldpath, const char* newpath);
+void* ki_mmap(void* addr, size_t length, int prot, int flags, int fd,
+              off_t offset);
+int ki_munmap(void* addr, size_t length);
+int ki_open_resource(const char* file);
 
 EXTERN_C_END
 

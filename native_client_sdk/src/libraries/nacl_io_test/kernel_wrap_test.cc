@@ -11,8 +11,9 @@
 #include "nacl_io/kernel_wrap.h"
 #include "kernel_proxy_mock.h"
 
-using ::testing::StrEq;
 using ::testing::_;
+using ::testing::Return;
+using ::testing::StrEq;
 
 namespace {
 
@@ -75,6 +76,12 @@ void MakeDummyStatbuf(struct stat* statbuf) {
 class KernelWrapTest : public ::testing::Test {
  public:
   KernelWrapTest() {
+    // Initializing the KernelProxy opens stdin/stdout/stderr.
+    EXPECT_CALL(mock, open(_, _))
+      .WillOnce(Return(0))
+      .WillOnce(Return(1))
+      .WillOnce(Return(2));
+
     ki_init(&mock);
   }
 

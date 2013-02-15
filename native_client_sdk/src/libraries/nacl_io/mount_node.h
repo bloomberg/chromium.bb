@@ -35,6 +35,9 @@ class MountNode : public RefObject {
   virtual int Read(size_t offs, void* buf, size_t count);
   virtual int Truncate(size_t size);
   virtual int Write(size_t offs, const void* buf, size_t count);
+  virtual void* MMap(void* addr, size_t length, int prot, int flags,
+                     size_t offset);
+  virtual int Munmap(void* addr, size_t length);
 
   virtual int GetLinks();
   virtual int GetMode();

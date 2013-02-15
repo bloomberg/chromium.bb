@@ -17,6 +17,7 @@
 #include <irt_syscalls.h>
 #include <nacl_stat.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include "nacl_io/kernel_intercept.h"
 
@@ -117,6 +118,9 @@ DECLARE(rmdir)
 DECLARE(seek)
 DECLARE(stat)
 DECLARE(write)
+DECLARE(mmap)
+DECLARE(munmap)
+DECLARE(open_resource)
 
 int access(const char* path, int amode) NOTHROW {
   return ki_access(path, amode);
@@ -223,14 +227,35 @@ int WRAP(mkdir) (const char* pathname, mode_t mode) {
   return (ki_mkdir(pathname, mode)) ? errno : 0;
 }
 
+int WRAP(mmap)(void** addr, size_t length, int prot, int flags, int fd,
+               off_t offset) {
+  if (flags & MAP_ANONYMOUS)
+    return REAL(mmap)(addr, length, prot, flags, fd, offset);
+
+  *addr = ki_mmap(*addr, length, prot, flags, fd, offset);
+  return *addr == (void*)-1 ? errno : 0;
+}
+
 int mount(const char* source, const char* target, const char* filesystemtype,
           unsigned long mountflags, const void* data) NOTHROW {
   return ki_mount(source, target, filesystemtype, mountflags, data);
 }
 
+int WRAP(munmap)(void* addr, size_t length) {
+  // Always let the real munmap run on the address range. It is not an error if
+  // there are no mapped pages in that range.
+  int result = ki_munmap(addr, length);
+  return REAL(munmap)(addr, length);
+}
+
 int WRAP(open)(const char* pathname, int oflag, mode_t cmode, int* newfd) {
   *newfd = ki_open(pathname, oflag);
   return (*newfd < 0) ? errno : 0;
+}
+
+int WRAP(open_resource)(const char* file, int* fd) {
+  *fd = ki_open_resource(file);
+  return (*fd < 0) ? errno : 0;
 }
 
 int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
@@ -290,19 +315,91 @@ int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
   return (signed_nwrote < 0) ? errno : 0;
 }
 
-int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
-  return REAL(write)(fd, buf, count, nwrote);
+
+// "real" functions, i.e. the unwrapped original functions.
+
+int _real_close(int fd) {
+  return REAL(close)(fd);
+}
+
+int _real_fstat(int fd, struct stat *buf) {
+  struct nacl_abi_stat st;
+  int err = REAL(fstat)(fd, &st);
+  if (err) {
+    errno = err;
+    return -1;
+  }
+
+  nacl_stat_to_stat(&st, buf);
+  return 0;
+}
+
+int _real_getdents(int fd, void* buf, size_t count, size_t *nread) {
+  // "buf" contains dirent(s); "nacl_buf" contains nacl_abi_dirent(s).
+  // See WRAP(getdents) above.
+  char* nacl_buf = (char*)alloca(count);
+  size_t offset = 0;
+  size_t nacl_offset = 0;
+  size_t nacl_nread;
+  int err = REAL(getdents)(fd, (dirent*)nacl_buf, count, &nacl_nread);
+  if (err)
+    return err;
+
+  while (nacl_offset < nacl_nread) {
+    dirent* d = (dirent*)((char*)buf + offset);
+    nacl_abi_dirent* nacl_d = (nacl_abi_dirent*)(nacl_buf + nacl_offset);
+    d->d_ino = nacl_d->nacl_abi_d_ino;
+    d->d_off = nacl_d->nacl_abi_d_off;
+    d->d_reclen = nacl_d->nacl_abi_d_reclen + d_name_shift;
+    size_t d_name_len = nacl_d->nacl_abi_d_reclen -
+        offsetof(nacl_abi_dirent, nacl_abi_d_name);
+    memcpy(d->d_name, nacl_d->nacl_abi_d_name, d_name_len);
+
+    offset += d->d_reclen;
+    offset += nacl_d->nacl_abi_d_reclen;
+  }
+
+  *nread = offset;
+  return 0;
+}
+
+int _real_lseek(int fd, off_t offset, int whence, off_t* new_offset) {
+  return REAL(seek)(fd, offset, whence, new_offset);
+}
+
+int _real_mkdir(const char* pathname, mode_t mode) {
+  return REAL(mkdir)(pathname, mode);
+}
+
+int _real_mmap(void** addr, size_t length, int prot, int flags, int fd,
+               off_t offset) {
+  return REAL(mmap)(addr, length, prot, flags, fd, offset);
+}
+
+int _real_munmap(void* addr, size_t length) {
+  return REAL(munmap)(addr, length);
+}
+
+int _real_open(const char* pathname, int oflag, mode_t cmode, int* newfd) {
+  return REAL(open)(pathname, oflag, cmode, newfd);
+}
+
+int _real_open_resource(const char* file, int* fd) {
+  return REAL(open_resource)(file, fd);
 }
 
 int _real_read(int fd, void *buf, size_t count, size_t *nread) {
   return REAL(read)(fd, buf, count, nread);
 }
 
-int _real_fstat(int fd, struct stat *buf) {
-  struct nacl_abi_stat st;
-  int ret = REAL(fstat)(fd, &st);
-
+int _real_rmdir(const char* pathname) {
+  return REAL(rmdir)(pathname);
 }
+
+int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
+  return REAL(write)(fd, buf, count, nwrote);
+}
+
 
 void kernel_wrap_init() {
   static bool wrapped = false;
@@ -323,6 +420,9 @@ void kernel_wrap_init() {
     DO_WRAP(seek);
     DO_WRAP(stat);
     DO_WRAP(write);
+    DO_WRAP(mmap);
+    DO_WRAP(munmap);
+    DO_WRAP(open_resource);
   }
 }
 

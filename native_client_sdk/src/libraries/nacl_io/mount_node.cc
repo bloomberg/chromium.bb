@@ -10,7 +10,9 @@
 #include <sys/stat.h>
 #include <string>
 
+#include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/mount.h"
+#include "nacl_io/osmman.h"
 #include "utils/auto_lock.h"
 
 static const int USR_ID = 1001;
@@ -74,6 +76,33 @@ int MountNode::Truncate(size_t size) {
 int MountNode::Write(size_t offs, const void* buf, size_t count) {
   errno = EINVAL;
   return -1;
+}
+
+void* MountNode::MMap(void* addr, size_t length, int prot, int flags,
+                      size_t offset) {
+  // This default mmap support is just enough to make dlopen work.
+  // This implementation just reads from the mount into the mmap'd memory area.
+  void* new_addr = addr;
+  int err = _real_mmap(&new_addr, length, prot | PROT_WRITE, flags |
+                       MAP_ANONYMOUS, -1, 0);
+  if (addr == MAP_FAILED) {
+    _real_munmap(addr, length);
+    errno = err;
+    return MAP_FAILED;
+  }
+
+  ssize_t cnt = Read(offset, addr, length);
+  if (cnt == -1) {
+    _real_munmap(addr, length);
+    errno = ENOSYS;
+    return MAP_FAILED;
+  }
+
+  return new_addr;
+}
+
+int MountNode::Munmap(void* addr, size_t length) {
+  return _real_munmap(addr, length);
 }
 
 int MountNode::GetLinks() {

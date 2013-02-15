@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/mount_dev.h"
 #include "nacl_io/mount_node.h"
 #include "nacl_io/mount_node_dir.h"
@@ -20,13 +21,6 @@
 #elif defined(WIN32)
 #  include <stdlib.h>
 #endif
-
-
-extern "C" {
-int _real_write(int fd, const void *buf, size_t count, size_t *nwrote);
-int _real_read(int fd, void *buf, size_t count, size_t *nread);
-int _real_fstat(int fd, struct stat *buf);
-};
 
 
 namespace {

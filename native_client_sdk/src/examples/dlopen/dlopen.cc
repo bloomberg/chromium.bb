@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Native Client Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,35 +16,32 @@
 /// a blocking call, which is not alowed on the main thread.
 
 #include <dlfcn.h> 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
+#include <string.h>
 
-#include <ppapi/cpp/module.h>
 #include <ppapi/cpp/completion_callback.h>
-#include <ppapi/cpp/var.h>
 #include <ppapi/cpp/instance.h>
+#include <ppapi/cpp/module.h>
+#include <ppapi/cpp/var.h>
 
 #include "eightball.h"
+#include "nacl_io/nacl_io.h"
+#include "reverse.h"
 
-/// The Instance class.  One of these exists for each instance of your NaCl
-/// module on the web page.  The browser will ask the Module object to create
-/// a new Instance for each occurrence of the <embed> tag that has these
-/// attributes:
-/// <pre>
-///     type="application/x-nacl"
-///     nacl="dlopen.nmf"
-/// </pre>
-class dlOpenInstance : public pp::Instance {
+
+class DlopenInstance : public pp::Instance {
  public:
-  explicit dlOpenInstance(pp::Core *core, PP_Instance instance):
-    pp::Instance(instance) {
-    _dlhandle = NULL;
-    _eightball = NULL;
-    _core = core;
-    _tid = 0;
-  };
-  virtual ~dlOpenInstance(){};
+  explicit DlopenInstance(PP_Instance instance)
+      : pp::Instance(instance),
+        eightball_so_(NULL),
+        reverse_so_(NULL),
+        eightball_(NULL),
+        reverse_(NULL),
+        tid_(NULL) {}
+
+  virtual ~DlopenInstance(){};
 
   // Helper function to post a message back to the JS and stdout functions.
   void logmsg(const char* pStr){
@@ -54,8 +51,14 @@ class dlOpenInstance : public pp::Instance {
 
   // Initialize the module, staring a worker thread to load the shared object.
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]){
+    nacl_io_init_ppapi(pp_instance(),
+                       pp::Module::Get()->get_browser_interface());
+    // Mount a HTTP mount at /http. All reads from /http/* will read from the
+    // server.
+    mount("", "/http", "httpfs", 0, "");
+
     logmsg("Spawning thread to cache .so files...");
-    if (pthread_create(&_tid, NULL, LoadLibrariesOnWorker, this)) {
+    if (pthread_create(&tid_, NULL, LoadLibrariesOnWorker, this)) {
       logmsg("ERROR; pthread_create() failed.\n");
       return false;
     }
@@ -65,57 +68,86 @@ class dlOpenInstance : public pp::Instance {
   // This function is called on a worker thread, and will call dlopen to load
   // the shared object.  In addition, note that this function does NOT call
   // dlclose, which would close the shared object and unload it from memory.
-  void LoadLibrary()
-  {
+  void LoadLibrary() {
     const int32_t IMMEDIATELY = 0;
-    _dlhandle = dlopen("libeightball.so", RTLD_LAZY);
+    eightball_so_ = dlopen("libeightball.so", RTLD_LAZY);
+    reverse_so_ = dlopen("/http/glibc/Debug/libreverse_x86_64.so", RTLD_LAZY);
     pp::CompletionCallback cc(LoadDoneCB, this);
-    _core->CallOnMainThread(IMMEDIATELY, cc , 0);
+    pp::Module::Get()->core()->CallOnMainThread(IMMEDIATELY, cc , 0);
   }
 
   // This function will run on the main thread and use the handle it stored by
   // the worker thread, assuming it successfully loaded, to get a pointer to the
   // message function in the shared object.
   void UseLibrary() {
-    _dlhandle = dlopen("libeightball.so", RTLD_LAZY);
-    if(_dlhandle == NULL) {
-      logmsg("libeightball.so did not load");
+    if (eightball_so_ != NULL) {
+      intptr_t offset = (intptr_t) dlsym(eightball_so_, "Magic8Ball");
+      eightball_ = (TYPE_eightball) offset;
+      if (NULL == eightball_) {
+          std::string message = "dlsym() returned NULL: ";
+          message += dlerror();
+          message += "\n";
+          logmsg(message.c_str());
+          return;
+      }
+
+      logmsg("Loaded libeightball.so");
     } else {
-      intptr_t offset = (intptr_t) dlsym(this->_dlhandle, "Magic8Ball");
-      _eightball = (TYPE_eightball) offset;
-      if (NULL == _eightball) {
-          std::string ballmessage = "dlsym() returned NULL: ";
-          ballmessage += dlerror();
-          ballmessage += "\n";
-          logmsg(ballmessage.c_str());
+      logmsg("libeightball.so did not load");
+    }
+
+
+    if (reverse_so_ != NULL) {
+      intptr_t offset = (intptr_t) dlsym(reverse_so_, "Reverse");
+      reverse_ = (TYPE_reverse) offset;
+      if (NULL == reverse_) {
+          std::string message = "dlsym() returned NULL: ";
+          message += dlerror();
+          message += "\n";
+          logmsg(message.c_str());
+          return;
       }
-      else{
-        logmsg("Eightball loaded!");
-      }
+      logmsg("Loaded libreverse.so");
+    } else {
+      logmsg("libreverse.so did not load");
     }
   }
 
   // Called by the browser to handle the postMessage() call in Javascript.
   virtual void HandleMessage(const pp::Var& var_message) {
-    if(NULL == _eightball){
-      logmsg("Eightball library not loaded");
-      return;
-    }
-
     if (!var_message.is_string()) {
       logmsg("Message is not a string.");
       return;
     }
 
     std::string message = var_message.AsString();
-    if (message == "query") {
-      fprintf(stdout, "%s(%d) Got this far.\n", __FILE__, __LINE__);
+    if (message == "eightball") {
+      if (NULL == eightball_){
+        logmsg("Eightball library not loaded");
+        return;
+      }
+
       std::string ballmessage = "The Magic 8-Ball says: ";
-      ballmessage += this->_eightball();
+      ballmessage += eightball_();
       ballmessage += "!";
 
       logmsg(ballmessage.c_str());
-      fprintf(stdout, "%s(%d) Got this far.\n", __FILE__, __LINE__);
+    } else if (message.find("reverse:") == 0) {
+      if (NULL == reverse_) {
+        logmsg("Reverse library not loaded");
+        return;
+      }
+
+      std::string s = message.substr(strlen("reverse:"));
+      char* result = reverse_(s.c_str());
+
+      std::string message = "Your string reversed: \"";
+      message += result;
+      message += "\"";
+
+      free(result);
+
+      logmsg(message.c_str());
     } else {
       std::string errormsg = "Unexpected message: ";
       errormsg += message + "\n";
@@ -124,22 +156,22 @@ class dlOpenInstance : public pp::Instance {
   }
 
   static void* LoadLibrariesOnWorker(void *pInst) {
-    dlOpenInstance *inst = static_cast<dlOpenInstance *>(pInst);
+    DlopenInstance *inst = static_cast<DlopenInstance *>(pInst);
     inst->LoadLibrary();
     return NULL;
   }
 
   static void LoadDoneCB(void *pInst, int32_t result) {
-    dlOpenInstance *inst = static_cast<dlOpenInstance *>(pInst);
+    DlopenInstance *inst = static_cast<DlopenInstance *>(pInst);
     inst->UseLibrary();
   }
 
  private:
-  void *_dlhandle;
-  TYPE_eightball _eightball;
-  pp::Core *_core;
-  pthread_t _tid;
-
+  void* eightball_so_;
+  void* reverse_so_;
+  TYPE_eightball eightball_;
+  TYPE_reverse reverse_;
+  pthread_t tid_;
  };
 
 // The Module class.  The browser calls the CreateInstance() method to create
@@ -150,9 +182,9 @@ class dlOpenModule : public pp::Module {
   dlOpenModule() : pp::Module() {}
   virtual ~dlOpenModule() {}
 
-  // Create and return a dlOpenInstance object.
+  // Create and return a DlopenInstance object.
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new dlOpenInstance(core(), instance);
+    return new DlopenInstance(instance);
   }
 };
 
