@@ -385,9 +385,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdySerializedFrame* SerializeRstStream(
       const SpdyRstStreamIR& rst_stream) const;
 
-  // Creates an instance of SpdySettingsControlFrame. The SETTINGS frame is
+  // Creates and serializes a SETTINGS frame. The SETTINGS frame is
   // used to communicate name/value pairs relevant to the communication channel.
-  SpdySettingsControlFrame* CreateSettings(const SettingsMap& values) const;
+  SpdyFrame* CreateSettings(const SettingsMap& values) const;
   SpdySerializedFrame* SerializeSettings(const SpdySettingsIR& settings) const;
 
   // Creates and serializes a PING frame. The unique_id is used to
@@ -426,11 +426,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyFrame* CreateCredentialFrame(const SpdyCredential& credential) const;
   SpdySerializedFrame* SerializeCredential(
       const SpdyCredentialIR& credential) const;
-
-  // Given a SpdySettingsControlFrame, extract the settings.
-  // Returns true on successful parse, false otherwise.
-  static bool ParseSettings(const SpdySettingsControlFrame* frame,
-                            SettingsMap* settings);
 
   // Given a CREDENTIAL frame's payload, extract the credential.
   // Returns true on successful parse, false otherwise.

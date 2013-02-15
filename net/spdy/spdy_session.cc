@@ -1765,7 +1765,7 @@ void SpdySession::SendSettings(const SettingsMap& settings) {
 
   // Create the SETTINGS frame and send it.
   DCHECK(buffered_spdy_framer_.get());
-  scoped_ptr<SpdySettingsControlFrame> settings_frame(
+  scoped_ptr<SpdyFrame> settings_frame(
       buffered_spdy_framer_->CreateSettings(settings));
   sent_settings_ = true;
   QueueFrame(settings_frame.release(), HIGHEST);

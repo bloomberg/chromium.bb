@@ -679,7 +679,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       frame_size_without_variable_data = GetHeadersMinimumSize();
       break;
     case SETTINGS:
-      frame_size_without_variable_data = SpdySettingsControlFrame::size();
+      frame_size_without_variable_data = GetSettingsMinimumSize();
       break;
     default:
       frame_size_without_variable_data = -1;
@@ -1397,34 +1397,6 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
   return reader.GetBytesConsumed();
 }
 
-// TODO(hkhalil): Remove, or move to test utils kit.
-/* static */
-bool SpdyFramer::ParseSettings(const SpdySettingsControlFrame* frame,
-                               SettingsMap* settings) {
-  DCHECK_EQ(frame->type(), SETTINGS);
-  DCHECK(settings);
-
-  SpdyFrameReader parser(frame->header_block(), frame->header_block_len());
-  for (size_t index = 0; index < frame->num_entries(); ++index) {
-    uint32 id_and_flags_wire;
-    uint32 value;
-    // SettingsFlagsAndId accepts off-the-wire (network byte order) data, so we
-    // use ReadBytes() instead of ReadUInt32() as the latter calls ntohl().
-    if (!parser.ReadBytes(&id_and_flags_wire, 4)) {
-      return false;
-    }
-    if (!parser.ReadUInt32(&value))
-      return false;
-    SettingsFlagsAndId flags_and_id =
-        SettingsFlagsAndId::FromWireFormat(frame->version(), id_and_flags_wire);
-    SpdySettingsIds id = static_cast<SpdySettingsIds>(flags_and_id.id());
-    SpdySettingsFlags flags =
-        static_cast<SpdySettingsFlags>(flags_and_id.flags());
-    (*settings)[id] = SettingsFlagsAndValue(flags, value);
-  }
-  return true;
-}
-
 /* static */
 bool SpdyFramer::ParseCredentialData(const char* data, size_t len,
                                      SpdyCredential* credential) {
@@ -1570,7 +1542,7 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
   return builder.take();
 }
 
-SpdySettingsControlFrame* SpdyFramer::CreateSettings(
+SpdyFrame* SpdyFramer::CreateSettings(
     const SettingsMap& values) const {
   SpdySettingsIR settings;
   for (SettingsMap::const_iterator it = values.begin();
@@ -1581,8 +1553,7 @@ SpdySettingsControlFrame* SpdyFramer::CreateSettings(
                         (it->second.first & SETTINGS_FLAG_PERSISTED) != 0,
                         it->second.second);
   }
-  return reinterpret_cast<SpdySettingsControlFrame*>(
-      SerializeSettings(settings));
+  return SerializeSettings(settings);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeSettings(

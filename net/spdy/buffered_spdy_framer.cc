@@ -243,7 +243,7 @@ SpdyFrame* BufferedSpdyFramer::CreateRstStream(
   return spdy_framer_.CreateRstStream(stream_id, status);
 }
 
-SpdySettingsControlFrame* BufferedSpdyFramer::CreateSettings(
+SpdyFrame* BufferedSpdyFramer::CreateSettings(
     const SettingsMap& values) const {
   return spdy_framer_.CreateSettings(values);
 }

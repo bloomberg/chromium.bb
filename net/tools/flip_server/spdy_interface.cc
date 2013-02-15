@@ -303,7 +303,7 @@ int SpdySM::PostAcceptHook() {
   SettingsMap settings;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 100);
-  SpdySettingsControlFrame* settings_frame =
+  SpdyFrame* settings_frame =
       buffered_spdy_framer_->CreateSettings(settings);
 
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Sending Settings Frame";

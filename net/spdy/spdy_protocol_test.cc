@@ -43,7 +43,6 @@ TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(8u, SpdyFrame::kHeaderSize);
   EXPECT_EQ(8u, SpdyDataFrame::size());
   EXPECT_EQ(8u, SpdyControlFrame::kHeaderSize);
-  EXPECT_EQ(12u, SpdySettingsControlFrame::size());
   EXPECT_EQ(4u, sizeof(FlagsAndLength));
   EXPECT_EQ(1, SYN_STREAM);
   EXPECT_EQ(2, SYN_REPLY);
@@ -118,57 +117,6 @@ TEST_P(SpdyProtocolTest, TestDataFrame) {
   frame.set_flags(5u);
   EXPECT_EQ(5u, frame.flags());
   EXPECT_EQ(length, frame.length());
-}
-
-// Test various types of SETTINGS frames.
-TEST_P(SpdyProtocolTest, TestSpdySettingsFrame) {
-  SpdyFramer framer(spdy_version_);
-
-  // Create a settings frame with no settings.
-  SettingsMap settings;
-  scoped_ptr<SpdySettingsControlFrame> settings_frame(
-      framer.CreateSettings(settings));
-  EXPECT_EQ(framer.protocol_version(), settings_frame->version());
-  EXPECT_TRUE(settings_frame->is_control_frame());
-  EXPECT_EQ(SETTINGS, settings_frame->type());
-  EXPECT_EQ(0u, settings_frame->num_entries());
-
-  // We'll add several different ID/Flag combinations and then verify
-  // that they encode and decode properly.
-  SettingsFlagsAndId ids[] = {
-    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0x00000000),
-    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0x00010203),
-    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0x01030402),
-    SettingsFlagsAndId::FromWireFormat(spdy_version_, 0x02030401),
-    SettingsFlagsAndId(3, 9)
-  };
-
-  for (uint32 index = 0; index < arraysize(ids); ++index) {
-    SettingsFlagsAndId flags_and_id = ids[index];
-    SpdySettingsIds id = static_cast<SpdySettingsIds>(flags_and_id.id());
-    SpdySettingsFlags flags =
-        static_cast<SpdySettingsFlags>(flags_and_id.flags());
-    settings[id] = SettingsFlagsAndValue(flags, index);
-    settings_frame.reset(framer.CreateSettings(settings));
-    EXPECT_EQ(framer.protocol_version(), settings_frame->version());
-    EXPECT_TRUE(settings_frame->is_control_frame());
-    EXPECT_EQ(SETTINGS, settings_frame->type());
-    EXPECT_EQ(index + 1, settings_frame->num_entries());
-
-    SettingsMap parsed_settings;
-    EXPECT_TRUE(framer.ParseSettings(settings_frame.get(), &parsed_settings));
-    EXPECT_EQ(settings.size(), parsed_settings.size());
-    for (SettingsMap::const_iterator it = parsed_settings.begin();
-         it != parsed_settings.end();
-         it++) {
-      SettingsMap::const_iterator it2 = settings.find(it->first);
-      EXPECT_EQ(it->first, it2->first);
-      SettingsFlagsAndValue parsed = it->second;
-      SettingsFlagsAndValue created = it2->second;
-      EXPECT_EQ(created.first, parsed.first);
-      EXPECT_EQ(created.second, parsed.second);
-    }
-  }
 }
 
 TEST_P(SpdyProtocolTest, HasHeaderBlock) {

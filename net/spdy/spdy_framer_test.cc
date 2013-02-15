@@ -2090,18 +2090,11 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x0a, 0x0b, 0x0c, 0x0d,
     };
 
-    scoped_ptr<SpdySettingsControlFrame> frame(framer.CreateSettings(settings));
+    scoped_ptr<SpdyFrame> frame(framer.CreateSettings(settings));
     CompareFrame(kDescription,
                  *frame,
                  IsSpdy2() ? kFrameDatav2 : kFrameDatav3,
                  arraysize(kFrameDatav3));  // Size is unchanged among versions.
-
-    // Make sure that ParseSettings also works as advertised.
-    SettingsMap parsed_settings;
-    EXPECT_TRUE(framer.ParseSettings(frame.get(), &parsed_settings));
-    EXPECT_EQ(settings.size(), parsed_settings.size());
-    EXPECT_EQ(kFlags, parsed_settings[kId].first);
-    EXPECT_EQ(kValue, parsed_settings[kId].second);
   }
 
   {
@@ -2130,7 +2123,7 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x03, 0x00, 0x00, 0x03,  // 4th Setting
       0xff, 0x00, 0x00, 0x04,
     };
-    scoped_ptr<SpdySettingsControlFrame> frame(framer.CreateSettings(settings));
+    scoped_ptr<SpdyFrame> frame(framer.CreateSettings(settings));
     CompareFrame(kDescription,
                  *frame,
                  kFrameData,

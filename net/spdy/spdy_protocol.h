@@ -483,12 +483,6 @@ struct SpdyFrameBlock {
   FlagsAndLength flags_length_;
 };
 
-// A SETTINGS Control Frame structure.
-struct SpdySettingsControlFrameBlock : SpdyFrameBlock {
-  uint32 num_entries_;
-  // Variable data here.
-};
-
 #pragma pack(pop)
 
 class SpdyFrame;
@@ -940,38 +934,6 @@ class SpdyControlFrame : public SpdyFrame {
     return frame_;
   }
   DISALLOW_COPY_AND_ASSIGN(SpdyControlFrame);
-};
-
-class SpdySettingsControlFrame : public SpdyControlFrame {
- public:
-  SpdySettingsControlFrame() : SpdyControlFrame(size()) {}
-  SpdySettingsControlFrame(char* data, bool owns_buffer)
-      : SpdyControlFrame(data, owns_buffer) {}
-
-  uint32 num_entries() const {
-    return ntohl(block()->num_entries_);
-  }
-
-  int header_block_len() const {
-    return length() - (size() - SpdyFrame::kHeaderSize);
-  }
-
-  const char* header_block() const {
-    return reinterpret_cast<const char*>(block()) + size();
-  }
-
-  // Returns the size of the SpdySettingsControlFrameBlock structure.
-  // Note: this is not the size of the SpdySettingsControlFrameBlock class.
-  static size_t size() { return sizeof(SpdySettingsControlFrameBlock); }
-
- private:
-  const struct SpdySettingsControlFrameBlock* block() const {
-    return static_cast<SpdySettingsControlFrameBlock*>(frame_);
-  }
-  struct SpdySettingsControlFrameBlock* mutable_block() {
-    return static_cast<SpdySettingsControlFrameBlock*>(frame_);
-  }
-  DISALLOW_COPY_AND_ASSIGN(SpdySettingsControlFrame);
 };
 
 }  // namespace net
