@@ -456,6 +456,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
     ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
         texture_id_in_layer_);
     texture_id_in_layer_ = 0;
+    current_mailbox_name_.clear();
   }
 }
 
