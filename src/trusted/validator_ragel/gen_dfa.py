@@ -946,6 +946,21 @@ def main():
 
   for def_file in args:
     for instruction in ParseDefFile(def_file):
+      if options.bitness == 32 and Attribute('amd64') in instruction.attributes:
+        continue
+      if options.bitness == 64 and Attribute('ia32') in instruction.attributes:
+        continue
+
+      if mode == VALIDATOR:
+        if Attribute('nacl-forbidden') in instruction.attributes:
+          continue
+        if (options.bitness == 32 and
+            Attribute('nacl-ia32-forbidden') in instruction.attributes):
+          continue
+        if (options.bitness == 64 and
+            Attribute('nacl-amd64-forbidden') in instruction.attributes):
+          continue
+
       instruction_names.add((instruction.GetNameAsIdentifier(),
                              instruction.name))
 
