@@ -2346,7 +2346,12 @@ translate-sb-tool() {
   local arches=$2
   local pexe="${toolname}.pexe"
   if ${PNACL_PRUNE}; then
-    ${PNACL_STRIP} "${pexe}"
+    # Only strip debug, to preserve symbol names for testing. This is okay
+    # because we strip the native nexe later anyway.
+    # So, why bother stripping here at all?
+    # It does appear to affect the size of the nexe:
+    # http://code.google.com/p/nativeclient/issues/detail?id=3305
+    ${PNACL_STRIP} --strip-debug "${pexe}"
   fi
 
   local tarch
@@ -2357,13 +2362,8 @@ translate-sb-tool() {
     # NOTE: we are using --noirt to build without a segment gap
     # since we aren't loading the IRT for the translator nexes.
     #
-    # We are using -ffunction-sections, -fdata-sections, --gc-sections
-    # to reduce the size, because llc is built with --export-dynamic
-    # and that prevents the optimizer from GC'ing unused functions/data.
-    # http://code.google.com/p/nativeclient/issues/detail?id=3094
-    # In any case, it still helps a bit.
-    #
-    # If you want to use --gc-sections to test out:
+    # Compiling with -ffunction-sections, -fdata-sections, --gc-sections
+    # helps reduce the size a bit. If you want to use --gc-sections to test out:
     # http://code.google.com/p/nativeclient/issues/detail?id=1591
     # you will need to do a build without these flags.
     "${PNACL_TRANSLATE}" -ffunction-sections -fdata-sections --gc-sections \
@@ -2372,6 +2372,16 @@ translate-sb-tool() {
   done
   StepBanner "TRANSLATE" "Waiting for translation processes to finish"
   QueueWait
+
+  # Test that certain symbols have been pruned before stripping.
+  if [ "${toolname}" == "llc" ]; then
+    for tarch in ${arches}; do
+      local nexe="${toolname}.${tarch}.nexe"
+      local llvm_host_lib=$(ls "${LLVM_INSTALL_DIR}"/lib/libLLVM-*svn.so)
+      python "${PNACL_ROOT}/prune_test.py" "${PNACL_NM}" \
+        "${llvm_host_lib}" "${nexe}"
+    done
+  fi
 
   if ${PNACL_PRUNE}; then
     # Strip the nexes.
