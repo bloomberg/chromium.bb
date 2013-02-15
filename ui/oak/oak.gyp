@@ -39,6 +39,8 @@
         'oak_window.h',
         'oak_details_model.h',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
   ],
 }

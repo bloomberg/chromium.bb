@@ -783,6 +783,8 @@
           'include_dirs': [
             '../third_party/wtl/include',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         }],
       ],
     },  # target_name: views_examples_lib
@@ -876,6 +878,8 @@
           'include_dirs': [
             '../third_party/wtl/include',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         }],
       ],
     },  # target_name: views_examples_with_content_lib

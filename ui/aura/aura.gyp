@@ -159,6 +159,8 @@
         'test/window_test_api.cc',
         'test/window_test_api.h',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       # We build a minimal set of resources required for aura_test_support.
