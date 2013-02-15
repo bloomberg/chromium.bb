@@ -133,8 +133,6 @@
         'shell/webkit_test_platform_support_win.cc',
         'shell/webkit_test_runner.cc',
         'shell/webkit_test_runner.h',
-        'shell/webkit_test_runner_bindings.cc',
-        'shell/webkit_test_runner_bindings.h',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

@@ -34,7 +34,6 @@ class WebKitTestRunner : public RenderViewObserver,
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
 
   // WebTestDelegate implementation.
   virtual void clearEditCommand();
@@ -106,15 +105,9 @@ class WebKitTestRunner : public RenderViewObserver,
       size_t* currentEntryIndex);
 
   void Reset();
-  void NotifyDone();
-  void DumpAsText();
-  void DumpChildFramesAsText();
-  void WaitUntilDone();
-  void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
-
-  void NotImplemented(const std::string& object, const std::string& method);
 
   void set_proxy(::WebTestRunner::WebTestProxyBase* proxy) { proxy_ = proxy; }
+  ::WebTestRunner::WebTestProxyBase* proxy() const { return proxy_; }
 
  private:
   // Message handlers.
@@ -126,8 +119,6 @@ class WebKitTestRunner : public RenderViewObserver,
       const std::string& expected_pixel_hash);
 
   void CaptureDump();
-  void CaptureTextDump();
-  void CaptureImageDump();
 
   static int window_count_;
 
@@ -137,17 +128,12 @@ class WebKitTestRunner : public RenderViewObserver,
 
   ::WebTestRunner::WebPreferences prefs_;
 
-  bool test_is_running_;
-  bool wait_until_done_;
-  bool load_finished_;
-  bool dump_as_text_;
-  bool dump_child_frames_as_text_;
-  bool printing_;
-
   bool enable_pixel_dumping_;
   int layout_test_timeout_;
   bool allow_external_pages_;
   std::string expected_pixel_hash_;
+
+  bool is_main_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };

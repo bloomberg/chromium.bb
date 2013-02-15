@@ -15,6 +15,10 @@ class WebPlugin;
 struct WebPluginParams;
 }
 
+namespace WebTestRunner {
+class WebTestProxyBase;
+}
+
 namespace content {
 
 class ShellRenderProcessObserver;
@@ -24,7 +28,6 @@ class ShellContentRendererClient : public ContentRendererClient {
   ShellContentRendererClient();
   virtual ~ShellContentRendererClient();
   virtual void RenderThreadStarted() OVERRIDE;
-  virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
   virtual bool OverrideCreatePlugin(
       RenderView* render_view,
       WebKit::WebFrame* frame,
@@ -32,6 +35,9 @@ class ShellContentRendererClient : public ContentRendererClient {
       WebKit::WebPlugin** plugin) OVERRIDE;
 
  private:
+   void WebTestProxyCreated(RenderView* render_view,
+                            WebTestRunner::WebTestProxyBase* proxy);
+
   scoped_ptr<ShellRenderProcessObserver> shell_observer_;
 };
 

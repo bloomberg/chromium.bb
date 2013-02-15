@@ -176,10 +176,6 @@ bool WebKitTestController::PrepareForLayoutTest(
       initial_size);
   WebContentsObserver::Observe(main_window_->web_contents());
   main_window_->LoadURL(test_url);
-  if (test_url.spec().find("/dumpAsText/") != std::string::npos)
-    enable_pixel_dumping_ = false;
-  if (test_url.spec().find("/inspector/") != std::string::npos)
-    main_window_->ShowDevTools();
   main_window_->web_contents()->GetRenderViewHost()->Focus();
   main_window_->web_contents()->GetRenderViewHost()->SetActive(true);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {

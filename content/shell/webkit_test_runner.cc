@@ -41,7 +41,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTask.h"
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
@@ -62,6 +64,7 @@ using WebKit::WebVector;
 using WebKit::WebView;
 using WebTestRunner::WebPreferences;
 using WebTestRunner::WebTask;
+using WebTestRunner::WebTestInterfaces;
 
 namespace content {
 
@@ -71,68 +74,6 @@ void InvokeTaskHelper(void* context) {
   WebTask* task = reinterpret_cast<WebTask*>(context);
   task->run();
   delete task;
-}
-
-std::string DumpDocumentText(WebFrame* frame) {
-  // We use the document element's text instead of the body text here because
-  // not all documents have a body, such as XML documents.
-  WebElement documentElement = frame->document().documentElement();
-  if (documentElement.isNull())
-    return std::string();
-  return documentElement.innerText().utf8();
-}
-
-std::string DumpDocumentPrintedText(WebFrame* frame) {
-  return frame->renderTreeAsText(WebFrame::RenderAsTextPrinting).utf8();
-}
-
-std::string DumpFramesAsText(WebFrame* frame, bool printing, bool recursive) {
-  std::string result;
-
-  // Cannot do printed format for anything other than HTML.
-  if (printing && !frame->document().isHTMLDocument())
-    return std::string();
-
-  // Add header for all but the main frame. Skip emtpy frames.
-  if (frame->parent() && !frame->document().documentElement().isNull()) {
-    result.append("\n--------\nFrame: '");
-    result.append(frame->uniqueName().utf8().data());
-    result.append("'\n--------\n");
-  }
-
-  result.append(
-      printing ? DumpDocumentPrintedText(frame) : DumpDocumentText(frame));
-  result.append("\n");
-
-  if (recursive) {
-    for (WebFrame* child = frame->firstChild(); child;
-         child = child->nextSibling()) {
-      result.append(DumpFramesAsText(child, printing, recursive));
-    }
-  }
-  return result;
-}
-
-std::string DumpFrameScrollPosition(WebFrame* frame, bool recursive) {
-  std::string result;
-
-  WebSize offset = frame->scrollOffset();
-  if (offset.width > 0 || offset.height > 0) {
-    if (frame->parent()) {
-      result.append(
-          base::StringPrintf("frame '%s' ", frame->uniqueName().utf8().data()));
-    }
-    result.append(
-        base::StringPrintf("scrolled to %d,%d\n", offset.width, offset.height));
-  }
-
-  if (recursive) {
-    for (WebFrame* child = frame->firstChild(); child;
-         child = child->nextSibling()) {
-      result.append(DumpFrameScrollPosition(child, recursive));
-    }
-  }
-  return result;
 }
 
 #if !defined(OS_MACOSX)
@@ -165,7 +106,8 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 int WebKitTestRunner::window_count_ = 0;
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+    : RenderViewObserver(render_view),
+      is_main_window_(false) {
   Reset();
   ++window_count_;
 }
@@ -465,10 +407,20 @@ bool WebKitTestRunner::wasMockSpeechRecognitionAborted() {
 }
 
 void WebKitTestRunner::testFinished() {
+  if (!is_main_window_)
+    return;
+  WebTestInterfaces* interfaces =
+      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+  interfaces->setTestIsRunning(false);
   CaptureDump();
 }
 
 void WebKitTestRunner::testTimedOut() {
+  if (!is_main_window_)
+    return;
+  WebTestInterfaces* interfaces =
+      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+  interfaces->setTestIsRunning(false);
   Send(new ShellViewHostMsg_TestFinished(routing_id(), true));
 }
 
@@ -486,8 +438,6 @@ void WebKitTestRunner::closeRemainingWindows() {
 }
 
 int WebKitTestRunner::navigationEntryCount() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "navigationEntryCount"));
   return 0;
 }
 
@@ -529,16 +479,6 @@ void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
   ShellRenderProcessObserver::GetInstance()->BindTestRunnersToWindow(frame);
 }
 
-void WebKitTestRunner::DidFinishLoad(WebFrame* frame) {
-  if (!frame->parent()) {
-    if (!wait_until_done_) {
-      test_is_running_ = false;
-      CaptureDump();
-    }
-    load_finished_ = true;
-  }
-}
-
 bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebKitTestRunner, message)
@@ -552,97 +492,11 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
 
 // Public methods - -----------------------------------------------------------
 
-void WebKitTestRunner::NotifyDone() {
-  if (load_finished_) {
-    test_is_running_ = false;
-    CaptureDump();
-  } else {
-    wait_until_done_ = false;
-  }
-}
-
-void WebKitTestRunner::DumpAsText() {
-  dump_as_text_ = true;
-}
-
-void WebKitTestRunner::DumpChildFramesAsText() {
-  dump_child_frames_as_text_ = true;
-}
-
-void WebKitTestRunner::WaitUntilDone() {
-  wait_until_done_ = true;
-}
-
-void WebKitTestRunner::OverridePreference(const std::string& key,
-                                          v8::Local<v8::Value> value) {
-  if (key == "WebKitDefaultFontSize") {
-    prefs_.defaultFontSize = value->Int32Value();
-  } else if (key == "WebKitMinimumFontSize") {
-    prefs_.minimumFontSize = value->Int32Value();
-  } else if (key == "WebKitDefaultTextEncodingName") {
-    prefs_.defaultTextEncodingName =
-        WebString::fromUTF8(std::string(*v8::String::AsciiValue(value)));
-  } else if (key == "WebKitJavaScriptEnabled") {
-    prefs_.javaScriptEnabled = value->BooleanValue();
-  } else if (key == "WebKitSupportsMultipleWindows") {
-    prefs_.supportsMultipleWindows = value->BooleanValue();
-  } else if (key == "WebKitDisplayImagesKey") {
-    prefs_.loadsImagesAutomatically = value->BooleanValue();
-  } else if (key == "WebKitPluginsEnabled") {
-    prefs_.pluginsEnabled = value->BooleanValue();
-  } else if (key == "WebKitJavaEnabled") {
-    prefs_.javaEnabled = value->BooleanValue();
-  } else if (key == "WebKitUsesPageCachePreferenceKey") {
-    prefs_.usesPageCache = value->BooleanValue();
-  } else if (key == "WebKitPageCacheSupportsPluginsPreferenceKey") {
-    prefs_.pageCacheSupportsPlugins = value->BooleanValue();
-  } else if (key == "WebKitOfflineWebApplicationCacheEnabled") {
-    prefs_.offlineWebApplicationCacheEnabled = value->BooleanValue();
-  } else if (key == "WebKitTabToLinksPreferenceKey") {
-    prefs_.tabsToLinks = value->BooleanValue();
-  } else if (key == "WebKitWebGLEnabled") {
-    prefs_.experimentalWebGLEnabled = value->BooleanValue();
-  } else if (key == "WebKitCSSRegionsEnabled") {
-    prefs_.experimentalCSSRegionsEnabled = value->BooleanValue();
-  } else if (key == "WebKitCSSGridLayoutEnabled") {
-    prefs_.experimentalCSSGridLayoutEnabled = value->BooleanValue();
-  } else if (key == "WebKitHyperlinkAuditingEnabled") {
-    prefs_.hyperlinkAuditingEnabled = value->BooleanValue();
-  } else if (key == "WebKitEnableCaretBrowsing") {
-    prefs_.caretBrowsingEnabled = value->BooleanValue();
-  } else if (key == "WebKitAllowDisplayingInsecureContent") {
-    prefs_.allowDisplayOfInsecureContent = value->BooleanValue();
-  } else if (key == "WebKitAllowRunningInsecureContent") {
-    prefs_.allowRunningOfInsecureContent = value->BooleanValue();
-  } else if (key == "WebKitCSSCustomFilterEnabled") {
-    prefs_.cssCustomFilterEnabled = value->BooleanValue();
-  } else if (key == "WebKitShouldRespectImageOrientation") {
-    prefs_.shouldRespectImageOrientation = value->BooleanValue();
-  } else if (key == "WebKitWebAudioEnabled") {
-    DCHECK(value->BooleanValue());
-  } else {
-    std::string message("CONSOLE MESSAGE: Invalid name for preference: ");
-    printMessage(message + key + "\n");
-  }
-  applyPreferences();
-}
-
-void WebKitTestRunner::NotImplemented(const std::string& object,
-                                      const std::string& method) {
-  Send(new ShellViewHostMsg_NotImplemented(routing_id(), object, method));
-}
-
 void WebKitTestRunner::Reset() {
   prefs_.reset();
   webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
   ExportLayoutTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
-  test_is_running_ = true;
-  load_finished_ = false;
-  wait_until_done_ = false;
-  dump_as_text_ = false;
-  dump_child_frames_as_text_ = false;
-  printing_ = false;
   enable_pixel_dumping_ = true;
   layout_test_timeout_ = 30 * 1000;
   allow_external_pages_ = false;
@@ -652,38 +506,48 @@ void WebKitTestRunner::Reset() {
 // Private methods  -----------------------------------------------------------
 
 void WebKitTestRunner::CaptureDump() {
-  std::string mime_type = render_view()->GetWebView()->mainFrame()->dataSource()
-      ->response().mimeType().utf8();
-  if (mime_type == "text/plain") {
-    dump_as_text_ = true;
-    enable_pixel_dumping_ = false;
+  WebTestInterfaces* interfaces =
+      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+
+  Send(
+      new ShellViewHostMsg_TextDump(routing_id(), proxy()->captureTree(false)));
+
+  if (interfaces->testRunner()->shouldGeneratePixelResults()) {
+    SkBitmap snapshot;
+    CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
+
+    SkAutoLockPixels snapshot_lock(snapshot);
+    base::MD5Digest digest;
+#if defined(OS_ANDROID)
+    // On Android, pixel layout is RGBA, however, other Chrome platforms use
+    // BGRA.
+    const uint8_t* raw_pixels =
+        reinterpret_cast<const uint8_t*>(snapshot.getPixels());
+    size_t snapshot_size = snapshot.getSize();
+    scoped_array<uint8_t> reordered_pixels(new uint8_t[snapshot_size]);
+    for (size_t i = 0; i < snapshot_size; i += 4) {
+      reordered_pixels[i] = raw_pixels[i + 2];
+      reordered_pixels[i + 1] = raw_pixels[i + 1];
+      reordered_pixels[i + 2] = raw_pixels[i];
+      reordered_pixels[i + 3] = raw_pixels[i + 3];
+    }
+    base::MD5Sum(reordered_pixels.get(), snapshot_size, &digest);
+#else
+    base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
+#endif
+    std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
+
+    if (actual_pixel_hash == expected_pixel_hash_) {
+      SkBitmap empty_image;
+      Send(new ShellViewHostMsg_ImageDump(
+          routing_id(), actual_pixel_hash, empty_image));
+    } else {
+      Send(new ShellViewHostMsg_ImageDump(
+          routing_id(), actual_pixel_hash, snapshot));
+    }
   }
-  CaptureTextDump();
-  if (enable_pixel_dumping_)
-    CaptureImageDump();
+
   Send(new ShellViewHostMsg_TestFinished(routing_id(), false));
-}
-
-void WebKitTestRunner::CaptureTextDump() {
-  WebFrame* frame = render_view()->GetWebView()->mainFrame();
-  std::string dump;
-  if (dump_as_text_) {
-    dump = DumpFramesAsText(frame, printing_, dump_child_frames_as_text_);
-  } else {
-    WebFrame::RenderAsTextControls render_text_behavior =
-        WebFrame::RenderAsTextNormal;
-    if (printing_)
-      render_text_behavior |= WebFrame::RenderAsTextPrinting;
-    dump = frame->renderTreeAsText(render_text_behavior).utf8();
-    dump.append(DumpFrameScrollPosition(frame, dump_child_frames_as_text_));
-  }
-  Send(new ShellViewHostMsg_TextDump(routing_id(), dump));
-}
-
-void WebKitTestRunner::CaptureImageDump() {
-  SkBitmap empty_image;
-  Send(new ShellViewHostMsg_ImageDump(
-      routing_id(), expected_pixel_hash_, empty_image));
 }
 
 void WebKitTestRunner::OnSetTestConfiguration(
@@ -697,6 +561,13 @@ void WebKitTestRunner::OnSetTestConfiguration(
   layout_test_timeout_ = layout_test_timeout;
   allow_external_pages_ = allow_external_pages;
   expected_pixel_hash_ = expected_pixel_hash;
+  is_main_window_ = true;
+
+  WebTestInterfaces* interfaces =
+      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+  interfaces->setTestIsRunning(true);
+  interfaces->configureForTestWithURL(
+      net::FilePathToFileURL(current_working_directory), enable_pixel_dumping);
 }
 
 }  // namespace content
