@@ -3410,6 +3410,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # TODO(karl): Add vector defs/uses etc.
    src_unsigned := op=11; dest_unsigned := op(0)=1;
    d := D:Vd; m := M:Vm;
+   defs := {};  # Doesn't affect general purpose registers.
+   uses := {};
    safety := op=00 => DECODER_ERROR &
              size=11 | Vm(0)=1 => UNDEFINED;
    arch := ASIMD;
@@ -3421,6 +3423,8 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    half_to_single := op=1;
    esize := 16; elements := 4;
    d := D:Vd; m := M:Vm;
+   defs := {};  # Doesn't affect general purpose registers.
+   uses := {};
    safety := size=~01 => UNDEFINED &
              half_to_single & Vd(0)=1 => UNDEFINED &
              not half_to_single & Vm(0)=1 => UNDEFINED;

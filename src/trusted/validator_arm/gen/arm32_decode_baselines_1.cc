@@ -2085,10 +2085,12 @@ uses(Instruction inst) const {
 //    M: M(5),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1,
 //    arch: ASIMDhp,
 //    baseline: Vector2RegisterMiscellaneous_CVT_H2S,
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    elements: 4,
 //    esize: 16,
 //    fields: [D(22), size(19:18), Vd(15:12), op(8), M(5), Vm(3:0)],
@@ -2103,7 +2105,15 @@ uses(Instruction inst) const {
 //         Vd(0)=1 => UNDEFINED,
 //      not half_to_single &&
 //         Vm(0)=1 => UNDEFINED],
-//    size: size(19:18)}
+//    size: size(19:18),
+//    uses: {}}
+RegisterList CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -2132,6 +2142,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // DBG_cccc001100100000111100001111iiii_case_0:
 //

@@ -991,11 +991,20 @@ uses(Instruction inst) const {
 // Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1
 //
 // Actual:
-//   {safety: [inst(19:18)=~01 => UNDEFINED,
+//   {defs: {},
+//    safety: [inst(19:18)=~01 => UNDEFINED,
 //      inst(8)=1 &&
 //         inst(15:12)(0)=1 => UNDEFINED,
 //      not inst(8)=1 &&
-//         inst(3:0)(0)=1 => UNDEFINED]}
+//         inst(3:0)(0)=1 => UNDEFINED],
+//    uses: {}}
+
+RegisterList Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
 
 SafetyLevel Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1::
 safety(Instruction inst) const {
@@ -1025,6 +1034,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // Actual_DMB_1111010101111111111100000101xxxx_case_1
 //

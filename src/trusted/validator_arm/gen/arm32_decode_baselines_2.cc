@@ -6470,81 +6470,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f110qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VABS_A1,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-RegisterList VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{}'
-  return RegisterList();
-}
-
-SafetyLevel VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // inst(6)=1 &&
-  //       (inst(15:12)(0)=1 ||
-  //       inst(3:0)(0)=1) => UNDEFINED
-  if (((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
-          0x00000001))))
-    return UNDEFINED;
-
-  // inst(19:18)=~10 => UNDEFINED
-  if ((inst.Bits() & 0x000C0000)  !=
-          0x00080000)
-    return UNDEFINED;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{}'
-  return RegisterList();
-}
-
-// VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -6574,14 +6500,14 @@ uses(Instruction inst) const {
 //         Vm(0)=1) => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
-RegisterList VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1::
+RegisterList VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1::
+SafetyLevel VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -6599,6 +6525,82 @@ safety(Instruction inst) const {
           0x00000001) ||
        (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f110qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VABS_A1,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+RegisterList VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(6)=1 &&
+  //       (inst(15:12)(0)=1 ||
+  //       inst(3:0)(0)=1) => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))))
+    return UNDEFINED;
+
+  // inst(19:18)=~10 => UNDEFINED
+  if ((inst.Bits() & 0x000C0000)  !=
+          0x00080000)
     return UNDEFINED;
 
   return MAY_BE_SAFE;
@@ -7681,81 +7683,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f010qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCEQ_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-RegisterList VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{}'
-  return RegisterList();
-}
-
-SafetyLevel VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // inst(6)=1 &&
-  //       (inst(15:12)(0)=1 ||
-  //       inst(3:0)(0)=1) => UNDEFINED
-  if (((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
-          0x00000001))))
-    return UNDEFINED;
-
-  // inst(19:18)=~10 => UNDEFINED
-  if ((inst.Bits() & 0x000C0000)  !=
-          0x00080000)
-    return UNDEFINED;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{}'
-  return RegisterList();
-}
-
-// VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -7785,14 +7713,14 @@ uses(Instruction inst) const {
 //         Vm(0)=1) => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
-RegisterList VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1::
+RegisterList VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1::
+SafetyLevel VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -7810,6 +7738,82 @@ safety(Instruction inst) const {
           0x00000001) ||
        (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f010qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCEQ_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+RegisterList VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(6)=1 &&
+  //       (inst(15:12)(0)=1 ||
+  //       inst(3:0)(0)=1) => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))))
+    return UNDEFINED;
+
+  // inst(19:18)=~10 => UNDEFINED
+  if ((inst.Bits() & 0x000C0000)  !=
+          0x00080000)
     return UNDEFINED;
 
   return MAY_BE_SAFE;
@@ -8001,81 +8005,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f001qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCGE_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-RegisterList VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{}'
-  return RegisterList();
-}
-
-SafetyLevel VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // inst(6)=1 &&
-  //       (inst(15:12)(0)=1 ||
-  //       inst(3:0)(0)=1) => UNDEFINED
-  if (((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
-          0x00000001))))
-    return UNDEFINED;
-
-  // inst(19:18)=~10 => UNDEFINED
-  if ((inst.Bits() & 0x000C0000)  !=
-          0x00080000)
-    return UNDEFINED;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{}'
-  return RegisterList();
-}
-
-// VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -8105,14 +8035,14 @@ uses(Instruction inst) const {
 //         Vm(0)=1) => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
-RegisterList VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1::
+RegisterList VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1::
+SafetyLevel VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -8130,6 +8060,82 @@ safety(Instruction inst) const {
           0x00000001) ||
        (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f001qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCGE_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+RegisterList VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(6)=1 &&
+  //       (inst(15:12)(0)=1 ||
+  //       inst(3:0)(0)=1) => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))))
+    return UNDEFINED;
+
+  // inst(19:18)=~10 => UNDEFINED
+  if ((inst.Bits() & 0x000C0000)  !=
+          0x00080000)
     return UNDEFINED;
 
   return MAY_BE_SAFE;
@@ -8321,81 +8327,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f000qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCGT_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-RegisterList VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{}'
-  return RegisterList();
-}
-
-SafetyLevel VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // inst(6)=1 &&
-  //       (inst(15:12)(0)=1 ||
-  //       inst(3:0)(0)=1) => UNDEFINED
-  if (((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
-          0x00000001))))
-    return UNDEFINED;
-
-  // inst(19:18)=~10 => UNDEFINED
-  if ((inst.Bits() & 0x000C0000)  !=
-          0x00080000)
-    return UNDEFINED;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{}'
-  return RegisterList();
-}
-
-// VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -8425,14 +8357,14 @@ uses(Instruction inst) const {
 //         Vm(0)=1) => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
-RegisterList VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1::
+RegisterList VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1::
+SafetyLevel VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -8450,6 +8382,82 @@ safety(Instruction inst) const {
           0x00000001) ||
        (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f000qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCGT_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+RegisterList VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(6)=1 &&
+  //       (inst(15:12)(0)=1 ||
+  //       inst(3:0)(0)=1) => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))))
+    return UNDEFINED;
+
+  // inst(19:18)=~10 => UNDEFINED
+  if ((inst.Bits() & 0x000C0000)  !=
+          0x00080000)
     return UNDEFINED;
 
   return MAY_BE_SAFE;
@@ -8641,81 +8649,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f011qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCLE_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-RegisterList VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{}'
-  return RegisterList();
-}
-
-SafetyLevel VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // inst(6)=1 &&
-  //       (inst(15:12)(0)=1 ||
-  //       inst(3:0)(0)=1) => UNDEFINED
-  if (((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
-          0x00000001))))
-    return UNDEFINED;
-
-  // inst(19:18)=~10 => UNDEFINED
-  if ((inst.Bits() & 0x000C0000)  !=
-          0x00080000)
-    return UNDEFINED;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{}'
-  return RegisterList();
-}
-
-// VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -8745,14 +8679,14 @@ uses(Instruction inst) const {
 //         Vm(0)=1) => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
-RegisterList VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1::
+RegisterList VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1::
+SafetyLevel VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -8776,6 +8710,82 @@ safety(Instruction inst) const {
 }
 
 
+RegisterList VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f011qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCLE_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+RegisterList VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(6)=1 &&
+  //       (inst(15:12)(0)=1 ||
+  //       inst(3:0)(0)=1) => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))))
+    return UNDEFINED;
+
+  // inst(19:18)=~10 => UNDEFINED
+  if ((inst.Bits() & 0x000C0000)  !=
+          0x00080000)
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -8791,6 +8801,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -8866,81 +8877,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f100qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCLT_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-RegisterList VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{}'
-  return RegisterList();
-}
-
-SafetyLevel VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // inst(6)=1 &&
-  //       (inst(15:12)(0)=1 ||
-  //       inst(3:0)(0)=1) => UNDEFINED
-  if (((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
-          0x00000001))))
-    return UNDEFINED;
-
-  // inst(19:18)=~10 => UNDEFINED
-  if ((inst.Bits() & 0x000C0000)  !=
-          0x00080000)
-    return UNDEFINED;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{}'
-  return RegisterList();
-}
-
-// VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -8970,14 +8907,14 @@ uses(Instruction inst) const {
 //         Vm(0)=1) => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
-RegisterList VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1::
+RegisterList VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1::
+SafetyLevel VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -9001,6 +8938,82 @@ safety(Instruction inst) const {
 }
 
 
+RegisterList VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f100qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCLT_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+RegisterList VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(6)=1 &&
+  //       (inst(15:12)(0)=1 ||
+  //       inst(3:0)(0)=1) => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))))
+    return UNDEFINED;
+
+  // inst(19:18)=~10 => UNDEFINED
+  if ((inst.Bits() & 0x000C0000)  !=
+          0x00080000)
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -9016,6 +9029,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -9199,6 +9213,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8,
 //    constraints: ,
@@ -9327,6 +9342,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_CVT_F2I,
 //    constraints: ,

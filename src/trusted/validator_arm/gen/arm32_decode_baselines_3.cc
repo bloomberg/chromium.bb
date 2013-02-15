@@ -3878,6 +3878,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VMOVN_111100111d11ss10dddd001000m0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V16_32_64N,
 //    constraints: ,
@@ -5428,6 +5429,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8,
 //    constraints: ,
@@ -5503,81 +5505,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f111qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VNEG,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-RegisterList VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{}'
-  return RegisterList();
-}
-
-SafetyLevel VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // inst(6)=1 &&
-  //       (inst(15:12)(0)=1 ||
-  //       inst(3:0)(0)=1) => UNDEFINED
-  if (((inst.Bits() & 0x00000040)  ==
-          0x00000040) &&
-       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
-          0x00000001) ||
-       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
-          0x00000001))))
-    return UNDEFINED;
-
-  // inst(19:18)=~10 => UNDEFINED
-  if ((inst.Bits() & 0x000C0000)  !=
-          0x00080000)
-    return UNDEFINED;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{}'
-  return RegisterList();
-}
-
-// VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -5607,14 +5535,14 @@ uses(Instruction inst) const {
 //         Vm(0)=1) => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
-RegisterList VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1::
+RegisterList VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // defs: '{}'
   return RegisterList();
 }
 
-SafetyLevel VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1::
+SafetyLevel VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
 
@@ -5632,6 +5560,82 @@ safety(Instruction inst) const {
           0x00000001) ||
        (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
           0x00000001))))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VNEG_111100111d11ss01dddd0f111qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f111qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VNEG,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+RegisterList VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(6)=1 &&
+  //       (inst(15:12)(0)=1 ||
+  //       inst(3:0)(0)=1) => UNDEFINED
+  if (((inst.Bits() & 0x00000040)  ==
+          0x00000040) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))))
+    return UNDEFINED;
+
+  // inst(19:18)=~10 => UNDEFINED
+  if ((inst.Bits() & 0x000C0000)  !=
+          0x00080000)
     return UNDEFINED;
 
   return MAY_BE_SAFE;
@@ -6072,6 +6076,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -6148,6 +6153,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -6990,6 +6996,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -7718,10 +7725,12 @@ uses(Instruction inst) const {
 //    M: M(5),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_I16_32_64N,
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    dest_unsigned: op(0)=1,
 //    fields: [D(22), size(19:18), Vd(15:12), op(7:6), M(5), Vm(3:0)],
 //    generated_baseline: VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0,
@@ -7733,7 +7742,15 @@ uses(Instruction inst) const {
 //      size(19:18)=11 ||
 //         Vm(0)=1 => UNDEFINED],
 //    size: size(19:18),
-//    src_unsigned: op(7:6)=11}
+//    src_unsigned: op(7:6)=11,
+//    uses: {}}
+RegisterList VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -7755,16 +7772,25 @@ safety(Instruction inst) const {
 }
 
 
+RegisterList VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0:
 //
 //   {D: D(22),
 //    M: M(5),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_I16_32_64N,
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    dest_unsigned: op(0)=1,
 //    fields: [D(22), size(19:18), Vd(15:12), op(7:6), M(5), Vm(3:0)],
 //    generated_baseline: VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0,
@@ -7776,7 +7802,15 @@ safety(Instruction inst) const {
 //      size(19:18)=11 ||
 //         Vm(0)=1 => UNDEFINED],
 //    size: size(19:18),
-//    src_unsigned: op(7:6)=11}
+//    src_unsigned: op(7:6)=11,
+//    uses: {}}
+RegisterList VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
 SafetyLevel VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0::
 safety(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -7798,6 +7832,13 @@ safety(Instruction inst) const {
 }
 
 
+RegisterList VQMOVUN_111100111d11ss10dddd0010ppm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // VQNEG_111100111d11ss00dddd01111qm0mmmm_case_0:
 //
 //   {D: D(22),
@@ -7806,6 +7847,7 @@ safety(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -9002,6 +9044,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_F32,
 //    constraints: ,
@@ -9162,6 +9205,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_RG,
 //    constraints: ,
@@ -9240,6 +9284,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_RG,
 //    constraints: ,
@@ -9318,6 +9363,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VREV16_111100111d11ss00dddd000ppqm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_RG,
 //    constraints: ,
@@ -9750,6 +9796,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_F32,
 //    constraints: ,
@@ -10170,6 +10217,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_I8_16_32L,
 //    constraints: ,
@@ -13298,6 +13346,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VSWP_111100111d11ss10dddd00000qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8S,
 //    constraints: ,
@@ -13440,6 +13489,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VTRN_111100111d11ss10dddd00001qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32T,
 //    constraints: ,
@@ -13609,6 +13659,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32I,
 //    constraints: ,
@@ -13700,6 +13751,7 @@ uses(Instruction inst) const {
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VUZP_111100111d11ss10dddd00010qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32I,
 //    constraints: ,

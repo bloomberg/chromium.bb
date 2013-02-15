@@ -3747,9 +3747,18 @@ uses(Instruction inst) const {
 // Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1
 //
 // Actual:
-//   {safety: [inst(19:18)=11 ||
+//   {defs: {},
+//    safety: [inst(19:18)=11 ||
 //         inst(3:0)(0)=1 => UNDEFINED,
-//      inst(7:6)=00 => DECODER_ERROR]}
+//      inst(7:6)=00 => DECODER_ERROR],
+//    uses: {}}
+
+RegisterList Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
 
 SafetyLevel Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1::
 safety(Instruction inst) const {
@@ -3771,6 +3780,13 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+RegisterList Actual_VQMOVN_111100111d11ss10dddd0010ppm0mmmm_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // Actual_VQRSHRN_1111001u1diiiiiidddd100p01m1mmmm_case_1
 //

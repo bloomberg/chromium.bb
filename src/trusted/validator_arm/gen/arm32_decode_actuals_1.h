@@ -2613,21 +2613,25 @@ class Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case
 // Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1
 //
 // Actual:
-//   {safety: [inst(19:18)=~01 => UNDEFINED,
+//   {defs: {},
+//    safety: [inst(19:18)=~01 => UNDEFINED,
 //      inst(8)=1 &&
 //         inst(15:12)(0)=1 => UNDEFINED,
 //      not inst(8)=1 &&
-//         inst(3:0)(0)=1 => UNDEFINED]}
+//         inst(3:0)(0)=1 => UNDEFINED],
+//    uses: {}}
 //
 // Baseline:
 //   {D: D(22),
 //    M: M(5),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1,
 //    arch: ASIMDhp,
 //    baseline: Vector2RegisterMiscellaneous_CVT_H2S,
 //    constraints: ,
 //    d: D:Vd,
+//    defs: {},
 //    elements: 4,
 //    esize: 16,
 //    fields: [D(22), size(19:18), Vd(15:12), op(8), M(5), Vm(3:0)],
@@ -2642,13 +2646,16 @@ class Actual_CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case
 //         Vd(0)=1 => UNDEFINED,
 //      not half_to_single &&
 //         Vm(0)=1 => UNDEFINED],
-//    size: size(19:18)}
+//    size: size(19:18),
+//    uses: {}}
 class Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1
      : public ClassDecoder {
  public:
   Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1()
      : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1);

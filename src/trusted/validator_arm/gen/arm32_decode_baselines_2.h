@@ -3665,56 +3665,7 @@ class VABD_floating_point_111100110d1snnnndddd1101nqm0mmmm_case_0
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f110qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VABS_A1,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0
-     : public ClassDecoder {
- public:
-  VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0()
-     : ClassDecoder() {}
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0);
-};
-
-// VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -3742,6 +3693,57 @@ class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0
 //      Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vm(0)=1) => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0);
+};
+
+// VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f110qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VABS_A1,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
 class VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1
@@ -4505,56 +4507,7 @@ class VBSL_111100110d01nnnndddd0001nqm1mmmm_case_0
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f010qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCEQ_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0
-     : public ClassDecoder {
- public:
-  VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0()
-     : ClassDecoder() {}
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0);
-};
-
-// VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -4582,6 +4535,57 @@ class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0
 //      Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vm(0)=1) => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0);
+};
+
+// VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f010qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCEQ_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
 class VCEQ_immediate_0_111100111d11ss01dddd0f010qm0mmmm_case_1
@@ -4719,56 +4723,7 @@ class VCEQ_register_A2_111100100d0snnnndddd1110nqm0mmmm_case_0
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f001qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCGE_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0
-     : public ClassDecoder {
- public:
-  VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0()
-     : ClassDecoder() {}
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0);
-};
-
-// VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -4796,6 +4751,57 @@ class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0
 //      Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vm(0)=1) => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0);
+};
+
+// VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f001qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCGE_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
 class VCGE_immediate_0_111100111d11ss01dddd0f001qm0mmmm_case_1
@@ -4933,56 +4939,7 @@ class VCGE_register_A2_111100110d0snnnndddd1110nqm0mmmm_case_0
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f000qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCGT_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0
-     : public ClassDecoder {
- public:
-  VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0()
-     : ClassDecoder() {}
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0);
-};
-
-// VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -5010,6 +4967,57 @@ class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0
 //      Q(6)=1 &&
 //         (Vd(0)=1 ||
 //         Vm(0)=1) => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
+class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0);
+};
+
+// VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f000qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCGT_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
 class VCGT_immediate_0_111100111d11ss01dddd0f000qm0mmmm_case_1
@@ -5147,56 +5155,7 @@ class VCGT_register_A2_111100110d1snnnndddd1110nqm0mmmm_case_0
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f011qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCLE_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0
-     : public ClassDecoder {
- public:
-  VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0()
-     : ClassDecoder() {}
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0);
-};
-
-// VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -5226,6 +5185,57 @@ class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0
 //         Vm(0)=1) => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
+class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0);
+};
+
+// VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f011qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCLE_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
 class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1
      : public ClassDecoder {
  public:
@@ -5247,6 +5257,7 @@ class VCLE_immediate_0_111100111d11ss01dddd0f011qm0mmmm_case_1
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -5297,56 +5308,7 @@ class VCLS_111100111d11ss00dddd01000qm0mmmm_case_0
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
-//    arch: ASIMD,
-//    baseline: Vector2RegisterMiscellaneous_F32,
-//    constraints: ,
-//    d: D:Vd,
-//    defs: {},
-//    elements: 64 / esize,
-//    esize: 8 << size,
-//    fields: [D(22),
-//      size(19:18),
-//      Vd(15:12),
-//      F(10),
-//      op(8:7),
-//      Q(6),
-//      M(5),
-//      Vm(3:0)],
-//    generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
-//    m: M:Vm,
-//    op: op(8:7),
-//    pattern: 111100111d11ss01dddd0f100qm0mmmm,
-//    regs: 1
-//         if Q(6)=0
-//         else 2,
-//    rule: VCLT_immediate_0,
-//    safety: [Q(6)=1 &&
-//         (Vd(0)=1 ||
-//         Vm(0)=1) => UNDEFINED,
-//      size(19:18)=~10 => UNDEFINED],
-//    size: size(19:18),
-//    uses: {}}
-class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0
-     : public ClassDecoder {
- public:
-  VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0()
-     : ClassDecoder() {}
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0);
-};
-
-// VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1:
-//
-//   {D: D(22),
-//    F: F(10),
-//    M: M(5),
-//    Q: Q(6),
-//    Vd: Vd(15:12),
-//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -5376,6 +5338,57 @@ class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0
 //         Vm(0)=1) => UNDEFINED],
 //    size: size(19:18),
 //    uses: {}}
+class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0
+     : public ClassDecoder {
+ public:
+  VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0);
+};
+
+// VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1:
+//
+//   {D: D(22),
+//    F: F(10),
+//    M: M(5),
+//    Q: Q(6),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
+//    arch: ASIMD,
+//    baseline: Vector2RegisterMiscellaneous_F32,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    elements: 64 / esize,
+//    esize: 8 << size,
+//    fields: [D(22),
+//      size(19:18),
+//      Vd(15:12),
+//      F(10),
+//      op(8:7),
+//      Q(6),
+//      M(5),
+//      Vm(3:0)],
+//    generated_baseline: VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_0,
+//    m: M:Vm,
+//    op: op(8:7),
+//    pattern: 111100111d11ss01dddd0f100qm0mmmm,
+//    regs: 1
+//         if Q(6)=0
+//         else 2,
+//    rule: VCLT_immediate_0,
+//    safety: [Q(6)=1 &&
+//         (Vd(0)=1 ||
+//         Vm(0)=1) => UNDEFINED,
+//      size(19:18)=~10 => UNDEFINED],
+//    size: size(19:18),
+//    uses: {}}
 class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1
      : public ClassDecoder {
  public:
@@ -5397,6 +5410,7 @@ class VCLT_immediate_0_111100111d11ss01dddd0f100qm0mmmm_case_1
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8_16_32,
 //    constraints: ,
@@ -5529,6 +5543,7 @@ class VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VCNT_111100111d11ss00dddd01010qm0mmmm_case_1,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_V8,
 //    constraints: ,
@@ -5619,6 +5634,7 @@ class VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0
 //    Q: Q(6),
 //    Vd: Vd(15:12),
 //    Vm: Vm(3:0),
+//    actual: Actual_VABS_A1_111100111d11ss01dddd0f110qm0mmmm_case_2,
 //    arch: ASIMD,
 //    baseline: Vector2RegisterMiscellaneous_CVT_F2I,
 //    constraints: ,
