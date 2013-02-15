@@ -13,7 +13,7 @@ namespace webdriver {
 
 AlertTextCommand::AlertTextCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    base::DictionaryValue* parameters)
     : WebDriverCommand(path_segments, parameters) {
 }
 
@@ -35,7 +35,7 @@ void AlertTextCommand::ExecuteGet(Response* const response) {
     response->SetError(error);
     return;
   }
-  response->SetValue(Value::CreateStringValue(text));
+  response->SetValue(new base::StringValue(text));
 }
 
 void AlertTextCommand::ExecutePost(Response* const response) {
@@ -52,7 +52,7 @@ void AlertTextCommand::ExecutePost(Response* const response) {
 
 AcceptAlertCommand::AcceptAlertCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    base::DictionaryValue* parameters)
     : WebDriverCommand(path_segments, parameters) {
 }
 
@@ -71,7 +71,7 @@ void AcceptAlertCommand::ExecutePost(Response* const response) {
 
 DismissAlertCommand::DismissAlertCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    base::DictionaryValue* parameters)
     : WebDriverCommand(path_segments, parameters) {
 }
 

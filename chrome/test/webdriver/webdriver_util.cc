@@ -312,13 +312,13 @@ struct ZipEntry {
 
     // End of central directory.
     stream.WriteUInt32(kEndOfCentralDirSignature);
-    stream.WriteUInt16(0); // num of this disk
-    stream.WriteUInt16(0); // disk where cd starts
-    stream.WriteUInt16(1); // number of cds on this disk
-    stream.WriteUInt16(1); // total cds
-    stream.WriteUInt32(cd_size); // size of cd
-    stream.WriteUInt32(entry_size); // offset of cd
-    stream.WriteUInt16(0); // comment len
+    stream.WriteUInt16(0);  // num of this disk
+    stream.WriteUInt16(0);  // disk where cd starts
+    stream.WriteUInt16(1);  // number of cds on this disk
+    stream.WriteUInt16(1);  // total cds
+    stream.WriteUInt32(cd_size);  // size of cd
+    stream.WriteUInt32(entry_size);  // offset of cd
+    stream.WriteUInt16(0);  // comment len
 
     return stream.buffer();
   }
@@ -420,7 +420,7 @@ void TruncateContainedStrings(Value* value) {
       std::string data;
       if (child->GetAsString(&data)) {
         TruncateString(&data);
-        dict->SetWithoutPathExpansion(*key, Value::CreateStringValue(data));
+        dict->SetWithoutPathExpansion(*key, new base::StringValue(data));
       } else {
         TruncateContainedStrings(child);
       }
@@ -433,7 +433,7 @@ void TruncateContainedStrings(Value* value) {
       std::string data;
       if (child->GetAsString(&data)) {
         TruncateString(&data);
-        list->Set(i, Value::CreateStringValue(data));
+        list->Set(i, new base::StringValue(data));
       } else {
         TruncateContainedStrings(child);
       }
@@ -449,7 +449,7 @@ std::string JsonStringifyForDisplay(const Value* value) {
     std::string data;
     value->GetAsString(&data);
     TruncateString(&data);
-    copy.reset(Value::CreateStringValue(data));
+    copy.reset(new base::StringValue(data));
   } else {
     copy.reset(value->DeepCopy());
     TruncateContainedStrings(copy.get());

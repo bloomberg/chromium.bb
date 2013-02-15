@@ -11,7 +11,7 @@ using base::ListValue;
 using base::Value;
 
 Value* ValueConversionTraits<int>::CreateValueFrom(int t) {
-  return Value::CreateIntegerValue(t);
+  return new base::FundamentalValue(t);
 }
 
 bool ValueConversionTraits<int>::SetFromValue(const Value* value, int* t) {
@@ -24,7 +24,7 @@ bool ValueConversionTraits<int>::CanConvert(const Value* value) {
 }
 
 Value* ValueConversionTraits<bool>::CreateValueFrom(bool t) {
-  return Value::CreateBooleanValue(t);
+  return new base::FundamentalValue(t);
 }
 
 bool ValueConversionTraits<bool>::SetFromValue(const Value* value, bool* t) {
@@ -38,7 +38,7 @@ bool ValueConversionTraits<bool>::CanConvert(const Value* value) {
 
 Value* ValueConversionTraits<std::string>::CreateValueFrom(
     const std::string& t) {
-  return Value::CreateStringValue(t);
+  return new base::StringValue(t);
 }
 
 bool ValueConversionTraits<std::string>::SetFromValue(

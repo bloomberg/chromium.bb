@@ -687,7 +687,7 @@ bool SendDragAndDropFilePathsJSONRequest(
 
   ListValue* list_value = new ListValue();
   for (size_t path_index = 0; path_index < paths.size(); ++path_index) {
-    list_value->Append(Value::CreateStringValue(paths[path_index]));
+    list_value->Append(new base::StringValue(paths[path_index]));
   }
   dict.Set("paths", list_value);
 

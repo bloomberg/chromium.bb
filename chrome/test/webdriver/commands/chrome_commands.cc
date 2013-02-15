@@ -67,7 +67,7 @@ void ExtensionsCommand::ExecuteGet(Response* const response) {
       return;
     }
 
-    id_list.Append(Value::CreateStringValue(extension_id));
+    id_list.Append(new base::StringValue(extension_id));
   }
 
   response->SetValue(id_list.DeepCopy());
@@ -87,7 +87,7 @@ void ExtensionsCommand::ExecutePost(Response* const response) {
     response->SetError(error);
     return;
   }
-  response->SetValue(Value::CreateStringValue(extension_id));
+  response->SetValue(new base::StringValue(extension_id));
 }
 
 ExtensionCommand::ExtensionCommand(

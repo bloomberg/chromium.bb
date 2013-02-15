@@ -207,8 +207,8 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id) {
 }
 
 Status WebViewImpl::GetMainFrame(std::string* out_frame) {
-  DictionaryValue params;
-  scoped_ptr<DictionaryValue> result;
+  base::DictionaryValue params;
+  scoped_ptr<base::DictionaryValue> result;
   Status status = client_->SendCommandAndGetResult(
       "Page.getResourceTree", params, &result);
   if (status.IsError())

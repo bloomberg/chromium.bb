@@ -53,9 +53,9 @@ TEST(CapabilitiesParser, Args) {
   dict.Set("chromeOptions", options);
 
   ListValue* args = new ListValue();
-  args->Append(Value::CreateStringValue("arg1"));
-  args->Append(Value::CreateStringValue("arg2=val"));
-  args->Append(Value::CreateStringValue("arg3='a space'"));
+  args->Append(new base::StringValue("arg1"));
+  args->Append(new base::StringValue("arg2=val"));
+  args->Append(new base::StringValue("arg3='a space'"));
   options->Set("args", args);
 
   Capabilities caps;
@@ -74,8 +74,8 @@ TEST(CapabilitiesParser, Extensions) {
   dict.Set("chromeOptions", options);
 
   ListValue* extensions = new ListValue();
-  extensions->Append(Value::CreateStringValue("TWFu"));
-  extensions->Append(Value::CreateStringValue("TWFuTWFu"));
+  extensions->Append(new base::StringValue("TWFu"));
+  extensions->Append(new base::StringValue("TWFuTWFu"));
   options->Set("extensions", extensions);
 
   Capabilities caps;
@@ -175,7 +175,7 @@ TEST(CapabilitiesParser, ProxyTypeCapNullValue) {
   DictionaryValue* options = new DictionaryValue();
   dict.Set("proxy", options);
 
-  options->Set("proxyType", Value::CreateNullValue());
+  options->Set("proxyType", base::Value::CreateNullValue());
 
   CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_TRUE(parser.Parse());
@@ -221,7 +221,7 @@ TEST(CapabilitiesParser, ProxyBypassListCapNullValue) {
   dict.Set("proxy", options);
 
   options->SetString("proxyType", "manual");
-  options->Set("noProxy", Value::CreateNullValue());
+  options->Set("noProxy", base::Value::CreateNullValue());
   options->SetString("httpProxy", "localhost:8001");
 
   CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
@@ -250,7 +250,7 @@ TEST(CapabilitiesParser, ProxyFtpServerCapNullValue) {
 
   options->SetString("proxyType", "manual");
   options->SetString("httpProxy", "localhost:8001");
-  options->Set("ftpProxy", Value::CreateNullValue());
+  options->Set("ftpProxy", base::Value::CreateNullValue());
 
   CapabilitiesParser parser(&dict, base::FilePath(), Logger(), &caps);
   ASSERT_FALSE(parser.Parse());
@@ -280,9 +280,9 @@ TEST(CapabilitiesParser, ExcludeSwitches) {
   dict.Set("chromeOptions", options);
 
   ListValue* switches = new ListValue();
-  switches->Append(Value::CreateStringValue(switches::kNoFirstRun));
-  switches->Append(Value::CreateStringValue(switches::kDisableSync));
-  switches->Append(Value::CreateStringValue(switches::kDisableTranslate));
+  switches->Append(new base::StringValue(switches::kNoFirstRun));
+  switches->Append(new base::StringValue(switches::kDisableSync));
+  switches->Append(new base::StringValue(switches::kDisableTranslate));
   options->Set("excludeSwitches", switches);
 
   Capabilities caps;

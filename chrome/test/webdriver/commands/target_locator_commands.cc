@@ -12,13 +12,11 @@
 #include "chrome/test/webdriver/webdriver_session.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 
-using base::Value;
-
 namespace webdriver {
 
 WindowHandleCommand::WindowHandleCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    base::DictionaryValue* parameters)
     : WebDriverCommand(path_segments, parameters) {}
 
 WindowHandleCommand::~WindowHandleCommand() {}
@@ -28,13 +26,13 @@ bool WindowHandleCommand::DoesGet() {
 }
 
 void WindowHandleCommand::ExecuteGet(Response* const response) {
-  response->SetValue(Value::CreateStringValue(
+  response->SetValue(new base::StringValue(
       WebViewIdToString(session_->current_target().view_id)));
 }
 
 WindowHandlesCommand::WindowHandlesCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    base::DictionaryValue* parameters)
     : WebDriverCommand(path_segments, parameters) {}
 
 WindowHandlesCommand::~WindowHandlesCommand() {}
@@ -55,15 +53,14 @@ void WindowHandlesCommand::ExecuteGet(Response* const response) {
     if (!views[i].view_id.IsTab() &&
         views[i].view_id.GetId().type() != AutomationId::kTypeAppShell)
       continue;
-    id_list->Append(Value::CreateStringValue(
-        WebViewIdToString(views[i].view_id)));
+    id_list->Append(new base::StringValue(WebViewIdToString(views[i].view_id)));
   }
   response->SetValue(id_list);
 }
 
 WindowCommand::WindowCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    base::DictionaryValue* parameters)
     : WebDriverCommand(path_segments, parameters) {}
 
 WindowCommand::~WindowCommand() {}
@@ -101,7 +98,7 @@ bool WindowCommand::ShouldRunPreAndPostCommandHandlers() {
 
 SwitchFrameCommand::SwitchFrameCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    base::DictionaryValue* parameters)
     : WebDriverCommand(path_segments, parameters) {}
 
 SwitchFrameCommand::~SwitchFrameCommand() {}
@@ -134,7 +131,7 @@ void SwitchFrameCommand::ExecutePost(Response* const response) {
 
 bool SwitchFrameCommand::GetWebElementParameter(const std::string& key,
                                                 ElementId* out) const {
-  const DictionaryValue* value;
+  const base::DictionaryValue* value;
   if (!GetDictionaryParameter(key, &value))
     return false;
 
@@ -148,7 +145,7 @@ bool SwitchFrameCommand::GetWebElementParameter(const std::string& key,
 
 ActiveElementCommand::ActiveElementCommand(
     const std::vector<std::string>& path_segments,
-    DictionaryValue* parameters)
+    base::DictionaryValue* parameters)
     : WebDriverCommand(path_segments, parameters) {}
 
 ActiveElementCommand::~ActiveElementCommand() {}
@@ -158,8 +155,8 @@ bool ActiveElementCommand::DoesPost() {
 }
 
 void ActiveElementCommand::ExecutePost(Response* const response) {
-  ListValue args;
-  Value* result = NULL;
+  base::ListValue args;
+  base::Value* result = NULL;
   Error* error = session_->ExecuteScript(
       "return document.activeElement || document.body", &args, &result);
   if (error) {

@@ -426,7 +426,7 @@ void Dispatcher::OnSetChannel(int channel) {
 
 void Dispatcher::OnMessageInvoke(const std::string& extension_id,
                                  const std::string& function_name,
-                                 const ListValue& args,
+                                 const base::ListValue& args,
                                  const GURL& event_url,
                                  bool user_gesture) {
   scoped_ptr<WebScopedUserGesture> web_user_gesture;
@@ -1046,9 +1046,9 @@ void Dispatcher::OnUnload(const std::string& extension_id) {
   // the browser know when we are starting and stopping the event dispatch, so
   // that it still considers the extension idle despite any activity the unload
   // event creates.
-  ListValue args;
-  args.Set(0, Value::CreateStringValue(kOnUnloadEvent));
-  args.Set(1, new ListValue());
+  base::ListValue args;
+  args.Set(0, new base::StringValue(kOnUnloadEvent));
+  args.Set(1, new base::ListValue());
   v8_context_set_.DispatchChromeHiddenMethod(
       extension_id, kEventDispatchFunction, args, NULL, GURL());
 
@@ -1056,9 +1056,9 @@ void Dispatcher::OnUnload(const std::string& extension_id) {
 }
 
 void Dispatcher::OnCancelUnload(const std::string& extension_id) {
-  ListValue args;
-  args.Set(0, Value::CreateStringValue(kOnSuspendCanceledEvent));
-  args.Set(1, new ListValue());
+  base::ListValue args;
+  args.Set(0, new base::StringValue(kOnSuspendCanceledEvent));
+  args.Set(1, new base::ListValue());
   v8_context_set_.DispatchChromeHiddenMethod(
       extension_id, kEventDispatchFunction, args, NULL, GURL());
 }

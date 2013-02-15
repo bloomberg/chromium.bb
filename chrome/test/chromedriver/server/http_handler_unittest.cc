@@ -29,7 +29,7 @@ class DummyExecutor : public CommandExecutor {
                               scoped_ptr<base::Value>* value,
                               std::string* out_session_id) OVERRIDE {
     *status = status_;
-    value->reset(base::Value::CreateIntegerValue(1));
+    value->reset(new base::FundamentalValue(1));
     *out_session_id = "session_id";
   }
 
@@ -37,7 +37,7 @@ class DummyExecutor : public CommandExecutor {
   StatusCode status_;
 };
 
-}
+}  // namespace
 
 TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
   HttpHandler handler(

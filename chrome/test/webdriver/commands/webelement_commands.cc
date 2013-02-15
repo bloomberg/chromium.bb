@@ -25,7 +25,7 @@ namespace webdriver {
 
 WebElementCommand::WebElementCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* const parameters)
+    const base::DictionaryValue* const parameters)
     : WebDriverCommand(path_segments, parameters),
       path_segments_(path_segments) {}
 
@@ -52,7 +52,7 @@ bool WebElementCommand::Init(Response* const response) {
 
 ElementAttributeCommand::ElementAttributeCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementAttributeCommand::~ElementAttributeCommand() {}
@@ -70,7 +70,7 @@ void ElementAttributeCommand::ExecuteGet(Response* const response) {
   }
 
   const std::string key = path_segments_.at(6);
-  Value* value;
+  base::Value* value;
   Error* error = session_->GetAttribute(element, key, &value);
   if (error) {
     response->SetError(error);
@@ -84,7 +84,7 @@ void ElementAttributeCommand::ExecuteGet(Response* const response) {
 
 ElementClearCommand::ElementClearCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementClearCommand::~ElementClearCommand() {}
@@ -94,13 +94,13 @@ bool ElementClearCommand::DoesPost() {
 }
 
 void ElementClearCommand::ExecutePost(Response* const response) {
-  ListValue args;
+  base::ListValue args;
   args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "(%s).apply(null, arguments);", atoms::asString(atoms::CLEAR).c_str());
 
-  Value* result = NULL;
+  base::Value* result = NULL;
   Error* error = session_->ExecuteScript(script, &args, &result);
   if (error) {
     response->SetError(error);
@@ -113,7 +113,7 @@ void ElementClearCommand::ExecutePost(Response* const response) {
 
 ElementCssCommand::ElementCssCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementCssCommand::~ElementCssCommand() {}
@@ -134,11 +134,11 @@ void ElementCssCommand::ExecuteGet(Response* const response) {
       "return (%s).apply(null, arguments);",
       atoms::asString(atoms::GET_EFFECTIVE_STYLE).c_str());
 
-  ListValue args;
+  base::ListValue args;
   args.Append(element.ToValue());
-  args.Append(Value::CreateStringValue(path_segments_.at(6)));
+  args.Append(new base::StringValue(path_segments_.at(6)));
 
-  Value* result = NULL;
+  base::Value* result = NULL;
   Error* error = session_->ExecuteScript(script, &args, &result);
   if (error) {
     response->SetError(error);
@@ -151,7 +151,7 @@ void ElementCssCommand::ExecuteGet(Response* const response) {
 
 ElementDisplayedCommand::ElementDisplayedCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementDisplayedCommand::~ElementDisplayedCommand() {}
@@ -169,14 +169,14 @@ void ElementDisplayedCommand::ExecuteGet(Response* const response) {
     response->SetError(error);
     return;
   }
-  response->SetValue(Value::CreateBooleanValue(is_displayed));
+  response->SetValue(new base::FundamentalValue(is_displayed));
 }
 
 ///////////////////// ElementEnabledCommand ////////////////////
 
 ElementEnabledCommand::ElementEnabledCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementEnabledCommand::~ElementEnabledCommand() {}
@@ -186,14 +186,14 @@ bool ElementEnabledCommand::DoesGet() {
 }
 
 void ElementEnabledCommand::ExecuteGet(Response* const response) {
-  ListValue args;
+  base::ListValue args;
   args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
       "return (%s).apply(null, arguments);",
       atoms::asString(atoms::IS_ENABLED).c_str());
 
-  Value* result = NULL;
+  base::Value* result = NULL;
   Error* error = session_->ExecuteScript(script, &args, &result);
   if (error) {
     response->SetError(error);
@@ -206,7 +206,7 @@ void ElementEnabledCommand::ExecuteGet(Response* const response) {
 
 ElementEqualsCommand::ElementEqualsCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementEqualsCommand::~ElementEqualsCommand() {}
@@ -225,13 +225,13 @@ void ElementEqualsCommand::ExecuteGet(Response* const response) {
 
   std::string script = "return arguments[0] == arguments[1];";
 
-  ListValue args;
+  base::ListValue args;
   args.Append(element.ToValue());
 
   ElementId other_element(path_segments_.at(6));
   args.Append(other_element.ToValue());
 
-  Value* result = NULL;
+  base::Value* result = NULL;
   Error* error = session_->ExecuteScript(script, &args, &result);
   if (error) {
     response->SetError(error);
@@ -244,7 +244,7 @@ void ElementEqualsCommand::ExecuteGet(Response* const response) {
 
 ElementLocationCommand::ElementLocationCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementLocationCommand::~ElementLocationCommand() {}
@@ -258,10 +258,10 @@ void ElementLocationCommand::ExecuteGet(Response* const response) {
       "return (%s).apply(null, arguments);",
       atoms::asString(atoms::GET_LOCATION).c_str());
 
-  ListValue args;
+  base::ListValue args;
   args.Append(element.ToValue());
 
-  Value* result = NULL;
+  base::Value* result = NULL;
   Error* error = session_->ExecuteScript(script, &args, &result);
   if (error) {
     response->SetError(error);
@@ -274,7 +274,7 @@ void ElementLocationCommand::ExecuteGet(Response* const response) {
 
 ElementLocationInViewCommand::ElementLocationInViewCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementLocationInViewCommand::~ElementLocationInViewCommand() {}
@@ -290,7 +290,7 @@ void ElementLocationInViewCommand::ExecuteGet(Response* const response) {
     response->SetError(error);
     return;
   }
-  DictionaryValue* coord_dict = new DictionaryValue();
+  base::DictionaryValue* coord_dict = new base::DictionaryValue();
   coord_dict->SetInteger("x", location.x());
   coord_dict->SetInteger("y", location.y());
   response->SetValue(coord_dict);
@@ -300,7 +300,7 @@ void ElementLocationInViewCommand::ExecuteGet(Response* const response) {
 
 ElementNameCommand::ElementNameCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementNameCommand::~ElementNameCommand() {}
@@ -317,14 +317,14 @@ void ElementNameCommand::ExecuteGet(Response* const response) {
     response->SetError(error);
     return;
   }
-  response->SetValue(Value::CreateStringValue(tag_name));
+  response->SetValue(new base::StringValue(tag_name));
 }
 
 ///////////////////// ElementSelectedCommand ////////////////////
 
 ElementSelectedCommand::ElementSelectedCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementSelectedCommand::~ElementSelectedCommand() {}
@@ -345,7 +345,7 @@ void ElementSelectedCommand::ExecuteGet(Response* const response) {
     response->SetError(error);
     return;
   }
-  response->SetValue(Value::CreateBooleanValue(is_selected));
+  response->SetValue(new base::FundamentalValue(is_selected));
 }
 
 void ElementSelectedCommand::ExecutePost(Response* const response) {
@@ -361,7 +361,7 @@ void ElementSelectedCommand::ExecutePost(Response* const response) {
 
 ElementSizeCommand::ElementSizeCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementSizeCommand::~ElementSizeCommand() {}
@@ -378,7 +378,7 @@ void ElementSizeCommand::ExecuteGet(Response* const response) {
     response->SetError(error);
     return;
   }
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("width", size.width());
   dict->SetInteger("height", size.height());
   response->SetValue(dict);
@@ -388,7 +388,7 @@ void ElementSizeCommand::ExecuteGet(Response* const response) {
 
 ElementSubmitCommand::ElementSubmitCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementSubmitCommand::~ElementSubmitCommand() {}
@@ -401,10 +401,10 @@ void ElementSubmitCommand::ExecutePost(Response* const response) {
   std::string script = base::StringPrintf(
       "(%s).apply(null, arguments);", atoms::asString(atoms::SUBMIT).c_str());
 
-  ListValue args;
+  base::ListValue args;
   args.Append(element.ToValue());
 
-  Value* result = NULL;
+  base::Value* result = NULL;
   Error* error = session_->ExecuteScript(script, &args, &result);
   if (error) {
     response->SetError(error);
@@ -417,7 +417,7 @@ void ElementSubmitCommand::ExecutePost(Response* const response) {
 
 ElementToggleCommand::ElementToggleCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementToggleCommand::~ElementToggleCommand() {}
@@ -431,10 +431,10 @@ void ElementToggleCommand::ExecutePost(Response* const response) {
       "return (%s).apply(null, arguments);",
       atoms::asString(atoms::CLICK).c_str());
 
-  ListValue args;
+  base::ListValue args;
   args.Append(element.ToValue());
 
-  Value* result = NULL;
+  base::Value* result = NULL;
   Error* error = session_->ExecuteScript(script, &args, &result);
   if (error) {
     response->SetError(error);
@@ -447,7 +447,7 @@ void ElementToggleCommand::ExecutePost(Response* const response) {
 
 ElementValueCommand::ElementValueCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementValueCommand::~ElementValueCommand() {}
@@ -461,20 +461,19 @@ bool ElementValueCommand::DoesPost() {
 }
 
 void ElementValueCommand::ExecuteGet(Response* const response) {
-  Value* unscoped_result = NULL;
-  ListValue args;
+  base::Value* unscoped_result = NULL;
+  base::ListValue args;
   std::string script = "return arguments[0]['value']";
   args.Append(element.ToValue());
 
-  Error* error =
-      session_->ExecuteScript(script, &args, &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
+  Error* error = session_->ExecuteScript(script, &args, &unscoped_result);
+  scoped_ptr<base::Value> result(unscoped_result);
   if (error) {
     response->SetError(error);
     return;
   }
-  if (!result->IsType(Value::TYPE_STRING) &&
-      !result->IsType(Value::TYPE_NULL)) {
+  if (!result->IsType(base::Value::TYPE_STRING) &&
+      !result->IsType(base::Value::TYPE_NULL)) {
     response->SetError(new Error(
         kUnknownError, "Result is not string or null type"));
     return;
@@ -514,9 +513,9 @@ void ElementValueCommand::ExecutePost(Response* const response) {
 
 Error* ElementValueCommand::HasAttributeWithLowerCaseValueASCII(
     const std::string& key, const std::string& value, bool* result) const {
-  Value* unscoped_value = NULL;
+  base::Value* unscoped_value = NULL;
   Error* error = session_->GetAttribute(element, key, &unscoped_value);
-  scoped_ptr<Value> scoped_value(unscoped_value);
+  scoped_ptr<base::Value> scoped_value(unscoped_value);
   if (error)
     return error;
 
@@ -531,7 +530,7 @@ Error* ElementValueCommand::HasAttributeWithLowerCaseValueASCII(
 }
 
 Error* ElementValueCommand::DragAndDropFilePaths() const {
-  const ListValue* path_list;
+  const base::ListValue* path_list;
   if (!GetListParameter("value", &path_list))
     return new Error(kBadRequest, "Missing or invalid 'value' parameter");
 
@@ -580,7 +579,7 @@ Error* ElementValueCommand::DragAndDropFilePaths() const {
 }
 
 Error* ElementValueCommand::SendKeys() const {
-  const ListValue* key_list;
+  const base::ListValue* key_list;
   if (!GetListParameter("value", &key_list)) {
     return new Error(kBadRequest, "Missing or invalid 'value' parameter");
   }
@@ -598,7 +597,7 @@ Error* ElementValueCommand::SendKeys() const {
 
 ElementTextCommand::ElementTextCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* parameters)
+    const base::DictionaryValue* parameters)
     : WebElementCommand(path_segments, parameters) {}
 
 ElementTextCommand::~ElementTextCommand() {}
@@ -608,8 +607,8 @@ bool ElementTextCommand::DoesGet() {
 }
 
 void ElementTextCommand::ExecuteGet(Response* const response) {
-  Value* unscoped_result = NULL;
-  ListValue args;
+  base::Value* unscoped_result = NULL;
+  base::ListValue args;
   args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
@@ -618,12 +617,12 @@ void ElementTextCommand::ExecuteGet(Response* const response) {
 
   Error* error = session_->ExecuteScript(script, &args,
                                          &unscoped_result);
-  scoped_ptr<Value> result(unscoped_result);
+  scoped_ptr<base::Value> result(unscoped_result);
   if (error) {
     response->SetError(error);
     return;
   }
-  if (!result->IsType(Value::TYPE_STRING)) {
+  if (!result->IsType(base::Value::TYPE_STRING)) {
     response->SetError(new Error(kUnknownError, "Result is not string type"));
     return;
   }

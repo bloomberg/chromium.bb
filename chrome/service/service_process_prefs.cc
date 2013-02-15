@@ -26,7 +26,7 @@ void ServiceProcessPrefs::WritePrefs() {
 std::string ServiceProcessPrefs::GetString(
     const std::string& key,
     const std::string& default_value) const {
-  const Value* value;
+  const base::Value* value;
   std::string result;
   if (!prefs_->GetValue(key, &value) || !value->GetAsString(&result))
     return default_value;
@@ -36,12 +36,12 @@ std::string ServiceProcessPrefs::GetString(
 
 void ServiceProcessPrefs::SetString(const std::string& key,
                                     const std::string& value) {
-  prefs_->SetValue(key, Value::CreateStringValue(value));
+  prefs_->SetValue(key, new base::StringValue(value));
 }
 
 bool ServiceProcessPrefs::GetBoolean(const std::string& key,
                                      bool default_value) const {
-  const Value* value;
+  const base::Value* value;
   bool result = false;
   if (!prefs_->GetValue(key, &value) || !value->GetAsBoolean(&result))
     return default_value;
@@ -50,12 +50,12 @@ bool ServiceProcessPrefs::GetBoolean(const std::string& key,
 }
 
 void ServiceProcessPrefs::SetBoolean(const std::string& key, bool value) {
-  prefs_->SetValue(key, Value::CreateBooleanValue(value));
+  prefs_->SetValue(key, new base::FundamentalValue(value));
 }
 
 int ServiceProcessPrefs::GetInt(const std::string& key,
                                 int default_value) const {
-  const Value* value;
+  const base::Value* value;
   int result = default_value;
   if (!prefs_->GetValue(key, &value) || !value->GetAsInteger(&result))
     return default_value;
@@ -64,27 +64,27 @@ int ServiceProcessPrefs::GetInt(const std::string& key,
 }
 
 void ServiceProcessPrefs::SetInt(const std::string& key, int value) {
-  prefs_->SetValue(key, Value::CreateIntegerValue(value));
+  prefs_->SetValue(key, new base::FundamentalValue(value));
 }
 
-const DictionaryValue* ServiceProcessPrefs::GetDictionary(
+const base::DictionaryValue* ServiceProcessPrefs::GetDictionary(
     const std::string& key) const {
-  const Value* value;
+  const base::Value* value;
   if (!prefs_->GetValue(key, &value) ||
-      !value->IsType(Value::TYPE_DICTIONARY)) {
+      !value->IsType(base::Value::TYPE_DICTIONARY)) {
     return NULL;
   }
 
-  return static_cast<const DictionaryValue*>(value);
+  return static_cast<const base::DictionaryValue*>(value);
 }
 
 const base::ListValue* ServiceProcessPrefs::GetList(
     const std::string& key) const {
-  const Value* value;
-  if (!prefs_->GetValue(key, &value) || !value->IsType(Value::TYPE_LIST))
+  const base::Value* value;
+  if (!prefs_->GetValue(key, &value) || !value->IsType(base::Value::TYPE_LIST))
     return NULL;
 
-  return static_cast<const ListValue*>(value);
+  return static_cast<const base::ListValue*>(value);
 }
 
 void ServiceProcessPrefs::SetValue(const std::string& key, base::Value* value) {

@@ -22,7 +22,7 @@ namespace webdriver {
 
 WebDriverCommand::WebDriverCommand(
     const std::vector<std::string>& path_segments,
-    const DictionaryValue* const parameters)
+    const base::DictionaryValue* const parameters)
     : Command(path_segments, parameters), session_(NULL) {
 }
 
@@ -57,7 +57,7 @@ bool WebDriverCommand::Init(Response* const response) {
       return false;
     }
   }
-  response->SetField("sessionId", Value::CreateStringValue(session_id_));
+  response->SetField("sessionId", new base::StringValue(session_id_));
   return true;
 }
 

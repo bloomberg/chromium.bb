@@ -47,7 +47,7 @@ TEST(DispatchTest, CorrectlyConvertsResponseCodesToHttpStatusCodes) {
   HttpResponse http_response;
 
   Response command_response;
-  command_response.SetValue(Value::CreateStringValue("foobar"));
+  command_response.SetValue(new base::StringValue("foobar"));
 
   command_response.SetStatus(kSuccess);
   ExpectHttpStatus(HttpResponse::kOk, command_response, &http_response);
@@ -65,9 +65,9 @@ TEST(DispatchTest, CorrectlyConvertsResponseCodesToHttpStatusCodes) {
   ExpectHttpStatus(HttpResponse::kNotFound, command_response,
                    &http_response);
 
-  ListValue* methods = new ListValue;
-  methods->Append(Value::CreateStringValue("POST"));
-  methods->Append(Value::CreateStringValue("GET"));
+  base::ListValue* methods = new base::ListValue;
+  methods->Append(new base::StringValue("POST"));
+  methods->Append(new base::StringValue("GET"));
   command_response.SetValue(methods);
   command_response.SetStatus(kMethodNotAllowed);
   ExpectHttpStatus(HttpResponse::kMethodNotAllowed, command_response,
@@ -93,12 +93,12 @@ TEST(DispatchTest, CorrectlyConvertsResponseCodesToHttpStatusCodes) {
 
 TEST(DispatchTest,
      ReturnsAnErrorOnNonStringMethodsListedOnAMethodNotAllowedResponse) {
-  ListValue* methods = new ListValue;
-  methods->Append(Value::CreateStringValue("POST"));
-  methods->Append(new DictionaryValue);
-  methods->Append(Value::CreateStringValue("GET"));
-  methods->Append(new DictionaryValue);
-  methods->Append(Value::CreateStringValue("DELETE"));
+  base::ListValue* methods = new base::ListValue;
+  methods->Append(new base::StringValue("POST"));
+  methods->Append(new base::DictionaryValue);
+  methods->Append(new base::StringValue("GET"));
+  methods->Append(new base::DictionaryValue);
+  methods->Append(new base::StringValue("DELETE"));
 
   Response command_response;
   command_response.SetStatus(kMethodNotAllowed);
@@ -114,7 +114,7 @@ TEST(DispatchTest, ReturnsCommandResponseAsJson) {
 
   Response command_response;
   command_response.SetStatus(kSuccess);
-  command_response.SetValue(Value::CreateStringValue("foobar"));
+  command_response.SetValue(new base::StringValue("foobar"));
 
   HttpResponse http_response;
   internal::PrepareHttpResponse(command_response, &http_response);
@@ -127,14 +127,15 @@ TEST(DispatchTest, ReturnsCommandResponseAsJson) {
   // verify it is correct.
   int error_code;
   std::string error_message;
-  scoped_ptr<Value> parsed_response(base::JSONReader::ReadAndReturnError(
+  scoped_ptr<base::Value> parsed_response(base::JSONReader::ReadAndReturnError(
       http_response.body(), base::JSON_PARSE_RFC, &error_code, &error_message));
 
   ASSERT_TRUE(parsed_response.get() != NULL) << error_message;
-  ASSERT_TRUE(parsed_response->IsType(Value::TYPE_DICTIONARY))
+  ASSERT_TRUE(parsed_response->IsType(base::Value::TYPE_DICTIONARY))
       << "Response should be a dictionary: " << http_response.body();
 
-  DictionaryValue* dict = static_cast<DictionaryValue*>(parsed_response.get());
+  base::DictionaryValue* dict =
+      static_cast<base::DictionaryValue*>(parsed_response.get());
   EXPECT_EQ(2u, dict->size());
   EXPECT_TRUE(dict->HasKey("status"));
   EXPECT_TRUE(dict->HasKey("value"));
@@ -174,13 +175,13 @@ TEST_F(ParseRequestInfoTest, ParseRequestWithEmptyUrlBase) {
 
   std::string method;
   std::vector<std::string> path_segments;
-  DictionaryValue* parameters;
+  base::DictionaryValue* parameters;
   Response response;
 
   SessionManager::GetInstance()->set_url_base("");
   EXPECT_TRUE(internal::ParseRequestInfo(
       &request_info,
-      NULL, //NULL is ok because GET not POST is used
+      NULL,  // NULL is ok because GET not POST is used
       &method,
       &path_segments,
       &parameters,
@@ -200,13 +201,13 @@ TEST_F(ParseRequestInfoTest, ParseRequestStripsNonEmptyUrlBaseFromPath) {
 
   std::string method;
   std::vector<std::string> path_segments;
-  DictionaryValue* parameters;
+  base::DictionaryValue* parameters;
   Response response;
 
   SessionManager::GetInstance()->set_url_base("/foo");
   EXPECT_TRUE(internal::ParseRequestInfo(
       &request_info,
-      NULL, //NULL is ok because GET not POST is used
+      NULL,  // NULL is ok because GET not POST is used
       &method,
       &path_segments,
       &parameters,

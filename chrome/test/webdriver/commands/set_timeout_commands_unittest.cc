@@ -30,10 +30,11 @@ void AssertError(ErrorCode expected_status,
   command->ExecutePost(&response);
   ASSERT_EQ(expected_status,  response.GetStatus()) << response.ToJSON();
 
-  const Value* value = response.GetValue();
-  ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
+  const base::Value* value = response.GetValue();
+  ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
 
-  const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
+  const base::DictionaryValue* dict =
+      static_cast<const base::DictionaryValue*>(value);
   std::string actual_message;
   ASSERT_TRUE(dict->GetString("message", &actual_message));
   ASSERT_EQ(expected_message, actual_message);
@@ -60,14 +61,15 @@ TEST(ImplicitWaitCommandTest, SettingImplicitWaits) {
   path_segments.push_back("timeouts");
   path_segments.push_back("implicitly_wait");
 
-  DictionaryValue* parameters = new DictionaryValue;  // Owned by |command|.
+  base::DictionaryValue* parameters =
+      new base::DictionaryValue;  // Owned by |command|.
   ImplicitWaitCommand command(path_segments, parameters);
 
   AssertIsAbleToInitialize(&command);
 
   AssertError(kBadRequest, "Request missing ms parameter", &command);
 
-  parameters->Set("ms", Value::CreateNullValue());
+  parameters->Set("ms", base::Value::CreateNullValue());
   AssertError(kBadRequest, "ms parameter is not a number", &command);
 
   parameters->SetString("ms", "apples");

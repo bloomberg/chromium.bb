@@ -16,7 +16,7 @@
 namespace webdriver {
 
 SessionWithID::SessionWithID(const std::vector<std::string>& path_segments,
-                             const DictionaryValue* const parameters)
+                             const base::DictionaryValue* const parameters)
     : WebDriverCommand(path_segments, parameters) {}
 
 SessionWithID::~SessionWithID() {}
@@ -30,7 +30,7 @@ bool SessionWithID::DoesDelete() {
 }
 
 void SessionWithID::ExecuteGet(Response* const response) {
-  DictionaryValue *temp_value = new DictionaryValue();
+  base::DictionaryValue* temp_value = new base::DictionaryValue();
 
   // Standard capabilities defined at
   // http://code.google.com/p/selenium/wiki/JsonWireProtocol#Capabilities_JSON_Object
@@ -67,7 +67,7 @@ void SessionWithID::ExecuteGet(Response* const response) {
   // Custom non-standard session info.
   temp_value->SetWithoutPathExpansion(
       "chrome.chromedriverVersion",
-      Value::CreateStringValue(chrome::kChromeVersion));
+      new base::StringValue(chrome::kChromeVersion));
 
   response->SetValue(temp_value);
 }

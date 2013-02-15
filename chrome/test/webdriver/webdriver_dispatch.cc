@@ -111,18 +111,18 @@ void SendStatus(struct mg_connection* connection,
                 const struct mg_request_info* request_info,
                 void* user_data) {
   chrome::VersionInfo version_info;
-  DictionaryValue* build_info = new DictionaryValue;
+  base::DictionaryValue* build_info = new base::DictionaryValue;
   build_info->SetString("time",
                         base::StringPrintf("%s %s PST", __DATE__, __TIME__));
   build_info->SetString("version", version_info.Version());
   build_info->SetString("revision", version_info.LastChange());
 
-  DictionaryValue* os_info = new DictionaryValue;
+  base::DictionaryValue* os_info = new base::DictionaryValue;
   os_info->SetString("name", base::SysInfo::OperatingSystemName());
   os_info->SetString("version", base::SysInfo::OperatingSystemVersion());
   os_info->SetString("arch", base::SysInfo::OperatingSystemArchitecture());
 
-  DictionaryValue* status = new DictionaryValue;
+  base::DictionaryValue* status = new base::DictionaryValue;
   status->Set("build", build_info);
   status->Set("os", os_info);
 
@@ -203,7 +203,7 @@ void PrepareHttpResponse(const Response& command_response,
     // and kMethodNotAllowed should be detected before creating
     // a command_response, and should thus not need conversion.
     case kSeeOther: {
-      const Value* const value = command_response.GetValue();
+      const base::Value* const value = command_response.GetValue();
       std::string location;
       if (!value->GetAsString(&location)) {
         // This should never happen.
@@ -224,8 +224,8 @@ void PrepareHttpResponse(const Response& command_response,
       break;
 
     case kMethodNotAllowed: {
-      const Value* const value = command_response.GetValue();
-      if (!value->IsType(Value::TYPE_LIST)) {
+      const base::Value* const value = command_response.GetValue();
+      if (!value->IsType(base::Value::TYPE_LIST)) {
         // This should never happen.
         http_response->set_status(HttpResponse::kInternalServerError);
         http_response->set_body(
@@ -234,8 +234,8 @@ void PrepareHttpResponse(const Response& command_response,
         return;
       }
 
-      const ListValue* const list_value =
-          static_cast<const ListValue* const>(value);
+      const base::ListValue* const list_value =
+          static_cast<const base::ListValue* const>(value);
       std::vector<std::string> allowed_methods;
       for (size_t i = 0; i < list_value->GetSize(); ++i) {
         std::string method;
@@ -279,7 +279,7 @@ bool ParseRequestInfo(const struct mg_request_info* const request_info,
                       struct mg_connection* const connection,
                       std::string* method,
                       std::vector<std::string>* path_segments,
-                      DictionaryValue** parameters,
+                      base::DictionaryValue** parameters,
                       Response* const response) {
   *method = request_info->request_method;
   if (*method == "HEAD")
@@ -298,7 +298,7 @@ bool ParseRequestInfo(const struct mg_request_info* const request_info,
     ReadRequestBody(request_info, connection, &json);
     if (json.length() > 0) {
       std::string error_msg;
-      scoped_ptr<Value> params(base::JSONReader::ReadAndReturnError(
+      scoped_ptr<base::Value> params(base::JSONReader::ReadAndReturnError(
           json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error_msg));
       if (!params.get()) {
         response->SetError(new Error(
@@ -307,13 +307,13 @@ bool ParseRequestInfo(const struct mg_request_info* const request_info,
                 "\n  Data: " + json));
         return false;
       }
-      if (!params->IsType(Value::TYPE_DICTIONARY)) {
+      if (!params->IsType(base::Value::TYPE_DICTIONARY)) {
         response->SetError(new Error(
             kBadRequest,
             "Data passed in URL must be a dictionary. Data: " + json));
         return false;
       }
-      *parameters = static_cast<DictionaryValue*>(params.release());
+      *parameters = static_cast<base::DictionaryValue*>(params.release());
     }
   }
   return true;
@@ -328,15 +328,15 @@ void DispatchHelper(Command* command_ptr,
   if ((method == "GET" && !command->DoesGet()) ||
       (method == "POST" && !command->DoesPost()) ||
       (method == "DELETE" && !command->DoesDelete())) {
-    ListValue* methods = new ListValue;
+    base::ListValue* methods = new base::ListValue;
     if (command->DoesPost())
-      methods->Append(Value::CreateStringValue("POST"));
+      methods->Append(new base::StringValue("POST"));
     if (command->DoesGet()) {
-      methods->Append(Value::CreateStringValue("GET"));
-      methods->Append(Value::CreateStringValue("HEAD"));
+      methods->Append(new base::StringValue("GET"));
+      methods->Append(new base::StringValue("HEAD"));
     }
     if (command->DoesDelete())
-      methods->Append(Value::CreateStringValue("DELETE"));
+      methods->Append(new base::StringValue("DELETE"));
     response->SetStatus(kMethodNotAllowed);
     response->SetValue(methods);
     return;

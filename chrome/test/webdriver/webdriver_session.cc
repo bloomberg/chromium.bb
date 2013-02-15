@@ -82,7 +82,7 @@ Session::~Session() {
   SessionManager::GetInstance()->Remove(id_);
 }
 
-Error* Session::Init(const DictionaryValue* capabilities_dict) {
+Error* Session::Init(const base::DictionaryValue* capabilities_dict) {
   if (!thread_.Start()) {
     delete this;
     return new Error(kUnknownError, "Cannot start session thread");
@@ -161,10 +161,10 @@ void Session::Terminate() {
 
 Error* Session::ExecuteScript(const FrameId& frame_id,
                               const std::string& script,
-                              const ListValue* const args,
-                              Value** value) {
+                              const base::ListValue* const args,
+                              base::Value** value) {
   std::string args_as_json;
-  base::JSONWriter::Write(static_cast<const Value* const>(args),
+  base::JSONWriter::Write(static_cast<const base::Value* const>(args),
                           &args_as_json);
 
   // Every injected script is fed through the executeScript atom. This atom
@@ -180,28 +180,28 @@ Error* Session::ExecuteScript(const FrameId& frame_id,
 }
 
 Error* Session::ExecuteScript(const std::string& script,
-                              const ListValue* const args,
-                              Value** value) {
+                              const base::ListValue* const args,
+                              base::Value** value) {
   return ExecuteScript(current_target_, script, args, value);
 }
 
 Error* Session::ExecuteScriptAndParse(const FrameId& frame_id,
                                       const std::string& anonymous_func_script,
                                       const std::string& script_name,
-                                      const ListValue* args,
+                                      const base::ListValue* args,
                                       const ValueParser* parser) {
-  scoped_ptr<const ListValue> scoped_args(args);
+  scoped_ptr<const base::ListValue> scoped_args(args);
   scoped_ptr<const ValueParser> scoped_parser(parser);
   std::string called_script = base::StringPrintf(
       "return (%s).apply(null, arguments);", anonymous_func_script.c_str());
-  Value* unscoped_value = NULL;
+  base::Value* unscoped_value = NULL;
   Error* error = ExecuteScript(frame_id, called_script, args, &unscoped_value);
   if (error) {
     error->AddDetails(script_name + " execution failed");
     return error;
   }
 
-  scoped_ptr<Value> value(unscoped_value);
+  scoped_ptr<base::Value> value(unscoped_value);
   std::string error_msg;
   if (!parser->Parse(value.get())) {
     error_msg = base::StringPrintf("%s returned invalid value: %s",
@@ -213,10 +213,10 @@ Error* Session::ExecuteScriptAndParse(const FrameId& frame_id,
 
 Error* Session::ExecuteAsyncScript(const FrameId& frame_id,
                                    const std::string& script,
-                                   const ListValue* const args,
-                                   Value** value) {
+                                   const base::ListValue* const args,
+                                   base::Value** value) {
   std::string args_as_json;
-  base::JSONWriter::Write(static_cast<const Value* const>(args),
+  base::JSONWriter::Write(static_cast<const base::Value* const>(args),
                           &args_as_json);
 
   int timeout_ms = async_script_timeout();
@@ -403,7 +403,7 @@ Error* Session::GetURL(std::string* url) {
   return ExecuteScriptAndParse(current_target_,
                                "function() { return document.URL }",
                                "getUrl",
-                               new ListValue(),
+                               new base::ListValue(),
                                CreateDirectValueParser(url));
 }
 
@@ -418,7 +418,7 @@ Error* Session::GetTitle(std::string* tab_title) {
   return ExecuteScriptAndParse(FrameId(current_target_.view_id, FramePath()),
                                kGetTitleScript,
                                "getTitle",
-                               new ListValue(),
+                               new base::ListValue(),
                                CreateDirectValueParser(tab_title));
 }
 
@@ -561,7 +561,7 @@ Error* Session::MouseDoubleClick() {
   return error;
 }
 
-Error* Session::GetCookies(const std::string& url, ListValue** cookies) {
+Error* Session::GetCookies(const std::string& url, base::ListValue** cookies) {
   Error* error = NULL;
   RunSessionTask(base::Bind(
       &Automation::GetCookies,
@@ -588,7 +588,7 @@ Error* Session::DeleteCookie(const std::string& url,
 // |cookie_dict| is destroyed as soon as the caller finishes. Therefore
 // it is essential that RunSessionTask executes synchronously.
 Error* Session::SetCookie(const std::string& url,
-                          DictionaryValue* cookie_dict) {
+                          base::DictionaryValue* cookie_dict) {
   Error* error = NULL;
   RunSessionTask(base::Bind(
       &Automation::SetCookie,
@@ -640,7 +640,7 @@ Error* Session::SwitchToView(const std::string& id_or_name) {
           FrameId(views[i].view_id, FramePath()),
           "function() { return window.name; }",
           "getWindowName",
-          new ListValue(),
+          new base::ListValue(),
           CreateDirectValueParser(&window_name));
       if (error)
         return error;
@@ -785,7 +785,7 @@ Error* Session::GetWindowBounds(const WebViewId& window, Rect* bounds) {
       FrameId(window, FramePath()),
       kGetWindowBoundsScript,
       "getWindowBoundsScript",
-      new ListValue(),
+      new base::ListValue(),
       CreateDirectValueParser(bounds));
 }
 
@@ -1069,14 +1069,14 @@ Error* Session::SetOptionElementSelected(const FrameId& frame_id,
       "var args = [].slice.apply(arguments);"
       "args[args.length - 1]();"
       "return (%s).apply(null, args.slice(0, args.length - 1));";
-  Value* value = NULL;
+  base::Value* value = NULL;
   Error* error = ExecuteAsyncScript(
       frame_id,
       base::StringPrintf(kSetSelectedWrapper,
                          atoms::asString(atoms::CLICK).c_str()),
       CreateListValueFrom(element, selected),
       &value);
-  scoped_ptr<Value> scoped_value(value);
+  scoped_ptr<base::Value> scoped_value(value);
   return error;
 }
 
@@ -1149,7 +1149,7 @@ Error* Session::GetClickableLocation(const ElementId& element,
 
 Error* Session::GetAttribute(const ElementId& element,
                              const std::string& key,
-                             Value** value) {
+                             base::Value** value) {
   return ExecuteScriptAndParse(
       current_target_,
       atoms::asString(atoms::GET_ATTRIBUTE),
@@ -1284,7 +1284,7 @@ Error* Session::GetBrowserConnectionState(bool* online) {
       current_target_,
       atoms::asString(atoms::IS_ONLINE),
       "isOnline",
-      new ListValue(),
+      new base::ListValue(),
       CreateDirectValueParser(online));
 }
 
@@ -1293,7 +1293,7 @@ Error* Session::GetAppCacheStatus(int* status) {
       current_target_,
       atoms::asString(atoms::GET_APPCACHE_STATUS),
       "getAppcacheStatus",
-      new ListValue(),
+      new base::ListValue(),
       CreateDirectValueParser(status));
 }
 
@@ -1305,7 +1305,7 @@ Error* Session::GetStorageSize(StorageType type, int* size) {
       current_target_,
       js,
       "getStorageSize",
-      new ListValue(),
+      new base::ListValue(),
       CreateDirectValueParser(size));
 }
 
@@ -1331,11 +1331,11 @@ Error* Session::ClearStorage(StorageType type) {
       current_target_,
       js,
       "clearStorage",
-      new ListValue(),
+      new base::ListValue(),
       CreateDirectValueParser(kSkipParsing));
 }
 
-Error* Session::GetStorageKeys(StorageType type, ListValue** keys) {
+Error* Session::GetStorageKeys(StorageType type, base::ListValue** keys) {
   std::string js = atoms::asString(
       type == kLocalStorageType ? atoms::GET_LOCAL_STORAGE_KEYS
                                 : atoms::GET_SESSION_STORAGE_KEYS);
@@ -1343,7 +1343,7 @@ Error* Session::GetStorageKeys(StorageType type, ListValue** keys) {
       current_target_,
       js,
       "getStorageKeys",
-      new ListValue(),
+      new base::ListValue(),
       CreateDirectValueParser(keys));
 }
 
@@ -1480,7 +1480,7 @@ void Session::TerminateOnSessionThread() {
 
 Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
                                            const std::string& script,
-                                           Value** script_result) {
+                                           base::Value** script_result) {
   std::string response_json;
   Error* error = NULL;
   RunSessionTask(base::Bind(
@@ -1494,14 +1494,15 @@ Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
   if (error)
     return error;
 
-  scoped_ptr<Value> value(base::JSONReader::ReadAndReturnError(
+  scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
       response_json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, NULL));
   if (!value.get())
     return new Error(kUnknownError, "Failed to parse script result");
-  if (value->GetType() != Value::TYPE_DICTIONARY)
+  if (value->GetType() != base::Value::TYPE_DICTIONARY)
     return new Error(kUnknownError, "Execute script returned non-dict: " +
                          JsonStringify(value.get()));
-  DictionaryValue* result_dict = static_cast<DictionaryValue*>(value.get());
+  base::DictionaryValue* result_dict =
+      static_cast<base::DictionaryValue*>(value.get());
 
   int status;
   if (!result_dict->GetInteger("status", &status))
@@ -1509,7 +1510,7 @@ Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
                          JsonStringify(result_dict));
   ErrorCode code = static_cast<ErrorCode>(status);
   if (code != kSuccess) {
-    DictionaryValue* error_dict;
+    base::DictionaryValue* error_dict;
     std::string error_msg;
     if (result_dict->GetDictionary("value", &error_dict))
       error_dict->GetString("message", &error_msg);
@@ -1518,12 +1519,12 @@ Error* Session::ExecuteScriptAndParseValue(const FrameId& frame_id,
     return new Error(code, error_msg);
   }
 
-  Value* tmp;
+  base::Value* tmp;
   if (result_dict->Get("value", &tmp)) {
     *script_result= tmp->DeepCopy();
   } else {
     // "value" was not defined in the returned dictionary; set to null.
-    *script_result= Value::CreateNullValue();
+    *script_result= base::Value::CreateNullValue();
   }
   return NULL;
 }
@@ -1584,7 +1585,7 @@ WebMouseEvent Session::CreateWebMouseEvent(
 }
 
 Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(
-    const std::string& script, ListValue* args) {
+    const std::string& script, base::ListValue* args) {
   class SwitchFrameValueParser : public ValueParser {
    public:
     SwitchFrameValueParser(
@@ -1594,7 +1595,7 @@ Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(
     virtual ~SwitchFrameValueParser() { }
 
     virtual bool Parse(base::Value* value) const OVERRIDE {
-      if (value->IsType(Value::TYPE_NULL)) {
+      if (value->IsType(base::Value::TYPE_NULL)) {
         *found_frame_ = false;
         return true;
       }
@@ -1686,12 +1687,12 @@ Error* Session::ExecuteFindElementScriptAndParse(
     virtual ~FindElementsParser() { }
 
     virtual bool Parse(base::Value* value) const OVERRIDE {
-      if (!value->IsType(Value::TYPE_LIST))
+      if (!value->IsType(base::Value::TYPE_LIST))
         return false;
-      ListValue* list = static_cast<ListValue*>(value);
+      base::ListValue* list = static_cast<base::ListValue*>(value);
       for (size_t i = 0; i < list->GetSize(); ++i) {
         ElementId element;
-        Value* element_value = NULL;
+        base::Value* element_value = NULL;
         if (!list->Get(i, &element_value))
           return false;
         if (!SetFromValue(element_value, &element))
@@ -1712,7 +1713,7 @@ Error* Session::ExecuteFindElementScriptAndParse(
     virtual ~FindElementParser() { }
 
     virtual bool Parse(base::Value* value) const OVERRIDE {
-      if (value->IsType(Value::TYPE_NULL))
+      if (value->IsType(base::Value::TYPE_NULL))
         return true;
       ElementId element;
       bool set = SetFromValue(value, &element);
@@ -1724,7 +1725,7 @@ Error* Session::ExecuteFindElementScriptAndParse(
     std::vector<ElementId>* elements_;
   };
 
-  DictionaryValue locator_dict;
+  base::DictionaryValue locator_dict;
   locator_dict.SetString(locator, query);
   std::vector<ElementId> temp_elements;
   Error* error = NULL;
@@ -1760,9 +1761,9 @@ Error* Session::VerifyElementIsClickable(
     virtual ~IsElementClickableParser() { }
 
     virtual bool Parse(base::Value* value) const OVERRIDE {
-      if (!value->IsType(Value::TYPE_DICTIONARY))
+      if (!value->IsType(base::Value::TYPE_DICTIONARY))
         return false;
-      DictionaryValue* dict = static_cast<DictionaryValue*>(value);
+      base::DictionaryValue* dict = static_cast<base::DictionaryValue*>(value);
       dict->GetString("message", message_);
       return dict->GetBoolean("clickable", clickable_);
     }
@@ -1891,19 +1892,19 @@ Error* Session::InitForWebsiteTesting() {
   error = SetPreference(
       "ssl.rev_checking.enabled",
       false /* is_user_pref */,
-      Value::CreateBooleanValue(false));
+      new base::FundamentalValue(false));
   if (error)
     return error;
 
   // Allow content by default.
   // Media-stream cannot be enabled by default; we must specify
   // particular host patterns and devices.
-  DictionaryValue* devices = new DictionaryValue();
+  base::DictionaryValue* devices = new base::DictionaryValue();
   devices->SetString("audio", "Default");
   devices->SetString("video", "Default");
-  DictionaryValue* content_settings = new DictionaryValue();
+  base::DictionaryValue* content_settings = new base::DictionaryValue();
   content_settings->Set("media-stream", devices);
-  DictionaryValue* pattern_pairs = new DictionaryValue();
+  base::DictionaryValue* pattern_pairs = new base::DictionaryValue();
   pattern_pairs->Set("https://*,*", content_settings);
   error = SetPreference(
       "profile.content_settings.pattern_pairs",
@@ -1912,7 +1913,7 @@ Error* Session::InitForWebsiteTesting() {
   if (error)
     return error;
   const int kAllowContent = 1;
-  DictionaryValue* default_content_settings = new DictionaryValue();
+  base::DictionaryValue* default_content_settings = new base::DictionaryValue();
   default_content_settings->SetInteger("geolocation", kAllowContent);
   default_content_settings->SetInteger("mouselock", kAllowContent);
   default_content_settings->SetInteger("notifications", kAllowContent);
@@ -1924,14 +1925,14 @@ Error* Session::InitForWebsiteTesting() {
 }
 
 Error* Session::SetPrefs() {
-  for (DictionaryValue::Iterator iter(*capabilities_.prefs); !iter.IsAtEnd();
-       iter.Advance()) {
+  for (base::DictionaryValue::Iterator iter(*capabilities_.prefs);
+       !iter.IsAtEnd(); iter.Advance()) {
     Error* error = SetPreference(iter.key(), true /* is_user_pref */,
                                  iter.value().DeepCopy());
     if (error)
       return error;
   }
-  for (DictionaryValue::Iterator iter(*capabilities_.local_state);
+  for (base::DictionaryValue::Iterator iter(*capabilities_.local_state);
        !iter.IsAtEnd(); iter.Advance()) {
     Error* error = SetPreference(iter.key(), false /* is_user_pref */,
                                  iter.value().DeepCopy());

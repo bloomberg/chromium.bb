@@ -30,21 +30,21 @@ ElementId::ElementId() : is_valid_(false) {}
 
 ElementId::ElementId(const std::string& id) : id_(id), is_valid_(true) {}
 
-ElementId::ElementId(const Value* value) {
+ElementId::ElementId(const base::Value* value) {
   is_valid_ = false;
-  if (value->IsType(Value::TYPE_DICTIONARY)) {
-    is_valid_ = static_cast<const DictionaryValue*>(value)->
+  if (value->IsType(base::Value::TYPE_DICTIONARY)) {
+    is_valid_ = static_cast<const base::DictionaryValue*>(value)->
         GetString(kWebElementKey, &id_);
   }
 }
 
 ElementId::~ElementId() {}
 
-Value* ElementId::ToValue() const {
+base::Value* ElementId::ToValue() const {
   CHECK(is_valid_);
   if (id_.empty())
-    return Value::CreateNullValue();
-  DictionaryValue* element = new DictionaryValue();
+    return base::Value::CreateNullValue();
+  base::DictionaryValue* element = new base::DictionaryValue();
   element->SetString(kWebElementKey, id_);
   return element;
 }
