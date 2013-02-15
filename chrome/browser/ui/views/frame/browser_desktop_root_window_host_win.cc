@@ -227,6 +227,10 @@ bool BrowserDesktopRootWindowHostWin::IsUsingCustomFrame() const {
 bool BrowserDesktopRootWindowHostWin::ShouldUseNativeFrame() {
   if (!views::DesktopRootWindowHostWin::ShouldUseNativeFrame())
     return false;
+  // This function can get called when the Browser window is closed i.e. in the
+  // context of the BrowserView destructor.
+  if (!browser_view_->browser())
+    return false;
   return chrome::ShouldUseNativeFrame(browser_view_,
                                       GetWidget()->GetThemeProvider());
 }
