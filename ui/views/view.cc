@@ -931,6 +931,45 @@ void View::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void View::OnMouseEvent(ui::MouseEvent* event) {
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+      if (ProcessMousePressed(*event))
+        event->SetHandled();
+      return;
+
+    case ui::ET_MOUSE_MOVED:
+      if ((event->flags() & (ui::EF_LEFT_MOUSE_BUTTON |
+                             ui::EF_RIGHT_MOUSE_BUTTON |
+                             ui::EF_MIDDLE_MOUSE_BUTTON)) == 0) {
+        OnMouseMoved(*event);
+        return;
+      }
+      // FALL-THROUGH
+    case ui::ET_MOUSE_DRAGGED:
+      if (ProcessMouseDragged(*event))
+        event->SetHandled();
+      return;
+
+    case ui::ET_MOUSE_RELEASED:
+      ProcessMouseReleased(*event);
+      return;
+
+    case ui::ET_MOUSEWHEEL:
+      if (OnMouseWheel(*static_cast<ui::MouseWheelEvent*>(event)))
+        event->SetHandled();
+      break;
+
+    case ui::ET_MOUSE_ENTERED:
+      OnMouseEntered(*event);
+      break;
+
+    case ui::ET_MOUSE_EXITED:
+      OnMouseExited(*event);
+      break;
+
+    default:
+      return;
+  }
 }
 
 void View::OnScrollEvent(ui::ScrollEvent* event) {
@@ -1377,6 +1416,10 @@ bool View::HasHitTestMask() const {
 
 void View::GetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
+}
+
+View::DragInfo* View::GetDragInfo() {
+  return parent_ ? parent_->GetDragInfo() : NULL;
 }
 
 // Focus -----------------------------------------------------------------------
@@ -1988,8 +2031,7 @@ void View::DestroyLayer() {
 
 // Input -----------------------------------------------------------------------
 
-bool View::ProcessMousePressed(const ui::MouseEvent& event,
-                               DragInfo* drag_info) {
+bool View::ProcessMousePressed(const ui::MouseEvent& event) {
   int drag_operations =
       (enabled_ && event.IsOnlyLeftMouseButton() &&
        HitTestPoint(event.location())) ?
@@ -2005,24 +2047,23 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event,
     return result;
 
   if (drag_operations != ui::DragDropTypes::DRAG_NONE) {
-    drag_info->PossibleDrag(event.location());
+    GetDragInfo()->PossibleDrag(event.location());
     return true;
   }
   return !!context_menu_controller || result;
 }
 
-bool View::ProcessMouseDragged(const ui::MouseEvent& event,
-                               DragInfo* drag_info) {
+bool View::ProcessMouseDragged(const ui::MouseEvent& event) {
   // Copy the field, that way if we're deleted after drag and drop no harm is
   // done.
   ContextMenuController* context_menu_controller = context_menu_controller_;
-  const bool possible_drag = drag_info->possible_drag;
+  const bool possible_drag = GetDragInfo()->possible_drag;
   if (possible_drag &&
-      ExceededDragThreshold(drag_info->start_pt - event.location())) {
+      ExceededDragThreshold(GetDragInfo()->start_pt - event.location())) {
     if (!drag_controller_ ||
         drag_controller_->CanStartDragForView(
-            this, drag_info->start_pt, event.location())) {
-      DoDrag(event, drag_info->start_pt,
+            this, GetDragInfo()->start_pt, event.location())) {
+      DoDrag(event, GetDragInfo()->start_pt,
           ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
     }
   } else {
