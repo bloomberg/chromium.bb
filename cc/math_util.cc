@@ -409,4 +409,14 @@ scoped_ptr<base::Value> MathUtil::asValue(gfx::QuadF q) {
   return res.PassAs<base::Value>();
 }
 
+scoped_ptr<base::Value> MathUtil::asValueSafely(double value) {
+  return scoped_ptr<base::Value>(base::Value::CreateDoubleValue(
+    std::min(value, std::numeric_limits<double>::max())));
+}
+
+scoped_ptr<base::Value> MathUtil::asValueSafely(float value) {
+  return scoped_ptr<base::Value>(base::Value::CreateDoubleValue(
+    std::min(value, std::numeric_limits<float>::max())));
+}
+
 }  // namespace cc

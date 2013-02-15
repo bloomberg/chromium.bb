@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "cc/math_util.h"
 #include "cc/platform_color.h"
 #include "cc/raster_worker_pool.h"
 #include "cc/resource_pool.h"
@@ -97,7 +98,7 @@ scoped_ptr<base::Value> TileManagerBinAsValue(TileManagerBin bin) {
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "NEVER_BIN"));
   default:
-      DCHECK(false) << "Unrecognized TileManagerBin value";
+      DCHECK(false) << "Unrecognized TileManagerBin value " << bin;
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "<unknown TileManagerBin value>"));
   }
@@ -148,9 +149,13 @@ ManagedTileState::ManagedTileState()
       contents_swizzled(false),
       need_to_gather_pixel_refs(true),
       gpu_memmgr_stats_bin(NEVER_BIN),
-      raster_state(IDLE_STATE) {
-  for (int i = 0; i < NUM_TREES; ++i)
+      raster_state(IDLE_STATE),
+      resolution(NON_IDEAL_RESOLUTION),
+      time_to_needed_in_seconds(std::numeric_limits<float>::infinity()) {
+  for (int i = 0; i < NUM_TREES; ++i) {
     tree_bin[i] = NEVER_BIN;
+    bin[i] = NEVER_BIN;
+  }
 }
 
 ManagedTileState::~ManagedTileState() {
@@ -165,11 +170,11 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   state->SetBoolean("has_resource", resource.get() != 0);
   state->SetBoolean("resource_is_being_initialized", resource_is_being_initialized);
   state->Set("raster_state", TileRasterStateAsValue(raster_state).release());
-  state->Set("bin.0", TileManagerBinAsValue(bin[0]).release());
-  state->Set("bin.1", TileManagerBinAsValue(bin[0]).release());
-  state->Set("gpu_memmgr_stats_bin", TileManagerBinAsValue(bin[0]).release());
+  state->Set("bin.0", TileManagerBinAsValue(bin[ACTIVE_TREE]).release());
+  state->Set("bin.1", TileManagerBinAsValue(bin[PENDING_TREE]).release());
+  state->Set("gpu_memmgr_stats_bin", TileManagerBinAsValue(bin[ACTIVE_TREE]).release());
   state->Set("resolution", TileResolutionAsValue(resolution).release());
-  state->SetDouble("time_to_needed_in_seconds", time_to_needed_in_seconds);
+  state->Set("time_to_needed_in_seconds", MathUtil::asValueSafely(time_to_needed_in_seconds).release());
   return state.PassAs<base::Value>();
 }
 

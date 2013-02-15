@@ -65,7 +65,7 @@ scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree) {
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "PENDING_TREE"));
   default:
-      DCHECK(false) << "Unrecognized WhichTree value";
+      DCHECK(false) << "Unrecognized WhichTree value " << tree;
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "<unknown WhichTree value>"));
   }
@@ -84,7 +84,7 @@ scoped_ptr<base::Value> TileResolutionAsValue(
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
         "NON_IDEAL_RESOLUTION"));
   default:
-    DCHECK(false) << "Unrecognized TileResolution value";
+    DCHECK(false) << "Unrecognized TileResolution value " << resolution;
     return scoped_ptr<base::Value>(base::Value::CreateStringValue(
         "<unknown TileResolution value>"));
   }
@@ -94,8 +94,8 @@ scoped_ptr<base::Value> TilePriority::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   state->SetBoolean("is_live", is_live);
   state->Set("resolution", TileResolutionAsValue(resolution).release());
-  state->SetDouble("time_to_visible_in_seconds", time_to_visible_in_seconds);
-  state->SetDouble("distance_to_visible_in_pixels", distance_to_visible_in_pixels);
+  state->Set("time_to_visible_in_seconds", MathUtil::asValueSafely(time_to_visible_in_seconds).release());
+  state->Set("distance_to_visible_in_pixels", MathUtil::asValueSafely(distance_to_visible_in_pixels).release());
   state->Set("current_screen_quad", MathUtil::asValue(current_screen_quad).release());
   return state.PassAs<base::Value>();
 }
@@ -173,7 +173,7 @@ scoped_ptr<base::Value> TreePriorityAsValue(TreePriority prio) {
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "NEW_CONTENT_TAKES_PRIORITY"));
   default:
-      DCHECK(false) << "Unrecognized priority value";
+      DCHECK(false) << "Unrecognized priority value " << prio;
       return scoped_ptr<base::Value>(base::Value::CreateStringValue(
           "<unknown>"));
   }

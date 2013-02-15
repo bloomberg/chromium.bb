@@ -123,6 +123,12 @@ public:
     static scoped_ptr<base::Value> asValue(gfx::Size s);
     static scoped_ptr<base::Value> asValue(gfx::PointF q);
     static scoped_ptr<base::Value> asValue(gfx::QuadF q);
+
+    // Returns a base::Value representation of the floating point value.
+    // If the value is inf, returns max double/float representation.
+    static scoped_ptr<base::Value> asValueSafely(double value);
+    static scoped_ptr<base::Value> asValueSafely(float value);
+
 };
 
 } // namespace cc
