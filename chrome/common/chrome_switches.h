@@ -159,6 +159,7 @@ extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
 extern const char kEnableNaClExceptionHandling[];
 extern const char kEnableNativeMessaging[];
+extern const char kEnableNetBenchmarking[];
 extern const char kEnableNewAutofillHeuristics[];
 extern const char kEnableNewAutofillUi[];
 extern const char kEnableNpn[];

@@ -7,13 +7,9 @@
 #include "base/command_line.h"
 #include "base/metrics/stats_table.h"
 #include "base/time.h"
-#include "chrome/common/benchmarking_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "v8/include/v8.h"
-
-using WebKit::WebCache;
 
 const char kBenchmarkingExtensionName[] = "v8/Benchmarking";
 
@@ -29,29 +25,9 @@ class BenchmarkingWrapper : public v8::Extension {
         "if (typeof(chrome.benchmarking) == 'undefined') {"
         "  chrome.benchmarking = {};"
         "};"
-        "chrome.benchmarking.clearCache = function() {"
-        "  native function ClearCache();"
-        "  ClearCache();"
-        "};"
-        "chrome.benchmarking.clearHostResolverCache = function() {"
-        "  native function ClearHostResolverCache();"
-        "  ClearHostResolverCache();"
-        "};"
-        "chrome.benchmarking.clearPredictorCache = function() {"
-        "  native function ClearPredictorCache();"
-        "  ClearPredictorCache();"
-        "};"
-        "chrome.benchmarking.closeConnections = function() {"
-        "  native function CloseConnections();"
-        "  CloseConnections();"
-        "};"
         "chrome.benchmarking.counter = function(name) {"
         "  native function GetCounter();"
         "  return GetCounter(name);"
-        "};"
-        "chrome.benchmarking.enableSpdy = function(name) {"
-        "  native function EnableSpdy();"
-        "  EnableSpdy(name);"
         "};"
         "chrome.benchmarking.isSingleProcess = function() {"
         "  native function IsSingleProcess();"
@@ -80,18 +56,8 @@ class BenchmarkingWrapper : public v8::Extension {
         ) {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name) OVERRIDE {
-    if (name->Equals(v8::String::New("CloseConnections"))) {
-      return v8::FunctionTemplate::New(CloseConnections);
-    } else if (name->Equals(v8::String::New("ClearCache"))) {
-      return v8::FunctionTemplate::New(ClearCache);
-    } else if (name->Equals(v8::String::New("ClearHostResolverCache"))) {
-      return v8::FunctionTemplate::New(ClearHostResolverCache);
-    } else if (name->Equals(v8::String::New("ClearPredictorCache"))) {
-      return v8::FunctionTemplate::New(ClearPredictorCache);
-    } else if (name->Equals(v8::String::New("EnableSpdy"))) {
-      return v8::FunctionTemplate::New(EnableSpdy);
-    } else if (name->Equals(v8::String::New("GetCounter"))) {
+      v8::Handle<v8::String> name) {
+    if (name->Equals(v8::String::New("GetCounter"))) {
       return v8::FunctionTemplate::New(GetCounter);
     } else if (name->Equals(v8::String::New("IsSingleProcess"))) {
       return v8::FunctionTemplate::New(IsSingleProcess);
@@ -100,44 +66,6 @@ class BenchmarkingWrapper : public v8::Extension {
     }
 
     return v8::Handle<v8::FunctionTemplate>();
-  }
-
-  static v8::Handle<v8::Value> CloseConnections(const v8::Arguments& args) {
-    content::RenderThread::Get()->Send(
-        new ChromeViewHostMsg_CloseCurrentConnections());
-    return v8::Undefined();
-  }
-
-  static v8::Handle<v8::Value> ClearCache(const v8::Arguments& args) {
-    int rv;
-    content::RenderThread::Get()->Send(new ChromeViewHostMsg_ClearCache(&rv));
-    WebCache::clear();
-    return v8::Undefined();
-  }
-
-  static v8::Handle<v8::Value> ClearHostResolverCache(
-      const v8::Arguments& args) {
-    int rv;
-    content::RenderThread::Get()->Send(
-        new ChromeViewHostMsg_ClearHostResolverCache(&rv));
-    return v8::Undefined();
-  }
-
-  static v8::Handle<v8::Value> ClearPredictorCache(
-      const v8::Arguments& args) {
-    int rv;
-    content::RenderThread::Get()->Send(
-        new ChromeViewHostMsg_ClearPredictorCache(&rv));
-    return v8::Undefined();
-  }
-
-  static v8::Handle<v8::Value> EnableSpdy(const v8::Arguments& args) {
-    if (!args.Length() || !args[0]->IsBoolean())
-      return v8::Undefined();
-
-    content::RenderThread::Get()->Send(new ChromeViewHostMsg_EnableSpdy(
-        args[0]->BooleanValue()));
-    return v8::Undefined();
   }
 
   static v8::Handle<v8::Value> GetCounter(const v8::Arguments& args) {

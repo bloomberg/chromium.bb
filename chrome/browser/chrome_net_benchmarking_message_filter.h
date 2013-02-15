@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROME_BENCHMARKING_MESSAGE_FILTER_H_
-#define CHROME_BROWSER_CHROME_BENCHMARKING_MESSAGE_FILTER_H_
+#ifndef CHROME_BROWSER_CHROME_NET_BENCHMARKING_MESSAGE_FILTER_H_
+#define CHROME_BROWSER_CHROME_NET_BENCHMARKING_MESSAGE_FILTER_H_
 
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
@@ -16,9 +16,10 @@ class Profile;
 
 // This class filters out incoming Chrome-specific benchmarking IPC messages
 // for the renderer process on the IPC thread.
-class ChromeBenchmarkingMessageFilter : public content::BrowserMessageFilter {
+class ChromeNetBenchmarkingMessageFilter
+    : public content::BrowserMessageFilter {
  public:
-  ChromeBenchmarkingMessageFilter(
+  ChromeNetBenchmarkingMessageFilter(
       int render_process_id,
       Profile* profile,
       net::URLRequestContextGetter* request_context);
@@ -28,7 +29,7 @@ class ChromeBenchmarkingMessageFilter : public content::BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
  private:
-  virtual ~ChromeBenchmarkingMessageFilter();
+  virtual ~ChromeNetBenchmarkingMessageFilter();
 
   // Message handlers.
   void OnCloseCurrentConnections();
@@ -48,8 +49,8 @@ class ChromeBenchmarkingMessageFilter : public content::BrowserMessageFilter {
   Profile* profile_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeBenchmarkingMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(ChromeNetBenchmarkingMessageFilter);
 };
 
-#endif  // CHROME_BROWSER_CHROME_BENCHMARKING_MESSAGE_FILTER_H_
+#endif  // CHROME_BROWSER_CHROME_NET_BENCHMARKING_MESSAGE_FILTER_H_
 

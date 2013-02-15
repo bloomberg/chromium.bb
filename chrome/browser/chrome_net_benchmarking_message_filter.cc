@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_benchmarking_message_filter.h"
+#include "chrome/browser/chrome_net_benchmarking_message_filter.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -23,7 +23,7 @@
 
 namespace {
 
-void ClearCacheCallback(ChromeBenchmarkingMessageFilter* filter,
+void ClearCacheCallback(ChromeNetBenchmarkingMessageFilter* filter,
                         IPC::Message* reply_msg,
                         int result) {
   ChromeViewHostMsg_ClearCache::WriteReplyParams(reply_msg, result);
@@ -32,7 +32,7 @@ void ClearCacheCallback(ChromeBenchmarkingMessageFilter* filter,
 
 }  // namespace
 
-ChromeBenchmarkingMessageFilter::ChromeBenchmarkingMessageFilter(
+ChromeNetBenchmarkingMessageFilter::ChromeNetBenchmarkingMessageFilter(
     int render_process_id,
     Profile* profile,
     net::URLRequestContextGetter* request_context)
@@ -41,13 +41,13 @@ ChromeBenchmarkingMessageFilter::ChromeBenchmarkingMessageFilter(
       request_context_(request_context) {
 }
 
-ChromeBenchmarkingMessageFilter::~ChromeBenchmarkingMessageFilter() {
+ChromeNetBenchmarkingMessageFilter::~ChromeNetBenchmarkingMessageFilter() {
 }
 
-bool ChromeBenchmarkingMessageFilter::OnMessageReceived(
+bool ChromeNetBenchmarkingMessageFilter::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ChromeBenchmarkingMessageFilter, message,
+  IPC_BEGIN_MESSAGE_MAP_EX(ChromeNetBenchmarkingMessageFilter, message,
                            *message_was_ok)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CloseCurrentConnections,
                         OnCloseCurrentConnections)
@@ -62,7 +62,7 @@ bool ChromeBenchmarkingMessageFilter::OnMessageReceived(
   return handled;
 }
 
-void ChromeBenchmarkingMessageFilter::OnClearCache(IPC::Message* reply_msg) {
+void ChromeNetBenchmarkingMessageFilter::OnClearCache(IPC::Message* reply_msg) {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled()) {
@@ -86,7 +86,7 @@ void ChromeBenchmarkingMessageFilter::OnClearCache(IPC::Message* reply_msg) {
   Send(reply_msg);
 }
 
-void ChromeBenchmarkingMessageFilter::OnClearHostResolverCache(int* result) {
+void ChromeNetBenchmarkingMessageFilter::OnClearHostResolverCache(int* result) {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled()) {
@@ -104,7 +104,7 @@ void ChromeBenchmarkingMessageFilter::OnClearHostResolverCache(int* result) {
 
 // TODO(lzheng): This only enables spdy over ssl. Enable spdy for http
 // when needed.
-void ChromeBenchmarkingMessageFilter::OnEnableSpdy(bool enable) {
+void ChromeNetBenchmarkingMessageFilter::OnEnableSpdy(bool enable) {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled()) {
@@ -119,7 +119,7 @@ void ChromeBenchmarkingMessageFilter::OnEnableSpdy(bool enable) {
   }
 }
 
-void ChromeBenchmarkingMessageFilter::OnCloseCurrentConnections() {
+void ChromeNetBenchmarkingMessageFilter::OnCloseCurrentConnections() {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled()) {
@@ -130,7 +130,7 @@ void ChromeBenchmarkingMessageFilter::OnCloseCurrentConnections() {
       http_transaction_factory()->GetCache()->CloseAllConnections();
 }
 
-void ChromeBenchmarkingMessageFilter::OnSetCacheMode(bool enabled) {
+void ChromeNetBenchmarkingMessageFilter::OnSetCacheMode(bool enabled) {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled()) {
@@ -144,7 +144,7 @@ void ChromeBenchmarkingMessageFilter::OnSetCacheMode(bool enabled) {
   http_cache->set_mode(mode);
 }
 
-void ChromeBenchmarkingMessageFilter::OnClearPredictorCache(int* result) {
+void ChromeNetBenchmarkingMessageFilter::OnClearPredictorCache(int* result) {
   // This function is disabled unless the user has enabled
   // benchmarking extensions.
   if (!CheckBenchmarkingEnabled()) {
@@ -157,13 +157,14 @@ void ChromeBenchmarkingMessageFilter::OnClearPredictorCache(int* result) {
   *result = 0;
 }
 
-bool ChromeBenchmarkingMessageFilter::CheckBenchmarkingEnabled() const {
+bool ChromeNetBenchmarkingMessageFilter::CheckBenchmarkingEnabled() const {
   static bool checked = false;
   static bool result = false;
   if (!checked) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    result = command_line.HasSwitch(switches::kEnableBenchmarking);
+    result = command_line.HasSwitch(switches::kEnableNetBenchmarking);
     checked = true;
   }
   return result;
 }
+
