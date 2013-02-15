@@ -112,6 +112,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     MOVE_LOOP_CANCELED
   };
 
+  // Source that initiated the move loop.
+  enum MoveLoopSource {
+    MOVE_LOOP_SOURCE_MOUSE,
+    MOVE_LOOP_SOURCE_TOUCH,
+  };
+
   struct VIEWS_EXPORT InitParams {
     enum Type {
       TYPE_WINDOW,      // A decorated Window, like a frame window.
@@ -355,11 +361,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void SetVisibilityChangedAnimationsEnabled(bool value);
 
   // Starts a nested message loop that moves the window. This can be used to
-  // start a window move operation from a mouse moved event. This returns when
-  // the move completes. |drag_offset| is the offset from the top left corner
-  // of the window to the point where the cursor is dragging, and is used to
-  // offset the bounds of the window from the cursor.
-  MoveLoopResult RunMoveLoop(const gfx::Vector2d& drag_offset);
+  // start a window move operation from a mouse or touch event. This returns
+  // when the move completes. |drag_offset| is the offset from the top left
+  // corner of the window to the point where the cursor is dragging, and is used
+  // to offset the bounds of the window from the cursor.
+  MoveLoopResult RunMoveLoop(const gfx::Vector2d& drag_offset,
+                             MoveLoopSource source);
 
   // Stops a previously started move loop. This is not immediate.
   void EndMoveLoop();

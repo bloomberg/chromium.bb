@@ -930,7 +930,7 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
 
 bool Tab::OnMouseDragged(const ui::MouseEvent& event) {
   if (controller())
-    controller()->ContinueDrag(this, event.location());
+    controller()->ContinueDrag(this, event);
   return true;
 }
 
@@ -1022,7 +1022,7 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
       break;
 
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      controller()->ContinueDrag(this, event->location());
+      controller()->ContinueDrag(this, *event);
       break;
 
     default:

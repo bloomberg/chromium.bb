@@ -41,7 +41,7 @@ class FakeTabController : public TabController {
       const ui::LocatedEvent& event,
       const ui::ListSelectionModel& original_selection) OVERRIDE {}
   virtual void ContinueDrag(views::View* view,
-                            const gfx::Point& location) OVERRIDE {}
+                            const ui::LocatedEvent& event) OVERRIDE {}
   virtual bool EndDrag(EndDragReason reason) OVERRIDE { return false; }
   virtual Tab* GetTabAt(Tab* tab,
                         const gfx::Point& tab_in_tab_coordinates) OVERRIDE {

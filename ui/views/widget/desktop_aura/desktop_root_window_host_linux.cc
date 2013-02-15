@@ -542,11 +542,16 @@ void DesktopRootWindowHostLinux::ClearNativeFocus() {
 }
 
 Widget::MoveLoopResult DesktopRootWindowHostLinux::RunMoveLoop(
-    const gfx::Vector2d& drag_offset) {
+    const gfx::Vector2d& drag_offset,
+    Widget::MoveLoopSource source) {
   SetCapture();
 
-  if (x11_window_move_client_->RunMoveLoop(content_window_, drag_offset) ==
-      aura::client::MOVE_SUCCESSFUL)
+  aura::client::WindowMoveSource window_move_source =
+      source == Widget::MOVE_LOOP_SOURCE_MOUSE ?
+      aura::client::WINDOW_MOVE_SOURCE_MOUSE :
+      aura::client::WINDOW_MOVE_SOURCE_TOUCH;
+  if (x11_window_move_client_->RunMoveLoop(content_window_, drag_offset,
+      window_move_source) == aura::client::MOVE_SUCCESSFUL)
     return Widget::MOVE_LOOP_SUCCESSFUL;
 
   return Widget::MOVE_LOOP_CANCELED;

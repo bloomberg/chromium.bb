@@ -218,7 +218,8 @@ TEST_F(WorkspaceEventHandlerTest, DeleteWhileInRunLoop) {
   ASSERT_TRUE(aura::client::GetWindowMoveClient(window->parent()));
   MessageLoop::current()->DeleteSoon(FROM_HERE, window.get());
   aura::client::GetWindowMoveClient(window->parent())->RunMoveLoop(
-      window.release(), gfx::Vector2d());
+      window.release(), gfx::Vector2d(),
+      aura::client::WINDOW_MOVE_SOURCE_MOUSE);
 }
 
 }  // namespace internal

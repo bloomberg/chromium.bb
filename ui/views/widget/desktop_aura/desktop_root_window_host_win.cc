@@ -277,7 +277,8 @@ void DesktopRootWindowHostWin::ClearNativeFocus() {
 }
 
 Widget::MoveLoopResult DesktopRootWindowHostWin::RunMoveLoop(
-    const gfx::Vector2d& drag_offset) {
+    const gfx::Vector2d& drag_offset,
+    Widget::MoveLoopSource source) {
   return message_handler_->RunMoveLoop(drag_offset) ?
       Widget::MOVE_LOOP_SUCCESSFUL : Widget::MOVE_LOOP_CANCELED;
 }

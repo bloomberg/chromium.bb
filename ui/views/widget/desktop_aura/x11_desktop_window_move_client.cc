@@ -59,7 +59,8 @@ bool X11DesktopWindowMoveClient::Dispatch(const base::NativeEvent& event) {
 
 aura::client::WindowMoveResult X11DesktopWindowMoveClient::RunMoveLoop(
     aura::Window* source,
-    const gfx::Vector2d& drag_offset) {
+    const gfx::Vector2d& drag_offset,
+    aura::client::WindowMoveSource move_source) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
   window_offset_ = drag_offset;

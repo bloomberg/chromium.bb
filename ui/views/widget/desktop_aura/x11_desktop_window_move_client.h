@@ -37,7 +37,8 @@ class VIEWS_EXPORT X11DesktopWindowMoveClient
   // Overridden from aura::client::WindowMoveClient:
   virtual aura::client::WindowMoveResult RunMoveLoop(
       aura::Window* window,
-      const gfx::Vector2d& drag_offset) OVERRIDE;
+      const gfx::Vector2d& drag_offset,
+      aura::client::WindowMoveSource move_source) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
 
  private:

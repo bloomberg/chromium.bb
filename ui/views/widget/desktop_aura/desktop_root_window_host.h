@@ -86,7 +86,8 @@ class VIEWS_EXPORT DesktopRootWindowHost {
   virtual void ClearNativeFocus() = 0;
 
   virtual Widget::MoveLoopResult RunMoveLoop(
-      const gfx::Vector2d& drag_offset) = 0;
+      const gfx::Vector2d& drag_offset,
+      Widget::MoveLoopSource source) = 0;
   virtual void EndMoveLoop() = 0;
 
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) = 0;

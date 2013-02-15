@@ -270,6 +270,12 @@ views::View* ConvertPointToViewAndGetEventHandler(
       dest->GetEventHandlerForPoint(dest_point) : NULL;
 }
 
+TabDragController::EventSource EventSourceFromEvent(
+    const ui::LocatedEvent& event) {
+  return event.IsGestureEvent() ? TabDragController::EVENT_SOURCE_TOUCH :
+      TabDragController::EVENT_SOURCE_MOUSE;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1114,17 +1120,15 @@ void TabStrip::MaybeStartDrag(
   if (event.type() == ui::ET_GESTURE_BEGIN)
     GetWidget()->SetCapture(this);
   drag_controller_.reset(new TabDragController);
-  TabDragController::EventSource event_source = event.IsGestureEvent() ?
-      TabDragController::EVENT_SOURCE_TOUCH :
-      TabDragController::EVENT_SOURCE_MOUSE;
   drag_controller_->Init(
       this, tab, tabs, gfx::Point(x, y), event.x(), selection_model,
-      detach_behavior, move_behavior, event_source);
+      detach_behavior, move_behavior, EventSourceFromEvent(event));
 }
 
-void TabStrip::ContinueDrag(views::View* view, const gfx::Point& location) {
-  if (drag_controller_.get()) {
-    gfx::Point screen_location(location);
+void TabStrip::ContinueDrag(views::View* view, const ui::LocatedEvent& event) {
+  if (drag_controller_.get() &&
+      drag_controller_->event_source() == EventSourceFromEvent(event)) {
+    gfx::Point screen_location(event.location());
     views::View::ConvertPointToScreen(view, &screen_location);
     drag_controller_->Drag(screen_location);
   }
@@ -1483,7 +1487,7 @@ bool TabStrip::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool TabStrip::OnMouseDragged(const ui::MouseEvent& event) {
-  ContinueDrag(this, event.location());
+  ContinueDrag(this, event);
   return true;
 }
 
@@ -1521,7 +1525,7 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
       break;
 
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      ContinueDrag(this, event->location());
+      ContinueDrag(this, *event);
       break;
 
     case ui::ET_GESTURE_BEGIN:

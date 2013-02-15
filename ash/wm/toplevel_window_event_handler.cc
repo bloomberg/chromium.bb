@@ -136,6 +136,9 @@ void ToplevelWindowEventHandler::OnMouseEvent(
       (ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON)) != 0)
     return;
 
+  if (in_gesture_drag_)
+    return;
+
   aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -162,6 +165,9 @@ void ToplevelWindowEventHandler::OnMouseEvent(
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (!target->delegate())
+    return;
+
+  if (in_move_loop_ && !in_gesture_drag_)
     return;
 
   switch (event->type()) {
@@ -244,14 +250,16 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 
 aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
     aura::Window* source,
-    const gfx::Vector2d& drag_offset) {
+    const gfx::Vector2d& drag_offset,
+    aura::client::WindowMoveSource move_source) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
   move_cancelled_ = false;
   aura::RootWindow* root_window = source->GetRootWindow();
   DCHECK(root_window);
   gfx::Point drag_location;
-  if (aura::Env::GetInstance()->is_touch_down()) {
+  if (move_source == aura::client::WINDOW_MOVE_SOURCE_TOUCH &&
+      aura::Env::GetInstance()->is_touch_down()) {
     in_gesture_drag_ = true;
     bool has_point = root_window->gesture_recognizer()->
         GetLastTouchPointForTarget(source, &drag_location);

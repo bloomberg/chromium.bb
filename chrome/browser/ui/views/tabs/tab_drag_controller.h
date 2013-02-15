@@ -117,6 +117,8 @@ class TabDragController : public content::WebContentsDelegate,
   void SetMoveBehavior(MoveBehavior behavior);
   MoveBehavior move_behavior() const { return move_behavior_; }
 
+  EventSource event_source() const { return event_source_; }
+
   // See description above fields for details on these.
   bool active() const { return active_; }
   const TabStrip* attached_tabstrip() const { return attached_tabstrip_; }

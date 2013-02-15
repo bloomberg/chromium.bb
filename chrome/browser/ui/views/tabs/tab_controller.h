@@ -64,7 +64,8 @@ class TabController {
       const ui::ListSelectionModel& original_selection) = 0;
 
   // Continues dragging a Tab.
-  virtual void ContinueDrag(views::View* view, const gfx::Point& location) = 0;
+  virtual void ContinueDrag(views::View* view,
+                            const ui::LocatedEvent& event) = 0;
 
   // Ends dragging a Tab. Returns whether the tab has been destroyed.
   virtual bool EndDrag(EndDragReason reason) = 0;
