@@ -42,22 +42,73 @@ bool Verifier::VerifyBPF(const std::vector<struct sock_filter>& program,
 #endif
 #endif
     ErrorCode code = evaluate_syscall(sysnum, aux);
-    if (!VerifyErrorCode(program, &data, code, err)) {
+    if (!VerifyErrorCode(program, &data, code, code, err)) {
       return false;
     }
   }
   return true;
 }
 
+uint32_t Verifier::EvaluateErrorCode(const ErrorCode& code,
+                                     const struct arch_seccomp_data& data) {
+  if (code.error_type_ == ErrorCode::ET_SIMPLE ||
+      code.error_type_ == ErrorCode::ET_TRAP) {
+    return code.err_;
+  } else if (code.error_type_ == ErrorCode::ET_COND) {
+    if (code.width_ == ErrorCode::TP_32BIT &&
+        (data.args[code.argno_] >> 32) &&
+        (data.args[code.argno_]&0xFFFFFFFF80000000ull)!=0xFFFFFFFF80000000ull){
+      return Sandbox::Unexpected64bitArgument().err();
+    }
+    switch (code.op_) {
+    case ErrorCode::OP_EQUAL:
+      return EvaluateErrorCode((code.width_ == ErrorCode::TP_32BIT
+                                ? uint32_t(data.args[code.argno_])
+                                : data.args[code.argno_]) == code.value_
+                               ? *code.passed_
+                               : *code.failed_,
+                               data);
+    case ErrorCode::OP_HAS_ALL_BITS:
+      return EvaluateErrorCode(((code.width_ == ErrorCode::TP_32BIT
+                                 ? uint32_t(data.args[code.argno_])
+                                 : data.args[code.argno_]) & code.value_)
+                               == code.value_
+                               ? *code.passed_
+                               : *code.failed_,
+                               data);
+    case ErrorCode::OP_HAS_ANY_BITS:
+      return EvaluateErrorCode((code.width_ == ErrorCode::TP_32BIT
+                                ? uint32_t(data.args[code.argno_])
+                                : data.args[code.argno_]) & code.value_
+                               ? *code.passed_
+                               : *code.failed_,
+                               data);
+    default:
+      return SECCOMP_RET_INVALID;
+    }
+  } else {
+    return SECCOMP_RET_INVALID;
+  }
+}
+
 bool Verifier::VerifyErrorCode(const std::vector<struct sock_filter>& program,
                                struct arch_seccomp_data *data,
-                               const ErrorCode& code, const char **err) {
+                               const ErrorCode& root_code,
+                               const ErrorCode& code,
+                               const char **err) {
   if (code.error_type_ == ErrorCode::ET_SIMPLE ||
       code.error_type_ == ErrorCode::ET_TRAP) {
     uint32_t computed_ret = EvaluateBPF(program, *data, err);
     if (*err) {
       return false;
-    } else if (computed_ret != code.err()) {
+    } else if (computed_ret != EvaluateErrorCode(root_code, *data)) {
+      // For efficiency's sake, we'd much rather compare "computed_ret"
+      // against "code.err_". This works most of the time, but it doesn't
+      // always work for nested conditional expressions. The test values
+      // that we generate on the fly to probe expressions can trigger
+      // code flow decisions in multiple nodes of the decision tree, and the
+      // only way to compute the correct error code in that situation is by
+      // calling EvaluateErrorCode().
       *err = "Exit code from BPF program doesn't match";
       return false;
     }
@@ -71,14 +122,14 @@ bool Verifier::VerifyErrorCode(const std::vector<struct sock_filter>& program,
       // Verify that we can check a 32bit value (or the LSB of a 64bit value)
       // for equality.
       data->args[code.argno_] = code.value_;
-      if (!VerifyErrorCode(program, data, *code.passed_, err)) {
+      if (!VerifyErrorCode(program, data, root_code, *code.passed_, err)) {
         return false;
       }
 
       // Change the value to no longer match and verify that this is detected
       // as an inequality.
       data->args[code.argno_] = code.value_ ^ 0x55AA55AA;
-      if (!VerifyErrorCode(program, data, *code.failed_, err)) {
+      if (!VerifyErrorCode(program, data, root_code, *code.failed_, err)) {
         return false;
       }
 
@@ -95,8 +146,8 @@ bool Verifier::VerifyErrorCode(const std::vector<struct sock_filter>& program,
         // verify that it is a fatal error if a 64bit value is ever passed
         // here.
         data->args[code.argno_] = 0x100000000ull;
-        if (!VerifyErrorCode(program, data, Sandbox::Unexpected64bitArgument(),
-                           err)) {
+        if (!VerifyErrorCode(program, data, root_code,
+                             Sandbox::Unexpected64bitArgument(), err)) {
           return false;
         }
       } else {
@@ -107,12 +158,56 @@ bool Verifier::VerifyErrorCode(const std::vector<struct sock_filter>& program,
         // know that the equality test already passed, as unlike the kernel
         // the Verifier does operate on 64bit quantities.
         data->args[code.argno_] = code.value_ ^ 0x55AA55AA00000000ull;
-        if (!VerifyErrorCode(program, data, *code.failed_, err)) {
+        if (!VerifyErrorCode(program, data, root_code, *code.failed_, err)) {
           return false;
         }
       }
       break;
-    default: // TODO(markus): We can only check for equality so far.
+    case ErrorCode::OP_HAS_ALL_BITS:
+    case ErrorCode::OP_HAS_ANY_BITS:
+      // A comprehensive test of bit values is difficult and potentially rather
+      // time-expensive. We avoid doing so at run-time and instead rely on the
+      // unittest for full testing. The test that we have here covers just the
+      // common cases. We test against the bitmask itself, all zeros and all
+      // ones.
+      {
+        // Testing "any" bits against a zero mask is always false. So, there
+        // are some cases, where we expect tests to take the "failed_" branch
+        // even though this is a test that normally should take "passed_".
+        const ErrorCode& passed =
+          (!code.value_ && code.op_ == ErrorCode::OP_HAS_ANY_BITS) ||
+
+          // On a 32bit system, it is impossible to pass a 64bit value as a
+          // system call argument. So, some additional tests always evaluate
+          // as false.
+          ((code.value_ & ~uint64_t(uintptr_t(-1))) &&
+           code.op_ == ErrorCode::OP_HAS_ALL_BITS) ||
+          (code.value_ && !(code.value_ & uintptr_t(-1)) &&
+              code.op_ == ErrorCode::OP_HAS_ANY_BITS)
+
+          ? *code.failed_ : *code.passed_;
+
+        // Similary, testing for "all" bits in a zero mask is always true. So,
+        // some cases pass despite them normally failing.
+        const ErrorCode& failed =
+          !code.value_ && code.op_ == ErrorCode::OP_HAS_ALL_BITS
+          ? *code.passed_ : *code.failed_;
+
+        data->args[code.argno_] = code.value_ & uintptr_t(-1);
+        if (!VerifyErrorCode(program, data, root_code, passed, err)) {
+          return false;
+        }
+        data->args[code.argno_] = uintptr_t(-1);
+        if (!VerifyErrorCode(program, data, root_code, passed, err)) {
+          return false;
+        }
+        data->args[code.argno_] = 0;
+        if (!VerifyErrorCode(program, data, root_code, failed, err)) {
+          return false;
+        }
+      }
+      break;
+    default: // TODO(markus): Need to add support for OP_GREATER
       *err = "Unsupported operation in conditional error code";
       return false;
     }
@@ -159,6 +254,9 @@ uint32_t Verifier::EvaluateBPF(const std::vector<struct sock_filter>& program,
         return 0;
       }
       return r; }
+    case BPF_ALU:
+      Alu(&state, insn, err);
+      break;
     default:
       *err = "Unexpected instruction in BPF program";
       break;
@@ -247,5 +345,70 @@ uint32_t Verifier::Ret(State *, const struct sock_filter& insn,
   }
   return insn.k;
 }
+
+void Verifier::Alu(State *state, const struct sock_filter& insn,
+                   const char **err) {
+  if (BPF_OP(insn.code) == BPF_NEG) {
+    state->accumulator = -state->accumulator;
+    return;
+  } else {
+    if (BPF_SRC(insn.code) != BPF_K) {
+      *err = "Unexpected source operand in arithmetic operation";
+      return;
+    }
+    switch (BPF_OP(insn.code)) {
+    case BPF_ADD:
+      state->accumulator += insn.k;
+      break;
+    case BPF_SUB:
+      state->accumulator -= insn.k;
+      break;
+    case BPF_MUL:
+      state->accumulator *= insn.k;
+      break;
+    case BPF_DIV:
+      if (!insn.k) {
+        *err = "Illegal division by zero";
+        break;
+      }
+      state->accumulator /= insn.k;
+      break;
+    case BPF_MOD:
+      if (!insn.k) {
+        *err = "Illegal division by zero";
+        break;
+      }
+      state->accumulator %= insn.k;
+      break;
+    case BPF_OR:
+      state->accumulator |= insn.k;
+      break;
+    case BPF_XOR:
+      state->accumulator ^= insn.k;
+      break;
+    case BPF_AND:
+      state->accumulator &= insn.k;
+      break;
+    case BPF_LSH:
+      if (insn.k > 32) {
+        *err = "Illegal shift operation";
+        break;
+      }
+      state->accumulator <<= insn.k;
+      break;
+    case BPF_RSH:
+      if (insn.k > 32) {
+        *err = "Illegal shift operation";
+        break;
+      }
+      state->accumulator >>= insn.k;
+      break;
+    default:
+      *err = "Invalid operator in arithmetic operation";
+      break;
+    }
+  }
+}
+
 
 }  // namespace

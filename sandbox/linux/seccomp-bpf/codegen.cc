@@ -58,7 +58,27 @@ void CodeGen::PrintProgram(const Sandbox::Program& program) {
     switch (BPF_CLASS(iter->code)) {
     case BPF_LD:
       if (iter->code == BPF_LD+BPF_W+BPF_ABS) {
-        fprintf(stderr, "LOAD %d\n", (int)iter->k);
+        fprintf(stderr, "LOAD %d  // ", (int)iter->k);
+        if (iter->k == offsetof(struct arch_seccomp_data, nr)) {
+          fprintf(stderr, "System call number\n");
+        } else if (iter->k == offsetof(struct arch_seccomp_data, arch)) {
+          fprintf(stderr, "Architecture\n");
+        } else if (iter->k == offsetof(struct arch_seccomp_data,
+                                       instruction_pointer)) {
+          fprintf(stderr, "Instruction pointer (LSB)\n");
+        } else if (iter->k == offsetof(struct arch_seccomp_data,
+                                       instruction_pointer) + 4) {
+          fprintf(stderr, "Instruction pointer (MSB)\n");
+        } else if (iter->k >= offsetof(struct arch_seccomp_data, args) &&
+                   iter->k <  offsetof(struct arch_seccomp_data, args)+48 &&
+                   (iter->k-offsetof(struct arch_seccomp_data, args))%4 == 0) {
+          fprintf(stderr, "Argument %d (%cSB)\n",
+                  (int)(iter->k-offsetof(struct arch_seccomp_data, args))/8,
+                  (iter->k-offsetof(struct arch_seccomp_data,
+                                    args))%8 ? 'M' : 'L');
+        } else {
+          fprintf(stderr, "???\n");
+        }
       } else {
         fprintf(stderr, "LOAD ???\n");
       }
@@ -77,7 +97,31 @@ void CodeGen::PrintProgram(const Sandbox::Program& program) {
       }
       break;
     case BPF_RET:
-      fprintf(stderr, "RET 0x%x\n", iter->k);
+      fprintf(stderr, "RET 0x%x  // ", iter->k);
+      if ((iter->k & SECCOMP_RET_ACTION) == SECCOMP_RET_TRAP) {
+        fprintf(stderr, "Trap #%d\n", iter->k & SECCOMP_RET_DATA);
+      } else if ((iter->k & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
+        fprintf(stderr, "errno = %d\n", iter->k & SECCOMP_RET_DATA);
+      } else if (iter->k == SECCOMP_RET_ALLOW) {
+        fprintf(stderr, "Allowed\n");
+      } else {
+        fprintf(stderr, "???\n");
+      }
+      break;
+    case BPF_ALU:
+      fprintf(stderr, BPF_OP(iter->code) == BPF_NEG
+              ? "A := -A\n" : "A := A %s 0x%x\n",
+              BPF_OP(iter->code) == BPF_ADD ? "+"  :
+              BPF_OP(iter->code) == BPF_SUB ? "-"  :
+              BPF_OP(iter->code) == BPF_MUL ? "*"  :
+              BPF_OP(iter->code) == BPF_DIV ? "/"  :
+              BPF_OP(iter->code) == BPF_MOD ? "%"  :
+              BPF_OP(iter->code) == BPF_OR  ? "|"  :
+              BPF_OP(iter->code) == BPF_XOR ? "^"  :
+              BPF_OP(iter->code) == BPF_AND ? "&"  :
+              BPF_OP(iter->code) == BPF_LSH ? "<<" :
+              BPF_OP(iter->code) == BPF_RSH ? ">>" : "???",
+              (int)iter->k);
       break;
     default:
       fprintf(stderr, "???\n");

@@ -91,6 +91,13 @@
 #define IPC_64                   0x0100
 #endif
 
+#ifndef BPF_MOD
+#define BPF_MOD                    0x90
+#endif
+#ifndef BPF_XOR
+#define BPF_XOR                    0xA0
+#endif
+
 // In order to build will older tool chains, we currently have to avoid
 // including <linux/seccomp.h>. Until that can be fixed (if ever). Rely on
 // our own definitions of the seccomp kernel ABI.
@@ -370,7 +377,11 @@ class Sandbox {
   // function, you must not call any other sandboxing function.
   // Typically, AssembleFilter() is only used by unit tests and by sandbox
   // internals. It should not be used by production code.
-  static Program *AssembleFilter();
+  // For performance reasons, we normally only run the assembled BPF program
+  // through the verifier, iff the program was built in debug mode.
+  // But by setting "force_verification", the caller can request that the
+  // verifier is run unconditionally. This is useful for unittests.
+  static Program *AssembleFilter(bool force_verification);
 
  private:
   friend class CodeGen;

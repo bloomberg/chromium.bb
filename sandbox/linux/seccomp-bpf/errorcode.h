@@ -11,10 +11,10 @@ namespace playground2 {
 
 struct arch_seccomp_data;
 
-// This class holds all the possible values that can returned by a sandbox
+// This class holds all the possible values that can be returned by a sandbox
 // policy.
 // We can either wrap a symbolic ErrorCode (i.e. ERR_XXX enum values), an
-// errno value (in the range 1..4095), a pointer to a TrapFnc callback
+// errno value (in the range 0..4095), a pointer to a TrapFnc callback
 // handling a SECCOMP_RET_TRAP trap, or a complex constraint.
 // All of the commonly used values are stored in the "err_" field. So, code
 // that is using the ErrorCode class typically operates on a single 32bit
@@ -22,23 +22,76 @@ struct arch_seccomp_data;
 class ErrorCode {
  public:
   enum {
-    // Allow this system call.
-    ERR_ALLOWED   = 0x0000,
+    // Allow this system call. The value of ERR_ALLOWED is pretty much
+    // completely arbitrary. But we want to pick it so that is is unlikely
+    // to be passed in accidentally, when the user intended to return an
+    // "errno" (see below) value instead.
+    ERR_ALLOWED   = 0x04000000,
 
     // Deny the system call with a particular "errno" value.
-    ERR_MIN_ERRNO = 1,
+    // N.B.: It is also possible to return "0" here. That would normally
+    //       indicate success, but it won't actually run the system call.
+    //       This is very different from return ERR_ALLOWED.
+    ERR_MIN_ERRNO = 0,
     ERR_MAX_ERRNO = 4095,
-
-    // This code should never be used directly, it is used internally only.
-    ERR_INVALID   = -1,
   };
 
+  // While BPF filter programs always operate on 32bit quantities, the kernel
+  // always sees system call arguments as 64bit values. This statement is true
+  // no matter whether the host system is natively operating in 32bit or 64bit.
+  // The BPF compiler hides the fact that BPF instructions cannot directly
+  // access 64bit quantities. But policies are still advised to specify whether
+  // a system call expects a 32bit or a 64bit quantity.
   enum ArgType {
-    TP_32BIT, TP_64BIT,
+    // When passed as an argument to Sandbox::Cond(), TP_32BIT requests that
+    // the conditional test should operate on the 32bit part of the system call
+    // argument.
+    // On 64bit architectures, this verifies that user space did not pass
+    // a 64bit value as an argument to the system call. If it did, that will be
+    // interpreted as an attempt at breaking the sandbox and results in the
+    // program getting terminated.
+    // In other words, only perform a 32bit test, if you are sure this
+    // particular system call would never legitimately take a 64bit
+    // argument.
+    // Implementation detail: TP_32BIT does two things. 1) it restricts the
+    // conditional test to operating on the LSB only, and 2) it adds code to
+    // the BPF filter program verifying that the MSB  the kernel received from
+    // user space is either 0, or 0xFFFFFFFF; the latter is acceptable, iff bit
+    // 31 was set in the system call argument. It deals with 32bit arguments
+    // having been sign extended.
+    TP_32BIT,
+
+    // When passed as an argument to Sandbox::Cond(), TP_64BIT requests that
+    // the conditional test should operate on the full 64bit argument. It is
+    // generally harmless to perform a 64bit test on 32bit systems, as the
+    // kernel will always see the top 32 bits of all arguments as zero'd out.
+    // This approach has the desirable property that for tests of pointer
+    // values, we can always use TP_64BIT no matter the host architecture.
+    // But of course, that also means, it is possible to write conditional
+    // policies that turn into no-ops on 32bit systems; this is by design.
+    TP_64BIT,
   };
 
   enum Operation {
-    OP_EQUAL, OP_GREATER, OP_GREATER_EQUAL, OP_HAS_BITS,
+    // Test whether the system call argument is equal to the operand.
+    OP_EQUAL,
+
+    // Test whether the system call argument is greater (or equal) to the
+    // operand. Please note that all tests always operate on unsigned
+    // values. You can generally emulate signed tests, if that's what you
+    // need.
+    // TODO(markus): Check whether we should automatically emulate signed
+    //               operations.
+    OP_GREATER_UNSIGNED, OP_GREATER_EQUAL_UNSIGNED,
+
+    // Tests a system call argument against a bit mask.
+    // The "ALL_BITS" variant performs this test: "arg & mask == mask"
+    // This implies that a mask of zero always results in a passing test.
+    // The "ANY_BITS" variant performs this test: "arg & mask != 0"
+    // This implies that a mask of zero always results in a failing test.
+    OP_HAS_ALL_BITS, OP_HAS_ANY_BITS,
+
+    // Total number of operations.
     OP_NUM_OPS,
   };
 

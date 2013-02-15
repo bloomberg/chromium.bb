@@ -60,14 +60,19 @@ class Verifier {
     DISALLOW_IMPLICIT_CONSTRUCTORS(State);
   };
 
+  static uint32_t EvaluateErrorCode(const ErrorCode& code,
+                                    const struct arch_seccomp_data& data);
   static bool     VerifyErrorCode(const std::vector<struct sock_filter>& prg,
                                   struct arch_seccomp_data *data,
+                                  const ErrorCode& root_code,
                                   const ErrorCode& code, const char **err);
   static void     Ld (State *state, const struct sock_filter& insn,
                       const char **err);
   static void     Jmp(State *state, const struct sock_filter& insn,
                       const char **err);
   static uint32_t Ret(State *state, const struct sock_filter& insn,
+                      const char **err);
+  static void     Alu(State *state, const struct sock_filter& insn,
                       const char **err);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Verifier);

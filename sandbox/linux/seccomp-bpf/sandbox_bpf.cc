@@ -35,6 +35,17 @@ void WriteFailedStderrSetupMessage(int out_fd) {
   }
 }
 
+template<class T> int popcount(T x);
+template<> int popcount<unsigned int>(unsigned int x) {
+  return __builtin_popcount(x);
+}
+template<> int popcount<unsigned long>(unsigned long x) {
+  return __builtin_popcountl(x);
+}
+template<> int popcount<unsigned long long>(unsigned long long x) {
+  return __builtin_popcountll(x);
+}
+
 }  // namespace
 
 // The kernel gives us a sandbox, we turn it into a playground :-)
@@ -406,7 +417,7 @@ void Sandbox::InstallFilter(bool quiet) {
   // installed the BPF filter program in the kernel. Depending on the
   // system memory allocator that is in effect, these operators can result
   // in system calls to things like munmap() or brk().
-  Program *program = AssembleFilter();
+  Program *program = AssembleFilter(false /* force_verification */);
 
   struct sock_filter bpf[program->size()];
   const struct sock_fprog prog = {
@@ -430,7 +441,11 @@ void Sandbox::InstallFilter(bool quiet) {
   return;
 }
 
-Sandbox::Program *Sandbox::AssembleFilter() {
+Sandbox::Program *Sandbox::AssembleFilter(bool force_verification) {
+#if !defined(NDEBUG)
+  force_verification = true;
+#endif
+
   // Verify that the user pushed a policy.
   if (evaluators_.empty()) {
     SANDBOX_DIE("Failed to configure system call filters");
@@ -583,9 +598,12 @@ Sandbox::Program *Sandbox::AssembleFilter() {
   // Make sure compilation resulted in BPF program that executes
   // correctly. Otherwise, there is an internal error in our BPF compiler.
   // There is really nothing the caller can do until the bug is fixed.
-#ifndef NDEBUG
-  VerifyProgram(*program, has_unsafe_traps);
-#endif
+  if (force_verification) {
+    // Verification is expensive. We only perform this step, if we are
+    // compiled in debug mode, or if the caller explicitly requested
+    // verification.
+    VerifyProgram(*program, has_unsafe_traps);
+  }
 
   return program;
 }
@@ -604,6 +622,7 @@ void Sandbox::VerifyProgram(const Program& program, bool has_unsafe_traps) {
                        program,
                        has_unsafe_traps ? redirected_evaluators : evaluators_,
                        &err)) {
+    CodeGen::PrintProgram(program);
     SANDBOX_DIE(err);
   }
 }
@@ -706,13 +725,114 @@ Instruction *Sandbox::CondExpression(CodeGen *gen, const ErrorCode& cond) {
     if (cond.width_ == ErrorCode::TP_64BIT) {
       msb_tail = gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K,
                                       static_cast<uint32_t>(cond.value_ >> 32),
-                                      NULL,
+                                      lsb_head,
                                       RetExpression(gen, *cond.failed_));
       gen->JoinInstructions(msb_head, msb_tail);
     }
     break;
+  case ErrorCode::OP_HAS_ALL_BITS:
+    // Check the bits in the LSB half of the system call argument. Our
+    // OP_HAS_ALL_BITS operator passes, iff all of the bits are set. This is
+    // different from the kernel's BPF_JSET operation which passes, if any of
+    // the bits are set.
+    // Of course, if there is only a single set bit (or none at all), then
+    // things get easier.
+    {
+      uint32_t lsb_bits = static_cast<uint32_t>(cond.value_);
+      int lsb_bit_count = popcount(lsb_bits);
+      if (lsb_bit_count == 0) {
+        // No bits are set in the LSB half. The test will always pass.
+        lsb_head = RetExpression(gen, *cond.passed_);
+        lsb_tail = NULL;
+      } else if (lsb_bit_count == 1) {
+        // Exactly one bit is set in the LSB half. We can use the BPF_JSET
+        // operator.
+        lsb_tail = gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K,
+                                        lsb_bits,
+                                        RetExpression(gen, *cond.passed_),
+                                        RetExpression(gen, *cond.failed_));
+        gen->JoinInstructions(lsb_head, lsb_tail);
+      } else {
+        // More than one bit is set in the LSB half. We need to combine
+        // BPF_AND and BPF_JEQ to test whether all of these bits are in fact
+        // set in the system call argument.
+        gen->JoinInstructions(lsb_head,
+                     gen->MakeInstruction(BPF_ALU+BPF_AND+BPF_K,
+                                          lsb_bits,
+          lsb_tail = gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K,
+                                          lsb_bits,
+                                          RetExpression(gen, *cond.passed_),
+                                          RetExpression(gen, *cond.failed_))));
+      }
+    }
+
+    // If we are looking at a 64bit argument, we need to also check the bits
+    // in the MSB half of the system call argument.
+    if (cond.width_ == ErrorCode::TP_64BIT) {
+      uint32_t msb_bits = static_cast<uint32_t>(cond.value_ >> 32);
+      int msb_bit_count = popcount(msb_bits);
+      if (msb_bit_count == 0) {
+        // No bits are set in the MSB half. The test will always pass.
+        msb_head = lsb_head;
+      } else if (msb_bit_count == 1) {
+        // Exactly one bit is set in the MSB half. We can use the BPF_JSET
+        // operator.
+        msb_tail = gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K,
+                                        msb_bits,
+                                        lsb_head,
+                                        RetExpression(gen, *cond.failed_));
+        gen->JoinInstructions(msb_head, msb_tail);
+      } else {
+        // More than one bit is set in the MSB half. We need to combine
+        // BPF_AND and BPF_JEQ to test whether all of these bits are in fact
+        // set in the system call argument.
+        gen->JoinInstructions(msb_head,
+          gen->MakeInstruction(BPF_ALU+BPF_AND+BPF_K,
+                               msb_bits,
+          gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K,
+                               msb_bits,
+                               lsb_head,
+                               RetExpression(gen, *cond.failed_))));
+      }
+    }
+    break;
+  case ErrorCode::OP_HAS_ANY_BITS:
+    // Check the bits in the LSB half of the system call argument. Our
+    // OP_HAS_ANY_BITS operator passes, iff any of the bits are set. This maps
+    // nicely to the kernel's BPF_JSET operation.
+    {
+      uint32_t lsb_bits = static_cast<uint32_t>(cond.value_);
+      if (!lsb_bits) {
+        // No bits are set in the LSB half. The test will always fail.
+        lsb_head = RetExpression(gen, *cond.failed_);
+        lsb_tail = NULL;
+      } else {
+        lsb_tail = gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K,
+                                        lsb_bits,
+                                        RetExpression(gen, *cond.passed_),
+                                        RetExpression(gen, *cond.failed_));
+        gen->JoinInstructions(lsb_head, lsb_tail);
+      }
+    }
+
+    // If we are looking at a 64bit argument, we need to also check the bits
+    // in the MSB half of the system call argument.
+    if (cond.width_ == ErrorCode::TP_64BIT) {
+      uint32_t msb_bits = static_cast<uint32_t>(cond.value_ >> 32);
+      if (!msb_bits) {
+        // No bits are set in the MSB half. The test will always fail.
+        msb_head = lsb_head;
+      } else {
+        msb_tail = gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K,
+                                        msb_bits,
+                                        RetExpression(gen, *cond.passed_),
+                                        lsb_head);
+        gen->JoinInstructions(msb_head, msb_tail);
+      }
+    }
+    break;
   default:
-    // TODO(markus): We can only check for equality so far.
+    // TODO(markus): Need to add support for OP_GREATER
     SANDBOX_DIE("Not implemented");
     break;
   }
@@ -743,8 +863,6 @@ Instruction *Sandbox::CondExpression(CodeGen *gen, const ErrorCode& cond) {
       gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, 0,
                            lsb_head,
                            invalid_64bit));
-  } else {
-    gen->JoinInstructions(msb_tail, lsb_head);
   }
 
   return msb_head;

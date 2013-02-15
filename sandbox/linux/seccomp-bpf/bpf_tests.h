@@ -91,7 +91,7 @@ class BpfTests : public UnitTests {
       // if we don't have kernel support.
       playground2::Sandbox::SetSandboxPolicy(arg->policy(), &arg->aux_);
       playground2::Sandbox::Program *program =
-          playground2::Sandbox::AssembleFilter();
+          playground2::Sandbox::AssembleFilter(true /* force_verification */);
       delete program;
       sandbox::UnitTests::IgnoreThisTest();
     }
