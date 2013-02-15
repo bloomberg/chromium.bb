@@ -25,9 +25,17 @@ namespace android_webview {
 class AwRenderViewHostExt : public content::WebContentsObserver,
                             public base::NonThreadSafe {
  public:
+  class Client {
+   public:
+    virtual void OnPictureUpdated(int process_id, int render_view_id) = 0;
+
+   protected:
+    virtual ~Client() {}
+  };
+
   // To send receive messages to a RenderView we take the WebContents instance,
   // as it internally handles RenderViewHost instances changing underneath us.
-  AwRenderViewHostExt(content::WebContents* contents);
+  AwRenderViewHostExt(content::WebContents* contents, Client* client);
   virtual ~AwRenderViewHostExt();
 
   // |result| will be invoked with the outcome of the request.
@@ -49,6 +57,14 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   // Return |last_hit_test_data_|. Note that this is unavoidably racy;
   // the corresponding public WebView API is as well.
   const AwHitTestData& GetLastHitTestData() const;
+
+  // Enables updating picture piles on every new frame.
+  // OnPictureUpdated is called when a new picture is available,
+  // stored by renderer id in RendererPictureMap.
+  void EnableCapturePictureCallback(bool enabled);
+
+  // Captures the latest available picture pile synchronously.
+  void CapturePictureSync();
 
   // Sets the zoom level for text only. Used in layout modes other than
   // Text Autosizing.
@@ -76,6 +92,8 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   AwHitTestData last_hit_test_data_;
 
   bool has_new_hit_test_data_;
+
+  Client* client_;
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderViewHostExt);
 };

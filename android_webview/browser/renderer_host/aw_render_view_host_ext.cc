@@ -18,9 +18,11 @@
 
 namespace android_webview {
 
-AwRenderViewHostExt::AwRenderViewHostExt(content::WebContents* contents)
+AwRenderViewHostExt::AwRenderViewHostExt(content::WebContents* contents,
+                                         Client* client)
     : content::WebContentsObserver(contents),
-      has_new_hit_test_data_(false) {
+      has_new_hit_test_data_(false),
+      client_(client) {
 }
 
 AwRenderViewHostExt::~AwRenderViewHostExt() {}
@@ -63,6 +65,11 @@ const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
   return last_hit_test_data_;
 }
 
+void AwRenderViewHostExt::EnableCapturePictureCallback(bool enabled) {
+  Send(new AwViewMsg_EnableCapturePictureCallback(
+      web_contents()->GetRoutingID(), enabled));
+}
+
 void AwRenderViewHostExt::SetTextZoomLevel(double level) {
   DCHECK(CalledOnValidThread());
   Send(new AwViewMsg_SetTextZoomLevel(web_contents()->GetRoutingID(), level));
@@ -94,6 +101,8 @@ bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
                         OnDocumentHasImagesResponse)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_UpdateHitTestData,
                         OnUpdateHitTestData)
+    IPC_MESSAGE_HANDLER(AwViewHostMsg_PictureUpdated,
+                        OnPictureUpdated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -118,6 +127,26 @@ void AwRenderViewHostExt::OnUpdateHitTestData(
   DCHECK(CalledOnValidThread());
   last_hit_test_data_ = hit_test_data;
   has_new_hit_test_data_ = true;
+}
+
+void AwRenderViewHostExt::OnPictureUpdated() {
+  if (client_)
+    client_->OnPictureUpdated(web_contents()->GetRenderProcessHost()->GetID(),
+                              routing_id());
+}
+
+bool AwRenderViewHostExt::IsRenderViewReady() const {
+  return web_contents()->GetRenderProcessHost()->HasConnection() &&
+      web_contents()->GetRenderViewHost() &&
+      web_contents()->GetRenderViewHost()->IsRenderViewLive();
+}
+
+void AwRenderViewHostExt::CapturePictureSync() {
+  if (!IsRenderViewReady())
+    return;
+
+  ScopedAllowWaitForLegacyWebViewApi wait;
+  Send(new AwViewMsg_CapturePictureSync(web_contents()->GetRoutingID()));
 }
 
 }  // namespace android_webview
