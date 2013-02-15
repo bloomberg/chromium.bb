@@ -25,6 +25,12 @@ use_gyp = False
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 
+def Trace(msg):
+  if Trace.verbose:
+    sys.stderr.write(str(msg) + '\n')
+Trace.verbose = False
+
+
 def Replace(text, replacements):
   for key, val in replacements.items():
     if val is not None:
@@ -139,7 +145,6 @@ def GenerateRules(desc, tools):
 
   configs = desc.get('CONFIGS', ['Debug', 'Release'])
   for tc, enabled_arches in tools.iteritems():
-    print tc
     makeobj = MakeRules(tc)
     arches = makeobj.GetArches()
     rules += makeobj.BuildDirectoryRules(configs)
@@ -364,6 +369,7 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains):
   name = desc['NAME']
   outdir = os.path.join(dstroot, desc['DEST'], name)
   srcfile = os.path.join(srcroot, 'index.html')
+  dstfile = os.path.join(outdir, 'index.html')
   tools = GetPlatforms(toolchains, desc['TOOLS'])
 
   if use_gyp and getos.GetPlatform() != 'win':
@@ -371,27 +377,17 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains):
   else:
     configs = ['Debug', 'Release']
 
-  for tool in tools:
-    for cfg in configs:
-      dstfile = os.path.join(outdir, 'index_%s_%s.html' % (tool, cfg))
-      print 'Writing from %s to %s' % (srcfile, dstfile)
-      if use_gyp:
-        path = "build/%s-%s" % (tool, cfg)
-      else:
-        path = "%s/%s" % (tool, cfg)
-      replace = {
-        '<path>': path,
-        '<NAME>': name,
-        '<TITLE>': desc['TITLE'],
-        '<tc>': tool
-      }
-      WriteReplaced(srcfile, dstfile, replace)
+  if use_gyp:
+    path = "build/{tc}-{config}"
+  else:
+    path = "{tc}/{config}"
 
-  replace['<tc>'] = tools[0]
-  replace['<config>'] = configs[0]
-
-  srcfile = os.path.join(SDK_SRC_DIR, 'build_tools', 'redirect.html')
-  dstfile = os.path.join(outdir, 'index.html')
+  replace = {
+    '{{title}}': desc['TITLE'],
+    '{{attrs}}':
+        'data-name="%s" data-tools="%s" data-configs="%s" data-path="%s"' % (
+        name, ' '.join(tools), ' '.join(configs), path),
+  }
   WriteReplaced(srcfile, dstfile, replace)
 
 
@@ -402,7 +398,7 @@ def LoadProject(filename, toolchains):
   if it matches the set of requested toolchains.  Return None if the
   project is filtered out."""
 
-  print 'Processing %s...' % filename
+  Trace('Processing %s...' % filename)
   # Default src directory is the directory the description was found in
   desc = open(filename, 'r').read()
   desc = eval(desc, {}, {})
@@ -433,7 +429,8 @@ def FindAndCopyFiles(src_files, root, search_dirs, dst_dir):
     dst_file = os.path.join(dst_dir, src_name)
     if os.path.exists(dst_file):
       if os.stat(src_file).st_mtime <= os.stat(dst_file).st_mtime:
-        print 'Skipping "%s", destination "%s" is newer.' % (src_file, dst_file)
+        Trace('Skipping "%s", destination "%s" is newer.' % (
+            src_file, dst_file))
         continue
     buildbot_common.CopyFile(src_file, dst_file)
 
@@ -553,22 +550,26 @@ def main(argv):
   parser.add_option('--dstroot', help='Set root for destination.',
       default=os.path.join(OUT_DIR, 'pepper_canary'))
   parser.add_option('--master', help='Create master Makefile.',
-      action='store_true', default=False)
+      action='store_true')
   parser.add_option('--newlib', help='Create newlib examples.',
-      action='store_true', default=False)
+      action='store_true')
   parser.add_option('--glibc', help='Create glibc examples.',
-      action='store_true', default=False)
+      action='store_true')
   parser.add_option('--pnacl', help='Create pnacl examples.',
-      action='store_true', default=False)
+      action='store_true')
   parser.add_option('--host', help='Create host examples.',
-      action='store_true', default=False)
+      action='store_true')
   parser.add_option('--experimental', help='Create experimental examples.',
-      action='store_true', default=False)
+      action='store_true')
+  parser.add_option('-v', '--verbose', help='Verbose output',
+      action='store_true')
 
   toolchains = []
   platform = getos.GetPlatform()
 
   options, args = parser.parse_args(argv)
+  if options.verbose:
+    Trace.verbose = True
   if options.newlib:
     toolchains.append('newlib')
   if options.glibc:
@@ -591,14 +592,14 @@ def main(argv):
   for i, filename in enumerate(args):
     if i:
       # Print two newlines between each dsc file we process
-      print '\n'
+      Trace('\n')
     desc = LoadProject(filename, toolchains)
     if not desc:
-      print 'Skipping %s, not in [%s].' % (filename, ', '.join(toolchains))
+      Trace('Skipping %s, not in [%s].' % (filename, ', '.join(toolchains)))
       continue
 
     if desc.get('EXPERIMENTAL', False) and not options.experimental:
-      print 'Skipping %s, experimental only.' % (filename,)
+      Trace('Skipping %s, experimental only.' % (filename,))
       continue
 
     srcroot = os.path.dirname(os.path.abspath(filename))
@@ -611,6 +612,7 @@ def main(argv):
 
     # if this is an example, update landing page html file.
     if desc['DEST'] == 'examples':
+      Trace('Adding desc: %s' % filename)
       landing_page.AddDesc(desc)
 
     # Create a list of projects for each DEST. This will be used to generate a

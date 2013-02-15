@@ -136,7 +136,7 @@ class PluggableHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     _, _, _, query, _ = urlparse.urlsplit(self.path)
     if query:
       params = urlparse.parse_qs(query)
-      if '1' in params.get('quit', None):
+      if '1' in params.get('quit', []):
         self._SendNothingAndDie()
         return
 

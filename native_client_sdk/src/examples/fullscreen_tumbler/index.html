@@ -8,7 +8,7 @@ found in the LICENSE file.
 <head>
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="-1">
-  <title><TITLE></title>
+  <title>{{title}}</title>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="check_browser.js"></script>
   <script type="text/javascript" src="bind.js"></script>
@@ -17,9 +17,8 @@ found in the LICENSE file.
   <script type="text/javascript" src="vector3.js"></script>
   <script type="text/javascript" src="trackball.js"></script>
 </head>
-<body data-name="<NAME>" data-tc="<tc>" data-path="<path>" data-width="480"
-    data-height="480">
-  <h1><TITLE></h1>
+<body data-width="480" data-height="480" {{attrs}}>
+  <h1>{{title}}</h1>
   <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <p>
     The Native Client module executed in this page draws a 3D cube

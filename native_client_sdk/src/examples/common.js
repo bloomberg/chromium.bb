@@ -255,9 +255,30 @@ document.addEventListener('DOMContentLoaded', function() {
       loadFunction = window.domContentLoaded;
     }
 
+    // From https://developer.mozilla.org/en-US/docs/DOM/window.location
+    var searchVars = {};
+    if (window.location.search.length > 1) {
+      var pairs = window.location.search.substr(1).split("&");
+      for (var key_ix = 0; key_ix < pairs.length; key_ix++) {
+        var keyValue = pairs[key_ix].split("=");
+        searchVars[unescape(keyValue[0])] =
+            keyValue.length > 1 ? unescape(keyValue[1]) : "";
+      }
+    }
+
     if (loadFunction) {
-      loadFunction(body.dataset.name, body.dataset.tc, body.dataset.path,
-          body.dataset.width, body.dataset.height);
+      var toolchains = body.dataset.tools.split(' ');
+      var configs = body.dataset.configs.split(' ');
+
+      var tc = toolchains.indexOf(searchVars.tc) !== -1 ?
+          searchVars.tc : toolchains[0];
+      var config = configs.indexOf(searchVars.config) !== -1 ?
+          searchVars.config : configs[0];
+      var pathFormat = body.dataset.path;
+      var path = pathFormat.replace('{tc}', tc).replace('{config}', config);
+
+      loadFunction(body.dataset.name, tc, path, body.dataset.width,
+                   body.dataset.height);
     }
   }
 });

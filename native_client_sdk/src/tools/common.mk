@@ -288,16 +288,16 @@ PPAPI_DEBUG=$(abspath $(OSNAME)/Debug/$(TARGET)$(HOST_EXT));application/x-ppapi-
 PPAPI_RELEASE=$(abspath $(OSNAME)/Release/$(TARGET)$(HOST_EXT));application/x-ppapi-release
 
 
-PAGE?=index_$(TOOLCHAIN)_$(CONFIG).html
+PAGE?=index.html
+PAGE_TC_CONFIG="$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
 
 RUN: LAUNCH
 LAUNCH: CHECK_FOR_CHROME all
 ifeq (,$(wildcard $(PAGE)))
-	$(warning No valid HTML page found at $(PAGE))
-	$(error Make sure TOOLCHAIN and CONFIG are properly set)
+	$(error No valid HTML page found at $(PAGE))
 endif
-	$(RUN_PY) -C $(CURDIR) -P $(PAGE) $(addprefix -E ,$(CHROME_ENV)) -- \
-	    $(CHROME_PATH) $(CHROME_ARGS) \
+	$(RUN_PY) -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
+	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
 
@@ -307,6 +307,7 @@ GDB_ARGS+=-D $(CURDIR)/$(OUTDIR)/$(TARGET)_$(SYSARCH).nexe
 
 DEBUG: CHECK_FOR_CHROME all
 	$(RUN_PY) $(GDB_ARGS) \
-	    -C $(CURDIR) -P $(PAGE) $(addprefix -E ,$(CHROME_ENV)) -- \
-	    $(CHROME_PATH) $(CHROME_ARGS) --enable-nacl-debug \
+	    -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
+	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
+	    --enable-nacl-debug \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
