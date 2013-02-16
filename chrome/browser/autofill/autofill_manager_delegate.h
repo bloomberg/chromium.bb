@@ -27,7 +27,7 @@ class AutofillMetrics;
 class FormStructure;
 class GURL;
 class InfoBarService;
-class PrefServiceBase;
+class PrefService;
 class Profile;
 class ProfileSyncServiceBase;
 
@@ -68,7 +68,7 @@ class AutofillManagerDelegate {
   virtual InfoBarService* GetInfoBarService() = 0;
 
   // Gets the preferences associated with the delegate.
-  virtual PrefServiceBase* GetPrefs() = 0;
+  virtual PrefService* GetPrefs() = 0;
 
   // Gets the profile sync service associated with the delegate.  Will
   // be NULL if sync is not enabled.

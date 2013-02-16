@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -58,8 +58,8 @@ AutofillDownloadManager::AutofillDownloadManager(BrowserContext* context,
       negative_upload_rate_(0),
       fetcher_id_for_unittest_(0) {
   DCHECK(observer_);
-  PrefServiceBase* preferences =
-      PrefServiceBase::FromBrowserContext(browser_context_);
+  PrefService* preferences =
+      PrefServiceFromBrowserContext(browser_context_);
   positive_upload_rate_ =
       preferences->GetDouble(prefs::kAutofillPositiveUploadRate);
   negative_upload_rate_ =
@@ -148,7 +148,7 @@ void AutofillDownloadManager::SetPositiveUploadRate(double rate) {
   positive_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  PrefServiceBase* preferences = PrefServiceBase::FromBrowserContext(
+  PrefService* preferences = PrefServiceFromBrowserContext(
       browser_context_);
   preferences->SetDouble(prefs::kAutofillPositiveUploadRate, rate);
 }
@@ -159,7 +159,7 @@ void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
   negative_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  PrefServiceBase* preferences = PrefServiceBase::FromBrowserContext(
+  PrefService* preferences = PrefServiceFromBrowserContext(
       browser_context_);
   preferences->SetDouble(prefs::kAutofillNegativeUploadRate, rate);
 }

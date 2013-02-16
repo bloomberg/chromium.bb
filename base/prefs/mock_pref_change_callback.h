@@ -19,7 +19,7 @@ using testing::Truly;
 // |pref_name| in |prefs| matches |value|. If |value| is NULL, the matcher
 // checks that the value is not set.
 MATCHER_P3(PrefValueMatches, prefs, pref_name, value, "") {
-  const PrefServiceBase::Preference* pref =
+  const PrefService::Preference* pref =
       prefs->FindPreference(pref_name.c_str());
   if (!pref)
     return false;
@@ -35,7 +35,7 @@ MATCHER_P3(PrefValueMatches, prefs, pref_name, value, "") {
 // A mock for testing preference notifications and easy setup of expectations.
 class MockPrefChangeCallback {
  public:
-  explicit MockPrefChangeCallback(PrefServiceBase* prefs);
+  explicit MockPrefChangeCallback(PrefService* prefs);
   virtual ~MockPrefChangeCallback();
 
   PrefChangeRegistrar::NamedChangeCallback GetCallback();
@@ -46,7 +46,7 @@ class MockPrefChangeCallback {
               const Value* value);
 
  private:
-  PrefServiceBase* prefs_;
+  PrefService* prefs_;
 };
 
 #endif  // BASE_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_

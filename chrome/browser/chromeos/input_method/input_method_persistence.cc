@@ -26,7 +26,7 @@ void PersistSystemInputMethod(const std::string& input_method) {
 }
 
 void PersistUserInputMethod(const std::string& input_method) {
-  PrefServiceBase* user_prefs = NULL;
+  PrefService* user_prefs = NULL;
   Profile* profile = ProfileManager::GetDefaultProfile();
   if (profile)
     user_prefs = profile->GetPrefs();

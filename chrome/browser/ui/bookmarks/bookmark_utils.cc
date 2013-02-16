@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -240,7 +240,7 @@ void GetURLAndTitleToBookmark(content::WebContents* web_contents,
 }
 
 void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context) {
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(browser_context);
+  PrefService* prefs = PrefServiceFromBrowserContext(browser_context);
   const bool always_show = !prefs->GetBoolean(prefs::kShowBookmarkBar);
 
   // The user changed when the bookmark bar is shown, update the preferences.
@@ -248,7 +248,7 @@ void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context) {
 }
 
 string16 FormatBookmarkURLForDisplay(const GURL& url,
-                                     const PrefServiceBase* prefs) {
+                                     const PrefService* prefs) {
   std::string languages;
   if (prefs)
     languages = prefs->GetString(prefs::kAcceptLanguages);

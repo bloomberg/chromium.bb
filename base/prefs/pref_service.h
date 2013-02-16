@@ -22,8 +22,8 @@
 #include "base/observer_list.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/persistent_pref_store.h"
-#include "base/prefs/public/pref_service_base.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/values.h"
 
 class PrefNotifier;
 class PrefNotifierImpl;
@@ -32,15 +32,27 @@ class PrefRegistry;
 class PrefValueStore;
 class PrefStore;
 
+namespace base {
+class FilePath;
+}
+
+namespace content {
+class BrowserContext;
+}
+
 namespace subtle {
+class PrefMemberBase;
 class ScopedUserPrefUpdateBase;
-};
+}
 
 // Base class for PrefServices. You can use the base class to read and
 // interact with preferences, but not to register new preferences; for
 // that see e.g. PrefRegistrySimple.
-class BASE_PREFS_EXPORT PrefService : public NON_EXPORTED_BASE(PrefServiceBase),
-                                      public base::NonThreadSafe {
+//
+// Settings and storage accessed through this class represent
+// user-selected preferences and information and MUST not be
+// extracted, overwritten or modified except through the defined APIs.
+class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
  public:
   enum PrefInitializationStatus {
     INITIALIZATION_STATUS_WAITING,
@@ -50,7 +62,7 @@ class BASE_PREFS_EXPORT PrefService : public NON_EXPORTED_BASE(PrefServiceBase),
   };
 
   // A helper class to store all the information associated with a preference.
-  class Preference : public PrefServiceBase::Preference {
+  class BASE_PREFS_EXPORT Preference {
    public:
     // The type of the preference is determined by the type with which it is
     // registered. This type needs to be a boolean, integer, double, string,
@@ -59,22 +71,61 @@ class BASE_PREFS_EXPORT PrefService : public NON_EXPORTED_BASE(PrefServiceBase),
     Preference(const PrefService* service,
                const char* name,
                base::Value::Type type);
-    virtual ~Preference() {}
+    ~Preference() {}
 
-    // PrefServiceBase::Preference implementation.
-    virtual const std::string name() const OVERRIDE;
-    virtual base::Value::Type GetType() const OVERRIDE;
-    virtual const base::Value* GetValue() const OVERRIDE;
-    virtual const base::Value* GetRecommendedValue() const OVERRIDE;
-    virtual bool IsManaged() const OVERRIDE;
-    virtual bool IsRecommended() const OVERRIDE;
-    virtual bool HasExtensionSetting() const OVERRIDE;
-    virtual bool HasUserSetting() const OVERRIDE;
-    virtual bool IsExtensionControlled() const OVERRIDE;
-    virtual bool IsUserControlled() const OVERRIDE;
-    virtual bool IsDefaultValue() const OVERRIDE;
-    virtual bool IsUserModifiable() const OVERRIDE;
-    virtual bool IsExtensionModifiable() const OVERRIDE;
+    // Returns the name of the Preference (i.e., the key, e.g.,
+    // browser.window_placement).
+    const std::string name() const;
+
+    // Returns the registered type of the preference.
+    base::Value::Type GetType() const;
+
+    // Returns the value of the Preference, falling back to the registered
+    // default value if no other has been set.
+    const base::Value* GetValue() const;
+
+    // Returns the value recommended by the admin, if any.
+    const base::Value* GetRecommendedValue() const;
+
+    // Returns true if the Preference is managed, i.e. set by an admin policy.
+    // Since managed prefs have the highest priority, this also indicates
+    // whether the pref is actually being controlled by the policy setting.
+    bool IsManaged() const;
+
+    // Returns true if the Preference is recommended, i.e. set by an admin
+    // policy but the user is allowed to change it.
+    bool IsRecommended() const;
+
+    // Returns true if the Preference has a value set by an extension, even if
+    // that value is being overridden by a higher-priority source.
+    bool HasExtensionSetting() const;
+
+    // Returns true if the Preference has a user setting, even if that value is
+    // being overridden by a higher-priority source.
+    bool HasUserSetting() const;
+
+    // Returns true if the Preference value is currently being controlled by an
+    // extension, and not by any higher-priority source.
+    bool IsExtensionControlled() const;
+
+    // Returns true if the Preference value is currently being controlled by a
+    // user setting, and not by any higher-priority source.
+    bool IsUserControlled() const;
+
+    // Returns true if the Preference is currently using its default value,
+    // and has not been set by any higher-priority source (even with the same
+    // value).
+    bool IsDefaultValue() const;
+
+    // Returns true if the user can change the Preference value, which is the
+    // case if no higher-priority source than the user store controls the
+    // Preference.
+    bool IsUserModifiable() const;
+
+    // Returns true if an extension can change the Preference value, which is
+    // the case if no higher-priority source than the extension store controls
+    // the Preference.
+    bool IsExtensionModifiable() const;
 
    private:
     friend class PrefService;
@@ -112,31 +163,58 @@ class BASE_PREFS_EXPORT PrefService : public NON_EXPORTED_BASE(PrefServiceBase),
   // immediately (basically, during shutdown).
   void CommitPendingWrite();
 
-  // PrefServiceBase implementation.
-  virtual bool IsManagedPreference(const char* pref_name) const OVERRIDE;
-  virtual bool IsUserModifiablePreference(const char* pref_name) const OVERRIDE;
-  virtual const PrefService::Preference* FindPreference(
-      const char* path) const OVERRIDE;
-  virtual bool GetBoolean(const char* path) const OVERRIDE;
-  virtual int GetInteger(const char* path) const OVERRIDE;
-  virtual double GetDouble(const char* path) const OVERRIDE;
-  virtual std::string GetString(const char* path) const OVERRIDE;
-  virtual base::FilePath GetFilePath(const char* path) const OVERRIDE;
-  virtual const base::DictionaryValue* GetDictionary(
-      const char* path) const OVERRIDE;
-  virtual const base::ListValue* GetList(const char* path) const OVERRIDE;
-  virtual void ClearPref(const char* path) OVERRIDE;
-  virtual void Set(const char* path, const base::Value& value) OVERRIDE;
-  virtual void SetBoolean(const char* path, bool value) OVERRIDE;
-  virtual void SetInteger(const char* path, int value) OVERRIDE;
-  virtual void SetDouble(const char* path, double value) OVERRIDE;
-  virtual void SetString(const char* path, const std::string& value) OVERRIDE;
-  virtual void SetFilePath(const char* path,
-                           const base::FilePath& value) OVERRIDE;
-  virtual void SetInt64(const char* path, int64 value) OVERRIDE;
-  virtual int64 GetInt64(const char* path) const OVERRIDE;
-  virtual void SetUint64(const char* path, uint64 value) OVERRIDE;
-  virtual uint64 GetUint64(const char* path) const OVERRIDE;
+  // Returns true if the preference for the given preference name is available
+  // and is managed.
+  bool IsManagedPreference(const char* pref_name) const;
+
+  // Returns |true| if a preference with the given name is available and its
+  // value can be changed by the user.
+  bool IsUserModifiablePreference(const char* pref_name) const;
+
+  // Look up a preference.  Returns NULL if the preference is not
+  // registered.
+  const PrefService::Preference* FindPreference(const char* path) const;
+
+  // If the path is valid and the value at the end of the path matches the type
+  // specified, it will return the specified value.  Otherwise, the default
+  // value (set when the pref was registered) will be returned.
+  bool GetBoolean(const char* path) const;
+  int GetInteger(const char* path) const;
+  double GetDouble(const char* path) const;
+  std::string GetString(const char* path) const;
+  base::FilePath GetFilePath(const char* path) const;
+
+  // Returns the branch if it exists, or the registered default value otherwise.
+  // Note that |path| must point to a registered preference. In that case, these
+  // functions will never return NULL.
+  const base::DictionaryValue* GetDictionary(
+      const char* path) const;
+  const base::ListValue* GetList(const char* path) const;
+
+  // Removes a user pref and restores the pref to its default value.
+  void ClearPref(const char* path);
+
+  // If the path is valid (i.e., registered), update the pref value in the user
+  // prefs.
+  // To set the value of dictionary or list values in the pref tree use
+  // Set(), but to modify the value of a dictionary or list use either
+  // ListPrefUpdate or DictionaryPrefUpdate from scoped_user_pref_update.h.
+  void Set(const char* path, const base::Value& value);
+  void SetBoolean(const char* path, bool value);
+  void SetInteger(const char* path, int value);
+  void SetDouble(const char* path, double value);
+  void SetString(const char* path, const std::string& value);
+  void SetFilePath(const char* path, const base::FilePath& value);
+
+  // Int64 helper methods that actually store the given value as a string.
+  // Note that if obtaining the named value via GetDictionary or GetList, the
+  // Value type will be TYPE_STRING.
+  void SetInt64(const char* path, int64 value);
+  int64 GetInt64(const char* path) const;
+
+  // As above, but for unsigned values.
+  void SetUint64(const char* path, uint64 value);
+  uint64 GetUint64(const char* path) const;
 
   // Returns the value of the given preference, from the user pref store. If
   // the preference is not set in the user pref store, returns NULL.
@@ -216,11 +294,26 @@ class BASE_PREFS_EXPORT PrefService : public NON_EXPORTED_BASE(PrefServiceBase),
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
   friend class subtle::ScopedUserPrefUpdateBase;
 
-  // PrefServiceBase implementation (protected in base, private here).
-  virtual void AddPrefObserver(const char* path,
-                               PrefObserver* obs) OVERRIDE;
-  virtual void RemovePrefObserver(const char* path,
-                                  PrefObserver* obs) OVERRIDE;
+  // Registration of pref change observers must be done using the
+  // PrefChangeRegistrar, which is declared as a friend here to grant it
+  // access to the otherwise protected members Add/RemovePrefObserver.
+  // PrefMember registers for preferences changes notification directly to
+  // avoid the storage overhead of the registrar, so its base class must be
+  // declared as a friend, too.
+  friend class PrefChangeRegistrar;
+  friend class subtle::PrefMemberBase;
+
+  // These are protected so they can only be accessed by the friend
+  // classes listed above.
+  //
+  // If the pref at the given path changes, we call the observer's
+  // OnPreferenceChanged method. Note that observers should not call
+  // these methods directly but rather use a PrefChangeRegistrar to
+  // make sure the observer gets cleaned up properly.
+  //
+  // Virtual for testing.
+  virtual void AddPrefObserver(const char* path, PrefObserver* obs);
+  virtual void RemovePrefObserver(const char* path, PrefObserver* obs);
 
   // Sends notification of a changed preference. This needs to be called by
   // a ScopedUserPrefUpdate if a DictionaryValue or ListValue is changed.
@@ -258,5 +351,11 @@ class BASE_PREFS_EXPORT PrefService : public NON_EXPORTED_BASE(PrefServiceBase),
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };
+
+// Retrieves a PrefService for the given context.
+//
+// TODO(joi): This doesn't really belong here, since it references a
+// content type; probably best to get rid of it completely.
+PrefService* PrefServiceFromBrowserContext(content::BrowserContext* context);
 
 #endif  // BASE_PREFS_PREF_SERVICE_H_

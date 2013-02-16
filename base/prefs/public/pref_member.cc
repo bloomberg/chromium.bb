@@ -7,7 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/value_conversions.h"
 
 using base::MessageLoopProxy;
@@ -24,14 +24,14 @@ PrefMemberBase::~PrefMemberBase() {
 }
 
 void PrefMemberBase::Init(const char* pref_name,
-                          PrefServiceBase* prefs,
+                          PrefService* prefs,
                           const NamedChangeCallback& observer) {
   observer_ = observer;
   Init(pref_name, prefs);
 }
 
 void PrefMemberBase::Init(const char* pref_name,
-                          PrefServiceBase* prefs) {
+                          PrefService* prefs) {
   DCHECK(pref_name);
   DCHECK(prefs);
   DCHECK(pref_name_.empty());  // Check that Init is only called once.
@@ -61,7 +61,7 @@ void PrefMemberBase::MoveToThread(
   internal()->MoveToThread(message_loop);
 }
 
-void PrefMemberBase::OnPreferenceChanged(PrefServiceBase* service,
+void PrefMemberBase::OnPreferenceChanged(PrefService* service,
                                          const std::string& pref_name) {
   VerifyValuePrefName();
   UpdateValueFromPref((!setting_value_ && !observer_.is_null()) ?
@@ -70,7 +70,7 @@ void PrefMemberBase::OnPreferenceChanged(PrefServiceBase* service,
 
 void PrefMemberBase::UpdateValueFromPref(const base::Closure& callback) const {
   VerifyValuePrefName();
-  const PrefServiceBase::Preference* pref =
+  const PrefService::Preference* pref =
       prefs_->FindPreference(pref_name_.c_str());
   DCHECK(pref);
   if (!internal())

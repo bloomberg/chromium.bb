@@ -9,7 +9,6 @@
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/public/pref_service_base.h"
 #include "base/string_split.h"
 #include "base/sys_info.h"
 #include "base/time.h"
@@ -43,7 +42,7 @@ const int32 kFingerprinterVersion = 1;
 // Returns the delta between the time at which Chrome was installed and the Unix
 // epoch.
 base::TimeDelta GetInstallTimestamp() {
-  PrefServiceBase* prefs = g_browser_process->local_state();
+  PrefService* prefs = g_browser_process->local_state();
   base::Time install_time =
       base::Time::FromTimeT(prefs->GetInt64(prefs::kInstallDate));
   // The install date should always be available and initialized.
@@ -182,7 +181,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       const gfx::Rect& window_bounds,
       const gfx::Rect& content_bounds,
       const WebScreenInfo& screen_info,
-      const PrefServiceBase& prefs,
+      const PrefService& prefs,
       const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
  private:
@@ -232,7 +231,7 @@ FingerprintDataLoader::FingerprintDataLoader(
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
     const WebScreenInfo& screen_info,
-    const PrefServiceBase& prefs,
+    const PrefService& prefs,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback)
     : gpu_data_manager_(content::GpuDataManager::GetInstance()),
       gaia_id_(gaia_id),
@@ -383,7 +382,7 @@ void GetFingerprint(
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
     const WebKit::WebScreenInfo& screen_info,
-    const PrefServiceBase& prefs,
+    const PrefService& prefs,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback) {
   // TODO(isherman): Add a DCHECK that the ToS have been accepted prior to
   // calling into this method.  Also, ensure that the UI contains a clear

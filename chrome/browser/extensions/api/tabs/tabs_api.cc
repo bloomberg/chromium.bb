@@ -1675,7 +1675,7 @@ bool TabsCaptureVisibleTabFunction::GetTabToCapture(
 };
 
 bool TabsCaptureVisibleTabFunction::RunImpl() {
-  PrefServiceBase* service = profile()->GetPrefs();
+  PrefService* service = profile()->GetPrefs();
   if (service->GetBoolean(prefs::kDisableScreenshots)) {
     error_ = keys::kScreenshotsDisabled;
     return false;

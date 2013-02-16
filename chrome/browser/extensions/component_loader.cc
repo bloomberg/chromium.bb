@@ -71,8 +71,8 @@ ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
 }
 
 ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
-                                 PrefServiceBase* profile_prefs,
-                                 PrefServiceBase* local_state)
+                                 PrefService* profile_prefs,
+                                 PrefService* local_state)
     : profile_prefs_(profile_prefs),
       local_state_(local_state),
       extension_service_(extension_service) {

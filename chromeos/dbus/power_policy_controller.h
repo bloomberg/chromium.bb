@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
@@ -37,19 +37,19 @@ class CHROMEOS_EXPORT PowerPolicyController
   // Sends an updated policy to the power manager based on the current
   // values of the passed-in prefs.
   void UpdatePolicyFromPrefs(
-      const PrefServiceBase::Preference& ac_screen_dim_delay_ms_pref,
-      const PrefServiceBase::Preference& ac_screen_off_delay_ms_pref,
-      const PrefServiceBase::Preference& ac_screen_lock_delay_ms_pref,
-      const PrefServiceBase::Preference& ac_idle_delay_ms_pref,
-      const PrefServiceBase::Preference& battery_screen_dim_delay_ms_pref,
-      const PrefServiceBase::Preference& battery_screen_off_delay_ms_pref,
-      const PrefServiceBase::Preference& battery_screen_lock_delay_ms_pref,
-      const PrefServiceBase::Preference& battery_idle_delay_ms_pref,
-      const PrefServiceBase::Preference& idle_action_pref,
-      const PrefServiceBase::Preference& lid_closed_action_pref,
-      const PrefServiceBase::Preference& use_audio_activity_pref,
-      const PrefServiceBase::Preference& use_video_activity_pref,
-      const PrefServiceBase::Preference& presentation_idle_delay_factor_pref);
+      const PrefService::Preference& ac_screen_dim_delay_ms_pref,
+      const PrefService::Preference& ac_screen_off_delay_ms_pref,
+      const PrefService::Preference& ac_screen_lock_delay_ms_pref,
+      const PrefService::Preference& ac_idle_delay_ms_pref,
+      const PrefService::Preference& battery_screen_dim_delay_ms_pref,
+      const PrefService::Preference& battery_screen_off_delay_ms_pref,
+      const PrefService::Preference& battery_screen_lock_delay_ms_pref,
+      const PrefService::Preference& battery_idle_delay_ms_pref,
+      const PrefService::Preference& idle_action_pref,
+      const PrefService::Preference& lid_closed_action_pref,
+      const PrefService::Preference& use_audio_activity_pref,
+      const PrefService::Preference& use_video_activity_pref,
+      const PrefService::Preference& presentation_idle_delay_factor_pref);
 
   // DBusThreadManagerObserver implementation:
   virtual void OnDBusThreadManagerDestroying(DBusThreadManager* manager)

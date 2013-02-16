@@ -16,7 +16,7 @@
 #include "googleurl/src/gurl.h"
 
 class Browser;
-class PrefServiceBase;
+class PrefService;
 
 namespace content {
 class WebContents;
@@ -54,7 +54,7 @@ class BookmarkPromptController : public chrome::BrowserListObserver,
   static void ClosingBookmarkPrompt();
 
   // Disable bookmark prompt feature in a profile in |prefs|.
-  static void DisableBookmarkPrompt(PrefServiceBase* prefs);
+  static void DisableBookmarkPrompt(PrefService* prefs);
 
   // True if bookmark prompt feature is enabled, otherwise false.
   static bool IsEnabled();

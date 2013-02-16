@@ -10,7 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -82,7 +82,7 @@ void PreferencesBrowserTest::SetUpOnMainThread() {
   render_view_host_ = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host_);
   pref_change_registrar_.Init(
-      PrefServiceBase::FromBrowserContext(browser()->profile()));
+      PrefServiceFromBrowserContext(browser()->profile()));
   pref_service_ = browser()->profile()->GetPrefs();
   ASSERT_TRUE(content::ExecuteScript(render_view_host_,
       "function TestEnv() {"

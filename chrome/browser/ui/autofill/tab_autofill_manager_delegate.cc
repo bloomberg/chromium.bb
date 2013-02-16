@@ -52,7 +52,7 @@ InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
   return InfoBarService::FromWebContents(web_contents_);
 }
 
-PrefServiceBase* TabAutofillManagerDelegate::GetPrefs() {
+PrefService* TabAutofillManagerDelegate::GetPrefs() {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext())->
       GetPrefs();
 }

@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/public/pref_service_base.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -249,12 +248,12 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
 bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
   DCHECK(command_id == IDC_BOOKMARK_BAR_ALWAYS_SHOW);
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+  PrefService* prefs = PrefServiceFromBrowserContext(profile_);
   return prefs->GetBoolean(prefs::kShowBookmarkBar);
 }
 
 bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+  PrefService* prefs = PrefServiceFromBrowserContext(profile_);
 
   bool is_root_node = selection_.size() == 1 &&
                       selection_[0]->parent() == model_->root_node();

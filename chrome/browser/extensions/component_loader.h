@@ -14,7 +14,7 @@
 #include "base/values.h"
 
 class ExtensionServiceInterface;
-class PrefServiceBase;
+class PrefService;
 class PrefRegistrySyncable;
 
 namespace extensions {
@@ -25,8 +25,8 @@ class Extension;
 class ComponentLoader {
  public:
   ComponentLoader(ExtensionServiceInterface* extension_service,
-                  PrefServiceBase* prefs,
-                  PrefServiceBase* local_state);
+                  PrefService* prefs,
+                  PrefService* local_state);
   virtual ~ComponentLoader();
 
   size_t registered_extensions_count() const {
@@ -130,8 +130,8 @@ class ComponentLoader {
   // Unloads |component| from the memory.
   void UnloadComponent(ComponentExtensionInfo* component);
 
-  PrefServiceBase* profile_prefs_;
-  PrefServiceBase* local_state_;
+  PrefService* profile_prefs_;
+  PrefService* local_state_;
 
   ExtensionServiceInterface* extension_service_;
 

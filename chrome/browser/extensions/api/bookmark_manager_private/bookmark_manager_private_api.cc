@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/json/json_writer.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -501,7 +501,7 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunImpl() {
 }
 
 bool BookmarkManagerPrivateCanEditFunction::RunImpl() {
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+  PrefService* prefs = PrefServiceFromBrowserContext(profile_);
   SetResult(new base::FundamentalValue(
       prefs->GetBoolean(prefs::kEditBookmarksEnabled)));
   return true;

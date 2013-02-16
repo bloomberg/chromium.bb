@@ -16,7 +16,7 @@ InputMethodDelegateImpl::InputMethodDelegateImpl() {}
 
 std::string InputMethodDelegateImpl::GetHardwareKeyboardLayout() const {
   if (g_browser_process) {
-    PrefServiceBase* local_state = g_browser_process->local_state();
+    PrefService* local_state = g_browser_process->local_state();
     if (local_state)
       return local_state->GetString(prefs::kHardwareKeyboardLayout);
   }

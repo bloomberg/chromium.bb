@@ -123,7 +123,7 @@ class MediaFileSystemRegistry : public RemovableStorageObserver {
       MTPDeviceDelegateMap;
 #endif
 
-  void OnRememberedGalleriesChanged(PrefServiceBase* service);
+  void OnRememberedGalleriesChanged(PrefService* service);
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // Returns ScopedMTPDeviceMapEntry object for the given |device_location|.

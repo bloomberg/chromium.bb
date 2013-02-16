@@ -157,7 +157,7 @@ class SSLConfigServiceManagerPref
  private:
   // Callback for preference changes.  This will post the changes to the IO
   // thread with SetNewSSLConfig.
-  void OnPreferenceChanged(PrefServiceBase* prefs,
+  void OnPreferenceChanged(PrefService* prefs,
                            const std::string& pref_name);
 
   // Store SSL config settings in |config|, directly from the preferences. Must
@@ -166,10 +166,10 @@ class SSLConfigServiceManagerPref
 
   // Processes changes to the disabled cipher suites preference, updating the
   // cached list of parsed SSL/TLS cipher suites that are disabled.
-  void OnDisabledCipherSuitesChange(PrefServiceBase* local_state);
+  void OnDisabledCipherSuitesChange(PrefService* local_state);
 
   // Processes changes to the default cookie settings.
-  void OnDefaultContentSettingsChange(PrefServiceBase* user_prefs);
+  void OnDefaultContentSettingsChange(PrefService* user_prefs);
 
   PrefChangeRegistrar local_state_change_registrar_;
   PrefChangeRegistrar user_prefs_change_registrar_;
@@ -268,7 +268,7 @@ net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
 }
 
 void SSLConfigServiceManagerPref::OnPreferenceChanged(
-    PrefServiceBase* prefs,
+    PrefService* prefs,
     const std::string& pref_name_in) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs);
@@ -325,13 +325,13 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
 }
 
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
-    PrefServiceBase* local_state) {
+    PrefService* local_state) {
   const ListValue* value = local_state->GetList(prefs::kCipherSuiteBlacklist);
   disabled_cipher_suites_ = ParseCipherSuites(ListValueToStringVector(value));
 }
 
 void SSLConfigServiceManagerPref::OnDefaultContentSettingsChange(
-    PrefServiceBase* user_prefs) {
+    PrefService* user_prefs) {
   const DictionaryValue* value = user_prefs->GetDictionary(
       prefs::kDefaultContentSettings);
   int default_cookie_settings = -1;

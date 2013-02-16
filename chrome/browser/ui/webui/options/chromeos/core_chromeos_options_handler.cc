@@ -212,7 +212,7 @@ void CoreChromeOSOptionsHandler::Observe(
 }
 
 void CoreChromeOSOptionsHandler::OnPreferenceChanged(
-    PrefServiceBase* service,
+    PrefService* service,
     const std::string& pref_name) {
   // Special handling for preferences kUseSharedProxies and kProxy, the latter
   // controls the former and decides if it's managed by policy/extension.

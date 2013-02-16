@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -1810,7 +1810,7 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
 // Test that we correctly fill an address form from an auxiliary profile.
 TEST_F(AutofillManagerTest, FillAddressFormFromAuxiliaryProfile) {
   personal_data_.ClearAutofillProfiles();
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
+  PrefService* prefs = PrefServiceFromBrowserContext(profile());
   prefs->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, true);
   personal_data_.CreateTestAuxiliaryProfiles();
 
@@ -2704,7 +2704,7 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 // Checks that resetting the auxiliary profile enabled preference does the right
 // thing on all platforms.
 TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
+  PrefService* prefs = PrefServiceFromBrowserContext(profile());
 #if defined(OS_MACOSX)
   // Auxiliary profiles is implemented on Mac only.  It enables Mac Address
   // Book integration.
@@ -3005,7 +3005,7 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
       web_contents(),
       PasswordManagerDelegateImpl::FromWebContents(web_contents()));
 
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
+  PrefService* prefs = PrefServiceFromBrowserContext(profile());
 
   // Allow this test to control what should get synced.
   prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
@@ -3063,7 +3063,7 @@ TEST_F(IncognitoAutofillManagerTest, UpdatePasswordSyncStateIncognito) {
       web_contents(),
       PasswordManagerDelegateImpl::FromWebContents(web_contents()));
 
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
+  PrefService* prefs = PrefServiceFromBrowserContext(profile());
 
   // Allow this test to control what should get synced.
   prefs->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
@@ -3083,7 +3083,7 @@ TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
       web_contents(),
       PasswordManagerDelegateImpl::FromWebContents(web_contents()));
 
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
+  PrefService* prefs = PrefServiceFromBrowserContext(profile());
 
   // Always set password sync enabled so we can test the behavior of password
   // generation.

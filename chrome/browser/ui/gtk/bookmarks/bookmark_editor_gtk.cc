@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
@@ -359,8 +359,8 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   GtkWidget* table;
   if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     url_entry_ = gtk_entry_new();
-    PrefServiceBase* prefs = profile_ ?
-        PrefServiceBase::FromBrowserContext(profile_) :
+    PrefService* prefs = profile_ ?
+        PrefServiceFromBrowserContext(profile_) :
         NULL;
     gtk_entry_set_text(
         GTK_ENTRY(url_entry_),

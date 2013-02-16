@@ -113,8 +113,7 @@ void HomePageUndoBubble::Init() {
 }
 
 void HomePageUndoBubble::LinkClicked(views::Link* source, int event_flags) {
-  PrefServiceBase* prefs =
-      PrefServiceBase::FromBrowserContext(browser_->profile());
+  PrefService* prefs = PrefServiceFromBrowserContext(browser_->profile());
   prefs->SetBoolean(prefs::kHomePageIsNewTabPage, undo_value_is_ntp_);
   prefs->SetString(prefs::kHomePage, undo_url_.spec());
 

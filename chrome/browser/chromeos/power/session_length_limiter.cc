@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/public/pref_service_base.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/pref_names.h"
@@ -110,7 +109,7 @@ void SessionLengthLimiter::OnSessionLengthLimitChanged() {
     timer_->Stop();
 
   int limit;
-  const PrefServiceBase::Preference* session_length_limit_pref =
+  const PrefService::Preference* session_length_limit_pref =
       pref_change_registrar_.prefs()->
           FindPreference(prefs::kSessionLengthLimit);
   if (session_length_limit_pref->IsDefaultValue() ||

@@ -9,7 +9,7 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/sync/profile_sync_service_base.h"
@@ -509,7 +509,7 @@ bool PersonalDataManager::IsDataLoaded() const {
 }
 
 const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles() {
-  if (!PrefServiceBase::FromBrowserContext(browser_context_)->GetBoolean(
+  if (!PrefServiceFromBrowserContext(browser_context_)->GetBoolean(
           prefs::kAutofillAuxiliaryProfilesEnabled)) {
     return web_profiles();
   }
@@ -684,7 +684,7 @@ void PersonalDataManager::Init(BrowserContext* browser_context) {
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
-  return PrefServiceBase::FromBrowserContext(browser_context_)->GetBoolean(
+  return PrefServiceFromBrowserContext(browser_context_)->GetBoolean(
       prefs::kAutofillEnabled);
 }
 

@@ -143,7 +143,7 @@ void CoreOptionsHandler::Uninitialize() {
   }
 }
 
-void CoreOptionsHandler::OnPreferenceChanged(PrefServiceBase* service,
+void CoreOptionsHandler::OnPreferenceChanged(PrefService* service,
                                              const std::string& pref_name) {
   if (pref_name == prefs::kClearPluginLSODataEnabled) {
     // This preference is stored in Local State, not in the user preferences.

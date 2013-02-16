@@ -361,7 +361,6 @@
         'prefs/public/pref_change_registrar.h',
         'prefs/public/pref_member.cc',
         'prefs/public/pref_member.h',
-        'prefs/public/pref_service_base.h',
         'prefs/value_map_pref_store.cc',
         'prefs/value_map_pref_store.h',
       ],

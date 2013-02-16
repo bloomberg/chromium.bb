@@ -79,9 +79,9 @@ class PrefObserverMock : public PrefObserver {
   PrefObserverMock() {}
   virtual ~PrefObserverMock() {}
 
-  MOCK_METHOD2(OnPreferenceChanged, void(PrefServiceBase*, const std::string&));
+  MOCK_METHOD2(OnPreferenceChanged, void(PrefService*, const std::string&));
 
-  void Expect(PrefServiceBase* prefs,
+  void Expect(PrefService* prefs,
               const std::string& pref_name,
               const Value* value) {
     EXPECT_CALL(*this, OnPreferenceChanged(prefs, pref_name))

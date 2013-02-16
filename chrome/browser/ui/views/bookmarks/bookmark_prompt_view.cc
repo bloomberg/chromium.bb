@@ -26,7 +26,7 @@ BookmarkPromptView* BookmarkPromptView::bookmark_bubble_ = NULL;
 
 // static
 void BookmarkPromptView::ShowPrompt(views::View* anchor_view,
-                                    PrefServiceBase* prefs) {
+                                    PrefService* prefs) {
   if (bookmark_bubble_)
     return;
   bookmark_bubble_ = new BookmarkPromptView(anchor_view, prefs);
@@ -35,7 +35,7 @@ void BookmarkPromptView::ShowPrompt(views::View* anchor_view,
 }
 
 BookmarkPromptView::BookmarkPromptView(views::View* anchor_view,
-                                       PrefServiceBase* prefs)
+                                       PrefService* prefs)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       dismiss_link_(NULL),
       prefs_(prefs) {

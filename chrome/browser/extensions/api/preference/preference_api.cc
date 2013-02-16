@@ -260,7 +260,7 @@ PreferenceEventRouter::PreferenceEventRouter(Profile* profile)
 
 PreferenceEventRouter::~PreferenceEventRouter() { }
 
-void PreferenceEventRouter::OnPrefChanged(PrefServiceBase* pref_service,
+void PreferenceEventRouter::OnPrefChanged(PrefService* pref_service,
                                           const std::string& browser_pref) {
   bool incognito = (pref_service != profile_->GetPrefs());
 
@@ -273,7 +273,7 @@ void PreferenceEventRouter::OnPrefChanged(PrefServiceBase* pref_service,
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   args.Append(dict);
-  const PrefServiceBase::Preference* pref =
+  const PrefService::Preference* pref =
       pref_service->FindPreference(browser_pref.c_str());
   CHECK(pref);
   ExtensionService* extension_service =

@@ -719,7 +719,7 @@ bool TranslateManager::IsAcceptLanguage(WebContents* web_contents,
   return iter->second.count(language) != 0;
 }
 
-void TranslateManager::InitAcceptLanguages(PrefServiceBase* prefs) {
+void TranslateManager::InitAcceptLanguages(PrefService* prefs) {
   // We have been asked for this profile, build the languages.
   std::string accept_langs_str = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<std::string> accept_langs_list;

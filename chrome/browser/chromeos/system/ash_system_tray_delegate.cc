@@ -35,7 +35,6 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/public/pref_service_base.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -975,7 +974,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void UpdateSessionLengthLimit() {
-    const PrefServiceBase::Preference* session_length_limit_pref =
+    const PrefService::Preference* session_length_limit_pref =
         local_state_registrar_.prefs()->
             FindPreference(prefs::kSessionLengthLimit);
     int limit;

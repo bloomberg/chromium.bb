@@ -728,7 +728,7 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
 }
 
 void MediaFileSystemRegistry::OnRememberedGalleriesChanged(
-    PrefServiceBase* prefs) {
+    PrefService* prefs) {
   // Find the Profile that contains the source PrefService.
   PrefChangeRegistrarMap::iterator pref_change_it =
       pref_change_registrar_map_.begin();

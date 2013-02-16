@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -116,7 +116,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
   // May be NULL in unit tests.
   autofill_data_ = AutofillWebDataService::FromBrowserContext(browser_context_);
   autofill_enabled_.Init(prefs::kAutofillEnabled,
-                         PrefServiceBase::FromBrowserContext(browser_context_));
+                         PrefServiceFromBrowserContext(browser_context_));
 }
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {
@@ -243,7 +243,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       query_id_(0),
       external_delegate_(NULL) {
   autofill_enabled_.Init(prefs::kAutofillEnabled,
-                         PrefServiceBase::FromBrowserContext(browser_context_));
+                         PrefServiceFromBrowserContext(browser_context_));
 }
 
 void AutocompleteHistoryManager::CancelPendingQuery() {

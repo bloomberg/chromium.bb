@@ -185,7 +185,7 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
     return NULL;
   }
 
-  virtual PrefServiceBase* GetPrefs() OVERRIDE {
+  virtual PrefService* GetPrefs() OVERRIDE {
     return NULL;
   }
 

@@ -15,6 +15,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../build/linux/system.gyp:dbus',
         '../build/linux/system.gyp:ssl',
         '../dbus/dbus.gyp:dbus',

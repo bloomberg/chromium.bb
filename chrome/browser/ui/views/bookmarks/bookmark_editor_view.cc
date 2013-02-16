@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -365,8 +365,8 @@ void BookmarkEditorView::Init() {
         l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_URL_LABEL));
 
     url_tf_ = new views::Textfield;
-    PrefServiceBase* prefs = profile_ ?
-        PrefServiceBase::FromBrowserContext(profile_) :
+    PrefService* prefs = profile_ ?
+        PrefServiceFromBrowserContext(profile_) :
         NULL;
     url_tf_->SetText(chrome::FormatBookmarkURLForDisplay(url, prefs));
     url_tf_->SetController(this);

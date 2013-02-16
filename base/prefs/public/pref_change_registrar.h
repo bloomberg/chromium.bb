@@ -13,7 +13,7 @@
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_observer.h"
 
-class PrefServiceBase;
+class PrefService;
 
 // Automatically manages the registration of one or more pref change observers
 // with a PrefStore. Functions much like NotificationRegistrar, but specifically
@@ -30,7 +30,7 @@ class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
 
   // Must be called before adding or removing observers. Can be called more
   // than once as long as the value of |service| doesn't change.
-  void Init(PrefServiceBase* service);
+  void Init(PrefService* service);
 
   // Adds a pref observer for the specified pref |path| and |obs| observer
   // object. All registered observers will be automatically unregistered
@@ -58,12 +58,12 @@ class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
   // Check whether any of the observed preferences has the managed bit set.
   bool IsManaged();
 
-  // Return the PrefServiceBase for this registrar.
-  PrefServiceBase* prefs();
+  // Return the PrefService for this registrar.
+  PrefService* prefs();
 
  private:
   // PrefObserver:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
+  virtual void OnPreferenceChanged(PrefService* service,
                                    const std::string& pref_name) OVERRIDE;
 
   static void InvokeUnnamedCallback(const base::Closure& callback,
@@ -72,7 +72,7 @@ class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
   typedef std::map<std::string, NamedChangeCallback> ObserverMap;
 
   ObserverMap observers_;
-  PrefServiceBase* service_;
+  PrefService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefChangeRegistrar);
 };

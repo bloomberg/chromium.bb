@@ -8,14 +8,14 @@
 #include "base/basictypes.h"
 
 class PrefRegistrySyncable;
-class PrefServiceBase;
+class PrefService;
 
 // Helper class for getting, changing bookmark prompt related preferences.
 class BookmarkPromptPrefs {
  public:
   // Constructs and associates to |prefs|. Further operations occurred on
   // associated |prefs|.
-  explicit BookmarkPromptPrefs(PrefServiceBase* prefs);
+  explicit BookmarkPromptPrefs(PrefService* prefs);
   ~BookmarkPromptPrefs();
 
   // Disables bookmark prompt feature.
@@ -34,7 +34,7 @@ class BookmarkPromptPrefs {
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
  private:
-  PrefServiceBase* prefs_;  // Weak.
+  PrefService* prefs_;  // Weak.
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkPromptPrefs);
 };

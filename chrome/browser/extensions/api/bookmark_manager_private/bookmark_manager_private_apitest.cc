@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
   model->AddURL(bar, 1, ASCIIToUTF16("AAA"), GURL("http://aaa.example.com"));
   model->AddURL(folder, 0, ASCIIToUTF16("BBB"), GURL("http://bbb.example.com"));
 
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile);
+  PrefService* prefs = PrefServiceFromBrowserContext(profile);
   prefs->SetBoolean(prefs::kEditBookmarksEnabled, false);
 
   ASSERT_TRUE(RunComponentExtensionTest("bookmark_manager/edit_disabled"))

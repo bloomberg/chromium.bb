@@ -9,7 +9,7 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/link_listener.h"
 
-class PrefServiceBase;
+class PrefService;
 
 // BookmarkPromptView is a view intended to be used as the content of an
 // Bubble. BookmarkPromptView provides views for prompting user for action box
@@ -19,11 +19,11 @@ class BookmarkPromptView : public views::BubbleDelegateView,
                            public views::LinkListener {
  public:
   // Show the prompt bubble.
-  static void ShowPrompt(views::View* anchor_view, PrefServiceBase* prefs);
+  static void ShowPrompt(views::View* anchor_view, PrefService* prefs);
 
  private:
   // Creates a BookmarkPromptView.
-  BookmarkPromptView(views::View* anchor_view, PrefServiceBase* prefs);
+  BookmarkPromptView(views::View* anchor_view, PrefService* prefs);
 
   virtual ~BookmarkPromptView();
 
@@ -43,7 +43,7 @@ class BookmarkPromptView : public views::BubbleDelegateView,
   views::Link* dismiss_link_;
 
   // The pref service to use disabling bookmark prompt feature.
-  PrefServiceBase* prefs_;
+  PrefService* prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkPromptView);
 };

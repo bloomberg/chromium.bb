@@ -14,7 +14,7 @@
 class BookmarkNode;
 class Browser;
 class GURL;
-class PrefServiceBase;
+class PrefService;
 
 namespace content {
 class BrowserContext;
@@ -78,7 +78,7 @@ void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context);
 // the given |prefs|, which may be NULL.  When re-parsing this URL, clients
 // should call URLFixerUpper::FixupURL().
 string16 FormatBookmarkURLForDisplay(const GURL& url,
-                                     const PrefServiceBase* prefs);
+                                     const PrefService* prefs);
 
 }  // namespace chrome
 

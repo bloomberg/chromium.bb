@@ -162,7 +162,7 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
     const std::string& pref_name,
     const std::string& generic_family,
     const std::string& script) {
-  const PrefServiceBase::Preference* pref = registrar_.prefs()->FindPreference(
+  const PrefService::Preference* pref = registrar_.prefs()->FindPreference(
       pref_name.c_str());
   CHECK(pref);
 
@@ -193,7 +193,7 @@ void FontSettingsEventRouter::OnFontPrefChanged(
     const std::string& event_name,
     const std::string& key,
     const std::string& pref_name) {
-  const PrefServiceBase::Preference* pref = registrar_.prefs()->FindPreference(
+  const PrefService::Preference* pref = registrar_.prefs()->FindPreference(
       pref_name.c_str());
   CHECK(pref);
 

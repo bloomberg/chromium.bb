@@ -202,7 +202,7 @@ void BookmarkPromptController::ClosingBookmarkPrompt() {
 
 // static
 void BookmarkPromptController::DisableBookmarkPrompt(
-    PrefServiceBase* prefs) {
+    PrefService* prefs) {
   UMA_HISTOGRAM_ENUMERATION("BookmarkPrompt.DisabledReason",
                             PROMPT_DISABLED_REASON_BY_MANUAL,
                             PROMPT_DISABLED_REASON_LIMIT);

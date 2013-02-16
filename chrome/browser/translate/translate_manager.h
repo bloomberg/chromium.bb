@@ -25,7 +25,6 @@ template <typename T> struct DefaultSingletonTraits;
 class GURL;
 struct PageTranslatedDetails;
 class PrefService;
-class PrefServiceBase;
 class TranslateInfoBarDelegate;
 
 namespace content {
@@ -165,7 +164,7 @@ class TranslateManager : public content::NotificationObserver,
 
   // Initializes the |accept_languages_| language table based on the associated
   // preference in |prefs|.
-  void InitAcceptLanguages(PrefServiceBase* prefs);
+  void InitAcceptLanguages(PrefService* prefs);
 
   // Fetches the JS translate script (the script that is injected in the page
   // to translate it).
@@ -188,7 +187,7 @@ class TranslateManager : public content::NotificationObserver,
 
   // A map that associates a profile with its parsed "accept languages".
   typedef std::set<std::string> LanguageSet;
-  typedef std::map<PrefServiceBase*, LanguageSet> PrefServiceLanguagesMap;
+  typedef std::map<PrefService*, LanguageSet> PrefServiceLanguagesMap;
   PrefServiceLanguagesMap accept_languages_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;

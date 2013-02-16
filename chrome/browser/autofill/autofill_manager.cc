@@ -16,7 +16,6 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/public/pref_service_base.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/supports_user_data.h"

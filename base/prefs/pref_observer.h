@@ -7,12 +7,12 @@
 
 #include <string>
 
-class PrefServiceBase;
+class PrefService;
 
 // TODO(joi): Switch to base::Callback and remove this.
 class PrefObserver {
  public:
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
+  virtual void OnPreferenceChanged(PrefService* service,
                                    const std::string& pref_name) = 0;
 };
 

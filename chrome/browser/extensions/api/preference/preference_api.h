@@ -27,7 +27,7 @@ class PreferenceEventRouter {
   virtual ~PreferenceEventRouter();
 
  private:
-  void OnPrefChanged(PrefServiceBase* pref_service,
+  void OnPrefChanged(PrefService* pref_service,
                      const std::string& pref_key);
 
   PrefChangeRegistrar registrar_;

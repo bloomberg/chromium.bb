@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
@@ -116,7 +116,7 @@ bool BookmarksFunction::GetBookmarkIdAsInt64(const std::string& id_string,
 }
 
 bool BookmarksFunction::EditBookmarksEnabled() {
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+  PrefService* prefs = PrefServiceFromBrowserContext(profile_);
   if (prefs->GetBoolean(prefs::kEditBookmarksEnabled))
     return true;
   error_ = keys::kEditBookmarksDisabled;
@@ -431,7 +431,7 @@ bool BookmarksSearchFunction::RunImpl() {
       bookmarks::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile_);
+  PrefService* prefs = PrefServiceFromBrowserContext(profile_);
   std::string lang = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<const BookmarkNode*> nodes;
   bookmark_utils::GetBookmarksContainingText(

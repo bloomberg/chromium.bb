@@ -12,7 +12,7 @@ namespace chromeos {
 
 namespace {
 
-// If |pref|, a PrefServiceBase::Preference containing an integer, has been
+// If |pref|, a PrefService::Preference containing an integer, has been
 // explicitly set to 0 or a positive value, assigns it to |proto_field|, a
 // int32 field in |proto|, a google::protobuf::MessageLite*.
 #define SET_DELAY_FROM_PREF(pref, proto_field, proto)                          \
@@ -33,7 +33,7 @@ namespace {
       }                                                                        \
     }
 
-// If |pref|, a PrefServiceBase::Preference containing a bool, has been
+// If |pref|, a PrefService::Preference containing a bool, has been
 // set, assigns it to |proto_field|, a bool field in |proto|, a
 // google::protobuf::MessageLite*.
 #define SET_BOOL_FROM_PREF(pref, proto_field, proto)                           \
@@ -47,7 +47,7 @@ namespace {
 
 // Returns a zero or positive integer value from |pref|.  Returns -1 if the
 // pref is unset and logs an error if it's set to a negative value.
-int GetIntPrefValue(const PrefServiceBase::Preference& pref) {
+int GetIntPrefValue(const PrefService::Preference& pref) {
   if (pref.IsDefaultValue())
     return -1;
 
@@ -104,19 +104,19 @@ PowerPolicyController::~PowerPolicyController() {
 }
 
 void PowerPolicyController::UpdatePolicyFromPrefs(
-    const PrefServiceBase::Preference& ac_screen_dim_delay_ms_pref,
-    const PrefServiceBase::Preference& ac_screen_off_delay_ms_pref,
-    const PrefServiceBase::Preference& ac_screen_lock_delay_ms_pref,
-    const PrefServiceBase::Preference& ac_idle_delay_ms_pref,
-    const PrefServiceBase::Preference& battery_screen_dim_delay_ms_pref,
-    const PrefServiceBase::Preference& battery_screen_off_delay_ms_pref,
-    const PrefServiceBase::Preference& battery_screen_lock_delay_ms_pref,
-    const PrefServiceBase::Preference& battery_idle_delay_ms_pref,
-    const PrefServiceBase::Preference& idle_action_pref,
-    const PrefServiceBase::Preference& lid_closed_action_pref,
-    const PrefServiceBase::Preference& use_audio_activity_pref,
-    const PrefServiceBase::Preference& use_video_activity_pref,
-    const PrefServiceBase::Preference& presentation_idle_delay_factor_pref) {
+    const PrefService::Preference& ac_screen_dim_delay_ms_pref,
+    const PrefService::Preference& ac_screen_off_delay_ms_pref,
+    const PrefService::Preference& ac_screen_lock_delay_ms_pref,
+    const PrefService::Preference& ac_idle_delay_ms_pref,
+    const PrefService::Preference& battery_screen_dim_delay_ms_pref,
+    const PrefService::Preference& battery_screen_off_delay_ms_pref,
+    const PrefService::Preference& battery_screen_lock_delay_ms_pref,
+    const PrefService::Preference& battery_idle_delay_ms_pref,
+    const PrefService::Preference& idle_action_pref,
+    const PrefService::Preference& lid_closed_action_pref,
+    const PrefService::Preference& use_audio_activity_pref,
+    const PrefService::Preference& use_video_activity_pref,
+    const PrefService::Preference& presentation_idle_delay_factor_pref) {
   prefs_policy_.Clear();
 
   power_manager::PowerManagementPolicy::Delays* delays =

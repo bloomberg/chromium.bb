@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 
 PrefChangeRegistrar::PrefChangeRegistrar() : service_(NULL) {}
 
@@ -18,7 +18,7 @@ PrefChangeRegistrar::~PrefChangeRegistrar() {
   RemoveAll();
 }
 
-void PrefChangeRegistrar::Init(PrefServiceBase* service) {
+void PrefChangeRegistrar::Init(PrefService* service) {
   DCHECK(IsEmpty() || service_ == service);
   service_ = service;
 }
@@ -67,7 +67,7 @@ bool PrefChangeRegistrar::IsObserved(const std::string& pref) {
 bool PrefChangeRegistrar::IsManaged() {
   for (ObserverMap::const_iterator it = observers_.begin();
        it != observers_.end(); ++it) {
-    const PrefServiceBase::Preference* pref =
+    const PrefService::Preference* pref =
         service_->FindPreference(it->first.c_str());
     if (pref && pref->IsManaged())
       return true;
@@ -75,7 +75,7 @@ bool PrefChangeRegistrar::IsManaged() {
   return false;
 }
 
-void PrefChangeRegistrar::OnPreferenceChanged(PrefServiceBase* service,
+void PrefChangeRegistrar::OnPreferenceChanged(PrefService* service,
                                               const std::string& pref) {
   if (IsObserved(pref))
     observers_[pref].Run(pref);
@@ -86,6 +86,6 @@ void PrefChangeRegistrar::InvokeUnnamedCallback(const base::Closure& callback,
   callback.Run();
 }
 
-PrefServiceBase* PrefChangeRegistrar::prefs() {
+PrefService* PrefChangeRegistrar::prefs() {
   return service_;
 }

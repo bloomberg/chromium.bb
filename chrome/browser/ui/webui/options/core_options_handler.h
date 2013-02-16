@@ -65,10 +65,10 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
                          const std::string& metric);
 
   // Virtual dispatch is needed as handling of some prefs may be
-  // finessed in subclasses.  The PrefServiceBase pointer is included
+  // finessed in subclasses.  The PrefService pointer is included
   // so that subclasses can know whether the observed pref is from the
   // local state or not.
-  virtual void OnPreferenceChanged(PrefServiceBase* service,
+  virtual void OnPreferenceChanged(PrefService* service,
                                    const std::string& pref_name);
 
   // Notifies registered JS callbacks on change in |pref_name| preference.

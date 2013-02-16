@@ -65,8 +65,8 @@ Profile* profile() {
   return profile;
 }
 
-PrefServiceBase* prefs() {
-  return PrefServiceBase::FromBrowserContext(profile());
+PrefService* prefs() {
+  return PrefServiceFromBrowserContext(profile());
 }
 
 void EnableScreenManagnifierToPref(bool enabled) {

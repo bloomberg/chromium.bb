@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 
-#include "base/prefs/public/pref_service_base.h"
+#include "base/prefs/pref_service.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
@@ -69,8 +69,8 @@
   // arrived here from an "Add Page..." item in a context menu.
   if (node_) {
     [self setInitialName:base::SysUTF16ToNSString(node_->GetTitle())];
-    PrefServiceBase* prefs = [self profile] ?
-        PrefServiceBase::FromBrowserContext([self profile]) :
+    PrefService* prefs = [self profile] ?
+        PrefServiceFromBrowserContext([self profile]) :
         NULL;
     string16 urlString =
         chrome::FormatBookmarkURLForDisplay(node_->url(), prefs);

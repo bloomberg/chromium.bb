@@ -22,7 +22,6 @@
 class NetPrefObserver;
 class PrefRegistrySyncable;
 class PrefService;
-class PrefServiceBase;
 class PrefServiceSyncable;
 class SSLConfigServiceManager;
 
@@ -177,7 +176,7 @@ class ProfileImpl : public Profile {
   void OnDefaultZoomLevelChanged();
   void OnZoomLevelChanged(const std::string& host);
 
-  void OnInitializationCompleted(PrefServiceBase* pref_service,
+  void OnInitializationCompleted(PrefService* pref_service,
                                  bool succeeded);
 
   // Does final prefs initialization and calls Init().

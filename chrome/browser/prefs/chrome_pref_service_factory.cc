@@ -94,7 +94,7 @@ void PrepareBuilder(
 }  // namespace
 
 // TODO(joi): Find a better home for this.
-PrefServiceBase* PrefServiceBase::FromBrowserContext(BrowserContext* context) {
+PrefService* PrefServiceFromBrowserContext(BrowserContext* context) {
   return static_cast<Profile*>(context)->GetPrefs();
 }
 

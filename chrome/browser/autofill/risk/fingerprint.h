@@ -9,7 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 
-class PrefServiceBase;
+class PrefService;
 
 namespace gfx {
 class Rect;
@@ -36,7 +36,7 @@ void GetFingerprint(
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
     const WebKit::WebScreenInfo& screen_info,
-    const PrefServiceBase& prefs,
+    const PrefService& prefs,
     const base::Callback<void(scoped_ptr<Fingerprint>)>& callback);
 
 }  // namespace risk
