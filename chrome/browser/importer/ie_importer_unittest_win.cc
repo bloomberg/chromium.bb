@@ -131,9 +131,9 @@ bool CreateOrderBlob(const base::FilePath& favorites_folder,
   blob[16] = static_cast<uint8>(entries.size());
 
   for (size_t i = 0; i < entries.size(); ++i) {
-    ITEMIDLIST* id_list_full = ILCreateFromPath(
+    PIDLIST_ABSOLUTE id_list_full = ILCreateFromPath(
         favorites_folder.Append(path).Append(entries[i]).value().c_str());
-    ITEMIDLIST* id_list = ILFindLastID(id_list_full);
+    PUITEMID_CHILD id_list = ILFindLastID(id_list_full);
     // Include the trailing zero-length item id.  Don't include the single
     // element array.
     size_t id_list_size = id_list->mkid.cb + sizeof(id_list->mkid.cb);
