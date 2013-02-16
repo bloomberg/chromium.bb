@@ -41,7 +41,7 @@ void SetChromeSpecificCommandLineFlags() {
   SetCommandLineSwitchASCII(
       switches::kPrerenderFromOmnibox,
       switches::kPrerenderFromOmniboxSwitchValueEnabled);
-#if defined(GOOGLE_TV)
-  SetCommandLineSwitch(switches::kEnableEncryptedMedia);
+#if !defined(GOOGLE_TV)
+  SetCommandLineSwitch(switches::kDisableEncryptedMedia);
 #endif
 }
