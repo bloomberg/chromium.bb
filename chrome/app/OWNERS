@@ -2,3 +2,5 @@ cpu@chromium.org
 
 per-file chromeos_strings.grdp=*
 per-file generated_resources.grd=*
+per-file google_chrome_strings.grd=*
+per-file chromium_strings.grd=*
