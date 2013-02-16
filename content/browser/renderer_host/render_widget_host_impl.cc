@@ -1943,11 +1943,10 @@ void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
 }
 
 void RenderWidgetHostImpl::ProcessTouchAck(InputEventAckState ack_result) {
-  if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
-    // If one of the events was consumed at some point, then it should never
-    // receive a NO_CONSUMER_EXISTS.
-    CHECK_NE(touch_event_state_, INPUT_EVENT_ACK_STATE_CONSUMED);
-  }
+  // If one of the events was consumed at some point, then remember this state
+  // to make sure that all subsequent touch-events continue to reach the
+  // web-page (even if some of them are ACKed with NOT_CONSUMED or
+  // NO_CONSUMER_EXISTS).
   if (touch_event_state_ != INPUT_EVENT_ACK_STATE_CONSUMED)
     touch_event_state_ = ack_result;
   touch_event_queue_->ProcessTouchAck(ack_result);
