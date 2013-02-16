@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from perf_tools import histogram_measurement
-from telemetry.page import multi_page_benchmark
+from telemetry import multi_page_benchmark
 
 MEMORY_HISTOGRAMS = [
     {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent'},

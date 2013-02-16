@@ -4,8 +4,8 @@
 
 import logging
 
-from telemetry.core import util
-from telemetry.page import multi_page_benchmark
+from telemetry import multi_page_benchmark
+from telemetry import util
 
 class SpaceportBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def CustomizeBrowserOptions(self, options):

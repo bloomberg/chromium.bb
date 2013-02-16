@@ -4,8 +4,8 @@
 
 import collections
 
-from telemetry.core import util
-from telemetry.page import multi_page_benchmark
+from telemetry import multi_page_benchmark
+from telemetry import util
 
 class LoadingBenchmark(multi_page_benchmark.MultiPageBenchmark):
   @property

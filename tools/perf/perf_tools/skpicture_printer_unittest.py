@@ -6,9 +6,9 @@ import os
 import tempfile
 import shutil
 
+from telemetry import multi_page_benchmark_unittest_base
+from telemetry import options_for_unittests
 from perf_tools import skpicture_printer
-from telemetry.page import multi_page_benchmark_unittest_base
-from telemetry.test import options_for_unittests
 
 class SkPicturePrinterUnitTest(
   multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):

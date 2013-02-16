@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from perf_tools import smoothness_measurement
-from telemetry.core import util
-from telemetry.page import multi_page_benchmark
+from telemetry import multi_page_benchmark
+from telemetry import util
 
 class DidNotScrollException(multi_page_benchmark.MeasurementFailure):
   def __init__(self):

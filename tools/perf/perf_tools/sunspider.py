@@ -5,8 +5,8 @@
 import collections
 import json
 
-from telemetry.core import util
-from telemetry.page import multi_page_benchmark
+from telemetry import multi_page_benchmark
+from telemetry import util
 
 
 class SunSpiderBenchark(multi_page_benchmark.MultiPageBenchmark):
