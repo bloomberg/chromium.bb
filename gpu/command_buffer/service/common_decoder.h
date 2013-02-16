@@ -102,6 +102,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
   void set_engine(CommandBufferEngine* engine) {
     engine_ = engine;
   }
+  CommandBufferEngine* engine() const { return engine_; }
 
   // Creates a bucket. If the bucket already exists returns that bucket.
   Bucket* CreateBucket(uint32 bucket_id);

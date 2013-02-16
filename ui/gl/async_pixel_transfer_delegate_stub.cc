@@ -77,8 +77,9 @@ AsyncPixelTransferState*
 }
 
 void AsyncPixelTransferDelegateStub::AsyncNotifyCompletion(
-    const base::Closure& task) {
-  task.Run();
+    const AsyncMemoryParams& mem_params,
+    const CompletionCallback& callback) {
+  callback.Run(mem_params);
 }
 
 void AsyncPixelTransferDelegateStub::AsyncTexImage2D(

@@ -148,8 +148,7 @@ SafeSharedMemoryPool* safe_shared_memory_pool() {
 // Class which holds async pixel transfers state (EGLImage).
 // The EGLImage is accessed by either thread, but everything
 // else accessed only on the main thread.
-class TransferStateInternal
-    : public base::RefCountedThreadSafe<TransferStateInternal> {
+class TransferStateInternal : public base::RefCounted<TransferStateInternal> {
  public:
   explicit TransferStateInternal(GLuint texture_id,
                                  bool wait_for_uploads,
@@ -239,7 +238,7 @@ class TransferStateInternal
   }
 
  protected:
-  friend class base::RefCountedThreadSafe<TransferStateInternal>;
+  friend class base::RefCounted<TransferStateInternal>;
   friend class AsyncPixelTransferDelegateAndroid;
 
   static void DeleteTexture(GLuint id) {
@@ -318,7 +317,8 @@ class AsyncPixelTransferDelegateAndroid
 
   // implement AsyncPixelTransferDelegate:
   virtual void AsyncNotifyCompletion(
-      const base::Closure& task) OVERRIDE;
+      const AsyncMemoryParams& mem_params,
+      const CompletionCallback& callback) OVERRIDE;
   virtual void AsyncTexImage2D(
       AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
@@ -338,6 +338,10 @@ class AsyncPixelTransferDelegateAndroid
   void AsyncTexImage2DCompleted(scoped_refptr<TransferStateInternal> state);
   void AsyncTexSubImage2DCompleted(scoped_refptr<TransferStateInternal> state);
 
+  static void PerformNotifyCompletion(
+      AsyncMemoryParams mem_params,
+      ScopedSafeSharedMemory* safe_shared_memory,
+      const CompletionCallback& callback);
   static void PerformAsyncTexImage2D(
       TransferStateInternal* state,
       AsyncTexImage2DParams tex_params,
@@ -406,7 +410,7 @@ AsyncPixelTransferState*
         CreateRawPixelTransferState(GLuint texture_id) {
 
   // We can't wait on uploads on imagination (it can take 200ms+).
-  // In practice, they are complete when the CPU glSubTexImage2D completes.
+  // In practice, they are complete when the CPU glTexSubImage2D completes.
   bool wait_for_uploads = !is_imagination_;
 
   // Qualcomm has a race when using image_preserved=FALSE,
@@ -422,19 +426,23 @@ AsyncPixelTransferState*
                                     use_image_preserved));
 }
 
-namespace {
-// Dummy function to measure completion on
-// the upload thread.
-void NoOp() {}
-} // namespace
-
 void AsyncPixelTransferDelegateAndroid::AsyncNotifyCompletion(
-      const base::Closure& task) {
-  // Post a no-op task to the upload thread followed
-  // by a reply to the callback. The reply will then occur after
-  // all async transfers are complete.
-  transfer_message_loop_proxy()->PostTaskAndReply(FROM_HERE,
-      base::Bind(&NoOp), task);
+    const AsyncMemoryParams& mem_params,
+    const CompletionCallback& callback) {
+  DCHECK(mem_params.shared_memory);
+  DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
+            mem_params.shm_size);
+  // Post a PerformNotifyCompletion task to the upload thread. This task
+  // will run after all async transfers are complete.
+  transfer_message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&AsyncPixelTransferDelegateAndroid::PerformNotifyCompletion,
+                 mem_params,
+                 base::Owned(
+                     new ScopedSafeSharedMemory(safe_shared_memory_pool(),
+                                                mem_params.shared_memory,
+                                                mem_params.shm_size)),
+                 callback));
 }
 
 void AsyncPixelTransferDelegateAndroid::AsyncTexImage2D(
@@ -558,6 +566,16 @@ void SetGlParametersForEglImageTexture() {
 }
 } // namespace
 
+void AsyncPixelTransferDelegateAndroid::PerformNotifyCompletion(
+    AsyncMemoryParams mem_params,
+    ScopedSafeSharedMemory* safe_shared_memory,
+    const CompletionCallback& callback) {
+  TRACE_EVENT0("gpu", "PerformNotifyCompletion");
+  gfx::AsyncMemoryParams safe_mem_params = mem_params;
+  safe_mem_params.shared_memory = safe_shared_memory->shared_memory();
+  callback.Run(safe_mem_params);
+}
+
 void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
     TransferStateInternal* state,
     AsyncTexImage2DParams tex_params,
@@ -641,7 +659,6 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
   DCHECK(CHECK_GL());
   state->last_transfer_time_ = base::TimeTicks::HighResNow() - begin_time;
 }
-
 
 namespace {
 bool IsPowerOfTwo (unsigned int x) {

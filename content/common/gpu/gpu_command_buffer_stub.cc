@@ -299,6 +299,9 @@ void GpuCommandBufferStub::Destroy() {
   while (!sync_points_.empty())
     OnRetireSyncPoint(sync_points_.front());
 
+  if (decoder_.get())
+    decoder_->set_engine(NULL);
+
   // The scheduler has raw references to the decoder and the command buffer so
   // destroy it before those.
   scheduler_.reset();

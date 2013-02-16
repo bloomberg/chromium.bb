@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/query_manager.h"
+
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/shared_memory.h"
 #include "base/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "ui/gl/async_pixel_transfer_delegate.h"
 
 namespace gpu {
@@ -176,10 +178,20 @@ class AsyncPixelTransfersCompletedQuery
   virtual bool Process() OVERRIDE;
   virtual void Destroy(bool have_context) OVERRIDE;
 
-  void MarkAsCompletedCallback() { MarkAsCompleted(1); }
-
  protected:
   virtual ~AsyncPixelTransfersCompletedQuery();
+
+  static void MarkAsCompletedThreadSafe(
+      uint32 submit_count, const gfx::AsyncMemoryParams& mem_params) {
+    DCHECK(mem_params.shared_memory);
+    DCHECK(mem_params.shared_memory->memory());
+    void *data = static_cast<int8*>(mem_params.shared_memory->memory()) +
+        mem_params.shm_data_offset;
+    QuerySync* sync = static_cast<QuerySync*>(data);
+
+    // No need for a MemoryBarrier here as sync->result is not written.
+    sync->process_count = submit_count;
+  }
 };
 
 AsyncPixelTransfersCompletedQuery::AsyncPixelTransfersCompletedQuery(
@@ -192,28 +204,41 @@ bool AsyncPixelTransfersCompletedQuery::Begin() {
 }
 
 bool AsyncPixelTransfersCompletedQuery::End(uint32 submit_count) {
-  MarkAsPending(submit_count);
+  gfx::AsyncMemoryParams mem_params;
+  // Get the real shared memory since it might need to be duped to prevent
+  // use-after-free of the memory.
+  Buffer buffer = manager()->decoder()->GetSharedMemoryBuffer(shm_id());
+  if (!buffer.shared_memory)
+    return false;
+  mem_params.shared_memory = buffer.shared_memory;
+  mem_params.shm_size = buffer.size;
+  mem_params.shm_data_offset = shm_offset();
+  mem_params.shm_data_size = sizeof(QuerySync);
 
-  // This will call MarkAsCompleted(1) as a reply to a task on
-  // the async upload thread, such that it occurs after all previous
-  // async transfers have completed.
+  // Ask AsyncPixelTransferDelegate to run completion callback after all
+  // previous async transfers are done. No guarantee that callback is run
+  // on the current thread.
   manager()->decoder()->GetAsyncPixelTransferDelegate()->AsyncNotifyCompletion(
-      base::Bind(
-          &AsyncPixelTransfersCompletedQuery::MarkAsCompletedCallback,
-          AsWeakPtr()));
+      mem_params,
+      base::Bind(AsyncPixelTransfersCompletedQuery::MarkAsCompletedThreadSafe,
+                 submit_count));
 
-  // TODO(epenner): The async task occurs outside the normal
-  // flow, via a callback on this thread. Is there anything
-  // missing or wrong with that?
-
-  // TODO(epenner): Could we possibly trigger the completion on
-  // the upload thread by writing to the query shared memory
-  // directly?
-  return true;
+  return AddToPendingTransferQueue(submit_count);
 }
 
 bool AsyncPixelTransfersCompletedQuery::Process() {
-  NOTREACHED();
+  QuerySync* sync = manager()->decoder()->GetSharedMemoryAs<QuerySync*>(
+      shm_id(), shm_offset(), sizeof(*sync));
+  if (!sync)
+    return false;
+
+  // Check if completion callback has been run. sync->process_count atomicity
+  // is guaranteed as this is already used to notify client of a completed
+  // query.
+  if (sync->process_count != submit_count())
+    return true;
+
+  UnmarkAsPending();
   return true;
 }
 
@@ -435,7 +460,7 @@ bool QueryManager::ProcessPendingQueries() {
       return false;
     }
     if (query->pending()) {
-      return true;
+      break;
     }
     pending_queries_.pop_front();
   }
@@ -445,6 +470,25 @@ bool QueryManager::ProcessPendingQueries() {
 
 bool QueryManager::HavePendingQueries() {
   return !pending_queries_.empty();
+}
+
+bool QueryManager::ProcessPendingTransferQueries() {
+  while (!pending_transfer_queries_.empty()) {
+    Query* query = pending_transfer_queries_.front().get();
+    if (!query->Process()) {
+      return false;
+    }
+    if (query->pending()) {
+      break;
+    }
+    pending_transfer_queries_.pop_front();
+  }
+
+  return true;
+}
+
+bool QueryManager::HavePendingTransferQueries() {
+  return !pending_transfer_queries_.empty();
 }
 
 bool QueryManager::AddPendingQuery(Query* query, uint32 submit_count) {
@@ -458,6 +502,17 @@ bool QueryManager::AddPendingQuery(Query* query, uint32 submit_count) {
   return true;
 }
 
+bool QueryManager::AddPendingTransferQuery(Query* query, uint32 submit_count) {
+  DCHECK(query);
+  DCHECK(!query->IsDeleted());
+  if (!RemovePendingQuery(query)) {
+    return false;
+  }
+  query->MarkAsPending(submit_count);
+  pending_transfer_queries_.push_back(query);
+  return true;
+}
+
 bool QueryManager::RemovePendingQuery(Query* query) {
   DCHECK(query);
   if (query->pending()) {
@@ -468,6 +523,13 @@ bool QueryManager::RemovePendingQuery(Query* query) {
          it != pending_queries_.end(); ++it) {
       if (it->get() == query) {
         pending_queries_.erase(it);
+        break;
+      }
+    }
+    for (QueryQueue::iterator it = pending_transfer_queries_.begin();
+         it != pending_transfer_queries_.end(); ++it) {
+      if (it->get() == query) {
+        pending_transfer_queries_.erase(it);
         break;
       }
     }

@@ -36,7 +36,9 @@ class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
   virtual ~AsyncPixelTransferDelegateStub();
 
   // implement AsyncPixelTransferDelegate:
-  virtual void AsyncNotifyCompletion(const base::Closure& task) OVERRIDE;
+  virtual void AsyncNotifyCompletion(
+      const AsyncMemoryParams& mem_params,
+      const CompletionCallback& callback) OVERRIDE;
   virtual void AsyncTexImage2D(
       AsyncPixelTransferState* transfer_state,
       const AsyncTexImage2DParams& tex_params,

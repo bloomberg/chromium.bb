@@ -78,6 +78,8 @@ class GL_EXPORT AsyncPixelTransferState :
 
 class GL_EXPORT AsyncPixelTransferDelegate {
  public:
+  typedef base::Callback<void(const AsyncMemoryParams&)> CompletionCallback;
+
   static scoped_ptr<AsyncPixelTransferDelegate>
       Create(gfx::GLContext* context);
   virtual ~AsyncPixelTransferDelegate() {}
@@ -89,8 +91,10 @@ class GL_EXPORT AsyncPixelTransferDelegate {
     return make_scoped_ptr(CreateRawPixelTransferState(texture_id));
   }
 
+  // There's no guarantee that callback will run on the caller thread.
   virtual void AsyncNotifyCompletion(
-      const base::Closure& notify_task) = 0;
+      const AsyncMemoryParams& mem_params,
+      const CompletionCallback& callback) = 0;
 
   virtual void AsyncTexImage2D(
       AsyncPixelTransferState* state,

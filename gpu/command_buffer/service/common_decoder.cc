@@ -63,6 +63,7 @@ CommonDecoder::~CommonDecoder() {}
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
                                             unsigned int offset,
                                             unsigned int size) {
+  CHECK(engine_);
   Buffer buffer = engine_->GetSharedMemoryBuffer(shm_id);
   if (!buffer.ptr)
     return NULL;
