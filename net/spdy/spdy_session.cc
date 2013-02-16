@@ -362,7 +362,7 @@ net::Error SpdySession::InitializeWithSocket(
 
   DCHECK(protocol >= kProtoSPDY2);
   DCHECK(protocol <= kProtoSPDY3);
-  int version = (protocol == kProtoSPDY3) ? 3 : 2;
+  int version = (protocol == kProtoSPDY3) ? kSpdyVersion3 : kSpdyVersion2;
   flow_control_ = (protocol >= kProtoSPDY3);
 
   buffered_spdy_framer_.reset(new BufferedSpdyFramer(version,
