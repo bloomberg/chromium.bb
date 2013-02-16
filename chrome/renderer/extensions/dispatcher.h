@@ -173,9 +173,9 @@ class Dispatcher : public content::RenderProcessObserver {
       bool adblock,
       bool adblock_plus,
       bool other_webrequest);
-  void OnShouldUnload(const std::string& extension_id, int sequence_id);
-  void OnUnload(const std::string& extension_id);
-  void OnCancelUnload(const std::string& extension_id);
+  void OnShouldSuspend(const std::string& extension_id, int sequence_id);
+  void OnSuspend(const std::string& extension_id);
+  void OnCancelSuspend(const std::string& extension_id);
 
   // Update the list of active extensions that will be reported when we crash.
   void UpdateActiveExtensions();

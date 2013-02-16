@@ -122,12 +122,12 @@ class ExtensionProcessManager : public content::NotificationObserver {
   void IncrementLazyKeepaliveCountForView(
       content::RenderViewHost* render_view_host);
 
-  // Handles a response to the ShouldUnload message, used for lazy background
+  // Handles a response to the ShouldSuspend message, used for lazy background
   // pages.
-  void OnShouldUnloadAck(const std::string& extension_id, int sequence_id);
+  void OnShouldSuspendAck(const std::string& extension_id, int sequence_id);
 
-  // Same as above, for the Unload message.
-  void OnUnloadAck(const std::string& extension_id);
+  // Same as above, for the Suspend message.
+  void OnSuspendAck(const std::string& extension_id);
 
   // Tracks network requests for a given RenderViewHost, used to know
   // when network activity is idle for lazy background pages.
@@ -205,12 +205,12 @@ class ExtensionProcessManager : public content::NotificationObserver {
   BackgroundPageDataMap background_page_data_;
 
   // The time to delay between an extension becoming idle and
-  // sending a ShouldUnload message; read from command-line switch.
+  // sending a ShouldSuspend message; read from command-line switch.
   base::TimeDelta event_page_idle_time_;
 
-  // The time to delay between sending a ShouldUnload message and
-  // sending a Unload message; read from command-line switch.
-  base::TimeDelta event_page_unloading_time_;
+  // The time to delay between sending a ShouldSuspend message and
+  // sending a Suspend message; read from command-line switch.
+  base::TimeDelta event_page_suspending_time_;
 
   base::WeakPtrFactory<ExtensionProcessManager> weak_ptr_factory_;
 

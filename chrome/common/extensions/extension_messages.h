@@ -335,21 +335,21 @@ IPC_MESSAGE_CONTROL3(ExtensionMsg_UsingWebRequestAPI,
                      bool /* adblock_plus */,
                      bool /* other_webrequest */)
 
-// Ask the lazy background page if it is ready to unload. This is sent when the
-// page is considered idle. The renderer will reply with the same sequence_id
-// so that we can tell which message it is responding to.
-IPC_MESSAGE_CONTROL2(ExtensionMsg_ShouldUnload,
+// Ask the lazy background page if it is ready to be suspended. This is sent
+// when the page is considered idle. The renderer will reply with the same
+// sequence_id so that we can tell which message it is responding to.
+IPC_MESSAGE_CONTROL2(ExtensionMsg_ShouldSuspend,
                      std::string /* extension_id */,
                      int /* sequence_id */)
 
-// If we complete a round of ShouldUnload->ShouldUnloadAck messages without the
-// lazy background page becoming active again, we are ready to unload. This
-// message tells the page to dispatch the unload event.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_Unload,
+// If we complete a round of ShouldSuspend->ShouldSuspendAck messages without
+// the lazy background page becoming active again, we are ready to unload. This
+// message tells the page to dispatch the suspend event.
+IPC_MESSAGE_CONTROL1(ExtensionMsg_Suspend,
                      std::string /* extension_id */)
 
-// The browser changed its mind about unloading this extension.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_CancelUnload,
+// The browser changed its mind about suspending this extension.
+IPC_MESSAGE_CONTROL1(ExtensionMsg_CancelSuspend,
                      std::string /* extension_id */)
 
 // Send to renderer once the installation mentioned on
@@ -559,13 +559,13 @@ IPC_MESSAGE_ROUTED3(ExtensionHostMsg_GetAppInstallState,
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_ResponseAck,
                     int /* request_id */)
 
-// Response to ExtensionMsg_ShouldUnload.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_ShouldUnloadAck,
+// Response to ExtensionMsg_ShouldSuspend.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_ShouldSuspendAck,
                      std::string /* extension_id */,
                      int /* sequence_id */)
 
-// Response to ExtensionMsg_Unload, after we dispatch the unload event.
-IPC_MESSAGE_CONTROL1(ExtensionHostMsg_UnloadAck,
+// Response to ExtensionMsg_Suspend, after we dispatch the suspend event.
+IPC_MESSAGE_CONTROL1(ExtensionHostMsg_SuspendAck,
                      std::string /* extension_id */)
 
 // Informs the browser to increment the keepalive count for the lazy background

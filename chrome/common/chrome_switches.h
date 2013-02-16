@@ -184,7 +184,7 @@ extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
 extern const char kExtensionsInActionBox[];
 extern const char kEventPageIdleTime[];
-extern const char kEventPageUnloadingTime[];
+extern const char kEventPageSuspendingTime[];
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsUpdateFrequency[];

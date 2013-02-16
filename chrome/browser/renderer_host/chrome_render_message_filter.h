@@ -146,9 +146,9 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionRequestForIOThread(
       int routing_id,
       const ExtensionHostMsg_Request_Params& params);
-  void OnExtensionShouldUnloadAck(const std::string& extension_id,
-                                  int sequence_id);
-  void OnExtensionUnloadAck(const std::string& extension_id);
+  void OnExtensionShouldSuspendAck(const std::string& extension_id,
+                                   int sequence_id);
+  void OnExtensionSuspendAck(const std::string& extension_id);
   void OnExtensionGenerateUniqueID(int* unique_id);
   void OnExtensionResumeRequests(int route_id);
   void OnAllowDatabase(int render_view_id,

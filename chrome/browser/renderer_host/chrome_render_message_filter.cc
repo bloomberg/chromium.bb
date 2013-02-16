@@ -111,11 +111,11 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
                         OnExtensionRequestForIOThread)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ShouldUnloadAck,
-                        OnExtensionShouldUnloadAck)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ShouldSuspendAck,
+                        OnExtensionShouldSuspendAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GenerateUniqueID,
                         OnExtensionGenerateUniqueID)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_UnloadAck, OnExtensionUnloadAck)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_SuspendAck, OnExtensionSuspendAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ResumeRequests,
                         OnExtensionResumeRequests);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_AllowDatabase, OnAllowDatabase)
@@ -159,8 +159,8 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_AddFilteredListener::ID:
     case ExtensionHostMsg_RemoveFilteredListener::ID:
     case ExtensionHostMsg_CloseChannel::ID:
-    case ExtensionHostMsg_ShouldUnloadAck::ID:
-    case ExtensionHostMsg_UnloadAck::ID:
+    case ExtensionHostMsg_ShouldSuspendAck::ID:
+    case ExtensionHostMsg_SuspendAck::ID:
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
       break;
@@ -498,19 +498,19 @@ void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(
       weak_ptr_factory_.GetWeakPtr(), routing_id, params);
 }
 
-void ChromeRenderMessageFilter::OnExtensionShouldUnloadAck(
+void ChromeRenderMessageFilter::OnExtensionShouldSuspendAck(
      const std::string& extension_id, int sequence_id) {
   if (extensions::ExtensionSystem::Get(profile_)->process_manager()) {
     extensions::ExtensionSystem::Get(profile_)->process_manager()->
-        OnShouldUnloadAck(extension_id, sequence_id);
+        OnShouldSuspendAck(extension_id, sequence_id);
   }
 }
 
-void ChromeRenderMessageFilter::OnExtensionUnloadAck(
+void ChromeRenderMessageFilter::OnExtensionSuspendAck(
      const std::string& extension_id) {
   if (extensions::ExtensionSystem::Get(profile_)->process_manager()) {
     extensions::ExtensionSystem::Get(profile_)->process_manager()->
-        OnUnloadAck(extension_id);
+        OnSuspendAck(extension_id);
   }
 }
 
