@@ -2864,7 +2864,8 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     result_string = "return "
     if func.return_type == "void":
       result_string = ""
-    file.Write('  TRACE_EVENT0("gpu", "GLES2Trace::%s");\n' % func.name)
+    file.Write('  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::%s");\n' %
+               func.name)
     file.Write("  %sgl_->%s(%s);\n" %
                (result_string, func.name, func.MakeOriginalArgString("")))
     file.Write("}\n")

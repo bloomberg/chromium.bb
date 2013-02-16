@@ -1549,7 +1549,8 @@ namespace gfx {
     if argument_names == 'void' or argument_names == '':
       argument_names = ''
     function_name = names[0]
-    file.write('  TRACE_EVENT0("gpu", "TraceGLAPI::%s")\n' % function_name)
+    file.write('  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::%s")\n' %
+               function_name)
     if return_type == 'void':
       file.write('  %s_api_->%sFn(%s);\n' %
           (set_name.lower(), function_name, argument_names))
