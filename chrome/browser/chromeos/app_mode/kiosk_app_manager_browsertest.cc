@@ -140,6 +140,11 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     manager_.reset(new KioskAppManager);
   }
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    // Release |manager_| while main thread still runs.
+    // See http://crbug.com/176659.
+    manager_.reset();
+  }
 
   std::string GetAppIds() const {
     KioskAppManager::Apps apps;
