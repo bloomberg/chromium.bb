@@ -6,6 +6,6 @@
 
 NativeWebContentsModalDialogManager*
     WebContentsModalDialogManager::CreateNativeManager(
-        WebContentsModalDialogManager* manager) {
+        NativeWebContentsModalDialogManagerDelegate* native_delegate) {
   return NULL;
 }

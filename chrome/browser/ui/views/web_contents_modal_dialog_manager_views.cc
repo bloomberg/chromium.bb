@@ -32,8 +32,8 @@ class NativeWebContentsModalDialogManagerViews
       public views::WidgetObserver {
  public:
   NativeWebContentsModalDialogManagerViews(
-      WebContentsModalDialogManager* manager)
-      : manager_(manager) {
+      NativeWebContentsModalDialogManagerDelegate* native_delegate)
+      : native_delegate_(native_delegate) {
   }
 
   virtual ~NativeWebContentsModalDialogManagerViews() {
@@ -87,7 +87,7 @@ class NativeWebContentsModalDialogManagerViews
 
   // views::WidgetObserver overrides
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
-    manager_->WillClose(static_cast<ConstrainedWindowViews*>(widget));
+    native_delegate_->WillClose(static_cast<ConstrainedWindowViews*>(widget));
     observed_widgets_.erase(widget);
   }
 
@@ -98,7 +98,7 @@ class NativeWebContentsModalDialogManagerViews
     return widget;
   }
 
-  WebContentsModalDialogManager* manager_;
+  NativeWebContentsModalDialogManagerDelegate* native_delegate_;
   std::set<views::Widget*> observed_widgets_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManagerViews);
@@ -107,6 +107,7 @@ class NativeWebContentsModalDialogManagerViews
 }  // namespace
 
 NativeWebContentsModalDialogManager* WebContentsModalDialogManager::
-CreateNativeManager(WebContentsModalDialogManager* manager) {
-  return new NativeWebContentsModalDialogManagerViews(manager);
+CreateNativeManager(
+    NativeWebContentsModalDialogManagerDelegate* native_delegate) {
+  return new NativeWebContentsModalDialogManagerViews(native_delegate);
 }

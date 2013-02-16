@@ -18,7 +18,8 @@ class WebContentsModalDialogManagerDelegate;
 
 // Per-WebContents class to manage WebContents-modal dialogs.
 class WebContentsModalDialogManager
-    : public content::WebContentsObserver,
+    : public NativeWebContentsModalDialogManagerDelegate,
+      public content::WebContentsObserver,
       public content::WebContentsUserData<WebContentsModalDialogManager> {
  public:
   virtual ~WebContentsModalDialogManager();
@@ -27,14 +28,11 @@ class WebContentsModalDialogManager
   void set_delegate(WebContentsModalDialogManagerDelegate* d) { delegate_ = d; }
 
   static NativeWebContentsModalDialogManager* CreateNativeManager(
-      WebContentsModalDialogManager* manager);
+      NativeWebContentsModalDialogManagerDelegate* native_delegate);
 
   // Adds the given dialog to the list of child dialogs. The dialog will notify
   // via WillClose() when it is being destroyed.
   void AddDialog(WebContentsModalDialog* dialog);
-
-  // Called when a WebContentsModalDialogs we own is about to be closed.
-  void WillClose(WebContentsModalDialog* dialog);
 
   // Blocks/unblocks interaction with renderer process.
   void BlockWebContentsInteraction(bool blocked);
@@ -45,6 +43,10 @@ class WebContentsModalDialogManager
   // Focus the topmost modal dialog.  IsShowingDialog() must be true when
   // calling this function.
   void FocusTopmostDialog();
+
+  // Overriden from NativeWebContentsModalDialogManagerDelegate:
+  // Called when a WebContentsModalDialogs we own is about to be closed.
+  virtual void WillClose(WebContentsModalDialog* dialog) OVERRIDE;
 
   // For testing.
   class TestApi {

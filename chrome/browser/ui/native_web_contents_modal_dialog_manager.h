@@ -7,6 +7,21 @@
 
 #include "chrome/browser/ui/native_web_contents_modal_dialog.h"
 
+class WebContentsModalDialog;
+
+// Interface from NativeWebContentsModalDialogManager to
+// WebContentsModalDialogManager.
+class NativeWebContentsModalDialogManagerDelegate {
+ public:
+  NativeWebContentsModalDialogManagerDelegate() {}
+  virtual ~NativeWebContentsModalDialogManagerDelegate() {}
+
+  virtual void WillClose(WebContentsModalDialog* dialog) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManagerDelegate);
+};
+
 // Provides an interface for platform-specific UI implementation for the web
 // contents modal dialog.
 class NativeWebContentsModalDialogManager {

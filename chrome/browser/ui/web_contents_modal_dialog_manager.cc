@@ -34,21 +34,6 @@ void WebContentsModalDialogManager::AddDialog(
   }
 }
 
-void WebContentsModalDialogManager::WillClose(WebContentsModalDialog* dialog) {
-  WebContentsModalDialogList::iterator i(
-      std::find(child_dialogs_.begin(), child_dialogs_.end(), dialog));
-  bool removed_topmost_dialog = i == child_dialogs_.begin();
-  if (i != child_dialogs_.end())
-    child_dialogs_.erase(i);
-  if (child_dialogs_.empty()) {
-    BlockWebContentsInteraction(false);
-  } else {
-    if (removed_topmost_dialog)
-      child_dialogs_[0]->ShowWebContentsModalDialog();
-    BlockWebContentsInteraction(true);
-  }
-}
-
 void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
   WebContents* contents = web_contents();
   if (!contents) {
@@ -76,6 +61,21 @@ void WebContentsModalDialogManager::FocusTopmostDialog() {
   WebContentsModalDialog* window = *dialog_begin();
   DCHECK(window);
   window->FocusWebContentsModalDialog();
+}
+
+void WebContentsModalDialogManager::WillClose(WebContentsModalDialog* dialog) {
+  WebContentsModalDialogList::iterator i(
+      std::find(child_dialogs_.begin(), child_dialogs_.end(), dialog));
+  bool removed_topmost_dialog = i == child_dialogs_.begin();
+  if (i != child_dialogs_.end())
+    child_dialogs_.erase(i);
+  if (child_dialogs_.empty()) {
+    BlockWebContentsInteraction(false);
+  } else {
+    if (removed_topmost_dialog)
+      child_dialogs_[0]->ShowWebContentsModalDialog();
+    BlockWebContentsInteraction(true);
+  }
 }
 
 WebContentsModalDialogManager::WebContentsModalDialogManager(
