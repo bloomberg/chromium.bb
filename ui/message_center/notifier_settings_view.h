@@ -32,6 +32,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
                                       gfx::NativeView context);
 
   void UpdateIconImage(const std::string& id, const gfx::ImageSkia& icon);
+  void UpdateFavicon(const GURL& url, const gfx::ImageSkia& icon);
 
   void set_delegate(NotifierSettingsViewDelegate* new_delegate) {
     delegate_ = new_delegate;

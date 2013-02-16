@@ -8,7 +8,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chrome/browser/history/history_types.h"
 #include "ui/message_center/notifier_settings_view_delegate.h"
+
+class CancelableTaskTracker;
 
 namespace message_center {
 class NotifierSettingsView;
@@ -37,9 +40,15 @@ class MessageCenterSettingsController
   virtual void OnNotifierSettingsClosing() OVERRIDE;
 
  private:
+  void OnFaviconLoaded(const GURL& url,
+                       const history::FaviconImageResult& favicon_result);
+
   // The view displaying notifier settings. NULL if the settings are not
   // visible.
   message_center::NotifierSettingsView* settings_view_;
+
+  // The task tracker for loading favicons.
+  scoped_ptr<CancelableTaskTracker> favicon_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsController);
 };

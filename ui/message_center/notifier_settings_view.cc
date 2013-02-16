@@ -77,10 +77,6 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
     return checkbox_->checked();
   }
 
-  std::string id() const {
-    return notifier_->id;
-  }
-
   const Notifier& notifier() const {
     return *notifier_.get();
   }
@@ -123,7 +119,18 @@ void NotifierSettingsView::UpdateIconImage(const std::string& id,
                                            const gfx::ImageSkia& icon) {
   for (std::set<NotifierButton*>::iterator iter = buttons_.begin();
        iter != buttons_.end(); ++iter) {
-    if ((*iter)->id() == id) {
+    if ((*iter)->notifier().id == id) {
+      (*iter)->UpdateIconImage(icon);
+      return;
+    }
+  }
+}
+
+void NotifierSettingsView::UpdateFavicon(const GURL& url,
+                                         const gfx::ImageSkia& icon) {
+  for (std::set<NotifierButton*>::iterator iter = buttons_.begin();
+       iter != buttons_.end(); ++iter) {
+    if ((*iter)->notifier().url == url) {
       (*iter)->UpdateIconImage(icon);
       return;
     }

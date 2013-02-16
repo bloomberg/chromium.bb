@@ -6,10 +6,15 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/cancelable_task_tracker.h"
+#include "ui/gfx/image/image.h"
+#include "ui/message_center/message_center_constants.h"
 #include "ui/message_center/notifier_settings_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -63,6 +68,9 @@ void MessageCenterSettingsController::GetNotifierList(
 
   ContentSettingsForOneType settings;
   notification_service->GetNotificationsSettings(&settings);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, Profile::EXPLICIT_ACCESS);
+  favicon_tracker_.reset(new CancelableTaskTracker());
   for (ContentSettingsForOneType::const_iterator iter = settings.begin();
        iter != settings.end(); ++iter) {
     if (iter->primary_pattern == ContentSettingsPattern::Wildcard() &&
@@ -77,7 +85,17 @@ void MessageCenterSettingsController::GetNotifierList(
         url,
         UTF8ToUTF16(url_pattern),
         notification_service->GetContentSetting(url) == CONTENT_SETTING_ALLOW));
-    // TODO(mukai): add favicon loader here.
+    FaviconService::FaviconForURLParams favicon_params(
+        profile, url, history::FAVICON | history::TOUCH_ICON,
+        message_center::kSettingsIconSize);
+    // Note that favicon service obtains the favicon from history. This means
+    // that it will fail to obtain the image if there are no history data for
+    // that URL.
+    favicon_service->GetFaviconImageForURL(
+        favicon_params,
+        base::Bind(&MessageCenterSettingsController::OnFaviconLoaded,
+                   base::Unretained(this), url),
+        favicon_tracker_.get());
   }
 }
 
@@ -124,4 +142,14 @@ void MessageCenterSettingsController::SetNotifierEnabled(
 
 void MessageCenterSettingsController::OnNotifierSettingsClosing() {
   settings_view_ = NULL;
+  DCHECK(favicon_tracker_.get());
+  favicon_tracker_->TryCancelAll();
+}
+
+void MessageCenterSettingsController::OnFaviconLoaded(
+    const GURL& url,
+    const history::FaviconImageResult& favicon_result) {
+  if (!settings_view_)
+    return;
+  settings_view_->UpdateFavicon(url, favicon_result.image.AsImageSkia());
 }
