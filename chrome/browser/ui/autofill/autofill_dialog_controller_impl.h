@@ -67,6 +67,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void Show();
   void Hide();
 
+  DialogType dialog_type() const { return dialog_type_; }
+
   // Updates the progress bar based on the Autocheckout progress. |value| should
   // be in [0.0, 1.0].
   void UpdateProgressBar(double value);

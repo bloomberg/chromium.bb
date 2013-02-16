@@ -124,17 +124,20 @@ void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
 }
 
 void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
-  if (autofill_dialog_controller_)
+  if (autofill_dialog_controller_) {
     autofill_dialog_controller_->Hide();
-  RequestAutocompleteDialogClosed();
+    RequestAutocompleteDialogClosed();
+  }
 }
 
 void TabAutofillManagerDelegate::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  // TODO(dbeam): selectively allow this dialog to remain open when going
-  // through the autocheckout flow (when the behavior is more fleshed out).
-  HideRequestAutocompleteDialog();
+  if (autofill_dialog_controller_ &&
+      autofill_dialog_controller_->dialog_type() ==
+          autofill::DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {
+    HideRequestAutocompleteDialog();
+  }
 }
 
 }  // namespace autofill
