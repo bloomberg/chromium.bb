@@ -27,6 +27,7 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
        gfx::Size tile_size,
        GLenum format,
        gfx::Rect content_rect,
+       gfx::Rect opaque_rect,
        float contents_scale);
 
   PicturePileImpl* picture_pile() {

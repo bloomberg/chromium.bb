@@ -336,6 +336,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       content_rect.size(),
       GL_RGBA,
       content_rect,
+      contentsOpaque() ? content_rect : gfx::Rect(),
       tiling->contents_scale()));
 }
 

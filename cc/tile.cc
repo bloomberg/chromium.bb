@@ -15,12 +15,14 @@ Tile::Tile(TileManager* tile_manager,
            gfx::Size tile_size,
            GLenum format,
            gfx::Rect content_rect,
+           gfx::Rect opaque_rect,
            float contents_scale)
   : tile_manager_(tile_manager),
     picture_pile_(picture_pile),
     tile_size_(tile_size),
     format_(format),
     content_rect_(content_rect),
+    opaque_rect_(opaque_rect),
     contents_scale_(contents_scale) {
   tile_manager_->RegisterTile(this);
 }
