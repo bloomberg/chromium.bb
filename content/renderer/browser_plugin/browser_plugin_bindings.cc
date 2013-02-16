@@ -708,15 +708,16 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
                            NPObject* np_obj,
                            const NPVariant* variant) OVERRIDE {
     std::string new_value = StringFromNPVariant(*variant);
+    // We should not be issuing navigation IPCs if we attempt to set the
+    // src property to the empty string. Instead, we want to simply restore
+    // the src attribute back to its old value.
+    if (new_value.empty()) {
+      RemoveProperty(bindings, np_obj);
+      return true;
+    }
     std::string old_value = bindings->instance()->GetSrcAttribute();
     bool guest_crashed = bindings->instance()->guest_crashed();
     if ((old_value != new_value) || guest_crashed) {
-      if (new_value.empty()) {
-        // Remove the DOM attribute to trigger <webview>'s mutation observer
-        // when it is restored to its original value again.
-        bindings->instance()->RemoveDOMAttribute(name());
-        new_value = old_value;
-      }
       // If the new value was empty then we're effectively resetting the
       // attribute to the old value here. This will be picked up by <webview>'s
       // mutation observer and will restore the src attribute after it has been
