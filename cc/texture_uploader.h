@@ -53,6 +53,7 @@ public:
                 const gfx::Size& size);
 
     void flush();
+    void releaseCachedQueries();
 
 private:
     class Query {

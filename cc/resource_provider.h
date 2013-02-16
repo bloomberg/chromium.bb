@@ -99,6 +99,7 @@ public:
     void markPendingUploadsAsNonBlocking();
     double estimatedUploadsPerSecond();
     void flushUploads();
+    void releaseCachedData();
 
     // Flush all context operations, kicking uploads and ensuring ordering with
     // respect to other contexts.

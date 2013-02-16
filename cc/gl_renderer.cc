@@ -1402,6 +1402,7 @@ void GLRenderer::enforceMemoryPolicy()
         releaseRenderPassTextures();
         if (m_discardBackbufferWhenNotVisible)
             discardBackbuffer();
+        m_resourceProvider->releaseCachedData();
         GLC(m_context, m_context->flush());
     }
 }

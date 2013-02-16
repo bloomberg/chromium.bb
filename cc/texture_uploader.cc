@@ -196,6 +196,12 @@ void TextureUploader::flush() {
   m_numTextureUploadsSinceLastFlush = 0;
 }
 
+void TextureUploader::releaseCachedQueries()
+{
+  processQueries();
+  m_availableQueries.clear();
+}
+
 void TextureUploader::uploadWithTexSubImage(const uint8* image,
                                             const gfx::Rect& image_rect,
                                             const gfx::Rect& source_rect,

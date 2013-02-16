@@ -406,6 +406,14 @@ void ResourceProvider::flushUploads()
     m_textureUploader->flush();
 }
 
+void ResourceProvider::releaseCachedData()
+{
+    if (!m_textureUploader)
+        return;
+
+    m_textureUploader->releaseCachedQueries();
+}
+
 void ResourceProvider::flush()
 {
     DCHECK(m_threadChecker.CalledOnValidThread());
