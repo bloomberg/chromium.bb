@@ -9,8 +9,106 @@ found in the LICENSE file.
 -->
   <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="css/items.css">
+
+    <link rel="stylesheet" href="../../../../ui/webui/resources/css/chrome_shared.css">
+    <link rel="stylesheet" href="../../../../ui/webui/resources/css/trash.css">
+    <link rel="stylesheet" href="../uber/uber_shared.css">
+
+    <script src="js/main_scripts.js"></script>
   </head>
   <body>
-    Developer Environment!!
+    <h1 i18n-content="extensionSettingsAppsDevtool"></h1>
+    <div class="page" id="extension-settings">
+      <div id="developer-controls">
+        <button id="load-unpacked"
+            i18n-content="extensionSettingsLoadUnpackedButton"></button>
+        <button id="pack-item" disabled
+            i18n-content="extensionSettingsPackButton"></button>
+        <button id = "update-items-now"
+            i18n-content="extensionSettingsUpdateButton"></button>
+      </div>
+      <div id="search-container">
+        <input id="search" type="text" placeholder="type to search"
+            spellcheck="false">
+      </div>
+      <div id="items"></div>
+      <div id="extension-settings-list" class="empty-extension-list"></div>
+      <div id="no-extensions">
+        <span id="no-extensions-message"
+            i18n-content="extensionSettingsNoExtensions"></span>
+      </div>
+    </div>
+    <div id="template-collection" hidden>
+      <div class="extension-list-item-wrapper">
+        <div class="extension-list-item">
+          <div class="extension-details">
+            <div>
+              <span class="extension-title"></span>
+              <span class="extension-version"></span>
+              <span class="extension-disable-reason"></span>
+            </div>
+            <p class="extension-description">
+              <span></span>
+              <a class="site-link" target="_blank"></a>
+            </p>
+            <div class="item-id">
+              <span i18n-content="extensionSettingsExtensionId"></span>
+              <span class="extension-id"></span>
+            </div>
+            <div class="load-path" hidden>
+              <span i18n-content="extensionSettingsExtensionPath"></span>
+              <span></span>
+            </div>
+            <div class="managed-message"
+                i18n-content="extensionSettingsPolicyControlled" hidden>
+            </div>
+            <div class="active-views" hidden>
+              <span i18n-content="extensionSettingsInspectViews"></span>
+              <a href="#"></a>
+            </div>
+            <div class="extension-warnings" hidden>
+              <span i18n-content="extensionSettingsInstallWarnings"></span>
+            </div>
+            <div class="install-warnings" hidden>
+              <span i18n-content="extensionSettingsWarningsTitle"></span>
+              <ul></ul>
+            </div>
+            <div class="optional-controls">
+              <button class="show-button"
+                  i18n-content="extensionSettingsShowButton" hidden></button>
+              <span class="optional-control-disableable">
+                <label class="file-access-control" hidden>
+                  <input type="checkbox">
+                    <span i18n-content="extensionSettingsAllowFileAccess">
+                    </span>
+                </label>
+                <a class="options-link" i18n-content="extensionSettingsOptions"
+                    href="#" target="_blank" hidden></a>
+                <a class="reload-link" href="#"
+                    i18n-content="extensionSettingsReloadUnpacked" hidden></a>
+              </span>
+            </div>
+          </div>
+          <div class="enable-controls">
+            <a class="terminated-reload-link" href="#"
+                i18n-content="extensionSettingsReloadTerminated" hidden></a>
+            <div class="checkbox enable-checkbox" hidden>
+              <label>
+                <input type="checkbox">
+                <span class="enable-checkbox-text">
+                  <span class="enabled-text"
+                      i18n-content="extensionSettingsEnabled"></span>
+                  <span class="enable-text"
+                      i18n-content="extensionSettingsEnable"></span>
+                </span>
+              </label>
+              <span class="location-text"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <include src="../../../../ui/webui/resources/html/trash.html">
+    </div>
   </body>
 </html>

@@ -576,6 +576,7 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("extensionSettings", IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
 
   SET_STRING("extensionSettingsNoExtensions", IDS_EXTENSIONS_NONE_INSTALLED);
+  SET_STRING("extensionSettingsAppsDevtool", IDS_EXTENSIONS_APPS_DEVTOOL);
   SET_STRING("extensionSettingsGetMoreExtensions", IDS_GET_MORE_EXTENSIONS);
   SET_STRING("extensionSettingsExtensionId", IDS_EXTENSIONS_ID);
   SET_STRING("extensionSettingsExtensionPath", IDS_EXTENSIONS_PATH);

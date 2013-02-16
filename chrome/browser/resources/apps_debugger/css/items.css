@@ -1,0 +1,180 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body,
+html {
+  overflow: visible;
+}
+
+/* Contents */
+
+#extension-settings {
+  max-width: 738px;
+}
+
+#no-extensions-message {
+  font-weight: bold;
+}
+
+.empty-extension-list {
+  height: 3em;
+}
+
+#developer-controls {
+  margin: 5px;
+}
+
+#search-container {
+  margin: 5px;
+}
+
+#no-extensions {
+  margin: 10px 10px;
+}
+
+.loading #no-extensions,
+#extension-settings-list:not(.empty-extension-list) ~ #no-extensions,
+.empty-extension-list {
+  display: none;
+}
+
+.extension-list-item-wrapper {
+  margin: 23px 0;
+}
+
+.extension-list-item {
+  /* Set in ItemsList.createNode_() */
+  background-repeat: no-repeat;
+  display: -webkit-box;
+  min-height: 4em;
+}
+
+html[dir='rtl'] .extension-list-item {
+  background-position: right;
+}
+
+.extension-title {
+  -webkit-padding-end: 20px;
+  color: rgb(48, 57, 66);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/**
+ * extension-title should be unhighlighted as the parent when the extension is
+ * inactive.
+ */
+.inactive-extension .extension-title {
+  color: inherit;
+}
+
+.extension-version {
+  -webkit-padding-end: 7px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.extension-description {
+  -webkit-padding-end: 5px;
+  font-size: 13px;
+  margin: 5px 0;
+  white-space: normal;
+}
+
+.extension-details {
+  -webkit-box-flex: 1;
+  -webkit-padding-start: 55px;
+}
+
+.extension-description,
+.extension-list-item-wrapper.inactive-extension .extension-details,
+.location-text,
+.enable-checkbox input:disabled + .enable-checkbox-text {
+  color: rgb(151, 156, 160);
+}
+
+.active-views {
+  margin: 4px;
+}
+
+.enable-controls {
+  /* Matches right: position of dev controls toggle. */
+  -webkit-margin-end: 20px;
+  position: relative;
+}
+
+.enable-checkbox-text {
+  /* Matches width of trash. */
+  -webkit-margin-end: 30px;
+}
+
+.checkbox {
+  display: inline-block;
+}
+
+.enabled-text {
+  font-weight: bold;
+}
+
+.extension-list-item-wrapper.inactive-extension .enabled-text,
+.extension-list-item-wrapper:not(.inactive-extension) .enable-text,
+.extension-list-item-wrapper.inactive-extension .optional-controls {
+  display: none;
+}
+
+.load-path > span {
+  word-wrap: break-word;
+}
+
+.terminated-reload-link {
+  -webkit-margin-end: 2.5em;
+  padding-top: 7px;
+}
+
+.extension-list-item a {
+  -webkit-margin-start: 0.5em;
+  display: inline-block;
+}
+
+.install-warnings a {
+  -webkit-margin-start: 0;
+}
+
+/* Trash */
+
+#extension-settings .trash {
+  -webkit-transition: opacity 200ms;
+  height: 22px;
+  opacity: 0.8;
+  position: absolute;
+  right: 0;
+  top: 3px;
+  vertical-align: middle;
+}
+
+html[dir='rtl'] #extension-settings .trash {
+  left: 0;
+  right: auto;
+}
+
+.extension-list-item:not(:hover) .trash:not(:focus) {
+  opacity: 0;
+}
+
+.extension-list-item-wrapper.may-not-disable .trash {
+  visibility: hidden;
+}
+
+.may-not-disable .optional-controls .optional-controls-disableable {
+  display: none;
+}
+
+a {
+  color: rgb(17, 85, 204);
+  text-decoration: underline;
+}
+
+a:active {
+  color: rgb(5, 37, 119);
+}

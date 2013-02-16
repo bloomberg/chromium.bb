@@ -109,6 +109,7 @@
       </if>
       <include name="IDR_APPS_DEBUGGER_MAIN" file="apps_debugger/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_APPS_DEBUGGER_BACKGROUND_JS" file="apps_debugger/background.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_APPS_DEBUGGER_MAIN_JS" file="apps_debugger/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_APPS_DEBUGGER_ICON_128" file="apps_debugger/images/dev-icon-128.png" flattenhtml="true" type="BINDATA" />
       <include name="IDR_APPS_DEBUGGER_ICON_16" file="apps_debugger/images/dev-icon-16.png" flattenhtml="true" type="BINDATA" />
 
