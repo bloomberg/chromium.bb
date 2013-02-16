@@ -181,6 +181,7 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_new_(false),
       is_current_user_ephemeral_regular_user_(false),
       ephemeral_users_enabled_(false),
+      merge_session_state_(MERGE_STATUS_NOT_STARTED),
       observed_sync_service_(NULL),
       user_image_manager_(new UserImageManagerImpl) {
   // UserManager instance should be used only on UI thread.
@@ -725,6 +726,19 @@ bool UserManagerImpl::IsSessionStarted() const {
   return session_started_;
 }
 
+UserManager::MergeSessionState UserManagerImpl::GetMergeSessionState() const {
+  return merge_session_state_;
+}
+
+void UserManagerImpl::SetMergeSessionState(
+    UserManager::MergeSessionState state) {
+  if (merge_session_state_ == state)
+    return;
+
+  merge_session_state_ = state;
+  NotifyMergeSessionStateChanged();
+}
+
 bool UserManagerImpl::HasBrowserRestarted() const {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return base::chromeos::IsRunningOnChromeOS() &&
@@ -1085,6 +1099,12 @@ void UserManagerImpl::NotifyUserListChanged() {
       chrome::NOTIFICATION_USER_LIST_CHANGED,
       content::Source<UserManager>(this),
       content::NotificationService::NoDetails());
+}
+
+void UserManagerImpl::NotifyMergeSessionStateChanged() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(UserManager::Observer, observer_list_,
+                    MergeSessionStateChanged(merge_session_state_));
 }
 
 }  // namespace chromeos

@@ -66,6 +66,8 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(RemoveObserver, void(UserManager::Observer*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
   MOCK_METHOD0(CreateLocallyManagedUserRecord, void(void));
+  MOCK_CONST_METHOD0(GetMergeSessionState, MergeSessionState(void));
+  MOCK_METHOD1(SetMergeSessionState, void(MergeSessionState));
 
   // You can't mock this function easily because nobody can create User objects
   // but the UserManagerImpl and us.

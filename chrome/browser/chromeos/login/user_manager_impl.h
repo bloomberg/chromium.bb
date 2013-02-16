@@ -90,6 +90,8 @@ class UserManagerImpl
   virtual bool IsLoggedInAsLocallyManagedUser() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
+  virtual MergeSessionState GetMergeSessionState() const OVERRIDE;
+  virtual void SetMergeSessionState(MergeSessionState status) OVERRIDE;
   virtual bool HasBrowserRestarted() const OVERRIDE;
   virtual bool IsUserNonCryptohomeDataEphemeral(
       const std::string& email) const OVERRIDE;
@@ -171,6 +173,9 @@ class UserManagerImpl
   // Notifies the UI about a change to the user list.
   void NotifyUserListChanged();
 
+  // Notifies observers that merge session state had changed.
+  void NotifyMergeSessionStateChanged();
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 
@@ -214,8 +219,8 @@ class UserManagerImpl
   // policy yet.
   bool ephemeral_users_enabled_;
 
-  // True if user pod row is showed at login screen.
-  bool show_users_;
+  // Merge session state (cookie restore process state).
+  MergeSessionState merge_session_state_;
 
   // Cached name of device owner. Defaults to empty string if the value has not
   // been read from trusted device policy yet.
