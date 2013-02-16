@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,6 +8,11 @@
 # NDK/SDK: ". build/android/envsetup.sh".  Environment variable
 # ANDROID_SDK_BUILD=1 will then be defined and used in the rest of the setup to
 # specifiy build type.
+
+if [ "$_" == "$0" ]; then
+  echo "ERROR: envsetup must be sourced."
+  exit 1
+fi
 
 # Source functions script.  The file is in the same directory as this script.
 . "$(dirname $BASH_SOURCE)"/envsetup_functions.sh
