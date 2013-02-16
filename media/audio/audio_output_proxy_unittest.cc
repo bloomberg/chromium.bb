@@ -616,10 +616,40 @@ TEST_F(AudioOutputResamplerTest, LowLatencyOpenFailedFallback) {
 }
 
 // Simulate failures to open both the low latency and the fallback high latency
-// stream and ensure AudioOutputResampler terminates normally.
-TEST_F(AudioOutputResamplerTest, LowLatencyFallbackFailed) {
+// stream and ensure AudioOutputResampler falls back to a fake stream.
+TEST_F(AudioOutputResamplerTest, HighLatencyFallbackFailed) {
+  MockAudioOutputStream okay_stream(&manager_, params_);
+
   EXPECT_CALL(manager(), MakeAudioOutputStream(_))
       .Times(2)
+      .WillRepeatedly(Return(static_cast<AudioOutputStream*>(NULL)));
+
+  // To prevent shared memory issues the sample rate and buffer size should
+  // match the input stream parameters.
+  EXPECT_CALL(manager(), MakeAudioOutputStream(AllOf(
+      testing::Property(&AudioParameters::format, AudioParameters::AUDIO_FAKE),
+      testing::Property(&AudioParameters::sample_rate, params_.sample_rate()),
+      testing::Property(
+          &AudioParameters::frames_per_buffer, params_.frames_per_buffer()))))
+      .Times(1)
+      .WillOnce(Return(&okay_stream));
+  EXPECT_CALL(okay_stream, Open())
+      .WillOnce(Return(true));
+  EXPECT_CALL(okay_stream, Close())
+      .Times(1);
+
+  AudioOutputProxy* proxy = new AudioOutputProxy(resampler_);
+  EXPECT_TRUE(proxy->Open());
+  proxy->Close();
+  WaitForCloseTimer(kTestCloseDelayMs);
+}
+
+// Simulate failures to open both the low latency, the fallback high latency
+// stream, and the fake audio output stream and ensure AudioOutputResampler
+// terminates normally.
+TEST_F(AudioOutputResamplerTest, AllFallbackFailed) {
+  EXPECT_CALL(manager(), MakeAudioOutputStream(_))
+      .Times(3)
       .WillRepeatedly(Return(static_cast<AudioOutputStream*>(NULL)));
 
   AudioOutputProxy* proxy = new AudioOutputProxy(resampler_);

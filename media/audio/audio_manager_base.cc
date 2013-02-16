@@ -104,12 +104,6 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     return NULL;
   }
 
-  // If there are no audio output devices we should use a FakeAudioOutputStream
-  // to ensure video playback continues to work.
-  bool audio_output_disabled =
-      params.format() == AudioParameters::AUDIO_FAKE ||
-      !HasAudioOutputDevices();
-
   AudioOutputStream* stream = NULL;
   if (virtual_audio_input_stream_) {
 #if defined(OS_IOS)
@@ -122,7 +116,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
         base::Bind(&AudioManagerBase::ReleaseVirtualOutputStream,
                    base::Unretained(this)));
 #endif
-  } else if (audio_output_disabled) {
+  } else if (params.format() == AudioParameters::AUDIO_FAKE) {
     stream = FakeAudioOutputStream::MakeFakeStream(this, params);
   } else if (params.format() == AudioParameters::AUDIO_PCM_LINEAR) {
     stream = MakeLinearOutputStream(params);

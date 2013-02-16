@@ -188,7 +188,7 @@ bool AudioOutputResampler::OpenStream() {
 
   // If we've already tried to open the stream in high latency mode or we've
   // successfully opened a stream previously, there's nothing more to be done.
-  if (output_params_.format() == AudioParameters::AUDIO_PCM_LINEAR ||
+  if (output_params_.format() != AudioParameters::AUDIO_PCM_LOW_LATENCY ||
       streams_opened_ || !callbacks_.empty()) {
     return false;
   }
@@ -210,9 +210,26 @@ bool AudioOutputResampler::OpenStream() {
   RecordFallbackStats(output_params_);
   output_params_ = SetupFallbackParams(params_, output_params_);
   Initialize();
+  if (dispatcher_->OpenStream()) {
+    streams_opened_ = true;
+    return true;
+  }
 
-  // Retry, if this fails, there's nothing left to do but report the error back.
-  return dispatcher_->OpenStream();
+  DLOG(ERROR) << "Unable to open audio device in high latency mode.  Falling "
+              << "back to fake audio output.";
+
+  // Finally fall back to a fake audio output device.
+  output_params_.Reset(
+      AudioParameters::AUDIO_FAKE, params_.channel_layout(),
+      params_.input_channels(), params_.sample_rate(),
+      params_.bits_per_sample(), params_.frames_per_buffer());
+  Initialize();
+  if (dispatcher_->OpenStream()) {
+    streams_opened_ = true;
+    return true;
+  }
+
+  return false;
 }
 
 bool AudioOutputResampler::StartStream(
