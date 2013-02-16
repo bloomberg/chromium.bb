@@ -2028,6 +2028,8 @@
         'browser/ui/webui/options/chromeos/internet_options_handler.h',
         'browser/ui/webui/options/chromeos/keyboard_handler.cc',
         'browser/ui/webui/options/chromeos/keyboard_handler.h',
+        'browser/ui/webui/options/chromeos/kiosk_apps_handler.cc',
+        'browser/ui/webui/options/chromeos/kiosk_apps_handler.h',
         'browser/ui/webui/options/chromeos/language_chewing_handler.cc',
         'browser/ui/webui/options/chromeos/language_chewing_handler.h',
         'browser/ui/webui/options/chromeos/language_hangul_handler.cc',

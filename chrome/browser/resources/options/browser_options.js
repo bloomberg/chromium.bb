@@ -438,6 +438,17 @@ cr.define('options', function() {
           OptionsPage.navigateToPage('factoryResetData');
         };
       }
+
+      // Kiosk section (CrOS only).
+      if (cr.isChromeOS) {
+        if (loadTimeData.getBoolean('enableKioskSection')) {
+          $('kiosk-section').hidden = false;
+
+          $('manage-kiosk-apps-button').onclick = function(event) {
+            OptionsPage.navigateToPage('kioskAppsOverlay');
+          };
+        }
+      }
     },
 
     /** @override */
@@ -1337,7 +1348,6 @@ cr.define('options', function() {
           $('bluetooth-paired-devices-list').deleteItemAtIndex(index);
       }
     }
-
   };
 
   //Forward public APIs to private implementations.

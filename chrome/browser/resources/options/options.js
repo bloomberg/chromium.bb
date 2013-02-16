@@ -191,6 +191,9 @@ function load() {
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('keyboard-settings-button')]);
+    OptionsPage.registerOverlay(KioskAppsOverlay.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('manage-kiosk-apps-button')]);
     OptionsPage.registerOverlay(PointerOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('pointer-settings-button')]);
