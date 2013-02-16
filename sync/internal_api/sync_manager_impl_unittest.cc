@@ -99,7 +99,8 @@ namespace {
 const char kTestChromeVersion[] = "test chrome version";
 
 void ExpectInt64Value(int64 expected_value,
-                      const DictionaryValue& value, const std::string& key) {
+                      const base::DictionaryValue& value,
+                      const std::string& key) {
   std::string int64_str;
   EXPECT_TRUE(value.GetString(key, &int64_str));
   int64 val = 0;
@@ -108,7 +109,8 @@ void ExpectInt64Value(int64 expected_value,
 }
 
 void ExpectTimeValue(const base::Time& expected_value,
-                     const DictionaryValue& value, const std::string& key) {
+                     const base::DictionaryValue& value,
+                     const std::string& key) {
   std::string time_str;
   EXPECT_TRUE(value.GetString(key, &time_str));
   EXPECT_EQ(GetTimeDebugString(expected_value), time_str);
@@ -527,7 +529,7 @@ TEST_F(SyncApiTest, BaseNodeSetSpecificsPreservesUnknownFields) {
 
 namespace {
 
-void CheckNodeValue(const BaseNode& node, const DictionaryValue& value,
+void CheckNodeValue(const BaseNode& node, const base::DictionaryValue& value,
                     bool is_detailed) {
   ExpectInt64Value(node.GetId(), value, "id");
   {
@@ -559,11 +561,11 @@ void CheckNodeValue(const BaseNode& node, const DictionaryValue& value,
     ExpectInt64Value(node.GetSuccessorId(), value, "successorId");
     ExpectInt64Value(node.GetFirstChildId(), value, "firstChildId");
     {
-      scoped_ptr<DictionaryValue> expected_entry(
+      scoped_ptr<base::DictionaryValue> expected_entry(
           node.GetEntry()->ToValue(NULL));
-      const Value* entry = NULL;
+      const base::Value* entry = NULL;
       EXPECT_TRUE(value.Get("entry", &entry));
-      EXPECT_TRUE(Value::Equals(entry, expected_entry.get()));
+      EXPECT_TRUE(base::Value::Equals(entry, expected_entry.get()));
     }
     EXPECT_EQ(11u, value.size());
   } else {
@@ -577,7 +579,7 @@ TEST_F(SyncApiTest, BaseNodeGetSummaryAsValue) {
   ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
   ReadNode node(&trans);
   node.InitByRootLookup();
-  scoped_ptr<DictionaryValue> details(node.GetSummaryAsValue());
+  scoped_ptr<base::DictionaryValue> details(node.GetSummaryAsValue());
   if (details.get()) {
     CheckNodeValue(node, *details, false);
   } else {
@@ -589,7 +591,7 @@ TEST_F(SyncApiTest, BaseNodeGetDetailsAsValue) {
   ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
   ReadNode node(&trans);
   node.InitByRootLookup();
-  scoped_ptr<DictionaryValue> details(node.GetDetailsAsValue());
+  scoped_ptr<base::DictionaryValue> details(node.GetDetailsAsValue());
   if (details.get()) {
     CheckNodeValue(node, *details, true);
   } else {
@@ -1040,9 +1042,8 @@ TEST_F(SyncManagerTest, ProcessJsMessage) {
 
   StrictMock<MockJsReplyHandler> reply_handler;
 
-  ListValue disabled_args;
-  disabled_args.Append(
-      Value::CreateStringValue("TRANSIENT_INVALIDATION_ERROR"));
+  base::ListValue disabled_args;
+  disabled_args.Append(new base::StringValue("TRANSIENT_INVALIDATION_ERROR"));
 
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState",
@@ -1068,7 +1069,7 @@ TEST_F(SyncManagerTest, ProcessJsMessageGetRootNodeDetails) {
   SendJsMessage("getRootNodeDetails", kNoArgs, reply_handler.AsWeakHandle());
 
   EXPECT_EQ(1u, return_args.Get().GetSize());
-  const DictionaryValue* node_info = NULL;
+  const base::DictionaryValue* node_info = NULL;
   EXPECT_TRUE(return_args.Get().GetDictionary(0, &node_info));
   if (node_info) {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1085,11 +1086,11 @@ void CheckGetNodesByIdReturnArgs(SyncManager* sync_manager,
                                  int64 id,
                                  bool is_detailed) {
   EXPECT_EQ(1u, return_args.Get().GetSize());
-  const ListValue* nodes = NULL;
+  const base::ListValue* nodes = NULL;
   ASSERT_TRUE(return_args.Get().GetList(0, &nodes));
   ASSERT_TRUE(nodes);
   EXPECT_EQ(1u, nodes->GetSize());
-  const DictionaryValue* node_info = NULL;
+  const base::DictionaryValue* node_info = NULL;
   EXPECT_TRUE(nodes->GetDictionary(0, &node_info));
   ASSERT_TRUE(node_info);
   ReadTransaction trans(FROM_HERE, sync_manager->GetUserShare());
@@ -1125,10 +1126,10 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
         .Times(arraysize(ids)).WillRepeatedly(SaveArg<1>(&return_args));
 
     for (size_t i = 0; i < arraysize(ids); ++i) {
-      ListValue args;
-      ListValue* id_values = new ListValue();
+      base::ListValue args;
+      base::ListValue* id_values = new base::ListValue();
       args.Append(id_values);
-      id_values->Append(Value::CreateStringValue(base::Int64ToString(ids[i])));
+      id_values->Append(new base::StringValue(base::Int64ToString(ids[i])));
       SendJsMessage(message_name,
                     JsArgList(&args), reply_handler.AsWeakHandle());
 
@@ -1140,8 +1141,8 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
   void RunGetNodesByIdFailureTest(const char* message_name) {
     StrictMock<MockJsReplyHandler> reply_handler;
 
-    ListValue empty_list_args;
-    empty_list_args.Append(new ListValue());
+    base::ListValue empty_list_args;
+    empty_list_args.Append(new base::ListValue());
 
     EXPECT_CALL(reply_handler,
                 HandleJsReply(message_name,
@@ -1149,50 +1150,50 @@ class SyncManagerGetNodesByIdTest : public SyncManagerTest {
         .Times(6);
 
     {
-      ListValue args;
+      base::ListValue args;
       SendJsMessage(message_name,
                     JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
-      ListValue args;
-      args.Append(new ListValue());
+      base::ListValue args;
+      args.Append(new base::ListValue());
       SendJsMessage(message_name,
                     JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
-      ListValue args;
-      ListValue* ids = new ListValue();
+      base::ListValue args;
+      base::ListValue* ids = new base::ListValue();
       args.Append(ids);
-      ids->Append(Value::CreateStringValue(""));
+      ids->Append(new base::StringValue(""));
       SendJsMessage(message_name,
                     JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
-      ListValue args;
-      ListValue* ids = new ListValue();
+      base::ListValue args;
+      base::ListValue* ids = new base::ListValue();
       args.Append(ids);
-      ids->Append(Value::CreateStringValue("nonsense"));
+      ids->Append(new base::StringValue("nonsense"));
       SendJsMessage(message_name,
                     JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
-      ListValue args;
-      ListValue* ids = new ListValue();
+      base::ListValue args;
+      base::ListValue* ids = new base::ListValue();
       args.Append(ids);
-      ids->Append(Value::CreateStringValue("0"));
+      ids->Append(new base::StringValue("0"));
       SendJsMessage(message_name,
                     JsArgList(&args), reply_handler.AsWeakHandle());
     }
 
     {
-      ListValue args;
-      ListValue* ids = new ListValue();
+      base::ListValue args;
+      base::ListValue* ids = new base::ListValue();
       args.Append(ids);
-      ids->Append(Value::CreateStringValue("9999"));
+      ids->Append(new base::StringValue("9999"));
       SendJsMessage(message_name,
                     JsArgList(&args), reply_handler.AsWeakHandle());
     }
@@ -1225,14 +1226,14 @@ TEST_F(SyncManagerTest, GetChildNodeIds) {
       .Times(1).WillRepeatedly(SaveArg<1>(&return_args));
 
   {
-    ListValue args;
-    args.Append(Value::CreateStringValue("1"));
+    base::ListValue args;
+    args.Append(new base::StringValue("1"));
     SendJsMessage("getChildNodeIds",
                   JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   EXPECT_EQ(1u, return_args.Get().GetSize());
-  const ListValue* nodes = NULL;
+  const base::ListValue* nodes = NULL;
   ASSERT_TRUE(return_args.Get().GetList(0, &nodes));
   ASSERT_TRUE(nodes);
   EXPECT_EQ(9u, nodes->GetSize());
@@ -1241,8 +1242,8 @@ TEST_F(SyncManagerTest, GetChildNodeIds) {
 TEST_F(SyncManagerTest, GetChildNodeIdsFailure) {
   StrictMock<MockJsReplyHandler> reply_handler;
 
-  ListValue empty_list_args;
-  empty_list_args.Append(new ListValue());
+  base::ListValue empty_list_args;
+  empty_list_args.Append(new base::ListValue());
 
   EXPECT_CALL(reply_handler,
               HandleJsReply("getChildNodeIds",
@@ -1250,35 +1251,35 @@ TEST_F(SyncManagerTest, GetChildNodeIdsFailure) {
       .Times(5);
 
   {
-    ListValue args;
+    base::ListValue args;
     SendJsMessage("getChildNodeIds",
                    JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   {
-    ListValue args;
-    args.Append(Value::CreateStringValue(""));
+    base::ListValue args;
+    args.Append(new base::StringValue(""));
     SendJsMessage("getChildNodeIds",
                   JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   {
-    ListValue args;
-    args.Append(Value::CreateStringValue("nonsense"));
+    base::ListValue args;
+    args.Append(new base::StringValue("nonsense"));
     SendJsMessage("getChildNodeIds",
                   JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   {
-    ListValue args;
-    args.Append(Value::CreateStringValue("0"));
+    base::ListValue args;
+    args.Append(new base::StringValue("0"));
     SendJsMessage("getChildNodeIds",
                   JsArgList(&args), reply_handler.AsWeakHandle());
   }
 
   {
-    ListValue args;
-    args.Append(Value::CreateStringValue("9999"));
+    base::ListValue args;
+    args.Append(new base::StringValue("9999"));
     SendJsMessage("getChildNodeIds",
                   JsArgList(&args), reply_handler.AsWeakHandle());
   }
@@ -1293,7 +1294,7 @@ TEST_F(SyncManagerTest, GetAllNodesTest) {
       .Times(1).WillRepeatedly(SaveArg<1>(&return_args));
 
   {
-    ListValue args;
+    base::ListValue args;
     SendJsMessage("getAllNodes",
                   JsArgList(&args), reply_handler.AsWeakHandle());
   }
@@ -1306,8 +1307,8 @@ TEST_F(SyncManagerTest, GetAllNodesTest) {
   // would make this test brittle without greatly increasing our chances of
   // catching real bugs.
 
-  const ListValue* node_list;
-  const DictionaryValue* first_result;
+  const base::ListValue* node_list;
+  const base::DictionaryValue* first_result;
 
   // The resulting argument list should have one argument, a list of nodes.
   ASSERT_EQ(1U, return_args.Get().GetSize());
@@ -1330,14 +1331,14 @@ TEST_F(SyncManagerTest, GetAllNodesTest) {
 TEST_F(SyncManagerTest, OnInvalidatorStateChangeJsEvents) {
   StrictMock<MockJsEventHandler> event_handler;
 
-  DictionaryValue enabled_details;
+  base::DictionaryValue enabled_details;
   enabled_details.SetString("state", "INVALIDATIONS_ENABLED");
-  DictionaryValue credentials_rejected_details;
+  base::DictionaryValue credentials_rejected_details;
   credentials_rejected_details.SetString(
       "state", "INVALIDATION_CREDENTIALS_REJECTED");
-  DictionaryValue transient_error_details;
+  base::DictionaryValue transient_error_details;
   transient_error_details.SetString("state", "TRANSIENT_INVALIDATION_ERROR");
-  DictionaryValue auth_error_details;
+  base::DictionaryValue auth_error_details;
   auth_error_details.SetString("status", "CONNECTION_AUTH_ERROR");
 
   EXPECT_CALL(manager_observer_,
@@ -1404,15 +1405,15 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
 
   // Build expected_args to have a single argument with the string
   // equivalents of model_types.
-  DictionaryValue expected_details;
+  base::DictionaryValue expected_details;
   {
-    ListValue* model_type_list = new ListValue();
+    base::ListValue* model_type_list = new base::ListValue();
     expected_details.SetString("source", "REMOTE_INVALIDATION");
     expected_details.Set("changedTypes", model_type_list);
     for (ModelTypeSet::Iterator it = model_types.First();
          it.Good(); it.Inc()) {
       model_type_list->Append(
-          Value::CreateStringValue(ModelTypeToString(it.Get())));
+          new base::StringValue(ModelTypeToString(it.Get())));
     }
   }
 

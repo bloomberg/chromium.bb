@@ -43,7 +43,7 @@ namespace {
 // V should be convertible to Value.
 template <class T, class U, class V>
 void SetFieldValues(const EntryKernel& kernel,
-                    DictionaryValue* dictionary_value,
+                    base::DictionaryValue* dictionary_value,
                     const char* (*enum_key_fn)(T),
                     V* (*enum_value_fn)(U),
                     int field_key_min, int field_key_max) {
@@ -59,7 +59,7 @@ void SetFieldValues(const EntryKernel& kernel,
 void SetEncryptableProtoValues(
     const EntryKernel& kernel,
     Cryptographer* cryptographer,
-    DictionaryValue* dictionary_value,
+    base::DictionaryValue* dictionary_value,
     int field_key_min, int field_key_max) {
   DCHECK_LE(field_key_min, field_key_max);
   for (int i = field_key_min; i <= field_key_max; ++i) {
@@ -84,26 +84,35 @@ void SetEncryptableProtoValues(
 
 // Helper functions for SetFieldValues().
 
-StringValue* Int64ToValue(int64 i) {
-  return Value::CreateStringValue(base::Int64ToString(i));
+base::StringValue* Int64ToValue(int64 i) {
+  return new base::StringValue(base::Int64ToString(i));
 }
 
-StringValue* TimeToValue(const base::Time& t) {
-  return Value::CreateStringValue(GetTimeDebugString(t));
+base::StringValue* TimeToValue(const base::Time& t) {
+  return new base::StringValue(GetTimeDebugString(t));
 }
 
-StringValue* IdToValue(const Id& id) {
+base::StringValue* IdToValue(const Id& id) {
   return id.ToValue();
 }
 
-StringValue* OrdinalToValue(const NodeOrdinal& ord) {
-  return Value::CreateStringValue(ord.ToDebugString());
+base::StringValue* OrdinalToValue(const NodeOrdinal& ord) {
+  return new base::StringValue(ord.ToDebugString());
+}
+
+base::FundamentalValue* BooleanToValue(bool bool_val) {
+  return new base::FundamentalValue(bool_val);
+}
+
+base::StringValue* StringToValue(const std::string& str) {
+  return new base::StringValue(str);
 }
 
 }  // namespace
 
-DictionaryValue* EntryKernel::ToValue(Cryptographer* cryptographer) const {
-  DictionaryValue* kernel_info = new DictionaryValue();
+base::DictionaryValue* EntryKernel::ToValue(
+    Cryptographer* cryptographer) const {
+  base::DictionaryValue* kernel_info = new base::DictionaryValue();
   kernel_info->SetBoolean("isDirty", is_dirty());
   kernel_info->Set("serverModelType", ModelTypeToValue(GetServerModelType()));
 
@@ -130,22 +139,20 @@ DictionaryValue* EntryKernel::ToValue(Cryptographer* cryptographer) const {
 
   // Bit fields.
   SetFieldValues(*this, kernel_info,
-                 &GetIndexedBitFieldString, &Value::CreateBooleanValue,
+                 &GetIndexedBitFieldString, &BooleanToValue,
                  BIT_FIELDS_BEGIN, INDEXED_BIT_FIELDS_END - 1);
   SetFieldValues(*this, kernel_info,
-                 &GetIsDelFieldString, &Value::CreateBooleanValue,
+                 &GetIsDelFieldString, &BooleanToValue,
                  INDEXED_BIT_FIELDS_END, IS_DEL);
   SetFieldValues(*this, kernel_info,
-                 &GetBitFieldString, &Value::CreateBooleanValue,
+                 &GetBitFieldString, &BooleanToValue,
                  IS_DEL + 1, BIT_FIELDS_END - 1);
 
   // String fields.
   {
     // Pick out the function overload we want.
-    StringValue* (*string_to_value)(const std::string&) =
-        &Value::CreateStringValue;
     SetFieldValues(*this, kernel_info,
-                   &GetStringFieldString, string_to_value,
+                   &GetStringFieldString, &StringToValue,
                    STRING_FIELDS_BEGIN, STRING_FIELDS_END - 1);
   }
 
@@ -160,15 +167,15 @@ DictionaryValue* EntryKernel::ToValue(Cryptographer* cryptographer) const {
 
   // Bit temps.
   SetFieldValues(*this, kernel_info,
-                 &GetBitTempString, &Value::CreateBooleanValue,
+                 &GetBitTempString, &BooleanToValue,
                  BIT_TEMPS_BEGIN, BIT_TEMPS_END - 1);
 
   return kernel_info;
 }
 
-ListValue* EntryKernelMutationMapToValue(
+base::ListValue* EntryKernelMutationMapToValue(
     const EntryKernelMutationMap& mutations) {
-  ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
   for (EntryKernelMutationMap::const_iterator it = mutations.begin();
        it != mutations.end(); ++it) {
     list->Append(EntryKernelMutationToValue(it->second));
@@ -176,9 +183,9 @@ ListValue* EntryKernelMutationMapToValue(
   return list;
 }
 
-DictionaryValue* EntryKernelMutationToValue(
+base::DictionaryValue* EntryKernelMutationToValue(
     const EntryKernelMutation& mutation) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("original", mutation.original.ToValue(NULL));
   dict->Set("mutated", mutation.mutated.ToValue(NULL));
   return dict;

@@ -50,14 +50,14 @@ void JsMutationEventObserver::OnChangesApplied(
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.SetString("modelType", ModelTypeToString(model_type));
   details.SetString("writeTransactionId",
                     base::Int64ToString(write_transaction_id));
   base::Value* changes_value = NULL;
   const size_t changes_size = changes.Get().size();
   if (changes_size <= kChangeLimit) {
-    ListValue* changes_list = new ListValue();
+    base::ListValue* changes_list = new base::ListValue();
     for (ChangeRecordList::const_iterator it =
              changes.Get().begin(); it != changes.Get().end(); ++it) {
       changes_list->Append(it->ToValue());
@@ -65,7 +65,7 @@ void JsMutationEventObserver::OnChangesApplied(
     changes_value = changes_list;
   } else {
     changes_value =
-        Value::CreateStringValue(
+        new base::StringValue(
             base::Uint64ToString(static_cast<uint64>(changes_size)) +
             " changes");
   }
@@ -77,7 +77,7 @@ void JsMutationEventObserver::OnChangesComplete(ModelType model_type) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.SetString("modelType", ModelTypeToString(model_type));
   HandleJsEvent(FROM_HERE, "onChangesComplete", JsEventDetails(&details));
 }
@@ -89,7 +89,7 @@ void JsMutationEventObserver::OnTransactionWrite(
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.Set("writeTransactionInfo",
               write_transaction_info.Get().ToValue(kChangeLimit));
   details.Set("modelsWithChanges",

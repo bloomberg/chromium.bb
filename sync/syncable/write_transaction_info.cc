@@ -26,17 +26,17 @@ WriteTransactionInfo::~WriteTransactionInfo() {}
 
 base::DictionaryValue* WriteTransactionInfo::ToValue(
     size_t max_mutations_size) const {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("id", base::Int64ToString(id));
   dict->SetString("location", location_string);
   dict->SetString("writer", WriterTagToString(writer));
-  Value* mutations_value = NULL;
+  base::Value* mutations_value = NULL;
   const size_t mutations_size = mutations.Get().size();
   if (mutations_size <= max_mutations_size) {
     mutations_value = EntryKernelMutationMapToValue(mutations.Get());
   } else {
     mutations_value =
-        Value::CreateStringValue(
+        new base::StringValue(
             base::Uint64ToString(static_cast<uint64>(mutations_size)) +
             " mutations");
   }

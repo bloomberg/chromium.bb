@@ -19,15 +19,15 @@ TEST_F(JsArgListTest, EmptyList) {
 }
 
 TEST_F(JsArgListTest, FromList) {
-  scoped_ptr<ListValue> list(new ListValue());
-  list->Append(Value::CreateBooleanValue(false));
-  list->Append(Value::CreateIntegerValue(5));
-  DictionaryValue* dict = new DictionaryValue();
+  scoped_ptr<base::ListValue> list(new base::ListValue());
+  list->Append(new base::FundamentalValue(false));
+  list->Append(new base::FundamentalValue(5));
+  base::DictionaryValue* dict = new base::DictionaryValue();
   list->Append(dict);
   dict->SetString("foo", "bar");
-  dict->Set("baz", new ListValue());
+  dict->Set("baz", new base::ListValue());
 
-  scoped_ptr<ListValue> list_copy(list->DeepCopy());
+  scoped_ptr<base::ListValue> list_copy(list->DeepCopy());
 
   JsArgList arg_list(list.get());
 

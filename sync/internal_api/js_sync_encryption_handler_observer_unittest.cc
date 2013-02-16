@@ -59,9 +59,9 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, NoArgNotifiations) {
 TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseRequired) {
   InSequence dummy;
 
-  DictionaryValue reason_passphrase_not_required_details;
-  DictionaryValue reason_encryption_details;
-  DictionaryValue reason_decryption_details;
+  base::DictionaryValue reason_passphrase_not_required_details;
+  base::DictionaryValue reason_encryption_details;
+  base::DictionaryValue reason_decryption_details;
 
   reason_passphrase_not_required_details.SetString(
       "reason",
@@ -95,7 +95,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseRequired) {
 }
 
 TEST_F(JsSyncEncryptionHandlerObserverTest, OnBootstrapTokenUpdated) {
-  DictionaryValue bootstrap_token_details;
+  base::DictionaryValue bootstrap_token_details;
   bootstrap_token_details.SetString("bootstrapToken", "<redacted>");
   bootstrap_token_details.SetString("type", "PASSPHRASE_BOOTSTRAP_TOKEN");
 
@@ -110,8 +110,8 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnBootstrapTokenUpdated) {
 }
 
 TEST_F(JsSyncEncryptionHandlerObserverTest, OnEncryptedTypesChanged) {
-  DictionaryValue expected_details;
-  ListValue* encrypted_type_values = new ListValue();
+  base::DictionaryValue expected_details;
+  base::ListValue* encrypted_type_values = new base::ListValue();
   const bool encrypt_everything = false;
   expected_details.Set("encryptedTypes", encrypted_type_values);
   expected_details.SetBoolean("encryptEverything", encrypt_everything);
@@ -120,7 +120,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnEncryptedTypesChanged) {
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType type = ModelTypeFromInt(i);
     encrypted_types.Put(type);
-    encrypted_type_values->Append(Value::CreateStringValue(
+    encrypted_type_values->Append(new base::StringValue(
         ModelTypeToString(type)));
   }
 
@@ -135,7 +135,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnEncryptedTypesChanged) {
 
 
 TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
-  DictionaryValue expected_details;
+  base::DictionaryValue expected_details;
   bool expected_ready = false;
   bool expected_pending = false;
   expected_details.SetBoolean("ready", expected_ready);
@@ -157,7 +157,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
 TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseTypeChanged) {
   InSequence dummy;
 
-  DictionaryValue passphrase_type_details;
+  base::DictionaryValue passphrase_type_details;
   passphrase_type_details.SetString("passphraseType", "IMPLICIT_PASSPHRASE");
   passphrase_type_details.SetInteger("explicitPassphraseTime", 10);
   EXPECT_CALL(mock_js_event_handler_,

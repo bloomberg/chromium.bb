@@ -214,8 +214,8 @@ SyncManagerImpl::~SyncManagerImpl() {
 SyncManagerImpl::NotificationInfo::NotificationInfo() : total_count(0) {}
 SyncManagerImpl::NotificationInfo::~NotificationInfo() {}
 
-DictionaryValue* SyncManagerImpl::NotificationInfo::ToValue() const {
-  DictionaryValue* value = new DictionaryValue();
+base::DictionaryValue* SyncManagerImpl::NotificationInfo::ToValue() const {
+  base::DictionaryValue* value = new base::DictionaryValue();
   value->SetInteger("totalCount", total_count);
   value->SetString("payload", payload);
   return value;
@@ -289,7 +289,6 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
 
     if (marker.token().empty())
       result.Put(i.Get());
-
   }
   return result;
 }
@@ -327,7 +326,6 @@ void SyncManagerImpl::ConfigureSyncer(
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE);
   if (!scheduler_->ScheduleConfiguration(params))
     retry_task.Run();
-
 }
 
 void SyncManagerImpl::Init(
@@ -1006,7 +1004,6 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
             event.snapshot.model_neutral_state().sync_protocol_error));
     return;
   }
-
 }
 
 void SyncManagerImpl::SetJsEventHandler(
@@ -1050,9 +1047,9 @@ void SyncManagerImpl::BindJsMessageHandler(
       base::Bind(unbound_message_handler, base::Unretained(this));
 }
 
-DictionaryValue* SyncManagerImpl::NotificationInfoToValue(
+base::DictionaryValue* SyncManagerImpl::NotificationInfoToValue(
     const NotificationInfoMap& notification_info) {
-  DictionaryValue* value = new DictionaryValue();
+  base::DictionaryValue* value = new base::DictionaryValue();
 
   for (NotificationInfoMap::const_iterator it = notification_info.begin();
       it != notification_info.end(); ++it) {
@@ -1065,7 +1062,7 @@ DictionaryValue* SyncManagerImpl::NotificationInfoToValue(
 
 std::string SyncManagerImpl::NotificationInfoToString(
     const NotificationInfoMap& notification_info) {
-  scoped_ptr<DictionaryValue> value(
+  scoped_ptr<base::DictionaryValue> value(
       NotificationInfoToValue(notification_info));
   std::string str;
   base::JSONWriter::Write(value.get(), &str);
@@ -1077,8 +1074,8 @@ JsArgList SyncManagerImpl::GetNotificationState(
   const std::string& notification_state =
       InvalidatorStateToString(invalidator_state_);
   DVLOG(1) << "GetNotificationState: " << notification_state;
-  ListValue return_args;
-  return_args.Append(Value::CreateStringValue(notification_state));
+  base::ListValue return_args;
+  return_args.Append(new base::StringValue(notification_state));
   return JsArgList(&return_args);
 }
 
@@ -1086,7 +1083,7 @@ JsArgList SyncManagerImpl::GetNotificationInfo(
     const JsArgList& args) {
   DVLOG(1) << "GetNotificationInfo: "
            << NotificationInfoToString(notification_info_map_);
-  ListValue return_args;
+  base::ListValue return_args;
   return_args.Append(NotificationInfoToValue(notification_info_map_));
   return JsArgList(&return_args);
 }
@@ -1096,15 +1093,15 @@ JsArgList SyncManagerImpl::GetRootNodeDetails(
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode root(&trans);
   root.InitByRootLookup();
-  ListValue return_args;
+  base::ListValue return_args;
   return_args.Append(root.GetDetailsAsValue());
   return JsArgList(&return_args);
 }
 
 JsArgList SyncManagerImpl::GetClientServerTraffic(
     const JsArgList& args) {
-  ListValue return_args;
-  ListValue* value = traffic_recorder_.ToValue();
+  base::ListValue return_args;
+  base::ListValue* value = traffic_recorder_.ToValue();
   if (value != NULL)
     return_args.Append(value);
   return JsArgList(&return_args);
@@ -1112,7 +1109,7 @@ JsArgList SyncManagerImpl::GetClientServerTraffic(
 
 namespace {
 
-int64 GetId(const ListValue& ids, int i) {
+int64 GetId(const base::ListValue& ids, int i) {
   std::string id_str;
   if (!ids.GetString(i, &id_str)) {
     return kInvalidId;
@@ -1124,14 +1121,15 @@ int64 GetId(const ListValue& ids, int i) {
   return id;
 }
 
-JsArgList GetNodeInfoById(const JsArgList& args,
-                          UserShare* user_share,
-                          DictionaryValue* (BaseNode::*info_getter)() const) {
+JsArgList GetNodeInfoById(
+    const JsArgList& args,
+    UserShare* user_share,
+    base::DictionaryValue* (BaseNode::*info_getter)() const) {
   CHECK(info_getter);
-  ListValue return_args;
-  ListValue* node_summaries = new ListValue();
+  base::ListValue return_args;
+  base::ListValue* node_summaries = new base::ListValue();
   return_args.Append(node_summaries);
-  const ListValue* id_list = NULL;
+  const base::ListValue* id_list = NULL;
   ReadTransaction trans(FROM_HERE, user_share);
   if (args.Get().GetList(0, &id_list)) {
     CHECK(id_list);
@@ -1161,8 +1159,8 @@ JsArgList SyncManagerImpl::GetNodeDetailsById(const JsArgList& args) {
 }
 
 JsArgList SyncManagerImpl::GetAllNodes(const JsArgList& args) {
-  ListValue return_args;
-  ListValue* result = new ListValue();
+  base::ListValue return_args;
+  base::ListValue* result = new base::ListValue();
   return_args.Append(result);
 
   ReadTransaction trans(FROM_HERE, GetUserShare());
@@ -1179,8 +1177,8 @@ JsArgList SyncManagerImpl::GetAllNodes(const JsArgList& args) {
 }
 
 JsArgList SyncManagerImpl::GetChildNodeIds(const JsArgList& args) {
-  ListValue return_args;
-  ListValue* child_ids = new ListValue();
+  base::ListValue return_args;
+  base::ListValue* child_ids = new base::ListValue();
   return_args.Append(child_ids);
   int64 id = GetId(args.Get(), 0);
   if (id != kInvalidId) {
@@ -1190,8 +1188,7 @@ JsArgList SyncManagerImpl::GetChildNodeIds(const JsArgList& args) {
                                                   id, &child_handles);
     for (syncable::Directory::ChildHandles::const_iterator it =
              child_handles.begin(); it != child_handles.end(); ++it) {
-      child_ids->Append(Value::CreateStringValue(
-          base::Int64ToString(*it)));
+      child_ids->Append(new base::StringValue(base::Int64ToString(*it)));
     }
   }
   return JsArgList(&return_args);
@@ -1225,7 +1222,7 @@ void SyncManagerImpl::OnInvalidatorStateChange(InvalidatorState state) {
   }
 
   if (js_event_handler_.IsInitialized()) {
-    DictionaryValue details;
+    base::DictionaryValue details;
     details.SetString("state", state_str);
     js_event_handler_.Call(FROM_HERE,
                            &JsEventHandler::HandleJsEvent,
@@ -1253,15 +1250,15 @@ void SyncManagerImpl::OnIncomingInvalidation(
   }
 
   if (js_event_handler_.IsInitialized()) {
-    DictionaryValue details;
-    ListValue* changed_types = new ListValue();
+    base::DictionaryValue details;
+    base::ListValue* changed_types = new base::ListValue();
     details.Set("changedTypes", changed_types);
     for (ModelTypeInvalidationMap::const_iterator it =
              type_invalidation_map.begin(); it != type_invalidation_map.end();
          ++it) {
       const std::string& model_type_str =
           ModelTypeToString(it->first);
-      changed_types->Append(Value::CreateStringValue(model_type_str));
+      changed_types->Append(new base::StringValue(model_type_str));
     }
     details.SetString("source", "REMOTE_INVALIDATION");
     js_event_handler_.Call(FROM_HERE,
@@ -1286,15 +1283,15 @@ void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   }
 
   if (js_event_handler_.IsInitialized()) {
-    DictionaryValue details;
-    ListValue* changed_types = new ListValue();
+    base::DictionaryValue details;
+    base::ListValue* changed_types = new base::ListValue();
     details.Set("changedTypes", changed_types);
     for (ModelTypeInvalidationMap::const_iterator it =
              type_invalidation_map.begin(); it != type_invalidation_map.end();
          ++it) {
       const std::string& model_type_str =
           ModelTypeToString(it->first);
-      changed_types->Append(Value::CreateStringValue(model_type_str));
+      changed_types->Append(new base::StringValue(model_type_str));
     }
     details.SetString("source", "LOCAL_INVALIDATION");
     js_event_handler_.Call(FROM_HERE,

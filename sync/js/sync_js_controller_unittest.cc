@@ -36,9 +36,9 @@ TEST_F(SyncJsControllerTest, Messages) {
   StrictMock<MockJsBackend> mock_backend;
   SyncJsController sync_js_controller;
 
-  ListValue arg_list1, arg_list2;
-  arg_list1.Append(Value::CreateBooleanValue(false));
-  arg_list2.Append(Value::CreateIntegerValue(5));
+  base::ListValue arg_list1, arg_list2;
+  arg_list1.Append(new base::FundamentalValue(false));
+  arg_list2.Append(new base::FundamentalValue(5));
   JsArgList args1(&arg_list1), args2(&arg_list2);
 
   // TODO(akalin): Write matchers for WeakHandle and use them here
@@ -62,9 +62,9 @@ TEST_F(SyncJsControllerTest, QueuedMessages) {
   StrictMock<MockJsBackend> mock_backend;
   SyncJsController sync_js_controller;
 
-  ListValue arg_list1, arg_list2;
-  arg_list1.Append(Value::CreateBooleanValue(false));
-  arg_list2.Append(Value::CreateIntegerValue(5));
+  base::ListValue arg_list1, arg_list2;
+  arg_list1.Append(new base::FundamentalValue(false));
+  arg_list2.Append(new base::FundamentalValue(5));
   JsArgList args1(&arg_list1), args2(&arg_list2);
 
   // Should queue messages.
@@ -98,7 +98,7 @@ TEST_F(SyncJsControllerTest, Events) {
   InSequence dummy;
   SyncJsController sync_js_controller;
 
-  DictionaryValue details_dict1, details_dict2;
+  base::DictionaryValue details_dict1, details_dict2;
   details_dict1.SetString("foo", "bar");
   details_dict2.SetInteger("baz", 5);
   JsEventDetails details1(&details_dict1), details2(&details_dict2);

@@ -407,24 +407,24 @@ const char* ModelTypeToString(ModelType model_type) {
   return "INVALID";
 }
 
-StringValue* ModelTypeToValue(ModelType model_type) {
+base::StringValue* ModelTypeToValue(ModelType model_type) {
   if (model_type >= FIRST_REAL_MODEL_TYPE) {
-    return Value::CreateStringValue(ModelTypeToString(model_type));
+    return new base::StringValue(ModelTypeToString(model_type));
   } else if (model_type == TOP_LEVEL_FOLDER) {
-    return Value::CreateStringValue("Top-level folder");
+    return new base::StringValue("Top-level folder");
   } else if (model_type == UNSPECIFIED) {
-    return Value::CreateStringValue("Unspecified");
+    return new base::StringValue("Unspecified");
   }
   NOTREACHED();
-  return Value::CreateStringValue("");
+  return new base::StringValue("");
 }
 
-ModelType ModelTypeFromValue(const Value& value) {
-  if (value.IsType(Value::TYPE_STRING)) {
+ModelType ModelTypeFromValue(const base::Value& value) {
+  if (value.IsType(base::Value::TYPE_STRING)) {
     std::string result;
     CHECK(value.GetAsString(&result));
     return ModelTypeFromString(result);
-  } else if (value.IsType(Value::TYPE_INTEGER)) {
+  } else if (value.IsType(base::Value::TYPE_INTEGER)) {
     int result;
     CHECK(value.GetAsInteger(&result));
     return ModelTypeFromInt(result);
@@ -495,17 +495,17 @@ std::string ModelTypeSetToString(ModelTypeSet model_types) {
 }
 
 base::ListValue* ModelTypeSetToValue(ModelTypeSet model_types) {
-  ListValue* value = new ListValue();
+  base::ListValue* value = new base::ListValue();
   for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
-    value->Append(
-        Value::CreateStringValue(ModelTypeToString(it.Get())));
+    value->Append(new base::StringValue(ModelTypeToString(it.Get())));
   }
   return value;
 }
 
 ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value) {
   ModelTypeSet result;
-  for (ListValue::const_iterator i = value.begin(); i != value.end(); ++i) {
+  for (base::ListValue::const_iterator i = value.begin();
+       i != value.end(); ++i) {
     result.Put(ModelTypeFromValue(**i));
   }
   return result;
@@ -721,7 +721,7 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     *model_type = SYNCED_NOTIFICATIONS;
     return true;
   } else if (notification_type == kDeviceInfoNotificationType) {
-    *model_type = DEVICE_INFO;;
+    *model_type = DEVICE_INFO;
     return true;
   } else if (notification_type == kExperimentsNotificationType) {
     *model_type = EXPERIMENTS;
