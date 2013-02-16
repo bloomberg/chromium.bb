@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
+#include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -139,6 +140,12 @@ void RegisterExtensionManifestHandlers() {
       extension_manifest_keys::kPageAction, page_action_handler);
   extensions::ManifestHandler::Register(
       extension_manifest_keys::kPageActions, page_action_handler);
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kContentSecurityPolicy,
+      make_linked_ptr(new extensions::CSPHandler(false))); // not platform app.
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kPlatformAppContentSecurityPolicy,
+      make_linked_ptr(new extensions::CSPHandler(true))); // platform app.
 }
 
 static void AppendParams(const std::vector<string16>& additional_names,

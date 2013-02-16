@@ -13,6 +13,7 @@
 #include "base/pickle.h"
 #include "base/shared_memory.h"
 #include "base/stringprintf.h"
+#include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -62,7 +63,7 @@ int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
         WebSecurityOrigin::create(extension->url()));
     frame->setIsolatedWorldContentSecurityPolicy(
         iter->second,
-        WebString::fromUTF8(extension->content_security_policy()));
+        WebString::fromUTF8(CSPInfo::GetContentSecurityPolicy(extension)));
     return iter->second;
   }
 
@@ -78,7 +79,7 @@ int UserScriptSlave::GetIsolatedWorldIdForExtension(const Extension* extension,
       WebSecurityOrigin::create(extension->url()));
   frame->setIsolatedWorldContentSecurityPolicy(
       new_id,
-      WebString::fromUTF8(extension->content_security_policy()));
+      WebString::fromUTF8(CSPInfo::GetContentSecurityPolicy(extension)));
   return new_id;
 }
 

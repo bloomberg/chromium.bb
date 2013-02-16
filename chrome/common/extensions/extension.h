@@ -577,11 +577,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Theme-related.
   bool is_theme() const;
 
-  // Content Security Policy!
-  const std::string& content_security_policy() const {
-    return content_security_policy_;
-  }
-
   // Content pack related.
   bool is_content_pack() const;
   ExtensionResource GetContentPackSiteList() const;
@@ -685,7 +680,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadSystemIndicator(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
   bool LoadIncognitoMode(string16* error);
-  bool LoadContentSecurityPolicy(string16* error);
   bool LoadManagedModeFeatures(string16* error);
   bool LoadManagedModeSites(
       const base::DictionaryValue* content_pack_value,
@@ -896,11 +890,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The flags that were passed to InitFromValue.
   int creation_flags_;
-
-  // The Content-Security-Policy for this extension.  Extensions can use
-  // Content-Security-Policies to mitigate cross-site scripting and other
-  // vulnerabilities.
-  std::string content_security_policy_;
 
   FRIEND_TEST_ALL_PREFIXES(::TabStripModelTest, Apps);
 

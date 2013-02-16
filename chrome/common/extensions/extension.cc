@@ -29,6 +29,7 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 #include "chrome/common/extensions/api/themes/theme_handler.h"
+#include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -68,7 +69,6 @@ namespace info_keys = extension_info_keys;
 
 using extensions::csp_validator::ContentSecurityPolicyIsLegal;
 using extensions::csp_validator::ContentSecurityPolicyIsSandboxed;
-using extensions::csp_validator::ContentSecurityPolicyIsSecure;
 
 namespace extensions {
 
@@ -89,28 +89,6 @@ const char kPublic[] = "PUBLIC";
 const char kPrivate[] = "PRIVATE";
 
 const int kRSAKeySize = 1024;
-
-const char kDefaultContentSecurityPolicy[] =
-    "script-src 'self' chrome-extension-resource:; object-src 'self'";
-
-#define PLATFORM_APP_LOCAL_CSP_SOURCES \
-    "'self' data: chrome-extension-resource:"
-const char kDefaultPlatformAppContentSecurityPolicy[] =
-    // Platform apps can only use local resources by default.
-    "default-src 'self' chrome-extension-resource:;"
-    // For remote resources, they can fetch them via XMLHttpRequest.
-    "connect-src *;"
-    // And serve them via data: or same-origin (blob:, filesystem:) URLs
-    "style-src " PLATFORM_APP_LOCAL_CSP_SOURCES " 'unsafe-inline';"
-    "img-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
-    "frame-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
-    "font-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
-    // Media can be loaded from remote resources since:
-    // 1. <video> and <audio> have good fallback behavior when offline or under
-    //    spotty connectivity.
-    // 2. Fetching via XHR and serving via blob: URLs currently does not allow
-    //    streaming or partial buffering.
-    "media-src *;";
 
 const char kDefaultSandboxedPageContentSecurityPolicy[] =
     "sandbox allow-scripts allow-forms allow-popups";
@@ -395,7 +373,8 @@ bool Extension::IsSandboxedPage(const std::string& relative_path) const {
 std::string Extension::GetResourceContentSecurityPolicy(
     const std::string& relative_path) const {
   return IsSandboxedPage(relative_path) ?
-      sandboxed_pages_content_security_policy_ : content_security_policy();
+      sandboxed_pages_content_security_policy_ :
+      CSPInfo::GetContentSecurityPolicy(this);
 }
 
 ExtensionResource Extension::GetResource(
@@ -2250,8 +2229,7 @@ bool Extension::LoadExtensionFeatures(string16* error) {
 
   if (!LoadContentScripts(error) ||
       !LoadSystemIndicator(error) ||
-      !LoadIncognitoMode(error) ||
-      !LoadContentSecurityPolicy(error))
+      !LoadIncognitoMode(error))
     return false;
 
   return true;
@@ -2331,39 +2309,6 @@ bool Extension::LoadIncognitoMode(string16* error) {
   } else {
     *error = ASCIIToUTF16(errors::kInvalidIncognitoBehavior);
     return false;
-  }
-  return true;
-}
-
-bool Extension::LoadContentSecurityPolicy(string16* error) {
-  const std::string& key = is_platform_app() ?
-      keys::kPlatformAppContentSecurityPolicy : keys::kContentSecurityPolicy;
-
-  if (manifest_->HasPath(key)) {
-    std::string content_security_policy;
-    if (!manifest_->GetString(key, &content_security_policy)) {
-      *error = ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
-      return false;
-    }
-    if (!ContentSecurityPolicyIsLegal(content_security_policy)) {
-      *error = ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
-      return false;
-    }
-    if (manifest_version_ >= 2 &&
-        !ContentSecurityPolicyIsSecure(content_security_policy, GetType())) {
-      *error = ASCIIToUTF16(errors::kInsecureContentSecurityPolicy);
-      return false;
-    }
-
-    content_security_policy_ = content_security_policy;
-  } else if (manifest_version_ >= 2) {
-    // Manifest version 2 introduced a default Content-Security-Policy.
-    // TODO(abarth): Should we continue to let extensions override the
-    //               default Content-Security-Policy?
-    content_security_policy_ = is_platform_app() ?
-        kDefaultPlatformAppContentSecurityPolicy :
-        kDefaultContentSecurityPolicy;
-    CHECK(ContentSecurityPolicyIsSecure(content_security_policy_, GetType()));
   }
   return true;
 }

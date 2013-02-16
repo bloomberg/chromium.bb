@@ -184,6 +184,8 @@
         'common/extensions/api/themes/theme_handler.h',
         'common/extensions/command.cc',
         'common/extensions/command.h',
+        'common/extensions/csp_handler.cc',
+        'common/extensions/csp_handler.h',
         'common/extensions/csp_validator.cc',
         'common/extensions/csp_validator.h',
         'common/extensions/extension.cc',

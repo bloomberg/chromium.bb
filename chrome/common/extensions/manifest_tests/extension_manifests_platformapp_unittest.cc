@@ -2,18 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
 
-TEST_F(ExtensionManifestTest, PlatformApps) {
+class PlatformAppsManifestTest : public ExtensionManifestTest {
+  virtual void SetUp() OVERRIDE {
+    ExtensionManifestTest::SetUp();
+    extensions::ManifestHandler::Register(
+        extension_manifest_keys::kPlatformAppContentSecurityPolicy,
+        make_linked_ptr(new extensions::CSPHandler(true))); // platform app.
+  }
+};
+
+TEST_F(PlatformAppsManifestTest, PlatformApps) {
   scoped_refptr<extensions::Extension> extension =
       LoadAndExpectSuccess("init_valid_platform_app.json");
   EXPECT_TRUE(extension->is_storage_isolated());
@@ -54,7 +63,7 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
       warning_testcases, arraysize(warning_testcases), EXPECT_TYPE_WARNING);
 }
 
-TEST_F(ExtensionManifestTest, PlatformAppContentSecurityPolicy) {
+TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   // Normal platform apps can't specify a CSP value.
   Testcase warning_testcases[] = {
     Testcase(
@@ -89,7 +98,7 @@ TEST_F(ExtensionManifestTest, PlatformAppContentSecurityPolicy) {
       errors::kInsecureContentSecurityPolicy);
 }
 
-TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
+TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   // Put APIs here that should be restricted to platform apps, but that haven't
   // yet graduated from experimental.
   const char* kPlatformAppExperimentalApis[] = {
