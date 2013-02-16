@@ -76,6 +76,10 @@ class SURFACE_EXPORT AcceleratedPresenter
       const base::Callback<void(bool)>& callback);
   void Invalidate();
 
+  // Destroy any D3D resources owned by the given present thread. Called on
+  // the given present thread.
+  void ResetPresentThread(PresentThread* present_thread);
+
 #if defined(USE_AURA)
   // TODO(scottmg): This is a temporary hack until we have a two-worlds ash/aura
   // separation.
@@ -126,11 +130,6 @@ class SURFACE_EXPORT AcceleratedPresenter
 
   // The window that is presented to.
   gfx::PluginWindowHandle window_;
-
-  // The lock is taken while any thread is calling the object, except those that
-  // simply post from the main thread to the present thread via the immutable
-  // present_thread_ member.
-  base::Lock lock_;
 
   // UI thread can wait on this event to ensure a present is finished.
   base::WaitableEvent event_;

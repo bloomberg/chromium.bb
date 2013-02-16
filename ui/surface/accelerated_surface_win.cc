@@ -115,6 +115,11 @@ class PresentThread : public base::Thread,
 
   void InitDevice();
   void ResetDevice();
+  bool IsDeviceLost();
+
+  base::Lock* lock() {
+    return &lock_;
+  }
 
  protected:
   virtual void Init();
@@ -124,6 +129,10 @@ class PresentThread : public base::Thread,
   friend class base::RefCountedThreadSafe<PresentThread>;
 
   ~PresentThread();
+
+  // The lock is taken while any thread is calling an AcceleratedPresenter
+  // associated with this thread.
+  base::Lock lock_;
 
   base::ScopedNativeLibrary d3d_module_;
   base::win::ScopedComPtr<IDirect3DDevice9Ex> device_;
@@ -163,6 +172,11 @@ class AcceleratedPresenterMap {
   scoped_refptr<AcceleratedPresenter> GetPresenter(
       gfx::PluginWindowHandle window);
 
+
+  // Destroy any D3D resources owned by the given present thread. Called on
+  // the given present thread.
+  void ResetPresentThread(PresentThread* present_thread);
+
  private:
   base::Lock lock_;
   typedef std::map<gfx::PluginWindowHandle, AcceleratedPresenter*> PresenterMap;
@@ -191,10 +205,17 @@ void PresentThread::InitDevice() {
 void PresentThread::ResetDevice() {
   TRACE_EVENT0("gpu", "PresentThread::ResetDevice");
 
+  LOG(ERROR) << "Reseting D3D device";
+
+  // The D3D device must be created on the present thread.
+  CHECK(message_loop() == MessageLoop::current());
+
   // This will crash some Intel drivers but we can't render anything without
   // reseting the device, which would be disappointing.
   query_ = NULL;
   device_ = NULL;
+
+  g_accelerated_presenter_map.Pointer()->ResetPresentThread(this);
 
   if (!d3d_utils::CreateDevice(d3d_module_,
                                D3DDEVTYPE_HAL,
@@ -216,6 +237,11 @@ void PresentThread::ResetDevice() {
     device_ = NULL;
     return;
   }
+}
+
+bool PresentThread::IsDeviceLost() {
+  HRESULT hr = device_->CheckDeviceState(NULL);
+  return FAILED(hr) || hr == S_PRESENT_MODE_CHANGED;
 }
 
 void PresentThread::Init() {
@@ -296,6 +322,17 @@ scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::GetPresenter(
   return it->second;
 }
 
+void AcceleratedPresenterMap::ResetPresentThread(
+    PresentThread* present_thread) {
+  base::AutoLock locked(lock_);
+
+  for (PresenterMap::iterator it = presenters_.begin();
+      it != presenters_.end();
+      ++it) {
+    it->second->ResetPresentThread(present_thread);
+  }
+}
+
 AcceleratedPresenter::AcceleratedPresenter(gfx::PluginWindowHandle window)
     : present_thread_(g_present_thread_pool.Pointer()->NextThread()),
       window_(window),
@@ -335,7 +372,7 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
 void AcceleratedPresenter::Present(HDC dc) {
   TRACE_EVENT0("gpu", "Present");
 
-  base::AutoLock locked(lock_);
+  base::AutoLock locked(*present_thread_->lock());
 
   // If invalidated, do nothing. The window is gone.
   if (!window_)
@@ -406,7 +443,7 @@ bool AcceleratedPresenter::DoCopyToARGB(const gfx::Rect& requested_src_subrect,
       "width", dst_size.width(),
       "height", dst_size.height());
 
-  base::AutoLock locked(lock_);
+  base::AutoLock locked(*present_thread_->lock());
 
   if (!swap_chain_)
     return false;
@@ -503,7 +540,7 @@ bool AcceleratedPresenter::DoCopyToYUV(
       "width", dst_size.width(),
       "height", dst_size.height());
 
-  base::AutoLock locked(lock_);
+  base::AutoLock locked(*present_thread_->lock());
 
   if (!swap_chain_)
     return false;
@@ -589,7 +626,7 @@ void AcceleratedPresenter::Suspend() {
 }
 
 void AcceleratedPresenter::WasHidden() {
-  base::AutoLock locked(lock_);
+  base::AutoLock locked(*present_thread_->lock());
   hidden_ = true;
 }
 
@@ -609,8 +646,23 @@ void AcceleratedPresenter::Invalidate() {
   // last pending task has been ignored, the reference count on the presenter
   // will go to zero and the presenter, and potentially also the present thread
   // it has a reference count on, will be destroyed.
-  base::AutoLock locked(lock_);
+  base::AutoLock locked(*present_thread_->lock());
   window_ = NULL;
+}
+
+void AcceleratedPresenter::ResetPresentThread(
+    PresentThread* present_thread) {
+  TRACE_EVENT0("gpu", "ResetPresentThread");
+
+  // present_thread_ can be accessed without the lock because it is immutable.
+  if (present_thread_ != present_thread)
+    return;
+
+  present_thread_->lock()->AssertAcquired();
+
+  source_texture_ = NULL;
+  swap_chain_ = NULL;
+  quantized_size_ = gfx::Size();
 }
 
 #if defined(USE_AURA)
@@ -633,7 +685,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   HRESULT hr;
 
-  base::AutoLock locked(lock_);
+  base::AutoLock locked(*present_thread_->lock());
 
   // Initialize the device lazily since calling Direct3D can crash bots.
   present_thread_->InitDevice();
@@ -644,10 +696,13 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     return;
   }
 
+  // Ensure the task is acknowledged on early out after this point.
+  base::ScopedClosureRunner scoped_completion_runner(
+      base::Bind(completion_task, true, base::TimeTicks(), base::TimeDelta()));
+
   // If invalidated, do nothing, the window is gone.
   if (!window_) {
     TRACE_EVENT0("gpu", "EarlyOut_NoWindow");
-    completion_task.Run(true, base::TimeTicks(), base::TimeDelta());
     return;
   }
 
@@ -673,14 +728,9 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     TRACE_EVENT2("gpu", "EarlyOut_WrongWindowSize2",
                  "windowwidth", window_size.width(),
                  "windowheight", window_size.height());
-    completion_task.Run(true, base::TimeTicks(), base::TimeDelta());
     return;
   }
 #endif
-
-  // Ensure the task is notified of failure on early out after this point.
-  base::ScopedClosureRunner scoped_completion_runner(
-      base::Bind(completion_task, false, base::TimeTicks(), base::TimeDelta()));
 
   // Round up size so the swap chain is not continuously resized with the
   // surface, which could lead to memory fragmentation.
@@ -781,21 +831,15 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     // For latency_tests.cc:
     UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
 
-    if (FAILED(hr) &&
-        FAILED(present_thread_->device()->CheckDeviceState(window_))) {
-      LOG(ERROR) << "Reseting D3D device";
-      present_thread_->ResetDevice();
+    if (FAILED(hr)) {
+      if (present_thread_->IsDeviceLost())
+        present_thread_->ResetDevice();
+      return;
     }
   } else {
     HDC dc = GetDC(window_);
     PresentWithGDI(dc);
     ReleaseDC(window_, dc);
-  }
-
-  // Early out if failed to reset device.
-  if (!present_thread_->device()) {
-    LOG(ERROR) << "Failed to reset device";
-    return;
   }
 
   hidden_ = false;
@@ -841,11 +885,17 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   // that it is safe to write to its backing store again.
   {
     TRACE_EVENT0("gpu", "spin");
+
     do {
       hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
-
-      if (hr == S_FALSE)
+      if (hr == S_FALSE) {
         Sleep(1);
+
+        if (present_thread_->IsDeviceLost()) {
+          present_thread_->ResetDevice();
+          return;
+        }
+      }
     } while (hr == S_FALSE);
   }
 
@@ -854,12 +904,12 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 }
 
 void AcceleratedPresenter::DoSuspend() {
-  base::AutoLock locked(lock_);
+  base::AutoLock locked(*present_thread_->lock());
   swap_chain_ = NULL;
 }
 
 void AcceleratedPresenter::DoReleaseSurface() {
-  base::AutoLock locked(lock_);
+  base::AutoLock locked(*present_thread_->lock());
   present_thread_->InitDevice();
   source_texture_.Release();
 }
@@ -909,6 +959,16 @@ void AcceleratedPresenter::PresentWithGDI(HDC dc) {
     TRACE_EVENT0("gpu", "GetRenderTargetData");
     hr = present_thread_->device()->GetRenderTargetData(back_buffer,
                                                         system_surface);
+
+    if (FAILED(hr)) {
+      if (present_thread_->IsDeviceLost()) {
+        present_thread_->message_loop()->PostTask(
+            FROM_HERE,
+            base::Bind(&PresentThread::ResetDevice, present_thread_));
+      }
+      return;
+    }
+
     DCHECK(SUCCEEDED(hr));
   }
 
