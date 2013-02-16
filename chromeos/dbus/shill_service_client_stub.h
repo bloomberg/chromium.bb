@@ -58,6 +58,10 @@ class ShillServiceClientStub : public ShillServiceClient,
       const std::string& carrier,
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual void CompleteCellularActivation(
+      const dbus::ObjectPath& service_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
   virtual bool CallActivateCellularModemAndBlock(
       const dbus::ObjectPath& service_path,
       const std::string& carrier) OVERRIDE;

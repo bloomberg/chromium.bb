@@ -127,6 +127,13 @@ class CHROMEOS_EXPORT ShillServiceClient {
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 
+  // Calls the CompleteCellularActivation method.
+  // |callback| is called after the method call succeeds.
+  virtual void CompleteCellularActivation(
+      const dbus::ObjectPath& service_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+
   // DEPRECATED DO NOT USE: Calls ActivateCellularModem method and blocks until
   // the method call finishes.
   //

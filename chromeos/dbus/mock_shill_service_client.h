@@ -53,6 +53,10 @@ class MockShillServiceClient : public ShillServiceClient {
                     const std::string& carrier,
                     const base::Closure& callback,
                     const ErrorCallback& error_callback));
+  MOCK_METHOD3(CompleteCellularActivation,
+               void(const dbus::ObjectPath& service_path,
+                    const base::Closure& callback,
+                    const ErrorCallback& error_callback));
   MOCK_METHOD2(CallActivateCellularModemAndBlock,
                bool(const dbus::ObjectPath& service_path,
                     const std::string& carrier));

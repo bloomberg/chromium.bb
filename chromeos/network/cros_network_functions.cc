@@ -318,6 +318,13 @@ bool CrosActivateCellularModem(const std::string& service_path,
                                         carrier);
 }
 
+void CrosCompleteCellularActivation(const std::string& service_path) {
+  return DBusThreadManager::Get()->GetShillServiceClient()->
+      CompleteCellularActivation(dbus::ObjectPath(service_path),
+                                 base::Bind(&DoNothing),
+                                 base::Bind(&IgnoreErrors));
+}
+
 void CrosSetNetworkServiceProperty(const std::string& service_path,
                                    const std::string& property,
                                    const base::Value& value) {

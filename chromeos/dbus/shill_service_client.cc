@@ -159,6 +159,18 @@ class ShillServiceClientImpl : public ShillServiceClient {
                                                              error_callback);
   }
 
+  virtual void CompleteCellularActivation(
+      const dbus::ObjectPath& service_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
+                                 shill::kCompleteCellularActivationFunction);
+    dbus::MessageWriter writer(&method_call);
+    GetHelper(service_path)->CallVoidMethodWithErrorCallback(&method_call,
+                                                             callback,
+                                                             error_callback);
+  }
+
   virtual bool CallActivateCellularModemAndBlock(
       const dbus::ObjectPath& service_path,
       const std::string& carrier) OVERRIDE {

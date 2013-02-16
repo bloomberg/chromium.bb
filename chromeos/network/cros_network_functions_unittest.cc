@@ -185,6 +185,15 @@ TEST_F(CrosNetworkFunctionsTest, CrosActivateCellularModem) {
   EXPECT_TRUE(CrosActivateCellularModem(service_path, carrier));
 }
 
+TEST_F(CrosNetworkFunctionsTest, CrosCompleteCellularActivation) {
+  const std::string service_path = "/";
+  EXPECT_CALL(*mock_service_client_,
+              CompleteCellularActivation(dbus::ObjectPath(service_path), _, _))
+      .Times(1);
+
+  CrosCompleteCellularActivation(service_path);
+}
+
 TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkServiceProperty) {
   const std::string service_path = "/";
   const std::string property = "property";

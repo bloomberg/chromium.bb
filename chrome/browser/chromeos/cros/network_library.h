@@ -875,6 +875,7 @@ class CellularNetwork : public WirelessNetwork {
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   virtual bool StartActivation();
+  virtual void CompleteActivation();
 
   bool activate_over_non_cellular_network() const {
     return activate_over_non_cellular_network_;

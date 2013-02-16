@@ -62,6 +62,9 @@ class CHROMEOS_EXPORT CrosNetworkWatcher {
 CHROMEOS_EXPORT bool CrosActivateCellularModem(const std::string& service_path,
                                                const std::string& carrier);
 
+// Completes the activation for the cellular modem specified by |service_path|.
+CHROMEOS_EXPORT void CrosCompleteCellularActivation(
+    const std::string& service_path);
 
 // Sets a property of a service to the provided value.
 // Success is indicated by the receipt of a matching PropertyChanged signal.

@@ -877,6 +877,12 @@ bool CellularNetwork::StartActivation() {
   return true;
 }
 
+void CellularNetwork::CompleteActivation() {
+  if (!EnsureCrosLoaded())
+    return;
+  CrosCompleteCellularActivation(service_path());
+}
+
 void CellularNetwork::SetApn(const CellularApn& apn) {
   if (!apn.apn.empty()) {
     DictionaryValue value;

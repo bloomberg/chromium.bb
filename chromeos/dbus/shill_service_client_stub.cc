@@ -221,6 +221,15 @@ void ShillServiceClientStub::ActivateCellularModem(
   MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
+void ShillServiceClientStub::CompleteCellularActivation(
+    const dbus::ObjectPath& service_path,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  if (callback.is_null())
+    return;
+  MessageLoop::current()->PostTask(FROM_HERE, callback);
+}
+
 bool ShillServiceClientStub::CallActivateCellularModemAndBlock(
     const dbus::ObjectPath& service_path,
     const std::string& carrier) {
