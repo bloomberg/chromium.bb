@@ -2101,19 +2101,21 @@ TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
   BookmarkButton* targetButton = [bar_ buttonWithTitleEqualTo:@"1b"];
   ASSERT_TRUE(targetButton);
   NSPoint targetPoint = [targetButton left];
-  const CGFloat xDelta = 0.5 * bookmarks::kBookmarkHorizontalPadding;
+  CGFloat leftMarginIndicatorPosition = bookmarks::kBookmarkLeftMargin - 0.5 *
+                                        bookmarks::kBookmarkHorizontalPadding;
   const CGFloat baseOffset = targetPoint.x;
-  CGFloat expected = xDelta;
+  CGFloat expected = leftMarginIndicatorPosition;
   CGFloat actual = [bar_ indicatorPosForDragToPoint:targetPoint];
   EXPECT_CGFLOAT_EQ(expected, actual);
   targetButton = [bar_ buttonWithTitleEqualTo:@"2f"];
   actual = [bar_ indicatorPosForDragToPoint:[targetButton right]];
   targetButton = [bar_ buttonWithTitleEqualTo:@"3b"];
-  expected = [targetButton left].x - baseOffset + xDelta;
+  expected = [targetButton left].x - baseOffset + leftMarginIndicatorPosition;
   EXPECT_CGFLOAT_EQ(expected, actual);
   targetButton = [bar_ buttonWithTitleEqualTo:@"4b"];
   targetPoint = [targetButton right];
   targetPoint.x += 100;  // Somewhere off to the right.
+  CGFloat xDelta = 0.5 * bookmarks::kBookmarkHorizontalPadding;
   expected = NSMaxX([targetButton frame]) + xDelta;
   actual = [bar_ indicatorPosForDragToPoint:targetPoint];
   EXPECT_CGFLOAT_EQ(expected, actual);

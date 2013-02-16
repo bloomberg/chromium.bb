@@ -45,6 +45,12 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 // Vertical frame inset for buttons in the bookmark bar.
 const CGFloat kBookmarkVerticalPadding = 2.0;
 
+// Left margin before the first button in the bookmark bar.
+const CGFloat kBookmarkLeftMargin = 2.0;
+
+// Right margin before the last button in the bookmark bar.
+const CGFloat kBookmarkRightMargin = 2.0;
+
 // Used as a min/max width for buttons on menus (not on the bar).
 const CGFloat kBookmarkMenuButtonMinimumWidth = 100.0;
 const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
