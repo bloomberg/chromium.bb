@@ -181,10 +181,6 @@ void AutocheckoutManager::ReturnAutocheckoutData(const FormStructure* result) {
     if (AutofillType(type).group() == AutofillType::CREDIT_CARD) {
       credit_card_->SetRawInfo(result->field(i)->type(),
                                result->field(i)->value);
-      // TODO(ramankk): Fix NAME_FULL when dialog controller can return it.
-      if (result->field(i)->type() == CREDIT_CARD_NAME) {
-        profile_->SetRawInfo(NAME_FULL, result->field(i)->value);
-      }
     } else {
       profile_->SetRawInfo(result->field(i)->type(), result->field(i)->value);
     }

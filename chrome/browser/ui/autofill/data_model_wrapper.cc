@@ -95,6 +95,21 @@ string16 AutofillCreditCardWrapper::GetDisplayText() {
   return card_->TypeAndLastFourDigits();
 }
 
+void AutofillCreditCardWrapper::FillFormField(AutofillField* field) {
+  AutofillFieldType field_type = field->type();
+
+  if (field_type == NAME_FULL) {
+    // Requests for the user's full name are filled from the credit card data,
+    // but the CreditCard class only knows how to fill credit card fields.  So,
+    // temporarily set the type to the corresponding credit card type.
+    field->set_heuristic_type(CREDIT_CARD_NAME);
+  }
+
+  AutofillDataModelWrapper::FillFormField(field);
+
+  field->set_heuristic_type(field_type);
+}
+
 // WalletAddressWrapper
 
 WalletAddressWrapper::WalletAddressWrapper(

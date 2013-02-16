@@ -86,6 +86,9 @@ class AutofillCreditCardWrapper : public AutofillDataModelWrapper {
   virtual gfx::Image GetIcon() OVERRIDE;
   virtual string16 GetDisplayText() OVERRIDE;
 
+ protected:
+  virtual void FillFormField(AutofillField* field) OVERRIDE;
+
  private:
   const CreditCard* card_;
 };
