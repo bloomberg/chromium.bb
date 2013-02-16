@@ -7,7 +7,7 @@
 import os
 
 from pylib import android_commands
-from pylib.instrumentation.run_java_tests import TestRunner
+from pylib.instrumentation import test_runner
 
 
 def _GetPackageName(fname):
@@ -22,6 +22,6 @@ def RunJavaTest(fname, suite, test, ports_to_forward):
   device = android_commands.GetAttachedDevices()[0]
   package_name = _GetPackageName(fname)
   test = package_name + '.' + suite + '#' + test
-  java_test_runner = TestRunner(False, device, [test], False, False, False,
-                                False, 0, ports_to_forward)
+  java_test_runner = test_runner.TestRunner(False, device, [test], False, False,
+                                            False, False, 0, ports_to_forward)
   return java_test_runner.Run()

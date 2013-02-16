@@ -10,7 +10,6 @@ import multiprocessing
 
 from pylib.base import sharded_tests_queue
 from pylib.base.test_result import TestResults
-from pylib.instrumentation.run_java_tests import FatalTestException
 
 from python_test_caller import CallPythonTest
 
@@ -139,7 +138,7 @@ class PythonTestSharder(object):
       except Exception:
         logging.exception('Unable to run tests. Something with the '
                           'PythonTestRunners has gone wrong.')
-        raise FatalTestException('PythonTestRunners were unable to run tests.')
+        raise Exception('PythonTestRunners were unable to run tests.')
 
       test_results = TestResults.FromTestResults(results_lists)
       # Accumulate passing results.

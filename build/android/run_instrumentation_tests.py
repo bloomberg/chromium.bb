@@ -14,10 +14,10 @@ import time
 from pylib import buildbot_report
 from pylib import constants
 from pylib import ports
-from pylib.base.test_result import TestResults
+from pylib.base import test_result
 from pylib.host_driven import run_python_tests
 from pylib.instrumentation import apk_info
-from pylib.instrumentation import run_java_tests
+from pylib.instrumentation import dispatch
 from pylib.utils import run_tests_helper
 from pylib.utils import test_options_parser
 
@@ -43,17 +43,18 @@ def DispatchInstrumentationTests(options):
       raise Exception('Failed to reset test server port.')
 
   start_date = int(time.time() * 1000)
-  java_results = TestResults()
-  python_results = TestResults()
+  java_results = test_result.TestResults()
+  python_results = test_result.TestResults()
 
   if options.run_java_tests:
-    java_results = run_java_tests.DispatchJavaTests(
+    java_results = dispatch.Dispatch(
         options,
         [apk_info.ApkInfo(options.test_apk_path, options.test_apk_jar_path)])
   if options.run_python_tests:
     python_results = run_python_tests.DispatchPythonTests(options)
 
-  all_results = TestResults.FromTestResults([java_results, python_results])
+  all_results = test_result.TestResults.FromTestResults([java_results,
+                                                         python_results])
 
   all_results.LogFull(
       test_type='Instrumentation',

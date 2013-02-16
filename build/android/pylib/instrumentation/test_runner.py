@@ -4,7 +4,6 @@
 
 """Runs the Java tests. See more information on run_instrumentation_tests.py."""
 
-import fnmatch
 import logging
 import os
 import re
@@ -15,15 +14,13 @@ import time
 from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
+from pylib import forwarder
+from pylib import json_perf_parser
+from pylib import perf_tests_helper
 from pylib import valgrind_tools
-from pylib.android_commands import errors
-from pylib.base import sharded_tests_queue
-from pylib.base.base_test_runner import BaseTestRunner
-from pylib.base.base_test_sharder import BaseTestSharder, SetTestsContainer
-from pylib.base.test_result import SingleTestResult, TestResults
-from pylib.forwarder import Forwarder
-from pylib.json_perf_parser import GetAverageRunInfoFromJSONString
-from pylib.perf_tests_helper import PrintPerfResult
+from pylib.base import base_test_runner
+from pylib.base import base_test_sharder
+from pylib.base import test_result
 
 import apk_info
 
@@ -31,40 +28,7 @@ import apk_info
 _PERF_TEST_ANNOTATION = 'PerfTest'
 
 
-class FatalTestException(Exception):
-  """A fatal test exception."""
-  pass
-
-
-def _TestNameToExpectation(test_name):
-  # A test name is a Package.Path.Class#testName; convert to what we use in
-  # the expectation file.
-  return '.'.join(test_name.replace('#', '.').split('.')[-2:])
-
-
-def FilterTests(test_names, pattern_list, inclusive):
-  """Filters |test_names| using a list of patterns.
-
-  Args:
-    test_names: A list of test names.
-    pattern_list: A list of patterns.
-    inclusive: If True, returns the tests that match any pattern. if False,
-               returns the tests that do not match any pattern.
-  Returns:
-    A list of test names.
-  """
-  ret = []
-  for t in test_names:
-    has_match = False
-    for pattern in pattern_list:
-      has_match = has_match or fnmatch.fnmatch(_TestNameToExpectation(t),
-                                               pattern)
-    if has_match == inclusive:
-      ret += [t]
-  return ret
-
-
-class TestRunner(BaseTestRunner):
+class TestRunner(base_test_runner.BaseTestRunner):
   """Responsible for running a series of tests connected to a single device."""
 
   _DEVICE_DATA_DIR = 'chrome/test/data'
@@ -109,10 +73,10 @@ class TestRunner(BaseTestRunner):
       ports_to_forward: A list of port numbers for which to set up forwarders.
                         Can be optionally requested by a test case.
     Raises:
-      FatalTestException: if coverage metadata is not available.
+      Exception: if coverage metadata is not available.
     """
-    BaseTestRunner.__init__(
-        self, device, options.tool, shard_index, options.build_type)
+    super(TestRunner, self).__init__(
+        device, options.tool, shard_index, options.build_type)
 
     if not apks:
       apks = [apk_info.ApkInfo(options.test_apk_path,
@@ -133,29 +97,29 @@ class TestRunner(BaseTestRunner):
     self.instrumentation_class_path = self.test_apk.GetPackageName()
     self.ports_to_forward = ports_to_forward
 
-    self.test_results = TestResults()
+    self.test_results = test_result.TestResults()
     self.forwarder = None
 
     if self.coverage:
       if os.path.exists(TestRunner._COVERAGE_MERGED_FILENAME):
         os.remove(TestRunner._COVERAGE_MERGED_FILENAME)
       if not os.path.exists(TestRunner._COVERAGE_META_INFO_PATH):
-        raise FatalTestException('FATAL ERROR in ' + sys.argv[0] +
-                                 ' : Coverage meta info [' +
-                                 TestRunner._COVERAGE_META_INFO_PATH +
-                                 '] does not exist.')
+        raise Exception('FATAL ERROR in ' + sys.argv[0] +
+                        ' : Coverage meta info [' +
+                        TestRunner._COVERAGE_META_INFO_PATH +
+                        '] does not exist.')
       if (not TestRunner._COVERAGE_WEB_ROOT_DIR or
           not os.path.exists(TestRunner._COVERAGE_WEB_ROOT_DIR)):
-        raise FatalTestException('FATAL ERROR in ' + sys.argv[0] +
-                                 ' : Path specified in $EMMA_WEB_ROOTDIR [' +
-                                 TestRunner._COVERAGE_WEB_ROOT_DIR +
-                                 '] does not exist.')
+        raise Exception('FATAL ERROR in ' + sys.argv[0] +
+                        ' : Path specified in $EMMA_WEB_ROOTDIR [' +
+                        TestRunner._COVERAGE_WEB_ROOT_DIR +
+                        '] does not exist.')
 
   def _GetTestsIter(self):
     if not self.tests_iter:
       # multiprocessing.Queue can't be pickled across processes if we have it as
       # a member set during constructor.  Grab one here instead.
-      self.tests_iter = (BaseTestSharder.tests_container)
+      self.tests_iter = (base_test_sharder.BaseTestSharder.tests_container)
     assert self.tests_iter
     return self.tests_iter
 
@@ -269,7 +233,7 @@ class TestRunner(BaseTestRunner):
       # We need to remember which ports the HTTP server is using, since the
       # forwarder will stomp on them otherwise.
       port_pairs.append(http_server_ports)
-      self.forwarder = Forwarder(self.adb, self.build_type)
+      self.forwarder = forwarder.Forwarder(self.adb, self.build_type)
       self.forwarder.Run(port_pairs, self.tool, '127.0.0.1')
     self.CopyTestFilesOnce()
     self.flags.AddFlags(['--enable-test-intents'])
@@ -317,7 +281,7 @@ class TestRunner(BaseTestRunner):
                                TestRunner._DEVICE_PERF_OUTPUT_SEARCH_PREFIX)
     self.adb.StartMonitoringLogcat()
 
-  def TestTeardown(self, test, test_result):
+  def TestTeardown(self, test, raw_result):
     """Cleans up the test harness after running a particular test.
 
     Depending on the options of this TestRunner this might handle coverage
@@ -326,13 +290,13 @@ class TestRunner(BaseTestRunner):
 
     Args:
       test: The name of the test that was just run.
-      test_result: result for this test.
+      raw_result: result for this test.
     """
 
     self.tool.CleanUpEnvironment()
 
     # The logic below relies on the test passing.
-    if not test_result or test_result.GetStatusCode():
+    if not raw_result or raw_result.GetStatusCode():
       return
 
     self.TearDownPerfMonitoring(test)
@@ -344,7 +308,7 @@ class TestRunner(BaseTestRunner):
     Args:
       test: The name of the test that was just run.
     Raises:
-      FatalTestException: if there's anything wrong with the perf data.
+      Exception: if there's anything wrong with the perf data.
     """
     if not self._IsPerfTest(test):
       return
@@ -371,7 +335,7 @@ class TestRunner(BaseTestRunner):
       if json_string:
         json_string = '\n'.join(json_string)
       else:
-        raise FatalTestException('Perf file does not exist or is empty')
+        raise Exception('Perf file does not exist or is empty')
 
       if self.save_perf_json:
         json_local_file = '/tmp/chromium-android-perf-json-' + raw_test_name
@@ -386,14 +350,15 @@ class TestRunner(BaseTestRunner):
         if raw_perf_set:
           perf_set = raw_perf_set.split(',')
           if len(perf_set) != 3:
-            raise FatalTestException('Unexpected number of tokens in '
-                                     'perf annotation string: ' + raw_perf_set)
+            raise Exception('Unexpected number of tokens in perf annotation '
+                            'string: ' + raw_perf_set)
 
           # Process the performance data
-          result = GetAverageRunInfoFromJSONString(json_string, perf_set[0])
-
-          PrintPerfResult(perf_set[1], perf_set[2],
-                          [result['average']], result['units'])
+          result = json_perf_parser.GetAverageRunInfoFromJSONString(json_string,
+                                                                    perf_set[0])
+          perf_tests_helper.PrintPerfResult(perf_set[1], perf_set[2],
+                                            [result['average']],
+                                            result['units'])
 
   def _SetupIndividualTestTimeoutScale(self, test):
     timeout_scale = self._GetIndividualTestTimeoutScale(test)
@@ -429,48 +394,49 @@ class TestRunner(BaseTestRunner):
     """Runs the tests, generating the coverage if needed.
 
     Returns:
-      A TestResults object.
+      A test_result.TestResults object.
     """
     instrumentation_path = (self.instrumentation_class_path +
                             '/android.test.InstrumentationTestRunner')
     instrumentation_args = self._GetInstrumentationArgs()
     for test in self._GetTestsIter():
-      test_result = None
+      raw_result = None
       start_date_ms = None
       try:
         self.TestSetup(test)
         start_date_ms = int(time.time()) * 1000
         args_with_filter = dict(instrumentation_args)
         args_with_filter['class'] = test
-        # |test_results| is a list that should contain
+        # |raw_results| is a list that should contain
         # a single TestResult object.
         logging.warn(args_with_filter)
-        (test_results, _) = self.adb.Adb().StartInstrumentation(
+        (raw_results, _) = self.adb.Adb().StartInstrumentation(
             instrumentation_path=instrumentation_path,
             instrumentation_args=args_with_filter,
             timeout_time=(self._GetIndividualTestTimeoutSecs(test) *
                           self._GetIndividualTestTimeoutScale(test) *
                           self.tool.GetTimeoutScale()))
         duration_ms = int(time.time()) * 1000 - start_date_ms
-        assert len(test_results) == 1
-        test_result = test_results[0]
-        status_code = test_result.GetStatusCode()
+        assert len(raw_results) == 1
+        raw_result = raw_results[0]
+        status_code = raw_result.GetStatusCode()
         if status_code:
-          log = test_result.GetFailureReason()
+          log = raw_result.GetFailureReason()
           if not log:
             log = 'No information.'
           if self.screenshot_failures or log.find('INJECT_EVENTS perm') >= 0:
             self._TakeScreenshot(test)
-          self.test_results.failed += [SingleTestResult(test, start_date_ms,
-                                                        duration_ms, log)]
+          self.test_results.failed += [test_result.SingleTestResult(
+              test, start_date_ms, duration_ms, log)]
         else:
-          result = [SingleTestResult(test, start_date_ms, duration_ms)]
+          result = [test_result.SingleTestResult(test, start_date_ms,
+                                                 duration_ms)]
           self.test_results.ok += result
       # Catch exceptions thrown by StartInstrumentation().
       # See ../../third_party/android/testrunner/adb_interface.py
-      except (errors.WaitForResponseTimedOutError,
-              errors.DeviceUnresponsiveError,
-              errors.InstrumentationError), e:
+      except (android_commands.errors.WaitForResponseTimedOutError,
+              android_commands.errors.DeviceUnresponsiveError,
+              android_commands.errors.InstrumentationError), e:
         if start_date_ms:
           duration_ms = int(time.time()) * 1000 - start_date_ms
         else:
@@ -479,117 +445,8 @@ class TestRunner(BaseTestRunner):
         message = str(e)
         if not message:
           message = 'No information.'
-        self.test_results.crashed += [SingleTestResult(test, start_date_ms,
-                                                       duration_ms,
-                                                       message)]
-        test_result = None
-      self.TestTeardown(test, test_result)
+        self.test_results.crashed += [test_result.SingleTestResult(
+            test, start_date_ms, duration_ms, message)]
+        raw_result = None
+      self.TestTeardown(test, raw_result)
     return self.test_results
-
-
-class TestSharder(BaseTestSharder):
-  """Responsible for sharding the tests on the connected devices."""
-
-  def __init__(self, attached_devices, options, tests, apks):
-    BaseTestSharder.__init__(self, attached_devices, options.build_type)
-    self.options = options
-    self.tests = tests
-    self.apks = apks
-
-  def SetupSharding(self, tests):
-    """Called before starting the shards."""
-    SetTestsContainer(sharded_tests_queue.ShardedTestsQueue(
-        len(self.attached_devices), tests))
-
-  def CreateShardedTestRunner(self, device, index):
-    """Creates a sharded test runner.
-
-    Args:
-      device: Device serial where this shard will run.
-      index: Index of this device in the pool.
-
-    Returns:
-      A TestRunner object.
-    """
-    return TestRunner(self.options, device, None, False, index, self.apks, [])
-
-
-def DispatchJavaTests(options, apks):
-  """Dispatches Java tests onto connected device(s).
-
-  If possible, this method will attempt to shard the tests to
-  all connected devices. Otherwise, dispatch and run tests on one device.
-
-  Args:
-    options: Command line options.
-    apks: list of APKs to use.
-
-  Returns:
-    A TestResults object holding the results of the Java tests.
-
-  Raises:
-    FatalTestException: when there's no attached the devices.
-  """
-  test_apk = apks[0]
-  # The default annotation for tests which do not have any sizes annotation.
-  default_size_annotation = 'SmallTest'
-
-  def _GetTestsMissingAnnotation(test_apk):
-    test_size_annotations = frozenset(['Smoke', 'SmallTest', 'MediumTest',
-                                       'LargeTest', 'EnormousTest', 'FlakyTest',
-                                       'DisabledTest', 'Manual', 'PerfTest'])
-    tests_missing_annotations = []
-    for test_method in test_apk.GetTestMethods():
-      annotations = frozenset(test_apk.GetTestAnnotations(test_method))
-      if (annotations.isdisjoint(test_size_annotations) and
-          not apk_info.ApkInfo.IsPythonDrivenTest(test_method)):
-        tests_missing_annotations.append(test_method)
-    return sorted(tests_missing_annotations)
-
-  if options.annotation:
-    available_tests = test_apk.GetAnnotatedTests(options.annotation)
-    if options.annotation.count(default_size_annotation) > 0:
-      tests_missing_annotations = _GetTestsMissingAnnotation(test_apk)
-      if tests_missing_annotations:
-        logging.warning('The following tests do not contain any annotation. '
-                        'Assuming "%s":\n%s',
-                        default_size_annotation,
-                        '\n'.join(tests_missing_annotations))
-        available_tests += tests_missing_annotations
-  else:
-    available_tests = [m for m in test_apk.GetTestMethods()
-                       if not apk_info.ApkInfo.IsPythonDrivenTest(m)]
-  coverage = os.environ.get('EMMA_INSTRUMENT') == 'true'
-
-  tests = []
-  if options.test_filter:
-    # |available_tests| are in adb instrument format: package.path.class#test.
-    filter_without_hash = options.test_filter.replace('#', '.')
-    tests = [t for t in available_tests
-             if filter_without_hash in t.replace('#', '.')]
-  else:
-    tests = available_tests
-
-  if not tests:
-    logging.warning('No Java tests to run with current args.')
-    return TestResults()
-
-  tests *= options.number_of_runs
-
-  attached_devices = android_commands.GetAttachedDevices()
-  test_results = TestResults()
-
-  if not attached_devices:
-    raise FatalTestException('You have no devices attached or visible!')
-  if options.device:
-    attached_devices = [options.device]
-
-  logging.info('Will run: %s', str(tests))
-
-  if len(attached_devices) > 1 and (coverage or options.wait_for_debugger):
-    logging.warning('Coverage / debugger can not be sharded, '
-                    'using first available device')
-    attached_devices = attached_devices[:1]
-  sharder = TestSharder(attached_devices, options, tests, apks)
-  test_results = sharder.RunShardedTests()
-  return test_results
