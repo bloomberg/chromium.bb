@@ -1,21 +1,11 @@
 #!/bin/bash
 
-
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Only run outside chroot.
-if [ -f /etc/debian_chroot ]; then
-  echo "This script must be run outside the chroot."
-  exit 1
-fi
-
-# This is a less lazy way to get all the unittests running at once, but
-# took longer to write.
-
-IN_CHROOT=cros_sdk
-OUTSIDE_CHROOT_CHROMITE=$(realpath "$(dirname "$0")/..")
+CHROMITE_PATH=$(realpath "$(dirname "$0")/..")
+IN_CHROOT="cros_sdk"
 CHROOT_CHROMITE=../../chromite
 
 set -eu
@@ -49,13 +39,17 @@ run_test() {
     echo "Skipping unittest $1"
     rm "${log_file}"
     return
-  elif [[ "${special}" == "inside" ]]; then
+  elif [[ "${special}" == "outside" && -f /etc/debian_chroot ]]; then
+    echo "Skipping unittest $1 because it must run outside the chroot."
+    rm "${log_file}"
+    return
+  elif [[ "${special}" == "inside" && ! -f /etc/debian_chroot ]]; then
     echo "Starting unittest $1 inside the chroot"
     ${IN_CHROOT} python "${CHROOT_CHROMITE}/$1" &> "${log_file}" ||
       append_failed_test "$1" "${log_file}"
   else
     echo "Starting unittest $1"
-    python "${OUTSIDE_CHROOT_CHROMITE}/$1" &> "${log_file}" ||
+    python "${CHROMITE_PATH}/$1" &> "${log_file}" ||
       append_failed_test "$1" "${log_file}"
   fi
 
@@ -85,6 +79,9 @@ special_tests=(
   ['scripts/cros_portage_upgrade_unittest.py']=inside
   ['scripts/upload_package_status_unittest.py']=inside
 
+  # Tests that need to run outside the chroot.
+  ['lib/cgroups_unittest.py']=outside
+
   # Tests that are presently broken.
   ['buildbot/validation_pool_unittest.py']=skip
   ['lib/gdata_lib_unittest.py']=skip
@@ -97,10 +94,10 @@ special_tests=(
   ['scripts/cros_portage_upgrade_unittest.py']=skip
 )
 
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
   # List all unit test scripts that match the given pattern.
   all_tests=(
-    $(find "${OUTSIDE_CHROOT_CHROMITE}" -name '*_unittest.py' -printf '%P ')
+    $(find "${CHROMITE_PATH}" -name '*_unittest.py' -printf '%P ')
   )
   set -- "${all_tests[@]}"
 fi

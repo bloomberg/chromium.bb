@@ -56,25 +56,18 @@ class RepoInitTests(cros_test_lib.MoxTempDirTestCase):
 
   def _Initialize(self, branch='master'):
     repo = repository.RepoRepository(constants.MANIFEST_URL, self.tempdir,
-                                      branch=branch)
+                                     branch=branch)
     repo.Initialize()
-    return repo
-
-  def setUp(self):
-    self._Initialize()
-    self.manifests_dir = os.path.join(self.tempdir, '.repo', 'manifests')
-
-  def testFailedReInitialization(self):
-    """Test that a failed re-init doesn't leave repo in bad state."""
-    # Test failure to create manifests/ dir due to bad branch.
-    self.assertRaises(Exception, self._Initialize, 'monkey')
-    self._Initialize('release-R20-2268.B')
 
   def testReInitialization(self):
     """Test ability to switch between branches."""
-    self._Initialize('release-R20-2268.B')
     self._Initialize('release-R19-2046.B')
     self._Initialize('master')
+
+    # Test that a failed re-init due to bad branch doesn't leave repo in bad
+    # state.
+    self.assertRaises(Exception, self._Initialize, 'monkey')
+    self._Initialize('release-R20-2268.B')
 
 
 class RepoInitChromeBotTests(RepoInitTests):
