@@ -1163,7 +1163,10 @@ void Browser::TabStripEmpty() {
 
 bool Browser::CanOverscrollContent() const {
 #if defined(USE_AURA)
-  return !is_app() && !is_devtools() && is_type_tabbed();
+  bool overscroll_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableOverscrollHistoryNavigation);
+  return overscroll_enabled ? !is_app() && !is_devtools() && is_type_tabbed() :
+                              false;
 #else
   return false;
 #endif
