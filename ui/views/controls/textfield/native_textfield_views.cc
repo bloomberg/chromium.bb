@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -19,9 +20,11 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/range/range.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
@@ -37,6 +40,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_views_model.h"
+#include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/metrics.h"
 #include "ui/views/widget/widget.h"
@@ -174,10 +178,45 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       break;
     case ui::ET_GESTURE_TAP:
-      touch_selection_controller_.reset(
-          ui::TouchSelectionController::create(this));
+      CreateTouchSelectionControllerAndNotifyIt();
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      // If long press happens outside selection, select word and show context
+      // menu (If touch selection is enabled, context menu is shown by the
+      // |touch_selection_controller_|, hence we mark the event handled.
+      // Otherwise, the regular context menu will be shown by views).
+      // If long press happens in selected text and touch drag drop is enabled,
+      // we will turn off touch selection (if one exists) and let views do drag
+      // drop.
+      if (!GetRenderText()->IsPointInSelection(event->location())) {
+        OnBeforeUserAction();
+        model_->SelectWord();
+        touch_selection_controller_.reset(
+            ui::TouchSelectionController::create(this));
+        OnCaretBoundsChanged();
+        SchedulePaint();
+        OnAfterUserAction();
+        if (touch_selection_controller_.get())
+          event->SetHandled();
+      } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTouchDragDrop)) {
+        touch_selection_controller_.reset();
+      } else {
+        if (!touch_selection_controller_.get())
+          CreateTouchSelectionControllerAndNotifyIt();
+        if (touch_selection_controller_.get())
+          event->SetHandled();
+      }
+      return;
+    case ui::ET_GESTURE_LONG_TAP:
+      if (!touch_selection_controller_.get())
+        CreateTouchSelectionControllerAndNotifyIt();
+
+      // If touch selection is enabled, the context menu on long tap will be
+      // shown by the |touch_selection_controller_|, hence we mark the event
+      // handled so views does not try to show context menu on it.
       if (touch_selection_controller_.get())
-        touch_selection_controller_->SelectionChanged();
+        event->SetHandled();
       break;
     default:
       View::OnGestureEvent(event);
@@ -390,6 +429,12 @@ void NativeTextfieldViews::WriteDragDataForView(views::View* sender,
   DCHECK_NE(ui::DragDropTypes::DRAG_NONE,
             GetDragOperationsForView(sender, press_pt));
   data->SetString(GetSelectedText());
+  scoped_ptr<gfx::Canvas> canvas(
+      views::GetCanvasForDragImage(textfield_->GetWidget(), size()));
+  GetRenderText()->DrawSelectedText(canvas.get());
+  drag_utils::SetDragImageOnDataObject(*canvas, size(),
+                                       press_pt.OffsetFromOrigin(),
+                                       data);
   TextfieldController* controller = textfield_->GetController();
   if (controller)
     controller->OnWriteDragData(data);
@@ -1337,6 +1382,13 @@ bool NativeTextfieldViews::ShouldInsertChar(char16 ch, int flags) {
   // flag that we don't care about.
   return ((ch >= 0x20 && ch < 0x7F) || ch > 0x9F) &&
       (flags & ~(ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN)) != ui::EF_ALT_DOWN;
+}
+
+void NativeTextfieldViews::CreateTouchSelectionControllerAndNotifyIt() {
+  touch_selection_controller_.reset(
+      ui::TouchSelectionController::create(this));
+  if (touch_selection_controller_.get())
+    touch_selection_controller_->SelectionChanged();
 }
 
 void NativeTextfieldViews::PlatformGestureEventHandling(

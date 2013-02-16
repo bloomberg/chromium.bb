@@ -87,6 +87,18 @@ class GetTextHelper {
   DISALLOW_COPY_AND_ASSIGN(GetTextHelper);
 };
 
+// Convenience to make constructing a GestureEvent simpler.
+class GestureEventForTest : public ui::GestureEvent {
+ public:
+  GestureEventForTest(ui::EventType type, int x, int y, int flags)
+      : GestureEvent(type, x, y, flags, base::TimeDelta(),
+                     ui::GestureEventDetails(type, 0.0f, 0.0f), 0) {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
+};
+
 const char16 kHebrewLetterSamekh = 0x05E1;
 
 }  // namespace
@@ -197,6 +209,10 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   ui::MenuModel* GetContextMenuModel() {
     textfield_view_->UpdateContextMenu();
     return textfield_view_->context_menu_contents_.get();
+  }
+
+  ui::TouchSelectionController* GetTouchSelectionController() {
+    return textfield_view_->touch_selection_controller_.get();
   }
 
  protected:
@@ -1701,5 +1717,54 @@ TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBoundsTest) {
   EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 1, &rect));
   EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 100, &rect));
 }
+
+// Touch selection and draggin currently only works for chromeos.
+#if defined(OS_CHROMEOS)
+TEST_F(NativeTextfieldViewsTest, TouchSelectionAndDraggingTest) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+  EXPECT_FALSE(GetTouchSelectionController());
+  const int eventX = GetCursorPositionX(2);
+  const int eventY = 0;
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTouchEditing);
+
+  // Tapping on the textfield should turn on the TouchSelectionController.
+  GestureEventForTest tap(ui::ET_GESTURE_TAP, eventX, eventY, 0);
+  textfield_view_->OnGestureEvent(&tap);
+  EXPECT_TRUE(GetTouchSelectionController());
+
+  // Un-focusing the textfield should reset the TouchSelectionController
+  textfield_view_->GetFocusManager()->ClearFocus();
+  EXPECT_FALSE(GetTouchSelectionController());
+
+  // With touch editing enabled, long press should not show context menu.
+  // Instead, select word and invoke TouchSelectionController.
+  GestureEventForTest tap_down(ui::ET_GESTURE_TAP_DOWN, eventX, eventY, 0);
+  textfield_view_->OnGestureEvent(&tap_down);
+  GestureEventForTest long_press(ui::ET_GESTURE_LONG_PRESS, eventX, eventY, 0);
+  textfield_view_->OnGestureEvent(&long_press);
+  EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
+  EXPECT_TRUE(GetTouchSelectionController());
+
+  // Long pressing again in the selecting region should not do anything since
+  // touch drag drop is not yet enabled.
+  textfield_view_->OnGestureEvent(&tap_down);
+  textfield_view_->OnGestureEvent(&long_press);
+  EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
+  EXPECT_TRUE(GetTouchSelectionController());
+  EXPECT_TRUE(long_press.handled());
+
+  // After enabling touch drag drop, long pressing in the selected region should
+  // start a drag and remove TouchSelectionController.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableTouchDragDrop);
+  textfield_view_->OnGestureEvent(&tap_down);
+  // Create a new long press event since the previous one is not marked handled.
+  GestureEventForTest long_press2(ui::ET_GESTURE_LONG_PRESS, eventX, eventY, 0);
+  textfield_view_->OnGestureEvent(&long_press2);
+  EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
+  EXPECT_FALSE(GetTouchSelectionController());
+}
+#endif
 
 }  // namespace views
