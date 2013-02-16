@@ -164,12 +164,12 @@ void FFmpegVideoDecoder::Read(const ReadCB& read_cb) {
   read_cb_ = BindToCurrentLoop(read_cb);
 
   // Return empty frames if decoding has finished.
-  if (state_ == kDecodeFinished) {
+  if (decoded_frames_.empty() && state_ == kDecodeFinished) {
     base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
 
-  ReadFromDemuxerStream();
+  ReturnFrameOrReadFromDemuxerStream();
 }
 
 void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
@@ -188,6 +188,7 @@ void FFmpegVideoDecoder::DoReset() {
   DCHECK(read_cb_.is_null());
 
   avcodec_flush_buffers(codec_context_);
+  decoded_frames_.clear();
   state_ = kNormal;
   base::ResetAndReturn(&reset_cb_).Run();
 }
@@ -212,11 +213,17 @@ FFmpegVideoDecoder::~FFmpegVideoDecoder() {
   DCHECK(!av_frame_);
 }
 
-void FFmpegVideoDecoder::ReadFromDemuxerStream() {
+void FFmpegVideoDecoder::ReturnFrameOrReadFromDemuxerStream() {
+  if (!decoded_frames_.empty()) {
+    scoped_refptr<VideoFrame> frame = decoded_frames_.front();
+    decoded_frames_.pop_front();
+    base::ResetAndReturn(&read_cb_).Run(kOk, frame);
+    return;
+  }
+
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
   DCHECK(!read_cb_.is_null());
-
   demuxer_stream_->Read(base::Bind(&FFmpegVideoDecoder::BufferReady, this));
 }
 
@@ -233,6 +240,15 @@ void FFmpegVideoDecoder::BufferReady(
   DCHECK(!read_cb_.is_null());
 
   if (status == DemuxerStream::kConfigChanged) {
+    // Collect all frames that are still buffered in the decoder before we
+    // reconfigure it.
+    scoped_refptr<DecoderBuffer> eos_buffer = DecoderBuffer::CreateEOSBuffer();
+    scoped_refptr<VideoFrame> video_frame;
+    while (Decode(eos_buffer, &video_frame) && video_frame) {
+      decoded_frames_.push_back(video_frame);
+      video_frame = NULL;
+    }
+
     if (!ConfigureDecoder()) {
       base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
       state_ = kDecodeFinished;
@@ -242,7 +258,7 @@ void FFmpegVideoDecoder::BufferReady(
     }
 
     if (reset_cb_.is_null()) {
-      ReadFromDemuxerStream();
+      ReturnFrameOrReadFromDemuxerStream();
       return;
     }
   }
@@ -252,6 +268,8 @@ void FFmpegVideoDecoder::BufferReady(
     DoReset();
     return;
   }
+
+  DCHECK_NE(status, DemuxerStream::kConfigChanged);
 
   if (status == DemuxerStream::kAborted) {
     base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
@@ -315,20 +333,27 @@ void FFmpegVideoDecoder::DecodeBuffer(
     statistics_cb_.Run(statistics);
   }
 
-  // If we didn't get a frame then we've either completely finished decoding or
-  // we need more data.
-  if (!video_frame) {
-    if (state_ == kFlushCodec) {
-      state_ = kDecodeFinished;
+  if (video_frame) {
+    decoded_frames_.push_back(video_frame);
+    video_frame = NULL;
+  }
+
+  if (state_ == kFlushCodec) {
+    // Collect all remaining frames that may be buffered in the codec.
+    DCHECK(buffer->IsEndOfStream());
+    while (Decode(buffer, &video_frame) && video_frame) {
+      decoded_frames_.push_back(video_frame);
+      video_frame = NULL;
+    }
+
+    state_ = kDecodeFinished;
+    if (decoded_frames_.empty()) {
       base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
       return;
     }
-
-    ReadFromDemuxerStream();
-    return;
   }
 
-  base::ResetAndReturn(&read_cb_).Run(kOk, video_frame);
+  ReturnFrameOrReadFromDemuxerStream();
 }
 
 bool FFmpegVideoDecoder::Decode(

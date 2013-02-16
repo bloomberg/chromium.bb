@@ -5,6 +5,8 @@
 #ifndef MEDIA_FILTERS_FFMPEG_VIDEO_DECODER_H_
 #define MEDIA_FILTERS_FFMPEG_VIDEO_DECODER_H_
 
+#include <list>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/demuxer_stream.h"
@@ -51,7 +53,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   };
 
   // Reads from the demuxer stream and corresponding read callback.
-  void ReadFromDemuxerStream();
+  void ReturnFrameOrReadFromDemuxerStream();
   void BufferReady(DemuxerStream::Status status,
                    const scoped_refptr<DecoderBuffer>& buffer);
 
@@ -86,6 +88,8 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
+
+  std::list<scoped_refptr<VideoFrame> > decoded_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecoder);
 };
