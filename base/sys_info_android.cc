@@ -44,39 +44,68 @@ void ParseOSVersionNumbers(const char* os_version_str,
   *bugfix_version = kDefaultAndroidBugfixVersion;
 }
 
-int ParseHeapSize(const base::StringPiece& str) {
+// Parses a system property (specified with unit 'k','m' or 'g').
+// Returns a value in bytes.
+// Returns -1 if the string could not be parsed.
+int64 ParseSystemPropertyBytes(const base::StringPiece& str) {
   const int64 KB = 1024;
   const int64 MB = 1024 * KB;
   const int64 GB = 1024 * MB;
-  CHECK_GT(str.size(), 0u);
-  int64 factor = 1;
+  if (str.size() == 0u)
+    return -1;
+  int64 unit_multiplier = 1;
   size_t length = str.size();
   if (str[length - 1] == 'k') {
-    factor = KB;
+    unit_multiplier = KB;
     length--;
   } else if (str[length - 1] == 'm') {
-    factor = MB;
+    unit_multiplier = MB;
     length--;
   } else if (str[length - 1] == 'g') {
-    factor = GB;
+    unit_multiplier = GB;
     length--;
-  } else {
-    CHECK('0' <= str[length - 1] && str[length - 1] <= '9');
   }
   int64 result = 0;
   bool parsed = base::StringToInt64(str.substr(0, length), &result);
-  CHECK(parsed);
-  result = result * factor / MB;
-  // dalvik.vm.heapsize property is writable by user,
-  // truncate it to reasonable value to avoid overflows later.
-  result = std::min<int64>(std::max<int64>(32, result), 1024);
-  return static_cast<int>(result);
+  bool negative = result <= 0;
+  bool overflow = result >= std::numeric_limits<int64>::max() / unit_multiplier;
+  if (!parsed || negative || overflow)
+    return -1;
+  return result * unit_multiplier;
 }
 
 int GetDalvikHeapSizeMB() {
   char heap_size_str[PROP_VALUE_MAX];
   __system_property_get("dalvik.vm.heapsize", heap_size_str);
-  return ParseHeapSize(heap_size_str);
+  // dalvik.vm.heapsize property is writable by a root user.
+  // Clamp it to reasonable range as a sanity check,
+  // a typical android device will never have less than 48MB.
+  const int64 MB = 1024 * 1024;
+  int64 result = ParseSystemPropertyBytes(heap_size_str);
+  if (result == -1) {
+     // We should consider not exposing these values if they are not reliable.
+     LOG(ERROR) << "Can't parse dalvik.vm.heapsize: " << heap_size_str;
+     result = base::SysInfo::AmountOfPhysicalMemoryMB() / 3;
+  }
+  result = std::min<int64>(std::max<int64>(32 * MB, result), 1024 * MB) / MB;
+  return static_cast<int>(result);
+}
+
+int GetDalvikHeapGrowthLimitMB() {
+  char heap_size_str[PROP_VALUE_MAX];
+  __system_property_get("dalvik.vm.heapgrowthlimit", heap_size_str);
+  // dalvik.vm.heapgrowthlimit property is writable by a root user.
+  // Clamp it to reasonable range as a sanity check,
+  // a typical android device will never have less than 24MB.
+  const int64 MB = 1024 * 1024;
+  int64 result = ParseSystemPropertyBytes(heap_size_str);
+  if (result == -1) {
+     // We should consider not exposing these values if they are not reliable.
+     LOG(ERROR) << "Can't parse dalvik.vm.heapgrowthlimit: " << heap_size_str;
+     result = base::SysInfo::AmountOfPhysicalMemoryMB() / 6;
+  }
+  result = std::min<int64>(std::max<int64>(16 * MB, result), 512 * MB) / MB;
+  return static_cast<int>(result);
 }
 
 }  // anonymous namespace
@@ -121,5 +150,11 @@ int SysInfo::DalvikHeapSizeMB() {
   static int heap_size = GetDalvikHeapSizeMB();
   return heap_size;
 }
+
+int SysInfo::DalvikHeapGrowthLimitMB() {
+  static int heap_growth_limit = GetDalvikHeapGrowthLimitMB();
+  return heap_growth_limit;
+}
+
 
 }  // namespace base

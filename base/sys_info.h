@@ -104,6 +104,7 @@ class BASE_EXPORT SysInfo {
   static std::string GetDeviceName();
 
   static int DalvikHeapSizeMB();
+  static int DalvikHeapGrowthLimitMB();
 #endif  // defined(OS_ANDROID)
 };
 
