@@ -24,6 +24,10 @@ const char kHostConfigSwitchName[] = "host-config";
 const base::FilePath::CharType kDefaultHostConfigFile[] =
     FILE_PATH_LITERAL("host.json");
 
+// Maximum number of times to try reading the configuration file before
+// reporting an error.
+const int kMaxRetries = 3;
+
 class ConfigFileWatcherImpl
     : public base::RefCountedThreadSafe<ConfigFileWatcherImpl> {
  public:
@@ -56,6 +60,9 @@ class ConfigFileWatcherImpl
   base::FilePath config_path_;
 
   scoped_ptr<base::DelayTimer<ConfigFileWatcherImpl> > config_updated_timer_;
+
+  // Number of times an attempt to read the configuration file failed.
+  int retries_;
 
   // Monitors the host configuration file.
   scoped_ptr<base::FilePathWatcher> config_watcher_;
@@ -93,7 +100,8 @@ ConfigFileWatcherImpl::ConfigFileWatcherImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     ConfigFileWatcher::Delegate* delegate)
-    : delegate_weak_factory_(delegate),
+    : retries_(0),
+      delegate_weak_factory_(delegate),
       delegate_(delegate_weak_factory_.GetWeakPtr()),
       main_task_runner_(main_task_runner),
       io_task_runner_(io_task_runner) {
@@ -109,8 +117,8 @@ void ConfigFileWatcherImpl::Watch(const base::FilePath& config_path) {
   }
 
   DCHECK(config_path_.empty());
-  DCHECK(config_updated_timer_.get() == NULL);
-  DCHECK(config_watcher_.get() == NULL);
+  DCHECK(!config_updated_timer_);
+  DCHECK(!config_watcher_);
 
   // Create the timer that will be used for delayed-reading the configuration
   // file.
@@ -124,7 +132,7 @@ void ConfigFileWatcherImpl::Watch(const base::FilePath& config_path) {
   if (!config_watcher_->Watch(
           config_path_, false,
           base::Bind(&ConfigFileWatcherImpl::OnConfigUpdated, this))) {
-    LOG(ERROR) << "Couldn't watch file '" << config_path_.value() << "'";
+    PLOG(ERROR) << "Couldn't watch file '" << config_path_.value() << "'";
     main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&ConfigFileWatcher::Delegate::OnConfigWatcherError,
@@ -145,15 +153,15 @@ void ConfigFileWatcherImpl::StopWatching() {
 }
 
 ConfigFileWatcherImpl::~ConfigFileWatcherImpl() {
-  DCHECK(config_updated_timer_.get() == NULL);
-  DCHECK(config_watcher_.get() == NULL);
+  DCHECK(!config_updated_timer_);
+  DCHECK(!config_watcher_);
 }
 
 void ConfigFileWatcherImpl::FinishStopping() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  config_updated_timer_.reset(NULL);
-  config_watcher_.reset(NULL);
+  config_updated_timer_.reset();
+  config_watcher_.reset();
 }
 
 void ConfigFileWatcherImpl::OnConfigUpdated(const base::FilePath& path,
@@ -173,13 +181,27 @@ void ConfigFileWatcherImpl::ReloadConfig() {
 
   std::string config;
   if (!file_util::ReadFileToString(config_path_, &config)) {
-    LOG(ERROR) << "Failed to read '" << config_path_.value() << "'";
+#if defined(OS_WIN)
+    // EACCESS may indicate a locking or sharing violation. Retry a few times
+    // before reporting an error.
+    if (errno == EACCES && retries_ < kMaxRetries) {
+      PLOG(WARNING) << "Failed to read '" << config_path_.value() << "'";
+
+      retries_ += 1;
+      config_updated_timer_->Reset();
+      return;
+    }
+#endif  // defined(OS_WIN)
+
+    PLOG(ERROR) << "Failed to read '" << config_path_.value() << "'";
     main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&ConfigFileWatcher::Delegate::OnConfigWatcherError,
                    delegate_));
     return;
   }
+
+  retries_ = 0;
 
   // Post an updated configuration only if it has actually changed.
   if (config_ != config) {
