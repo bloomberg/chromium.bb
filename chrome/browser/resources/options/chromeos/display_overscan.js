@@ -27,13 +27,18 @@ cr.define('options', function() {
     id_: null,
 
     /**
+     * The keyboard event handler function.
+     * @private
+     */
+    keyHandler_: null,
+
+    /**
      * Initialize the page.
      */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      $('display-overscan-page').addEventListener(
-          'keydown', this.handleKeyevent_.bind(this));
+      this.keyHandler_ = this.handleKeyevent_.bind(this);
       $('display-overscan-operation-reset').onclick = function() {
         chrome.send('reset');
       };
@@ -60,6 +65,7 @@ cr.define('options', function() {
         return;
       }
 
+      window.addEventListener('keydown', this.keyHandler_);
       // Sets up the size of the overscan dialog based on DisplayOptions dialog.
       var displayOptionsPage = $('display-options-page');
       var displayOverscanPage = $('display-overscan-page');
@@ -84,6 +90,7 @@ cr.define('options', function() {
     /** @override */
     didClosePage: function() {
       window.removeEventListener('blur', DisplayOverscan.onWindowBlur);
+      window.removeEventListener('keydown', this.keyHandler_);
     },
 
     /**
