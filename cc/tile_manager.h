@@ -97,6 +97,7 @@ class CC_EXPORT ManagedTileState {
   TileManagerBin gpu_memmgr_stats_bin;
   TileResolution resolution;
   float time_to_needed_in_seconds;
+  float distance_to_visible_in_pixels;
 };
 
 // This class manages tiles, deciding which should get rasterized and which
