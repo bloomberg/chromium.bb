@@ -991,6 +991,32 @@ class TRACE_EVENT_API_CLASS_EXPORT TraceEndOnScopeClose {
   Data data_;
 };
 
+// Used by TRACE_EVENT_BINARY_EFFICIENTx macro. Do not use directly.
+class TRACE_EVENT_API_CLASS_EXPORT ScopedTrace {
+ public:
+  ScopedTrace(TRACE_EVENT_API_ATOMIC_WORD* event_uid, const char* name);
+  ~ScopedTrace();
+
+ private:
+  const unsigned char* category_enabled_;
+  const char* name_;
+};
+
+// A support macro for TRACE_EVENT_BINARY_EFFICIENTx
+#define INTERNAL_TRACE_EVENT_BINARY_EFFICIENT_ADD_SCOPED( \
+    category, name, ...) \
+    static TRACE_EVENT_API_ATOMIC_WORD INTERNAL_TRACE_EVENT_UID(atomic) = 0; \
+    trace_event_internal::ScopedTrace \
+        INTERNAL_TRACE_EVENT_UID(profileScope)( \
+            &INTERNAL_TRACE_EVENT_UID(atomic), name); \
+
+// This macro generates less code then TRACE_EVENT0 but is also
+// slower to execute when tracing is off. It should generally only be
+// used with code that is seldom executed or conditionally executed
+// when debugging.
+#define TRACE_EVENT_BINARY_EFFICIENT0(category, name) \
+    INTERNAL_TRACE_EVENT_BINARY_EFFICIENT_ADD_SCOPED(category, name)
+
 }  // namespace trace_event_internal
 
 #endif  // BASE_DEBUG_TRACE_EVENT_INTERNAL_H_

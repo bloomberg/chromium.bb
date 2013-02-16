@@ -821,3 +821,51 @@ void TraceLog::SetTimeOffset(TimeDelta offset) {
 
 }  // namespace debug
 }  // namespace base
+
+namespace trace_event_internal {
+
+ScopedTrace::ScopedTrace(
+    TRACE_EVENT_API_ATOMIC_WORD* event_uid, const char* name) {
+  category_enabled_ =
+    reinterpret_cast<const unsigned char*>(TRACE_EVENT_API_ATOMIC_LOAD(
+        *event_uid));
+  if (!category_enabled_) {
+    category_enabled_ = TRACE_EVENT_API_GET_CATEGORY_ENABLED("gpu");
+    TRACE_EVENT_API_ATOMIC_STORE(
+        *event_uid,
+        reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>(category_enabled_));
+  }
+  if (*category_enabled_) {
+    name_ = name;
+    TRACE_EVENT_API_ADD_TRACE_EVENT(
+        TRACE_EVENT_PHASE_BEGIN,    // phase
+        category_enabled_,          // category enabled
+        name,                       // name
+        0,                          // id
+        0,                          // num_args
+        NULL,                       // arg_names
+        NULL,                       // arg_types
+        NULL,                       // arg_values
+        TRACE_EVENT_FLAG_NONE);     // flags
+  } else {
+    category_enabled_ = NULL;
+  }
+}
+
+ScopedTrace::~ScopedTrace() {
+  if (category_enabled_ && *category_enabled_) {
+    TRACE_EVENT_API_ADD_TRACE_EVENT(
+        TRACE_EVENT_PHASE_END,   // phase
+        category_enabled_,       // category enabled
+        name_,                   // name
+        0,                       // id
+        0,                       // num_args
+        NULL,                    // arg_names
+        NULL,                    // arg_types
+        NULL,                    // arg_values
+        TRACE_EVENT_FLAG_NONE);  // flags
+  }
+}
+
+}  // namespace trace_event_internal
+
