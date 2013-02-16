@@ -44,10 +44,6 @@ GURL GetBaseSecureUrl() {
 
 namespace wallet {
 
-// TODO(ahutter): This shouldn't live in this class. See
-// http://crbug.com/164281.
-const char kApiKey[] = "abcdefg";
-
 GURL GetGetWalletItemsUrl() {
   return GetBaseAutocheckoutUrl().Resolve("getWalletItemsJwtless");
 }

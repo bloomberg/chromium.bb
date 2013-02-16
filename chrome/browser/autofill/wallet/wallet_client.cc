@@ -19,6 +19,7 @@
 #include "chrome/browser/autofill/wallet/wallet_client_observer.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "chrome/browser/autofill/wallet/wallet_service_url.h"
+#include "google_apis/google_api_keys.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -61,7 +62,7 @@ void WalletClient::AcceptLegalDocuments(
   request_type_ = ACCEPT_LEGAL_DOCUMENTS;
 
   DictionaryValue request_dict;
-  request_dict.SetString("api_key", wallet::kApiKey);
+  request_dict.SetString("api_key", google_apis::GetAPIKey());
   request_dict.SetString("google_transaction_id", google_transaction_id);
   ListValue* docs_list = new ListValue();
   for (std::vector<std::string>::const_iterator it = document_ids.begin();
@@ -128,7 +129,7 @@ void WalletClient::GetFullWallet(const std::string& instrument_id,
   request_type_ = GET_FULL_WALLET;
 
   DictionaryValue request_dict;
-  request_dict.SetString("api_key", wallet::kApiKey);
+  request_dict.SetString("api_key", google_apis::GetAPIKey());
   request_dict.SetString("risk_params", GetRiskParams());
   request_dict.SetString("selected_instrument_id", instrument_id);
   request_dict.SetString("selected_address_id", address_id);
@@ -149,7 +150,7 @@ void WalletClient::GetWalletItems(WalletClientObserver* observer) {
   request_type_ = GET_WALLET_ITEMS;
 
   DictionaryValue request_dict;
-  request_dict.SetString("api_key", wallet::kApiKey);
+  request_dict.SetString("api_key", google_apis::GetAPIKey());
   request_dict.SetString("risk_params", GetRiskParams());
 
   std::string post_body;
@@ -199,7 +200,7 @@ void WalletClient::SaveToWallet(const Instrument* instrument,
                                 const Address* shipping_address,
                                 WalletClientObserver* observer) {
   DictionaryValue request_dict;
-  request_dict.SetString("api_key", wallet::kApiKey);
+  request_dict.SetString("api_key", google_apis::GetAPIKey());
   request_dict.SetString("risk_params", GetRiskParams());
 
   if (instrument) {
@@ -229,7 +230,7 @@ void WalletClient::SendAutocheckoutStatus(
   request_type_ = SEND_STATUS;
 
   DictionaryValue request_dict;
-  request_dict.SetString("api_key", wallet::kApiKey);
+  request_dict.SetString("api_key", google_apis::GetAPIKey());
   bool success = status == autofill::SUCCESS;
   request_dict.SetBoolean("success", success);
   request_dict.SetString("hostname", merchant_domain);
@@ -251,7 +252,7 @@ void WalletClient::UpdateInstrument(const std::string& instrument_id,
   request_type_ = UPDATE_INSTRUMENT;
 
   DictionaryValue request_dict;
-  request_dict.SetString("api_key", wallet::kApiKey);
+  request_dict.SetString("api_key", google_apis::GetAPIKey());
   request_dict.SetString("upgraded_instrument_id", instrument_id);
   request_dict.SetString("instrument_phone_number",
                          billing_address.phone_number());

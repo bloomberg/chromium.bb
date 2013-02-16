@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/autofill/wallet/cart.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "chrome/browser/autofill/wallet/instrument.h"
@@ -170,13 +173,11 @@ const char kAcceptLegalDocumentsValidRequest[] =
             "\"doc_1\","
             "\"doc_2\""
         "],"
-        "\"api_key\":\"abcdefg\","
         "\"google_transaction_id\":\"google-transaction-id\""
     "}";
 
 const char kGetFullWalletValidRequest[] =
     "{"
-        "\"api_key\":\"abcdefg\","
         "\"cart\":"
         "{"
             "\"currency_code\":\"currency_code\","
@@ -193,13 +194,11 @@ const char kGetFullWalletValidRequest[] =
 
 const char kGetWalletItemsValidRequest[] =
     "{"
-        "\"api_key\":\"abcdefg\","
         "\"risk_params\":\"\""
     "}";
 
 const char kSaveAddressValidRequest[] =
     "{"
-        "\"api_key\":\"abcdefg\","
         "\"risk_params\":\"\","
         "\"shipping_address\":"
         "{"
@@ -222,7 +221,6 @@ const char kSaveAddressValidRequest[] =
 
 const char kSaveInstrumentValidRequest[] =
     "{"
-        "\"api_key\":\"abcdefg\","
         "\"instrument\":"
         "{"
             "\"credit_card\":"
@@ -254,7 +252,6 @@ const char kSaveInstrumentValidRequest[] =
 
 const char kSaveInstrumentAndAddressValidRequest[] =
     "{"
-        "\"api_key\":\"abcdefg\","
         "\"instrument\":"
         "{"
             "\"credit_card\":"
@@ -303,7 +300,6 @@ const char kSaveInstrumentAndAddressValidRequest[] =
 
 const char kSendAutocheckoutStatusOfSuccessValidRequest[] =
     "{"
-        "\"api_key\":\"abcdefg\","
         "\"google_transaction_id\":\"google_transaction_id\","
         "\"hostname\":\"hostname\","
         "\"success\":true"
@@ -311,7 +307,6 @@ const char kSendAutocheckoutStatusOfSuccessValidRequest[] =
 
 const char kSendAutocheckoutStatusOfFailureValidRequest[] =
     "{"
-        "\"api_key\":\"abcdefg\","
         "\"google_transaction_id\":\"google_transaction_id\","
         "\"hostname\":\"hostname\","
         "\"reason\":\"CANNOT_PROCEED\","
@@ -320,7 +315,6 @@ const char kSendAutocheckoutStatusOfFailureValidRequest[] =
 
 const char kUpdateInstrumentValidRequest[] =
     "{"
-        "\"api_key\":\"abcdefg\","
         "\"instrument_phone_number\":\"phone_number\","
         "\"upgraded_billing_address\":"
         "{"
@@ -359,18 +353,32 @@ class WalletClientTest : public testing::Test {
     io_thread_.Stop();
   }
 
+  std::string GetData(net::TestURLFetcher* fetcher) {
+    std::string data = fetcher->upload_data();
+    scoped_ptr<Value> root(base::JSONReader::Read(data));
+
+    // If this is not a JSON dictionary, return plain text.
+    if (root.get() == NULL || !root->IsType(Value::TYPE_DICTIONARY))
+      return data;
+
+    // Remove api_key entry (to prevent accidental leak), return JSON as text.
+    DictionaryValue* dict = static_cast<DictionaryValue*>(root.get());
+    dict->Remove("api_key", NULL);
+    base::JSONWriter::Write(dict, &data);
+    return data;
+  }
+
   void VerifyAndFinishRequest(const net::TestURLFetcherFactory& fetcher_factory,
                               net::HttpStatusCode response_code,
                               const std::string& request_body,
                               const std::string& response_body) {
     net::TestURLFetcher* fetcher = fetcher_factory.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
-    EXPECT_EQ(request_body, fetcher->upload_data());
+    EXPECT_EQ(request_body, GetData(fetcher));
     fetcher->set_response_code(response_code);
     fetcher->SetResponseString(response_body);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
-
  protected:
   TestingProfile profile_;
 
@@ -559,7 +567,7 @@ TEST_F(WalletClientTest, GetFullWallet) {
                               &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kGetFullWalletValidRequest, fetcher->upload_data());
+  EXPECT_EQ(kGetFullWalletValidRequest, GetData(fetcher));
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(kGetFullWalletValidResponse);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -582,7 +590,7 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
                                      &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kAcceptLegalDocumentsValidRequest, fetcher->upload_data());
+  EXPECT_EQ(kAcceptLegalDocumentsValidRequest, GetData(fetcher));
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -595,7 +603,7 @@ TEST_F(WalletClientTest, GetWalletItems) {
   wallet_client.GetWalletItems(&observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kGetWalletItemsValidRequest, fetcher->upload_data());
+  EXPECT_EQ(kGetWalletItemsValidRequest, GetData(fetcher));
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(kGetWalletItemsValidResponse);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -781,8 +789,7 @@ TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
                                        &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kSendAutocheckoutStatusOfSuccessValidRequest,
-            fetcher->upload_data());
+  EXPECT_EQ(kSendAutocheckoutStatusOfSuccessValidRequest, GetData(fetcher));
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -800,8 +807,7 @@ TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
                                        &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kSendAutocheckoutStatusOfFailureValidRequest,
-            fetcher->upload_data());
+  EXPECT_EQ(kSendAutocheckoutStatusOfFailureValidRequest, GetData(fetcher));
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }

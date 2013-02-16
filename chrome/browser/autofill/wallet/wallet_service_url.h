@@ -9,7 +9,6 @@ class GURL;
 
 namespace wallet {
 
-extern const char kApiKey[];
 GURL GetGetWalletItemsUrl();
 GURL GetGetFullWalletUrl();
 GURL GetAcceptLegalDocumentsUrl();
