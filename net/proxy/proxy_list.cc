@@ -175,7 +175,11 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
 void ProxyList::UpdateRetryInfoOnFallback(
     ProxyRetryInfoMap* proxy_retry_info, const BoundNetLog& net_log) const {
   // Number of minutes to wait before retrying a bad proxy server.
+#if defined(OS_ANDROID)
+  const TimeDelta kProxyRetryDelay = TimeDelta::FromMinutes(1);
+#else
   const TimeDelta kProxyRetryDelay = TimeDelta::FromMinutes(5);
+#endif
 
   if (proxies_.empty()) {
     NOTREACHED();
