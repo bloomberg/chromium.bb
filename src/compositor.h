@@ -738,7 +738,7 @@ void
 weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec);
 void
 weston_seat_init_pointer(struct weston_seat *seat);
-void
+int
 weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap);
 void
 weston_seat_init_touch(struct weston_seat *seat);

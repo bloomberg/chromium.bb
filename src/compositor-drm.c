@@ -1934,7 +1934,7 @@ drm_restore(struct weston_compositor *ec)
 
 static const char default_seat[] = "seat0";
 
-static void
+static int
 device_added(struct udev_device *udev_device, struct drm_seat *master)
 {
 	struct weston_compositor *c;
@@ -1949,7 +1949,7 @@ device_added(struct udev_device *udev_device, struct drm_seat *master)
 		device_seat = default_seat;
 
 	if (strcmp(device_seat, master->seat_id))
-		return;
+		return 0;
 
 	c = master->base.compositor;
 	devnode = udev_device_get_devnode(udev_device);
@@ -1960,14 +1960,18 @@ device_added(struct udev_device *udev_device, struct drm_seat *master)
 	fd = weston_launcher_open(c, devnode, O_RDWR | O_NONBLOCK);
 	if (fd < 0) {
 		weston_log("opening input device '%s' failed.\n", devnode);
-		return;
+		return -1;
 	}
 
 	device = evdev_device_create(&master->base, devnode, fd);
-	if (!device) {
+	if (device == EVDEV_UNHANDLED_DEVICE) {
 		close(fd);
 		weston_log("not using input device '%s'.\n", devnode);
-		return;
+		return 0;
+	} else if (device == NULL) {
+		close(fd);
+		weston_log("failed to create input device '%s'.\n", devnode);
+		return -1;
 	}
 
 	calibration_values =
@@ -1993,9 +1997,11 @@ device_added(struct udev_device *udev_device, struct drm_seat *master)
 	}
 
 	wl_list_insert(master->devices_list.prev, &device->link);
+
+	return 0;
 }
 
-static void
+static int
 evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
 {
 	struct drm_seat *seat = (struct drm_seat *) seat_base;
@@ -2017,7 +2023,11 @@ evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
 			continue;
 		}
 
-		device_added(device, seat);
+		if (device_added(device, seat) < 0) {
+			udev_device_unref(device);
+			udev_enumerate_unref(e);
+			return -1;
+		}
 
 		udev_device_unref(device);
 	}
@@ -2034,6 +2044,8 @@ evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
 			"(Weston backend option 'seat', "
 			"udev device property ID_SEAT)\n");
 	}
+
+	return 0;
 }
 
 static int
@@ -2136,7 +2148,7 @@ drm_led_update(struct weston_seat *seat_base, enum weston_led leds)
 		evdev_led_update(device, leds);
 }
 
-static void
+static struct drm_seat *
 evdev_input_create(struct weston_compositor *c, struct udev *udev,
 		   const char *seat_id)
 {
@@ -2144,7 +2156,7 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 
 	seat = malloc(sizeof *seat);
 	if (seat == NULL)
-		return;
+		return NULL;
 
 	memset(seat, 0, sizeof *seat);
 	weston_seat_init(&seat->base, c);
@@ -2152,13 +2164,17 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 
 	wl_list_init(&seat->devices_list);
 	seat->seat_id = strdup(seat_id);
-	if (!evdev_enable_udev_monitor(udev, &seat->base)) {
-		free(seat->seat_id);
-		free(seat);
-		return;
-	}
+	if (!evdev_enable_udev_monitor(udev, &seat->base))
+		goto err;
+	if (evdev_add_devices(udev, &seat->base) < 0)
+		goto err;
 
-	evdev_add_devices(udev, &seat->base);
+	return seat;
+
+ err:
+	free(seat->seat_id);
+	free(seat);
+	return NULL;
 }
 
 static void
@@ -2486,7 +2502,10 @@ drm_compositor_create(struct wl_display *display,
 
 	path = NULL;
 
-	evdev_input_create(&ec->base, ec->udev, seat);
+	if (evdev_input_create(&ec->base, ec->udev, seat) == NULL) {
+		weston_log("failed to create input devices\n");
+		goto err_sprite;
+	}
 
 	loop = wl_display_get_event_loop(ec->base.wl_display);
 	ec->drm_source =

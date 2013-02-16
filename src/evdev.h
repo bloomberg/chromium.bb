@@ -88,6 +88,8 @@ struct evdev_device {
 #define TEST_BIT(array, bit)    ((array[LONG(bit)] >> OFF(bit)) & 1)
 /* end copied */
 
+#define EVDEV_UNHANDLED_DEVICE ((struct evdev_device *) 1)
+
 struct evdev_dispatch;
 
 struct evdev_dispatch_interface {

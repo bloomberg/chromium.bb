@@ -2363,14 +2363,15 @@ device_handle_new_drag_icon(struct wl_listener *listener, void *data)
 	weston_seat_update_drag_surface(seat, 0, 0);
 }
 
-static void weston_compositor_xkb_init(struct weston_compositor *ec,
-				       struct xkb_rule_names *names)
+static int
+weston_compositor_xkb_init(struct weston_compositor *ec,
+			   struct xkb_rule_names *names)
 {
 	if (ec->xkb_context == NULL) {
 		ec->xkb_context = xkb_context_new(0);
 		if (ec->xkb_context == NULL) {
 			weston_log("failed to create XKB context\n");
-			exit(1);
+			return -1;
 		}
 	}
 
@@ -2382,6 +2383,8 @@ static void weston_compositor_xkb_init(struct weston_compositor *ec,
 		ec->xkb_names.model = strdup("pc105");
 	if (!ec->xkb_names.layout)
 		ec->xkb_names.layout = strdup("us");
+
+	return 0;
 }
 
 static void xkb_info_destroy(struct weston_xkb_info *xkb_info)
@@ -2407,7 +2410,7 @@ static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
 	xkb_context_unref(ec->xkb_context);
 }
 
-static void
+static int
 weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 {
 	char *keymap_str;
@@ -2436,7 +2439,7 @@ weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 	keymap_str = xkb_map_get_as_string(xkb_info->keymap);
 	if (keymap_str == NULL) {
 		weston_log("failed to get string version of keymap\n");
-		exit(EXIT_FAILURE);
+		return -1;
 	}
 	xkb_info->keymap_size = strlen(keymap_str) + 1;
 
@@ -2458,21 +2461,21 @@ weston_xkb_info_new_keymap(struct weston_xkb_info *xkb_info)
 	strcpy(xkb_info->keymap_area, keymap_str);
 	free(keymap_str);
 
-	return;
+	return 0;
 
 err_dev_zero:
 	close(xkb_info->keymap_fd);
 	xkb_info->keymap_fd = -1;
 err_keymap_str:
 	free(keymap_str);
-	exit(EXIT_FAILURE);
+	return -1;
 }
 
-static void
+static int
 weston_compositor_build_global_keymap(struct weston_compositor *ec)
 {
 	if (ec->xkb_info.keymap != NULL)
-		return;
+		return 0;
 
 	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_context,
 						     &ec->xkb_names,
@@ -2480,28 +2483,32 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 	if (ec->xkb_info.keymap == NULL) {
 		weston_log("failed to compile global XKB keymap\n");
 		weston_log("  tried rules %s, model %s, layout %s, variant %s, "
-			"options %s",
+			"options %s\n",
 			ec->xkb_names.rules, ec->xkb_names.model,
 			ec->xkb_names.layout, ec->xkb_names.variant,
 			ec->xkb_names.options);
-		exit(1);
+		return -1;
 	}
 
-	weston_xkb_info_new_keymap(&ec->xkb_info);
+	if (weston_xkb_info_new_keymap(&ec->xkb_info) < 0)
+		return -1;
+
+	return 0;
 }
 
-WL_EXPORT void
+WL_EXPORT int
 weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 {
 	if (seat->has_keyboard)
-		return;
+		return 0;
 
 	if (keymap != NULL) {
 		seat->xkb_info.keymap = xkb_map_ref(keymap);
-		weston_xkb_info_new_keymap(&seat->xkb_info);
-	}
-	else {
-		weston_compositor_build_global_keymap(seat->compositor);
+		if (weston_xkb_info_new_keymap(&seat->xkb_info) < 0)
+			return -1;
+	} else {
+		if (weston_compositor_build_global_keymap(seat->compositor) < 0)
+			return -1;
 		seat->xkb_info = seat->compositor->xkb_info;
 		seat->xkb_info.keymap = xkb_map_ref(seat->xkb_info.keymap);
 	}
@@ -2509,7 +2516,7 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 	seat->xkb_state.state = xkb_state_new(seat->xkb_info.keymap);
 	if (seat->xkb_state.state == NULL) {
 		weston_log("failed to initialise XKB state\n");
-		exit(1);
+		return -1;
 	}
 
 	seat->xkb_state.leds = 0;
@@ -2518,6 +2525,8 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 	wl_seat_set_keyboard(&seat->seat, &seat->keyboard.keyboard);
 
 	seat->has_keyboard = 1;
+
+	return 0;
 }
 
 WL_EXPORT void
@@ -2991,7 +3000,8 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	weston_plane_init(&ec->primary_plane, 0, 0);
 
-	weston_compositor_xkb_init(ec, &xkb_names);
+	if (weston_compositor_xkb_init(ec, &xkb_names) < 0)
+		return -1;
 
 	ec->ping_handler = NULL;
 

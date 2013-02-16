@@ -397,7 +397,7 @@ evdev_device_data(int fd, uint32_t mask, void *data)
 }
 
 static int
-evdev_configure_device(struct evdev_device *device)
+evdev_handle_device(struct evdev_device *device)
 {
 	struct input_absinfo absinfo;
 	unsigned long ev_bits[NBITS(EV_MAX)];
@@ -483,9 +483,15 @@ evdev_configure_device(struct evdev_device *device)
 		weston_log("input device %s, %s "
 			   "ignored: unsupported device type\n",
 			   device->devname, device->devnode);
-		return -1;
+		return 0;
 	}
 
+	return 1;
+}
+
+static int
+evdev_configure_device(struct evdev_device *device)
+{
 	if ((device->caps &
 	     (EVDEV_MOTION_ABS | EVDEV_MOTION_REL | EVDEV_BUTTON))) {
 		weston_seat_init_pointer(device->seat);
@@ -496,7 +502,8 @@ evdev_configure_device(struct evdev_device *device)
 			   device->caps & EVDEV_BUTTON ? " button" : "");
 	}
 	if ((device->caps & EVDEV_KEYBOARD)) {
-		weston_seat_init_keyboard(device->seat, NULL);
+		if (weston_seat_init_keyboard(device->seat, NULL) < 0)
+			return -1;
 		weston_log("input device %s, %s is a keyboard\n",
 			   device->devname, device->devnode);
 	}
@@ -537,6 +544,13 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 
 	ioctl(device->fd, EVIOCGNAME(sizeof(devname)), devname);
 	device->devname = strdup(devname);
+
+	if (!evdev_handle_device(device)) {
+		free(device->devnode);
+		free(device->devname);
+		free(device);
+		return EVDEV_UNHANDLED_DEVICE;
+	}
 
 	if (evdev_configure_device(device) == -1)
 		goto err1;

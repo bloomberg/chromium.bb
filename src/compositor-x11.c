@@ -303,7 +303,8 @@ x11_input_create(struct x11_compositor *c, int no_input)
 	weston_seat_init_pointer(&c->core_seat);
 
 	keymap = x11_compositor_get_keymap(c);
-	weston_seat_init_keyboard(&c->core_seat, keymap);
+	if (weston_seat_init_keyboard(&c->core_seat, keymap) < 0)
+		return -1;
 	if (keymap)
 		xkb_map_unref(keymap);
 
