@@ -68,6 +68,7 @@ punctuation	*	35	ASTERISK
 punctuation	+	235	PLUS SIGN
 punctuation	,	2	COMMA
 punctuation	-	36	HYPHEN-MINUS
+punctuation − 36	Added u+2212 simbol
 punctuation	.	3	FULL STOP
 punctuation	/	256	SOLIDUS
 punctuation	:	25	COLON
