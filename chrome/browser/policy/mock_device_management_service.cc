@@ -85,6 +85,12 @@ class AsyncRequestJob : public MockRequestJobBase,
   virtual ~AsyncRequestJob() {}
 
  protected:
+  virtual void RetryJob() OVERRIDE {
+    if (!retry_callback_.is_null())
+      retry_callback_.Run(this);
+    Run();
+  }
+
   virtual void SendResponse(
       DeviceManagementStatus status,
       const em::DeviceManagementResponse& response) OVERRIDE {

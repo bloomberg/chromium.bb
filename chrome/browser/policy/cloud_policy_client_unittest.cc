@@ -9,11 +9,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/policy/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/mock_device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::Mock;
 using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
@@ -30,19 +32,6 @@ const char kMachineID[] = "fake-machine-id";
 const char kMachineModel[] = "fake-machine-model";
 const char kOAuthToken[] = "fake-oauth-token";
 const char kDMToken[] = "fake-dm-token";
-
-class MockObserver : public CloudPolicyClient::Observer {
- public:
-  MockObserver() {}
-  virtual ~MockObserver() {}
-
-  MOCK_METHOD1(OnPolicyFetched, void(CloudPolicyClient*));
-  MOCK_METHOD1(OnRegistrationStateChanged, void(CloudPolicyClient*));
-  MOCK_METHOD1(OnClientError, void(CloudPolicyClient*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockObserver);
-};
 
 class MockStatusProvider : public CloudPolicyClient::StatusProvider {
  public:
@@ -176,7 +165,7 @@ class CloudPolicyClientTest : public testing::Test {
   PolicyNamespaceKey policy_ns_key_;
   MockDeviceManagementService service_;
   StrictMock<MockStatusProvider> status_provider_;
-  StrictMock<MockObserver> observer_;
+  StrictMock<MockCloudPolicyClientObserver> observer_;
   scoped_ptr<CloudPolicyClient> client_;
 };
 
@@ -251,6 +240,38 @@ TEST_F(CloudPolicyClientTest, RegistrationFailure) {
   EXPECT_FALSE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_ns_key_));
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, RetryRegistration) {
+  // First registration does not set the re-register flag.
+  EXPECT_FALSE(
+      registration_request_.mutable_register_request()->has_reregister());
+  MockDeviceManagementJob* register_job = NULL;
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+      .WillOnce(service_.CreateAsyncJob(&register_job));
+  EXPECT_CALL(service_, StartJob(dm_protocol::kValueRequestRegister,
+                                 "", kOAuthToken, "", "", _,
+                                 MatchProto(registration_request_)));
+  client_->Register(em::DeviceRegisterRequest::USER,
+                    kOAuthToken, std::string(), false);
+  EXPECT_FALSE(client_->is_registered());
+  Mock::VerifyAndClearExpectations(&service_);
+
+  // Simulate a retry callback before proceeding; the re-register flag is set.
+  registration_request_.mutable_register_request()->set_reregister(true);
+  EXPECT_CALL(service_, StartJob(dm_protocol::kValueRequestRegister,
+                                 "", kOAuthToken, "", "", _,
+                                 MatchProto(registration_request_)));
+  register_job->RetryJob();
+  Mock::VerifyAndClearExpectations(&service_);
+
+  // Subsequent retries keep the flag set.
+  EXPECT_CALL(service_, StartJob(dm_protocol::kValueRequestRegister,
+                                 "", kOAuthToken, "", "", _,
+                                 MatchProto(registration_request_)));
+  register_job->RetryJob();
+  Mock::VerifyAndClearExpectations(&service_);
 }
 
 TEST_F(CloudPolicyClientTest, PolicyUpdate) {

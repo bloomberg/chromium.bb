@@ -110,6 +110,9 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
   if (is_auto_enrollement)
     request->set_auto_enrolled(true);
 
+  request_job_->SetRetryCallback(
+      base::Bind(&CloudPolicyClient::OnRetryRegister, base::Unretained(this)));
+
   request_job_->Start(base::Bind(&CloudPolicyClient::OnRegisterCompleted,
                                  base::Unretained(this)));
 }
@@ -205,6 +208,16 @@ const em::PolicyFetchResponse* CloudPolicyClient::GetPolicyFor(
     const PolicyNamespaceKey& key) const {
   ResponseMap::const_iterator it = responses_.find(key);
   return it == responses_.end() ? NULL : it->second;
+}
+
+void CloudPolicyClient::OnRetryRegister(DeviceManagementRequestJob* job) {
+  DCHECK_EQ(request_job_.get(), job);
+  // If the initial request managed to get to the server but the response didn't
+  // arrive at the client then retrying with the same client ID will fail.
+  // Set the re-registration flag so that the server accepts it.
+  // If the server hasn't seen the client ID before then it will also accept
+  // the re-registration.
+  job->GetRequest()->mutable_register_request()->set_reregister(true);
 }
 
 void CloudPolicyClient::OnRegisterCompleted(

@@ -17,6 +17,7 @@ namespace policy {
 class MockDeviceManagementJob {
  public:
   virtual ~MockDeviceManagementJob();
+  virtual void RetryJob() = 0;
   virtual void SendResponse(
       DeviceManagementStatus status,
       const enterprise_management::DeviceManagementResponse& response) = 0;

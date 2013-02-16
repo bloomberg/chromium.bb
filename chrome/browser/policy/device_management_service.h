@@ -45,6 +45,8 @@ class DeviceManagementRequestJob {
       void(DeviceManagementStatus,
            const enterprise_management::DeviceManagementResponse&)> Callback;
 
+  typedef base::Callback<void(DeviceManagementRequestJob*)> RetryCallback;
+
   virtual ~DeviceManagementRequestJob();
 
   // Functions for configuring the job. These should only be called before
@@ -56,8 +58,15 @@ class DeviceManagementRequestJob {
   void SetClientID(const std::string& client_id);
   enterprise_management::DeviceManagementRequest* GetRequest();
 
+  // A job may automatically retry if it fails due to a temporary condition, or
+  // due to proxy misconfigurations. If a |retry_callback| is set then it will
+  // be invoked with the DeviceManagementRequestJob as an argument when that
+  // happens, so that the job's owner can customize the retry request before
+  // it's sent.
+  void SetRetryCallback(const RetryCallback& retry_callback);
+
   // Starts the job. |callback| will be invoked on completion.
-  void Start(const DeviceManagementRequestJob::Callback& callback);
+  void Start(const Callback& callback);
 
  protected:
   typedef std::vector<std::pair<std::string, std::string> > ParameterMap;
@@ -74,6 +83,7 @@ class DeviceManagementRequestJob {
   std::string gaia_token_;
   std::string dm_token_;
   enterprise_management::DeviceManagementRequest request_;
+  RetryCallback retry_callback_;
 
   Callback callback_;
 
@@ -89,6 +99,11 @@ class DeviceManagementService : public net::URLFetcherDelegate {
  public:
   explicit DeviceManagementService(const std::string& server_url);
   virtual ~DeviceManagementService();
+
+  // The ID of URLFetchers created by the DeviceManagementService. This can be
+  // used by tests that use a TestURLFetcherFactory to get the pending fetchers
+  // created by the DeviceManagementService.
+  static const int kURLFetcherID;
 
   // Creates a new device management request job. Ownership is transferred to
   // the caller.
@@ -117,7 +132,7 @@ class DeviceManagementService : public net::URLFetcherDelegate {
   void Initialize();
 
   // Starts a job.
-  void StartJob(DeviceManagementRequestJobImpl* job, bool bypass_proxy);
+  void StartJob(DeviceManagementRequestJobImpl* job);
 
   // Adds a job. Caller must make sure the job pointer stays valid until the job
   // completes or gets canceled via RemoveJob().

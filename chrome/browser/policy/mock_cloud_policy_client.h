@@ -54,6 +54,19 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyClient);
 };
 
+class MockCloudPolicyClientObserver : public CloudPolicyClient::Observer {
+ public:
+  MockCloudPolicyClientObserver();
+  virtual ~MockCloudPolicyClientObserver();
+
+  MOCK_METHOD1(OnPolicyFetched, void(CloudPolicyClient*));
+  MOCK_METHOD1(OnRegistrationStateChanged, void(CloudPolicyClient*));
+  MOCK_METHOD1(OnClientError, void(CloudPolicyClient*));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyClientObserver);
+};
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_MOCK_CLOUD_POLICY_CLIENT_H_

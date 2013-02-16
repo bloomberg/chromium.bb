@@ -163,6 +163,9 @@ class CloudPolicyClient {
   // A set of PolicyNamespaceKeys to fetch.
   typedef std::set<PolicyNamespaceKey> NamespaceSet;
 
+  // Callback for retries of registration requests.
+  void OnRetryRegister(DeviceManagementRequestJob* job);
+
   // Callback for registration requests.
   void OnRegisterCompleted(
       DeviceManagementStatus status,

@@ -29,4 +29,8 @@ void MockCloudPolicyClient::SetStatus(DeviceManagementStatus status) {
   status_ = status;
 }
 
+MockCloudPolicyClientObserver::MockCloudPolicyClientObserver() {}
+
+MockCloudPolicyClientObserver::~MockCloudPolicyClientObserver() {}
+
 }  // namespace policy

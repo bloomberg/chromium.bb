@@ -15,10 +15,12 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/policy/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/chrome_settings.pb.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
+#include "chrome/browser/policy/test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -53,16 +55,6 @@ namespace em = enterprise_management;
 namespace policy {
 
 namespace {
-
-class MockCloudPolicyClientObserver : public CloudPolicyClient::Observer {
- public:
-  MockCloudPolicyClientObserver() {}
-  virtual ~MockCloudPolicyClientObserver() {}
-
-  MOCK_METHOD1(OnPolicyFetched, void(CloudPolicyClient*));
-  MOCK_METHOD1(OnRegistrationStateChanged, void(CloudPolicyClient*));
-  MOCK_METHOD1(OnClientError, void(CloudPolicyClient*));
-};
 
 const char* GetTestUser() {
 #if defined(OS_CHROMEOS)
@@ -137,19 +129,8 @@ class CloudPolicyTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    // Checks that no policies have been loaded by the other providers before
-    // setting up the cloud connection. Other policies configured in the test
-    // machine will interfere with these tests.
-    const PolicyMap& map = g_browser_process->policy_service()->GetPolicies(
-        PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-    if (!map.empty()) {
-      base::DictionaryValue dict;
-      for (PolicyMap::const_iterator it = map.begin(); it != map.end(); ++it)
-        dict.SetWithoutPathExpansion(it->first, it->second.value->DeepCopy());
-      ADD_FAILURE()
-          << "There are pre-existing policies in this machine that will "
-          << "interfere with these tests. Policies found: " << dict;
-    }
+    ASSERT_TRUE(PolicyServiceIsEmpty(g_browser_process->policy_service()))
+        << "Pre-existing policies in this machine will make this test fail.";
 
     BrowserPolicyConnector* connector =
         g_browser_process->browser_policy_connector();
