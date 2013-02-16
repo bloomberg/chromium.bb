@@ -117,12 +117,42 @@
 #include <dlfcn.h>
 #endif
 
+namespace net {
+
+// State machines are easier to debug if you log state transitions.
+// Enable these if you want to see what's going on.
+#if 1
+#define EnterFunction(x)
+#define LeaveFunction(x)
+#define GotoState(s) next_handshake_state_ = s
+#else
+#define EnterFunction(x)\
+    VLOG(1) << (void *)this << " " << __FUNCTION__ << " enter " << x\
+            << "; next_handshake_state " << next_handshake_state_
+#define LeaveFunction(x)\
+    VLOG(1) << (void *)this << " " << __FUNCTION__ << " leave " << x\
+            << "; next_handshake_state " << next_handshake_state_
+#define GotoState(s)\
+    do {\
+      VLOG(1) << (void *)this << " " << __FUNCTION__ << " jump to state " << s;\
+      next_handshake_state_ = s;\
+    } while (0)
+#endif
+
+namespace {
+
 // SSL plaintext fragments are shorter than 16KB. Although the record layer
 // overhead is allowed to be 2K + 5 bytes, in practice the overhead is much
 // smaller than 1KB. So a 17KB buffer should be large enough to hold an
 // entire SSL record.
-static const int kRecvBufferSize = 17 * 1024;
-static const int kSendBufferSize = 17 * 1024;
+const int kRecvBufferSize = 17 * 1024;
+const int kSendBufferSize = 17 * 1024;
+
+// Used by SSLClientSocketNSS::Core to indicate there is no read result
+// obtained by a previous operation waiting to be returned to the caller.
+// This constant can be any non-negative/non-zero value (eg: it does not
+// overlap with any value of the net::Error range, including net::OK).
+const int kNoPendingReadResult = 1;
 
 #if defined(OS_WIN)
 // CERT_OCSP_RESPONSE_PROP_ID is only implemented on Vista+, but it can be
@@ -130,7 +160,7 @@ static const int kSendBufferSize = 17 * 1024;
 // sending the OCSP response if it supports the extension, for the subset of
 // XP clients who will request it but be unable to use it, but this is an
 // acceptable trade-off for simplicity of implementation.
-static bool IsOCSPStaplingSupported() {
+bool IsOCSPStaplingSupported() {
   return true;
 }
 #elif defined(USE_NSS)
@@ -169,46 +199,22 @@ class RuntimeLibNSSFunctionPointers {
       cache_ocsp_response_from_side_channel_;
 };
 
-static CacheOCSPResponseFromSideChannelFunction
+CacheOCSPResponseFromSideChannelFunction
 GetCacheOCSPResponseFromSideChannelFunction() {
   return RuntimeLibNSSFunctionPointers::GetInstance()
     ->GetCacheOCSPResponseFromSideChannelFunction();
 }
 
-static bool IsOCSPStaplingSupported() {
+bool IsOCSPStaplingSupported() {
   return GetCacheOCSPResponseFromSideChannelFunction() != NULL;
 }
 #else
 // TODO(agl): Figure out if we can plumb the OCSP response into Mac's system
 // certificate validation functions.
-static bool IsOCSPStaplingSupported() {
+bool IsOCSPStaplingSupported() {
   return false;
 }
 #endif
-
-namespace net {
-
-// State machines are easier to debug if you log state transitions.
-// Enable these if you want to see what's going on.
-#if 1
-#define EnterFunction(x)
-#define LeaveFunction(x)
-#define GotoState(s) next_handshake_state_ = s
-#else
-#define EnterFunction(x)\
-    VLOG(1) << (void *)this << " " << __FUNCTION__ << " enter " << x\
-            << "; next_handshake_state " << next_handshake_state_
-#define LeaveFunction(x)\
-    VLOG(1) << (void *)this << " " << __FUNCTION__ << " leave " << x\
-            << "; next_handshake_state " << next_handshake_state_
-#define GotoState(s)\
-    do {\
-      VLOG(1) << (void *)this << " " << __FUNCTION__ << " jump to state " << s;\
-      next_handshake_state_ = s;\
-    } while (0)
-#endif
-
-namespace {
 
 class FreeCERTCertificate {
  public:
@@ -837,6 +843,17 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // Buffers for the network end of the SSL state machine
   memio_Private* nss_bufs_;
 
+  // Used by DoPayloadRead() when attempting to fill the caller's buffer with
+  // as much data as possible, without blocking.
+  // If DoPayloadRead() encounters an error after having read some data, stores
+  // the results to return on the *next* call to DoPayloadRead(). A value of
+  // kNoPendingReadResult indicates there is no pending result, otherwise 0
+  // indicates EOF and < 0 indicates an error.
+  int pending_read_result_;
+  // Contains the previously observed NSS error. Only valid when
+  // pending_read_result_ != kNoPendingReadResult.
+  PRErrorCode pending_read_nss_error_;
+
   // The certificate chain, in DER form, that is expected to be received from
   // the server.
   std::vector<std::string> predicted_certs_;
@@ -912,6 +929,8 @@ SSLClientSocketNSS::Core::Core(
       ssl_config_(ssl_config),
       nss_fd_(NULL),
       nss_bufs_(NULL),
+      pending_read_result_(kNoPendingReadResult),
+      pending_read_nss_error_(0),
       next_handshake_state_(STATE_NONE),
       channel_id_xtn_negotiated_(false),
       channel_id_needed_(false),
@@ -1945,43 +1964,115 @@ int SSLClientSocketNSS::Core::DoPayloadRead() {
   DCHECK(user_read_buf_);
   DCHECK_GT(user_read_buf_len_, 0);
 
-  int rv = PR_Read(nss_fd_, user_read_buf_->data(), user_read_buf_len_);
-  // Update NSSTaskRunner status because PR_Read may consume |nss_bufs_|, then
-  // following |amount_in_read_buffer| may be changed here.
-  int amount_in_read_buffer = memio_GetReadableBufferSize(nss_bufs_);
-  PostOrRunCallback(
-      FROM_HERE,
-      base::Bind(&Core::OnNSSBufferUpdated, this, amount_in_read_buffer));
+  int rv;
+  // If a previous greedy read resulted in an error that was not consumed (eg:
+  // due to the caller having read some data successfully), then return that
+  // pending error now.
+  if (pending_read_result_ != kNoPendingReadResult) {
+    rv = pending_read_result_;
+    PRErrorCode prerr = pending_read_nss_error_;
+    pending_read_result_ = kNoPendingReadResult;
+    pending_read_nss_error_ = 0;
 
-  if (client_auth_cert_needed_) {
-    // We don't need to invalidate the non-client-authenticated SSL session
-    // because the server will renegotiate anyway.
-    rv = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
-    PostOrRunCallback(
-        FROM_HERE,
-        base::Bind(&AddLogEventWithCallback, weak_net_log_,
-                   NetLog::TYPE_SSL_READ_ERROR,
-                   CreateNetLogSSLErrorCallback(rv, 0)));
+    if (rv == 0) {
+      PostOrRunCallback(
+          FROM_HERE,
+          base::Bind(&LogByteTransferEvent, weak_net_log_,
+                     NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED, rv,
+                     scoped_refptr<IOBuffer>(user_read_buf_)));
+    } else {
+      PostOrRunCallback(
+          FROM_HERE,
+          base::Bind(&AddLogEventWithCallback, weak_net_log_,
+                     NetLog::TYPE_SSL_READ_ERROR,
+                     CreateNetLogSSLErrorCallback(rv, prerr)));
+    }
     return rv;
   }
+
+  // Perform a greedy read, attempting to read as much as the caller has
+  // requested. In the current NSS implementation, PR_Read will return
+  // exactly one SSL application data record's worth of data per invocation.
+  // The record size is dictated by the server, and may be noticeably smaller
+  // than the caller's buffer. This may be as little as a single byte, if the
+  // server is performing 1/n-1 record splitting.
+  //
+  // However, this greedy read may result in renegotiations/re-handshakes
+  // happening or may lead to some data being read, followed by an EOF (such as
+  // a TLS close-notify). If at least some data was read, then that result
+  // should be deferred until the next call to DoPayloadRead(). Otherwise, if no
+  // data was read, it's safe to return the error or EOF immediately.
+  int total_bytes_read = 0;
+  do {
+    rv = PR_Read(nss_fd_, user_read_buf_->data() + total_bytes_read,
+                 user_read_buf_len_ - total_bytes_read);
+    if (rv > 0)
+      total_bytes_read += rv;
+  } while (total_bytes_read < user_read_buf_len_ && rv > 0);
+  int amount_in_read_buffer = memio_GetReadableBufferSize(nss_bufs_);
+  PostOrRunCallback(FROM_HERE, base::Bind(&Core::OnNSSBufferUpdated, this,
+                                          amount_in_read_buffer));
+
+  if (total_bytes_read == user_read_buf_len_) {
+    // The caller's entire request was satisfied without error. No further
+    // processing needed.
+    rv = total_bytes_read;
+  } else {
+    // Otherwise, an error occurred (rv <= 0). The error needs to be handled
+    // immediately, while the NSPR/NSS errors are still available in
+    // thread-local storage. However, the handled/remapped error code should
+    // only be returned if no application data was already read; if it was, the
+    // error code should be deferred until the next call of DoPayloadRead.
+    //
+    // If no data was read, |*next_result| will point to the return value of
+    // this function. If at least some data was read, |*next_result| will point
+    // to |pending_read_error_|, to be returned in a future call to
+    // DoPayloadRead() (e.g.: after the current data is handled).
+    int* next_result = &rv;
+    if (total_bytes_read > 0) {
+      pending_read_result_ = rv;
+      rv = total_bytes_read;
+      next_result = &pending_read_result_;
+    }
+
+    if (client_auth_cert_needed_) {
+      *next_result = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
+      pending_read_nss_error_ = 0;
+    } else if (*next_result < 0) {
+      // If *next_result == 0, then that indicates EOF, and no special error
+      // handling is needed.
+      pending_read_nss_error_ = PR_GetError();
+      *next_result = HandleNSSError(pending_read_nss_error_, false);
+      if (rv > 0 && *next_result == ERR_IO_PENDING) {
+        // If at least some data was read from PR_Read(), do not treat
+        // insufficient data as an error to return in the next call to
+        // DoPayloadRead() - instead, let the call fall through to check
+        // PR_Read() again. This is because DoTransportIO() may complete
+        // in between the next call to DoPayloadRead(), and thus it is
+        // important to check PR_Read() on subsequent invocations to see
+        // if a complete record may now be read.
+        pending_read_nss_error_ = 0;
+        pending_read_result_ = kNoPendingReadResult;
+      }
+    }
+  }
+
+  DCHECK_NE(ERR_IO_PENDING, pending_read_result_);
+
   if (rv >= 0) {
     PostOrRunCallback(
         FROM_HERE,
         base::Bind(&LogByteTransferEvent, weak_net_log_,
                    NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED, rv,
                    scoped_refptr<IOBuffer>(user_read_buf_)));
-    return rv;
+  } else if (rv != ERR_IO_PENDING) {
+    PostOrRunCallback(
+        FROM_HERE,
+        base::Bind(&AddLogEventWithCallback, weak_net_log_,
+                   NetLog::TYPE_SSL_READ_ERROR,
+                   CreateNetLogSSLErrorCallback(rv, pending_read_nss_error_)));
+    pending_read_nss_error_ = 0;
   }
-  PRErrorCode prerr = PR_GetError();
-  if (prerr == PR_WOULD_BLOCK_ERROR)
-    return ERR_IO_PENDING;
-
-  rv = HandleNSSError(prerr, false);
-  PostOrRunCallback(
-      FROM_HERE,
-      base::Bind(&AddLogEventWithCallback, weak_net_log_,
-                 NetLog::TYPE_SSL_READ_ERROR,
-                 CreateNetLogSSLErrorCallback(rv, prerr)));
   return rv;
 }
 

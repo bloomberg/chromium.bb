@@ -265,6 +265,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.MultipartHandler,
       self.MultipartSlowHandler,
       self.GetSSLSessionCacheHandler,
+      self.SSLManySmallRecords,
       self.CloseSocketHandler,
       self.RangeResetHandler,
       self.DefaultResponseHandler]
@@ -1406,6 +1407,24 @@ class TestPageHandler(testserver_base.BasePageHandler):
     except AttributeError:
       self.wfile.write('Pass --https-record-resume in order to use' +
                        ' this request')
+    return True
+
+  def SSLManySmallRecords(self):
+    """Sends a reply consisting of a variety of small writes. These will be
+    translated into a series of small SSL records when used over an HTTPS
+    server."""
+
+    if not self._ShouldHandleRequest('/ssl-many-small-records'):
+      return False
+
+    self.send_response(200)
+    self.send_header('Content-Type', 'text/plain')
+    self.end_headers()
+
+    # Write ~26K of data, in 1350 byte chunks
+    for i in xrange(20):
+      self.wfile.write('*' * 1350)
+      self.wfile.flush()
     return True
 
   def CloseSocketHandler(self):

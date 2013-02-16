@@ -43,6 +43,10 @@ namespace {
 const int kSessionCacheTimeoutSeconds = 60 * 60;
 const size_t kSessionCacheMaxEntires = 1024;
 
+// This constant can be any non-negative/non-zero value (eg: it does not
+// overlap with any value of the net::Error range, including net::OK).
+const int kNoPendingReadResult = 1;
+
 // If a client doesn't have a list of protocols that it supports, but
 // the server supports NPN, choosing "http/1.1" is the best answer.
 const char kDefaultSupportedNPNProtocol[] = "http/1.1";
@@ -425,6 +429,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
     : transport_send_busy_(false),
       transport_recv_busy_(false),
       transport_recv_eof_(false),
+      pending_read_error_(kNoPendingReadResult),
       completed_handshake_(false),
       client_auth_cert_needed_(false),
       cert_verifier_(context.cert_verifier),
@@ -1340,20 +1345,69 @@ bool SSLClientSocketOpenSSL::SetSendBufferSize(int32 size) {
 
 int SSLClientSocketOpenSSL::DoPayloadRead() {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  int rv = SSL_read(ssl_, user_read_buf_->data(), user_read_buf_len_);
-  // We don't need to invalidate the non-client-authenticated SSL session
-  // because the server will renegotiate anyway.
-  if (client_auth_cert_needed_)
-    return ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
+
+  int rv;
+  if (pending_read_error_ != kNoPendingReadResult) {
+    rv = pending_read_error_;
+    pending_read_error_ = kNoPendingReadResult;
+    if (rv == 0) {
+      net_log_.AddByteTransferEvent(NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED,
+                                    rv, user_read_buf_->data());
+    }
+    return rv;
+  }
+
+  int total_bytes_read = 0;
+  do {
+    rv = SSL_read(ssl_, user_read_buf_->data() + total_bytes_read,
+                  user_read_buf_len_ - total_bytes_read);
+    if (rv > 0)
+      total_bytes_read += rv;
+  } while (total_bytes_read < user_read_buf_len_ && rv > 0);
+
+  if (total_bytes_read == user_read_buf_len_) {
+    rv = total_bytes_read;
+  } else {
+    // Otherwise, an error occurred (rv <= 0). The error needs to be handled
+    // immediately, while the OpenSSL errors are still available in
+    // thread-local storage. However, the handled/remapped error code should
+    // only be returned if no application data was already read; if it was, the
+    // error code should be deferred until the next call of DoPayloadRead.
+    //
+    // If no data was read, |*next_result| will point to the return value of
+    // this function. If at least some data was read, |*next_result| will point
+    // to |pending_read_error_|, to be returned in a future call to
+    // DoPayloadRead() (e.g.: after the current data is handled).
+    int *next_result = &rv;
+    if (total_bytes_read > 0) {
+      pending_read_error_ = rv;
+      rv = total_bytes_read;
+      next_result = &pending_read_error_;
+    }
+
+    if (client_auth_cert_needed_) {
+      *next_result = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
+    } else if (*next_result < 0) {
+      int err = SSL_get_error(ssl_, *next_result);
+      *next_result = MapOpenSSLError(err, err_tracer);
+      if (rv > 0 && *next_result == ERR_IO_PENDING) {
+          // If at least some data was read from SSL_read(), do not treat
+          // insufficient data as an error to return in the next call to
+          // DoPayloadRead() - instead, let the call fall through to check
+          // SSL_read() again. This is because DoTransportIO() may complete
+          // in between the next call to DoPayloadRead(), and thus it is
+          // important to check SSL_read() on subsequent invocations to see
+          // if a complete record may now be read.
+        *next_result = kNoPendingReadResult;
+      }
+    }
+  }
 
   if (rv >= 0) {
     net_log_.AddByteTransferEvent(NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED, rv,
                                   user_read_buf_->data());
-    return rv;
   }
-
-  int err = SSL_get_error(ssl_, rv);
-  return MapOpenSSLError(err, err_tracer);
+  return rv;
 }
 
 int SSLClientSocketOpenSSL::DoPayloadWrite() {
