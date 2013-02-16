@@ -184,11 +184,6 @@ class ChromeDownloadManagerDelegate
       const base::FilePath& unverified_path);
 #endif
 
-  // Determine the intermediate path to use for |target_path|. |danger_type|
-  // specifies the danger level of the download.
-  base::FilePath GetIntermediatePath(const base::FilePath& target_path,
-                               content::DownloadDangerType danger_type);
-
   // Called on the UI thread once a reserved path is available. Updates the
   // download identified by |download_id| with the |target_path|, target
   // disposition and |danger_type|.

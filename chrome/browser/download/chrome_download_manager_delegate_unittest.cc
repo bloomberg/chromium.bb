@@ -90,8 +90,9 @@ enum TestCaseExpectOverwrite {
 
 // Used with DownloadTestCase. Type of intermediate filename to expect.
 enum TestCaseExpectIntermediate {
-  EXPECT_CRDOWNLOAD,  // Expect path/to/target.crdownload
-  EXPECT_UNCONFIRMED  // Expect path/to/Unconfirmed xxx.crdownload
+  EXPECT_CRDOWNLOAD,  // Expect path/to/target.crdownload.
+  EXPECT_UNCONFIRMED, // Expect path/to/Unconfirmed xxx.crdownload.
+  EXPECT_TARGET_PATH, // Expect target path.
 };
 
 // Typical download test case. Used with
@@ -493,21 +494,29 @@ void ChromeDownloadManagerDelegateTest::DownloadTargetVerifier(
   EXPECT_EQ(test_case->expected_disposition, disposition);
   EXPECT_EQ(test_case->danger_type, danger_type);
 
-  if (test_case->expected_intermediate == EXPECT_CRDOWNLOAD) {
-    EXPECT_EQ(download_util::GetCrDownloadPath(target_path).value(),
-              intermediate_path.value());
-  } else {
-    // The paths (in English) look like: /path/Unconfirmed xxx.crdownload.
-    // Of this, we only check that the path is:
-    // 1. Not "/path/target.crdownload",
-    // 2. Points to the same directory as the target.
-    // 3. Has extension ".crdownload".
-    EXPECT_NE(download_util::GetCrDownloadPath(target_path).value(),
-              intermediate_path.value());
-    EXPECT_EQ(target_path.DirName().value(),
-              intermediate_path.DirName().value());
-    EXPECT_TRUE(intermediate_path.MatchesExtension(
-        FILE_PATH_LITERAL(".crdownload")));
+  switch (test_case->expected_intermediate) {
+    case EXPECT_CRDOWNLOAD:
+      EXPECT_EQ(download_util::GetCrDownloadPath(target_path).value(),
+                intermediate_path.value());
+      break;
+
+    case EXPECT_UNCONFIRMED:
+      // The paths (in English) look like: /path/Unconfirmed xxx.crdownload.
+      // Of this, we only check that the path is:
+      // 1. Not "/path/target.crdownload",
+      // 2. Points to the same directory as the target.
+      // 3. Has extension ".crdownload".
+      EXPECT_NE(download_util::GetCrDownloadPath(target_path).value(),
+                intermediate_path.value());
+      EXPECT_EQ(target_path.DirName().value(),
+                intermediate_path.DirName().value());
+      EXPECT_TRUE(intermediate_path.MatchesExtension(
+          FILE_PATH_LITERAL(".crdownload")));
+      break;
+
+    case EXPECT_TARGET_PATH:
+      EXPECT_EQ(target_path.value(), intermediate_path.value());
+      break;
   }
 }
 
@@ -587,7 +596,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_Basic) {
       FILE_PATH_LITERAL(""),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-      EXPECT_CRDOWNLOAD
+      EXPECT_TARGET_PATH
     },
 
 #if defined(FULL_SAFE_BROWSING)
