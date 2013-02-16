@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
 #define CHROME_BROWSER_UI_NATIVE_WEB_CONTENTS_MODAL_DIALOG_MANAGER_H_
 
-#include "ui/gfx/native_widget_types.h"
+#include "chrome/browser/ui/native_web_contents_modal_dialog.h"
 
 class WebContentsModalDialog;
 
@@ -26,16 +26,18 @@ class NativeWebContentsModalDialogManagerDelegate {
 // contents modal dialog.
 class NativeWebContentsModalDialogManager {
  public:
-  NativeWebContentsModalDialogManager() {}
   virtual ~NativeWebContentsModalDialogManager() {}
 
   // Starts management of the modal aspects of the dialog.  This function should
   // also register to be notified when the dialog is closing, so that it can
   // notify the manager.
-  virtual void ManageDialog(gfx::NativeWindow window) = 0;
+  virtual void ManageDialog(NativeWebContentsModalDialog dialog) = 0;
 
   // Closes the web contents modal dialog.
-  virtual void CloseDialog(gfx::NativeWindow window) = 0;
+  virtual void CloseDialog(NativeWebContentsModalDialog dialog) = 0;
+
+ protected:
+  NativeWebContentsModalDialogManager() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWebContentsModalDialogManager);

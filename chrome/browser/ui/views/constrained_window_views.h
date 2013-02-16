@@ -43,7 +43,7 @@ class ConstrainedWindowViews : public views::Widget,
   virtual void CloseWebContentsModalDialog() OVERRIDE;
   virtual void FocusWebContentsModalDialog() OVERRIDE;
   virtual void PulseWebContentsModalDialog() OVERRIDE;
-  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
+  virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE;
 
   // Factory function for the class (temporary).
   static ConstrainedWindowViews* Create(content::WebContents* web_contents,

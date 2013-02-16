@@ -76,9 +76,11 @@ void ConstrainedWindowMac::PulseWebContentsModalDialog() {
       pulseSheet:sheet_];
 }
 
-gfx::NativeWindow ConstrainedWindowMac::GetNativeWindow() {
-  NOTREACHED();
-  return nil;
+NativeWebContentsModalDialog ConstrainedWindowMac::GetNativeDialog() {
+  // TODO(wittman): Ultimately this should be changed to the
+  // ConstrainedWindowSheet pointer, in conjunction with the corresponding
+  // changes to NativeWebContentsModalDialogManagerCocoa.
+  return this;
 }
 
 void ConstrainedWindowMac::Observe(
