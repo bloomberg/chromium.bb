@@ -1250,16 +1250,17 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
   notify_browser_of_print_failure_ = true;
 }
 
+void PrintWebViewHelper::OnFramePreparedForPrintPages() {
+  PrintPages();
+  FinishFramePrinting();
+}
+
 void PrintWebViewHelper::PrintPages() {
-  // Delete prep_frame_view_ on exit.
-  scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view;
-  prep_frame_view.swap(prep_frame_view_);
-  if (!prep_frame_view)  // Printing is already canceled or failed.
+  if (!prep_frame_view_)  // Printing is already canceled or failed.
     return;
+  prep_frame_view_->StartPrinting();
 
-  prep_frame_view->StartPrinting();
-
-  int page_count = prep_frame_view->GetExpectedPageCount();
+  int page_count = prep_frame_view_->GetExpectedPageCount();
   if (!page_count) {
     LOG(ERROR) << "Can't print 0 pages.";
     return DidFinishPrinting(FAIL_PRINT);
@@ -1281,11 +1282,15 @@ void PrintWebViewHelper::PrintPages() {
   }
 #endif  // !defined(OS_CHROMEOS)
 
-  if (!PrintPagesNative(prep_frame_view->frame(), prep_frame_view->node(),
-                        page_count, prep_frame_view->GetPrintCanvasSize())) {
+  if (!PrintPagesNative(prep_frame_view_->frame(), prep_frame_view_->node(),
+                        page_count, prep_frame_view_->GetPrintCanvasSize())) {
     LOG(ERROR) << "Printing failed.";
     return DidFinishPrinting(FAIL_PRINT);
   }
+}
+
+void PrintWebViewHelper::FinishFramePrinting() {
+  prep_frame_view_.reset();
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -1536,7 +1541,8 @@ bool PrintWebViewHelper::RenderPagesForPrint(WebKit::WebFrame* frame,
          print_pages_params_->pages.empty());
   prep_frame_view_->CopySelectionIfNeeded(
       render_view()->GetWebkitPreferences(),
-      base::Bind(&PrintWebViewHelper::PrintPages, base::Unretained(this)));
+      base::Bind(&PrintWebViewHelper::OnFramePreparedForPrintPages,
+                 base::Unretained(this)));
   return true;
 }
 

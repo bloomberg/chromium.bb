@@ -92,6 +92,9 @@ bool PrintWebViewHelper::PrintPagesNative(WebKit::WebFrame* frame,
     PrintPageInternal(page_params, canvas_size, frame, &metafile);
   }
 
+  // WebKit::printEnd() for PDF should be called before metafile is closed.
+  FinishFramePrinting();
+
   metafile.FinishDocument();
 
   // Get the size of the resulting metafile.
