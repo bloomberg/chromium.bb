@@ -100,34 +100,6 @@ string16 GetAppModelId() {
   return ShellIntegration::GetAppListAppModelIdForProfile(initial_profile_path);
 }
 
-void LaunchHostedAppInChromeOnUIThread(const std::string app_id,
-                                       Profile* profile) {
-  ExtensionService* service = profile->GetExtensionService();
-  DCHECK(service);
-  const extensions::Extension* extension = service->GetInstalledExtension(
-      app_id);
-  // There is a non-zero chance the extension was uninstalled while we were
-  // checking the default browser.
-  if (!extension)
-    return;
-
-  chrome::OpenApplication(chrome::AppLaunchParams(
-      profile, extension, NEW_FOREGROUND_TAB));
-}
-
-void LaunchHostedAppOnFileThread(const GURL launch_url,
-                                 const std::string app_id,
-                                 Profile* profile) {
-  if (ShellIntegration::GetDefaultBrowser() != ShellIntegration::IS_DEFAULT) {
-    platform_util::OpenExternal(launch_url);
-    return;
-  }
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&LaunchHostedAppInChromeOnUIThread, app_id, profile));
-}
-
 class AppListControllerDelegateWin : public AppListControllerDelegate {
  public:
   AppListControllerDelegateWin();
@@ -354,29 +326,6 @@ void AppListControllerDelegateWin::ActivateApp(
 
 void AppListControllerDelegateWin::LaunchApp(
     Profile* profile, const extensions::Extension* extension, int event_flags) {
-  // Having the app launcher installed does not mean the user has Chrome
-  // installed, or set as the default browser. The behavior for app launch needs
-  // to be consistent but also respect the users default browser choice for apps
-  // which appear as web sites, and never show chrome the browser if it is not
-  // installed.
-  // The launch behavior is:
-  //   - v1 hosted apps: if chrome is not default browser, launch in default
-  //                     browser; otherwise launch in chrome
-  //   - v1 packaged apps : open in an app window
-  //   - v2 packaged apps : launch normally
-  // Note: a special case, the ChromeApp, should always launch Chrome.
-  if (extension->is_hosted_app() &&
-      extension->id() != extension_misc::kChromeAppId) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&LaunchHostedAppOnFileThread,
-                   extension->GetFullLaunchURL(),
-                   extension->id(),
-                   profile));
-    return;
-  }
-
   chrome::OpenApplication(chrome::AppLaunchParams(
       profile, extension, NEW_FOREGROUND_TAB));
 }
