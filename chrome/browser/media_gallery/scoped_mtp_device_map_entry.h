@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace fileapi {
+class MTPDeviceAsyncDelegate;
 class MTPDeviceDelegate;
 }
 
@@ -50,7 +51,14 @@ class ScopedMTPDeviceMapEntry
 
   // Callback to add the managed MTPDeviceDelegate to the MTPDeviceMapService.
   // Called on the media task runner thread.
+  // TODO(kmadhusu): Remove OnMTPDeviceDelegateCreated() after fixing
+  // crbug.com/154835.
   void OnMTPDeviceDelegateCreated(fileapi::MTPDeviceDelegate* delegate);
+
+  // Callback to add the managed MTPDeviceAsyncDelegate to the
+  // MTPDeviceMapService on the IO thread.
+  void OnMTPDeviceAsyncDelegateCreated(
+      fileapi::MTPDeviceAsyncDelegate* delegate);
 
   // The MTP or PTP device location.
   const base::FilePath::StringType device_location_;
