@@ -38,8 +38,9 @@ class PolicyServiceImpl : public PolicyService,
                            PolicyService::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(PolicyDomain domain,
                               PolicyService::Observer* observer) OVERRIDE;
-  virtual void RegisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE;
-  virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE;
+  virtual void RegisterPolicyDomain(
+      PolicyDomain domain,
+      const std::set<std::string>& components) OVERRIDE;
   virtual const PolicyMap& GetPolicies(
       const PolicyNamespace& ns) const OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;

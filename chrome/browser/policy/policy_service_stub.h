@@ -24,9 +24,9 @@ class PolicyServiceStub : public PolicyService {
   virtual void RemoveObserver(PolicyDomain domain,
                               Observer* observer) OVERRIDE;
 
-  virtual void RegisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE;
-
-  virtual void UnregisterPolicyNamespace(const PolicyNamespace& ns) OVERRIDE;
+  virtual void RegisterPolicyDomain(
+      PolicyDomain domain,
+      const std::set<std::string>& components) OVERRIDE;
 
   virtual const PolicyMap& GetPolicies(
       const PolicyNamespace& ns) const OVERRIDE;

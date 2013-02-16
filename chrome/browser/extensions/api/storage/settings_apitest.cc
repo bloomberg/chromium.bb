@@ -93,7 +93,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     EXPECT_CALL(policy_provider_,
-                RegisterPolicyNamespace(_, _)).Times(AnyNumber());
+                RegisterPolicyDomain(_, _)).Times(AnyNumber());
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
 #endif

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
-#include <string>
-
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 
@@ -104,10 +102,8 @@ void ConfigurationPolicyProvider::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ConfigurationPolicyProvider::RegisterPolicyNamespace(
-    const PolicyNamespace& ns) {}
-
-void ConfigurationPolicyProvider::UnregisterPolicyNamespace(
-    const PolicyNamespace& ns) {}
+void ConfigurationPolicyProvider::RegisterPolicyDomain(
+    PolicyDomain domain,
+    const std::set<std::string>& component_ids) {}
 
 }  // namespace policy

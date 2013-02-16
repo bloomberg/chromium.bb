@@ -76,7 +76,7 @@ void PowerPolicyBrowserTest::SetUpInProcessBrowserTestFixture() {
   power_manager_client_ = dbus_thread_manager->mock_power_manager_client();
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(provider_, RegisterPolicyNamespace(_, _)).Times(AnyNumber());
+  EXPECT_CALL(provider_, RegisterPolicyDomain(_, _)).Times(AnyNumber());
   BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 
