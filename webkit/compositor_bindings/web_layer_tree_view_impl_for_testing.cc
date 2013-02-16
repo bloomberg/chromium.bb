@@ -13,6 +13,8 @@
 #include "cc/output_surface.h"
 #include "cc/switches.h"
 #include "cc/thread.h"
+#include "cc/thread_impl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
@@ -20,19 +22,30 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "webkit/compositor_bindings/web_compositor_support_impl.h"
+#include "webkit/compositor_bindings/web_compositor_support_software_output_device.h"
 #include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_rendering_stats_impl.h"
 #include "webkit/compositor_bindings/web_to_ccinput_handler_adapter.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace WebKit {
 
-WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting() {}
+WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
+    RenderingType type, WebKit::WebLayerTreeViewClient* client)
+    : type_(type),
+      client_(client) {}
 
 WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
 
-bool WebLayerTreeViewImplForTesting::initialize() {
-  layer_tree_host_ = cc::LayerTreeHost::create(this, cc::LayerTreeSettings(),
-                                               scoped_ptr<cc::Thread>());
+bool WebLayerTreeViewImplForTesting::initialize(
+      scoped_ptr<cc::Thread> compositor_thread) {
+  cc::LayerTreeSettings settings;
+  // Accelerated animations are disabled for layout tests, but enabled for unit
+  // tests.
+  settings.acceleratedAnimationEnabled = type_ == FAKE_CONTEXT;
+  layer_tree_host_ = cc::LayerTreeHost::create(this, settings,
+                                               compositor_thread.Pass());
   if (!layer_tree_host_.get())
     return false;
   return true;
@@ -146,9 +159,15 @@ void WebLayerTreeViewImplForTesting::didBeginFrame() {
 }
 
 void WebLayerTreeViewImplForTesting::animate(
-    double monotonic_frame_begin_time) { }
+    double monotonic_frame_begin_time) {
+  if (client_)
+    client_->updateAnimations(monotonic_frame_begin_time);
+}
 
-void WebLayerTreeViewImplForTesting::layout() { }
+void WebLayerTreeViewImplForTesting::layout() {
+  if (client_)
+    client_->layout();
+}
 
 void WebLayerTreeViewImplForTesting::applyScrollAndScale(
     gfx::Vector2d scroll_delta, float page_scale) {
@@ -156,9 +175,31 @@ void WebLayerTreeViewImplForTesting::applyScrollAndScale(
 
 scoped_ptr<cc::OutputSurface>
     WebLayerTreeViewImplForTesting::createOutputSurface() {
-  scoped_ptr<WebGraphicsContext3D> context3d(
-      new cc::FakeWebGraphicsContext3D);
-  return make_scoped_ptr(new cc::OutputSurface(context3d.Pass()));
+  scoped_ptr<cc::OutputSurface> surface;
+  switch (type_) {
+    case FAKE_CONTEXT: {
+      scoped_ptr<WebGraphicsContext3D> context3d(
+          new cc::FakeWebGraphicsContext3D);
+      surface.reset(new cc::OutputSurface(context3d.Pass()));
+      break;
+    }
+    case SOFTWARE_CONTEXT: {
+      using webkit::WebCompositorSupportSoftwareOutputDevice;
+      scoped_ptr<WebCompositorSupportSoftwareOutputDevice> software_device =
+          make_scoped_ptr(new WebCompositorSupportSoftwareOutputDevice);
+      surface.reset(new cc::OutputSurface(
+            software_device.PassAs<cc::SoftwareOutputDevice>()));
+      break;
+    }
+    case MESA_CONTEXT: {
+      scoped_ptr<WebGraphicsContext3D> context3d(
+          WebKit::Platform::current()->createOffscreenGraphicsContext3D(
+            WebGraphicsContext3D::Attributes()));
+      surface.reset(new cc::OutputSurface(context3d.Pass()));
+      break;
+    }
+  }
+  return surface.Pass();
 }
 
 void WebLayerTreeViewImplForTesting::didRecreateOutputSurface(bool success) { }
@@ -176,6 +217,9 @@ void WebLayerTreeViewImplForTesting::didCommitAndDrawFrame() { }
 
 void WebLayerTreeViewImplForTesting::didCompleteSwapBuffers() { }
 
-void WebLayerTreeViewImplForTesting::scheduleComposite() { }
+void WebLayerTreeViewImplForTesting::scheduleComposite() {
+  if (client_)
+    client_->scheduleComposite();
+}
 
 }  // namespace WebKit

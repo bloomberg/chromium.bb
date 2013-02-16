@@ -27,6 +27,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "cc/thread_impl.h"
 #include "googleurl/src/url_util.h"
 #include "grit/webkit_chromium_resources.h"
 #include "media/base/filter_collection.h"
@@ -50,6 +51,8 @@
 #include "ui/gl/gl_surface.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/base/file_path_string_conversions.h"
+#include "webkit/compositor_bindings/web_compositor_support_impl.h"
+#include "webkit/compositor_bindings/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
@@ -515,6 +518,37 @@ WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
   }
   NOTREACHED();
   return NULL;
+}
+
+static WebKit::WebLayerTreeView* CreateLayerTreeView(
+    WebKit::WebLayerTreeViewImplForTesting::RenderingType type,
+    WebKit::WebLayerTreeViewClient* client) {
+  scoped_ptr<WebKit::WebLayerTreeViewImplForTesting> view(
+      new WebKit::WebLayerTreeViewImplForTesting(type, client));
+
+  scoped_ptr<cc::Thread> compositor_thread;
+
+  webkit::WebCompositorSupportImpl* compositor_support_impl =
+      test_environment->webkit_platform_support()->compositor_support_impl();
+  if (compositor_support_impl->impl_thread_message_loop_proxy())
+    compositor_thread = cc::ThreadImpl::createForDifferentThread(
+        compositor_support_impl->impl_thread_message_loop_proxy());
+
+  if (!view->initialize(compositor_thread.Pass()))
+    return NULL;
+  return view.release();
+}
+
+WebKit::WebLayerTreeView* CreateLayerTreeViewSoftware(
+    WebKit::WebLayerTreeViewClient* client) {
+  return CreateLayerTreeView(
+      WebKit::WebLayerTreeViewImplForTesting::SOFTWARE_CONTEXT, client);
+}
+
+WebKit::WebLayerTreeView* CreateLayerTreeView3d(
+    WebKit::WebLayerTreeViewClient* client) {
+  return CreateLayerTreeView(
+      WebKit::WebLayerTreeViewImplForTesting::MESA_CONTEXT, client);
 }
 
 void RegisterMockedURL(const WebKit::WebURL& url,

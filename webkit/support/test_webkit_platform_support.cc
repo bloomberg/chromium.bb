@@ -4,12 +4,14 @@
 
 #include "webkit/support/test_webkit_platform_support.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "cc/thread_impl.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
@@ -31,6 +33,7 @@
 #include "third_party/hyphen/hyphen.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/compositor_bindings/web_layer_tree_view_impl_for_testing.h"
 #include "webkit/database/vfs_backend.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
@@ -63,6 +66,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
+using WebKit::WebLayerTreeViewImplForTesting;
 using WebKit::WebScriptController;
 
 TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
@@ -546,11 +550,9 @@ WebKit::WebGestureCurve* TestWebKitPlatformSupport::createFlingAnimationCurve(
   return new WebGestureCurveMock(velocity, cumulative_scroll);
 }
 
-#if HAVE_WEBUNITTESTSUPPORT
 WebKit::WebUnitTestSupport* TestWebKitPlatformSupport::unitTestSupport() {
   return this;
 }
-#endif
 
 void TestWebKitPlatformSupport::registerMockedURL(
     const WebKit::WebURL& url,
@@ -582,17 +584,22 @@ WebKit::WebString TestWebKitPlatformSupport::webKitRootDir() {
   return webkit_support::GetWebKitRootDir();
 }
 
-#if HAVE_CREATELAYERTREEVIEWFORTESTING
+
 WebKit::WebLayerTreeView*
-    TestWebKitPlatformSupport::createLayerTreeViewForTesting(
-        TestViewType type) {
-  // TODO(jamesr): Support TestViewTypeLayoutTest.
-  DCHECK_EQ(TestViewTypeUnitTest, type);
-  scoped_ptr<WebKit::WebLayerTreeViewImplForTesting> view(
-      new WebKit::WebLayerTreeViewImplForTesting);
-  if (!view->initialize())
+    TestWebKitPlatformSupport::createLayerTreeViewForTesting() {
+  scoped_ptr<WebLayerTreeViewImplForTesting> view(
+      new WebLayerTreeViewImplForTesting(
+          WebLayerTreeViewImplForTesting::FAKE_CONTEXT, NULL));
+
+  if (!view->initialize(scoped_ptr<cc::Thread>()))
     return NULL;
   return view.release();
 }
-#endif
+
+WebKit::WebLayerTreeView*
+    TestWebKitPlatformSupport::createLayerTreeViewForTesting(
+        TestViewType type) {
+  DCHECK_EQ(TestViewTypeUnitTest, type);
+  return createLayerTreeViewForTesting();
+}
 

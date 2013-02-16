@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebUnitTestSupport.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/support/simple_database_system.h"
@@ -18,10 +19,6 @@
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 #include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
-
-#if HAVE_WEBUNITTESTSUPPORT
-#include "third_party/WebKit/Source/Platform/chromium/public/WebUnitTestSupport.h"
-#endif
 
 class TestShellWebBlobRegistryImpl;
 
@@ -34,9 +31,7 @@ typedef struct _HyphenDict HyphenDict;
 
 // An implementation of WebKitPlatformSupport for tests.
 class TestWebKitPlatformSupport :
-#if HAVE_WEBUNITTESTSUPPORT
-    public NON_EXPORTED_BASE(WebKit::WebUnitTestSupport),
-#endif
+    public WebKit::WebUnitTestSupport,
     public webkit_glue::WebKitPlatformSupportImpl {
  public:
   TestWebKitPlatformSupport(bool unit_test_mode,
@@ -142,9 +137,7 @@ class TestWebKitPlatformSupport :
       const WebKit::WebFloatPoint& velocity,
       const WebKit::WebSize& cumulative_scroll);
 
-#if HAVE_WEBUNITTESTSUPPORT
   virtual WebKit::WebUnitTestSupport* unitTestSupport();
-#endif
 
   // WebUnitTestSupport implementation
   virtual void registerMockedURL(const WebKit::WebURL& url,
@@ -157,10 +150,9 @@ class TestWebKitPlatformSupport :
   virtual void unregisterAllMockedURLs();
   virtual void serveAsynchronousMockedRequests();
   virtual WebKit::WebString webKitRootDir();
-#if HAVE_CREATELAYERTREEVIEWFORTESTING
+  virtual WebKit::WebLayerTreeView* createLayerTreeViewForTesting();
   virtual WebKit::WebLayerTreeView* createLayerTreeViewForTesting(
       TestViewType type);
-#endif
 
  private:
   TestShellWebMimeRegistryImpl mime_registry_;

@@ -6,13 +6,10 @@
 #define WEBKIT_COMPOSITOR_BINDINGS_WEB_COMPOSITOR_SUPPORT_IMPL_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_proxy.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
-
-namespace base {
-class MessageLoopProxy;
-}
 
 namespace WebKit {
 class WebCompositorOutputSurface;
@@ -62,6 +59,10 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   virtual WebKit::WebLayerTreeView* createLayerTreeView(
       WebKit::WebLayerTreeViewClient* client, const WebKit::WebLayer& root,
       const WebKit::WebLayerTreeView::Settings& settings);
+
+  scoped_refptr<base::MessageLoopProxy> impl_thread_message_loop_proxy() {
+    return impl_thread_message_loop_proxy_;
+  }
  private:
   scoped_refptr<base::MessageLoopProxy> impl_thread_message_loop_proxy_;
   bool initialized_;

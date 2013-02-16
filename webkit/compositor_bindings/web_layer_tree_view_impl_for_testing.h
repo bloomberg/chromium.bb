@@ -12,6 +12,7 @@
 
 namespace cc {
 class LayerTreeHost;
+class Thread;
 }
 
 namespace WebKit {
@@ -22,10 +23,13 @@ class WebLayerTreeViewClientAdapter;
 class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
     public cc::LayerTreeHostClient {
  public:
-  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerTreeViewImplForTesting();
+  enum RenderingType { FAKE_CONTEXT, SOFTWARE_CONTEXT, MESA_CONTEXT };
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerTreeViewImplForTesting(
+      RenderingType type, WebKit::WebLayerTreeViewClient* client);
   virtual ~WebLayerTreeViewImplForTesting();
 
-  WEBKIT_COMPOSITOR_BINDINGS_EXPORT bool initialize();
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT bool initialize(
+      scoped_ptr<cc::Thread> compositor_thread);
 
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();
@@ -74,6 +78,8 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   virtual void scheduleComposite() OVERRIDE;
 
  private:
+  RenderingType type_;
+  WebKit::WebLayerTreeViewClient* client_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
 };
 

@@ -164,6 +164,10 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
       const WebKit::WebFloatPoint& velocity,
       const WebKit::WebSize& cumulative_scroll) OVERRIDE;
 
+  webkit::WebCompositorSupportImpl* compositor_support_impl() const {
+    return compositor_support_.get();
+  }
+
  private:
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)
