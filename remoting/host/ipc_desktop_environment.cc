@@ -92,7 +92,6 @@ IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
 }
 
 IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
 scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
