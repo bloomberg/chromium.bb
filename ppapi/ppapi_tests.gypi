@@ -64,6 +64,8 @@
           'product_extension': 'plugin',
         }],
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
 # TODO(dmichael):  Figure out what is wrong with the script on Windows and add
 #                  it as an automated action.
 #      'actions': [
@@ -241,6 +243,8 @@
       'sources': [
         'examples/gamepad/gamepad.cc',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
 
     {
@@ -312,6 +316,8 @@
       'sources': [
         'examples/ime/ime.cc',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'ppapi_example_paint_manager',
@@ -413,6 +419,8 @@
         'examples/video_decode/video_decode.cc',
         'examples/video_decode/testdata.h',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'ppapi_example_vc',
@@ -458,6 +466,8 @@
       'sources': [
         'examples/printing/printing.cc',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
   ],
 }
