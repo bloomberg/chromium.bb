@@ -314,15 +314,16 @@ class WebContents : public PageNavigator,
   // Save page with the main HTML file path, the directory for saving resources,
   // and the save type: HTML only or complete web page. Returns true if the
   // saving process has been initiated successfully.
-  virtual bool SavePage(const FilePath& main_file,
-                        const FilePath& dir_path,
+  virtual bool SavePage(const base::FilePath& main_file,
+                        const base::FilePath& dir_path,
                         SavePageType save_type) = 0;
 
   // Generate an MHTML representation of the current page in the given file.
   virtual void GenerateMHTML(
-      const FilePath& file,
-      const base::Callback<void(const FilePath& /* path to the MHTML file */,
-                                int64 /* size of the file */)>& callback) = 0;
+      const base::FilePath& file,
+      const base::Callback<void(
+          const base::FilePath& /* path to the MHTML file */,
+          int64 /* size of the file */)>& callback) = 0;
 
   // Returns true if the active NavigationEntry's page_id equals page_id.
   virtual bool IsActiveEntry(int32 page_id) = 0;

@@ -44,7 +44,7 @@ class MockListener : public IPC::Listener {
 
     // Open the default dictionary and call the OnControllMessageReceived
     // function with a HyphenatorMsg_SetDictionary message.
-    FilePath dictionary_path;
+    base::FilePath dictionary_path;
     if (!PathService::Get(base::DIR_SOURCE_ROOT, &dictionary_path))
       return false;
     dictionary_path = dictionary_path.AppendASCII("third_party");
@@ -84,7 +84,7 @@ class HyphenatorTest : public testing::Test {
   }
 
   bool Initialize() {
-    FilePath dictionary_path;
+    base::FilePath dictionary_path;
     if (!PathService::Get(base::DIR_SOURCE_ROOT, &dictionary_path))
       return false;
     dictionary_path = dictionary_path.AppendASCII("third_party");

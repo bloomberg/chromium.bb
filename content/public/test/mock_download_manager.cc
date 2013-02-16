@@ -10,8 +10,8 @@
 namespace content {
 
 MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
-    const FilePath& current_path,
-    const FilePath& target_path,
+    const base::FilePath& current_path,
+    const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
     const GURL& referrer_url,
     const base::Time& start_time,
@@ -79,8 +79,8 @@ DownloadItem* MockDownloadManager::StartDownload(
 }
 
 DownloadItem* MockDownloadManager::CreateDownloadItem(
-    const FilePath& current_path,
-    const FilePath& target_path,
+    const base::FilePath& current_path,
+    const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
     const GURL& referrer_url,
     const base::Time& start_time,

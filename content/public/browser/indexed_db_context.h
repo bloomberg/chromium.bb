@@ -32,7 +32,8 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   virtual void DeleteForOrigin(const GURL& origin_url) = 0;
 
   // Get the file name of the local storage file for the given origin.
-  virtual FilePath GetFilePathForTesting(const string16& origin_id) const = 0;
+  virtual base::FilePath GetFilePathForTesting(
+      const string16& origin_id) const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<IndexedDBContext>;

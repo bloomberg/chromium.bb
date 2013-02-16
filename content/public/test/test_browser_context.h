@@ -23,11 +23,11 @@ class TestBrowserContext : public BrowserContext {
 
   // Takes ownership of the temporary directory so that it's not deleted when
   // this object is destructed.
-  FilePath TakePath();
+  base::FilePath TakePath();
 
   void SetSpecialStoragePolicy(quota::SpecialStoragePolicy* policy);
 
-  virtual FilePath GetPath() OVERRIDE;
+  virtual base::FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual DownloadManagerDelegate* GetDownloadManagerDelegate() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
@@ -38,7 +38,7 @@ class TestBrowserContext : public BrowserContext {
       int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetMediaRequestContextForStoragePartition(
-          const FilePath& partition_path,
+          const base::FilePath& partition_path,
           bool in_memory) OVERRIDE;
   virtual ResourceContext* GetResourceContext() OVERRIDE;
   virtual GeolocationPermissionContext*

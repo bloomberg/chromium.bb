@@ -96,7 +96,7 @@ void AddOriginMetadataToFile(const base::FilePath& file, const GURL& source,
 // LSFileQuarantineEnabled entry in our Info.plist, but it knows relatively
 // little about the files. We add more information about the download to
 // improve the UI shown by the OS when the users tries to open the file.
-void AddQuarantineMetadataToFile(const FilePath& file, const GURL& source,
+void AddQuarantineMetadataToFile(const base::FilePath& file, const GURL& source,
                                  const GURL& referrer) {
   FSRef file_ref;
   if (!base::mac::FSRefFromPath(file.value(), &file_ref))

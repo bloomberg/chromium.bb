@@ -159,7 +159,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
   virtual net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
       BrowserContext* browser_context,
-      const FilePath& partition_path,
+      const base::FilePath& partition_path,
       bool in_memory,
       scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
           blob_protocol_handler,
@@ -461,7 +461,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the default download directory.
   // This can be called on any thread.
-  virtual FilePath GetDefaultDownloadDirectory();
+  virtual base::FilePath GetDefaultDownloadDirectory();
 
   // Returns the default filename used in downloads when we have no idea what
   // else we should do with the file.
@@ -483,7 +483,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                                     const SocketPermissionRequest& params);
 
   // Returns the directory containing hyphenation dictionaries.
-  virtual FilePath GetHyphenDictionaryDirectory();
+  virtual base::FilePath GetHyphenDictionaryDirectory();
 
   // Returns an implementation of a file selecition policy. Can return NULL.
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(

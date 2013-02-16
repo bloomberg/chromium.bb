@@ -34,7 +34,7 @@ class PepperHungPluginFilter
   // send messages to the browser via that view's route. The |plugin_child_id|
   // is the ID in the browser process of the pepper plugin process host. We use
   // this to identify the proper plugin process to terminate.
-  PepperHungPluginFilter(const FilePath& plugin_path,
+  PepperHungPluginFilter(const base::FilePath& plugin_path,
                          int view_routing_id,
                          int plugin_child_id);
 
@@ -74,7 +74,7 @@ class PepperHungPluginFilter
 
   base::Lock lock_;
 
-  FilePath plugin_path_;
+  base::FilePath plugin_path_;
   int view_routing_id_;
   int plugin_child_id_;
 

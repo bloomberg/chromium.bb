@@ -70,7 +70,7 @@ class PepperFlashFileMessageFilter : public ppapi::host::ResourceMessageFilter {
       const ppapi::PepperFilePath& pepper_path,
       int flags);
 
-  FilePath plugin_data_directory_;
+  base::FilePath plugin_data_directory_;
   int render_process_id_;
   base::ProcessHandle plugin_process_handle_;
 

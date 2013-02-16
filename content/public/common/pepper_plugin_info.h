@@ -34,7 +34,7 @@ struct CONTENT_EXPORT PepperPluginInfo {
   // Defaults to true.
   bool is_sandboxed;
 
-  FilePath path;  // Internal plugins have "internal-[name]" as path.
+  base::FilePath path;  // Internal plugins have "internal-[name]" as path.
   std::string name;
   std::string description;
   std::string version;

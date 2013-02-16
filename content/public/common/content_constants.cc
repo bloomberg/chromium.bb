@@ -5,9 +5,9 @@
 #include "content/public/common/content_constants.h"
 namespace content {
 
-const FilePath::CharType kAppCacheDirname[] =
+const base::FilePath::CharType kAppCacheDirname[] =
     FILE_PATH_LITERAL("Application Cache");
-const FilePath::CharType kPepperDataDirname[] =
+const base::FilePath::CharType kPepperDataDirname[] =
     FILE_PATH_LITERAL("Pepper Data");
 
 const char kBrowserPluginMimeType[] = "application/browser-plugin";

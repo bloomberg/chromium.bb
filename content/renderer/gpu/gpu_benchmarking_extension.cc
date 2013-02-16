@@ -49,7 +49,7 @@ void InitSkGraphics() {
 
 class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
  public:
-  explicit SkPictureRecorder(const FilePath& dirpath)
+  explicit SkPictureRecorder(const base::FilePath& dirpath)
       : dirpath_(dirpath),
         layer_id_(0) {
     // Let skia register known effect subclasses. This basically enables
@@ -77,7 +77,7 @@ class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
   }
 
  private:
-  FilePath dirpath_;
+  base::FilePath dirpath_;
   int layer_id_;
   SkPicture picture_;
 };
@@ -220,8 +220,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (!benchmark_support)
       return v8::Undefined();
 
-    FilePath dirpath(FilePath::StringType(*dirname,
-                                          *dirname + dirname.length()));
+    base::FilePath dirpath(
+        base::FilePath::StringType(*dirname, *dirname + dirname.length()));
     if (!file_util::CreateDirectory(dirpath) ||
         !file_util::PathIsWritable(dirpath)) {
       std::string msg("Path is not writable: ");

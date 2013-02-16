@@ -33,7 +33,7 @@ CONTENT_EXPORT RendererPpapiHost*
 RendererPpapiHost::CreateExternalPluginModule(
     scoped_refptr<PluginModule> plugin_module,
     PluginInstance* plugin_instance,
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
     base::ProcessId plugin_pid,

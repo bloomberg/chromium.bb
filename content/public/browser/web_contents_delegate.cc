@@ -142,7 +142,7 @@ content::ColorChooser* WebContentsDelegate::OpenColorChooser(
 bool WebContentsDelegate::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,
-    const FilePath& plugin_path,
+    const base::FilePath& plugin_path,
     const base::Callback<void(bool)>& callback) {
   return false;
 }

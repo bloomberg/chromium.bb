@@ -192,7 +192,7 @@ void SetCookieOnIOThread(const GURL& url,
 }  // namespace
 
 
-GURL GetFileUrlWithQuery(const FilePath& path,
+GURL GetFileUrlWithQuery(const base::FilePath& path,
                          const std::string& query_string) {
   GURL url = net::FilePathToFileURL(path);
   if (!query_string.empty()) {

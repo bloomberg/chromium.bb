@@ -61,7 +61,7 @@ class PepperFileChooserHostTest : public RenderViewTest {
 };
 
 // For testing to convert our hardcoded file paths to 8-bit.
-std::string FilePathToUTF8(const FilePath::StringType& path) {
+std::string FilePathToUTF8(const base::FilePath::StringType& path) {
 #if defined(OS_WIN)
   return UTF16ToUTF8(path);
 #else
@@ -107,7 +107,7 @@ TEST_F(PepperFileChooserHostTest, Show) {
   // path separator so we include both a Unix and a Windows one.
   ui::SelectedFileInfo selected_info;
   selected_info.display_name = FILE_PATH_LITERAL("Hello, world");
-  selected_info.local_path = FilePath(FILE_PATH_LITERAL("myp\\ath/foo"));
+  selected_info.local_path = base::FilePath(FILE_PATH_LITERAL("myp\\ath/foo"));
   std::vector<ui::SelectedFileInfo> selected_info_vector;
   selected_info_vector.push_back(selected_info);
   RenderViewImpl* view_impl = static_cast<RenderViewImpl*>(view_);

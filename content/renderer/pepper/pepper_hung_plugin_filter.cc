@@ -23,9 +23,10 @@ const int kBlockedHardThresholdSec = kHungThresholdSec * 1.5;
 
 }  // namespace
 
-PepperHungPluginFilter::PepperHungPluginFilter(const FilePath& plugin_path,
-                                               int view_routing_id,
-                                               int plugin_child_id)
+PepperHungPluginFilter::PepperHungPluginFilter(
+    const base::FilePath& plugin_path,
+    int view_routing_id,
+    int plugin_child_id)
     : plugin_path_(plugin_path),
       view_routing_id_(view_routing_id),
       plugin_child_id_(plugin_child_id),

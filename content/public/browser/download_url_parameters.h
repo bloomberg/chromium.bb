@@ -86,7 +86,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   void set_callback(const OnStartedCallback& callback) {
     callback_ = callback;
   }
-  void set_file_path(const FilePath& file_path) {
+  void set_file_path(const base::FilePath& file_path) {
     save_info_.file_path = file_path;
   }
   void set_suggested_name(const string16& suggested_name) {
@@ -128,7 +128,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   ResourceDispatcherHost* resource_dispatcher_host() const {
     return resource_dispatcher_host_;
   }
-  const FilePath& file_path() const { return save_info_.file_path; }
+  const base::FilePath& file_path() const { return save_info_.file_path; }
   const string16& suggested_name() const { return save_info_.suggested_name; }
   int64 offset() const { return save_info_.offset; }
   const std::string& hash_state() const { return save_info_.hash_state; }

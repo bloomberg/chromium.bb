@@ -31,7 +31,7 @@ class PluginServiceFilter {
 
   // Whether the renderer has permission to load available |plugin|.
   virtual bool CanLoadPlugin(int render_process_id,
-                             const FilePath& path) = 0;
+                             const base::FilePath& path) = 0;
 };
 
 }  // namespace content

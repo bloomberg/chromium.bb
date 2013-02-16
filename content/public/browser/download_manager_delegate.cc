@@ -25,7 +25,7 @@ WebContents* DownloadManagerDelegate::
 }
 
 bool DownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
-    const FilePath& path) {
+    const base::FilePath& path) {
   return false;
 }
 

@@ -915,7 +915,7 @@ WebKit::WebView* RenderViewImpl::webview() const {
   return static_cast<WebKit::WebView*>(webwidget());
 }
 
-void RenderViewImpl::PluginCrashed(const FilePath& plugin_path,
+void RenderViewImpl::PluginCrashed(const base::FilePath& plugin_path,
                                    base::ProcessId plugin_pid) {
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path, plugin_pid));
 }
@@ -4632,7 +4632,7 @@ void RenderViewImpl::LoadURLExternally(
 // webkit_glue::WebPluginPageDelegate ------------------------------------------
 
 webkit::npapi::WebPluginDelegate* RenderViewImpl::CreatePluginDelegate(
-    const FilePath& file_path,
+    const base::FilePath& file_path,
     const std::string& mime_type) {
   if (!PluginChannelHost::IsListening()) {
     LOG(ERROR) << "PluginChannelHost isn't listening";
@@ -4654,7 +4654,7 @@ webkit::npapi::WebPluginDelegate* RenderViewImpl::CreatePluginDelegate(
 }
 
 WebKit::WebPlugin* RenderViewImpl::CreatePluginReplacement(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   return GetContentClient()->renderer()->CreatePluginReplacement(
       this, file_path);
 }
@@ -5346,7 +5346,7 @@ void RenderViewImpl::OnCustomContextMenuAction(
 
 void RenderViewImpl::OnEnumerateDirectoryResponse(
     int id,
-    const std::vector<FilePath>& paths) {
+    const std::vector<base::FilePath>& paths) {
   if (!enumeration_completions_[id])
     return;
 
@@ -5529,8 +5529,8 @@ void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(
 
 void RenderViewImpl::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
     const std::vector<GURL>& links,
-    const std::vector<FilePath>& local_paths,
-    const FilePath& local_directory_name) {
+    const std::vector<base::FilePath>& local_paths,
+    const base::FilePath& local_directory_name) {
 
   // Convert std::vector of GURLs to WebVector<WebURL>
   WebVector<WebURL> weburl_links(links);

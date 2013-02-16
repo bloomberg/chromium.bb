@@ -271,7 +271,7 @@ class AsyncOpenFileSystemURLCallbackTranslator
   }
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path) OVERRIDE {
+      const base::FilePath& platform_path) OVERRIDE {
     NOTREACHED();
   }
   virtual void DidCreateSnapshotFile(
@@ -377,7 +377,7 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   *pepper_plugin_was_registered = true;
 
   // See if a module has already been loaded for this plugin.
-  FilePath path(webplugin_info.path);
+  base::FilePath path(webplugin_info.path);
   scoped_refptr<webkit::ppapi::PluginModule> module =
       PepperPluginRegistry::GetInstance()->GetLiveModule(path);
   if (module) {
@@ -439,7 +439,7 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
 
 RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
     scoped_refptr<webkit::ppapi::PluginModule> module,
-    const FilePath& path,
+    const base::FilePath& path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
     base::ProcessId peer_pid,
@@ -461,7 +461,7 @@ scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
   DCHECK(!plugin_module->GetBroker());
 
   // The broker path is the same as the plugin.
-  const FilePath& broker_path = plugin_module->path();
+  const base::FilePath& broker_path = plugin_module->path();
 
   scoped_refptr<PepperBrokerImpl> broker =
       new PepperBrokerImpl(plugin_module, this);
@@ -484,7 +484,7 @@ scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
 
 RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
     webkit::ppapi::PluginModule* module,
-    const FilePath& path,
+    const base::FilePath& path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
     base::ProcessId peer_pid,
@@ -803,7 +803,7 @@ SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
 }
 
 WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePluginReplacement(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   return GetContentClient()->renderer()->CreatePluginReplacement(
       render_view_, file_path);
 }
@@ -958,7 +958,7 @@ void PepperPluginDelegateImpl::OnPpapiBrokerPermissionResult(
 }
 
 bool PepperPluginDelegateImpl::AsyncOpenFile(
-    const FilePath& path,
+    const base::FilePath& path,
     int flags,
     const AsyncOpenFileCallback& callback) {
   int message_id = pending_async_open_files_.Add(
@@ -1117,7 +1117,7 @@ bool PepperPluginDelegateImpl::AsyncOpenFileSystemURL(
 }
 
 void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(
-    const GURL& url, FilePath* platform_path) {
+    const GURL& url, base::FilePath* platform_path) {
   RenderThreadImpl::current()->Send(new FileSystemHostMsg_SyncGetPlatformPath(
       url, platform_path));
 }

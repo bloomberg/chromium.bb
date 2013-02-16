@@ -30,7 +30,7 @@ class DownloadFileWithErrors: public DownloadFileImpl {
 
   DownloadFileWithErrors(
       scoped_ptr<DownloadSaveInfo> save_info,
-      const FilePath& default_download_directory,
+      const base::FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
       bool calculate_hash,
@@ -50,10 +50,10 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   virtual DownloadInterruptReason AppendDataToFile(
       const char* data, size_t data_len) OVERRIDE;
   virtual void RenameAndUniquify(
-      const FilePath& full_path,
+      const base::FilePath& full_path,
       const RenameCompletionCallback& callback) OVERRIDE;
   virtual void RenameAndAnnotate(
-      const FilePath& full_path,
+      const base::FilePath& full_path,
       const RenameCompletionCallback& callback) OVERRIDE;
 
  private:
@@ -96,16 +96,16 @@ static void RenameErrorCallback(
     const DownloadFile::RenameCompletionCallback original_callback,
     DownloadInterruptReason overwrite_error,
     DownloadInterruptReason original_error,
-    const FilePath& path_result) {
+    const base::FilePath& path_result) {
   original_callback.Run(
       overwrite_error,
       overwrite_error == DOWNLOAD_INTERRUPT_REASON_NONE ?
-      path_result : FilePath());
+      path_result : base::FilePath());
 }
 
 DownloadFileWithErrors::DownloadFileWithErrors(
     scoped_ptr<DownloadSaveInfo> save_info,
-    const FilePath& default_download_directory,
+    const base::FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,
@@ -154,7 +154,7 @@ DownloadInterruptReason DownloadFileWithErrors::AppendDataToFile(
 }
 
 void DownloadFileWithErrors::RenameAndUniquify(
-    const FilePath& full_path,
+    const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
   DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
   RenameCompletionCallback callback_to_use = callback;
@@ -171,7 +171,7 @@ void DownloadFileWithErrors::RenameAndUniquify(
 }
 
 void DownloadFileWithErrors::RenameAndAnnotate(
-    const FilePath& full_path,
+    const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
   DownloadInterruptReason error_to_return = DOWNLOAD_INTERRUPT_REASON_NONE;
   RenameCompletionCallback callback_to_use = callback;
@@ -223,7 +223,7 @@ class DownloadFileWithErrorsFactory : public DownloadFileFactory {
   // DownloadFileFactory interface.
   virtual DownloadFile* CreateFile(
       scoped_ptr<DownloadSaveInfo> save_info,
-      const FilePath& default_download_directory,
+      const base::FilePath& default_download_directory,
       const GURL& url,
       const GURL& referrer_url,
       bool calculate_hash,
@@ -257,7 +257,7 @@ DownloadFileWithErrorsFactory::~DownloadFileWithErrorsFactory() {
 
 DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
     scoped_ptr<DownloadSaveInfo> save_info,
-    const FilePath& default_download_directory,
+    const base::FilePath& default_download_directory,
     const GURL& url,
     const GURL& referrer_url,
     bool calculate_hash,

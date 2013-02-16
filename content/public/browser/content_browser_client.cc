@@ -54,7 +54,7 @@ net::URLRequestContextGetter* ContentBrowserClient::CreateRequestContext(
 net::URLRequestContextGetter*
 ContentBrowserClient::CreateRequestContextForStoragePartition(
     BrowserContext* browser_context,
-    const FilePath& partition_path,
+    const base::FilePath& partition_path,
     bool in_memory,
     scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
         blob_protocol_handler,
@@ -246,8 +246,8 @@ bool ContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }
 
-FilePath ContentBrowserClient::GetDefaultDownloadDirectory() {
-  return FilePath();
+base::FilePath ContentBrowserClient::GetDefaultDownloadDirectory() {
+  return base::FilePath();
 }
 
 std::string ContentBrowserClient::GetDefaultDownloadName() {
@@ -266,8 +266,8 @@ bool ContentBrowserClient::AllowPepperSocketAPI(
   return false;
 }
 
-FilePath ContentBrowserClient::GetHyphenDictionaryDirectory() {
-  return FilePath();
+base::FilePath ContentBrowserClient::GetHyphenDictionaryDirectory() {
+  return base::FilePath();
 }
 
 ui::SelectFilePolicy* ContentBrowserClient::CreateSelectFilePolicy(

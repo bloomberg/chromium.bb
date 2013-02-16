@@ -73,8 +73,9 @@ static void RunTests(JNIEnv* env,
       CommandLine(argc, &argv[0]), false);
 
   // Create fifo and redirect stdout and stderr to it.
-  FilePath files_dir(base::android::ConvertJavaStringToUTF8(env, jfiles_dir));
-  FilePath fifo_path(files_dir.Append(FilePath("test.fifo")));
+  base::FilePath files_dir(
+      base::android::ConvertJavaStringToUTF8(env, jfiles_dir));
+  base::FilePath fifo_path(files_dir.Append(base::FilePath("test.fifo")));
   CreateFIFO(fifo_path.value().c_str());
   RedirectStream(stdout, fifo_path.value().c_str(), "w");
   dup2(STDOUT_FILENO, STDERR_FILENO);

@@ -144,8 +144,8 @@ class CONTENT_EXPORT DownloadManager
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
   virtual DownloadItem* CreateDownloadItem(
-      const FilePath& current_path,
-      const FilePath& target_path,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
       const base::Time& start_time,

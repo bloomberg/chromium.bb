@@ -52,7 +52,8 @@ class RenderWidgetTest : public RenderViewTest {
   // file_util::CreateTemporaryFile(&tmp_path);
   // OutputBitmapToFile(bitmap, tmp_path);
   // LOG(INFO) << "Bitmap image stored at: " << tmp_path.value();
-  void OutputBitmapToFile(const SkBitmap& bitmap, const FilePath& file_path);
+  void OutputBitmapToFile(const SkBitmap& bitmap,
+                          const base::FilePath& file_path);
 };
 
 }  // namespace content

@@ -26,8 +26,8 @@ class MockDownloadManager : public DownloadManager {
   // Structure to make it possible to match more than 10 arguments on
   // CreateDownloadItem.
   struct CreateDownloadItemAdapter {
-    FilePath current_path;
-    FilePath target_path;
+    base::FilePath current_path;
+    base::FilePath target_path;
     std::vector<GURL> url_chain;
     GURL referrer_url;
     base::Time start_time;
@@ -40,8 +40,8 @@ class MockDownloadManager : public DownloadManager {
     bool opened;
 
     CreateDownloadItemAdapter(
-      const FilePath& current_path,
-      const FilePath& target_path,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
       const base::Time& start_time,
@@ -89,8 +89,8 @@ class MockDownloadManager : public DownloadManager {
 
   // Redirects to mock method to get around gmock 10 argument limit.
   virtual DownloadItem* CreateDownloadItem(
-      const FilePath& current_path,
-      const FilePath& target_path,
+      const base::FilePath& current_path,
+      const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
       const base::Time& start_time,

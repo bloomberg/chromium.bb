@@ -101,9 +101,9 @@ void PepperFileChooserHost::StoreChosenFiles(
   std::vector<ppapi::PPB_FileRef_CreateInfo> chosen_files;
   for (size_t i = 0; i < files.size(); i++) {
 #if defined(OS_WIN)
-    FilePath file_path(UTF8ToWide(files[i].path));
+    base::FilePath file_path(UTF8ToWide(files[i].path));
 #else
-    FilePath file_path(files[i].path);
+    base::FilePath file_path(files[i].path);
 #endif
 
     webkit::ppapi::PPB_FileRef_Impl* ref =

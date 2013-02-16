@@ -29,7 +29,7 @@ typedef base::Callback<void(DownloadItem*)>
 // operation.  If the delegate wants notification of the download item created
 // in response to this operation, the SavePackageDownloadCreatedCallback will be
 // non-null.
-typedef base::Callback<void(const FilePath&,
+typedef base::Callback<void(const base::FilePath&,
                             SavePageType,
                             const SavePackageDownloadCreatedCallback&)>
     SavePackagePathPickedCallback;
@@ -41,10 +41,10 @@ typedef base::Callback<void(const FilePath&,
 // same as |target_path|). Both |target_path| and |intermediate_path| are
 // expected to in the same directory.
 typedef base::Callback<void(
-    const FilePath& target_path,
+    const base::FilePath& target_path,
     DownloadItem::TargetDisposition disposition,
     DownloadDangerType danger_type,
-    const FilePath& intermediate_path)> DownloadTargetCallback;
+    const base::FilePath& intermediate_path)> DownloadTargetCallback;
 
 // Called when a download delayed by the delegate has completed.
 typedef base::Callback<void(bool)> DownloadOpenDelayedCallback;
@@ -83,7 +83,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   virtual WebContents* GetAlternativeWebContentsToNotifyForDownload();
 
   // Tests if a file type should be opened automatically.
-  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
+  virtual bool ShouldOpenFileBasedOnExtension(const base::FilePath& path);
 
   // Allows the delegate to delay completion of the download.  This function
   // will either return true (in which case the download may complete)
@@ -107,17 +107,18 @@ class CONTENT_EXPORT DownloadManagerDelegate {
 
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(BrowserContext* browser_context,
-                          FilePath* website_save_dir,
-                          FilePath* download_save_dir,
+                          base::FilePath* website_save_dir,
+                          base::FilePath* download_save_dir,
                           bool* skip_dir_check) {}
 
   // Asks the user for the path to save a page. The delegate calls the callback
   // to give the answer.
-  virtual void ChooseSavePath(WebContents* web_contents,
-                              const FilePath& suggested_path,
-                              const FilePath::StringType& default_extension,
-                              bool can_save_as_complete,
-                              const SavePackagePathPickedCallback& callback) {
+  virtual void ChooseSavePath(
+      WebContents* web_contents,
+      const base::FilePath& suggested_path,
+      const base::FilePath::StringType& default_extension,
+      bool can_save_as_complete,
+      const SavePackagePathPickedCallback& callback) {
   }
 
   // Opens the file associated with this download.

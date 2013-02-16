@@ -57,11 +57,11 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
   MOCK_CONST_METHOD0(GetETag, const std::string&());
   MOCK_CONST_METHOD0(IsSavePackageDownload, bool());
-  MOCK_CONST_METHOD0(GetFullPath, const FilePath&());
-  MOCK_CONST_METHOD0(GetTargetFilePath, const FilePath&());
-  MOCK_CONST_METHOD0(GetForcedFilePath, const FilePath&());
-  MOCK_CONST_METHOD0(GetUserVerifiedFilePath, FilePath());
-  MOCK_CONST_METHOD0(GetFileNameToReportUser, FilePath());
+  MOCK_CONST_METHOD0(GetFullPath, const base::FilePath&());
+  MOCK_CONST_METHOD0(GetTargetFilePath, const base::FilePath&());
+  MOCK_CONST_METHOD0(GetForcedFilePath, const base::FilePath&());
+  MOCK_CONST_METHOD0(GetUserVerifiedFilePath, base::FilePath());
+  MOCK_CONST_METHOD0(GetFileNameToReportUser, base::FilePath());
   MOCK_CONST_METHOD0(GetTargetDisposition, TargetDisposition());
   MOCK_CONST_METHOD0(GetHash, const std::string&());
   MOCK_CONST_METHOD0(GetHashState, const std::string&());
@@ -88,7 +88,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_METHOD1(SetIsTemporary, void(bool));
   MOCK_METHOD1(SetOpened, void(bool));
-  MOCK_METHOD1(SetDisplayName, void(const FilePath&));
+  MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
 };
 

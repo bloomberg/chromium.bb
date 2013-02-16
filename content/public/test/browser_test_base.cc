@@ -112,7 +112,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   RunTestOnMainThreadLoop();
 }
 
-void BrowserTestBase::CreateTestServer(const FilePath& test_server_base) {
+void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
   CHECK(!test_server_.get());
   test_server_.reset(new net::TestServer(
       net::TestServer::TYPE_HTTP,

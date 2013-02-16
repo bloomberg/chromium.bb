@@ -56,5 +56,5 @@ base::FilePath GetResourcesPakFilePath() {
       [base::mac::FrameworkBundle() pathForResource:@"content_shell"
                                              ofType:@"pak"];
 
-  return FilePath([pak_path fileSystemRepresentation]);
+  return base::FilePath([pak_path fileSystemRepresentation]);
 }
