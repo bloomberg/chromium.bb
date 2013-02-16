@@ -12,9 +12,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/sys_byteorder.h"
+#include "net/base/net_export.h"
 #include "net/spdy/spdy_bitmasks.h"
 
 //  Data Frame Format
@@ -549,12 +551,17 @@ class SpdyFrameWithFinIR : public SpdyFrameWithStreamIdIR {
 
 // Abstract class intended to be inherited by IRs that contain a name-value
 // block. Implies SpdyFrameWithFinIR.
-class SpdyFrameWithNameValueBlockIR : public SpdyFrameWithFinIR {
+class NET_EXPORT_PRIVATE SpdyFrameWithNameValueBlockIR
+    : public NON_EXPORTED_BASE(SpdyFrameWithFinIR) {
  public:
   const SpdyNameValueBlock& name_value_block() const {
     return name_value_block_;
   }
   SpdyNameValueBlock* GetMutableNameValueBlock() { return &name_value_block_; }
+  void SetHeader(const base::StringPiece& name,
+                 const base::StringPiece& value) {
+    name_value_block_[name.as_string()] = value.as_string();
+  }
 
  protected:
   explicit SpdyFrameWithNameValueBlockIR(SpdyStreamId stream_id);
@@ -877,63 +884,6 @@ class SpdyDataFrame : public SpdyFrame {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyDataFrame);
-};
-
-// A Control Frame.
-class SpdyControlFrame : public SpdyFrame {
- public:
-  explicit SpdyControlFrame(size_t size) : SpdyFrame(size) {}
-  SpdyControlFrame(char* data, bool owns_buffer)
-      : SpdyFrame(data, owns_buffer) {}
-
-  // Callers can use this method to check if the frame appears to be a valid
-  // frame.  Does not guarantee that there are no errors.
-  bool AppearsToBeAValidControlFrame() const {
-    // Right now we only check if the frame has an out-of-bounds type.
-    uint16 type = ntohs(block()->control_.type_);
-    // NOOP is not a 'valid' control frame in SPDY/3 and beyond.
-    return type >= SYN_STREAM &&
-        type < NUM_CONTROL_FRAME_TYPES &&
-        (version() == 2 || type != NOOP);
-  }
-
-  uint16 version() const {
-    const int kVersionMask = 0x7fff;
-    return ntohs(block()->control_.version_) & kVersionMask;
-  }
-
-  void set_version(uint16 version) {
-    const uint16 kControlBit = 0x80;
-    DCHECK_EQ(0, version & kControlBit);
-    mutable_block()->control_.version_ = kControlBit | htons(version);
-  }
-
-  SpdyControlType type() const {
-    uint16 type = ntohs(block()->control_.type_);
-    LOG_IF(DFATAL, type < SYN_STREAM || type >= NUM_CONTROL_FRAME_TYPES)
-        << "Invalid control frame type " << type;
-    return static_cast<SpdyControlType>(type);
-  }
-
-  void set_type(SpdyControlType type) {
-    DCHECK(type >= SYN_STREAM && type < NUM_CONTROL_FRAME_TYPES);
-    mutable_block()->control_.type_ = htons(type);
-  }
-
-  // Returns true if this control frame is of a type that has a header block,
-  // otherwise it returns false.
-  bool has_header_block() const {
-    return type() == SYN_STREAM || type() == SYN_REPLY || type() == HEADERS;
-  }
-
- private:
-  const struct SpdyFrameBlock* block() const {
-    return frame_;
-  }
-  struct SpdyFrameBlock* mutable_block() {
-    return frame_;
-  }
-  DISALLOW_COPY_AND_ASSIGN(SpdyControlFrame);
 };
 
 }  // namespace net

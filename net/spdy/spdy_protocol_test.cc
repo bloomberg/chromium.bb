@@ -16,7 +16,7 @@ enum SpdyProtocolTestTypes {
   SPDY3 = 3,
 };
 
-} // namespace
+}  // namespace
 
 namespace net {
 
@@ -42,7 +42,6 @@ INSTANTIATE_TEST_CASE_P(SpdyProtocolTests,
 TEST_P(SpdyProtocolTest, ProtocolConstants) {
   EXPECT_EQ(8u, SpdyFrame::kHeaderSize);
   EXPECT_EQ(8u, SpdyDataFrame::size());
-  EXPECT_EQ(8u, SpdyControlFrame::kHeaderSize);
   EXPECT_EQ(4u, sizeof(FlagsAndLength));
   EXPECT_EQ(1, SYN_STREAM);
   EXPECT_EQ(2, SYN_REPLY);
@@ -119,20 +118,6 @@ TEST_P(SpdyProtocolTest, TestDataFrame) {
   EXPECT_EQ(length, frame.length());
 }
 
-TEST_P(SpdyProtocolTest, HasHeaderBlock) {
-  SpdyControlFrame frame(SpdyControlFrame::kHeaderSize);
-  for (SpdyControlType type = SYN_STREAM;
-      type < NUM_CONTROL_FRAME_TYPES;
-      type = static_cast<SpdyControlType>(type + 1)) {
-    frame.set_type(type);
-    if (type == SYN_STREAM || type == SYN_REPLY || type == HEADERS) {
-      EXPECT_TRUE(frame.has_header_block());
-    } else {
-      EXPECT_FALSE(frame.has_header_block());
-    }
-  }
-}
-
 class SpdyProtocolDeathTest : public SpdyProtocolTest {};
 
 // All tests are run with two different SPDY versions: SPDY/2 and SPDY/3.
@@ -166,31 +151,6 @@ TEST_P(SpdyProtocolDeathTest, TestDataFrame) {
 #endif
 #endif
   EXPECT_EQ(0, frame.flags());
-}
-
-TEST_P(SpdyProtocolDeathTest, TestSpdyControlFrameType) {
-  SpdyControlFrame frame(SpdyControlFrame::kHeaderSize);
-  memset(frame.data(), 255, SpdyControlFrame::kHeaderSize);
-
-  // type() should be out of bounds.
-  EXPECT_FALSE(frame.AppearsToBeAValidControlFrame());
-
-  frame.set_version(spdy_version_);
-  uint16 version = frame.version();
-
-  for (int i = SYN_STREAM; i <= WINDOW_UPDATE; ++i) {
-    frame.set_type(static_cast<SpdyControlType>(i));
-    EXPECT_EQ(i, static_cast<int>(frame.type()));
-    if (!IsSpdy2() && i == NOOP) {
-      // NOOP frames aren't 'valid'.
-      EXPECT_FALSE(frame.AppearsToBeAValidControlFrame());
-    } else {
-      EXPECT_TRUE(frame.AppearsToBeAValidControlFrame());
-    }
-    // Make sure setting type does not alter the version block.
-    EXPECT_EQ(version, frame.version());
-    EXPECT_TRUE(frame.is_control_frame());
-  }
 }
 
 }  // namespace net
