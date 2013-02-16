@@ -26,7 +26,7 @@ void WebContentsModalDialogManager::AddDialog(
   child_dialogs_.push_back(dialog);
 
   if (native_manager_)
-    native_manager_->ManageDialog(dialog->GetNativeDialog());
+    native_manager_->ManageDialog(dialog->GetNativeWindow());
 
   if (child_dialogs_.size() == 1) {
     dialog->ShowWebContentsModalDialog();

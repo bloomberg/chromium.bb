@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_H_
 #define CHROME_BROWSER_UI_WEB_CONTENTS_MODAL_DIALOG_H_
 
-#include "chrome/browser/ui/native_web_contents_modal_dialog.h"
+#include "build/build_config.h"
+#include "ui/gfx/native_widget_types.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // WebContentsModalDialog
@@ -28,8 +29,8 @@ class WebContentsModalDialog {
   // Runs a pulse animation for the web contents modal dialog.
   virtual void PulseWebContentsModalDialog() = 0;
 
-  // Returns the native representation of the web contents modal dialog.
-  virtual NativeWebContentsModalDialog GetNativeDialog() = 0;
+  // Returns the native window of the web contents modal dialog.
+  virtual gfx::NativeWindow GetNativeWindow() = 0;
 
  protected:
   virtual ~WebContentsModalDialog() {}

@@ -45,8 +45,8 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   // NativeWebContentsModalDialogManager overrides
-  virtual void ManageDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    views::Widget* widget = GetWidget(dialog);
+  virtual void ManageDialog(gfx::NativeWindow window) OVERRIDE {
+    views::Widget* widget = GetWidget(window);
     widget->AddObserver(this);
     observed_widgets_.insert(widget);
     widget->set_movement_disabled(true);
@@ -74,8 +74,8 @@ class NativeWebContentsModalDialogManagerViews
 #endif
   }
 
-  virtual void CloseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
-    views::Widget* widget = GetWidget(dialog);
+  virtual void CloseDialog(gfx::NativeWindow window) OVERRIDE {
+    views::Widget* widget = GetWidget(window);
 #if defined(USE_ASH)
     gfx::NativeView view = platform_util::GetParent(widget->GetNativeView());
     // Allow the parent to animate again.
@@ -92,8 +92,8 @@ class NativeWebContentsModalDialogManagerViews
   }
 
  private:
-  static views::Widget* GetWidget(NativeWebContentsModalDialog dialog) {
-    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(dialog);
+  static views::Widget* GetWidget(gfx::NativeWindow window) {
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
     DCHECK(widget);
     return widget;
   }

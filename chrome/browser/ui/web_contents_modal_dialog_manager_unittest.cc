@@ -42,7 +42,7 @@ class WebContentsModalDialogCloseTest : public WebContentsModalDialog {
   }
   virtual void FocusWebContentsModalDialog() OVERRIDE {}
   virtual void PulseWebContentsModalDialog() OVERRIDE {}
-  virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE {
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {
     NOTREACHED();
     return NULL;
   }

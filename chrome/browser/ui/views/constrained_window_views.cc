@@ -612,8 +612,8 @@ void ConstrainedWindowViews::FocusWebContentsModalDialog() {
 void ConstrainedWindowViews::PulseWebContentsModalDialog() {
 }
 
-NativeWebContentsModalDialog ConstrainedWindowViews::GetNativeDialog() {
-  return GetNativeView();
+gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
+  return Widget::GetNativeWindow();
 }
 
 ConstrainedWindowViews* ConstrainedWindowViews::Create(

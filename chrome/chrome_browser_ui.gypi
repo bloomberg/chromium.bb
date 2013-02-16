@@ -1163,7 +1163,6 @@
         'browser/ui/media_stream_infobar_delegate.cc',
         'browser/ui/metro_pin_tab_helper_win.cc',
         'browser/ui/metro_pin_tab_helper_win.h',
-        'browser/ui/native_web_contents_modal_dialog.h',
         'browser/ui/native_web_contents_modal_dialog_manager.h',
         'browser/ui/network_profile_bubble.cc',
         'browser/ui/network_profile_bubble.h',
@@ -2336,10 +2335,6 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:udev',
-          ],
-          'sources/': [
-            ['exclude', '^browser/ui/webui/certificate_viewer_webui.cc'],
-            ['exclude', '^browser/ui/webui/certificate_viewer_webui.h'],
           ],
         }],
         ['chromeos==0', {

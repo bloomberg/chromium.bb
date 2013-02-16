@@ -59,7 +59,7 @@ class ConstrainedWindowGtk : public WebContentsModalDialog {
   virtual void CloseWebContentsModalDialog() OVERRIDE;
   virtual void FocusWebContentsModalDialog() OVERRIDE;
   virtual void PulseWebContentsModalDialog() OVERRIDE;
-  virtual NativeWebContentsModalDialog GetNativeDialog() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
 
   // Called when the result of GetBackgroundColor may have changed.
   void BackgroundColorChanged();
