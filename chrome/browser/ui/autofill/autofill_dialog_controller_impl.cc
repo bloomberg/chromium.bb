@@ -506,6 +506,9 @@ bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,
     case ADDRESS_HOME_ZIP:
       break;
 
+    case NAME_FULL:  // Used for shipping.
+      break;
+
     default:
       NOTREACHED();  // Trying to validate unknown field.
       break;
