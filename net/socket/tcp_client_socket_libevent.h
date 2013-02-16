@@ -191,7 +191,7 @@ class NET_EXPORT_PRIVATE TCPClientSocketLibevent : public StreamSocket,
   UseHistory use_history_;
 
   // Enables experimental TCP FastOpen option.
-  bool use_tcp_fastopen_;
+  const bool use_tcp_fastopen_;
 
   // True when TCP FastOpen is in use and we have done the connect.
   bool tcp_fastopen_connected_;

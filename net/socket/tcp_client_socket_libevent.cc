@@ -136,14 +136,11 @@ TCPClientSocketLibevent::TCPClientSocketLibevent(
       connect_os_error_(0),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
       previously_disconnected_(false),
-      use_tcp_fastopen_(false),
+      use_tcp_fastopen_(IsTCPFastOpenEnabled()),
       tcp_fastopen_connected_(false),
       num_bytes_read_(0) {
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source.ToEventParametersCallback());
-
-  if (is_tcp_fastopen_enabled())
-    use_tcp_fastopen_ = true;
 }
 
 TCPClientSocketLibevent::~TCPClientSocketLibevent() {
@@ -520,12 +517,14 @@ int TCPClientSocketLibevent::InternalWrite(IOBuffer* buf, int buf_len) {
       return -1;
     }
 
-    // We have a limited amount of data to send in the SYN packet.
-    int kMaxFastOpenSendLength = 1420;
-
-    buf_len = std::min(kMaxFastOpenSendLength, buf_len);
-
-    int flags = 0x20000000;  // Magic flag to enable TCP_FASTOPEN
+    int flags = 0x20000000; // Magic flag to enable TCP_FASTOPEN.
+#if defined(OS_LINUX)
+    // sendto() will fail with EPIPE when the system doesn't support TCP Fast
+    // Open. Theoretically that shouldn't happen since the caller should check
+    // for system support on startup, but users may dynamically disable TCP Fast
+    // Open via sysctl.
+    flags |= MSG_NOSIGNAL;
+#endif // defined(OS_LINUX)
     nwrite = HANDLE_EINTR(sendto(socket_,
                                  buf->data(),
                                  buf_len,
@@ -535,15 +534,16 @@ int TCPClientSocketLibevent::InternalWrite(IOBuffer* buf, int buf_len) {
     tcp_fastopen_connected_ = true;
 
     if (nwrite < 0) {
-      // Non-blocking mode is returning EINPROGRESS rather than EAGAIN.
+      DCHECK_NE(EPIPE, errno);
+
+      // If errno == EINPROGRESS, that means the kernel didn't have a cookie
+      // and would block. The kernel is internally doing a connect() though.
+      // Remap EINPROGRESS to EAGAIN so we treat this the same as our other
+      // asynchronous cases. Note that the user buffer has not been copied to
+      // kernel space.
       if (errno == EINPROGRESS)
          errno = EAGAIN;
 
-      // Unlike "normal" nonblocking sockets, the data is already queued,
-      // so tell the app that we've consumed it.
-      // TODO(wtc): should we test if errno is EAGAIN or EWOULDBLOCK?
-      // Otherwise, returning buf_len here will mask a real error.
-      return buf_len;
     }
   } else {
     nwrite = HANDLE_EINTR(write(socket_, buf->data(), buf_len));

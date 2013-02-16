@@ -25,10 +25,10 @@ typedef TCPClientSocketLibevent TCPClientSocket;
 
 // Enable/disable experimental TCP FastOpen option.
 // Not thread safe.  Must be called during initialization/startup only.
-NET_EXPORT void set_tcp_fastopen_enabled(bool value);
+NET_EXPORT void SetTCPFastOpenEnabled(bool value);
 
 // Check if the TCP FastOpen option is enabled.
-bool is_tcp_fastopen_enabled();
+bool IsTCPFastOpenEnabled();
 
 }  // namespace net
 

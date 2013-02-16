@@ -321,7 +321,7 @@ void BrowserMainLoop::EarlyInitialization() {
   // TODO(abarth): Should this move to InitializeNetworkOptions?  This doesn't
   // seem dependent on SSL initialization().
   if (parsed_command_line_.HasSwitch(switches::kEnableTcpFastOpen))
-    net::set_tcp_fastopen_enabled(true);
+    net::SetTCPFastOpenEnabled(true);
 
 #if !defined(OS_IOS)
   if (parsed_command_line_.HasSwitch(switches::kRendererProcessLimit)) {
