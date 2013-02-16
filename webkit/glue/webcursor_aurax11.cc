@@ -20,6 +20,9 @@ const ui::PlatformCursor WebCursor::GetPlatformCursor() {
   if (platform_cursor_)
     return platform_cursor_;
 
+  if (custom_data_.size() == 0)
+    return 0;
+
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                    custom_size_.width(), custom_size_.height());
