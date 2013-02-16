@@ -229,12 +229,11 @@ void ReloadButton::ExecuteCommand(int command_id, int event_flags) {
 // ReloadButton, private:
 
 ui::SimpleMenuModel* ReloadButton::CreateMenuModel() {
-  ui::SimpleMenuModel* menu_model_ = new ui::SimpleMenuModel(this);
-  for (size_t i = 0; i < arraysize(kReloadMenuItems); i++) {
-    menu_model_->AddItemWithStringId(kReloadMenuItems[i],
-                                     kReloadMenuItems[i]);
-  }
-  return menu_model_;
+  ui::SimpleMenuModel* menu_model = new ui::SimpleMenuModel(this);
+  for (size_t i = 0; i < arraysize(kReloadMenuItems); ++i)
+    menu_model->AddItemWithStringId(kReloadMenuItems[i], kReloadMenuItems[i]);
+
+  return menu_model;
 }
 
 void ReloadButton::ExecuteBrowserCommand(int command, int event_flags) {
