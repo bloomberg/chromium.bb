@@ -69,9 +69,9 @@ bool IsEmptySelection(const gfx::Point& p1, const gfx::Point& p2) {
 namespace views {
 
 // A View that displays the text selection handle.
-class TouchSelectionControllerImpl::SelectionHandleView : public View {
+class TouchSelectionControllerImpl::EditingHandleView : public View {
  public:
-  explicit SelectionHandleView(TouchSelectionControllerImpl* controller,
+  explicit EditingHandleView(TouchSelectionControllerImpl* controller,
                                gfx::NativeView context)
       : controller_(controller),
         cursor_height_(0) {
@@ -83,7 +83,7 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
     set_owned_by_client();
   }
 
-  virtual ~SelectionHandleView() {
+  virtual ~EditingHandleView() {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -100,14 +100,13 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
     event->SetHandled();
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN:
-        controller_->dragging_handle_ = this;
+        controller_->SetDraggingHandle(this);
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
         controller_->SelectionHandleDragged(event->location());
         break;
       case ui::ET_GESTURE_SCROLL_END:
-      case ui::ET_GESTURE_END:
-        controller_->dragging_handle_ = NULL;
+        controller_->SetDraggingHandle(NULL);
         break;
       default:
         break;
@@ -151,17 +150,19 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
   TouchSelectionControllerImpl* controller_;
   int cursor_height_;
 
-  DISALLOW_COPY_AND_ASSIGN(SelectionHandleView);
+  DISALLOW_COPY_AND_ASSIGN(EditingHandleView);
 };
 
 TouchSelectionControllerImpl::TouchSelectionControllerImpl(
     ui::TouchEditable* client_view)
     : client_view_(client_view),
       client_widget_(NULL),
-      selection_handle_1_(new SelectionHandleView(this,
+      selection_handle_1_(new EditingHandleView(this,
                           client_view->GetNativeView())),
-      selection_handle_2_(new SelectionHandleView(this,
+      selection_handle_2_(new EditingHandleView(this,
                           client_view->GetNativeView())),
+      cursor_handle_(new EditingHandleView(this,
+                     client_view->GetNativeView())),
       context_menu_(NULL),
       dragging_handle_(NULL) {
   client_widget_ = Widget::GetWidgetForNativeView(
@@ -196,15 +197,17 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     // the start.
     dragging_handle_->SetSelectionRectInScreen(screen_rect_2);
 
-    // The non-dragging-handle might have recently become visible.
-    SelectionHandleView* non_dragging_handle =
-        dragging_handle_ == selection_handle_1_.get()?
-            selection_handle_2_.get() : selection_handle_1_.get();
-    if (client_view_->GetBounds().Contains(r1.origin())) {
-      non_dragging_handle->SetSelectionRectInScreen(screen_rect_1);
-      non_dragging_handle->SetVisible(true);
-    } else {
-      non_dragging_handle->SetVisible(false);
+    if (dragging_handle_ != cursor_handle_.get()) {
+      // The non-dragging-handle might have recently become visible.
+      EditingHandleView* non_dragging_handle =
+          dragging_handle_ == selection_handle_1_.get()?
+              selection_handle_2_.get() : selection_handle_1_.get();
+      if (client_view_->GetBounds().Contains(r1.origin())) {
+        non_dragging_handle->SetSelectionRectInScreen(screen_rect_1);
+        non_dragging_handle->SetVisible(true);
+      } else {
+        non_dragging_handle->SetVisible(false);
+      }
     }
   } else {
     UpdateContextMenu(r1.origin(), r2.origin());
@@ -213,9 +216,12 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     if (IsEmptySelection(screen_pos_2, screen_pos_1)) {
       selection_handle_1_->SetVisible(false);
       selection_handle_2_->SetVisible(false);
+      cursor_handle_->SetSelectionRectInScreen(screen_rect_1);
+      cursor_handle_->SetVisible(true);
       return;
     }
 
+    cursor_handle_->SetVisible(false);
     if (client_view_->GetBounds().Contains(r1.origin())) {
       selection_handle_1_->SetSelectionRectInScreen(screen_rect_1);
       selection_handle_1_->SetVisible(true);
@@ -232,19 +238,31 @@ void TouchSelectionControllerImpl::SelectionChanged() {
   }
 }
 
+void TouchSelectionControllerImpl::SetDraggingHandle(
+    EditingHandleView* handle) {
+  dragging_handle_ = handle;
+  if (dragging_handle_)
+    HideContextMenu();
+  else
+    StartContextMenuTimer();
+}
+
 void TouchSelectionControllerImpl::SelectionHandleDragged(
     const gfx::Point& drag_pos) {
   // We do not want to show the context menu while dragging.
   HideContextMenu();
-  context_menu_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kContextMenuTimoutMs),
-      this,
-      &TouchSelectionControllerImpl::ContextMenuTimerFired);
 
   DCHECK(dragging_handle_);
+
+  if (dragging_handle_ == cursor_handle_.get()) {
+    gfx::Point p(drag_pos.x() + kSelectionHandleRadius, drag_pos.y());
+    ConvertPointToClientView(dragging_handle_, &p);
+    client_view_->SelectRect(p, p);
+    return;
+  }
+
   // Find the stationary selection handle.
-  SelectionHandleView* fixed_handle = selection_handle_1_.get();
+  EditingHandleView* fixed_handle = selection_handle_1_.get();
   if (fixed_handle == dragging_handle_)
     fixed_handle = selection_handle_2_.get();
 
@@ -262,7 +280,7 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
 }
 
 void TouchSelectionControllerImpl::ConvertPointToClientView(
-    SelectionHandleView* source, gfx::Point* point) {
+    EditingHandleView* source, gfx::Point* point) {
   View::ConvertPointToScreen(source, point);
   client_view_->ConvertPointFromScreen(point);
 }
@@ -326,19 +344,21 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
       client_view_->GetNativeView());
 }
 
+void TouchSelectionControllerImpl::StartContextMenuTimer() {
+  if (context_menu_timer_.IsRunning())
+    return;
+  context_menu_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kContextMenuTimoutMs),
+      this,
+      &TouchSelectionControllerImpl::ContextMenuTimerFired);
+}
+
 void TouchSelectionControllerImpl::UpdateContextMenu(const gfx::Point& p1,
                                                      const gfx::Point& p2) {
   // Hide context menu to be shown when the timer fires.
   HideContextMenu();
-
-  // If there is selection, we restart the context menu timer.
-  if (!IsEmptySelection(p1, p2)) {
-    context_menu_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kContextMenuTimoutMs),
-        this,
-        &TouchSelectionControllerImpl::ContextMenuTimerFired);
-  }
+  StartContextMenuTimer();
 }
 
 void TouchSelectionControllerImpl::HideContextMenu() {

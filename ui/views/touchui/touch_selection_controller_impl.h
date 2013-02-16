@@ -32,7 +32,9 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
  private:
   friend class TouchSelectionControllerImplTest;
-  class SelectionHandleView;
+  class EditingHandleView;
+
+  void SetDraggingHandle(EditingHandleView* handle);
 
   // Callback to inform the client view that the selection handle has been
   // dragged, hence selection may need to be updated.
@@ -40,7 +42,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
   // Convenience method to convert a point from a selection handle's coordinate
   // system to that of the client view.
-  void ConvertPointToClientView(SelectionHandleView* source, gfx::Point* point);
+  void ConvertPointToClientView(EditingHandleView* source, gfx::Point* point);
 
   // Overridden from TouchEditingMenuController.
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
@@ -58,6 +60,8 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // Time to show context menu.
   void ContextMenuTimerFired();
 
+  void StartContextMenuTimer();
+
   // Convenience method to update the position/visibility of the context menu.
   void UpdateContextMenu(const gfx::Point& p1, const gfx::Point& p2);
 
@@ -72,8 +76,9 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
   ui::TouchEditable* client_view_;
   Widget* client_widget_;
-  scoped_ptr<SelectionHandleView> selection_handle_1_;
-  scoped_ptr<SelectionHandleView> selection_handle_2_;
+  scoped_ptr<EditingHandleView> selection_handle_1_;
+  scoped_ptr<EditingHandleView> selection_handle_2_;
+  scoped_ptr<EditingHandleView> cursor_handle_;
   TouchEditingMenuView* context_menu_;
 
   // Timer to trigger |context_menu| (|context_menu| is not shown if the
@@ -82,7 +87,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   base::OneShotTimer<TouchSelectionControllerImpl> context_menu_timer_;
 
   // Pointer to the SelectionHandleView being dragged during a drag session.
-  SelectionHandleView* dragging_handle_;
+  EditingHandleView* dragging_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerImpl);
 };
