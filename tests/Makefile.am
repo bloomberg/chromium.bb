@@ -32,7 +32,11 @@ check_PROGRAMS =			\
 	$(weston_tests)
 
 AM_CFLAGS = $(GCC_CFLAGS)
-AM_CPPFLAGS = -I$(top_srcdir)/src -DUNIT_TEST $(COMPOSITOR_CFLAGS)
+AM_CPPFLAGS =					\
+	-I$(top_srcdir)/src			\
+	-I$(top_srcdir)/shared			\
+	-DUNIT_TEST				\
+	$(COMPOSITOR_CFLAGS)
 AM_LDFLAGS = -module -avoid-version -rpath $(libdir)
 
 surface_global_test_la_SOURCES = surface-global-test.c

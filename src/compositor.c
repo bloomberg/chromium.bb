@@ -58,6 +58,7 @@
 #include "compositor.h"
 #include "../shared/os-compatibility.h"
 #include "git-version.h"
+#include "version.h"
 
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
@@ -3044,6 +3045,14 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	wl_array_release(&ec->vtxcnt);
 
 	wl_event_loop_destroy(ec->input_loop);
+}
+
+WL_EXPORT void
+weston_version(int *major, int *minor, int *micro)
+{
+	*major = WESTON_VERSION_MAJOR;
+	*minor = WESTON_VERSION_MINOR;
+	*micro = WESTON_VERSION_MICRO;
 }
 
 static int on_term_signal(int signal_number, void *data)

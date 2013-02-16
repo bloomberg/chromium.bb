@@ -2,6 +2,7 @@ bin_PROGRAMS = weston				\
 	$(weston_launch)
 
 AM_CPPFLAGS =					\
+	-I$(top_srcdir)/shared			\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
 	-DLIBEXECDIR='"$(libexecdir)"'		\
@@ -77,6 +78,16 @@ install-exec-hook:
 endif
 
 endif # BUILD_WESTON_LAUNCH
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = weston.pc
+
+westonincludedir = $(includedir)/weston
+westoninclude_HEADERS =				\
+	version.h				\
+	compositor.h				\
+	../shared/matrix.h			\
+	../shared/config-parser.h
 
 moduledir = @libdir@/weston
 module_LTLIBRARIES =				\

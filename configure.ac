@@ -1,9 +1,20 @@
+m4_define([weston_major_version], [1])
+m4_define([weston_minor_version], [0])
+m4_define([weston_micro_version], [90])
+m4_define([weston_version],
+          [weston_major_version.weston_minor_version.weston_micro_version])
+
 AC_PREREQ([2.64])
 AC_INIT([weston],
-        [1.0.90],
-        [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=weston&version=1.0.90],
+        [weston_version],
+        [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=weston&version=weston_version],
         [weston],
         [http://wayland.freedesktop.org/])
+
+AC_SUBST([WESTON_VERSION_MAJOR], [weston_major_version])
+AC_SUBST([WESTON_VERSION_MINOR], [weston_minor_version])
+AC_SUBST([WESTON_VERSION_MICRO], [weston_micro_version])
+AC_SUBST([WESTON_VERSION], [weston_version])
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -301,6 +312,8 @@ AC_CONFIG_FILES([Makefile
 		 shared/Makefile
 		 src/Makefile
 		 src/xwayland/Makefile
+		 src/version.h
+		 src/weston.pc
 		 clients/Makefile
 		 wcap/Makefile
 		 data/Makefile
