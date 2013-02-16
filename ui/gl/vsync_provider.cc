@@ -58,25 +58,28 @@ void SyncControlVSyncProvider::GetVSyncParameters(
     monotonic_time.tv_sec * base::Time::kMicrosecondsPerSecond +
     monotonic_time.tv_nsec / base::Time::kNanosecondsPerMicrosecond;
 
-  if ((system_time > real_time_in_microseconds) &&
-      (system_time > monotonic_time_in_microseconds))
-    return;
-
   // We need the time according to CLOCK_MONOTONIC, so if we've been given
   // a time from CLOCK_REALTIME, we need to convert.
   bool time_conversion_needed =
-    (system_time > monotonic_time_in_microseconds) ||
-    (real_time_in_microseconds - system_time <
-     monotonic_time_in_microseconds - system_time);
+      abs(system_time - real_time_in_microseconds) <
+      abs(system_time - monotonic_time_in_microseconds);
 
-  if (time_conversion_needed) {
-    int64 time_difference =
-      real_time_in_microseconds - monotonic_time_in_microseconds;
-    timebase = base::TimeTicks::FromInternalValue(
-        system_time - time_difference);
-  } else {
-    timebase = base::TimeTicks::FromInternalValue(system_time);
+  if (time_conversion_needed)
+    system_time += monotonic_time_in_microseconds - real_time_in_microseconds;
+
+  // Return if |system_time| is more than 1 frames in the future.
+  int64 interval_in_microseconds = last_good_interval_.InMicroseconds();
+  if (system_time > monotonic_time_in_microseconds + interval_in_microseconds)
+    return;
+
+  // If |system_time| is slightly in the future, adjust it to the previous
+  // frame and use the last frame counter to prevent issues in the callback.
+  if (system_time > monotonic_time_in_microseconds) {
+    system_time -= interval_in_microseconds;
+    media_stream_counter--;
   }
+
+  timebase = base::TimeTicks::FromInternalValue(system_time);
 
   int32 numerator, denominator;
   if (GetMscRate(&numerator, &denominator)) {
