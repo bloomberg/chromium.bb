@@ -35,14 +35,12 @@ namespace chromeos {
 struct OutputSnapshot;
 
 // Used to describe the state of a multi-display configuration.
-// TODO(oshima): remove DUAL_SECONDARY_ONLY
 enum OutputState {
   STATE_INVALID,
   STATE_HEADLESS,
   STATE_SINGLE,
   STATE_DUAL_MIRROR,
-  STATE_DUAL_PRIMARY_ONLY,
-  STATE_DUAL_SECONDARY_ONLY,
+  STATE_DUAL_EXTENDED,
   STATE_DUAL_UNKNOWN,
 };
 

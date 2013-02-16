@@ -372,11 +372,8 @@ OutputState InferCurrentState(Display* display,
         if (primary_native && secondary_native) {
           // Just check the relative locations.
           int secondary_offset = outputs[0].height + kVerticalGap;
-          int primary_offset = outputs[1].height + kVerticalGap;
           if ((outputs[0].y == 0) && (outputs[1].y == secondary_offset)) {
-            state = STATE_DUAL_PRIMARY_ONLY;
-          } else if ((outputs[1].y == 0) && (outputs[0].y == primary_offset)) {
-            state = STATE_DUAL_SECONDARY_ONLY;
+            state = STATE_DUAL_EXTENDED;
           } else {
             // Unexpected locations.
             state = STATE_DUAL_UNKNOWN;
@@ -412,16 +409,16 @@ OutputState GetNextState(Display* display,
       bool mirror_supported = (0 != outputs[0].mirror_mode) &&
           (0 != outputs[1].mirror_mode);
       switch (current_state) {
-        case STATE_DUAL_PRIMARY_ONLY:
+        case STATE_DUAL_EXTENDED:
           state =
-              mirror_supported ? STATE_DUAL_MIRROR : STATE_DUAL_PRIMARY_ONLY;
+              mirror_supported ? STATE_DUAL_MIRROR : STATE_DUAL_EXTENDED;
           break;
         case STATE_DUAL_MIRROR:
-          state = STATE_DUAL_PRIMARY_ONLY;
+          state = STATE_DUAL_EXTENDED;
           break;
         default:
-          // Default to primary only.
-          state = STATE_DUAL_PRIMARY_ONLY;
+          // Default to extended mode.
+          state = STATE_DUAL_EXTENDED;
       }
       break;
     }
@@ -808,21 +805,23 @@ void OutputConfigurator::ConfigureOutputs() {
 
   std::vector<OutputSnapshot> outputs = GetDualOutputs(display, screen);
   int new_output_count = outputs.size();
-  bool changed = false;
-  if (new_output_count != connected_output_count_) {
-    connected_output_count_ = new_output_count;
-    OutputState new_state =
-        GetNextState(display, screen, STATE_INVALID, outputs);
-    changed = EnterState(display, screen, window, new_state, outputs);
-    if (changed)
-      output_state_ = new_state;
-  }
+  // Don't skip even if the output counts didn't change because
+  // a display might have been swapped during the suspend.
+  connected_output_count_ = new_output_count;
+  OutputState new_state =
+      GetNextState(display, screen, STATE_INVALID, outputs);
+  // When a display was swapped, the state moves from
+  // STATE_DUAL_EXTENDED to STATE_DUAL_EXTENDED, so don't rely on
+  // the state chagne to tell if it was successful.
+  bool success = EnterState(display, screen, window, new_state, outputs);
   bool is_projecting = IsProjecting(outputs);
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
 
-  if (changed)
+  if (success) {
+    output_state_ = new_state;
     NotifyOnDisplayChanged();
+  }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       SetIsProjecting(is_projecting);
 }
@@ -1256,7 +1255,7 @@ bool OutputConfigurator::EnterState(
         CrtcConfig config2(secondary_crtc, 0, 0, outputs[1].native_mode,
                            outputs[1].output);
 
-        if (new_state == STATE_DUAL_PRIMARY_ONLY)
+        if (new_state == STATE_DUAL_EXTENDED)
           config2.y = primary_height + kVerticalGap;
         else
           config1.y = secondary_height + kVerticalGap;
@@ -1318,13 +1317,10 @@ void OutputConfigurator::RecordPreviousStateUMA() {
         UMA_HISTOGRAM_LONG_TIMES("Display.EnterState.mirror_fallback_duration",
                                  duration);
       break;
-    case STATE_DUAL_PRIMARY_ONLY:
+    case STATE_DUAL_EXTENDED:
       UMA_HISTOGRAM_LONG_TIMES("Display.EnterState.dual_primary_duration",
                                duration);
       break;
-    case STATE_DUAL_SECONDARY_ONLY:
-      UMA_HISTOGRAM_LONG_TIMES("Display.EnterState.dual_secondary_duration",
-                               duration);
     default:
       break;
   }
