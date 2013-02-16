@@ -69,6 +69,8 @@
       'sources': [
         '<@(gles2_implementation_source_files)',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       # Stub to expose gles2_implemenation in C instead of C++.
@@ -261,6 +263,8 @@
         'command_buffer/tests/gl_virtual_contexts_unittests.cc',
         'command_buffer/tests/occlusion_query_unittests.cc',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'gpu_unittest_utils',
