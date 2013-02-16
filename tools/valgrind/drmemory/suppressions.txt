@@ -394,6 +394,7 @@ MSVCR100D.dll!operator new
 
 WARNING
 name=Security test (calloc overflow)
+*!`anonymous namespace'::CallocReturnsNull
 *!`anonymous namespace'::SecurityTest_CallocOverflow_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>
 
