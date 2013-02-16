@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import multi_page_benchmark_unittest_base
+from telemetry.page import multi_page_benchmark_unittest_base
 # from perf_tools import image_decoding_benchmark
 
 
