@@ -263,13 +263,7 @@ IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, DetachAndAttachPanel) {
   panel_manager->CloseAll();
 }
 
-#if defined(OS_WIN)
-// Fails on windows. http://crbug.com/171940
-#define MAYBE_ResizePanel DISABLED_ResizePanel
-#else
-#define MAYBE_ResizePanel ResizePanel
-#endif
-IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, MAYBE_ResizePanel) {
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, ResizePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Balloon* balloon = CreateBalloon();
 

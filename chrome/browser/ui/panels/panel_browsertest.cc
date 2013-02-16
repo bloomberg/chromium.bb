@@ -980,8 +980,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
 }
 
 // TODO(jianli): To be enabled for other platforms.
-// http://crbug.com/164976 for USE_AURA.
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #define MAYBE_ActivateDeactivateBasic ActivateDeactivateBasic
 #else
 #define MAYBE_ActivateDeactivateBasic DISABLED_ActivateDeactivateBasic
@@ -1765,7 +1764,7 @@ class PanelExtensionApiTest : public ExtensionApiTest {
   }
 };
 
-#if defined(OS_LINUX) || defined(USE_AURA)
+#if defined(OS_LINUX) || (!defined(OS_WIN) && defined(USE_AURA))
 // Focus test fails if there is no window manager on Linux.
 // Aura panels have different behavior that do not apply to this test.
 #define MAYBE_FocusChangeEventOnMinimize DISABLED_FocusChangeEventOnMinimize

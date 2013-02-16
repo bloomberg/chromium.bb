@@ -25,16 +25,13 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/views/hwnd_util.h"
 #include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/icon_util.h"
-#endif
-
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/hwnd_util.h"
 #endif
 
 namespace {
@@ -136,23 +133,23 @@ void NativePanelTestingWin::FinishDragTitlebar() {
 
 bool NativePanelTestingWin::VerifyDrawingAttention() const {
   MessageLoop::current()->RunUntilIdle();
-  return panel_view_->GetFrameView()->paint_state() ==
+  return panel_view_->GetFrameView()->GetPaintState() ==
          PanelFrameView::PAINT_FOR_ATTENTION;
 }
 
 bool NativePanelTestingWin::VerifyActiveState(bool is_active) {
-  return panel_view_->GetFrameView()->paint_state() ==
+  return panel_view_->GetFrameView()->GetPaintState() ==
          (is_active ? PanelFrameView::PAINT_AS_ACTIVE
                     : PanelFrameView::PAINT_AS_INACTIVE);
 }
 
 bool NativePanelTestingWin::VerifyAppIcon() const {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // We only care about Windows 7 and later.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return true;
 
-  HWND native_window = panel_view_->GetNativePanelWindow();
+  HWND native_window = chrome::HWNDForWidget(panel_view_->window());
   HICON app_icon = reinterpret_cast<HICON>(
       ::SendMessage(native_window, WM_GETICON, ICON_BIG, 0L));
   if (!app_icon)
@@ -167,8 +164,8 @@ bool NativePanelTestingWin::VerifyAppIcon() const {
 }
 
 bool NativePanelTestingWin::VerifySystemMinimizeState() const {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  HWND native_window = panel_view_->GetNativePanelWindow();
+#if defined(OS_WIN)
+  HWND native_window = chrome::HWNDForWidget(panel_view_->window());
   WINDOWPLACEMENT placement;
   if (!::GetWindowPlacement(native_window, &placement))
     return false;
@@ -274,11 +271,11 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
         iter->first, ui::AcceleratorManager::kNormalPriority, this);
   }
 
-#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+#if defined(OS_WIN)
   ui::win::SetAppIdForWindow(
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
                                                 panel->profile()->GetPath()),
-      window_->GetNativeWindow());
+      chrome::HWNDForWidget(window_));
 #endif
 }
 
@@ -445,7 +442,7 @@ bool PanelView::IsPanelActive() const {
 }
 
 void PanelView::PreventActivationByOS(bool prevent_activation) {
-#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Set the flags "NoActivate" to make sure the minimized panels do not get
   // activated by the OS. In addition, set "AppWindow" to make sure the
   // minimized panels do appear in the taskbar and Alt-Tab menu if it is not
@@ -563,7 +560,7 @@ void PanelView::SetWindowCornerStyle(panel::CornerStyle corner_style) {
 
 void PanelView::PanelExpansionStateChanging(Panel::ExpansionState old_state,
                                             Panel::ExpansionState new_state) {
-#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Live preview is only available since Windows 7.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
@@ -573,7 +570,7 @@ void PanelView::PanelExpansionStateChanging(Panel::ExpansionState old_state,
   if (is_minimized == will_be_minimized)
     return;
 
-  HWND native_window = window_->GetNativeWindow();
+  HWND native_window = chrome::HWNDForWidget(window_);
 
   if (!thumbnailer_.get()) {
     DCHECK(native_window);
@@ -941,7 +938,7 @@ void PanelView::UpdateWindowAttribute(int attribute_index,
 #endif
 
 void PanelView::OnViewWasResized() {
-#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+#if defined(OS_WIN) && !defined(USE_AURA)
   content::WebContents* web_contents = panel_->GetWebContents();
   if (!web_view_ || !web_contents)
     return;

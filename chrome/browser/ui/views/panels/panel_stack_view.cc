@@ -9,19 +9,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
+#include "chrome/browser/ui/views/panels/panel_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/shell_integration.h"
-#include "ui/base/win/shell.h"
-#endif
-
-#if defined(OS_WIN) && !defined(USE_AURA)
 #include "base/win/windows_version.h"
+#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/views/hwnd_util.h"
 #include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
+#include "ui/base/win/shell.h"
 #endif
 
 // static
@@ -69,11 +68,11 @@ void PanelStackView::EnsureInitialized() {
     return;
   delay_initialized_ = true;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   ui::win::SetAppIdForWindow(
       ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
                                                 panel->profile()->GetPath()),
-      window_->GetNativeWindow());
+      chrome::HWNDForWidget(window_));
 #endif
 }
 
@@ -97,12 +96,12 @@ void PanelStackView::SetBounds(const gfx::Rect& bounds) {
 void PanelStackView::Minimize() {
   // When the owner stack window is minimized by the system, its live preview
   // is lost. We need to set it explicitly.
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Live preview is only available since Windows 7.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
-  HWND native_window = window_->GetNativeWindow();
+  HWND native_window = chrome::HWNDForWidget(window_);
 
   if (!thumbnailer_.get()) {
     DCHECK(native_window);
@@ -114,7 +113,10 @@ void PanelStackView::Minimize() {
   for (StackedPanelCollection::Panels::const_iterator iter =
             stacked_collection_->panels().begin();
         iter != stacked_collection_->panels().end(); ++iter) {
-    native_panel_windows.push_back((*iter)->GetNativeWindow());
+    Panel* panel = *iter;
+    native_panel_windows.push_back(
+        chrome::HWNDForWidget(
+            static_cast<PanelView*>(panel->native_panel())->window()));
   }
   thumbnailer_->Start(native_panel_windows);
 #endif
@@ -164,21 +166,22 @@ void PanelStackView::OnWidgetDestroying(views::Widget* widget) {
 
 void PanelStackView::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   if (active && thumbnailer_)
     thumbnailer_->Stop();
 #endif
 }
 
 void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  HWND panel_window = panel->GetNativeWindow();
+#if defined(OS_WIN)
+  HWND panel_window = chrome::HWNDForWidget(
+      static_cast<PanelView*>(panel->native_panel())->window());
 
   HWND stack_window = NULL;
   StackedPanelCollection* stack = panel->stack();
   if (stack) {
-    stack_window = static_cast<PanelStackView*>(stack->native_stack())->
-        window_->GetNativeWindow();
+    stack_window = chrome::HWNDForWidget(
+        static_cast<PanelStackView*>(stack->native_stack())->window_);
   }
 
   // The extended style WS_EX_APPWINDOW is used to force a top-level window onto
