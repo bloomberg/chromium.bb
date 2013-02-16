@@ -324,6 +324,10 @@ void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
 }
 
 void WebstoreStandaloneInstaller::CompleteInstall(const std::string& error) {
+  // Clear webstore_data_fetcher_ so that WebContentsDestroyed will no longer
+  // call Release in case the WebContents is destroyed before this object.
+  scoped_ptr<WebstoreDataFetcher> webstore_data_fetcher(
+      webstore_data_fetcher_.Pass());
   if (!callback_.is_null())
     callback_.Run(error.empty(), error);
 

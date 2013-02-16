@@ -802,6 +802,10 @@ const char kKioskMode[]                     = "kiosk";
 // See http://crbug.com/31395.
 const char kKioskModePrinting[]             = "kiosk-printing";
 
+// Causes Chrome to attempt to get metadata from the webstore for the
+// given item, and then prompt the user to download and install it.
+const char kLimitedInstallFromWebstore[]    = "limited-install-from-webstore";
+
 // Comma-separated list of directories with component extensions to load.
 const char kLoadComponentExtension[]        = "load-component-extension";
 

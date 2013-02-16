@@ -232,8 +232,6 @@ class CommandLineWebstoreInstall : public WebstoreStandaloneInstallTest,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                    content::NotificationService::AllSources());
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kInstallFromWebstore, kTestExtensionId);
   }
 
   bool saw_install() { return saw_install_; }
@@ -243,7 +241,7 @@ class CommandLineWebstoreInstall : public WebstoreStandaloneInstallTest,
   // NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details)  OVERRIDE {
+                       const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
       const Extension* extension = content::Details<Extension>(details).ptr();
       ASSERT_TRUE(extension != NULL);
@@ -268,6 +266,8 @@ class CommandLineWebstoreInstall : public WebstoreStandaloneInstallTest,
 IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Accept) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(
+      switches::kInstallFromWebstore, kTestExtensionId);
+  command_line->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   extensions::StartupHelper helper;
   EXPECT_TRUE(helper.InstallFromWebstore(*command_line, browser()->profile()));
@@ -278,9 +278,56 @@ IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Accept) {
 IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Cancel) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(
+      switches::kInstallFromWebstore, kTestExtensionId);
+  command_line->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   extensions::StartupHelper helper;
   EXPECT_FALSE(helper.InstallFromWebstore(*command_line, browser()->profile()));
+  EXPECT_FALSE(saw_install());
+  EXPECT_EQ(0, browser_open_count());
+}
+
+IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, LimitedAccept) {
+  extensions::StartupHelper helper;
+
+  // Small test of "WebStoreIdFromLimitedInstallCmdLine" which made more
+  // sense together with the rest of the test for "LimitedInstallFromWebstore".
+  CommandLine command_line_test1(CommandLine::NO_PROGRAM);
+  command_line_test1.AppendSwitchASCII(switches::kLimitedInstallFromWebstore,
+      "1");
+  EXPECT_EQ("nckgahadagoaajjgafhacjanaoiihapd",
+      helper.WebStoreIdFromLimitedInstallCmdLine(command_line_test1));
+
+  CommandLine command_line_test2(CommandLine::NO_PROGRAM);
+  command_line_test1.AppendSwitchASCII(switches::kLimitedInstallFromWebstore,
+      "2");
+  EXPECT_EQ(kTestExtensionId,
+      helper.WebStoreIdFromLimitedInstallCmdLine(command_line_test1));
+
+  // Now, on to the real test for LimitedInstallFromWebstore.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(
+      switches::kLimitedInstallFromWebstore, "2");
+  command_line->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  helper.LimitedInstallFromWebstore(*command_line, browser()->profile(),
+      MessageLoop::QuitWhenIdleClosure());
+  MessageLoop::current()->Run();
+
+  EXPECT_TRUE(saw_install());
+  EXPECT_EQ(0, browser_open_count());
+}
+
+IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, LimitedCancel) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(
+      switches::kLimitedInstallFromWebstore, "2");
+  command_line->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
+  extensions::StartupHelper helper;
+  helper.LimitedInstallFromWebstore(*command_line, browser()->profile(),
+      MessageLoop::QuitWhenIdleClosure());
+  MessageLoop::current()->Run();
   EXPECT_FALSE(saw_install());
   EXPECT_EQ(0, browser_open_count());
 }

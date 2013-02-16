@@ -225,19 +225,23 @@ void InstallationValidator::ValidateAppCommandFlags(
   }
 }
 
-// Validates the "install-application" Google Update product command.
-void InstallationValidator::ValidateInstallAppCommand(
+// Validates both "install-application" and "install-extension" depending on
+// what is passed in.
+void InstallationValidator::ValidateInstallCommand(
     const ProductContext& ctx,
     const AppCommand& app_cmd,
+    const wchar_t* expected_command,
+    const wchar_t* expected_app_name,
+    const char* expected_switch,
     bool* is_valid) {
   DCHECK(is_valid);
 
   CommandLine cmd_line(CommandLine::FromString(app_cmd.command_line()));
-  string16 name(kCmdInstallApp);
+  string16 name(expected_command);
 
   base::FilePath expected_path(
       installer::GetChromeInstallPath(ctx.system_install, ctx.dist)
-      .Append(installer::kChromeAppHostExe));
+      .Append(expected_app_name));
 
   if (!base::FilePath::CompareEqualIgnoreCase(expected_path.value(),
                                               cmd_line.GetProgram().value())) {
@@ -248,10 +252,7 @@ void InstallationValidator::ValidateInstallAppCommand(
   }
 
   SwitchExpectations expected;
-
-  expected.push_back(
-      std::make_pair(std::string(::switches::kInstallFromWebstore),
-                     true));
+  expected.push_back(std::make_pair(std::string(expected_switch), true));
 
   ValidateCommandExpectations(ctx, cmd_line, expected, name, is_valid);
 
@@ -260,6 +261,26 @@ void InstallationValidator::ValidateInstallAppCommand(
   flags_exp.insert(google_update::kRegWebAccessibleField);
   flags_exp.insert(google_update::kRegRunAsUserField);
   ValidateAppCommandFlags(ctx, app_cmd, flags_exp, name, is_valid);
+}
+
+// Validates the "install-application" Google Update product command.
+void InstallationValidator::ValidateInstallAppCommand(
+    const ProductContext& ctx,
+    const AppCommand& app_cmd,
+    bool* is_valid) {
+  ValidateInstallCommand(ctx, app_cmd, kCmdInstallApp,
+                         installer::kChromeAppHostExe,
+                         ::switches::kInstallFromWebstore, is_valid);
+}
+
+// Validates the "install-extension" Google Update product command.
+void InstallationValidator::ValidateInstallExtensionCommand(
+    const ProductContext& ctx,
+    const AppCommand& app_cmd,
+    bool* is_valid) {
+  ValidateInstallCommand(ctx, app_cmd, kCmdInstallExtension,
+                         installer::kChromeExe,
+                         ::switches::kLimitedInstallFromWebstore, is_valid);
 }
 
 // Validates the "on-os-upgrade" Google Update internal command.
@@ -750,6 +771,7 @@ void InstallationValidator::ValidateAppCommands(
     expectations[kCmdInstallApp] = &ValidateInstallAppCommand;
   }
   if (ctx.dist->GetType() == BrowserDistribution::CHROME_BROWSER) {
+    expectations[kCmdInstallExtension] = &ValidateInstallExtensionCommand;
     expectations[kCmdOnOsUpgrade] = &ValidateOnOsUpgradeCommand;
   }
 

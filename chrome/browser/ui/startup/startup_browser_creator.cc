@@ -550,6 +550,12 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     }
   }
 
+  if (command_line.HasSwitch(switches::kLimitedInstallFromWebstore)) {
+    extensions::StartupHelper helper;
+    helper.LimitedInstallFromWebstore(command_line, last_used_profile,
+                                      base::Bind(&base::DoNothing));
+  }
+
 #if defined(OS_CHROMEOS)
   // The browser will be launched after the user logs in.
   if (command_line.HasSwitch(switches::kLoginManager) ||

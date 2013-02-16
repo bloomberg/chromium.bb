@@ -221,29 +221,68 @@ string16 GetRegCommandKey(BrowserDistribution* dist,
   return cmd_key;
 }
 
+// Adds work items to create (or delete if uninstalling) app commands to launch
+// the app with a switch. The following criteria should be true:
+//  1. The switch takes one parameter.
+//  2. The command send pings.
+//  3. The command is web accessible.
+//  4. The command is run as the user.
+void AddCommandWithParameterWorkItems(const InstallerState& installer_state,
+                                      const InstallationState& machine_state,
+                                      const Version& new_version,
+                                      const Product& product,
+                                      const wchar_t* command_key,
+                                      const wchar_t* app,
+                                      const char* command_with_parameter,
+                                      WorkItemList* work_item_list) {
+  DCHECK(command_key);
+  DCHECK(app);
+  DCHECK(command_with_parameter);
+  DCHECK(work_item_list);
+
+  string16 full_cmd_key(GetRegCommandKey(product.distribution(), command_key));
+
+  if (installer_state.operation() == InstallerState::UNINSTALL) {
+    work_item_list->AddDeleteRegKeyWorkItem(
+        installer_state.root_key(), full_cmd_key)->set_log_message(
+            "removing " + WideToASCII(command_key) + " command");
+  } else {
+    CommandLine cmd_line(installer_state.target_path().Append(app));
+    cmd_line.AppendSwitchASCII(command_with_parameter, "%1");
+
+    AppCommand cmd(cmd_line.GetCommandLineString());
+    cmd.set_sends_pings(true);
+    cmd.set_is_web_accessible(true);
+    cmd.set_is_run_as_user(true);
+    cmd.AddWorkItems(installer_state.root_key(), full_cmd_key, work_item_list);
+  }
+}
+
 void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
                                    const InstallationState& machine_state,
                                    const Version& new_version,
                                    const Product& product,
                                    WorkItemList* work_item_list) {
   DCHECK(product.is_chrome_app_host());
-  string16 cmd_key(GetRegCommandKey(product.distribution(), kCmdInstallApp));
+  AddCommandWithParameterWorkItems(installer_state, machine_state, new_version,
+                                   product, kCmdInstallApp,
+                                   installer::kChromeAppHostExe,
+                                   ::switches::kInstallFromWebstore,
+                                   work_item_list);
+}
 
-  if (installer_state.operation() == InstallerState::UNINSTALL) {
-    work_item_list->AddDeleteRegKeyWorkItem(
-        installer_state.root_key(), cmd_key)->set_log_message(
-            "removing install-application command");
-  } else {
-    CommandLine cmd_line(
-        installer_state.target_path().Append(installer::kChromeAppHostExe));
-    cmd_line.AppendSwitchASCII(::switches::kInstallFromWebstore, "%1");
-
-    AppCommand cmd(cmd_line.GetCommandLineString());
-    cmd.set_sends_pings(true);
-    cmd.set_is_web_accessible(true);
-    cmd.set_is_run_as_user(true);
-    cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
-  }
+void AddInstallExtensionCommandWorkItem(const InstallerState& installer_state,
+                                        const InstallationState& machine_state,
+                                        const FilePath& setup_path,
+                                        const Version& new_version,
+                                        const Product& product,
+                                        WorkItemList* work_item_list) {
+  DCHECK(product.is_chrome());
+  AddCommandWithParameterWorkItems(installer_state, machine_state, new_version,
+                                   product, kCmdInstallExtension,
+                                   installer::kChromeExe,
+                                   ::switches::kLimitedInstallFromWebstore,
+                                   work_item_list);
 }
 
 // Returns the basic CommandLine to setup.exe for a quick-enable operation on
@@ -352,6 +391,8 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
     if (p.is_chrome()) {
       AddOsUpgradeWorkItems(installer_state, setup_path, new_version, p,
                             list);
+      AddInstallExtensionCommandWorkItem(installer_state, original_state,
+                                         setup_path, new_version, p, list);
     }
     if (p.is_chrome_binaries()) {
       AddQueryEULAAcceptanceWorkItems(

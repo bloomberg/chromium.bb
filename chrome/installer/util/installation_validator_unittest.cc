@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/installation_state.h"
@@ -78,6 +79,10 @@ class FakeProductState : public ProductState {
                            const char* version,
                            int channel_modifiers,
                            Vehicle vehicle);
+  void AddInstallExtensionCommand(BrowserDistribution::Type dist_type,
+                                  Level install_level,
+                                  const char* version,
+                                  int channel_modifiers);
   void AddOsUpgradeCommand(BrowserDistribution::Type dist_type,
                            Level install_level,
                            const char* version,
@@ -104,6 +109,11 @@ class FakeProductState : public ProductState {
     ChannelModifier modifier;
     bool (ChannelInfo::*method)(bool value);
   };
+
+  static base::FilePath GetSetupPath(
+      BrowserDistribution::Type dist_type,
+      Level install_level,
+      int channel_modifiers);
 
   static base::FilePath GetSetupExePath(
       BrowserDistribution::Type dist_type,
@@ -139,15 +149,25 @@ const FakeProductState::ChannelMethodForModifier
 };
 
 // static
-FilePath FakeProductState::GetSetupExePath(BrowserDistribution::Type dist_type,
-                                           Level install_level,
-                                           const char* version,
-                                           int channel_modifiers) {
+base::FilePath FakeProductState::GetSetupPath(
+    BrowserDistribution::Type dist_type,
+    Level install_level,
+    int channel_modifiers) {
   const bool is_multi_install = (channel_modifiers & CM_MULTI) != 0;
-  base::FilePath setup_path = installer::GetChromeInstallPath(
+  return installer::GetChromeInstallPath(
       install_level == SYSTEM_LEVEL,
       BrowserDistribution::GetSpecificDistribution(is_multi_install ?
               BrowserDistribution::CHROME_BINARIES : dist_type));
+}
+
+// static
+base::FilePath FakeProductState::GetSetupExePath(
+    BrowserDistribution::Type dist_type,
+    Level install_level,
+    const char* version,
+    int channel_modifiers) {
+  base::FilePath setup_path = GetSetupPath(dist_type, install_level,
+                                           channel_modifiers);
   return setup_path
       .AppendASCII(version)
       .Append(installer::kInstallerDir)
@@ -203,6 +223,26 @@ void FakeProductState::SetUninstallCommand(BrowserDistribution::Type dist_type,
   }
   if (vehicle == MSI)
     uninstall_command_.AppendSwitch(installer::switches::kMsi);
+}
+
+// Adds the "install-extension" Google Update product command.
+void FakeProductState::AddInstallExtensionCommand(
+    BrowserDistribution::Type dist_type,
+    Level install_level,
+    const char* version,
+    int channel_modifiers) {
+  // Right now only Chrome browser uses this.
+  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BROWSER);
+
+  CommandLine cmd_line(GetSetupPath(dist_type, install_level,
+                                    channel_modifiers).
+                           Append(installer::kChromeExe));
+  cmd_line.AppendSwitchASCII(::switches::kLimitedInstallFromWebstore, "%1");
+  AppCommand app_cmd(cmd_line.GetCommandLineString());
+  app_cmd.set_sends_pings(true);
+  app_cmd.set_is_web_accessible(true);
+  app_cmd.set_is_run_as_user(true);
+  commands_.Set(installer::kCmdInstallExtension, app_cmd);
 }
 
 // Adds the "on-os-upgrade" Google Update product command.
@@ -498,6 +538,10 @@ void InstallationValidatorTest::MakeProductState(
                                install_level,
                                chrome::kChromeVersion,
                                channel_modifiers);
+    state->AddInstallExtensionCommand(prod_type,
+                                      install_level,
+                                      chrome::kChromeVersion,
+                                      channel_modifiers);
   }
 }
 
