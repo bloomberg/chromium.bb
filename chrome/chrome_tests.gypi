@@ -455,7 +455,11 @@
         '../third_party/webdriver/atoms.cc',
         '../third_party/webdriver/atoms.h',
       ],
-    },
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      # Although this one is probably safe to ignore.
+      # Mongose casts -1 directly as HANDLE (definitely safe to ignore).
+      'msvs_disabled_warnings': [4267, 4306, ],
+   },
     {
       # chromedriver is the chromium implementation of WebDriver.
       # See http://www.chromium.org/developers/testing/webdriver-for-chrome
