@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import os
 
-from telemetry import multi_page_benchmark
+from telemetry.page import multi_page_benchmark
 
 _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 

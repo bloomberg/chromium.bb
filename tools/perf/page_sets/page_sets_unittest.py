@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import unittest
 
-from telemetry import page_set
+from telemetry.page import page_set
 import page_sets
 
 class PageSetsUnittest(unittest.TestCase):

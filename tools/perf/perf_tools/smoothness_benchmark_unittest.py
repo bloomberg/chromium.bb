@@ -1,11 +1,10 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry import multi_page_benchmark_unittest_base
-from telemetry import page
 from perf_tools import smoothness_benchmark
-
-from telemetry.page_benchmark_results import PageBenchmarkResults
+from telemetry.page import multi_page_benchmark_unittest_base
+from telemetry.page import page
+from telemetry.page.page_benchmark_results import PageBenchmarkResults
 
 class SmoothnessBenchmarkUnitTest(
   multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
