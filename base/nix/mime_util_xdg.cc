@@ -23,6 +23,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 
+namespace base {
+namespace nix {
+
 namespace {
 
 class IconTheme;
@@ -570,9 +573,6 @@ MimeUtilConstants::~MimeUtilConstants() {
 }
 
 }  // namespace
-
-namespace base {
-namespace nix {
 
 std::string GetFileMimeType(const FilePath& filepath) {
   if (filepath.empty())

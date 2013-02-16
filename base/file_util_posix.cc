@@ -58,6 +58,8 @@
 #include "base/chromeos/chromeos_version.h"
 #endif
 
+using base::FilePath;
+
 namespace file_util {
 
 namespace {

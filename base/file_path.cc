@@ -29,6 +29,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+namespace base {
+
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
 const FilePath::CharType FilePath::kSeparators[] = FILE_PATH_LITERAL("\\/");
 #else  // FILE_PATH_USES_WIN_SEPARATORS
@@ -404,7 +406,7 @@ FilePath FilePath::InsertBeforeExtension(const StringType& suffix) const {
   return FilePath(ret);
 }
 
-FilePath FilePath::InsertBeforeExtensionASCII(const base::StringPiece& suffix)
+FilePath FilePath::InsertBeforeExtensionASCII(const StringPiece& suffix)
     const {
   DCHECK(IsStringASCII(suffix));
 #if defined(OS_WIN)
@@ -506,7 +508,7 @@ FilePath FilePath::Append(const FilePath& component) const {
   return Append(component.value());
 }
 
-FilePath FilePath::AppendASCII(const base::StringPiece& component) const {
+FilePath FilePath::AppendASCII(const StringPiece& component) const {
   DCHECK(IsStringASCII(component));
 #if defined(OS_WIN)
   return Append(ASCIIToUTF16(component.as_string()));
@@ -544,7 +546,7 @@ bool FilePath::ReferencesParent() const {
 // platforms.  These encoding conversion functions are not quite correct.
 
 string16 FilePath::LossyDisplayName() const {
-  return WideToUTF16(base::SysNativeMBToWide(path_));
+  return WideToUTF16(SysNativeMBToWide(path_));
 }
 
 std::string FilePath::MaybeAsASCII() const {
@@ -557,7 +559,7 @@ std::string FilePath::AsUTF8Unsafe() const {
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   return value();
 #else
-  return WideToUTF8(base::SysNativeMBToWide(value()));
+  return WideToUTF8(SysNativeMBToWide(value()));
 #endif
 }
 
@@ -566,7 +568,7 @@ std::string FilePath::AsUTF8Unsafe() const {
 
 // static
 FilePath FilePath::FromWStringHack(const std::wstring& wstring) {
-  return FilePath(base::SysWideToNativeMB(wstring));
+  return FilePath(SysWideToNativeMB(wstring));
 }
 
 // static
@@ -574,7 +576,7 @@ FilePath FilePath::FromUTF8Unsafe(const std::string& utf8) {
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   return FilePath(utf8);
 #else
-  return FilePath(base::SysWideToNativeMB(UTF8ToWide(utf8)));
+  return FilePath(SysWideToNativeMB(UTF8ToWide(utf8)));
 #endif
 }
 
@@ -1129,7 +1131,7 @@ int FilePath::HFSFastUnicodeCompare(const StringType& string1,
 }
 
 StringType FilePath::GetHFSDecomposedForm(const StringType& string) {
-  base::mac::ScopedCFTypeRef<CFStringRef> cfstring(
+  mac::ScopedCFTypeRef<CFStringRef> cfstring(
       CFStringCreateWithBytesNoCopy(
           NULL,
           reinterpret_cast<const UInt8*>(string.c_str()),
@@ -1176,7 +1178,7 @@ int FilePath::CompareIgnoreCase(const StringType& string1,
   // GetHFSDecomposedForm() returns an empty string in an error case.
   if (hfs1.empty() || hfs2.empty()) {
     NOTREACHED();
-    base::mac::ScopedCFTypeRef<CFStringRef> cfstring1(
+    mac::ScopedCFTypeRef<CFStringRef> cfstring1(
         CFStringCreateWithBytesNoCopy(
             NULL,
             reinterpret_cast<const UInt8*>(string1.c_str()),
@@ -1184,7 +1186,7 @@ int FilePath::CompareIgnoreCase(const StringType& string1,
             kCFStringEncodingUTF8,
             false,
             kCFAllocatorNull));
-    base::mac::ScopedCFTypeRef<CFStringRef> cfstring2(
+    mac::ScopedCFTypeRef<CFStringRef> cfstring2(
         CFStringCreateWithBytesNoCopy(
             NULL,
             reinterpret_cast<const UInt8*>(string2.c_str()),
@@ -1251,6 +1253,8 @@ FilePath FilePath::NormalizePathSeparators() const {
 #endif
 }
 
-void PrintTo(const FilePath& path, std::ostream* out) {
+}  // namespace base
+
+void PrintTo(const base::FilePath& path, std::ostream* out) {
   *out << path.value();
 }

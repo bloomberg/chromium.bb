@@ -17,6 +17,8 @@
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 
+using base::FilePath;
+
 namespace base {
   bool PathProvider(int key, FilePath* result);
 #if defined(OS_WIN)

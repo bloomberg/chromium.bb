@@ -8,6 +8,8 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 
+using base::FilePath;
+
 const char* JSONFileValueSerializer::kAccessDenied = "Access denied.";
 const char* JSONFileValueSerializer::kCannotReadFile = "Can't read file.";
 const char* JSONFileValueSerializer::kFileLocked = "File locked.";

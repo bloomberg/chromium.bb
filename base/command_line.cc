@@ -20,6 +20,8 @@
 #include <shellapi.h>
 #endif
 
+using base::FilePath;
+
 CommandLine* CommandLine::current_process_commandline_ = NULL;
 
 namespace {
