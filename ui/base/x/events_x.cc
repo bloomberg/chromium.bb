@@ -835,7 +835,7 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
             return is_cancel ? ET_SCROLL_FLING_CANCEL : ET_SCROLL_FLING_START;
           } else if (GetScrollOffsets(
               native_event, NULL, NULL, NULL, NULL, NULL)) {
-            return ET_SCROLL;
+            return IsTouchpadEvent(native_event) ? ET_SCROLL : ET_MOUSEWHEEL;
           } else if (GetButtonMaskForX2Event(xievent)) {
             return ET_MOUSE_DRAGGED;
           } else {
@@ -1074,8 +1074,13 @@ int GetChangedMouseButtonFlagsFromNative(
 }
 
 int GetMouseWheelOffset(const base::NativeEvent& native_event) {
-  int button = native_event->type == GenericEvent
-    ? EventButtonFromNative(native_event) : native_event->xbutton.button;
+  float offset = 0;
+  if (native_event->type == GenericEvent &&
+      GetScrollOffsets(native_event, NULL, &offset, NULL, NULL, NULL))
+    return static_cast<int>(offset);
+
+  int button = native_event->type == GenericEvent ?
+      EventButtonFromNative(native_event) : native_event->xbutton.button;
 
   switch (button) {
     case 4:
