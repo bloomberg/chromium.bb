@@ -7,7 +7,6 @@
 
 #include <deque>
 #include <string>
-#include <vector>
 
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
@@ -131,9 +130,7 @@ class GpuChannel : public IPC::Listener,
   void AddRoute(int32 route_id, IPC::Listener* listener);
   void RemoveRoute(int32 route_id);
 
-  gpu::PreemptionFlag* GetPreemptionFlag() {
-    return processing_stalled_.get();
-  }
+  gpu::PreemptionFlag* GetPreemptionFlag();
 
   // If |preemption_flag->IsSet()|, any stub on this channel
   // should stop issuing GL commands. Setting this to NULL stops deferral.
@@ -151,6 +148,7 @@ class GpuChannel : public IPC::Listener,
 
  private:
   friend class base::RefCountedThreadSafe<GpuChannel>;
+  friend class SyncPointMessageFilter;
 
   void OnDestroy();
 
@@ -192,17 +190,15 @@ class GpuChannel : public IPC::Listener,
 
   scoped_ptr<IPC::SyncChannel> channel_;
 
-  // Pointer to number of routed messages that are pending processing on a
-  // stub. The lifetime is properly managed because we pass ownership to a
-  // SyncPointMessageFilter, which we hold a reference to.
-  base::AtomicRefCount* unprocessed_messages_;
+  uint64 messages_processed_;
 
-  // Whether the processing of IPCs on this channel is stalled.
-  scoped_refptr<gpu::PreemptionFlag> processing_stalled_;
+  // Whether the processing of IPCs on this channel is stalled and we should
+  // preempt other GpuChannels.
+  scoped_refptr<gpu::PreemptionFlag> preempting_flag_;
 
   // If non-NULL, all stubs on this channel should stop processing GL
-  // commands (via their GpuScheduler) when preemption_flag_->IsSet()
-  scoped_refptr<gpu::PreemptionFlag> preemption_flag_;
+  // commands (via their GpuScheduler) when preempted_flag_->IsSet()
+  scoped_refptr<gpu::PreemptionFlag> preempted_flag_;
 
   std::deque<IPC::Message*> deferred_messages_;
 
