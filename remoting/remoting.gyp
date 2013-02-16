@@ -472,9 +472,6 @@
               },
             }],
             ['OS=="win"', {
-              'defines': [
-                'ISOLATION_AWARE_ENABLED=1',
-              ],
               'dependencies': [
                 '../sandbox/sandbox.gyp:sandbox',
               ],
@@ -633,9 +630,6 @@
               ],  # conditions
             }],  # OS=="mac"
             [ 'OS=="win"', {
-              'defines': [
-                'ISOLATION_AWARE_ENABLED=1',
-              ],
               'dependencies': [
                 'remoting_controller_idl',
                 'remoting_version_resources',
@@ -648,11 +642,6 @@
                 'host/win/core.rc',
                 'host/plugin/host_plugin.def',
               ],
-              'msvs_settings': {
-                'VCManifestTool': {
-                  'AdditionalManifestFiles': 'host/plugin/remoting_host_plugin.manifest',
-                },
-              },
             }],
           ],
         },  # end of target 'remoting_host_plugin'
@@ -1185,12 +1174,11 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'defines' : [
             '_ATL_APARTMENT_THREADED',
-            '_ATL_CSTRING_EXPLICIT_CONSTRUCTORS',
             '_ATL_NO_AUTOMATIC_NAMESPACE',
-            'DAEMON_CONTROLLER_CLSID="{<(daemon_controller_clsid)}"',
+            '_ATL_CSTRING_EXPLICIT_CONSTRUCTORS',
             'HOST_IMPLEMENTATION',
-            'ISOLATION_AWARE_ENABLED=1',
             'STRICT',
+            'DAEMON_CONTROLLER_CLSID="{<(daemon_controller_clsid)}"',
             'VERSION=<(version_full)',
           ],
           'dependencies': [
@@ -1275,11 +1263,38 @@
                 'wtsapi32.lib',
               ],
             },
-            'VCManifestTool': {
-              'AdditionalManifestFiles': 'host/win/remoting_core.manifest',
-            },
           },
         },  # end of target 'remoting_core'
+        {
+          'target_name': 'remoting_core_manifest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_core',
+          ],
+          'hard_dependency': '1',
+          'actions': [
+            {
+              'action_name': 'Embedding manifest into remoting_core.dll',
+              'binary': '<(PRODUCT_DIR)/remoting_core.dll',
+              'manifest': 'host/win/remoting_core.manifest',
+              'inputs': [
+                '<(_binary)',
+                '<(_manifest)',
+              ],
+              'outputs': [
+                '<(_binary).embedded.manifest',
+              ],
+              'action': [
+                'mt',
+                '-nologo',
+                '-manifest',
+                '<(_manifest)',
+                '-outputresource:<(_binary);#2',
+                '-out:<(_binary).embedded.manifest',
+              ],
+            },
+          ],  # actions
+        },  # end of target 'remoting_core_manifest'
         {
           'target_name': 'remoting_controller',
           'type': 'executable',
@@ -1339,19 +1354,37 @@
               'SubSystem': '2', # /SUBSYSTEM:WINDOWS
             },
           },
-          # Add 'level="requireAdministrator" uiAccess="true"' to the manifest
-          # only for the official builds because it requires the binary to be
-          # signed to work.
-          'conditions': [
-            ['buildtype == "Official"', {
-              'msvs_settings': {
-                'VCManifestTool': {
-                  'AdditionalManifestFiles': 'host/win/remoting_desktop.manifest',
-                },
-              },
-            }],
-          ],
         },  # end of target 'remoting_desktop'
+        {
+          'target_name': 'remoting_desktop_manifest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_desktop',
+          ],
+          'hard_dependency': '1',
+          'actions': [
+            {
+              'action_name': 'Embedding manifest into remoting_desktop.exe',
+              'binary': '<(PRODUCT_DIR)/remoting_desktop.exe',
+              'manifest': 'host/win/remoting_desktop.manifest',
+              'inputs': [
+                '<(_binary)',
+                '<(_manifest)',
+              ],
+              'outputs': [
+                '<(_binary).embedded.manifest',
+              ],
+              'action': [
+                'mt',
+                '-nologo',
+                '-manifest',
+                '<(_manifest)',
+                '-outputresource:<(_binary);#1',
+                '-out:<(_binary).embedded.manifest',
+              ],
+            },
+          ],  # actions
+        },  # end of target 'remoting_desktop_manifest'
         {
           'target_name': 'remoting_host_exe',
           'product_name': 'remoting_host',
@@ -1374,21 +1407,37 @@
               'SubSystem': '2', # /SUBSYSTEM:WINDOWS
             },
           },
-          # Add 'level="requireAdministrator" uiAccess="true"' to the manifest
-          # only for the official builds because it requires the binary to be
-          # signed to work. Additionally, add the manifest only if the binary
-          # will be injecting keyboard input (i.e. when a single process host is
-          # built).
-          'conditions': [
-            ['buildtype == "Official" and remoting_multi_process == 0', {
-              'msvs_settings': {
-                'VCManifestTool': {
-                  'AdditionalManifestFiles': 'host/win/remoting_host.manifest',
-                },
-              },
-            }],
-          ],
         },  # end of target 'remoting_host_exe'
+        {
+          'target_name': 'remoting_host_manifest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_host_exe',
+          ],
+          'hard_dependency': '1',
+          'actions': [
+            {
+              'action_name': 'Embedding manifest into remoting_host.exe',
+              'binary': '<(PRODUCT_DIR)/remoting_host.exe',
+              'manifest': 'host/win/remoting_host.manifest',
+              'inputs': [
+                '<(_binary)',
+                '<(_manifest)',
+              ],
+              'outputs': [
+                '<(_binary).embedded.manifest',
+              ],
+              'action': [
+                'mt',
+                '-nologo',
+                '-manifest',
+                '<(_manifest)',
+                '-outputresource:<(_binary);#1',
+                '-out:<(_binary).embedded.manifest',
+              ],
+            },
+          ],  # actions
+        },  # end of target 'remoting_host_manifest'
 
         # Generates the version information resources for the Windows binaries.
         # The .RC files are generated from the "version.rc.version" template and
@@ -1509,7 +1558,7 @@
           'type': 'none',
           'dependencies': [
             'remoting_controller',
-            'remoting_core',
+            'remoting_core_manifest',
             'remoting_daemon',
             'remoting_host_exe',
           ],
@@ -1533,6 +1582,19 @@
             }, {  # else buildtype != "Official"
               'defs': [
                 'OFFICIAL_BUILD=0',
+              ],
+            }],
+            # Add 'level="requireAdministrator" uiAccess="true"' to the manifest
+            # only for the official builds because it requires the binary to be
+            # signed to work.
+            ['buildtype == "Official" and remoting_multi_process == 0', {
+              'dependencies': [
+                'remoting_host_manifest',
+              ],
+            }],
+            ['buildtype == "Official" and remoting_multi_process != 0', {
+              'dependencies': [
+                'remoting_desktop_manifest',
               ],
             }],
             ['remoting_multi_process != 0', {
