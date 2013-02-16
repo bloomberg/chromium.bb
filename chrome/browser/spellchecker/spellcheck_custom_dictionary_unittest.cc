@@ -63,6 +63,10 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
         profile_.get(), &BuildSpellcheckService);
   }
 
+  virtual void TearDown() OVERRIDE {
+    MessageLoop::current()->RunUntilIdle();
+  }
+
   // A wrapper around SpellcheckCustomDictionary::LoadDictionaryFile private
   // function to avoid a large number of FRIEND_TEST declarations in
   // SpellcheckCustomDictionary.
