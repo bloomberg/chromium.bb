@@ -75,7 +75,7 @@ void CertificateViewerDialog::Show(WebContents* web_contents,
       web_contents->GetBrowserContext(),
       this,
       NULL,
-      web_contents)->GetWindow()->GetNativeWindow();
+      web_contents)->GetWindow()->GetNativeDialog();
 }
 
 ui::ModalType CertificateViewerDialog::GetDialogModalType() const {

@@ -119,8 +119,8 @@ void ConstrainedWindowGtk::FocusWebContentsModalDialog() {
 void ConstrainedWindowGtk::PulseWebContentsModalDialog() {
 }
 
-gfx::NativeWindow ConstrainedWindowGtk::GetNativeWindow() {
-  return GTK_WINDOW(gtk_widget_get_toplevel(widget()));
+NativeWebContentsModalDialog ConstrainedWindowGtk::GetNativeDialog() {
+  return widget();
 }
 
 void ConstrainedWindowGtk::BackgroundColorChanged() {
