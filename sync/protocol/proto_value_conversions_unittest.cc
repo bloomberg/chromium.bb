@@ -159,6 +159,14 @@ TEST_F(ProtoValueConversionsTest, ExtensionSpecificsToValue) {
   TestSpecificsToValue(ExtensionSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, FaviconImageSpecificsToValue) {
+  TestSpecificsToValue(FaviconImageSpecificsToValue);
+}
+
+TEST_F(ProtoValueConversionsTest, FaviconTrackingSpecificsToValue) {
+  TestSpecificsToValue(FaviconTrackingSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, HistoryDeleteDirectiveSpecificsToValue) {
   TestSpecificsToValue(HistoryDeleteDirectiveSpecificsToValue);
 }

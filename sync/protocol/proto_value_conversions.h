@@ -35,9 +35,9 @@ class EntitySpecifics;
 class EverythingDirective;
 class ExperimentsSpecifics;
 class ExtensionSettingSpecifics;
-class ExtensionSettingSpecifics;
 class ExtensionSpecifics;
-class ExtensionSpecifics;
+class FaviconImageSpecifics;
+class FaviconTrackingSpecifics;
 class GlobalIdDirective;
 class HistoryDeleteDirectiveSpecifics;
 class KeystoreEncryptionFlagsSpecifics;
@@ -155,6 +155,12 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* ExtensionSettingSpecificsToValue(
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* ExtensionSpecificsToValue(
     const sync_pb::ExtensionSpecifics& extension_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* FaviconImageSpecificsToValue(
+    const sync_pb::FaviconImageSpecifics& favicon_image_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* FaviconTrackingSpecificsToValue(
+    const sync_pb::FaviconTrackingSpecifics& favicon_tracking_specifics);
 
 SYNC_EXPORT base::DictionaryValue* HistoryDeleteDirectiveSpecificsToValue(
     const sync_pb::HistoryDeleteDirectiveSpecifics&

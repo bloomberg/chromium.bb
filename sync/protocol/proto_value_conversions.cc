@@ -21,6 +21,8 @@
 #include "sync/protocol/experiments_specifics.pb.h"
 #include "sync/protocol/extension_setting_specifics.pb.h"
 #include "sync/protocol/extension_specifics.pb.h"
+#include "sync/protocol/favicon_image_specifics.pb.h"
+#include "sync/protocol/favicon_tracking_specifics.pb.h"
 #include "sync/protocol/history_delete_directive_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
@@ -354,6 +356,37 @@ DictionaryValue* ExtensionSpecificsToValue(
   SET_BOOL(enabled);
   SET_BOOL(incognito_enabled);
   SET_STR(name);
+  return value;
+}
+
+namespace {
+DictionaryValue* FaviconDataToValue(
+    const sync_pb::FaviconData& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_BYTES(favicon);
+  SET_INT32(width);
+  SET_INT32(height);
+  return value;
+}
+}  // namespace
+
+DictionaryValue* FaviconImageSpecificsToValue(
+    const sync_pb::FaviconImageSpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(favicon_url);
+  SET(favicon_web, FaviconDataToValue);
+  SET(favicon_web_32, FaviconDataToValue);
+  SET(favicon_touch_64, FaviconDataToValue);
+  SET(favicon_touch_precomposed_64, FaviconDataToValue);
+  return value;
+}
+
+DictionaryValue* FaviconTrackingSpecificsToValue(
+    const sync_pb::FaviconTrackingSpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(favicon_url);
+  SET_INT64(last_visit_time_ms)
+  SET_BOOL(is_bookmarked);
   return value;
 }
 

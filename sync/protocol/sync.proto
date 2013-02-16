@@ -27,6 +27,8 @@ import "encryption.proto";
 import "experiments_specifics.proto";
 import "extension_setting_specifics.proto";
 import "extension_specifics.proto";
+import "favicon_image_specifics.proto";
+import "favicon_tracking_specifics.proto";
 import "get_updates_caller_info.proto";
 import "history_delete_directive_specifics.proto";
 import "nigori_specifics.proto";
@@ -110,6 +112,8 @@ message EntitySpecifics {
   optional ExperimentsSpecifics experiments = 161496;
   optional PriorityPreferenceSpecifics priority_preference = 163425;
   optional DictionarySpecifics dictionary = 170540;
+  optional FaviconTrackingSpecifics favicon_tracking = 181534;
+  optional FaviconImageSpecifics favicon_image = 182019;
 }
 
 message SyncEntity {

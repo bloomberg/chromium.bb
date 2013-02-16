@@ -23,6 +23,8 @@
     'protocol/experiments_specifics.proto',
     'protocol/extension_setting_specifics.proto',
     'protocol/extension_specifics.proto',
+    'protocol/favicon_image_specifics.proto',
+    'protocol/favicon_tracking_specifics.proto',
     'protocol/get_updates_caller_info.proto',
     'protocol/history_delete_directive_specifics.proto',
     'protocol/nigori_specifics.proto',
