@@ -9,8 +9,9 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
-#include "ui/app_list/cocoa/app_list_view.h"
-#include "ui/app_list/cocoa/app_list_view_window.h"
+#include "ui/app_list/app_list_view_delegate.h"
+#import "ui/app_list/cocoa/apps_grid_controller.h"
+#import "ui/app_list/cocoa/app_list_window_controller.h"
 
 namespace gfx {
 class ImageSkia;
@@ -28,8 +29,9 @@ class AppListController {
   void CreateAppList();
   void ShowAppList();
   void DismissAppList();
+
  private:
-  scoped_nsobject<AppListViewWindow> current_window_;
+  scoped_nsobject<AppListWindowController> window_controller_;
   base::OneShotTimer<AppListController> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListController);
@@ -39,31 +41,32 @@ base::LazyInstance<AppListController>::Leaky g_app_list_controller =
     LAZY_INSTANCE_INITIALIZER;
 
 void AppListController::CreateAppList() {
-  current_window_.reset([[AppListViewWindow alloc] initAsBubble]);
-  scoped_nsobject<AppListView> contentView(
-      [[AppListView alloc] initWithViewDelegate:NULL]);
-
-  [current_window_ setAppListView:contentView];
+  // TODO(tapted): Create our own AppListViewDelegate subtype, and use it here.
+  scoped_ptr<app_list::AppListViewDelegate> delegate;
+  scoped_nsobject<AppsGridController> content(
+      [[AppsGridController alloc] initWithViewDelegate:delegate.Pass()]);
+  window_controller_.reset(
+      [[AppListWindowController alloc] initWithGridController:content]);
 }
 
 void AppListController::ShowAppList() {
   const int kLifetimeIntervalMS = 1000;
 
-  if (!current_window_)
+  if (!window_controller_)
     CreateAppList();
 
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMilliseconds(kLifetimeIntervalMS), this,
                &AppListController::DismissAppList);
-  [current_window_ makeKeyAndOrderFront:nil];
+  [[window_controller_ window] makeKeyAndOrderFront:nil];
 }
 
 void AppListController::DismissAppList() {
-  if (!current_window_)
+  if (!window_controller_)
     return;
 
   timer_.Stop();
-  [current_window_ close];
+  [[window_controller_ window] close];
 }
 
 }  // namespace
@@ -76,7 +79,6 @@ void InitAppList(Profile* profile) {
 }
 
 void ShowAppList(Profile* profile) {
-  // Create the App list.
   g_app_list_controller.Get().ShowAppList();
 }
 

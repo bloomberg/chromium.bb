@@ -35,10 +35,10 @@
         'app_list_switches.h',
         'app_list_view_delegate.h',
         'apps_grid_view_delegate.h',
-        'cocoa/app_list_view.h',
-        'cocoa/app_list_view.mm',
-        'cocoa/app_list_view_window.h',
-        'cocoa/app_list_view_window.mm',
+        'cocoa/app_list_window_controller.h',
+        'cocoa/app_list_window_controller.mm',
+        'cocoa/apps_grid_controller.h',
+        'cocoa/apps_grid_controller.mm',
         'pagination_model.cc',
         'pagination_model.h',
         'pagination_model_observer.h',
@@ -123,11 +123,15 @@
       ],
       'sources': [
         'pagination_model_unittest.cc',
+        'test/app_list_test_model.cc',
+        'test/app_list_test_model.h',
         'test/app_list_test_suite.cc',
         'test/app_list_test_suite.h',
+        'test/app_list_test_view_delegate.cc',
+        'test/app_list_test_view_delegate.h',
         'test/run_all_unittests.cc',
-        'cocoa/app_list_view_unittest.mm',
-        'cocoa/app_list_view_window_unittest.mm',
+        'cocoa/app_list_window_controller_unittest.mm',
+        'cocoa/apps_grid_controller_unittest.mm',
         'views/apps_grid_view_unittest.cc',
         'views/test/apps_grid_view_test_api.cc',
         'views/test/apps_grid_view_test_api.h',
@@ -146,6 +150,12 @@
         ['OS=="mac"', {
           'dependencies': [
             '../ui.gyp:ui_test_support',
+          ],
+          'conditions': [
+            ['component=="static_library"', {
+              # Needed to link to Obj-C static libraries.
+              'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+            }],
           ],
         }, {  # OS!="mac"
           'sources/': [
