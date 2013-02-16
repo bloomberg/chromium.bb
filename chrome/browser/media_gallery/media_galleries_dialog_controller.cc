@@ -250,8 +250,9 @@ void MediaGalleriesDialogController::SavePermissions() {
     if (!iter->allowed)
       continue;
 
+    // TODO(gbillock): Should be adding volume metadata during FileSelected.
     const MediaGalleryPrefInfo& gallery = iter->pref_info;
-    MediaGalleryPrefId id = preferences_->AddGallery(
+    MediaGalleryPrefId id = preferences_->AddGalleryWithName(
         gallery.device_id, gallery.display_name, gallery.path, true);
     preferences_->SetGalleryPermissionForExtension(
         *extension_, id, true);

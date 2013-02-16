@@ -71,6 +71,8 @@ class MediaStorageUtil {
 
   // Given |path|, fill in |device_id|, |device_name|, and |relative_path|
   // (from the root of the device) if they are not NULL.
+  // TODO(gbillock): This needs to have an outparam of type
+  // RemovableStorageNotifications::StorageInfo.
   static bool GetDeviceInfoFromPath(const base::FilePath& path,
                                     std::string* device_id,
                                     string16* device_name,

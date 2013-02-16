@@ -72,6 +72,8 @@ class MockGalleryChangeObserver
   DISALLOW_COPY_AND_ASSIGN(MockGalleryChangeObserver);
 };
 
+}  // namespace
+
 class MediaGalleriesPreferencesTest : public testing::Test {
  public:
   typedef std::map<std::string /*device id*/, MediaGalleryPrefIdSet>
@@ -201,6 +203,15 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     expected_device_map[device_id].insert(id);
   }
 
+  MediaGalleryPrefId AddGalleryWithNameV0(const std::string& device_id,
+                                        const string16& display_name,
+                                        const base::FilePath& relative_path,
+                                        bool user_added) {
+    return gallery_prefs()->AddGalleryInternal(
+        device_id, display_name, relative_path, user_added,
+        string16(), string16(), string16(), 0, base::Time(), false, 0);
+  }
+
   scoped_refptr<extensions::Extension> all_permission_extension;
   scoped_refptr<extensions::Extension> regular_permission_extension;
   scoped_refptr<extensions::Extension> no_permissions_extension;
@@ -249,8 +260,8 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
                                           &relative_path);
   device_name = ASCIIToUTF16("NewAutoGallery");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, false /*auto*/);
   EXPECT_EQ(default_galleries_count() + 1UL, id);
   auto_id = id;
   AddGalleryExpectation(id, device_name, device_id, relative_path,
@@ -258,8 +269,8 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   Verify();
 
   // Add it again (as user), nothing should happen.
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   true /*auto*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, true /*auto*/);
   EXPECT_EQ(auto_id, id);
   Verify();
 
@@ -268,8 +279,8 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
                                           &relative_path);
   device_name = ASCIIToUTF16("NewUserGallery");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   true /*user*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, true /*user*/);
   EXPECT_EQ(default_galleries_count() + 2UL, id);
   user_added_id = id;
   AddGalleryExpectation(id, device_name, device_id, relative_path,
@@ -286,9 +297,11 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_auto"),
                                                    &gallery_info));
   VerifyGalleryInfo(gallery_info, auto_id);
+  EXPECT_FALSE(gallery_info.volume_metadata_valid);
   EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_user"),
                                                    &gallery_info));
   VerifyGalleryInfo(gallery_info, user_added_id);
+  EXPECT_FALSE(gallery_info.volume_metadata_valid);
 
   path = MakePath("other");
   EXPECT_FALSE(gallery_prefs()->LookUpGalleryByPath(path, &gallery_info));
@@ -313,6 +326,82 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   Verify();
 }
 
+TEST_F(MediaGalleriesPreferencesTest, AddGalleryWithVolumeMetadata) {
+  MediaGalleryPrefId id;
+  base::FilePath path;
+  std::string device_id;
+  base::FilePath relative_path;
+  base::Time now = base::Time::Now();
+  Verify();
+
+  // Add a new auto detected gallery.
+  path = MakePath("new_auto");
+  MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
+                                          &relative_path);
+  id = gallery_prefs()->AddGallery(device_id, relative_path,
+                                   false /*auto*/,
+                                   ASCIIToUTF16("volume label"),
+                                   ASCIIToUTF16("vendor name"),
+                                   ASCIIToUTF16("model name"),
+                                   1000000ULL, now);
+  EXPECT_EQ(default_galleries_count() + 1UL, id);
+  AddGalleryExpectation(id, string16(), device_id, relative_path,
+                        MediaGalleryPrefInfo::kAutoDetected);
+  Verify();
+
+  MediaGalleryPrefInfo gallery_info;
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_auto"),
+                                                   &gallery_info));
+  EXPECT_TRUE(gallery_info.volume_metadata_valid);
+  EXPECT_EQ(ASCIIToUTF16("volume label"), gallery_info.volume_label);
+  EXPECT_EQ(ASCIIToUTF16("vendor name"), gallery_info.vendor_name);
+  EXPECT_EQ(ASCIIToUTF16("model name"), gallery_info.model_name);
+  EXPECT_EQ(1000000ULL, gallery_info.total_size_in_bytes);
+  // Note: we put the microseconds time into a double, so there'll
+  // be some possible rounding errors. If it's less than 100, we don't
+  // care.
+  EXPECT_LE(abs(now.ToInternalValue() -
+                gallery_info.last_attach_time.ToInternalValue()), 100);
+}
+
+TEST_F(MediaGalleriesPreferencesTest, ReplaceGalleryWithVolumeMetadata) {
+  MediaGalleryPrefId id, metadata_id;
+  base::FilePath path;
+  std::string device_id;
+  string16 device_name;
+  base::FilePath relative_path;
+  base::Time now = base::Time::Now();
+  Verify();
+
+  // Add an auto detected gallery in the prefs version 0 format.
+  path = MakePath("new_auto");
+  MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
+                                          &relative_path);
+  device_name = ASCIIToUTF16("NewAutoGallery");
+  id = AddGalleryWithNameV0(device_id, device_name,
+                            relative_path, false /*auto*/);
+  EXPECT_EQ(default_galleries_count() + 1UL, id);
+  AddGalleryExpectation(id, device_name, device_id, relative_path,
+                        MediaGalleryPrefInfo::kAutoDetected);
+  Verify();
+
+  metadata_id = gallery_prefs()->AddGallery(device_id,
+                                            relative_path,
+                                            false /*auto*/,
+                                            ASCIIToUTF16("volume label"),
+                                            ASCIIToUTF16("vendor name"),
+                                            ASCIIToUTF16("model name"),
+                                            1000000ULL, now);
+  EXPECT_EQ(id, metadata_id);
+  AddGalleryExpectation(id, string16(), device_id, relative_path,
+                        MediaGalleryPrefInfo::kAutoDetected);
+
+  // Make sure the display_name is set to empty now, as the metadata
+  // upgrade should set the manual override name empty.
+  Verify();
+}
+
+
 // Whenever a gallery is added, its type is either set to "AutoDetected" or
 // "UserAdded". When the gallery is removed, user added galleries are actually
 // deleted and the auto detected galleries are moved to black listed state.
@@ -331,8 +420,8 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
   MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
                                           &relative_path);
   device_name = ASCIIToUTF16("NewAutoGallery");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, false /*auto*/);
   EXPECT_EQ(default_galleries_count() + 1UL, id);
   auto_id = id;
   AddGalleryExpectation(id, device_name, device_id, relative_path,
@@ -359,8 +448,8 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
   Verify();
 
   // Try adding the gallery again automatically and it should be a no-op.
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, false /*auto*/);
   EXPECT_EQ(auto_id, id);
   Verify();
 }
@@ -378,8 +467,8 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
                                           &relative_path);
   device_name = ASCIIToUTF16("NewUserGallery");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   true /*user*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, true /*user*/);
   EXPECT_EQ(default_galleries_count() + 1UL, id);
   user_added_id = id;
   AddGalleryExpectation(id, device_name, device_id, relative_path,
@@ -390,8 +479,8 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
                                           &relative_path);
   device_name = ASCIIToUTF16("NewAutoGallery");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, false /*auto*/);
   EXPECT_EQ(default_galleries_count() + 2UL, id);
   auto_id = id;
   AddGalleryExpectation(id, device_name, device_id, relative_path,
@@ -402,8 +491,8 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
                                           &relative_path);
   device_name = ASCIIToUTF16("ToBlacklistGallery");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, false /*auto*/);
   EXPECT_EQ(default_galleries_count() + 3UL, id);
   to_blacklist_id = id;
   AddGalleryExpectation(id, device_name, device_id, relative_path,
@@ -500,8 +589,8 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryDetails) {
   MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
                                           &relative_path);
   device_name = ASCIIToUTF16("NewAutoGallery");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, false /*auto*/);
   EXPECT_EQ(default_galleries_count() + 1UL, id);
   auto_id = id;
   AddGalleryExpectation(id, device_name, device_id, relative_path,
@@ -510,8 +599,8 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryDetails) {
 
   // Update the device name and add the gallery again.
   device_name = ASCIIToUTF16("AutoGallery2");
-  id = gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                   false /*auto*/);
+  id = gallery_prefs()->AddGalleryWithName(device_id, device_name,
+                                           relative_path, false /*auto*/);
   EXPECT_EQ(auto_id, id);
   AddGalleryExpectation(id, device_name, device_id, relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
@@ -531,8 +620,8 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
                                           &relative_path);
   device_name = ASCIIToUTF16("NewUserGallery");
   MediaGalleryPrefId user_added_id =
-      gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                  true /*user*/);
+      gallery_prefs()->AddGalleryWithName(device_id, device_name, relative_path,
+                                          true /*user*/);
   EXPECT_EQ(default_galleries_count() + 1UL, user_added_id);
   AddGalleryExpectation(user_added_id, device_name, device_id, relative_path,
                         MediaGalleryPrefInfo::kUserAdded);
@@ -553,7 +642,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
   relative_path = base::FilePath(FILE_PATH_LITERAL("path1/on/device1"));
   device_name = ASCIIToUTF16("Device1Path1");
   device_id = "device1";
-  MediaGalleryPrefId dev1_path1_id = gallery_prefs()->AddGallery(
+  MediaGalleryPrefId dev1_path1_id = gallery_prefs()->AddGalleryWithName(
       device_id, device_name, relative_path, true /*user*/);
   EXPECT_EQ(default_galleries_count() + 2UL, dev1_path1_id);
   AddGalleryExpectation(dev1_path1_id, device_name, device_id, relative_path,
@@ -562,7 +651,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
 
   relative_path = base::FilePath(FILE_PATH_LITERAL("path2/on/device1"));
   device_name = ASCIIToUTF16("Device1Path2");
-  MediaGalleryPrefId dev1_path2_id = gallery_prefs()->AddGallery(
+  MediaGalleryPrefId dev1_path2_id = gallery_prefs()->AddGalleryWithName(
       device_id, device_name, relative_path, true /*user*/);
   EXPECT_EQ(default_galleries_count() + 3UL, dev1_path2_id);
   AddGalleryExpectation(dev1_path2_id, device_name, device_id, relative_path,
@@ -572,7 +661,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
   relative_path = base::FilePath(FILE_PATH_LITERAL("path1/on/device2"));
   device_name = ASCIIToUTF16("Device2Path1");
   device_id = "device2";
-  MediaGalleryPrefId dev2_path1_id = gallery_prefs()->AddGallery(
+  MediaGalleryPrefId dev2_path1_id = gallery_prefs()->AddGalleryWithName(
       device_id, device_name, relative_path, true /*user*/);
   EXPECT_EQ(default_galleries_count() + 4UL, dev2_path1_id);
   AddGalleryExpectation(dev2_path1_id, device_name, device_id, relative_path,
@@ -581,7 +670,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
 
   relative_path = base::FilePath(FILE_PATH_LITERAL("path2/on/device2"));
   device_name = ASCIIToUTF16("Device2Path2");
-  MediaGalleryPrefId dev2_path2_id = gallery_prefs()->AddGallery(
+  MediaGalleryPrefId dev2_path2_id = gallery_prefs()->AddGalleryWithName(
       device_id, device_name, relative_path, true /*user*/);
   EXPECT_EQ(default_galleries_count() + 5UL, dev2_path2_id);
   AddGalleryExpectation(dev2_path2_id, device_name, device_id, relative_path,
@@ -589,7 +678,7 @@ TEST_F(MediaGalleriesPreferencesTest, MultipleGalleriesPerDevices) {
   Verify();
 
   // Check that adding one of them again works as expected.
-  MediaGalleryPrefId id = gallery_prefs()->AddGallery(
+  MediaGalleryPrefId id = gallery_prefs()->AddGalleryWithName(
       device_id, device_name, relative_path, true /*user*/);
   EXPECT_EQ(dev2_path2_id, id);
   Verify();
@@ -608,8 +697,8 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
   MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, NULL,
                                           &relative_path);
   MediaGalleryPrefId auto_id =
-      gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                  false /*auto*/);
+      gallery_prefs()->AddGalleryWithName(device_id, device_name, relative_path,
+                                          false /*auto*/);
   EXPECT_EQ(default_galleries_count() + 1UL, auto_id);
   AddGalleryExpectation(auto_id, device_name, device_id, relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
@@ -625,8 +714,8 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
                                           &relative_path);
   device_name = ASCIIToUTF16("NewUserGallery");
   MediaGalleryPrefId user_added_id =
-      gallery_prefs()->AddGallery(device_id, device_name, relative_path,
-                                  true /*user*/);
+      gallery_prefs()->AddGalleryWithName(device_id, device_name, relative_path,
+                                          true /*user*/);
   AddGalleryExpectation(user_added_id, device_name, device_id, relative_path,
                         MediaGalleryPrefInfo::kUserAdded);
   EXPECT_EQ(default_galleries_count() + 2UL, user_added_id);
@@ -652,7 +741,5 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
   EXPECT_EQ(2, observer1.notifications());
   EXPECT_EQ(3, observer2.notifications());
 }
-
-}  // namespace
 
 }  // namespace chrome

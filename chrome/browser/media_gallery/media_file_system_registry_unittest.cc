@@ -647,7 +647,7 @@ std::string MediaFileSystemRegistryTest::AddUserGallery(
   DCHECK(!MediaStorageUtil::IsMediaDevice(device_id));
 
   for (size_t i = 0; i < profile_states_.size(); ++i) {
-    profile_states_[i]->GetMediaGalleriesPrefs()->AddGallery(
+    profile_states_[i]->GetMediaGalleriesPrefs()->AddGalleryWithName(
         device_id, name, base::FilePath(), true /*user_added*/);
   }
   return device_id;
@@ -663,7 +663,7 @@ std::string MediaFileSystemRegistryTest::AttachDevice(
   ProcessAttach(device_id, name, location.value());
   bool user_added = (type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
   for (size_t i = 0; i < profile_states_.size(); ++i) {
-    profile_states_[i]->GetMediaGalleriesPrefs()->AddGallery(
+    profile_states_[i]->GetMediaGalleriesPrefs()->AddGalleryWithName(
         device_id, name, base::FilePath(), user_added);
   }
   MessageLoop::current()->RunUntilIdle();

@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
 class PrefRegistrySyncable;
@@ -66,6 +67,37 @@ struct MediaGalleryPrefInfo {
 
   // The type of gallery.
   Type type;
+
+  // The volume label of the volume/device on which the gallery
+  // resides. Empty if there is no such label or it is unknown.
+  string16 volume_label;
+
+  // Vendor name for the volume/device on which the gallery is located.
+  // Will be empty if unknown.
+  string16 vendor_name;
+
+  // Model name for the volume/device on which the gallery is located.
+  // Will be empty if unknown.
+  string16 model_name;
+
+  // The capacity in bytes of the volume/device on which the gallery is
+  // located. Will be zero if unknown.
+  uint64 total_size_in_bytes;
+
+  // If the gallery is on a removable device, the time that device was last
+  // attached. It is stored in preferences by the base::Time internal value,
+  // which is microseconds since the epoch.
+  base::Time last_attach_time;
+
+  // Set to true if the volume metadata fields (volume_label, vendor_name,
+  // model_name, total_size_in_bytes) were set. False if these fields were
+  // never written.
+  bool volume_metadata_valid;
+
+  // 0 if the display_name is set externally and always used for display.
+  // 1 if the display_name is only set externally when it is overriding
+  // the name constructed from volume metadata.
+  int prefs_version;
 };
 
 typedef std::map<MediaGalleryPrefId, MediaGalleryPrefInfo>
@@ -114,9 +146,20 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   // Teaches the registry about a new gallery.
   // Returns the gallery's pref id.
   MediaGalleryPrefId AddGallery(const std::string& device_id,
-                                const string16& display_name,
                                 const base::FilePath& relative_path,
-                                bool user_added);
+                                bool user_added,
+                                const string16& volume_label,
+                                const string16& vendor_name,
+                                const string16& model_name,
+                                uint64 total_size_in_bytes,
+                                base::Time last_attach_time);
+
+  // Teaches the registry about a new gallery.
+  // Returns the gallery's pref id.
+  MediaGalleryPrefId AddGalleryWithName(const std::string& device_id,
+                                        const string16& display_name,
+                                        const base::FilePath& relative_path,
+                                        bool user_added);
 
   // Teach the registry about a user added registry simply from the path.
   // Returns the gallery's pref id.
@@ -147,6 +190,8 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   static bool APIHasBeenUsed(Profile* profile);
 
  private:
+  friend class MediaGalleriesPreferencesTest;
+
   typedef std::map<std::string /*device id*/, MediaGalleryPrefIdSet>
       DeviceIdPrefIdsMap;
 
@@ -159,6 +204,18 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
 
   // Notifies |gallery_change_observers_| about changes in |known_galleries_|.
   void NotifyChangeObservers();
+
+  MediaGalleryPrefId AddGalleryInternal(const std::string& device_id,
+                                        const string16& display_name,
+                                        const base::FilePath& relative_path,
+                                        bool user_added,
+                                        const string16& volume_label,
+                                        const string16& vendor_name,
+                                        const string16& model_name,
+                                        uint64 total_size_in_bytes,
+                                        base::Time last_attach_time,
+                                        bool volume_metadata_valid,
+                                        int prefs_version);
 
   extensions::ExtensionPrefs* GetExtensionPrefs() const;
 
