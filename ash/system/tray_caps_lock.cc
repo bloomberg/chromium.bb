@@ -6,6 +6,7 @@
 
 #include "ash/caps_lock_delegate.h"
 #include "ash/shell.h"
+#include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"

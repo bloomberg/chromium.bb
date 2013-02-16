@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/power/power_status_view.h"
+#include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"

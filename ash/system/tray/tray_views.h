@@ -34,22 +34,6 @@ namespace internal {
 
 class TrayItemView;
 
-// An image view with a specified width and height (kTrayPopupDetailsIconWidth).
-// If the specified width or height is zero, then the image size is used for
-// that dimension.
-class FixedSizedImageView : public views::ImageView {
- public:
-  FixedSizedImageView(int width, int height);
-  virtual ~FixedSizedImageView();
-
- private:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-  int width_;
-  int height_;
-  DISALLOW_COPY_AND_ASSIGN(FixedSizedImageView);
-};
-
 // A focusable view that performs an action when user clicks on it, or presses
 // enter or space when focused. Note that the action is triggered on mouse-up,
 // instead of on mouse-down. So if user presses the mouse on the view, then

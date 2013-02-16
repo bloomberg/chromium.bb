@@ -233,6 +233,8 @@
         'system/status_area_widget.h',
         'system/status_area_widget_delegate.cc',
         'system/status_area_widget_delegate.h',
+        'system/tray/fixed_sized_image_view.cc',
+        'system/tray/fixed_sized_image_view.h',
         'system/tray/special_popup_row.cc',
         'system/tray/special_popup_row.h',
         'system/tray/system_tray.cc',

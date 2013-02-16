@@ -8,6 +8,7 @@
 #include "ash/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
+#include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
@@ -24,7 +25,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/slider.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
 namespace ash {

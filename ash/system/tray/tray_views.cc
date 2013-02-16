@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_views.h"
 
 #include "ash/ash_constants.h"
+#include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/i18n/rtl.h"
@@ -81,25 +82,6 @@ const int kTrayPopupLabelButtonBorderImagesHovered[] = {
     IDR_AURA_TRAY_POPUP_LABEL_BUTTON_BORDER,
 };
 
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// FixedSizedImageView
-
-FixedSizedImageView::FixedSizedImageView(int width, int height)
-    : width_(width),
-      height_(height) {
-  SetHorizontalAlignment(views::ImageView::CENTER);
-  SetVerticalAlignment(views::ImageView::CENTER);
-}
-
-FixedSizedImageView::~FixedSizedImageView() {
-}
-
-gfx::Size FixedSizedImageView::GetPreferredSize() {
-  gfx::Size size = views::ImageView::GetPreferredSize();
-  return gfx::Size(width_ ? width_ : size.width(),
-                   height_ ? height_ : size.height());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
