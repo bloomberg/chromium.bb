@@ -495,8 +495,10 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
   // See comments on the declaration of |safe_browsing_thread_|.
   {
     // A ScopedAllowIO object is required to join the thread when calling Stop.
-    // See http://crbug.com/72696.
+    // See http://crbug.com/72696. Note that we call Stop() first to clear out
+    // any remaining tasks before clearing safe_browsing_thread_.
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
+    safe_browsing_thread_->Stop();
     safe_browsing_thread_.reset();
   }
 
