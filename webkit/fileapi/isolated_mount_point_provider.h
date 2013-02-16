@@ -15,6 +15,10 @@ class AsyncFileUtilAdapter;
 class IsolatedContext;
 class MediaPathFilter;
 
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+class DeviceMediaAsyncFileUtil;
+#endif
+
 class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  public:
   explicit IsolatedMountPointProvider(const base::FilePath& profile_path);
@@ -67,7 +71,11 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   scoped_ptr<AsyncFileUtilAdapter> native_media_file_util_;
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  scoped_ptr<AsyncFileUtilAdapter> device_media_file_util_;
+  scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
+
+  //  TODO(kmadhusu): Remove |device_media_file_util_adapter_| after
+  //  fixing crbug.com/154835.
+  scoped_ptr<AsyncFileUtilAdapter> device_media_file_util_adapter_;
 #endif
 };
 
