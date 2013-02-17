@@ -59,7 +59,8 @@ class GclTestsBase(SuperMoxTestBase):
     change_info._comments_added = []
 
     class RpcServer(object):
-      def get_issue_properties(self, *_):  # pylint: disable=R0201
+      # pylint: disable=R0201,W0613
+      def get_issue_properties(self, issue, messages):
         return { 'patchsets': [1337] }
     change_info.RpcServer = RpcServer
 

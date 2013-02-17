@@ -1045,7 +1045,8 @@ def CMDcommit(change_info, args):
       elif revision:
         change_info.description += "\nCommitted: " + revision
       change_info.CloseIssue()
-      props = change_info.RpcServer().get_issue_properties(change_info.issue)
+      props = change_info.RpcServer().get_issue_properties(
+          change_info.issue, False)
       patch_num = len(props['patchsets'])
       comment = "Committed patchset #%d manually as r%s" % (patch_num, revision)
       comment += ' (presubmit successful).' if not bypassed else '.'

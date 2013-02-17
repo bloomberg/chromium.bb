@@ -1495,7 +1495,7 @@ def SendUpstream(parser, args, cmd):
     print ('Closing issue '
            '(you may be prompted for your codereview password)...')
     cl.CloseIssue()
-    props = cl.RpcServer().get_issue_properties(cl.GetIssue())
+    props = cl.RpcServer().get_issue_properties(cl.GetIssue(), False)
     patch_num = len(props['patchset'])
     comment = "Committed patchset #%d manually as r%s" % (patch_num, revision)
     comment += ' (presubmit successful).' if not options.bypass_hooks else '.'
