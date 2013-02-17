@@ -7,7 +7,7 @@
 
 #include <GLES2/gl2.h>
 
-#include <queue>
+#include <deque>
 #include "../client/hash_tables.h"
 #include "../common/gles2_cmd_format.h"
 #include "gles2_impl_export.h"
@@ -26,19 +26,30 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
  public:
   static const size_t kSyncsPerBucket = 4096;
 
+  struct Bucket {
+    explicit Bucket(QuerySync* sync_mem)
+        : syncs(sync_mem),
+          used_query_count(0) {
+    }
+    QuerySync* syncs;
+    unsigned used_query_count;
+  };
   struct QueryInfo {
-    QueryInfo(int32 id, uint32 offset, QuerySync* sync_mem)
-        : shm_id(id),
+    QueryInfo(Bucket* bucket, int32 id, uint32 offset, QuerySync* sync_mem)
+        : bucket(bucket),
+          shm_id(id),
           shm_offset(offset),
           sync(sync_mem) {
     }
 
     QueryInfo()
-        : shm_id(0),
+        : bucket(NULL),
+          shm_id(0),
           shm_offset(0),
           sync(NULL) {
     }
 
+    Bucket* bucket;
     int32 shm_id;
     uint32 shm_offset;
     QuerySync* sync;
@@ -49,11 +60,12 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
 
   bool Alloc(QueryInfo* info);
   void Free(const QueryInfo& sync);
+  void Shrink();
 
  private:
   MappedMemoryManager* mapped_memory_;
-  std::queue<QuerySync*> buckets_;
-  std::queue<QueryInfo> free_queries_;
+  std::deque<Bucket*> buckets_;
+  std::deque<QueryInfo> free_queries_;
 
   DISALLOW_COPY_AND_ASSIGN(QuerySyncManager);
 };
@@ -143,6 +155,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
   Query* CreateQuery(GLuint id, GLenum target);
   Query* GetQuery(GLuint id);
   void RemoveQuery(GLuint id, bool context_lost);
+  void Shrink();
 
  private:
   typedef gpu::hash_map<GLuint, Query*> QueryMap;
