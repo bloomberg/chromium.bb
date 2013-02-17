@@ -1192,7 +1192,7 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       return;
     case ui::ET_MOUSEWHEEL:
       if (GetRootView()->OnMouseWheel(
-          reinterpret_cast<const ui::MouseWheelEvent&>(*event)))
+          static_cast<const ui::MouseWheelEvent&>(*event)))
         event->SetHandled();
       return;
     default:
