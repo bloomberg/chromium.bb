@@ -750,6 +750,10 @@ from :3
         stdout=PIPE, stderr=STDOUT, cwd=path).communicate()
     Popen(['git', 'config', '--unset', 'remote.origin.fetch'], stdout=PIPE,
         stderr=STDOUT, cwd=path).communicate()
+    Popen(['git', 'config', 'user.email', 'someuser@chromium.org'], stdout=PIPE,
+        stderr=STDOUT, cwd=path).communicate()
+    Popen(['git', 'config', 'user.name', 'Some User'], stdout=PIPE,
+        stderr=STDOUT, cwd=path).communicate()
     return True
 
   def setUp(self):
