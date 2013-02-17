@@ -126,7 +126,8 @@ class CreateChromeApplicationShortcutsDialogGtk
       const ShellIntegration::ShortcutInfo& shortcut_info) OVERRIDE;
 
  private:
-  void OnImageLoaded(const gfx::Image& image);
+  void OnShortcutInfoLoaded(
+      const ShellIntegration::ShortcutInfo& shortcut_info);
 
  private:
   const extensions::Extension* app_;
