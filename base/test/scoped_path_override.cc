@@ -16,7 +16,7 @@ ScopedPathOverride::ScopedPathOverride(int key) : key_(key) {
   CHECK(result);
 }
 
-ScopedPathOverride::ScopedPathOverride(int key, const FilePath& dir)
+ScopedPathOverride::ScopedPathOverride(int key, const base::FilePath& dir)
     : key_(key) {
   bool result = PathService::Override(key, dir);
   CHECK(result);

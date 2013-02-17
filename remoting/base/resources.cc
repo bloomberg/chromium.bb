@@ -18,7 +18,7 @@ const char kCommonResourcesFileName[] = "chrome_remote_desktop.pak";
 
 // Loads chromoting resources.
 bool LoadResources(const std::string& pref_locale) {
-  FilePath path;
+  base::FilePath path;
   if (!PathService::Get(base::DIR_MODULE, &path))
     return false;
 

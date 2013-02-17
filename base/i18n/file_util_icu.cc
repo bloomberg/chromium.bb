@@ -137,7 +137,7 @@ bool IsFilenameLegal(const string16& file_name) {
   return IllegalCharacters::GetInstance()->containsNone(file_name);
 }
 
-void ReplaceIllegalCharactersInPath(FilePath::StringType* file_name,
+void ReplaceIllegalCharactersInPath(base::FilePath::StringType* file_name,
                                     char replace_char) {
   DCHECK(file_name);
 
@@ -180,7 +180,8 @@ void ReplaceIllegalCharactersInPath(FilePath::StringType* file_name,
   }
 }
 
-bool LocaleAwareCompareFilenames(const FilePath& a, const FilePath& b) {
+bool LocaleAwareCompareFilenames(const base::FilePath& a,
+                                 const base::FilePath& b) {
 #if defined(OS_WIN)
   return LocaleAwareComparator::GetInstance()->Compare(a.value().c_str(),
                                                        b.value().c_str()) < 0;
@@ -200,13 +201,13 @@ bool LocaleAwareCompareFilenames(const FilePath& a, const FilePath& b) {
 #endif
 }
 
-void NormalizeFileNameEncoding(FilePath* file_name) {
+void NormalizeFileNameEncoding(base::FilePath* file_name) {
 #if defined(OS_CHROMEOS)
   std::string normalized_str;
   if (base::ConvertToUtf8AndNormalize(file_name->BaseName().value(),
                                       base::kCodepageUTF8,
                                       &normalized_str)) {
-    *file_name = file_name->DirName().Append(FilePath(normalized_str));
+    *file_name = file_name->DirName().Append(base::FilePath(normalized_str));
   }
 #endif
 }

@@ -319,7 +319,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   // List of files created for the current plugin instance. File names are
   // added to the list every time the NPP_StreamAsFile function is called.
-  std::vector<FilePath> files_created_;
+  std::vector<base::FilePath> files_created_;
 
   // Next unusued timer id.
   uint32 next_timer_id_;

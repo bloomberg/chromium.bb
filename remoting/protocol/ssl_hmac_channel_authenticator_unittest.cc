@@ -53,12 +53,12 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    FilePath certs_dir(net::GetTestCertsDirectory());
+    base::FilePath certs_dir(net::GetTestCertsDirectory());
 
-    FilePath cert_path = certs_dir.AppendASCII("unittest.selfsigned.der");
+    base::FilePath cert_path = certs_dir.AppendASCII("unittest.selfsigned.der");
     ASSERT_TRUE(file_util::ReadFileToString(cert_path, &host_cert_));
 
-    FilePath key_path = certs_dir.AppendASCII("unittest.key.bin");
+    base::FilePath key_path = certs_dir.AppendASCII("unittest.key.bin");
     std::string key_string;
     ASSERT_TRUE(file_util::ReadFileToString(key_path, &key_string));
     std::vector<uint8> key_vector(

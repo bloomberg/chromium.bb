@@ -27,7 +27,7 @@ class PluginLibTest : public PluginLib {
 TEST(PluginLibLoading, UnloadAllPlugins) {
   // For the creation of the g_loaded_libs global variable.
   ASSERT_EQ(static_cast<PluginLibTest*>(NULL),
-      PluginLibTest::CreatePluginLib(FilePath()));
+      PluginLibTest::CreatePluginLib(base::FilePath()));
 
   // Try with a single plugin lib.
   scoped_refptr<PluginLibTest> plugin_lib1(new PluginLibTest());
@@ -35,7 +35,7 @@ TEST(PluginLibLoading, UnloadAllPlugins) {
 
   // Need to create it again, it should have been destroyed above.
   ASSERT_EQ(static_cast<PluginLibTest*>(NULL),
-      PluginLibTest::CreatePluginLib(FilePath()));
+      PluginLibTest::CreatePluginLib(base::FilePath()));
 
   // Try with two plugin libs.
   plugin_lib1 = new PluginLibTest();
@@ -44,7 +44,7 @@ TEST(PluginLibLoading, UnloadAllPlugins) {
 
   // Need to create it again, it should have been destroyed above.
   ASSERT_EQ(static_cast<PluginLibTest*>(NULL),
-      PluginLibTest::CreatePluginLib(FilePath()));
+      PluginLibTest::CreatePluginLib(base::FilePath()));
 
   // Now try to manually Unload one and then UnloadAll.
   plugin_lib1 = new PluginLibTest();
@@ -54,7 +54,7 @@ TEST(PluginLibLoading, UnloadAllPlugins) {
 
   // Need to create it again, it should have been destroyed above.
   ASSERT_EQ(static_cast<PluginLibTest*>(NULL),
-      PluginLibTest::CreatePluginLib(FilePath()));
+      PluginLibTest::CreatePluginLib(base::FilePath()));
 
   // Now try to manually Unload the only one and then UnloadAll.
   plugin_lib1 = new PluginLibTest();

@@ -74,15 +74,15 @@ FILE* fopen_internal(const char* fname, const char* mode) {
 #endif
 }
 
-::FilePath CreateFilePath(const std::string& file_path) {
+base::FilePath CreateFilePath(const std::string& file_path) {
 #if defined(OS_WIN)
-  return FilePath(UTF8ToUTF16(file_path));
+  return base::FilePath(UTF8ToUTF16(file_path));
 #else
-  return FilePath(file_path);
+  return base::FilePath(file_path);
 #endif
 }
 
-std::string FilePathToString(const ::FilePath& file_path) {
+std::string FilePathToString(const base::FilePath& file_path) {
 #if defined(OS_WIN)
   return UTF16ToUTF8(file_path.value());
 #else
@@ -92,7 +92,7 @@ std::string FilePathToString(const ::FilePath& file_path) {
 
 bool sync_parent(const std::string& fname) {
 #if !defined(OS_WIN)
-  FilePath parent_dir = CreateFilePath(fname).DirName();
+  base::FilePath parent_dir = CreateFilePath(fname).DirName();
   int parent_fd = HANDLE_EINTR(open(FilePathToString(parent_dir).c_str(), O_RDONLY));
   if (parent_fd < 0)
     return false;
@@ -140,7 +140,7 @@ namespace {
 
 class Thread;
 
-static const ::FilePath::CharType kLevelDBTestDirectoryPrefix[]
+static const base::FilePath::CharType kLevelDBTestDirectoryPrefix[]
     = FILE_PATH_LITERAL("leveldb-test-");
 
 const char* PlatformFileErrorString(const ::base::PlatformFileError& error) {
@@ -381,7 +381,7 @@ class ChromiumEnv : public Env, public UMALogger {
     result->clear();
     ::file_util::FileEnumerator iter(
         CreateFilePath(dir), false, ::file_util::FileEnumerator::FILES);
-    ::FilePath current = iter.Next();
+    base::FilePath current = iter.Next();
     while (!current.empty()) {
       result->push_back(FilePathToString(current.BaseName()));
       current = iter.Next();
@@ -436,7 +436,7 @@ class ChromiumEnv : public Env, public UMALogger {
 
   virtual Status RenameFile(const std::string& src, const std::string& dst) {
     Status result;
-    FilePath src_file_path = CreateFilePath(src);
+    base::FilePath src_file_path = CreateFilePath(src);
     if (!::file_util::PathExists(src_file_path))
       return result;
     if (!::file_util::ReplaceFile(src_file_path, CreateFilePath(dst))) {
@@ -560,7 +560,7 @@ class ChromiumEnv : public Env, public UMALogger {
     reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
   }
 
-  FilePath test_directory_;
+  base::FilePath test_directory_;
 
   size_t page_size_;
   ::base::Lock mu_;

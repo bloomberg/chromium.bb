@@ -11,7 +11,7 @@
 
 namespace file_util {
 
-bool EvictFileFromSystemCache(const FilePath& file) {
+bool EvictFileFromSystemCache(const base::FilePath& file) {
   // There aren't any really direct ways to purge a file from the UBC.  From
   // talking with Amit Singh, the safest is to mmap the file with MAP_FILE (the
   // default) + MAP_SHARED, then do an msync to invalidate the memory.  The next

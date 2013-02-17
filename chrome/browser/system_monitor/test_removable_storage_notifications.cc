@@ -25,7 +25,7 @@ bool TestRemovableStorageNotifications::GetDeviceInfoForPath(
 }
 
 uint64 TestRemovableStorageNotifications::GetStorageSize(
-    const FilePath::StringType& location) const {
+    const base::FilePath::StringType& location) const {
   return 0;
 }
 
@@ -41,7 +41,7 @@ bool TestRemovableStorageNotifications::GetMTPStorageInfoFromDeviceId(
 void TestRemovableStorageNotifications::ProcessAttach(
     const std::string& id,
     const string16& name,
-    const FilePath::StringType& location) {
+    const base::FilePath::StringType& location) {
   receiver()->ProcessAttach(id, name, location);
 }
 

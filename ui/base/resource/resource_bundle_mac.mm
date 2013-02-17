@@ -22,7 +22,7 @@ namespace ui {
 
 namespace {
 
-FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
+base::FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
   NSString *resource_path;
   // Some of the helper processes need to be able to fetch resources
   // (chrome_main.cc: SubprocessNeedsResourceBundle()). Fetch the same locale
@@ -66,8 +66,8 @@ void ResourceBundle::LoadCommonResources() {
   }
 }
 
-FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
-                                           bool test_file_exists) {
+base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
+                                                 bool test_file_exists) {
   NSString* mac_locale = base::SysUTF8ToNSString(app_locale);
 
   // Mac OS X uses "_" instead of "-", so swap to get a Mac-style value.

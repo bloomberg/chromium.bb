@@ -26,7 +26,7 @@ namespace {
 // Returns true if PathService::Get returns true and sets the path parameter
 // to non-empty for the given PathService::DirType enumeration value.
 bool ReturnsValidPath(int dir_type) {
-  FilePath path;
+  base::FilePath path;
   bool result = PathService::Get(dir_type, &path);
 
   // Some paths might not exist on some platforms in which case confirming
@@ -81,7 +81,7 @@ bool ReturnsValidPath(int dir_type) {
 // of Windows. Checks that the function fails and that the returned path is
 // empty.
 bool ReturnsInvalidPath(int dir_type) {
-  FilePath path;
+  base::FilePath path;
   bool result = PathService::Get(dir_type, &path);
   return !result && path.empty();
 }
@@ -152,13 +152,13 @@ TEST_F(PathServiceTest, Override) {
   int my_special_key = 666;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath fake_cache_dir(temp_dir.path().AppendASCII("cache"));
+  base::FilePath fake_cache_dir(temp_dir.path().AppendASCII("cache"));
   // PathService::Override should always create the path provided if it doesn't
   // exist.
   EXPECT_TRUE(PathService::Override(my_special_key, fake_cache_dir));
   EXPECT_TRUE(file_util::PathExists(fake_cache_dir));
 
-  FilePath fake_cache_dir2(temp_dir.path().AppendASCII("cache2"));
+  base::FilePath fake_cache_dir2(temp_dir.path().AppendASCII("cache2"));
   // PathService::OverrideAndCreateIfNeeded should obey the |create| parameter.
   PathService::OverrideAndCreateIfNeeded(my_special_key,
                                          fake_cache_dir2,
@@ -175,17 +175,17 @@ TEST_F(PathServiceTest, OverrideMultiple) {
   int my_special_key = 666;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath fake_cache_dir1(temp_dir.path().AppendASCII("1"));
+  base::FilePath fake_cache_dir1(temp_dir.path().AppendASCII("1"));
   EXPECT_TRUE(PathService::Override(my_special_key, fake_cache_dir1));
   EXPECT_TRUE(file_util::PathExists(fake_cache_dir1));
   ASSERT_EQ(1, file_util::WriteFile(fake_cache_dir1.AppendASCII("t1"), ".", 1));
 
-  FilePath fake_cache_dir2(temp_dir.path().AppendASCII("2"));
+  base::FilePath fake_cache_dir2(temp_dir.path().AppendASCII("2"));
   EXPECT_TRUE(PathService::Override(my_special_key + 1, fake_cache_dir2));
   EXPECT_TRUE(file_util::PathExists(fake_cache_dir2));
   ASSERT_EQ(1, file_util::WriteFile(fake_cache_dir2.AppendASCII("t2"), ".", 1));
 
-  FilePath result;
+  base::FilePath result;
   EXPECT_TRUE(PathService::Get(my_special_key, &result));
   // Override might have changed the path representation but our test file
   // should be still there.
@@ -199,14 +199,14 @@ TEST_F(PathServiceTest, RemoveOverride) {
   // clear any overrides that might have been left from other tests.
   PathService::RemoveOverride(base::DIR_TEMP);
 
-  FilePath original_user_data_dir;
+  base::FilePath original_user_data_dir;
   EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &original_user_data_dir));
   EXPECT_FALSE(PathService::RemoveOverride(base::DIR_TEMP));
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   EXPECT_TRUE(PathService::Override(base::DIR_TEMP, temp_dir.path()));
-  FilePath new_user_data_dir;
+  base::FilePath new_user_data_dir;
   EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &new_user_data_dir));
   EXPECT_NE(original_user_data_dir, new_user_data_dir);
 

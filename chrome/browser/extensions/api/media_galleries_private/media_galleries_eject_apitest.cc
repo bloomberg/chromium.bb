@@ -42,7 +42,7 @@ const char kEjectFailListenerOk[] = "eject_no_such_device";
 
 const char kDeviceId[] = "testDeviceId";
 const char kDeviceName[] = "foobar";
-FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
+base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
 
 }  // namespace
 

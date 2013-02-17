@@ -9,6 +9,7 @@
 #include "testing/platform_test.h"
 
 typedef PlatformTest SysInfoTest;
+using base::FilePath;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 TEST_F(SysInfoTest, MaxSharedMemorySize) {

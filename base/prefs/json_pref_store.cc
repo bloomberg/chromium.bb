@@ -20,7 +20,7 @@
 namespace {
 
 // Some extensions we'll tack on to copies of the Preferences files.
-const FilePath::CharType* kBadExtension = FILE_PATH_LITERAL("bad");
+const base::FilePath::CharType* kBadExtension = FILE_PATH_LITERAL("bad");
 
 // Differentiates file loading between origin thread and passed
 // (aka file) thread.
@@ -36,7 +36,7 @@ class FileThreadDeserializer
         origin_loop_proxy_(base::MessageLoopProxy::current()) {
   }
 
-  void Start(const FilePath& path) {
+  void Start(const base::FilePath& path) {
     DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
     sequenced_task_runner_->PostTask(
         FROM_HERE,
@@ -45,7 +45,7 @@ class FileThreadDeserializer
   }
 
   // Deserializes JSON on the sequenced task runner.
-  void ReadFileAndReport(const FilePath& path) {
+  void ReadFileAndReport(const base::FilePath& path) {
     DCHECK(sequenced_task_runner_->RunsTasksOnCurrentThread());
 
     value_.reset(DoReading(path, &error_, &no_dir_));
@@ -61,7 +61,7 @@ class FileThreadDeserializer
     delegate_->OnFileRead(value_.release(), error_, no_dir_);
   }
 
-  static Value* DoReading(const FilePath& path,
+  static Value* DoReading(const base::FilePath& path,
                           PersistentPrefStore::PrefReadError* error,
                           bool* no_dir) {
     int error_code;
@@ -74,7 +74,7 @@ class FileThreadDeserializer
   }
 
   static void HandleErrors(const Value* value,
-                           const FilePath& path,
+                           const base::FilePath& path,
                            int error_code,
                            const std::string& error_msg,
                            PersistentPrefStore::PrefReadError* error);
@@ -94,7 +94,7 @@ class FileThreadDeserializer
 // static
 void FileThreadDeserializer::HandleErrors(
     const Value* value,
-    const FilePath& path,
+    const base::FilePath& path,
     int error_code,
     const std::string& error_msg,
     PersistentPrefStore::PrefReadError* error) {
@@ -123,7 +123,7 @@ void FileThreadDeserializer::HandleErrors(
         // We keep the old file for possible support and debugging assistance
         // as well as to detect if they're seeing these errors repeatedly.
         // TODO(erikkay) Instead, use the last known good file.
-        FilePath bad = path.ReplaceExtension(kBadExtension);
+        base::FilePath bad = path.ReplaceExtension(kBadExtension);
 
         // If they've ever had a parse error before, put them in another bucket.
         // TODO(erikkay) if we keep this error checking for very long, we may
@@ -141,7 +141,7 @@ void FileThreadDeserializer::HandleErrors(
 }  // namespace
 
 scoped_refptr<base::SequencedTaskRunner> JsonPrefStore::GetTaskRunnerForFile(
-    const FilePath& filename,
+    const base::FilePath& filename,
     base::SequencedWorkerPool* worker_pool) {
   std::string token("json_pref_store-");
   token.append(filename.AsUTF8Unsafe());
@@ -150,7 +150,7 @@ scoped_refptr<base::SequencedTaskRunner> JsonPrefStore::GetTaskRunnerForFile(
       base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 }
 
-JsonPrefStore::JsonPrefStore(const FilePath& filename,
+JsonPrefStore::JsonPrefStore(const base::FilePath& filename,
                              base::SequencedTaskRunner* sequenced_task_runner)
     : path_(filename),
       sequenced_task_runner_(sequenced_task_runner),

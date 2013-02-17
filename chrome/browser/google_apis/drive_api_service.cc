@@ -448,7 +448,7 @@ void DriveAPIService::RemoveResourceFromDirectory(
 }
 
 void DriveAPIService::InitiateUploadNewFile(
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const GURL& parent_upload_url,
@@ -462,7 +462,7 @@ void DriveAPIService::InitiateUploadNewFile(
 }
 
 void DriveAPIService::InitiateUploadExistingFile(
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const GURL& upload_url,

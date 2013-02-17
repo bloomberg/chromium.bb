@@ -68,7 +68,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
   // DriveServiceInterface overrides.
   // Handles a request for obtaining an upload location URL.
   virtual void InitiateUploadNewFile(
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& parent_upload_url,
@@ -87,7 +87,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
   }
 
   virtual void InitiateUploadExistingFile(
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& upload_url,
@@ -171,7 +171,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
 class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   // Returns error.
   virtual void InitiateUploadNewFile(
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& parent_upload_url,
@@ -182,7 +182,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   }
 
   virtual void InitiateUploadExistingFile(
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& upload_url,
@@ -203,7 +203,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
 class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   // Succeeds and returns an upload location URL.
   virtual void InitiateUploadNewFile(
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& parent_upload_url,
@@ -214,7 +214,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   }
 
   virtual void InitiateUploadExistingFile(
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& upload_url,

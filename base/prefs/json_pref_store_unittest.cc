@@ -55,14 +55,14 @@ class JsonPrefStoreTest : public testing::Test {
   // The path to temporary directory used to contain the test operations.
   base::ScopedTempDir temp_dir_;
   // The path to the directory where the test data is stored.
-  FilePath data_dir_;
+  base::FilePath data_dir_;
   // A message loop that we can use as the file thread message loop.
   MessageLoop message_loop_;
 };
 
 // Test fallback behavior for a nonexistent file.
 TEST_F(JsonPrefStoreTest, NonExistentFile) {
-  FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
+  base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
   ASSERT_FALSE(file_util::PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(
@@ -74,8 +74,8 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
 
 // Test fallback behavior for an invalid file.
 TEST_F(JsonPrefStoreTest, InvalidFile) {
-  FilePath invalid_file_original = data_dir_.AppendASCII("invalid.json");
-  FilePath invalid_file = temp_dir_.path().AppendASCII("invalid.json");
+  base::FilePath invalid_file_original = data_dir_.AppendASCII("invalid.json");
+  base::FilePath invalid_file = temp_dir_.path().AppendASCII("invalid.json");
   ASSERT_TRUE(file_util::CopyFile(invalid_file_original, invalid_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(
@@ -86,7 +86,7 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
 
   // The file should have been moved aside.
   EXPECT_FALSE(file_util::PathExists(invalid_file));
-  FilePath moved_aside = temp_dir_.path().AppendASCII("invalid.bad");
+  base::FilePath moved_aside = temp_dir_.path().AppendASCII("invalid.bad");
   EXPECT_TRUE(file_util::PathExists(moved_aside));
   EXPECT_TRUE(file_util::TextContentsEqual(invalid_file_original,
                                            moved_aside));
@@ -95,8 +95,8 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
 // This function is used to avoid code duplication while testing synchronous and
 // asynchronous version of the JsonPrefStore loading.
 void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
-                               const FilePath& output_file,
-                               const FilePath& golden_output_file) {
+                               const base::FilePath& output_file,
+                               const base::FilePath& golden_output_file) {
   const char kNewWindowsInTabs[] = "tabs.new_windows_in_tabs";
   const char kMaxTabs[] = "tabs.max_tabs";
   const char kLongIntPref[] = "long_int.pref";
@@ -112,10 +112,10 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   const char kSomeDirectory[] = "some_directory";
 
   EXPECT_TRUE(pref_store->GetValue(kSomeDirectory, &actual));
-  FilePath::StringType path;
+  base::FilePath::StringType path;
   EXPECT_TRUE(actual->GetAsString(&path));
-  EXPECT_EQ(FilePath::StringType(FILE_PATH_LITERAL("/usr/local/")), path);
-  FilePath some_path(FILE_PATH_LITERAL("/usr/sbin/"));
+  EXPECT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("/usr/local/")), path);
+  base::FilePath some_path(FILE_PATH_LITERAL("/usr/sbin/"));
 
   pref_store->SetValue(kSomeDirectory, new StringValue(some_path.value()));
   EXPECT_TRUE(pref_store->GetValue(kSomeDirectory, &actual));
@@ -163,7 +163,7 @@ TEST_F(JsonPrefStoreTest, Basic) {
                                   temp_dir_.path().AppendASCII("write.json")));
 
   // Test that the persistent value can be loaded.
-  FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
   ASSERT_TRUE(file_util::PathExists(input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(
@@ -191,7 +191,7 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
                                   temp_dir_.path().AppendASCII("write.json")));
 
   // Test that the persistent value can be loaded.
-  FilePath input_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
   ASSERT_TRUE(file_util::PathExists(input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(
@@ -230,7 +230,7 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
 
 // Tests asynchronous reading of the file when there is no file.
 TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
-  FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
+  base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
   ASSERT_FALSE(file_util::PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store =
       new JsonPrefStore(
@@ -251,7 +251,7 @@ TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
 }
 
 TEST_F(JsonPrefStoreTest, NeedsEmptyValue) {
-  FilePath pref_file = temp_dir_.path().AppendASCII("write.json");
+  base::FilePath pref_file = temp_dir_.path().AppendASCII("write.json");
 
   ASSERT_TRUE(file_util::CopyFile(
       data_dir_.AppendASCII("read.need_empty_value.json"),
@@ -292,7 +292,7 @@ TEST_F(JsonPrefStoreTest, NeedsEmptyValue) {
   RunLoop().RunUntilIdle();
 
   // Compare to expected output.
-  FilePath golden_output_file =
+  base::FilePath golden_output_file =
       data_dir_.AppendASCII("write.golden.need_empty_value.json");
   ASSERT_TRUE(file_util::PathExists(golden_output_file));
   EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, pref_file));

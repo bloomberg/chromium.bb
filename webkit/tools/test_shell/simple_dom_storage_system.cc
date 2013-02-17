@@ -194,7 +194,8 @@ SimpleDomStorageSystem* SimpleDomStorageSystem::g_instance_;
 
 SimpleDomStorageSystem::SimpleDomStorageSystem()
     : weak_factory_(this),
-      context_(new DomStorageContext(FilePath(), FilePath(), NULL, NULL)),
+      context_(new DomStorageContext(base::FilePath(), base::FilePath(),
+                                     NULL, NULL)),
       host_(new DomStorageHost(context_)),
       area_being_processed_(NULL),
       next_connection_id_(1) {

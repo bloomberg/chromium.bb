@@ -81,7 +81,7 @@ TEST(ActivityDatabaseTest, RecordAPIAction) {
 // Check that blocked actions are recorded in the db.
 TEST(ActivityDatabaseTest, RecordBlockedAction) {
   base::ScopedTempDir temp_dir;
-  FilePath db_file;
+  base::FilePath db_file;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
   file_util::Delete(db_file, false);

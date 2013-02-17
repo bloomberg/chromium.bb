@@ -104,11 +104,11 @@ bool PrefMemberBase::Internal::IsOnCorrectThread() const {
 }
 
 void PrefMemberBase::Internal::UpdateValue(
-    Value* v,
+    base::Value* v,
     bool is_managed,
     bool is_user_modifiable,
     const base::Closure& callback) const {
-  scoped_ptr<Value> value(v);
+  scoped_ptr<base::Value> value(v);
   base::ScopedClosureRunner closure_runner(callback);
   if (IsOnCorrectThread()) {
     bool rv = UpdateValueInternal(*value);
@@ -131,9 +131,9 @@ void PrefMemberBase::Internal::MoveToThread(
   thread_loop_ = message_loop;
 }
 
-bool PrefMemberVectorStringUpdate(const Value& value,
+bool PrefMemberVectorStringUpdate(const base::Value& value,
                                   std::vector<std::string>* string_vector) {
-  if (!value.IsType(Value::TYPE_LIST))
+  if (!value.IsType(base::Value::TYPE_LIST))
     return false;
   const ListValue* list = static_cast<const ListValue*>(&value);
 
@@ -158,7 +158,8 @@ void PrefMember<bool>::UpdatePref(const bool& value) {
 }
 
 template <>
-bool PrefMember<bool>::Internal::UpdateValueInternal(const Value& value) const {
+bool PrefMember<bool>::Internal::UpdateValueInternal(
+    const base::Value& value) const {
   return value.GetAsBoolean(&value_);
 }
 
@@ -168,7 +169,8 @@ void PrefMember<int>::UpdatePref(const int& value) {
 }
 
 template <>
-bool PrefMember<int>::Internal::UpdateValueInternal(const Value& value) const {
+bool PrefMember<int>::Internal::UpdateValueInternal(
+    const base::Value& value) const {
   return value.GetAsInteger(&value_);
 }
 
@@ -178,7 +180,7 @@ void PrefMember<double>::UpdatePref(const double& value) {
 }
 
 template <>
-bool PrefMember<double>::Internal::UpdateValueInternal(const Value& value)
+bool PrefMember<double>::Internal::UpdateValueInternal(const base::Value& value)
     const {
   return value.GetAsDouble(&value_);
 }
@@ -189,18 +191,20 @@ void PrefMember<std::string>::UpdatePref(const std::string& value) {
 }
 
 template <>
-bool PrefMember<std::string>::Internal::UpdateValueInternal(const Value& value)
+bool PrefMember<std::string>::Internal::UpdateValueInternal(
+    const base::Value& value)
     const {
   return value.GetAsString(&value_);
 }
 
 template <>
-void PrefMember<FilePath>::UpdatePref(const FilePath& value) {
+void PrefMember<base::FilePath>::UpdatePref(const base::FilePath& value) {
   prefs()->SetFilePath(pref_name().c_str(), value);
 }
 
 template <>
-bool PrefMember<FilePath>::Internal::UpdateValueInternal(const Value& value)
+bool PrefMember<base::FilePath>::Internal::UpdateValueInternal(
+    const base::Value& value)
     const {
   return base::GetValueAsFilePath(value, &value_);
 }
@@ -215,6 +219,6 @@ void PrefMember<std::vector<std::string> >::UpdatePref(
 
 template <>
 bool PrefMember<std::vector<std::string> >::Internal::UpdateValueInternal(
-    const Value& value) const {
+    const base::Value& value) const {
   return subtle::PrefMemberVectorStringUpdate(value, &value_);
 }

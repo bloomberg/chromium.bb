@@ -34,6 +34,8 @@
 // This macro helps avoid wrapped lines in the test structs.
 #define FPL(x) FILE_PATH_LITERAL(x)
 
+using base::FilePath;
+
 namespace {
 
 // To test that file_util::Normalize FilePath() deals with NTFS reparse points

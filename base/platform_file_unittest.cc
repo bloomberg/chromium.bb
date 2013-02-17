@@ -8,6 +8,8 @@
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::FilePath;
+
 namespace {
 
 // Reads from a file the given number of bytes, or until EOF is reached.

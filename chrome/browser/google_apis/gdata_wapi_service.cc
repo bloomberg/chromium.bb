@@ -409,7 +409,7 @@ void GDataWapiService::RemoveResourceFromDirectory(
 }
 
 void GDataWapiService::InitiateUploadNewFile(
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const GURL& parent_upload_url,
@@ -435,7 +435,7 @@ void GDataWapiService::InitiateUploadNewFile(
 }
 
 void GDataWapiService::InitiateUploadExistingFile(
-    const FilePath& drive_file_path,
+    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const GURL& upload_url,

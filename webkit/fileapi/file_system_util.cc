@@ -25,8 +25,8 @@ const char kIsolatedDir[] = "/isolated";
 const char kExternalDir[] = "/external";
 const char kTestDir[] = "/test";
 
-const FilePath::CharType VirtualPath::kRoot[] = FILE_PATH_LITERAL("/");
-const FilePath::CharType VirtualPath::kSeparator = FILE_PATH_LITERAL('/');
+const base::FilePath::CharType VirtualPath::kRoot[] = FILE_PATH_LITERAL("/");
+const base::FilePath::CharType VirtualPath::kSeparator = FILE_PATH_LITERAL('/');
 
 // TODO(ericu): Consider removing support for '\', even on Windows, if possible.
 // There's a lot of test code that will need reworking, and we may have trouble
@@ -73,20 +73,21 @@ void VirtualPath::GetComponents(
       std::vector<base::FilePath::StringType>(ret_val.rbegin(), ret_val.rend());
 }
 
-FilePath::StringType VirtualPath::GetNormalizedFilePath(const FilePath& path) {
-  FilePath::StringType normalized_path = path.value();
-  const size_t num_separators = FilePath::StringType(
-      FilePath::kSeparators).length();
+base::FilePath::StringType VirtualPath::GetNormalizedFilePath(
+    const base::FilePath& path) {
+  base::FilePath::StringType normalized_path = path.value();
+  const size_t num_separators = base::FilePath::StringType(
+      base::FilePath::kSeparators).length();
   for (size_t i = 1; i < num_separators; ++i) {
     std::replace(normalized_path.begin(), normalized_path.end(),
-                 FilePath::kSeparators[i], kSeparator);
+                 base::FilePath::kSeparators[i], kSeparator);
   }
 
   return (IsAbsolute(normalized_path)) ?
-      normalized_path : FilePath::StringType(kRoot) + normalized_path;
+      normalized_path : base::FilePath::StringType(kRoot) + normalized_path;
 }
 
-bool VirtualPath::IsAbsolute(const FilePath::StringType& path) {
+bool VirtualPath::IsAbsolute(const base::FilePath::StringType& path) {
   return path.find(kRoot) == 0;
 }
 

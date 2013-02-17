@@ -11,7 +11,7 @@ PepperFilePath::PepperFilePath()
       path_() {
 }
 
-PepperFilePath::PepperFilePath(Domain domain, const FilePath& path)
+PepperFilePath::PepperFilePath(Domain domain, const base::FilePath& path)
     : domain_(domain),
       path_(path) {
   // TODO(viettrungluu): Should we DCHECK() some things here?

@@ -238,7 +238,7 @@ class DriveServiceInterface {
   // |callback| must not be null.
   // TODO(hidehiko): Replace |parent_upload_url| by resource id.
   virtual void InitiateUploadNewFile(
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& parent_upload_url,
@@ -251,7 +251,7 @@ class DriveServiceInterface {
   // |callback| must not be null.
   // TODO(hidehiko): Replace |upload_url| by resource id.
   virtual void InitiateUploadExistingFile(
-      const FilePath& drive_file_path,
+      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const GURL& upload_url,

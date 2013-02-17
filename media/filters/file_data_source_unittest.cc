@@ -34,7 +34,7 @@ class ReadCBHandler {
 // FilePath class are unicode, and the pipeline wants char strings.  Convert
 // the string to UTF8 under Windows.  For Mac and Linux, file paths are already
 // chars so just return the string from the base::FilePath.
-FilePath TestFileURL() {
+base::FilePath TestFileURL() {
   base::FilePath data_dir;
   EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
   data_dir = data_dir.Append(FILE_PATH_LITERAL("media"))

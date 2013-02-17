@@ -40,7 +40,7 @@ class TestRemovableStorageNotifications
   // get rid of ProcessAttach/ProcessDetach here.
   void ProcessAttach(const std::string& id,
                      const string16& name,
-                     const FilePath::StringType& location);
+                     const base::FilePath::StringType& location);
 
   void ProcessDetach(const std::string& id);
 

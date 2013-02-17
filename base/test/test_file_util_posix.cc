@@ -22,7 +22,7 @@ namespace file_util {
 namespace {
 
 // Deny |permission| on the file |path|.
-bool DenyFilePermission(const FilePath& path, mode_t permission) {
+bool DenyFilePermission(const base::FilePath& path, mode_t permission) {
   struct stat stat_buf;
   if (stat(path.value().c_str(), &stat_buf) != 0)
     return false;
@@ -35,7 +35,7 @@ bool DenyFilePermission(const FilePath& path, mode_t permission) {
 // Gets a blob indicating the permission information for |path|.
 // |length| is the length of the blob.  Zero on failure.
 // Returns the blob pointer, or NULL on failure.
-void* GetPermissionInfo(const FilePath& path, size_t* length) {
+void* GetPermissionInfo(const base::FilePath& path, size_t* length) {
   DCHECK(length);
   *length = 0;
 
@@ -55,7 +55,8 @@ void* GetPermissionInfo(const FilePath& path, size_t* length) {
 // |info| is the pointer to the blob.
 // |length| is the length of the blob.
 // Either |info| or |length| may be NULL/0, in which case nothing happens.
-bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
+bool RestorePermissionInfo(const base::FilePath& path,
+                           void* info, size_t length) {
   if (!info || (length == 0))
     return false;
 
@@ -71,15 +72,15 @@ bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
 
 }  // namespace
 
-bool DieFileDie(const FilePath& file, bool recurse) {
+bool DieFileDie(const base::FilePath& file, bool recurse) {
   // There is no need to workaround Windows problems on POSIX.
   // Just pass-through.
   return file_util::Delete(file, recurse);
 }
 
 // Mostly a verbatim copy of CopyDirectory
-bool CopyRecursiveDirNoCache(const FilePath& source_dir,
-                             const FilePath& dest_dir) {
+bool CopyRecursiveDirNoCache(const base::FilePath& source_dir,
+                             const base::FilePath& dest_dir) {
   char top_dir[PATH_MAX];
   if (base::strlcpy(top_dir, source_dir.value().c_str(),
                     arraysize(top_dir)) >= arraysize(top_dir)) {
@@ -87,7 +88,7 @@ bool CopyRecursiveDirNoCache(const FilePath& source_dir,
   }
 
   // This function does not properly handle destinations within the source
-  FilePath real_to_path = dest_dir;
+  base::FilePath real_to_path = dest_dir;
   if (PathExists(real_to_path)) {
     if (!AbsolutePath(&real_to_path))
       return false;
@@ -107,7 +108,7 @@ bool CopyRecursiveDirNoCache(const FilePath& source_dir,
 
   // dest_dir may not exist yet, start the loop with dest_dir
   FileEnumerator::FindInfo info;
-  FilePath current = source_dir;
+  base::FilePath current = source_dir;
   if (stat(source_dir.value().c_str(), &info.stat) < 0) {
     DLOG(ERROR) << "CopyRecursiveDirNoCache() couldn't stat source directory: "
                 << source_dir.value() << " errno = " << errno;
@@ -123,7 +124,7 @@ bool CopyRecursiveDirNoCache(const FilePath& source_dir,
       DCHECK_EQ('/', suffix[0]);
       suffix.erase(0, 1);
     }
-    const FilePath target_path = dest_dir.Append(suffix);
+    const base::FilePath target_path = dest_dir.Append(suffix);
 
     if (S_ISDIR(info.stat.st_mode)) {
       if (mkdir(target_path.value().c_str(), info.stat.st_mode & 01777) != 0 &&
@@ -154,29 +155,29 @@ bool CopyRecursiveDirNoCache(const FilePath& source_dir,
 }
 
 #if !defined(OS_LINUX) && !defined(OS_MACOSX)
-bool EvictFileFromSystemCache(const FilePath& file) {
+bool EvictFileFromSystemCache(const base::FilePath& file) {
   // There doesn't seem to be a POSIX way to cool the disk cache.
   NOTIMPLEMENTED();
   return false;
 }
 #endif
 
-std::wstring FilePathAsWString(const FilePath& path) {
+std::wstring FilePathAsWString(const base::FilePath& path) {
   return UTF8ToWide(path.value());
 }
-FilePath WStringAsFilePath(const std::wstring& path) {
-  return FilePath(WideToUTF8(path));
+base::FilePath WStringAsFilePath(const std::wstring& path) {
+  return base::FilePath(WideToUTF8(path));
 }
 
-bool MakeFileUnreadable(const FilePath& path) {
+bool MakeFileUnreadable(const base::FilePath& path) {
   return DenyFilePermission(path, S_IRUSR | S_IRGRP | S_IROTH);
 }
 
-bool MakeFileUnwritable(const FilePath& path) {
+bool MakeFileUnwritable(const base::FilePath& path) {
   return DenyFilePermission(path, S_IWUSR | S_IWGRP | S_IWOTH);
 }
 
-PermissionRestorer::PermissionRestorer(const FilePath& path)
+PermissionRestorer::PermissionRestorer(const base::FilePath& path)
     : path_(path), info_(NULL), length_(0) {
   info_ = GetPermissionInfo(path_, &length_);
   DCHECK(info_ != NULL);

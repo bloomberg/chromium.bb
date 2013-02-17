@@ -47,6 +47,8 @@
 #include "base/process_util_unittest_mac.h"
 #endif
 
+using base::FilePath;
+
 namespace {
 
 #if defined(OS_WIN)

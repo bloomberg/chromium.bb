@@ -11,7 +11,7 @@
 
 namespace media {
 
-FilePath GetTestDataFilePath(const std::string& name) {
+base::FilePath GetTestDataFilePath(const std::string& name) {
   base::FilePath file_path;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
 

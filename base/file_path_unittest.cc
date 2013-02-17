@@ -15,6 +15,8 @@
 // This macro constructs strings which can contain NULs.
 #define FPS(x) FilePath::StringType(FPL(x), arraysize(FPL(x)) - 1)
 
+namespace base {
+
 struct UnaryTestData {
   const FilePath::CharType* input;
   const FilePath::CharType* expected;
@@ -1196,3 +1198,5 @@ TEST_F(FilePathTest, NormalizePathSeparators) {
 }
 
 #endif
+
+}  // namespace base

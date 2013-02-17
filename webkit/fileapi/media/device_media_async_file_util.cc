@@ -316,7 +316,7 @@ void DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError(
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
     base::PlatformFileError error) {
   if (!callback.is_null())
-    callback.Run(error, base::PlatformFileInfo(), FilePath(),
+    callback.Run(error, base::PlatformFileInfo(), base::FilePath(),
                  kSnapshotFileTemporary);
 }
 

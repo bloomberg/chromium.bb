@@ -21,22 +21,23 @@ TEST(BlobStorageControllerTest, RegisterBlobUrl) {
   scoped_refptr<BlobData> blob_data1(new BlobData());
   blob_data1->AppendData("Data1");
   blob_data1->AppendData("Data2");
-  blob_data1->AppendFile(FilePath(FILE_PATH_LITERAL("File1.txt")),
+  blob_data1->AppendFile(base::FilePath(FILE_PATH_LITERAL("File1.txt")),
     10, 1024, time1);
 
   scoped_refptr<BlobData> blob_data2(new BlobData());
   blob_data2->AppendData("Data3");
   blob_data2->AppendBlob(GURL("blob://url_1"), 8, 100);
-  blob_data2->AppendFile(FilePath(FILE_PATH_LITERAL("File2.txt")),
+  blob_data2->AppendFile(base::FilePath(FILE_PATH_LITERAL("File2.txt")),
       0, 20, time2);
 
   scoped_refptr<BlobData> canonicalized_blob_data2(new BlobData());
   canonicalized_blob_data2->AppendData("Data3");
   canonicalized_blob_data2->AppendData("a2___", 2);
-  canonicalized_blob_data2->AppendFile(FilePath(FILE_PATH_LITERAL("File1.txt")),
+  canonicalized_blob_data2->AppendFile(
+      base::FilePath(FILE_PATH_LITERAL("File1.txt")),
       10, 98, time1);
-  canonicalized_blob_data2->AppendFile(FilePath(FILE_PATH_LITERAL("File2.txt")),
-      0, 20, time2);
+  canonicalized_blob_data2->AppendFile(
+      base::FilePath(FILE_PATH_LITERAL("File2.txt")), 0, 20, time2);
 
   BlobStorageController blob_storage_controller;
 

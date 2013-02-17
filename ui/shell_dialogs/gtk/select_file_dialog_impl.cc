@@ -25,8 +25,8 @@ UseKdeFileDialogStatus use_kde_ = UNKNOWN;
 
 namespace ui {
 
-FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
-FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
+base::FilePath* SelectFileDialogImpl::last_saved_path_ = NULL;
+base::FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
 
 // static
 SelectFileDialog* CreateLinuxSelectFileDialog(

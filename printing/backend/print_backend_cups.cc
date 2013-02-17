@@ -327,7 +327,7 @@ int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
   }
 }
 
-FilePath PrintBackendCUPS::GetPPD(const char* name) {
+base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
   // cupsGetPPD returns a filename stored in a static buffer in CUPS.
   // Protect this code with lock.
   CR_DEFINE_STATIC_LOCAL(base::Lock, ppd_lock, ());

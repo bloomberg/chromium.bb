@@ -27,7 +27,7 @@ static const quota::StorageType kPerm = quota::kStorageTypePersistent;
 class MockDatabaseTracker : public DatabaseTracker {
  public:
   MockDatabaseTracker()
-      : DatabaseTracker(FilePath(), false, NULL, NULL, NULL),
+      : DatabaseTracker(base::FilePath(), false, NULL, NULL, NULL),
         delete_called_count_(0),
         async_delete_(false) {}
 

@@ -74,7 +74,7 @@ void ExtensionsCommand::ExecuteGet(Response* const response) {
 }
 
 void ExtensionsCommand::ExecutePost(Response* const response) {
-  FilePath::StringType path_string;
+  base::FilePath::StringType path_string;
   if (!GetStringParameter("path", &path_string)) {
     response->SetError(new Error(kBadRequest, "'path' missing or invalid"));
     return;
@@ -82,7 +82,7 @@ void ExtensionsCommand::ExecutePost(Response* const response) {
 
   std::string extension_id;
   Error* error = session_->InstallExtension(
-      FilePath(path_string), &extension_id);
+      base::FilePath(path_string), &extension_id);
   if (error) {
     response->SetError(error);
     return;

@@ -19,20 +19,20 @@ class NativeFileUtilTest : public testing::Test {
   }
 
  protected:
-  FilePath Path() {
+  base::FilePath Path() {
     return data_dir_.path();
   }
 
-  FilePath Path(const char* file_name) {
+  base::FilePath Path(const char* file_name) {
     return data_dir_.path().AppendASCII(file_name);
   }
 
-  bool FileExists(const FilePath& path) {
+  bool FileExists(const base::FilePath& path) {
     return file_util::PathExists(path) &&
            !file_util::DirectoryExists(path);
   }
 
-  int64 GetSize(const FilePath& path) {
+  int64 GetSize(const base::FilePath& path) {
     base::PlatformFileInfo info;
     file_util::GetFileInfo(path, &info);
     return info.size;
@@ -45,7 +45,7 @@ class NativeFileUtilTest : public testing::Test {
 };
 
 TEST_F(NativeFileUtilTest, CreateCloseAndDeleteFile) {
-  FilePath file_name = Path("test_file");
+  base::FilePath file_name = Path("test_file");
   base::PlatformFile file_handle;
   bool created = false;
   int flags = base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC;
@@ -76,7 +76,7 @@ TEST_F(NativeFileUtilTest, CreateCloseAndDeleteFile) {
 }
 
 TEST_F(NativeFileUtilTest, EnsureFileExists) {
-  FilePath file_name = Path("foobar");
+  base::FilePath file_name = Path("foobar");
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(file_name, &created));
@@ -91,7 +91,7 @@ TEST_F(NativeFileUtilTest, EnsureFileExists) {
 }
 
 TEST_F(NativeFileUtilTest, CreateAndDeleteDirectory) {
-  FilePath dir_name = Path("test_dir");
+  base::FilePath dir_name = Path("test_dir");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CreateDirectory(dir_name,
                                             false /* exclusive */,
@@ -112,7 +112,7 @@ TEST_F(NativeFileUtilTest, CreateAndDeleteDirectory) {
 }
 
 TEST_F(NativeFileUtilTest, TouchFileAndGetFileInfo) {
-  FilePath file_name = Path("test_file");
+  base::FilePath file_name = Path("test_file");
   base::PlatformFileInfo native_info;
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             NativeFileUtil::GetFileInfo(file_name, &native_info));
@@ -148,11 +148,12 @@ TEST_F(NativeFileUtilTest, TouchFileAndGetFileInfo) {
 }
 
 TEST_F(NativeFileUtilTest, CreateFileEnumerator) {
-  FilePath path_1 = Path("dir1");
-  FilePath path_2 = Path("file1");
-  FilePath path_11 = Path("dir1").AppendASCII("file11");
-  FilePath path_12 = Path("dir1").AppendASCII("dir12");
-  FilePath path_121 = Path("dir1").AppendASCII("dir12").AppendASCII("file121");
+  base::FilePath path_1 = Path("dir1");
+  base::FilePath path_2 = Path("file1");
+  base::FilePath path_11 = Path("dir1").AppendASCII("file11");
+  base::FilePath path_12 = Path("dir1").AppendASCII("dir12");
+  base::FilePath path_121 =
+      Path("dir1").AppendASCII("dir12").AppendASCII("file121");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CreateDirectory(path_1, false, false));
   bool created = false;
@@ -168,10 +169,10 @@ TEST_F(NativeFileUtilTest, CreateFileEnumerator) {
   {
     scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator =
         NativeFileUtil::CreateFileEnumerator(Path(), false);
-    std::set<FilePath> set;
+    std::set<base::FilePath> set;
     set.insert(path_1);
     set.insert(path_2);
-    for (FilePath path = enumerator->Next(); !path.empty();
+    for (base::FilePath path = enumerator->Next(); !path.empty();
          path = enumerator->Next())
       EXPECT_EQ(1U, set.erase(path));
     EXPECT_TRUE(set.empty());
@@ -180,13 +181,13 @@ TEST_F(NativeFileUtilTest, CreateFileEnumerator) {
   {
     scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator =
         NativeFileUtil::CreateFileEnumerator(Path(), true);
-        std::set<FilePath> set;
+        std::set<base::FilePath> set;
     set.insert(path_1);
     set.insert(path_2);
     set.insert(path_11);
     set.insert(path_12);
     set.insert(path_121);
-    for (FilePath path = enumerator->Next(); !path.empty();
+    for (base::FilePath path = enumerator->Next(); !path.empty();
          path = enumerator->Next())
       EXPECT_EQ(1U, set.erase(path));
     EXPECT_TRUE(set.empty());
@@ -194,7 +195,7 @@ TEST_F(NativeFileUtilTest, CreateFileEnumerator) {
 }
 
 TEST_F(NativeFileUtilTest, Truncate) {
-  FilePath file_name = Path("truncated");
+  base::FilePath file_name = Path("truncated");
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(file_name, &created));
@@ -208,9 +209,9 @@ TEST_F(NativeFileUtilTest, Truncate) {
 }
 
 TEST_F(NativeFileUtilTest, CopyFile) {
-  FilePath from_file = Path("fromfile");
-  FilePath to_file1 = Path("tofile1");
-  FilePath to_file2 = Path("tofile2");
+  base::FilePath from_file = Path("fromfile");
+  base::FilePath to_file1 = Path("tofile1");
+  base::FilePath to_file2 = Path("tofile2");
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
@@ -235,11 +236,11 @@ TEST_F(NativeFileUtilTest, CopyFile) {
   EXPECT_TRUE(FileExists(to_file2));
   EXPECT_EQ(1020, GetSize(to_file2));
 
-  FilePath dir = Path("dir");
+  base::FilePath dir = Path("dir");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CreateDirectory(dir, false, false));
   ASSERT_TRUE(file_util::DirectoryExists(dir));
-  FilePath to_dir_file = dir.AppendASCII("file");
+  base::FilePath to_dir_file = dir.AppendASCII("file");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(from_file, to_dir_file, true));
   EXPECT_TRUE(FileExists(to_dir_file));
@@ -270,8 +271,8 @@ TEST_F(NativeFileUtilTest, CopyFile) {
 }
 
 TEST_F(NativeFileUtilTest, MoveFile) {
-  FilePath from_file = Path("fromfile");
-  FilePath to_file = Path("tofile");
+  base::FilePath from_file = Path("fromfile");
+  base::FilePath to_file = Path("tofile");
   bool created = false;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::EnsureFileExists(from_file, &created));
@@ -294,11 +295,11 @@ TEST_F(NativeFileUtilTest, MoveFile) {
   ASSERT_TRUE(FileExists(from_file));
   ASSERT_EQ(base::PLATFORM_FILE_OK, NativeFileUtil::Truncate(from_file, 1020));
 
-  FilePath dir = Path("dir");
+  base::FilePath dir = Path("dir");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CreateDirectory(dir, false, false));
   ASSERT_TRUE(file_util::DirectoryExists(dir));
-  FilePath to_dir_file = dir.AppendASCII("file");
+  base::FilePath to_dir_file = dir.AppendASCII("file");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(from_file, to_dir_file, false));
   EXPECT_FALSE(FileExists(from_file));

@@ -23,7 +23,7 @@ namespace ui {
 
 namespace {
 
-FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
+base::FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
   NSString *resource_path;
   if ([mac_locale length]) {
     resource_path = [base::mac::FrameworkBundle() pathForResource:name
@@ -58,8 +58,8 @@ void ResourceBundle::LoadCommonResources() {
   }
 }
 
-FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
-                                           bool test_file_exists) {
+base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
+                                                 bool test_file_exists) {
   NSString* mac_locale = base::SysUTF8ToNSString(app_locale);
 
   // iOS uses "_" instead of "-", so swap to get a iOS-style value.

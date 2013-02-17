@@ -50,7 +50,7 @@ class CrossOperationTestHelper {
 
   void SetUp() {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
-    FilePath base_dir = base_.path();
+    base::FilePath base_dir = base_.path();
     quota_manager_ = new quota::MockQuotaManager(
         false /* is_incognito */, base_dir,
         base::MessageLoopProxy::current(),
@@ -102,12 +102,12 @@ class CrossOperationTestHelper {
 
   FileSystemURL SourceURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_, src_type_, FilePath::FromUTF8Unsafe(path));
+        origin_, src_type_, base::FilePath::FromUTF8Unsafe(path));
   }
 
   FileSystemURL DestURL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_, dest_type_, FilePath::FromUTF8Unsafe(path));
+        origin_, dest_type_, base::FilePath::FromUTF8Unsafe(path));
   }
 
   base::PlatformFileError Copy(const FileSystemURL& src,
@@ -146,10 +146,11 @@ class CrossOperationTestHelper {
       const FileSystemURL& root,
       const test::TestCaseRecord* const test_cases,
       size_t test_case_size) {
-    std::map<FilePath, const test::TestCaseRecord*> test_case_map;
+    std::map<base::FilePath, const test::TestCaseRecord*> test_case_map;
     for (size_t i = 0; i < test_case_size; ++i)
-      test_case_map[FilePath(test_cases[i].path).NormalizePathSeparators()] =
-          &test_cases[i];
+      test_case_map[
+          base::FilePath(test_cases[i].path).NormalizePathSeparators()] =
+              &test_cases[i];
 
     std::queue<FileSystemURL> directories;
     FileEntryList entries;
@@ -163,7 +164,7 @@ class CrossOperationTestHelper {
             dir.origin(),
             dir.mount_type(),
             dir.virtual_path().Append(entries[i].name));
-        FilePath relative;
+        base::FilePath relative;
         root.virtual_path().AppendRelativePath(url.virtual_path(), &relative);
         relative = relative.NormalizePathSeparators();
         ASSERT_TRUE(ContainsKey(test_case_map, relative));

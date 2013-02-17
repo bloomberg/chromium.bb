@@ -16,7 +16,7 @@
 
 namespace {
 
-FilePath GetResourcesPakFilePath(const std::string& pak_name) {
+base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
   base::FilePath path;
   if (PathService::Get(base::DIR_MODULE, &path))
     return path.AppendASCII(pak_name.c_str());

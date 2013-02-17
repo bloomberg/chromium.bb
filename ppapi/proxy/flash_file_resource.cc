@@ -60,9 +60,9 @@ int32_t FlashFileResource::RenameFile(PP_Instance /*instance*/,
                                       const char* path_from,
                                       const char* path_to) {
   PepperFilePath pepper_from(PepperFilePath::DOMAIN_MODULE_LOCAL,
-                             FilePath::FromUTF8Unsafe(path_from));
+                             base::FilePath::FromUTF8Unsafe(path_from));
   PepperFilePath pepper_to(PepperFilePath::DOMAIN_MODULE_LOCAL,
-                           FilePath::FromUTF8Unsafe(path_to));
+                           base::FilePath::FromUTF8Unsafe(path_to));
 
   int32_t error = SyncCall<IPC::Message>(
       BROWSER, PpapiHostMsg_FlashFile_RenameFile(pepper_from, pepper_to));
@@ -74,7 +74,7 @@ int32_t FlashFileResource::DeleteFileOrDir(PP_Instance /*instance*/,
                                            const char* path,
                                            PP_Bool recursive) {
   PepperFilePath pepper_path(PepperFilePath::DOMAIN_MODULE_LOCAL,
-                             FilePath::FromUTF8Unsafe(path));
+                             base::FilePath::FromUTF8Unsafe(path));
 
   int32_t error = SyncCall<IPC::Message>(
       BROWSER, PpapiHostMsg_FlashFile_DeleteFileOrDir(pepper_path,
@@ -86,7 +86,7 @@ int32_t FlashFileResource::DeleteFileOrDir(PP_Instance /*instance*/,
 int32_t FlashFileResource::CreateDir(PP_Instance /*instance*/,
                                      const char* path) {
   PepperFilePath pepper_path(PepperFilePath::DOMAIN_MODULE_LOCAL,
-                             FilePath::FromUTF8Unsafe(path));
+                             base::FilePath::FromUTF8Unsafe(path));
 
   int32_t error = SyncCall<IPC::Message>(BROWSER,
       PpapiHostMsg_FlashFile_CreateDir(pepper_path));
@@ -105,7 +105,7 @@ int32_t FlashFileResource::GetDirContents(PP_Instance /*instance*/,
                                           PP_DirContents_Dev** contents) {
   ppapi::DirContents entries;
   PepperFilePath pepper_path(PepperFilePath::DOMAIN_MODULE_LOCAL,
-                             FilePath::FromUTF8Unsafe(path));
+                             base::FilePath::FromUTF8Unsafe(path));
 
   int32_t error = SyncCall<PpapiPluginMsg_FlashFile_GetDirContentsReply>(
       BROWSER, PpapiHostMsg_FlashFile_GetDirContents(pepper_path), &entries);
@@ -182,7 +182,7 @@ int32_t FlashFileResource::OpenFileHelper(const std::string& path,
       !file)
     return PP_ERROR_BADARGUMENT;
 
-  PepperFilePath pepper_path(domain_type, FilePath::FromUTF8Unsafe(path));
+  PepperFilePath pepper_path(domain_type, base::FilePath::FromUTF8Unsafe(path));
 
   IPC::Message unused;
   ResourceMessageReplyParams reply_params;
@@ -207,7 +207,7 @@ int32_t FlashFileResource::QueryFileHelper(const std::string& path,
     return PP_ERROR_BADARGUMENT;
 
   base::PlatformFileInfo file_info;
-  PepperFilePath pepper_path(domain_type, FilePath::FromUTF8Unsafe(path));
+  PepperFilePath pepper_path(domain_type, base::FilePath::FromUTF8Unsafe(path));
 
   int32_t error = SyncCall<PpapiPluginMsg_FlashFile_QueryFileReply>(BROWSER,
       PpapiHostMsg_FlashFile_QueryFile(pepper_path), &file_info);

@@ -45,8 +45,8 @@ namespace google_apis {
 struct DriveUploader::UploadFileInfo {
   UploadFileInfo(scoped_refptr<base::SequencedTaskRunner> task_runner,
                  UploadMode upload_mode,
-                 const FilePath& drive_path,
-                 const FilePath& local_path,
+                 const base::FilePath& drive_path,
+                 const base::FilePath& local_path,
                  const std::string& content_type,
                  const UploadCompletionCallback& callback)
       : upload_mode(upload_mode),

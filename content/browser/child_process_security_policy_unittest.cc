@@ -364,7 +364,7 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
   base::FilePath child_traversal2 = base::FilePath(
       TEST_PATH("/home/joe/file/../otherfile"));
   base::FilePath evil_traversal1 =
-      FilePath(TEST_PATH("/home/joe/../../etc/passwd"));
+      base::FilePath(TEST_PATH("/home/joe/../../etc/passwd"));
   base::FilePath evil_traversal2 = base::FilePath(
       TEST_PATH("/home/joe/./.././../etc/passwd"));
   base::FilePath self_traversal =

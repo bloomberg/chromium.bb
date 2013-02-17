@@ -207,8 +207,8 @@ void ResourceBundle::AddDataPackFromFile(base::PlatformFile file,
 }
 
 #if !defined(OS_MACOSX)
-FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
-                                           bool test_file_exists) {
+base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
+                                                 bool test_file_exists) {
   if (app_locale.empty())
     return base::FilePath();
 

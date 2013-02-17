@@ -90,7 +90,7 @@ const OriginEnumerationTestRecord kOriginEnumerationTestRecords[] = {
 };
 
 FileSystemURL FileSystemURLAppend(
-    const FileSystemURL& url, const FilePath::StringType& child) {
+    const FileSystemURL& url, const base::FilePath::StringType& child) {
   return FileSystemURL::CreateForTest(
       url.origin(), url.mount_type(), url.virtual_path().Append(child));
 }
@@ -100,7 +100,7 @@ FileSystemURL FileSystemURLAppendUTF8(
   return FileSystemURL::CreateForTest(
       url.origin(),
       url.mount_type(),
-      url.virtual_path().Append(FilePath::FromUTF8Unsafe(child)));
+      url.virtual_path().Append(base::FilePath::FromUTF8Unsafe(child)));
 }
 
 FileSystemURL FileSystemURLDirName(const FileSystemURL& url) {

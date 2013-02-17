@@ -152,7 +152,7 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
 // This function implements StringListPrefMember::UpdateValue().
 // It is exposed here for testing purposes.
 bool BASE_PREFS_EXPORT PrefMemberVectorStringUpdate(
-    const Value& value,
+    const base::Value& value,
     std::vector<std::string>* string_vector);
 
 }  // namespace subtle
@@ -323,14 +323,16 @@ BASE_PREFS_EXPORT void PrefMember<std::string>::UpdatePref(
 
 template <>
 BASE_PREFS_EXPORT bool PrefMember<std::string>::Internal::UpdateValueInternal(
-    const Value& value) const;
+    const base::Value& value) const;
 
 template <>
-BASE_PREFS_EXPORT void PrefMember<FilePath>::UpdatePref(const FilePath& value);
+BASE_PREFS_EXPORT void PrefMember<base::FilePath>::UpdatePref(
+    const base::FilePath& value);
 
 template <>
-BASE_PREFS_EXPORT bool PrefMember<FilePath>::Internal::UpdateValueInternal(
-    const Value& value) const;
+BASE_PREFS_EXPORT bool
+PrefMember<base::FilePath>::Internal::UpdateValueInternal(
+    const base::Value& value) const;
 
 template <>
 BASE_PREFS_EXPORT void PrefMember<std::vector<std::string> >::UpdatePref(
@@ -339,13 +341,13 @@ BASE_PREFS_EXPORT void PrefMember<std::vector<std::string> >::UpdatePref(
 template <>
 BASE_PREFS_EXPORT bool
 PrefMember<std::vector<std::string> >::Internal::UpdateValueInternal(
-    const Value& value) const;
+    const base::Value& value) const;
 
 typedef PrefMember<bool> BooleanPrefMember;
 typedef PrefMember<int> IntegerPrefMember;
 typedef PrefMember<double> DoublePrefMember;
 typedef PrefMember<std::string> StringPrefMember;
-typedef PrefMember<FilePath> FilePathPrefMember;
+typedef PrefMember<base::FilePath> FilePathPrefMember;
 // This preference member is expensive for large string arrays.
 typedef PrefMember<std::vector<std::string> > StringListPrefMember;
 

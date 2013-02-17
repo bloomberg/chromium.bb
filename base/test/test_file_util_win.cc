@@ -29,7 +29,7 @@ struct PermissionInfo {
 };
 
 // Deny |permission| on the file |path|, for the current user.
-bool DenyFilePermission(const FilePath& path, DWORD permission) {
+bool DenyFilePermission(const base::FilePath& path, DWORD permission) {
   PACL old_dacl;
   PSECURITY_DESCRIPTOR security_descriptor;
   if (GetNamedSecurityInfo(const_cast<wchar_t*>(path.value().c_str()),
@@ -67,7 +67,7 @@ bool DenyFilePermission(const FilePath& path, DWORD permission) {
 // Gets a blob indicating the permission information for |path|.
 // |length| is the length of the blob.  Zero on failure.
 // Returns the blob pointer, or NULL on failure.
-void* GetPermissionInfo(const FilePath& path, size_t* length) {
+void* GetPermissionInfo(const base::FilePath& path, size_t* length) {
   DCHECK(length != NULL);
   *length = 0;
   PACL dacl = NULL;
@@ -93,7 +93,8 @@ void* GetPermissionInfo(const FilePath& path, size_t* length) {
 // |info| is the pointer to the blob.
 // |length| is the length of the blob.
 // Either |info| or |length| may be NULL/0, in which case nothing happens.
-bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
+bool RestorePermissionInfo(const base::FilePath& path,
+                           void* info, size_t length) {
   if (!info || !length)
     return false;
 
@@ -112,7 +113,7 @@ bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
 
 }  // namespace
 
-bool DieFileDie(const FilePath& file, bool recurse) {
+bool DieFileDie(const base::FilePath& file, bool recurse) {
   // It turns out that to not induce flakiness a long timeout is needed.
   const int kIterations = 25;
   const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(10) /
@@ -132,7 +133,7 @@ bool DieFileDie(const FilePath& file, bool recurse) {
   return false;
 }
 
-bool EvictFileFromSystemCache(const FilePath& file) {
+bool EvictFileFromSystemCache(const base::FilePath& file) {
   // Request exclusive access to the file and overwrite it with no buffering.
   base::win::ScopedHandle file_handle(
       CreateFile(file.value().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL,
@@ -217,8 +218,8 @@ bool EvictFileFromSystemCache(const FilePath& file) {
 
 // Like CopyFileNoCache but recursively copies all files and subdirectories
 // in the given input directory to the output directory.
-bool CopyRecursiveDirNoCache(const FilePath& source_dir,
-                             const FilePath& dest_dir) {
+bool CopyRecursiveDirNoCache(const base::FilePath& source_dir,
+                             const base::FilePath& dest_dir) {
   // Try to create the directory if it doesn't already exist.
   if (!CreateDirectory(dest_dir)) {
     if (GetLastError() != ERROR_ALREADY_EXISTS)
@@ -227,7 +228,7 @@ bool CopyRecursiveDirNoCache(const FilePath& source_dir,
 
   std::vector<std::wstring> files_copied;
 
-  FilePath src(source_dir.AppendASCII("*"));
+  base::FilePath src(source_dir.AppendASCII("*"));
 
   WIN32_FIND_DATA fd;
   HANDLE fh = FindFirstFile(src.value().c_str(), &fd);
@@ -239,8 +240,8 @@ bool CopyRecursiveDirNoCache(const FilePath& source_dir,
     if (cur_file == L"." || cur_file == L"..")
       continue;  // Skip these special entries.
 
-    FilePath cur_source_path = source_dir.Append(cur_file);
-    FilePath cur_dest_path = dest_dir.Append(cur_file);
+    base::FilePath cur_source_path = source_dir.Append(cur_file);
+    base::FilePath cur_dest_path = dest_dir.Append(cur_file);
 
     if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
       // Recursively copy a subdirectory. We stripped "." and ".." already.
@@ -270,7 +271,7 @@ bool CopyRecursiveDirNoCache(const FilePath& source_dir,
 
 // Checks if the volume supports Alternate Data Streams. This is required for
 // the Zone Identifier implementation.
-bool VolumeSupportsADS(const FilePath& path) {
+bool VolumeSupportsADS(const base::FilePath& path) {
   wchar_t drive[MAX_PATH] = {0};
   wcscpy_s(drive, MAX_PATH, path.value().c_str());
 
@@ -290,8 +291,8 @@ bool VolumeSupportsADS(const FilePath& path) {
 // Return whether the ZoneIdentifier is correctly set to "Internet" (3)
 // Only returns a valid result when called from same process as the
 // one that (was supposed to have) set the zone identifier.
-bool HasInternetZoneIdentifier(const FilePath& full_path) {
-  FilePath zone_path(full_path.value() + L":Zone.Identifier");
+bool HasInternetZoneIdentifier(const base::FilePath& full_path) {
+  base::FilePath zone_path(full_path.value() + L":Zone.Identifier");
   std::string zone_path_contents;
   if (!file_util::ReadFileToString(zone_path, &zone_path_contents))
     return false;
@@ -313,22 +314,22 @@ bool HasInternetZoneIdentifier(const FilePath& full_path) {
   }
 }
 
-std::wstring FilePathAsWString(const FilePath& path) {
+std::wstring FilePathAsWString(const base::FilePath& path) {
   return path.value();
 }
-FilePath WStringAsFilePath(const std::wstring& path) {
-  return FilePath(path);
+base::FilePath WStringAsFilePath(const std::wstring& path) {
+  return base::FilePath(path);
 }
 
-bool MakeFileUnreadable(const FilePath& path) {
+bool MakeFileUnreadable(const base::FilePath& path) {
   return DenyFilePermission(path, GENERIC_READ);
 }
 
-bool MakeFileUnwritable(const FilePath& path) {
+bool MakeFileUnwritable(const base::FilePath& path) {
   return DenyFilePermission(path, GENERIC_WRITE);
 }
 
-PermissionRestorer::PermissionRestorer(const FilePath& path)
+PermissionRestorer::PermissionRestorer(const base::FilePath& path)
     : path_(path), info_(NULL), length_(0) {
   info_ = GetPermissionInfo(path_, &length_);
   DCHECK(info_ != NULL);

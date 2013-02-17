@@ -63,18 +63,18 @@ bool IsDirectoryEmpty(FileSystemContext* context, const FileSystemURL& url) {
 
 FileSystemURL GetEntryURL(FileSystemContext* file_system_context,
                           const FileSystemURL& dir,
-                          const FilePath::StringType& name) {
+                          const base::FilePath::StringType& name) {
   return file_system_context->CreateCrackedFileSystemURL(
       dir.origin(),
       dir.mount_type(),
       dir.virtual_path().Append(name));
 }
 
-FilePath GetRelativeVirtualPath(const FileSystemURL& root,
-                                const FileSystemURL& url) {
+base::FilePath GetRelativeVirtualPath(const FileSystemURL& root,
+                                      const FileSystemURL& url) {
   if (root.virtual_path().empty())
     return url.virtual_path();
-  FilePath relative;
+  base::FilePath relative;
   const bool success = root.virtual_path().AppendRelativePath(
       url.virtual_path(), &relative);
   DCHECK(success);
@@ -162,14 +162,14 @@ class IsolatedFileUtilTest : public testing::Test {
     return file_system_context()->CreateCrackedFileSystemURL(
         GURL("http://example.com"),
         kFileSystemTypeTemporary,
-        FilePath().AppendASCII("dest").Append(path));
+        base::FilePath().AppendASCII("dest").Append(path));
   }
 
   void VerifyFilesHaveSameContent(const FileSystemURL& url1,
                                   const FileSystemURL& url2) {
     // Get the file info for url1.
     base::PlatformFileInfo info1;
-    FilePath platform_path1;
+    base::FilePath platform_path1;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               AsyncFileTestHelper::GetMetadata(
                   file_system_context(), url1, &info1, &platform_path1));

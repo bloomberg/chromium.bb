@@ -49,7 +49,7 @@ struct DictionaryFile {
   }
 
   // The desired location of the dictionary file, whether or not it exists.
-  FilePath path;
+  base::FilePath path;
 
   // The file descriptor/handle for the dictionary file.
   base::PlatformFile descriptor;
@@ -73,7 +73,7 @@ scoped_ptr<DictionaryFile> InitializeDictionaryLocation(
 
   // Initialize the BDICT path. Initialization should be in the FILE thread
   // because it checks if there is a "Dictionaries" directory and create it.
-  FilePath dict_dir;
+  base::FilePath dict_dir;
   PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
   file->path = chrome::spellcheck_common::GetVersionedFileName(
       language, dict_dir);
@@ -83,7 +83,7 @@ scoped_ptr<DictionaryFile> InitializeDictionaryLocation(
   // rather than downloading anew.
   base::FilePath user_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_dir);
-  FilePath fallback = user_dir.Append(file->path.BaseName());
+  base::FilePath fallback = user_dir.Append(file->path.BaseName());
   if (!file_util::PathExists(file->path) && file_util::PathExists(fallback))
     file->path = fallback;
 #endif
@@ -113,7 +113,8 @@ scoped_ptr<DictionaryFile> InitializeDictionaryLocation(
 
 // Saves |data| to file at |path|. Returns true on successful save, otherwise
 // returns false.
-bool SaveDictionaryData(scoped_ptr<std::string> data, const FilePath& path) {
+bool SaveDictionaryData(scoped_ptr<std::string> data,
+                        const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   size_t bytes_written =

@@ -11,6 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::FilePath;
+
 // To test Windows quoting behavior, we use a string that has some backslashes
 // and quotes.
 // Consider the command-line argument: q\"bs1\bs2\\bs3q\\\"
