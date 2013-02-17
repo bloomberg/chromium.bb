@@ -266,7 +266,8 @@ int32 PluginGetURLTest::Write(NPStream *stream, int32 offset, int32 len,
     case FETCHED_URL_STREAM_ID:
       {
         char read_buffer[STREAM_CHUNK];
-        int32 bytes = fread(read_buffer, 1, len, test_file_);
+        int32 bytes =
+            static_cast<int32>(fread(read_buffer, 1, len, test_file_));
         // Technically, fread could return fewer than len
         // bytes.  But this is not likely.
         if (bytes != len)

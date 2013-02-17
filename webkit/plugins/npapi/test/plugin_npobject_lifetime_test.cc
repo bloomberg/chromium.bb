@@ -39,8 +39,8 @@ NPError NPObjectLifetimeTest::SetWindow(NPWindow* pNPWindow) {
 }
 
 void CALLBACK NPObjectLifetimeTest::TimerProc(
-    HWND window, UINT message, UINT timer_id,
-    unsigned long elapsed_milli_seconds) {
+    HWND window, UINT message, UINT_PTR timer_id,
+    DWORD elapsed_milli_seconds) {
 
   NPObjectLifetimeTest* this_instance =
       reinterpret_cast<NPObjectLifetimeTest*>
@@ -135,14 +135,14 @@ NPError NPObjectDeletePluginInNPN_Evaluate::SetWindow(NPWindow* np_window) {
   // http://b/issue?id=1134683.
   if (!timer_id_) {
     timer_id_ = SetTimer(window_handle, kNPObjectLifetimeTimer,
-                        kNPObjectLifetimeTimerElapse, TimerProc);
+                         kNPObjectLifetimeTimerElapse, TimerProc);
   }
   return NPERR_NO_ERROR;
 }
 
 void CALLBACK NPObjectDeletePluginInNPN_Evaluate::TimerProc(
-    HWND window, UINT message, UINT timer_id,
-    unsigned long elapsed_milli_seconds) {
+    HWND window, UINT message, UINT_PTR timer_id,
+    DWORD elapsed_milli_seconds) {
 
   KillTimer(window, g_npn_evaluate_test_instance_->timer_id_);
   g_npn_evaluate_test_instance_->timer_id_ = 0;

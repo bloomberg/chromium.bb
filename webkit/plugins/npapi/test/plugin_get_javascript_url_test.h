@@ -32,8 +32,8 @@ class ExecuteGetJavascriptUrlTest : public PluginTest {
 
  private:
 #if defined(OS_WIN)
-  static void CALLBACK TimerProc(HWND window, UINT message, UINT timer_id,
-                                 unsigned long elapsed_time);
+  static void CALLBACK TimerProc(HWND window, UINT message, UINT_PTR timer_id,
+                                 DWORD elapsed_time);
 #endif
   bool test_started_;
   // This flag is set to true in the context of the NPN_Evaluate call.

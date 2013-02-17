@@ -31,8 +31,8 @@ class NPObjectLifetimeTest : public PluginTest {
   NPObject* other_plugin_instance_object_;
 
 #if defined(OS_WIN)
-  static void CALLBACK TimerProc(HWND window, UINT message, UINT timer_id,
-                                 unsigned long elapsed_milli_seconds);
+  static void CALLBACK TimerProc(HWND window, UINT message, UINT_PTR timer_id,
+                                 DWORD elapsed_milli_seconds);
   UINT_PTR timer_id_;
 #endif
   DISALLOW_IMPLICIT_CONSTRUCTORS(NPObjectLifetimeTest);
@@ -69,8 +69,8 @@ class NPObjectDeletePluginInNPN_Evaluate : public PluginTest {
  protected:
   NPObject* plugin_instance_object_;
 #if defined(OS_WIN)
-  static void CALLBACK TimerProc(HWND window, UINT message, UINT timer_id,
-                                 unsigned long elapsed_milli_seconds);
+  static void CALLBACK TimerProc(HWND window, UINT message, UINT_PTR timer_id,
+                                 DWORD elapsed_milli_seconds);
   UINT_PTR timer_id_;
 #endif
 

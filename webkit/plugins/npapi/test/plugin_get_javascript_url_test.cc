@@ -66,7 +66,7 @@ NPError ExecuteGetJavascriptUrlTest::SetWindow(NPWindow* pNPWindow) {
 
 #ifdef OS_WIN
 void CALLBACK ExecuteGetJavascriptUrlTest::TimerProc(
-    HWND window, UINT message, UINT timer_id, unsigned long elapsed_time) {
+    HWND window, UINT message, UINT_PTR timer_id, DWORD elapsed_time) {
   ExecuteGetJavascriptUrlTest* this_instance =
       reinterpret_cast<ExecuteGetJavascriptUrlTest*>
           (::GetProp(window, L"Plugin_Instance"));
