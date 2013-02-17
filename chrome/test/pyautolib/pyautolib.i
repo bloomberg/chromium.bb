@@ -81,6 +81,7 @@ class GURL {
 };
 
 // FilePath
+namespace base {
 %feature("docstring",
          "Represent a file path. Call value() to get the string.") FilePath;
 class FilePath {
@@ -97,6 +98,7 @@ class FilePath {
   FilePath();
   explicit FilePath(const StringType& path);
 };
+}  // namespace base
 
 class PyUITestSuiteBase {
  public:
@@ -106,10 +108,10 @@ class PyUITestSuiteBase {
 
   %feature("docstring", "Initialize from the path to browser dir.")
       InitializeWithPath;
-  void InitializeWithPath(const FilePath& browser_dir);
+  void InitializeWithPath(const base::FilePath& browser_dir);
   %feature("docstring", "Set chrome source root path, used in some tests")
       SetCrSourceRoot;
-  void SetCrSourceRoot(const FilePath& path);
+  void SetCrSourceRoot(const base::FilePath& path);
 };
 
 class PyUITestBase {
@@ -118,7 +120,7 @@ class PyUITestBase {
 
   %feature("docstring", "Initialize the entire setup. Should be called "
            "before launching the browser. For internal use.") Initialize;
-  void Initialize(const FilePath& browser_dir);
+  void Initialize(const base::FilePath& browser_dir);
 
   %feature("docstring", "Appends a command-line switch (with associated value "
            "if given) to the list of switches to be passed to the browser "
@@ -162,7 +164,7 @@ class PyUITestBase {
   void set_clear_profile(bool clear_profile);
 
   %feature("docstring", "Get the path to profile directory.") user_data_dir;
-  FilePath user_data_dir() const;
+  base::FilePath user_data_dir() const;
 
   // Meta-method
   %feature("docstring", "Send a sync JSON request to Chrome.  "
@@ -196,11 +198,12 @@ class TestServer {
   };
 
   // Initialize a TestServer listening on the specified host (IP or hostname).
-  TestServer(Type type, const std::string& host, const FilePath& document_root);
+  TestServer(Type type, const std::string& host,
+             const base::FilePath& document_root);
   // Initialize a TestServer with a specific set of SSLOptions.
   TestServer(Type type,
              const SSLOptions& ssl_options,
-             const FilePath& document_root);
+             const base::FilePath& document_root);
 
   %feature("docstring", "Start TestServer over an ephemeral port") Start;
   bool Start();
@@ -209,7 +212,7 @@ class TestServer {
   bool Stop();
 
   %feature("docstring", "Get FilePath to the document root") document_root;
-  const FilePath& document_root() const;
+  const base::FilePath& document_root() const;
 
   std::string GetScheme() const;
 

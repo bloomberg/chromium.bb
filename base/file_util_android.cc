@@ -9,7 +9,7 @@
 
 namespace file_util {
 
-bool GetShmemTempDir(FilePath* path, bool executable) {
+bool GetShmemTempDir(base::FilePath* path, bool executable) {
   return PathService::Get(base::DIR_CACHE, path);
 }
 

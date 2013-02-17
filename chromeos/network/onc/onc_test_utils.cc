@@ -24,7 +24,7 @@ const char kNetworkComponentDirectory[] = "network";
 }  // namespace
 
 std::string ReadTestData(const std::string& filename) {
-  FilePath path;
+  base::FilePath path;
   if (!chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory,
                                              filename,
                                              &path)) {
@@ -40,7 +40,7 @@ std::string ReadTestData(const std::string& filename) {
 scoped_ptr<base::DictionaryValue> ReadTestDictionary(
     const std::string& filename) {
   base::DictionaryValue* dict = NULL;
-  FilePath path;
+  base::FilePath path;
   if (!chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory,
                                              filename,
                                              &path)) {

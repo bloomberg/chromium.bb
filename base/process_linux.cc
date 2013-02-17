@@ -38,12 +38,12 @@ struct CGroups {
   // all background renderers. This allows us to limit the impact of background
   // renderers on foreground ones to a greater level than simple renicing.
   bool enabled;
-  FilePath foreground_file;
-  FilePath background_file;
+  base::FilePath foreground_file;
+  base::FilePath background_file;
 
   CGroups() {
-    foreground_file = FilePath(StringPrintf(kControlPath, kForeground));
-    background_file = FilePath(StringPrintf(kControlPath, kBackground));
+    foreground_file = base::FilePath(StringPrintf(kControlPath, kForeground));
+    background_file = base::FilePath(StringPrintf(kControlPath, kBackground));
     file_util::FileSystemType foreground_type;
     file_util::FileSystemType background_type;
     enabled =
@@ -69,7 +69,7 @@ bool Process::IsProcessBackgrounded() const {
   if (cgroups.Get().enabled) {
     std::string proc;
     if (file_util::ReadFileToString(
-        FilePath(StringPrintf(kProcPath, process_)),
+        base::FilePath(StringPrintf(kProcPath, process_)),
         &proc)) {
       std::vector<std::string> proc_parts;
       base::SplitString(proc, ':', &proc_parts);
@@ -90,7 +90,7 @@ bool Process::SetProcessBackgrounded(bool background) {
 #if defined(OS_CHROMEOS)
   if (cgroups.Get().enabled) {
     std::string pid = StringPrintf("%d", process_);
-    const FilePath file =
+    const base::FilePath file =
         background ?
             cgroups.Get().background_file : cgroups.Get().foreground_file;
     return file_util::WriteFile(file, pid.c_str(), pid.size()) > 0;

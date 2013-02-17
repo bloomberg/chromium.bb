@@ -96,10 +96,11 @@ static const struct normalize_name_encoding_test_cases {
 
 TEST_F(FileUtilICUTest, NormalizeFileNameEncoding) {
   for (size_t i = 0; i < arraysize(kNormalizeFileNameEncodingTestCases); i++) {
-    FilePath path(kNormalizeFileNameEncodingTestCases[i].original_path);
+    base::FilePath path(kNormalizeFileNameEncodingTestCases[i].original_path);
     file_util::NormalizeFileNameEncoding(&path);
-    EXPECT_EQ(FilePath(kNormalizeFileNameEncodingTestCases[i].normalized_path),
-              path);
+    EXPECT_EQ(
+        base::FilePath(kNormalizeFileNameEncodingTestCases[i].normalized_path),
+        path);
   }
 }
 

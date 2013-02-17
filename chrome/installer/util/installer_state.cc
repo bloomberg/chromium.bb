@@ -346,7 +346,7 @@ void InstallerState::set_package_type(PackageType type) {
 
 // Returns the Chrome binaries directory for multi-install or |dist|'s directory
 // otherwise.
-FilePath InstallerState::GetDefaultProductInstallPath(
+base::FilePath InstallerState::GetDefaultProductInstallPath(
     BrowserDistribution* dist) const {
   DCHECK(dist);
   DCHECK(package_type_ != UNKNOWN_PACKAGE_TYPE);
@@ -597,7 +597,8 @@ bool InstallerState::IsChromeFrameRunning(
   return in_use;
 }
 
-FilePath InstallerState::GetInstallerDirectory(const Version& version) const {
+base::FilePath InstallerState::GetInstallerDirectory(
+    const Version& version) const {
   return target_path().Append(ASCIIToWide(version.GetString()))
       .Append(kInstallerDir);
 }

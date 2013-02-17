@@ -25,7 +25,7 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfoForCurrentModule() {
 
 // static
 FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
-    const FilePath& file_path) {
+    const base::FilePath& file_path) {
   NSString* path = base::SysUTF8ToNSString(file_path.value());
   NSBundle* bundle = [NSBundle bundleWithPath:path];
   return new FileVersionInfoMac(bundle);

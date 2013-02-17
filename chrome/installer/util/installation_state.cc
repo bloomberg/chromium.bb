@@ -143,7 +143,7 @@ bool ProductState::Initialize(bool system_install,
   return version_.get() != NULL;
 }
 
-FilePath ProductState::GetSetupPath() const {
+base::FilePath ProductState::GetSetupPath() const {
   return uninstall_command_.GetProgram();
 }
 

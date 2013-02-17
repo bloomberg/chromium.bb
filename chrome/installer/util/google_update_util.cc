@@ -43,7 +43,7 @@ bool IsGoogleUpdatePresent(bool system_install) {
 
 // Returns GoogleUpdateSetup.exe's executable path at specified level.
 // or an empty path if none is found.
-FilePath GetGoogleUpdateSetupExe(bool system_install) {
+base::FilePath GetGoogleUpdateSetupExe(bool system_install) {
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   RegKey update_key;
 

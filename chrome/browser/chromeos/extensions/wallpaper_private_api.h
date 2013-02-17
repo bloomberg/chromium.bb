@@ -148,7 +148,7 @@ class WallpaperPrivateSetCustomWallpaperFunction
 
   // Generates thumbnail of custom wallpaper. A simple STRETCH is used for
   // generating thunbail.
-  void GenerateThumbnail(const FilePath& thumbnail_path,
+  void GenerateThumbnail(const base::FilePath& thumbnail_path,
                          scoped_ptr<gfx::ImageSkia> image);
 
   // Thumbnail is ready. Calls api function javascript callback.
@@ -224,7 +224,7 @@ class WallpaperPrivateGetThumbnailFunction : public AsyncExtensionFunction {
   void FileLoaded(const std::string& data);
 
   // Gets thumbnail from |path|. If |path| does not exist, call FileNotLoaded().
-  void Get(const FilePath& path);
+  void Get(const base::FilePath& path);
 
   // Sequence token associated with wallpaper operations. Shared with
   // WallpaperManager.

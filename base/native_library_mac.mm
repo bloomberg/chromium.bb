@@ -16,7 +16,7 @@
 namespace base {
 
 // static
-NativeLibrary LoadNativeLibrary(const FilePath& library_path,
+NativeLibrary LoadNativeLibrary(const base::FilePath& library_path,
                                 std::string* error) {
   // dlopen() etc. open the file off disk.
   if (library_path.Extension() == "dylib" ||

@@ -16,9 +16,9 @@
 
 namespace {
 
-FilePath GetChromeInstallBasePath(bool system,
-                                  BrowserDistribution* distribution,
-                                  const wchar_t* sub_path) {
+base::FilePath GetChromeInstallBasePath(bool system,
+                                        BrowserDistribution* distribution,
+                                        const wchar_t* sub_path) {
   base::FilePath install_path;
   if (system) {
     PathService::Get(base::DIR_PROGRAM_FILES, &install_path);
@@ -38,7 +38,8 @@ FilePath GetChromeInstallBasePath(bool system,
 
 namespace installer {
 
-FilePath GetChromeInstallPath(bool system_install, BrowserDistribution* dist) {
+base::FilePath GetChromeInstallPath(bool system_install,
+                                    BrowserDistribution* dist) {
   return GetChromeInstallBasePath(system_install, dist, kInstallBinaryDir);
 }
 

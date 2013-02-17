@@ -83,7 +83,7 @@ void PrintHelp() {
 }
 
 scoped_ptr<base::DictionaryValue> ReadDictionary(std::string filename) {
-  FilePath path(filename);
+  base::FilePath path(filename);
   JSONFileValueSerializer serializer(path);
   serializer.set_allow_trailing_comma(true);
 

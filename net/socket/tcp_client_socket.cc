@@ -17,7 +17,7 @@ namespace {
 // kernel support. Additionally, this checks system configuration to ensure that
 // it's enabled.
 bool SystemSupportsTCPFastOpen() {
-  static const FilePath::CharType kTCPFastOpenProcFilePath[] =
+  static const base::FilePath::CharType kTCPFastOpenProcFilePath[] =
       "/proc/sys/net/ipv4/tcp_fastopen";
   std::string system_enabled_tcp_fastopen;
   if (!file_util::ReadFileToString(
