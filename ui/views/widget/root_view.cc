@@ -544,8 +544,10 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
       if (!mouse_move_handler_->notify_enter_exit_on_child() ||
           !mouse_move_handler_->Contains(old_handler)) {
         MouseEnterExitEvent entered(event, ui::ET_MOUSE_ENTERED);
+        entered.ConvertLocationToTarget(static_cast<View*>(this),
+                                        mouse_move_handler_);
         DispatchEventToTarget(mouse_move_handler_, &entered);
-        NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_ENTERED, v,
+        NotifyEnterExitOfDescendant(entered, ui::ET_MOUSE_ENTERED, v,
             old_handler);
       }
     }
