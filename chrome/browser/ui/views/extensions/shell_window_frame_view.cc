@@ -235,13 +235,13 @@ void ShellWindowFrameView::Layout() {
   if (window_->frameless())
     return;
   gfx::Size close_size = close_button_->GetPreferredSize();
-  int closeButtonOffsetY =
-      (kCaptionHeight - close_size.height()) / 2;
-  const int kButtonSpacing = 9;
+  const int kButtonOffsetY = 0;
+  const int kButtonSpacing = 1;
+  const int kRightMargin = 3;
 
   close_button_->SetBounds(
-      width() - kButtonSpacing - close_size.width(),
-      closeButtonOffsetY,
+      width() - kRightMargin - close_size.width(),
+      kButtonOffsetY,
       close_size.width(),
       close_size.height());
 
@@ -252,13 +252,13 @@ void ShellWindowFrameView::Layout() {
   gfx::Size maximize_size = maximize_button_->GetPreferredSize();
   maximize_button_->SetBounds(
       close_button_->x() - kButtonSpacing - maximize_size.width(),
-      closeButtonOffsetY,
+      kButtonOffsetY,
       maximize_size.width(),
       maximize_size.height());
   gfx::Size restore_size = restore_button_->GetPreferredSize();
   restore_button_->SetBounds(
       close_button_->x() - kButtonSpacing - restore_size.width(),
-      closeButtonOffsetY,
+      kButtonOffsetY,
       restore_size.width(),
       restore_size.height());
 
@@ -273,7 +273,7 @@ void ShellWindowFrameView::Layout() {
   gfx::Size minimize_size = minimize_button_->GetPreferredSize();
   minimize_button_->SetBounds(
       maximize_button_->x() - kButtonSpacing - minimize_size.width(),
-      closeButtonOffsetY,
+      kButtonOffsetY,
       minimize_size.width(),
       minimize_size.height());
 }
@@ -281,6 +281,16 @@ void ShellWindowFrameView::Layout() {
 void ShellWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   if (window_->frameless())
     return;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (ShouldPaintAsActive()) {
+    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+        rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE).ToImageSkia());
+  } else {
+    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+        rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_U).ToImageSkia());
+  }
+
   // TODO(jeremya): different look for inactive?
   SkPaint paint;
   paint.setAntiAlias(false);

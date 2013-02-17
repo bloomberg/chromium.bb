@@ -56,6 +56,7 @@
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE" file="win/app_window_close.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_H" file="win/app_window_close_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_P" file="win/app_window_close_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_U" file="win/app_window_close_unfocused.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE" file="win/app_window_restore.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_H" file="win/app_window_restore_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_P" file="win/app_window_restore_active.png" />
