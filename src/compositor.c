@@ -2306,6 +2306,7 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	    seat->seat.keyboard->focus->resource.client == client) {
 		wl_keyboard_set_focus(seat->seat.keyboard,
 				      seat->seat.keyboard->focus);
+		wl_data_device_set_keyboard_focus(&seat->seat);
 	}
 }
 
