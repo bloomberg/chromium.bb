@@ -1218,6 +1218,14 @@ InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewp
             potentiallyScrollingLayerImpl = scrollLayerImpl;
     }
 
+    // When hiding top controls is enabled and the controls are hidden or
+    // overlaying the content, force scrolls to be enabled on the root layer to
+    // allow bringing the top controls back into view.
+    if (!potentiallyScrollingLayerImpl && m_topControlsManager &&
+            m_topControlsManager->content_top_offset() != m_settings.topControlsHeight) {
+        potentiallyScrollingLayerImpl = rootScrollLayer();
+    }
+
     if (potentiallyScrollingLayerImpl) {
         m_activeTree->set_currently_scrolling_layer(potentiallyScrollingLayerImpl);
         m_shouldBubbleScrolls = (type != NonBubblingGesture);

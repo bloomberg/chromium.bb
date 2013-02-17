@@ -37,6 +37,7 @@
 #include "cc/texture_layer_impl.h"
 #include "cc/tile_draw_quad.h"
 #include "cc/tiled_layer_impl.h"
+#include "cc/top_controls_manager.h"
 #include "cc/video_layer_impl.h"
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1111,6 +1112,38 @@ TEST_P(LayerTreeHostImplTest, scrollRootIgnored)
     EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollIgnored);
     EXPECT_FALSE(m_didRequestRedraw);
     EXPECT_FALSE(m_didRequestCommit);
+}
+
+TEST_P(LayerTreeHostImplTest, scrollNonScrollableRootWithTopControls)
+{
+    LayerTreeSettings settings;
+    settings.calculateTopControlsPosition = true;
+    settings.topControlsHeight = 50;
+
+    m_hostImpl = LayerTreeHostImpl::create(settings, this, &m_proxy);
+    m_hostImpl->initializeRenderer(createOutputSurface());
+    m_hostImpl->setViewportSize(gfx::Size(10, 10), gfx::Size(10, 10));
+
+    gfx::Size layerSize(5, 5);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(m_hostImpl->activeTree(), 1);
+    root->setScrollable(true);
+    root->setMaxScrollOffset(gfx::Vector2d(layerSize.width(), layerSize.height()));
+    root->setBounds(layerSize);
+    root->setContentBounds(layerSize);
+    root->setPosition(gfx::PointF(0, 0));
+    root->setAnchorPoint(gfx::PointF(0, 0));
+    m_hostImpl->activeTree()->SetRootLayer(root.Pass());
+    m_hostImpl->activeTree()->FindRootScrollLayer();
+    initializeRendererAndDrawFrame();
+
+    EXPECT_EQ(InputHandlerClient::ScrollIgnored, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
+
+    m_hostImpl->topControlsManager()->ScrollBegin();
+    m_hostImpl->topControlsManager()->ScrollBy(gfx::Vector2dF(0, 50));
+    m_hostImpl->topControlsManager()->ScrollEnd();
+    EXPECT_EQ(m_hostImpl->topControlsManager()->content_top_offset(), 0.f);
+
+    EXPECT_EQ(InputHandlerClient::ScrollStarted, m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Gesture));
 }
 
 TEST_P(LayerTreeHostImplTest, scrollNonCompositedRoot)
