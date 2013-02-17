@@ -188,7 +188,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  // TODO(hashimoto): Remove this method. crosbug.com/28500
+  // TODO(hashimoto): Remove this method. crbug.com/141006
   virtual bool CallTpmIsEnabledAndBlock(bool* enabled) OVERRIDE {
     // We don't use INITIALIZE_METHOD_CALL here because the C++ method name is
     // different from the D-Bus method name (TpmIsEnabled).
@@ -209,13 +209,28 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmIsOwned(bool* owned) OVERRIDE {
+  virtual void TpmIsOwned(const BoolDBusMethodCallback& callback) OVERRIDE {
+    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsOwned);
+    CallBoolMethod(&method_call, callback);
+  }
+
+  // CryptohomeClient override.
+  // TODO(hashimoto): Remove this method. crbug.com/141012
+  virtual bool CallTpmIsOwnedAndBlock(bool* owned) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsOwned);
     return CallBoolMethodAndBlock(&method_call, owned);
   }
 
   // CryptohomeClient override.
-  virtual bool TpmIsBeingOwned(bool* owning) OVERRIDE {
+  virtual void TpmIsBeingOwned(const BoolDBusMethodCallback& callback)
+      OVERRIDE {
+    INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsBeingOwned);
+    CallBoolMethod(&method_call, callback);
+  }
+
+  // CryptohomeClient override.
+  // TODO(hashimoto): Remove this method. crbug.com/141011
+  virtual bool CallTpmIsBeingOwnedAndBlock(bool* owning) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeTpmIsBeingOwned);
     return CallBoolMethodAndBlock(&method_call, owning);
   }
@@ -228,8 +243,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
     CallVoidMethod(&method_call, callback);
   }
 
+  // CryptohomeClient overrides.
+  virtual void TpmClearStoredPassword(const VoidDBusMethodCallback& callback)
+      OVERRIDE {
+    INITIALIZE_METHOD_CALL(method_call,
+                           cryptohome::kCryptohomeTpmClearStoredPassword);
+    CallVoidMethod(&method_call, callback);
+  }
+
   // CryptohomeClient override.
-  virtual bool TpmClearStoredPassword() OVERRIDE {
+  // TODO(hashimoto): Remove this method. crbug.com/141010
+  virtual bool CallTpmClearStoredPasswordAndBlock() OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call,
                            cryptohome::kCryptohomeTpmClearStoredPassword);
     scoped_ptr<dbus::Response> response(
@@ -675,13 +699,26 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmIsOwned(bool* owned) OVERRIDE {
+  virtual void TpmIsOwned(const BoolDBusMethodCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+  }
+
+  // CryptohomeClient override.
+  virtual bool CallTpmIsOwnedAndBlock(bool* owned) OVERRIDE {
     *owned = true;
     return true;
   }
 
   // CryptohomeClient override.
-  virtual bool TpmIsBeingOwned(bool* owning) OVERRIDE {
+  virtual void TpmIsBeingOwned(const BoolDBusMethodCallback& callback)
+      OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+  }
+
+  // CryptohomeClient override.
+  virtual bool CallTpmIsBeingOwnedAndBlock(bool* owning) OVERRIDE {
     *owning = true;
     return true;
   }
@@ -694,7 +731,14 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool TpmClearStoredPassword() OVERRIDE { return true; }
+  virtual void TpmClearStoredPassword(const VoidDBusMethodCallback& callback)
+      OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+  }
+
+  // CryptohomeClient override.
+  virtual bool CallTpmClearStoredPasswordAndBlock() OVERRIDE { return true; }
 
   // CryptohomeClient override.
   virtual void Pkcs11IsTpmTokenReady(

@@ -48,11 +48,15 @@ class MockCryptohomeClient : public CryptohomeClient {
   MOCK_METHOD1(TpmIsEnabled, void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(CallTpmIsEnabledAndBlock, bool(bool* enabled));
   MOCK_METHOD1(TpmGetPassword, void(const StringDBusMethodCallback& callback));
-  MOCK_METHOD1(TpmIsOwned, bool(bool* owned));
-  MOCK_METHOD1(TpmIsBeingOwned, bool(bool* owning));
+  MOCK_METHOD1(TpmIsOwned, void(const BoolDBusMethodCallback& callback));
+  MOCK_METHOD1(CallTpmIsOwnedAndBlock, bool(bool* owned));
+  MOCK_METHOD1(TpmIsBeingOwned, void(const BoolDBusMethodCallback& callback));
+  MOCK_METHOD1(CallTpmIsBeingOwnedAndBlock, bool(bool* owning));
   MOCK_METHOD1(TpmCanAttemptOwnership,
                void(const VoidDBusMethodCallback& callback));
-  MOCK_METHOD0(TpmClearStoredPassword, bool());
+  MOCK_METHOD1(TpmClearStoredPassword,
+               void(const VoidDBusMethodCallback& callback));
+  MOCK_METHOD0(CallTpmClearStoredPasswordAndBlock, bool());
   MOCK_METHOD1(Pkcs11IsTpmTokenReady,
                void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(Pkcs11GetTpmTokenInfo,
