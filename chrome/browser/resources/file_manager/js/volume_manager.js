@@ -504,6 +504,7 @@ VolumeManager.prototype.validateError_ = function(error) {
  * @private
  */
 VolumeManager.prototype.validateMountPath_ = function(mountPath) {
-  if (!/^\/(((archive|removable)\/[^\/]+)|drive|Downloads)$/.test(mountPath))
+  if (!/^\/(((archive|removable)\/[^\/]+)|drive|drive_offline|Downloads)$/.
+      test(mountPath))
     throw new Error('Invalid mount path: ', mountPath);
 };

@@ -705,7 +705,8 @@ FileTransferController.prototype = {
    * @this {FileTransferController}
    */
   get isOnDrive() {
-    return this.directoryModel_.getCurrentRootType() === RootType.DRIVE;
+    return this.directoryModel_.getCurrentRootType() === RootType.DRIVE ||
+           this.directoryModel_.getCurrentRootType() === RootType.DRIVE_OFFLINE;
   },
 
   /**

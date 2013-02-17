@@ -66,6 +66,19 @@ DirectoryModel.fakeDriveEntry_ = {
 };
 
 /**
+ * Fake entry representing a psuedo directory, which contains Drive files
+ * available offline. This entry works as a trigger to start a search using
+ * DirectoryContentsDriveOffline.
+ * DirectoryModel is responsible to start the search when the UI tries to open
+ * this fake entry (e.g. changeDirectory()).
+ * @private
+ */
+DirectoryModel.fakeDriveOfflineEntry_ = {
+  fullPath: RootDirectory.DRIVE_OFFLINE,
+  isDirectory: true
+};
+
+/**
  * DirectoryModel extends cr.EventTarget.
  */
 DirectoryModel.prototype.__proto__ = cr.EventTarget.prototype;
@@ -105,7 +118,8 @@ DirectoryModel.prototype.setDriveEnabled = function(enabled) {
     return;
   this.driveEnabled_ = enabled;
   this.updateRoots_();
-  if (!enabled && this.getCurrentRootType() == RootType.DRIVE)
+  if (!enabled && (this.getCurrentRootType() == RootType.DRIVE ||
+                   this.getCurrentRootType() == RootType.DRIVE_OFFLINE))
     this.changeDirectory(this.getDefaultDirectory());
 };
 
@@ -170,7 +184,9 @@ DirectoryModel.prototype.setDriveOffline = function(offline) {
 };
 
 /**
- * @return {boolean} True if current directory is read only.
+ * TODO(haruki): This actually checks the current root. Fix the method name and
+ * related code.
+ * @return {boolean} True if the root for the current directory is read only.
  */
 DirectoryModel.prototype.isReadOnly = function() {
   return this.isPathReadOnly(this.getCurrentRootPath());
@@ -204,6 +220,8 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
     case RootType.DOWNLOADS:
       return false;
     case RootType.DRIVE:
+      // TODO(haruki): Maybe add DRIVE_OFFLINE as well to allow renaming in the
+      // offline tab.
       return this.isDriveOffline();
     default:
       return true;
@@ -230,6 +248,17 @@ DirectoryModel.prototype.setFilterHidden = function(value) {
  */
 DirectoryModel.prototype.getCurrentDirEntry = function() {
   return this.currentDirContents_.getDirectoryEntry();
+};
+
+/**
+ * @return {string} URL of the current directory. or null if unavailable.
+ */
+DirectoryModel.prototype.getCurrentDirectoryURL = function() {
+  var entry = this.currentDirContents_.getDirectoryEntry();
+  if (entry == DirectoryModel.fakeDriveOfflineEntry_) {
+    return util.makeFilesystemUrl(entry.fullPath);
+  }
+  return entry.toURL();
 };
 
 /**
@@ -695,6 +724,12 @@ DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
         errorCallback({ code: FileError.NOT_FOUND_ERR });
       return;
     }
+  } else if (PathUtil.getRootType(path) == RootType.DRIVE_OFFLINE) {
+    if (path == DirectoryModel.fakeDriveOfflineEntry_.fullPath)
+      successCallback(DirectoryModel.fakeDriveOfflineEntry_);
+    else  // Subdirectory.
+      errorCallback({ code: FileError.NOT_FOUND_ERR });
+    return;
   }
 
   if (path == '/') {
@@ -789,15 +824,23 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  */
 DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
                                                           opt_callback) {
-  if (dirEntry == DirectoryModel.fakeDriveEntry_ &&
+  var needsDrive = dirEntry == DirectoryModel.fakeDriveEntry_ ||
+                   dirEntry == DirectoryModel.fakeDriveOfflineEntry_;
+  if (needsDrive &&
       this.volumeManager_.getDriveStatus() ==
           VolumeManager.DriveStatus.UNMOUNTED) {
     this.volumeManager_.mountDrive(function() {}, function() {});
   }
 
-  this.clearSearch_();
   var previous = this.currentDirContents_.getDirectoryEntry();
-  this.changeDirectoryEntrySilent_(dirEntry, opt_callback);
+  if (dirEntry == DirectoryModel.fakeDriveOfflineEntry_) {
+    // This fake root is representing a special search.
+    this.getDriveOfflineFiles('');
+  } else {
+    // Ordinary directory change.
+    this.clearSearch_();
+    this.changeDirectoryEntrySilent_(dirEntry, opt_callback);
+  }
 
   var e = new cr.Event('directory-changed');
   e.previousDirEntry = previous;
@@ -1052,6 +1095,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
     } else {
       groups.drive = fake;
     }
+    // TODO(haruki): Add DirectoryModel.fakeDriveOfflineEntry_ to show the tab.
   } else {
     groups.drive = [];
   }
@@ -1123,24 +1167,27 @@ DirectoryModel.prototype.onMountChanged_ = function() {
  * @private
  */
 DirectoryModel.prototype.onDriveStatusChanged_ = function() {
-  if (this.getCurrentRootType() != RootType.DRIVE)
-     return;
-
   var mounted = this.isDriveMounted();
-  if (this.getCurrentDirEntry() == DirectoryModel.fakeDriveEntry_) {
-    if (mounted) {
-      // Change fake entry to real one and rescan.
-      var onGotDirectory = function(entry) {
-        this.updateRootEntry_(entry);
-        if (this.getCurrentDirEntry() == DirectoryModel.fakeDriveEntry_) {
-          this.changeDirectoryEntrySilent_(entry);
-        }
-      };
-      this.root_.getDirectory(RootDirectory.DRIVE, {},
-                              onGotDirectory.bind(this));
+  if (mounted) {
+    // Change fake entry to real one and rescan.
+    var onGotDirectory = function(entry) {
+      this.updateRootEntry_(entry);
+      var currentDirEntry = this.getCurrentDirEntry();
+      if (currentDirEntry == DirectoryModel.fakeDriveEntry_) {
+        this.changeDirectoryEntrySilent_(entry);
+      } else if (currentDirEntry == DirectoryModel.fakeDriveOfflineEntry_) {
+        // Need to update the results for offline available files.
+        this.getDriveOfflineFiles('');
+      }
     }
-  } else if (!mounted) {
-    // Current entry unmounted. Replace with fake one.
+    this.root_.getDirectory(RootDirectory.DRIVE, {},
+                            onGotDirectory.bind(this));
+  } else {
+    var rootType = this.getCurrentRootType();
+    if (rootType != RootType.DRIVE && rootType != RootType.DRIVE_OFFLINE)
+      return;
+
+    // Current entry unmounted. Replace with fake drive one.
     this.updateRootEntry_(DirectoryModel.fakeDriveEntry_);
     if (this.getCurrentDirPath() == DirectoryModel.fakeDriveEntry_.fullPath) {
       // Replace silently and rescan.
@@ -1165,6 +1212,25 @@ DirectoryModel.prototype.updateRootEntry_ = function(entry) {
     }
   }
   console.error('Cannot find root: ' + entry.fullPath);
+};
+
+/**
+ * Finds the first entry in the roots list model which has the given root type.
+ *
+ * @param {RootType} rootType RootType of the desired root..
+ * @return {DirectoryEntry} Root entry for with the given root type.
+ * @private
+ */
+DirectoryModel.prototype.findRootEntryByType_ = function(rootType) {
+  var root;
+  for (var index = 0; index < this.rootsList_.length; index++) {
+    if (PathUtil.getRootType(this.rootsList_.item(index).fullPath) ==
+        rootType) {
+      root = this.rootsList_.item(index);
+      break;
+    }
+  }
+  return root;
 };
 
 /**
@@ -1213,6 +1279,11 @@ DirectoryModel.isMountableRoot = function(path) {
 DirectoryModel.prototype.search = function(query,
                                            onSearchRescan,
                                            onClearSearch) {
+  if (this.getCurrentRootType() === RootType.DRIVE_OFFLINE) {
+    this.getDriveOfflineFiles(query);
+    return;
+  }
+
   query = query.trimLeft();
 
   this.clearSearch_();
@@ -1249,6 +1320,31 @@ DirectoryModel.prototype.search = function(query,
   this.clearAndScan_(newDirContents);
 };
 
+
+/**
+ * Performs search and displays results for the Drive files available offline.
+ * @param {string} query Query that will be searched for.
+ */
+DirectoryModel.prototype.getDriveOfflineFiles = function(query) {
+  this.clearSearch_();
+
+  this.onSearchCompleted_ = null;
+  this.onClearSearch_ = null;
+
+  var driveRoot = this.findRootEntryByType_(RootType.DRIVE);
+  if (!driveRoot || driveRoot == DirectoryModel.fakeDriveEntry_) {
+    // Drive root not available or not ready. onDriveStatusChanged_() handles
+    // rescan if necessary.
+    driveRoot = null;
+  }
+
+  var newDirContents = new DirectoryContentsDriveOffline(
+      this.currentFileListContext_,
+      driveRoot,
+      DirectoryModel.fakeDriveOfflineEntry_,
+      query);
+  this.clearAndScan_(newDirContents);
+};
 
 /**
  * In case the search was active, remove listeners and send notifications on

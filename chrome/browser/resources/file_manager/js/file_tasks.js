@@ -436,6 +436,9 @@ FileTasks.prototype.openGallery = function(urls) {
     galleryFrame.contentWindow.ImageUtil.metrics = metrics;
     window.galleryTestAPI = galleryFrame.contentWindow.galleryTestAPI;
 
+    // TODO(haruki): isOnReadonlyDirectory() only checks the permission for the
+    // root. We should check more granular permission to know whether the file
+    // is writable or not.
     var readonly = fm.isOnReadonlyDirectory();
     var currentDir = fm.directoryModel_.getCurrentDirEntry();
     var downloadsDir = fm.directoryModel_.getRootsList().item(0);

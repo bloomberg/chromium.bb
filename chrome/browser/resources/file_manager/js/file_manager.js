@@ -1549,7 +1549,21 @@ DialogType.isModal = function(type) {
     this.currentList_.restoreLeadItem(leadListItem);
   };
 
+  /**
+   * @return {boolean} True if the current directory content is from Google
+   * Drive.
+   */
   FileManager.prototype.isOnDrive = function() {
+    return this.directoryModel_.getCurrentRootType() === RootType.DRIVE ||
+           this.directoryModel_.getCurrentRootType() === RootType.DRIVE_OFFLINE;
+  };
+
+  /**
+   * @return {boolean} True if the "Available offline" column should be shown in
+   * the table layout.
+   * @private
+   */
+  FileManager.prototype.shouldShowOfflineColumn = function() {
     return this.directoryModel_.getCurrentRootType() === RootType.DRIVE;
   };
 
@@ -1802,10 +1816,11 @@ DialogType.isModal = function(type) {
 
   /**
    * Return URL of the current directory or null.
+   * @return {string} URL representing the current directory.
    */
   FileManager.prototype.getCurrentDirectoryURL = function() {
     return this.directoryModel_ &&
-        this.directoryModel_.getCurrentDirEntry().toURL();
+        this.directoryModel_.getCurrentDirectoryURL();
   };
 
   FileManager.prototype.deleteSelection = function() {
@@ -1992,7 +2007,7 @@ DialogType.isModal = function(type) {
     this.selectionHandler_.onFileSelectionChanged();
     this.updateSearchBoxOnDirChange_();
     if (this.dialogType == DialogType.FULL_PAGE)
-      this.table_.showOfflineColumn(this.isOnDrive());
+      this.table_.showOfflineColumn(this.shouldShowOfflineColumn());
 
     util.updateAppState(event.initial, this.getCurrentDirectory());
 
@@ -2150,6 +2165,9 @@ DialogType.isModal = function(type) {
       }.bind(this));
     };
 
+    // TODO(haruki): this.getCurrentDirectoryURL() might not return the actual
+    // parent if the directory content is a search result. Fix it to do proper
+    // validation.
     this.validateFileName_(this.getCurrentDirectoryURL(),
                            newName,
                            validationDone.bind(this));

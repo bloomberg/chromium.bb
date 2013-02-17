@@ -634,3 +634,152 @@ DirectoryContentsLocalSearch.prototype.scanDirectory_ = function(entry) {
  */
 DirectoryContentsLocalSearch.prototype.readNextChunk = function() {
 };
+
+/**
+ * DirectoryContents to list Drive files available offline. The search is done
+ * by traversing the directory tree under "My Drive" and filtering them using
+ * the availableOffline property in 'drive' metadata.
+ * @param {FileListContext} context File list context.
+ * @param {DirectoryEntry} driveDirEntry Directory for actual Drive. Traversal
+ *     starts from this Entry. Should be null if underlying Drive is not
+ *     available.
+ * @param {DirectoryEntry} fakeOfflineDirEntry Fake directory representing
+ *     the set of offline files. This serves as a top directory for this search.
+ * @param {string} query Search query to filter the files.
+ * @constructor
+ * @extends {DirectoryContents}
+ */
+function DirectoryContentsDriveOffline(context,
+                                       driveDirEntry,
+                                       fakeOfflineDirEntry,
+                                       query) {
+  DirectoryContents.call(this, context);
+  this.driveDirEntry_ = driveDirEntry;
+  this.fakeOfflineDirEntry_ = fakeOfflineDirEntry;
+  this.query_ = query;
+}
+
+/**
+ * Extends DirectoryContents.
+ */
+DirectoryContentsDriveOffline.prototype.__proto__ = DirectoryContents.prototype;
+
+/**
+ * Creates a copy of the object, but without scan started.
+ * @return {DirectoryContents} Object copy.
+ */
+DirectoryContentsDriveOffline.prototype.clone = function() {
+  return new DirectoryContentsDriveOffline(
+      this.context_, this.directoryEntry_, this.fakeOfflineDirEntry_,
+      this.query_);
+};
+
+/**
+ * @return {boolean} True if this is search results (yes).
+ */
+DirectoryContentsDriveOffline.prototype.isSearch = function() {
+  return true;
+};
+
+/**
+ * @return {DirectoryEntry} An Entry representing the current contents
+ *     (i.e. fake root for "Offline").
+ */
+DirectoryContentsDriveOffline.prototype.getDirectoryEntry = function() {
+  return this.fakeOfflineDirEntry_;
+};
+
+/**
+ * @return {DirectoryEntry} DirectoryEntry for the directory that was current
+ *     before the search.
+ */
+DirectoryContentsDriveOffline.prototype.getLastNonSearchDirectoryEntry =
+    function() {
+  return this.driveDirEntry_;
+};
+
+/**
+ * @return {string} The path.
+ */
+DirectoryContentsDriveOffline.prototype.getPath = function() {
+  return this.fakeOfflineDirEntry_.fullPath;
+};
+
+/**
+ * Starts directory scan.
+ */
+DirectoryContentsDriveOffline.prototype.scan = function() {
+  this.pendingScans_ = 0;
+  if (this.driveDirEntry_) {
+    this.scanDirectory_(this.driveDirEntry_);
+  } else {
+    // Show nothing when Drive is not available.
+    this.lastChunkReceived();
+  }
+};
+
+/**
+ * Scans a directory.
+ * @param {DirectoryEntry} entry A directory to scan.
+ * @private
+ */
+DirectoryContentsDriveOffline.prototype.scanDirectory_ = function(entry) {
+  this.pendingScans_++;
+  var reader = entry.createReader();
+  var candidates = [];
+
+  var getNextChunk = function() {
+    reader.readEntries(onChunkComplete, this.onError.bind(this));
+  }.bind(this);
+
+  var onChunkComplete = function(entries) {
+    if (this.scanCancelled_)
+      return;
+
+    if (entries.length === 0) {
+      if (candidates.length > 0) {
+        // Retrieve 'drive' metadata and check if the file is available offline.
+        this.context_.metadataCache.get(
+            candidates, 'drive',
+            function(properties) {
+              var results = [];
+              for (var i = 0; i < properties.length; i++) {
+                if (properties[i].availableOffline)
+                  results.push(candidates[i]);
+              }
+              if (results.length > 0)
+                this.onNewEntries(results);
+            }.bind(this));
+      }
+
+      this.pendingScans_--;
+      if (this.pendingScans_ === 0)
+        this.lastChunkReceived();
+      return;
+    }
+
+    for (var i = 0; i < entries.length; i++) {
+      var resultEntry = entries[i];
+
+      // Will check metadata for files with names matching the query.
+      // When the query is empty, check all the files.
+      if (resultEntry.isFile &&
+          (!this.query_ ||
+           resultEntry.name.toLowerCase().indexOf(this.query_) != -1)) {
+        candidates.push(entries[i]);
+      } else if (resultEntry.isDirectory) {
+        this.scanDirectory_(entries[i]);
+      }
+    }
+
+    getNextChunk();
+  }.bind(this);
+
+  getNextChunk();
+};
+
+/**
+ * Everything is done in scanDirectory_().
+ */
+DirectoryContentsDriveOffline.prototype.readNextChunk = function() {
+};

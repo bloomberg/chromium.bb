@@ -153,6 +153,12 @@
     url('../images/files/volumes/2x/drive.png') 2x);
 }
 
+*[volume-type-icon='drive_offline'] {
+  background-image: -webkit-image-set(
+    url('../images/files/volumes/drive_offline.png') 1x,
+    url('../images/files/volumes/2x/drive_offline.png') 2x);
+}
+
 *[volume-type-icon='removable'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_usb.png') 1x,
