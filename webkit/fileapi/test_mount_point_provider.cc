@@ -101,15 +101,6 @@ base::FilePath TestMountPointProvider::GetFileSystemRootPathOnFileThread(
   return success ? base_path_ : base::FilePath();
 }
 
-bool TestMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
-  return url.type() == fileapi::kFileSystemTypeTest;
-}
-
-bool TestMountPointProvider::IsRestrictedFileName(
-    const base::FilePath& filename) const {
-  return false;
-}
-
 FileSystemFileUtil* TestMountPointProvider::GetFileUtil(FileSystemType type) {
   DCHECK(local_file_util_.get());
   return local_file_util_->sync_file_util();

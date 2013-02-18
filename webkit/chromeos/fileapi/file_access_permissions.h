@@ -24,7 +24,7 @@ class FileAccessPermissions {
                              const base::FilePath& path);
   // Checks id |extension_id| has permission to access to |path|.
   bool HasAccessPermission(const std::string& extension_id,
-                           const base::FilePath& path);
+                           const base::FilePath& path) const;
   // Revokes all file permissions for |extension_id|.
   void RevokePermissions(const std::string& extension_id);
 
@@ -32,7 +32,7 @@ class FileAccessPermissions {
   typedef std::set<base::FilePath> PathSet;
   typedef std::map<std::string, PathSet> PathAccessMap;
 
-  base::Lock lock_;  // Synchronize all access to path_map_.
+  mutable base::Lock lock_;  // Synchronize all access to path_map_.
   PathAccessMap path_map_;
 };
 

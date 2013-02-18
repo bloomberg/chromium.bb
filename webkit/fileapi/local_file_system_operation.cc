@@ -835,13 +835,7 @@ void LocalFileSystemOperation::DidCreateSnapshotFile(
 base::PlatformFileError LocalFileSystemOperation::SetUp(
     const FileSystemURL& url,
     SetUpMode mode) {
-  if (!url.is_valid())
-    return base::PLATFORM_FILE_ERROR_INVALID_URL;
-
-  // Restricted file system is read-only.
-  if (url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal &&
-      mode != SETUP_FOR_READ)
-    return base::PLATFORM_FILE_ERROR_SECURITY;
+  DCHECK(url.is_valid());
 
   async_file_util_ = file_system_context()->GetAsyncFileUtil(url.type());
   if (!async_file_util_)
@@ -849,37 +843,18 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
 
   // If this operation is created for recursive sub-operations (i.e.
   // operation context is overridden from another operation) we skip
-  // some duplicated security checks.
+  // some duplicated notifications.
   if (overriding_operation_context_)
     return base::PLATFORM_FILE_OK;
 
-  if (!file_system_context()->GetMountPointProvider(
-          url.type())->IsAccessAllowed(url))
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-
+  // Notify / set up observers.
   if (mode == SETUP_FOR_READ) {
     operation_context()->access_observers()->Notify(
         &FileAccessObserver::OnAccess, MakeTuple(url));
-    return base::PLATFORM_FILE_OK;
-  }
-
-  DCHECK(mode == SETUP_FOR_WRITE || mode == SETUP_FOR_CREATE);
-
-  scoped_update_notifiers_.push_back(new ScopedUpdateNotifier(
-      operation_context(), url));
-
-  // Any write access is disallowed on the root path.
-  if (url.path().value().length() == 0 ||
-      url.path().DirName().value() == url.path().value())
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-
-  if (mode == SETUP_FOR_CREATE) {
-    FileSystemMountPointProvider* provider = file_system_context()->
-        GetMountPointProvider(url.type());
-
-    // Check if the cracked file name looks good to create.
-    if (provider->IsRestrictedFileName(VirtualPath::BaseName(url.path())))
-      return base::PLATFORM_FILE_ERROR_SECURITY;
+  } else {
+    DCHECK(mode == SETUP_FOR_WRITE || mode == SETUP_FOR_CREATE);
+    scoped_update_notifiers_.push_back(new ScopedUpdateNotifier(
+        operation_context(), url));
   }
 
   return base::PLATFORM_FILE_OK;

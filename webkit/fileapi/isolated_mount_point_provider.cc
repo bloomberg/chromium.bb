@@ -79,17 +79,6 @@ base::FilePath IsolatedMountPointProvider::GetFileSystemRootPathOnFileThread(
   return base::FilePath();
 }
 
-bool IsolatedMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
-  return true;
-}
-
-bool IsolatedMountPointProvider::IsRestrictedFileName(
-    const base::FilePath& filename) const {
-  // TODO(kinuko): We need to check platform-specific restricted file names
-  // before we actually start allowing file creation in isolated file systems.
-  return false;
-}
-
 FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
     FileSystemType type) {
   switch (type) {
@@ -136,7 +125,7 @@ FilePermissionPolicy IsolatedMountPointProvider::GetPermissionPolicy(
     const FileSystemURL& url, int permissions) const {
   if (url.type() == kFileSystemTypeDragged && url.path().empty()) {
     // The root directory of the dragged filesystem must be always read-only.
-    if (permissions != kReadFilePermissions)
+    if (permissions & ~fileapi::kReadFilePermissions)
       return FILE_PERMISSION_ALWAYS_DENY;
   }
   // Access to isolated file systems should be checked using per-filesystem

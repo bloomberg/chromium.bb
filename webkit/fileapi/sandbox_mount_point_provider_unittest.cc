@@ -15,10 +15,21 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 
 namespace fileapi {
+
+namespace {
+
+FileSystemURL CreateFileSystemURL(const char* path) {
+  const GURL kOrigin("http://foo/");
+  return FileSystemURL::CreateForTest(
+      kOrigin, kFileSystemTypeTemporary, base::FilePath::FromUTF8Unsafe(path));
+}
+
+}  // namespace
 
 class SandboxMountPointProviderOriginEnumeratorTest : public testing::Test {
  public:
@@ -102,6 +113,89 @@ TEST_F(SandboxMountPointProviderOriginEnumeratorTest, EnumerateOrigins) {
 
   EXPECT_EQ(temporary_size, temporary_actual_size);
   EXPECT_EQ(persistent_size, persistent_actual_size);
+}
+
+TEST(SandboxMountPointProviderTest, AccessPermissions) {
+  MessageLoop message_loop_;
+  SandboxMountPointProvider provider(
+      NULL, base::MessageLoopProxy::current(), base::FilePath(),
+      CreateAllowFileAccessOptions());
+
+  // Any access should be allowed in sandbox directory.
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL("foo"),
+                                         kReadFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL("foo"),
+                                         kWriteFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL("foo"),
+                                         kCreateFilePermissions));
+
+  // Access to a path with parent references ('..') should be disallowed.
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
+            provider.GetPermissionPolicy(CreateFileSystemURL("a/../b"),
+                                         kReadFilePermissions));
+
+  // Access from non-allowed scheme should be disallowed.
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
+            provider.GetPermissionPolicy(
+                FileSystemURL::CreateForTest(
+                    GURL("unknown://bar"), kFileSystemTypeTemporary,
+                    base::FilePath::FromUTF8Unsafe("foo")),
+                kReadFilePermissions));
+
+  // Access for non-sandbox type should be disallowed.
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
+            provider.GetPermissionPolicy(
+                FileSystemURL::CreateForTest(
+                    GURL("http://foo/"), kFileSystemTypeTest,
+                    base::FilePath::FromUTF8Unsafe("foo")),
+                kReadFilePermissions));
+
+  // Write access to the root folder should be restricted.
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
+            provider.GetPermissionPolicy(CreateFileSystemURL(""),
+                                         kWriteFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
+            provider.GetPermissionPolicy(CreateFileSystemURL("/"),
+                                         kWriteFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
+            provider.GetPermissionPolicy(CreateFileSystemURL("/"),
+                                         kCreateFilePermissions));
+
+  // Create access with restricted name should be disallowed.
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
+            provider.GetPermissionPolicy(CreateFileSystemURL(".."),
+                                         kCreateFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_DENY,
+            provider.GetPermissionPolicy(CreateFileSystemURL("."),
+                                         kCreateFilePermissions));
+
+  // Similar but safe cases.
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL(" ."),
+                                         kCreateFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL(". "),
+                                         kCreateFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL(" .."),
+                                         kCreateFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL(".. "),
+                                         kCreateFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL("b."),
+                                         kCreateFilePermissions));
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL(".b"),
+                                         kCreateFilePermissions));
+
+  // A path that looks like a drive letter.
+  EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,
+            provider.GetPermissionPolicy(CreateFileSystemURL("c:"),
+                                         kCreateFilePermissions));
 }
 
 }  // namespace fileapi

@@ -225,34 +225,6 @@ SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
   return GetBaseDirectoryForOriginAndType(url.origin(), url.type(), create);
 }
 
-bool SandboxMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
-  if (!CanHandleType(url.type()))
-    return false;
-  // We essentially depend on quota to do our access controls, so here
-  // we only check if the requested scheme is allowed or not.
-  return IsAllowedScheme(url.origin());
-}
-
-bool SandboxMountPointProvider::IsRestrictedFileName(const base::FilePath& filename)
-    const {
-  if (filename.value().empty())
-    return false;
-
-  for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
-    // Exact match.
-    if (filename.value() == kRestrictedNames[i])
-      return true;
-  }
-
-  for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
-    if (filename.value().find(kRestrictedChars[i]) !=
-        base::FilePath::StringType::npos)
-      return true;
-  }
-
-  return false;
-}
-
 FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil(
     FileSystemType type) {
   DCHECK(sandbox_file_util_.get());
@@ -266,10 +238,33 @@ AsyncFileUtil* SandboxMountPointProvider::GetAsyncFileUtil(
 
 FilePermissionPolicy SandboxMountPointProvider::GetPermissionPolicy(
     const FileSystemURL& url, int permissions) const {
+  if (!CanHandleType(url.type()) || !IsAllowedScheme(url.origin()))
+    return FILE_PERMISSION_ALWAYS_DENY;
+
+  if (url.path().ReferencesParent())
+    return FILE_PERMISSION_ALWAYS_DENY;
+
+  // Any write access is disallowed on the root path.
+  if ((url.path().empty() || VirtualPath::DirName(url.path()) == url.path())
+      && (permissions & ~kReadFilePermissions))
+    return FILE_PERMISSION_ALWAYS_DENY;
+
+  if ((permissions & kCreateFilePermissions) == kCreateFilePermissions) {
+    base::FilePath filename = VirtualPath::BaseName(url.path());
+    // See if the name is allowed to create.
+    for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
+      if (filename.value() == kRestrictedNames[i])
+        return FILE_PERMISSION_ALWAYS_DENY;
+    }
+    for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
+      if (filename.value().find(kRestrictedChars[i]) !=
+          base::FilePath::StringType::npos)
+        return FILE_PERMISSION_ALWAYS_DENY;
+    }
+  }
+
   // Access to the sandbox directory (and only to the directory) should be
   // always allowed.
-  CHECK(CanHandleType(url.type()));
-  CHECK(!url.path().ReferencesParent());
   return FILE_PERMISSION_ALWAYS_ALLOW;
 }
 

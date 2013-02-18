@@ -33,8 +33,6 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   virtual base::FilePath GetFileSystemRootPathOnFileThread(
       const FileSystemURL& url,
       bool create) OVERRIDE;
-  virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
-  virtual bool IsRestrictedFileName(const base::FilePath& filename) const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePermissionPolicy GetPermissionPolicy(

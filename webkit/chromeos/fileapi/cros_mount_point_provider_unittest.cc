@@ -10,6 +10,7 @@
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/external_mount_points.h"
+#include "webkit/fileapi/file_permission_policy.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -89,6 +90,8 @@ TEST(CrosMountPointProviderTest, GetRootDirectories) {
 }
 
 TEST(CrosMountPointProviderTest, AccessPermissions) {
+  const int kPermission = fileapi::kReadFilePermissions;
+
   url_util::AddStandardScheme("chrome-extension");
 
   scoped_refptr<quota::MockSpecialStoragePolicy> storage_policy =
@@ -121,64 +124,106 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
       base::FilePath(FPL("/usr/share/oem"))));
 
   // Provider specific mount point access.
-  EXPECT_FALSE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_ALWAYS_DENY,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "removable/foo", mount_points.get()),
+          kPermission));
 
   provider.GrantFileAccessToExtension(extension,
-                                      base::FilePath(FPL("removable/foo")));
-  EXPECT_TRUE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
-  EXPECT_FALSE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "removable/foo1", mount_points.get())));
+                                      FilePath(FPL("removable/foo")));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "removable/foo", mount_points.get()),
+          kPermission));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_ALWAYS_DENY,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "removable/foo1", mount_points.get()),
+          kPermission));
 
   // System mount point access.
-  EXPECT_FALSE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "system/foo", system_mount_points.get())));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_ALWAYS_DENY,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "system/foo",
+                              system_mount_points.get()),
+          kPermission));
 
-  provider.GrantFileAccessToExtension(extension, base::FilePath(FPL("system/foo")));
-  EXPECT_TRUE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "system/foo", system_mount_points.get())));
-  EXPECT_FALSE(provider.IsAccessAllowed(CreateFileSystemURL(
-      extension, "system/foo1", system_mount_points.get())));
+  provider.GrantFileAccessToExtension(extension, FilePath(FPL("system/foo")));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "system/foo",
+                              system_mount_points.get()),
+          kPermission));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_ALWAYS_DENY,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "system/foo1",
+                              system_mount_points.get()),
+          kPermission));
 
   // oem is restricted file system.
   provider.GrantFileAccessToExtension(extension, base::FilePath(FPL("oem/foo")));
   // The extension should not be able to access the file even if
   // GrantFileAccessToExtension was called.
-  EXPECT_FALSE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "oem/foo", mount_points.get())));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_ALWAYS_DENY,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "oem/foo", mount_points.get()),
+          kPermission));
 
   provider.GrantFullAccessToExtension(extension);
   // The extension should be able to access restricted file system after it was
   // granted full access.
-  EXPECT_TRUE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "oem/foo", mount_points.get())));
-  // The extension which was granted full access  should be able to access any
-  // path on curent file systems.
-  EXPECT_TRUE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "removable/foo1", mount_points.get())));
-  EXPECT_TRUE(provider.IsAccessAllowed(CreateFileSystemURL(
-      extension, "system/foo1", system_mount_points.get())));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "oem/foo", mount_points.get()),
+          kPermission));
+  // The extension which was granted full access should be able to access any
+  // path on current file systems.
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "removable/foo1", mount_points.get()),
+          kPermission));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "system/foo1",
+                              system_mount_points.get()),
+          kPermission));
 
   // The extension cannot access new mount points.
   // TODO(tbarzic): This should probably be changed.
   ASSERT_TRUE(mount_points->RegisterFileSystem(
       "test",
       fileapi::kFileSystemTypeNativeLocal,
-      base::FilePath(FPL("/foo/test"))));
-  EXPECT_FALSE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "test_/foo", mount_points.get())));
+      FilePath(FPL("/foo/test"))));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_ALWAYS_DENY,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "test_/foo", mount_points.get()),
+          kPermission));
 
   provider.RevokeAccessForExtension(extension);
-  EXPECT_FALSE(provider.IsAccessAllowed(
-      CreateFileSystemURL(extension, "removable/foo", mount_points.get())));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_ALWAYS_DENY,
+      provider.GetPermissionPolicy(
+          CreateFileSystemURL(extension, "removable/foo", mount_points.get()),
+          kPermission));
 
   fileapi::FileSystemURL internal_url = FileSystemURL::CreateForTest(
       GURL("chrome://foo"),
       fileapi::kFileSystemTypeExternal,
       base::FilePath(FPL("removable/")));
   // Internal WebUI should have full access.
-  EXPECT_TRUE(provider.IsAccessAllowed(internal_url));
+  EXPECT_EQ(
+      fileapi::FILE_PERMISSION_ALWAYS_ALLOW,
+      provider.GetPermissionPolicy(internal_url, kPermission));
 }
 
 TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
@@ -249,4 +294,3 @@ TEST(CrosMountPointProvider, GetVirtualPathConflictWithSystemPoints) {
 }
 
 }  // namespace
-

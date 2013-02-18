@@ -30,7 +30,7 @@ void FileAccessPermissions::GrantAccessPermission(
 }
 
 bool FileAccessPermissions::HasAccessPermission(
-    const std::string& extension_id, const base::FilePath& path) {
+    const std::string& extension_id, const base::FilePath& path) const {
   base::AutoLock locker(lock_);
   PathAccessMap::const_iterator path_map_iter = path_map_.find(extension_id);
   if (path_map_iter == path_map_.end())

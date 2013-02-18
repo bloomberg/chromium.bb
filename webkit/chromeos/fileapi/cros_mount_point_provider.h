@@ -59,8 +59,6 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
   virtual base::FilePath GetFileSystemRootPathOnFileThread(
       const fileapi::FileSystemURL& url,
       bool create) OVERRIDE;
-  virtual bool IsAccessAllowed(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual bool IsRestrictedFileName(const base::FilePath& filename) const OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
   virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
@@ -89,11 +87,14 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
       const DeleteFileSystemCallback& callback) OVERRIDE;
 
   // fileapi::ExternalFileSystemMountPointProvider overrides.
+  virtual bool IsAccessAllowed(const fileapi::FileSystemURL& url)
+      const OVERRIDE;
   virtual std::vector<base::FilePath> GetRootDirectories() const OVERRIDE;
   virtual void GrantFullAccessToExtension(
       const std::string& extension_id) OVERRIDE;
   virtual void GrantFileAccessToExtension(
-      const std::string& extension_id, const base::FilePath& virtual_path) OVERRIDE;
+      const std::string& extension_id,
+      const base::FilePath& virtual_path) OVERRIDE;
   virtual void RevokeAccessForExtension(
       const std::string& extension_id) OVERRIDE;
   virtual bool GetVirtualPath(const base::FilePath& filesystem_path,
