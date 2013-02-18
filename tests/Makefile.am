@@ -20,6 +20,10 @@ if HAVE_RADEON
 SUBDIRS += radeon
 endif
 
+if HAVE_EXYNOS
+SUBDIRS += exynos
+endif
+
 if HAVE_LIBUDEV
 
 check_LTLIBRARIES = libdrmtest.la

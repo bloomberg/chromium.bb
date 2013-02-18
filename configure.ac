@@ -376,6 +376,7 @@ AC_CONFIG_FILES([
 	tests/kmstest/Makefile
 	tests/radeon/Makefile
 	tests/vbltest/Makefile
+	tests/exynos/Makefile
 	include/Makefile
 	include/drm/Makefile
 	man/Makefile
