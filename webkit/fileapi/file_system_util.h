@@ -36,11 +36,12 @@ class WEBKIT_STORAGE_EXPORT VirtualPath {
   // character.
   static base::FilePath BaseName(const base::FilePath& virtual_path);
 
-  // Likewise, use this instead of base::FilePath::GetComponents when operating on
-  // virtual paths.
-  // Note that this assumes very clean input, with no leading slash, and it will
-  // not evaluate '.' or '..' components.
-  static void GetComponents(const base::FilePath& path,
+  // Likewise, use this instead of base::FilePath::GetComponents when
+  // operating on virtual paths.
+  // Note that this assumes very clean input, with no leading slash, and
+  // it will not evaluate '..' components.
+  static void GetComponents(
+      const base::FilePath& path,
       std::vector<base::FilePath::StringType>* components);
 
   // Returns a path name ensuring that it begins with kRoot and all path
