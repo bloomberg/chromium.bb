@@ -227,6 +227,12 @@
                     '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
                   ],
                 }],
+                ['target_arch=="x64"', {
+                  'inputs!': [
+                    '<(PRODUCT_DIR)/nacl64.exe',
+                    '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
+                  ],
+                }],
               ],
               'inputs': [
                 '<(create_installer_archive_py_path)',
