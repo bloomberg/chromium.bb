@@ -183,7 +183,7 @@ struct drm_sprite {
 	uint32_t formats[];
 };
 
-struct drm_seat {
+struct udev_seat {
 	struct weston_seat base;
 	struct wl_list devices_list;
 	struct udev_monitor *udev_monitor;
@@ -1935,7 +1935,7 @@ drm_restore(struct weston_compositor *ec)
 static const char default_seat[] = "seat0";
 
 static int
-device_added(struct udev_device *udev_device, struct drm_seat *master)
+device_added(struct udev_device *udev_device, struct udev_seat *master)
 {
 	struct weston_compositor *c;
 	struct evdev_device *device;
@@ -2002,9 +2002,8 @@ device_added(struct udev_device *udev_device, struct drm_seat *master)
 }
 
 static int
-evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
+udev_seat_add_devices(struct udev_seat *seat, struct udev *udev)
 {
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
 	struct udev_enumerate *e;
 	struct udev_list_entry *entry;
 	struct udev_device *device;
@@ -2051,7 +2050,7 @@ evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
 static int
 evdev_udev_handler(int fd, uint32_t mask, void *data)
 {
-	struct drm_seat *seat = data;
+	struct udev_seat *seat = data;
 	struct udev_device *udev_device;
 	struct evdev_device *device, *next;
 	const char *action;
@@ -2089,35 +2088,34 @@ out:
 }
 
 static int
-evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base)
+udev_seat_enable_udev_monitor(struct udev_seat *seat, struct udev *udev)
 {
-	struct drm_seat *master = (struct drm_seat *) seat_base;
 	struct wl_event_loop *loop;
-	struct weston_compositor *c = master->base.compositor;
+	struct weston_compositor *c = seat->base.compositor;
 	int fd;
 
-	master->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
-	if (!master->udev_monitor) {
+	seat->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
+	if (!seat->udev_monitor) {
 		weston_log("udev: failed to create the udev monitor\n");
 		return 0;
 	}
 
-	udev_monitor_filter_add_match_subsystem_devtype(master->udev_monitor,
+	udev_monitor_filter_add_match_subsystem_devtype(seat->udev_monitor,
 			"input", NULL);
 
-	if (udev_monitor_enable_receiving(master->udev_monitor)) {
+	if (udev_monitor_enable_receiving(seat->udev_monitor)) {
 		weston_log("udev: failed to bind the udev monitor\n");
-		udev_monitor_unref(master->udev_monitor);
+		udev_monitor_unref(seat->udev_monitor);
 		return 0;
 	}
 
 	loop = wl_display_get_event_loop(c->wl_display);
-	fd = udev_monitor_get_fd(master->udev_monitor);
-	master->udev_monitor_source =
+	fd = udev_monitor_get_fd(seat->udev_monitor);
+	seat->udev_monitor_source =
 		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
-				     evdev_udev_handler, master);
-	if (!master->udev_monitor_source) {
-		udev_monitor_unref(master->udev_monitor);
+				     evdev_udev_handler, seat);
+	if (!seat->udev_monitor_source) {
+		udev_monitor_unref(seat->udev_monitor);
 		return 0;
 	}
 
@@ -2125,10 +2123,8 @@ evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base)
 }
 
 static void
-evdev_disable_udev_monitor(struct weston_seat *seat_base)
+udev_seat_disable_udev_monitor(struct udev_seat *seat)
 {
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
-
 	if (!seat->udev_monitor)
 		return;
 
@@ -2141,18 +2137,18 @@ evdev_disable_udev_monitor(struct weston_seat *seat_base)
 static void
 drm_led_update(struct weston_seat *seat_base, enum weston_led leds)
 {
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
+	struct udev_seat *seat = (struct udev_seat *) seat_base;
 	struct evdev_device *device;
 
 	wl_list_for_each(device, &seat->devices_list, link)
 		evdev_led_update(device, leds);
 }
 
-static struct drm_seat *
+static struct udev_seat *
 evdev_input_create(struct weston_compositor *c, struct udev *udev,
 		   const char *seat_id)
 {
-	struct drm_seat *seat;
+	struct udev_seat *seat;
 
 	seat = malloc(sizeof *seat);
 	if (seat == NULL)
@@ -2164,9 +2160,9 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 
 	wl_list_init(&seat->devices_list);
 	seat->seat_id = strdup(seat_id);
-	if (!evdev_enable_udev_monitor(udev, &seat->base))
+	if (!udev_seat_enable_udev_monitor(seat, udev))
 		goto err;
-	if (evdev_add_devices(udev, &seat->base) < 0)
+	if (udev_seat_add_devices(seat, udev) < 0)
 		goto err;
 
 	return seat;
@@ -2178,9 +2174,8 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 }
 
 static void
-evdev_remove_devices(struct weston_seat *seat_base)
+udev_seat_remove_devices(struct udev_seat *seat)
 {
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
 	struct evdev_device *device, *next;
 
 	wl_list_for_each_safe(device, next, &seat->devices_list, link)
@@ -2191,14 +2186,12 @@ evdev_remove_devices(struct weston_seat *seat_base)
 }
 
 static void
-evdev_input_destroy(struct weston_seat *seat_base)
+udev_seat_destroy(struct udev_seat *seat)
 {
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
+	udev_seat_remove_devices(seat);
+	udev_seat_disable_udev_monitor(seat);
 
-	evdev_remove_devices(seat_base);
-	evdev_disable_udev_monitor(&seat->base);
-
-	weston_seat_release(seat_base);
+	weston_seat_release(&seat->base);
 	free(seat->seat_id);
 	free(seat);
 }
@@ -2215,11 +2208,11 @@ static void
 drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
-	struct weston_seat *seat, *next;
+	struct udev_seat *seat, *next;
 	struct drm_configured_output *o, *n;
 
-	wl_list_for_each_safe(seat, next, &ec->seat_list, link)
-		evdev_input_destroy(seat);
+	wl_list_for_each_safe(seat, next, &ec->seat_list, base.link)
+		udev_seat_destroy(seat);
 	wl_list_for_each_safe(o, n, &configured_output_list, link)
 		drm_free_configured_output(o);
 
@@ -2268,7 +2261,7 @@ static void
 vt_func(struct weston_compositor *compositor, int event)
 {
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
-	struct weston_seat *seat;
+	struct udev_seat *seat;
 	struct drm_sprite *sprite;
 	struct drm_output *output;
 
@@ -2283,16 +2276,16 @@ vt_func(struct weston_compositor *compositor, int event)
 		compositor->state = ec->prev_state;
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
-		wl_list_for_each(seat, &compositor->seat_list, link) {
-			evdev_add_devices(ec->udev, seat);
-			evdev_enable_udev_monitor(ec->udev, seat);
+		wl_list_for_each(seat, &compositor->seat_list, base.link) {
+			udev_seat_add_devices(seat, ec->udev);
+			udev_seat_enable_udev_monitor(seat, ec->udev);
 		}
 		break;
 	case TTY_LEAVE_VT:
 		weston_log("leaving VT\n");
-		wl_list_for_each(seat, &compositor->seat_list, link) {
-			evdev_disable_udev_monitor(seat);
-			evdev_remove_devices(seat);
+		wl_list_for_each(seat, &compositor->seat_list, base.link) {
+			udev_seat_disable_udev_monitor(seat);
+			udev_seat_remove_devices(seat);
 		}
 
 		compositor->focus = 0;
@@ -2420,7 +2413,7 @@ drm_compositor_create(struct wl_display *display,
 	struct drm_compositor *ec;
 	struct udev_device *drm_device;
 	struct wl_event_loop *loop;
-	struct weston_seat *weston_seat, *next;
+	struct udev_seat *udev_seat, *next;
 	const char *path;
 	uint32_t key;
 
@@ -2502,7 +2495,7 @@ drm_compositor_create(struct wl_display *display,
 
 	path = NULL;
 
-	if (evdev_input_create(&ec->base, ec->udev, seat) == NULL) {
+	if (udev_seat_create(&ec->base, ec->udev, seat) == NULL) {
 		weston_log("failed to create input devices\n");
 		goto err_sprite;
 	}
@@ -2545,8 +2538,8 @@ err_udev_monitor:
 	udev_monitor_unref(ec->udev_monitor);
 err_drm_source:
 	wl_event_source_remove(ec->drm_source);
-	wl_list_for_each_safe(weston_seat, next, &ec->base.seat_list, link)
-		evdev_input_destroy(weston_seat);
+	wl_list_for_each_safe(udev_seat, next, &ec->base.seat_list, base.link)
+		udev_seat_destroy(udev_seat);
 err_sprite:
 	ec->base.renderer->destroy(&ec->base);
 	gbm_device_destroy(ec->gbm);
