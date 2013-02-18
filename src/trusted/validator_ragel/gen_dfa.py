@@ -380,10 +380,14 @@ class InstructionPrinter(object):
     if Attribute('norex') in instruction.attributes:
       return
 
-    if instruction.rex.w_set:
-      self._out.write('REXW_RXB\n')
+    if instruction.rex.w_matters:
+      if instruction.rex.w_set:
+        self._out.write('REXW_RXB\n')
+      else:
+        self._out.write('REX_RXB?\n')
     else:
-      self._out.write('REX_RXB?\n')
+      self._out.write('REX_WRXB?\n')
+
 
   def _PrintOpcode(self, instruction):
     """Print a machine for opcode."""
@@ -880,7 +884,23 @@ def SplitVYZ(bitness, instruction):
       v_present = True
 
   if not z_present and not y_present and not v_present:
-    return [instruction]
+    # Even when there are no operands to split by size, we usually want to
+    # allow spurious rexw bit.
+    # But we don't do that when instruction is split in def-file manually.
+    if (Attribute('norex') in instruction.attributes or
+        Attribute('norexw') in instruction.attributes or
+        instruction.rex.w_set):
+      return [instruction]
+
+    # When data16 prefix is present, rexw definitely matters (because rexw takes
+    # precedence over data16), so we don't mark it as irrelevant.
+    # TODO(shcherbina): remove this exception if
+    # https://code.google.com/p/nativeclient/issues/detail?id=3310 is fixed.
+    if 'data16' in instruction.required_prefixes:
+      return [instruction]
+
+    instr1.rex.w_matters = False
+    return [instr1]
 
   assert 'data16' not in instruction.required_prefixes
   instr1.required_prefixes.append('data16')
