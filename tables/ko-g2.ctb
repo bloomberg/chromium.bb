@@ -21,20 +21,20 @@
 
 
 # Globals:
-include ko.ctb Uncontracted Hangul, punctuation and symbols.
+include ko.cti Uncontracted Hangul, punctuation and symbols.
 
 
 # Common letter contractions:
 # Using "always" opcode in order for contraction to work correctly.
 # Otherwise letters shows grade 1 dot patterns.
-# This is because many Korean contractions are shorthand for Hangul characters (see ko.ctb).
+# This is because many Korean contractions are shorthand for Hangul characters (see ko.cti).
 
 # Special cases:
 # Since there are a number of rules in place about special char placement, had to put one of the special cases at the top.
 
 # Case 1: numbers followed by Korean characters:
 # Included case 1 before actual common char contractions to help with translations.
-# See ko.ctb for more info regarding this matter.
+# See ko.cti for more info regarding this matter.
 after digit always 나 0-14
 after digit always 낙 0-14-1
 after digit always 낚 0-14-1-1

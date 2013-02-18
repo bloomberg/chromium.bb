@@ -22,7 +22,7 @@
 
 # There are three files that are needed for displaying Korean chars:
 
-# ko.ctb, which contains punctuations, numbers and Unicode sign
+# ko.cti, which contains punctuations, numbers and Unicode sign
 # opcodes for Korean (Hangul) chars. This file also includes Korean
 # dot/char patterns which are not affected by grade 1 and grade 2
 # rules - that is, entries which are common to grade 1 and grade 2.
@@ -41,12 +41,12 @@
 # uncontracted and a number of multi-char ones which has shorthand dot
 # patterns.
 
-# As for the structure of the files: ko.ctb is the base table from
+# As for the structure of the files: ko.cti is the base table from
 # which ko-g1.ctb and ko-g2.ctb derives. Thus, unlike other tables,
 # ko-g2.ctb does not include ko-g1.ctb. This would help me extend the
 # table without major modifications - all I need to do is categorize
 # whether an entry is universal or grade-specific, then add the
-# entries in the appropriate file (if it is universal, then ko.ctb
+# entries in the appropriate file (if it is universal, then ko.cti
 # will be modified; if it is grade-specific, ko-g1 or ko-g2 will be
 # modified).
 
@@ -11802,7 +11802,7 @@ always 우애 134-36-1235
 #Case 2: Numbers followed by Korean chars:
 #There are seven conscenant dot patterns which may be confused with digits.
 #In this case, put dot 0 (space) before Korean characters.
-#In ko.ctb, dot patterns which does not change across grades are included.
+#In ko.cti, dot patterns which does not change across grades are included.
 #For grade 1 dot patterns, see ko1.ctb; for grade 2, see ko2.ctb.
 after digit always 내 0-14-1235
 after digit always 낵 0-14-1235-1

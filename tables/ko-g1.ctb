@@ -20,7 +20,7 @@
 # Foundation.  Please see the file COPYING for details.
 
 # Globals:
-include ko.ctb
+include ko.cti
 
 # Rules specific to grade 1:
 

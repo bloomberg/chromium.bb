@@ -138,7 +138,7 @@ table_files = \
 	kannada.cti \
 	kha.ctb \
 	kn.ctb \
-	ko.ctb \
+	ko.cti \
 	ko-g1.ctb \
 	ko-g2.ctb \
 	kok.ctb \
