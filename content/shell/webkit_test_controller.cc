@@ -140,6 +140,7 @@ void WebKitTestResultPrinter::AddMessageRaw(const std::string& message) {
 void WebKitTestResultPrinter::AddErrorMessage(const std::string& message) {
   if (state_ != DURING_TEST)
     return;
+  PrintTextHeader();
   *output_ << message << "\n";
   if (!capture_text_only_)
     *error_ << message << "\n";
