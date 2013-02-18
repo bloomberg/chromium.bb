@@ -709,6 +709,8 @@
               },
             },
           },
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         }],
       ],
     },
@@ -830,6 +832,8 @@
           'message': 'Generating sources for embedding js in chromedriver',
         },
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     # This is the new ChromeDriver based on DevTools.
     {
@@ -846,6 +850,8 @@
       'sources': [
         'test/chromedriver/chromedriver_shared_library.cc',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'chromedriver2_server_lib',
@@ -863,6 +869,8 @@
         'test/chromedriver/server/http_response.cc',
         'test/chromedriver/server/http_response.h',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'chromedriver2_server',
@@ -878,6 +886,9 @@
         '../third_party/mongoose/mongoose.h',
         'test/chromedriver/server/chromedriver_server.cc',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      # c4306 is because Mongoose casts -1 directly to a handle type.
+      'msvs_disabled_warnings': [ 4306, 4267, ],
     },
     {
       'target_name': 'chromedriver2_unittests',
@@ -946,6 +957,8 @@
         'test/chromedriver/test_util.cc',
         'test/chromedriver/test_util.h',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       # Executable that runs each browser test in a new process.
