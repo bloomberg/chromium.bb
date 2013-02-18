@@ -28,6 +28,7 @@ class ShellContentRendererClient : public ContentRendererClient {
   ShellContentRendererClient();
   virtual ~ShellContentRendererClient();
   virtual void RenderThreadStarted() OVERRIDE;
+  virtual void RenderViewCreated(RenderView* render_view) OVERRIDE;
   virtual bool OverrideCreatePlugin(
       RenderView* render_view,
       WebKit::WebFrame* frame,

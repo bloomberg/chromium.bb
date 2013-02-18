@@ -22,6 +22,7 @@
 using WebKit::WebFrame;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
+using WebTestRunner::WebTestDelegate;
 using WebTestRunner::WebTestProxyBase;
 
 namespace content {
@@ -46,6 +47,17 @@ void ShellContentRendererClient::RenderThreadStarted() {
 #endif
 }
 
+void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
+  WebKitTestRunner* test_runner = WebKitTestRunner::Get(render_view);
+  test_runner->Reset();
+  render_view->GetWebView()->setSpellCheckClient(
+      test_runner->proxy()->spellCheckClient());
+  WebTestDelegate* delegate =
+      ShellRenderProcessObserver::GetInstance()->test_delegate();
+  if (delegate == static_cast<WebTestDelegate*>(test_runner))
+    ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view);
+}
+
 bool ShellContentRendererClient::OverrideCreatePlugin(
     RenderView* render_view,
     WebFrame* frame,
@@ -65,16 +77,12 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
                                                      WebTestProxyBase* proxy) {
   WebKitTestRunner* test_runner = new WebKitTestRunner(render_view);
   test_runner->set_proxy(proxy);
-  render_view->GetWebView()->setSpellCheckClient(proxy->spellCheckClient());
-  if (!ShellRenderProcessObserver::GetInstance()->test_delegate()) {
-    ShellRenderProcessObserver::GetInstance()->SetMainWindow(render_view,
-                                                             test_runner,
-                                                             test_runner);
-  }
-  proxy->setDelegate(
-      ShellRenderProcessObserver::GetInstance()->test_delegate());
+  if (!ShellRenderProcessObserver::GetInstance()->test_delegate())
+    ShellRenderProcessObserver::GetInstance()->SetTestDelegate(test_runner);
   proxy->setInterfaces(
       ShellRenderProcessObserver::GetInstance()->test_interfaces());
+  test_runner->proxy()->setDelegate(
+      ShellRenderProcessObserver::GetInstance()->test_delegate());
 }
 
 }  // namespace content

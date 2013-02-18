@@ -811,6 +811,8 @@ class CONTENT_EXPORT RenderViewImpl
  protected:
   explicit RenderViewImpl(RenderViewImplParams* params);
 
+  void Initialize(RenderViewImplParams* params);
+
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderViewImpl();
 

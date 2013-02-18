@@ -32,9 +32,8 @@ class ShellRenderProcessObserver : public RenderProcessObserver {
   ShellRenderProcessObserver();
   virtual ~ShellRenderProcessObserver();
 
-  void SetMainWindow(RenderView* view,
-                     WebKitTestRunner* test_runner,
-                     WebTestRunner::WebTestDelegate* delegate);
+  void SetTestDelegate(WebTestRunner::WebTestDelegate* delegate);
+  void SetMainWindow(RenderView* view);
   void BindTestRunnersToWindow(WebKit::WebFrame* frame);
 
   // RenderProcessObserver implementation.

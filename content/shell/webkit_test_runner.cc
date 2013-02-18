@@ -107,8 +107,8 @@ int WebKitTestRunner::window_count_ = 0;
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
+      RenderViewObserverTracker(render_view),
       is_main_window_(false) {
-  Reset();
   ++window_count_;
 }
 

@@ -658,6 +658,9 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       pending_frame_tree_update_(false),
       target_process_id_(0),
       target_routing_id_(0) {
+}
+
+void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 #if defined(ENABLE_PLUGINS)
   pepper_helper_.reset(new PepperPluginDelegateImpl(this));
 #else
@@ -891,9 +894,13 @@ RenderViewImpl* RenderViewImpl::Create(
       next_page_id,
       screen_info,
       accessibility_mode);
+  RenderViewImpl* render_view = NULL;
   if (g_create_render_view_impl)
-    return g_create_render_view_impl(&params);
-  return new RenderViewImpl(&params);
+    render_view = g_create_render_view_impl(&params);
+  else
+    render_view = new RenderViewImpl(&params);
+  render_view->Initialize(&params);
+  return render_view;
 }
 
 // static

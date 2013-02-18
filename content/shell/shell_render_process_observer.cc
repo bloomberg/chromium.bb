@@ -58,15 +58,16 @@ ShellRenderProcessObserver::~ShellRenderProcessObserver() {
   g_instance = NULL;
 }
 
-void ShellRenderProcessObserver::SetMainWindow(
-    RenderView* view,
-    WebKitTestRunner* test_runner,
-    WebTestDelegate* delegate) {
+void ShellRenderProcessObserver::SetTestDelegate(WebTestDelegate* delegate) {
   test_interfaces_->setDelegate(delegate);
+  test_delegate_ = delegate;
+}
+
+void ShellRenderProcessObserver::SetMainWindow(RenderView* view) {
+  WebKitTestRunner* test_runner = WebKitTestRunner::Get(view);
   test_interfaces_->setWebView(view->GetWebView(), test_runner->proxy());
   main_render_view_ = view;
   main_test_runner_ = test_runner;
-  test_delegate_ = delegate;
 }
 
 void ShellRenderProcessObserver::BindTestRunnersToWindow(WebFrame* frame) {

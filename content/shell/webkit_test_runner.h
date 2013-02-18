@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
 #include "v8/include/v8.h"
@@ -26,6 +27,7 @@ namespace content {
 
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
+                         public RenderViewObserverTracker<WebKitTestRunner>,
                          public WebTestRunner::WebTestDelegate {
  public:
   explicit WebKitTestRunner(RenderView* render_view);
