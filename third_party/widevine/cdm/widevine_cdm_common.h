@@ -20,7 +20,7 @@ const char kWidevineCdmPluginMimeType[] ="application/x-ppapi-widevine-cdm";
 const char kWidevineCdmPluginMimeTypeDescription[] = "Widevine HTML CDM";
 
 // File name of the plugin on different platforms.
-const FilePath::CharType kWidevineCdmPluginFileName[] =
+const base::FilePath::CharType kWidevineCdmPluginFileName[] =
 #if defined(OS_MACOSX)
     FILE_PATH_LITERAL("widevinecdmadapter.plugin");
 #elif defined(OS_WIN)
