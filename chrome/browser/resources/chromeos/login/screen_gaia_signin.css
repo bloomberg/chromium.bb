@@ -69,7 +69,10 @@ html[oobe=new] .no-right-panel #signin-right {
 }
 
 #signin-frame {
-  height: 100%;
+  /* TODO(nkostylev): Figure out why height: 100% stopped working (gives
+    same resalt as not specifying it). Specifying content size from
+    .step-contents for now. Working at r182673, broken at r183121. */
+  height: 470px;
   width: 340px;
 }
 
