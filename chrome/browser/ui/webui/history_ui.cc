@@ -172,6 +172,7 @@ string16 getRelativeDateLocalized(const base::Time& visit_time) {
   return date_str;
 }
 
+
 // Sets the correct year when substracting months from a date.
 void normalizeMonths(base::Time::Exploded* exploded) {
   // Decrease a year at a time until we have a proper date.
@@ -179,6 +180,35 @@ void normalizeMonths(base::Time::Exploded* exploded) {
     exploded->month += 12;
     exploded->year--;
   }
+}
+
+// Comparison function for sorting history results from newest to oldest.
+bool SortByTimeDescending(Value* value1, Value* value2) {
+  DictionaryValue* result1;
+  DictionaryValue* result2;
+  double time1;
+  double time2;
+
+  if (value1->GetAsDictionary(&result1) && result1->GetDouble("time", &time1) &&
+      value2->GetAsDictionary(&result2) && result2->GetDouble("time", &time2)) {
+    return time1 > time2;
+  }
+  NOTREACHED() << "Unable to extract values";
+  return true;
+}
+
+// Returns the URL of a query result value.
+bool GetResultTimeAndUrl(Value* result, base::Time* time, string16* url) {
+  DictionaryValue* result_dict;
+  double timestamp;
+
+  if (result->GetAsDictionary(&result_dict) &&
+      result_dict->GetDouble("time", &timestamp) &&
+      result_dict->GetString("url", url)) {
+    *time = base::Time::FromJsTime(timestamp);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -234,7 +264,7 @@ bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(const ListValue* value,
 void BrowsingHistoryHandler::WebHistoryTimeout() {
   // TODO(dubroy): Communicate the failure to the front end.
   if (!results_info_value_.empty())
-    ReturnResultsToFrontEnd();
+    ReturnResultsToFrontEnd(false, 0);
 }
 
 void BrowsingHistoryHandler::QueryHistory(
@@ -395,7 +425,7 @@ void BrowsingHistoryHandler::HandleRemoveBookmark(const ListValue* args) {
 }
 
 DictionaryValue* BrowsingHistoryHandler::CreateQueryResultValue(
-    const GURL& url, const string16 title, base::Time visit_time,
+    const GURL& url, const string16& title, base::Time visit_time,
     bool is_search_result, const string16& snippet) {
   DictionaryValue* result = new DictionaryValue();
   SetURLAndTitle(result, title, url);
@@ -434,7 +464,53 @@ DictionaryValue* BrowsingHistoryHandler::CreateQueryResultValue(
   return result;
 }
 
-void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
+void BrowsingHistoryHandler::RemoveDuplicateResults(ListValue* results) {
+  ListValue new_results;
+  std::set<string16> current_day_urls;  // Holds the unique URLs for a day.
+
+  // Keeps track of the day that |current_day_urls| is holding the URLs for,
+  // in order to handle removing per-day duplicates.
+  base::Time current_day_midnight;
+
+  for (ListValue::iterator it = results->begin(); it != results->end(); ) {
+    Value* visit_value;
+    base::Time visit_time;
+    string16 url;
+
+    it = results->Erase(it, &visit_value);
+    GetResultTimeAndUrl(visit_value, &visit_time, &url);
+
+    if (current_day_midnight != visit_time.LocalMidnight()) {
+      current_day_urls.clear();
+      current_day_midnight = visit_time.LocalMidnight();
+    }
+
+    // Keep this visit if it's the first visit to this URL on the current day.
+    if (current_day_urls.count(url) == 0) {
+      current_day_urls.insert(url);
+      new_results.Append(visit_value);
+    } else {
+      delete visit_value;
+    }
+  }
+  results->Swap(&new_results);
+}
+
+void BrowsingHistoryHandler::ReturnResultsToFrontEnd(
+    bool results_need_merge, int max_count) {
+  if (results_need_merge) {
+    std::sort(results_value_.begin(),
+              results_value_.end(),
+              SortByTimeDescending);
+    RemoveDuplicateResults(&results_value_);
+  }
+
+  // Truncate the result set if necessary.
+  if (max_count > 0) {
+    for (int i = results_value_.GetSize(); i > max_count; --i)
+      results_value_.Remove(i - 1, NULL);
+  }
+
   web_ui()->CallJavascriptFunction(
       "historyResult", results_info_value_, results_value_);
   results_info_value_.Clear();
@@ -446,7 +522,8 @@ void BrowsingHistoryHandler::QueryComplete(
     const history::QueryOptions& options,
     HistoryService::Handle request_handle,
     history::QueryResults* results) {
-  unsigned int old_results_count = results_value_.GetSize();
+  // If we're appending to existing results, they will need merging.
+  bool needs_merge = results_value_.GetSize() >  0;
 
   for (size_t i = 0; i < results->size(); ++i) {
     history::URLResult const &page = (*results)[i];
@@ -471,12 +548,8 @@ void BrowsingHistoryHandler::QueryComplete(
     results_info_value_.SetString("queryEndTime",
         getRelativeDateLocalized(base::Time::Now()));
   }
-
-  // The results are sorted if and only if they were empty before.
-  results_info_value_.SetBoolean("sorted", old_results_count == 0);
-
   if (!web_history_timer_.IsRunning())
-    ReturnResultsToFrontEnd();
+    ReturnResultsToFrontEnd(needs_merge, options.max_count);
 }
 
 void BrowsingHistoryHandler::WebHistoryQueryComplete(
@@ -485,11 +558,6 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
     history::WebHistoryService::Request* request,
     const DictionaryValue* results_value) {
   web_history_timer_.Stop();
-
-  // Check if the results have already been received from the history DB.
-  // It is unlikely, but possible, that server results will arrive first.
-  bool has_local_results = !results_info_value_.empty();
-  unsigned int old_results_count = results_value_.GetSize();
 
   const ListValue* events = NULL;
   if (results_value && results_value->GetList("event", &events)) {
@@ -532,14 +600,11 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
         }
       }
     }
-    // The results are sorted if and only if they were empty before.
-    results_info_value_.SetBoolean("sorted", old_results_count == 0);
   } else if (results_value) {
     NOTREACHED() << "Failed to parse JSON response.";
   }
-
-  if (has_local_results)
-    ReturnResultsToFrontEnd();
+  if (!results_info_value_.empty())
+    ReturnResultsToFrontEnd(true, options.max_count);
 }
 
 void BrowsingHistoryHandler::RemoveComplete() {
