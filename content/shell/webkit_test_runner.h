@@ -14,6 +14,7 @@
 #include "v8/include/v8.h"
 
 class SkCanvas;
+struct ShellViewMsg_SetTestConfiguration_Params;
 
 namespace WebKit {
 struct WebRect;
@@ -114,11 +115,7 @@ class WebKitTestRunner : public RenderViewObserver,
  private:
   // Message handlers.
   void OnSetTestConfiguration(
-      const base::FilePath& current_working_directory,
-      bool enable_pixel_dumping,
-      int layout_test_timeout,
-      bool allow_external_pages,
-      const std::string& expected_pixel_hash);
+      const ShellViewMsg_SetTestConfiguration_Params& params);
 
   void CaptureDump();
 

@@ -551,23 +551,18 @@ void WebKitTestRunner::CaptureDump() {
 }
 
 void WebKitTestRunner::OnSetTestConfiguration(
-    const base::FilePath& current_working_directory,
-    bool enable_pixel_dumping,
-    int layout_test_timeout,
-    bool allow_external_pages,
-    const std::string& expected_pixel_hash) {
-  current_working_directory_ = current_working_directory;
-  enable_pixel_dumping_ = enable_pixel_dumping;
-  layout_test_timeout_ = layout_test_timeout;
-  allow_external_pages_ = allow_external_pages;
-  expected_pixel_hash_ = expected_pixel_hash;
+    const ShellViewMsg_SetTestConfiguration_Params& params) {
+  current_working_directory_ = params.current_working_directory;
+  enable_pixel_dumping_ = params.enable_pixel_dumping;
+  layout_test_timeout_ = params.layout_test_timeout;
+  allow_external_pages_ = params.allow_external_pages;
+  expected_pixel_hash_ = params.expected_pixel_hash;
   is_main_window_ = true;
 
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->setTestIsRunning(true);
-  interfaces->configureForTestWithURL(
-      net::FilePathToFileURL(current_working_directory), enable_pixel_dumping);
+  interfaces->configureForTestWithURL(params.test_url, enable_pixel_dumping_);
 }
 
 }  // namespace content

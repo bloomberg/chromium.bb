@@ -157,6 +157,7 @@ bool WebKitTestController::PrepareForLayoutTest(
   current_working_directory_ = current_working_directory;
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
+  test_url_ = test_url;
   printer_->reset();
   printer_->PrintTextHeader();
   content::ShellBrowserContext* browser_context =
@@ -196,6 +197,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   is_compositing_test_ = false;
   enable_pixel_dumping_ = false;
   expected_pixel_hash_.clear();
+  test_url_ = GURL();
   prefs_ = webkit_glue::WebPreferences();
   should_override_prefs_ = false;
   watchdog_.Cancel();
@@ -264,14 +266,16 @@ void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
   // later when the RenderProcessHost was created.
   if (render_view_host->GetProcess()->GetHandle() != base::kNullProcessHandle)
     current_pid_ = base::GetProcId(render_view_host->GetProcess()->GetHandle());
+  ShellViewMsg_SetTestConfiguration_Params params;
+  params.current_working_directory = current_working_directory_;
+  params.test_url = test_url_;
+  params.enable_pixel_dumping = enable_pixel_dumping_;
+  params.layout_test_timeout = kTestTimeoutMilliseconds;
+  params.allow_external_pages = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAllowExternalPages);
+  params.expected_pixel_hash = expected_pixel_hash_;
   render_view_host->Send(new ShellViewMsg_SetTestConfiguration(
-      render_view_host->GetRoutingID(),
-      current_working_directory_,
-      enable_pixel_dumping_,
-      kTestTimeoutMilliseconds,
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowExternalPages),
-      expected_pixel_hash_));
+      render_view_host->GetRoutingID(), params));
 }
 
 void WebKitTestController::RenderViewGone(base::TerminationStatus status) {

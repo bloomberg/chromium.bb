@@ -133,6 +133,7 @@ class WebKitTestController : public base::NonThreadSafe,
 
   bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
+  GURL test_url_;
 
   webkit_glue::WebPreferences prefs_;
   bool should_override_prefs_;

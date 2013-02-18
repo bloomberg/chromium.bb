@@ -12,6 +12,26 @@
 
 #define IPC_MESSAGE_START ShellMsgStart
 
+IPC_STRUCT_BEGIN(ShellViewMsg_SetTestConfiguration_Params)
+  // The current working directory.
+  IPC_STRUCT_MEMBER(base::FilePath, current_working_directory)
+
+  // The URL of the current layout test.
+  IPC_STRUCT_MEMBER(GURL, test_url)
+
+  // True if pixel tests are enabled.
+  IPC_STRUCT_MEMBER(bool, enable_pixel_dumping)
+
+  // The layout test timeout in milliseconds.
+  IPC_STRUCT_MEMBER(int, layout_test_timeout)
+
+  // True if tests can open external URLs
+  IPC_STRUCT_MEMBER(bool, allow_external_pages)
+
+  // The expected MD5 hash of the pixel results.
+  IPC_STRUCT_MEMBER(std::string, expected_pixel_hash)
+IPC_STRUCT_END()
+
 // Tells the renderer to reset all test runners.
 IPC_MESSAGE_CONTROL0(ShellViewMsg_ResetAll)
 
@@ -20,12 +40,8 @@ IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
                      base::FilePath /* webkit source dir */)
 
 // Sets the initial configuration to use for layout tests.
-IPC_MESSAGE_ROUTED5(ShellViewMsg_SetTestConfiguration,
-                    base::FilePath /* current_working_directory */,
-                    bool /* enable_pixel_dumping */,
-                    int /* layout_test_timeout */,
-                    bool /* allow_external_pages */,
-                    std::string /* expected pixel hash */)
+IPC_MESSAGE_ROUTED1(ShellViewMsg_SetTestConfiguration,
+                    ShellViewMsg_SetTestConfiguration_Params)
 
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
