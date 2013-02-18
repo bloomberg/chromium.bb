@@ -189,7 +189,9 @@ class AsyncPixelTransfersCompletedQuery
         mem_params.shm_data_offset;
     QuerySync* sync = static_cast<QuerySync*>(data);
 
-    // No need for a MemoryBarrier here as sync->result is not written.
+    // Need a MemoryBarrier here to ensure that upload completed before
+    // submit_count was written to sync->process_count.
+    base::subtle::MemoryBarrier();
     sync->process_count = submit_count;
   }
 };
