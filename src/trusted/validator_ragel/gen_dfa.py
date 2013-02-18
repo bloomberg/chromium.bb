@@ -284,6 +284,14 @@ class Instruction(object):
   def HasOpcodeInsteadOfImmediate(self):
     return '/' in self.opcodes
 
+  def GetOpcodeInModRM(self):
+    """Return either opcode (0-7) or None."""
+    for opcode in self.opcodes:
+      m = re.match(r'/(\d)$', opcode)
+      if m is not None:
+        return int(m.group(1))
+    return None
+
   def GetMainOpcodePart(self):
     result = []
     for opcode in self.opcodes:
@@ -540,6 +548,8 @@ class InstructionPrinter(object):
     self._PrintLegacyPrefixes(instruction)
     self._PrintRexPrefix(instruction)
 
+    assert instruction.GetOpcodeInModRM() is None
+
     assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'
 
     self._PrintOpcode(instruction)
@@ -573,6 +583,31 @@ class InstructionPrinter(object):
 
     # TODO(shcherbina): subtract NOP from XCHG
 
+  def _PrintModRMOperandSources(self, instruction):
+    """Print sources for operands encoded in modrm."""
+    for operand in instruction.operands:
+      if operand.arg_type in [
+          def_format.OperandType.CONTROL_REGISTER,
+          def_format.OperandType.DEBUG_REGISTER,
+          def_format.OperandType.REGISTER_IN_REG,
+          def_format.OperandType.XMM_REGISTER_IN_REG]:
+        source = 'from_modrm_reg'
+      elif operand.arg_type in [
+          def_format.OperandType.MMX_REGISTER_IN_REG,
+          def_format.OperandType.SEGMENT_REGISTER_IN_REG]:
+        source = 'from_modrm_reg_norex'
+      elif operand.arg_type in [
+          def_format.OperandType.REGISTER_IN_RM,
+          def_format.OperandType.XMM_REGISTER_IN_RM]:
+        source = 'from_modrm_rm'
+      elif operand.arg_type == def_format.OperandType.MMX_REGISTER_IN_RM:
+        source = 'from_modrm_rm_norex'
+      elif operand.arg_type == def_format.OperandType.MEMORY:
+        source = 'rm'
+      else:
+        continue
+      self._PrintOperandSource(operand, source)
+
   def PrintInstructionWithModRMReg(self, instruction):
     """Print instruction that encodes register in its ModRM.r/m field."""
 
@@ -600,30 +635,21 @@ class InstructionPrinter(object):
     self._PrintOpcode(instruction)
     self._out.write('\n')
 
-    self._PrintSignature(instruction)
-    self._PrintImplicitOperandSources(instruction)
+    opcode_in_modrm = instruction.GetOpcodeInModRM()
+    if opcode_in_modrm is None:
+      self._PrintSignature(instruction)
+      self._PrintImplicitOperandSources(instruction)
 
-    self._out.write('modrm_registers\n')
-    for operand in instruction.operands:
-      if operand.arg_type in [
-          def_format.OperandType.CONTROL_REGISTER,
-          def_format.OperandType.DEBUG_REGISTER,
-          def_format.OperandType.REGISTER_IN_REG,
-          def_format.OperandType.XMM_REGISTER_IN_REG]:
-        source = 'from_modrm_reg'
-      elif operand.arg_type in [
-          def_format.OperandType.MMX_REGISTER_IN_REG,
-          def_format.OperandType.SEGMENT_REGISTER_IN_REG]:
-        source = 'from_modrm_reg_norex'
-      elif operand.arg_type in [
-          def_format.OperandType.REGISTER_IN_RM,
-          def_format.OperandType.XMM_REGISTER_IN_RM]:
-        source = 'from_modrm_rm'
-      elif operand.arg_type == def_format.OperandType.MMX_REGISTER_IN_RM:
-        source = 'from_modrm_rm_norex'
-      else:
-        continue
-      self._PrintOperandSource(operand, source)
+      self._out.write('modrm_registers\n')
+      self._PrintModRMOperandSources(instruction)
+    else:
+      self._out.write('(modrm_registers & opcode_%d)\n' % opcode_in_modrm)
+
+      # We postpone printing signature until opcode in modrm is read.
+      self._PrintSignature(instruction)
+      self._PrintImplicitOperandSources(instruction)
+
+      self._PrintModRMOperandSources(instruction)
 
     self._PrintSpuriousRexInfo(instruction)
 
@@ -666,35 +692,37 @@ class InstructionPrinter(object):
     self._PrintOpcode(instruction)
     self._out.write('\n')
 
-    self._PrintSignature(instruction)
-    self._PrintImplicitOperandSources(instruction)
+    opcode_in_modrm = instruction.GetOpcodeInModRM()
+    if opcode_in_modrm is None:
+      self._PrintSignature(instruction)
+      self._PrintImplicitOperandSources(instruction)
 
-    # Here we print something like
-    # (any @operand0_from_modrm_reg @operand1_rm any* &
-    #  operand_sib_base_index)
-    # The first term specifies operand sources (they are known after the first
-    # byte we read, ModRM), in this case operand0 come from ModRM.reg, and
-    # operand1 is memory operand.
-    # The second term parses information about specific addressing mode
-    # (together with disp), independently of which operand will refer to it.
+      # Here we print something like
+      # (any @operand0_from_modrm_reg @operand1_rm any* &
+      #  operand_sib_base_index)
+      # The first term specifies operand sources (they are known after the first
+      # byte we read, ModRM), in this case operand0 come from ModRM.reg, and
+      # operand1 is memory operand.
+      # The second term parses information about specific addressing mode
+      # (together with disp), independently of which operand will refer to it.
 
-    self._out.write('(any\n')
-    for operand in instruction.operands:
-      if operand.arg_type in [
-          def_format.OperandType.REGISTER_IN_REG,
-          def_format.OperandType.XMM_REGISTER_IN_REG]:
-        source = 'from_modrm_reg'
-      elif operand.arg_type in [
-          def_format.OperandType.MMX_REGISTER_IN_REG,
-          def_format.OperandType.SEGMENT_REGISTER_IN_REG]:
-        source = 'from_modrm_reg_norex'
-      elif operand.arg_type == def_format.OperandType.MEMORY:
-        source = 'rm'
-      else:
-        continue
-      self._PrintOperandSource(operand, source)
-    self._out.write('  any* &\n')
-    self._out.write('%s)\n' % address_mode.mode)
+      self._out.write('(any\n')
+      self._PrintModRMOperandSources(instruction)
+      self._out.write('  any* &\n')
+
+      self._out.write('%s)\n' % address_mode.mode)
+    else:
+      # Here we print something like
+      # (opcode_2 @operand1_rm any* &
+      #  operand_sib_base_index)
+      # Note that we postpone printing signature until we read opcode in modrm.
+      self._out.write('(opcode_%d\n' % opcode_in_modrm)
+      self._PrintSignature(instruction)
+      self._PrintImplicitOperandSources(instruction)
+      self._PrintModRMOperandSources(instruction)
+      self._out.write('  any* &\n')
+
+      self._out.write('%s)\n' % address_mode.mode)
 
     # TODO(shcherbina): we don't have to parse parts like disp (only ModRM
     # (and possibly SIB)) to determine spurious rex bits. Perhaps move it

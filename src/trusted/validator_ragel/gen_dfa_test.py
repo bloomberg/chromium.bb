@@ -324,6 +324,27 @@ class TestInstructionPrinter(unittest.TestCase):
         @set_spurious_rex_b
         """.split())
 
+  def test_opcode_in_modrm(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'adc =Ib &Rb, 0x80 /2')
+
+    printer.PrintInstructionWithModRMReg(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        0x80
+        (modrm_registers & opcode_2)
+        @instruction_adc
+        @operands_count_is_2
+        @operand0_8bit
+        @operand1_8bit
+        @operand1_from_modrm_rm
+        imm8
+        @operand0_immediate
+        """.split())
+
 
 class TestSplit(unittest.TestCase):
 
