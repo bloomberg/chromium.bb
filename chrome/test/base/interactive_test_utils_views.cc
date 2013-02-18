@@ -11,6 +11,16 @@
 #include "chrome/test/base/ui_controls.h"
 #include "ui/views/focus/focus_manager.h"
 
+namespace {
+
+void SendMouseEventsAfterMoveComplete(ui_controls::MouseButton button,
+                                      int state,
+                                      const base::Closure& closure) {
+  ui_controls::SendMouseEventsNotifyWhenDone(button, state, closure);
+}
+
+}
+
 namespace ui_test_utils {
 
 bool IsViewFocused(const Browser* browser, ViewID vid) {
@@ -47,8 +57,10 @@ void MoveMouseToCenterAndPress(views::View* view,
   DCHECK(view->GetWidget());
   gfx::Point view_center(view->width() / 2, view->height() / 2);
   views::View::ConvertPointToScreen(view, &view_center);
-  ui_controls::SendMouseMove(view_center.x(), view_center.y());
-  ui_controls::SendMouseEventsNotifyWhenDone(button, state, closure);
+  ui_controls::SendMouseMoveNotifyWhenDone(
+      view_center.x(), view_center.y(),
+      base::Bind(&SendMouseEventsAfterMoveComplete,
+                 button, state, closure));
 }
 
 }  // namespace ui_test_utils
