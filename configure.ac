@@ -281,6 +281,13 @@ if test "x$GCC" = "xyes"; then
 fi
 AC_SUBST(GCC_CFLAGS)
 
+PKG_CHECK_MODULES(LIBUNWIND, libunwind,
+                  [have_libunwind=yes], [have_libunwind=no])
+if test "x$have_libunwind" = xyes; then
+       AC_DEFINE(HAVE_LIBUNWIND, 1, [Have libunwind support])
+fi
+AM_CONDITIONAL(HAVE_LIBUNWIND, [test "x$have_libunwind" = xyes])
+
 if test "x$WESTON_NATIVE_BACKEND" = "x"; then
 	WESTON_NATIVE_BACKEND="drm-backend.so"
 fi
