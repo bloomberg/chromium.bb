@@ -34,6 +34,11 @@ class ShellContentRendererClient : public ContentRendererClient {
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       WebKit::WebPlugin** plugin) OVERRIDE;
+  virtual WebKit::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(
+      WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
+  virtual WebKit::WebRTCPeerConnectionHandler*
+  OverrideCreateWebRTCPeerConnectionHandler(
+      WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
 
  private:
    void WebTestProxyCreated(RenderView* render_view,

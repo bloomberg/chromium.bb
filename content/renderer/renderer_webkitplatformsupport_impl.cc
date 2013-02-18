@@ -698,7 +698,14 @@ RendererWebKitPlatformSupportImpl::createRTCPeerConnectionHandler(
   DCHECK(render_thread);
   if (!render_thread)
     return NULL;
+
 #if defined(ENABLE_WEBRTC)
+  WebRTCPeerConnectionHandler* peer_connection_handler =
+      GetContentClient()->renderer()->OverrideCreateWebRTCPeerConnectionHandler(
+          client);
+  if (peer_connection_handler)
+    return peer_connection_handler;
+
   MediaStreamDependencyFactory* rtc_dependency_factory =
       render_thread->GetMediaStreamDependencyFactory();
   return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client);

@@ -27,7 +27,11 @@ class FilePath;
 namespace WebKit {
 class WebFrame;
 class WebMediaPlayerClient;
+class WebMediaStreamCenter;
+class WebMediaStreamCenterClient;
 class WebPlugin;
+class WebRTCPeerConnectionHandler;
+class WebRTCPeerConnectionHandlerClient;
 class WebURLRequest;
 struct WebPluginParams;
 struct WebURLError;
@@ -118,6 +122,17 @@ class CONTENT_EXPORT ContentRendererClient {
       WebKit::WebMediaPlayerClient* client,
       base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
       const webkit_media::WebMediaPlayerParams& params);
+
+  // Allows the embedder to override creating a WebMediaStreamCenter. If it
+  // returns NULL the content layer will create the stream center.
+  virtual WebKit::WebMediaStreamCenter* OverrideCreateWebMediaStreamCenter(
+      WebKit::WebMediaStreamCenterClient* client);
+
+  // Allows the embedder to override creating a WebRTCPeerConnectionHandler. If
+  // it returns NULL the content layer will create the connection handler.
+  virtual WebKit::WebRTCPeerConnectionHandler*
+  OverrideCreateWebRTCPeerConnectionHandler(
+      WebKit::WebRTCPeerConnectionHandlerClient* client);
 
   // Returns true if the renderer process should schedule the idle handler when
   // all widgets are hidden.

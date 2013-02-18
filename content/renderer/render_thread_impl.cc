@@ -1130,9 +1130,14 @@ WebKit::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
 #endif
 
 #if defined(ENABLE_WEBRTC)
-  if (!media_stream_center_)
-    media_stream_center_ = new MediaStreamCenter(
-        client, GetMediaStreamDependencyFactory());
+  if (!media_stream_center_) {
+    media_stream_center_ = GetContentClient()->renderer()
+        ->OverrideCreateWebMediaStreamCenter(client);
+    if (!media_stream_center_) {
+      media_stream_center_ = new MediaStreamCenter(
+          client, GetMediaStreamDependencyFactory());
+    }
+  }
 #endif
   return media_stream_center_;
 }

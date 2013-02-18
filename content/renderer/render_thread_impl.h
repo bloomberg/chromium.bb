@@ -330,7 +330,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
 
   // Used on the render thread and deleted by WebKit at shutdown.
-  MediaStreamCenter* media_stream_center_;
+  WebKit::WebMediaStreamCenter* media_stream_center_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;

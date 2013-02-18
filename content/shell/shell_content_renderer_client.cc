@@ -14,15 +14,22 @@
 #include "content/shell/shell_render_process_observer.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_runner.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamCenter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebFrame;
+using WebKit::WebMediaStreamCenter;
+using WebKit::WebMediaStreamCenterClient;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
+using WebKit::WebRTCPeerConnectionHandler;
+using WebKit::WebRTCPeerConnectionHandlerClient;
 using WebTestRunner::WebTestDelegate;
+using WebTestRunner::WebTestInterfaces;
 using WebTestRunner::WebTestProxyBase;
 
 namespace content {
@@ -73,6 +80,34 @@ bool ShellContentRendererClient::OverrideCreatePlugin(
         switches::kEnableBrowserPluginForAllViewTypes);
   }
   return false;
+}
+
+WebMediaStreamCenter*
+ShellContentRendererClient::OverrideCreateWebMediaStreamCenter(
+    WebMediaStreamCenterClient* client) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return NULL;
+#if defined(ENABLE_WEBRTC)
+  WebTestInterfaces* interfaces =
+      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+  return interfaces->createMediaStreamCenter(client);
+#else
+  return NULL;
+#endif
+}
+
+WebRTCPeerConnectionHandler*
+ShellContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
+    WebRTCPeerConnectionHandlerClient* client) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return NULL;
+#if defined(ENABLE_WEBRTC)
+  WebTestInterfaces* interfaces =
+      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+  return interfaces->createWebRTCPeerConnectionHandler(client);
+#else
+  return NULL;
+#endif
 }
 
 void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,

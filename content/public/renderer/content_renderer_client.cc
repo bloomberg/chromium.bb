@@ -47,6 +47,18 @@ ContentRendererClient::OverrideCreateWebMediaPlayer(
   return NULL;
 }
 
+WebKit::WebMediaStreamCenter*
+ContentRendererClient::OverrideCreateWebMediaStreamCenter(
+    WebKit::WebMediaStreamCenterClient* client) {
+  return NULL;
+}
+
+WebKit::WebRTCPeerConnectionHandler*
+ContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
+    WebKit::WebRTCPeerConnectionHandlerClient* client) {
+  return NULL;
+}
+
 bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }
