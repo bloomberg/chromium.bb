@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_util.h"
@@ -31,6 +32,12 @@ static GURL ToAndFromOriginIdentifier(const GURL origin_url) {
   return DatabaseUtil::GetOriginFromIdentifier(id);
 }
 
+static void TestValidOriginIdentifier(bool expected_result,
+                                      const base::StringPiece id) {
+  EXPECT_EQ(expected_result,
+            DatabaseUtil::IsValidOriginIdentifier(ASCIIToUTF16(id)));
+}
+
 namespace webkit_database {
 
 // Test DatabaseUtil::CrackVfsFilePath on various inputs.
@@ -52,6 +59,15 @@ TEST(DatabaseUtilTest, OriginIdentifiers) {
   const GURL kHttpOrigin(GURL("http://bar/").GetOrigin());
   EXPECT_EQ(kFileOrigin, ToAndFromOriginIdentifier(kFileOrigin));
   EXPECT_EQ(kHttpOrigin, ToAndFromOriginIdentifier(kHttpOrigin));
+}
+
+TEST(DatabaseUtilTest, IsValidOriginIdentifier) {
+  TestValidOriginIdentifier(true,  "http_bar_0");
+  TestValidOriginIdentifier(true,  "");
+  TestValidOriginIdentifier(false, "bad..id");
+  TestValidOriginIdentifier(false, "bad/id");
+  TestValidOriginIdentifier(false, "bad\\id");
+  TestValidOriginIdentifier(false, base::StringPiece("bad\0id", 6));
 }
 
 }  // namespace webkit_database

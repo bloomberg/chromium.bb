@@ -31,6 +31,7 @@ class WEBKIT_STORAGE_EXPORT DatabaseUtil {
                                                   const string16& vfs_file_name);
   static string16 GetOriginIdentifier(const GURL& url);
   static GURL GetOriginFromIdentifier(const string16& origin_identifier);
+  static bool IsValidOriginIdentifier(const string16& origin_identifier);
 };
 
 }  // namespace webkit_database

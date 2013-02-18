@@ -4,6 +4,7 @@
 
 #include "webkit/database/database_util.h"
 
+#include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -88,6 +89,17 @@ GURL DatabaseUtil::GetOriginFromIdentifier(const string16& origin_identifier) {
   }
 
   return GURL(web_security_origin.toString());
+}
+
+bool DatabaseUtil::IsValidOriginIdentifier(const string16& origin_identifier) {
+  string16 dotdot = ASCIIToUTF16("..");
+  char16 forbidden[] = {'\\', '/', '\0'};
+
+  string16::size_type pos = origin_identifier.find(dotdot);
+  if (pos == string16::npos)
+    pos = origin_identifier.find_first_of(forbidden, 0, arraysize(forbidden));
+
+  return pos == string16::npos;
 }
 
 }  // namespace webkit_database
