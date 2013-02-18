@@ -1900,6 +1900,14 @@ shell_map_popup(struct shell_surface *shsurf)
 	struct weston_surface *es = shsurf->surface;
 	struct weston_surface *parent = shsurf->parent;
 
+	/* Remove the old transform. We don't want to add it twice
+	 * otherwise Weston will go into an infinite loop when going
+	 * through the transforms. */
+	if (!wl_list_empty(&shsurf->popup.parent_transform.link)) {
+		wl_list_remove(&shsurf->popup.parent_transform.link);
+		wl_list_init(&shsurf->popup.parent_transform.link);
+	}
+
 	es->output = parent->output;
 	shsurf->popup.grab.interface = &popup_grab_interface;
 
@@ -2070,6 +2078,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	weston_matrix_init(&shsurf->rotation.rotation);
 
 	wl_list_init(&shsurf->workspace_transform.link);
+	wl_list_init(&shsurf->popup.parent_transform.link);
 
 	shsurf->type = SHELL_SURFACE_NONE;
 	shsurf->next_type = SHELL_SURFACE_NONE;
