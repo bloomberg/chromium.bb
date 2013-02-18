@@ -102,6 +102,9 @@ class Operand(object):
     Returns:
       String like '8bit', '32bit', 'xmm', 'mmx', etc.
     """
+    if self.arg_type == def_format.OperandType.SEGMENT_REGISTER_IN_REG:
+      return 'segreg'
+
     if self.size == 'b':
       return '8bit'
     if self.size == 'w':
@@ -644,9 +647,15 @@ class InstructionPrinter(object):
       self._PrintSignature(instruction)
       self._PrintImplicitOperandSources(instruction)
 
-      self._out.write('modrm_registers\n')
+      if instruction.FindOperand(
+          def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None:
+        self._out.write('modrm_registers\n')
+      else:
+        self._out.write('(modrm_registers & opcode_s)\n')
       self._PrintModRMOperandSources(instruction)
     else:
+      assert instruction.FindOperand(
+          def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None
       self._out.write('(modrm_registers & opcode_%d)\n' % opcode_in_modrm)
 
       # We postpone printing signature until opcode in modrm is read.
@@ -710,7 +719,11 @@ class InstructionPrinter(object):
       # The second term parses information about specific addressing mode
       # (together with disp), independently of which operand will refer to it.
 
-      self._out.write('(any\n')
+      if instruction.FindOperand(
+          def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None:
+        self._out.write('(any\n')
+      else:
+        self._out.write('(opcode_s\n')
       self._PrintModRMOperandSources(instruction)
       self._out.write('  any* &\n')
 
@@ -720,6 +733,8 @@ class InstructionPrinter(object):
       # (opcode_2 @operand1_rm any* &
       #  operand_sib_base_index)
       # Note that we postpone printing signature until we read opcode in modrm.
+      assert instruction.FindOperand(
+          def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None
       self._out.write('(opcode_%d\n' % opcode_in_modrm)
       self._PrintSignature(instruction)
       self._PrintImplicitOperandSources(instruction)
@@ -1024,6 +1039,8 @@ def main():
 
   for def_file in args:
     for instruction in ParseDefFile(def_file):
+      instruction.CollectPrefixes()
+
       if options.bitness == 32 and Attribute('amd64') in instruction.attributes:
         continue
       if options.bitness == 64 and Attribute('ia32') in instruction.attributes:

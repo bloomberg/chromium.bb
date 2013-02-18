@@ -345,6 +345,26 @@ class TestInstructionPrinter(unittest.TestCase):
         @operand0_immediate
         """.split())
 
+  def test_segment_register(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'mov Sw !Rw, 0x8c /s, nacl-forbidden')
+
+    printer.PrintInstructionWithModRMReg(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        0x8c
+        @instruction_mov
+        @operands_count_is_2
+        @operand0_segreg
+        @operand1_16bit
+        (modrm_registers & opcode_s)
+        @operand0_from_modrm_reg_norex
+        @operand1_from_modrm_rm
+        """.split())
+
 
 class TestSplit(unittest.TestCase):
 
