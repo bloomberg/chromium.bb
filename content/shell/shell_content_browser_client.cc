@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/shell/geolocation/shell_access_token_store.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
@@ -77,7 +78,12 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
     RenderProcessHost* host) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
-  host->GetChannel()->AddFilter(new ShellMessageFilter(host->GetID()));
+  host->GetChannel()->AddFilter(new ShellMessageFilter(
+      host->GetID(),
+      BrowserContext::GetDefaultStoragePartition(browser_context())
+          ->GetDatabaseTracker(),
+      BrowserContext::GetDefaultStoragePartition(browser_context())
+          ->GetQuotaManager()));
   host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
 }
 

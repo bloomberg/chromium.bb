@@ -84,6 +84,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     url_request_context_.reset(new net::URLRequestContext());
     network_delegate_.reset(new ShellNetworkDelegate);
+    if (command_line.HasSwitch(switches::kDumpRenderTree))
+      ShellNetworkDelegate::SetAcceptAllCookies(false);
     url_request_context_->set_network_delegate(network_delegate_.get());
     storage_.reset(
         new net::URLRequestContextStorage(url_request_context_.get()));

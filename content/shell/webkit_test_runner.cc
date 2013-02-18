@@ -4,6 +4,7 @@
 
 #include "content/shell/webkit_test_runner.h"
 
+#include <clocale>
 #include <cmath>
 
 #include "base/base64.h"
@@ -281,13 +282,11 @@ void WebKitTestRunner::evaluateInWebInspector(long call_id,
 }
 
 void WebKitTestRunner::clearAllDatabases() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "clearAllDatabases"));
+  Send(new ShellViewHostMsg_ClearAllDatabases(routing_id()));
 }
 
 void WebKitTestRunner::setDatabaseQuota(int quota) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setDatabaseQuota"));
+  Send(new ShellViewHostMsg_SetDatabaseQuota(routing_id(), quota));
 }
 
 void WebKitTestRunner::setDeviceScaleFactor(float factor) {
@@ -301,8 +300,7 @@ void WebKitTestRunner::setFocus(bool focus) {
 }
 
 void WebKitTestRunner::setAcceptAllCookies(bool accept) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setAcceptAllCookies"));
+  Send(new ShellViewHostMsg_AcceptAllCookies(routing_id(), accept));
 }
 
 std::string WebKitTestRunner::pathToLocalResource(const std::string& resource) {
@@ -312,8 +310,7 @@ std::string WebKitTestRunner::pathToLocalResource(const std::string& resource) {
 }
 
 void WebKitTestRunner::setLocale(const std::string& locale) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setLocale"));
+  setlocale(LC_ALL, locale.c_str());
 }
 
 void WebKitTestRunner::setDeviceOrientation(WebDeviceOrientation& orientation) {

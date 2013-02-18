@@ -16,6 +16,8 @@ class ShellNetworkDelegate : public net::NetworkDelegate {
   ShellNetworkDelegate();
   virtual ~ShellNetworkDelegate();
 
+  static void SetAcceptAllCookies(bool accept);
+
  private:
   // net::NetworkDelegate implementation.
   virtual int OnBeforeURLRequest(net::URLRequest* request,
