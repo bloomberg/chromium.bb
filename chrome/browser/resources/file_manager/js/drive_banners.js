@@ -247,7 +247,7 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
  */
 FileListBannerController.prototype.showLowDriveSpaceWarning_ =
       function(show, sizeStats) {
-  var box = this.document_.querySelector('.drive-space-warning');
+  var box = this.document_.querySelector('#volume-space-warning');
 
   // Avoid showing two banners.
   // TODO(kaznacheev): Unify the low space warning and the promo header.

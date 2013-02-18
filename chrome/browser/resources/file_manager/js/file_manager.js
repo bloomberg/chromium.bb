@@ -767,6 +767,14 @@ DialogType.isModal = function(type) {
     this.dialogDom_.querySelector('#search-box').addEventListener(
         'input', this.onSearchBoxUpdate_.bind(this));
 
+    this.authFailedWarning_ = dom.querySelector('#drive-auth-failed-warning');
+    var authFailedText = this.authFailedWarning_.querySelector('.drive-text');
+    authFailedText.innerHTML = util.htmlUnescape(str('DRIVE_NOT_REACHED'));
+    authFailedText.querySelector('a').addEventListener('click', function(e) {
+        chrome.fileBrowserPrivate.logoutUser();
+        e.preventDefault();
+    });
+
     this.defaultActionMenuItem_ =
         this.dialogDom_.querySelector('#default-action');
 
@@ -1692,6 +1700,7 @@ DialogType.isModal = function(type) {
       else
         self.hostedButton.removeAttribute('checked');
 
+      var hideDriveNotReachedMessage = true;
       switch (connection.type) {
         case DriveConnectionType.ONLINE:
           self.dialogContainer_.removeAttribute('connection');
@@ -1700,11 +1709,16 @@ DialogType.isModal = function(type) {
           self.dialogContainer_.setAttribute('connection', 'metered');
           break;
         case DriveConnectionType.OFFLINE:
+          if (connection.reasons.indexOf('not_ready') !== -1)
+            hideDriveNotReachedMessage = false;
+
           self.dialogContainer_.setAttribute('connection', 'offline');
           break;
         default:
           console.assert(true, 'unknown connection type.');
       }
+      self.authFailedWarning_.hidden = hideDriveNotReachedMessage;
+      console.log(hideDriveNotReachedMessage);
     });
   };
 

@@ -623,7 +623,7 @@ button#detail-view:not([disabled]) {
 }
 
 /* Drive space warning banner. */
-.volume-space-warning {
+.volume-warning {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-transition: height 70ms linear;
@@ -639,12 +639,12 @@ button#detail-view:not([disabled]) {
   position: relative;
 }
 
-.volume-space-warning[hidden] {
+.volume-warning[hidden] {
   border-top-width: 0;
   height: 0;
 }
 
-.volume-space-warning .drive-icon {
+.volume-warning .drive-icon {
   background-image: -webkit-image-set(
     url('../images/files/ui/drive_logo.png') 1x,
     url('../images/files/ui/2x/drive_logo.png') 2x);
@@ -655,7 +655,7 @@ button#detail-view:not([disabled]) {
   width: 50px;
 }
 
-.volume-space-warning .drive-text {
+.volume-warning .drive-text {
   margin-right: 11px;
 }
 

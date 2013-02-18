@@ -383,6 +383,12 @@
     ],
     "functions": [
       {
+        "name": "logoutUser",
+        "type": "function",
+        "description": "Logout the current user.",
+        "parameters": []
+      },
+      {
         "name": "cancelDialog",
         "type": "function",
         "description": "Cancels file selection.",

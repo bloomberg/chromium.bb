@@ -64,6 +64,19 @@ class FileBrowserPrivateAPI : public ProfileKeyedService {
   scoped_refptr<FileBrowserEventRouter> event_router_;
 };
 
+// Implements the chrome.fileBrowserPrivate.logoutUser method.
+class LogoutUserFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.logoutUser",
+                             FILEBROWSERPRIVATE_LOGOUTUSER)
+
+ protected:
+  virtual ~LogoutUserFunction() {}
+
+  // SyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
 // Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.
 class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
  public:
@@ -233,7 +246,7 @@ class SetDefaultTaskFileBrowserFunction : public SyncExtensionFunction {
  protected:
   virtual ~SetDefaultTaskFileBrowserFunction();
 
-  // AsyncExtensionFunction overrides.
+  // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 };
 

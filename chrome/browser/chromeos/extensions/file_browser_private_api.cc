@@ -49,6 +49,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/google_apis/time_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -567,6 +568,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
 
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
+  registry->RegisterFunction<LogoutUserFunction>();
   registry->RegisterFunction<CancelFileDialogFunction>();
   registry->RegisterFunction<ExecuteTasksFileBrowserFunction>();
   registry->RegisterFunction<SetDefaultTaskFileBrowserFunction>();
@@ -632,6 +634,11 @@ void RequestLocalFileSystemFunction::RequestOnFileThread(
           file_system_context,
           child_id,
           GetExtension()));
+}
+
+bool LogoutUserFunction::RunImpl() {
+  chrome::AttemptUserExit();
+  return true;
 }
 
 bool RequestLocalFileSystemFunction::RunImpl() {
@@ -2251,6 +2258,8 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, SPACE_AVAILABLE);
   SET_STRING(IDS_FILE_BROWSER, WAITING_FOR_SPACE_INFO);
   SET_STRING(IDS_FILE_BROWSER, FAILED_SPACE_INFO);
+
+  SET_STRING(IDS_FILE_BROWSER, DRIVE_NOT_REACHED);
 
   SET_STRING(IDS_FILE_BROWSER, HELP_LINK_LABEL);
 #undef SET_STRING
