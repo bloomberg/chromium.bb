@@ -133,6 +133,8 @@ drm_backend_la_CFLAGS =				\
 drm_backend_la_SOURCES =			\
 	compositor-drm.c			\
 	tty.c					\
+	udev-seat.c				\
+	udev-seat.h				\
 	evdev.c					\
 	evdev.h					\
 	evdev-touchpad.c			\
