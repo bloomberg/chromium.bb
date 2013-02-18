@@ -855,7 +855,7 @@ static void
 update_xkb_state_from_core(struct x11_compositor *c, uint16_t x11_mask)
 {
 	uint32_t mask = get_xkb_mod_mask(c, x11_mask);
-	struct wl_keyboard *keyboard = &c->core_seat.keyboard;
+	struct wl_keyboard *keyboard = &c->core_seat.keyboard.keyboard;
 
 	xkb_state_update_mask(c->core_seat.xkb_state.state,
 			      keyboard->modifiers.mods_depressed & mask,
