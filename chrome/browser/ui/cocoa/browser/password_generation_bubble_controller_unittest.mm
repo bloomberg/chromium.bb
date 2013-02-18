@@ -5,22 +5,46 @@
 #import "chrome/browser/ui/cocoa/browser/password_generation_bubble_controller.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autofill/password_generator.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "content/public/common/password_form.h"
 #include "testing/gtest_mac.h"
 
+using base::Histogram;
+using base::HistogramSamples;
+using base::StatisticsRecorder;
+
+const char kHistogramName[] = "PasswordGeneration.UserActions";
+
 class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
  public:
   PasswordGenerationBubbleControllerTest()
       : controller_(nil) {}
 
-  virtual void SetUp() {
-    CocoaTest::SetUp();
+  static void SetUpTestCase() {
+    StatisticsRecorder::Initialize();
+  }
 
-    content::PasswordForm form;
+  virtual void SetUp() {
+    CocoaProfileTest::SetUp();
+
     generator_.reset(new autofill::PasswordGenerator(20));
+
+    Histogram* histogram = StatisticsRecorder::FindHistogram(kHistogramName);
+    if (histogram)
+      original_ = histogram->SnapshotSamples();
+
+    SetUpController();
+  }
+
+  PasswordGenerationBubbleController* controller() { return controller_; }
+
+  void SetUpController() {
+    content::PasswordForm form;
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
 
@@ -34,11 +58,32 @@ class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
                            forForm:form];
   }
 
-  PasswordGenerationBubbleController* controller() { return controller_; }
+  void CloseController() {
+    [controller_ close];
+    [controller_ windowWillClose:nil];
+    controller_ = nil;
+  }
+
+  HistogramSamples* GetHistogramSamples() {
+    Histogram* histogram =
+        StatisticsRecorder::FindHistogram(kHistogramName);
+    if (histogram) {
+      current_ = histogram->SnapshotSamples();
+      if (original_.get())
+        current_->Subtract(*original_.get());
+    }
+    return current_.get();
+  }
 
  protected:
   // Weak.
   PasswordGenerationBubbleController* controller_;
+
+  // Used to determine the histogram changes made just for this specific
+  // test run.
+  scoped_ptr<HistogramSamples> original_;
+
+  scoped_ptr<HistogramSamples> current_;
 
   scoped_ptr<autofill::PasswordGenerator> generator_;
 };
@@ -58,4 +103,43 @@ TEST_F(PasswordGenerationBubbleControllerTest, Regenerate) {
   // about.
   NSString* after = [textfield stringValue];
   EXPECT_FALSE([before isEqualToString:after]);
+}
+
+TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
+  [controller() showWindow:nil];
+
+  // Do nothing.
+  CloseController();
+
+  HistogramSamples* samples = GetHistogramSamples();
+  EXPECT_EQ(1, samples->GetCount(password_generation::IGNORE_FEATURE));
+  EXPECT_EQ(0, samples->GetCount(password_generation::ACCEPT_AFTER_EDITING));
+  EXPECT_EQ(0, samples->GetCount(
+                password_generation::ACCEPT_ORIGINAL_PASSWORD));
+
+  SetUpController();
+
+  // Pretend like the user changed the password and accepted it.
+  [controller() controlTextDidChange:nil];
+  [controller() fillPassword:nil];
+  CloseController();
+
+  samples = GetHistogramSamples();
+  EXPECT_EQ(1, samples->GetCount(password_generation::IGNORE_FEATURE));
+  EXPECT_EQ(1, samples->GetCount(password_generation::ACCEPT_AFTER_EDITING));
+  EXPECT_EQ(0, samples->GetCount(
+                password_generation::ACCEPT_ORIGINAL_PASSWORD));
+
+  SetUpController();
+
+  // Just accept the password
+  [controller() fillPassword:nil];
+  CloseController();
+
+  samples = GetHistogramSamples();
+  EXPECT_EQ(1, samples->GetCount(password_generation::IGNORE_FEATURE));
+  EXPECT_EQ(1, samples->GetCount(password_generation::ACCEPT_AFTER_EDITING));
+  EXPECT_EQ(1, samples->GetCount(
+                password_generation::ACCEPT_ORIGINAL_PASSWORD));
+
 }

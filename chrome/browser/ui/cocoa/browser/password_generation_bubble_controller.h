@@ -9,6 +9,7 @@
 
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/styled_text_field.h"
+#include "chrome/common/password_generation_util.h"
 #include "content/public/common/password_form.h"
 
 namespace autofill {
@@ -33,12 +34,15 @@ class PasswordManager;
          hoverImage:(NSImage*)hoverImage;
 @end
 
-@interface PasswordGenerationBubbleController : BaseBubbleController {
+@interface PasswordGenerationBubbleController :
+    BaseBubbleController<NSTextFieldDelegate> {
  @private
+  // |renderViewHost_| and |passwordManager_| may be nil in testing.
   content::RenderViewHost* renderViewHost_;
   PasswordManager* passwordManager_;
   autofill::PasswordGenerator* passwordGenerator_;
   content::PasswordForm form_;
+  password_generation::PasswordGenerationActions actions_;
 
   PasswordGenerationTextField* textField_;   // weak
 }

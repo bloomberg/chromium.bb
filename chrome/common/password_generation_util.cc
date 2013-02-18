@@ -6,32 +6,6 @@
 
 #include "base/metrics/histogram.h"
 
-namespace {
-
-// Enumerates user actions after password generation bubble is shown.
-enum UserAction {
-  // User closes the bubble without any meaningful actions (e.g. use backspace
-  // key, close the bubble, click outside the bubble, etc).
-  IGNORE_FEATURE,
-
-  // User navigates to the learn more page. Note that in the current
-  // implementation this will result in closing the bubble so this action
-  // doesn't overlap with the following two actions.
-  LEARN_MORE,
-
-  // User accepts the generated password without manually editing it (but
-  // including changing it through the regenerate button).
-  ACCEPT_ORIGINAL_PASSWORD,
-
-  // User accepts the gererated password after manually editing it.
-  ACCEPT_AFTER_EDITING,
-
-  // Number of enum entries, used for UMA histogram reporting macros.
-  ACTION_ENUM_COUNT
-};
-
-}  // anonymous namespace
-
 namespace password_generation {
 
 PasswordGenerationActions::PasswordGenerationActions()

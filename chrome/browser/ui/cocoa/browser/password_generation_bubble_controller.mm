@@ -16,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/common/autofill_messages.h"
+#include "chrome/common/password_generation_util.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/password_form.h"
 #include "grit/generated_resources.h"
@@ -340,6 +341,7 @@ const CGFloat kIconSize = 26.0;
   [textField_ setFont:smallBoldFont.GetNativeFont()];
   [textField_
     setStringValue:base::SysUTF8ToNSString(passwordGenerator_->Generate())];
+  [textField_ setDelegate:self];
   [contentView addSubview:textField_];
 
   CGFloat buttonX = (NSMaxX([textField_ frame]) +
@@ -372,17 +374,32 @@ const CGFloat kIconSize = 26.0;
 }
 
 - (IBAction)fillPassword:(id)sender {
-  renderViewHost_->Send(
-      new AutofillMsg_GeneratedPasswordAccepted(
-          renderViewHost_->GetRoutingID(),
-          base::SysNSStringToUTF16([textField_ stringValue])));
-  passwordManager_->SetFormHasGeneratedPassword(form_);
+  if (renderViewHost_) {
+    renderViewHost_->Send(
+        new AutofillMsg_GeneratedPasswordAccepted(
+            renderViewHost_->GetRoutingID(),
+            base::SysNSStringToUTF16([textField_ stringValue])));
+  }
+  if (passwordManager_)
+    passwordManager_->SetFormHasGeneratedPassword(form_);
+
+  actions_.password_accepted = true;
   [self close];
 }
 
 - (void)regeneratePassword {
   [textField_
     setStringValue:base::SysUTF8ToNSString(passwordGenerator_->Generate())];
+  actions_.password_regenerated = true;
+}
+
+- (void)controlTextDidChange:(NSNotification*)notification {
+  actions_.password_edited = true;
+}
+
+- (void)windowWillClose:(NSNotification*)notification {
+  password_generation::LogUserActions(actions_);
+  [super windowWillClose:notification];
 }
 
 @end
