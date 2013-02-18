@@ -1000,13 +1000,13 @@ bool ListValue::Remove(const Value& value, size_t* index) {
   return false;
 }
 
-ListValue::iterator ListValue::Erase(iterator iter, Value** out_value) {
+void ListValue::Erase(iterator iter, Value** out_value) {
   if (out_value)
     *out_value = *iter;
   else
     delete *iter;
 
-  return list_.erase(iter);
+  list_.erase(iter);
 }
 
 void ListValue::Append(Value* in_value) {

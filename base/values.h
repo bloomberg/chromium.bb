@@ -453,9 +453,7 @@ class BASE_EXPORT ListValue : public Value {
 
   // Removes the element at |iter|. If |out_value| is NULL, the value will be
   // deleted, otherwise ownership of the value is passed back to the caller.
-  // Returns an iterator pointing to the location of the element that
-  // followed the erased element.
-  iterator Erase(iterator iter, Value** out_value);
+  void Erase(iterator iter, Value** out_value);
 
   // Appends a Value to the end of the list.
   void Append(Value* in_value);

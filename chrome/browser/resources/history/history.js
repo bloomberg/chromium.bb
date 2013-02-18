@@ -393,6 +393,7 @@ HistoryModel.prototype.getSearchText = function() {
  */
 HistoryModel.prototype.requestPage = function(page) {
   this.requestedPage_ = page;
+  this.changed = true;
   this.updateSearch_();
 };
 
@@ -414,13 +415,34 @@ HistoryModel.prototype.addResults = function(info, results) {
   if (info.term != this.searchText_)
     return;
 
+  // If necessary, sort the results from newest to oldest.
+  if (!results.sorted)
+    results.sort(function(a, b) { return b.time - a.time; });
+
   var lastVisit = this.visits_.slice(-1)[0];
   var lastDay = lastVisit ? lastVisit.dateRelativeDay : null;
 
   for (var i = 0, thisResult; thisResult = results[i]; i++) {
     var thisDay = thisResult.dateRelativeDay;
     var isSameDay = lastDay == thisDay;
-    this.visits_.push(new Visit(thisResult, isSameDay, this));
+
+    // Keep track of all URLs seen on a particular day, and only use the
+    // latest visit from that day.
+    if (!isSameDay)
+      this.urlsFromLastSeenDay_ = {};
+
+    // Only create a new Visit object for the first visit to a URL on a
+    // particular day.
+    var visit = this.urlsFromLastSeenDay_[thisResult.url];
+    if (visit) {
+      // Record the timestamp of the duplicate visit.
+      visit.addDuplicateTimestamp(thisResult.timestamp);
+      continue;
+    }
+    visit = new Visit(thisResult, isSameDay, this);
+    this.urlsFromLastSeenDay_[thisResult.url] = visit;
+    this.visits_.push(visit);
+    this.changed = true;
     lastDay = thisDay;
   }
 
@@ -520,6 +542,11 @@ HistoryModel.prototype.clearModel_ = function() {
   // An opaque value that is returned with the query results. This is used to
   // fetch the next page of results for a query.
   this.queryCursor_ = null;
+
+  // A map of URLs of visits on the same day as the last known visit.
+  // This is used for de-duping URLs, so that we only show the most recent
+  // visit to a URL on any day.
+  this.urlsFromLastSeenDay_ = {};
 
   if (this.view_)
     this.view_.clear_();
