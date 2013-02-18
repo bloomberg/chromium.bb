@@ -23,7 +23,10 @@
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "webkit/fileapi/syncable/file_change.h"
+#include "webkit/fileapi/syncable/sync_action.h"
 #include "webkit/fileapi/syncable/sync_callbacks.h"
+#include "webkit/fileapi/syncable/sync_direction.h"
+#include "webkit/fileapi/syncable/sync_status_code.h"
 
 class ExtensionService;
 
@@ -365,6 +368,10 @@ class DriveFileSyncService
   void UpdatePollingDelay(int64 new_delay_sec);
   void RegisterDriveNotifications();
   void SetPushNotificationEnabled(syncer::InvalidatorState state);
+  void NotifyObserversFileStatusChanged(const fileapi::FileSystemURL& url,
+                                        fileapi::SyncFileStatus sync_status,
+                                        fileapi::SyncAction action_taken,
+                                        fileapi::SyncDirection direction);
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
   scoped_ptr<DriveFileSyncClient> sync_client_;

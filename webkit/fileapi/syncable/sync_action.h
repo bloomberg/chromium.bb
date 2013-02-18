@@ -7,6 +7,7 @@
 
 namespace fileapi {
 
+// TODO(calvinlo): Move to sync_file_system namespace. http://crbug/174870.
 enum SyncAction {
   // Indicates no action has been made.
   SYNC_ACTION_NONE,

@@ -90,7 +90,7 @@ class MockSyncEventObserver : public SyncEventObserver {
                void(const fileapi::FileSystemURL& url,
                     fileapi::SyncFileStatus status,
                     fileapi::SyncAction action,
-                    SyncDirection direction));
+                    fileapi::SyncDirection direction));
 };
 
 ACTION_P3(NotifyStateAndCallback,

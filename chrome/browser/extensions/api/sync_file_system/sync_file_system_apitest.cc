@@ -127,9 +127,9 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChanged) {
       .WillOnce(ReturnWithFakeFileAddedStatus(
           &origin,
           mock_remote_service(),
-          sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL,
           fileapi::SYNC_FILE_STATUS_SYNCED,
-          fileapi::SYNC_ACTION_ADDED));
+          fileapi::SYNC_ACTION_ADDED,
+          fileapi::SYNC_DIRECTION_REMOTE_TO_LOCAL));
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/on_file_status_changed"))
       << message_;
 }
@@ -143,9 +143,9 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileStatusChangedDeleted) {
       .WillOnce(ReturnWithFakeFileAddedStatus(
           &origin,
           mock_remote_service(),
-          sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL,
           fileapi::SYNC_FILE_STATUS_SYNCED,
-          fileapi::SYNC_ACTION_DELETED));
+          fileapi::SYNC_ACTION_DELETED,
+          fileapi::SYNC_DIRECTION_REMOTE_TO_LOCAL));
   ASSERT_TRUE(RunPlatformAppTest(
       "sync_file_system/on_file_status_changed_deleted"))
       << message_;

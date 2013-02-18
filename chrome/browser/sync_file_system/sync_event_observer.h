@@ -52,7 +52,7 @@ class SyncEventObserver {
   virtual void OnFileSynced(const fileapi::FileSystemURL& url,
                             fileapi::SyncFileStatus status,
                             fileapi::SyncAction action,
-                            SyncDirection direction) = 0;
+                            fileapi::SyncDirection direction) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEventObserver);

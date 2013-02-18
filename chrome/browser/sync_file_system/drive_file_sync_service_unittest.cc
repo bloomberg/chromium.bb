@@ -28,6 +28,7 @@
 #include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/syncable/sync_direction.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
@@ -199,9 +200,9 @@ class MockFileStatusObserver: public FileStatusObserver {
 
   MOCK_METHOD4(OnFileStatusChanged,
                void(const fileapi::FileSystemURL& url,
-                    SyncDirection direction,
                     fileapi::SyncFileStatus sync_status,
-                    fileapi::SyncAction action_taken));
+                    fileapi::SyncAction action_taken,
+                    fileapi::SyncDirection direction));
 };
 
 class DriveFileSyncServiceTest : public testing::Test {
@@ -387,18 +388,18 @@ class DriveFileSyncServiceTest : public testing::Test {
 
   void ProcessRemoteChange(fileapi::SyncStatusCode expected_status,
                            const fileapi::FileSystemURL& expected_url,
-                           SyncDirection expected_sync_direction,
                            fileapi::SyncFileStatus expected_sync_file_status,
-                           fileapi::SyncAction expected_sync_action) {
+                           fileapi::SyncAction expected_sync_action,
+                           fileapi::SyncDirection expected_sync_direction) {
     fileapi::SyncStatusCode actual_status = fileapi::SYNC_STATUS_UNKNOWN;
     fileapi::FileSystemURL actual_url;
 
     if (expected_sync_file_status != fileapi::SYNC_FILE_STATUS_UNKNOWN) {
       EXPECT_CALL(*mock_file_status_observer(),
                   OnFileStatusChanged(expected_url,
-                                      expected_sync_direction,
                                       expected_sync_file_status,
-                                      expected_sync_action))
+                                      expected_sync_action,
+                                      expected_sync_direction))
           .Times(1);
     }
 
@@ -844,9 +845,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NoChange) {
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_NO_CHANGE_TO_SYNC,
                       fileapi::FileSystemURL(),
-                      SYNC_DIRECTION_NONE,
                       fileapi::SYNC_FILE_STATUS_UNKNOWN,
-                      fileapi::SYNC_ACTION_NONE);
+                      fileapi::SYNC_ACTION_NONE,
+                      fileapi::SYNC_DIRECTION_NONE);
   EXPECT_TRUE(metadata_store()->batch_sync_origins().empty());
   EXPECT_TRUE(metadata_store()->incremental_sync_origins().empty());
   EXPECT_TRUE(pending_changes().empty());
@@ -884,9 +885,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_Busy) {
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_FILE_BUSY,
                       CreateURL(kOrigin, kFileName),
-                      SYNC_DIRECTION_NONE,
                       fileapi::SYNC_FILE_STATUS_UNKNOWN,
-                      fileapi::SYNC_ACTION_NONE);
+                      fileapi::SYNC_ACTION_NONE,
+                      fileapi::SYNC_DIRECTION_NONE);
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
@@ -928,9 +929,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_NewFile) {
 
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
-                      SYNC_DIRECTION_REMOTE_TO_LOCAL,
                       fileapi::SYNC_FILE_STATUS_SYNCED,
-                      fileapi::SYNC_ACTION_ADDED);
+                      fileapi::SYNC_ACTION_ADDED,
+                      fileapi::SYNC_DIRECTION_REMOTE_TO_LOCAL);
 }
 
 TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
@@ -971,9 +972,9 @@ TEST_F(DriveFileSyncServiceTest, RemoteChange_UpdateFile) {
   AppendIncrementalRemoteChangeByEntry(kOrigin, *entry, 12345);
   ProcessRemoteChange(fileapi::SYNC_STATUS_OK,
                       CreateURL(kOrigin, kFileName),
-                      SYNC_DIRECTION_REMOTE_TO_LOCAL,
                       fileapi::SYNC_FILE_STATUS_SYNCED,
-                      fileapi::SYNC_ACTION_UPDATED);
+                      fileapi::SYNC_ACTION_UPDATED,
+                      fileapi::SYNC_DIRECTION_REMOTE_TO_LOCAL);
 }
 
 TEST_F(DriveFileSyncServiceTest, RegisterOriginWithSyncDisabled) {

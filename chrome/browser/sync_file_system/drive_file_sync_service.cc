@@ -618,12 +618,10 @@ void DriveFileSyncService::ApplyLocalChange(
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
                      AsWeakPtr(), base::Passed(&token), url,
                      google_apis::HTTP_CONFLICT, callback));
-      FOR_EACH_OBSERVER(
-          FileStatusObserver, file_status_observers_,
-          OnFileStatusChanged(url,
-                              SYNC_DIRECTION_NONE,
-                              fileapi::SYNC_FILE_STATUS_CONFLICTING,
-                              fileapi::SYNC_ACTION_NONE));
+      NotifyObserversFileStatusChanged(url,
+                                       fileapi::SYNC_FILE_STATUS_CONFLICTING,
+                                       fileapi::SYNC_ACTION_NONE,
+                                       fileapi::SYNC_DIRECTION_NONE);
       return;
     }
     case LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE: {
@@ -1199,12 +1197,10 @@ void DriveFileSyncService::DidUploadNewFileForLocalSync(
         url, metadata,
         base::Bind(&DriveFileSyncService::DidApplyLocalChange,
                    AsWeakPtr(), base::Passed(&token), url, error, callback));
-    FOR_EACH_OBSERVER(
-        FileStatusObserver, file_status_observers_,
-        OnFileStatusChanged(url,
-                            SYNC_DIRECTION_LOCAL_TO_REMOTE,
-                            fileapi::SYNC_FILE_STATUS_SYNCED,
-                            fileapi::SYNC_ACTION_ADDED));
+    NotifyObserversFileStatusChanged(url,
+                                     fileapi::SYNC_FILE_STATUS_SYNCED,
+                                     fileapi::SYNC_ACTION_ADDED,
+                                     fileapi::SYNC_DIRECTION_LOCAL_TO_REMOTE);
     return;
   }
   FinalizeLocalSync(token.Pass(), callback,
@@ -1229,12 +1225,10 @@ void DriveFileSyncService::DidUploadExistingFileForLocalSync(
           url, metadata,
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
                      AsWeakPtr(), base::Passed(&token), url, error, callback));
-      FOR_EACH_OBSERVER(
-          FileStatusObserver, file_status_observers_,
-          OnFileStatusChanged(url,
-                              SYNC_DIRECTION_LOCAL_TO_REMOTE,
-                              fileapi::SYNC_FILE_STATUS_SYNCED,
-                              fileapi::SYNC_ACTION_UPDATED));
+      NotifyObserversFileStatusChanged(url,
+                                       fileapi::SYNC_FILE_STATUS_SYNCED,
+                                       fileapi::SYNC_ACTION_UPDATED,
+                                       fileapi::SYNC_DIRECTION_LOCAL_TO_REMOTE);
       return;
     }
     case google_apis::HTTP_CONFLICT: {
@@ -1249,12 +1243,10 @@ void DriveFileSyncService::DidUploadExistingFileForLocalSync(
           url, metadata,
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
                      AsWeakPtr(), base::Passed(&token), url, error, callback));
-      FOR_EACH_OBSERVER(
-          FileStatusObserver, file_status_observers_,
-          OnFileStatusChanged(url,
-                              SYNC_DIRECTION_NONE,
-                              fileapi::SYNC_FILE_STATUS_CONFLICTING,
-                              fileapi::SYNC_ACTION_NONE));
+      NotifyObserversFileStatusChanged(url,
+                                       fileapi::SYNC_FILE_STATUS_CONFLICTING,
+                                       fileapi::SYNC_ACTION_NONE,
+                                       fileapi::SYNC_DIRECTION_NONE);
       return;
     }
     case google_apis::HTTP_NOT_MODIFIED: {
@@ -1283,12 +1275,10 @@ void DriveFileSyncService::DidDeleteFileForLocalSync(
           url,
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
                      AsWeakPtr(), base::Passed(&token), url, error, callback));
-      FOR_EACH_OBSERVER(
-          FileStatusObserver, file_status_observers_,
-          OnFileStatusChanged(url,
-                              SYNC_DIRECTION_LOCAL_TO_REMOTE,
-                              fileapi::SYNC_FILE_STATUS_SYNCED,
-                              fileapi::SYNC_ACTION_DELETED));
+      NotifyObserversFileStatusChanged(url,
+                                       fileapi::SYNC_FILE_STATUS_SYNCED,
+                                       fileapi::SYNC_ACTION_DELETED,
+                                       fileapi::SYNC_DIRECTION_LOCAL_TO_REMOTE);
       return;
     }
     case google_apis::HTTP_PRECONDITION:
@@ -1305,12 +1295,10 @@ void DriveFileSyncService::DidDeleteFileForLocalSync(
           url, metadata,
           base::Bind(&DriveFileSyncService::DidApplyLocalChange,
                      AsWeakPtr(), base::Passed(&token), url, error, callback));
-      FOR_EACH_OBSERVER(
-          FileStatusObserver, file_status_observers_,
-          OnFileStatusChanged(url,
-                              SYNC_DIRECTION_NONE,
-                              fileapi::SYNC_FILE_STATUS_CONFLICTING,
-                              fileapi::SYNC_ACTION_NONE));
+      NotifyObserversFileStatusChanged(url,
+                                       fileapi::SYNC_FILE_STATUS_CONFLICTING,
+                                       fileapi::SYNC_ACTION_NONE,
+                                       fileapi::SYNC_DIRECTION_NONE);
       return;
     }
     default: {
@@ -1436,12 +1424,10 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
           url, drive_metadata,
           base::Bind(&DriveFileSyncService::CompleteRemoteSync, AsWeakPtr(),
                      base::Passed(&param)));
-      FOR_EACH_OBSERVER(
-          FileStatusObserver, file_status_observers_,
-          OnFileStatusChanged(url,
-                              SYNC_DIRECTION_NONE,
-                              fileapi::SYNC_FILE_STATUS_CONFLICTING,
-                              fileapi::SYNC_ACTION_NONE));
+      NotifyObserversFileStatusChanged(url,
+                                       fileapi::SYNC_FILE_STATUS_CONFLICTING,
+                                       fileapi::SYNC_ACTION_NONE,
+                                       fileapi::SYNC_DIRECTION_NONE);
       return;
     }
 
@@ -1664,20 +1650,16 @@ void DriveFileSyncService::FinalizeRemoteSync(
   NotifyTaskDone(status, param->token.Pass());
   if (status == fileapi::SYNC_STATUS_HAS_CONFLICT ||
       param->drive_metadata.conflicted()) {
-    FOR_EACH_OBSERVER(
-        FileStatusObserver, file_status_observers_,
-        OnFileStatusChanged(param->remote_change.url,
-                            SYNC_DIRECTION_NONE,
-                            fileapi::SYNC_FILE_STATUS_CONFLICTING,
-                            fileapi::SYNC_ACTION_NONE));
+    NotifyObserversFileStatusChanged(param->remote_change.url,
+                                     fileapi::SYNC_FILE_STATUS_CONFLICTING,
+                                     fileapi::SYNC_ACTION_NONE,
+                                     fileapi::SYNC_DIRECTION_NONE);
   } else if (status == fileapi::SYNC_STATUS_OK &&
              param->sync_action != fileapi::SYNC_ACTION_NONE) {
-    FOR_EACH_OBSERVER(
-        FileStatusObserver, file_status_observers_,
-        OnFileStatusChanged(param->remote_change.url,
-                            SYNC_DIRECTION_REMOTE_TO_LOCAL,
-                            fileapi::SYNC_FILE_STATUS_SYNCED,
-                            param->sync_action));
+    NotifyObserversFileStatusChanged(param->remote_change.url,
+                                     fileapi::SYNC_FILE_STATUS_SYNCED,
+                                     param->sync_action,
+                                     fileapi::SYNC_DIRECTION_REMOTE_TO_LOCAL);
   }
   param->callback.Run(status, param->remote_change.url);
 }
@@ -2026,6 +2008,21 @@ DriveFileSyncService::GDataErrorCodeToSyncStatusCodeWrapper(
   if (status != fileapi::SYNC_STATUS_OK && !sync_client_->IsAuthenticated())
     return fileapi::SYNC_STATUS_AUTHENTICATION_FAILED;
   return status;
+}
+
+void DriveFileSyncService::NotifyObserversFileStatusChanged(
+    const fileapi::FileSystemURL& url,
+    fileapi::SyncFileStatus sync_status,
+    fileapi::SyncAction action_taken,
+    fileapi::SyncDirection direction) {
+  if (sync_status != fileapi::SYNC_FILE_STATUS_SYNCED) {
+    DCHECK_EQ(fileapi::SYNC_ACTION_NONE, action_taken);
+    DCHECK_EQ(fileapi::SYNC_DIRECTION_NONE, direction);
+  }
+
+  FOR_EACH_OBSERVER(
+      FileStatusObserver, file_status_observers_,
+      OnFileStatusChanged(url, sync_status, action_taken, direction));
 }
 
 }  // namespace sync_file_system

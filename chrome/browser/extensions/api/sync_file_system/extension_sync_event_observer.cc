@@ -70,13 +70,13 @@ api::sync_file_system::SyncAction SyncActionToExtensionEnum(
 }
 
 api::sync_file_system::SyncDirection SyncDirectionToExtensionEnum(
-    sync_file_system::SyncDirection direction) {
+    fileapi::SyncDirection direction) {
   switch (direction) {
-    case sync_file_system::SYNC_DIRECTION_LOCAL_TO_REMOTE:
+    case fileapi::SYNC_DIRECTION_LOCAL_TO_REMOTE:
       return api::sync_file_system::SYNC_DIRECTION_LOCAL_TO_REMOTE;
-    case sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL:
+    case fileapi::SYNC_DIRECTION_REMOTE_TO_LOCAL:
       return api::sync_file_system::SYNC_DIRECTION_REMOTE_TO_LOCAL;
-    case sync_file_system::SYNC_DIRECTION_NONE:
+    case fileapi::SYNC_DIRECTION_NONE:
       return api::sync_file_system::SYNC_DIRECTION_NONE;
   }
   NOTREACHED() << "Invalid direction: " << direction;
@@ -138,7 +138,7 @@ void ExtensionSyncEventObserver::OnFileSynced(
     const fileapi::FileSystemURL& url,
     fileapi::SyncFileStatus status,
     fileapi::SyncAction action,
-    sync_file_system::SyncDirection direction) {
+    fileapi::SyncDirection direction) {
   // Get all values needed to build FileEntry in custom_bindings args massager.
   std::string mount_type = fileapi::GetFileSystemTypeString(url.mount_type());
   std::string file_system_name = fileapi::GetFileSystemName(url.origin(),

@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/syncable/sync_direction.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
@@ -513,9 +514,9 @@ void SyncFileSystemService::OnStateChanged() {
 
 void SyncFileSystemService::OnFileStatusChanged(
     const FileSystemURL& url,
-    SyncDirection direction,
     fileapi::SyncFileStatus sync_status,
-    fileapi::SyncAction action_taken) {
+    fileapi::SyncAction action_taken,
+    fileapi::SyncDirection direction) {
   FOR_EACH_OBSERVER(
       SyncEventObserver, observers_,
       OnFileSynced(url, sync_status, action_taken, direction));

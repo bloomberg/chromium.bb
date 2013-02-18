@@ -45,7 +45,7 @@ class ExtensionSyncEventObserver
       const fileapi::FileSystemURL& url,
       fileapi::SyncFileStatus status,
       fileapi::SyncAction action,
-      sync_file_system::SyncDirection direction) OVERRIDE;
+      fileapi::SyncDirection direction) OVERRIDE;
 
  private:
    const std::string& GetExtensionId(const GURL& app_origin);
