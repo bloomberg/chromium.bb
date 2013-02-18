@@ -404,7 +404,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
     ui::MouseEvent mouse_pressed_event(event, static_cast<View*>(this),
                                        mouse_pressed_handler_);
     drag_info_.Reset();
-    mouse_pressed_handler_->ProcessMousePressed(mouse_pressed_event);
+    DispatchEventToTarget(mouse_pressed_handler_, &mouse_pressed_event);
     return true;
   }
   DCHECK(!explicit_mouse_handler_);
@@ -432,8 +432,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
       mouse_pressed_event.set_flags(event.flags() & ~ui::EF_IS_DOUBLE_CLICK);
 
     drag_info_.Reset();
-    bool handled = mouse_pressed_handler_->ProcessMousePressed(
-        mouse_pressed_event);
+    DispatchEventToTarget(mouse_pressed_handler_, &mouse_pressed_event);
 
     // The view could have removed itself from the tree when handling
     // OnMousePressed().  In this case, the removal notification will have
@@ -448,7 +447,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
     // If the view handled the event, leave mouse_pressed_handler_ set and
     // return true, which will cause subsequent drag/release events to get
     // forwarded to that view.
-    if (handled) {
+    if (mouse_pressed_event.handled()) {
       last_click_handler_ = mouse_pressed_handler_;
       DVLOG(1) << "OnMousePressed handled by "
           << mouse_pressed_handler_->GetClassName();
@@ -487,17 +486,11 @@ void RootView::OnMouseReleased(const ui::MouseEvent& event) {
   if (mouse_pressed_handler_) {
     ui::MouseEvent mouse_released(event, static_cast<View*>(this),
                                   mouse_pressed_handler_);
-    // TODO(sadrul|oshima): This is tentative solution to pass target
-    // to LauncherDelegate::ItemClicked. Remove this once crbug.com/173235
-    // is implemented.
-    ui::Event::DispatcherApi api(&mouse_released);
-    api.set_target(this);
-
-    // We allow the view to delete us from ProcessMouseReleased. As such,
+    // We allow the view to delete us from the event dispatch callback. As such,
     // configure state such that we're done first, then call View.
     View* mouse_pressed_handler = mouse_pressed_handler_;
     SetMouseHandler(NULL);
-    mouse_pressed_handler->ProcessMouseReleased(mouse_released);
+    DispatchEventToTarget(mouse_pressed_handler, &mouse_released);
     // WARNING: we may have been deleted.
   }
 }
