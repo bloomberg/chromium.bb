@@ -1251,6 +1251,7 @@ int32 FileBrowserFunction::GetTabId() const {
 void FileBrowserFunction::GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
     const UrlList& file_urls,
     GetLocalPathsCallback callback) {
+  DCHECK(render_view_host());
   content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(profile(), site_instance)->
@@ -2333,6 +2334,11 @@ void GetDriveFilePropertiesFunction::GetNextFileProperties() {
     // Exit of asynchronous look and return the result.
     SetResult(file_properties_.release());
     SendResponse(true);
+    return;
+  }
+  // RenderViewHost may have gone while the task is posted asynchronously.
+  if (!render_view_host()) {
+    SendResponse(false);
     return;
   }
 
