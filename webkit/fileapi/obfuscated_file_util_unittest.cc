@@ -105,7 +105,7 @@ FileSystemURL FileSystemURLAppendUTF8(
 
 FileSystemURL FileSystemURLDirName(const FileSystemURL& url) {
   return FileSystemURL::CreateForTest(
-      url.origin(), url.mount_type(), url.virtual_path().DirName());
+      url.origin(), url.mount_type(), VirtualPath::DirName(url.virtual_path()));
 }
 
 }  // namespace (anonymous)

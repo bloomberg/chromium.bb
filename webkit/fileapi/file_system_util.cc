@@ -48,6 +48,40 @@ base::FilePath VirtualPath::BaseName(const base::FilePath& virtual_path) {
   return base::FilePath(path);
 }
 
+base::FilePath VirtualPath::DirName(const base::FilePath& virtual_path) {
+  typedef base::FilePath::StringType StringType;
+  StringType  path = virtual_path.value();
+
+  // The logic below is taken from that of base::FilePath::DirName, except
+  // that this version never cares about '//' or drive-letters even on win32.
+
+  // Strip trailing separators.
+  while (path.size() > 1 && base::FilePath::IsSeparator(path[path.size() - 1]))
+    path.resize(path.size() - 1);
+
+  StringType::size_type last_separator =
+      path.find_last_of(base::FilePath::kSeparators);
+  if (last_separator == StringType::npos) {
+    // path_ is in the current directory.
+    return base::FilePath(base::FilePath::kCurrentDirectory);
+  }
+  if (last_separator == 0) {
+    // path_ is in the root directory.
+    return base::FilePath(path.substr(0, 1));
+  }
+  // path_ is somewhere else, trim the basename.
+  path.resize(last_separator);
+
+  // Strip trailing separators.
+  while (path.size() > 1 && base::FilePath::IsSeparator(path[path.size() - 1]))
+    path.resize(path.size() - 1);
+
+  if (path.empty())
+    return base::FilePath(base::FilePath::kCurrentDirectory);
+
+  return base::FilePath(path);
+}
+
 void VirtualPath::GetComponents(
     const base::FilePath& path,
     std::vector<base::FilePath::StringType>* components) {

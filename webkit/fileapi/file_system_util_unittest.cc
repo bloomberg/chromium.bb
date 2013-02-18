@@ -54,6 +54,46 @@ TEST_F(FileSystemUtilTest, VirtualPathBaseName) {
   }
 }
 
+TEST_F(FileSystemUtilTest, VirtualPathDirName) {
+  struct test_data {
+    const base::FilePath::StringType path;
+    const base::FilePath::StringType dir_name;
+  } test_cases[] = {
+    { FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL("foo/b:bar"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL(""), FILE_PATH_LITERAL(".") },
+    { FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/") },
+    { FILE_PATH_LITERAL("foo//////bar"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL("foo/bar/"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL("foo/bar/////"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL("/bar/////"), FILE_PATH_LITERAL("/") },
+    { FILE_PATH_LITERAL("bar/////"), FILE_PATH_LITERAL(".") },
+    { FILE_PATH_LITERAL("bar/"), FILE_PATH_LITERAL(".") },
+    { FILE_PATH_LITERAL("/bar"), FILE_PATH_LITERAL("/") },
+    { FILE_PATH_LITERAL("////bar"), FILE_PATH_LITERAL("/") },
+    { FILE_PATH_LITERAL("bar"), FILE_PATH_LITERAL(".") },
+    { FILE_PATH_LITERAL("c:bar"), FILE_PATH_LITERAL(".") },
+#ifdef FILE_PATH_USES_WIN_SEPARATORS
+    { FILE_PATH_LITERAL("foo\\bar"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL("foo\\b:bar"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL("\\"), FILE_PATH_LITERAL("\\") },
+    { FILE_PATH_LITERAL("foo\\\\\\\\\\\\bar"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL("foo\\bar\\"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL("foo\\bar\\\\\\\\\\"), FILE_PATH_LITERAL("foo") },
+    { FILE_PATH_LITERAL("\\bar\\\\\\\\\\"), FILE_PATH_LITERAL("\\") },
+    { FILE_PATH_LITERAL("bar\\\\\\\\\\"), FILE_PATH_LITERAL(".") },
+    { FILE_PATH_LITERAL("bar\\"), FILE_PATH_LITERAL(".") },
+    { FILE_PATH_LITERAL("\\bar"), FILE_PATH_LITERAL("\\") },
+    { FILE_PATH_LITERAL("\\\\\\\\bar"), FILE_PATH_LITERAL("\\") },
+#endif
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    base::FilePath input = base::FilePath(test_cases[i].path);
+    base::FilePath dir_name = VirtualPath::DirName(input);
+    EXPECT_EQ(test_cases[i].dir_name, dir_name.value());
+  }
+}
+
 TEST_F(FileSystemUtilTest, GetNormalizedFilePath) {
   struct test_data {
     const base::FilePath::StringType path;

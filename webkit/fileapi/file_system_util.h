@@ -36,6 +36,10 @@ class WEBKIT_STORAGE_EXPORT VirtualPath {
   // character.
   static base::FilePath BaseName(const base::FilePath& virtual_path);
 
+  // Use this instead of base::FilePath::DirName when operating on virtual
+  // paths.
+  static base::FilePath DirName(const base::FilePath& virtual_path);
+
   // Likewise, use this instead of base::FilePath::GetComponents when
   // operating on virtual paths.
   // Note that this assumes very clean input, with no leading slash, and
