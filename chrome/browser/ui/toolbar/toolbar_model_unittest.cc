@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/instant/instant_service.h"
 #include "chrome/browser/instant/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -20,6 +23,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/escape.h"
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -108,7 +112,23 @@ struct TestItem {
     ASCIIToUTF16("tractor supply"),
     true,
     true
-  }
+  },
+  {
+    GURL("https://google.com/search?q=tractorsupply.com&espv=1"),
+    ASCIIToUTF16("https://google.com/search?q=tractorsupply.com&espv=1"),
+    ASCIIToUTF16("https://google.com/search?q=tractorsupply.com&espv=1"),
+    ASCIIToUTF16("https://google.com/search?q=tractorsupply.com&espv=1"),
+    false,
+    true
+  },
+  {
+    GURL("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
+    ASCIIToUTF16("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
+    ASCIIToUTF16("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
+    ASCIIToUTF16("https://google.com/search?q=ftp://tractorsupply.ie&espv=1"),
+    false,
+    true
+  },
 };
 
 }  // end namespace
@@ -121,6 +141,8 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(), &TemplateURLServiceFactory::BuildInstanceFor);
+    AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(), &AutocompleteClassifierFactory::BuildInstanceFor);
   }
   virtual void TearDown() OVERRIDE { BrowserWithTestWindowTest::TearDown(); }
 
@@ -149,6 +171,26 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
                              should_display);
     NavigateAndCheckTextImpl(url, true, expected_replace_text, would_replace,
                              should_display);
+  }
+
+  void NavigateAndCheckQueries(const std::vector<const char*>& queries,
+                               bool would_replace) {
+    const std::string kInstantExtendedPrefix(
+        "https://google.com/search?espv=1&q=");
+
+    chrome::search::EnableQueryExtractionForTesting();
+
+    ResetDefaultTemplateURL();
+    AddTab(browser(), GURL(chrome::kAboutBlankURL));
+    for (size_t i = 0; i < queries.size(); ++i) {
+      std::string url_string = kInstantExtendedPrefix +
+          net::EscapeQueryParamValue(queries[i], true);
+      NavigateAndCheckTextImpl(GURL(url_string), true,
+                               ASCIIToUTF16(would_replace ?
+                                            std::string(queries[i]) :
+                                            url_string),
+                               would_replace, true);
+    }
   }
 
  private:
@@ -217,4 +259,49 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionEnabled) {
                          test_item.would_replace,
                          test_item.should_display);
   }
+}
+
+// Test that replacement doesn't happen for URLs.
+TEST_F(ToolbarModelTest, DoNotExtractUrls) {
+  static const char* const kQueries[] = {
+    "www.google.com ",
+    "www.google.ca",  // Oh, Canada!
+    "www.google.ca.",
+    "www.google.ca ",
+    "www.google.ca. ",
+    "something.xxx",
+    "something.travel",
+    "bankofamerica.com/",
+    "bankofamerica.com/foo",
+    "bankofamerica.com/foo bla",
+    "BankOfAmerica.BIZ/foo bla",
+    "   http:/monkeys",
+    "http://monkeys",
+    "javascript:alert(1)",
+    "JavaScript:alert(1)",
+    "localhost",
+  };
+
+  NavigateAndCheckQueries(
+      std::vector<const char*>(&kQueries[0],
+                               &kQueries[arraysize(kQueries)]), false);
+}
+
+// Test that replacement does happen for non-URLs.
+TEST_F(ToolbarModelTest, ExtractNonUrls) {
+  static const char* const kQueries[] = {
+    "facebook.com login",
+    "site:amazon.com",
+    "e.coli",
+    "info:http://www.google.com/",
+    "cache:http://www.apple.com/",
+    "9/11",
+    "<nomatch/>",
+    "ac/dc",
+    "ps/2",
+  };
+
+  NavigateAndCheckQueries(
+      std::vector<const char*>(&kQueries[0],
+                               &kQueries[arraysize(kQueries)]), true);
 }

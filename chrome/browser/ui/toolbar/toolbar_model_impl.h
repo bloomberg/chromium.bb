@@ -56,6 +56,10 @@ class ToolbarModelImpl : public ToolbarModel {
   // Helper method to extract the profile from the navigation controller.
   Profile* GetProfile() const;
 
+  // Returns search terms as in chrome::search::GetSearchTerms unless those
+  // terms would be treated by the omnibox as a navigation.
+  string16 GetSearchTerms() const;
+
   ToolbarModelDelegate* delegate_;
 
   // Whether the text in the location bar is currently being edited.

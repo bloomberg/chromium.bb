@@ -7,7 +7,10 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/search/search.h"
@@ -48,8 +51,7 @@ ToolbarModelImpl::~ToolbarModelImpl() {
 string16 ToolbarModelImpl::GetText(
     bool display_search_urls_as_search_terms) const {
   if (display_search_urls_as_search_terms) {
-    string16 search_terms =
-        chrome::search::GetSearchTerms(delegate_->GetActiveWebContents());
+    string16 search_terms = GetSearchTerms();
     if (!search_terms.empty())
       return search_terms;
   }
@@ -81,8 +83,7 @@ GURL ToolbarModelImpl::GetURL() const {
 }
 
 bool ToolbarModelImpl::WouldReplaceSearchURLWithSearchTerms() const {
-  const content::WebContents* contents = delegate_->GetActiveWebContents();
-  return !chrome::search::GetSearchTerms(contents).empty();
+  return !GetSearchTerms().empty();
 }
 
 bool ToolbarModelImpl::ShouldDisplayURL() const {
@@ -219,4 +220,25 @@ Profile* ToolbarModelImpl::GetProfile() const {
   return navigation_controller ?
       Profile::FromBrowserContext(navigation_controller->GetBrowserContext()) :
       NULL;
+}
+
+string16 ToolbarModelImpl::GetSearchTerms() const {
+  const WebContents* contents = delegate_->GetActiveWebContents();
+  string16 search_terms = chrome::search::GetSearchTerms(contents);
+
+  // Don't extract search terms that the omnibox would treat as a navigation.
+  // This might confuse users into believing that the search terms were the
+  // URL of the current page, and could cause problems if users hit enter in
+  // the omnibox expecting to reload the page.
+  if (!search_terms.empty()) {
+    AutocompleteMatch match;
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
+    AutocompleteClassifierFactory::GetForProfile(profile)->Classify(
+        search_terms, string16(), false, false, &match, NULL);
+    if (!AutocompleteMatch::IsSearchType(match.type))
+      search_terms.clear();
+  }
+
+  return search_terms;
 }
