@@ -83,6 +83,20 @@ util.getFileErrorString = function(code) {
 };
 
 /**
+ * @param {string} str String to escape.
+ * @return {string} Escaped string.
+ */
+util.htmlEscape = function(str) {
+  return str.replace(/[<>&]/g, function(entity) {
+    switch (entity) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+    }
+  });
+};
+
+/**
  * @param {string} str String to unescape.
  * @return {string} Unescaped string.
  */
