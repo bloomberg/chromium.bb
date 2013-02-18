@@ -82,6 +82,9 @@ class DebugColors {
   static int NonOccludingRectBorderWidth(const LayerTreeImpl* tree_impl);
   static SkColor NonOccludingRectFillColor();
 
+  static SkColor NonPaintedFillColor();
+  static SkColor MissingPictureFillColor();
+
   static SkColor PlatformLayerTreeTextColor();
   static SkColor FPSDisplayTextAndGraphColor();
   static SkColor PaintTimeDisplayTextAndGraphColor();

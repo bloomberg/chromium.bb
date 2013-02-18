@@ -112,6 +112,12 @@ SkColor DebugColors::NonOccludingRectBorderColor() { return SkColorSetARGB(255, 
 int DebugColors::NonOccludingRectBorderWidth(const LayerTreeImpl* tree_impl) { return Scale(2, tree_impl); }
 SkColor DebugColors::NonOccludingRectFillColor() { return SkColorSetARGB(10, 200, 0, 100); }
 
+// Non-Painted rects in cyan.
+SkColor DebugColors::NonPaintedFillColor() { return SK_ColorCYAN; }
+
+// Missing picture rects in magenta.
+SkColor DebugColors::MissingPictureFillColor() { return SK_ColorMAGENTA; }
+
 // ======= HUD widget colors =======
 
 SkColor DebugColors::PlatformLayerTreeTextColor() { return SK_ColorRED; }

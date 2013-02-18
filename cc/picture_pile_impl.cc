@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/debug/trace_event.h"
+#include "cc/debug_colors.h"
 #include "cc/picture_pile_impl.h"
 #include "cc/region.h"
 #include "cc/rendering_stats.h"
@@ -65,6 +66,11 @@ void PicturePileImpl::Raster(
 
   DCHECK(contents_scale >= min_contents_scale_);
 
+#ifndef NDEBUG
+  // Any non-painted areas will be left in this color.
+  canvas->clear(DebugColors::NonPaintedFillColor());
+#endif  // NDEBUG
+
   canvas->save();
   canvas->translate(-content_rect.x(), -content_rect.y());
   canvas->clipRect(gfx::RectToSkRect(content_rect));
@@ -114,6 +120,20 @@ void PicturePileImpl::Raster(
           content_clip.width() * content_clip.height();
     }
   }
+
+#ifndef NDEBUG
+  // Fill the remaining clip with debug color. This allows us to
+  // distinguish between non painted areas and problems with missing
+  // pictures.
+  SkPaint paint;
+  paint.setColor(DebugColors::MissingPictureFillColor());
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  canvas->drawPaint(paint);
+#endif  // NDEBUG
+
+  // We should always paint some part of |content_rect|.
+  DCHECK(!unclipped.Contains(content_rect));
+
   canvas->restore();
 }
 
