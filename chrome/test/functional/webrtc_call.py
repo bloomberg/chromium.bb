@@ -135,20 +135,9 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
        playing, say, a YouTube video, and record with # arecord -f dat mine.dat.
        Verify the recording with aplay (should have recorded what you played
        from chrome).
-
-    * On Windows 7:
-    1. Control panel > Sound > Manage audio devices.
-    2. In the recording tab, right-click in an empty space in the pane with the
-       devices. Tick 'show disabled devices'.
-    3. You should see a 'stero mix' device - this is what your speakers output.
-       Right click > Properties.
-    4. In the Listen tab for the mix device, check the 'listen to this device'
-       checkbox.
-    5. Launch chrome and try playing a video. You should see movement in the
-       volume meter for the mix device.
     """
-    if not (self.IsLinux() or self.IsWin()):
-      print 'This test is only available on Linux and Windows for now.'
+    if not self.IsLinux():
+      print 'This test is only available on Linux for now.'
       return
 
     self._LoadPageInTwoTabs('webrtc_jsep01_test.html')
@@ -347,7 +336,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
 
   def _CreateTempFile(self):
     """Returns an absolute path to an empty temp file."""
-    file_handle, path = tempfile.mkstemp(suffix='_webrtc.wav')
+    file_handle, path = tempfile.mkstemp(suffix='_webrtc.dat')
     os.close(file_handle)
     return path
 
