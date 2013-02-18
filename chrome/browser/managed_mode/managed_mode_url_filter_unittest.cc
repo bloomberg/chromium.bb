@@ -38,6 +38,10 @@ class ManagedModeURLFilterTest : public ::testing::Test,
   scoped_refptr<ManagedModeURLFilter> filter_;
 };
 
+// Disable all tests if ENABLE_CONFIGURATION_POLICY is not defined
+// Since IsURLWhitelisted() doesn't work.
+#if defined(ENABLE_CONFIGURATION_POLICY)
+
 TEST_F(ManagedModeURLFilterTest, Basic) {
   std::vector<std::string> list;
   // Allow domain and all subdomains, for any filtered scheme.
@@ -145,3 +149,5 @@ TEST_F(ManagedModeURLFilterTest, IPAddress) {
   EXPECT_TRUE(IsURLWhitelisted("http://123.123.123.123/"));
   EXPECT_FALSE(IsURLWhitelisted("http://123.123.123.124/"));
 }
+
+#endif  // ENABLE_CONFIGURATION_POLICY

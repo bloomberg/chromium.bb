@@ -32,10 +32,12 @@ namespace {
 class LazySafeBrowsingDatabaseManager {
  public:
   LazySafeBrowsingDatabaseManager() {
+#if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
     if (g_browser_process && g_browser_process->safe_browsing_service()) {
       instance_ =
           g_browser_process->safe_browsing_service()->database_manager();
     }
+#endif
   }
 
   scoped_refptr<SafeBrowsingDatabaseManager> get() {
