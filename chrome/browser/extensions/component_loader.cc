@@ -304,12 +304,12 @@ void ComponentLoader::AddChromeApp() {
   // required in case LoadAll() is called again.
   DictionaryValue* manifest = ParseManifest(manifest_contents);
 
-  // Update manifest to use a proper name.
-  manifest->SetString(extension_manifest_keys::kName,
-                      l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
-
-  if (manifest)
+  if (manifest) {
+    // Update manifest to use a proper name.
+    manifest->SetString(extension_manifest_keys::kName,
+                        l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
     Add(manifest, base::FilePath(FILE_PATH_LITERAL("chrome_app")));
+  }
 #endif
 }
 
