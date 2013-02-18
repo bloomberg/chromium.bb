@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_H_
 #define CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_H_
 
-namespace browser {
+namespace chrome {
 
 // Starts a user initiated exit process. Called from Browser::Exit.
 // On platforms other than ChromeOS, this is equivalent to
@@ -53,10 +53,6 @@ void CloseAllBrowsers();
 
 // Begins shutdown of the application when the desktop session is ending.
 void SessionEnding();
-
-}  // namespace browser
-
-namespace chrome {
 
 // Tells the BrowserList to keep the application alive after the last Browser
 // closes. This is implemented as a count, so callers should pair their calls

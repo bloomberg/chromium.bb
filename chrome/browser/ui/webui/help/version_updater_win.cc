@@ -152,7 +152,7 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback) {
 }
 
 void VersionUpdaterWin::RelaunchBrowser() const {
-  browser::AttemptRestart();
+  chrome::AttemptRestart();
 }
 
 void VersionUpdaterWin::OnReportResults(

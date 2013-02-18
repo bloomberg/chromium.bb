@@ -369,7 +369,7 @@ void SyncTest::CleanUpOnMainThread() {
   // around, so run messages both before and after closing all browsers.
   content::RunAllPendingInMessageLoop();
   // Close all browser windows.
-  browser::CloseAllBrowsers();
+  chrome::CloseAllBrowsers();
   content::RunAllPendingInMessageLoop();
 
   // All browsers should be closed at this point, or else we could see memory

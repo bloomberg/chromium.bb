@@ -52,7 +52,7 @@ const base::Time SessionLengthLimiterDelegateImpl::GetCurrentTime() const {
 }
 
 void SessionLengthLimiterDelegateImpl::StopSession() {
-  browser::AttemptUserExit();
+  chrome::AttemptUserExit();
 }
 
 }  // namespace

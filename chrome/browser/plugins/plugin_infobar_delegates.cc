@@ -518,7 +518,7 @@ string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
 }
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
-  browser::AttemptRestartWithModeSwitch();
+  chrome::AttemptRestartWithModeSwitch();
   return true;
 }
 

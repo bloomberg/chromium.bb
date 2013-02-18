@@ -97,7 +97,7 @@ void CriticalNotificationBubbleView::OnCountdown() {
     content::RecordAction(
         UserMetricsAction("CriticalNotification_AutoRestart"));
     refresh_timer_.Stop();
-    browser::AttemptRestart();
+    chrome::AttemptRestart();
   }
 
   // Update the counter. It may seem counter-intuitive to update the message
@@ -114,9 +114,8 @@ void CriticalNotificationBubbleView::ButtonPressed(
   UpgradeDetector::GetInstance()->acknowledge_critical_update();
 
   if (sender == restart_button_) {
-    content::RecordAction(
-        UserMetricsAction("CriticalNotification_Restart"));
-    browser::AttemptRestart();
+    content::RecordAction(UserMetricsAction("CriticalNotification_Restart"));
+    chrome::AttemptRestart();
   } else if (sender == dismiss_button_) {
     content::RecordAction(UserMetricsAction("CriticalNotification_Ignore"));
     // If the counter reaches 0, we set a restart flag that must be cleared if

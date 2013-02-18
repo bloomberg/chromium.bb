@@ -19,7 +19,7 @@ void SessionStateControllerDelegateChromeos::RequestLockScreen() {
   // be the most acceptable replacement for the lock action of the power
   // button for Kiosk mode users.
   if (KioskModeSettings::Get()->IsKioskModeEnabled()) {
-    browser::AttemptUserExit();
+    chrome::AttemptUserExit();
     return;
   }
   // TODO(antrim) : additional logging for crbug/173178

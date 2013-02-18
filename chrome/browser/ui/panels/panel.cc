@@ -360,7 +360,7 @@ void Panel::ExecuteCommandWithDisposition(int id,
       break;
     case IDC_EXIT:
       content::RecordAction(UserMetricsAction("Exit"));
-      browser::AttemptUserExit();
+      chrome::AttemptUserExit();
       break;
 
     // Clipboard

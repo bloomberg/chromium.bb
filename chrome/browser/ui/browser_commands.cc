@@ -637,7 +637,7 @@ void ConvertPopupToTabbedBrowser(Browser* browser) {
 
 void Exit() {
   content::RecordAction(UserMetricsAction("Exit"));
-  browser::AttemptUserExit();
+  chrome::AttemptUserExit();
 }
 
 void BookmarkCurrentPage(Browser* browser) {

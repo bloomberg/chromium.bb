@@ -232,7 +232,7 @@ bool BrowserFrameWin::PreHandleMSG(UINT message,
     }
     return false;
   case WM_ENDSESSION:
-    browser::SessionEnding();
+    chrome::SessionEnding();
     return true;
   case WM_INITMENUPOPUP:
     GetSystemMenu()->UpdateStates();

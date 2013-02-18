@@ -323,7 +323,7 @@ bool PDFUnsupportedFeaturePromptDelegate::ShouldExpire(
 void PDFUnsupportedFeaturePromptDelegate::Accept() {
 #if defined(OS_WIN)
   if (base::win::IsMetroProcess()) {
-    browser::AttemptRestartWithModeSwitch();
+    chrome::AttemptRestartWithModeSwitch();
     return;
   }
 #endif

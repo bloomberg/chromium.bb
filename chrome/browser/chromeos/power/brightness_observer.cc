@@ -34,7 +34,7 @@ void BrightnessObserver::BrightnessChanged(int level, bool user_initiated) {
   // is complete, see crbug.com/161267.
   if (UserManager::Get()->IsLoggedInAsPublicAccount() &&
       !level && !user_initiated) {
-    browser::AttemptUserExit();
+    chrome::AttemptUserExit();
   }
 }
 

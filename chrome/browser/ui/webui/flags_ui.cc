@@ -146,7 +146,7 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
 }
 
 void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
-  browser::AttemptRestart();
+  chrome::AttemptRestart();
 }
 
 }  // namespace

@@ -184,7 +184,7 @@ void ChromeShellDelegate::Shutdown() {
 }
 
 void ChromeShellDelegate::Exit() {
-  browser::AttemptUserExit();
+  chrome::AttemptUserExit();
 }
 
 void ChromeShellDelegate::NewTab() {

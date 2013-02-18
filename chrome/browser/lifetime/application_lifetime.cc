@@ -47,7 +47,7 @@
 #include "chromeos/dbus/update_engine_client.h"
 #endif
 
-namespace browser {
+namespace chrome {
 namespace {
 
 // Returns true if all browsers can be closed without user interaction.
@@ -219,7 +219,7 @@ void AttemptRestartWithModeSwitch() {
   // operating systems so there is no need for OS version check.
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kRestartSwitchMode, true);
-  browser::AttemptRestart();
+  AttemptRestart();
 }
 #endif
 
@@ -294,21 +294,17 @@ void SessionEnding() {
   content::ImmediateShutdownAndExitProcess();
 }
 
-}  // namespace browser
-
-namespace chrome {
-
 void StartKeepAlive() {
   // Increment the browser process refcount as long as we're keeping the
   // application alive.
   if (!WillKeepAlive())
     g_browser_process->AddRefModule();
-  ++browser::g_keep_alive_count;
+  ++g_keep_alive_count;
 }
 
 void EndKeepAlive() {
-  DCHECK_GT(browser::g_keep_alive_count, 0);
-  --browser::g_keep_alive_count;
+  DCHECK_GT(g_keep_alive_count, 0);
+  --g_keep_alive_count;
 
   DCHECK(g_browser_process);
   // Although we should have a browser process, if there is none,
@@ -324,13 +320,13 @@ void EndKeepAlive() {
     if (chrome::GetTotalBrowserCount() == 0 &&
         !browser_shutdown::IsTryingToQuit() &&
         MessageLoop::current()) {
-      browser::CloseAllBrowsers();
+      CloseAllBrowsers();
     }
   }
 }
 
 bool WillKeepAlive() {
-  return browser::g_keep_alive_count > 0;
+  return g_keep_alive_count > 0;
 }
 
 void NotifyAppTerminating() {
@@ -350,7 +346,7 @@ void NotifyAndTerminate(bool fast_path) {
   // Don't ask SessionManager to shutdown if
   // a) a shutdown request has already been sent.
   // b) shutdown request comes from session manager.
-  if (notified || browser::g_session_manager_requested_shutdown)
+  if (notified || g_session_manager_requested_shutdown)
     return;
   notified = true;
 #endif
@@ -375,7 +371,7 @@ void NotifyAndTerminate(bool fast_path) {
     // If running the Chrome OS build, but we're not on the device, act
     // as if we received signal from SessionManager.
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&browser::ExitCleanly));
+                                     base::Bind(&ExitCleanly));
   }
 #endif
 }

@@ -481,7 +481,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void SignOut() OVERRIDE {
-    browser::AttemptUserExit();
+    chrome::AttemptUserExit();
   }
 
   virtual void RequestLockScreen() OVERRIDE {

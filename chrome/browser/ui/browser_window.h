@@ -362,7 +362,7 @@ class BrowserWindow : public BaseWindow {
       autofill::PasswordGenerator* password_generator) = 0;
 
  protected:
-  friend void browser::CloseAllBrowsers();
+  friend void chrome::CloseAllBrowsers();
   friend class BrowserView;
   virtual void DestroyBrowser() = 0;
 };

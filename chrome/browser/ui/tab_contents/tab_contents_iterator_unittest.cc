@@ -195,8 +195,8 @@ TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
   ProfileManager* profile_manager = new ProfileManager(base::FilePath());
   testing_browser_process->SetProfileManager(profile_manager);
 
-  browser::AttemptRestart();
-  // Cancel the effects of us calling browser::AttemptRestart. Otherwise tests
+  chrome::AttemptRestart();
+  // Cancel the effects of us calling chrome::AttemptRestart. Otherwise tests
   // ran after this one will fail.
   browser_shutdown::SetTryingToQuit(false);
 

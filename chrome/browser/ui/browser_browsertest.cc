@@ -496,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
   // platform, though, it exits unconditionally. See the comment and bug ID
   // in AttemptUserExit() in application_lifetime.cc.
 #if defined(OS_CHROMEOS)
-  browser::AttemptExit();
+  chrome::AttemptExit();
 #else
   chrome::ExecuteCommand(second_window, IDC_EXIT);
 #endif

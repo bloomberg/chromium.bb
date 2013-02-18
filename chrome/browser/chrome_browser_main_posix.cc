@@ -145,9 +145,9 @@ ExitHandler::~ExitHandler() {
 void ExitHandler::Exit() {
 #if defined(OS_CHROMEOS)
   // On ChromeOS, exiting on signal should be always clean.
-  browser::ExitCleanly();
+  chrome::ExitCleanly();
 #else
-  browser::AttemptExit();
+  chrome::AttemptExit();
 #endif
 }
 

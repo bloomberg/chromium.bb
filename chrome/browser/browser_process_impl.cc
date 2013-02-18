@@ -1026,7 +1026,7 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
   }
 
   DLOG(WARNING) << "Shutting down current instance of the browser.";
-  browser::AttemptExit();
+  chrome::AttemptExit();
 
   // Transfer ownership to Upgrade.
   upgrade_util::SetNewCommandLine(new_cl.release());

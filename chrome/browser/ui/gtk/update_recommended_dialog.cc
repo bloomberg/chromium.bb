@@ -55,7 +55,7 @@ void UpdateRecommendedDialog::OnResponse(GtkWidget* dialog, int response_id) {
   gtk_widget_destroy(dialog_);
 
   if (response_id == GTK_RESPONSE_ACCEPT)
-    browser::AttemptRestart();
+    chrome::AttemptRestart();
 
   delete this;
 }

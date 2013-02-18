@@ -196,7 +196,7 @@ void KioskModeSettings::VerifyModeIsKnown(
             base::TimeDelta::FromMilliseconds(kDeviceModeFetchRetryDelayMs));
         break;
       case policy::DEVICE_MODE_KIOSK:
-        browser::ExitCleanly();
+        chrome::ExitCleanly();
         break;
       default:
         break;

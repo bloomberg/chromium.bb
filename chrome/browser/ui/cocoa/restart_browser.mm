@@ -41,7 +41,7 @@
   if (returnCode == NSAlertFirstButtonReturn) {
     // Nothing to do. User will restart later.
   } else if (returnCode == NSAlertSecondButtonReturn) {
-    browser::AttemptRestart();
+    chrome::AttemptRestart();
   } else {
     NOTREACHED();
   }

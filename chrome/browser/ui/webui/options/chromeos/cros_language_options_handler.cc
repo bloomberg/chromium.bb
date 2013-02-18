@@ -245,7 +245,7 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
 
 void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
-  browser::AttemptUserExit();
+  chrome::AttemptUserExit();
 }
 
 void CrosLanguageOptionsHandler::InputMethodDisableCallback(

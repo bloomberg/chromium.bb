@@ -126,7 +126,7 @@ void LanguageOptionsHandler::SetApplicationLocale(
 
 void LanguageOptionsHandler::RestartCallback(const ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_Restart"));
-  browser::AttemptRestart();
+  chrome::AttemptRestart();
 }
 
 }  // namespace options

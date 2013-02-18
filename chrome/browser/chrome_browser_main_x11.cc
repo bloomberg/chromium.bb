@@ -61,7 +61,7 @@ int BrowserX11IOErrorHandler(Display* d) {
     g_in_x11_io_error_handler = true;
     LOG(ERROR) << "X IO error received (X server probably went away)";
     browser_shutdown::SetShuttingDownWithoutClosingBrowsers(true);
-    browser::SessionEnding();
+    chrome::SessionEnding();
   }
 
   return 0;

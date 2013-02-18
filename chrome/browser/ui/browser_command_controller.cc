@@ -111,7 +111,7 @@ class SwichToMetroUIHandler
       case ShellIntegration::STATE_UNKNOWN :
         break;
       case ShellIntegration::STATE_IS_DEFAULT:
-        browser::AttemptRestartWithModeSwitch();
+        chrome::AttemptRestartWithModeSwitch();
         break;
       case ShellIntegration::STATE_NOT_DEFAULT:
         if (first_check_) {
@@ -439,7 +439,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       browser_->SetMetroSnapMode(false);
       break;
     case IDC_WIN8_DESKTOP_RESTART:
-      browser::AttemptRestartWithModeSwitch();
+      chrome::AttemptRestartWithModeSwitch();
       content::RecordAction(content::UserMetricsAction("Win8DesktopRestart"));
       break;
     case IDC_WIN8_METRO_RESTART:

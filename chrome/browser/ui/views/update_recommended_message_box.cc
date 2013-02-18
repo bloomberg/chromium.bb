@@ -52,7 +52,7 @@ bool UpdateRecommendedMessageBox::Accept() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
   // If running the Chrome OS build, but we're not on the device, fall through
 #endif
-  browser::AttemptRestart();
+  chrome::AttemptRestart();
   return true;
 }
 

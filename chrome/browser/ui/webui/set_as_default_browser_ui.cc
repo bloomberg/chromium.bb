@@ -379,9 +379,8 @@ void SetAsDefaultBrowserDialogImpl::
   // delegate_execute.exe will choose an immersive launch on the basis of the
   // same IsMachineATablet check, but will not store this as the user's
   // choice.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&browser::AttemptRestart));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&chrome::AttemptRestart));
 }
 
 }  // namespace

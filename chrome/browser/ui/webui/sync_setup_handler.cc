@@ -1044,7 +1044,7 @@ void SyncSetupHandler::HandleShowSetupUIWithoutLogin(const ListValue* args) {
 
 void SyncSetupHandler::HandleDoSignOutOnAuthError(const ListValue* args) {
   DLOG(INFO) << "Signing out the user to fix a sync error.";
-  browser::AttemptUserExit();
+  chrome::AttemptUserExit();
 }
 
 void SyncSetupHandler::HandleStopSyncing(const ListValue* args) {

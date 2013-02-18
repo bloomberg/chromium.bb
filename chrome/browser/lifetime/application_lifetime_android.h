@@ -7,12 +7,12 @@
 
 #include "base/android/jni_android.h"
 
-namespace browser {
+namespace chrome {
 
 void TerminateAndroid();
 
 bool RegisterApplicationLifetimeAndroid(JNIEnv* env);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_ANDROID_H_

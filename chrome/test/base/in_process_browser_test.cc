@@ -382,11 +382,11 @@ void InProcessBrowserTest::QuitBrowsers() {
   // AttemptExit exits the message loop after everything has been
   // shut down properly.
   MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                        base::Bind(&browser::AttemptExit));
+                                        base::Bind(&chrome::AttemptExit));
   content::RunMessageLoop();
 
 #if defined(OS_MACOSX)
-  // browser::AttemptExit() will attempt to close all browsers by deleting
+  // chrome::AttemptExit() will attempt to close all browsers by deleting
   // their tab contents. The last tab contents being removed triggers closing of
   // the browser window.
   //

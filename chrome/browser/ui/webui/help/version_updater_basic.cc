@@ -17,7 +17,7 @@ void VersionUpdaterBasic::CheckForUpdate(
 }
 
 void VersionUpdaterBasic::RelaunchBrowser() const {
-  browser::AttemptRestart();
+  chrome::AttemptRestart();
 }
 
 VersionUpdater* VersionUpdater::Create() {

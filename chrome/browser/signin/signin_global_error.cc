@@ -112,7 +112,7 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
 #if defined(OS_CHROMEOS)
   if (auth_error_.state() != GoogleServiceAuthError::NONE) {
     DLOG(INFO) << "Signing out the user to fix a sync error.";
-    // TODO(beng): seems like this could just call browser::AttemptUserExit().
+    // TODO(beng): seems like this could just call chrome::AttemptUserExit().
     chrome::ExecuteCommand(browser, IDC_EXIT);
     return;
   }

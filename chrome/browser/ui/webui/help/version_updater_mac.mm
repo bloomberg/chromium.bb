@@ -124,7 +124,7 @@ void VersionUpdaterMac::PromoteUpdater() const {
 
 void VersionUpdaterMac::RelaunchBrowser() const {
   // Tell the Broweser to restart if possible.
-  browser::AttemptRestart();
+  chrome::AttemptRestart();
 }
 
 void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {

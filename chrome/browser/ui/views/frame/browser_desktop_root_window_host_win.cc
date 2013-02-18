@@ -166,7 +166,7 @@ bool BrowserDesktopRootWindowHostWin::PreHandleMSG(UINT message,
         minimize_button_metrics_.OnHWNDActivated();
       return false;
     case WM_ENDSESSION:
-      browser::SessionEnding();
+      chrome::SessionEnding();
       return true;
     case WM_INITMENUPOPUP:
       GetSystemMenu()->UpdateStates();

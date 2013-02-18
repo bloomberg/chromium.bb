@@ -125,7 +125,7 @@ void UpgradeDetector::IdleCallback(IdleState state) {
     case IDLE_STATE_LOCKED:
       // Computer is locked, auto-restart.
       idle_check_timer_.Stop();
-      browser::AttemptRestart();
+      chrome::AttemptRestart();
       break;
     case IDLE_STATE_IDLE:
       // Computer has been idle for long enough, show warning.
