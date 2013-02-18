@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "content/common/clipboard_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -17,6 +18,22 @@
 
 namespace content {
 
+namespace {
+
+// Writes objects to the clipboard with a SourceTag corresponding to
+// |browser_context|.
+void WriteObjectsWrapper(ui::Clipboard* clipboard,
+                         const ui::Clipboard::ObjectMap& objects,
+                         BrowserContext* browser_context) {
+  ui::Clipboard::SourceTag source_tag =
+      BrowserContext::GetMarkerForOffTheRecordContext(browser_context);
+  clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD,
+                          objects,
+                          source_tag);
+}
+
+}  // namespace
+
 #if defined(OS_WIN)
 
 namespace {
@@ -24,17 +41,19 @@ namespace {
 // The write must be performed on the UI thread because the clipboard object
 // from the IO thread cannot create windows so it cannot be the "owner" of the
 // clipboard's contents.  // See http://crbug.com/5823.
-void WriteObjectsHelper(const ui::Clipboard::ObjectMap* objects) {
+void WriteObjectsOnUIThread(ui::Clipboard::ObjectMap* objects,
+                            BrowserContext* browser_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   static ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD, *objects);
+  WriteObjectsWrapper(clipboard, *objects, browser_context);
 }
 
 }  // namespace
 
 #endif
 
-ClipboardMessageFilter::ClipboardMessageFilter() {
+ClipboardMessageFilter::ClipboardMessageFilter(BrowserContext* browser_context)
+    : browser_context_(browser_context) {
 }
 
 void ClipboardMessageFilter::OverrideThreadForMessage(
@@ -90,32 +109,27 @@ ClipboardMessageFilter::~ClipboardMessageFilter() {
 }
 
 void ClipboardMessageFilter::OnWriteObjectsSync(
-    const ui::Clipboard::ObjectMap& objects,
+    ui::Clipboard::ObjectMap objects,
     base::SharedMemoryHandle bitmap_handle) {
   DCHECK(base::SharedMemory::IsHandleValid(bitmap_handle))
       << "Bad bitmap handle";
+  // Splice the shared memory handle into the clipboard data.
+  ui::Clipboard::ReplaceSharedMemHandle(&objects, bitmap_handle, peer_handle());
 #if defined(OS_WIN)
   // We cannot write directly from the IO thread, and cannot service the IPC
   // on the UI thread. We'll copy the relevant data and get a handle to any
   // shared memory so it doesn't go away when we resume the renderer, and post
   // a task to perform the write on the UI thread.
-  ui::Clipboard::ObjectMap* long_living_objects =
-      new ui::Clipboard::ObjectMap(objects);
-
-  // Splice the shared memory handle into the clipboard data.
-  ui::Clipboard::ReplaceSharedMemHandle(long_living_objects, bitmap_handle,
-                                        peer_handle());
+  ui::Clipboard::ObjectMap* long_living_objects = new ui::Clipboard::ObjectMap;
+  long_living_objects->swap(objects);
 
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WriteObjectsHelper, base::Owned(long_living_objects)));
+      base::Bind(&WriteObjectsOnUIThread, base::Owned(long_living_objects),
+                 browser_context_));
 #else
-  // Splice the shared memory handle into the clipboard data.
-  ui::Clipboard::ObjectMap objects_copy(objects);
-  ui::Clipboard::ReplaceSharedMemHandle(&objects_copy,
-      bitmap_handle, peer_handle());
-  GetClipboard()->WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects_copy);
+  WriteObjectsWrapper(GetClipboard(), objects, browser_context_);
 #endif
 }
 
@@ -135,9 +149,10 @@ void ClipboardMessageFilter::OnWriteObjectsAsync(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WriteObjectsHelper, base::Owned(long_living_objects)));
+      base::Bind(&WriteObjectsOnUIThread, base::Owned(long_living_objects),
+                 browser_context_));
 #else
-  GetClipboard()->WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects);
+  WriteObjectsWrapper(GetClipboard(), objects, browser_context_);
 #endif
 }
 

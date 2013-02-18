@@ -40,6 +40,7 @@ class UI_EXPORT ClipboardUtil {
   static FORMATETC* GetWebKitSmartPasteFormat();
   static FORMATETC* GetWebCustomDataFormat();
   static FORMATETC* GetPepperCustomDataFormat();
+  static FORMATETC* GetSourceTagFormat();
 
   /////////////////////////////////////////////////////////////////////////////
   // These methods check to see if |data_object| has the requested type.

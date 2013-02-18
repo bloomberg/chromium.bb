@@ -17,12 +17,21 @@ namespace ui {
 ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard,
                                              Clipboard::Buffer buffer)
     : clipboard_(clipboard),
-      buffer_(buffer) {
+      buffer_(buffer),
+      source_tag_() {
+}
+
+ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard,
+                                             Clipboard::Buffer buffer,
+                                             Clipboard::SourceTag source_tag)
+    : clipboard_(clipboard),
+      buffer_(buffer),
+      source_tag_(source_tag) {
 }
 
 ScopedClipboardWriter::~ScopedClipboardWriter() {
   if (!objects_.empty() && clipboard_)
-    clipboard_->WriteObjects(buffer_, objects_);
+    clipboard_->WriteObjects(buffer_, objects_, source_tag_);
 }
 
 void ScopedClipboardWriter::WriteText(const string16& text) {

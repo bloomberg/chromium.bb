@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_listener_map.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/event_filtering_info.h"
@@ -27,6 +26,7 @@ class GURL;
 class Profile;
 
 namespace content {
+class BrowserContext;
 class RenderProcessHost;
 }
 

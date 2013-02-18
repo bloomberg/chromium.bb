@@ -725,6 +725,7 @@
             'browser/plugin_data_remover_impl_browsertest.cc',
             'browser/plugin_browsertest.cc',
             'browser/plugin_service_impl_browsertest.cc',
+            'browser/renderer_host/clipboard_browsertest.cc',
             'browser/renderer_host/render_view_host_browsertest.cc',
             'browser/renderer_host/render_view_host_manager_browsertest.cc',
             'browser/renderer_host/render_widget_host_view_browsertest.cc',

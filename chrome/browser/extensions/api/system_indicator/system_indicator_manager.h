@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/linked_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"

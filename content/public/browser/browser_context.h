@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "ui/base/clipboard/clipboard.h"
 
 class GURL;
 
@@ -93,6 +94,12 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Tells the HTML5 objects on this context to purge any uneeded memory.
   static void PurgeMemory(BrowserContext* browser_context);
+
+  // Returns a Clipboard::SourceTag (pointer) if |context| is OffTheRecord
+  // context. Otherwise, NULL. If the clipboard contains that SourceTag at the
+  // time of |context| destruction it will be flushed.
+  static ui::Clipboard::SourceTag GetMarkerForOffTheRecordContext(
+      BrowserContext* context);
 
   virtual ~BrowserContext();
 

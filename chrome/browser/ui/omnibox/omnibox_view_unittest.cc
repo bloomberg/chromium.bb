@@ -63,7 +63,8 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
 #if !defined(USE_AURA)
   // Does an empty clipboard get empty text?
   clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD,
-                          ui::Clipboard::ObjectMap());
+                          ui::Clipboard::ObjectMap(),
+                          ui::Clipboard::SourceTag());
   EXPECT_EQ(string16(), OmniboxView::GetClipboardText());
 #endif
 

@@ -26,6 +26,9 @@ namespace ui {
 
 namespace {
 
+// Source tag format type.
+NSString* const kSourceTagPboardType = @"org.chromium.source-tag-data";
+
 // Would be nice if this were in UTCoreTypes.h, but it isn't
 NSString* const kUTTypeURLName = @"public.url-name";
 
@@ -90,7 +93,9 @@ Clipboard::~Clipboard() {
   DCHECK(CalledOnValidThread());
 }
 
-void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+void Clipboard::WriteObjectsImpl(Buffer buffer,
+                                 const ObjectMap& objects,
+                                 SourceTag tag) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
@@ -101,6 +106,7 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
+  WriteSourceTag(tag);
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
@@ -210,6 +216,13 @@ void Clipboard::WriteData(const FormatType& format,
   [pb addTypes:[NSArray arrayWithObject:format.ToNSString()] owner:nil];
   [pb setData:[NSData dataWithBytes:data_data length:data_len]
       forType:format.ToNSString()];
+}
+
+void Clipboard::WriteSourceTag(SourceTag tag) {
+  if (tag != SourceTag()) {
+    ObjectMapParam binary = SourceTag2Binary(tag);
+    WriteData(GetSourceTagFormatType(), &binary[0], binary.size());
+  }
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
@@ -410,6 +423,13 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
     result->assign(static_cast<const char*>([data bytes]), [data length]);
 }
 
+Clipboard::SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  std::string result;
+  ReadData(GetSourceTagFormatType(), &result);
+  return Binary2SourceTag(result);
+}
+
 // static
 Clipboard::FormatType Clipboard::GetFormatType(
     const std::string& format_string) {
@@ -482,6 +502,12 @@ const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (kPepperCustomDataPboardType));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetSourceTagFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kSourceTagPboardType));
   return type;
 }
 

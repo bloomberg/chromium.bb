@@ -106,6 +106,7 @@ GdkFilterReturn SelectionChangeObserver::OnXEvent(GdkXEvent* xevent,
   return GDK_FILTER_CONTINUE;
 }
 
+const char kSourceTagType[] = "org.chromium.source-tag";
 const char kMimeTypeBitmap[] = "image/bmp";
 const char kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
@@ -152,7 +153,7 @@ void GetData(GtkClipboard* clipboard,
 // GtkClipboardClearFunc callback.
 // We are guaranteed this will be called exactly once for each call to
 // gtk_clipboard_set_with_data.
-void ClearData(GtkClipboard* clipboard,
+void ClearData(GtkClipboard* /*clipboard*/,
                gpointer user_data) {
   Clipboard::TargetMap* map =
       reinterpret_cast<Clipboard::TargetMap*>(user_data);
@@ -217,7 +218,9 @@ Clipboard::~Clipboard() {
   gtk_clipboard_store(clipboard_);
 }
 
-void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+void Clipboard::WriteObjectsImpl(Buffer buffer,
+                                 const ObjectMap& objects,
+                                 SourceTag tag) {
   DCHECK(CalledOnValidThread());
   clipboard_data_ = new TargetMap();
 
@@ -225,13 +228,24 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
-
+  WriteSourceTag(tag);
   SetGtkClipboard(buffer);
+
+  if (buffer == BUFFER_STANDARD) {
+    ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
+    if (text_iter != objects.end()) {
+      // Copy text and SourceTag to the selection clipboard.
+      ObjectMap::const_iterator next_iter = text_iter;
+      WriteObjectsImpl(BUFFER_SELECTION,
+                       ObjectMap(text_iter, ++next_iter),
+                       tag);
+    }
+  }
 }
 
 // Take ownership of the GTK clipboard and inform it of the targets we support.
 void Clipboard::SetGtkClipboard(Buffer buffer) {
-  scoped_ptr<GtkTargetEntry[]> targets(
+  scoped_array<GtkTargetEntry> targets(
       new GtkTargetEntry[clipboard_data_->size()]);
 
   int i = 0;
@@ -251,14 +265,6 @@ void Clipboard::SetGtkClipboard(Buffer buffer) {
     gtk_clipboard_set_can_store(clipboard,
                                 targets.get(),
                                 clipboard_data_->size());
-  }
-
-  if (buffer == BUFFER_STANDARD) {
-    Clipboard::TargetMap::iterator text_iter = clipboard_data_->find("TEXT");
-    if (text_iter != clipboard_data_->end()) {
-      gtk_clipboard_set_text(primary_selection_, text_iter->second.first,
-                             text_iter->second.second);
-    }
   }
 
   // clipboard_data_ now owned by the GtkClipboard.
@@ -348,6 +354,13 @@ void Clipboard::WriteData(const FormatType& format,
   memcpy(data, data_data, data_len);
   // TODO(dcheng): Maybe this map should use GdkAtoms...
   InsertMapping(GdkAtomToString(format.ToGdkAtom()).c_str(), data, data_len);
+}
+
+void Clipboard::WriteSourceTag(SourceTag tag) {
+  if (tag != SourceTag()) {
+    ObjectMapParam binary = SourceTag2Binary(tag);
+    WriteData(GetSourceTagFormatType(), &binary[0], binary.size());
+  }
 }
 
 // We do not use gtk_clipboard_wait_is_target_available because of
@@ -576,15 +589,29 @@ void Clipboard::ReadBookmark(string16* title, std::string* url) const {
 }
 
 void Clipboard::ReadData(const FormatType& format, std::string* result) const {
+  ReadDataImpl(BUFFER_STANDARD, format, result);
+}
+
+void Clipboard::ReadDataImpl(Buffer buffer,
+                             const FormatType& format,
+                             std::string* result) const {
   DCHECK(CalledOnValidThread());
+  result->clear();
+  GtkClipboard* clipboard = LookupBackingClipboard(buffer);
   GtkSelectionData* data =
-      gtk_clipboard_wait_for_contents(clipboard_, format.ToGdkAtom());
+      gtk_clipboard_wait_for_contents(clipboard, format.ToGdkAtom());
   if (!data)
     return;
   result->assign(reinterpret_cast<const char*>(
                      gtk_selection_data_get_data(data)),
                  gtk_selection_data_get_length(data));
   gtk_selection_data_free(data);
+}
+
+Clipboard::SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
+  std::string result;
+  ReadDataImpl(buffer, GetSourceTagFormatType(), &result);
+  return Binary2SourceTag(result);
 }
 
 uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
@@ -656,6 +683,12 @@ const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetSourceTagFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kSourceTagType));
   return type;
 }
 

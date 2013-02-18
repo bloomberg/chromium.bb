@@ -39,6 +39,7 @@ const char kMimeTypeMozillaURL[] = "text/x-moz-url";
 const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
 const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 const char kMultiple[] = "MULTIPLE";
+const char kSourceTagType[] = "org.chromium.source-tag";
 const char kString[] = "STRING";
 const char kTargets[] = "TARGETS";
 const char kText[] = "TEXT";
@@ -52,6 +53,7 @@ const char* kAtomsToCache[] = {
   kMimeTypeMozillaURL,
   kMimeTypeWebkitSmartPaste,
   kMultiple,
+  kSourceTagType,
   kString,
   kTargets,
   kText,
@@ -885,7 +887,9 @@ Clipboard::~Clipboard() {
   // current selection to live on.
 }
 
-void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+void Clipboard::WriteObjectsImpl(Buffer buffer,
+                                 const ObjectMap& objects,
+                                 SourceTag tag) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsValidBuffer(buffer));
 
@@ -894,6 +898,7 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
+  WriteSourceTag(tag);
   aurax11_details_->TakeOwnershipOfSelection(buffer);
 
   if (buffer == BUFFER_STANDARD) {
@@ -902,6 +907,7 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
       aurax11_details_->CreateNewClipboardData();
       const ObjectMapParam& char_vector = text_iter->second[0];
       WriteText(&char_vector.front(), char_vector.size());
+      WriteSourceTag(tag);
       aurax11_details_->TakeOwnershipOfSelection(BUFFER_SELECTION);
     }
   }
@@ -1048,12 +1054,24 @@ void Clipboard::ReadBookmark(string16* title, std::string* url) const {
 }
 
 void Clipboard::ReadData(const FormatType& format, std::string* result) const {
+  ReadDataImpl(BUFFER_STANDARD, format, result);
+}
+
+void Clipboard::ReadDataImpl(Buffer buffer,
+                             const FormatType& format,
+                             std::string* result) const {
   DCHECK(CalledOnValidThread());
 
   scoped_ptr<SelectionData> data(aurax11_details_->RequestAndWaitForTypes(
-      BUFFER_STANDARD, aurax11_details_->GetAtomsForFormat(format)));
+      buffer, aurax11_details_->GetAtomsForFormat(format)));
   if (data.get())
     data->AssignTo(result);
+}
+
+Clipboard::SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
+  std::string result;
+  ReadDataImpl(buffer, GetSourceTagFormatType(), &result);
+  return Binary2SourceTag(result);
 }
 
 uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
@@ -1137,6 +1155,13 @@ void Clipboard::WriteData(const FormatType& format,
   aurax11_details_->InsertMapping(format.ToString(), data, data_len);
 }
 
+void Clipboard::WriteSourceTag(SourceTag tag) {
+  if (tag != SourceTag()) {
+    ObjectMapParam binary = SourceTag2Binary(tag);
+    WriteData(GetSourceTagFormatType(), &binary[0], binary.size());
+  }
+}
+
 // static
 Clipboard::FormatType Clipboard::GetFormatType(
     const std::string& format_string) {
@@ -1209,6 +1234,12 @@ const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
 // static
 const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetSourceTagFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kSourceTagType));
   return type;
 }
 

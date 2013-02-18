@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/process.h"
@@ -169,6 +170,12 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   typedef std::vector<ObjectMapParam> ObjectMapParams;
   typedef std::map<int /* ObjectType */, ObjectMapParams> ObjectMap;
 
+  // WriteObject() caller can use the SourceTag that will be stored in the
+  // clipboard. NULL value means "no tag".
+  typedef void* SourceTag;
+  static ObjectMapParam SourceTag2Binary(SourceTag tag);
+  static SourceTag Binary2SourceTag(const std::string& serialization);
+
   // Buffer designates which clipboard the action should be applied to.
   // Only platforms that use the X Window System support the selection
   // buffer.
@@ -176,6 +183,13 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     BUFFER_STANDARD,
     BUFFER_SELECTION,
   };
+
+  // The callback is called after Clipboard::WriteObjects().
+  // Don't use it for notification about changed OS clipboard.
+  void set_write_objects_callback_for_testing(
+      const base::Callback<void(Buffer)>& cb) {
+    write_objects_callback_ = cb;
+  }
 
   static bool IsValidBuffer(int32 buffer) {
     switch (buffer) {
@@ -214,7 +228,9 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // contents of |objects|. On Windows they are copied to the system clipboard.
   // On linux they are copied into a structure owned by the Clipboard object and
   // kept until the system clipboard is set again.
-  void WriteObjects(Buffer buffer, const ObjectMap& objects);
+  // SourceTag is optional value to be stored in the clipboard, NULL won't be
+  // stored.
+  void WriteObjects(Buffer buffer, const ObjectMap& objects, SourceTag tag);
 
   // Returns a sequence number which uniquely identifies clipboard state.
   // This can be used to version the data on the clipboard and determine
@@ -261,6 +277,9 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // as a byte vector.
   void ReadData(const FormatType& format, std::string* result) const;
 
+  // Reads Source tag from the clipboard, if available.
+  SourceTag ReadSourceTag(Buffer buffer) const;
+
   // Gets the FormatType corresponding to an arbitrary format string,
   // registering it with the system if needed. Due to Windows/Linux
   // limitiations, |format_string| must never be controlled by the user.
@@ -283,6 +302,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // crbug.com/158399.
   static const FormatType& GetWebCustomDataFormatType();
   static const FormatType& GetPepperCustomDataFormatType();
+  static const FormatType& GetSourceTagFormatType();
 
   // Embeds a pointer to a SharedMemory object pointed to by |bitmap_handle|
   // belonging to |process| into a shared bitmap [CBF_SMBITMAP] slot in
@@ -310,6 +330,8 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
   void DispatchObject(ObjectType type, const ObjectMapParams& params);
 
+  void WriteObjectsImpl(Buffer buffer, const ObjectMap& objects, SourceTag tag);
+
   void WriteText(const char* text_data, size_t text_len);
 
   void WriteHTML(const char* markup_data,
@@ -331,6 +353,8 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   void WriteData(const FormatType& format,
                  const char* data_data,
                  size_t data_len);
+
+  void WriteSourceTag(SourceTag tag);
 #if defined(OS_WIN)
   void WriteBitmapFromHandle(HBITMAP source_hbitmap,
                              const gfx::Size& size);
@@ -374,17 +398,26 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
   // Find the gtk clipboard for the passed buffer enum.
   GtkClipboard* LookupBackingClipboard(Buffer clipboard) const;
+  // Reads raw data from the specified clipboard with the given format type.
+  void ReadDataImpl(Buffer buffer,
+                    const FormatType& format,
+                    std::string* result) const;
 
   TargetMap* clipboard_data_;
   GtkClipboard* clipboard_;
   GtkClipboard* primary_selection_;
 #elif defined(USE_AURA) && defined(USE_X11) && !defined(OS_CHROMEOS)
  private:
+  // Reads raw data from the specified clipboard with the given format type.
+  void ReadDataImpl(Buffer buffer,
+                    const FormatType& format,
+                    std::string* result) const;
   // We keep our implementation details private because otherwise we bring in
   // the X11 headers and break chrome compile.
   class AuraX11Details;
   scoped_ptr<AuraX11Details> aurax11_details_;
 #endif
+  base::Callback<void(Buffer)> write_objects_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };

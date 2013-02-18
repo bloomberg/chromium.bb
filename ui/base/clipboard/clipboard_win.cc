@@ -208,7 +208,9 @@ Clipboard::~Clipboard() {
   clipboard_owner_ = NULL;
 }
 
-void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
+void Clipboard::WriteObjectsImpl(Buffer buffer,
+                                 const ObjectMap& objects,
+                                 SourceTag tag) {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
 
   ScopedClipboard clipboard;
@@ -221,6 +223,7 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
+  WriteSourceTag(tag);
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
@@ -359,6 +362,13 @@ void Clipboard::WriteData(const FormatType& format,
   memcpy(data, data_data, data_len);
   ::GlobalUnlock(data);
   WriteToClipboard(format.ToUINT(), hdata);
+}
+
+void Clipboard::WriteSourceTag(SourceTag tag) {
+  if (tag != SourceTag()) {
+    ObjectMapParam binary = SourceTag2Binary(tag);
+    WriteData(GetSourceTagFormatType(), &binary[0], binary.size());
+  }
 }
 
 void Clipboard::WriteToClipboard(unsigned int format, HANDLE handle) {
@@ -656,6 +666,13 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
   ::GlobalUnlock(data);
 }
 
+Clipboard::SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  std::string result;
+  ReadData(GetSourceTagFormatType(), &result);
+  return Binary2SourceTag(result);
+}
+
 // static
 void Clipboard::ParseBookmarkClipboardFormat(const string16& bookmark,
                                              string16* title,
@@ -831,6 +848,15 @@ const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
       FormatType,
       type,
       (ClipboardUtil::GetPepperCustomDataFormat()->cfFormat));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetSourceTagFormatType() {
+  CR_DEFINE_STATIC_LOCAL(
+      FormatType,
+      type,
+      (ClipboardUtil::GetSourceTagFormat()->cfFormat));
   return type;
 }
 

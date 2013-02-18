@@ -225,6 +225,13 @@ FORMATETC* ClipboardUtil::GetPepperCustomDataFormat() {
   return &format;
 }
 
+FORMATETC* ClipboardUtil::GetSourceTagFormat() {
+  static UINT cf =
+      RegisterClipboardFormat(L"Chromium Source tag Format");
+  static FORMATETC format = {cf, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+  return &format;
+}
+
 bool ClipboardUtil::HasUrl(IDataObject* data_object) {
   DCHECK(data_object);
   return SUCCEEDED(data_object->QueryGetData(GetMozUrlFormat())) ||

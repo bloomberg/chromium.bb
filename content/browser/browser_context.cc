@@ -23,6 +23,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/fileapi/external_mount_points.h"
 #endif // !OS_IOS
@@ -36,6 +37,7 @@ namespace content {
 namespace {
 
 // Key names on BrowserContext.
+const char kClipboardDestroyerKey[] = "clipboard_destroyer";
 const char kDownloadManagerKeyName[] = "download_manager";
 const char kMountPointsKey[] = "mount_points";
 const char kStorageParitionMapKeyName[] = "content_storage_partition_map";
@@ -90,6 +92,42 @@ void SaveSessionStateOnWebkitThread(
 
 void PurgeMemoryOnIOThread(appcache::AppCacheService* appcache_service) {
   appcache_service->PurgeMemory();
+}
+
+// OffTheRecordClipboardDestroyer is supposed to clear the clipboard in
+// destructor if current clipboard content came from corresponding OffTheRecord
+// browser context.
+class OffTheRecordClipboardDestroyer : public base::SupportsUserData::Data {
+ public:
+  virtual ~OffTheRecordClipboardDestroyer() {
+    ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+    ExamineClipboard(clipboard, ui::Clipboard::BUFFER_STANDARD);
+    if (ui::Clipboard::IsValidBuffer(ui::Clipboard::BUFFER_SELECTION))
+      ExamineClipboard(clipboard, ui::Clipboard::BUFFER_SELECTION);
+  }
+
+  ui::Clipboard::SourceTag GetAsSourceTag() {
+    return ui::Clipboard::SourceTag(this);
+  }
+
+ private:
+  void ExamineClipboard(ui::Clipboard* clipboard,
+                        ui::Clipboard::Buffer buffer) {
+    ui::Clipboard::SourceTag source_tag = clipboard->ReadSourceTag(buffer);
+    if (source_tag == ui::Clipboard::SourceTag(this))
+      clipboard->Clear(buffer);
+  }
+};
+
+// Returns existing OffTheRecordClipboardDestroyer or creates one.
+OffTheRecordClipboardDestroyer* GetClipboardDestroyerForBrowserContext(
+    BrowserContext* context) {
+  if (base::SupportsUserData::Data* data = context->GetUserData(
+          kClipboardDestroyerKey))
+    return static_cast<OffTheRecordClipboardDestroyer*>(data);
+  OffTheRecordClipboardDestroyer* data = new OffTheRecordClipboardDestroyer;
+  context->SetUserData(kClipboardDestroyerKey, data);
+  return data;
 }
 
 }  // namespace
@@ -272,6 +310,17 @@ void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
 
   ForEachStoragePartition(browser_context,
                           base::Bind(&PurgeDOMStorageContextInPartition));
+}
+
+ui::Clipboard::SourceTag BrowserContext::GetMarkerForOffTheRecordContext(
+    BrowserContext* context) {
+  if (context && context->IsOffTheRecord()) {
+    OffTheRecordClipboardDestroyer* clipboard_destroyer =
+        GetClipboardDestroyerForBrowserContext(context);
+
+    return clipboard_destroyer->GetAsSourceTag();
+  }
+  return ui::Clipboard::SourceTag();
 }
 #endif  // !OS_IOS
 
