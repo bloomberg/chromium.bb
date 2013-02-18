@@ -16,6 +16,10 @@
   // Number of events that currently have occured.  
   var gNumberOfEvents = 0;
 
+  var gLocalStream = null;
+
+  var gSentTones = '';
+
   // Test that we can setup call with an audio and video track.
   function call(constraints) {
     createConnections(null);
@@ -62,6 +66,30 @@
     navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
       failedCallback);
     waitForVideo($('remote-view'), 320, 240);
+  }
+
+  // Test that we can setup call and send DTMF.
+  function callAndSendDtmf(tones) {
+    createConnections(null);
+    navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
+      failedCallback);
+    var onCallEstablished = function() {
+      // Send DTMF tones.
+      var localAudioTrack = gLocalStream.getAudioTracks()[0];
+      var dtmfSender = gFirstConnection.createDTMFSender(localAudioTrack);
+      dtmfSender.ontonechange = onToneChange;
+      dtmfSender.insertDTMF(tones);
+      // Wait for the DTMF tones callback.
+      document.title = 'Waiting for dtmf...';
+      addExpectedEvent();
+      var waitDtmf = setInterval(function() {
+        if (gSentTones == tones) {
+          clearInterval(waitDtmf);
+          eventOccured();
+        }
+      }, 100);
+    }
+    detectVideoIn($('remote-view'), 320, 240, onCallEstablished);
   }
 
   // This function is used for setting up a test that: 
@@ -111,6 +139,11 @@
     }
   }
 
+  function onToneChange(tone) {
+    gSentTones += tone.tone;
+    document.title = gSentTones;
+  }
+
   function failedCallback(error) {
     document.title = 'getUserMedia request failed with code ' + error.code;
   }
@@ -120,6 +153,7 @@
     $('local-view').src = localStreamUrl;
 
     callUsingStream(localStream);
+    gLocalStream = localStream;
   }
 
   function createConnections(constraints) {
@@ -204,18 +238,25 @@
   }
 
   // TODO(phoglund): perhaps use the video detector in chrome/test/data/webrtc/?
-  function waitForVideo(videoElement, width, height) {
-    document.title = 'Waiting for video...';
-    addExpectedEvent();
+  function detectVideoIn(videoElement, width, height, callback) {
     var canvas = $('canvas');
-    setInterval(function() {
+    var waitVideo = setInterval(function() {
       var context = canvas.getContext('2d');
       context.drawImage(videoElement, 0, 0, width, height);
       var pixels = context.getImageData(0, 0, width, height).data;
 
-      if (isVideoPlaying(pixels, width, height))
-        eventOccured();
+      if (isVideoPlaying(pixels, width, height)) {
+        clearInterval(waitVideo);
+        callback();
+      }
     }, 100);
+  }
+
+  function waitForVideo(videoElement, width, height) {
+    document.title = 'Waiting for video...';
+    addExpectedEvent();
+    detectVideoIn(videoElement, width, height,
+                  function () { eventOccured(); });
   }
 
   // This very basic video verification algorithm will be satisfied if any

@@ -79,6 +79,15 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CanSetupAudioAndVideoCall) {
   ExpectTitle("OK");
 }
 
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
+  GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(
+      ExecuteJavascript("callAndSendDtmf('123,abc');"));
+  ExpectTitle("OK");
+}
+
 // This test will make a complete PeerConnection-based call but remove the
 // MSID and bundle attribute from the initial offer to verify that
 // video is playing for the call even if the initiating client don't support
