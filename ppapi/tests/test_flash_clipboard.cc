@@ -15,7 +15,10 @@
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/tests/testing_instance.h"
 
+// http://crbug.com/176822
+#if !defined(OS_WIN)
 REGISTER_TEST_CASE(FlashClipboard);
+#endif
 
 // WriteData() sends an async request to the browser process. As a result, the
 // string written may not be reflected by IsFormatAvailable() or ReadPlainText()
