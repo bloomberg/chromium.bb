@@ -5,7 +5,6 @@
 #include "net/url_request/url_fetcher_core.h"
 
 #include "base/bind.h"
-#include "base/files/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -19,6 +18,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_file_writer.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -53,211 +53,6 @@ void URLFetcherCore::Registry::CancelAll() {
   while (!fetchers_.empty())
     (*fetchers_.begin())->CancelURLRequest();
 }
-
-
-// URLFetcherCore::FileWriter -------------------------------------------------
-
-URLFetcherCore::FileWriter::FileWriter(
-    URLFetcherCore* core,
-    scoped_refptr<base::TaskRunner> file_task_runner)
-    : core_(core),
-      error_code_(base::PLATFORM_FILE_OK),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      file_task_runner_(file_task_runner),
-      file_handle_(base::kInvalidPlatformFileValue) {
-}
-
-URLFetcherCore::FileWriter::~FileWriter() {
-  CloseAndDeleteFile();
-}
-
-void URLFetcherCore::FileWriter::CreateFileAtPath(
-    const base::FilePath& file_path) {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-  DCHECK(file_task_runner_.get());
-  base::FileUtilProxy::CreateOrOpen(
-      file_task_runner_,
-      file_path,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
-      base::Bind(&URLFetcherCore::FileWriter::DidCreateFile,
-                 weak_factory_.GetWeakPtr(),
-                 file_path));
-}
-
-void URLFetcherCore::FileWriter::CreateTempFile() {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-  DCHECK(file_task_runner_.get());
-  base::FileUtilProxy::CreateTemporary(
-      file_task_runner_,
-      0,  // No additional file flags.
-      base::Bind(&URLFetcherCore::FileWriter::DidCreateTempFile,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void URLFetcherCore::FileWriter::WriteBuffer(int num_bytes) {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-
-  // Start writing to the file by setting the initial state
-  // of |pending_bytes_| and |buffer_offset_| to indicate that the
-  // entire buffer has not yet been written.
-  pending_bytes_ = num_bytes;
-  buffer_offset_ = 0;
-  ContinueWrite(base::PLATFORM_FILE_OK, 0);
-}
-
-void URLFetcherCore::FileWriter::ContinueWrite(
-    base::PlatformFileError error_code,
-    int bytes_written) {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-
-  if (file_handle_ == base::kInvalidPlatformFileValue) {
-    // While a write was being done on the file thread, a request
-    // to close or disown the file occured on the IO thread.  At
-    // this point a request to close the file is pending on the
-    // file thread.
-    return;
-  }
-
-  // Every code path that resets |core_->request_| should reset
-  // |core->file_writer_| or cause the file writer to disown the file.  In the
-  // former case, this callback can not be called, because the weak pointer to
-  // |this| will be NULL. In the latter case, the check of |file_handle_| at the
-  // start of this method ensures that we can not reach this point.
-  CHECK(core_->request_.get());
-
-  if (base::PLATFORM_FILE_OK != error_code) {
-    error_code_ = error_code;
-    CloseAndDeleteFile();
-    core_->delegate_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, core_));
-    return;
-  }
-
-  total_bytes_written_ += bytes_written;
-  buffer_offset_ += bytes_written;
-  pending_bytes_ -= bytes_written;
-
-  if (pending_bytes_ > 0) {
-    base::FileUtilProxy::Write(
-        file_task_runner_, file_handle_,
-        total_bytes_written_,  // Append to the end
-        (core_->buffer_->data() + buffer_offset_), pending_bytes_,
-        base::Bind(&URLFetcherCore::FileWriter::ContinueWrite,
-                   weak_factory_.GetWeakPtr()));
-  } else {
-    // Finished writing core_->buffer_ to the file. Read some more.
-    core_->ReadResponse();
-  }
-}
-
-void URLFetcherCore::FileWriter::DisownFile() {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-
-  // Disowning is done by the delegate's OnURLFetchComplete method.
-  // The file should be closed by the time that method is called.
-  DCHECK(file_handle_ == base::kInvalidPlatformFileValue);
-
-  // Forget about any file by reseting the path.
-  file_path_.clear();
-}
-
-void URLFetcherCore::FileWriter::CloseFileAndCompleteRequest() {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-
-  if (file_handle_ != base::kInvalidPlatformFileValue) {
-    base::FileUtilProxy::Close(
-        file_task_runner_, file_handle_,
-        base::Bind(&URLFetcherCore::FileWriter::DidCloseFile,
-                   weak_factory_.GetWeakPtr()));
-    file_handle_ = base::kInvalidPlatformFileValue;
-  }
-}
-
-void URLFetcherCore::FileWriter::CloseAndDeleteFile() {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-
-  if (file_handle_ == base::kInvalidPlatformFileValue) {
-    DeleteFile(base::PLATFORM_FILE_OK);
-    return;
-  }
-  // Close the file if it is open.
-  base::FileUtilProxy::Close(
-      file_task_runner_, file_handle_,
-      base::Bind(&URLFetcherCore::FileWriter::DeleteFile,
-                 weak_factory_.GetWeakPtr()));
-  file_handle_ = base::kInvalidPlatformFileValue;
-}
-
-void URLFetcherCore::FileWriter::DeleteFile(
-    base::PlatformFileError error_code) {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-  if (file_path_.empty())
-    return;
-
-  base::FileUtilProxy::Delete(
-      file_task_runner_, file_path_,
-      false,  // No need to recurse, as the path is to a file.
-      base::FileUtilProxy::StatusCallback());
-  DisownFile();
-}
-
-void URLFetcherCore::FileWriter::DidCreateFile(
-    const base::FilePath& file_path,
-    base::PlatformFileError error_code,
-    base::PassPlatformFile file_handle,
-    bool created) {
-  DidCreateFileInternal(file_path, error_code, file_handle);
-}
-
-void URLFetcherCore::FileWriter::DidCreateTempFile(
-    base::PlatformFileError error_code,
-    base::PassPlatformFile file_handle,
-    const base::FilePath& file_path) {
-  DidCreateFileInternal(file_path, error_code, file_handle);
-}
-
-void URLFetcherCore::FileWriter::DidCreateFileInternal(
-    const base::FilePath& file_path,
-    base::PlatformFileError error_code,
-    base::PassPlatformFile file_handle) {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-
-  if (base::PLATFORM_FILE_OK != error_code) {
-    error_code_ = error_code;
-    CloseAndDeleteFile();
-    core_->delegate_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, core_));
-    return;
-  }
-
-  file_path_ = file_path;
-  file_handle_ = file_handle.ReleaseValue();
-  total_bytes_written_ = 0;
-
-  core_->network_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&URLFetcherCore::StartURLRequestWhenAppropriate, core_));
-}
-
-void URLFetcherCore::FileWriter::DidCloseFile(
-    base::PlatformFileError error_code) {
-  DCHECK(core_->network_task_runner_->BelongsToCurrentThread());
-
-  if (base::PLATFORM_FILE_OK != error_code) {
-    error_code_ = error_code;
-    CloseAndDeleteFile();
-    core_->delegate_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, core_));
-    return;
-  }
-
-  // If the file was successfully closed, then the URL request is complete.
-  core_->RetryOrCompleteUrlFetch();
-}
-
 
 // URLFetcherCore -------------------------------------------------------------
 
@@ -633,7 +428,7 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
     if (file_writer_.get()) {
       // If the file is open, close it.  After closing the file,
       // RetryOrCompleteUrlFetch() will be called.
-      file_writer_->CloseFileAndCompleteRequest();
+      file_writer_->CloseFile(base::Bind(&URLFetcherCore::DidCloseFile, this));
     } else {
       // Otherwise, complete or retry the URL request directly.
       RetryOrCompleteUrlFetch();
@@ -676,16 +471,19 @@ void URLFetcherCore::StartOnIOThread() {
       DCHECK(file_task_runner_.get())
           << "Need to set the file task runner.";
 
-      file_writer_.reset(new FileWriter(this, file_task_runner_));
+      file_writer_.reset(new URLFetcherFileWriter(file_task_runner_));
 
       // If the file is successfully created,
       // URLFetcherCore::StartURLRequestWhenAppropriate() will be called.
       switch (response_destination_) {
         case PERMANENT_FILE:
-          file_writer_->CreateFileAtPath(response_destination_file_path_);
+          file_writer_->CreateFileAtPath(
+              response_destination_file_path_,
+              base::Bind(&URLFetcherCore::DidCreateFile, this));
           break;
         case TEMP_FILE:
-          file_writer_->CreateTempFile();
+          file_writer_->CreateTempFile(
+              base::Bind(&URLFetcherCore::DidCreateFile, this));
           break;
         default:
           NOTREACHED();
@@ -792,6 +590,16 @@ void URLFetcherCore::StartURLRequest() {
   request_->Start();
 }
 
+void URLFetcherCore::DidCreateFile(int result) {
+  if (result != OK) {
+    delegate_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, this));
+    return;
+  }
+  StartURLRequestWhenAppropriate();
+}
+
 void URLFetcherCore::StartURLRequestWhenAppropriate() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
@@ -873,6 +681,17 @@ void URLFetcherCore::NotifyMalformedContent() {
     }
     url_throttler_entry_->ReceivedContentWasMalformed(status_code);
   }
+}
+
+void URLFetcherCore::DidCloseFile(int result) {
+  if (result != OK) {
+    delegate_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, this));
+    return;
+  }
+  // If the file was successfully closed, then the URL request is complete.
+  RetryOrCompleteUrlFetch();
 }
 
 void URLFetcherCore::RetryOrCompleteUrlFetch() {
@@ -984,7 +803,8 @@ bool URLFetcherCore::WriteBuffer(int num_bytes) {
 
     case PERMANENT_FILE:
     case TEMP_FILE:
-      file_writer_->WriteBuffer(num_bytes);
+      file_writer_->Write(buffer_, num_bytes,
+                          base::Bind(&URLFetcherCore::DidWriteBuffer, this));
       // WriteBuffer() sends a request the file thread.
       // The write is not done yet.
       write_complete = false;
@@ -994,6 +814,17 @@ bool URLFetcherCore::WriteBuffer(int num_bytes) {
       NOTREACHED();
   }
   return write_complete;
+}
+
+void URLFetcherCore::DidWriteBuffer(int result) {
+  if (result < 0) {
+    delegate_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, this));
+    return;
+  }
+  // Finished writing buffer_. Read some more.
+  ReadResponse();
 }
 
 void URLFetcherCore::ReadResponse() {

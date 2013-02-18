@@ -876,6 +876,8 @@
         'url_request/url_fetcher.h',
         'url_request/url_fetcher_core.cc',
         'url_request/url_fetcher_core.h',
+        'url_request/url_fetcher_file_writer.cc',
+        'url_request/url_fetcher_file_writer.h',
         'url_request/url_fetcher_delegate.cc',
         'url_request/url_fetcher_delegate.h',
         'url_request/url_fetcher_factory.h',
