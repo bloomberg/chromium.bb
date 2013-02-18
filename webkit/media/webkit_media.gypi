@@ -190,6 +190,8 @@
         'crypto/ppapi/clear_key_cdm.cc',
         'crypto/ppapi/clear_key_cdm.h',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
     },
     {
       'target_name': 'clearkeycdmadapter',
@@ -216,6 +218,8 @@
         }],
         ['OS == "win"', {
           'type': 'shared_library',
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         }],
         ['OS == "mac"', {
           'type': 'loadable_module',
