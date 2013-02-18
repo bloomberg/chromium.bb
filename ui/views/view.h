@@ -906,6 +906,25 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                                      bool is_horizontal, bool is_positive);
 
  protected:
+  // Used to track a drag. RootView passes this into
+  // ProcessMousePressed/Dragged.
+  struct DragInfo {
+    // Sets possible_drag to false and start_x/y to 0. This is invoked by
+    // RootView prior to invoke ProcessMousePressed.
+    void Reset();
+
+    // Sets possible_drag to true and start_pt to the specified point.
+    // This is invoked by the target view if it detects the press may generate
+    // a drag.
+    void PossibleDrag(const gfx::Point& p);
+
+    // Whether the press may generate a drag.
+    bool possible_drag;
+
+    // Coordinates of the mouse press.
+    gfx::Point start_pt;
+  };
+
   // Size and disposition ------------------------------------------------------
 
   // Override to be notified when the bounds of the view have changed.
@@ -1050,6 +1069,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Subclasses override to provide custom shaped hit test regions.
   virtual void GetHitTestMask(gfx::Path* mask) const;
 
+  virtual DragInfo* GetDragInfo();
+
   // Focus ---------------------------------------------------------------------
 
   // Override to be notified when focus has changed either to or from this View.
@@ -1133,25 +1154,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class internal::RootView;
   friend class FocusManager;
   friend class Widget;
-
-  // Used to track a drag. RootView passes this into
-  // ProcessMousePressed/Dragged.
-  struct DragInfo {
-    // Sets possible_drag to false and start_x/y to 0. This is invoked by
-    // RootView prior to invoke ProcessMousePressed.
-    void Reset();
-
-    // Sets possible_drag to true and start_pt to the specified point.
-    // This is invoked by the target view if it detects the press may generate
-    // a drag.
-    void PossibleDrag(const gfx::Point& p);
-
-    // Whether the press may generate a drag.
-    bool possible_drag;
-
-    // Coordinates of the mouse press.
-    gfx::Point start_pt;
-  };
 
   // Painting  -----------------------------------------------------------------
 
@@ -1292,10 +1294,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Input ---------------------------------------------------------------------
 
-  // RootView invokes these. These in turn invoke the appropriate OnMouseXXX
-  // method. If a drag is detected, DoDrag is invoked.
-  bool ProcessMousePressed(const ui::MouseEvent& event, DragInfo* drop_info);
-  bool ProcessMouseDragged(const ui::MouseEvent& event, DragInfo* drop_info);
+  bool ProcessMousePressed(const ui::MouseEvent& event);
+  bool ProcessMouseDragged(const ui::MouseEvent& event);
   void ProcessMouseReleased(const ui::MouseEvent& event);
 
   // Accelerators --------------------------------------------------------------

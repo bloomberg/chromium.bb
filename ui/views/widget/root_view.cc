@@ -408,8 +408,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
     ui::MouseEvent mouse_pressed_event(event, static_cast<View*>(this),
                                        mouse_pressed_handler_);
     drag_info_.Reset();
-    mouse_pressed_handler_->ProcessMousePressed(mouse_pressed_event,
-                                                &drag_info_);
+    mouse_pressed_handler_->ProcessMousePressed(mouse_pressed_event);
     return true;
   }
   DCHECK(!explicit_mouse_handler_);
@@ -438,7 +437,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
 
     drag_info_.Reset();
     bool handled = mouse_pressed_handler_->ProcessMousePressed(
-        mouse_pressed_event, &drag_info_);
+        mouse_pressed_event);
 
     // The view could have removed itself from the tree when handling
     // OnMousePressed().  In this case, the removal notification will have
@@ -481,8 +480,7 @@ bool RootView::OnMouseDragged(const ui::MouseEvent& event) {
 
     ui::MouseEvent mouse_event(event, static_cast<View*>(this),
                                mouse_pressed_handler_);
-    return mouse_pressed_handler_->ProcessMouseDragged(mouse_event,
-                                                       &drag_info_);
+    return mouse_pressed_handler_->ProcessMouseDragged(mouse_event);
   }
   return false;
 }
@@ -649,6 +647,10 @@ gfx::Vector2d RootView::CalculateOffsetToAncestorWithLayer(
   if (!layer())
     offset += widget_->CalculateOffsetToAncestorWithLayer(layer_parent);
   return offset;
+}
+
+View::DragInfo* RootView::GetDragInfo() {
+  return &drag_info_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

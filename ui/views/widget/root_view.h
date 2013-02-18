@@ -117,6 +117,7 @@ class VIEWS_EXPORT RootView : public View,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Vector2d CalculateOffsetToAncestorWithLayer(
       ui::Layer** layer_parent) OVERRIDE;
+  virtual View::DragInfo* GetDragInfo() OVERRIDE;
 
  private:
   friend class View;
