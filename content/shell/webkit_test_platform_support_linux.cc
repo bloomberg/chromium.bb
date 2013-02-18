@@ -23,7 +23,7 @@ bool CheckAndLoadFontFile(
   if (access(font, R_OK) < 0) {
     font = path2;
     if (access(font, R_OK) < 0) {
-      std::cerr << "Your are missing " << path1 << " or " << path2 << ". "
+      std::cerr << "You are missing " << path1 << " or " << path2 << ". "
                 << "Without this, some layout tests may fail. See "
                 << "http://code.google.com/p/chromium/wiki/LayoutTestsLinux "
                 << "for more.\n";
@@ -115,9 +115,9 @@ bool SetupFontConfig() {
   // We special case these fonts because they're only needed in a few layout
   // tests.
   CheckAndLoadFontFile(
-     font_config,
-     "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_pa.ttf",
-     "/usr/share/fonts/truetype/ttf-punjabi-fonts/lohit_pa.ttf");
+      font_config,
+      "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_pa.ttf",
+      "/usr/share/fonts/truetype/ttf-punjabi-fonts/lohit_pa.ttf");
 
   base::FilePath ahem_font = base_path.Append("AHEM____.TTF");
   if (!FcConfigAppFontAddFile(
