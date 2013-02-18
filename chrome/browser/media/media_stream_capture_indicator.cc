@@ -380,14 +380,19 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconContextMenu() {
        iter != usage_map_.end(); ++iter) {
     // Check if any audio and video devices have been used.
     const WebContentsDeviceUsage& usage = *iter->second;
+    WebContents* const web_contents = iter->first;
     if (usage.IsWebContentsDestroyed() ||
+        !GetExtension(web_contents) ||
         (!usage.IsCapturingAudio() && !usage.IsCapturingVideo())) {
+      // We only show the tray icon for extensions that have not been
+      // destroyed and are capturing audio or video.
+      // For regular tabs, we show an indicator in the tab icon.
       continue;
     }
+
     audio = audio || usage.IsCapturingAudio();
     video = video || usage.IsCapturingVideo();
 
-    WebContents* const web_contents = iter->first;
     command_targets_.push_back(web_contents);
     menu->AddItem(command_id, GetTitle(web_contents));
 
