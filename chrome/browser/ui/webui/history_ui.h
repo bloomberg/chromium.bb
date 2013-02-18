@@ -45,6 +45,11 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Removes duplicate visits from the given list of query results, only
+  // retaining the most recent visit to a URL on a particular day. |results|
+  // must already be sorted by visit time, most recent first.
+  static void RemoveDuplicateResults(ListValue* results);
+
  private:
   // The range for which to return results:
   // - ALLTIME: allows access to all the results in a paginated way.
@@ -61,11 +66,15 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   // Creates a history query result value.
   DictionaryValue* CreateQueryResultValue(
-      const GURL& url, const string16 title, base::Time visit_time,
+      const GURL& url, const string16& title, base::Time visit_time,
       bool is_search_result, const string16& snippet);
 
-  // Helper to send the accumulated results of the query to the front end.
-  void ReturnResultsToFrontEnd();
+  // Sends the accumulated results of the query to the front end, truncating
+  // the number to |max_count| if necessary. If |max_count| is 0, the results
+  // are not truncated.
+  // If |remove_duplicates| is true, duplicate visits on the same day are
+  // removed.
+  void ReturnResultsToFrontEnd(bool remove_duplicates, int max_count);
 
   // Callback from |web_history_timer_| when a response from web history has
   // not been received in time.

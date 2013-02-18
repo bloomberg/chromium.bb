@@ -15,6 +15,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -168,6 +169,39 @@ void QueryHistoryCompletionCallback(
   callback.Run(request, NULL);
 }
 
+// Converts a time into a string for use as a parameter in a request to the
+// history server.
+std::string ServerTimeString(base::Time time) {
+  return base::Int64ToString((time - base::Time::UnixEpoch()).InMicroseconds());
+}
+
+// Returns a URL for querying the history server for a query specified by
+// |options|.
+std::string GetQueryUrl(const QueryOptions& options) {
+  GURL url = GURL(kHistoryQueryHistoryUrl);
+  url = net::AppendQueryParameter(url, "titles", "1");
+
+  // Take |begin_time|, |end_time|, and |max_count| from the original query
+  // options, and convert them to the equivalent URL parameters.
+
+  base::Time end_time =
+      std::min(base::Time::FromInternalValue(options.EffectiveEndTime()),
+               base::Time::Now());
+  url = net::AppendQueryParameter(url, "max", ServerTimeString(end_time));
+
+  if (!options.begin_time.is_null()) {
+    url = net::AppendQueryParameter(
+        url, "min", ServerTimeString(options.begin_time));
+  }
+
+  if (options.max_count) {
+    url = net::AppendQueryParameter(
+        url, "num", base::IntToString(options.max_count));
+  }
+
+  return url.spec();
+}
+
 }  // namespace
 
 WebHistoryService::Request::Request() {
@@ -192,7 +226,7 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
       &QueryHistoryCompletionCallback, callback);
 
   scoped_ptr<RequestImpl> request(
-      new RequestImpl(profile_, kHistoryQueryHistoryUrl, completion_callback));
+      new RequestImpl(profile_, GetQueryUrl(options), completion_callback));
   request->Start();
   return request.PassAs<Request>();
 }
@@ -204,10 +238,8 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistoryBetween(
     const WebHistoryService::ExpireWebHistoryCallback& callback) {
 
   // Determine the timestamps representing the beginning and end of the day.
-  std::string min_timestamp(base::Int64ToString(
-      (begin_time - base::Time::FromJsTime(0)).InMicroseconds()));
-  std::string max_timestamp(base::Int64ToString(
-      (end_time - base::Time::FromJsTime(0)).InMicroseconds()));
+  std::string min_timestamp = ServerTimeString(begin_time);
+  std::string max_timestamp = ServerTimeString(end_time);
 
   DictionaryValue delete_request;
   ListValue* deletions = new ListValue;
