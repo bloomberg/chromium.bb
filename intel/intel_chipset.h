@@ -192,15 +192,15 @@
 				 (devid) == PCI_CHIP_SANDYBRIDGE_S)
 
 #define IS_GEN7(devid)		(IS_IVYBRIDGE(devid) || \
-				 IS_HASWELL(devid))
+				 IS_HASWELL(devid) || \
+				 IS_VALLEYVIEW(devid))
 
 #define IS_IVYBRIDGE(devid)	((devid) == PCI_CHIP_IVYBRIDGE_GT1 || \
 				 (devid) == PCI_CHIP_IVYBRIDGE_GT2 || \
 				 (devid) == PCI_CHIP_IVYBRIDGE_M_GT1 || \
 				 (devid) == PCI_CHIP_IVYBRIDGE_M_GT2 || \
 				 (devid) == PCI_CHIP_IVYBRIDGE_S || \
-				 (devid) == PCI_CHIP_IVYBRIDGE_S_GT2 || \
-				 (devid) == PCI_CHIP_VALLEYVIEW_PO)
+				 (devid) == PCI_CHIP_IVYBRIDGE_S_GT2)
 
 #define IS_VALLEYVIEW(devid)	((devid) == PCI_CHIP_VALLEYVIEW_PO || \
 				 (devid) == PCI_CHIP_VALLEYVIEW_1 || \
