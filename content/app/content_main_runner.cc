@@ -549,6 +549,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     base::allocator::SetGetStatsFunction(GetStatsThunk);
     base::allocator::SetReleaseFreeMemoryFunction(ReleaseFreeMemoryThunk);
 
+#if !defined(USE_SYSTEM_TCMALLOC)
     // Provide optional hook for monitoring allocation quantities on a
     // per-thread basis.  Only set the hook if the environment indicates this
     // needs to be enabled.
@@ -559,7 +560,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
           MallocExtension::GetBytesAllocatedOnCurrentThread,
           tracked_objects::TIME_SOURCE_TYPE_TCMALLOC);
     }
-#endif
+#endif  // !defined(USE_SYSTEM_TCMALLOC)
+#endif  // !defined(OS_MACOSX) && defined(USE_TCMALLOC)
 
     // On Android,
     // - setlocale() is not supported.

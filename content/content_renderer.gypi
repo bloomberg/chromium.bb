@@ -4,6 +4,7 @@
 
 {
   'dependencies': [
+    '../base/allocator/allocator.gyp:allocator_headers',
     '../jingle/jingle.gyp:jingle_glue',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',

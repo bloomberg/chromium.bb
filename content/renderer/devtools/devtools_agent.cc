@@ -129,7 +129,7 @@ void DevToolsAgent::clearBrowserCookies() {
   Send(new DevToolsHostMsg_ClearBrowserCookies(routing_id()));
 }
 
-#if defined(USE_TCMALLOC) && !defined(OS_WIN)
+#if defined(USE_TCMALLOC) && !defined(OS_WIN) && !defined(USE_SYSTEM_TCMALLOC)
 static void AllocationVisitor(void* data, const void* ptr) {
     typedef WebKit::WebDevToolsAgentClient::AllocatedObjectVisitor Visitor;
     Visitor* visitor = reinterpret_cast<Visitor*>(data);
@@ -138,7 +138,7 @@ static void AllocationVisitor(void* data, const void* ptr) {
 #endif
 
 void DevToolsAgent::visitAllocatedObjects(AllocatedObjectVisitor* visitor) {
-#if defined(USE_TCMALLOC) && !defined(OS_WIN)
+#if defined(USE_TCMALLOC) && !defined(OS_WIN) && !defined(USE_SYSTEM_TCMALLOC)
   IterateAllocatedObjects(&AllocationVisitor, visitor);
 #endif
 }
