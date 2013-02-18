@@ -89,7 +89,7 @@ westoninclude_HEADERS =				\
 	../shared/matrix.h			\
 	../shared/config-parser.h
 
-moduledir = @libdir@/weston
+moduledir = $(libdir)/weston
 module_LTLIBRARIES =				\
 	$(desktop_shell)			\
 	$(tablet_shell)				\
