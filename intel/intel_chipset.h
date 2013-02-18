@@ -52,26 +52,26 @@
 #define PCI_CHIP_IGD_GM			0xA011
 #define PCI_CHIP_IGD_G			0xA001
 
-#define IS_IGDGM(devid)	(devid == PCI_CHIP_IGD_GM)
-#define IS_IGDG(devid)	(devid == PCI_CHIP_IGD_G)
-#define IS_IGD(devid) (IS_IGDG(devid) || IS_IGDGM(devid))
+#define IS_IGDGM(devid)		((devid) == PCI_CHIP_IGD_GM)
+#define IS_IGDG(devid)		((devid) == PCI_CHIP_IGD_G)
+#define IS_IGD(devid)		(IS_IGDG(devid) || IS_IGDGM(devid))
 
 #define PCI_CHIP_I965_G			0x29A2
 #define PCI_CHIP_I965_Q			0x2992
 #define PCI_CHIP_I965_G_1		0x2982
 #define PCI_CHIP_I946_GZ		0x2972
-#define PCI_CHIP_I965_GM                0x2A02
-#define PCI_CHIP_I965_GME               0x2A12
+#define PCI_CHIP_I965_GM		0x2A02
+#define PCI_CHIP_I965_GME		0x2A12
 
-#define PCI_CHIP_GM45_GM                0x2A42
+#define PCI_CHIP_GM45_GM		0x2A42
 
-#define PCI_CHIP_IGD_E_G                0x2E02
-#define PCI_CHIP_Q45_G                  0x2E12
-#define PCI_CHIP_G45_G                  0x2E22
-#define PCI_CHIP_G41_G                  0x2E32
+#define PCI_CHIP_IGD_E_G		0x2E02
+#define PCI_CHIP_Q45_G			0x2E12
+#define PCI_CHIP_G45_G			0x2E22
+#define PCI_CHIP_G41_G			0x2E32
 
-#define PCI_CHIP_ILD_G                  0x0042
-#define PCI_CHIP_ILM_G                  0x0046
+#define PCI_CHIP_ILD_G			0x0042
+#define PCI_CHIP_ILM_G			0x0046
 
 #define PCI_CHIP_SANDYBRIDGE_GT1	0x0102 /* desktop */
 #define PCI_CHIP_SANDYBRIDGE_GT2	0x0112
@@ -88,169 +88,169 @@
 #define PCI_CHIP_IVYBRIDGE_S		0x015a /* server */
 #define PCI_CHIP_IVYBRIDGE_S_GT2	0x016a /* server */
 
-#define PCI_CHIP_HASWELL_GT1            0x0402 /* Desktop */
-#define PCI_CHIP_HASWELL_GT2            0x0412
-#define PCI_CHIP_HASWELL_GT2_PLUS       0x0422
-#define PCI_CHIP_HASWELL_M_GT1          0x0406 /* Mobile */
-#define PCI_CHIP_HASWELL_M_GT2          0x0416
-#define PCI_CHIP_HASWELL_M_GT2_PLUS     0x0426
-#define PCI_CHIP_HASWELL_S_GT1          0x040A /* Server */
-#define PCI_CHIP_HASWELL_S_GT2          0x041A
-#define PCI_CHIP_HASWELL_S_GT2_PLUS     0x042A
-#define PCI_CHIP_HASWELL_SDV_GT1        0x0C02 /* Desktop */
-#define PCI_CHIP_HASWELL_SDV_GT2        0x0C12
-#define PCI_CHIP_HASWELL_SDV_GT2_PLUS   0x0C22
-#define PCI_CHIP_HASWELL_SDV_M_GT1      0x0C06 /* Mobile */
-#define PCI_CHIP_HASWELL_SDV_M_GT2      0x0C16
-#define PCI_CHIP_HASWELL_SDV_M_GT2_PLUS 0x0C26
-#define PCI_CHIP_HASWELL_SDV_S_GT1      0x0C0A /* Server */
-#define PCI_CHIP_HASWELL_SDV_S_GT2      0x0C1A
-#define PCI_CHIP_HASWELL_SDV_S_GT2_PLUS 0x0C2A
-#define PCI_CHIP_HASWELL_ULT_GT1        0x0A02 /* Desktop */
-#define PCI_CHIP_HASWELL_ULT_GT2        0x0A12
-#define PCI_CHIP_HASWELL_ULT_GT2_PLUS   0x0A22
-#define PCI_CHIP_HASWELL_ULT_M_GT1      0x0A06 /* Mobile */
-#define PCI_CHIP_HASWELL_ULT_M_GT2      0x0A16
-#define PCI_CHIP_HASWELL_ULT_M_GT2_PLUS 0x0A26
-#define PCI_CHIP_HASWELL_ULT_S_GT1      0x0A0A /* Server */
-#define PCI_CHIP_HASWELL_ULT_S_GT2      0x0A1A
-#define PCI_CHIP_HASWELL_ULT_S_GT2_PLUS 0x0A2A
-#define PCI_CHIP_HASWELL_CRW_GT1        0x0D12 /* Desktop */
-#define PCI_CHIP_HASWELL_CRW_GT2        0x0D22
-#define PCI_CHIP_HASWELL_CRW_GT2_PLUS   0x0D32
-#define PCI_CHIP_HASWELL_CRW_M_GT1      0x0D16 /* Mobile */
-#define PCI_CHIP_HASWELL_CRW_M_GT2      0x0D26
-#define PCI_CHIP_HASWELL_CRW_M_GT2_PLUS 0x0D36
-#define PCI_CHIP_HASWELL_CRW_S_GT1      0x0D1A /* Server */
-#define PCI_CHIP_HASWELL_CRW_S_GT2      0x0D2A
-#define PCI_CHIP_HASWELL_CRW_S_GT2_PLUS 0x0D3A
+#define PCI_CHIP_HASWELL_GT1		0x0402 /* Desktop */
+#define PCI_CHIP_HASWELL_GT2		0x0412
+#define PCI_CHIP_HASWELL_GT2_PLUS	0x0422
+#define PCI_CHIP_HASWELL_M_GT1		0x0406 /* Mobile */
+#define PCI_CHIP_HASWELL_M_GT2		0x0416
+#define PCI_CHIP_HASWELL_M_GT2_PLUS	0x0426
+#define PCI_CHIP_HASWELL_S_GT1		0x040A /* Server */
+#define PCI_CHIP_HASWELL_S_GT2		0x041A
+#define PCI_CHIP_HASWELL_S_GT2_PLUS	0x042A
+#define PCI_CHIP_HASWELL_SDV_GT1	0x0C02 /* Desktop */
+#define PCI_CHIP_HASWELL_SDV_GT2	0x0C12
+#define PCI_CHIP_HASWELL_SDV_GT2_PLUS	0x0C22
+#define PCI_CHIP_HASWELL_SDV_M_GT1	0x0C06 /* Mobile */
+#define PCI_CHIP_HASWELL_SDV_M_GT2	0x0C16
+#define PCI_CHIP_HASWELL_SDV_M_GT2_PLUS	0x0C26
+#define PCI_CHIP_HASWELL_SDV_S_GT1	0x0C0A /* Server */
+#define PCI_CHIP_HASWELL_SDV_S_GT2	0x0C1A
+#define PCI_CHIP_HASWELL_SDV_S_GT2_PLUS	0x0C2A
+#define PCI_CHIP_HASWELL_ULT_GT1	0x0A02 /* Desktop */
+#define PCI_CHIP_HASWELL_ULT_GT2	0x0A12
+#define PCI_CHIP_HASWELL_ULT_GT2_PLUS	0x0A22
+#define PCI_CHIP_HASWELL_ULT_M_GT1	0x0A06 /* Mobile */
+#define PCI_CHIP_HASWELL_ULT_M_GT2	0x0A16
+#define PCI_CHIP_HASWELL_ULT_M_GT2_PLUS	0x0A26
+#define PCI_CHIP_HASWELL_ULT_S_GT1	0x0A0A /* Server */
+#define PCI_CHIP_HASWELL_ULT_S_GT2	0x0A1A
+#define PCI_CHIP_HASWELL_ULT_S_GT2_PLUS	0x0A2A
+#define PCI_CHIP_HASWELL_CRW_GT1	0x0D12 /* Desktop */
+#define PCI_CHIP_HASWELL_CRW_GT2	0x0D22
+#define PCI_CHIP_HASWELL_CRW_GT2_PLUS	0x0D32
+#define PCI_CHIP_HASWELL_CRW_M_GT1	0x0D16 /* Mobile */
+#define PCI_CHIP_HASWELL_CRW_M_GT2	0x0D26
+#define PCI_CHIP_HASWELL_CRW_M_GT2_PLUS	0x0D36
+#define PCI_CHIP_HASWELL_CRW_S_GT1	0x0D1A /* Server */
+#define PCI_CHIP_HASWELL_CRW_S_GT2	0x0D2A
+#define PCI_CHIP_HASWELL_CRW_S_GT2_PLUS	0x0D3A
 
 #define PCI_CHIP_VALLEYVIEW_PO		0x0f30 /* VLV PO board */
 #define PCI_CHIP_VALLEYVIEW_1		0x0f31
 #define PCI_CHIP_VALLEYVIEW_2		0x0f32
 #define PCI_CHIP_VALLEYVIEW_3		0x0f33
 
-#define IS_MOBILE(devid)	(devid == PCI_CHIP_I855_GM || \
-				 devid == PCI_CHIP_I915_GM || \
-				 devid == PCI_CHIP_I945_GM || \
-				 devid == PCI_CHIP_I945_GME || \
-				 devid == PCI_CHIP_I965_GM || \
-				 devid == PCI_CHIP_I965_GME || \
-				 devid == PCI_CHIP_GM45_GM || IS_IGD(devid) || \
-				 devid == PCI_CHIP_IVYBRIDGE_M_GT1 ||	\
-				 devid == PCI_CHIP_IVYBRIDGE_M_GT2)
+#define IS_MOBILE(devid)	((devid) == PCI_CHIP_I855_GM || \
+				 (devid) == PCI_CHIP_I915_GM || \
+				 (devid) == PCI_CHIP_I945_GM || \
+				 (devid) == PCI_CHIP_I945_GME || \
+				 (devid) == PCI_CHIP_I965_GM || \
+				 (devid) == PCI_CHIP_I965_GME || \
+				 (devid) == PCI_CHIP_GM45_GM || IS_IGD(devid) || \
+				 (devid) == PCI_CHIP_IVYBRIDGE_M_GT1 || \
+				 (devid) == PCI_CHIP_IVYBRIDGE_M_GT2)
 
-#define IS_G45(devid)           (devid == PCI_CHIP_IGD_E_G || \
-                                 devid == PCI_CHIP_Q45_G || \
-                                 devid == PCI_CHIP_G45_G || \
-                                 devid == PCI_CHIP_G41_G)
-#define IS_GM45(devid)          (devid == PCI_CHIP_GM45_GM)
+#define IS_G45(devid)		((devid) == PCI_CHIP_IGD_E_G || \
+				 (devid) == PCI_CHIP_Q45_G || \
+				 (devid) == PCI_CHIP_G45_G || \
+				 (devid) == PCI_CHIP_G41_G)
+#define IS_GM45(devid)		((devid) == PCI_CHIP_GM45_GM)
 #define IS_G4X(devid)		(IS_G45(devid) || IS_GM45(devid))
 
-#define IS_ILD(devid)           (devid == PCI_CHIP_ILD_G)
-#define IS_ILM(devid)           (devid == PCI_CHIP_ILM_G)
+#define IS_ILD(devid)		((devid) == PCI_CHIP_ILD_G)
+#define IS_ILM(devid)		((devid) == PCI_CHIP_ILM_G)
 
-#define IS_915(devid)		(devid == PCI_CHIP_I915_G || \
-				 devid == PCI_CHIP_E7221_G || \
-				 devid == PCI_CHIP_I915_GM)
+#define IS_915(devid)		((devid) == PCI_CHIP_I915_G || \
+				 (devid) == PCI_CHIP_E7221_G || \
+				 (devid) == PCI_CHIP_I915_GM)
 
-#define IS_945GM(devid)		(devid == PCI_CHIP_I945_GM || \
-				 devid == PCI_CHIP_I945_GME)
+#define IS_945GM(devid)		((devid) == PCI_CHIP_I945_GM || \
+				 (devid) == PCI_CHIP_I945_GME)
 
-#define IS_945(devid)		(devid == PCI_CHIP_I945_G || \
-				 devid == PCI_CHIP_I945_GM || \
-				 devid == PCI_CHIP_I945_GME || \
+#define IS_945(devid)		((devid) == PCI_CHIP_I945_G || \
+				 (devid) == PCI_CHIP_I945_GM || \
+				 (devid) == PCI_CHIP_I945_GME || \
 				 IS_G33(devid))
 
-#define IS_G33(devid)		(devid == PCI_CHIP_G33_G || \
-				 devid == PCI_CHIP_Q33_G || \
-				 devid == PCI_CHIP_Q35_G || IS_IGD(devid))
+#define IS_G33(devid)		((devid) == PCI_CHIP_G33_G || \
+				 (devid) == PCI_CHIP_Q33_G || \
+				 (devid) == PCI_CHIP_Q35_G || IS_IGD(devid))
 
-#define IS_GEN2(devid)		(devid == PCI_CHIP_I830_M || \
-				 devid == PCI_CHIP_845_G || \
-				 devid == PCI_CHIP_I855_GM || \
-				 devid == PCI_CHIP_I865_G)
+#define IS_GEN2(devid)		((devid) == PCI_CHIP_I830_M || \
+				 (devid) == PCI_CHIP_845_G || \
+				 (devid) == PCI_CHIP_I855_GM || \
+				 (devid) == PCI_CHIP_I865_G)
 
 #define IS_GEN3(devid)		(IS_945(devid) || IS_915(devid))
 
-#define IS_GEN4(devid)		(devid == PCI_CHIP_I965_G || \
-				 devid == PCI_CHIP_I965_Q || \
-				 devid == PCI_CHIP_I965_G_1 || \
-				 devid == PCI_CHIP_I965_GM || \
-				 devid == PCI_CHIP_I965_GME || \
-				 devid == PCI_CHIP_I946_GZ || \
+#define IS_GEN4(devid)		((devid) == PCI_CHIP_I965_G || \
+				 (devid) == PCI_CHIP_I965_Q || \
+				 (devid) == PCI_CHIP_I965_G_1 || \
+				 (devid) == PCI_CHIP_I965_GM || \
+				 (devid) == PCI_CHIP_I965_GME || \
+				 (devid) == PCI_CHIP_I946_GZ || \
 				 IS_G4X(devid))
 
 #define IS_GEN5(devid)		(IS_ILD(devid) || IS_ILM(devid))
 
-#define IS_GEN6(devid)		(devid == PCI_CHIP_SANDYBRIDGE_GT1 || \
-				 devid == PCI_CHIP_SANDYBRIDGE_GT2 || \
-				 devid == PCI_CHIP_SANDYBRIDGE_GT2_PLUS || \
-				 devid == PCI_CHIP_SANDYBRIDGE_M_GT1 || \
-				 devid == PCI_CHIP_SANDYBRIDGE_M_GT2 || \
-				 devid == PCI_CHIP_SANDYBRIDGE_M_GT2_PLUS || \
-				 devid == PCI_CHIP_SANDYBRIDGE_S)
+#define IS_GEN6(devid)		((devid) == PCI_CHIP_SANDYBRIDGE_GT1 || \
+				 (devid) == PCI_CHIP_SANDYBRIDGE_GT2 || \
+				 (devid) == PCI_CHIP_SANDYBRIDGE_GT2_PLUS || \
+				 (devid) == PCI_CHIP_SANDYBRIDGE_M_GT1 || \
+				 (devid) == PCI_CHIP_SANDYBRIDGE_M_GT2 || \
+				 (devid) == PCI_CHIP_SANDYBRIDGE_M_GT2_PLUS || \
+				 (devid) == PCI_CHIP_SANDYBRIDGE_S)
 
-#define IS_GEN7(devid)          (IS_IVYBRIDGE(devid) || \
-                                 IS_HASWELL(devid))
+#define IS_GEN7(devid)		(IS_IVYBRIDGE(devid) || \
+				 IS_HASWELL(devid))
 
-#define IS_IVYBRIDGE(dev)	(dev == PCI_CHIP_IVYBRIDGE_GT1 || \
-				 dev == PCI_CHIP_IVYBRIDGE_GT2 || \
-				 dev == PCI_CHIP_IVYBRIDGE_M_GT1 || \
-				 dev == PCI_CHIP_IVYBRIDGE_M_GT2 || \
-				 dev == PCI_CHIP_IVYBRIDGE_S || \
-				 dev == PCI_CHIP_IVYBRIDGE_S_GT2 || \
-				 dev == PCI_CHIP_VALLEYVIEW_PO)
+#define IS_IVYBRIDGE(devid)	((devid) == PCI_CHIP_IVYBRIDGE_GT1 || \
+				 (devid) == PCI_CHIP_IVYBRIDGE_GT2 || \
+				 (devid) == PCI_CHIP_IVYBRIDGE_M_GT1 || \
+				 (devid) == PCI_CHIP_IVYBRIDGE_M_GT2 || \
+				 (devid) == PCI_CHIP_IVYBRIDGE_S || \
+				 (devid) == PCI_CHIP_IVYBRIDGE_S_GT2 || \
+				 (devid) == PCI_CHIP_VALLEYVIEW_PO)
 
-#define IS_VALLEYVIEW(dev) (((dev) == PCI_CHIP_VALLEYVIEW_PO) ||	\
-			    ((dev) == PCI_CHIP_VALLEYVIEW_1) ||		\
-			    ((dev) == PCI_CHIP_VALLEYVIEW_2) ||		\
-			    ((dev) == PCI_CHIP_VALLEYVIEW_3))
+#define IS_VALLEYVIEW(devid)	((devid) == PCI_CHIP_VALLEYVIEW_PO || \
+				 (devid) == PCI_CHIP_VALLEYVIEW_1 || \
+				 (devid) == PCI_CHIP_VALLEYVIEW_2 || \
+				 (devid) == PCI_CHIP_VALLEYVIEW_3)
 
-#define IS_HSW_GT1(devid)       (devid == PCI_CHIP_HASWELL_GT1 || \
-				 devid == PCI_CHIP_HASWELL_M_GT1 || \
-				 devid == PCI_CHIP_HASWELL_S_GT1 || \
-				 devid == PCI_CHIP_HASWELL_SDV_GT1 || \
-				 devid == PCI_CHIP_HASWELL_SDV_M_GT1 || \
-				 devid == PCI_CHIP_HASWELL_SDV_S_GT1 || \
-				 devid == PCI_CHIP_HASWELL_ULT_GT1 || \
-				 devid == PCI_CHIP_HASWELL_ULT_M_GT1 || \
-				 devid == PCI_CHIP_HASWELL_ULT_S_GT1 || \
-				 devid == PCI_CHIP_HASWELL_CRW_GT1 || \
-				 devid == PCI_CHIP_HASWELL_CRW_M_GT1 || \
-				 devid == PCI_CHIP_HASWELL_CRW_S_GT1)
-#define IS_HSW_GT2(devid)       (devid == PCI_CHIP_HASWELL_GT2 || \
-                                 devid == PCI_CHIP_HASWELL_M_GT2 || \
-				 devid == PCI_CHIP_HASWELL_S_GT2 || \
-				 devid == PCI_CHIP_HASWELL_SDV_GT2 || \
-				 devid == PCI_CHIP_HASWELL_SDV_M_GT2 || \
-				 devid == PCI_CHIP_HASWELL_SDV_S_GT2 || \
-				 devid == PCI_CHIP_HASWELL_ULT_GT2 || \
-				 devid == PCI_CHIP_HASWELL_ULT_M_GT2 || \
-				 devid == PCI_CHIP_HASWELL_ULT_S_GT2 || \
-				 devid == PCI_CHIP_HASWELL_CRW_GT2 || \
-				 devid == PCI_CHIP_HASWELL_CRW_M_GT2 || \
-				 devid == PCI_CHIP_HASWELL_CRW_S_GT2 || \
-				 devid == PCI_CHIP_HASWELL_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_M_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_S_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_SDV_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_SDV_M_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_SDV_S_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_ULT_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_ULT_M_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_ULT_S_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_CRW_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_CRW_M_GT2_PLUS || \
-				 devid == PCI_CHIP_HASWELL_CRW_S_GT2_PLUS)
+#define IS_HSW_GT1(devid)	((devid) == PCI_CHIP_HASWELL_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_M_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_S_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_SDV_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_SDV_M_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_SDV_S_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_ULT_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_ULT_M_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_ULT_S_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_CRW_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_CRW_M_GT1 || \
+				 (devid) == PCI_CHIP_HASWELL_CRW_S_GT1)
+#define IS_HSW_GT2(devid)	((devid) == PCI_CHIP_HASWELL_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_M_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_S_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_SDV_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_SDV_M_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_SDV_S_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_ULT_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_ULT_M_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_ULT_S_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_CRW_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_CRW_M_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_CRW_S_GT2 || \
+				 (devid) == PCI_CHIP_HASWELL_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_M_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_S_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_SDV_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_SDV_M_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_SDV_S_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_ULT_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_ULT_M_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_ULT_S_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_CRW_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_CRW_M_GT2_PLUS || \
+				 (devid) == PCI_CHIP_HASWELL_CRW_S_GT2_PLUS)
 
-#define IS_HASWELL(devid)       (IS_HSW_GT1(devid) || \
-                                 IS_HSW_GT2(devid))
+#define IS_HASWELL(devid)	(IS_HSW_GT1(devid) || \
+				 IS_HSW_GT2(devid))
 
-#define IS_9XX(dev) (IS_GEN3(dev) ||				\
-		     IS_GEN4(dev) ||				\
-		     IS_GEN5(dev) ||				\
-		     IS_GEN6(dev) ||				\
-		     IS_GEN7(dev))
+#define IS_9XX(dev)		(IS_GEN3(dev) || \
+				 IS_GEN4(dev) || \
+				 IS_GEN5(dev) || \
+				 IS_GEN6(dev) || \
+				 IS_GEN7(dev))
 
 #endif /* _INTEL_CHIPSET_H */
