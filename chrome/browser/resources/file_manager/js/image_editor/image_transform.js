@@ -187,9 +187,11 @@ ImageEditor.Mode.Crop.prototype.getDoubleTapAction = function(x, y) {
 
 /*
  * A draggable rectangle over the image.
+ * @param {Rect} rect  //TODO(JSDOC).
+ * @param {Viewport} viewport  //TODO(JSDOC).
+ * @constructor
  */
-//TODO(JSDOC).
-function DraggableRect(rect, viewport, sensitivity) {
+function DraggableRect(rect, viewport) {
 
   // The bounds are not held in a regular rectangle (with width/height).
   // left/top/right/bottom held instead for convenience.
@@ -200,7 +202,6 @@ function DraggableRect(rect, viewport, sensitivity) {
   this.bounds_[DraggableRect.BOTTOM] = rect.top + rect.height;
 
   this.viewport_ = viewport;
-  this.sensitivity_ = sensitivity;
 
   this.oppositeSide_ = {};
   this.oppositeSide_[DraggableRect.LEFT] = DraggableRect.RIGHT;
