@@ -29,7 +29,6 @@ def GeneratorMain(argv):
   parser.add_option('--headers-root', action='append')
   parser.add_option('--define', action='append')
   parser.add_option('--output-directory')
-  parser.add_option('--prefix', default='')
   parser.add_option('--use-include-next', action='store_true')
   parser.add_option('--outputs', action='store_true')
   parser.add_option('--generate', action='store_true')
@@ -81,11 +80,10 @@ def GeneratorMain(argv):
             for header in include_before.split(':'):
               f.write('#include %s\n' % header)
 
-          include_target = options.prefix + header_filename
           if options.use_include_next:
-            f.write('#include_next <%s>\n' % include_target)
+            f.write('#include_next <%s>\n' % header_filename)
           else:
-            f.write('#include <%s>\n' % include_target)
+            f.write('#include <%s>\n' % header_filename)
 
           if include_after:
             for header in include_after.split(':'):

@@ -7,7 +7,6 @@
     '..',
   ],
   'dependencies': [
-    '../base/allocator/allocator.gyp:allocator_headers',
     '../base/base.gyp:base',
     '../base/base.gyp:base_i18n',
     '../crypto/crypto.gyp:crypto',

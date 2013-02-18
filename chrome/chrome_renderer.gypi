@@ -13,7 +13,6 @@
         'common_net',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
-        '../base/allocator/allocator.gyp:allocator_headers',
         '../components/components.gyp:visitedlink_renderer',
         '../content/content.gyp:content_renderer',
         '../net/net.gyp:net',
