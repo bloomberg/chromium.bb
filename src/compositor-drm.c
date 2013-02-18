@@ -2535,6 +2535,8 @@ err_sprite:
 err_udev_dev:
 	udev_device_unref(drm_device);
 err_tty:
+	if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 0) < 0)
+		weston_log("failed to drop master: %m\n");
 	tty_destroy(ec->tty);
 err_udev:
 	udev_unref(ec->udev);
