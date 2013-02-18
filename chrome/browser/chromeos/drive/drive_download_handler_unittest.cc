@@ -31,6 +31,11 @@ void CopySubstituteDriveDownloadPathResult(base::FilePath* out_file_path,
   *out_file_path = file_path;
 }
 
+// Copies |value| to |out|, is used as a content::CheckForFileExistenceCallback.
+void CopyCheckForFileExistenceResult(bool* out, bool value) {
+  *out = value;
+}
+
 }  // namespace
 
 class DriveDownloadHandlerTest : public testing::Test {
@@ -77,7 +82,7 @@ class DriveDownloadHandlerTest : public testing::Test {
 };
 
 TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathNonDrivePath) {
-  const base::FilePath non_drive_path("/foo/bar");
+  const base::FilePath non_drive_path(FILE_PATH_LITERAL("/foo/bar"));
   ASSERT_FALSE(util::IsUnderDriveMountPoint(non_drive_path));
 
   // Call SubstituteDriveDownloadPath()
@@ -95,7 +100,7 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathNonDrivePath) {
 
 TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPath) {
   const base::FilePath drive_path =
-      util::GetDriveMountPointPath().Append("test.dat");
+      util::GetDriveMountPointPath().AppendASCII("test.dat");
 
   // Call SubstituteDriveDownloadPath()
   base::FilePath substituted_path;
@@ -119,7 +124,7 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPath) {
 
 TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
   const base::FilePath drive_path =
-      util::GetDriveMountPointPath().Append("test.dat");
+      util::GetDriveMountPointPath().AppendASCII("test.dat");
 
   // Call SubstituteDriveDownloadPath()
   base::FilePath substituted_path;
@@ -141,7 +146,7 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
 
 TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathCreateDirectory) {
   const base::FilePath drive_path =
-      util::GetDriveMountPointPath().Append("test.dat");
+      util::GetDriveMountPointPath().AppendASCII("test.dat");
 
   // Call SubstituteDriveDownloadPath()
   base::FilePath substituted_path;
@@ -171,7 +176,7 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathCreateDirectory) {
 TEST_F(DriveDownloadHandlerTest,
        SubstituteDriveDownloadPathCreateDirectoryFailure) {
   const base::FilePath drive_path =
-      util::GetDriveMountPointPath().Append("test.dat");
+      util::GetDriveMountPointPath().AppendASCII("test.dat");
 
   // Call SubstituteDriveDownloadPath()
   base::FilePath substituted_path;
@@ -200,7 +205,7 @@ TEST_F(DriveDownloadHandlerTest,
 // DownloadItem.
 TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
   const base::FilePath drive_path =
-      util::GetDriveMountPointPath().Append("test.dat");
+      util::GetDriveMountPointPath().AppendASCII("test.dat");
 
   // Call SubstituteDriveDownloadPath()
   base::FilePath substituted_path;
@@ -228,6 +233,52 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
   // |download_item_| is a drive download now.
   ASSERT_TRUE(download_handler_->IsDriveDownload(&download_item_));
   EXPECT_EQ(drive_path, download_handler_->GetTargetPath(&download_item_));
+}
+
+TEST_F(DriveDownloadHandlerTest, CheckForFileExistence) {
+  const base::FilePath drive_path =
+      util::GetDriveMountPointPath().AppendASCII("test.dat");
+
+  // Make |download_item_| a drive download.
+  download_handler_->SetDownloadParams(drive_path, &download_item_);
+  ASSERT_TRUE(download_handler_->IsDriveDownload(&download_item_));
+  EXPECT_EQ(drive_path, download_handler_->GetTargetPath(&download_item_));
+
+  // Call CheckForFileExistence.
+  bool file_exists = false;
+  download_handler_->CheckForFileExistence(
+      &download_item_,
+      base::Bind(&CopyCheckForFileExistenceResult, &file_exists));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Return result of GetEntryInfoByPath(), file exists.
+  {
+    scoped_ptr<DriveEntryProto> entry(new DriveEntryProto);
+    ASSERT_FALSE(get_entry_info_callback_.is_null());
+    get_entry_info_callback_.Run(DRIVE_FILE_OK, entry.Pass());
+  }
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Check the result.
+  EXPECT_TRUE(file_exists);
+
+  // Reset callback to call CheckForFileExistence again.
+  get_entry_info_callback_.Reset();
+
+  // Call CheckForFileExistence again.
+  download_handler_->CheckForFileExistence(
+      &download_item_,
+      base::Bind(&CopyCheckForFileExistenceResult, &file_exists));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Return result of GetEntryInfoByPath(), file does not exist.
+  ASSERT_FALSE(get_entry_info_callback_.is_null());
+  get_entry_info_callback_.Run(DRIVE_FILE_ERROR_NOT_FOUND,
+                               scoped_ptr<DriveEntryProto>());
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // Check the result.
+  EXPECT_FALSE(file_exists);
 }
 
 }  // namespace drive
