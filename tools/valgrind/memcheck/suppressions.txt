@@ -6055,7 +6055,7 @@
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
    fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE1EE8toStringIN3WTF12AtomicStringEEET_v
    fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE1EEcvN3WTF12AtomicStringEEv
-   fun:_ZN7WebCore23WorkerContextV8InternalL24addEventListenerCallbackERKN2v89ArgumentsE
+   fun:_ZN7WebCore20IDBRequestV8InternalL24addEventListenerCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
@@ -6553,4 +6553,48 @@
    bug_176270
    Memcheck:Uninitialized
    fun:_ZNK2cc19LayerTreeDebugState20recordRenderingStatsEv
+}
+{
+   bug_176616_a
+   Memcheck:Uninitialized
+   fun:_ZN13WebTestRunner16WebTestProxyBase19didCreateDataSourceEPN6WebKit8WebFrameEPNS1_13WebDataSourceE
+   fun:_ZN13WebTestRunner12WebTestProxyI11WebViewHostP9TestShellE19didCreateDataSourceEPN6WebKit8WebFrameEPNS5_13WebDataSourceE
+   fun:_ZN6WebKit21FrameLoaderClientImpl20createDocumentLoaderERKN7WebCore15ResourceRequestERKNS1_14SubstituteDataE
+   fun:_ZN7WebCore11FrameLoader4initEv
+   fun:_ZN7WebCore5Frame4initEv
+   fun:_ZN6WebKit12WebFrameImpl21initializeAsMainFrameEPN7WebCore4PageE
+   fun:_ZN6WebKit11WebViewImpl19initializeMainFrameEPNS_14WebFrameClientE
+   fun:_ZN9TestShell15createNewWindowERKN6WebKit6WebURLEP16DRTDevToolsAgentPN13WebTestRunner17WebTestInterfacesE
+   fun:_ZN9TestShell16createMainWindowEv
+   fun:_ZN9TestShell10initializeEP25MockWebKitPlatformSupport
+}
+{
+   bug_176616_b
+   Memcheck:Uninitialized
+   fun:_ZN13WebTestRunner10TestRunner5resetEv
+   fun:_ZN13WebTestRunner14TestInterfaces8resetAllEv
+   fun:_ZN13WebTestRunner17WebTestInterfaces8resetAllEv
+   fun:_ZN9TestShell19resetTestControllerEv
+   fun:_ZL7runTestR9TestShellR10TestParamsRKSsb
+}
+{
+   bug_176619_a
+   Memcheck:Uninitialized
+   fun:_ZN3WTF6StringC1EPKt
+   fun:_ZN7WebCore12WebVTTParser22constructTreeFromTokenEPNS_8DocumentE
+   fun:_ZN7WebCore12WebVTTParser33createDocumentFragmentFromCueTextERKN3WTF6StringE
+   fun:_ZN7WebCore12TextTrackCue20createWebVTTNodeTreeEv
+   fun:_ZN7WebCore12TextTrackCue22createCueRenderingTreeEv
+   fun:_ZN7WebCore12TextTrackCue17updateDisplayTreeEf
+}
+{
+   bug_176619_b
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore12WebVTTParser13collectDigitsERKN3WTF6StringEPj
+   fun:_ZN7WebCore12WebVTTParser16collectTimeStampERKN3WTF6StringEPj
+   fun:_ZN7WebCore12WebVTTParser22constructTreeFromTokenEPNS_8DocumentE
+   fun:_ZN7WebCore12WebVTTParser33createDocumentFragmentFromCueTextERKN3WTF6StringE
+   fun:_ZN7WebCore12TextTrackCue20createWebVTTNodeTreeEv
+   fun:_ZN7WebCore12TextTrackCue22createCueRenderingTreeEv
+   fun:_ZN7WebCore12TextTrackCue17updateDisplayTreeEf
 }
