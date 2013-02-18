@@ -48,6 +48,8 @@ void ShellContentRendererClient::RenderThreadStarted() {
 }
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
   WebKitTestRunner* test_runner = WebKitTestRunner::Get(render_view);
   test_runner->Reset();
   render_view->GetWebView()->setSpellCheckClient(
