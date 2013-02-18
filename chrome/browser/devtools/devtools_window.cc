@@ -22,6 +22,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -581,9 +582,9 @@ GURL DevToolsWindow::GetDevToolsUrl(Profile* profile,
   CHECK(tp);
 
   SkColor color_toolbar =
-      tp->GetColor(ThemeService::COLOR_TOOLBAR);
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
   SkColor color_tab_text =
-      tp->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
+      tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool experiments_enabled =
@@ -605,9 +606,9 @@ void DevToolsWindow::UpdateTheme() {
   CHECK(tp);
 
   SkColor color_toolbar =
-      tp->GetColor(ThemeService::COLOR_TOOLBAR);
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
   SkColor color_tab_text =
-      tp->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
+      tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
   std::string command = StringPrintf(
       "InspectorFrontendAPI.setToolbarColors(\"%s\", \"%s\")",
       SkColorToRGBAString(color_toolbar).c_str(),

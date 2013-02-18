@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
@@ -26,6 +26,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -502,7 +503,7 @@ void FindBarView::OnThemeChanged() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (GetThemeProvider()) {
     close_button_->SetBackground(
-        GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT),
         rb.GetImageSkiaNamed(IDR_TAB_CLOSE),
         rb.GetImageSkiaNamed(IDR_TAB_CLOSE_MASK));
   }

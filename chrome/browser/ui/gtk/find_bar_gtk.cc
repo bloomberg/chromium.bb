@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
@@ -546,7 +547,7 @@ void FindBarGtk::Observe(int type,
     // This is necessary to make the close button dark enough.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_->SetBackground(
-        theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT),
+        theme_service_->GetColor(ThemeProperties::COLOR_TAB_TEXT),
         rb.GetImageNamed(IDR_TAB_CLOSE).AsBitmap(),
         rb.GetImageNamed(IDR_TAB_CLOSE).AsBitmap());
   }

@@ -10,7 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/hwnd_util.h"
@@ -340,7 +340,8 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                 toolbar_bounds.bottom() - kClientEdgeThickness,
                 w - (2 * kClientEdgeThickness),
                 kClientEdgeThickness),
-      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
+      ThemeProperties::GetDefaultColor(
+          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
 }
 
 void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -379,7 +380,7 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // where not covered by the toolbar image.  NOTE: We do this after drawing the
   // images because the images are meant to alpha-blend atop the frame whereas
   // these rects are meant to be fully opaque, without anything overlaid.
-  SkColor toolbar_color = tp->GetColor(ThemeService::COLOR_TOOLBAR);
+  SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
   canvas->FillRect(gfx::Rect(client_area_bounds.x() - kClientEdgeThickness,
       client_area_top, kClientEdgeThickness,
       client_area_bottom + kClientEdgeThickness - client_area_top),

@@ -8,10 +8,11 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/theme_provider.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
@@ -112,7 +113,7 @@ void BookmarkBarInstructionsView::UpdateColors() {
     return;
   updated_colors_ = true;
   SkColor text_color =
-      theme_provider->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
+      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
   instructions_->SetEnabledColor(text_color);
   if (import_link_)
     import_link_->SetEnabledColor(text_color);

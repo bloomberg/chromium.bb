@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list_impl.h"
@@ -725,7 +726,7 @@ void DrawThemedToolbarBackground(GtkWidget* widget,
                                  GtkThemeService* theme_service) {
   // Fill the entire region with the toolbar color.
   GdkColor color = theme_service->GetGdkColor(
-      ThemeService::COLOR_TOOLBAR);
+      ThemeProperties::COLOR_TOOLBAR);
   gdk_cairo_set_source_color(cr, &color);
   cairo_fill(cr);
 

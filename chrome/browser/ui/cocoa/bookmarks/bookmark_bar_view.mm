@@ -6,6 +6,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
 #include "chrome/browser/profiles/profile.h"
+#import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
@@ -85,7 +86,7 @@ using content::UserMetricsAction;
     return;
 
   NSColor* color =
-      themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT,
+      themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT,
                                 true);
   [noItemTextfield_ setTextColor:color];
 }

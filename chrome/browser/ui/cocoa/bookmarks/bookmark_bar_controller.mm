@@ -16,7 +16,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#import "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -1314,7 +1315,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   ui::ThemeProvider* themeProvider = [[[self view] window] themeProvider];
   if (themeProvider) {
     NSColor* color =
-        themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT,
+        themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT,
                                   true);
     [cell setTextColor:color];
   }
@@ -1865,7 +1866,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!themeProvider)
     return;
   NSColor* color =
-      themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT,
+      themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT,
                                 true);
   for (BookmarkButton* button in buttons_.get()) {
     BookmarkButtonCell* cell = [button cell];

@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -23,6 +23,7 @@
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
@@ -347,7 +348,8 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
-  SkColor toolbar_color = theme_service_->GetColor(ThemeService::COLOR_TOOLBAR);
+  SkColor toolbar_color = theme_service_->GetColor(
+      ThemeProperties::COLOR_TOOLBAR);
   paint.setColor(toolbar_color);
 
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
@@ -442,7 +444,7 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
                         std::max(0, text_height));
   body_bounds.set_x(GetMirroredXForRect(body_bounds));
   SkColor text_color =
-      theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT);
+      theme_service_->GetColor(ThemeProperties::COLOR_TAB_TEXT);
 
   // DrawStringInt doesn't handle alpha, so we'll do the blending ourselves.
   text_color = SkColorSetARGB(

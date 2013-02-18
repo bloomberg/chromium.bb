@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
@@ -549,7 +550,7 @@ void BrowserTitlebar::GetButtonResources(const std::string& button_name,
 
 void BrowserTitlebar::UpdateButtonBackground(CustomDrawButton* button) {
   SkColor color = theme_service_->GetColor(
-      ThemeService::COLOR_BUTTON_BACKGROUND);
+      ThemeProperties::COLOR_BUTTON_BACKGROUND);
   SkBitmap background = theme_service_->GetImageNamed(
       IDR_THEME_WINDOW_CONTROL_BACKGROUND).AsBitmap();
 
@@ -745,10 +746,10 @@ void BrowserTitlebar::UpdateTextColor() {
     GdkColor frame_color;
     if (window_has_focus_) {
       frame_color = theme_service_->GetGdkColor(
-          ThemeService::COLOR_FRAME);
+          ThemeProperties::COLOR_FRAME);
     } else {
       frame_color = theme_service_->GetGdkColor(
-          ThemeService::COLOR_FRAME_INACTIVE);
+          ThemeProperties::COLOR_FRAME_INACTIVE);
     }
     GdkColor text_color = PickLuminosityContrastingColor(
         &frame_color, &ui::kGdkWhite, &ui::kGdkBlack);

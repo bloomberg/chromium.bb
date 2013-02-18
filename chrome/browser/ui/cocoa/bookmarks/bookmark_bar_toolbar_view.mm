@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -103,7 +103,7 @@ const CGFloat kBorderRadius = 3.0;
 
   // Draw the rounded rectangle.
   NSColor* toolbarColor =
-      themeProvider->GetNSColor(ThemeService::COLOR_TOOLBAR, true);
+      themeProvider->GetNSColor(ThemeProperties::COLOR_TOOLBAR, true);
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];  // Set with opacity.
   [border fill];
@@ -123,7 +123,7 @@ const CGFloat kBorderRadius = 3.0;
 
   // Draw the border of the rounded rectangle.
   NSColor* borderColor = themeProvider->GetNSColor(
-      ThemeService::COLOR_TOOLBAR_BUTTON_STROKE, true);
+      ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE, true);
   alpha = morph * [borderColor alphaComponent];
   [[borderColor colorWithAlphaComponent:alpha] set];  // Set with opacity.
   [border stroke];
@@ -166,7 +166,8 @@ const CGFloat kBorderRadius = 3.0;
     CGContextBeginTransparencyLayer(cgContext, NULL);
     CGContextSetAlpha(
         cgContext, chrome::search::kBookmarkBarThemeBackgroundAlphaFactor);
-    [themeProvider->GetNSColor(ThemeService::COLOR_NTP_BACKGROUND, true) set];
+    [themeProvider->GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND, true)
+        set];
     NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
     CGContextEndTransparencyLayer(cgContext);
   }
@@ -179,8 +180,8 @@ const CGFloat kBorderRadius = 3.0;
 
   NSColor* strokeColor = nil;
   if (useThemeColor) {
-    strokeColor =
-        themeProvider->GetNSColor(ThemeService::COLOR_TOOLBAR_SEPARATOR, true);
+    strokeColor = themeProvider->GetNSColor(
+        ThemeProperties::COLOR_TOOLBAR_SEPARATOR, true);
   } else {
     strokeColor = gfx::SkColorToCalibratedNSColor(
         chrome::search::GetBookmarkBarNoThemeSeparatorColor());

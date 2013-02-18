@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -26,6 +26,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -363,12 +364,12 @@ void DownloadShelfView::UpdateColorsFromTheme() {
   if (show_all_view_ && close_button_ && GetThemeProvider()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     set_background(views::Background::CreateSolidBackground(
-        GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR)));
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
     show_all_view_->SetBackgroundColor(background()->get_color());
     show_all_view_->SetEnabledColor(
-        GetThemeProvider()->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
     close_button_->SetBackground(
-        GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT),
         rb.GetImageSkiaNamed(IDR_CLOSE_BAR),
         rb.GetImageSkiaNamed(IDR_CLOSE_BAR_MASK));
   }

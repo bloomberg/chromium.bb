@@ -40,50 +40,6 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
   }
 };
 
-TEST_F(ThemeServiceTest, AlignmentConversion) {
-  // Verify that we get out what we put in.
-  std::string top_left = "left top";
-  int alignment = ThemeService::StringToAlignment(top_left);
-  EXPECT_EQ(ThemeService::ALIGN_TOP | ThemeService::ALIGN_LEFT,
-            alignment);
-  EXPECT_EQ(top_left, ThemeService::AlignmentToString(alignment));
-
-  // We get back a normalized version of what we put in.
-  alignment = ThemeService::StringToAlignment("top");
-  EXPECT_EQ(ThemeService::ALIGN_TOP, alignment);
-  EXPECT_EQ("center top", ThemeService::AlignmentToString(alignment));
-
-  alignment = ThemeService::StringToAlignment("left");
-  EXPECT_EQ(ThemeService::ALIGN_LEFT, alignment);
-  EXPECT_EQ("left center", ThemeService::AlignmentToString(alignment));
-
-  alignment = ThemeService::StringToAlignment("right");
-  EXPECT_EQ(ThemeService::ALIGN_RIGHT, alignment);
-  EXPECT_EQ("right center", ThemeService::AlignmentToString(alignment));
-
-  alignment = ThemeService::StringToAlignment("righttopbottom");
-  EXPECT_EQ(ThemeService::ALIGN_CENTER, alignment);
-  EXPECT_EQ("center center", ThemeService::AlignmentToString(alignment));
-}
-
-TEST_F(ThemeServiceTest, AlignmentConversionInput) {
-  // Verify that we output in an expected format.
-  int alignment = ThemeService::StringToAlignment("bottom right");
-  EXPECT_EQ("right bottom", ThemeService::AlignmentToString(alignment));
-
-  // Verify that bad strings don't cause explosions.
-  alignment = ThemeService::StringToAlignment("new zealand");
-  EXPECT_EQ("center center", ThemeService::AlignmentToString(alignment));
-
-  // Verify that bad strings don't cause explosions.
-  alignment = ThemeService::StringToAlignment("new zealand top");
-  EXPECT_EQ("center top", ThemeService::AlignmentToString(alignment));
-
-  // Verify that bad strings don't cause explosions.
-  alignment = ThemeService::StringToAlignment("new zealandtop");
-  EXPECT_EQ("center center", ThemeService::AlignmentToString(alignment));
-}
-
 // Installs then uninstalls a theme and makes sure that the ThemeService
 // reverts to the default theme after the uninstall.
 TEST_F(ThemeServiceTest, ThemeInstallUninstall) {

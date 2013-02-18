@@ -8,6 +8,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
@@ -356,12 +357,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   ui::ThemeProvider* theme = [[[self view] window] themeProvider];
   if (theme && ![self selected]) {
     titleColor =
-        theme->GetNSColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT,
+        theme->GetNSColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT,
                           true);
   }
   // Default to the selected text color unless told otherwise.
   if (theme && !titleColor) {
-    titleColor = theme->GetNSColor(ThemeService::COLOR_TAB_TEXT,
+    titleColor = theme->GetNSColor(ThemeProperties::COLOR_TAB_TEXT,
                                    true);
   }
   [titleView_ setTextColor:titleColor ? titleColor : [NSColor textColor]];

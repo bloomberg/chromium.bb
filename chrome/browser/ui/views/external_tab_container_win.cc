@@ -28,7 +28,7 @@
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/repost_form_warning_controller.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -1034,7 +1034,8 @@ bool ExternalTabContainerWin::InitNavigationInfo(
 }
 
 SkColor ExternalTabContainerWin::GetInfoBarSeparatorColor() const {
-  return ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR);
+  return ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_TOOLBAR_SEPARATOR);
 }
 
 void ExternalTabContainerWin::InfoBarContainerStateChanged(bool is_animating) {

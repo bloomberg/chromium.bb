@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
 
 #include "base/logging.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -98,8 +99,8 @@
     // Draw the outer stroke (over the background).
     BOOL active = [[controlView window] isMainWindow];
     NSColor* strokeColor = themeProvider->GetNSColor(
-        active ? ThemeService::COLOR_TOOLBAR_BUTTON_STROKE :
-                 ThemeService::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
+        active ? ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE :
+                 ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
         true);
     rect_path_utils::FrameRectWithInset(roundedCornerFlags, frame, 0.0, 0.0,
                                         radius, lineWidth, strokeColor);
@@ -134,7 +135,7 @@
       themeProvider->UsingDefaultTheme()) {
 
     NSColor* bezelColor = themeProvider->GetNSColor(
-        ThemeService::COLOR_TOOLBAR_BEZEL, true);
+        ThemeProperties::COLOR_TOOLBAR_BEZEL, true);
     [[bezelColor colorWithAlphaComponent:0.5 / lineWidth] set];
     NSRect bezelRect = NSMakeRect(cellFrame.origin.x,
                                   NSMaxY(cellFrame) - lineWidth,

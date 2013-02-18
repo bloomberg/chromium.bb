@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -196,7 +197,7 @@ void BookmarkBarGtk::Init() {
   paint_box_ = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(ntp_padding_box_), paint_box_);
   GdkColor paint_box_color =
-      theme_service_->GetGdkColor(ThemeService::COLOR_TOOLBAR);
+      theme_service_->GetGdkColor(ThemeProperties::COLOR_TOOLBAR);
   gtk_widget_modify_bg(paint_box_, GTK_STATE_NORMAL, &paint_box_color);
   gtk_widget_add_events(paint_box_, GDK_POINTER_MOTION_MASK |
                                     GDK_BUTTON_PRESS_MASK);
@@ -636,7 +637,7 @@ void BookmarkBarGtk::UpdateDetachedState(BookmarkBar::State old_state) {
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(paint_box_), TRUE);
     GdkColor stroke_color = theme_service_->UsingNativeTheme() ?
         theme_service_->GetBorderColor() :
-        theme_service_->GetGdkColor(ThemeService::COLOR_NTP_HEADER);
+        theme_service_->GetGdkColor(ThemeProperties::COLOR_NTP_HEADER);
     gtk_util::ActAsRoundedWindow(paint_box_, stroke_color, kNTPRoundedness,
                                  gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
 
@@ -974,13 +975,13 @@ void BookmarkBarGtk::Observe(int type,
     UpdateEventBoxPaintability();
 
     GdkColor paint_box_color =
-        theme_service_->GetGdkColor(ThemeService::COLOR_TOOLBAR);
+        theme_service_->GetGdkColor(ThemeProperties::COLOR_TOOLBAR);
     gtk_widget_modify_bg(paint_box_, GTK_STATE_NORMAL, &paint_box_color);
 
     if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
       GdkColor stroke_color = theme_service_->UsingNativeTheme() ?
           theme_service_->GetBorderColor() :
-          theme_service_->GetGdkColor(ThemeService::COLOR_NTP_HEADER);
+          theme_service_->GetGdkColor(ThemeProperties::COLOR_NTP_HEADER);
       gtk_util::SetRoundedWindowBorderColor(paint_box_, stroke_color);
     }
 

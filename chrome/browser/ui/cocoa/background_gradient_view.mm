@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/background_gradient_view.h"
 
+#import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -66,8 +67,8 @@
   if (!themeProvider)
     return [NSColor blackColor];
   return themeProvider->GetNSColor(
-      isActive ? ThemeService::COLOR_TOOLBAR_STROKE :
-                 ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true);
+      isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
+                 ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE, true);
 }
 
 - (NSColor*)backgroundImageColor {

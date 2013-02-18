@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/download/download_shelf_view.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
@@ -35,8 +36,8 @@
   BOOL isActive = [[self window] isMainWindow];
   ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   return themeProvider ? themeProvider->GetNSColor(
-      isActive ? ThemeService::COLOR_TOOLBAR_STROKE :
-                 ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE, true) :
+      isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
+                 ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE, true) :
       [NSColor blackColor];
 }
 
@@ -63,7 +64,7 @@
       static_cast<ThemeService*>([[self window] themeProvider]);
   if (themeProvider) {
     int resourceName = themeProvider->UsingDefaultTheme() ?
-        ThemeService::COLOR_TOOLBAR_BEZEL : ThemeService::COLOR_TOOLBAR;
+        ThemeProperties::COLOR_TOOLBAR_BEZEL : ThemeProperties::COLOR_TOOLBAR;
     NSColor* highlightColor = themeProvider->GetNSColor(resourceName, true);
     if (highlightColor) {
       [highlightColor set];

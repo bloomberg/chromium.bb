@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -17,6 +18,8 @@
 
 NSString* const kBrowserThemeDidChangeNotification =
     @"BrowserThemeDidChangeNotification";
+
+typedef ThemeProperties Properties;
 
 namespace {
 
@@ -127,7 +130,7 @@ NSColor* ThemeService::GetNSColor(int id, bool allow_default) const {
     is_default = false;
   } else {
     is_default = true;
-    sk_color = GetDefaultColor(id);
+    sk_color = ThemeProperties::GetDefaultColor(id);
   }
 
   if (is_default && !allow_default)
@@ -159,7 +162,7 @@ NSColor* ThemeService::GetNSColorTint(int id, bool allow_default) const {
     is_default = false;
   } else {
     is_default = true;
-    tint = GetDefaultTint(id);
+    tint = ThemeProperties::GetDefaultTint(id);
   }
 
   if (is_default && !allow_default)
@@ -198,10 +201,10 @@ NSGradient* ThemeService::GetNSGradient(int id) const {
   // Note that we are not leaking when we assign a retained object to
   // |gradient|; in all cases we cache it before we return.
   switch (id) {
-    case GRADIENT_FRAME_INCOGNITO:
-    case GRADIENT_FRAME_INCOGNITO_INACTIVE: {
+    case Properties::GRADIENT_FRAME_INCOGNITO:
+    case Properties::GRADIENT_FRAME_INCOGNITO_INACTIVE: {
       // TODO(avi): can we simplify this?
-      BOOL active = id == GRADIENT_FRAME_INCOGNITO;
+      BOOL active = id == Properties::GRADIENT_FRAME_INCOGNITO;
       NSColor* base_color = [NSColor colorWithCalibratedRed:83/255.0
                                                       green:108.0/255.0
                                                        blue:140/255.0
@@ -226,11 +229,11 @@ NSGradient* ThemeService::GetNSGradient(int id) const {
       break;
     }
 
-    case GRADIENT_TOOLBAR:
-    case GRADIENT_TOOLBAR_INACTIVE: {
+    case Properties::GRADIENT_TOOLBAR:
+    case Properties::GRADIENT_TOOLBAR_INACTIVE: {
       NSColor* base_color = [NSColor colorWithCalibratedWhite:0.2 alpha:1.0];
-      BOOL faded = (id == GRADIENT_TOOLBAR_INACTIVE ) ||
-                   (id == GRADIENT_TOOLBAR_BUTTON_INACTIVE);
+      BOOL faded = (id == Properties::GRADIENT_TOOLBAR_INACTIVE ) ||
+                   (id == Properties::GRADIENT_TOOLBAR_BUTTON_INACTIVE);
       NSColor* start_color =
           [base_color gtm_colorAdjustedFor:GTMColorationLightHighlight
                                      faded:faded];
@@ -253,18 +256,18 @@ NSGradient* ThemeService::GetNSGradient(int id) const {
       break;
     }
 
-    case GRADIENT_TOOLBAR_BUTTON:
-    case GRADIENT_TOOLBAR_BUTTON_INACTIVE: {
+    case Properties::GRADIENT_TOOLBAR_BUTTON:
+    case Properties::GRADIENT_TOOLBAR_BUTTON_INACTIVE: {
       NSColor* start_color = [NSColor colorWithCalibratedWhite:1.0 alpha:0.0];
       NSColor* end_color = [NSColor colorWithCalibratedWhite:1.0 alpha:0.3];
       gradient = [[NSGradient alloc] initWithStartingColor:start_color
                                                endingColor:end_color];
       break;
     }
-    case GRADIENT_TOOLBAR_BUTTON_PRESSED:
-    case GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE: {
+    case Properties::GRADIENT_TOOLBAR_BUTTON_PRESSED:
+    case Properties::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE: {
       NSColor* base_color = [NSColor colorWithCalibratedWhite:0.5 alpha:1.0];
-      BOOL faded = id == GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE;
+      BOOL faded = id == Properties::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE;
       NSColor* start_color =
           [base_color gtm_colorAdjustedFor:GTMColorationBaseShadow
                                      faded:faded];

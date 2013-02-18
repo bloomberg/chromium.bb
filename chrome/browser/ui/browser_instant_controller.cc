@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
@@ -270,7 +271,7 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
 
     // Set theme background color.
     SkColor background_color =
-        theme_service->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
+        theme_service->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
     if (gfx::IsInvertedColorScheme())
       background_color = color_utils::InvertColor(background_color);
     theme_info_.color_r = SkColorGetR(background_color);
@@ -284,11 +285,11 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
 
       // Set theme background image horizontal alignment.
       int alignment = 0;
-      theme_service->GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT,
-                                        &alignment);
-      if (alignment & ThemeService::ALIGN_LEFT) {
+      theme_service->GetDisplayProperty(
+          ThemeProperties::NTP_BACKGROUND_ALIGNMENT, &alignment);
+      if (alignment & ThemeProperties::ALIGN_LEFT) {
         theme_info_.image_horizontal_alignment = THEME_BKGRND_IMAGE_ALIGN_LEFT;
-      } else if (alignment & ThemeService::ALIGN_RIGHT) {
+      } else if (alignment & ThemeProperties::ALIGN_RIGHT) {
         theme_info_.image_horizontal_alignment = THEME_BKGRND_IMAGE_ALIGN_RIGHT;
       } else {  // ALIGN_CENTER
         theme_info_.image_horizontal_alignment =
@@ -296,7 +297,7 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
       }
 
       // Set theme background image vertical alignment.
-      if (alignment & ThemeService::ALIGN_TOP) {
+      if (alignment & ThemeProperties::ALIGN_TOP) {
         theme_info_.image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_TOP;
 #if !defined(OS_ANDROID)
         // A detached bookmark bar will draw the top part of a top-aligned theme
@@ -304,7 +305,7 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
         if (browser_->bookmark_bar_state() == BookmarkBar::DETACHED)
           theme_info_.image_top_offset = -chrome::kNTPBookmarkBarHeight;
 #endif  // !defined(OS_ANDROID)
-      } else if (alignment & ThemeService::ALIGN_BOTTOM) {
+      } else if (alignment & ThemeProperties::ALIGN_BOTTOM) {
         theme_info_.image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_BOTTOM;
       } else {  // ALIGN_CENTER
         theme_info_.image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_CENTER;
@@ -312,19 +313,19 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
 
       // Set theme background image tiling.
       int tiling = 0;
-      theme_service->GetDisplayProperty(ThemeService::NTP_BACKGROUND_TILING,
+      theme_service->GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING,
                                         &tiling);
       switch (tiling) {
-        case ThemeService::NO_REPEAT:
+        case ThemeProperties::NO_REPEAT:
             theme_info_.image_tiling = THEME_BKGRND_IMAGE_NO_REPEAT;
             break;
-        case ThemeService::REPEAT_X:
+        case ThemeProperties::REPEAT_X:
             theme_info_.image_tiling = THEME_BKGRND_IMAGE_REPEAT_X;
             break;
-        case ThemeService::REPEAT_Y:
+        case ThemeProperties::REPEAT_Y:
             theme_info_.image_tiling = THEME_BKGRND_IMAGE_REPEAT_Y;
             break;
-        case ThemeService::REPEAT:
+        case ThemeProperties::REPEAT:
             theme_info_.image_tiling = THEME_BKGRND_IMAGE_REPEAT;
             break;
       }

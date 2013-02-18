@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -142,7 +142,7 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithNoImage) {
 
   // Tests where we don't have a background image, only a color.
   NiceMock<MockThemeProvider> provider;
-  EXPECT_CALL(provider, GetColor(ThemeService::COLOR_NTP_BACKGROUND))
+  EXPECT_CALL(provider, GetColor(ThemeProperties::COLOR_NTP_BACKGROUND))
       .WillRepeatedly(Return(SK_ColorWHITE));
   EXPECT_CALL(provider, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
       .WillRepeatedly(Return(false));
@@ -153,12 +153,12 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithNoImage) {
 
 // Actions used in DisplayAsDetachedBarWithBgImage.
 ACTION(SetBackgroundTiling) {
-  *arg1 = ThemeService::NO_REPEAT;
+  *arg1 = ThemeProperties::NO_REPEAT;
   return true;
 }
 
 ACTION(SetAlignLeft) {
-  *arg1 = ThemeService::ALIGN_LEFT;
+  *arg1 = ThemeProperties::ALIGN_LEFT;
   return true;
 }
 
@@ -170,17 +170,17 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithBgImage) {
   NiceMock<MockThemeProvider> provider;
 
   // Advertise having an image.
-  EXPECT_CALL(provider, GetColor(ThemeService::COLOR_NTP_BACKGROUND))
+  EXPECT_CALL(provider, GetColor(ThemeProperties::COLOR_NTP_BACKGROUND))
       .WillRepeatedly(Return(SK_ColorRED));
   EXPECT_CALL(provider, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
       .WillRepeatedly(Return(true));
 
   // Return the correct tiling/alignment information.
   EXPECT_CALL(provider,
-      GetDisplayProperty(ThemeService::NTP_BACKGROUND_TILING, _))
+      GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING, _))
       .WillRepeatedly(SetBackgroundTiling());
   EXPECT_CALL(provider,
-      GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT, _))
+      GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_ALIGNMENT, _))
       .WillRepeatedly(SetAlignLeft());
 
   // Create a dummy bitmap full of not-red to blit with.
@@ -207,10 +207,10 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsBottomDetachedBar) {
   NSColor* color = [NSColor redColor];
   EXPECT_CALL(provider, HasCustomImage(IDR_THEME_NTP_BACKGROUND))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(provider, GetNSColor(ThemeService::COLOR_NTP_BACKGROUND, true))
+  EXPECT_CALL(provider, GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND, true))
       .WillRepeatedly(Return(color));
   EXPECT_CALL(provider,
-              GetNSColor(ThemeService::COLOR_TOOLBAR_SEPARATOR, true))
+              GetNSColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR, true))
       .WillRepeatedly(Return(color));
   [controller_.get() setThemeProvider:&provider];
 

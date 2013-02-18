@@ -6,12 +6,13 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/infobars/infobar.h"
-#import "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/theme_provider.h"
 
 namespace {
 
@@ -39,8 +40,8 @@ const CGFloat kTipWidth = 23;
 
   BOOL active = [[self window] isMainWindow];
   return themeProvider->GetNSColor(
-      active ? ThemeService::COLOR_TOOLBAR_STROKE :
-               ThemeService::COLOR_TOOLBAR_STROKE_INACTIVE,
+      active ? ThemeProperties::COLOR_TOOLBAR_STROKE :
+               ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE,
       true);
 }
 

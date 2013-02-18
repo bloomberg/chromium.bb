@@ -11,7 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
@@ -438,8 +438,8 @@ gfx::Rect ConstrainedWindowFrameView::IconBounds() const {
 
 void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  frame_background_->set_frame_color(ThemeService::GetDefaultColor(
-      ThemeService::COLOR_FRAME));
+  frame_background_->set_frame_color(ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_FRAME));
   chrome::HostDesktopType desktop_type =
       chrome::GetHostDesktopTypeForNativeView(GetWidget()->GetNativeView());
   gfx::ImageSkia* theme_frame = rb.GetImageSkiaNamed(

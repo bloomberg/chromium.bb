@@ -15,6 +15,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/color_utils.h"
 
@@ -90,6 +91,10 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // supposed to work for the NTP attribution and background resources.
   base::RefCountedMemory* GetRawData(int id,
                                      ui::ScaleFactor scale_factor) const;
+
+  // Returns the set of image idrs which can be overwritten by a user provided
+  // theme.
+  static void GetThemeableImageIDRs(std::set<int>* result);
 
   // Whether this theme provides an image for |id|.
   bool HasCustomImage(int id) const;

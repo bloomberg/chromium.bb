@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -36,9 +37,9 @@ TEST_F(GtkThemeServiceTest, DefaultValues) {
   BuildProvider();
 
   // Test that we get the default theme colors back when in normal mode.
-  for (int i = ThemeService::COLOR_FRAME;
-       i <= ThemeService::COLOR_BUTTON_BACKGROUND; ++i) {
-    EXPECT_EQ(provider_->GetColor(i), ThemeService::GetDefaultColor(i))
+  for (int i = ThemeProperties::COLOR_FRAME;
+       i <= ThemeProperties::COLOR_BUTTON_BACKGROUND; ++i) {
+    EXPECT_EQ(provider_->GetColor(i), ThemeProperties::GetDefaultColor(i))
         << "Wrong default color for " << i;
   }
 }
@@ -55,6 +56,6 @@ TEST_F(GtkThemeServiceTest, UsingGtkValues) {
   GtkWidget* fake_label = provider_->fake_label();
   GtkStyle* label_style = gtk_rc_get_style(fake_label);
   GdkColor label_color = label_style->fg[GTK_STATE_NORMAL];
-  EXPECT_EQ(provider_->GetColor(ThemeService::COLOR_TAB_TEXT),
+  EXPECT_EQ(provider_->GetColor(ThemeProperties::COLOR_TAB_TEXT),
             gfx::GdkColorToSkColor(label_color));
 }

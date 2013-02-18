@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/views/detachable_toolbar_view.h"
 
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
@@ -29,7 +30,7 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
     chrome::HostDesktopType host_desktop_type) {
   ui::ThemeProvider* tp = view->GetThemeProvider();
   canvas->FillRect(view->GetLocalBounds(),
-                   tp->GetColor(ThemeService::COLOR_TOOLBAR));
+                   tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
   canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
                        background_origin.x(), background_origin.y(), 0, 0,
                        view->width(), view->height());
@@ -74,7 +75,8 @@ void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
   int thickness = views::NonClientFrameView::kClientEdgeThickness;
   int y = view->IsDetached() ? 0 : (view->height() - thickness);
   canvas->FillRect(gfx::Rect(0, y, view->width(), thickness),
-      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
+      ThemeProperties::GetDefaultColor(
+          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
 }
 
 // static
@@ -85,7 +87,7 @@ void DetachableToolbarView::PaintContentAreaBackground(
     double roundness) {
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setColor(theme_provider->GetColor(ThemeService::COLOR_TOOLBAR));
+  paint.setColor(theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
 
   canvas->sk_canvas()->drawRoundRect(
       rect, SkDoubleToScalar(roundness), SkDoubleToScalar(roundness), paint);
@@ -97,7 +99,7 @@ void DetachableToolbarView::PaintContentAreaBorder(
     const SkRect& rect, double roundness) {
   SkPaint border_paint;
   border_paint.setColor(
-      theme_provider->GetColor(ThemeService::COLOR_NTP_HEADER));
+      theme_provider->GetColor(ThemeProperties::COLOR_NTP_HEADER));
   border_paint.setStyle(SkPaint::kStroke_Style);
   border_paint.setAlpha(96);
   border_paint.setAntiAlias(true);

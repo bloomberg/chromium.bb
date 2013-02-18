@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
@@ -297,11 +298,11 @@ void StatusBubbleGtk::UserChangedTheme() {
     // toolbar" that I can find. Maybe in later iterations of the theme system,
     // there will be a better color to pick.
     GdkColor bookmark_text =
-        theme_service_->GetGdkColor(ThemeService::COLOR_BOOKMARK_TEXT);
+        theme_service_->GetGdkColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
     gtk_widget_modify_fg(label_.get(), GTK_STATE_NORMAL, &bookmark_text);
 
     GdkColor toolbar_color =
-        theme_service_->GetGdkColor(ThemeService::COLOR_TOOLBAR);
+        theme_service_->GetGdkColor(ThemeProperties::COLOR_TOOLBAR);
     gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, &toolbar_color);
   }
 

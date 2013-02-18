@@ -8,7 +8,7 @@
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
 #include "base/command_line.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -440,7 +440,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
   int bottom_edge_height = h - split_point;
 
   canvas->FillRect(gfx::Rect(x, bottom_y, w, bottom_edge_height),
-                   tp->GetColor(ThemeService::COLOR_TOOLBAR));
+                   tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
 
   // Paint the main toolbar image.  Since this image is also used to draw the
   // tab background, we must use the tab strip offset to compute the image
@@ -485,13 +485,15 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
                 toolbar_bounds.bottom() - kClientEdgeThickness,
                 w - (2 * kClientEdgeThickness),
                 kClientEdgeThickness),
-      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
+      ThemeProperties::GetDefaultColor(
+          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
 }
 
 void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
   canvas->FillRect(gfx::Rect(0, close_button_->bounds().bottom(),
                              width(), kClientEdgeThickness),
-      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
+      ThemeProperties::GetDefaultColor(
+          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeFrameImageId() const {

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -245,7 +246,7 @@ void DownloadShelfGtk::Observe(int type,
                                const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     GdkColor color = theme_service_->GetGdkColor(
-        ThemeService::COLOR_TOOLBAR);
+        ThemeProperties::COLOR_TOOLBAR);
     gtk_widget_modify_bg(padding_bg_, GTK_STATE_NORMAL, &color);
 
     color = theme_service_->GetBorderColor();
@@ -255,18 +256,18 @@ void DownloadShelfGtk::Observe(int type,
     // the bookmark text color. Otherwise, standard link blue can look very
     // bad for some dark themes.
     bool use_default_color = theme_service_->GetColor(
-        ThemeService::COLOR_BOOKMARK_TEXT) ==
-        ThemeService::GetDefaultColor(
-            ThemeService::COLOR_BOOKMARK_TEXT);
+        ThemeProperties::COLOR_BOOKMARK_TEXT) ==
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_BOOKMARK_TEXT);
     GdkColor bookmark_color = theme_service_->GetGdkColor(
-        ThemeService::COLOR_BOOKMARK_TEXT);
+        ThemeProperties::COLOR_BOOKMARK_TEXT);
     gtk_chrome_link_button_set_normal_color(
         GTK_CHROME_LINK_BUTTON(link_button_),
         use_default_color ? NULL : &bookmark_color);
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_->SetBackground(
-        theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT),
+        theme_service_->GetColor(ThemeProperties::COLOR_TAB_TEXT),
         rb.GetImageNamed(IDR_CLOSE_BAR).AsBitmap(),
         rb.GetImageNamed(IDR_CLOSE_BAR_MASK).AsBitmap());
   }

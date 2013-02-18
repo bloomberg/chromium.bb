@@ -30,7 +30,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/speech/tts_controller.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -105,6 +105,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
@@ -1862,7 +1863,8 @@ void BrowserView::GetAccessiblePanes(
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   // NOTE: Keep this in sync with ToolbarView::OnPaint()!
   return (IsTabStripVisible() || !frame_->ShouldUseNativeFrame()) ?
-      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR) :
+      ThemeProperties::GetDefaultColor(
+          ThemeProperties::COLOR_TOOLBAR_SEPARATOR) :
       SK_ColorBLACK;
 }
 
@@ -1960,7 +1962,7 @@ void BrowserView::Init() {
       new InstantPreviewControllerViews(browser(), contents_));
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
-      GetColor(ThemeService::COLOR_TOOLBAR);
+      GetColor(ThemeProperties::COLOR_TOOLBAR);
 
   devtools_container_ = new views::WebView(browser_->profile());
   devtools_container_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);

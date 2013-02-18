@@ -1196,6 +1196,7 @@
         'browser/task_manager/task_manager_unittest.cc',
         'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
+        'browser/themes/theme_properties_unittest.cc',
         'browser/themes/theme_service_unittest.cc',
         'browser/themes/theme_syncable_service_unittest.cc',
         'browser/thumbnails/simple_thumbnail_crop_unittest.cc',

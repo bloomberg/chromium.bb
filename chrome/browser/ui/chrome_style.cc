@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/chrome_style.h"
 
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -19,7 +19,8 @@ int GetCloseButtonSize() {
 }
 
 SkColor GetBackgroundColor() {
-  return ThemeService::GetDefaultColor(ThemeService::COLOR_CONTROL_BACKGROUND);
+  return ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_CONTROL_BACKGROUND);
 }
 
 SkColor GetLinkColor() {

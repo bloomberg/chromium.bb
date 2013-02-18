@@ -24,7 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -60,6 +60,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/button_drag_utils.h"
@@ -341,7 +342,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
         canvas, kSeparatorStartX, height(), 1,
         DetachableToolbarView::kEdgeDividerColor,
         DetachableToolbarView::kMiddleDividerColor,
-        GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR));
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
@@ -1237,7 +1238,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   // We don't always have a theme provider (ui tests, for example).
   if (GetThemeProvider()) {
     button->SetEnabledColor(GetThemeProvider()->GetColor(
-        ThemeService::COLOR_BOOKMARK_TEXT));
+        ThemeProperties::COLOR_BOOKMARK_TEXT));
   }
 
   button->ClearMaxTextSize();
@@ -1532,7 +1533,7 @@ void BookmarkBarView::UpdateColors() {
   if (!theme_provider)
     return;
   SkColor text_color =
-      theme_provider->GetColor(ThemeService::COLOR_BOOKMARK_TEXT);
+      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
   for (int i = 0; i < GetBookmarkButtonCount(); ++i)
     GetBookmarkButton(i)->SetEnabledColor(text_color);
   other_bookmarked_button()->SetEnabledColor(text_color);

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/panels/panel_titlebar_gtk.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -110,8 +111,8 @@ SkColor PanelTitlebarGtk::GetTextColor() const {
     return kTitleTextDefaultColor;
   return theme_service_->GetColor(panel_gtk_->paint_state() ==
       PanelGtk::PAINT_AS_ACTIVE ?
-          ThemeService::COLOR_TAB_TEXT :
-          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+          ThemeProperties::COLOR_TAB_TEXT :
+          ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
 }
 
 void PanelTitlebarGtk::BuildButtons() {

@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
 
@@ -431,8 +432,8 @@ const CGFloat kWindowGradientHeight = 24.0;
   NSGradient* gradient = nil;
   if (!themeImageColor && incognito)
     gradient = themeProvider->GetNSGradient(
-        active ? ThemeService::GRADIENT_FRAME_INCOGNITO :
-                 ThemeService::GRADIENT_FRAME_INCOGNITO_INACTIVE);
+        active ? ThemeProperties::GRADIENT_FRAME_INCOGNITO :
+                 ThemeProperties::GRADIENT_FRAME_INCOGNITO_INACTIVE);
 
   BOOL themed = NO;
   if (themeImageColor) {
@@ -520,10 +521,10 @@ const CGFloat kWindowGradientHeight = 24.0;
   NSColor* titleColor = nil;
   if (popup && active) {
     titleColor = themeProvider->GetNSColor(
-        ThemeService::COLOR_TAB_TEXT, false);
+        ThemeProperties::COLOR_TAB_TEXT, false);
   } else if (popup && !active) {
     titleColor = themeProvider->GetNSColor(
-        ThemeService::COLOR_BACKGROUND_TAB_TEXT, false);
+        ThemeProperties::COLOR_BACKGROUND_TAB_TEXT, false);
   }
 
   if (titleColor)

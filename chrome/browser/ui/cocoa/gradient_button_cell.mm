@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
+#import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -396,8 +397,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
       } else {
         clickedGradient = themeProvider ? themeProvider->GetNSGradient(
             active ?
-                ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED :
-                ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE) :
+                ThemeProperties::GRADIENT_TOOLBAR_BUTTON_PRESSED :
+                ThemeProperties::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE) :
             nil;
       }
       [clickedGradient drawInBezierPath:innerPath angle:90.0];
@@ -440,8 +441,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                                        alpha:0.3 * outerStrokeAlphaMult_];
   } else {
     strokeColor = themeProvider ? themeProvider->GetNSColor(
-        active ? ThemeService::COLOR_TOOLBAR_BUTTON_STROKE :
-                 ThemeService::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
+        active ? ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE :
+                 ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
         true) : [NSColor colorWithCalibratedWhite:0.0
                                             alpha:0.3 * outerStrokeAlphaMult_];
   }
@@ -555,8 +556,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     NSRect borderRect, contentRect;
     NSDivideRect(cellFrame, &borderRect, &contentRect, lineWidth, NSMaxXEdge);
     NSColor* stroke = themeProvider ? themeProvider->GetNSColor(
-        active ? ThemeService::COLOR_TOOLBAR_BUTTON_STROKE :
-                 ThemeService::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
+        active ? ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE :
+                 ThemeProperties::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
         true) : [NSColor blackColor];
 
     [[stroke colorWithAlphaComponent:0.2] set];
@@ -597,13 +598,13 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     ThemeService* themeProvider = static_cast<ThemeService*>(
         [[controlView window] themeProvider]);
     NSColor* color = themeProvider ?
-        themeProvider->GetNSColorTint(ThemeService::TINT_BUTTONS, true) :
+        themeProvider->GetNSColorTint(ThemeProperties::TINT_BUTTONS, true) :
         [NSColor blackColor];
 
     if (isTemplate && themeProvider && themeProvider->UsingDefaultTheme()) {
       scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
       [shadow.get() setShadowColor:themeProvider->GetNSColor(
-          ThemeService::COLOR_TOOLBAR_BEZEL, true)];
+          ThemeProperties::COLOR_TOOLBAR_BEZEL, true)];
       [shadow.get() setShadowOffset:NSMakeSize(0.0, -lineWidth)];
       [shadow setShadowBlurRadius:lineWidth];
       [shadow set];

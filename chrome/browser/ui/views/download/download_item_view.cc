@@ -21,7 +21,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "content/public/browser/download_danger_type.h"
@@ -34,6 +34,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -638,7 +639,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
       int y = box_y_ + kVerticalPadding + font_.GetHeight() +
               kVerticalTextPadding;
       SkColor file_name_color = GetThemeProvider()->GetColor(
-          ThemeService::COLOR_BOOKMARK_TEXT);
+          ThemeProperties::COLOR_BOOKMARK_TEXT);
       // If text is light-on-dark, lightening it alone will do nothing.
       // Therefore we mute luminance a wee bit before drawing in this case.
       if (color_utils::RelativeLuminance(file_name_color) > 0.5)
@@ -760,7 +761,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     int mirrored_x = GetMirroredXWithWidthInView(
         download_util::kSmallProgressIconSize, kTextWidth);
     SkColor file_name_color = GetThemeProvider()->GetColor(
-        ThemeService::COLOR_BOOKMARK_TEXT);
+        ThemeProperties::COLOR_BOOKMARK_TEXT);
     int y =
         box_y_ + (status_text_.empty() ?
                   ((box_height_ - font_.GetHeight()) / 2) : kVerticalPadding);
@@ -862,7 +863,7 @@ void DownloadItemView::LoadIconIfItemPathChanged() {
 void DownloadItemView::UpdateColorsFromTheme() {
   if (dangerous_download_label_ && GetThemeProvider()) {
     dangerous_download_label_->SetEnabledColor(
-        GetThemeProvider()->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
   }
 }
 

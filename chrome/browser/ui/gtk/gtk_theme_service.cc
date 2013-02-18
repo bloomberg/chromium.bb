@@ -16,6 +16,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -40,6 +41,7 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gtk_util.h"
@@ -123,7 +125,8 @@ bool IsOverridableImage(int id) {
     images.insert(kAutocompleteImages,
                   kAutocompleteImages + arraysize(kAutocompleteImages));
 
-    const std::set<int>& buttons = ThemeService::GetTintableToolbarButtons();
+    const std::set<int>& buttons =
+        ThemeProperties::GetTintableToolbarButtons();
     images.insert(buttons.begin(), buttons.end());
   }
 
@@ -431,8 +434,8 @@ GdkColor GtkThemeService::GetBorderColor() const {
     text = style->text[GTK_STATE_NORMAL];
     bg = style->bg[GTK_STATE_NORMAL];
   } else {
-    text = GetGdkColor(COLOR_BOOKMARK_TEXT);
-    bg = GetGdkColor(COLOR_TOOLBAR);
+    text = GetGdkColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
+    bg = GetGdkColor(ThemeProperties::COLOR_TOOLBAR);
   }
 
   // Creates a weighted average between the text and base color where
@@ -702,19 +705,19 @@ void GtkThemeService::LoadGtkValues() {
   GtkStyle* frame_style = gtk_rc_get_style(fake_frame_);
 
   GtkStyle* window_style = gtk_rc_get_style(fake_window_);
-  SetThemeColorFromGtk(ThemeService::COLOR_CONTROL_BACKGROUND,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_CONTROL_BACKGROUND,
                        &window_style->bg[GTK_STATE_NORMAL]);
 
   GdkColor toolbar_color = window_style->bg[GTK_STATE_NORMAL];
-  SetThemeColorFromGtk(ThemeService::COLOR_TOOLBAR, &toolbar_color);
+  SetThemeColorFromGtk(ThemeProperties::COLOR_TOOLBAR, &toolbar_color);
 
   GdkColor button_color = window_style->bg[GTK_STATE_SELECTED];
-  SetThemeTintFromGtk(ThemeService::TINT_BUTTONS, &button_color);
+  SetThemeTintFromGtk(ThemeProperties::TINT_BUTTONS, &button_color);
 
   GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
   GdkColor label_color = label_style->fg[GTK_STATE_NORMAL];
-  SetThemeColorFromGtk(ThemeService::COLOR_TAB_TEXT, &label_color);
-  SetThemeColorFromGtk(ThemeService::COLOR_BOOKMARK_TEXT, &label_color);
+  SetThemeColorFromGtk(ThemeProperties::COLOR_TAB_TEXT, &label_color);
+  SetThemeColorFromGtk(ThemeProperties::COLOR_BOOKMARK_TEXT, &label_color);
 
   // Build the various icon tints.
   GetNormalButtonTintHSL(&button_tint_);
@@ -727,7 +730,8 @@ void GtkThemeService::LoadGtkValues() {
   // background tab color, with the lightness and saturation moved in the
   // opposite direction. (We don't touch the hue, since there should be subtle
   // hints of the color in the text.)
-  color_utils::HSL inactive_tab_text_hsl = tints_[TINT_BACKGROUND_TAB];
+  color_utils::HSL inactive_tab_text_hsl =
+      tints_[ThemeProperties::TINT_BACKGROUND_TAB];
   if (inactive_tab_text_hsl.l < 0.5)
     inactive_tab_text_hsl.l = kDarkInactiveLuminance;
   else
@@ -738,7 +742,7 @@ void GtkThemeService::LoadGtkValues() {
   else
     inactive_tab_text_hsl.s = kLightInactiveSaturation;
 
-  colors_[ThemeService::COLOR_BACKGROUND_TAB_TEXT] =
+  colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
       color_utils::HSLToSkColor(inactive_tab_text_hsl, 255);
 
   // We pick the text and background colors for the NTP out of the colors for a
@@ -749,9 +753,9 @@ void GtkThemeService::LoadGtkValues() {
   GtkStyle* entry_style = gtk_rc_get_style(fake_entry_.get());
   GdkColor ntp_background = entry_style->base[GTK_STATE_NORMAL];
   GdkColor ntp_foreground = entry_style->text[GTK_STATE_NORMAL];
-  SetThemeColorFromGtk(ThemeService::COLOR_NTP_BACKGROUND,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_NTP_BACKGROUND,
                        &ntp_background);
-  SetThemeColorFromGtk(ThemeService::COLOR_NTP_TEXT,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_NTP_TEXT,
                        &ntp_foreground);
 
   // The NTP header is the color that surrounds the current active thumbnail on
@@ -759,11 +763,11 @@ void GtkThemeService::LoadGtkValues() {
   // awesome if they were separated so we could use GetBorderColor() for the
   // border around the "Recent Links" section, but matching the frame color is
   // more important.
-  SetThemeColorFromGtk(ThemeService::COLOR_NTP_HEADER,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_NTP_HEADER,
                        &frame_color);
-  SetThemeColorFromGtk(ThemeService::COLOR_NTP_SECTION,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_NTP_SECTION,
                        &toolbar_color);
-  SetThemeColorFromGtk(ThemeService::COLOR_NTP_SECTION_TEXT,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_NTP_SECTION_TEXT,
                        &label_color);
 
   // Override the link color if the theme provides it.
@@ -777,13 +781,13 @@ void GtkThemeService::LoadGtkValues() {
     is_default_link_color = true;
   }
 
-  SetThemeColorFromGtk(ThemeService::COLOR_NTP_LINK,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_NTP_LINK,
                        link_color);
-  SetThemeColorFromGtk(ThemeService::COLOR_NTP_LINK_UNDERLINE,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_NTP_LINK_UNDERLINE,
                        link_color);
-  SetThemeColorFromGtk(ThemeService::COLOR_NTP_SECTION_LINK,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_NTP_SECTION_LINK,
                        link_color);
-  SetThemeColorFromGtk(ThemeService::COLOR_NTP_SECTION_LINK_UNDERLINE,
+  SetThemeColorFromGtk(ThemeProperties::COLOR_NTP_SECTION_LINK_UNDERLINE,
                        link_color);
 
   if (!is_default_link_color)
@@ -832,36 +836,38 @@ GdkColor GtkThemeService::BuildFrameColors(GtkStyle* frame_style) {
       &frame_style->bg[GTK_STATE_SELECTED],
       theme_frame,
       kDefaultFrameShift,
-      ThemeService::COLOR_FRAME,
-      ThemeService::TINT_FRAME);
+      ThemeProperties::COLOR_FRAME,
+      ThemeProperties::TINT_FRAME);
   if (theme_frame)
     gdk_color_free(theme_frame);
-  SetThemeTintFromGtk(ThemeService::TINT_BACKGROUND_TAB, &frame_color);
+  SetThemeTintFromGtk(ThemeProperties::TINT_BACKGROUND_TAB, &frame_color);
 
   BuildAndSetFrameColor(
       &frame_style->bg[GTK_STATE_INSENSITIVE],
       theme_inactive_frame,
       kDefaultFrameShift,
-      ThemeService::COLOR_FRAME_INACTIVE,
-      ThemeService::TINT_FRAME_INACTIVE);
+      ThemeProperties::COLOR_FRAME_INACTIVE,
+      ThemeProperties::TINT_FRAME_INACTIVE);
   if (theme_inactive_frame)
     gdk_color_free(theme_inactive_frame);
 
   BuildAndSetFrameColor(
       &frame_color,
       theme_incognito_frame,
-      GetDefaultTint(ThemeService::TINT_FRAME_INCOGNITO),
-      ThemeService::COLOR_FRAME_INCOGNITO,
-      ThemeService::TINT_FRAME_INCOGNITO);
+      ThemeProperties::GetDefaultTint(
+          ThemeProperties::TINT_FRAME_INCOGNITO),
+      ThemeProperties::COLOR_FRAME_INCOGNITO,
+      ThemeProperties::TINT_FRAME_INCOGNITO);
   if (theme_incognito_frame)
     gdk_color_free(theme_incognito_frame);
 
   BuildAndSetFrameColor(
       &frame_color,
       theme_incognito_inactive_frame,
-      GetDefaultTint(ThemeService::TINT_FRAME_INCOGNITO_INACTIVE),
-      ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE,
-      ThemeService::TINT_FRAME_INCOGNITO_INACTIVE);
+      ThemeProperties::GetDefaultTint(
+          ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE),
+      ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
+      ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE);
   if (theme_incognito_inactive_frame)
     gdk_color_free(theme_incognito_inactive_frame);
 
@@ -901,7 +907,7 @@ void GtkThemeService::SetThemeColorFromGtk(int id, const GdkColor* color) {
 }
 
 void GtkThemeService::SetThemeTintFromGtk(int id, const GdkColor* color) {
-  color_utils::HSL default_tint = GetDefaultTint(id);
+  color_utils::HSL default_tint = ThemeProperties::GetDefaultTint(id);
   color_utils::HSL hsl;
   color_utils::SkColorToHSL(gfx::GdkColorToSkColor(*color), &hsl);
 
@@ -958,17 +964,17 @@ SkBitmap GtkThemeService::GenerateGtkThemeBitmap(int id) const {
     case IDR_THEME_TAB_BACKGROUND_INCOGNITO:
       return GenerateTabImage(IDR_THEME_FRAME_INCOGNITO);
     case IDR_THEME_FRAME:
-      return GenerateFrameImage(ThemeService::COLOR_FRAME,
+      return GenerateFrameImage(ThemeProperties::COLOR_FRAME,
                                 "frame-gradient-color");
     case IDR_THEME_FRAME_INACTIVE:
-      return GenerateFrameImage(ThemeService::COLOR_FRAME_INACTIVE,
+      return GenerateFrameImage(ThemeProperties::COLOR_FRAME_INACTIVE,
                                 "inactive-frame-gradient-color");
     case IDR_THEME_FRAME_INCOGNITO:
-      return GenerateFrameImage(ThemeService::COLOR_FRAME_INCOGNITO,
+      return GenerateFrameImage(ThemeProperties::COLOR_FRAME_INCOGNITO,
                                 "incognito-frame-gradient-color");
     case IDR_THEME_FRAME_INCOGNITO_INACTIVE: {
       return GenerateFrameImage(
-          ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE,
+          ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE,
           "incognito-inactive-frame-gradient-color");
     }
     // Icons that sit inside the omnibox shouldn't receive TINT_BUTTONS and
@@ -1045,7 +1051,7 @@ SkBitmap GtkThemeService::GenerateFrameImage(
 SkBitmap GtkThemeService::GenerateTabImage(int base_id) const {
   SkBitmap base_image = GetImageNamed(base_id).AsBitmap();
   SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
-      base_image, GetTint(ThemeService::TINT_BACKGROUND_TAB));
+      base_image, GetTint(ThemeProperties::TINT_BACKGROUND_TAB));
   return SkBitmapOperations::CreateTiledBitmap(
       bg_tint, 0, 0, bg_tint.width(), bg_tint.height());
 }
@@ -1122,7 +1128,7 @@ gboolean GtkThemeService::OnSeparatorExpose(GtkWidget* widget,
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
-  GdkColor bottom_color = GetGdkColor(ThemeService::COLOR_TOOLBAR);
+  GdkColor bottom_color = GetGdkColor(ThemeProperties::COLOR_TOOLBAR);
   double bottom_color_rgb[] = {
       static_cast<double>(bottom_color.red / 257) / 255.0,
       static_cast<double>(bottom_color.green / 257) / 255.0,

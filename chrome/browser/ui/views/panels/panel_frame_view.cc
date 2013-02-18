@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/panels/panel_frame_view.h"
 
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -686,7 +687,8 @@ SkColor PanelFrameView::GetDefaultTitleColor(
 SkColor PanelFrameView::GetThemedTitleColor(
     PaintState paint_state) const {
   return GetThemeProvider()->GetColor(paint_state == PAINT_AS_ACTIVE ?
-      ThemeService::COLOR_TAB_TEXT : ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+      ThemeProperties::COLOR_TAB_TEXT :
+      ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
 }
 
 const gfx::ImageSkia* PanelFrameView::GetFrameBackground(

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/download/download_show_all_cell.h"
 
+#import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/download/background_theme.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -95,7 +96,7 @@ const CGFloat kOuterStrokeWidth = 1;
       [[[self controlView] window] themeProvider];
   if (!themeProvider || [self pressedWithDefaultTheme])
     return [NSColor alternateSelectedControlTextColor];
-  return themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT, true);
+  return themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT, true);
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -123,8 +124,8 @@ const CGFloat kOuterStrokeWidth = 1;
   if (!isDefaultTheme) {
     themeProvider = [self backgroundThemeWrappingProvider:themeProvider];
     bgGradient = themeProvider->GetNSGradient(
-        active ? ThemeService::GRADIENT_TOOLBAR_BUTTON :
-                 ThemeService::GRADIENT_TOOLBAR_BUTTON_INACTIVE);
+        active ? ThemeProperties::GRADIENT_TOOLBAR_BUTTON :
+                 ThemeProperties::GRADIENT_TOOLBAR_BUTTON_INACTIVE);
   }
 
   NSBezierPath* buttonInnerPath =

@@ -7,8 +7,9 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "grit/theme_resources.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
@@ -24,33 +25,33 @@ void PaintThemeBackground(
   int width = area.width() + ntp_background->width();
   int height = area.height() + ntp_background->height();
 
-  if (alignment & ThemeService::ALIGN_BOTTOM) {
+  if (alignment & ThemeProperties::ALIGN_BOTTOM) {
     y_pos += area.height() + tab_contents_height - ntp_background->height();
-  } else if (alignment & ThemeService::ALIGN_TOP) {
+  } else if (alignment & ThemeProperties::ALIGN_TOP) {
     // no op
   } else {  // ALIGN_CENTER
     y_pos += std::floor(area.height() + tab_contents_height / 2.0 -
         ntp_background->height() / 2.0 + 0.5);
   }
 
-  if (alignment & ThemeService::ALIGN_RIGHT) {
+  if (alignment & ThemeProperties::ALIGN_RIGHT) {
     x_pos += area.width() - ntp_background->width();
-  } else if (alignment & ThemeService::ALIGN_LEFT) {
+  } else if (alignment & ThemeProperties::ALIGN_LEFT) {
     // no op
   } else {  // ALIGN_CENTER
     x_pos +=
         std::floor(area.width() / 2.0 - ntp_background->width() / 2.0 + 0.5);
   }
 
-  if (tiling != ThemeService::REPEAT &&
-      tiling != ThemeService::REPEAT_X) {
+  if (tiling != ThemeProperties::REPEAT &&
+      tiling != ThemeProperties::REPEAT_X) {
     width = ntp_background->width();
   } else if (x_pos > 0) {
     x_pos = x_pos % ntp_background->width() - ntp_background->width();
   }
 
-  if (tiling != ThemeService::REPEAT &&
-      tiling != ThemeService::REPEAT_Y) {
+  if (tiling != ThemeProperties::REPEAT &&
+      tiling != ThemeProperties::REPEAT_Y) {
     height = ntp_background->height();
   } else if (y_pos > 0) {
     y_pos = y_pos % ntp_background->height() - ntp_background->height();
@@ -70,13 +71,13 @@ void NtpBackgroundUtil::PaintBackgroundDetachedMode(ui::ThemeProvider* tp,
                                                     const gfx::Rect& area,
                                                     int tab_contents_height) {
   // Draw the background to match the new tab page.
-  canvas->FillRect(area, tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND));
+  canvas->FillRect(area, tp->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND));
 
   if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-    int tiling = ThemeService::NO_REPEAT;
-    tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_TILING, &tiling);
+    int tiling = ThemeProperties::NO_REPEAT;
+    tp->GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_TILING, &tiling);
     int alignment;
-    if (tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT,
+    if (tp->GetDisplayProperty(ThemeProperties::NTP_BACKGROUND_ALIGNMENT,
                                &alignment)) {
       gfx::ImageSkia* ntp_background =
           tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);

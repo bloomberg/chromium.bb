@@ -10,7 +10,7 @@
 #include "base/debug/alias.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_resources.h"
@@ -1068,8 +1068,8 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
 
   SkColor title_color = GetThemeProvider()->
       GetColor(IsSelected() ?
-          ThemeService::COLOR_TAB_TEXT :
-          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+          ThemeProperties::COLOR_TAB_TEXT :
+          ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
 
   if (!data().mini || width() > kMiniTabRendererAsNormalTabWidth)
     PaintTitle(canvas, title_color);

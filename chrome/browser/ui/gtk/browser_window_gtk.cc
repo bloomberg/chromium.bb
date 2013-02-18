@@ -33,7 +33,7 @@
 #include "chrome/browser/prefs/pref_registry_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -1721,15 +1721,15 @@ void BrowserWindowGtk::SetBackgroundColor() {
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile);
   int frame_color_id;
   if (UsingCustomPopupFrame()) {
-    frame_color_id = ThemeService::COLOR_TOOLBAR;
+    frame_color_id = ThemeProperties::COLOR_TOOLBAR;
   } else if (DrawFrameAsActive()) {
     frame_color_id = browser()->profile()->IsOffTheRecord()
-       ? ThemeService::COLOR_FRAME_INCOGNITO
-       : ThemeService::COLOR_FRAME;
+       ? ThemeProperties::COLOR_FRAME_INCOGNITO
+       : ThemeProperties::COLOR_FRAME;
   } else {
     frame_color_id = browser()->profile()->IsOffTheRecord()
-       ? ThemeService::COLOR_FRAME_INCOGNITO_INACTIVE
-       : ThemeService::COLOR_FRAME_INACTIVE;
+       ? ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE
+       : ThemeProperties::COLOR_FRAME_INACTIVE;
   }
 
   SkColor frame_color = theme_provider->GetColor(frame_color_id);

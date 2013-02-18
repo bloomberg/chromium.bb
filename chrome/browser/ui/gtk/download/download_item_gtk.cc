@@ -15,6 +15,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/custom_drag.h"
 #include "chrome/browser/ui/gtk/download/download_shelf_context_menu_gtk.h"
@@ -512,7 +513,7 @@ void DownloadItemGtk::UpdateNameLabel() {
   }
 
   GdkColor color = theme_service_->GetGdkColor(
-      ThemeService::COLOR_BOOKMARK_TEXT);
+      ThemeProperties::COLOR_BOOKMARK_TEXT);
   gtk_util::SetLabelColor(
       name_label_,
       theme_service_->UsingNativeTheme() ? NULL : &color);
@@ -552,7 +553,7 @@ void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
   GdkColor text_color;
   if (!theme_service_->UsingNativeTheme()) {
     SkColor color = theme_service_->GetColor(
-        ThemeService::COLOR_BOOKMARK_TEXT);
+        ThemeProperties::COLOR_BOOKMARK_TEXT);
     if (color_utils::RelativeLuminance(color) > 0.5) {
       color = SkColorSetRGB(
           static_cast<int>(kDownloadItemLuminanceMod *
@@ -588,7 +589,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
       gtk_util::SetLabelColor(dangerous_label_, NULL);
     } else {
       GdkColor color = theme_service_->GetGdkColor(
-          ThemeService::COLOR_BOOKMARK_TEXT);
+          ThemeProperties::COLOR_BOOKMARK_TEXT);
       gtk_util::SetLabelColor(dangerous_label_, &color);
     }
 

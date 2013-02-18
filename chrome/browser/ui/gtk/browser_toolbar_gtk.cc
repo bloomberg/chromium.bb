@@ -19,6 +19,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -513,7 +514,7 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
       window_->tabstrip()->GetTabStripOriginForWidget(widget);
   // Fill the entire region with the toolbar color.
   GdkColor color = theme_service_->GetGdkColor(
-      ThemeService::COLOR_TOOLBAR);
+      ThemeProperties::COLOR_TOOLBAR);
   gdk_cairo_set_source_color(cr, &color);
   cairo_fill(cr);
 

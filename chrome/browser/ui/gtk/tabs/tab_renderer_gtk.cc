@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
@@ -356,9 +357,9 @@ void TabRendererGtk::Observe(int type,
                              const content::NotificationDetails& details) {
   DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
   selected_title_color_ =
-      theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT);
+      theme_service_->GetColor(ThemeProperties::COLOR_TAB_TEXT);
   unselected_title_color_ =
-      theme_service_->GetColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+      theme_service_->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
 }
 
 void TabRendererGtk::UpdateData(WebContents* contents,
@@ -814,7 +815,7 @@ void TabRendererGtk::Layout() {
     // If the close button color has changed, generate a new one.
     if (theme_service_) {
       SkColor tab_text_color =
-          theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT);
+          theme_service_->GetColor(ThemeProperties::COLOR_TAB_TEXT);
       if (!close_button_color_ || tab_text_color != close_button_color_) {
         close_button_color_ = tab_text_color;
         ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

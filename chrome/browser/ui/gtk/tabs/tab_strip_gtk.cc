@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -2271,7 +2272,7 @@ CustomDrawButton* TabStripGtk::MakeNewTabButton() {
 
 void TabStripGtk::SetNewTabButtonBackground() {
   SkColor color = theme_service_->GetColor(
-      ThemeService::COLOR_BUTTON_BACKGROUND);
+      ThemeProperties::COLOR_BUTTON_BACKGROUND);
   SkBitmap background = theme_service_->GetImageNamed(
       IDR_THEME_WINDOW_CONTROL_BACKGROUND).AsBitmap();
   SkBitmap mask = theme_service_->GetImageNamed(

@@ -2120,6 +2120,8 @@
         'browser/task_profiler/task_profiler_data_serializer.h',
         'browser/themes/browser_theme_pack.cc',
         'browser/themes/browser_theme_pack.h',
+        'browser/themes/theme_properties.cc',
+        'browser/themes/theme_properties.h',
         'browser/themes/theme_service.cc',
         'browser/themes/theme_service_factory.cc',
         'browser/themes/theme_service_factory.h',

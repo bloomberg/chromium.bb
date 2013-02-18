@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/download/background_theme.h"
 
-#import "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/themes/theme_properties.h"
 
 BackgroundTheme::BackgroundTheme(ui::ThemeProvider* provider) :
     provider_(provider) {
@@ -67,7 +67,7 @@ NSColor* BackgroundTheme::GetNSColor(int id, bool allow_default) const {
 }
 
 NSColor* BackgroundTheme::GetNSColorTint(int id, bool allow_default) const {
-  if (id == ThemeService::TINT_BUTTONS)
+  if (id == ThemeProperties::TINT_BUTTONS)
     return borderColor_.get();
 
   return provider_->GetNSColorTint(id, allow_default);
@@ -75,11 +75,11 @@ NSColor* BackgroundTheme::GetNSColorTint(int id, bool allow_default) const {
 
 NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   switch (id) {
-    case ThemeService::GRADIENT_TOOLBAR_BUTTON:
-    case ThemeService::GRADIENT_TOOLBAR_BUTTON_INACTIVE:
+    case ThemeProperties::GRADIENT_TOOLBAR_BUTTON:
+    case ThemeProperties::GRADIENT_TOOLBAR_BUTTON_INACTIVE:
       return buttonGradient_.get();
-    case ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED:
-    case ThemeService::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE:
+    case ThemeProperties::GRADIENT_TOOLBAR_BUTTON_PRESSED:
+    case ThemeProperties::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE:
       return buttonPressedGradient_.get();
     default:
       return provider_->GetNSGradient(id);

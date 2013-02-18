@@ -7,7 +7,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
-#import "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/download/background_theme.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "content/public/browser/download_item.h"
@@ -413,7 +413,7 @@ using content::DownloadItem;
       [[[self controlView] window] themeProvider];
   if ([self pressedWithDefaultThemeOnPart:part] || !themeProvider)
     return [NSColor alternateSelectedControlTextColor];
-  return themeProvider->GetNSColor(ThemeService::COLOR_BOOKMARK_TEXT, true);
+  return themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT, true);
 }
 
 - (void)drawSecondaryTitleInRect:(NSRect)innerFrame {
@@ -476,8 +476,8 @@ using content::DownloadItem;
   if (![self isDefaultTheme]) {
     themeProvider = [self backgroundThemeWrappingProvider:themeProvider];
     bgGradient = themeProvider->GetNSGradient(
-        active ? ThemeService::GRADIENT_TOOLBAR_BUTTON :
-                 ThemeService::GRADIENT_TOOLBAR_BUTTON_INACTIVE);
+        active ? ThemeProperties::GRADIENT_TOOLBAR_BUTTON :
+                 ThemeProperties::GRADIENT_TOOLBAR_BUTTON_INACTIVE);
   }
 
   NSRect buttonDrawRect, dropdownDrawRect;

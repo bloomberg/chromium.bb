@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/hover_image_button.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
@@ -216,8 +217,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
     NSRectFillUsingOperation([self bounds], NSCompositeSourceOver);
 
     titleColor = [[self window] isMainWindow]
-        ? theme->GetNSColor(ThemeService::COLOR_TAB_TEXT, true)
-        : theme->GetNSColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT, true);
+        ? theme->GetNSColor(ThemeProperties::COLOR_TAB_TEXT, true)
+        : theme->GetNSColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT, true);
   } else {
     // Default theme or no theme.
     BOOL isActive = [[self window] isMainWindow];
