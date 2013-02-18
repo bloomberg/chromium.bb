@@ -47,11 +47,12 @@ enum EventID {
   OBSOLETE_EVENT
 };
 
+// Temporarily renumber them in wierd way, to help remove LOG_TIP from WebKit
 enum LogLevel {
-  LOG_TIP,
-  LOG_INFO,
-  LOG_WARNING,
-  LOG_ERROR,
+  LOG_DEBUG = 4,
+  LOG_INFO = 1,
+  LOG_WARNING = 2,
+  LOG_ERROR = 3,
 };
 
 enum NamespaceType {

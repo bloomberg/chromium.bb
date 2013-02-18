@@ -202,8 +202,8 @@ void DevToolsAgent::OnAddMessageToConsole(ConsoleMessageLevel level,
 
   WebConsoleMessage::Level target_level = WebConsoleMessage::LevelLog;
   switch (level) {
-    case CONSOLE_MESSAGE_LEVEL_TIP:
-      target_level = WebConsoleMessage::LevelTip;
+    case CONSOLE_MESSAGE_LEVEL_DEBUG:
+      target_level = WebConsoleMessage::LevelDebug;
       break;
     case CONSOLE_MESSAGE_LEVEL_LOG:
       target_level = WebConsoleMessage::LevelLog;

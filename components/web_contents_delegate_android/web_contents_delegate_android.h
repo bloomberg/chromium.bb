@@ -23,8 +23,8 @@ struct OpenURLParams;
 namespace components {
 
 enum WebContentsDelegateLogLevel {
-  // Equivalent of WebCore::WebConsoleMessage::LevelTip.
-  WEB_CONTENTS_DELEGATE_LOG_LEVEL_TIP = 0,
+  // Equivalent of WebCore::WebConsoleMessage::LevelDebug.
+  WEB_CONTENTS_DELEGATE_LOG_LEVEL_DEBUG = 0,
   // Equivalent of WebCore::WebConsoleMessage::LevelLog.
   WEB_CONTENTS_DELEGATE_LOG_LEVEL_LOG = 1,
   // Equivalent of WebCore::WebConsoleMessage::LevelWarning.

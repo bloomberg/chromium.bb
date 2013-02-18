@@ -113,8 +113,8 @@ COMPILE_ASSERT((int)WebApplicationCacheHost::CachedEvent ==
                (int)CACHED_EVENT, CachedEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ObsoleteEvent ==
                (int)OBSOLETE_EVENT, ObsoleteEvent);
-COMPILE_ASSERT((int)WebConsoleMessage::LevelTip ==
-               (int)LOG_TIP, LevelTip);
+COMPILE_ASSERT((int)WebConsoleMessage::LevelDebug ==
+               (int)LOG_DEBUG, LevelDebug);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelLog ==
                (int)LOG_INFO, LevelLog);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelWarning ==

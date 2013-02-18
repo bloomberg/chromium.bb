@@ -278,7 +278,7 @@ TEST_F(ExtensionAlarmsTest, CreateDelayBelowMinimum) {
   const IPC::Message* warning = sink.GetUniqueMessageMatching(
       ExtensionMsg_AddMessageToConsole::ID);
   ASSERT_TRUE(warning);
-  content::ConsoleMessageLevel level = content::CONSOLE_MESSAGE_LEVEL_TIP;
+  content::ConsoleMessageLevel level = content::CONSOLE_MESSAGE_LEVEL_DEBUG;
   std::string message;
   ExtensionMsg_AddMessageToConsole::Read(warning, &level, &message);
   EXPECT_EQ(content::CONSOLE_MESSAGE_LEVEL_WARNING, level);

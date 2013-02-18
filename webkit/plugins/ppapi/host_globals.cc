@@ -48,7 +48,7 @@ void GetAllContainersForModule(PluginModule* module,
 WebConsoleMessage::Level LogLevelToWebLogLevel(PP_LogLevel level) {
   switch (level) {
     case PP_LOGLEVEL_TIP:
-      return WebConsoleMessage::LevelTip;
+      return WebConsoleMessage::LevelDebug;
     case PP_LOGLEVEL_LOG:
       return WebConsoleMessage::LevelLog;
     case PP_LOGLEVEL_WARNING:

@@ -195,10 +195,10 @@ bool WebContentsDelegateAndroid::AddMessageToConsole(
   ScopedJavaLocalRef<jstring> jmessage(ConvertUTF16ToJavaString(env, message));
   ScopedJavaLocalRef<jstring> jsource_id(
       ConvertUTF16ToJavaString(env, source_id));
-  int jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_TIP;
+  int jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_DEBUG;
   switch (level) {
     case logging::LOG_VERBOSE:
-      jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_TIP;
+      jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_DEBUG;
       break;
     case logging::LOG_INFO:
       jlevel = WEB_CONTENTS_DELEGATE_LOG_LEVEL_LOG;

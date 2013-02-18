@@ -524,8 +524,8 @@ void ExtensionHelper::AddMessageToRootConsole(ConsoleMessageLevel level,
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     WebConsoleMessage::Level target_level = WebConsoleMessage::LevelLog;
     switch (level) {
-      case content::CONSOLE_MESSAGE_LEVEL_TIP:
-        target_level = WebConsoleMessage::LevelTip;
+      case content::CONSOLE_MESSAGE_LEVEL_DEBUG:
+        target_level = WebConsoleMessage::LevelDebug;
         break;
       case content::CONSOLE_MESSAGE_LEVEL_LOG:
         target_level = WebConsoleMessage::LevelLog;
