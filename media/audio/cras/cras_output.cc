@@ -8,14 +8,14 @@
 // the exception of Close().  Even if an error state has been entered, if Open()
 // has previously returned successfully, Close() must be called.
 
-#include "media/audio/linux/cras_output.h"
+#include "media/audio/cras/cras_output.h"
 
 #include <cras_client.h>
 
 #include "base/logging.h"
 #include "media/audio/audio_util.h"
+#include "media/audio/cras/audio_manager_cras.h"
 #include "media/audio/linux/alsa_util.h"
-#include "media/audio/linux/audio_manager_linux.h"
 
 namespace media {
 
@@ -61,7 +61,7 @@ std::ostream& operator<<(std::ostream& os,
 // which likely will destroy this object.
 
 CrasOutputStream::CrasOutputStream(const AudioParameters& params,
-                                   AudioManagerLinux* manager)
+                                   AudioManagerCras* manager)
     : client_(NULL),
       stream_id_(0),
       samples_per_packet_(params.frames_per_buffer()),

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_LINUX_CRAS_INPUT_H_
-#define MEDIA_AUDIO_LINUX_CRAS_INPUT_H_
+#ifndef MEDIA_AUDIO_CRAS_CRAS_INPUT_H_
+#define MEDIA_AUDIO_CRAS_CRAS_INPUT_H_
 
 #include <cras_client.h>
 
@@ -18,7 +18,7 @@
 
 namespace media {
 
-class AudioManagerLinux;
+class AudioManagerCras;
 
 // Provides an input stream for audio capture based on CRAS, the ChromeOS Audio
 // Server.  This object is not thread safe and all methods should be invoked in
@@ -27,7 +27,7 @@ class CrasInputStream : public AudioInputStreamImpl {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
   // audio manager who is creating this object.
-  CrasInputStream(const AudioParameters& params, AudioManagerLinux* manager);
+  CrasInputStream(const AudioParameters& params, AudioManagerCras* manager);
 
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioOutputStream::Close().
@@ -76,7 +76,7 @@ class CrasInputStream : public AudioInputStreamImpl {
   // want circular references.  Additionally, stream objects live on the audio
   // thread, which is owned by the audio manager and we don't want to addref
   // the manager from that thread.
-  AudioManagerLinux* audio_manager_;
+  AudioManagerCras* audio_manager_;
 
   // Size of frame in bytes.
   uint32 bytes_per_frame_;
@@ -101,4 +101,4 @@ class CrasInputStream : public AudioInputStreamImpl {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_LINUX_ALSA_INPUT_H_
+#endif  // MEDIA_AUDIO_CRAS_ALSA_INPUT_H_

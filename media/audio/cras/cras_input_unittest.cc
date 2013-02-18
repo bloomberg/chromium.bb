@@ -9,8 +9,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
-#include "media/audio/linux/audio_manager_linux.h"
-#include "media/audio/linux/cras_input.h"
+#include "media/audio/cras/audio_manager_cras.h"
+#include "media/audio/cras/cras_input.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +30,7 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD1(OnClose, void(AudioInputStream*));
 };
 
-class MockAudioManagerLinuxInput : public AudioManagerLinux {
+class MockAudioManagerCrasInput : public AudioManagerCras {
  public:
   // We need to override this function in order to skip checking the number
   // of active output streams. It is because the number of active streams
@@ -45,7 +45,7 @@ class MockAudioManagerLinuxInput : public AudioManagerLinux {
 class CrasInputStreamTest : public testing::Test {
  protected:
   CrasInputStreamTest() {
-    mock_manager_.reset(new StrictMock<MockAudioManagerLinuxInput>());
+    mock_manager_.reset(new StrictMock<MockAudioManagerCrasInput>());
   }
 
   virtual ~CrasInputStreamTest() {
@@ -104,7 +104,7 @@ class CrasInputStreamTest : public testing::Test {
   static const uint32 kTestFramesPerPacket;
   static const int kTestSampleRate;
 
-  scoped_ptr<StrictMock<MockAudioManagerLinuxInput> > mock_manager_;
+  scoped_ptr<StrictMock<MockAudioManagerCrasInput> > mock_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrasInputStreamTest);
