@@ -52,6 +52,10 @@ IPC_MESSAGE_ROUTED2(ShellViewHostMsg_ImageDump,
                     std::string /* actual pixel hash */,
                     SkBitmap /* image */)
 
+// Send an audio dump to the render host.
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_AudioDump,
+                    std::vector<unsigned char> /* audio data */)
+
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TestFinished,
                     bool /* did_timeout */)
 

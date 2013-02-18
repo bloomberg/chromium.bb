@@ -36,7 +36,7 @@ const int kTestTimeoutMilliseconds = 30 * 1000;
 
 WebKitTestResultPrinter::WebKitTestResultPrinter(
     std::ostream* output, std::ostream* error)
-    : state_(BEFORE_TEST),
+    : state_(DURING_TEST),
       capture_text_only_(false),
       output_(output),
       error_(error) {
@@ -46,7 +46,7 @@ WebKitTestResultPrinter::~WebKitTestResultPrinter() {
 }
 
 void WebKitTestResultPrinter::PrintTextHeader() {
-  DCHECK_EQ(state_, BEFORE_TEST);
+  DCHECK_EQ(state_, DURING_TEST);
   if (!capture_text_only_)
     *output_ << "Content-Type: text/plain\n";
   state_ = IN_TEXT_BLOCK;
@@ -62,9 +62,7 @@ void WebKitTestResultPrinter::PrintTextFooter() {
     return;
   if (!capture_text_only_) {
     *output_ << "#EOF\n";
-    *error_ << "#EOF\n";
     output_->flush();
-    error_->flush();
   }
   state_ = IN_IMAGE_BLOCK;
 }
@@ -94,9 +92,39 @@ void WebKitTestResultPrinter::PrintImageFooter() {
     return;
   if (!capture_text_only_) {
     *output_ << "#EOF\n";
+    *error_ << "#EOF\n";
     output_->flush();
+    error_->flush();
   }
   state_ = AFTER_TEST;
+}
+
+void WebKitTestResultPrinter::PrintAudioHeader() {
+  DCHECK_EQ(state_, DURING_TEST);
+  if (!capture_text_only_)
+    *output_ << "Content-Type: audio/wav\n";
+  state_ = IN_AUDIO_BLOCK;
+}
+
+void WebKitTestResultPrinter::PrintAudioBlock(
+    const std::vector<unsigned char>& audio_data) {
+  if (state_ != IN_AUDIO_BLOCK || capture_text_only_)
+    return;
+  *output_ << "Content-Length: " << audio_data.size() << "\n";
+  output_->write(
+      reinterpret_cast<const char*>(&audio_data[0]), audio_data.size());
+}
+
+void WebKitTestResultPrinter::PrintAudioFooter() {
+  if (state_ != IN_AUDIO_BLOCK)
+    return;
+  if (!capture_text_only_) {
+    *output_ << "#EOF\n";
+    *error_ << "#EOF\n";
+    output_->flush();
+    error_->flush();
+  }
+  state_ = IN_IMAGE_BLOCK;
 }
 
 void WebKitTestResultPrinter::AddMessage(const std::string& message) {
@@ -104,13 +132,13 @@ void WebKitTestResultPrinter::AddMessage(const std::string& message) {
 }
 
 void WebKitTestResultPrinter::AddMessageRaw(const std::string& message) {
-  if (state_ != IN_TEXT_BLOCK)
+  if (state_ != DURING_TEST)
     return;
   *output_ << message;
 }
 
 void WebKitTestResultPrinter::AddErrorMessage(const std::string& message) {
-  if (state_ != IN_TEXT_BLOCK)
+  if (state_ != DURING_TEST)
     return;
   *output_ << message << "\n";
   if (!capture_text_only_)
@@ -159,7 +187,6 @@ bool WebKitTestController::PrepareForLayoutTest(
   expected_pixel_hash_ = expected_pixel_hash;
   test_url_ = test_url;
   printer_->reset();
-  printer_->PrintTextHeader();
   content::ShellBrowserContext* browser_context =
       static_cast<content::ShellContentBrowserClient*>(
           content::GetContentClient()->browser())->browser_context();
@@ -241,6 +268,7 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_AudioDump, OnAudioDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
                         OnOverridePreferences)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinished, OnTestFinished)
@@ -376,7 +404,14 @@ void WebKitTestController::OnImageDump(
   printer_->PrintImageFooter();
 }
 
+void WebKitTestController::OnAudioDump(const std::vector<unsigned char>& dump) {
+  printer_->PrintAudioHeader();
+  printer_->PrintAudioBlock(dump);
+  printer_->PrintAudioFooter();
+}
+
 void WebKitTestController::OnTextDump(const std::string& dump) {
+  printer_->PrintTextHeader();
   printer_->PrintTextBlock(dump);
   printer_->PrintTextFooter();
 }

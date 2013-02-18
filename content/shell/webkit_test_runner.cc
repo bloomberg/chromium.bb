@@ -31,6 +31,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBufferView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
@@ -49,6 +50,7 @@
 #include "webkit/glue/webpreferences.h"
 
 using WebKit::Platform;
+using WebKit::WebArrayBufferView;
 using WebKit::WebContextMenuData;
 using WebKit::WebDevToolsAgent;
 using WebKit::WebDeviceOrientation;
@@ -508,6 +510,18 @@ void WebKitTestRunner::Reset() {
 void WebKitTestRunner::CaptureDump() {
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
+
+  if (interfaces->testRunner()->shouldDumpAsAudio()) {
+    const WebArrayBufferView* audio_data =
+        interfaces->testRunner()->audioData();
+    std::vector<unsigned char> vector_data(
+        static_cast<const unsigned char*>(audio_data->baseAddress()),
+        static_cast<const unsigned char*>(audio_data->baseAddress()) +
+            audio_data->byteLength());
+    Send(new ShellViewHostMsg_AudioDump(routing_id(), vector_data));
+    Send(new ShellViewHostMsg_TestFinished(routing_id(), false));
+    return;
+  }
 
   Send(
       new ShellViewHostMsg_TextDump(routing_id(), proxy()->captureTree(false)));

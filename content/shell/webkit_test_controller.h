@@ -30,7 +30,7 @@ class WebKitTestResultPrinter {
   ~WebKitTestResultPrinter();
 
   void reset() {
-    state_ = BEFORE_TEST;
+    state_ = DURING_TEST;
   }
   bool output_finished() const { return state_ == AFTER_TEST; }
   void set_capture_text_only(bool capture_text_only) {
@@ -46,14 +46,19 @@ class WebKitTestResultPrinter {
   void PrintImageBlock(const std::vector<unsigned char>& png_image);
   void PrintImageFooter();
 
+  void PrintAudioHeader();
+  void PrintAudioBlock(const std::vector<unsigned char>& audio_data);
+  void PrintAudioFooter();
+
   void AddMessage(const std::string& message);
   void AddMessageRaw(const std::string& message);
   void AddErrorMessage(const std::string& message);
 
  private:
   enum State {
-    BEFORE_TEST,
+    DURING_TEST,
     IN_TEXT_BLOCK,
+    IN_AUDIO_BLOCK,
     IN_IMAGE_BLOCK,
     AFTER_TEST
   };
@@ -110,6 +115,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void TimeoutHandler();
 
   // Message handlers.
+  void OnAudioDump(const std::vector<unsigned char>& audio_dump);
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
   void OnPrintMessage(const std::string& message);
