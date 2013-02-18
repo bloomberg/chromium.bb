@@ -2006,17 +2006,13 @@ vt_func(struct weston_compositor *compositor, int event)
 		compositor->state = ec->prev_state;
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
-		wl_list_for_each(seat, &compositor->seat_list, base.link) {
-			udev_seat_add_devices(seat, ec->udev);
-			udev_seat_enable_udev_monitor(seat, ec->udev);
-		}
+		wl_list_for_each(seat, &compositor->seat_list, base.link)
+			udev_seat_enable(seat, ec->udev);
 		break;
 	case TTY_LEAVE_VT:
 		weston_log("leaving VT\n");
-		wl_list_for_each(seat, &compositor->seat_list, base.link) {
-			udev_seat_disable_udev_monitor(seat);
-			udev_seat_remove_devices(seat);
-		}
+		wl_list_for_each(seat, &compositor->seat_list, base.link)
+			udev_seat_disable(seat);
 
 		compositor->focus = 0;
 		ec->prev_state = compositor->state;

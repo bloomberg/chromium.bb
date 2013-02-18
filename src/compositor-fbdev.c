@@ -777,17 +777,13 @@ vt_func(struct weston_compositor *base, int event)
 
 		weston_compositor_damage_all(&compositor->base);
 
-		wl_list_for_each(seat, &compositor->base.seat_list, base.link) {
-			udev_seat_add_devices(seat, compositor->udev);
-			udev_seat_enable_udev_monitor(seat, compositor->udev);
-		}
+		wl_list_for_each(seat, &compositor->base.seat_list, base.link)
+			udev_seat_enable(seat, compositor->udev);
 		break;
 	case TTY_LEAVE_VT:
 		weston_log("leaving VT\n");
-		wl_list_for_each(seat, &compositor->base.seat_list, base.link) {
-			udev_seat_disable_udev_monitor(seat);
-			udev_seat_remove_devices(seat);
-		}
+		wl_list_for_each(seat, &compositor->base.seat_list, base.link)
+			udev_seat_disable(seat);
 
 		wl_list_for_each(output, &compositor->base.output_list, link) {
 			fbdev_output_disable(output);

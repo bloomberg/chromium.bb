@@ -35,13 +35,11 @@ struct udev_seat {
 	char *seat_id;
 };
 
-int udev_seat_add_devices(struct udev_seat *seat, struct udev *udev);
-int udev_seat_enable_udev_monitor(struct udev_seat *seat, struct udev *udev);
-void udev_seat_disable_udev_monitor(struct udev_seat *seat);
+int udev_seat_enable(struct udev_seat *seat, struct udev *udev);
+void udev_seat_disable(struct udev_seat *seat);
 struct udev_seat *udev_seat_create(struct weston_compositor *c,
 				   struct udev *udev,
 				   const char *seat_id);
-void udev_seat_remove_devices(struct udev_seat *seat);
 void udev_seat_destroy(struct udev_seat *seat);
 
 #endif

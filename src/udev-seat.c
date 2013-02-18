@@ -99,7 +99,7 @@ device_added(struct udev_device *udev_device, struct udev_seat *master)
 	return 0;
 }
 
-int
+static int
 udev_seat_add_devices(struct udev_seat *seat, struct udev *udev)
 {
 	struct udev_enumerate *e;
@@ -186,7 +186,7 @@ out:
 }
 
 int
-udev_seat_enable_udev_monitor(struct udev_seat *seat, struct udev *udev)
+udev_seat_enable(struct udev_seat *seat, struct udev *udev)
 {
 	struct wl_event_loop *loop;
 	struct weston_compositor *c = seat->base.compositor;
@@ -195,7 +195,7 @@ udev_seat_enable_udev_monitor(struct udev_seat *seat, struct udev *udev)
 	seat->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
 	if (!seat->udev_monitor) {
 		weston_log("udev: failed to create the udev monitor\n");
-		return 0;
+		return -1;
 	}
 
 	udev_monitor_filter_add_match_subsystem_devtype(seat->udev_monitor,
@@ -204,7 +204,7 @@ udev_seat_enable_udev_monitor(struct udev_seat *seat, struct udev *udev)
 	if (udev_monitor_enable_receiving(seat->udev_monitor)) {
 		weston_log("udev: failed to bind the udev monitor\n");
 		udev_monitor_unref(seat->udev_monitor);
-		return 0;
+		return -1;
 	}
 
 	loop = wl_display_get_event_loop(c->wl_display);
@@ -214,14 +214,29 @@ udev_seat_enable_udev_monitor(struct udev_seat *seat, struct udev *udev)
 				     evdev_udev_handler, seat);
 	if (!seat->udev_monitor_source) {
 		udev_monitor_unref(seat->udev_monitor);
-		return 0;
+		return -1;
 	}
 
-	return 1;
+	if (udev_seat_add_devices(seat, udev) < 0)
+		return -1;
+
+	return 0;
+}
+
+static void
+udev_seat_remove_devices(struct udev_seat *seat)
+{
+	struct evdev_device *device, *next;
+
+	wl_list_for_each_safe(device, next, &seat->devices_list, link)
+		evdev_device_destroy(device);
+
+	if (seat->base.seat.keyboard)
+		notify_keyboard_focus_out(&seat->base);
 }
 
 void
-udev_seat_disable_udev_monitor(struct udev_seat *seat)
+udev_seat_disable(struct udev_seat *seat)
 {
 	if (!seat->udev_monitor)
 		return;
@@ -230,6 +245,8 @@ udev_seat_disable_udev_monitor(struct udev_seat *seat)
 	seat->udev_monitor = NULL;
 	wl_event_source_remove(seat->udev_monitor_source);
 	seat->udev_monitor_source = NULL;
+
+	udev_seat_remove_devices(seat);
 }
 
 static void
@@ -258,9 +275,7 @@ udev_seat_create(struct weston_compositor *c, struct udev *udev,
 
 	wl_list_init(&seat->devices_list);
 	seat->seat_id = strdup(seat_id);
-	if (!udev_seat_enable_udev_monitor(seat, udev))
-		goto err;
-	if (udev_seat_add_devices(seat, udev) < 0)
+	if (udev_seat_enable(seat, udev) < 0)
 		goto err;
 
 	return seat;
@@ -272,22 +287,9 @@ udev_seat_create(struct weston_compositor *c, struct udev *udev,
 }
 
 void
-udev_seat_remove_devices(struct udev_seat *seat)
-{
-	struct evdev_device *device, *next;
-
-	wl_list_for_each_safe(device, next, &seat->devices_list, link)
-		evdev_device_destroy(device);
-
-	if (seat->base.seat.keyboard)
-		notify_keyboard_focus_out(&seat->base);
-}
-
-void
 udev_seat_destroy(struct udev_seat *seat)
 {
-	udev_seat_remove_devices(seat);
-	udev_seat_disable_udev_monitor(seat);
+	udev_seat_disable(seat);
 
 	weston_seat_release(&seat->base);
 	free(seat->seat_id);
