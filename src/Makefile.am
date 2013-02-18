@@ -205,6 +205,8 @@ fbdev_backend_la_CFLAGS = \
 fbdev_backend_la_SOURCES = \
 	compositor-fbdev.c \
 	tty.c \
+	udev-seat.c \
+	udev-seat.h \
 	evdev.c \
 	evdev.h \
 	evdev-touchpad.c \
