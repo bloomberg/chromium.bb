@@ -243,14 +243,11 @@ void LocationBarView::Init() {
   ev_bubble_view_->set_drag_controller(this);
   AddChildView(ev_bubble_view_);
 
-  // URL edit field.
-  // View container for URL edit field.
+  // Initialize the Omnibox view.
   location_entry_.reset(CreateOmniboxView(this, model_, profile_,
       command_updater_, mode_ == POPUP, this));
   SetLocationEntryFocusable(true);
-
   location_entry_view_ = location_entry_->AddToView(this);
-  location_entry_view_->set_id(VIEW_ID_AUTOCOMPLETE);
 
   selected_keyword_view_ = new SelectedKeywordView(
       kSelectedKeywordBackgroundImages, IDR_KEYWORD_SEARCH_MAGNIFIER,
@@ -630,16 +627,14 @@ string16 LocationBarView::GetInstantSuggestion() const {
 void LocationBarView::SetLocationEntryFocusable(bool focusable) {
   OmniboxViewViews* omnibox_views = GetOmniboxViewViews(location_entry_.get());
   if (omnibox_views)
-    omnibox_views->SetLocationEntryFocusable(focusable);
+    omnibox_views->set_focusable(focusable);
   else
     set_focusable(focusable);
 }
 
 bool LocationBarView::IsLocationEntryFocusableInRootView() const {
   OmniboxViewViews* omnibox_views = GetOmniboxViewViews(location_entry_.get());
-  if (omnibox_views)
-    return omnibox_views->IsLocationEntryFocusableInRootView();
-  return views::View::IsFocusable();
+  return omnibox_views ? omnibox_views->IsFocusable() : View::IsFocusable();
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {

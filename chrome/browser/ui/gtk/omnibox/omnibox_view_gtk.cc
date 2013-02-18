@@ -407,7 +407,7 @@ void OmniboxViewGtk::Init() {
                  content::Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
 
-  ViewIDUtil::SetID(GetNativeView(), VIEW_ID_AUTOCOMPLETE);
+  ViewIDUtil::SetID(GetNativeView(), VIEW_ID_OMNIBOX);
 }
 
 void OmniboxViewGtk::HandleHierarchyChanged(GtkWidget* sender,
