@@ -5240,7 +5240,6 @@
    fun:_ZN7WebCore23AccessibilityNodeObject4initEv
    fun:_ZN7WebCore25AccessibilityRenderObject4initEv
    fun:_ZN7WebCore18AccessibilityTable4initEv
-   fun:_ZN7WebCore18AccessibilityTable6createEPNS_12RenderObjectE
 }
 {
    bug_139470
@@ -6034,7 +6033,6 @@
    fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
    fun:_ZN7WebCore28WorkerContextIndexedDatabase9indexedDBEv
    fun:_ZN7WebCore28WorkerContextIndexedDatabase9indexedDBEPNS_22ScriptExecutionContextE
-   fun:_ZN7WebCore23WorkerContextV8InternalL19indexedDBAttrGetterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
 }
 {
    # storage/indexeddb/pending-activity-workers.html
@@ -6352,7 +6350,7 @@
    fun:_ZN7WebCore18StyleSheetContents6createERKNS_16CSSParserContextE
    fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
    fun:_ZN7WebCoreL12parseUASheetEPKcj
-   fun:_ZN7WebCoreL15viewSourceStyleEv
+   ...
    fun:_ZN7WebCore13StyleResolver12matchUARulesERNS0_11MatchResultE
    fun:_ZN7WebCore13StyleResolver15styleForElementEPNS_7ElementEPNS_11RenderStyleENS_20StyleSharingBehaviorENS_20RuleMatchingBehaviorEPNS_12RenderRegionE
    fun:_ZN7WebCore13StyleResolverC1EPNS_8DocumentEb
@@ -6597,4 +6595,23 @@
    fun:_ZN7WebCore12TextTrackCue20createWebVTTNodeTreeEv
    fun:_ZN7WebCore12TextTrackCue22createCueRenderingTreeEv
    fun:_ZN7WebCore12TextTrackCue17updateDisplayTreeEf
+}
+{
+   bug_176621
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN13WebTestRunner10TestPlugin6createEPN6WebKit8WebFrameERKNS1_15WebPluginParamsEPNS_15WebTestDelegateE
+   fun:_ZN13WebTestRunner16WebTestProxyBase12createPluginEPN6WebKit8WebFrameERKNS1_15WebPluginParamsE
+   fun:_ZN13WebTestRunner12WebTestProxyI11WebViewHostP9TestShellE12createPluginEPN6WebKit8WebFrameERKNS5_15WebPluginParamsE
+   fun:_ZN6WebKit21FrameLoaderClientImpl12createPluginERKN7WebCore7IntSizeEPNS1_17HTMLPlugInElementERKNS1_4KURLERKN3WTF6VectorINSA_6String*
+   fun:_ZN7WebCore14SubframeLoader10loadPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7*
+}
+{
+   bug_176624
+   Memcheck:Uninitialized
+   fun:_ZN5mediaL23FromInterleavedInternalIilEEvPKviiPNS_8AudioBusE
+   fun:_ZN5media8AudioBus22FromInterleavedPartialEPKviii
+   fun:_ZN5media8AudioBus15FromInterleavedEPKvii
+   fun:_ZN5media17AudioRendererImpl6RenderEPNS_8AudioBusEi
+   fun:_ZN5media13NullAudioSink14FillBufferTaskEv
 }
