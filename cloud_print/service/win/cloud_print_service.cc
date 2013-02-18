@@ -68,7 +68,7 @@ HRESULT HResultFromLastError() {
 }
 
 void InvalidUsage() {
-  FilePath service_path;
+  base::FilePath service_path;
   CHECK(PathService::Get(base::FILE_EXE, &service_path));
 
   std::cout << "Usage: ";
@@ -193,7 +193,7 @@ class CloudPrintServiceModule
     if (FAILED(hr))
       return hr;
 
-    FilePath service_path;
+    base::FilePath service_path;
     CHECK(PathService::Get(base::FILE_EXE, &service_path));
     CommandLine command_line(service_path);
     command_line.AppendSwitch(run_switch);
@@ -346,7 +346,7 @@ class CloudPrintServiceModule
                                            WideToASCII(*run_as_user), false));
       *run_as_password = ASCIIToWide(GetOption("Password", "", true));
 
-      FilePath requirements_filename(user_data_dir_);
+      base::FilePath requirements_filename(user_data_dir_);
       requirements_filename =
           requirements_filename.Append(kRequirementsFileName);
 
@@ -389,7 +389,7 @@ class CloudPrintServiceModule
   }
 
   HRESULT SetupServiceState() {
-    FilePath file = user_data_dir_.Append(kServiceStateFileName);
+    base::FilePath file = user_data_dir_.Append(kServiceStateFileName);
 
     for (;;) {
       std::string contents;
@@ -492,7 +492,7 @@ class CloudPrintServiceModule
   }
 
   HRESULT CheckRequirements() {
-    FilePath requirements_filename(user_data_dir_);
+    base::FilePath requirements_filename(user_data_dir_);
     requirements_filename = requirements_filename.Append(kRequirementsFileName);
     std::string output;
     output.append("Printers available for " +
@@ -506,7 +506,7 @@ class CloudPrintServiceModule
       output += printer_list[i].printer_name;
       output += "\n";
     }
-    FilePath chrome = chrome_launcher_support::GetAnyChromePath();
+    base::FilePath chrome = chrome_launcher_support::GetAnyChromePath();
     output.append(chrome.empty() ? kChromeIsNotAvalible : kChromeIsAvalible);
     file_util::WriteFile(requirements_filename, output.c_str(), output.size());
     return S_OK;
@@ -527,7 +527,7 @@ class CloudPrintServiceModule
   static BOOL WINAPI ConsoleCtrlHandler(DWORD type);
 
   bool check_requirements_;
-  FilePath user_data_dir_;
+  base::FilePath user_data_dir_;
   scoped_ptr<ChromeLauncher> chrome_;
 };
 

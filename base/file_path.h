@@ -408,7 +408,7 @@ class BASE_EXPORT FilePath {
 // http://crosbug.com/39008 MTPD has a circular dependency on base and uses the
 // old non-namespaced FilePath.
 #if defined(MTPD_DEVICE_MANAGER_H_) || defined(OS_CHROMEOS) || \
-    !defined(OS_LINUX)
+    (!defined(OS_LINUX) && !defined(OS_MAXOSX))
 using base::FilePath;
 #endif
 

@@ -25,6 +25,8 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 
+using base::FilePath;
+
 namespace file_util {
 
 namespace {

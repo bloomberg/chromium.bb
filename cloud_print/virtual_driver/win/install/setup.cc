@@ -87,8 +87,8 @@ void DeleteGoogleUpdateKeys() {
   }
 }
 
-FilePath GetSystemPath(const string16& binary) {
-  FilePath path;
+base::FilePath GetSystemPath(const string16& binary) {
+  base::FilePath path;
   if (!PathService::Get(base::DIR_SYSTEM, &path)) {
     LOG(ERROR) << "Unable to get system path.";
     return path;
@@ -96,10 +96,10 @@ FilePath GetSystemPath(const string16& binary) {
   return path.Append(binary);
 }
 
-FilePath GetNativeSystemPath(const string16& binary) {
+base::FilePath GetNativeSystemPath(const string16& binary) {
   if (!cloud_print::IsSystem64Bit())
     return GetSystemPath(binary);
-  FilePath path;
+  base::FilePath path;
   // Sysnative will bypass filesystem redirection and give us
   // the location of the 64bit system32 from a 32 bit process.
   if (!PathService::Get(base::DIR_WINDOWS, &path)) {
@@ -110,7 +110,7 @@ FilePath GetNativeSystemPath(const string16& binary) {
 }
 
 void SpoolerServiceCommand(const char* command) {
-  FilePath net_path = GetNativeSystemPath(L"net");
+  base::FilePath net_path = GetNativeSystemPath(L"net");
   if (net_path.empty())
     return;
   CommandLine command_line(net_path);
@@ -125,16 +125,16 @@ void SpoolerServiceCommand(const char* command) {
   base::LaunchProcess(command_line, options, NULL);
 }
 
-HRESULT RegisterPortMonitor(bool install, const FilePath& install_path) {
+HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
   DCHECK(install || install_path.empty());
-  FilePath target_path =
+  base::FilePath target_path =
       GetNativeSystemPath(cloud_print::GetPortMonitorDllName());
   if (target_path.empty()) {
     LOG(ERROR) << "Unable to get port monitor target path.";
     return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
   }
   if (install) {
-    FilePath source_path =
+    base::FilePath source_path =
         install_path.Append(cloud_print::GetPortMonitorDllName());
     if (!file_util::CopyFile(source_path, target_path)) {
       LOG(ERROR) << "Unable copy port monitor dll from " <<
@@ -146,7 +146,7 @@ HRESULT RegisterPortMonitor(bool install, const FilePath& install_path) {
     return S_OK;
   }
 
-  FilePath regsvr32_path = GetNativeSystemPath(L"regsvr32.exe");
+  base::FilePath regsvr32_path = GetNativeSystemPath(L"regsvr32.exe");
   if (regsvr32_path.empty()) {
     LOG(ERROR) << "Can't find regsvr32.exe.";
     return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
@@ -215,15 +215,15 @@ UINT CALLBACK CabinetCallback(PVOID data,
                               UINT notification,
                               UINT_PTR param1,
                               UINT_PTR param2 ) {
-  FilePath* temp_path = reinterpret_cast<FilePath*>(data);
+  base::FilePath* temp_path = reinterpret_cast<base::FilePath*>(data);
   if (notification == SPFILENOTIFY_FILEINCABINET) {
     FILE_IN_CABINET_INFO* info =
         reinterpret_cast<FILE_IN_CABINET_INFO*>(param1);
     for (int i = 0; i < arraysize(kDependencyList); i++) {
-      FilePath base_name(info->NameInCabinet);
+      base::FilePath base_name(info->NameInCabinet);
       base_name = base_name.BaseName();
-      if (FilePath::CompareEqualIgnoreCase(base_name.value().c_str(),
-                                           kDependencyList[i])) {
+      if (base::FilePath::CompareEqualIgnoreCase(base_name.value().c_str(),
+                                                 kDependencyList[i])) {
         StringCchCopy(info->FullTargetName, MAX_PATH,
                       temp_path->Append(kDependencyList[i]).value().c_str());
         return FILEOP_DOIT;
@@ -235,7 +235,7 @@ UINT CALLBACK CabinetCallback(PVOID data,
   return NO_ERROR;
 }
 
-void ReadyPpdDependencies(const FilePath& install_path) {
+void ReadyPpdDependencies(const base::FilePath& install_path) {
   base::win::Version version = base::win::GetVersion();
   if (version >= base::win::VERSION_VISTA) {
     // GetCorePrinterDrivers and GetPrinterDriverPackagePath only exist on
@@ -259,19 +259,19 @@ void ReadyPpdDependencies(const FilePath& install_path) {
     SetupIterateCabinet(package_path,
                         0,
                         CabinetCallback,
-                        const_cast<FilePath*>(&install_path));
+                        const_cast<base::FilePath*>(&install_path));
   } else {
     // PS driver files are in the sp3 cab.
-    FilePath package_path;
+    base::FilePath package_path;
     PathService::Get(base::DIR_WINDOWS, &package_path);
     package_path = package_path.Append(L"Driver Cache\\i386\\sp3.cab");
     SetupIterateCabinet(package_path.value().c_str(),
                         0,
                         CabinetCallback,
-                        const_cast<FilePath*>(&install_path));
+                        const_cast<base::FilePath*>(&install_path));
 
     // The XPS driver files are just sitting uncompressed in the driver cache.
-    FilePath xps_path;
+    base::FilePath xps_path;
     PathService::Get(base::DIR_WINDOWS, &xps_path);
     xps_path = xps_path.Append(L"Driver Cache\\i386");
     xps_path = xps_path.Append(kDriverName);
@@ -279,15 +279,15 @@ void ReadyPpdDependencies(const FilePath& install_path) {
   }
 }
 
-HRESULT InstallPpd(const FilePath& install_path) {
+HRESULT InstallPpd(const base::FilePath& install_path) {
   DRIVER_INFO_6 driver_info = {0};
   HRESULT result = S_OK;
 
   // Set up paths for the files we depend on.
-  FilePath ppd_path = install_path.Append(kPpdName);
-  FilePath xps_path = install_path.Append(kDriverName);
-  FilePath ui_path = install_path.Append(kUiDriverName);
-  FilePath ui_help_path = install_path.Append(kHelpName);
+  base::FilePath ppd_path = install_path.Append(kPpdName);
+  base::FilePath xps_path = install_path.Append(kDriverName);
+  base::FilePath ui_path = install_path.Append(kUiDriverName);
+  base::FilePath ui_help_path = install_path.Append(kHelpName);
   ReadyPpdDependencies(install_path);
   // None of the print API structures likes constant strings even though they
   // don't modify the string.  const_casting is the cleanest option.
@@ -390,7 +390,7 @@ HRESULT UninstallPrinter(void) {
   return S_OK;
 }
 
-void SetupUninstall(const FilePath& install_path) {
+void SetupUninstall(const base::FilePath& install_path) {
   // Now write the Windows Uninstall entries
   // Minimal error checking here since the install can contiunue
   // if this fails.
@@ -438,7 +438,7 @@ bool IsOSSupported() {
        (base::win::OSInfo::GetInstance()->service_pack().major >= 3));
 }
 
-HRESULT RegisterVirtualDriver(const FilePath& install_path) {
+HRESULT RegisterVirtualDriver(const base::FilePath& install_path) {
   HRESULT result = S_OK;
 
   DCHECK(file_util::DirectoryExists(install_path));
@@ -468,17 +468,17 @@ HRESULT RegisterVirtualDriver(const FilePath& install_path) {
   return S_OK;
 }
 
-void GetCurrentInstallPath(FilePath* install_path) {
+void GetCurrentInstallPath(base::FilePath* install_path) {
   base::win::RegKey key;
   if (key.Open(HKEY_LOCAL_MACHINE, kUninstallRegistry,
                KEY_QUERY_VALUE) != ERROR_SUCCESS) {
     // Not installed.
-    *install_path = FilePath();
+    *install_path = base::FilePath();
     return;
   }
   string16 install_path_value;
   key.ReadValue(L"InstallLocation", &install_path_value);
-  *install_path = FilePath(install_path_value);
+  *install_path = base::FilePath(install_path_value);
 }
 
 HRESULT TryUnregisterVirtualDriver() {
@@ -494,7 +494,7 @@ HRESULT TryUnregisterVirtualDriver() {
     return result;
   }
   // The second argument is ignored if the first is false.
-  result = RegisterPortMonitor(false, FilePath());
+  result = RegisterPortMonitor(false, base::FilePath());
   if (FAILED(result)) {
     LOG(ERROR) << "Unable to remove port monitor.";
     return result;
@@ -516,8 +516,8 @@ HRESULT UnregisterVirtualDriver() {
   return hr;
 }
 
-HRESULT DeleteProgramDir(const FilePath& installer_source, bool wait) {
-  FilePath temp_path;
+HRESULT DeleteProgramDir(const base::FilePath& installer_source, bool wait) {
+  base::FilePath temp_path;
   if (file_util::CreateTemporaryFile(&temp_path)) {
     file_util::CopyFile(installer_source, temp_path);
     file_util::DeleteAfterReboot(temp_path);
@@ -551,7 +551,7 @@ HRESULT DoUninstall() {
   if (FAILED(result))
     return result;
   CleanupUninstall();
-  FilePath installer_source;
+  base::FilePath installer_source;
   if (PathService::Get(base::FILE_EXE, &installer_source))
     return DeleteProgramDir(installer_source, false);
   return S_OK;
@@ -561,14 +561,14 @@ HRESULT DoUnregister() {
   return UnregisterVirtualDriver();
 }
 
-HRESULT DoRegister(const FilePath& install_path) {
+HRESULT DoRegister(const base::FilePath& install_path) {
   HRESULT result = UnregisterVirtualDriver();
   if (FAILED(result))
     return result;
   return RegisterVirtualDriver(install_path);
 }
 
-HRESULT DoDelete(const FilePath& install_path) {
+HRESULT DoDelete(const base::FilePath& install_path) {
   if (install_path.value().empty())
     return E_INVALIDARG;
   if (!file_util::DirectoryExists(install_path))
@@ -577,13 +577,13 @@ HRESULT DoDelete(const FilePath& install_path) {
   return file_util::Delete(install_path, true) ? S_OK : E_FAIL;
 }
 
-HRESULT DoInstall(const FilePath& install_path) {
+HRESULT DoInstall(const base::FilePath& install_path) {
   HRESULT result = UnregisterVirtualDriver();
   if (FAILED(result)) {
     LOG(ERROR) << "Unable to unregister.";
     return result;
   }
-  FilePath old_install_path;
+  base::FilePath old_install_path;
   GetCurrentInstallPath(&old_install_path);
   if (!old_install_path.value().empty() &&
       install_path != old_install_path) {
@@ -601,7 +601,7 @@ HRESULT DoInstall(const FilePath& install_path) {
 HRESULT ExecuteCommands() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  FilePath exe_path;
+  base::FilePath exe_path;
   if (FAILED(PathService::Get(base::DIR_EXE, &exe_path)) ||
       !file_util::DirectoryExists(exe_path)) {
     return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);

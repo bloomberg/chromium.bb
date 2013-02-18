@@ -67,7 +67,7 @@ struct PortData {
   DWORD job_id;
   HANDLE printer_handle;
   FILE* file;
-  FilePath file_path;
+  base::FilePath file_path;
 };
 
 typedef struct {
@@ -104,21 +104,21 @@ MONITOR2 g_monitor_2 = {
   Monitor2Shutdown
 };
 
-FilePath GetAppDataDir() {
-  FilePath file_path;
+base::FilePath GetAppDataDir() {
+  base::FilePath file_path;
   if (!PathService::Get(base::DIR_LOCAL_APP_DATA_LOW, &file_path)) {
     LOG(ERROR) << "Can't get DIR_LOCAL_APP_DATA_LOW";
-    return FilePath();
+    return base::FilePath();
   }
   return file_path.Append(kAppDataDir);
 }
 
 // Delete files which where not deleted by chrome.
-void DeleteLeakedFiles(const FilePath& dir) {
+void DeleteLeakedFiles(const base::FilePath& dir) {
   using file_util::FileEnumerator;
   base::Time delete_before = base::Time::Now() - base::TimeDelta::FromDays(1);
   FileEnumerator enumerator(dir, false, FileEnumerator::FILES);
-  for (FilePath file_path = enumerator.Next(); !file_path.empty();
+  for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
        file_path = enumerator.Next()) {
     FileEnumerator::FindInfo info;
     enumerator.GetFindInfo(&info);
@@ -193,7 +193,7 @@ bool GetUserToken(HANDLE* primary_token) {
 // Launches the Cloud Print dialog in Chrome.
 // xps_path references a file to print.
 // job_title is the title to be used for the resulting print job.
-bool LaunchPrintDialog(const FilePath& xps_path,
+bool LaunchPrintDialog(const base::FilePath& xps_path,
                        const string16& job_title) {
   HANDLE token = NULL;
   if (!GetUserToken(&token)) {
@@ -202,7 +202,7 @@ bool LaunchPrintDialog(const FilePath& xps_path,
   }
   base::win::ScopedHandle primary_token_scoped(token);
 
-  FilePath chrome_path = GetChromeExePath();
+  base::FilePath chrome_path = GetChromeExePath();
   if (chrome_path.empty()) {
     LOG(ERROR) << "Unable to get chrome exe path.";
     return false;
@@ -210,7 +210,7 @@ bool LaunchPrintDialog(const FilePath& xps_path,
 
   CommandLine command_line(chrome_path);
 
-  FilePath chrome_profile = GetChromeProfilePath();
+  base::FilePath chrome_profile = GetChromeProfilePath();
   if (!chrome_profile.empty()) {
     command_line.AppendSwitchPath(switches::kCloudPrintUserDataDir,
                                   chrome_profile);
@@ -243,7 +243,7 @@ void LaunchChromeDownloadPage() {
   }
   base::win::ScopedHandle token_scoped(token);
 
-  FilePath ie_path;
+  base::FilePath ie_path;
   PathService::Get(base::DIR_PROGRAM_FILESX86, &ie_path);
   ie_path = ie_path.Append(kIePath);
   CommandLine command_line(ie_path);
@@ -283,35 +283,35 @@ bool ValidateCurrentUser() {
 }
 }  // namespace
 
-FilePath ReadPathFromRegistry(HKEY root, const wchar_t* path_name) {
+base::FilePath ReadPathFromRegistry(HKEY root, const wchar_t* path_name) {
   base::win::RegKey gcp_key(HKEY_CURRENT_USER, kCloudPrintRegKey, KEY_READ);
   string16 data;
   if (SUCCEEDED(gcp_key.ReadValue(path_name, &data)) &&
-      file_util::PathExists(FilePath(data))) {
-    return FilePath(data);
+      file_util::PathExists(base::FilePath(data))) {
+    return base::FilePath(data);
   }
-  return FilePath();
+  return base::FilePath();
 }
 
-FilePath ReadPathFromAnyRegistry(const wchar_t* path_name) {
-  FilePath result = ReadPathFromRegistry(HKEY_CURRENT_USER, path_name);
+base::FilePath ReadPathFromAnyRegistry(const wchar_t* path_name) {
+  base::FilePath result = ReadPathFromRegistry(HKEY_CURRENT_USER, path_name);
   if (!result.empty())
     return result;
   return ReadPathFromRegistry(HKEY_LOCAL_MACHINE, path_name);
 }
 
-FilePath GetChromeExePath() {
-  FilePath path = ReadPathFromAnyRegistry(kChromeExePathRegValue);
+base::FilePath GetChromeExePath() {
+  base::FilePath path = ReadPathFromAnyRegistry(kChromeExePathRegValue);
   if (!path.empty())
     return path;
   return chrome_launcher_support::GetAnyChromePath();
 }
 
-FilePath GetChromeProfilePath() {
-  FilePath path = ReadPathFromAnyRegistry(kChromeProfilePathRegValue);
+base::FilePath GetChromeProfilePath() {
+  base::FilePath path = ReadPathFromAnyRegistry(kChromeProfilePathRegValue);
   if (!path.empty() && file_util::DirectoryExists(path))
     return path;
-  return FilePath();
+  return base::FilePath();
 }
 
 BOOL WINAPI Monitor2EnumPorts(HANDLE,
@@ -437,8 +437,8 @@ BOOL WINAPI Monitor2StartDocPort(HANDLE port_handle,
     // This is the normal flow during a unit test.
     port_data->printer_handle = NULL;
   }
-  FilePath& file_path = port_data->file_path;
-  FilePath app_data_dir = GetAppDataDir();
+  base::FilePath& file_path = port_data->file_path;
+  base::FilePath app_data_dir = GetAppDataDir();
   if (app_data_dir.empty())
     return FALSE;
   DeleteLeakedFiles(app_data_dir);
@@ -586,7 +586,7 @@ DWORD WINAPI Monitor2XcvDataPort(HANDLE xcv_handle,
   // dynamic creation of ports.
   if (lstrcmp(L"MonitorUI", data_name) == 0) {
     DWORD dll_path_len = 0;
-    FilePath dll_path(GetPortMonitorDllName());
+    base::FilePath dll_path(GetPortMonitorDllName());
     dll_path_len = static_cast<DWORD>(dll_path.value().length());
     if (output_data_bytes_needed != NULL) {
       *output_data_bytes_needed = dll_path_len;

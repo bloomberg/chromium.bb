@@ -258,7 +258,7 @@ namespace web_app {
 
 namespace internals {
 
-FilePath GetAppBundleByExtensionId(std::string extension_id) {
+base::FilePath GetAppBundleByExtensionId(std::string extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   // This matches APP_MODE_APP_BUNDLE_ID in chrome/chrome.gyp.
   std::string bundle_id =
@@ -271,10 +271,10 @@ FilePath GetAppBundleByExtensionId(std::string extension_id) {
   base::mac::ScopedCFTypeRef<CFURLRef> url(url_ref);
 
   if (status != noErr)
-    return FilePath();
+    return base::FilePath();
 
   NSString* path_string = [base::mac::CFToNSCast(url.get()) path];
-  return FilePath([path_string fileSystemRepresentation]);
+  return base::FilePath([path_string fileSystemRepresentation]);
 }
 
 bool CreatePlatformShortcuts(
@@ -292,7 +292,7 @@ void DeletePlatformShortcuts(
     const ShellIntegration::ShortcutInfo& info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  FilePath bundle_path = GetAppBundleByExtensionId(info.extension_id);
+  base::FilePath bundle_path = GetAppBundleByExtensionId(info.extension_id);
   file_util::Delete(bundle_path, true);
 }
 

@@ -19,11 +19,10 @@
 #include "base/win/scoped_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+namespace base {
+namespace win {
 
-using base::win::EtwTraceController;
-using base::win::EtwTraceProvider;
-using base::win::EtwTraceProperties;
+namespace {
 
 DEFINE_GUID(kGuidNull,
     0x0000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0);
@@ -50,7 +49,7 @@ class TestingProvider: public EtwTraceProvider {
     ::SetEvent(callback_event_.Get());
   }
 
-  base::win::ScopedHandle callback_event_;
+  ScopedHandle callback_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingProvider);
 };
@@ -110,8 +109,9 @@ namespace {
 
 class EtwTraceControllerTest : public testing::Test {
  public:
-  EtwTraceControllerTest() : session_name_(
-      base::StringPrintf(L"TestSession-%d", base::Process::Current().pid())) {
+  EtwTraceControllerTest()
+      : session_name_(
+            StringPrintf(L"TestSession-%d", Process::Current().pid())) {
   }
 
   virtual void SetUp() {
@@ -161,7 +161,7 @@ TEST_F(EtwTraceControllerTest, StartRealTimeSession) {
 }
 
 TEST_F(EtwTraceControllerTest, StartFileSession) {
-  base::ScopedTempDir temp_dir;
+  ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath temp;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(), &temp));
@@ -234,3 +234,6 @@ TEST_F(EtwTraceControllerTest, EnableDisable) {
   EXPECT_EQ(0, provider.enable_level());
   EXPECT_EQ(0, provider.enable_flags());
 }
+
+}  // namespace win
+}  // namespace base

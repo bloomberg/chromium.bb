@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "policy/policy_constants.h"
 
-void CheckUserDataDirPolicy(FilePath* user_data_dir) {
+void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   base::mac::ScopedNSAutoreleasePool pool;
 
   // Since the configuration management infrastructure is not initialized when
@@ -32,7 +32,7 @@ void CheckUserDataDirPolicy(FilePath* user_data_dir) {
     // Now replace any vars the user might have used.
     string_value =
         policy::path_parser::ExpandPathVariables(string_value);
-    *user_data_dir = FilePath(string_value);
+    *user_data_dir = base::FilePath(string_value);
   }
 }
 

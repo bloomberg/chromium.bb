@@ -212,7 +212,7 @@ void CollectD3D11Support() {
   FeatureLevel feature_level = FEATURE_LEVEL_UNKNOWN;
   UINT bgra_support = 0;
 
-  base::ScopedNativeLibrary module(FilePath(L"d3d11.dll"));
+  base::ScopedNativeLibrary module(base::FilePath(L"d3d11.dll"));
   if (!module.is_valid()) {
     feature_level = FEATURE_LEVEL_NO_D3D11_DLL;
   } else {

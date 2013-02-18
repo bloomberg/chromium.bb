@@ -115,8 +115,8 @@ unsigned char* OpenSSLWriteInto(std::string* str, size_t size) {
 // Returns a new EVP_PKEY on success, NULL on failure.
 EVP_PKEY* ImportPrivateKeyFile(const char* filename) {
   // Load file in memory.
-  FilePath certs_dir = GetTestCertsDirectory();
-  FilePath file_path = certs_dir.AppendASCII(filename);
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath file_path = certs_dir.AppendASCII(filename);
   ScopedStdioHandle handle(
       file_util::OpenFile(file_path, "rb"));
   if (!handle.get()) {
@@ -165,8 +165,8 @@ bool ImportPrivateKeyFileAsPkcs8(const char* filename,
 // Same as ImportPrivateKey, but for public ones.
 EVP_PKEY* ImportPublicKeyFile(const char* filename) {
   // Load file as PEM data.
-  FilePath certs_dir = GetTestCertsDirectory();
-  FilePath file_path = certs_dir.AppendASCII(filename);
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  base::FilePath file_path = certs_dir.AppendASCII(filename);
   ScopedStdioHandle handle(file_util::OpenFile(file_path, "rb"));
   if (!handle.get()) {
     LOG(ERROR) << "Could not open public key file: " << filename;

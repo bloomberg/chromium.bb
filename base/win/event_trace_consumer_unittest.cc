@@ -23,13 +23,10 @@
 
 #include <initguid.h>  // NOLINT - has to be last
 
-namespace {
+namespace base {
+namespace win {
 
-using base::win::EtwMofEvent;
-using base::win::EtwTraceController;
-using base::win::EtwTraceConsumerBase;
-using base::win::EtwTraceProperties;
-using base::win::EtwTraceProvider;
+namespace {
 
 typedef std::list<EVENT_TRACE> EventQueue;
 
@@ -70,21 +67,21 @@ class TestConsumer: public EtwTraceConsumerBase<TestConsumer> {
     ::SetEvent(sank_event_.Get());
   }
 
-  static base::win::ScopedHandle sank_event_;
+  static ScopedHandle sank_event_;
   static EventQueue events_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestConsumer);
 };
 
-base::win::ScopedHandle TestConsumer::sank_event_;
+ScopedHandle TestConsumer::sank_event_;
 EventQueue TestConsumer::events_;
 
 class EtwTraceConsumerBaseTest: public testing::Test {
  public:
   EtwTraceConsumerBaseTest()
-      : session_name_(base::StringPrintf(L"TestSession-%d",
-                                         base::Process::Current().pid())) {
+      : session_name_(StringPrintf(L"TestSession-%d",
+                                   Process::Current().pid())) {
   }
 
   virtual void SetUp() {
@@ -206,8 +203,8 @@ class EtwTraceConsumerRealtimeTest: public EtwTraceConsumerBaseTest {
   }
 
   TestConsumer consumer_;
-  base::win::ScopedHandle consumer_ready_;
-  base::win::ScopedHandle consumer_thread_;
+  ScopedHandle consumer_ready_;
+  ScopedHandle consumer_thread_;
 };
 
 }  // namespace
@@ -356,7 +353,7 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
   }
 
   EventQueue events_;
-  base::ScopedTempDir temp_dir_;
+  ScopedTempDir temp_dir_;
   FilePath temp_file_;
 };
 
@@ -381,3 +378,6 @@ TEST_F(EtwTraceConsumerDataTest, RoundTrip) {
   ASSERT_EQ(sizeof(kData), trace->MofLength);
   ASSERT_STREQ(kData, reinterpret_cast<const char*>(trace->MofData));
 }
+
+}  // namespace win
+}  // namespace base

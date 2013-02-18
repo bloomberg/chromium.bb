@@ -673,7 +673,7 @@ void FileBrowserEventRouter::ShowRemovableDeviceInFileManager(
       chromeos::ScreenLocker::default_screen_locker())
     return;
 
-  file_manager_util::OpenActionChoiceDialog(FilePath(mount_path));
+  file_manager_util::OpenActionChoiceDialog(base::FilePath(mount_path));
 }
 
 void FileBrowserEventRouter::OnDiskAdded(

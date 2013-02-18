@@ -51,7 +51,7 @@ bool LaunchProcess(const CommandLine& cmdline,
 
 }  // namespace
 
-ChromeLauncher::ChromeLauncher(const FilePath& user_data)
+ChromeLauncher::ChromeLauncher(const base::FilePath& user_data)
     : stop_event_(true, true),
       user_data_(user_data) {
 }
@@ -78,7 +78,7 @@ void ChromeLauncher::Run() {
 
   for (base::TimeDelta time_out = default_time_out;;
        time_out = std::min(time_out * 2, max_time_out)) {
-    FilePath chrome_path = chrome_launcher_support::GetAnyChromePath();
+    base::FilePath chrome_path = chrome_launcher_support::GetAnyChromePath();
 
     if (!chrome_path.empty()) {
       CommandLine cmd(chrome_path);

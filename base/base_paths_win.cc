@@ -16,6 +16,8 @@
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+using base::FilePath;
+
 namespace {
 
 bool GetQuickLaunchPath(bool default_user, FilePath* result) {

@@ -109,25 +109,26 @@ static void RunTests(JNIEnv* env,
       CommandLine(argc, &argv[0]), false);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  FilePath files_dir(base::android::ConvertJavaStringToUTF8(env, jfiles_dir));
+  base::FilePath files_dir(
+      base::android::ConvertJavaStringToUTF8(env, jfiles_dir));
 
   // A few options, such "--gtest_list_tests", will just use printf directly
   // Always redirect stdout to a known file.
-  FilePath fifo_path(files_dir.Append(FilePath("test.fifo")));
+  base::FilePath fifo_path(files_dir.Append(base::FilePath("test.fifo")));
   CreateFIFO(fifo_path.value().c_str());
 
-  FilePath stderr_fifo_path, stdin_fifo_path;
+  base::FilePath stderr_fifo_path, stdin_fifo_path;
 
   // DumpRenderTree needs a separate fifo for the stderr output. For all
   // other tests, insert stderr content to the same fifo we use for stdout.
   if (command_line.HasSwitch(kSeparateStderrFifo)) {
-    stderr_fifo_path = files_dir.Append(FilePath("stderr.fifo"));
+    stderr_fifo_path = files_dir.Append(base::FilePath("stderr.fifo"));
     CreateFIFO(stderr_fifo_path.value().c_str());
   }
 
   // DumpRenderTree uses stdin to receive input about which test to run.
   if (command_line.HasSwitch(kCreateStdinFifo)) {
-    stdin_fifo_path = files_dir.Append(FilePath("stdin.fifo"));
+    stdin_fifo_path = files_dir.Append(base::FilePath("stdin.fifo"));
     CreateFIFO(stdin_fifo_path.value().c_str());
   }
 

@@ -62,7 +62,7 @@ bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
   }
 
   DWORD flags = MOVEFILE_DELAY_UNTIL_REBOOT;
-  if (!file_util::DirectoryExists(FilePath::FromWStringHack(path))) {
+  if (!file_util::DirectoryExists(base::FilePath::FromWStringHack(path))) {
     // This flag valid only for files
     flags |= MOVEFILE_REPLACE_EXISTING;
   }
@@ -116,9 +116,9 @@ bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
   // First schedule all the normal files for deletion.
   {
     bool success = true;
-    file_util::FileEnumerator file_enum(FilePath(dir_name), false,
+    file_util::FileEnumerator file_enum(base::FilePath(dir_name), false,
                                         file_util::FileEnumerator::FILES);
-    for (FilePath file = file_enum.Next(); !file.empty();
+    for (base::FilePath file = file_enum.Next(); !file.empty();
          file = file_enum.Next()) {
       success = ScheduleFileSystemEntityForDeletion(file.value().c_str());
       if (!success) {
@@ -131,9 +131,9 @@ bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
   // Then recurse to all the subdirectories.
   {
     bool success = true;
-    file_util::FileEnumerator dir_enum(FilePath(dir_name), false,
+    file_util::FileEnumerator dir_enum(base::FilePath(dir_name), false,
                                        file_util::FileEnumerator::DIRECTORIES);
-    for (FilePath sub_dir = dir_enum.Next(); !sub_dir.empty();
+    for (base::FilePath sub_dir = dir_enum.Next(); !sub_dir.empty();
          sub_dir = dir_enum.Next()) {
       success = ScheduleDirectoryForDeletion(sub_dir.value().c_str());
       if (!success) {

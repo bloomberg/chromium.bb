@@ -313,7 +313,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
                                                  const std::wstring& type,
                                                  const std::wstring& channel) {
   scoped_ptr<FileVersionInfo>
-      version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(exe_path)));
+      version_info(FileVersionInfo::CreateFileVersionInfo(
+          base::FilePath(exe_path)));
 
   std::wstring version, product;
   std::wstring special_build;

@@ -14,10 +14,10 @@
 namespace cloud_print {
 
 // Returns path to be used for launching Chrome.
-FilePath GetChromeExePath();
+base::FilePath GetChromeExePath();
 
 // Returns path to user profile to be used for launching Chrome.
-FilePath GetChromeProfilePath();
+base::FilePath GetChromeProfilePath();
 
 // Implementations for the function pointers in the MONITOR2 structure
 // returned by InitializePrintMonitor2.  The prototypes and behaviors

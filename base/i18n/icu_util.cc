@@ -50,6 +50,8 @@
 #endif
 #endif
 
+using base::FilePath;
+
 namespace icu_util {
 
 bool Initialize() {

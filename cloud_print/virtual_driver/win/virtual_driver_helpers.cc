@@ -42,7 +42,7 @@ string16 GetPortMonitorDllName() {
   }
 }
 
-HRESULT GetPrinterDriverDir(FilePath* path) {
+HRESULT GetPrinterDriverDir(base::FilePath* path) {
   BYTE driver_dir_buffer[MAX_PATH * sizeof(wchar_t)];
   DWORD needed = 0;
   if (!GetPrinterDriverDirectory(NULL,
@@ -55,7 +55,7 @@ HRESULT GetPrinterDriverDir(FilePath* path) {
     // but that really shouldn't happen.
     return cloud_print::GetLastHResult();
   }
-  *path = FilePath(reinterpret_cast<wchar_t*>(driver_dir_buffer));
+  *path = base::FilePath(reinterpret_cast<wchar_t*>(driver_dir_buffer));
 
   // The XPS driver is a "Level 3" driver
   *path = path->Append(L"3");

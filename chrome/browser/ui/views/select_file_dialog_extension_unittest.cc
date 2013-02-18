@@ -45,7 +45,7 @@ class TestListener : public ui::SelectFileDialog::Listener {
   int file_index() const { return file_index_; }
 
   // ui::SelectFileDialog::Listener implementation
-  virtual void FileSelected(const FilePath& path,
+  virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* params) OVERRIDE {
     selected_ = true;

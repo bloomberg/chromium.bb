@@ -28,12 +28,12 @@ namespace win8 {
 
 bool RegisterTestDefaultBrowser(const string16& app_user_model_id,
                                 const string16& viewer_process_name) {
-  FilePath dir;
+  base::FilePath dir;
   if (!PathService::Get(base::DIR_EXE, &dir))
     return false;
 
-  FilePath chrome_exe(dir.Append(kChromeExe));
-  FilePath registrar(dir.Append(kRegistrar));
+  base::FilePath chrome_exe(dir.Append(kChromeExe));
+  base::FilePath registrar(dir.Append(kRegistrar));
 
   if (!file_util::PathExists(chrome_exe) || !file_util::PathExists(registrar)) {
     LOG(ERROR) << "Could not locate " << kChromeExe << " or " << kRegistrar;
