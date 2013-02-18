@@ -62,7 +62,10 @@ AM_CONDITIONAL(ENABLE_SETUID_INSTALL, test x$enable_setuid_install = xyes)
 
 AC_ARG_ENABLE(xwayland, [  --enable-xwayland],,
 	      enable_xwayland=yes)
+AC_ARG_ENABLE(xwayland-test, [  --enable-xwayland-test],,
+              enable_xwayland_test=yes)
 AM_CONDITIONAL(ENABLE_XWAYLAND, test x$enable_xwayland = xyes)
+AM_CONDITIONAL(ENABLE_XWAYLAND_TEST, test x$enable_xwayland = xyes -a x$enable_xwayland_test = xyes)
 if test x$enable_xwayland = xyes; then
   PKG_CHECK_MODULES([XWAYLAND], xcb xcb-xfixes xcursor cairo-xcb)
   AC_DEFINE([BUILD_XWAYLAND], [1], [Build the X server launcher])
@@ -71,14 +74,11 @@ if test x$enable_xwayland = xyes; then
               [Path to X server]), [XSERVER_PATH="$withval"],
               [XSERVER_PATH="$bindir/Xorg"])
   AC_SUBST([XSERVER_PATH])
+  if test x$enable_xwayland_test = xyes; then
+    PKG_CHECK_MODULES([XWAYLAND_TEST], xcb xcb-dri2 libdrm)
+  fi
 fi
 
-AC_ARG_ENABLE(xwayland-test, [  --enable-xwayland-test],,
-              enable_xwayland_test=yes)
-AM_CONDITIONAL(ENABLE_XWAYLAND_TEST, test x$enable_xwayland_test = xyes)
-if test x$enable_xwayland_test = xyes; then
-  PKG_CHECK_MODULES([XWAYLAND_TEST], xcb xcb-dri2 libdrm)
-fi
 
 AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 	      enable_x11_compositor=yes)
