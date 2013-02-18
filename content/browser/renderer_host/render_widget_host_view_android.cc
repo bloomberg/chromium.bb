@@ -28,6 +28,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
@@ -627,16 +629,17 @@ void RenderWidgetHostViewAndroid::HasTouchEventHandlers(
 // static
 void RenderWidgetHostViewPort::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
+  const gfx::Display& display =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  results->rect = display.bounds();
+  // TODO(husky): Remove any system controls from availableRect.
+  results->availableRect = display.work_area();
+  results->deviceScaleFactor = display.device_scale_factor();
+
   gfx::DeviceDisplayInfo info;
-  const int width = info.GetDisplayWidth();
-  const int height = info.GetDisplayHeight();
-  results->deviceScaleFactor = info.GetDIPScale();
-  results->depth = info.GetBitsPerPixel();
+  results->depth = info.GetBitsPerPixel();;
   results->depthPerComponent = info.GetBitsPerComponent();
   results->isMonochrome = (results->depthPerComponent == 0);
-  results->rect = WebKit::WebRect(0, 0, width, height);
-  // TODO(husky): Remove any system controls from availableRect.
-  results->availableRect = WebKit::WebRect(0, 0, width, height);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
