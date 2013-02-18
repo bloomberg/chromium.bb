@@ -120,25 +120,32 @@ BOOL CALLBACK ShowWindowsCallback(HWND window, LPARAM param) {
   return TRUE;
 }
 
-struct TransientRectsParams {
+struct CutoutRectsParams {
   RenderWidgetHostViewAura* widget;
-  std::vector<gfx::Rect>* transient_rects;
+  std::vector<gfx::Rect> cutout_rects;
   std::map<HWND, webkit::npapi::WebPluginGeometry>* geometry;
 };
 
-BOOL CALLBACK SetTransientRectsCallback(HWND window, LPARAM param) {
-  TransientRectsParams* params = reinterpret_cast<TransientRectsParams*>(param);
+// Used to update the region for the windowed plugin to draw in. We start with
+// the clip rect from the renderer, then remove the cutout rects from the
+// renderer, and then remove the transient windows from the root window and the
+// constrained windows from the parent window.
+BOOL CALLBACK SetCutoutRectsCallback(HWND window, LPARAM param) {
+  CutoutRectsParams* params = reinterpret_cast<CutoutRectsParams*>(param);
 
   if (GetProp(window, kWidgetOwnerProperty) == params->widget) {
+    // First calculate the offset of this plugin from the root window, since
+    // the cutouts are relative to the root window.
     HWND parent = params->widget->GetNativeView()->GetRootWindow()->
         GetAcceleratedWidget();
     POINT offset;
     offset.x = offset.y = 0;
     MapWindowPoints(window, parent, &offset, 1);
 
+    // Now get the cached clip rect and cutouts for this plugin window that came
+    // from the renderer.
     std::map<HWND, webkit::npapi::WebPluginGeometry>::iterator i =
         params->geometry->begin();
-
     while (i != params->geometry->end() &&
            i->second.window != window &&
            GetParent(i->second.window) != window) {
@@ -155,10 +162,10 @@ BOOL CALLBACK SetTransientRectsCallback(HWND window, LPARAM param) {
                               i->second.clip_rect.right(),
                               i->second.clip_rect.bottom());
     // We start with the cutout rects that came from the renderer, then add the
-    // ones that came from transient windows.
+    // ones that came from transient and constrained windows.
     std::vector<gfx::Rect> cutout_rects = i->second.cutout_rects;
-    for (size_t i = 0; i < params->transient_rects->size(); ++i) {
-      gfx::Rect offset_cutout = (*params->transient_rects)[i];
+    for (size_t i = 0; i < params->cutout_rects.size(); ++i) {
+      gfx::Rect offset_cutout = params->cutout_rects[i];
       offset_cutout.Offset(-offset.x, -offset.y);
       cutout_rects.push_back(offset_cutout);
     }
@@ -262,12 +269,12 @@ bool PointerEventActivates(const ui::Event& event) {
 class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
  public:
   explicit WindowObserver(RenderWidgetHostViewAura* view)
-      : view_(view),
-        top_level_(NULL) {}
+      : view_(view) {
+    view_->window_->AddObserver(this);
+  }
+
   virtual ~WindowObserver() {
-#if defined(OS_WIN)
-    StopObserving();
-#endif
+    view_->window_->RemoveObserver(this);
   }
 
   // Overridden from aura::WindowObserver:
@@ -281,7 +288,30 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
       view_->RemovingFromRootWindow();
   }
 
+ private:
+  RenderWidgetHostViewAura* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowObserver);
+};
+
 #if defined(OS_WIN)
+// On Windows, we need to watch the top level window for changes to transient
+// windows because they can cover the view and we need to ensure that they're
+// rendered on top of windowed NPAPI plugins.
+class RenderWidgetHostViewAura::TransientWindowObserver
+    : public aura::WindowObserver {
+ public:
+  explicit TransientWindowObserver(RenderWidgetHostViewAura* view)
+      : view_(view), top_level_(NULL) {
+    view_->window_->AddObserver(this);
+  }
+
+  virtual ~TransientWindowObserver() {
+    view_->window_->RemoveObserver(this);
+    StopObserving();
+  }
+
+  // Overridden from aura::WindowObserver:
   virtual void OnWindowHierarchyChanged(
       const aura::WindowObserver::HierarchyChangeParams& params) OVERRIDE {
     aura::Window* top_level = GetToplevelWindow();
@@ -353,16 +383,16 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
         cutouts.push_back(transients[i]->GetBoundsInRootWindow());
     }
 
-    view_->SetTransientRects(cutouts);
+    view_->UpdateTransientRects(cutouts);
   }
-#endif
-
  private:
   RenderWidgetHostViewAura* view_;
   aura::Window* top_level_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowObserver);
+  DISALLOW_COPY_AND_ASSIGN(TransientWindowObserver);
 };
+
+#endif
 
 class RenderWidgetHostViewAura::ResizeLock {
  public:
@@ -457,12 +487,14 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       paint_observer_(NULL) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
-  window_->AddObserver(window_observer_.get());
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
   aura::client::SetActivationChangeObserver(window_, this);
   aura::client::SetFocusChangeObserver(window_, this);
   gfx::Screen::GetScreenFor(window_)->AddObserver(this);
+#if defined(OS_WIN)
+  transient_observer_.reset(new TransientWindowObserver(this));
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -556,7 +588,7 @@ void RenderWidgetHostViewAura::WasShown() {
 #if defined(OS_WIN)
   LPARAM lparam = reinterpret_cast<LPARAM>(this);
   EnumChildWindows(ui::GetHiddenWindow(), ShowWindowsCallback, lparam);
-  window_observer_->SendPluginCutoutRects();
+  transient_observer_->SendPluginCutoutRects();
 #endif
 }
 
@@ -658,10 +690,14 @@ void RenderWidgetHostViewAura::MovePluginWindows(
 
     plugin_window_moves_[moves[i].window] = moves[i];
 
-    // transient_rects_ are relative to the root window. We want to convert them
-    // to be relative to the plugin window.
-    for (size_t j = 0; j < transient_rects_.size(); ++j) {
-      gfx::Rect offset_cutout = transient_rects_[j];
+    // transient_rects_ and constrained_rects_ are relative to the root window.
+    // We want to convert them to be relative to the plugin window.
+    std::vector<gfx::Rect> cutout_rects;
+    cutout_rects.assign(transient_rects_.begin(), transient_rects_.end());
+    cutout_rects.insert(cutout_rects.end(), constrained_rects_.begin(),
+                        constrained_rects_.end());
+    for (size_t j = 0; j < cutout_rects.size(); ++j) {
+      gfx::Rect offset_cutout = cutout_rects[j];
       offset_cutout -= moves[i].window_rect.OffsetFromOrigin();
       moves[i].cutout_rects.push_back(offset_cutout);
     }
@@ -1058,17 +1094,31 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
 }
 
 #if defined(OS_WIN)
-void RenderWidgetHostViewAura::SetTransientRects(
+void RenderWidgetHostViewAura::UpdateTransientRects(
     const std::vector<gfx::Rect>& rects) {
   transient_rects_ = rects;
+  UpdateCutoutRects();
+}
 
+void RenderWidgetHostViewAura::UpdateConstrainedWindowRects(
+    const std::vector<gfx::Rect>& rects) {
+  constrained_rects_ = rects;
+  UpdateCutoutRects();
+}
+
+void RenderWidgetHostViewAura::UpdateCutoutRects() {
+  if (!window_->GetRootWindow())
+    return;
   HWND parent = window_->GetRootWindow()->GetAcceleratedWidget();
-  TransientRectsParams params;
+  CutoutRectsParams params;
   params.widget = this;
-  params.transient_rects = &transient_rects_;
+  params.cutout_rects.assign(transient_rects_.begin(), transient_rects_.end());
+  params.cutout_rects.insert(params.cutout_rects.end(),
+                             constrained_rects_.begin(),
+                             constrained_rects_.end());
   params.geometry = &plugin_window_moves_;
   LPARAM lparam = reinterpret_cast<LPARAM>(&params);
-  EnumChildWindows(parent, SetTransientRectsCallback, lparam);
+  EnumChildWindows(parent, SetCutoutRectsCallback, lparam);
 }
 #endif
 
@@ -2040,7 +2090,10 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     factory->DestroySharedSurfaceHandle(shared_surface_handle_);
     factory->RemoveObserver(this);
   }
-  window_->RemoveObserver(window_observer_.get());
+  window_observer_.reset();
+#if defined(OS_WIN)
+  transient_observer_.reset();
+#endif
   if (window_->GetRootWindow())
     window_->GetRootWindow()->RemoveRootWindowObserver(this);
   UnlockMouse();

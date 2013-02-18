@@ -45,6 +45,9 @@ class CONTENT_EXPORT WebContentsViewAura
 
  private:
   class WindowObserver;
+#if defined(OS_WIN)
+  class ChildWindowObserver;
+#endif
 
   virtual ~WebContentsViewAura();
 
@@ -179,6 +182,9 @@ class CONTENT_EXPORT WebContentsViewAura
   scoped_ptr<aura::Window> overscroll_window_;
 
   scoped_ptr<WindowObserver> window_observer_;
+#if defined(OS_WIN)
+  scoped_ptr<ChildWindowObserver> child_window_observer_;
+#endif
 
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;

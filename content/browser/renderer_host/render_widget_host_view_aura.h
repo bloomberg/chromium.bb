@@ -246,6 +246,13 @@ class RenderWidgetHostViewAura
   virtual void OnRootWindowMoved(const aura::RootWindow* root,
                                  const gfx::Point& new_origin) OVERRIDE;
 
+#if defined(OS_WIN)
+  // Sets the cutout rects from constrained windows. These are rectangles that
+  // windowed NPAPI plugins shouldn't paint in. Overwrites any previous cutout
+  // rects.
+  void UpdateConstrainedWindowRects(const std::vector<gfx::Rect>& rects);
+#endif
+
  protected:
   friend class RenderWidgetHostView;
 
@@ -258,6 +265,10 @@ class RenderWidgetHostViewAura
 
   class WindowObserver;
   friend class WindowObserver;
+#if defined(OS_WIN)
+  class TransientWindowObserver;
+  friend class TransientWindowObserver;
+#endif
 
   // Overridden from ui::CompositorObserver:
   virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE;
@@ -350,7 +361,11 @@ class RenderWidgetHostViewAura
   // Sets the cutout rects from transient windows. These are rectangles that
   // windowed NPAPI plugins shouldn't paint in. Overwrites any previous cutout
   // rects.
-  void SetTransientRects(const std::vector<gfx::Rect>& rects);
+  void UpdateTransientRects(const std::vector<gfx::Rect>& rects);
+
+  // Updates the total list of cutout rects, which is the union of transient
+  // windows and constrained windows.
+  void UpdateCutoutRects();
 #endif
 
   // The model object.
@@ -482,9 +497,12 @@ class RenderWidgetHostViewAura
   PaintObserver* paint_observer_;
 
 #if defined(OS_WIN)
-  // The list of rectangles from transient windows over this view. Windowed
-  // NPAPI plugins shouldn't draw over them.
+  scoped_ptr<TransientWindowObserver> transient_observer_;
+
+  // The list of rectangles from transient and constrained windows over this
+  // view. Windowed NPAPI plugins shouldn't draw over them.
   std::vector<gfx::Rect> transient_rects_;
+  std::vector<gfx::Rect> constrained_rects_;
 
   typedef std::map<HWND, webkit::npapi::WebPluginGeometry> PluginWindowMoves;
   // Contains information about each windowed plugin's clip and cutout rects (
