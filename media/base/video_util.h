@@ -37,6 +37,25 @@ MEDIA_EXPORT void CopyPlane(size_t plane, const uint8* source, int stride,
 // Fills |frame| containing YUV data to the given color values.
 MEDIA_EXPORT void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v);
 
+// Rotates |src| plane by |rotation| degree with possible flipping vertically
+// and horizontally.
+// |rotation| is limited to {0, 90, 180, 270}.
+// |width| and |height| are expected to be even numbers.
+// Both |src| and |dest| planes are packed and have same |width| and |height|.
+// When |width| != |height| and rotated by 90/270, only the maximum square
+// portion located in the center is rotated. For example, for width=640 and
+// height=480, the rotated area is 480x480 located from row 0 through 479 and
+// from column 80 through 559. The leftmost and rightmost 80 columns are
+// ignored for both |src| and |dest|.
+// The caller is responsible for blanking out the margin area.
+MEDIA_EXPORT void RotatePlaneByPixels(
+    uint8* src,
+    uint8* dest,
+    int width,
+    int height,
+    int rotation,  // Clockwise.
+    bool flip_vert,
+    bool flip_horiz);
 }  // namespace media
 
 #endif  // MEDIA_BASE_VIDEO_UTIL_H_
