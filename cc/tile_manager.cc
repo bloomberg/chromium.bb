@@ -45,8 +45,8 @@ inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
     return NEVER_BIN;
 
   // The amount of time for which we want to have prepainting coverage.
-  const double prepainting_window_time_seconds = 1.0;
-  const double backfling_guard_distance_pixels = 314.0;
+  const float kPrepaintingWindowTimeSeconds = 1.0f;
+  const float kBackflingGuardDistancePixels = 314.0f;
 
   // Explicitly limit how far ahead we will prepaint to limit memory usage.
   if (prio.distance_to_visible_in_pixels >
@@ -54,13 +54,13 @@ inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
     return NEVER_BIN;
 
   if (prio.time_to_visible_in_seconds == 0 ||
-      prio.distance_to_visible_in_pixels < backfling_guard_distance_pixels)
+      prio.distance_to_visible_in_pixels < kBackflingGuardDistancePixels)
     return NOW_BIN;
 
   if (prio.resolution == NON_IDEAL_RESOLUTION)
     return EVENTUALLY_BIN;
 
-  if (prio.time_to_visible_in_seconds < prepainting_window_time_seconds)
+  if (prio.time_to_visible_in_seconds < kPrepaintingWindowTimeSeconds)
     return SOON_BIN;
 
   return EVENTUALLY_BIN;
