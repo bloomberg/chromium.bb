@@ -81,11 +81,8 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   // Throw away any already-decoded, not-yet-delivered frames.
   ready_video_frames_.clear();
 
-  DCHECK(pending_reset_cb_.is_null());
-  pending_reset_cb_ = BindToCurrentLoop(closure);
-
   if (!vda_.get()) {
-    base::ResetAndReturn(&pending_reset_cb_).Run();
+    gvd_loop_proxy_->PostTask(FROM_HERE, closure);
     return;
   }
 
@@ -93,6 +90,9 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   // us, so we fulfill such a read here.
   if (!pending_read_cb_.is_null())
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
+
+  DCHECK(pending_reset_cb_.is_null());
+  pending_reset_cb_ = BindToCurrentLoop(closure);
 
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Reset, weak_vda_));
