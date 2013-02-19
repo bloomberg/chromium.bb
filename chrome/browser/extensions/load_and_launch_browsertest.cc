@@ -88,9 +88,19 @@ class PlatformAppLoadAndLaunchBrowserTest : public PlatformAppBrowserTest {
 
 }  // namespace
 
+
+// TODO(jackhou): Make this test not flaky on Vista. See http://crbug.com/176897
+#if defined(OS_WIN)
+#define MAYBE_LoadAndLaunchAppChromeNotRunning \
+        DISABLED_LoadAndLaunchAppChromeNotRunning
+#else
+#define MAYBE_LoadAndLaunchAppChromeNotRunning \
+        LoadAndLaunchAppChromeNotRunning
+#endif
+
 // Case where Chrome is not running.
 IN_PROC_BROWSER_TEST_F(PlatformAppLoadAndLaunchBrowserTest,
-                       LoadAndLaunchAppChromeNotRunning) {
+                       MAYBE_LoadAndLaunchAppChromeNotRunning) {
   LoadAndLaunchApp();
 }
 
