@@ -117,6 +117,8 @@ class OverscrollWindowDelegate : public aura::WindowDelegate {
     image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
           ui::GetScaleFactorForNativeView(web_contents_window())));
     image_ = gfx::Image(image_reps);
+    if (image_.AsImageSkia().size() != web_contents_window()->bounds().size())
+      image_ = gfx::Image();
   }
 
   bool has_screenshot() const { return !image_.IsEmpty(); }
