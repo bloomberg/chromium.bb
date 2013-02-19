@@ -572,6 +572,8 @@
             'rpm_arch': 'x86_64',
             'packaging_files_binaries': [
               '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
+              '<(PRODUCT_DIR)/libwidevinecdmadapter.so',
+              '<(PRODUCT_DIR)/libwidevinecdm.so',
             ],
           }],
           ['target_arch=="arm"', {
