@@ -42,17 +42,17 @@ const base::FilePath::CharType kRLZLockFileName[] =
     FILE_PATH_LITERAL("RLZ Data.lock");
 
 // RLZ store path for testing.
-FilePath g_testing_rlz_store_path_;
+base::FilePath g_testing_rlz_store_path_;
 
 // Returns file path of the RLZ storage.
-FilePath GetRlzStorePath() {
+base::FilePath GetRlzStorePath() {
   return g_testing_rlz_store_path_.empty() ?
       file_util::GetHomeDir().Append(kRLZDataFileName) :
       g_testing_rlz_store_path_.Append(kRLZDataFileName);
 }
 
 // Returns file path of the RLZ storage lock file.
-FilePath GetRlzStoreLockPath() {
+base::FilePath GetRlzStoreLockPath() {
   return g_testing_rlz_store_path_.empty() ?
       file_util::GetHomeDir().Append(kRLZLockFileName) :
       g_testing_rlz_store_path_.Append(kRLZLockFileName);

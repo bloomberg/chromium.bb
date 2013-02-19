@@ -94,7 +94,7 @@ int DesktopProcessMain(int argc, char** argv) {
   // Mark the process as DPI-aware, so Windows won't scale coordinates in APIs.
   // N.B. This API exists on Vista and above.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    FilePath path(base::GetNativeLibraryName(UTF8ToUTF16("user32")));
+    base::FilePath path(base::GetNativeLibraryName(UTF8ToUTF16("user32")));
     base::ScopedNativeLibrary user32(path);
     CHECK(user32.is_valid());
 

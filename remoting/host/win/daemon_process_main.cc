@@ -44,7 +44,7 @@ const wchar_t kUsageMessage[] =
 const char* kCopiedSwitchNames[] = {
     "host-config", "daemon-pipe", switches::kV, switches::kVModule };
 
-void usage(const FilePath& program_name) {
+void usage(const base::FilePath& program_name) {
   LOG(INFO) << StringPrintf(kUsageMessage,
                             UTF16ToWide(program_name.value()).c_str());
 }
