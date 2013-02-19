@@ -68,13 +68,6 @@ LOCAL_MODULE_STEM := webviewchromium
 LOCAL_BUILT_MODULE_STEM := android_webview/assets/webviewchromium.pak
 include $(LOCAL_PATH)/webview_pak.mk
 
-# TODO(benm): remove when downstream depends on localised paks.
-include $(CLEAR_VARS)
-LOCAL_MODULE := webviewchromium_strings_pak
-LOCAL_MODULE_STEM := webviewchromium_strings
-LOCAL_BUILT_MODULE_STEM := android_webview/assets/webviewchromium_strings.pak
-include $(LOCAL_PATH)/webview_pak.mk
-
 include $(CLEAR_VARS)
 LOCAL_MODULE := webviewchromium_webkit_strings_am.pak
 LOCAL_MODULE_STEM := am

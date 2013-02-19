@@ -49,23 +49,12 @@ void AwBrowserMainParts::PreEarlyInitialization() {
 int AwBrowserMainParts::PreCreateThreads() {
   browser_context_->InitializeBeforeThreadCreation();
 
-  // Although we don't load a locale pak for Android WebView, we still
-  // need to initialise the resource bundle with a locale.
   ui::ResourceBundle::InitSharedInstanceLocaleOnly(
       content::GetContentClient()->browser()->GetApplicationLocale(), NULL);
 
-  // TODO(benm): It would be nice to be able to take string resources from
-  // the Android framework for WebView, and rely on resource paks only
-  // for non-string assets. e.g. graphics (and might be nice in the
-  // long term to move them into the Android framwork too). Toward
-  // that, seed the ResourceBundle instance with a non-string, locale
-  // independant pak. Until we no longer rely on paks for strings,
-  // load an extra data pack separately that has the strings in it.
   base::FilePath pak_path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_path.AppendASCII("webviewchromium_strings.pak"),
-      ui::SCALE_FACTOR_NONE);
+
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_path.AppendASCII("webviewchromium.pak"),
       ui::SCALE_FACTOR_NONE);

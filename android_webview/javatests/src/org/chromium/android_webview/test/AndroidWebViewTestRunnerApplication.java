@@ -14,7 +14,7 @@ public class AndroidWebViewTestRunnerApplication extends Application {
 
     /** The minimum set of .pak files the test runner needs. */
     private static final String[] MANDATORY_PAKS = {
-        "webviewchromium.pak", "webviewchromium_strings.pak"
+        "webviewchromium.pak", "en-US.pak"
     };
 
     @Override
