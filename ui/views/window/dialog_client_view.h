@@ -15,22 +15,18 @@ namespace views {
 class DialogDelegate;
 class TextButton;
 class Widget;
-namespace internal {
-class RootView;
-}
 
-///////////////////////////////////////////////////////////////////////////////
-// DialogClientView
-//
-//  This ClientView subclass provides the content of a typical dialog box,
-//  including a strip of buttons at the bottom right of the window, default
-//  accelerator handlers for accept and cancel, and the ability for the
-//  embedded contents view to provide extra UI to be shown in the row of
-//  buttons.
-//
-//  DialogClientView also provides the ability to set an arbitrary view that is
-//  positioned beneath the buttons.
-//
+// DialogClientView provides adornments for a dialog's content view, including
+// custom-labeled [OK] and [Cancel] buttons with [Enter] and [Esc] accelerators.
+// The view also displays the delegate's extra view alongside the buttons and
+// the delegate's footnote view below the buttons. The view appears like below.
+// NOTE: The contents view is not inset on the top or side client view edges.
+//   +------------------------------+
+//   |        Contents View         |
+//   +------------------------------+
+//   | [Extra View]   [OK] [Cancel] |
+//   | [      Footnote View       ] |
+//   +------------------------------+
 class VIEWS_EXPORT DialogClientView : public ClientView,
                                       public ButtonListener,
                                       public FocusChangeListener {
@@ -38,38 +34,19 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   DialogClientView(Widget* widget, View* contents_view);
   virtual ~DialogClientView();
 
-  // Adds the dialog buttons required by the supplied DialogDelegate to the
-  // view.
-  void ShowDialogButtons();
-
-  // Updates the enabled state and label of the buttons required by the
-  // supplied DialogDelegate
-  void UpdateDialogButtons();
-
-  // Accept the changes made in the window that contains this ClientView.
+  // Accept or Cancel the dialog.
   void AcceptWindow();
-
-  // Cancel the changes made in the window that contains this ClientView.
   void CancelWindow();
 
   // Accessors in case the user wishes to adjust these buttons.
   TextButton* ok_button() const { return ok_button_; }
   TextButton* cancel_button() const { return cancel_button_; }
 
-  // Returns the number of pixels at the bottom of the dialog which are visually
-  // part of the frame, but are actually rendered by the DialogClientView.
-  int GetBottomMargin();
+  // Update the dialog buttons to match the dialog's delegate.
+  void UpdateDialogButtons();
 
-  // Overridden from View:
-  virtual void NativeViewHierarchyChanged(
-      bool attached,
-      gfx::NativeView native_view,
-      internal::RootView* root_view) OVERRIDE;
-
-  // Overridden from ClientView:
+  // ClientView implementation:
   virtual bool CanClose() OVERRIDE;
-  virtual void WidgetClosing() OVERRIDE;
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual DialogClientView* AsDialogClientView() OVERRIDE;
   virtual const DialogClientView* AsDialogClientView() const OVERRIDE;
 
@@ -80,58 +57,29 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
                                 View* focused_now) OVERRIDE;
 
  protected:
-  // View overrides:
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add, View* parent,
-                                    View* child) OVERRIDE;
+  // View implementation:
+  virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
 
   // ButtonListener implementation:
-  virtual void ButtonPressed(Button* sender,
-                             const ui::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
  private:
-  // Parameters for the internal dialog styling.
-  struct StyleParams {
-    StyleParams();
+  bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
 
-    int button_vedge_margin;
-    int button_hedge_margin;
-    int button_shadow_margin;
-    int button_content_spacing;
-    int related_button_hspacing;
-  };
+  // Create the necessary dialog buttons.
+  void CreateDialogButtons();
 
   // Create a dialog button of the appropriate type.
-  TextButton* CreateDialogButton(ui::DialogButton type, const string16& title);
+  TextButton* CreateDialogButton(ui::DialogButton type);
 
-  // Paint the size box in the bottom right corner of the window if it is
-  // resizable.
-  void PaintSizeBox(gfx::Canvas* canvas);
-
-  // Returns the greater of ok and cancel button's preferred height.
-  int GetButtonsHeight() const;
-
-  // Returns the height of the dialog buttons area, including the spacing
-  // between bottom of contents view and top of buttons, the buttons height,
-  // and the spacing between bottom of buttons to end of the dialog.
-  int GetDialogButtonsAreaHeight() const;
-
-  // Returns the preferred height of |footnote_view_|, or 0 if that view is
-  // NULL.
-  int GetFootnoteViewHeight() const;
-
-  // Position and size various sub-views.
-  void LayoutDialogButtons();
-  void LayoutContentsView();
-  void LayoutFootnoteView();
-
-  // Makes the specified button the default button.
-  void SetDefaultButton(TextButton* button);
-
-  bool has_dialog_buttons() const { return ok_button_ || cancel_button_; }
+  // Returns the height of the row containing the buttons and the extra view.
+  int GetButtonsAndExtraViewRowHeight() const;
 
   // Create and add the extra view, if supplied by the delegate.
   void CreateExtraView();
@@ -145,43 +93,27 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Closes the widget.
   void Close();
 
-  // Updates focus listener.
-  void UpdateFocusListener();
-
-  // Parameters for the internal dialog styling.
-  StyleParams style_params_;
-
   // The dialog buttons.
   TextButton* ok_button_;
   TextButton* cancel_button_;
 
-  // The button that is currently the default button if any.
+  // The button that is currently default; may be NULL.
   TextButton* default_button_;
 
-  // The button-level extra view, NULL unless the dialog delegate supplies one.
+  // Observe |focus_manager_| to update the default button with focus changes.
+  FocusManager* focus_manager_;
+
+  // The extra view shown in the row of buttons; may be NULL.
   View* extra_view_;
 
-  // The view that resides beneath the dialog buttons, or NULL.
+  // The footnote view shown below the buttons; may be NULL.
   View* footnote_view_;
-
-  // See description of DialogDelegate::GetSizeExtraViewHeightToButtons for
-  // details on this.
-  bool size_extra_view_height_to_buttons_;
-
-  // The layout rect of the size box, when visible.
-  gfx::Rect size_box_bounds_;
 
   // True if we've notified the delegate the window is closing and the delegate
   // allosed the close. In some situations it's possible to get two closes (see
   // http://crbug.com/71940). This is used to avoid notifying the delegate
   // twice, which can have bad consequences.
   bool notified_delegate_;
-
-  // true if focus listener is added.
-  bool listening_to_focus_;
-
-  // When ancestor gets changed focus manager gets changed as well.
-  FocusManager* saved_focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientView);
 };

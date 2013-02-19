@@ -168,6 +168,9 @@ void TreeView::StartEditing(TreeModelNode* node) {
   focus_manager_ = GetFocusManager();
   if (focus_manager_)
     focus_manager_->AddFocusChangeListener(this);
+
+  // Accelerate the return key to commit the pending edit.
+  AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
 }
 
 void TreeView::CancelEdit() {
@@ -183,6 +186,9 @@ void TreeView::CancelEdit() {
   }
   editor_->SetVisible(false);
   SchedulePaint();
+
+  // Remove the return key accelerator when there is no pending edit.
+  RemoveAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
 }
 
 void TreeView::CommitEdit() {
@@ -317,6 +323,12 @@ void TreeView::Layout() {
 
 gfx::Size TreeView::GetPreferredSize() {
   return preferred_size_;
+}
+
+bool TreeView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  DCHECK_EQ(accelerator.key_code(), ui::VKEY_RETURN);
+  CommitEdit();
+  return true;
 }
 
 bool TreeView::OnMousePressed(const ui::MouseEvent& event) {

@@ -321,7 +321,7 @@ string16 CreateApplicationShortcutView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_COMMIT);
-  return string16();
+  return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
 bool CreateApplicationShortcutView::IsDialogButtonEnabled(

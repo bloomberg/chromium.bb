@@ -32,8 +32,7 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
   // views::DialogDelegate implementation.
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual bool IsDialogButtonVisible(ui::DialogButton button) const OVERRIDE;
-  virtual views::View* GetExtraView() OVERRIDE;
+  virtual views::View* CreateExtraView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 

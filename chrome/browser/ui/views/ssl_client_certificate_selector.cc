@@ -98,8 +98,7 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
       web_contents_(web_contents),
       window_(NULL),
       table_(NULL),
-      view_cert_button_(NULL),
-      view_cert_button_container_(NULL) {
+      view_cert_button_(NULL) {
   DVLOG(1) << __FUNCTION__;
 }
 
@@ -136,8 +135,6 @@ void SSLClientCertificateSelector::Init() {
                   views::GridLayout::FILL, kTableViewWidth, kTableViewHeight);
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  CreateViewCertButton();
 
   StartObserving();
 
@@ -213,8 +210,11 @@ views::View* SSLClientCertificateSelector::GetInitiallyFocusedView() {
   return table_;
 }
 
-views::View* SSLClientCertificateSelector::GetExtraView() {
-  return view_cert_button_container_;
+views::View* SSLClientCertificateSelector::CreateExtraView() {
+  DCHECK(!view_cert_button_);
+  view_cert_button_ = new views::NativeTextButton(this,
+      l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
+  return view_cert_button_;
 }
 
 ui::ModalType SSLClientCertificateSelector::GetModalType() const {
@@ -263,24 +263,6 @@ void SSLClientCertificateSelector::CreateCertTable() {
                                 true,  // resizable_columns
                                 true);  // autosize_columns
   table_->SetObserver(this);
-}
-
-void SSLClientCertificateSelector::CreateViewCertButton() {
-  view_cert_button_ = new views::NativeTextButton(this,
-      l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
-
-  // Wrap the view cert button in a grid layout in order to left-align it.
-  view_cert_button_container_ = new views::View();
-  views::GridLayout* layout = new views::GridLayout(
-      view_cert_button_container_);
-  view_cert_button_container_->SetLayoutManager(layout);
-
-  int column_set_id = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                        0, views::GridLayout::USE_PREF, 0, 0);
-  layout->StartRow(0, column_set_id);
-  layout->AddView(view_cert_button_);
 }
 
 namespace chrome {

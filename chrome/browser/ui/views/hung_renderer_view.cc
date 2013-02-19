@@ -29,6 +29,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
@@ -221,7 +222,6 @@ void HungRendererDialogView::KillRendererProcess(
 HungRendererDialogView::HungRendererDialogView()
     : hung_pages_table_(NULL),
       kill_button_(NULL),
-      kill_button_container_(NULL),
       initialized_(false) {
   InitClass();
 }
@@ -301,11 +301,14 @@ string16 HungRendererDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
-  return string16();
+  return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
-views::View* HungRendererDialogView::GetExtraView() {
-  return kill_button_container_;
+views::View* HungRendererDialogView::CreateExtraView() {
+  DCHECK(!kill_button_);
+  kill_button_ = new views::NativeTextButton(this,
+      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END));
+  return kill_button_;
 }
 
 bool HungRendererDialogView::Accept(bool window_closing) {
@@ -372,8 +375,6 @@ void HungRendererDialogView::Init() {
       false, true);
   hung_pages_table_->SetGrouper(hung_pages_table_model_.get());
 
-  CreateKillButtonView();
-
   using views::GridLayout;
   using views::ColumnSet;
 
@@ -404,29 +405,6 @@ void HungRendererDialogView::Init() {
                   views::GridLayout::FILL, kTableViewWidth, kTableViewHeight);
 
   initialized_ = true;
-}
-
-void HungRendererDialogView::CreateKillButtonView() {
-  kill_button_ = new views::NativeTextButton(this,
-      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END));
-
-  kill_button_container_ = new View;
-
-  using views::GridLayout;
-  using views::ColumnSet;
-
-  GridLayout* layout = new GridLayout(kill_button_container_);
-  kill_button_container_->SetLayoutManager(layout);
-
-  const int single_column_set_id = 0;
-  ColumnSet* column_set = layout->AddColumnSet(single_column_set_id);
-  column_set->AddPaddingColumn(0, frozen_icon_->width() +
-      kCentralColumnPadding);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, single_column_set_id);
-  layout->AddView(kill_button_);
 }
 
 gfx::Rect HungRendererDialogView::GetDisplayBounds(

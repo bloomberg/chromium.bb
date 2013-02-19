@@ -30,7 +30,7 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       window_(NULL),
       contents_(new views::View()),
       checkbox_container_(NULL),
-      add_gallery_container_(NULL),
+      add_gallery_button_(NULL),
       confirm_available_(false),
       accepted_(false) {
   InitChildViews();
@@ -173,17 +173,11 @@ ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
 #endif
 }
 
-views::View* MediaGalleriesDialogViews::GetExtraView() {
-  if (!add_gallery_container_) {
-    views::View* button = new views::NativeTextButton(this,
-        l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY));
-    add_gallery_container_ = new views::View();
-    add_gallery_container_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-    add_gallery_container_->AddChildView(button);
-  }
-
-  return add_gallery_container_;
+views::View* MediaGalleriesDialogViews::CreateExtraView() {
+  DCHECK(!add_gallery_button_);
+  add_gallery_button_ = new views::NativeTextButton(this,
+      l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY));
+  return add_gallery_button_;
 }
 
 bool MediaGalleriesDialogViews::Cancel() {
@@ -200,7 +194,7 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
   confirm_available_ = true;
   GetWidget()->client_view()->AsDialogClientView()->UpdateDialogButtons();
 
-  if (sender->parent() == add_gallery_container_) {
+  if (sender == add_gallery_button_) {
     controller_->OnAddFolderClicked();
     return;
   }

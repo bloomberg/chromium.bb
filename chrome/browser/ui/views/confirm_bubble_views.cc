@@ -62,10 +62,6 @@ string16 ConfirmBubbleViews::GetDialogButtonLabel(
 }
 
 bool ConfirmBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return IsDialogButtonVisible(button);
-}
-
-bool ConfirmBubbleViews::IsDialogButtonVisible(ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
       return !!(model_->GetButtons() & ConfirmBubbleModel::BUTTON_OK);
@@ -77,7 +73,7 @@ bool ConfirmBubbleViews::IsDialogButtonVisible(ui::DialogButton button) const {
   }
 }
 
-views::View* ConfirmBubbleViews::GetExtraView() {
+views::View* ConfirmBubbleViews::CreateExtraView() {
   return link_;
 }
 

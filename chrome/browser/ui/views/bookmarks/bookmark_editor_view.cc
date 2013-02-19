@@ -90,7 +90,7 @@ string16 BookmarkEditorView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_SAVE);
-  return string16();
+  return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
 bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
@@ -102,6 +102,10 @@ bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
       return GetInputURL().is_valid();
   }
   return true;
+}
+
+views::View* BookmarkEditorView::CreateExtraView() {
+  return new_folder_button_.get();
 }
 
 ui::ModalType BookmarkEditorView::GetModalType() const {
@@ -130,25 +134,6 @@ bool BookmarkEditorView::Accept() {
   return true;
 }
 
-bool BookmarkEditorView::AreAcceleratorsEnabled(ui::DialogButton button) {
-  return !show_tree_ || !tree_view_->GetEditingNode();
-}
-
-void BookmarkEditorView::Layout() {
-  GetLayoutManager()->Layout(this);
-
-  if (!show_tree_)
-    return;
-
-  // Manually align the New Folder button with the Save and Cancel buttons.
-  gfx::Size size = new_folder_button_->GetPreferredSize();
-  gfx::Rect parent_bounds = parent()->GetContentsBounds();
-  int x = views::DialogDelegate::UseNewStyle() ? 0 : views::kPanelHorizMargin;
-  int y = views::DialogDelegate::UseNewStyle() ? GetLocalBounds().bottom() :
-      parent_bounds.bottom() - size.height() - views::kButtonVEdgeMargin;
-  new_folder_button_->SetBounds(x, y, size.width(), size.height());
-}
-
 gfx::Size BookmarkEditorView::GetPreferredSize() {
   if (!show_tree_)
     return views::View::GetPreferredSize();
@@ -156,19 +141,6 @@ gfx::Size BookmarkEditorView::GetPreferredSize() {
   return gfx::Size(views::Widget::GetLocalizedContentsSize(
       IDS_EDITBOOKMARK_DIALOG_WIDTH_CHARS,
       IDS_EDITBOOKMARK_DIALOG_HEIGHT_LINES));
-}
-
-void BookmarkEditorView::ViewHierarchyChanged(bool is_add,
-                                              views::View* parent,
-                                              views::View* child) {
-  if (show_tree_ && child == this) {
-    // Add and remove the New Folder button from the ClientView's hierarchy.
-    if (is_add) {
-      parent->AddChildView(new_folder_button_.get());
-    } else {
-      parent->RemoveChildView(new_folder_button_.get());
-    }
-  }
 }
 
 void BookmarkEditorView::OnTreeViewSelectionChanged(

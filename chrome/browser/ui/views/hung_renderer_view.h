@@ -9,13 +9,17 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/models/table_model.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
 class WebContents;
+}
+
+namespace views {
+class TextButton;
 }
 
 // Provides functionality to display information about a hung renderer.
@@ -120,7 +124,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   virtual void WindowClosing() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
-  virtual views::View* GetExtraView() OVERRIDE;
+  virtual views::View* CreateExtraView() OVERRIDE;
   virtual bool Accept(bool window_closing)  OVERRIDE;
 
   // views::ButtonListener overrides:
@@ -144,7 +148,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
  private:
   // Initialize the controls in this dialog.
   void Init();
-  void CreateKillButtonView();
 
   // Returns the bounds the dialog should be displayed at to be meaningfully
   // associated with the specified WebContents.
@@ -155,11 +158,8 @@ class HungRendererDialogView : public views::DialogDelegateView,
   // Controls within the dialog box.
   views::TableView* hung_pages_table_;
 
-  // The button we insert into the ClientView to kill the errant process. This
-  // is parented to a container view that uses a grid layout to align it
-  // properly.
+  // The extra button inserted into the ClientView to kill the errant process.
   views::TextButton* kill_button_;
-  views::View* kill_button_container_;
 
   // The model that provides the contents of the table that shows a list of
   // pages affected by the hang.

@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "grit/ui_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -67,8 +69,14 @@ int DialogDelegate::GetDefaultDialogButton() const {
 }
 
 string16 DialogDelegate::GetDialogButtonLabel(ui::DialogButton button) const {
-  // Empty string results in defaults for
-  // ui::DIALOG_BUTTON_OK or ui::DIALOG_BUTTON_CANCEL.
+  if (button == ui::DIALOG_BUTTON_OK)
+    return l10n_util::GetStringUTF16(IDS_APP_OK);
+  if (button == ui::DIALOG_BUTTON_CANCEL) {
+    if (GetDialogButtons() & ui::DIALOG_BUTTON_OK)
+      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+    return l10n_util::GetStringUTF16(IDS_APP_CLOSE);
+  }
+  NOTREACHED();
   return string16();
 }
 
@@ -76,23 +84,11 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-bool DialogDelegate::IsDialogButtonVisible(ui::DialogButton button) const {
-  return true;
-}
-
-bool DialogDelegate::AreAcceleratorsEnabled(ui::DialogButton button) {
-  return true;
-}
-
-View* DialogDelegate::GetExtraView() {
+View* DialogDelegate::CreateExtraView() {
   return NULL;
 }
 
-bool DialogDelegate::GetSizeExtraViewHeightToButtons() {
-  return false;
-}
-
-View* DialogDelegate::GetFootnoteView() {
+View* DialogDelegate::CreateFootnoteView() {
   return NULL;
 }
 

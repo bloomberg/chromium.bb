@@ -22,7 +22,6 @@ class ImageSkia;
 namespace views {
 class ImageView;
 class NativeTextButton;
-class View;
 }
 
 namespace chromeos {
@@ -58,7 +57,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual views::View* GetExtraView() OVERRIDE;
+  virtual views::View* CreateExtraView() OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
 
   // views::WidgetDelegate methods.
@@ -93,9 +92,6 @@ class NetworkConfigView : public views::DialogDelegateView,
   // Creates and shows a dialog containing this view.
   void ShowDialog(gfx::NativeWindow parent);
 
-  // Creates an "Advanced" button in the lower-left corner of the dialog.
-  void CreateAdvancedButton();
-
   // Resets the underlying view to show advanced options.
   void ShowAdvancedView();
 
@@ -107,7 +103,6 @@ class NetworkConfigView : public views::DialogDelegateView,
 
   // Button in lower-left corner, may be null or hidden.
   views::NativeTextButton* advanced_button_;
-  views::View* advanced_button_container_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigView);
 };

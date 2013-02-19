@@ -80,18 +80,14 @@ class BookmarkEditorView : public BookmarkEditor,
   // views::DialogDelegateView:
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual views::View* CreateExtraView() OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual bool CanResize() const  OVERRIDE;
   virtual string16 GetWindowTitle() const  OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual bool AreAcceleratorsEnabled(ui::DialogButton button) OVERRIDE;
 
   // views::View:
-  virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
 
   // views::TreeViewController:
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) OVERRIDE;

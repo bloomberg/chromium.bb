@@ -33,12 +33,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   static bool UseNewStyle();
 
   // Returns a mask specifying which of the available DialogButtons are visible
-  // for the dialog. Note: If an OK button is provided, you should provide a
-  // CANCEL button. A dialog box with just an OK button is frowned upon and
-  // considered a very special case, so if you're planning on including one,
-  // you should reconsider, or beng says there will be stabbings.
-  //
-  // To use the extra button you need to override GetDialogButtons()
+  // for the dialog. Note: Dialogs with just an OK button are frowned upon.
   virtual int GetDialogButtons() const;
 
   // Returns the default dialog button. This should not be a mask as only
@@ -55,29 +50,13 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Returns whether the specified dialog button is enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const;
 
-  // Returns whether the specified dialog button is visible.
-  virtual bool IsDialogButtonVisible(ui::DialogButton button) const;
+  // Override this function to display an extra view adjacent to the buttons.
+  // Overrides may construct the view; this will only be called once per dialog.
+  virtual View* CreateExtraView();
 
-  // Returns whether accelerators are enabled on the button. This is invoked
-  // when an accelerator is pressed, not at construction time. This
-  // returns true.
-  virtual bool AreAcceleratorsEnabled(ui::DialogButton button);
-
-  // Override this function if with a view which will be shown in the same
-  // row as the OK and CANCEL buttons but flush to the left and extending
-  // up to the buttons.
-  virtual View* GetExtraView();
-
-  // Returns whether the height of the extra view should be at least as tall as
-  // the buttons. The default (false) is to give the extra view its preferred
-  // height. By returning true the height becomes
-  // max(extra_view preferred height, buttons preferred height).
-  virtual bool GetSizeExtraViewHeightToButtons();
-
-  // Like GetExtraView, this function can be overridden to display an auxiliary
-  // view in the dialog. This view will be placed beneath the dialog buttons and
-  // will extend all the way from the left to the right of the dialog.
-  virtual View* GetFootnoteView();
+  // Override this function to display a footnote view below the buttons.
+  // Overrides may construct the view; this will only be called once per dialog.
+  virtual View* CreateFootnoteView();
 
   // For Dialog boxes, if there is a "Cancel" button or no dialog button at all,
   // this is called when the user presses the "Cancel" button or the Close

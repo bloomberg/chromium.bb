@@ -540,11 +540,11 @@ bool AutofillDialogViews::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-views::View* AutofillDialogViews::GetExtraView() {
+views::View* AutofillDialogViews::CreateExtraView() {
   return button_strip_extra_view_;
 }
 
-views::View* AutofillDialogViews::GetFootnoteView() {
+views::View* AutofillDialogViews::CreateFootnoteView() {
   // TODO(estade): add a view to contain the terms of service.
   return NULL;
 }

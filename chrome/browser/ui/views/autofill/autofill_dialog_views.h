@@ -89,8 +89,8 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual views::View* GetExtraView() OVERRIDE;
-  virtual views::View* GetFootnoteView() OVERRIDE;
+  virtual views::View* CreateExtraView() OVERRIDE;
+  virtual views::View* CreateFootnoteView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
