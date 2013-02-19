@@ -52,6 +52,20 @@ extensions::ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
     return profile->GetExtensionService()->updater();
 }
 
+GURL ToDataURL(const base::FilePath& path) {
+  std::string contents;
+  if (!file_util::ReadFileToString(path, &contents))
+    return GURL();
+
+  std::string contents_base64;
+  if (!base::Base64Encode(contents, &contents_base64))
+    return GURL();
+
+  const char kDataURLPrefix[] = "data:image;base64,";
+  return GURL(kDataURLPrefix + contents_base64);
+}
+
+
 }  // namespace
 
 namespace extensions {
@@ -110,14 +124,15 @@ bool DeveloperPrivateAutoUpdateFunction::RunImpl() {
 
 DeveloperPrivateAutoUpdateFunction::~DeveloperPrivateAutoUpdateFunction() {}
 
-scoped_ptr<developer::ItemInfo> DeveloperPrivateGetItemsInfoFunction::
-    CreateItemInfo(
-        const Extension& item,
-        ExtensionSystem* system,
-        bool item_is_enabled) {
+scoped_ptr<developer::ItemInfo>
+  DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(
+      const Extension& item,
+      bool item_is_enabled) {
   scoped_ptr<developer::ItemInfo> info(new developer::ItemInfo());
 
+  ExtensionSystem* system = ExtensionSystem::Get(profile());
   ExtensionService* service = profile()->GetExtensionService();
+
   info->id = item.id();
   info->name = item.name();
   info->enabled = service->IsExtensionEnabled(info->id);
@@ -155,14 +170,6 @@ scoped_ptr<developer::ItemInfo> DeveloperPrivateGetItemsInfoFunction::
   info->terminated = service->terminated_extensions()->Contains(item.id());
   info->allow_incognito = item.can_be_incognito_enabled();
 
-  GURL icon =
-      ExtensionIconSource::GetIconURL(&item,
-                                      extension_misc::EXTENSION_ICON_MEDIUM,
-                                      ExtensionIconSet::MATCH_BIGGER,
-                                      !info->enabled,
-                                      NULL);
-  info->icon = icon.spec();
-
   info->homepage_url.reset(new std::string(
       extensions::ManifestURL::GetHomepageURL(&item).spec()));
   if (!ManifestURL::GetOptionsPage(&item).is_empty()) {
@@ -188,18 +195,24 @@ scoped_ptr<developer::ItemInfo> DeveloperPrivateGetItemsInfoFunction::
   return info.Pass();
 }
 
-void DeveloperPrivateGetItemsInfoFunction::AddItemsInfo(
-    const ExtensionSet& items,
-    ExtensionSystem* system,
-    ItemInfoList* item_list) {
-  for (ExtensionSet::const_iterator iter = items.begin();
-       iter != items.end(); ++iter) {
-    const Extension& item = **iter;
-    if (item.location() == Manifest::COMPONENT)
-      continue;  // Skip built-in extensions / apps;
-    item_list->push_back(make_linked_ptr<developer::ItemInfo>(
-        CreateItemInfo(item, system, false).release()));
+void DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread(
+    ItemInfoList item_list,
+    const std::map<std::string, ExtensionResource> idToIcon) {
+  for (ItemInfoList::iterator iter = item_list.begin();
+       iter != item_list.end(); ++iter) {
+    developer_private::ItemInfo* info = iter->get();
+    std::map<std::string, ExtensionResource>::const_iterator resource_ptr
+        = idToIcon.find(info->id);
+    if (resource_ptr != idToIcon.end()) {
+      info->icon = ToDataURL(resource_ptr->second.GetFilePath()).spec();
+    }
   }
+
+  results_ = developer::GetItemsInfo::Results::Create(item_list);
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&DeveloperPrivateGetItemsInfoFunction::SendResponse,
+                 this,
+                 true));
 }
 
 void DeveloperPrivateGetItemsInfoFunction::
@@ -315,31 +328,49 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
 }
 
 bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
-  ItemInfoList items;
-  ExtensionSystem* system = ExtensionSystem::Get(profile());
   scoped_ptr<developer::GetItemsInfo::Params> params(
       developer::GetItemsInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
   bool include_disabled = params->include_disabled;
   bool include_terminated = params->include_terminated;
-  ExtensionSet extension_set;
-  extension_set.InsertAll(
-      *profile()->GetExtensionService()->extensions());
+
+  ExtensionSet items;
+
+  ExtensionService* service = profile()->GetExtensionService();
+
+  items.InsertAll(*service->extensions());
 
   if (include_disabled) {
-    extension_set.InsertAll(
-        *profile()->GetExtensionService()->disabled_extensions());
+    items.InsertAll(*service->disabled_extensions());
   }
 
   if (include_terminated) {
-    extension_set.InsertAll(
-        *profile()->GetExtensionService()->terminated_extensions());
+    items.InsertAll(*service->terminated_extensions());
   }
 
-  AddItemsInfo(extension_set, system, &items);
+  std::map<std::string, ExtensionResource> idToIcon;
+  ItemInfoList item_list;
 
-  results_ = developer::GetItemsInfo::Results::Create(items);
+  for (ExtensionSet::const_iterator iter = items.begin();
+       iter != items.end(); ++iter) {
+    const Extension& item = **iter;
+
+    ExtensionResource item_resource =
+        item.GetIconResource(48, ExtensionIconSet::MATCH_BIGGER);
+    idToIcon[item.id()] = item_resource;
+
+    if (item.location() == Manifest::COMPONENT)
+      continue;  // Skip built-in extensions / apps;
+    item_list.push_back(make_linked_ptr<developer::ItemInfo>(
+        CreateItemInfo(item, false).release()));
+  }
+
+  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread,
+                 this,
+                 item_list,
+                 idToIcon));
   return true;
 }
 

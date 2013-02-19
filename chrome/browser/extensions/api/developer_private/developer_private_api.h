@@ -98,7 +98,7 @@ class DeveloperPrivateAutoUpdateFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class DeveloperPrivateGetItemsInfoFunction : public SyncExtensionFunction {
+class DeveloperPrivateGetItemsInfoFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.getItemsInfo",
                              DEVELOPERPRIVATE_GETITEMSINFO)
@@ -111,14 +111,13 @@ class DeveloperPrivateGetItemsInfoFunction : public SyncExtensionFunction {
 
  private:
 
-  void AddItemsInfo(const ExtensionSet& items,
-                    ExtensionSystem* system,
-                    ItemInfoList* item_list);
-
   scoped_ptr<developer::ItemInfo> CreateItemInfo(
       const extensions::Extension& item,
-      ExtensionSystem* system,
       bool item_is_enabled);
+
+  void GetIconsOnFileThread(
+      ItemInfoList item_list,
+      std::map<std::string, ExtensionResource> itemIdToIconResourceMap);
 
   // Helper that lists the current inspectable html pages for the extension.
   void GetInspectablePagesForExtensionProcess(
