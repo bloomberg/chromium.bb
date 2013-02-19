@@ -116,6 +116,17 @@ def GetPreferredTrySlaves(_, change):
         'nacl-toolchain-win7-pnacl-x86_64',
     ]
 
+  # If the change only affects the new toolchain_build scheme,
+  # then run only the trybots doing that build.
+  if all(IsFileInDirectories(file.AbsoluteLocalPath(),
+                             [os.path.join(NaClTopDir(), 'toolchain_build')])
+         for file in change.AffectedFiles(include_dirs=True)):
+    return [
+        'nacl-toolchain-lucid64-newlib-arm',
+        'nacl-toolchain-mac-newlib-arm',
+        'nacl-toolchain-win7-newlib-arm',
+        ]
+
   return [
       'nacl-lucid32_newlib_dbg',
       'nacl-lucid32_newlib_opt',
