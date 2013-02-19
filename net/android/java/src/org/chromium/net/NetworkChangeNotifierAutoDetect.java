@@ -62,7 +62,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
 
     private final Observer mObserver;
 
-    private final Context mContext;
+    private Context mContext;
     private ConnectivityManagerDelegate mConnectivityManagerDelegate;
     private boolean mRegistered;
     private int mConnectionType;
@@ -79,10 +79,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
         mContext = context;
         mConnectivityManagerDelegate = new ConnectivityManagerDelegate(context);
         mConnectionType = getCurrentConnectionType();
-
-        if (ActivityStatus.getState() != ActivityStatus.PAUSED) {
-            registerReceiver();
-        }
         ActivityStatus.registerStateListener(this);
     }
 
@@ -169,7 +165,15 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
     // ActivityStatus.StateListener
     @Override
     public void onActivityStateChange(int state) {
-        if (state == ActivityStatus.PAUSED) {
+        Context context = ActivityStatus.getActivity();
+        if (mContext != context && context != null) {
+            // Note that |context| can be null during testing. In this case |mContext| should not be
+            // overwritten.
+            mContext = context;
+        }
+        if (state == ActivityStatus.CREATED) {
+            registerReceiver();
+        } else if (state == ActivityStatus.PAUSED) {
             unregisterReceiver();
         } else if (state == ActivityStatus.RESUMED) {
             connectionTypeChanged();

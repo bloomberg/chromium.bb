@@ -53,7 +53,13 @@ public class ActivityStatus {
      * @param newState New state value.
      */
     public static void onStateChange(Activity activity, int newState) {
-        if (newState == CREATED) {
+        if (sActivity != activity) {
+            // ActivityStatus is notified very late during the main activity creation to avoid
+            // making startup performance worse than it is by notifying observers that could do some
+            // expensive work. This can lead to the RESUMED event being fired before the CREATED
+            // event in case the activity is resumed.
+            // TODO(pliard): http://crbug.com/176837.
+            assert newState == CREATED || newState == RESUMED;
             sActivity = activity;
         }
         sActivityState = newState;
