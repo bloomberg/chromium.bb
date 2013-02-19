@@ -365,6 +365,22 @@ class TestInstructionPrinter(unittest.TestCase):
         @operand1_from_modrm_rm
         """.split())
 
+  def test_cpu_features(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'emms, 0x0f 0x77, CPUFeature_MMX')
+
+    printer.PrintInstructionWithoutModRM(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        0x0f 0x77
+        @instruction_emms
+        @operands_count_is_0
+        @CPUFeature_MMX
+        """.split())
+
 
 class TestSplit(unittest.TestCase):
 

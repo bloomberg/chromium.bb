@@ -465,7 +465,11 @@ class InstructionPrinter(object):
     # TODO(shcherbina): print '@last_byte_is_not_immediate' when approptiate.
     # TODO(shcherbina): print '@modifiable_instruction' in validator64 if
     # attribute 'nacl-amd64-modifiable' is present.
-    # TODO(shcherbina): print info about CPU features.
+
+    for attr in instruction.attributes:
+      if attr.startswith('CPUFeature_'):
+        self._out.write('@%s\n' % attr)
+
     # TODO(shcherbina): att_show_name_suffix.
 
   def _NeedOperandInfo(self, operand):
