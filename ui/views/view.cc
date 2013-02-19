@@ -938,13 +938,8 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
       return;
 
     case ui::ET_MOUSE_MOVED:
-      if ((event->flags() & (ui::EF_LEFT_MOUSE_BUTTON |
-                             ui::EF_RIGHT_MOUSE_BUTTON |
-                             ui::EF_MIDDLE_MOUSE_BUTTON)) == 0) {
-        OnMouseMoved(*event);
-        return;
-      }
-      // FALL-THROUGH
+      OnMouseMoved(*event);
+      return;
     case ui::ET_MOUSE_DRAGGED:
       if (ProcessMouseDragged(*event))
         event->SetHandled();

@@ -552,7 +552,7 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
     }
     ui::MouseEvent moved_event(event, static_cast<View*>(this),
                                mouse_move_handler_);
-    mouse_move_handler_->OnMouseMoved(moved_event);
+    DispatchEventToTarget(mouse_move_handler_, &moved_event);
     if (!(moved_event.flags() & ui::EF_IS_NON_CLIENT))
       widget_->SetCursor(mouse_move_handler_->GetCursor(moved_event));
   } else if (mouse_move_handler_ != NULL) {
