@@ -6619,13 +6619,35 @@
    fun:_ZN4base25DefaultLazyInstanceTraitsIN12_GLOBAL__N_117GcryptInitializerEE3NewEPv
 }
 {
-   bug_176889
+   bug_176889_a
    Memcheck:Uninitialized
    fun:inflateReset2
    fun:inflateInit2_
    fun:png_create_read_struct_2
    obj:/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so
    obj:/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1
+   fun:gdk_pixbuf_loader_close
+}
+{
+   bug_176889_b
+   Memcheck:Uninitialized
+   fun:sse2_composite_over_8888_8888
+   ...
+   fun:gdk_pixbuf_loader_close
+}
+{
+   bug_176889_c
+   Memcheck:Uninitialized
+   fun:sse2_combine_over_u
+   ...
+   fun:gdk_pixbuf_loader_close
+}
+{
+   bug_176889_d
+   Memcheck:Uninitialized
+   obj:*/librsvg-2.so*
+   fun:rsvg_handle_get_pixbuf_sub
+   obj:*/libpixbufloader-svg.so
    fun:gdk_pixbuf_loader_close
 }
 {
