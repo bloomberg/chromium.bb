@@ -110,6 +110,18 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Actual_VDUP_ARM_core_register_cccc11101bq0ddddtttt1011d0e10000_case_1_instance_()
   , Actual_VDUP_scalar_111100111d11iiiidddd11000qm0mmmm_case_1_instance_()
   , Actual_VEXT_111100101d11nnnnddddiiiinqm0mmmm_case_1_instance_()
+  , Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1_instance_()
+  , Actual_VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_1_instance_()
+  , Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1_instance_()
+  , Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1_instance_()
+  , Actual_VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_1_instance_()
+  , Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1_instance_()
+  , Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1_instance_()
+  , Actual_VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_1_instance_()
+  , Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1_instance_()
+  , Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1_instance_()
+  , Actual_VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_1_instance_()
+  , Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1_instance_()
   , Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_instance_()
   , Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_instance_()
   , Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_instance_()
@@ -153,18 +165,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , ForbiddenCondDecoder_instance_()
   , PermanentlyUndefined_instance_()
   , Undefined_instance_()
-  , VectorLoadSingle1AllLanes_instance_()
-  , VectorLoadSingle2AllLanes_instance_()
-  , VectorLoadSingle3AllLanes_instance_()
-  , VectorLoadSingle4AllLanes_instance_()
-  , VectorLoadStoreMultiple1_instance_()
-  , VectorLoadStoreMultiple2_instance_()
-  , VectorLoadStoreMultiple3_instance_()
-  , VectorLoadStoreMultiple4_instance_()
-  , VectorLoadStoreSingle1_instance_()
-  , VectorLoadStoreSingle2_instance_()
-  , VectorLoadStoreSingle3_instance_()
-  , VectorLoadStoreSingle4_instance_()
   , not_implemented_()
 {}
 
@@ -363,7 +363,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_element_or_structure
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000C00 /* B(11:8)=1100 */) {
-    return VectorLoadSingle1AllLanes_instance_;
+    return Actual_VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -372,7 +372,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_element_or_structure
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000D00 /* B(11:8)=1101 */) {
-    return VectorLoadSingle2AllLanes_instance_;
+    return Actual_VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -381,7 +381,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_element_or_structure
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000E00 /* B(11:8)=1110 */) {
-    return VectorLoadSingle3AllLanes_instance_;
+    return Actual_VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00200000)  ==
@@ -390,105 +390,105 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_element_or_structure
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000F00 /* B(11:8)=1111 */) {
-    return VectorLoadSingle4AllLanes_instance_;
+    return Actual_VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000300 /* B(11:8)=0011 */) {
-    return VectorLoadStoreMultiple2_instance_;
+    return Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000700)  ==
           0x00000200 /* B(11:8)=x010 */) {
-    return VectorLoadStoreMultiple1_instance_;
+    return Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000000 /* B(11:8)=000x */) {
-    return VectorLoadStoreMultiple4_instance_;
+    return Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000400 /* B(11:8)=010x */) {
-    return VectorLoadStoreMultiple3_instance_;
+    return Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000600 /* B(11:8)=011x */) {
-    return VectorLoadStoreMultiple1_instance_;
+    return Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00000000 /* A(23)=0 */ &&
       (inst.Bits() & 0x00000E00)  ==
           0x00000800 /* B(11:8)=100x */) {
-    return VectorLoadStoreMultiple2_instance_;
+    return Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000800 /* B(11:8)=1000 */) {
-    return VectorLoadStoreSingle1_instance_;
+    return Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000900 /* B(11:8)=1001 */) {
-    return VectorLoadStoreSingle2_instance_;
+    return Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000A00 /* B(11:8)=1010 */) {
-    return VectorLoadStoreSingle3_instance_;
+    return Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000F00)  ==
           0x00000B00 /* B(11:8)=1011 */) {
-    return VectorLoadStoreSingle4_instance_;
+    return Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000000 /* B(11:8)=0x00 */) {
-    return VectorLoadStoreSingle1_instance_;
+    return Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000100 /* B(11:8)=0x01 */) {
-    return VectorLoadStoreSingle2_instance_;
+    return Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000200 /* B(11:8)=0x10 */) {
-    return VectorLoadStoreSingle3_instance_;
+    return Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x00800000)  ==
           0x00800000 /* A(23)=1 */ &&
       (inst.Bits() & 0x00000B00)  ==
           0x00000300 /* B(11:8)=0x11 */) {
-    return VectorLoadStoreSingle4_instance_;
+    return Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1_instance_;
   }
 
   if (true) {

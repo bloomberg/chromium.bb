@@ -23,6 +23,7 @@ namespace nacl_arm_dec {
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //    align: align(5:4),
 //    alignment: 1
 //         if align(5:4)=00
@@ -75,7 +76,8 @@ namespace nacl_arm_dec {
 //         d + regs  >
 //            32 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    type: type(11:8),
 //    uses: {m
 //         if wback
@@ -109,6 +111,7 @@ class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0
 //    T: T(5),
 //    Vd: Vd(15:12),
 //    a: a(4),
+//    actual: Actual_VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_1,
 //    alignment: 1
 //         if a(4)=0
 //         else ebytes,
@@ -149,7 +152,8 @@ class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0
 //         d + regs  >
 //            32 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -180,6 +184,7 @@ class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //    alignment: 1
 //         if size(11:10)=00
 //         else (1
@@ -248,7 +253,8 @@ class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0
 //      n  ==
 //            Pc => UNPREDICTABLE],
 //    size: size(11:10),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -279,6 +285,7 @@ class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //    align: align(5:4),
 //    alignment: 1
 //         if align(5:4)=00
@@ -326,7 +333,8 @@ class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0
 //         d2 + regs  >
 //            32 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    type: type(11:8),
 //    uses: {m
 //         if wback
@@ -360,6 +368,7 @@ class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //    T: T(5),
 //    Vd: Vd(15:12),
 //    a: a(4),
+//    actual: Actual_VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_1,
 //    alignment: 1
 //         if a(4)=0
 //         else 2 * ebytes,
@@ -399,7 +408,8 @@ class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //         d2  >
 //            31 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -430,6 +440,7 @@ class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstam
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //    alignment: (1
 //         if index_align(0)=0
 //         else 2)
@@ -496,7 +507,8 @@ class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstam
 //         d2  >
 //            31 => UNPREDICTABLE],
 //    size: size(11:10),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -527,6 +539,7 @@ class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaamm
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //    align: align(5:4),
 //    alignment: 1
 //         if align(0)=0
@@ -571,7 +584,8 @@ class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaamm
 //         d3  >
 //            31 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    type: type(11:8),
 //    uses: {m
 //         if wback
@@ -605,6 +619,7 @@ class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //    T: T(5),
 //    Vd: Vd(15:12),
 //    a: a(4),
+//    actual: Actual_VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_1,
 //    alignment: 1,
 //    arch: ASIMD,
 //    base: n,
@@ -644,7 +659,8 @@ class VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //         d3  >
 //            31 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -675,6 +691,7 @@ class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstam
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //    alignment: 1,
 //    arch: ASIMD,
 //    base: n,
@@ -734,7 +751,8 @@ class VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstam
 //         d3  >
 //            31 => UNPREDICTABLE],
 //    size: size(11:10),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -765,6 +783,7 @@ class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaamm
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //    align: align(5:4),
 //    alignment: 1
 //         if align(5:4)=00
@@ -809,7 +828,8 @@ class VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaamm
 //         d4  >
 //            31 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    type: type(11:8),
 //    uses: {m
 //         if wback
@@ -843,6 +863,7 @@ class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //    T: T(5),
 //    Vd: Vd(15:12),
 //    a: a(4),
+//    actual: Actual_VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_1,
 //    alignment: 16
 //         if size(7:6)=11
 //         else (1
@@ -891,7 +912,8 @@ class VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_0
 //         d4  >
 //            31 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -922,6 +944,7 @@ class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstam
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //    alignment: (1
 //         if index_align(0)=0
 //         else 4)
@@ -990,7 +1013,8 @@ class VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstam
 //         d4  >
 //            31 => UNPREDICTABLE],
 //    size: size(11:10),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -7174,6 +7198,7 @@ class VSRI_111100111diiiiiidddd0100lqm1mmmm_case_0
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1,
 //    align: align(5:4),
 //    alignment: 1
 //         if align(5:4)=00
@@ -7226,7 +7251,8 @@ class VSRI_111100111diiiiiidddd0100lqm1mmmm_case_0
 //         d + regs  >
 //            32 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    type: type(11:8),
 //    uses: {m
 //         if wback
@@ -7258,6 +7284,7 @@ class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1,
 //    alignment: 1
 //         if size(11:10)=00
 //         else (1
@@ -7326,7 +7353,8 @@ class VST1_multiple_single_elements_111101000d00nnnnddddttttssaammmm_case_0
 //      n  ==
 //            Pc => UNPREDICTABLE],
 //    size: size(11:10),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -7357,6 +7385,7 @@ class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //    align: align(5:4),
 //    alignment: 1
 //         if align(5:4)=00
@@ -7404,7 +7433,8 @@ class VST1_single_element_from_one_lane_111101001d00nnnnddddss00aaaammmm_case_0
 //         d2 + regs  >
 //            32 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    type: type(11:8),
 //    uses: {m
 //         if wback
@@ -7436,6 +7466,7 @@ class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1,
 //    alignment: (1
 //         if index_align(0)=0
 //         else 2)
@@ -7502,7 +7533,8 @@ class VST2_multiple_2_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //         d2  >
 //            31 => UNPREDICTABLE],
 //    size: size(11:10),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -7533,6 +7565,7 @@ class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaa
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //    align: align(5:4),
 //    alignment: 1
 //         if align(0)=0
@@ -7577,7 +7610,8 @@ class VST2_single_2_element_structure_from_one_lane_111101001d00nnnnddddss01aaaa
 //         d3  >
 //            31 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    type: type(11:8),
 //    uses: {m
 //         if wback
@@ -7609,6 +7643,7 @@ class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1,
 //    alignment: 1,
 //    arch: ASIMD,
 //    base: n,
@@ -7668,7 +7703,8 @@ class VST3_multiple_3_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //         d3  >
 //            31 => UNPREDICTABLE],
 //    size: size(11:10),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},
@@ -7699,6 +7735,7 @@ class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaa
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1,
 //    align: align(5:4),
 //    alignment: 1
 //         if align(5:4)=00
@@ -7743,7 +7780,8 @@ class VST3_single_3_element_structure_from_one_lane_111101001d00nnnnddddss10aaaa
 //         d4  >
 //            31 => UNPREDICTABLE],
 //    size: size(7:6),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    type: type(11:8),
 //    uses: {m
 //         if wback
@@ -7775,6 +7813,7 @@ class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //    Rn: Rn(19:16),
 //    Sp: 13,
 //    Vd: Vd(15:12),
+//    actual: Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1,
 //    alignment: (1
 //         if index_align(0)=0
 //         else 4)
@@ -7843,7 +7882,8 @@ class VST4_multiple_4_element_structures_111101000d00nnnnddddttttssaammmm_case_0
 //         d4  >
 //            31 => UNPREDICTABLE],
 //    size: size(11:10),
-//    small_imm_base_wb: not register_index,
+//    small_imm_base_wb: wback &&
+//         not register_index,
 //    uses: {m
 //         if wback
 //         else None, n},

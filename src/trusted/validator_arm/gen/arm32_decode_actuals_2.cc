@@ -783,7 +783,9 @@ uses(Instruction inst) const {
 //         inst(11:8)=1010 ||
 //         inst(11:8)=0110 ||
 //         inst(11:8)=0010 => DECODER_ERROR],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -890,12 +892,15 @@ bool Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_1::
@@ -929,7 +934,9 @@ uses(Instruction inst) const {
 //      inst(7:6)=11 ||
 //         (inst(7:6)=00 &&
 //         inst(4)=1) => UNDEFINED],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -994,12 +1001,15 @@ bool Actual_VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_ca
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_1::
@@ -1036,7 +1046,9 @@ uses(Instruction inst) const {
 //      inst(11:10)=10 &&
 //         inst(7:4)(2)=~0 => UNDEFINED,
 //      inst(11:10)=11 => UNDEFINED],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -1122,12 +1134,15 @@ bool Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_cas
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_1::
@@ -1168,7 +1183,9 @@ uses(Instruction inst) const {
 //      not inst(11:8)=1000 ||
 //         inst(11:8)=1001 ||
 //         inst(11:8)=0011 => DECODER_ERROR],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -1257,12 +1274,15 @@ bool Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_1::
@@ -1294,7 +1314,9 @@ uses(Instruction inst) const {
 //         if inst(5)=0
 //         else 2 => UNPREDICTABLE,
 //      inst(7:6)=11 => UNDEFINED],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -1353,12 +1375,15 @@ bool Actual_VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd110
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_1::
@@ -1400,7 +1425,9 @@ uses(Instruction inst) const {
 //      inst(11:10)=10 &&
 //         inst(7:4)(1)=~0 => UNDEFINED,
 //      inst(11:10)=11 => UNDEFINED],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -1487,12 +1514,15 @@ bool Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_1::
@@ -1529,7 +1559,9 @@ uses(Instruction inst) const {
 //         inst(5:4)(1)=1 => UNDEFINED,
 //      not inst(11:8)=0100 ||
 //         inst(11:8)=0101 => DECODER_ERROR],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -1604,12 +1636,15 @@ bool Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_1::
@@ -1644,7 +1679,9 @@ uses(Instruction inst) const {
 //         else 2 => UNPREDICTABLE,
 //      inst(7:6)=11 ||
 //         inst(4)=1 => UNDEFINED],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -1711,12 +1748,15 @@ bool Actual_VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd111
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD3_single_3_element_structure_to_all_lanes_111101001d10nnnndddd1110sstammmm_case_1::
@@ -1772,7 +1812,9 @@ uses(Instruction inst) const {
 //      inst(11:10)=10 &&
 //         inst(7:4)(1:0)=~00 => UNDEFINED,
 //      inst(11:10)=11 => UNDEFINED],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -1900,12 +1942,15 @@ bool Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD3_single_3_element_structure_to_one_lane_111101001d10nnnnddddss10aaaammmm_case_1::
@@ -1943,7 +1988,9 @@ uses(Instruction inst) const {
 //      inst(7:6)=11 => UNDEFINED,
 //      not inst(11:8)=0000 ||
 //         inst(11:8)=0001 => DECODER_ERROR],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -2020,12 +2067,15 @@ bool Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD4_multiple_4_element_structures_111101000d10nnnnddddttttssaammmm_case_1::
@@ -2062,7 +2112,9 @@ uses(Instruction inst) const {
 //         else 2 => UNPREDICTABLE,
 //      inst(7:6)=11 &&
 //         inst(4)=0 => UNDEFINED],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -2134,12 +2186,15 @@ bool Actual_VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd111
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD4_single_4_element_structure_to_all_lanes_111101001d10nnnndddd1111sstammmm_case_1::
@@ -2201,7 +2256,9 @@ uses(Instruction inst) const {
 //      inst(11:10)=10 &&
 //         inst(7:4)(1:0)=11 => UNDEFINED,
 //      inst(11:10)=11 => UNDEFINED],
-//    small_imm_base_wb: not (15  !=
+//    small_imm_base_wb: (15  !=
+//            inst(3:0)) &&
+//         not (15  !=
 //            inst(3:0) &&
 //         13  !=
 //            inst(3:0)),
@@ -2338,12 +2395,15 @@ bool Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11
 base_address_register_writeback_small_immediate(
       Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // small_imm_base_wb: 'not (15  !=
+  // small_imm_base_wb: '(15  !=
+  //          inst(3:0)) &&
+  //       not (15  !=
   //          inst(3:0) &&
   //       13  !=
   //          inst(3:0))'
-  return !((((((inst.Bits() & 0x0000000F)) != (15))) &&
-       ((((inst.Bits() & 0x0000000F)) != (13)))));
+  return (((((inst.Bits() & 0x0000000F)) != (15)))) &&
+       (!((((((inst.Bits() & 0x0000000F)) != (15))) &&
+       ((((inst.Bits() & 0x0000000F)) != (13))))));
 }
 
 RegisterList Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1::

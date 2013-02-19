@@ -1947,6 +1947,7 @@ SafetyLevel VectorLoadStoreMultiple2::safety(Instruction i) const {
       if (align.value(i) == 3) return UNDEFINED;
       regs = 1;
       // Via intialization: inc = 2;
+      break;
     default:
       return DECODER_ERROR;
   }

@@ -3627,7 +3627,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # defs ignores FPRs. It only models GPRs and conditions.
    defs := { base } if wback else {};
    # Note: register_index defines if Rm is used (rather than a small constant).
-   small_imm_base_wb := not register_index;
+   small_imm_base_wb := wback & not register_index;
    # uses ignores FPRs. It only models GPRs.
    uses := { m if wback else None , n };
    arch := ASIMD;
@@ -3686,7 +3686,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # defs ignores FPRs. It only models GPRs and conditions.
    defs := { base } if wback else {};
    # Note: register_index defines if Rm is used (rather than a small constant).
-   small_imm_base_wb := not register_index;
+   small_imm_base_wb := wback & not register_index;
    # uses ignores FPRs. It only models GPRs.
    uses := { m if wback else None , n };
    arch := ASIMD;
@@ -3744,7 +3744,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # defs ignores FPRs. It only models GPRs and conditions.
    defs := { base } if wback else {};
    # Note: register_index defines if Rm is used (rather than a small constant).
-   small_imm_base_wb := not register_index;
+   small_imm_base_wb := wback & not register_index;
    # uses ignores FPRs. It only models GPRs.
    uses := { m if wback else None , n };
    arch := ASIMD;

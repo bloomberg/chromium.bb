@@ -120,6 +120,7 @@ ACTUAL_GEN_TABLES = ["ARMv7",
                      "simd_dp_2shift",
                      "simd_dp_2misc",
                      "simd_dp_1imm",
+                     "advanced_simd_element_or_structure_load_store_instructions",
                      ]
 
 # The list of tables in armv7.table that should test the automatically
