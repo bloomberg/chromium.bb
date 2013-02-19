@@ -27,6 +27,9 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   class Observer {
    public:
     virtual void OnTextInputTypeChanged(const TextInputClient* client) = 0;
+    virtual void OnFocus() = 0;
+    virtual void OnBlur() = 0;
+    virtual void OnCaretBoundsChanged(const TextInputClient* client) = 0;
   };
   explicit MockInputMethod(internal::InputMethodDelegate* delegate);
   virtual ~MockInputMethod();
@@ -46,7 +49,7 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
-  virtual ui::TextInputType GetTextInputType() const OVERRIDE;
+  virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
 
   void AddObserver(Observer* observer);

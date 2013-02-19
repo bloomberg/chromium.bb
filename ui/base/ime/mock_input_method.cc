@@ -34,9 +34,11 @@ void MockInputMethod::Init(bool focused) {
 }
 
 void MockInputMethod::OnFocus() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnFocus());
 }
 
 void MockInputMethod::OnBlur() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnBlur());
 }
 
 void MockInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
@@ -44,6 +46,7 @@ void MockInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
 }
 
 void MockInputMethod::OnCaretBoundsChanged(const TextInputClient* client) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnCaretBoundsChanged(client));
 }
 
 void MockInputMethod::CancelComposition(const TextInputClient* client) {
