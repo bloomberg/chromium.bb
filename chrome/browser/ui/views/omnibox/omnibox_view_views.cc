@@ -216,7 +216,6 @@ void OmniboxViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
-  const bool result = views::Textfield::OnMousePressed(event);
   select_all_on_mouse_release_ =
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       (!HasFocus() || (model()->focus_state() == OMNIBOX_FOCUS_INVISIBLE));
@@ -226,7 +225,7 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   // either SetFocus() or OmniboxEditModel::OnSetFocus().
   if (select_all_on_mouse_release_)
     model()->SetCaretVisibility(true);
-  return result;
+  return views::Textfield::OnMousePressed(event);
 }
 
 bool OmniboxViewViews::OnMouseDragged(const ui::MouseEvent& event) {
@@ -254,8 +253,8 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
     OnAfterPossibleChange();
     return true;
   }
-  bool handled = views::Textfield::OnKeyPressed(event);
 
+  bool handled = views::Textfield::OnKeyPressed(event);
   if (event.key_code() == ui::VKEY_RETURN) {
     bool alt_held = event.IsAltDown();
     model()->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
@@ -295,23 +294,9 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
         model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
       }
       handled = true;
-    } else {
-      string16::size_type start = 0;
-      string16::size_type end = 0;
-      const size_t length = text().length();
-      GetSelectionBounds(&start, &end);
-      if (start != end || start < length) {
-        OnBeforePossibleChange();
-        SelectRange(ui::Range(length, length));
-        OnAfterPossibleChange();
-        handled = true;
-      }
-
-      // TODO(msw|oshima): Handle Instant.
     }
   }
-  // TODO(msw|oshima): Handle page up and page down.
-
+  // TODO(msw): Handle Instant, tab through popup, tab to search, page up/down.
   return handled;
 }
 
@@ -332,11 +317,17 @@ void OmniboxViewViews::OnFocus() {
   views::Textfield::OnFocus();
   // TODO(oshima): Get control key state.
   model()->OnSetFocus(false);
-  // Don't call controller()->OnSetFocus as this view has already
-  // acquired the focus.
+  // Don't call controller()->OnSetFocus, this view has already acquired focus.
+
+  // Restore a valid saved selection on tab-to-focus.
+  if (saved_temporary_selection_.IsValid() && !select_all_on_mouse_release_)
+    SelectRange(saved_temporary_selection_);
 }
 
 void OmniboxViewViews::OnBlur() {
+  // Save the selection to restore on tab-to-focus.
+  GetSelectedRange(&saved_temporary_selection_);
+
   views::Textfield::OnBlur();
   gfx::NativeView native_view = NULL;
 #if defined(USE_AURA)
