@@ -14,7 +14,7 @@ class DeveloperPrivateApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAppsDebugger);
+    command_line->AppendSwitch(switches::kAppsDevtool);
   }
 
   virtual void LoadExtensions() {

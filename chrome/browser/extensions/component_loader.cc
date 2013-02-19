@@ -384,7 +384,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   if (!skip_session_components) {
     // Apps Debugger
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kAppsDebugger)) {
+        switches::kAppsDevtool)) {
       Add(IDR_APPS_DEBUGGER_MANIFEST,
           base::FilePath(FILE_PATH_LITERAL("apps_debugger")));
     }

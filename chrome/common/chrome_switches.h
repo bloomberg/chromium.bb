@@ -35,7 +35,7 @@ extern const char kAllowScriptingGallery[];
 extern const char kAlwaysAuthorizePlugins[];
 extern const char kAppId[];
 extern const char kApp[];
-extern const char kAppsDebugger[];
+extern const char kAppsDevtool[];
 extern const char kAppWindowSize[];
 extern const char kAppNotifyChannelServerURL[];
 extern const char kAppsCheckoutURL[];
