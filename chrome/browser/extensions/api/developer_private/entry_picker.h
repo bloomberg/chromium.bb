@@ -29,7 +29,9 @@ class EntryPicker : public ui::SelectFileDialog::Listener {
               content::WebContents* web_contents,
               ui::SelectFileDialog::Type picker_type,
               const base::FilePath& last_directory,
-              const string16& select_title);
+              const string16& select_title,
+              const ui::SelectFileDialog::FileTypeInfo& info,
+              int file_type_index);
 
   // Allow picker UI to be skipped in testing.
   static void SkipPickerAndAlwaysSelectPathForTest(base::FilePath* path);

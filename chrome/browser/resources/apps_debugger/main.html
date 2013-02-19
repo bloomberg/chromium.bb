@@ -10,20 +10,26 @@ found in the LICENSE file.
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="css/items.css">
-
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/chrome_shared.css">
+    <link rel="stylesheet" href="css/pack_item_overlay.css">
+    <link rel="stylesheet" href="../../../../ui/webui/resources/css/alert_overlay.css">
+    <link rel="stylesheet" href="../../../../ui/webui/resources/css/overlay.css">
     <link rel="stylesheet" href="../../../../ui/webui/resources/css/trash.css">
     <link rel="stylesheet" href="../uber/uber_shared.css">
 
     <script src="js/main_scripts.js"></script>
   </head>
   <body>
+    <div id="overlay" class="overlay" hidden>
+      <include src="pack_item_overlay.html">
+      <include src="../../../../ui/webui/resources/html/alert_overlay.html">
+    </div>
     <h1 i18n-content="extensionSettingsAppsDevtool"></h1>
     <div class="page" id="extension-settings">
       <div id="developer-controls">
         <button id="load-unpacked"
             i18n-content="extensionSettingsLoadUnpackedButton"></button>
-        <button id="pack-item" disabled
+        <button id="pack-item"
             i18n-content="extensionSettingsPackButton"></button>
         <button id = "update-items-now"
             i18n-content="extensionSettingsUpdateButton"></button>

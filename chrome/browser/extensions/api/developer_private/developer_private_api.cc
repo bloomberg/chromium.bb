@@ -110,11 +110,11 @@ bool DeveloperPrivateAutoUpdateFunction::RunImpl() {
 
 DeveloperPrivateAutoUpdateFunction::~DeveloperPrivateAutoUpdateFunction() {}
 
-scoped_ptr<developer::ItemInfo>
-  DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(
-      const Extension& item,
-      ExtensionSystem* system,
-      bool item_is_enabled) {
+scoped_ptr<developer::ItemInfo> DeveloperPrivateGetItemsInfoFunction::
+    CreateItemInfo(
+        const Extension& item,
+        ExtensionSystem* system,
+        bool item_is_enabled) {
   scoped_ptr<developer::ItemInfo> info(new developer::ItemInfo());
 
   ExtensionService* service = profile()->GetExtensionService();
@@ -248,13 +248,12 @@ void DeveloperPrivateGetItemsInfoFunction::
                              process->GetBrowserContext()->IsOffTheRecord()));
   }
 }
-
-linked_ptr<developer::ItemInspectView>
-  DeveloperPrivateGetItemsInfoFunction::constructInspectView(
-      const GURL& url,
-      int render_process_id,
-      int render_view_id,
-      bool incognito) {
+linked_ptr<developer::ItemInspectView> DeveloperPrivateGetItemsInfoFunction::
+    constructInspectView(
+        const GURL& url,
+        int render_process_id,
+        int render_view_id,
+        bool incognito) {
   linked_ptr<developer::ItemInspectView> view(new developer::ItemInspectView());
 
   if (url.scheme() == extensions::kExtensionScheme) {
@@ -463,7 +462,6 @@ void DeveloperPrivateEnableFunction::OnRequirementsChecked(
         UTF8ToUTF16(JoinString(requirements_errors, ' ')),
         true /* be noisy */);
   }
-
   Release();
 }
 
@@ -515,41 +513,17 @@ bool DeveloperPrivateLoadUnpackedFunction::RunImpl() {
   string16 select_title =
       l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
 
-  const ui::SelectFileDialog::Type kSelectType =
-      ui::SelectFileDialog::SELECT_FOLDER;
-  const base::FilePath& last_unpacked_directory =
-      DeveloperPrivateAPI::Get(profile())->getLastUnpackedDirectory();
   SetResult(Value::CreateBooleanValue(true));
   // Balanced in FileSelected / FileSelectionCanceled.
   AddRef();
-  bool result = ShowPicker(kSelectType, last_unpacked_directory, select_title);
+  bool result = ShowPicker(
+      ui::SelectFileDialog::SELECT_FOLDER,
+      DeveloperPrivateAPI::Get(profile())->GetLastUnpackedDirectory(),
+      select_title,
+      ui::SelectFileDialog::FileTypeInfo(),
+      0);
   return result;
 }
-
-bool DeveloperPrivateChooseEntryFunction::ShowPicker(
-    ui::SelectFileDialog::Type picker_type,
-    const base::FilePath& last_directory,
-    const string16& select_title) {
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
-  DCHECK(registry);
-  ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
-      render_view_host());
-  if (!shell_window) {
-    return false;
-  }
-
-  // The entry picker will hold a reference to this function instance,
-  // and subsequent sending of the function response) until the user has
-  // selected a file or cancelled the picker. At that point, the picker will
-  // delete itself.
-  new EntryPicker(this, shell_window->web_contents(), picker_type,
-  last_directory, select_title);
-  return true;
-}
-
-bool DeveloperPrivateChooseEntryFunction::RunImpl() { return false; }
-
-DeveloperPrivateChooseEntryFunction::~DeveloperPrivateChooseEntryFunction() {}
 
 void DeveloperPrivateLoadUnpackedFunction::FileSelected(
     const base::FilePath& path) {
@@ -565,7 +539,172 @@ void DeveloperPrivateLoadUnpackedFunction::FileSelectionCanceled() {
   Release();
 }
 
+bool DeveloperPrivateChooseEntryFunction::ShowPicker(
+    ui::SelectFileDialog::Type picker_type,
+    const base::FilePath& last_directory,
+    const string16& select_title,
+    const ui::SelectFileDialog::FileTypeInfo& info,
+    int file_type_index) {
+  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
+  DCHECK(registry);
+  ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
+      render_view_host());
+  if (!shell_window) {
+    return false;
+  }
+
+  // The entry picker will hold a reference to this function instance,
+  // and subsequent sending of the function response) until the user has
+  // selected a file or cancelled the picker. At that point, the picker will
+  // delete itself.
+  new EntryPicker(this, shell_window->web_contents(), picker_type,
+  last_directory, select_title, info, file_type_index);
+  return true;
+}
+
+bool DeveloperPrivateChooseEntryFunction::RunImpl() { return false; }
+
+DeveloperPrivateChooseEntryFunction::~DeveloperPrivateChooseEntryFunction() {}
+
+void DeveloperPrivatePackDirectoryFunction::OnPackSuccess(
+    const base::FilePath& crx_file,
+    const base::FilePath& pem_file) {
+  developer::PackDirectoryResponse response;
+  response.message =
+      UTF16ToUTF8(extensions::PackExtensionJob::StandardSuccessMessage(
+          crx_file, pem_file));
+  response.status = developer::PACK_STATUS_SUCCESS;
+  results_ = developer::PackDirectory::Results::Create(response);
+  SendResponse(true);
+  Release();
+}
+
+void DeveloperPrivatePackDirectoryFunction::OnPackFailure(
+    const std::string& error,
+    extensions::ExtensionCreator::ErrorType error_type) {
+  developer::PackDirectoryResponse response;
+  response.message = error;
+  if (error_type == extensions::ExtensionCreator::kCRXExists) {
+    response.item_path = item_path_str_;
+    response.pem_path = key_path_str_;
+    response.override_flags = extensions::ExtensionCreator::kOverwriteCRX;
+    response.status = developer::PACK_STATUS_WARNING;
+  } else {
+    response.status = developer::PACK_STATUS_ERROR;
+  }
+  results_ = developer::PackDirectory::Results::Create(response);
+  SendResponse(true);
+  Release();
+}
+
+bool DeveloperPrivatePackDirectoryFunction::RunImpl() {
+  int flags;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &item_path_str_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &key_path_str_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &flags));
+
+ base::FilePath root_directory =
+     base::FilePath::FromWStringHack(UTF8ToWide(item_path_str_));
+
+ base::FilePath key_file =
+     base::FilePath::FromWStringHack(UTF8ToWide(key_path_str_));
+
+  developer::PackDirectoryResponse response;
+  if (root_directory.empty()) {
+    if (item_path_str_.empty())
+      response.message = l10n_util::GetStringUTF8(
+          IDS_EXTENSION_PACK_DIALOG_ERROR_ROOT_REQUIRED);
+    else
+      response.message = l10n_util::GetStringUTF8(
+          IDS_EXTENSION_PACK_DIALOG_ERROR_ROOT_INVALID);
+
+    response.status = developer::PACK_STATUS_ERROR;
+    results_ = developer::PackDirectory::Results::Create(response);
+    SendResponse(true);
+    return true;
+  }
+
+  if (!key_path_str_.empty() && key_file.empty()) {
+    response.message = l10n_util::GetStringUTF8(
+        IDS_EXTENSION_PACK_DIALOG_ERROR_KEY_INVALID);
+    response.status = developer::PACK_STATUS_ERROR;
+    results_ = developer::PackDirectory::Results::Create(response);
+    SendResponse(true);
+    return true;
+  }
+
+  // Balanced in OnPackSuccess / OnPackFailure.
+  AddRef();
+
+  pack_job_ = new extensions::PackExtensionJob(
+      this, root_directory, key_file, flags);
+  pack_job_->Start();
+  return true;
+}
+
+DeveloperPrivatePackDirectoryFunction::DeveloperPrivatePackDirectoryFunction()
+{}
+
+DeveloperPrivatePackDirectoryFunction::~DeveloperPrivatePackDirectoryFunction()
+{}
+
 DeveloperPrivateLoadUnpackedFunction::~DeveloperPrivateLoadUnpackedFunction() {}
+
+bool DeveloperPrivateChoosePathFunction::RunImpl() {
+
+  scoped_ptr<developer::ChoosePath::Params> params(
+      developer::ChoosePath::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  ui::SelectFileDialog::Type type = ui::SelectFileDialog::SELECT_FOLDER;
+  ui::SelectFileDialog::FileTypeInfo info;
+  if (params->select_type == developer::SELECT_TYPE_FILE) {
+    type = ui::SelectFileDialog::SELECT_OPEN_FILE;
+  }
+  string16 select_title;
+
+  int file_type_index = 0;
+  if (params->file_type == developer::FILE_TYPE_LOAD)
+    select_title = l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
+  else if (params->file_type== developer::FILE_TYPE_PEM) {
+    select_title = l10n_util::GetStringUTF16(
+        IDS_EXTENSION_PACK_DIALOG_SELECT_KEY);
+    info.extensions.push_back(std::vector<base::FilePath::StringType>());
+    info.extensions.front().push_back(FILE_PATH_LITERAL("pem"));
+    info.extension_description_overrides.push_back(
+        l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PACK_DIALOG_KEY_FILE_TYPE_DESCRIPTION));
+    info.include_all_files = true;
+    file_type_index = 1;
+  } else {
+    NOTREACHED();
+  }
+
+  // Balanced by FileSelected / FileSelectionCanceled.
+  AddRef();
+  bool result = ShowPicker(
+      type,
+      DeveloperPrivateAPI::Get(profile())->GetLastUnpackedDirectory(),
+      select_title,
+      info,
+      file_type_index);
+  return result;
+}
+
+void DeveloperPrivateChoosePathFunction::FileSelected(
+    const base::FilePath& path) {
+  SetResult(base::Value::CreateStringValue(
+      UTF16ToUTF8(path.LossyDisplayName())));
+  SendResponse(true);
+  Release();
+}
+
+void DeveloperPrivateChoosePathFunction::FileSelectionCanceled() {
+  SendResponse(false);
+  Release();
+}
+
+DeveloperPrivateChoosePathFunction::~DeveloperPrivateChoosePathFunction() {}
 
 bool DeveloperPrivateGetStringsFunction::RunImpl() {
   DictionaryValue* dict = new DictionaryValue();

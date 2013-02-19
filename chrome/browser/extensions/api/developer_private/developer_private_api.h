@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -60,7 +61,7 @@ class DeveloperPrivateAPI : public ProfileKeyedService,
 
   void SetLastUnpackedDirectory(const base::FilePath& path);
 
-  base::FilePath& getLastUnpackedDirectory() {
+  base::FilePath& GetLastUnpackedDirectory() {
     return last_unpacked_directory_;
   }
 
@@ -197,16 +198,18 @@ class DeveloperPrivateEnableFunction
   scoped_ptr<extensions::RequirementsChecker> requirements_checker_;
 };
 
-class DeveloperPrivateChooseEntryFunction : public SyncExtensionFunction,
+class DeveloperPrivateChooseEntryFunction : public AsyncExtensionFunction,
                                             public EntryPickerClient {
  protected:
   virtual ~DeveloperPrivateChooseEntryFunction();
   virtual bool RunImpl() OVERRIDE;
   bool ShowPicker(ui::SelectFileDialog::Type picker_type,
                   const base::FilePath& last_directory,
-                  const string16& select_title);
+                  const string16& select_title,
+                  const ui::SelectFileDialog::FileTypeInfo& info,
+                  int file_type_index);
 
-  // EntryPickerCLient functions.
+  // EntryPickerClient functions.
   virtual void FileSelected(const base::FilePath& path) = 0;
   virtual void FileSelectionCanceled() = 0;
 };
@@ -225,7 +228,48 @@ class DeveloperPrivateLoadUnpackedFunction
   // EntryPickerCLient implementation.
   virtual void FileSelected(const base::FilePath& path) OVERRIDE;
   virtual void FileSelectionCanceled() OVERRIDE;
+};
 
+class DeveloperPrivateChoosePathFunction
+    : public DeveloperPrivateChooseEntryFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.choosePath",
+                             DEVELOPERPRIVATE_CHOOSEPATH);
+
+ protected:
+  virtual ~DeveloperPrivateChoosePathFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+  // EntryPickerClient functions.
+  virtual void FileSelected(const base::FilePath& path) OVERRIDE;
+  virtual void FileSelectionCanceled() OVERRIDE;
+};
+
+class DeveloperPrivatePackDirectoryFunction
+    : public AsyncExtensionFunction,
+      public extensions::PackExtensionJob::Client {
+
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.packDirectory",
+                             DEVELOPERPRIVATE_PACKDIRECTORY);
+
+  DeveloperPrivatePackDirectoryFunction();
+
+  // ExtensionPackJob::Client implementation.
+  virtual void OnPackSuccess(const base::FilePath& crx_file,
+                             const base::FilePath& key_file) OVERRIDE;
+  virtual void OnPackFailure(
+      const std::string& error,
+      extensions::ExtensionCreator::ErrorType error_type) OVERRIDE;
+
+ protected:
+  virtual ~DeveloperPrivatePackDirectoryFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  scoped_refptr<extensions::PackExtensionJob> pack_job_;
+  std::string item_path_str_;
+  std::string key_path_str_;
 };
 
 class DeveloperPrivateGetStringsFunction : public SyncExtensionFunction {

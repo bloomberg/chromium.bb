@@ -141,6 +141,16 @@ html[dir='rtl'] .extension-list-item {
   -webkit-margin-start: 0;
 }
 
+/* Overlays */
+
+#overlay {
+  z-index: 5;
+}
+
+#overlay .page:not(.showing) {
+  display: none;
+}
+
 /* Trash */
 
 #extension-settings .trash {

@@ -1,0 +1,22 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.pack-item-heading {
+  padding-bottom: 5px;
+  width: 520px;
+}
+
+.pack-item-text-boxes {
+  text-align: end;
+}
+
+.pack-item-text-area {
+  width: 260px;
+}
+
+<if expr="pp_ifdef('toolkit_views')">
+.button-strip {
+  -webkit-box-direction: reverse;
+}
+</if>

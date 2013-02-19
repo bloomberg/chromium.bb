@@ -68,9 +68,41 @@ namespace developerPrivate {
     boolean incognito;
   };
 
+  enum PackStatus {
+    SUCCESS,
+    ERROR,
+    WARNING
+  };
+
+  enum FileType {
+    LOAD,
+    PEM
+  };
+
+  enum SelectType {
+    FILE,
+    FOLDER
+  };
+
+  dictionary PackDirectoryResponse {
+    // The response message of success or error.
+    DOMString message;
+
+    // Unpacked items's path.
+    DOMString item_path;
+
+    // Permanent key path.
+    DOMString pem_path;
+
+    long override_flags;
+    PackStatus status;
+  };
+
   callback BooleanCallback = void (boolean result);
   callback ItemsInfoCallback = void (ItemInfo[] result);
   callback GetStringsCallback = void (object result);
+  callback PathCallback = void (DOMString path);
+  callback PackCallback = void (PackDirectoryResponse response);
 
   interface Functions {
     // Runs auto update for extensions and apps immediately.
@@ -90,8 +122,8 @@ namespace developerPrivate {
     static void inspect(InspectOptions options,
                         BooleanCallback callback);
 
-    // Enable / Disable file access for a given |itemId|
-    static void allowFileAccess(DOMString itemId,
+    // Enable / Disable file access for a given |item_id|
+    static void allowFileAccess(DOMString item_id,
                                 boolean allow,
                                 BooleanCallback callback);
 
@@ -103,8 +135,24 @@ namespace developerPrivate {
                        boolean enable,
                        BooleanCallback callback);
 
-    // Load a user selected unpacked item.
+    // Load a user selected unpacked item
     static void loadUnpacked(BooleanCallback callback);
+
+    // Open Dialog to browse to an entry.
+    // |select_type| : Select a file or a folder.
+    // |file_type| : Required file type. For Example pem type is for private
+    // key and load type is for an unpacked item.
+    // |callback| : called with selected item's path.
+    static void choosePath(SelectType select_type,
+                           FileType file_type,
+                           PathCallback callback);
+
+    // Pack an item with given |path| and |private_key_path|
+    // |callback| : called with the success result string.
+    static void packDirectory(DOMString path,
+                              DOMString private_key_path,
+                              long flags,
+                              PackCallback callback);
 
     // Gets localized translated strings for apps_debugger. It returns the
     // strings as a dictionary mapping from string identifier to the
