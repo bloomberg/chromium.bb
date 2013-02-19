@@ -36,6 +36,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -78,6 +79,20 @@ Profile* ExtensionBrowserTest::profile() {
   return profile_;
 }
 
+// static
+const Extension* ExtensionBrowserTest::GetExtensionByPath(
+    const ExtensionSet* extensions, const base::FilePath& path) {
+  base::FilePath extension_path = path;
+  EXPECT_TRUE(file_util::AbsolutePath(&extension_path));
+  for (ExtensionSet::const_iterator iter = extensions->begin();
+       iter != extensions->end(); ++iter) {
+    if ((*iter)->path() == extension_path) {
+      return *iter;
+    }
+  }
+  return NULL;
+}
+
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
@@ -111,16 +126,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
 
   // Find the loaded extension by its path. See crbug.com/59531 for why
   // we cannot just use last_loaded_extension_id_.
-  base::FilePath extension_path = path;
-  file_util::AbsolutePath(&extension_path);
-  const Extension* extension = NULL;
-  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
-       iter != service->extensions()->end(); ++iter) {
-    if ((*iter)->path() == extension_path) {
-      extension = *iter;
-      break;
-    }
-  }
+  const Extension* extension = GetExtensionByPath(service->extensions(), path);
   if (!extension)
     return NULL;
 

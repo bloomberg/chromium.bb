@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/prefs/pref_service.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"

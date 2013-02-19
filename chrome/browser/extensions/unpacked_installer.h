@@ -39,8 +39,10 @@ class UnpackedInstaller
 
   // Loads the extension from the directory |extension_path|;
   // for use with command line switch --load-extension=path.
-  // This is equivalent to Load, except that it runs synchronously.
-  void LoadFromCommandLine(const base::FilePath& extension_path);
+  // This is equivalent to Load, except that it runs synchronously and
+  // optionally launches the extension once it's loaded.
+  void LoadFromCommandLine(const base::FilePath& extension_path,
+                           bool launch_on_load);
 
   // Allows prompting for plugins to be disabled; intended for testing only.
   bool prompt_for_plugins() { return prompt_for_plugins_; }
@@ -107,6 +109,9 @@ class UnpackedInstaller
   // Whether to require the extension installed to have a modern manifest
   // version.
   bool require_modern_manifest_version_;
+
+  // Whether to launch the extension once it's loaded.
+  bool launch_on_load_;
 
   DISALLOW_COPY_AND_ASSIGN(UnpackedInstaller);
 };

@@ -1223,6 +1223,7 @@
         'browser/extensions/isolated_app_browsertest.cc',
         'browser/extensions/lazy_background_page_apitest.cc',
         'browser/extensions/lazy_background_page_test_util.h',
+        'browser/extensions/load_and_launch_browsertest.cc',
         'browser/extensions/mutation_observers_apitest.cc',
         'browser/extensions/options_page_apitest.cc',
         'browser/extensions/page_action_browsertest.cc',
@@ -1606,6 +1607,7 @@
           ],
         }, { # chromeos==1
           'sources!': [
+            'browser/extensions/load_and_launch_browsertest.cc',
             'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
             'browser/service/service_process_control_browsertest.cc',

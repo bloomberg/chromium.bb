@@ -194,7 +194,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
                                                      FILE_PATH_LITERAL(","));
       while (t.GetNext()) {
         UnpackedInstaller::Create(extension_service_.get())->
-            LoadFromCommandLine(base::FilePath(t.token()));
+            LoadFromCommandLine(base::FilePath(t.token()), false);
       }
     }
   }

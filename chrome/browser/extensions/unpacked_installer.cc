@@ -99,7 +99,8 @@ UnpackedInstaller::UnpackedInstaller(ExtensionService* extension_service)
     : service_weak_(extension_service->AsWeakPtr()),
       prompt_for_plugins_(true),
       requirements_checker_(new RequirementsChecker()),
-      require_modern_manifest_version_(true) {
+      require_modern_manifest_version_(true),
+      launch_on_load_(false) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -115,7 +116,8 @@ void UnpackedInstaller::Load(const base::FilePath& path_in) {
       base::Bind(&UnpackedInstaller::GetAbsolutePath, this));
 }
 
-void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in) {
+void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
+                                            bool launch_on_load) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension_path_.empty());
 
@@ -144,6 +146,8 @@ void UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in) {
     ReportExtensionLoadError(error);
     return;
   }
+
+  launch_on_load_ = launch_on_load;
 
   CheckRequirements();
 }
@@ -264,6 +268,10 @@ void UnpackedInstaller::OnLoaded() {
 
   PermissionsUpdater perms_updater(service_weak_->profile());
   perms_updater.GrantActivePermissions(extension_, false);
+
+  if (launch_on_load_)
+    service_weak_->ScheduleLaunchOnLoad(extension_->id());
+
   service_weak_->OnExtensionInstalled(extension_,
                                       syncer::StringOrdinal(),
                                       false /* no requirement errors */,

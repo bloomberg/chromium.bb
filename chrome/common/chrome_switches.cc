@@ -806,6 +806,9 @@ const char kKioskModePrinting[]             = "kiosk-printing";
 // given item, and then prompt the user to download and install it.
 const char kLimitedInstallFromWebstore[]    = "limited-install-from-webstore";
 
+// Loads an app from the specified directory and launches it.
+const char kLoadAndLaunchApp[]              = "load-and-launch-app";
+
 // Comma-separated list of directories with component extensions to load.
 const char kLoadComponentExtension[]        = "load-component-extension";
 

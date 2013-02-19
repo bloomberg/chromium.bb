@@ -437,6 +437,9 @@ class ExtensionService
   virtual void AddComponentExtension(const extensions::Extension* extension)
       OVERRIDE;
 
+  // Launch an extension the next time it is loaded.
+  void ScheduleLaunchOnLoad(const std::string& extension_id);
+
   // Informs the service that an extension's files are in place for loading.
   //
   // Please make sure the Blacklist is checked some time before calling this

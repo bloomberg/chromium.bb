@@ -2310,6 +2310,10 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
   child_process_logging::SetActiveExtensions(extension_ids);
 }
 
+void ExtensionService::ScheduleLaunchOnLoad(const std::string& extension_id) {
+  on_load_events_[extension_id] = EVENT_LAUNCHED;
+}
+
 void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
     const syncer::StringOrdinal& page_ordinal,

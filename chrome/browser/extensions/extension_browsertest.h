@@ -24,8 +24,9 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
-class ExtensionService;
 class ExtensionProcessManager;
+class ExtensionService;
+class ExtensionSet;
 class Profile;
 
 // Base class for extension browser tests. Provides utilities for loading,
@@ -62,6 +63,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
 
   // Get the profile to use.
   Profile* profile();
+
+  static const extensions::Extension* GetExtensionByPath(
+      const ExtensionSet* extensions, const base::FilePath& path);
 
   // InProcessBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
