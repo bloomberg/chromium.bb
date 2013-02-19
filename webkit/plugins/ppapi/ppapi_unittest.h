@@ -39,7 +39,7 @@ class PpapiUnittest : public testing::Test,
   void ShutdownModule();
 
   // Sets the view size of the plugin instance.
-  void SetViewSize(int width, int height, float scale) const;
+  void SetViewSize(int width, int height) const;
 
  protected:
   virtual MockPluginDelegate* NewPluginDelegate();

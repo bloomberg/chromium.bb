@@ -12,7 +12,6 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 
 namespace webkit {
 namespace ppapi {
@@ -111,10 +110,9 @@ void PpapiUnittest::ShutdownModule() {
   module_ = NULL;
 }
 
-void PpapiUnittest::SetViewSize(int width, int height, float scale) const {
+void PpapiUnittest::SetViewSize(int width, int height) const {
   instance_->view_data_.rect = PP_FromGfxRect(gfx::Rect(0, 0, width, height));
   instance_->view_data_.clip_rect = instance_->view_data_.rect;
-  instance_->GetBoundGraphics2D()->SetScale(scale);
 }
 
 void PpapiUnittest::PluginModuleDead(PluginModule* /* dead_module */) {

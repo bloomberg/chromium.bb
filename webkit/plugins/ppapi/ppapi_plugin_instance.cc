@@ -1404,6 +1404,15 @@ bool PluginInstance::CanRotateView() {
   return true;
 }
 
+void PluginInstance::SetBoundGraphics2DForTest(
+    PluginDelegate::PlatformGraphics2D* graphics) {
+  BindGraphics(pp_instance(), 0);  // Unbind any old stuff.
+  if (graphics) {
+    bound_graphics_2d_platform_ = graphics;
+    bound_graphics_2d_platform_->BindToInstance(this);
+  }
+}
+
 void PluginInstance::RotateView(WebPlugin::RotationType type) {
   if (!LoadPdfInterface())
     return;

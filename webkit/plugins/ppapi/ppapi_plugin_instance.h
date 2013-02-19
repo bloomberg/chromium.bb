@@ -247,7 +247,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool CanRotateView();
   void RotateView(WebKit::WebPlugin::RotationType type);
 
-  void Graphics3DContextLost();
+  // Sets the bound_graphics_2d_platform_ for testing purposes. This is instead
+  // of calling BindGraphics and allows any PlatformGraphics implementation to
+  // be used, not just a resource one.
+  void SetBoundGraphics2DForTest(PluginDelegate::PlatformGraphics2D* graphics);
 
   // There are 2 implementations of the fullscreen interface
   // PPB_FlashFullscreen is used by Pepper Flash.
@@ -775,6 +778,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // calls and handles PPB_ContentDecryptor_Private calls.
   scoped_ptr<ContentDecryptorDelegate> content_decryptor_delegate_;
 
+  friend class PpapiPluginInstanceTest;
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };
 

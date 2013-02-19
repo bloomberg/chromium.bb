@@ -5,21 +5,31 @@
 #ifndef CONTENT_RENDERER_PEPPER_PEPPER_GRAPHICS_2D_HOST_H_
 #define CONTENT_RENDERER_PEPPER_PEPPER_GRAPHICS_2D_HOST_H_
 
+#include <vector>
+
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
+
+namespace gfx {
+class Point;
+class Rect;
+}
 
 namespace webkit {
 namespace ppapi {
 class PPB_ImageData_Impl;
 class PluginInstance;
-}
-}
+}  // namespace ppapi
+}  // namespace webkit
+
+using webkit::ppapi::PPB_ImageData_Impl;
 
 namespace content {
 
@@ -38,6 +48,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   virtual ~PepperGraphics2DHost();
 
+  // ppapi::host::ResourceHost override.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
@@ -56,13 +67,15 @@ class CONTENT_EXPORT PepperGraphics2DHost
   virtual void SetScale(float scale) OVERRIDE;
   virtual float GetScale() const OVERRIDE;
   virtual bool IsAlwaysOpaque() const OVERRIDE;
-  virtual webkit::ppapi::PPB_ImageData_Impl* ImageData() OVERRIDE;
+  virtual PPB_ImageData_Impl* ImageData() OVERRIDE;
   virtual bool IsGraphics2DHost() const OVERRIDE;
 
  private:
   PepperGraphics2DHost(RendererPpapiHost* host,
                        PP_Instance instance,
                        PP_Resource resource);
+
+  bool Init(int width, int height, bool is_always_opaque);
 
   int32_t OnHostMsgPaintImageData(ppapi::host::HostMessageContext* context,
                                   const ppapi::HostResource& image_data,
@@ -82,15 +95,83 @@ class CONTENT_EXPORT PepperGraphics2DHost
                                  PP_Resource image,
                                  const PP_Point& top_left);
 
-  static void SendFlushACKToPlugin(void* data, int32_t pp_error);
+  // If |old_image_data| is not NULL, a previous used ImageData object will be
+  // reused.  This is used by ReplaceContents.
+  int32_t Flush(PP_Resource* old_image_data);
 
-  // TODO: merge this delegation into this host class.
-  scoped_refptr<webkit::ppapi::PPB_Graphics2D_Impl> graphics_2d_;
+  // Called internally to execute the different queued commands. The
+  // parameters to these functions will have already been validated. The last
+  // rect argument will be filled by each function with the area affected by
+  // the update that requires invalidation. If there were no pixels changed,
+  // this rect can be untouched.
+  void ExecutePaintImageData(PPB_ImageData_Impl* image,
+                             int x, int y,
+                             const gfx::Rect& src_rect,
+                             gfx::Rect* invalidated_rect);
+  void ExecuteScroll(const gfx::Rect& clip, int dx, int dy,
+                     gfx::Rect* invalidated_rect);
+  void ExecuteReplaceContents(PPB_ImageData_Impl* image,
+                              gfx::Rect* invalidated_rect,
+                              PP_Resource* old_image_data);
+
+  void SendFlushAck();
+
+  // Function scheduled to execute by ScheduleOffscreenFlushAck that actually
+  // issues the offscreen callbacks.
+  void SendOffscreenFlushAck();
+
+  // Schedules the offscreen flush ACK at a future time.
+  void ScheduleOffscreenFlushAck();
+
+  // Returns true if there is any type of flush callback pending.
+  bool HasPendingFlush() const;
+
+  // Scale |op_rect| to logical pixels, taking care to include partially-
+  // covered logical pixels (aka DIPs). Also scale optional |delta| to logical
+  // pixels as well for scrolling cases. Returns false for scrolling cases where
+  // scaling either |op_rect| or |delta| would require scrolling to fall back to
+  // invalidation due to rounding errors, true otherwise.
+  static bool ConvertToLogicalPixels(float scale,
+                                     gfx::Rect* op_rect,
+                                     gfx::Point* delta);
+
+
+  RendererPpapiHost* renderer_ppapi_host_;
+
+  scoped_refptr<PPB_ImageData_Impl> image_data_;
+
+  // Non-owning pointer to the plugin instance this context is currently bound
+  // to, if any. If the context is currently unbound, this will be NULL.
+  webkit::ppapi::PluginInstance* bound_instance_;
+
+  // Keeps track of all drawing commands queued before a Flush call.
+  struct QueuedOperation;
+  typedef std::vector<QueuedOperation> OperationQueue;
+  OperationQueue queued_operations_;
+
+  // True if we need to send an ACK to plugin.
+  bool need_flush_ack_;
+
+  // When doing offscreen flushes, we issue a task that issues the callback
+  // later. This is set when one of those tasks is pending so that we can
+  // enforce the "only one pending flush at a time" constraint in the API.
+  bool offscreen_flush_pending_;
+
+  // Set to true if the plugin declares that this device will always be opaque.
+  // This allows us to do more optimized painting in some cases.
+  bool is_always_opaque_;
+
+  // Set to the scale between what the plugin considers to be one pixel and one
+  // DIP
+  float scale_;
+
+  base::WeakPtrFactory<PepperGraphics2DHost> weak_ptr_factory_;
 
   ppapi::host::ReplyMessageContext flush_reply_context_;
 
   bool is_running_in_process_;
 
+  friend class PepperGraphics2DHostTest;
   DISALLOW_COPY_AND_ASSIGN(PepperGraphics2DHost);
 };
 

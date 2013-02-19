@@ -750,6 +750,7 @@
             'renderer/pepper/mock_renderer_ppapi_host.cc',
             'renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc',
             'renderer/pepper/pepper_file_chooser_host_unittest.cc',
+            'renderer/pepper/pepper_graphics_2d_host_unittest.cc',
             'renderer/pepper/pepper_url_request_unittest.cc',
             'renderer/render_view_browsertest.cc',
             'renderer/render_view_browsertest_mac.mm',
@@ -876,6 +877,7 @@
                 'browser/plugin_data_remover_impl_browsertest.cc',
                 'renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc',
                 'renderer/pepper/pepper_file_chooser_host_unittest.cc',
+                'renderer/pepper/pepper_graphics_2d_host_unittest.cc',
               ],
             }],
             ['input_speech==0', {

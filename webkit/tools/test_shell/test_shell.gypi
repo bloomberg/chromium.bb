@@ -388,7 +388,7 @@
             '../../plugins/ppapi/mock_plugin_delegate.cc',
             '../../plugins/ppapi/mock_plugin_delegate.h',
             '../../plugins/ppapi/mock_resource.h',
-            '../../plugins/ppapi/ppb_graphics_2d_impl_unittest.cc',
+            '../../plugins/ppapi/ppapi_plugin_instance_unittest.cc',
             '../../plugins/ppapi/ppapi_unittest.cc',
             '../../plugins/ppapi/ppapi_unittest.h',
             '../../plugins/ppapi/quota_file_io_unittest.cc',
