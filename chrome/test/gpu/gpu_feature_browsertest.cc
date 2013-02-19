@@ -174,7 +174,14 @@ class GpuFeatureTest : public InProcessBrowserTest {
   bool gpu_enabled_;
 };
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingAllowed) {
+#if defined(OS_WIN)
+// This test is flaky on Windows. http://crbug.com/177113
+#define MAYBE_AcceleratedCompositingAllowed DISABLED_AcceleratedCompositingAllowed
+#else
+#define MAYBE_AcceleratedCompositingAllowed AcceleratedCompositingAllowed
+#endif
+
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_AcceleratedCompositingAllowed) {
   GpuFeatureType type =
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, 0);
