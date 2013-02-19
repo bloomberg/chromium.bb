@@ -783,6 +783,15 @@
    fun:wcscmp
    fun:_ZN7testing8internal6String17WideCStringEqualsEPKwS3_
 }
+{
+   # Most plugins return a constant char * string, but this totem plugin
+   # uses printf and allocates one.
+   Ubuntu_Precise_totem_mime_desc_leak
+   Memcheck:Leak
+   fun:g_strdup_printf
+   obj:*/libtotem-cone-plugin.so
+   fun:_ZN6webkit5npapi9PluginLib17ReadWebPluginInfoERKN4base8FilePathEPNS_13WebPluginInfoE
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -6442,7 +6451,6 @@
    fun:_ZN14ProfileManager10AddProfileEP7Profile
    fun:_ZN14ProfileManager10GetProfileE*
    ...
-   fun:_ZN12_GLOBAL__N_113CreateProfileERKN7content18MainFunctionParamsE*
    fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
    fun:_ZN22ChromeBrowserMainParts21PreMainMessageLoopRunEv
    fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
@@ -6649,6 +6657,11 @@
    fun:rsvg_handle_get_pixbuf_sub
    obj:*/libpixbufloader-svg.so
    fun:gdk_pixbuf_loader_close
+}
+{
+   bug_176889_e
+   Memcheck:Uninitialized
+   fun:gdk_pixbuf_saturate_and_pixelate
 }
 {
    bug_176891a
