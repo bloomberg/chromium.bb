@@ -50,9 +50,12 @@ class ManagedModeNavigationObserver
   // still recorded while the page redirects. The Observer moves to the next
   // state after the page finished redirecting (DidNavigateMainFrame gets
   // called).
+  // - NOT_RECORDING_URLS: The redirects have completed and blocked URLs are
+  // no longer being recorded.
   enum ObserverState {
     RECORDING_URLS_BEFORE_PREVIEW,
     RECORDING_URLS_AFTER_PREVIEW,
+    NOT_RECORDING_URLS,
   };
 
   friend class content::WebContentsUserData<ManagedModeNavigationObserver>;
@@ -63,11 +66,10 @@ class ManagedModeNavigationObserver
   // an interstitial for this RenderView. This allows the user to navigate
   // around on the website after clicking preview.
   void AddTemporaryException();
-  // Updates the ResourceThrottle with the latest user navigation status.
-  void UpdateExceptionNavigationStatus();
   void RemoveTemporaryException();
 
   void AddURLToPatternList(const GURL& url);
+  void AddURLAsLastPattern(const GURL& url);
 
   // content::WebContentsObserver implementation.
   // An example regarding the order in which these events take place for
@@ -104,7 +106,6 @@ class ManagedModeNavigationObserver
       const GURL& url,
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidGetUserGesture() OVERRIDE;
 
   // Owned by the profile, so outlives us.
   ManagedUserService* managed_user_service_;
@@ -116,12 +117,6 @@ class ManagedModeNavigationObserver
   InfoBarDelegate* warn_infobar_delegate_;
   InfoBarDelegate* preview_infobar_delegate_;
 
-  // Whether we received a user gesture.
-  // The goal is to allow automatic redirects (in order not to break the flow
-  // or show too many interstitials) while not allowing the user to navigate
-  // to blocked pages. We consider a redirect to be automatic if we did
-  // not get a user gesture.
-  bool got_user_gesture_;
   ObserverState state_;
   std::set<GURL> navigated_urls_;
   GURL last_url_;
