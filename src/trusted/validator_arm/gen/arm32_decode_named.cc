@@ -1278,41 +1278,103 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extension_register_load_
      const nacl_arm_dec::Instruction inst) const {
 
   if ((inst.Bits() & 0x01B00000)  ==
-          0x00900000 /* opcode(24:20)=01x01 */) {
-    return LoadVectorRegisterList_VLDM_instance_;
+          0x00900000 /* opcode(24:20)=01x01 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0_VLDM_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x00900000 /* opcode(24:20)=01x01 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0_VLDM_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x00B00000 /* opcode(24:20)=01x11 */ &&
       (inst.Bits() & 0x000F0000)  !=
-          0x000D0000 /* Rn(19:16)=~1101 */) {
-    return LoadVectorRegisterList_VLDM_instance_;
+          0x000D0000 /* Rn(19:16)=~1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0_VLDM_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x00B00000 /* opcode(24:20)=01x11 */ &&
+      (inst.Bits() & 0x000F0000)  !=
+          0x000D0000 /* Rn(19:16)=~1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0_VLDM_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x00B00000 /* opcode(24:20)=01x11 */ &&
       (inst.Bits() & 0x000F0000)  ==
-          0x000D0000 /* Rn(19:16)=1101 */) {
-    return LoadVectorRegisterList_VPOP_instance_;
+          0x000D0000 /* Rn(19:16)=1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return VPOP_cccc11001d111101dddd1010iiiiiiii_case_0_VPOP_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x00B00000 /* opcode(24:20)=01x11 */ &&
+      (inst.Bits() & 0x000F0000)  ==
+          0x000D0000 /* Rn(19:16)=1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return VPOP_cccc11001d111101dddd1011iiiiiiii_case_0_VPOP_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x01200000 /* opcode(24:20)=10x10 */ &&
       (inst.Bits() & 0x000F0000)  !=
-          0x000D0000 /* Rn(19:16)=~1101 */) {
-    return StoreVectorRegisterList_VSTM_instance_;
+          0x000D0000 /* Rn(19:16)=~1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0_VSTM_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x01200000 /* opcode(24:20)=10x10 */ &&
+      (inst.Bits() & 0x000F0000)  !=
+          0x000D0000 /* Rn(19:16)=~1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0_VSTM_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x01200000 /* opcode(24:20)=10x10 */ &&
       (inst.Bits() & 0x000F0000)  ==
-          0x000D0000 /* Rn(19:16)=1101 */) {
-    return StoreVectorRegisterList_VPUSH_instance_;
+          0x000D0000 /* Rn(19:16)=1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0_VPUSH_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
-          0x01300000 /* opcode(24:20)=10x11 */) {
-    return LoadVectorRegisterList_VLDM_instance_;
+          0x01200000 /* opcode(24:20)=10x10 */ &&
+      (inst.Bits() & 0x000F0000)  ==
+          0x000D0000 /* Rn(19:16)=1101 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0_VPUSH_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x01300000 /* opcode(24:20)=10x11 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0_VLDM_instance_;
+  }
+
+  if ((inst.Bits() & 0x01B00000)  ==
+          0x01300000 /* opcode(24:20)=10x11 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0_VLDM_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -1321,18 +1383,45 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extension_register_load_
   }
 
   if ((inst.Bits() & 0x01300000)  ==
-          0x01000000 /* opcode(24:20)=1xx00 */) {
-    return StoreVectorRegister_VSTR_instance_;
+          0x01000000 /* opcode(24:20)=1xx00 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0_VSTR_instance_;
   }
 
   if ((inst.Bits() & 0x01300000)  ==
-          0x01100000 /* opcode(24:20)=1xx01 */) {
-    return LoadVectorRegister_VLDR_instance_;
+          0x01000000 /* opcode(24:20)=1xx00 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0_VSTR_instance_;
+  }
+
+  if ((inst.Bits() & 0x01300000)  ==
+          0x01100000 /* opcode(24:20)=1xx01 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0_VLDR_instance_;
+  }
+
+  if ((inst.Bits() & 0x01300000)  ==
+          0x01100000 /* opcode(24:20)=1xx01 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0_VLDR_instance_;
   }
 
   if ((inst.Bits() & 0x01900000)  ==
-          0x00800000 /* opcode(24:20)=01xx0 */) {
-    return StoreVectorRegisterList_VSTM_instance_;
+          0x00800000 /* opcode(24:20)=01xx0 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000000 /* S(8)=0 */) {
+    return VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0_VSTM_instance_;
+  }
+
+  if ((inst.Bits() & 0x01900000)  ==
+          0x00800000 /* opcode(24:20)=01xx0 */ &&
+      (inst.Bits() & 0x00000100)  ==
+          0x00000100 /* S(8)=1 */) {
+    return VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0_VSTM_instance_;
   }
 
   // Catch any attempt to fall through...

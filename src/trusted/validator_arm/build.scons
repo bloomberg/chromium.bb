@@ -156,6 +156,7 @@ BASELINE_GEN_TABLES = [
     "coprocessor_instructions_and_supervisor_call",
     "floating_point_data_processing_instructions",
     "other_floating_point_data_processing_instructions",
+    "extension_register_load_store_instructions",
     ]
 
 # Verify that BASELINE_TEST_TABLES and BASELINE_GEN_TABLES don't intersect.

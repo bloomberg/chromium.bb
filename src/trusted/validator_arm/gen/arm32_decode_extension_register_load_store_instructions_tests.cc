@@ -45,7 +45,7 @@ namespace nacl_arm_test {
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -58,7 +58,6 @@ namespace nacl_arm_test {
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -89,11 +88,11 @@ namespace nacl_arm_test {
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTesterCase0
-    : public StoreVectorRegisterListTester {
+class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterListTesterCase0(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterListTester(decoder) {}
+  VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -101,7 +100,7 @@ class StoreVectorRegisterListTesterCase0
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterListTesterCase0
+bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -118,14 +117,14 @@ bool StoreVectorRegisterListTesterCase0
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterListTesterCase0
+bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -207,7 +206,7 @@ bool StoreVectorRegisterListTesterCase0
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -220,7 +219,6 @@ bool StoreVectorRegisterListTesterCase0
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -258,11 +256,11 @@ bool StoreVectorRegisterListTesterCase0
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTesterCase1
-    : public StoreVectorRegisterListTester {
+class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterListTesterCase1(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterListTester(decoder) {}
+  VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -270,7 +268,7 @@ class StoreVectorRegisterListTesterCase1
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterListTesterCase1
+bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -287,14 +285,14 @@ bool StoreVectorRegisterListTesterCase1
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterListTesterCase1
+bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -389,7 +387,7 @@ bool StoreVectorRegisterListTesterCase1
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -402,7 +400,6 @@ bool StoreVectorRegisterListTesterCase1
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -432,11 +429,11 @@ bool StoreVectorRegisterListTesterCase1
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTesterCase2
-    : public LoadStoreVectorRegisterListTester {
+class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterListTesterCase2(const NamedClassDecoder& decoder)
-    : LoadStoreVectorRegisterListTester(decoder) {}
+  VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -444,7 +441,7 @@ class LoadVectorRegisterListTesterCase2
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterListTesterCase2
+bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -461,14 +458,14 @@ bool LoadVectorRegisterListTesterCase2
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterListTesterCase2
+bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -546,7 +543,7 @@ bool LoadVectorRegisterListTesterCase2
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -559,7 +556,6 @@ bool LoadVectorRegisterListTesterCase2
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -596,11 +592,11 @@ bool LoadVectorRegisterListTesterCase2
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTesterCase3
-    : public LoadStoreVectorRegisterListTester {
+class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterListTesterCase3(const NamedClassDecoder& decoder)
-    : LoadStoreVectorRegisterListTester(decoder) {}
+  VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -608,7 +604,7 @@ class LoadVectorRegisterListTesterCase3
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterListTesterCase3
+bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -625,14 +621,14 @@ bool LoadVectorRegisterListTesterCase3
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterListTesterCase3
+bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -723,7 +719,7 @@ bool LoadVectorRegisterListTesterCase3
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -736,7 +732,6 @@ bool LoadVectorRegisterListTesterCase3
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -767,11 +762,11 @@ bool LoadVectorRegisterListTesterCase3
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTesterCase4
-    : public StoreVectorRegisterListTester {
+class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterListTesterCase4(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterListTester(decoder) {}
+  VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -779,7 +774,7 @@ class StoreVectorRegisterListTesterCase4
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterListTesterCase4
+bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -796,14 +791,14 @@ bool StoreVectorRegisterListTesterCase4
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterListTesterCase4
+bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -885,7 +880,7 @@ bool StoreVectorRegisterListTesterCase4
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -898,7 +893,6 @@ bool StoreVectorRegisterListTesterCase4
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -936,11 +930,11 @@ bool StoreVectorRegisterListTesterCase4
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTesterCase5
-    : public StoreVectorRegisterListTester {
+class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterListTesterCase5(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterListTester(decoder) {}
+  VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -948,7 +942,7 @@ class StoreVectorRegisterListTesterCase5
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterListTesterCase5
+bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -965,14 +959,14 @@ bool StoreVectorRegisterListTesterCase5
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterListTesterCase5
+bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -1067,7 +1061,7 @@ bool StoreVectorRegisterListTesterCase5
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -1080,7 +1074,6 @@ bool StoreVectorRegisterListTesterCase5
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -1110,11 +1103,11 @@ bool StoreVectorRegisterListTesterCase5
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTesterCase6
-    : public LoadStoreVectorRegisterListTester {
+class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterListTesterCase6(const NamedClassDecoder& decoder)
-    : LoadStoreVectorRegisterListTester(decoder) {}
+  VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -1122,7 +1115,7 @@ class LoadVectorRegisterListTesterCase6
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterListTesterCase6
+bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1142,14 +1135,14 @@ bool LoadVectorRegisterListTesterCase6
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterListTesterCase6
+bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -1227,7 +1220,7 @@ bool LoadVectorRegisterListTesterCase6
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -1240,7 +1233,6 @@ bool LoadVectorRegisterListTesterCase6
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -1277,11 +1269,11 @@ bool LoadVectorRegisterListTesterCase6
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTesterCase7
-    : public LoadStoreVectorRegisterListTester {
+class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterListTesterCase7(const NamedClassDecoder& decoder)
-    : LoadStoreVectorRegisterListTester(decoder) {}
+  VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -1289,7 +1281,7 @@ class LoadVectorRegisterListTesterCase7
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterListTesterCase7
+bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1309,14 +1301,14 @@ bool LoadVectorRegisterListTesterCase7
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterListTesterCase7
+bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -1401,12 +1393,11 @@ bool LoadVectorRegisterListTesterCase7
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11001d111101dddd1010iiiiiiii,
 //       regs: imm8,
@@ -1418,11 +1409,11 @@ bool LoadVectorRegisterListTesterCase7
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class LoadVectorRegisterListTesterCase8
-    : public LoadStoreVectorRegisterListTester {
+class VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterListTesterCase8(const NamedClassDecoder& decoder)
-    : LoadStoreVectorRegisterListTester(decoder) {}
+  VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -1430,7 +1421,7 @@ class LoadVectorRegisterListTesterCase8
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterListTesterCase8
+bool VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1450,14 +1441,14 @@ bool LoadVectorRegisterListTesterCase8
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterListTesterCase8
+bool VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: regs  ==
@@ -1480,12 +1471,11 @@ bool LoadVectorRegisterListTesterCase8
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11001d111101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
@@ -1504,11 +1494,11 @@ bool LoadVectorRegisterListTesterCase8
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class LoadVectorRegisterListTesterCase9
-    : public LoadStoreVectorRegisterListTester {
+class VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterListTesterCase9(const NamedClassDecoder& decoder)
-    : LoadStoreVectorRegisterListTester(decoder) {}
+  VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -1516,7 +1506,7 @@ class LoadVectorRegisterListTesterCase9
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterListTesterCase9
+bool VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1536,14 +1526,14 @@ bool LoadVectorRegisterListTesterCase9
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterListTesterCase9
+bool VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: regs  ==
@@ -1585,7 +1575,7 @@ bool LoadVectorRegisterListTesterCase9
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -1598,7 +1588,6 @@ bool LoadVectorRegisterListTesterCase9
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -1629,11 +1618,11 @@ bool LoadVectorRegisterListTesterCase9
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTesterCase10
-    : public StoreVectorRegisterListTester {
+class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterListTesterCase10(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterListTester(decoder) {}
+  VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -1641,7 +1630,7 @@ class StoreVectorRegisterListTesterCase10
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterListTesterCase10
+bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1661,14 +1650,14 @@ bool StoreVectorRegisterListTesterCase10
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterListTesterCase10
+bool VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -1750,7 +1739,7 @@ bool StoreVectorRegisterListTesterCase10
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -1763,7 +1752,6 @@ bool StoreVectorRegisterListTesterCase10
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -1801,11 +1789,11 @@ bool StoreVectorRegisterListTesterCase10
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTesterCase11
-    : public StoreVectorRegisterListTester {
+class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterListTesterCase11(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterListTester(decoder) {}
+  VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -1813,7 +1801,7 @@ class StoreVectorRegisterListTesterCase11
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterListTesterCase11
+bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1833,14 +1821,14 @@ bool StoreVectorRegisterListTesterCase11
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterListTesterCase11
+bool VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -1929,12 +1917,11 @@ bool StoreVectorRegisterListTesterCase11
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11010d101101dddd1010iiiiiiii,
 //       regs: imm8,
@@ -1946,11 +1933,11 @@ bool StoreVectorRegisterListTesterCase11
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class StoreVectorRegisterListTesterCase12
-    : public StoreVectorRegisterListTester {
+class VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterListTesterCase12(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterListTester(decoder) {}
+  VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -1958,7 +1945,7 @@ class StoreVectorRegisterListTesterCase12
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterListTesterCase12
+bool VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -1978,14 +1965,14 @@ bool StoreVectorRegisterListTesterCase12
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterListTesterCase12
+bool VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: regs  ==
@@ -2008,12 +1995,11 @@ bool StoreVectorRegisterListTesterCase12
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11010d101101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
@@ -2032,11 +2018,11 @@ bool StoreVectorRegisterListTesterCase12
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class StoreVectorRegisterListTesterCase13
-    : public StoreVectorRegisterListTester {
+class VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterListTesterCase13(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterListTester(decoder) {}
+  VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -2044,7 +2030,7 @@ class StoreVectorRegisterListTesterCase13
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterListTesterCase13
+bool VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2064,14 +2050,14 @@ bool StoreVectorRegisterListTesterCase13
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterListTesterCase13
+bool VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: regs  ==
@@ -2113,7 +2099,7 @@ bool StoreVectorRegisterListTesterCase13
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -2126,7 +2112,6 @@ bool StoreVectorRegisterListTesterCase13
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -2156,11 +2141,11 @@ bool StoreVectorRegisterListTesterCase13
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTesterCase14
-    : public LoadStoreVectorRegisterListTester {
+class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterListTesterCase14(const NamedClassDecoder& decoder)
-    : LoadStoreVectorRegisterListTester(decoder) {}
+  VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -2168,7 +2153,7 @@ class LoadVectorRegisterListTesterCase14
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterListTesterCase14
+bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2185,14 +2170,14 @@ bool LoadVectorRegisterListTesterCase14
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterListTesterCase14
+bool VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -2270,7 +2255,7 @@ bool LoadVectorRegisterListTesterCase14
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -2283,7 +2268,6 @@ bool LoadVectorRegisterListTesterCase14
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -2320,11 +2304,11 @@ bool LoadVectorRegisterListTesterCase14
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTesterCase15
-    : public LoadStoreVectorRegisterListTester {
+class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterListTesterCase15(const NamedClassDecoder& decoder)
-    : LoadStoreVectorRegisterListTester(decoder) {}
+  VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -2332,7 +2316,7 @@ class LoadVectorRegisterListTesterCase15
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterListTesterCase15
+bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2349,14 +2333,14 @@ bool LoadVectorRegisterListTesterCase15
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorRegisterListTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterListTesterCase15
+bool VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorRegisterListTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: P(24)=0 &&
@@ -2440,22 +2424,21 @@ bool LoadVectorRegisterListTesterCase15
 //       Rn: Rn(19:16),
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegister,
+//       baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       n: Rn,
 //       pattern: cccc1101ud00nnnndddd1010iiiiiiii,
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rn}}
-class StoreVectorRegisterTesterCase16
-    : public StoreVectorRegisterTester {
+class VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterTesterCase16(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterTester(decoder) {}
+  VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -2463,7 +2446,7 @@ class StoreVectorRegisterTesterCase16
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterTesterCase16
+bool VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2480,14 +2463,14 @@ bool StoreVectorRegisterTesterCase16
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterTesterCase16
+bool VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: n  ==
@@ -2505,22 +2488,21 @@ bool StoreVectorRegisterTesterCase16
 //       Rn: Rn(19:16),
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegister,
+//       baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       n: Rn,
 //       pattern: cccc1101ud00nnnndddd1011iiiiiiii,
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rn}}
-class StoreVectorRegisterTesterCase17
-    : public StoreVectorRegisterTester {
+class VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17
+    : public Arm32DecoderTester {
  public:
-  StoreVectorRegisterTesterCase17(const NamedClassDecoder& decoder)
-    : StoreVectorRegisterTester(decoder) {}
+  VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -2528,7 +2510,7 @@ class StoreVectorRegisterTesterCase17
                                  const NamedClassDecoder& decoder);
 };
 
-bool StoreVectorRegisterTesterCase17
+bool VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2545,14 +2527,14 @@ bool StoreVectorRegisterTesterCase17
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return StoreVectorRegisterTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool StoreVectorRegisterTesterCase17
+bool VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(StoreVectorRegisterTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // safety: n  ==
@@ -2570,21 +2552,20 @@ bool StoreVectorRegisterTesterCase17
 //       Rn: Rn(19:16),
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegister,
+//       baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1010iiiiiiii,
 //       rule: VLDR,
 //       uses: {Rn}}
-class LoadVectorRegisterTesterCase18
-    : public LoadStoreVectorOpTester {
+class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterTesterCase18(const NamedClassDecoder& decoder)
-    : LoadStoreVectorOpTester(decoder) {}
+  VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -2592,7 +2573,7 @@ class LoadVectorRegisterTesterCase18
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterTesterCase18
+bool VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2609,14 +2590,14 @@ bool LoadVectorRegisterTesterCase18
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorOpTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterTesterCase18
+bool VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorOpTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // defs: {};
@@ -2630,21 +2611,20 @@ bool LoadVectorRegisterTesterCase18
 //       Rn: Rn(19:16),
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegister,
+//       baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1011iiiiiiii,
 //       rule: VLDR,
 //       uses: {Rn}}
-class LoadVectorRegisterTesterCase19
-    : public LoadStoreVectorOpTester {
+class VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19
+    : public Arm32DecoderTester {
  public:
-  LoadVectorRegisterTesterCase19(const NamedClassDecoder& decoder)
-    : LoadStoreVectorOpTester(decoder) {}
+  VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
@@ -2652,7 +2632,7 @@ class LoadVectorRegisterTesterCase19
                                  const NamedClassDecoder& decoder);
 };
 
-bool LoadVectorRegisterTesterCase19
+bool VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -2669,14 +2649,14 @@ bool LoadVectorRegisterTesterCase19
   if ((inst.Bits() & 0xF0000000) == 0xF0000000) return false;
 
   // Check other preconditions defined for the base decoder.
-  return LoadStoreVectorOpTester::
+  return Arm32DecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-bool LoadVectorRegisterTesterCase19
+bool VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(LoadStoreVectorOpTester::
+  NC_PRECOND(Arm32DecoderTester::
                ApplySanityChecks(inst, decoder));
 
   // defs: {};
@@ -2702,7 +2682,7 @@ bool LoadVectorRegisterTesterCase19
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -2715,7 +2695,6 @@ bool LoadVectorRegisterTesterCase19
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -2746,12 +2725,12 @@ bool LoadVectorRegisterTesterCase19
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTester_Case0
-    : public StoreVectorRegisterListTesterCase0 {
+class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case0
+    : public VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0 {
  public:
-  StoreVectorRegisterListTester_Case0()
-    : StoreVectorRegisterListTesterCase0(
-      state_.StoreVectorRegisterList_VSTM_instance_)
+  VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case0()
+    : VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase0(
+      state_.VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0_VSTM_instance_)
   {}
 };
 
@@ -2767,7 +2746,7 @@ class StoreVectorRegisterListTester_Case0
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -2780,7 +2759,6 @@ class StoreVectorRegisterListTester_Case0
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -2818,12 +2796,12 @@ class StoreVectorRegisterListTester_Case0
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTester_Case1
-    : public StoreVectorRegisterListTesterCase1 {
+class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case1
+    : public VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1 {
  public:
-  StoreVectorRegisterListTester_Case1()
-    : StoreVectorRegisterListTesterCase1(
-      state_.StoreVectorRegisterList_VSTM_instance_)
+  VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case1()
+    : VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase1(
+      state_.VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0_VSTM_instance_)
   {}
 };
 
@@ -2839,7 +2817,7 @@ class StoreVectorRegisterListTester_Case1
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -2852,7 +2830,6 @@ class StoreVectorRegisterListTester_Case1
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -2882,12 +2859,12 @@ class StoreVectorRegisterListTester_Case1
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTester_Case2
-    : public LoadVectorRegisterListTesterCase2 {
+class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case2
+    : public VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2 {
  public:
-  LoadVectorRegisterListTester_Case2()
-    : LoadVectorRegisterListTesterCase2(
-      state_.LoadVectorRegisterList_VLDM_instance_)
+  VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case2()
+    : VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase2(
+      state_.VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0_VLDM_instance_)
   {}
 };
 
@@ -2903,7 +2880,7 @@ class LoadVectorRegisterListTester_Case2
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -2916,7 +2893,6 @@ class LoadVectorRegisterListTester_Case2
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -2953,12 +2929,12 @@ class LoadVectorRegisterListTester_Case2
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTester_Case3
-    : public LoadVectorRegisterListTesterCase3 {
+class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case3
+    : public VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3 {
  public:
-  LoadVectorRegisterListTester_Case3()
-    : LoadVectorRegisterListTesterCase3(
-      state_.LoadVectorRegisterList_VLDM_instance_)
+  VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case3()
+    : VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase3(
+      state_.VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0_VLDM_instance_)
   {}
 };
 
@@ -2974,7 +2950,7 @@ class LoadVectorRegisterListTester_Case3
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -2987,7 +2963,6 @@ class LoadVectorRegisterListTester_Case3
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -3018,12 +2993,12 @@ class LoadVectorRegisterListTester_Case3
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTester_Case4
-    : public StoreVectorRegisterListTesterCase4 {
+class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case4
+    : public VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4 {
  public:
-  StoreVectorRegisterListTester_Case4()
-    : StoreVectorRegisterListTesterCase4(
-      state_.StoreVectorRegisterList_VSTM_instance_)
+  VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case4()
+    : VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase4(
+      state_.VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0_VSTM_instance_)
   {}
 };
 
@@ -3039,7 +3014,7 @@ class StoreVectorRegisterListTester_Case4
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -3052,7 +3027,6 @@ class StoreVectorRegisterListTester_Case4
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -3090,12 +3064,12 @@ class StoreVectorRegisterListTester_Case4
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTester_Case5
-    : public StoreVectorRegisterListTesterCase5 {
+class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case5
+    : public VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5 {
  public:
-  StoreVectorRegisterListTester_Case5()
-    : StoreVectorRegisterListTesterCase5(
-      state_.StoreVectorRegisterList_VSTM_instance_)
+  VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case5()
+    : VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase5(
+      state_.VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0_VSTM_instance_)
   {}
 };
 
@@ -3111,7 +3085,7 @@ class StoreVectorRegisterListTester_Case5
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -3124,7 +3098,6 @@ class StoreVectorRegisterListTester_Case5
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -3154,12 +3127,12 @@ class StoreVectorRegisterListTester_Case5
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTester_Case6
-    : public LoadVectorRegisterListTesterCase6 {
+class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case6
+    : public VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6 {
  public:
-  LoadVectorRegisterListTester_Case6()
-    : LoadVectorRegisterListTesterCase6(
-      state_.LoadVectorRegisterList_VLDM_instance_)
+  VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case6()
+    : VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase6(
+      state_.VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0_VLDM_instance_)
   {}
 };
 
@@ -3175,7 +3148,7 @@ class LoadVectorRegisterListTester_Case6
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -3188,7 +3161,6 @@ class LoadVectorRegisterListTester_Case6
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -3225,12 +3197,12 @@ class LoadVectorRegisterListTester_Case6
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTester_Case7
-    : public LoadVectorRegisterListTesterCase7 {
+class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case7
+    : public VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7 {
  public:
-  LoadVectorRegisterListTester_Case7()
-    : LoadVectorRegisterListTesterCase7(
-      state_.LoadVectorRegisterList_VLDM_instance_)
+  VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case7()
+    : VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase7(
+      state_.VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0_VLDM_instance_)
   {}
 };
 
@@ -3240,12 +3212,11 @@ class LoadVectorRegisterListTester_Case7
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11001d111101dddd1010iiiiiiii,
 //       regs: imm8,
@@ -3257,12 +3228,12 @@ class LoadVectorRegisterListTester_Case7
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class LoadVectorRegisterListTester_Case8
-    : public LoadVectorRegisterListTesterCase8 {
+class VPOP_cccc11001d111101dddd1010iiiiiiii_case_0Tester_Case8
+    : public VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8 {
  public:
-  LoadVectorRegisterListTester_Case8()
-    : LoadVectorRegisterListTesterCase8(
-      state_.LoadVectorRegisterList_VPOP_instance_)
+  VPOP_cccc11001d111101dddd1010iiiiiiii_case_0Tester_Case8()
+    : VPOP_cccc11001d111101dddd1010iiiiiiii_case_0TesterCase8(
+      state_.VPOP_cccc11001d111101dddd1010iiiiiiii_case_0_VPOP_instance_)
   {}
 };
 
@@ -3272,12 +3243,11 @@ class LoadVectorRegisterListTester_Case8
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11001d111101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
@@ -3296,12 +3266,12 @@ class LoadVectorRegisterListTester_Case8
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class LoadVectorRegisterListTester_Case9
-    : public LoadVectorRegisterListTesterCase9 {
+class VPOP_cccc11001d111101dddd1011iiiiiiii_case_0Tester_Case9
+    : public VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9 {
  public:
-  LoadVectorRegisterListTester_Case9()
-    : LoadVectorRegisterListTesterCase9(
-      state_.LoadVectorRegisterList_VPOP_instance_)
+  VPOP_cccc11001d111101dddd1011iiiiiiii_case_0Tester_Case9()
+    : VPOP_cccc11001d111101dddd1011iiiiiiii_case_0TesterCase9(
+      state_.VPOP_cccc11001d111101dddd1011iiiiiiii_case_0_VPOP_instance_)
   {}
 };
 
@@ -3317,7 +3287,7 @@ class LoadVectorRegisterListTester_Case9
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -3330,7 +3300,6 @@ class LoadVectorRegisterListTester_Case9
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -3361,12 +3330,12 @@ class LoadVectorRegisterListTester_Case9
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTester_Case10
-    : public StoreVectorRegisterListTesterCase10 {
+class VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case10
+    : public VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10 {
  public:
-  StoreVectorRegisterListTester_Case10()
-    : StoreVectorRegisterListTesterCase10(
-      state_.StoreVectorRegisterList_VSTM_instance_)
+  VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case10()
+    : VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0TesterCase10(
+      state_.VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0_VSTM_instance_)
   {}
 };
 
@@ -3382,7 +3351,7 @@ class StoreVectorRegisterListTester_Case10
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -3395,7 +3364,6 @@ class StoreVectorRegisterListTester_Case10
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -3433,12 +3401,12 @@ class StoreVectorRegisterListTester_Case10
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class StoreVectorRegisterListTester_Case11
-    : public StoreVectorRegisterListTesterCase11 {
+class VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case11
+    : public VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11 {
  public:
-  StoreVectorRegisterListTester_Case11()
-    : StoreVectorRegisterListTesterCase11(
-      state_.StoreVectorRegisterList_VSTM_instance_)
+  VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case11()
+    : VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0TesterCase11(
+      state_.VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0_VSTM_instance_)
   {}
 };
 
@@ -3448,12 +3416,11 @@ class StoreVectorRegisterListTester_Case11
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11010d101101dddd1010iiiiiiii,
 //       regs: imm8,
@@ -3465,12 +3432,12 @@ class StoreVectorRegisterListTester_Case11
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class StoreVectorRegisterListTester_Case12
-    : public StoreVectorRegisterListTesterCase12 {
+class VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0Tester_Case12
+    : public VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12 {
  public:
-  StoreVectorRegisterListTester_Case12()
-    : StoreVectorRegisterListTesterCase12(
-      state_.StoreVectorRegisterList_VPUSH_instance_)
+  VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0Tester_Case12()
+    : VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0TesterCase12(
+      state_.VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0_VPUSH_instance_)
   {}
 };
 
@@ -3480,12 +3447,11 @@ class StoreVectorRegisterListTester_Case12
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11010d101101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
@@ -3504,12 +3470,12 @@ class StoreVectorRegisterListTester_Case12
 //       small_imm_base_wb: true,
 //       true: true,
 //       uses: {Sp}}
-class StoreVectorRegisterListTester_Case13
-    : public StoreVectorRegisterListTesterCase13 {
+class VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0Tester_Case13
+    : public VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13 {
  public:
-  StoreVectorRegisterListTester_Case13()
-    : StoreVectorRegisterListTesterCase13(
-      state_.StoreVectorRegisterList_VPUSH_instance_)
+  VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0Tester_Case13()
+    : VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0TesterCase13(
+      state_.VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0_VPUSH_instance_)
   {}
 };
 
@@ -3525,7 +3491,7 @@ class StoreVectorRegisterListTester_Case13
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -3538,7 +3504,6 @@ class StoreVectorRegisterListTester_Case13
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -3568,12 +3533,12 @@ class StoreVectorRegisterListTester_Case13
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTester_Case14
-    : public LoadVectorRegisterListTesterCase14 {
+class VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case14
+    : public VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14 {
  public:
-  LoadVectorRegisterListTester_Case14()
-    : LoadVectorRegisterListTesterCase14(
-      state_.LoadVectorRegisterList_VLDM_instance_)
+  VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case14()
+    : VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0TesterCase14(
+      state_.VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0_VLDM_instance_)
   {}
 };
 
@@ -3589,7 +3554,7 @@ class LoadVectorRegisterListTester_Case14
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -3602,7 +3567,6 @@ class LoadVectorRegisterListTester_Case14
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -3639,12 +3603,12 @@ class LoadVectorRegisterListTester_Case14
 //       small_imm_base_wb: wback,
 //       uses: {Rn},
 //       wback: W(21)=1}
-class LoadVectorRegisterListTester_Case15
-    : public LoadVectorRegisterListTesterCase15 {
+class VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case15
+    : public VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15 {
  public:
-  LoadVectorRegisterListTester_Case15()
-    : LoadVectorRegisterListTesterCase15(
-      state_.LoadVectorRegisterList_VLDM_instance_)
+  VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case15()
+    : VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0TesterCase15(
+      state_.VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0_VLDM_instance_)
   {}
 };
 
@@ -3653,23 +3617,22 @@ class LoadVectorRegisterListTester_Case15
 //       Rn: Rn(19:16),
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegister,
+//       baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       n: Rn,
 //       pattern: cccc1101ud00nnnndddd1010iiiiiiii,
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rn}}
-class StoreVectorRegisterTester_Case16
-    : public StoreVectorRegisterTesterCase16 {
+class VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0Tester_Case16
+    : public VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16 {
  public:
-  StoreVectorRegisterTester_Case16()
-    : StoreVectorRegisterTesterCase16(
-      state_.StoreVectorRegister_VSTR_instance_)
+  VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0Tester_Case16()
+    : VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0TesterCase16(
+      state_.VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0_VSTR_instance_)
   {}
 };
 
@@ -3678,23 +3641,22 @@ class StoreVectorRegisterTester_Case16
 //       Rn: Rn(19:16),
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegister,
+//       baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       n: Rn,
 //       pattern: cccc1101ud00nnnndddd1011iiiiiiii,
 //       rule: VSTR,
 //       safety: [n  ==
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rn}}
-class StoreVectorRegisterTester_Case17
-    : public StoreVectorRegisterTesterCase17 {
+class VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0Tester_Case17
+    : public VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17 {
  public:
-  StoreVectorRegisterTester_Case17()
-    : StoreVectorRegisterTesterCase17(
-      state_.StoreVectorRegister_VSTR_instance_)
+  VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0Tester_Case17()
+    : VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0TesterCase17(
+      state_.VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0_VSTR_instance_)
   {}
 };
 
@@ -3703,22 +3665,21 @@ class StoreVectorRegisterTester_Case17
 //       Rn: Rn(19:16),
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegister,
+//       baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1010iiiiiiii,
 //       rule: VLDR,
 //       uses: {Rn}}
-class LoadVectorRegisterTester_Case18
-    : public LoadVectorRegisterTesterCase18 {
+class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0Tester_Case18
+    : public VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18 {
  public:
-  LoadVectorRegisterTester_Case18()
-    : LoadVectorRegisterTesterCase18(
-      state_.LoadVectorRegister_VLDR_instance_)
+  VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0Tester_Case18()
+    : VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0TesterCase18(
+      state_.VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0_VLDR_instance_)
   {}
 };
 
@@ -3727,22 +3688,21 @@ class LoadVectorRegisterTester_Case18
 //       Rn: Rn(19:16),
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegister,
+//       baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1011iiiiiiii,
 //       rule: VLDR,
 //       uses: {Rn}}
-class LoadVectorRegisterTester_Case19
-    : public LoadVectorRegisterTesterCase19 {
+class VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0Tester_Case19
+    : public VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19 {
  public:
-  LoadVectorRegisterTester_Case19()
-    : LoadVectorRegisterTesterCase19(
-      state_.LoadVectorRegister_VLDR_instance_)
+  VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0Tester_Case19()
+    : VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0TesterCase19(
+      state_.VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0_VLDR_instance_)
   {}
 };
 
@@ -3767,7 +3727,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -3780,7 +3740,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -3812,8 +3771,8 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterListTester_Case0_TestCase0) {
-  StoreVectorRegisterListTester_Case0 baseline_tester;
+       VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case0_TestCase0) {
+  VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case0 baseline_tester;
   NamedActual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_VSTM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
@@ -3831,7 +3790,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -3844,7 +3803,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -3883,8 +3841,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterListTester_Case1_TestCase1) {
-  StoreVectorRegisterListTester_Case1 baseline_tester;
+       VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case1_TestCase1) {
+  VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case1 baseline_tester;
   NamedActual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_VSTM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
@@ -3902,7 +3860,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -3915,7 +3873,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -3946,8 +3903,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterListTester_Case2_TestCase2) {
-  LoadVectorRegisterListTester_Case2 baseline_tester;
+       VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case2_TestCase2) {
+  VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case2 baseline_tester;
   NamedActual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_VLDM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
@@ -3965,7 +3922,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -3978,7 +3935,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -4016,8 +3972,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterListTester_Case3_TestCase3) {
-  LoadVectorRegisterListTester_Case3 baseline_tester;
+       VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case3_TestCase3) {
+  VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case3 baseline_tester;
   NamedActual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_VLDM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
@@ -4035,7 +3991,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -4048,7 +4004,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -4080,8 +4035,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterListTester_Case4_TestCase4) {
-  StoreVectorRegisterListTester_Case4 baseline_tester;
+       VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case4_TestCase4) {
+  VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case4 baseline_tester;
   NamedActual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_VSTM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
@@ -4099,7 +4054,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -4112,7 +4067,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -4151,8 +4105,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterListTester_Case5_TestCase5) {
-  StoreVectorRegisterListTester_Case5 baseline_tester;
+       VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case5_TestCase5) {
+  VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case5 baseline_tester;
   NamedActual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_VSTM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
@@ -4170,7 +4124,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -4183,7 +4137,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -4214,8 +4167,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterListTester_Case6_TestCase6) {
-  LoadVectorRegisterListTester_Case6 baseline_tester;
+       VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case6_TestCase6) {
+  VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case6 baseline_tester;
   NamedActual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_VLDM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
@@ -4233,7 +4186,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -4246,7 +4199,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -4284,8 +4236,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterListTester_Case7_TestCase7) {
-  LoadVectorRegisterListTester_Case7 baseline_tester;
+       VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case7_TestCase7) {
+  VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case7 baseline_tester;
   NamedActual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_VLDM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
@@ -4297,12 +4249,11 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPOP_cccc11001d111101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11001d111101dddd1010iiiiiiii,
 //       regs: imm8,
@@ -4315,8 +4266,8 @@ TEST_F(Arm32DecoderStateTests,
 //       true: true,
 //       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterListTester_Case8_TestCase8) {
-  LoadVectorRegisterListTester_Case8 baseline_tester;
+       VPOP_cccc11001d111101dddd1010iiiiiiii_case_0Tester_Case8_TestCase8) {
+  VPOP_cccc11001d111101dddd1010iiiiiiii_case_0Tester_Case8 baseline_tester;
   NamedActual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_VPOP actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc11001d111101dddd1010iiiiiiii");
@@ -4328,12 +4279,11 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPOP_cccc11001d111101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11001d111101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
@@ -4353,8 +4303,8 @@ TEST_F(Arm32DecoderStateTests,
 //       true: true,
 //       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterListTester_Case9_TestCase9) {
-  LoadVectorRegisterListTester_Case9 baseline_tester;
+       VPOP_cccc11001d111101dddd1011iiiiiiii_case_0Tester_Case9_TestCase9) {
+  VPOP_cccc11001d111101dddd1011iiiiiiii_case_0Tester_Case9 baseline_tester;
   NamedActual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1_VPOP actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc11001d111101dddd1011iiiiiiii");
@@ -4372,7 +4322,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -4385,7 +4335,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1010iiiiiiii,
@@ -4417,8 +4366,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterListTester_Case10_TestCase10) {
-  StoreVectorRegisterListTester_Case10 baseline_tester;
+       VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case10_TestCase10) {
+  VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_0Tester_Case10 baseline_tester;
   NamedActual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1_VSTM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw0nnnndddd1010iiiiiiii");
@@ -4436,7 +4385,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -4449,7 +4398,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       n: Rn,
 //       pattern: cccc110pudw0nnnndddd1011iiiiiiii,
@@ -4488,8 +4436,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterListTester_Case11_TestCase11) {
-  StoreVectorRegisterListTester_Case11 baseline_tester;
+       VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case11_TestCase11) {
+  VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_0Tester_Case11 baseline_tester;
   NamedActual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1_VSTM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw0nnnndddd1011iiiiiiii");
@@ -4501,12 +4449,11 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11010d101101dddd1010iiiiiiii,
 //       regs: imm8,
@@ -4519,8 +4466,8 @@ TEST_F(Arm32DecoderStateTests,
 //       true: true,
 //       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterListTester_Case12_TestCase12) {
-  StoreVectorRegisterListTester_Case12 baseline_tester;
+       VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0Tester_Case12_TestCase12) {
+  VPUSH_cccc11010d101101dddd1010iiiiiiii_case_0Tester_Case12 baseline_tester;
   NamedActual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1_VPUSH actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc11010d101101dddd1010iiiiiiii");
@@ -4532,12 +4479,11 @@ TEST_F(Arm32DecoderStateTests,
 //       Vd: Vd(15:12),
 //       actual: Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1,
 //       base: Sp,
-//       baseline: StoreVectorRegisterList,
+//       baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Sp},
 //       fields: [D(22), Vd(15:12), imm8(7:0)],
-//       generated_baseline: VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       pattern: cccc11010d101101dddd1011iiiiiiii,
 //       regs: imm8 / 2,
@@ -4557,8 +4503,8 @@ TEST_F(Arm32DecoderStateTests,
 //       true: true,
 //       uses: {Sp}}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterListTester_Case13_TestCase13) {
-  StoreVectorRegisterListTester_Case13 baseline_tester;
+       VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0Tester_Case13_TestCase13) {
+  VPUSH_cccc11010d101101dddd1011iiiiiiii_case_0Tester_Case13 baseline_tester;
   NamedActual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1_VPUSH actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc11010d101101dddd1011iiiiiiii");
@@ -4576,7 +4522,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       d: Vd:D,
 //       defs: {Rn
@@ -4589,7 +4535,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -4620,8 +4565,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterListTester_Case14_TestCase14) {
-  LoadVectorRegisterListTester_Case14 baseline_tester;
+       VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case14_TestCase14) {
+  VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_0Tester_Case14 baseline_tester;
   NamedActual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1_VLDM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw1nnnndddd1010iiiiiiii");
@@ -4639,7 +4584,7 @@ TEST_F(Arm32DecoderStateTests,
 //       W: W(21),
 //       actual: Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegisterList,
+//       baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       d: D:Vd,
 //       defs: {Rn
@@ -4652,7 +4597,6 @@ TEST_F(Arm32DecoderStateTests,
 //         Rn(19:16),
 //         Vd(15:12),
 //         imm8(7:0)],
-//       generated_baseline: VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0,
 //       imm8: imm8(7:0),
 //       is_literal_load: Rn  ==
 //               Pc,
@@ -4690,8 +4634,8 @@ TEST_F(Arm32DecoderStateTests,
 //       uses: {Rn},
 //       wback: W(21)=1}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterListTester_Case15_TestCase15) {
-  LoadVectorRegisterListTester_Case15 baseline_tester;
+       VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case15_TestCase15) {
+  VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_0Tester_Case15 baseline_tester;
   NamedActual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1_VLDM actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc110pudw1nnnndddd1011iiiiiiii");
@@ -4702,11 +4646,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegister,
+//       baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0,
 //       n: Rn,
 //       pattern: cccc1101ud00nnnndddd1010iiiiiiii,
 //       rule: VSTR,
@@ -4714,8 +4657,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterTester_Case16_TestCase16) {
-  StoreVectorRegisterTester_Case16 baseline_tester;
+       VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0Tester_Case16_TestCase16) {
+  VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_0Tester_Case16 baseline_tester;
   NamedActual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1_VSTR actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc1101ud00nnnndddd1010iiiiiiii");
@@ -4726,11 +4669,10 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       actual: Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: StoreVectorRegister,
+//       baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0,
 //       n: Rn,
 //       pattern: cccc1101ud00nnnndddd1011iiiiiiii,
 //       rule: VSTR,
@@ -4738,8 +4680,8 @@ TEST_F(Arm32DecoderStateTests,
 //               Pc => FORBIDDEN_OPERANDS],
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
-       StoreVectorRegisterTester_Case17_TestCase17) {
-  StoreVectorRegisterTester_Case17 baseline_tester;
+       VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0Tester_Case17_TestCase17) {
+  VSTR_cccc1101ud00nnnndddd1011iiiiiiii_case_0Tester_Case17 baseline_tester;
   NamedActual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1_VSTR actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc1101ud00nnnndddd1011iiiiiiii");
@@ -4750,19 +4692,18 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegister,
+//       baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1010iiiiiiii,
 //       rule: VLDR,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterTester_Case18_TestCase18) {
-  LoadVectorRegisterTester_Case18 baseline_tester;
+       VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0Tester_Case18_TestCase18) {
+  VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0Tester_Case18 baseline_tester;
   NamedActual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_VLDR actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc1101ud01nnnndddd1010iiiiiiii");
@@ -4773,19 +4714,18 @@ TEST_F(Arm32DecoderStateTests,
 //       Rn: Rn(19:16),
 //       actual: Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1,
 //       base: Rn,
-//       baseline: LoadVectorRegister,
+//       baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
 //       constraints: ,
 //       defs: {},
 //       fields: [Rn(19:16)],
-//       generated_baseline: VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0,
 //       is_literal_load: Rn  ==
 //               Pc,
 //       pattern: cccc1101ud01nnnndddd1011iiiiiiii,
 //       rule: VLDR,
 //       uses: {Rn}}
 TEST_F(Arm32DecoderStateTests,
-       LoadVectorRegisterTester_Case19_TestCase19) {
-  LoadVectorRegisterTester_Case19 baseline_tester;
+       VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0Tester_Case19_TestCase19) {
+  VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0Tester_Case19 baseline_tester;
   NamedActual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1_VLDR actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc1101ud01nnnndddd1011iiiiiiii");
