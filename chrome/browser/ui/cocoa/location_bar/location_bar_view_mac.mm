@@ -103,7 +103,7 @@ LocationBarViewMac::LocationBarViewMac(
                                  OmniboxViewMac::GetFieldFont())),
       plus_decoration_(NULL),
       star_decoration_(new StarDecoration(command_updater)),
-      zoom_decoration_(new ZoomDecoration(toolbar_model)),
+      zoom_decoration_(new ZoomDecoration(this)),
       keyword_hint_decoration_(
           new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
       profile_(profile),
@@ -515,8 +515,8 @@ void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
   UpdateZoomDecoration();
   OnDecorationsChanged();
 
-  // TODO(dbeam): show a zoom bubble when |can_show_bubble| is true, the zoom
-  // decoration is showing, and the wrench menu isn't showing.
+  if (can_show_bubble && zoom_decoration_->IsVisible())
+    zoom_decoration_->ShowBubble(YES);
 }
 
 NSPoint LocationBarViewMac::GetActionBoxAnchorPoint() const {
@@ -667,8 +667,7 @@ void LocationBarViewMac::Layout() {
   if (plus_decoration_.get())
     [cell addRightDecoration:plus_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
-  // TODO(dbeam): uncomment when zoom bubble exists.
-  // [cell addRightDecoration:zoom_decoration_.get()];
+  [cell addRightDecoration:zoom_decoration_.get()];
 
   // Note that display order is right to left.
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
