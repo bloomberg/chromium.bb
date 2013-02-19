@@ -8,6 +8,7 @@
       'target_name': 'browser_ui_views',
       'type': '<(component)',
       'dependencies': [
+        '../base/base.gyp:base',
         '../ui/ui.gyp:ui',
       ],
       'defines': [
