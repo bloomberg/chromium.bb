@@ -23,7 +23,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/content_switches.h"
@@ -96,23 +95,6 @@ RenderWidgetHostView* RenderViewHostManager::GetRenderWidgetHostView() const {
   if (!render_view_host_)
     return NULL;
   return render_view_host_->GetView();
-}
-
-void RenderViewHostManager::SetPendingWebUI(const NavigationEntryImpl& entry) {
-  pending_web_ui_.reset(
-      delegate_->CreateWebUIForRenderManager(entry.GetURL()));
-  pending_and_current_web_ui_.reset();
-
-  // If we have assigned (zero or more) bindings to this NavigationEntry in the
-  // past, make sure we're not granting it different bindings than it had
-  // before.  If so, note it and don't give it any bindings, to avoid a
-  // potential privilege escalation.
-  if (pending_web_ui_.get() &&
-      entry.bindings() != NavigationEntryImpl::kInvalidBindings &&
-      pending_web_ui_->GetBindings() != entry.bindings()) {
-    RecordAction(UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
-    pending_web_ui_.reset();
-  }
 }
 
 RenderViewHostImpl* RenderViewHostManager::Navigate(
@@ -828,7 +810,9 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
     // It must also happen after the above conditional call to CancelPending(),
     // otherwise CancelPending may clear the pending_web_ui_ and the page will
     // not have its bindings set appropriately.
-    SetPendingWebUI(entry);
+    pending_web_ui_.reset(
+        delegate_->CreateWebUIForRenderManager(entry.GetURL()));
+    pending_and_current_web_ui_.reset();
 
     // Ensure that we have created RVHs for the new RVH's opener chain if
     // we are staying in the same BrowsingInstance. This allows the pending RVH
@@ -893,7 +877,9 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
       pending_web_ui_.reset();
       pending_and_current_web_ui_ = web_ui_->AsWeakPtr();
     } else {
-      SetPendingWebUI(entry);
+      pending_and_current_web_ui_.reset();
+      pending_web_ui_.reset(
+          delegate_->CreateWebUIForRenderManager(entry.GetURL()));
     }
 
     if (pending_web_ui() && render_view_host_->IsRenderViewLive())

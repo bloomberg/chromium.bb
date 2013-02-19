@@ -936,11 +936,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // The active entry's SiteInstance should match our SiteInstance.
   DCHECK(active_entry->site_instance() == web_contents_->GetSiteInstance());
 
-  // Remember the bindings the renderer process has at this point, so that
-  // we do not grant this entry additional bindings if we come back to it.
-  active_entry->SetBindings(
-      web_contents_->GetRenderViewHost()->GetEnabledBindings());
-
   // Now prep the rest of the details for the notification and broadcast.
   details->entry = active_entry;
   details->is_main_frame =

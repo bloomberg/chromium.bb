@@ -20,9 +20,6 @@ class CONTENT_EXPORT NavigationEntryImpl
  public:
   static NavigationEntryImpl* FromNavigationEntry(NavigationEntry* entry);
 
-  // The value of bindings() before it is set during commit.
-  static int kInvalidBindings;
-
   NavigationEntryImpl();
   NavigationEntryImpl(SiteInstanceImpl* instance,
                       int page_id,
@@ -97,14 +94,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   void set_site_instance(SiteInstanceImpl* site_instance);
   SiteInstanceImpl* site_instance() const {
     return site_instance_.get();
-  }
-
-  // Remember the set of bindings granted to this NavigationEntry at the time
-  // of commit, to ensure that we do not grant it additional bindings if we
-  // navigate back to it in the future.  This can only be changed once.
-  void SetBindings(int bindings);
-  int bindings() const {
-    return bindings_;
   }
 
   void set_page_type(PageType page_type) {
@@ -201,8 +190,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   // See the accessors above for descriptions.
   int unique_id_;
   scoped_refptr<SiteInstanceImpl> site_instance_;
-  // TODO(creis): Persist bindings_. http://crbug.com/173672.
-  int bindings_;
   PageType page_type_;
   GURL url_;
   Referrer referrer_;
