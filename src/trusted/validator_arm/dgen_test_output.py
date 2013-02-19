@@ -286,7 +286,6 @@ NAMED_BASES_H_HEADER="""%(FILE_HEADER)s
 #ifndef %(IFDEF_NAME)s
 #define %(IFDEF_NAME)s
 
-#include "native_client/src/trusted/validator_arm/actual_classes.h"
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/named_class_decoder.h"
 #include "%(FILENAME_BASE)s_baselines.h"
@@ -368,7 +367,6 @@ NAMED_CLASSES_H_HEADER="""%(FILE_HEADER)s
 #ifndef %(IFDEF_NAME)s
 #define %(IFDEF_NAME)s
 
-#include "native_client/src/trusted/validator_arm/actual_classes.h"
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/named_class_decoder.h"
 #include "%(FILENAME_BASE)s_actuals.h"
@@ -727,7 +725,6 @@ TEST_CC_HEADER="""%(FILE_HEADER)s
 #include "gtest/gtest.h"
 #include "native_client/src/trusted/validator_arm/actual_vs_baseline.h"
 #include "native_client/src/trusted/validator_arm/baseline_vs_baseline.h"
-#include "native_client/src/trusted/validator_arm/actual_classes.h"
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 #include "native_client/src/trusted/validator_arm/arm_helpers.h"

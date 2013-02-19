@@ -283,7 +283,6 @@ for tbl in GEN_TABLES:
 
 env.ComponentLibrary('arm_validator_core',
                      ['address_set.cc',
-                      'actual_classes.cc',
                       'baseline_classes.cc',
                       'inst_classes.cc',
                       'model.cc',

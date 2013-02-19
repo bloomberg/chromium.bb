@@ -142,67 +142,6 @@ bool CondAdvSIMDOpTester::ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// Unary1RegisterSetTester
-Unary1RegisterSetTester::Unary1RegisterSetTester(
-    const NamedClassDecoder& decoder)
-    : CondDecoderTester(decoder) {}
-
-bool Unary1RegisterSetTester::
-ApplySanityChecks(Instruction inst,
-                  const NamedClassDecoder& decoder) {
-  // Check if expected class name found.
-  NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
-
-  // Check that registers are correctly defined.
-  EXPECT_TRUE(expected_decoder_.d.reg(inst).Equals(inst.Reg(15, 12)));
-  EXPECT_EQ(expected_decoder_.read_spsr.IsDefined(inst), inst.Bit(22));
-
-  // Other ARM constraints about this instruction.
-  EXPECT_FALSE(expected_decoder_.d.reg(inst).Equals(Register::Pc()))
-      << "Expected Unpredictable for " << InstContents();
-  EXPECT_FALSE(expected_decoder_.read_spsr.IsDefined(inst))
-      << "Expected Unpredictable for " << InstContents();
-
-  return true;
-}
-
-// Unary1RegisterUseTester
-Unary1RegisterUseTester::Unary1RegisterUseTester(
-    const NamedClassDecoder& decoder)
-    : CondDecoderTester(decoder) {}
-
-bool Unary1RegisterUseTester::
-ApplySanityChecks(Instruction inst,
-                  const NamedClassDecoder& decoder) {
-  // Check if expected class name found.
-  NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
-
-  // Check that registers are correctly defined.
-  EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(3, 0)));
-  EXPECT_EQ(expected_decoder_.mask.value(inst), inst.Bits(19, 18));
-
-  // Other ARM constraints about this instruction.
-  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(Register::Pc()))
-      << "Expected Unpredictable for " << InstContents();
-  switch (expected_decoder_.mask.value(inst)) {
-    case 0:
-    case 1:
-      EXPECT_FALSE(decoder.defs(inst).Contains(Register::Conditions()));
-      break;
-    case 2:
-    case 3:
-      EXPECT_TRUE(decoder.defs(inst).Contains(Register::Conditions()));
-      break;
-
-    default:
-      // This should NOT happen.
-      EXPECT_FALSE(true);
-      break;
-  }
-
-  return true;
-}
-
 // MoveImmediate12ToApsrTester
 MoveImmediate12ToApsrTester::MoveImmediate12ToApsrTester(
     const NamedClassDecoder& decoder)

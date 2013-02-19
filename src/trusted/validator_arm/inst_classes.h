@@ -973,6 +973,18 @@ class Unpredictable : public UnsafeClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unpredictable);
 };
 
+// UDF
+// Permanently undefined in the ARM ISA.
+class PermanentlyUndefined : public ClassDecoder {
+ public:
+  PermanentlyUndefined() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PermanentlyUndefined);
+};
+
 // Defines the base class for all coprocessor instructions. We only
 // only allow coprocessors 101x, which defined VFP operations.
 // +----------------------------------------+--------+----------------+
