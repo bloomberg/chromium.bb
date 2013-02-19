@@ -6,9 +6,11 @@
 
 #include <algorithm>
 #include <cstring>
+#include <iomanip>
 #include <sstream>
 #include <vector>
 
+#include "ppapi/cpp/core.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/view.h"
@@ -66,7 +68,7 @@ bool TestingInstance::Init(uint32_t argc,
       if (argv[i][0] == '\0')
         break;
       current_case_ = CaseForTestName(argv[i]);
-      test_filter_ = FilterForTestName(argv[i]);
+      test_filter_ = argv[i];
       if (!current_case_)
         errors_.append(std::string("Unknown test case ") + argv[i]);
       else if (!current_case_->Init())
@@ -120,7 +122,15 @@ void TestingInstance::SetCookie(const std::string& name,
 }
 
 void TestingInstance::LogTest(const std::string& test_name,
-                              const std::string& error_message) {
+                              const std::string& error_message,
+                              PP_TimeTicks start_time) {
+  // Compute the time to run the test and save it in a string for logging:
+  PP_TimeTicks end_time(pp::Module::Get()->core()->GetTimeTicks());
+  std::ostringstream number_stream;
+  PP_TimeTicks elapsed_time(end_time - start_time);
+  number_stream << std::fixed << std::setprecision(3) << elapsed_time;
+  std::string time_string(number_stream.str());
+
   // Tell the browser we're still working.
   ReportProgress(kProgressSignal);
 
@@ -141,6 +151,10 @@ void TestingInstance::LogTest(const std::string& test_name,
       errors_.append(", ");  // Separator for different error messages.
     errors_.append(test_name + " FAIL: " + error_message);
   }
+  html.append(" <span class=\"time\">(");
+  html.append(time_string);
+  html.append("s)</span>");
+
   html.append("</div>");
   LogHTML(html);
 }
@@ -172,11 +186,34 @@ void TestingInstance::ExecuteTests(int32_t unused) {
                      "restrictive: '" + test_filter_ + "'.");
       LogError(errors_);
     }
-    else {
-      // Automated PyAuto tests rely on finding the exact strings below.
-      LogHTML(errors_.empty() ?
-              "<span class=\"pass\">[SHUTDOWN]</span> All tests passed." :
-              "<span class=\"fail\">[SHUTDOWN]</span> Some tests failed.");
+    if (current_case_->skipped_tests().size()) {
+      // TODO(dmichael): Convert all TestCases to run all tests in one fixture,
+      //                 and enable this check. Currently, a lot of our tests
+      //                 run 1 test per fixture, which is slow.
+      /*
+      errors_.append("Some tests were not listed and thus were not run. Make "
+                     "sure all tests are passed in the test_case URL (even if "
+                     "they are marked DISABLED_). Forgotten tests: ");
+      std::set<std::string>::const_iterator iter =
+          current_case_->skipped_tests().begin();
+      for (; iter != current_case_->skipped_tests().end(); ++iter) {
+        errors_.append(*iter);
+        errors_.append(" ");
+      }
+      LogError(errors_);
+      */
+    }
+    if (current_case_->remaining_tests().size()) {
+      errors_.append("Some listed tests were not found in the TestCase. Check "
+                     "the test names that were passed to make sure they match "
+                     "tests in the TestCase. Unknown tests: ");
+      std::map<std::string, bool>::const_iterator iter =
+          current_case_->remaining_tests().begin();
+      for (; iter != current_case_->remaining_tests().end(); ++iter) {
+        errors_.append(iter->first);
+        errors_.append(" ");
+      }
+      LogError(errors_);
     }
   }
 
@@ -197,13 +234,6 @@ TestCase* TestingInstance::CaseForTestName(const std::string& name) {
     iter = iter->next_;
   }
   return NULL;
-}
-
-std::string TestingInstance::FilterForTestName(const std::string& name) {
-  size_t delim = name.find_first_of('_');
-  if (delim != std::string::npos)
-    return name.substr(delim+1);
-  return "";
 }
 
 void TestingInstance::SendTestCommand(const std::string& command) {

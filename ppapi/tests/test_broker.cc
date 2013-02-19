@@ -217,13 +217,12 @@ void TestBroker::RunTests(const std::string& filter) {
 
   // The following tests require special setup, so only run them if they're
   // explicitly specified by the filter.
-  if (filter.empty())
-    return;
-
-  RUN_TEST(ConnectPermissionDenied, filter);
-  RUN_TEST(ConnectPermissionGranted, filter);
-  RUN_TEST(IsAllowedPermissionDenied, filter);
-  RUN_TEST(IsAllowedPermissionGranted, filter);
+  if (!ShouldRunAllTests(filter)) {
+    RUN_TEST(ConnectPermissionDenied, filter);
+    RUN_TEST(ConnectPermissionGranted, filter);
+    RUN_TEST(IsAllowedPermissionDenied, filter);
+    RUN_TEST(IsAllowedPermissionGranted, filter);
+  }
 }
 
 std::string TestBroker::TestCreate() {

@@ -4,16 +4,84 @@
 
 #include "ppapi/tests/test_case.h"
 
+#include <string.h>
+
 #include <sstream>
 
+#include "ppapi/cpp/core.h"
+#include "ppapi/cpp/module.h"
 #include "ppapi/tests/pp_thread.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
+namespace {
+
+std::string StripPrefix(const std::string& test_name) {
+  const char* const prefixes[] = {
+      "FAILS_", "FLAKY_", "DISABLED_" };
+  for (size_t i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); ++i)
+    if (test_name.find(prefixes[i]) == 0)
+      return test_name.substr(strlen(prefixes[i]));
+  return test_name;
+}
+
+// Strip the TestCase name off and return the remainder (i.e., everything after
+// '_'). If there is no '_', assume only the TestCase was provided, and return
+// an empty string.
+// For example:
+//   StripTestCase("TestCase_TestName");
+// returns
+//   "TestName"
+// while
+//   StripTestCase("TestCase);
+// returns
+//   ""
+std::string StripTestCase(const std::string& full_test_name) {
+  size_t delim = full_test_name.find_first_of('_');
+  if (delim != std::string::npos)
+    return full_test_name.substr(delim+1);
+  // In this case, our "filter" is the empty string; the full test name is the
+  // same as the TestCase name with which we were constructed.
+  // TODO(dmichael): It might be nice to be able to PP_DCHECK against the
+  // TestCase class name, but we'd have to plumb that name to TestCase somehow.
+  return std::string();
+}
+
+// Parse |test_filter|, which is a comma-delimited list of (possibly prefixed)
+// test names and insert the un-prefixed names into |remaining_tests|, with
+// the bool indicating whether the test should be run.
+void ParseTestFilter(const std::string& test_filter,
+                     std::map<std::string, bool>* remaining_tests) {
+  // We can't use base/string_util.h::Tokenize in ppapi, so we have to do it
+  // ourselves.
+  std::istringstream filter_stream(test_filter);
+  std::string current_test;
+  while (std::getline(filter_stream, current_test, ',')) {
+    // |current_test| might include a prefix, like DISABLED_Foo_TestBar, so we
+    // we strip it off if there is one.
+    std::string stripped_test_name(StripPrefix(current_test));
+    // Strip off the test case and use the test name as a key, because the test
+    // name ShouldRunTest wants to use to look up the test doesn't have the
+    // TestCase name.
+    std::string test_name_without_case(StripTestCase(stripped_test_name));
+
+    // If the test wasn't prefixed, it should be run.
+    bool should_run_test = (current_test == stripped_test_name);
+    PP_DCHECK(remaining_tests->count(test_name_without_case) == 0);
+    remaining_tests->insert(
+        std::make_pair(test_name_without_case, should_run_test));
+  }
+  // There may be a trailing comma; ignore empty strings.
+  remaining_tests->erase(std::string());
+}
+
+}  // namespace
+
 TestCase::TestCase(TestingInstance* instance)
     : instance_(instance),
       testing_interface_(NULL),
-      callback_type_(PP_REQUIRED) {
+      callback_type_(PP_REQUIRED),
+      have_populated_remaining_tests_(false) {
   // Get the testing_interface_ if it is available, so that we can do Resource
   // and Var checks on shutdown (see CheckResourcesAndVars). If it is not
   // available, testing_interface_ will be NULL. Some tests do not require it.
@@ -103,9 +171,35 @@ bool TestCase::EnsureRunningOverHTTP() {
   return true;
 }
 
-bool TestCase::MatchesFilter(const std::string& test_name,
+bool TestCase::ShouldRunAllTests(const std::string& filter) {
+  // If only the TestCase is listed, we're running all the tests in RunTests.
+  return (StripTestCase(filter) == std::string());
+}
+
+bool TestCase::ShouldRunTest(const std::string& test_name,
                              const std::string& filter) {
-  return filter.empty() || (test_name == filter);
+  if (ShouldRunAllTests(filter))
+    return true;
+
+  // Lazily initialize our "remaining_tests_" map.
+  if (!have_populated_remaining_tests_) {
+    ParseTestFilter(filter, &remaining_tests_);
+    have_populated_remaining_tests_ = true;
+  }
+  std::map<std::string, bool>::iterator iter = remaining_tests_.find(test_name);
+  if (iter == remaining_tests_.end()) {
+    // The test name wasn't listed in the filter. Don't run it, but store it
+    // so TestingInstance::ExecuteTests can report an error later.
+    skipped_tests_.insert(test_name);
+    return false;
+  }
+  bool should_run_test = iter->second;
+  remaining_tests_.erase(iter);
+  return should_run_test;
+}
+
+PP_TimeTicks TestCase::NowInTimeTicks() {
+  return pp::Module::Get()->core()->GetTimeTicks();
 }
 
 std::string TestCase::CheckResourcesAndVars(std::string errors) {

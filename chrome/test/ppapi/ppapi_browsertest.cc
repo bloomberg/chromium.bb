@@ -21,6 +21,10 @@ using content::RenderViewHost;
 
 // This macro finesses macro expansion to do what we want.
 #define STRIP_PREFIXES(test_name) StripPrefixes(#test_name)
+// Turn the given token into a string. This allows us to use precompiler stuff
+// to turn names into DISABLED_Foo, but still pass a string to RunTest.
+#define STRINGIFY(test_name) #test_name
+#define LIST_TEST(test_name) STRINGIFY(test_name) ","
 
 // Use these macros to run the tests for a specific interface.
 // Most interfaces should be tested with both macros.
@@ -63,25 +67,14 @@ using content::RenderViewHost;
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 
-// Similar macros for tests that require an audio device.
-#define TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPITest, test_name) { \
-      RunTestIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
-    }
-#define TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(test_name) \
-    IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, test_name) { \
-      RunTestIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
-    }
-
 #if defined(DISABLE_NACL)
-#define TEST_PPAPI_NACL_VIA_HTTP(test_name)
-#define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name)
+#define TEST_PPAPI_NACL(test_name)
+#define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name)
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)
-#define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name)
-#define TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(test_name)
+#define TEST_PPAPI_NACL_WITH_WS(test_name)
 #elif defined(OS_WIN)  // http://crbug.com/162094
 
-#define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
+#define TEST_PPAPI_NACL(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     } \
@@ -89,7 +82,7 @@ using content::RenderViewHost;
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 
-#define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name) \
+#define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
@@ -102,7 +95,7 @@ using content::RenderViewHost;
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
-#define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name) \
+#define TEST_PPAPI_NACL_WITH_WS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     } \
@@ -110,22 +103,15 @@ using content::RenderViewHost;
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 
-#define TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_##test_name) { \
-      RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
-    }
 #elif defined(ARCH_CPU_ARM_FAMILY)
 // NaCl glibc tests are not included in ARM as there is no glibc support
 // on ARM today.
-#define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
+#define TEST_PPAPI_NACL(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 
-#define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name) \
+#define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
@@ -135,20 +121,15 @@ using content::RenderViewHost;
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
-#define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name) \
+#define TEST_PPAPI_NACL_WITH_WS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
-    }
-
-#define TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
     }
 
 #else
 
 // NaCl based PPAPI tests
-#define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
+#define TEST_PPAPI_NACL(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     } \
@@ -157,7 +138,7 @@ using content::RenderViewHost;
     }
 
 // NaCl based PPAPI tests with disallowed socket API
-#define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name) \
+#define TEST_PPAPI_NACL_DISALLOWED_SOCKETS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
@@ -172,7 +153,7 @@ using content::RenderViewHost;
     }
 
 // NaCl based PPAPI tests with WebSocket server
-#define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name) \
+#define TEST_PPAPI_NACL_WITH_WS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     } \
@@ -180,14 +161,6 @@ using content::RenderViewHost;
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 
-// NaCl based PPAPI tests requiring an Audio device.
-#define TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(test_name) \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
-      RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
-    } \
-    IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, test_name) { \
-      RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
-    }
 #endif
 
 
@@ -270,11 +243,11 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Allowed) {
 
 TEST_PPAPI_IN_PROCESS(Console)
 TEST_PPAPI_OUT_OF_PROCESS(Console)
-TEST_PPAPI_NACL_VIA_HTTP(Console)
+TEST_PPAPI_NACL(Console)
 
 TEST_PPAPI_IN_PROCESS(Core)
 TEST_PPAPI_OUT_OF_PROCESS(Core)
-TEST_PPAPI_NACL_VIA_HTTP(Core)
+TEST_PPAPI_NACL(Core)
 
 #if defined(OS_CHROMEOS)
 #define MAYBE_InputEvent InputEvent
@@ -298,12 +271,12 @@ TEST_PPAPI_NACL_VIA_HTTP(Core)
 TEST_PPAPI_IN_PROCESS(MAYBE_InputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_InputEvent)
 // TODO(bbudge) Enable when input events are proxied correctly for NaCl.
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_InputEvent)
+TEST_PPAPI_NACL(DISABLED_InputEvent)
 
 TEST_PPAPI_IN_PROCESS(MAYBE_ImeInputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_ImeInputEvent)
 // TODO(kinaba) Enable when IME events are proxied correctly for NaCl.
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_ImeInputEvent)
+TEST_PPAPI_NACL(DISABLED_ImeInputEvent)
 
 TEST_PPAPI_IN_PROCESS(Instance_ExecuteScript);
 TEST_PPAPI_OUT_OF_PROCESS(Instance_ExecuteScript)
@@ -329,17 +302,17 @@ TEST_PPAPI_IN_PROCESS(Graphics2D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)
 // Graphics2D_Dev isn't supported in NaCl, only test the other interfaces
 // TODO(jhorwich) Enable when Graphics2D_Dev interfaces are proxied in NaCl.
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_InvalidResource)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_InvalidSize)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Humongous)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_InitToZero)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Describe)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Paint)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Scroll)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Replace)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_Flush)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_FlushOffscreenUpdate)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_BindNull)
+TEST_PPAPI_NACL(Graphics2D_InvalidResource)
+TEST_PPAPI_NACL(Graphics2D_InvalidSize)
+TEST_PPAPI_NACL(Graphics2D_Humongous)
+TEST_PPAPI_NACL(Graphics2D_InitToZero)
+TEST_PPAPI_NACL(Graphics2D_Describe)
+TEST_PPAPI_NACL(Graphics2D_Paint)
+TEST_PPAPI_NACL(Graphics2D_Scroll)
+TEST_PPAPI_NACL(Graphics2D_Replace)
+TEST_PPAPI_NACL(Graphics2D_Flush)
+TEST_PPAPI_NACL(Graphics2D_FlushOffscreenUpdate)
+TEST_PPAPI_NACL(Graphics2D_BindNull)
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 // These tests fail with the test compositor which is what's used by default for
@@ -347,12 +320,12 @@ TEST_PPAPI_NACL_VIA_HTTP(Graphics2D_BindNull)
 // available.
 TEST_PPAPI_IN_PROCESS(Graphics3D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics3D)
-TEST_PPAPI_NACL_VIA_HTTP(Graphics3D)
+TEST_PPAPI_NACL(Graphics3D)
 #endif
 
 TEST_PPAPI_IN_PROCESS(ImageData)
 TEST_PPAPI_OUT_OF_PROCESS(ImageData)
-TEST_PPAPI_NACL_VIA_HTTP(ImageData)
+TEST_PPAPI_NACL(ImageData)
 
 TEST_PPAPI_IN_PROCESS(BrowserFont)
 TEST_PPAPI_OUT_OF_PROCESS(BrowserFont)
@@ -376,26 +349,26 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Broadcast)
 #endif  // !defined(OS_MACOSX)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_SetSocketFeatureErrors)
-TEST_PPAPI_NACL_VIA_HTTP(UDPSocketPrivate_Connect)
-TEST_PPAPI_NACL_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
+TEST_PPAPI_NACL(UDPSocketPrivate_Connect)
+TEST_PPAPI_NACL(UDPSocketPrivate_ConnectFailure)
 #if !defined(OS_MACOSX)
-TEST_PPAPI_NACL_VIA_HTTP(UDPSocketPrivate_Broadcast)
+TEST_PPAPI_NACL(UDPSocketPrivate_Broadcast)
 #endif  // !defined(OS_MACOSX)
-TEST_PPAPI_NACL_VIA_HTTP(UDPSocketPrivate_SetSocketFeatureErrors)
+TEST_PPAPI_NACL(UDPSocketPrivate_SetSocketFeatureErrors)
 
-TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(HostResolverPrivateDisallowed)
-TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(TCPServerSocketPrivateDisallowed)
-TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(TCPSocketPrivateDisallowed)
-TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
+TEST_PPAPI_NACL_DISALLOWED_SOCKETS(HostResolverPrivateDisallowed)
+TEST_PPAPI_NACL_DISALLOWED_SOCKETS(TCPServerSocketPrivateDisallowed)
+TEST_PPAPI_NACL_DISALLOWED_SOCKETS(TCPSocketPrivateDisallowed)
+TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
-TEST_PPAPI_NACL_VIA_HTTP(TCPServerSocketPrivate)
+TEST_PPAPI_NACL(TCPServerSocketPrivate)
 
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_Resolve)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPv4)
-TEST_PPAPI_NACL_VIA_HTTP(HostResolverPrivate_Resolve)
-TEST_PPAPI_NACL_VIA_HTTP(HostResolverPrivate_ResolveIPv4)
+TEST_PPAPI_NACL(HostResolverPrivate_Resolve)
+TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
 
 // URLLoader tests.
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_BasicGET)
@@ -452,26 +425,26 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_AbortCalls)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntendedLoad)
 
 // These tests are failing a lot on Win 7 bots: http://crbug.com/167150
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_BasicGET)
+TEST_PPAPI_NACL(DISABLED_URLLoader_BasicGET)
 // Note this one that never failed - can it provide a clue to the failures of
 // the others?
-TEST_PPAPI_NACL_VIA_HTTP(URLLoader_BasicPOST)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_BasicFilePOST)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_BasicFileRangePOST)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_CompoundBodyPOST)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_EmptyDataPOST)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_BinaryDataPOST)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_CustomRequestHeader)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_FailsBogusContentLength)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_StreamToFile)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_UntrustedSameOriginRestriction)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_UntrustedCrossOriginRequest)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_UntrustedJavascriptURLRestriction)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_UntrustedHttpRequests)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_FollowURLRedirect)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_AuditURLRedirect)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_AbortCalls)
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLLoader_UntendedLoad)
+TEST_PPAPI_NACL(URLLoader_BasicPOST)
+TEST_PPAPI_NACL(DISABLED_URLLoader_BasicFilePOST)
+TEST_PPAPI_NACL(DISABLED_URLLoader_BasicFileRangePOST)
+TEST_PPAPI_NACL(DISABLED_URLLoader_CompoundBodyPOST)
+TEST_PPAPI_NACL(DISABLED_URLLoader_EmptyDataPOST)
+TEST_PPAPI_NACL(DISABLED_URLLoader_BinaryDataPOST)
+TEST_PPAPI_NACL(DISABLED_URLLoader_CustomRequestHeader)
+TEST_PPAPI_NACL(DISABLED_URLLoader_FailsBogusContentLength)
+TEST_PPAPI_NACL(DISABLED_URLLoader_StreamToFile)
+TEST_PPAPI_NACL(DISABLED_URLLoader_UntrustedSameOriginRestriction)
+TEST_PPAPI_NACL(DISABLED_URLLoader_UntrustedCrossOriginRequest)
+TEST_PPAPI_NACL(DISABLED_URLLoader_UntrustedJavascriptURLRestriction)
+TEST_PPAPI_NACL(DISABLED_URLLoader_UntrustedHttpRequests)
+TEST_PPAPI_NACL(DISABLED_URLLoader_FollowURLRedirect)
+TEST_PPAPI_NACL(DISABLED_URLLoader_AuditURLRedirect)
+TEST_PPAPI_NACL(DISABLED_URLLoader_AbortCalls)
+TEST_PPAPI_NACL(DISABLED_URLLoader_UntendedLoad)
 
 // URLRequestInfo tests.
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_CreateAndIsURLRequestInfo)
@@ -485,22 +458,22 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_CreateAndIsURLRequestInfo)
 #define MAYBE_URLRequest_CreateAndIsURLRequestInfo \
     URLRequest_CreateAndIsURLRequestInfo
 #endif
-TEST_PPAPI_NACL_VIA_HTTP(MAYBE_URLRequest_CreateAndIsURLRequestInfo)
+TEST_PPAPI_NACL(MAYBE_URLRequest_CreateAndIsURLRequestInfo)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_SetProperty)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_SetProperty)
 // http://crbug.com/167150
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_URLRequest_SetProperty)
+TEST_PPAPI_NACL(DISABLED_URLRequest_SetProperty)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_AppendDataToBody)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_AppendDataToBody)
-TEST_PPAPI_NACL_VIA_HTTP(URLRequest_AppendDataToBody)
+TEST_PPAPI_NACL(URLRequest_AppendDataToBody)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_Stress)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_Stress)
-TEST_PPAPI_NACL_VIA_HTTP(URLRequest_Stress)
+TEST_PPAPI_NACL(URLRequest_Stress)
 
 TEST_PPAPI_IN_PROCESS(PaintAggregator)
 TEST_PPAPI_OUT_OF_PROCESS(PaintAggregator)
-TEST_PPAPI_NACL_VIA_HTTP(PaintAggregator)
+TEST_PPAPI_NACL(PaintAggregator)
 
 // TODO(danakj): http://crbug.com/115286
 TEST_PPAPI_IN_PROCESS(DISABLED_Scrollbar)
@@ -509,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_Scrollbar) {
   RunTest("Scrollbar");
 }
 // TODO(danakj): http://crbug.com/115286
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_Scrollbar)
+TEST_PPAPI_NACL(DISABLED_Scrollbar)
 
 TEST_PPAPI_IN_PROCESS(URLUtil)
 TEST_PPAPI_OUT_OF_PROCESS(URLUtil)
@@ -522,7 +495,7 @@ TEST_PPAPI_OUT_OF_PROCESS(Crypto)
 
 TEST_PPAPI_IN_PROCESS(Var)
 TEST_PPAPI_OUT_OF_PROCESS(Var)
-TEST_PPAPI_NACL_VIA_HTTP(Var)
+TEST_PPAPI_NACL(Var)
 
 // Flaky on mac, http://crbug.com/121107
 #if defined(OS_MACOSX)
@@ -555,12 +528,12 @@ TEST_PPAPI_OUT_OF_PROCESS(PostMessage_ExtraParam)
 // Times out on Windows XP, Windows 7, and Linux x64: http://crbug.com/95557
 TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NonMainThread)
 #endif
-TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendInInit)
-TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingData)
-TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingArrayBuffer)
-TEST_PPAPI_NACL_VIA_HTTP(PostMessage_MessageEvent)
+TEST_PPAPI_NACL(PostMessage_SendInInit)
+TEST_PPAPI_NACL(PostMessage_SendingData)
+TEST_PPAPI_NACL(PostMessage_SendingArrayBuffer)
+TEST_PPAPI_NACL(PostMessage_MessageEvent)
 // http://crbug.com/167150
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_PostMessage_NoHandler)
+TEST_PPAPI_NACL(DISABLED_PostMessage_NoHandler)
 
 #if defined(OS_WIN)
 // Flaky: http://crbug.com/111209
@@ -569,14 +542,14 @@ TEST_PPAPI_NACL_VIA_HTTP(DISABLED_PostMessage_NoHandler)
 // directly to blame for the flakiness. It's possible that it's a more general
 // problem that is exposing itself only with one of the later tests in this
 // series.
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_PostMessage_ExtraParam)
+TEST_PPAPI_NACL(DISABLED_PostMessage_ExtraParam)
 #else
-TEST_PPAPI_NACL_VIA_HTTP(PostMessage_ExtraParam)
+TEST_PPAPI_NACL(PostMessage_ExtraParam)
 #endif
 
 TEST_PPAPI_IN_PROCESS(Memory)
 TEST_PPAPI_OUT_OF_PROCESS(Memory)
-TEST_PPAPI_NACL_VIA_HTTP(Memory)
+TEST_PPAPI_NACL(Memory)
 
 TEST_PPAPI_IN_PROCESS(VideoDecoder)
 TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
@@ -618,21 +591,21 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_WillWriteWillSetLength)
 #define MAYBE_FileIO_AbortCalls FileIO_AbortCalls
 #endif
 
-TEST_PPAPI_NACL_VIA_HTTP(FileIO_Open)
-TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_AbortCalls)
-TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_ParallelReads)
+TEST_PPAPI_NACL(FileIO_Open)
+TEST_PPAPI_NACL(MAYBE_FileIO_AbortCalls)
+TEST_PPAPI_NACL(MAYBE_FileIO_ParallelReads)
 // http://crbug.com/167150
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_FileIO_ParallelWrites)
-TEST_PPAPI_NACL_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
-TEST_PPAPI_NACL_VIA_HTTP(FileIO_TouchQuery)
-TEST_PPAPI_NACL_VIA_HTTP(FileIO_ReadWriteSetLength)
-TEST_PPAPI_NACL_VIA_HTTP(FileIO_ReadToArrayWriteSetLength)
+TEST_PPAPI_NACL(DISABLED_FileIO_ParallelWrites)
+TEST_PPAPI_NACL(FileIO_NotAllowMixedReadWrite)
+TEST_PPAPI_NACL(FileIO_TouchQuery)
+TEST_PPAPI_NACL(FileIO_ReadWriteSetLength)
+TEST_PPAPI_NACL(FileIO_ReadToArrayWriteSetLength)
 // The following test requires PPB_FileIO_Trusted, not available in NaCl.
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_FileIO_WillWriteWillSetLength)
+TEST_PPAPI_NACL(DISABLED_FileIO_WillWriteWillSetLength)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileRef)
-TEST_PPAPI_NACL_VIA_HTTP(FileRef)
+TEST_PPAPI_NACL(FileRef)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
@@ -645,7 +618,7 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 #define MAYBE_FileSystem FileSystem
 #endif
 
-TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileSystem)
+TEST_PPAPI_NACL(MAYBE_FileSystem)
 
 #if defined(OS_MACOSX)
 // http://crbug.com/103912
@@ -659,7 +632,7 @@ TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileSystem)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_Fullscreen)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_Fullscreen)
-TEST_PPAPI_NACL_VIA_HTTP(MAYBE_Fullscreen)
+TEST_PPAPI_NACL(MAYBE_Fullscreen)
 
 TEST_PPAPI_IN_PROCESS(X509CertificatePrivate)
 TEST_PPAPI_OUT_OF_PROCESS(X509CertificatePrivate)
@@ -699,14 +672,14 @@ TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetPort)
 TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetAddress)
 TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetScopeID)
 
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_AreEqual)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_AreHostsEqual)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_Describe)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_ReplacePort)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAnyAddress)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetFamily)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetPort)
-TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAddress)
+TEST_PPAPI_NACL(NetAddressPrivateUntrusted_AreEqual)
+TEST_PPAPI_NACL(NetAddressPrivateUntrusted_AreHostsEqual)
+TEST_PPAPI_NACL(NetAddressPrivateUntrusted_Describe)
+TEST_PPAPI_NACL(NetAddressPrivateUntrusted_ReplacePort)
+TEST_PPAPI_NACL(NetAddressPrivateUntrusted_GetAnyAddress)
+TEST_PPAPI_NACL(NetAddressPrivateUntrusted_GetFamily)
+TEST_PPAPI_NACL(NetAddressPrivateUntrusted_GetPort)
+TEST_PPAPI_NACL(NetAddressPrivateUntrusted_GetAddress)
 
 TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_Basic)
 TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_2Monitors)
@@ -716,101 +689,155 @@ TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_Basic)
 TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_2Monitors)
 TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_DeleteInCallback)
 TEST_PPAPI_OUT_OF_PROCESS(NetworkMonitorPrivate_ListObserver)
-TEST_PPAPI_NACL_VIA_HTTP(NetworkMonitorPrivate_Basic)
-TEST_PPAPI_NACL_VIA_HTTP(NetworkMonitorPrivate_2Monitors)
-TEST_PPAPI_NACL_VIA_HTTP(NetworkMonitorPrivate_DeleteInCallback)
-TEST_PPAPI_NACL_VIA_HTTP(NetworkMonitorPrivate_ListObserver)
+TEST_PPAPI_NACL(NetworkMonitorPrivate_Basic)
+TEST_PPAPI_NACL(NetworkMonitorPrivate_2Monitors)
+TEST_PPAPI_NACL(NetworkMonitorPrivate_DeleteInCallback)
+TEST_PPAPI_NACL(NetworkMonitorPrivate_ListObserver)
 
 TEST_PPAPI_IN_PROCESS(Flash_SetInstanceAlwaysOnTop)
 TEST_PPAPI_IN_PROCESS(Flash_GetCommandLineArgs)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_SetInstanceAlwaysOnTop)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 
-// NaCl based PPAPI tests with WebSocket server
-TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
-TEST_PPAPI_IN_PROCESS(WebSocket_UninitializedPropertiesAccess)
-TEST_PPAPI_IN_PROCESS(WebSocket_InvalidConnect)
-TEST_PPAPI_IN_PROCESS(WebSocket_Protocols)
-TEST_PPAPI_IN_PROCESS(WebSocket_GetURL)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_ValidConnect)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_InvalidClose)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_ValidClose)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_GetProtocol)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_TextSendReceive)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BinarySendReceive)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_StressedSendReceive)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BufferedAmount)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortCallsWithCallback)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortSendMessageCall)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortCloseCall)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortReceiveMessageCall)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_CcInterfaces)
-TEST_PPAPI_IN_PROCESS(WebSocket_UtilityInvalidConnect)
-TEST_PPAPI_IN_PROCESS(WebSocket_UtilityProtocols)
-TEST_PPAPI_IN_PROCESS(WebSocket_UtilityGetURL)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityValidConnect)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityInvalidClose)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityValidClose)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityGetProtocol)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityTextSendReceive)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBinarySendReceive)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBufferedAmount)
-TEST_PPAPI_OUT_OF_PROCESS(WebSocket_IsWebSocket)
-TEST_PPAPI_OUT_OF_PROCESS(WebSocket_UninitializedPropertiesAccess)
-TEST_PPAPI_OUT_OF_PROCESS(WebSocket_InvalidConnect)
-TEST_PPAPI_OUT_OF_PROCESS(WebSocket_Protocols)
-TEST_PPAPI_OUT_OF_PROCESS(WebSocket_GetURL)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_ValidConnect)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_InvalidClose)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_ValidClose)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_GetProtocol)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_TextSendReceive)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_BinarySendReceive)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_StressedSendReceive)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_BufferedAmount)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortCallsWithCallback)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortSendMessageCall)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortCloseCall)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortReceiveMessageCall)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_CcInterfaces)
-TEST_PPAPI_OUT_OF_PROCESS(WebSocket_UtilityInvalidConnect)
-TEST_PPAPI_OUT_OF_PROCESS(WebSocket_UtilityProtocols)
-TEST_PPAPI_OUT_OF_PROCESS(WebSocket_UtilityGetURL)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_UtilityValidConnect)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_UtilityInvalidClose)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_UtilityValidClose)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_UtilityGetProtocol)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_UtilityTextSendReceive)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_UtilityBinarySendReceive)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_UtilityBufferedAmount)
-TEST_PPAPI_NACL_VIA_HTTP(WebSocket_IsWebSocket)
-TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UninitializedPropertiesAccess)
-TEST_PPAPI_NACL_VIA_HTTP(WebSocket_InvalidConnect)
-TEST_PPAPI_NACL_VIA_HTTP(WebSocket_Protocols)
-TEST_PPAPI_NACL_VIA_HTTP(WebSocket_GetURL)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_ValidConnect)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_InvalidClose)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_ValidClose)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_GetProtocol)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_TextSendReceive)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BinarySendReceive)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_StressedSendReceive)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BufferedAmount)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortCallsWithCallback)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortSendMessageCall)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortCloseCall)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortReceiveMessageCall)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_CcInterfaces)
-TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UtilityInvalidConnect)
-TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UtilityProtocols)
-TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UtilityGetURL)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_UtilityValidConnect)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_UtilityInvalidClose)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_UtilityValidClose)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_UtilityGetProtocol)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_UtilityTextSendReceive)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_UtilityBinarySendReceive)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_UtilityBufferedAmount)
+// In-process WebSocket tests
+IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket) {
+  RunTestWithWebSocketServer(
+      LIST_TEST(WebSocket_IsWebSocket)
+      LIST_TEST(WebSocket_UninitializedPropertiesAccess)
+      LIST_TEST(WebSocket_InvalidConnect)
+      LIST_TEST(WebSocket_Protocols)
+      LIST_TEST(WebSocket_GetURL)
+      LIST_TEST(WebSocket_ValidConnect)
+      LIST_TEST(WebSocket_InvalidClose)
+      LIST_TEST(WebSocket_ValidClose)
+      LIST_TEST(WebSocket_GetProtocol)
+      LIST_TEST(WebSocket_TextSendReceive)
+      LIST_TEST(WebSocket_BinarySendReceive)
+      LIST_TEST(WebSocket_StressedSendReceive)
+      LIST_TEST(WebSocket_BufferedAmount)
+      LIST_TEST(WebSocket_AbortCallsWithCallback)
+      LIST_TEST(WebSocket_AbortSendMessageCall)
+      LIST_TEST(WebSocket_AbortCloseCall)
+      LIST_TEST(WebSocket_AbortReceiveMessageCall)
+      LIST_TEST(WebSocket_CcInterfaces)
+      LIST_TEST(WebSocket_UtilityInvalidConnect)
+      LIST_TEST(WebSocket_UtilityProtocols)
+      LIST_TEST(WebSocket_UtilityGetURL)
+      LIST_TEST(WebSocket_UtilityValidConnect)
+      LIST_TEST(WebSocket_UtilityInvalidClose)
+      LIST_TEST(WebSocket_UtilityValidClose)
+      LIST_TEST(WebSocket_UtilityGetProtocol)
+      LIST_TEST(WebSocket_UtilityTextSendReceive)
+      LIST_TEST(WebSocket_UtilityBinarySendReceive)
+      LIST_TEST(WebSocket_UtilityBufferedAmount));
+}
+
+// Out-of-process WebSocket tests
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket) {
+  RunTestWithWebSocketServer(
+      LIST_TEST(WebSocket_IsWebSocket)
+      LIST_TEST(WebSocket_UninitializedPropertiesAccess)
+      LIST_TEST(WebSocket_InvalidConnect)
+      LIST_TEST(WebSocket_Protocols)
+      LIST_TEST(WebSocket_GetURL)
+      LIST_TEST(WebSocket_ValidConnect)
+      LIST_TEST(WebSocket_InvalidClose)
+      LIST_TEST(WebSocket_ValidClose)
+      LIST_TEST(WebSocket_GetProtocol)
+      LIST_TEST(WebSocket_TextSendReceive)
+      LIST_TEST(WebSocket_BinarySendReceive)
+      LIST_TEST(WebSocket_StressedSendReceive)
+      LIST_TEST(WebSocket_BufferedAmount)
+      LIST_TEST(WebSocket_AbortCallsWithCallback)
+      LIST_TEST(WebSocket_AbortSendMessageCall)
+      LIST_TEST(WebSocket_AbortCloseCall)
+      LIST_TEST(WebSocket_AbortReceiveMessageCall)
+      LIST_TEST(WebSocket_CcInterfaces)
+      LIST_TEST(WebSocket_UtilityInvalidConnect)
+      LIST_TEST(WebSocket_UtilityProtocols)
+      LIST_TEST(WebSocket_UtilityGetURL)
+      LIST_TEST(WebSocket_UtilityValidConnect)
+      LIST_TEST(WebSocket_UtilityInvalidClose)
+      LIST_TEST(WebSocket_UtilityValidClose)
+      LIST_TEST(WebSocket_UtilityGetProtocol)
+      LIST_TEST(WebSocket_UtilityTextSendReceive)
+      LIST_TEST(WebSocket_UtilityBinarySendReceive)
+      LIST_TEST(WebSocket_UtilityBufferedAmount));
+}
+
+// NaClNewlib WebSocket tests
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket) {
+  RunTestWithWebSocketServer(
+      LIST_TEST(WebSocket_IsWebSocket)
+      LIST_TEST(WebSocket_UninitializedPropertiesAccess)
+      LIST_TEST(WebSocket_InvalidConnect)
+      LIST_TEST(WebSocket_Protocols)
+      LIST_TEST(WebSocket_GetURL)
+      LIST_TEST(WebSocket_ValidConnect)
+      LIST_TEST(WebSocket_InvalidClose)
+      LIST_TEST(WebSocket_ValidClose)
+      LIST_TEST(WebSocket_GetProtocol)
+      LIST_TEST(WebSocket_TextSendReceive)
+      LIST_TEST(WebSocket_BinarySendReceive)
+      LIST_TEST(WebSocket_StressedSendReceive)
+      LIST_TEST(WebSocket_BufferedAmount)
+      LIST_TEST(WebSocket_AbortCallsWithCallback)
+      LIST_TEST(WebSocket_AbortSendMessageCall)
+      LIST_TEST(WebSocket_AbortCloseCall)
+      LIST_TEST(WebSocket_AbortReceiveMessageCall)
+      LIST_TEST(WebSocket_CcInterfaces)
+      LIST_TEST(WebSocket_UtilityInvalidConnect)
+      LIST_TEST(WebSocket_UtilityProtocols)
+      LIST_TEST(WebSocket_UtilityGetURL)
+      LIST_TEST(WebSocket_UtilityValidConnect)
+      LIST_TEST(WebSocket_UtilityInvalidClose)
+      LIST_TEST(WebSocket_UtilityValidClose)
+      LIST_TEST(WebSocket_UtilityGetProtocol)
+      LIST_TEST(WebSocket_UtilityTextSendReceive)
+      LIST_TEST(WebSocket_UtilityBinarySendReceive)
+      LIST_TEST(WebSocket_UtilityBufferedAmount));
+}
+
+// NaClGLibc WebSocket tests
+// GLibc tests are currently disabled on Windows: http://crbug.com/162094.
+// NaCl glibc tests are not included in ARM as there is no glibc support
+// on ARM today.
+#if defined(OS_WIN) || defined(ARCH_CPU_ARM_FAMILY)
+#define MAYBE_GLIBC_WebSocket DISABLED_WebSocket
+#else
+#define MAYBE_GLIBC_WebSocket WebSocket
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC_WebSocket) {
+  RunTestWithWebSocketServer(
+      LIST_TEST(WebSocket_IsWebSocket)
+      LIST_TEST(WebSocket_UninitializedPropertiesAccess)
+      LIST_TEST(WebSocket_InvalidConnect)
+      LIST_TEST(WebSocket_Protocols)
+      LIST_TEST(WebSocket_GetURL)
+      LIST_TEST(WebSocket_ValidConnect)
+      LIST_TEST(WebSocket_InvalidClose)
+      LIST_TEST(WebSocket_ValidClose)
+      LIST_TEST(WebSocket_GetProtocol)
+      LIST_TEST(WebSocket_TextSendReceive)
+      LIST_TEST(WebSocket_BinarySendReceive)
+      LIST_TEST(WebSocket_StressedSendReceive)
+      LIST_TEST(WebSocket_BufferedAmount)
+      LIST_TEST(WebSocket_AbortCallsWithCallback)
+      LIST_TEST(WebSocket_AbortSendMessageCall)
+      LIST_TEST(WebSocket_AbortCloseCall)
+      LIST_TEST(WebSocket_AbortReceiveMessageCall)
+      LIST_TEST(WebSocket_CcInterfaces)
+      LIST_TEST(WebSocket_UtilityInvalidConnect)
+      LIST_TEST(WebSocket_UtilityProtocols)
+      LIST_TEST(WebSocket_UtilityGetURL)
+      LIST_TEST(WebSocket_UtilityValidConnect)
+      LIST_TEST(WebSocket_UtilityInvalidClose)
+      LIST_TEST(WebSocket_UtilityValidClose)
+      LIST_TEST(WebSocket_UtilityGetProtocol)
+      LIST_TEST(WebSocket_UtilityTextSendReceive)
+      LIST_TEST(WebSocket_UtilityBinarySendReceive)
+      LIST_TEST(WebSocket_UtilityBufferedAmount));
+}
 
 TEST_PPAPI_IN_PROCESS(AudioConfig_RecommendSampleRate)
 TEST_PPAPI_IN_PROCESS(AudioConfig_ValidConfigs)
@@ -818,32 +845,32 @@ TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_RecommendSampleRate)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_ValidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_InvalidConfigs)
-TEST_PPAPI_NACL_VIA_HTTP(AudioConfig_RecommendSampleRate)
-TEST_PPAPI_NACL_VIA_HTTP(AudioConfig_ValidConfigs)
-TEST_PPAPI_NACL_VIA_HTTP(AudioConfig_InvalidConfigs)
+TEST_PPAPI_NACL(AudioConfig_RecommendSampleRate)
+TEST_PPAPI_NACL(AudioConfig_ValidConfigs)
+TEST_PPAPI_NACL(AudioConfig_InvalidConfigs)
 
 // Only run audio output tests if we have an audio device available.
 // TODO(raymes): We should probably test scenarios where there is no audio
 // device available.
-TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_Creation)
-TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_DestroyNoStop)
-TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_Failures)
-TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_AudioCallback1)
-TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_AudioCallback2)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_Creation)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_DestroyNoStop)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_Failures)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_AudioCallback1)
-TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_AudioCallback2)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_Creation)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_DestroyNoStop)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_Failures)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_AudioCallback1)
-TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_AudioCallback2)
+TEST_PPAPI_IN_PROCESS(Audio_Creation)
+TEST_PPAPI_IN_PROCESS(Audio_DestroyNoStop)
+TEST_PPAPI_IN_PROCESS(Audio_Failures)
+TEST_PPAPI_IN_PROCESS(Audio_AudioCallback1)
+TEST_PPAPI_IN_PROCESS(Audio_AudioCallback2)
+TEST_PPAPI_OUT_OF_PROCESS(Audio_Creation)
+TEST_PPAPI_OUT_OF_PROCESS(Audio_DestroyNoStop)
+TEST_PPAPI_OUT_OF_PROCESS(Audio_Failures)
+TEST_PPAPI_OUT_OF_PROCESS(Audio_AudioCallback1)
+TEST_PPAPI_OUT_OF_PROCESS(Audio_AudioCallback2)
+TEST_PPAPI_NACL(Audio_Creation)
+TEST_PPAPI_NACL(Audio_DestroyNoStop)
+TEST_PPAPI_NACL(Audio_Failures)
+TEST_PPAPI_NACL(Audio_AudioCallback1)
+TEST_PPAPI_NACL(Audio_AudioCallback2)
 
 TEST_PPAPI_IN_PROCESS(View_CreatedVisible);
 TEST_PPAPI_OUT_OF_PROCESS(View_CreatedVisible);
-TEST_PPAPI_NACL_VIA_HTTP(View_CreatedVisible);
+TEST_PPAPI_NACL(View_CreatedVisible);
 // This test ensures that plugins created in a background tab have their
 // initial visibility set to false. We don't bother testing in-process for this
 // custom test since the out of process code also exercises in-process.
@@ -909,10 +936,10 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, InputEvent_AcceptTouchEvent) {
 
 TEST_PPAPI_IN_PROCESS(View_SizeChange);
 TEST_PPAPI_OUT_OF_PROCESS(View_SizeChange);
-TEST_PPAPI_NACL_VIA_HTTP(View_SizeChange);
+TEST_PPAPI_NACL(View_SizeChange);
 TEST_PPAPI_IN_PROCESS(View_ClipChange);
 TEST_PPAPI_OUT_OF_PROCESS(View_ClipChange);
-TEST_PPAPI_NACL_VIA_HTTP(View_ClipChange);
+TEST_PPAPI_NACL(View_ClipChange);
 
 TEST_PPAPI_IN_PROCESS(ResourceArray_Basics)
 TEST_PPAPI_IN_PROCESS(ResourceArray_OutOfRangeAccess)
@@ -930,7 +957,7 @@ TEST_PPAPI_OUT_OF_PROCESS(FlashMessageLoop_RunWithoutQuit)
 
 TEST_PPAPI_IN_PROCESS(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
-TEST_PPAPI_NACL_VIA_HTTP(MouseCursor)
+TEST_PPAPI_NACL(MouseCursor)
 
 // PPB_Printing only implemented for out of process.
 TEST_PPAPI_OUT_OF_PROCESS(Printing)

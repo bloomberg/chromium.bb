@@ -19,13 +19,13 @@ bool TestImageData::Init() {
 }
 
 void TestImageData::RunTests(const std::string& filter) {
-  instance_->LogTest("InvalidFormat", TestInvalidFormat());
-  instance_->LogTest("GetNativeFormat", TestGetNativeFormat());
-  instance_->LogTest("IsImageDataFormatSupported", TestFormatSupported());
-  instance_->LogTest("InvalidSize", TestInvalidSize());
-  instance_->LogTest("HugeSize", TestHugeSize());
-  instance_->LogTest("InitToZero", TestInitToZero());
-  instance_->LogTest("IsImageData", TestIsImageData());
+  RUN_TEST(InvalidFormat, filter);
+  RUN_TEST(GetNativeFormat, filter);
+  RUN_TEST(FormatSupported, filter);
+  RUN_TEST(InvalidSize, filter);
+  RUN_TEST(HugeSize, filter);
+  RUN_TEST(InitToZero, filter);
+  RUN_TEST(IsImageData, filter);
 }
 
 std::string TestImageData::TestInvalidFormat() {

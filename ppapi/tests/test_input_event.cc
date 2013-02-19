@@ -32,20 +32,16 @@ pp::Point GetCenter(const pp::Rect& rect) {
 void TestInputEvent::RunTests(const std::string& filter) {
   RUN_TEST(Events, filter);
 
-// Like RUN_TEST, but does an exact match with the filter (which means it does
-// not run the test if filter is empty).
-#define RUN_TEST_EXACT_MATCH(name, test_filter) \
-  if (test_filter == #name) { \
-    set_callback_type(PP_OPTIONAL); \
-    instance_->LogTest(#name, CheckResourcesAndVars(Test##name())); \
+  // The AcceptTouchEvent_N tests should not be run when the filter is empty;
+  // they can only be run one at a time.
+  // TODO(dmichael): Figure out a way to make these run in the same test fixture
+  //                 instance.
+  if (!ShouldRunAllTests(filter)) {
+    RUN_TEST(AcceptTouchEvent_1, filter);
+    RUN_TEST(AcceptTouchEvent_2, filter);
+    RUN_TEST(AcceptTouchEvent_3, filter);
+    RUN_TEST(AcceptTouchEvent_4, filter);
   }
-
-  RUN_TEST_EXACT_MATCH(AcceptTouchEvent_1, filter);
-  RUN_TEST_EXACT_MATCH(AcceptTouchEvent_2, filter);
-  RUN_TEST_EXACT_MATCH(AcceptTouchEvent_3, filter);
-  RUN_TEST_EXACT_MATCH(AcceptTouchEvent_4, filter);
-
-#undef RUN_TEST_EXACT_MATCH
 }
 
 TestInputEvent::TestInputEvent(TestingInstance* instance)

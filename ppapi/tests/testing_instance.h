@@ -62,12 +62,17 @@ pp::InstancePrivate {
 
   // Outputs the information from one test run, using the format
   //   <test_name> [PASS|FAIL <error_message>]
+  //
+  // You should generally use one of the RUN_TEST* macros in test_case.h
+  // instead.
+  //
   // If error_message is empty, we say the test passed and emit PASS. If
   // error_message is nonempty, the test failed with that message as the error
   // string.
   //
   // Intended usage:
-  //   LogTest("Foo", FooTest());
+  //   PP_TimeTicks start_time(core.GetTimeTicks());
+  //   LogTest("Foo", FooTest(), start_time);
   //
   // Where FooTest is defined as:
   //   std::string FooTest() {
@@ -75,7 +80,13 @@ pp::InstancePrivate {
   //       return "Something horrible happened";
   //     return "";
   //   }
-  void LogTest(const std::string& test_name, const std::string& error_message);
+  //
+  // NOTE: It's important to get the start time in the previous line, rather
+  //       than calling GetTimeTicks in the LogTestLine. There's no guarantee
+  //       that GetTimeTicks will be evaluated before FooTest().
+  void LogTest(const std::string& test_name,
+               const std::string& error_message,
+               PP_TimeTicks start_time);
 
   // Appends an error message to the log.
   void AppendError(const std::string& message);
@@ -116,15 +127,6 @@ pp::InstancePrivate {
   // test. Ownership is passed to the caller. The given string is split by '_'.
   // The test case name is the first part.
   TestCase* CaseForTestName(const std::string& name);
-  // Returns the filter (second part) of the given string. If there is no '_',
-  // returns the empty string, which means 'run all tests for this test case'.
-  // E.g.:
-  //  http://testserver/test_case.html?testcase=PostMessage
-  // Otherwise, the part of the testcase after '_' is returned, and the test
-  // whose name matches that string (if any) will be run:
-  //  http://testserver/test_case.html?testcase=PostMessage_SendingData
-  // Runs 'PostMessage_SendingData.
-  std::string FilterForTestName(const std::string& name);
 
   // Sends a test command to the page using PostMessage.
   void SendTestCommand(const std::string& command);

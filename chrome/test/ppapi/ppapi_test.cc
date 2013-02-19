@@ -325,14 +325,14 @@ void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
 
 // Append the correct mode and testcase string
 std::string PPAPINaClNewlibTest::BuildQuery(const std::string& base,
-                                      const std::string& test_case) {
+                                            const std::string& test_case) {
   return StringPrintf("%smode=nacl_newlib&testcase=%s", base.c_str(),
                       test_case.c_str());
 }
 
 // Append the correct mode and testcase string
 std::string PPAPINaClGLibcTest::BuildQuery(const std::string& base,
-                                      const std::string& test_case) {
+                                           const std::string& test_case) {
   return StringPrintf("%smode=nacl_glibc&testcase=%s", base.c_str(),
                       test_case.c_str());
 }
