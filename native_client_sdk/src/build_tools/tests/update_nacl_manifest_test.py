@@ -31,6 +31,7 @@ OS_M = ('mac',)
 OS_ML = ('mac', 'linux')
 OS_MW = ('mac', 'win')
 OS_MLW = ('mac', 'linux', 'win')
+OS_ALL = ('all',)
 POST_STABLE = 'post_stable'
 STABLE = 'stable'
 BETA = 'beta'
@@ -38,9 +39,13 @@ DEV = 'dev'
 CANARY = 'canary'
 
 
-def GetArchiveUrl(host_os, version):
-  basename = 'naclsdk_%s.tar.bz2' % (host_os,)
+def GetArchiveURL(basename, version):
   return urlparse.urljoin(HTTPS_BASE_URL, posixpath.join(version, basename))
+
+
+def GetPlatformArchiveUrl(host_os, version):
+  basename = 'naclsdk_%s.tar.bz2' % (host_os,)
+  return GetArchiveURL(basename, version)
 
 
 def MakeGsUrl(rel_path):
@@ -57,14 +62,22 @@ def GetPathFromHttpsUrl(url):
   return url[len(HTTPS_BASE_URL):]
 
 
-def MakeArchive(host_os, version):
+def MakeArchive(url, host_os):
   archive = manifest_util.Archive(host_os)
-  archive.url = GetArchiveUrl(host_os, version)
+  archive.url = url
   # dummy values that won't succeed if we ever use them, but will pass
   # validation. :)
   archive.checksum = {'sha1': 'foobar'}
   archive.size = 1
   return archive
+
+
+def MakePlatformArchive(host_os, version):
+  return MakeArchive(GetPlatformArchiveUrl(host_os, version), host_os)
+
+
+def MakeNonPlatformArchive(basename, version):
+  return MakeArchive(GetArchiveURL(basename, version), 'all')
 
 
 def MakeNonPepperBundle(name, with_archives=False):
@@ -85,8 +98,7 @@ def MakeNonPepperBundle(name, with_archives=False):
   return bundle
 
 
-def MakeBundle(major_version, revision=0, version=None, host_oses=None,
-    stability='dev'):
+def MakePepperBundle(major_version, revision=0, version=None, stability='dev'):
   assert (version is None or
           version.split('.')[0] == 'trunk' or
           version.split('.')[0] == str(major_version))
@@ -104,9 +116,17 @@ def MakeBundle(major_version, revision=0, version=None, host_oses=None,
   bundle.recommended = 'no'
   bundle.stability = stability
 
+  return bundle
+
+
+def MakePlatformBundle(major_version, revision=0, version=None, host_oses=None,
+    stability='dev'):
+  bundle = MakePepperBundle(major_version, revision, version, stability)
+
   if host_oses:
     for host_os in host_oses:
-      bundle.AddArchive(MakeArchive(host_os, version))
+      bundle.AddArchive(MakePlatformArchive(host_os, version))
+
   return bundle
 
 
@@ -144,18 +164,20 @@ class MakeFiles(dict):
       if not archive.host_os in add_archive_for_os:
         continue
 
-      # add a dummy file for each archive
-      path = GetPathFromHttpsUrl(archive.url)
-      self[path] = 'My Dummy Archive'
+      self.AddArchive(bundle, archive, archive.host_os in add_json_for_os)
 
-      if archive.host_os in add_json_for_os:
-        # add .json manifest snippet, it should look like a normal Bundle, but
-        # only has one archive.
-        new_bundle = manifest_util.Bundle('')
-        new_bundle.CopyFrom(bundle)
-        del new_bundle.archives[:]
-        new_bundle.AddArchive(archive)
-        self[path + '.json'] = new_bundle.GetDataAsString()
+  def AddArchive(self, bundle, archive, add_json=True):
+    path = GetPathFromHttpsUrl(archive.url)
+    self[path] = 'My Dummy archive'
+
+    if add_json:
+      # add .json manifest snippet, it should look like a normal Bundle, but
+      # only has one archive.
+      new_bundle = manifest_util.Bundle('')
+      new_bundle.CopyFrom(bundle)
+      del new_bundle.archives[:]
+      new_bundle.AddArchive(archive)
+      self[path + '.json'] = new_bundle.GetDataAsString()
 
 
 class TestDelegate(update_nacl_manifest.Delegate):
@@ -214,17 +236,20 @@ V19_0_1084_41 = '19.0.1084.41'
 V19_0_1084_67 = '19.0.1084.67'
 V21_0_1145_0 = '21.0.1145.0'
 V21_0_1166_0 = '21.0.1166.0'
+V26_0_1386_0 = '26.0.1386.0'
 VTRUNK_138079 = 'trunk.138079'
-B18_0_1025_163_R1_MLW = MakeBundle(18, 1, V18_0_1025_163, OS_MLW)
-B18_0_1025_184_R1_MLW = MakeBundle(18, 1, V18_0_1025_184, OS_MLW)
-B18_R1_NONE = MakeBundle(18)
-B19_0_1084_41_R1_MLW = MakeBundle(19, 1, V19_0_1084_41, OS_MLW)
-B19_0_1084_67_R1_MLW = MakeBundle(19, 1, V19_0_1084_67, OS_MLW)
-B19_R1_NONE = MakeBundle(19)
-BCANARY_R1_NONE = MakeBundle(0, stability=CANARY)
-B21_0_1145_0_R1_MLW = MakeBundle(21, 1, V21_0_1145_0, OS_MLW)
-B21_0_1166_0_R1_MW = MakeBundle(21, 1, V21_0_1166_0, OS_MW)
-BTRUNK_138079_R1_MLW = MakeBundle(21, 1, VTRUNK_138079, OS_MLW)
+B18_0_1025_163_R1_MLW = MakePlatformBundle(18, 1, V18_0_1025_163, OS_MLW)
+B18_0_1025_184_R1_MLW = MakePlatformBundle(18, 1, V18_0_1025_184, OS_MLW)
+B18_R1_NONE = MakePlatformBundle(18)
+B19_0_1084_41_R1_MLW = MakePlatformBundle(19, 1, V19_0_1084_41, OS_MLW)
+B19_0_1084_67_R1_MLW = MakePlatformBundle(19, 1, V19_0_1084_67, OS_MLW)
+B19_R1_NONE = MakePlatformBundle(19)
+BCANARY_R1_NONE = MakePlatformBundle(0, stability=CANARY)
+B21_0_1145_0_R1_MLW = MakePlatformBundle(21, 1, V21_0_1145_0, OS_MLW)
+B21_0_1166_0_R1_MW = MakePlatformBundle(21, 1, V21_0_1166_0, OS_MW)
+B26_R1_NONE = MakePlatformBundle(26)
+B26_0_1386_0_R1_MLW = MakePlatformBundle(26, 1, V26_0_1386_0, OS_MLW)
+BTRUNK_138079_R1_MLW = MakePlatformBundle(21, 1, VTRUNK_138079, OS_MLW)
 NON_PEPPER_BUNDLE_NOARCHIVES = MakeNonPepperBundle('foo')
 NON_PEPPER_BUNDLE_ARCHIVES = MakeNonPepperBundle('bar', with_archives=True)
 
@@ -242,8 +267,9 @@ class TestUpdateManifest(unittest.TestCase):
     self.delegate = TestDelegate(self.manifest, self.history.history,
         self.files, self.version_mapping)
 
-  def _Run(self, host_oses, fixed_bundle_versions=None):
-    update_nacl_manifest.Run(self.delegate, host_oses, fixed_bundle_versions)
+  def _Run(self, host_oses, extra_archives=None, fixed_bundle_versions=None):
+    update_nacl_manifest.Run(self.delegate, host_oses, extra_archives,
+                             fixed_bundle_versions)
 
   def _HasUploadedManifest(self):
     return 'naclsdk_manifest2.json' in self.files
@@ -411,7 +437,8 @@ class TestUpdateManifest(unittest.TestCase):
     # resulting manifest is still consistent with the old format.
     self.manifest = MakeManifest(B18_R1_NONE)
     self.history.Add(OS_MLW, BETA, V18_0_1025_163)
-    bundle_string_revision = MakeBundle('18', '1234', V18_0_1025_163, OS_MLW)
+    bundle_string_revision = MakePlatformBundle('18', '1234', V18_0_1025_163,
+                                                OS_MLW)
     self.files.Add(bundle_string_revision)
     self._MakeDelegate()
     self._Run(OS_MLW)
@@ -455,7 +482,7 @@ class TestUpdateManifest(unittest.TestCase):
 mac,canary,21.0.1163.0,2012-06-04 11:54:09.433166"""
     self._AddCsvHistory(history)
     self.version_mapping['21.0.1163.0'] = 'trunk.140240'
-    my_bundle = MakeBundle(21, 140240, '21.0.1163.0', OS_MLW)
+    my_bundle = MakePlatformBundle(21, 140240, '21.0.1163.0', OS_MLW)
     self.files.Add(my_bundle)
     self._MakeDelegate()
     self._Run(OS_MLW)
@@ -498,9 +525,9 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
         '21.0.1157.0': 'unknown',
         '21.0.1156.1': 'trunk.139576',
         '21.0.1156.0': 'trunk.139984'}
-    self.files.Add(MakeBundle(21, 139890, '21.0.1159.2', OS_MLW))
-    self.files.Add(MakeBundle(21, 0, '21.0.1157.1', ('linux', 'win')))
-    my_bundle = MakeBundle(21, 139576, '21.0.1156.1', OS_MLW)
+    self.files.Add(MakePlatformBundle(21, 139890, '21.0.1159.2', OS_MLW))
+    self.files.Add(MakePlatformBundle(21, 0, '21.0.1157.1', ('linux', 'win')))
+    my_bundle = MakePlatformBundle(21, 139576, '21.0.1156.1', OS_MLW)
     self.files.Add(my_bundle)
     self._MakeDelegate()
     self._Run(OS_MLW)
@@ -568,7 +595,7 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
     self.files.Add(B18_0_1025_184_R1_MLW)
 
     self._MakeDelegate()
-    self._Run(OS_MLW, [('pepper_18', '18.0.1025.184')])
+    self._Run(OS_MLW, None, [('pepper_18', '18.0.1025.184')])
     self._ReadUploadedManifest()
     self._AssertUploadedManifestHasBundle(B18_0_1025_184_R1_MLW, BETA)
     self.assertEqual(len(self.uploaded_manifest.GetBundles()), 1)
@@ -579,9 +606,45 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
     self.files.Add(B18_0_1025_163_R1_MLW)
 
     self._MakeDelegate()
-    self._Run(OS_MLW, [('pepper_18', '18.0.1025.184')])
+    self._Run(OS_MLW, None, [('pepper_18', '18.0.1025.184')])
     # Nothing should be uploaded if the user gives a missing fixed version.
     self.assertFalse(self.delegate.called_gsutil_cp)
+
+  def testDontIncludeRandomBundles(self):
+    self.manifest = MakeManifest(B26_R1_NONE)
+    self.history.Add(OS_MLW, BETA, V26_0_1386_0)
+    self.files.Add(B26_0_1386_0_R1_MLW)
+
+    some_other_bundle = MakePepperBundle(26, 1, V26_0_1386_0, BETA)
+    some_other_archive = MakeNonPlatformArchive('some_other.tar.bz2',
+                                                V26_0_1386_0)
+    some_other_bundle.AddArchive(some_other_archive)
+    self.files.AddArchive(some_other_bundle, some_other_archive)
+
+    self._MakeDelegate()
+    self._Run(OS_MLW)
+    self._ReadUploadedManifest()
+    uploaded_bundle = self.uploaded_manifest.GetBundle('pepper_26')
+    self.assertEqual(1, len(uploaded_bundle.GetHostOSArchives()))
+
+  def testNaclportsBundle(self):
+    self.manifest = MakeManifest(B26_R1_NONE)
+    self.history.Add(OS_MLW, BETA, V26_0_1386_0)
+    self.files.Add(B26_0_1386_0_R1_MLW)
+
+    # NaclPorts "bundle".
+    naclports_bundle = MakePepperBundle(26, 1, V26_0_1386_0, BETA)
+    naclports_archive = MakeNonPlatformArchive('naclports.tar.bz2',
+                                               V26_0_1386_0)
+    naclports_bundle.AddArchive(naclports_archive)
+    self.files.AddArchive(naclports_bundle, naclports_archive)
+
+    self._MakeDelegate()
+    self._Run(OS_MLW, [('naclports.tar.bz2', '26.0.1386.0')])
+    self._ReadUploadedManifest()
+
+    uploaded_bundle = self.uploaded_manifest.GetBundle('pepper_26')
+    self.assertEqual(2, len(uploaded_bundle.GetHostOSArchives()))
 
 
 class TestUpdateVitals(unittest.TestCase):
@@ -607,7 +670,7 @@ class TestUpdateVitals(unittest.TestCase):
       path = '/' + path
     archive.url = 'file://' + path
 
-    bundle = MakeBundle(18)
+    bundle = MakePlatformBundle(18)
     bundle.AddArchive(archive)
     manifest = MakeManifest(bundle)
     archive = manifest.GetBundles()[0]['archives'][0]
