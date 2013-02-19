@@ -769,22 +769,14 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   if (horizontal) {
     // Move the launcher with the gesture.
     target_bounds->launcher_bounds_in_root.Offset(0, translate);
+    target_bounds->status_bounds_in_root.Offset(0, translate);
 
-    if (translate > 0) {
-      // When dragging down, the statusbar should move.
-      target_bounds->status_bounds_in_root.Offset(0, translate);
-    } else {
+    if (translate < 0) {
       // When dragging up, the launcher height should increase.
       float move = std::max(translate,
                             -static_cast<float>(resistance_free_region));
       target_bounds->launcher_bounds_in_root.set_height(
           target_bounds->launcher_bounds_in_root.height() + move - translate);
-
-      // The statusbar should be in the center.
-      gfx::Rect status_y = target_bounds->launcher_bounds_in_root;
-      status_y.ClampToCenteredSize(
-          target_bounds->status_bounds_in_root.size());
-      target_bounds->status_bounds_in_root.set_y(status_y.y());
     }
   } else {
     // Move the launcher with the gesture.
