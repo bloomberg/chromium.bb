@@ -164,6 +164,8 @@ class Instruction(object):
       self.optional_prefixes.append('condrep')
     if Attribute('rep') in self.attributes:
       self.optional_prefixes.append('rep')
+    if Attribute('lock') in self.attributes:
+      self.optional_prefixes.append('lock')
 
     while True:
       opcode = self.opcodes[0]
@@ -796,18 +798,23 @@ def SplitRM(instruction):
           def_format.OperandType.XMM_REGISTER_IN_RM,
           def_format.OperandType.MEMORY)}
 
-  instr1 = copy.deepcopy(instruction)
-  instr2 = copy.deepcopy(instruction)
+  instr_register = copy.deepcopy(instruction)
+  instr_memory = copy.deepcopy(instruction)
   splitted = False
   for i, operand in enumerate(instruction.operands):
     if operand.arg_type in splits:
       assert not splitted, 'more than one r/m-splittable operand'
       splitted = True
-      (instr1.operands[i].arg_type,
-       instr2.operands[i].arg_type) = splits[operand.arg_type]
+      (instr_register.operands[i].arg_type,
+       instr_memory.operands[i].arg_type) = splits[operand.arg_type]
 
   if splitted:
-    return [instr1, instr2]
+    # Lock prefix is only allowed for instructions that access memory.
+    assert 'lock' not in instruction.required_prefixes
+    if 'lock' in instruction.optional_prefixes:
+      instr_register.optional_prefixes.remove('lock')
+
+    return [instr_register, instr_memory]
   else:
     return [instruction]
 
@@ -824,18 +831,18 @@ def SplitByteNonByte(instruction):
     original instruction is returned unchanged.
   """
 
-  instr1 = copy.deepcopy(instruction)
-  instr2 = copy.deepcopy(instruction)
+  instr_byte = copy.deepcopy(instruction)
+  instr_nonbyte = copy.deepcopy(instruction)
 
   splitted = False
   for i, operand in enumerate(instruction.operands):
     if operand.size == '':
       splitted = True
-      instr1.operands[i].size = 'b'
+      instr_byte.operands[i].size = 'b'
       if operand.arg_type == def_format.OperandType.IMMEDIATE:
-        instr2.operands[i].size = 'z'  # word/dword
+        instr_nonbyte.operands[i].size = 'z'  # word/dword
       else:
-        instr2.operands[i].size = 'v'  # word/dword/qword
+        instr_nonbyte.operands[i].size = 'v'  # word/dword/qword
 
   if not splitted:
     return [instruction]
@@ -845,11 +852,11 @@ def SplitByteNonByte(instruction):
   main_opcode_part = instruction.GetMainOpcodePart()
   last_byte = int(main_opcode_part[-1], 16)
   assert last_byte % 2 == 0
-  instr2.opcodes[len(main_opcode_part) - 1] = hex(last_byte | 1)
+  instr_nonbyte.opcodes[len(main_opcode_part) - 1] = hex(last_byte | 1)
 
   # TODO(shcherbina): att-show-name-suffix-b
 
-  return [instr1, instr2]
+  return [instr_byte, instr_nonbyte]
 
 
 def SplitVYZ(bitness, instruction):
@@ -873,9 +880,9 @@ def SplitVYZ(bitness, instruction):
   """
   assert bitness in [32, 64]
 
-  instr1 = copy.deepcopy(instruction)
-  instr2 = copy.deepcopy(instruction)
-  instr3 = copy.deepcopy(instruction)
+  instr16 = copy.deepcopy(instruction)
+  instr32 = copy.deepcopy(instruction)
+  instr64 = copy.deepcopy(instruction)
 
   z_present = False
   y_present = False
@@ -883,19 +890,19 @@ def SplitVYZ(bitness, instruction):
 
   for i, operand in enumerate(instruction.operands):
     if operand.size == 'z':
-      instr1.operands[i].size = 'w'
-      instr2.operands[i].size = 'd'
-      instr3.operands[i].size = 'd'
+      instr16.operands[i].size = 'w'
+      instr32.operands[i].size = 'd'
+      instr64.operands[i].size = 'd'
       z_present = True
     elif operand.size == 'y':
-      instr1.operands[i].size = 'd'
-      instr2.operands[i].size = 'd'
-      instr3.operands[i].size = 'q'
+      instr16.operands[i].size = 'd'
+      instr32.operands[i].size = 'd'
+      instr64.operands[i].size = 'q'
       y_present = True
     elif operand.size == 'v':
-      instr1.operands[i].size = 'w'
-      instr2.operands[i].size = 'd'
-      instr3.operands[i].size = 'q'
+      instr16.operands[i].size = 'w'
+      instr32.operands[i].size = 'd'
+      instr64.operands[i].size = 'q'
       v_present = True
 
   if not z_present and not y_present and not v_present:
@@ -914,23 +921,24 @@ def SplitVYZ(bitness, instruction):
     if 'data16' in instruction.required_prefixes:
       return [instruction]
 
-    instr1.rex.w_matters = False
-    return [instr1]
+    instr = copy.deepcopy(instruction)
+    instr.rex.w_matters = False
+    return [instr]
 
   assert 'data16' not in instruction.required_prefixes
-  instr1.required_prefixes.append('data16')
-  instr1.rex.w_set = False
-  instr2.rex.w_set = False
-  instr3.rex.w_set = True
+  instr16.required_prefixes.append('data16')
+  instr16.rex.w_set = False
+  instr32.rex.w_set = False
+  instr64.rex.w_set = True
 
   result = []
   if z_present or v_present:
-    result.append(instr1)
-  result.append(instr2)
+    result.append(instr16)
+  result.append(instr32)
   if (bitness == 64 and
       (y_present or v_present) and
       Attribute('norexw') not in instruction.attributes):
-    result.append(instr3)
+    result.append(instr64)
   return result
 
   # TODO(shcherbina): att-show-name-suffix-...
