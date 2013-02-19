@@ -475,7 +475,7 @@ bool RootView::OnMouseDragged(const ui::MouseEvent& event) {
 
     ui::MouseEvent mouse_event(event, static_cast<View*>(this),
                                mouse_pressed_handler_);
-    return mouse_pressed_handler_->ProcessMouseDragged(mouse_event);
+    DispatchEventToTarget(mouse_pressed_handler_, &mouse_event);
   }
   return false;
 }
