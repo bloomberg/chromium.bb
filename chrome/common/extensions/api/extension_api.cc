@@ -354,8 +354,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT));
   RegisterSchema("declarativeWebRequest", ReadFromResource(
       IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST));
-  RegisterSchema("devtools", ReadFromResource(
-      IDR_EXTENSION_API_JSON_DEVTOOLS));
   RegisterSchema("experimental.input.virtualKeyboard", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD));
   RegisterSchema("experimental.processes", ReadFromResource(

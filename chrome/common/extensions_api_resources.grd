@@ -15,7 +15,6 @@
       <include name="IDR_EXTENSION_API_JSON_COMMANDS" file="extensions\api\commands.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT" file="extensions\api\declarative_content.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST" file="extensions\api\declarative_web_request.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_DEVTOOLS" file="extensions\api\devtools.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_ECHOPRIVATE" file="extensions\api\echo_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD" file="extensions\api\experimental_input_virtual_keyboard.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES" file="extensions\api\experimental_processes.json" type="BINDATA" />
