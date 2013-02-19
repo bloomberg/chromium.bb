@@ -323,7 +323,7 @@ DriveFileSyncService::~DriveFileSyncService() {
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
     Profile* profile,
     const base::FilePath& base_dir,
-    scoped_ptr<DriveFileSyncClient> sync_client,
+    scoped_ptr<DriveFileSyncClientInterface> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store) {
   return make_scoped_ptr(new DriveFileSyncService(
       profile, base_dir, sync_client.Pass(), metadata_store.Pass()));
@@ -686,7 +686,7 @@ void DriveFileSyncService::OnNetworkConnected() {
 DriveFileSyncService::DriveFileSyncService(
     Profile* profile,
     const base::FilePath& base_dir,
-    scoped_ptr<DriveFileSyncClient> sync_client,
+    scoped_ptr<DriveFileSyncClientInterface> sync_client,
     scoped_ptr<DriveMetadataStore> metadata_store)
     : profile_(profile),
       last_operation_status_(fileapi::SYNC_STATUS_OK),

@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_client.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_client_interface.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
@@ -59,7 +59,7 @@ class DriveFileSyncService
   static scoped_ptr<DriveFileSyncService> CreateForTesting(
       Profile* profile,
       const base::FilePath& base_dir,
-      scoped_ptr<DriveFileSyncClient> sync_client,
+      scoped_ptr<DriveFileSyncClientInterface> sync_client,
       scoped_ptr<DriveMetadataStore> metadata_store);
 
   // RemoteFileSyncService overrides.
@@ -182,7 +182,7 @@ class DriveFileSyncService
 
   DriveFileSyncService(Profile* profile,
                        const base::FilePath& base_dir,
-                       scoped_ptr<DriveFileSyncClient> sync_client,
+                       scoped_ptr<DriveFileSyncClientInterface> sync_client,
                        scoped_ptr<DriveMetadataStore> metadata_store);
 
   // This should be called when an async task needs to get a task token.
@@ -374,7 +374,7 @@ class DriveFileSyncService
                                         fileapi::SyncDirection direction);
 
   scoped_ptr<DriveMetadataStore> metadata_store_;
-  scoped_ptr<DriveFileSyncClient> sync_client_;
+  scoped_ptr<DriveFileSyncClientInterface> sync_client_;
 
   Profile* profile_;
   fileapi::SyncStatusCode last_operation_status_;

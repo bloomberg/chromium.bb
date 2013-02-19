@@ -250,8 +250,10 @@ class DriveFileSyncServiceTest : public testing::Test {
   }
 
   void SetUpDriveSyncService(bool enabled) {
-    sync_service_ = DriveFileSyncService::CreateForTesting(profile_.get(),
-        base_dir_.path(), sync_client_.Pass(), metadata_store_.Pass()).Pass();
+    sync_service_ = DriveFileSyncService::CreateForTesting(
+        profile_.get(), base_dir_.path(),
+        sync_client_.PassAs<DriveFileSyncClientInterface>(),
+        metadata_store_.Pass()).Pass();
     sync_service_->SetSyncEnabled(enabled);
     sync_service_->AddServiceObserver(&mock_remote_observer_);
     sync_service_->AddFileStatusObserver(&mock_file_status_observer_);
@@ -341,7 +343,7 @@ class DriveFileSyncServiceTest : public testing::Test {
         inserted_to_queue.first);
   }
 
-  DriveFileSyncClient* sync_client() {
+  DriveFileSyncClientInterface* sync_client() {
     if (sync_client_)
       return sync_client_.get();
     return sync_service_->sync_client_.get();

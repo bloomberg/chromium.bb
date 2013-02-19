@@ -442,6 +442,11 @@ void DriveFileSyncClient::DeleteFile(
                             AsWeakPtr(), remote_file_md5, callback)));
 }
 
+GURL DriveFileSyncClient::ResourceIdToResourceLink(
+    const std::string& resource_id) const {
+  return url_generator_.GenerateEditUrl(resource_id);
+}
+
 // static
 std::string DriveFileSyncClient::OriginToDirectoryTitle(const GURL& origin) {
   DCHECK(origin.SchemeIs(extensions::kExtensionScheme));
@@ -451,11 +456,6 @@ std::string DriveFileSyncClient::OriginToDirectoryTitle(const GURL& origin) {
 // static
 GURL DriveFileSyncClient::DirectoryTitleToOrigin(const std::string& title) {
   return extensions::Extension::GetBaseURLFromExtensionId(title);
-}
-
-GURL DriveFileSyncClient::ResourceIdToResourceLink(
-    const std::string& resource_id) const {
-  return url_generator_.GenerateEditUrl(resource_id);
 }
 
 void DriveFileSyncClient::OnReadyToPerformOperations() {
@@ -706,6 +706,10 @@ void DriveFileSyncClient::UploadExistingFileInternal(
       mime_type,
       entry->etag(),
       base::Bind(&UploadResultAdapter, did_upload_callback));
+}
+
+bool DriveFileSyncClient::IsAuthenticated() const {
+  return drive_service_->HasRefreshToken();
 }
 
 void DriveFileSyncClient::DidUploadExistingFile(

@@ -2039,6 +2039,7 @@
         'browser/sync/user_selectable_sync_type.h',
         'browser/sync_file_system/drive_file_sync_client.cc',
         'browser/sync_file_system/drive_file_sync_client.h',
+        'browser/sync_file_system/drive_file_sync_client_interface.h',
         'browser/sync_file_system/drive_file_sync_service.cc',
         'browser/sync_file_system/drive_file_sync_service.h',
         'browser/sync_file_system/drive_file_sync_util.cc',
