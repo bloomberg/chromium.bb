@@ -21,11 +21,15 @@ class NotificationBubbleWrapperWin
     : public views::WidgetObserver,
       public views::TrayBubbleView::Delegate {
  public:
-  // Takes ownership of |bubble|.
+  enum BubbleType {
+    BUBBLE_TYPE_POPUP,
+    BUBBLE_TYPE_MESSAGE_CENTER,
+  };
+
   NotificationBubbleWrapperWin(
       WebNotificationTrayWin* tray,
       scoped_ptr<message_center::MessageBubbleBase> bubble,
-      AnchorType anchor_type);
+      BubbleType bubble_type);
   virtual ~NotificationBubbleWrapperWin();
 
   // Overridden from views::WidgetObserver.
@@ -50,6 +54,7 @@ class NotificationBubbleWrapperWin
 
  private:
   scoped_ptr<message_center::MessageBubbleBase> bubble_;
+  const BubbleType bubble_type_;
   // |bubble_view_| is owned by its Widget.
   views::TrayBubbleView* bubble_view_;
   views::Widget* bubble_widget_;

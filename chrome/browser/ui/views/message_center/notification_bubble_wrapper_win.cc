@@ -8,6 +8,8 @@
 #include "chrome/browser/ui/views/message_center/web_notification_tray_win.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_bubble_base.h"
+#include "ui/message_center/message_center_bubble.h"
+#include "ui/message_center/message_popup_bubble.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/widget/widget.h"
@@ -26,25 +28,25 @@ namespace internal {
 NotificationBubbleWrapperWin::NotificationBubbleWrapperWin(
     WebNotificationTrayWin* tray,
     scoped_ptr<message_center::MessageBubbleBase> bubble,
-    AnchorType anchor_type)
+    BubbleType bubble_type)
     : bubble_(bubble.Pass()),
+      bubble_type_(bubble_type),
       bubble_view_(NULL),
       bubble_widget_(NULL),
       tray_(tray) {
   // Windows-specific initialization.
   views::TrayBubbleView::AnchorAlignment anchor_alignment =
-      tray->GetAnchorAlignment();
+      tray_->GetAnchorAlignment();
   views::TrayBubbleView::InitParams init_params =
       bubble_->GetInitParams(anchor_alignment);
-  init_params.anchor_type = anchor_type;
   init_params.close_on_deactivate = false;
-  init_params.arrow_alignment =
-      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR;
+  init_params.arrow_alignment = views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE;
+  init_params.hide_arrow = true;
   // TODO(dewittj): Show big shadow without blocking clicks.
   init_params.shadow = views::BubbleBorder::NO_SHADOW;
 
   bubble_view_ = views::TrayBubbleView::Create(
-      tray->GetBubbleWindowContainer(), NULL, this, &init_params);
+      tray_->GetBubbleWindowContainer(), NULL, this, &init_params);
 
   bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
   bubble_widget_->AddObserver(this);
@@ -93,10 +95,9 @@ gfx::Rect NotificationBubbleWrapperWin::GetAnchorRect(
     views::Widget* anchor_widget,
     AnchorType anchor_type,
     AnchorAlignment anchor_alignment) {
-  gfx::Size size = bubble_view_->GetPreferredSize();
-  return tray_->GetAnchorRect(size,
-                              anchor_type,
-                              anchor_alignment);
+  if (bubble_type_ == BUBBLE_TYPE_POPUP)
+    return tray_->GetPopupAnchor();
+  return tray_->GetMessageCenterAnchor();
 }
 
 void NotificationBubbleWrapperWin::HideBubble(

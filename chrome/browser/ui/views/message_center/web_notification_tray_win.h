@@ -55,10 +55,8 @@ class WebNotificationTrayWin
   // These are forwarded to WebNotificationTrayWin by
   // NotificationBubbleWrapperWin classes since they don't have enough
   // context to provide the required data for TrayBubbleView::Delegate.
-  gfx::Rect GetAnchorRect(
-      gfx::Size preferred_size,
-      views::TrayBubbleView::AnchorType anchor_type,
-      views::TrayBubbleView::AnchorAlignment anchor_alignment);
+  gfx::Rect GetMessageCenterAnchor();
+  gfx::Rect GetPopupAnchor();
   gfx::NativeView GetBubbleWindowContainer();
   views::TrayBubbleView::AnchorAlignment GetAnchorAlignment();
 
@@ -83,7 +81,6 @@ class WebNotificationTrayWin
                            ManyMessageCenterNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayWinTest, ManyPopupNotifications);
 
-  void UpdateAnchorRect();
   void AddQuietModeMenu(StatusIcon* status_icon);
   message_center::MessagePopupBubble* GetPopupBubbleForTest();
   message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
@@ -94,8 +91,7 @@ class WebNotificationTrayWin
   StatusIcon* status_icon_;
   bool message_center_visible_;
   scoped_ptr<MessageCenterTray> message_center_tray_;
-  gfx::Rect message_center_anchor_rect_;
-  gfx::Rect popup_anchor_rect_;
+  gfx::Point mouse_click_point_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTrayWin);
 };

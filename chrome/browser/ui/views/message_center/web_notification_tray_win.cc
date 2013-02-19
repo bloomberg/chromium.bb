@@ -32,45 +32,45 @@ const int kEnableQuietModeHour = 1;
 const int kEnableQuietModeDay = 2;
 
 // Tray constants
-const int kPaddingFromLeftEdgeOfSystemTrayBottomAlignment = 8;
+const int kScreenEdgePadding = 2;
+const int kArrowHeight = 7;  // This is the appropriate size for NO_SHADOW.
 
-gfx::Rect GetCornerAnchorRect(gfx::Size preferred_size) {
+gfx::Rect GetCornerAnchorRect() {
   // TODO(dewittj): Use the preference to determine which corner to anchor from.
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   gfx::Rect rect = screen->GetPrimaryDisplay().work_area();
-  rect.Inset(10, 5);
-  gfx::Point bottom_right(
-    rect.bottom_right().x() - preferred_size.width() / 2,
-    rect.bottom_right().y());
-  return gfx::Rect(bottom_right, gfx::Size());
+  rect.Inset(kScreenEdgePadding, kScreenEdgePadding);
+  return gfx::Rect(rect.bottom_right(), gfx::Size());
 }
 
-// GetMouseAnchorRect returns a rectangle that is near the cursor point, but
-// whose behavior depends on where the Windows taskbar is. If it is on the
-// top or bottom of the screen, we want the arrow to touch the edge of the
-// taskbar directly above or below the mouse pointer and within the work area.
-// Otherwise, position the anchor on the mouse cursor directly.
-gfx::Rect GetMouseAnchorRect() {
+gfx::Point GetClosestCorner(gfx::Rect rect, gfx::Point query) {
+  gfx::Point center_point = rect.CenterPoint();
+  gfx::Point rv;
+
+  if (query.x() > center_point.x())
+    rv.set_x(rect.right());
+  else
+    rv.set_x(rect.x());
+
+  if (query.y() > center_point.y())
+    rv.set_y(rect.bottom());
+  else
+    rv.set_y(rect.y());
+
+  return rv;
+}
+
+// GetMouseAnchorRect returns a rectangle that has one corner where the mouse
+// clicked, and the opposite corner at the closest corner of the work area
+// (inset by an appropriate margin.)
+gfx::Rect GetMouseAnchorRect(gfx::Point cursor) {
+  // TODO(dewittj): GetNativeScreen could be wrong for Aura.
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  gfx::Rect usable_area = screen->GetPrimaryDisplay().bounds();
   gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
+  work_area.Inset(kScreenEdgePadding, kScreenEdgePadding);
+  gfx::Point corner = GetClosestCorner(work_area, cursor);
 
-  // Inset the rectangle by the taskbar width if it is on top or bottom.
-  usable_area.set_y(work_area.y());
-  usable_area.set_height(work_area.height());
-
-  // Keep the anchor from being too close to the edge of the screen.
-  usable_area.Inset(kPaddingFromLeftEdgeOfSystemTrayBottomAlignment, 0);
-
-  // Use a mouse point that is on the mouse cursor, unless the mouse is over the
-  // start menu and the start menu is on the top or bottom.
-  gfx::Point cursor = screen->GetCursorScreenPoint();
-  gfx::Rect mouse_anchor_rect(
-      gfx::BoundingRect(cursor, usable_area.bottom_right()));
-  mouse_anchor_rect.set_height(0);
-  if (!usable_area.Contains(cursor))
-    mouse_anchor_rect.AdjustToFit(usable_area);
-  mouse_anchor_rect.set_width(0);
+  gfx::Rect mouse_anchor_rect(gfx::BoundingRect(cursor, corner));
   return mouse_anchor_rect;
 }
 
@@ -122,7 +122,9 @@ bool WebNotificationTrayWin::ShowPopups() {
   scoped_ptr<message_center::MessagePopupBubble> bubble(
       new message_center::MessagePopupBubble(message_center()));
   popup_bubble_.reset(new internal::NotificationBubbleWrapperWin(
-      this, bubble.Pass(), views::TrayBubbleView::ANCHOR_TYPE_BUBBLE));
+      this,
+      bubble.Pass(),
+      internal::NotificationBubbleWrapperWin::BUBBLE_TYPE_POPUP));
   return true;
 }
 
@@ -131,25 +133,37 @@ void WebNotificationTrayWin::HidePopups() {
 }
 
 bool WebNotificationTrayWin::ShowMessageCenter() {
-  // Calculate the maximum height of the message center, given its anchor.
   scoped_ptr<message_center::MessageCenterBubble> bubble(
       new message_center::MessageCenterBubble(message_center()));
-  gfx::Point anchor_center = message_center_anchor_rect_.CenterPoint();
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
-  gfx::Point work_area_center = work_area.CenterPoint();
-  const int zMarginFromEdgeOfWorkArea = 10;
-  int max_height = 0;
-  if (work_area_center < anchor_center)
-    max_height = anchor_center.y() - work_area.origin().y();
-  else
-    max_height = work_area.bottom() - message_center_anchor_rect_.bottom();
-  bubble->SetMaxHeight(max_height - zMarginFromEdgeOfWorkArea);
+  views::TrayBubbleView::AnchorAlignment alignment = GetAnchorAlignment();
+
+  int max_height = work_area.height();
+
+  // If the alignment is left- or right-oriented, the bubble can fill up the
+  // entire vertical height of the screen since the bubble is rendered to the
+  // side of the clicked icon.  Otherwise we have to adjust for the arrow's
+  // height.
+  if (alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM ||
+      alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_TOP) {
+    max_height -= kArrowHeight;
+    max_height -= 2*kScreenEdgePadding;
+
+    // If the work area contains the click point, then we know that the icon is
+    // not in the taskbar.  Then we need to subtract the distance of the click
+    // point from the edge of the work area so we can see the whole bubble.
+    if (work_area.Contains(mouse_click_point_)) {
+      max_height -= std::min(mouse_click_point_.y() - work_area.y(),
+                             work_area.bottom() - mouse_click_point_.y());
+    }
+  }
+  bubble->SetMaxHeight(max_height);
 
   message_center_bubble_.reset(new internal::NotificationBubbleWrapperWin(
       this,
       bubble.Pass(),
-      views::TrayBubbleView::ANCHOR_TYPE_TRAY));
+      internal::NotificationBubbleWrapperWin::BUBBLE_TYPE_MESSAGE_CENTER));
   return true;
 }
 
@@ -173,13 +187,12 @@ void WebNotificationTrayWin::OnMessageCenterTrayChanged() {
   status_icon_->SetImage(GetIcon(has_unread_notifications));
 }
 
-gfx::Rect WebNotificationTrayWin::GetAnchorRect(
-    gfx::Size preferred_size,
-    views::TrayBubbleView::AnchorType anchor_type,
-    views::TrayBubbleView::AnchorAlignment anchor_alignment) {
-  if (anchor_type == views::TrayBubbleView::ANCHOR_TYPE_TRAY)
-    return message_center_anchor_rect_;
-  return GetCornerAnchorRect(preferred_size);
+gfx::Rect WebNotificationTrayWin::GetMessageCenterAnchor() {
+  return GetMouseAnchorRect(mouse_click_point_);
+}
+
+gfx::Rect WebNotificationTrayWin::GetPopupAnchor() {
+  return GetCornerAnchorRect();
 }
 
 views::TrayBubbleView::AnchorAlignment
@@ -194,11 +207,12 @@ WebNotificationTrayWin::GetAnchorAlignment() {
   // is on the bottom, and cause the arrow to be displayed on the bottom of the
   // bubble.  Otherwise, cause the arrow to be displayed on the side of the
   // bubble that the taskbar is on.
-  if (work_area.height() < screen_bounds.height())
-    return views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
-  if (work_area.x() > screen_bounds.x())
-    return views::TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
-  return views::TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
+  if (work_area.width() < screen_bounds.width()) {
+    if (work_area.x() > screen_bounds.x())
+      return views::TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
+    return views::TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
+  }
+  return views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
 }
 
 gfx::NativeView WebNotificationTrayWin::GetBubbleWindowContainer() {
@@ -206,7 +220,9 @@ gfx::NativeView WebNotificationTrayWin::GetBubbleWindowContainer() {
 }
 
 void WebNotificationTrayWin::OnStatusIconClicked() {
-  UpdateAnchorRect();
+  // TODO(dewittj): It's possible GetNativeScreen is wrong for win-aura.
+  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+  mouse_click_point_ = screen->GetCursorScreenPoint();
   message_center_tray_->ToggleMessageCenterBubble();
 }
 
@@ -247,10 +263,6 @@ void WebNotificationTrayWin::ExecuteCommand(int command_id) {
       base::TimeDelta::FromDays(1):
       base::TimeDelta::FromHours(1);
   message_center()->notification_list()->EnterQuietModeWithExpire(expires_in);
-}
-
-void WebNotificationTrayWin::UpdateAnchorRect() {
-  message_center_anchor_rect_ = GetMouseAnchorRect();
 }
 
 void WebNotificationTrayWin::AddQuietModeMenu(StatusIcon* status_icon) {
