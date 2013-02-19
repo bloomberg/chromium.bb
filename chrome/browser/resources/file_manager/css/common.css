@@ -384,7 +384,6 @@ input[type='submit'][disabled]:hover {
   border-radius: 2px;
   box-sizing: border-box;
   margin: 2px 0;
-  padding: 1px;
 }
 
 .progress-track {
