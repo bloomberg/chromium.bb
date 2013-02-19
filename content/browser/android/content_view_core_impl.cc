@@ -905,8 +905,8 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
                                      jint x, jint y, jint vx, jint vy) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureFlingStart, time_ms, x, y);
-  event.data.flingStart.velocityX = vx / GetDpiScale();
-  event.data.flingStart.velocityY = vy / GetDpiScale();
+  event.data.flingStart.velocityX = vx;
+  event.data.flingStart.velocityY = vy;
 
   SendGestureEvent(event);
 }

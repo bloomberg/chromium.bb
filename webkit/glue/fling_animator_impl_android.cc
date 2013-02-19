@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurveTarget.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/vector2d.h"
 
 using base::android::AttachCurrentThread;
@@ -108,7 +109,9 @@ bool FlingAnimatorImpl::apply(double time,
   gfx::Point current_position = GetCurrentPosition();
   gfx::Vector2d diff(current_position - last_position_);
   last_position_ = current_position;
-  WebKit::WebPoint scroll_amount(diff.x(), diff.y());
+  float dpi_scale = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()
+      .device_scale_factor();
+  WebKit::WebPoint scroll_amount(diff.x() / dpi_scale, diff.y() / dpi_scale);
   // scrollBy() could delete this curve if the animation is over, so don't touch
   // any member variables after making that call.
   target->scrollBy(scroll_amount);
