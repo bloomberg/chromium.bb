@@ -34,30 +34,53 @@ struct text_model_state {
 static void
 text_model_commit_string(void *data,
 			 struct text_model *text_model,
-			 const char *text,
-			 uint32_t index)
+			 uint32_t serial,
+			 const char *text)
 {
 }
 
 static void
 text_model_preedit_string(void *data,
 			  struct text_model *text_model,
+			  uint32_t serial,
 			  const char *text,
-			  uint32_t index)
+			  const char *commit)
 {
 }
 
 static void
 text_model_delete_surrounding_text(void *data,
 				   struct text_model *text_model,
+				   uint32_t serial,
 				   int32_t index,
 				   uint32_t length)
 {
 }
 
 static void
+text_model_cursor_position(void *data,
+			   struct text_model *text_model,
+			   uint32_t serial,
+			   int32_t index,
+			   int32_t anchor)
+{
+}
+
+static void
 text_model_preedit_styling(void *data,
-			   struct text_model *text_model)
+			   struct text_model *text_model,
+			   uint32_t serial,
+			   uint32_t index,
+			   uint32_t length,
+			   uint32_t style)
+{
+}
+
+static void
+text_model_preedit_cursor(void *data,
+			  struct text_model *text_model,
+			  uint32_t serial,
+			  int32_t index)
 {
 }
 
@@ -76,24 +99,6 @@ text_model_keysym(void *data,
 		  uint32_t sym,
 		  uint32_t state,
 		  uint32_t modifiers)
-{
-}
-
-static void
-text_model_selection_replacement(void *data,
-				 struct text_model *text_model)
-{
-}
-
-static void
-text_model_direction(void *data,
-		     struct text_model *text_model)
-{
-}
-
-static void
-text_model_locale(void *data,
-		  struct text_model *text_model)
 {
 }
 
@@ -119,18 +124,25 @@ text_model_leave(void *data,
 	state->deactivated += 1;
 }
 
+static void
+text_model_input_panel_state(void *data,
+			     struct text_model *text_model,
+			     uint32_t state)
+{
+}
+
 static const struct text_model_listener text_model_listener = {
 	text_model_commit_string,
 	text_model_preedit_string,
 	text_model_delete_surrounding_text,
+	text_model_cursor_position,
 	text_model_preedit_styling,
+	text_model_preedit_cursor,
 	text_model_modifiers_map,
 	text_model_keysym,
-	text_model_selection_replacement,
-	text_model_direction,
-	text_model_locale,
 	text_model_enter,
-	text_model_leave
+	text_model_leave,
+	text_model_input_panel_state
 };
 
 TEST(text_test)
@@ -165,7 +177,7 @@ TEST(text_test)
 	assert(client->input->keyboard->focus == client->surface);
 
 	/* Activate test model and make sure we get enter event. */
-	text_model_activate(text_model, client->input->wl_seat,
+	text_model_activate(text_model, 0, client->input->wl_seat,
 			    client->surface->wl_surface);
 	client_roundtrip(client);
 	assert(state.activated == 1 && state.deactivated == 0);
@@ -176,7 +188,7 @@ TEST(text_test)
 	assert(state.activated == 1 && state.deactivated == 1);
 
 	/* Activate test model again. */
-	text_model_activate(text_model, client->input->wl_seat,
+	text_model_activate(text_model, 0, client->input->wl_seat,
 			    client->surface->wl_surface);
 	client_roundtrip(client);
 	assert(state.activated == 2 && state.deactivated == 1);
