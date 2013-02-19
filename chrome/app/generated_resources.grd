@@ -484,7 +484,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         Today
       </message>
       <message name="IDS_HISTORY_NUMBER_VISITS" desc="Format string for the number of visits of a site.">
-        (<ph name="NUMBER_VISITS">$1</ph>)
+        (<ph name="NUMBER_VISITS">$1<ex>3</ex></ph>)
       </message>
 
       <!-- Generic terms -->
@@ -9531,7 +9531,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG" desc="When a webpage fails to load, in some cases we suggest checking the proxy server configuration, or disabling the proxy server.">
           If you use a proxy server, check your proxy settings or contact your
           network administrator to make sure the proxy server is working.
-          <ph name="PLATFORM_TEXT">$1</ph>
+          <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It.</ex></ph>
         </message>
       </if>
       <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
@@ -9540,7 +9540,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           network administrator to make sure the proxy server is working. If you
           don't believe you should be using a proxy server, adjust your proxy
           settings:
-          <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It</ex></ph>
+          <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It.</ex></ph>
         </message>
       </if>
       <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE" desc="When a webpage fails to load, we provide a link to the help center to learn more about the failure.">
