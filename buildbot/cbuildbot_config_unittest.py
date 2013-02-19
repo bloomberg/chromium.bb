@@ -364,6 +364,14 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     for config in cbuildbot_config.config.values():
       self.assertFalse(config['use_lkgm'] and config['use_chrome_lkgm'])
 
+  def testQuickPaladin(self):
+    """Test that no paladin builder has both quick_unit=False and vm_tests."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      self.assertFalse(config['build_type'] == constants.PALADIN_TYPE and
+                       config['important'] and not config['quick_unit'] and
+                       config['vm_tests'], '%s has both quick_unit=False and '
+                       'vm_tests' % build_name)
+
 
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""

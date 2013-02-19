@@ -1009,6 +1009,7 @@ internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='alex paladin',
   upload_hw_test_artifacts=True,
+  quick_unit=False,
 )
 
 internal_paladin.add_config('stumpy-paladin',
@@ -1026,6 +1027,7 @@ internal_paladin.add_config('lumpy-paladin',
 internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
+  quick_unit=False,
 )
 
 internal_paladin.add_config('parrot-paladin',
