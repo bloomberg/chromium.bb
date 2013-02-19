@@ -134,18 +134,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
       bool key_only,
       WebKit::WebIDBCallbacks* callbacks);
 
-  void RequestIDBDatabasePutOld(
-      int32 ipc_database_id,
-      int64 transaction_id,
-      int64 object_store_id,
-      WebKit::WebVector<unsigned char>* value,
-      const IndexedDBKey& key,
-      WebKit::WebIDBDatabase::PutMode put_mode,
-      WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebVector<long long>& index_ids,
-      const WebKit::WebVector<WebKit::WebVector<
-          WebKit::WebIDBKey> >& index_keys);
-
   void RequestIDBDatabasePut(
       int32 ipc_database_id,
       int64 transaction_id,
@@ -252,16 +240,11 @@ class CONTENT_EXPORT IndexedDBDispatcher
                        int32 ipc_database_id,
                        int64 old_version,
                        const IndexedDBDatabaseMetadata& metdata);
-  void OnAbortOld(int32 ipc_thread_id,
-                  int32 ipc_transaction_id,
-                  int code,
-                  const string16& message);
   void OnAbort(int32 ipc_thread_id,
                int32 ipc_database_id,
                int64 transaction_id,
                int code,
                const string16& message);
-  void OnCompleteOld(int32 ipc_thread_id, int32 ipc_transaction_id);
   void OnComplete(int32 ipc_thread_id,
                   int32 ipc_database_id,
                   int64 transaction_id);

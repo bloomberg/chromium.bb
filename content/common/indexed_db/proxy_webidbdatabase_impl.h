@@ -45,14 +45,6 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
                    WebKit::WebIDBCallbacks*);
   virtual void put(long long transactionId,
                    long long objectStoreId,
-                   WebKit::WebVector<unsigned char>* value,
-                   const WebKit::WebIDBKey&,
-                   PutMode,
-                   WebKit::WebIDBCallbacks*,
-                   const WebKit::WebVector<long long>& indexIds,
-                   const WebKit::WebVector<WebIndexKeys>&);
-  virtual void put(long long transactionId,
-                   long long objectStoreId,
                    const WebKit::WebData& value,
                    const WebKit::WebIDBKey&,
                    PutMode,

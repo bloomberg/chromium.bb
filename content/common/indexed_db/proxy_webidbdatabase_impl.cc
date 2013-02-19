@@ -110,23 +110,6 @@ void RendererWebIDBDatabaseImpl::get(
 void RendererWebIDBDatabaseImpl::put(
     long long transaction_id,
     long long object_store_id,
-    WebVector<unsigned char>* value,
-    const WebKit::WebIDBKey& key,
-    PutMode put_mode,
-    WebIDBCallbacks* callbacks,
-    const WebVector<long long>& web_index_ids,
-    const WebVector<WebIndexKeys>& web_index_keys) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBDatabasePutOld(
-      ipc_database_id_, transaction_id, object_store_id,
-      value, IndexedDBKey(key), put_mode, callbacks,
-      web_index_ids, web_index_keys);
-}
-
-void RendererWebIDBDatabaseImpl::put(
-    long long transaction_id,
-    long long object_store_id,
     const WebKit::WebData& value,
     const WebKit::WebIDBKey& key,
     PutMode put_mode,

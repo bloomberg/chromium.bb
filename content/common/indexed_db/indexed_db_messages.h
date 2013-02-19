@@ -113,33 +113,6 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseGet_Params)
 IPC_STRUCT_END()
 
 // Used to set a value in an object store.
-IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePutOld_Params)
-  // The id any response should contain.
-  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
-  IPC_STRUCT_MEMBER(int32, ipc_response_id)
-  // The database the object store belongs to.
-  IPC_STRUCT_MEMBER(int32, ipc_database_id)
-  // The transaction it's associated with.
-  IPC_STRUCT_MEMBER(int64, transaction_id)
-  // The object store's id.
-  IPC_STRUCT_MEMBER(int64, object_store_id)
-  // The index's id.
-  IPC_STRUCT_MEMBER(int64, index_id)
-  // The value to set.
-  IPC_STRUCT_MEMBER(std::vector<char>, value)
-  // The key to set it on (may not be "valid"/set in some cases).
-  IPC_STRUCT_MEMBER(content::IndexedDBKey, key)
-  // Whether this is an add or a put.
-  IPC_STRUCT_MEMBER(WebKit::WebIDBDatabase::PutMode, put_mode)
-  // The names of the indexes used below.
-  IPC_STRUCT_MEMBER(std::vector<int64>, index_ids)
-  // The keys for each index, such that each inner vector corresponds
-  // to each index named in index_names, respectively.
-  IPC_STRUCT_MEMBER(std::vector<std::vector<content::IndexedDBKey> >,
-                    index_keys)
-IPC_STRUCT_END()
-
-// Used to set a value in an object store.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabasePut_Params)
   // The id any response should contain.
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
@@ -475,10 +448,6 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseDestroyed,
 // WebIDBDatabase::get() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseGet,
                      IndexedDBHostMsg_DatabaseGet_Params)
-
-// WebIDBDatabase::put() message.
-IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabasePutOld,
-                     IndexedDBHostMsg_DatabasePutOld_Params)
 
 // WebIDBDatabase::put() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabasePut,

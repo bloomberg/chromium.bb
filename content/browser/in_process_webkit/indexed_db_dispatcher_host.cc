@@ -358,7 +358,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePutOld, OnPutOld)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPut)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetIndexKeys,
                         OnSetIndexKeys)
@@ -475,39 +474,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
                 params.object_store_id,
                 params.index_id,
                 params.key_range, params.key_only, callbacks.release());
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutOld(
-    const IndexedDBHostMsg_DatabasePutOld_Params& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, params.ipc_database_id);
-  if (!database)
-    return;
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebIDBKey>(parent_, params.ipc_thread_id,
-                                        params.ipc_response_id));
-  if (params.index_ids.size() != params.index_keys.size()) {
-    callbacks->onError(WebIDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionUnknownError,
-        "Malformed IPC message: index_ids.size() != index_keys.size()"));
-    return;
-  }
-
-  WebVector<unsigned char> value(params.value);
-  int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
-  database->put(host_transaction_id,
-                params.object_store_id,
-                &value, params.key,
-                params.put_mode, callbacks.release(),
-                params.index_ids,
-                params.index_keys);
-  TransactionIDToSizeMap* map =
-      &parent_->database_dispatcher_host_->transaction_size_map_;
-  // Size can't be big enough to overflow because it represents the
-  // actual bytes passed through IPC.
-  (*map)[host_transaction_id] += params.value.size();
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
