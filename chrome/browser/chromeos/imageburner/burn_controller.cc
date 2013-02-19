@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
@@ -34,7 +33,6 @@ bool IsBurnableDevice(const disks::DiskMountManager::Disk& disk) {
 class BurnControllerImpl
     : public BurnController,
       public disks::DiskMountManager::Observer,
-      public BurnLibrary::Observer,
       public NetworkLibrary::NetworkManagerObserver,
       public StateMachine::Observer,
       public BurnManager::Delegate,
@@ -43,7 +41,6 @@ class BurnControllerImpl
   explicit BurnControllerImpl(BurnController::Delegate* delegate)
       : burn_manager_(NULL),
         state_machine_(NULL),
-        observing_burn_lib_(false),
         working_(false),
         delegate_(delegate) {
     disks::DiskMountManager::GetInstance()->AddObserver(this);
@@ -55,7 +52,6 @@ class BurnControllerImpl
   }
 
   virtual ~BurnControllerImpl() {
-    CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
     if (state_machine_)
       state_machine_->RemoveObserver(this);
     burn_manager_->RemoveObserver(this);
@@ -93,35 +89,6 @@ class BurnControllerImpl
       const std::string& device_path) OVERRIDE {
   }
 
-  // BurnLibrary::Observer interface.
-  virtual void BurnProgressUpdated(BurnLibrary* object,
-                                   BurnEvent evt,
-                                   const ImageBurnStatus& status) OVERRIDE {
-    switch (evt) {
-      case(BURN_SUCCESS):
-        FinalizeBurn();
-        break;
-      case(BURN_FAIL):
-        ProcessError(IDS_IMAGEBURN_BURN_ERROR);
-        break;
-      case(BURN_UPDATE):
-        delegate_->OnProgress(BURNING, status.amount_burnt, status.total_size);
-        break;
-      case(UNZIP_STARTED):
-        delegate_->OnProgress(UNZIPPING, 0, 0);
-        break;
-      case(UNZIP_FAIL):
-        ProcessError(IDS_IMAGEBURN_EXTRACTING_ERROR);
-        break;
-      case(UNZIP_COMPLETE):
-        // We ignore this.
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-
   // NetworkLibrary::NetworkManagerObserver interface.
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE {
     if (state_machine_->state() == StateMachine::INITIAL && CheckNetwork())
@@ -153,6 +120,34 @@ class BurnControllerImpl
   // BurnManager::Observer override.
   virtual void OnDownloadCompleted() OVERRIDE {
     DownloadCompleted(true);
+  }
+
+  // BurnManager::Observer override.
+  virtual void OnBurnProgressUpdated(BurnEvent event,
+                                     const ImageBurnStatus& status) OVERRIDE {
+    switch (event) {
+      case(BURN_SUCCESS):
+        FinalizeBurn();
+        break;
+      case(BURN_FAIL):
+        ProcessError(IDS_IMAGEBURN_BURN_ERROR);
+        break;
+      case(BURN_UPDATE):
+        delegate_->OnProgress(BURNING, status.amount_burnt, status.total_size);
+        break;
+      case(UNZIP_STARTED):
+        delegate_->OnProgress(UNZIPPING, 0, 0);
+        break;
+      case(UNZIP_FAIL):
+        ProcessError(IDS_IMAGEBURN_EXTRACTING_ERROR);
+        break;
+      case(UNZIP_COMPLETE):
+        // We ignore this.
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
 
   // StateMachine::Observer interface.
@@ -278,25 +273,15 @@ class BurnControllerImpl
   }
 
   void BurnImage() {
-    if (!observing_burn_lib_) {
-      CrosLibrary::Get()->GetBurnLibrary()->AddObserver(this);
-      observing_burn_lib_ = true;
-    }
     if (state_machine_->state() == StateMachine::BURNING)
       return;
     state_machine_->OnBurnStarted();
-
-    CrosLibrary::Get()->GetBurnLibrary()->DoBurn(
-        zip_image_file_path_,
-        image_file_name_, burn_manager_->target_file_path(),
-        burn_manager_->target_device_path());
+    burn_manager_->DoBurn(zip_image_file_path_, image_file_name_);
   }
 
   void FinalizeBurn() {
     state_machine_->OnSuccess();
     burn_manager_->ResetTargetPaths();
-    CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
-    observing_burn_lib_ = false;
     delegate_->OnSuccess();
     working_ = false;
   }
@@ -306,11 +291,6 @@ class BurnControllerImpl
   void ProcessError(int message_id) {
     // If we are in intial state, error has already been dispached.
     if (state_machine_->state() == StateMachine::INITIAL) {
-      // We don't need burn library since we are not the ones doing the cleanup.
-      if (observing_burn_lib_) {
-        CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
-        observing_burn_lib_ = false;
-      }
       return;
     }
 
@@ -325,12 +305,9 @@ class BurnControllerImpl
     if (state  == StateMachine::DOWNLOADING) {
       burn_manager_->CancelImageFetch();
     } else if (state == StateMachine::BURNING) {
-      DCHECK(observing_burn_lib_);
       // Burn library doesn't send cancelled signal upon CancelBurnImage
       // invokation.
-      CrosLibrary::Get()->GetBurnLibrary()->CancelBurnImage();
-      CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
-      observing_burn_lib_ = false;
+      burn_manager_->CancelBurnImage();
     }
     burn_manager_->ResetTargetPaths();
   }
@@ -351,7 +328,6 @@ class BurnControllerImpl
   std::string image_file_name_;
   BurnManager* burn_manager_;
   StateMachine* state_machine_;
-  bool observing_burn_lib_;
   bool working_;
   BurnController::Delegate* delegate_;
 

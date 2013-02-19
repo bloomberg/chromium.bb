@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/cros/burn_library.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -158,7 +159,14 @@ class StateMachine {
   DISALLOW_COPY_AND_ASSIGN(StateMachine);
 };
 
-class BurnManager : net::URLFetcherDelegate {
+// This is a system-wide singleton class to manage burning the recovery media.
+// Currently, this only provides some methods to start/cancel background tasks,
+// and some accessors to obtain the current status. Other functions are
+// distributed among BurnController and BurnLibrary.
+// TODO(hidehiko): Simplify the relationship among this class, BurnLibrary,
+// BurnController and helper classes defined above.
+class BurnManager : public net::URLFetcherDelegate,
+                    public BurnLibrary::Observer {
  public:
 
   class Delegate : public base::SupportsWeakPtr<Delegate> {
@@ -176,6 +184,8 @@ class BurnManager : net::URLFetcherDelegate {
                                    const base::TimeDelta& time_remaining) = 0;
     virtual void OnDownloadCancelled() = 0;
     virtual void OnDownloadCompleted() = 0;
+    virtual void OnBurnProgressUpdated(BurnEvent event,
+                                       const ImageBurnStatus& status) = 0;
   };
 
   // Creates the global BurnManager instance.
@@ -201,6 +211,14 @@ class BurnManager : net::URLFetcherDelegate {
   // Fetch a zipped recovery image.
   void FetchImage(const GURL& image_url, const base::FilePath& file_path);
 
+  // Burns the image of given |source_path| and |image_name| to the
+  // |target_file_path| and |target_device_path|.
+  void DoBurn(const base::FilePath& source_path,
+              const std::string& image_name);
+
+  // Cancels the image burning.
+  void CancelBurnImage();
+
   // Cancel fetching image.
   void CancelImageFetch();
 
@@ -209,6 +227,12 @@ class BurnManager : net::URLFetcherDelegate {
   virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current,
                                           int64 total) OVERRIDE;
+
+  // BurnLibrary::Observer orverrides.
+  virtual void BurnProgressUpdated(BurnLibrary* object,
+                                   BurnEvent event,
+                                   const ImageBurnStatus& status) OVERRIDE;
+
 
   // Creates directory image will be downloaded to.
   // Must be called from FILE thread.

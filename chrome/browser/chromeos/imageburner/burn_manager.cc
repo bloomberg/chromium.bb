@@ -9,6 +9,8 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/burn_library.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -204,12 +206,14 @@ BurnManager::BurnManager()
       config_file_fetched_(false),
       state_machine_(new StateMachine()),
       bytes_image_download_progress_last_reported_(0) {
+  CrosLibrary::Get()->GetBurnLibrary()->AddObserver(this);
 }
 
 BurnManager::~BurnManager() {
   if (!image_dir_.empty()) {
     file_util::Delete(image_dir_, true);
   }
+  CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
 }
 
 // static
@@ -307,6 +311,16 @@ void BurnManager::CancelImageFetch() {
   image_fetcher_.reset();
 }
 
+void BurnManager::DoBurn(const base::FilePath& source_path,
+                         const std::string& image_name) {
+  CrosLibrary::Get()->GetBurnLibrary()->DoBurn(
+      source_path, image_name, target_file_path(), target_device_path());
+}
+
+void BurnManager::CancelBurnImage() {
+  CrosLibrary::Get()->GetBurnLibrary()->CancelBurnImage();
+}
+
 void BurnManager::OnURLFetchComplete(const net::URLFetcher* source) {
   const bool success =
       source->GetStatus().status() == net::URLRequestStatus::SUCCESS;
@@ -341,6 +355,14 @@ void BurnManager::OnURLFetchDownloadProgress(const net::URLFetcher* source,
                         OnDownloadUpdated(current, total, time_remaining));
     }
   }
+}
+
+void BurnManager::BurnProgressUpdated(BurnLibrary* object,
+                                      BurnEvent evt,
+                                      const ImageBurnStatus& status) {
+  // At the moment, this is just a proxy of BurnLibrary callback to observers.
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OnBurnProgressUpdated(evt, status));
 }
 
 void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
