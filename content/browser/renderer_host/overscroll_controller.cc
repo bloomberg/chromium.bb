@@ -227,14 +227,20 @@ void OverscrollController::ProcessOverscroll(float delta_x, float delta_y) {
     return;
   }
 
-  // The scroll may have changed the overscroll mode. Set the mode correctly
-  // first before informing the delegate about the update in overscroll amount.
-  if (fabs(overscroll_delta_x_) > fabs(overscroll_delta_y_)) {
-    SetOverscrollMode(overscroll_delta_x_ > 0.f ? OVERSCROLL_EAST :
-                                                  OVERSCROLL_WEST);
-  } else {
-    SetOverscrollMode(overscroll_delta_y_ > 0.f ? OVERSCROLL_SOUTH :
-                                                  OVERSCROLL_NORTH);
+  // Compute the current overscroll direction. If the direction is different
+  // from the current direction, then always switch to no-overscroll mode first
+  // to make sure that subsequent scroll events go through to the page first.
+  OverscrollMode new_mode = OVERSCROLL_NONE;
+  if (fabs(overscroll_delta_x_) > fabs(overscroll_delta_y_))
+    new_mode = overscroll_delta_x_ > 0.f ? OVERSCROLL_EAST : OVERSCROLL_WEST;
+  else
+    new_mode = overscroll_delta_y_ > 0.f ? OVERSCROLL_SOUTH : OVERSCROLL_NORTH;
+
+  if (overscroll_mode_ == OVERSCROLL_NONE) {
+    SetOverscrollMode(new_mode);
+  } else if (new_mode != overscroll_mode_) {
+    SetOverscrollMode(OVERSCROLL_NONE);
+    return;
   }
 
   // Tell the delegate about the overscroll update so that it can update
