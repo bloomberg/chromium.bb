@@ -24,6 +24,7 @@ class ShellContentClient : public ContentClient {
       ui::ScaleFactor scale_factor) const OVERRIDE;
   virtual base::RefCountedStaticMemory* GetDataResourceBytes(
       int resource_id) const OVERRIDE;
+  virtual gfx::Image& GetNativeImageNamed(int resource_id) const OVERRIDE;
 };
 
 }  // namespace content
