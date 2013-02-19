@@ -1191,56 +1191,6 @@ class Asan(EmbeddedTool):
     return 0
 
 
-class TsanGcc(EmbeddedTool):
-  """ThreadSanitizer with compile-time instrumentation done using GCC.
-
-  More information at
-  code.google.com/p/data-race-test/wiki/GccInstrumentation
-  """
-  def __init__(self):
-    super(TsanGcc, self).__init__()
-    self.RegisterOptionParserHook(TsanGcc.ExtendOptionParser)
-
-  def ExtendOptionParser(self, parser):
-    parser.add_option("", "--suppressions", default=[],
-                      action="append",
-                      help="path to TSan suppression file")
-
-  def Setup(self, args):
-    if not super(TsanGcc, self).Setup(args):
-      return False
-    ld_library_paths = []
-    for tail in "lib32", "lib64":
-      ld_library_paths.append(
-          os.path.join(self._source_dir, "third_party",
-                       "compiler-tsan", "gcc-current", tail))
-    # LD_LIBRARY_PATH will be overriden.
-    self._env["LD_LIBRARY_PATH"] = ":".join(ld_library_paths)
-
-    # TODO(glider): this is a temporary solution until Analyze is implemented.
-    env_options = ["--error-exitcode=1"]
-    # TODO(glider): merge this with other TSan suppressions code.
-    suppression_count = 0
-    for suppression_file in self._options.suppressions:
-      if os.path.exists(suppression_file):
-        suppression_count += 1
-        env_options += ["--suppressions=%s" % suppression_file]
-    if not suppression_count:
-      logging.warning("WARNING: NOT USING SUPPRESSIONS!")
-
-    self._env["TSAN_ARGS"] = " ".join(env_options)
-    return True
-
-  def ToolName(self):
-    return "tsan"
-
-  def Analyze(self, unused_check_sanity):
-    # TODO(glider): this should use tsan_analyze.TsanAnalyzer. As a temporary
-    # solution we set the exit code to 1 when a report occurs, because TSan-GCC
-    # does not support the --log-file flag yet.
-    return 0
-
-
 class ToolFactory:
   def Create(self, tool_name):
     if tool_name == "memcheck":
@@ -1261,8 +1211,6 @@ class ToolFactory:
       return DrMemory(False, True)
     if tool_name == "tsan_rv":
       return RaceVerifier()
-    if tool_name == "tsan_gcc":
-      return TsanGcc()
     if tool_name == "asan":
       return Asan()
     try:
