@@ -17,7 +17,7 @@ Id3Parser.prototype = {__proto__: MetadataParser.prototype};
  *
  * @param {ByteReader} reader - reader to use.
  * @param {int} length - bytes to read.
- * @return {int}  //TODO(JSDOC).
+ * @return {int}  // TODO(JSDOC).
  * @private
  */
 Id3Parser.readSynchSafe_ = function(reader, length) {
@@ -41,7 +41,7 @@ Id3Parser.readSynchSafe_ = function(reader, length) {
  * Reads 3bytes integer.
  *
  * @param {ByteReader} reader - reader to use.
- * @return {int}  //TODO(JSDOC).
+ * @return {int}  // TODO(JSDOC).
  * @private
  */
 Id3Parser.readUInt24_ = function(reader) {
@@ -174,7 +174,7 @@ Id3Parser.prototype.readAPIC_ = function(reader, majorVersion, frame, end) {
  * Reads string from reader with specified encoding
  *
  * @param {ByteReader} reader  reader to use.
- * @param {number} majorVersion  //TODO(JSDOC).
+ * @param {number} majorVersion  // TODO(JSDOC).
  * @return {Object} frame read.
  * @private
  */
@@ -238,10 +238,10 @@ Id3Parser.prototype.readFrame_ = function(reader, majorVersion) {
 };
 
 /**
- * @param {File} file  //TODO(JSDOC).
- * @param {Object} metadata  //TODO(JSDOC).
- * @param {function(Object)} callback  //TODO(JSDOC).
- * @param {function(etring)} onError  //TODO(JSDOC).
+ * @param {File} file  // TODO(JSDOC).
+ * @param {Object} metadata  // TODO(JSDOC).
+ * @param {function(Object)} callback  // TODO(JSDOC).
+ * @param {function(etring)} onError  // TODO(JSDOC).
  */
 Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
   var self = this;

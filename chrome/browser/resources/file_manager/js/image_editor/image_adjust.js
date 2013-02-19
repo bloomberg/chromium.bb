@@ -59,7 +59,7 @@ ImageEditor.Mode.Adjust.prototype.reset = function() {
 
 /**
  * TODO(JSDOC)
- * @param {Object} options  //TODO(JSDOC).
+ * @param {Object} options  // TODO(JSDOC).
  */
 ImageEditor.Mode.Adjust.prototype.update = function(options) {
   ImageEditor.Mode.prototype.update.apply(this, arguments);
@@ -101,7 +101,7 @@ ImageEditor.Mode.Adjust.prototype.updatePreviewImage = function() {
 
 /**
  * TODO(JSDOC)
- * @param {Object} options  //TODO(JSDOC).
+ * @param {Object} options  // TODO(JSDOC).
  * @return {function(ImageData,ImageData,number,number)} Created function.
  */
 ImageEditor.Mode.Adjust.prototype.createFilter = function(options) {
@@ -171,7 +171,7 @@ ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
 
 /**
  * TODO(JSDOC)
- * @return {boolean}  //TODO(JSDOC).
+ * @return {boolean}  // TODO(JSDOC).
  */
 ImageEditor.Mode.Autofix.prototype.isApplicable = function() {
   return this.getImageView().hasValidImage() &&

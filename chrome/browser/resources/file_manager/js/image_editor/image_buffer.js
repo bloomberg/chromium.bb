@@ -15,7 +15,7 @@ function ImageBuffer() {
 
 /**
  * TODO(JSDOC).
- * @param {ImageBuffer.Overlay} overlay  //TODO(JSDOC).
+ * @param {ImageBuffer.Overlay} overlay  // TODO(JSDOC).
  */
 ImageBuffer.prototype.addOverlay = function(overlay) {
   var zIndex = overlay.getZIndex();
@@ -29,7 +29,7 @@ ImageBuffer.prototype.addOverlay = function(overlay) {
 
 /**
  * TODO(JSDOC).
- * @param {ImageBuffer.Overlay} overlay  //TODO(JSDOC).
+ * @param {ImageBuffer.Overlay} overlay  // TODO(JSDOC).
  */
 ImageBuffer.prototype.removeOverlay = function(overlay) {
   for (var i = 0; i != this.overlays_.length; i++) {
@@ -129,7 +129,7 @@ ImageBuffer.Overlay = function() {};
 
 /**
  * TODO(JSDOC).
- * @return {number}  //TODO(JSDOC).
+ * @return {number}  // TODO(JSDOC).
  */
 ImageBuffer.Overlay.prototype.getZIndex = function() { return 0 };
 
@@ -152,9 +152,9 @@ ImageBuffer.Overlay.prototype.getCursorStyle = function(x, y, mouseDown) {
 
 /**
  * TODO(JSDOC).
- * @param {number} x  //TODO(JSDOC).
- * @param {number} y  //TODO(JSDOC).
- * @return {boolean}  //TODO(JSDOC).
+ * @param {number} x  // TODO(JSDOC).
+ * @param {number} y  // TODO(JSDOC).
+ * @return {boolean}  // TODO(JSDOC).
  */
 ImageBuffer.Overlay.prototype.onClick = function(x, y) {
   return false;
@@ -173,9 +173,9 @@ ImageBuffer.Overlay.prototype.getDragHandler = function(x, y, touch) {
 
 /**
  * TODO(JSDOC).
- * @param {number} x  //TODO(JSDOC).
- * @param {number} y  //TODO(JSDOC).
- * @return {ImageBuffer.DoubleTapAction}  //TODO(JSDOC).
+ * @param {number} x  // TODO(JSDOC).
+ * @param {number} y  // TODO(JSDOC).
+ * @return {ImageBuffer.DoubleTapAction}  // TODO(JSDOC).
  */
 ImageBuffer.Overlay.prototype.getDoubleTapAction = function(x, y) {
   return ImageBuffer.DoubleTapAction.NOTHING;

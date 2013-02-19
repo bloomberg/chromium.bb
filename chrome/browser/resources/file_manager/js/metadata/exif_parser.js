@@ -29,22 +29,22 @@ function ExifParser(parent) {
 ExifParser.prototype = {__proto__: ImageParser.prototype};
 
 /**
- * @param {File} file  //TODO(JSDOC).
- * @param {Object} metadata  //TODO(JSDOC).
- * @param {function} callback  //TODO(JSDOC).
- * @param {function} errorCallback  //TODO(JSDOC).
+ * @param {File} file  // TODO(JSDOC).
+ * @param {Object} metadata  // TODO(JSDOC).
+ * @param {function} callback  // TODO(JSDOC).
+ * @param {function} errorCallback  // TODO(JSDOC).
  */
 ExifParser.prototype.parse = function(file, metadata, callback, errorCallback) {
   this.requestSlice(file, callback, errorCallback, metadata, 0);
 };
 
 /**
- * @param {File} file  //TODO(JSDOC).
- * @param {function} callback  //TODO(JSDOC).
- * @param {function} errorCallback  //TODO(JSDOC).
- * @param {Object} metadata  //TODO(JSDOC).
- * @param {number} filePos  //TODO(JSDOC).
- * @param {number=} opt_length  //TODO(JSDOC).
+ * @param {File} file  // TODO(JSDOC).
+ * @param {function} callback  // TODO(JSDOC).
+ * @param {function} errorCallback  // TODO(JSDOC).
+ * @param {Object} metadata  // TODO(JSDOC).
+ * @param {number} filePos  // TODO(JSDOC).
+ * @param {number=} opt_length  // TODO(JSDOC).
  */
 ExifParser.prototype.requestSlice = function(
     file, callback, errorCallback, metadata, filePos, opt_length) {
@@ -61,12 +61,12 @@ ExifParser.prototype.requestSlice = function(
 };
 
 /**
- * @param {File} file  //TODO(JSDOC).
- * @param {function} callback  //TODO(JSDOC).
- * @param {function} errorCallback  //TODO(JSDOC).
- * @param {Object} metadata  //TODO(JSDOC).
- * @param {number} filePos  //TODO(JSDOC).
- * @param {ArrayBuffer} buf  //TODO(JSDOC).
+ * @param {File} file  // TODO(JSDOC).
+ * @param {function} callback  // TODO(JSDOC).
+ * @param {function} errorCallback  // TODO(JSDOC).
+ * @param {Object} metadata  // TODO(JSDOC).
+ * @param {number} filePos  // TODO(JSDOC).
+ * @param {ArrayBuffer} buf  // TODO(JSDOC).
  */
 ExifParser.prototype.parseSlice = function(
     file, callback, errorCallback, metadata, filePos, buf) {
@@ -136,8 +136,8 @@ ExifParser.prototype.parseSlice = function(
 
 /**
  * @private
- * @param {number} mark  //TODO(JSDOC).
- * @return {boolean}  //TODO(JSDOC).
+ * @param {number} mark  // TODO(JSDOC).
+ * @return {boolean}  // TODO(JSDOC).
  */
 ExifParser.isSOF_ = function(mark) {
   // There are 13 variants of SOF fragment format distinguished by the last
@@ -150,9 +150,9 @@ ExifParser.isSOF_ = function(mark) {
 };
 
 /**
- * @param {Object} metadata  //TODO(JSDOC).
- * @param {ArrayBuffer} buf  //TODO(JSDOC).
- * @param {ByteReader} br  //TODO(JSDOC).
+ * @param {Object} metadata  // TODO(JSDOC).
+ * @param {ArrayBuffer} buf  // TODO(JSDOC).
+ * @param {ByteReader} br  // TODO(JSDOC).
  */
 ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
   var magic = br.readString(6);
@@ -238,9 +238,9 @@ ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
 };
 
 /**
- * @param {Object} metadata  //TODO(JSDOC).
- * @param {number} width  //TODO(JSDOC).
- * @param {number} height  //TODO(JSDOC).
+ * @param {Object} metadata  // TODO(JSDOC).
+ * @param {number} width  // TODO(JSDOC).
+ * @param {number} height  // TODO(JSDOC).
  */
 ExifParser.setImageSize = function(metadata, width, height) {
   if (metadata.imageTransform && metadata.imageTransform.rotate90) {
@@ -253,16 +253,16 @@ ExifParser.setImageSize = function(metadata, width, height) {
 };
 
 /**
- * @param {ByteReader} br  //TODO(JSDOC).
- * @return {number}  //TODO(JSDOC).
+ * @param {ByteReader} br  // TODO(JSDOC).
+ * @return {number}  // TODO(JSDOC).
  */
 ExifParser.prototype.readMark = function(br) {
   return br.readScalar(2);
 };
 
 /**
- * @param {ByteReader} br  //TODO(JSDOC).
- * @return {number}  //TODO(JSDOC).
+ * @param {ByteReader} br  // TODO(JSDOC).
+ * @return {number}  // TODO(JSDOC).
  */
 ExifParser.prototype.readMarkLength = function(br) {
   // Length includes the 2 bytes used to store the length.
@@ -270,9 +270,9 @@ ExifParser.prototype.readMarkLength = function(br) {
 };
 
 /**
- * @param {ByteReader} br  //TODO(JSDOC).
- * @param {Array.<Object>} tags  //TODO(JSDOC).
- * @return {number}  //TODO(JSDOC).
+ * @param {ByteReader} br  // TODO(JSDOC).
+ * @param {Array.<Object>} tags  // TODO(JSDOC).
+ * @return {number}  // TODO(JSDOC).
  */
 ExifParser.prototype.readDirectory = function(br, tags) {
   var entryCount = br.readScalar(2);
@@ -288,8 +288,8 @@ ExifParser.prototype.readDirectory = function(br, tags) {
 };
 
 /**
- * @param {ByteReader} br  //TODO(JSDOC).
- * @param {Object} tag  //TODO(JSDOC).
+ * @param {ByteReader} br  // TODO(JSDOC).
+ * @param {Object} tag  // TODO(JSDOC).
  */
 ExifParser.prototype.readTagValue = function(br, tag) {
   var self = this;
@@ -420,7 +420,7 @@ ExifParser.ROTATE90 = [0, 0, 0, 0, 1, 1, 1, 1];
  * CSS and canvas transforms (scaleX, scaleY, rotation).
  *
  * @param {Object} ifd exif property dictionary (image or thumbnail).
- * @return {Object} //TODO(JSDOC).
+ * @return {Object} // TODO(JSDOC).
  */
 ExifParser.prototype.parseOrientation = function(ifd) {
   if (ifd[EXIF_TAG_ORIENTATION]) {

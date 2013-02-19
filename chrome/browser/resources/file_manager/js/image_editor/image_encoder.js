@@ -14,8 +14,8 @@ ImageEncoder.metadataEncoders = {};
 
 /**
  * @param {function(new:ImageEncoder.MetadataEncoder)} constructor
- *     //TODO(JSDOC).
- * @param {string} mimeType  //TODO(JSDOC).
+ *     // TODO(JSDOC).
+ * @param {string} mimeType  // TODO(JSDOC).
  */
 ImageEncoder.registerMetadataEncoder = function(constructor, mimeType) {
   ImageEncoder.metadataEncoders[mimeType] = constructor;
@@ -149,10 +149,10 @@ ImageEncoder.createThumbnail = function(canvas, opt_shrinkage) {
 
 /**
  * TODO(JSDOC)
- * @param {string} string  //TODO(JSDOC).
- * @param {number} from  //TODO(JSDOC).
- * @param {number} to  //TODO(JSDOC).
- * @return {ArrayBuffer}  //TODO(JSDOC).
+ * @param {string} string  // TODO(JSDOC).
+ * @param {number} from  // TODO(JSDOC).
+ * @param {number} to  // TODO(JSDOC).
+ * @return {ArrayBuffer}  // TODO(JSDOC).
  */
 ImageEncoder.stringToArrayBuffer = function(string, from, to) {
   var size = to - from;
@@ -183,7 +183,7 @@ ImageEncoder.MetadataEncoder = function(original_metadata) {
 
 /**
  * TODO(JSDOC)
- * @return {Object}   //TODO(JSDOC).
+ * @return {Object}   // TODO(JSDOC).
  */
 ImageEncoder.MetadataEncoder.prototype.getMetadata = function() {
   return this.metadata_;
@@ -210,7 +210,7 @@ ImageEncoder.MetadataEncoder.prototype.setThumbnailData =
 
 /**
  * Return a range where the metadata is (or should be) located.
- * @param {string} encodedImage //TODO(JSDOC).
+ * @param {string} encodedImage // TODO(JSDOC).
  * @return {Object} An object with from and to properties.
  */
 ImageEncoder.MetadataEncoder.prototype.
@@ -219,7 +219,7 @@ ImageEncoder.MetadataEncoder.prototype.
 /**
  * Return serialized metadata ready to write to an image file.
  * The return type is optimized for passing to Blob.append.
- * @return {ArrayBuffer} //TODO(JSDOC).
+ * @return {ArrayBuffer} // TODO(JSDOC).
  */
 ImageEncoder.MetadataEncoder.prototype.encode = function() {
   return new Uint8Array(0).buffer;
