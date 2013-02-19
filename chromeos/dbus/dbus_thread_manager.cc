@@ -42,7 +42,6 @@
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/sms_client.h"
-#include "chromeos/dbus/speech_synthesizer_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
@@ -121,8 +120,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         SessionManagerClient::Create(client_type, system_bus_.get()));
     sms_client_.reset(
         SMSClient::Create(client_type, system_bus_.get()));
-    speech_synthesizer_client_.reset(
-        SpeechSynthesizerClient::Create(client_type, system_bus_.get()));
     update_engine_client_.reset(
         UpdateEngineClient::Create(client_type, system_bus_.get()));
 
@@ -299,10 +296,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return sms_client_.get();
   }
 
-  virtual SpeechSynthesizerClient* GetSpeechSynthesizerClient() OVERRIDE {
-    return speech_synthesizer_client_.get();
-  }
-
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE {
     return update_engine_client_.get();
   }
@@ -381,7 +374,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<PowerManagerClient> power_manager_client_;
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SMSClient> sms_client_;
-  scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;
   scoped_ptr<IBusClient> ibus_client_;
   scoped_ptr<IBusConfigClient> ibus_config_client_;

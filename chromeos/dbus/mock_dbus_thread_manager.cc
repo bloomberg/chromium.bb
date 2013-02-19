@@ -27,7 +27,6 @@
 #include "chromeos/dbus/mock_power_manager_client.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "chromeos/dbus/mock_sms_client.h"
-#include "chromeos/dbus/mock_speech_synthesizer_client.h"
 #include "chromeos/dbus/mock_update_engine_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
 
@@ -61,7 +60,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_power_manager_client_(new MockPowerManagerClient),
       mock_session_manager_client_(new MockSessionManagerClient),
       mock_sms_client_(new MockSMSClient),
-      mock_speech_synthesizer_client_(new MockSpeechSynthesizerClient),
       mock_update_engine_client_(new MockUpdateEngineClient) {
   EXPECT_CALL(*this, GetBluetoothAdapterClient())
       .WillRepeatedly(Return(mock_bluetooth_adapter_client_.get()));
@@ -105,8 +103,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_session_manager_client_.get()));
   EXPECT_CALL(*this, GetSMSClient())
       .WillRepeatedly(Return(mock_sms_client_.get()));
-  EXPECT_CALL(*this, GetSpeechSynthesizerClient())
-      .WillRepeatedly(Return(mock_speech_synthesizer_client_.get()));
   EXPECT_CALL(*this, GetUpdateEngineClient())
       .WillRepeatedly(Return(mock_update_engine_client_.get()));
   EXPECT_CALL(*this, GetIBusInputContextClient())

@@ -176,12 +176,6 @@ SMSClient* MockDBusThreadManagerWithoutGMock::GetSMSClient() {
   return NULL;
 }
 
-SpeechSynthesizerClient*
-    MockDBusThreadManagerWithoutGMock::GetSpeechSynthesizerClient() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 UpdateEngineClient* MockDBusThreadManagerWithoutGMock::GetUpdateEngineClient() {
   NOTIMPLEMENTED();
   return NULL;
