@@ -11,6 +11,10 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace chromeos {
 
 // The base class of text input testing.
@@ -47,6 +51,13 @@ class TextInputTestHelper : public ui::MockInputMethod::Observer {
                                  const gfx::Rect& expected_composition_head);
   void WaitForSurroundingTextChanged(const std::string& expected_text,
                                      const ui::Range& expected_selection);
+
+  // Converts from string to gfx::Rect. The string should be "x,y,width,height".
+  // Returns false if the conversion failed.
+  static bool ConvertRectFromString(const std::string& str, gfx::Rect* rect);
+
+  // Sends mouse clicking event to DOM element which has |id| id.
+  static bool ClickElement(const std::string& id, content::WebContents* tab);
 
  private:
   enum WaitImeEventType {

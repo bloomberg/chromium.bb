@@ -1,6 +1,6 @@
 <html>
   <head>
-    <script type="text/javascript">
+    <script>
       function text01_focus() {
         document.getElementById('text01_id').focus();
         return true;
@@ -17,12 +17,9 @@
         document.getElementById('password02_id').focus();
         return true;
       }
-      function onLoad() {
-        document.activeElement.blur();
-      }
     </script>
   </head>
-  <body onload="onLoad()">
+  <body>
   <input type="text" id="text01_id">
   <input type="text" id="text02_id">
   <input type="password" id="password01_id">

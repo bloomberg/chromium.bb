@@ -3,9 +3,14 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
+#include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -128,6 +133,52 @@ void TextInputTestHelper::WaitForSurroundingTextChanged(
          expected_selection != selection_range_)
     content::RunMessageLoop();
   waiting_type_ = NO_WAIT;
+}
+
+// static
+bool TextInputTestHelper::ConvertRectFromString(const std::string& str,
+                                                gfx::Rect* rect) {
+  DCHECK(rect);
+  std::vector<std::string> rect_piece;
+  if (Tokenize(str, ",", &rect_piece) != 4UL)
+    return false;
+  int x, y, width, height;
+  if (!base::StringToInt(rect_piece[0], &x))
+    return false;
+  if (!base::StringToInt(rect_piece[1], &y))
+    return false;
+  if (!base::StringToInt(rect_piece[2], &width))
+    return false;
+  if (!base::StringToInt(rect_piece[3], &height))
+    return false;
+  *rect = gfx::Rect(x, y, width, height);
+  return true;
+}
+
+// static
+bool TextInputTestHelper::ClickElement(const std::string& id,
+                                       content::WebContents* tab) {
+  std::string coordinate;
+  if (!content::ExecuteScriptAndExtractString(
+      tab,
+      "textinput_helper.retrieveElementCoordinate('" + id + "')",
+      &coordinate))
+    return false;
+  gfx::Rect rect;
+  if (!ConvertRectFromString(coordinate, &rect))
+    return false;
+
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.x = rect.CenterPoint().x();
+  mouse_event.y = rect.CenterPoint().y();
+  mouse_event.clickCount = 1;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  return true;
 }
 
 } // namespace chromeos
