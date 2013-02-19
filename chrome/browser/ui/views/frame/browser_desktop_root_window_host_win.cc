@@ -37,8 +37,7 @@ class DesktopThemeProvider : public ui::ThemeProvider {
   }
 
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE {
-    return delegate_->GetImageSkiaNamed(
-        chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
+    return delegate_->GetImageSkiaNamed(MapImageResourceIdIfNeeded(id));
   }
 
   virtual SkColor GetColor(int id) const OVERRIDE {
@@ -51,8 +50,7 @@ class DesktopThemeProvider : public ui::ThemeProvider {
     return delegate_->ShouldUseNativeFrame();
   }
   virtual bool HasCustomImage(int id) const OVERRIDE {
-    return delegate_->HasCustomImage(chrome::MapThemeImage(
-                                         chrome::HOST_DESKTOP_TYPE_NATIVE, id));
+    return delegate_->HasCustomImage(MapImageResourceIdIfNeeded(id));
   }
   virtual base::RefCountedMemory* GetRawData(
       int id,
@@ -61,6 +59,13 @@ class DesktopThemeProvider : public ui::ThemeProvider {
   }
 
  private:
+  // Helper function to map the image resource id passed in to the Windows
+  // equivalent. This is not needed if there is a custom theme active.
+  int MapImageResourceIdIfNeeded(int id) const {
+    int resource_id = (ShouldUseNativeFrame() ?
+        chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id) : id);
+    return resource_id;
+  }
   ui::ThemeProvider* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopThemeProvider);
