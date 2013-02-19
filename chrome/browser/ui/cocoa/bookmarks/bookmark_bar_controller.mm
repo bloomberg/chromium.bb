@@ -1638,23 +1638,32 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   return [self finalRectOfButton:[[self buttons] lastObject]];
 }
 
+- (CGFloat)buttonViewMaxXWithOffTheSideButtonIsVisible:(BOOL)visible {
+  CGFloat maxViewX = NSMaxX([buttonView_ bounds]);
+  // If necessary, pull in the width to account for the Other Bookmarks button.
+  if ([self setOtherBookmarksButtonVisibility]) {
+    maxViewX = [otherBookmarksButton_.get() frame].origin.x -
+               bookmarks::kBookmarkRightMargin;
+  }
+
+  [self positionOffTheSideButton];
+  // If we're already overflowing, then we need to account for the chevron.
+  if (visible) {
+    maxViewX =
+        [offTheSideButton_ frame].origin.x - bookmarks::kBookmarkRightMargin;
+  }
+
+  return maxViewX;
+}
+
 - (void)redistributeButtonsOnBarAsNeeded {
   const BookmarkNode* node = bookmarkModel_->bookmark_bar_node();
   NSInteger barCount = node->child_count();
 
   // Determine the current maximum extent of the visible buttons.
-  CGFloat maxViewX = NSMaxX([[self view] bounds]);
-  NSButton* otherBookmarksButton = otherBookmarksButton_.get();
-  // If necessary, pull in the width to account for the Other Bookmarks button.
-  if ([self setOtherBookmarksButtonVisibility])
-    maxViewX =
-        [otherBookmarksButton frame].origin.x - bookmarks::kBookmarkRightMargin;
-
   [self positionOffTheSideButton];
-  // If we're already overflowing, then we need to account for the chevron.
-  if (barCount > displayedButtonCount_)
-    maxViewX =
-        [offTheSideButton_ frame].origin.x - bookmarks::kBookmarkRightMargin;
+  CGFloat maxViewX = [self buttonViewMaxXWithOffTheSideButtonIsVisible:
+      (barCount > displayedButtonCount_)];
 
   // As a result of pasting or dragging, the bar may now have more buttons
   // than will fit so remove any which overflow.  They will be shown in
@@ -1680,10 +1689,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     BookmarkButton* button = [self buttonForNode:child xOffset:&xOffset];
     // If we're testing against the last possible button then account
     // for the chevron no longer needing to be shown.
-    if (i == barCount + 1)
-      maxViewX += NSWidth([offTheSideButton_ frame]) +
-          bookmarks::kBookmarkHorizontalPadding;
-    if (NSMaxX([button frame]) >= maxViewX) {
+    if (i == barCount - 1)
+      maxViewX = [self buttonViewMaxXWithOffTheSideButtonIsVisible:NO];
+    if (NSMaxX([button frame]) > maxViewX) {
       [button setDelegate:nil];
       break;
     }

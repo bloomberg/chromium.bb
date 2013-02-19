@@ -1682,6 +1682,30 @@ TEST_F(BookmarkBarControllerTest, ShrinkOrHideView) {
   EXPECT_TRUE([view isHidden]);
 }
 
+TEST_F(BookmarkBarControllerTest, LastBookmarkResizeBehavior) {
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
+  const BookmarkNode* root = model.bookmark_bar_node();
+  const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+  [bar_ frameDidChange];
+
+  CGFloat viewWidths[] = { 123.0, 151.0, 152.0, 153.0, 154.0, 155.0, 200.0,
+                           155.0, 154.0, 153.0, 152.0, 151.0 };
+  BOOL offTheSideButtonIsHiddenResults[] = { NO, NO, NO, YES, YES, YES, YES,
+                                             YES, YES, YES, NO, NO, NO };
+  int displayedButtonCountResults[] = { 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2, 1 };
+
+  for (unsigned int i = 0; i < sizeof(viewWidths) / sizeof(viewWidths[0]);
+       ++i) {
+    NSRect frame = [[bar_ view] frame];
+    frame.size.width = viewWidths[i] + bookmarks::kBookmarkRightMargin;
+    [[bar_ view] setFrame:frame];
+    EXPECT_EQ(offTheSideButtonIsHiddenResults[i],
+              [bar_ offTheSideButtonIsHidden]);
+    EXPECT_EQ(displayedButtonCountResults[i], [bar_ displayedButtonCount]);
+  }
+}
+
 class BookmarkBarControllerOpenAllTest : public BookmarkBarControllerTest {
 public:
   virtual void SetUp() {
