@@ -419,6 +419,8 @@ void ExtensionHelper::OnAppWindowClosed() {
       render_view()->GetWebView()->mainFrame()->mainWorldScriptContext();
   ChromeV8Context* chrome_v8_context =
       dispatcher_->v8_context_set().GetByV8Context(script_context);
+  if (!chrome_v8_context)
+    return;
   chrome_v8_context->CallChromeHiddenMethod("OnAppWindowClosed", 0, NULL, NULL);
 }
 
