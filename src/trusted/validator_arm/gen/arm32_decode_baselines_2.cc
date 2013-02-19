@@ -6623,7 +6623,7 @@ uses(Instruction inst) const {
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VABS_cccc11101d110000dddd101s11m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -6633,7 +6633,6 @@ uses(Instruction inst) const {
 //    dp_operation: sz(8)=1,
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
-//    generated_baseline: VABS_cccc11101d110000dddd101s11m0mmmm_case_0,
 //    m: Vm:D
 //         if sz(8)=0
 //         else M:Vm,
@@ -9107,7 +9106,7 @@ uses(Instruction inst) const {
 //    Vm: Vm(3:0),
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -9117,7 +9116,6 @@ uses(Instruction inst) const {
 //    dp_operation: sz(8)=1,
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), E(7), M(5), Vm(3:0)],
-//    generated_baseline: VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0,
 //    m: M:Vm
 //         if dp_operation
 //         else Vm:M,
@@ -9162,7 +9160,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(15:12),
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -9171,7 +9169,6 @@ uses(Instruction inst) const {
 //    defs: {},
 //    dp_operation: sz(8)=1,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), E(7)],
-//    generated_baseline: VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0,
 //    pattern: cccc11101d110101dddd101se1000000,
 //    quiet_nan_exc: E(7)=1,
 //    rule: VCMP_VCMPE,
@@ -9291,13 +9288,12 @@ uses(Instruction inst) const {
 //    Vm: Vm(3:0),
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    arch: VFPv3HP,
-//    baseline: CondVfpOp,
+//    baseline: VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D,
 //    defs: {},
 //    fields: [cond(31:28), D(22), op(16), Vd(15:12), T(7), M(5), Vm(3:0)],
-//    generated_baseline: VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0,
 //    half_to_single: op(16)=0,
 //    lowbit: 16
 //         if T(7)=1
@@ -9421,7 +9417,7 @@ uses(Instruction inst) const {
 //    Vm: Vm(3:0),
 //    actual: Actual_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_1,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -9439,7 +9435,6 @@ uses(Instruction inst) const {
 //      op(7),
 //      M(5),
 //      Vm(3:0)],
-//    generated_baseline: VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0,
 //    m: Vm:M
 //         if not to_integer
 //         else M:Vm
@@ -9499,7 +9494,7 @@ uses(Instruction inst) const {
 //    Vm: Vm(3:0),
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -9508,7 +9503,6 @@ uses(Instruction inst) const {
 //    defs: {},
 //    double_to_single: sz(8)=1,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
-//    generated_baseline: VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0,
 //    m: Vm:D
 //         if sz(8)=0
 //         else M:Vm,
@@ -9638,7 +9632,7 @@ uses(Instruction inst) const {
 //    Vd: Vd(12),
 //    actual: Actual_VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_1,
 //    arch: VFPv3,
-//    baseline: VcvtPtAndFixedPoint_FloatingPoint,
+//    baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -9656,7 +9650,6 @@ uses(Instruction inst) const {
 //      i(5),
 //      imm4(3:0)],
 //    frac_bits: size - imm4:i,
-//    generated_baseline: VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0,
 //    i: i(5),
 //    imm4: imm4(3:0),
 //    op: op(18),

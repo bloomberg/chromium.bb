@@ -2462,35 +2462,35 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_other_floating_point_dat
           0x00000000 /* opc2(19:16)=0000 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x00000040 /* opc3(7:6)=01 */) {
-    return CondVfpOp_VMOV_register_instance_;
+    return VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0_VMOV_register_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00000000 /* opc2(19:16)=0000 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x000000C0 /* opc3(7:6)=11 */) {
-    return CondVfpOp_VABS_instance_;
+    return VABS_cccc11101d110000dddd101s11m0mmmm_case_0_VABS_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00010000 /* opc2(19:16)=0001 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x00000040 /* opc3(7:6)=01 */) {
-    return CondVfpOp_VNEG_instance_;
+    return VNEG_cccc11101d110001dddd101s01m0mmmm_case_0_VNEG_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00010000 /* opc2(19:16)=0001 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x000000C0 /* opc3(7:6)=11 */) {
-    return CondVfpOp_VSQRT_instance_;
+    return VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0_VSQRT_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00040000 /* opc2(19:16)=0100 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_VCMP_VCMPE_instance_;
+    return VCMP_VCMPE_cccc11101d110100dddd101se1m0mmmm_case_0_VCMP_VCMPE_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
@@ -2499,21 +2499,21 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_other_floating_point_dat
           0x00000040 /* opc3(7:6)=x1 */ &&
       (inst.Bits() & 0x0000002F)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000 */) {
-    return CondVfpOp_VCMP_VCMPE_instance_;
+    return VCMP_VCMPE_cccc11101d110101dddd101se1000000_case_0_VCMP_VCMPE_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00070000 /* opc2(19:16)=0111 */ &&
       (inst.Bits() & 0x000000C0)  ==
           0x000000C0 /* opc3(7:6)=11 */) {
-    return CondVfpOp_VCVT_between_double_precision_and_single_precision_instance_;
+    return VCVT_between_double_precision_and_single_precision_cccc11101d110111dddd101s11m0mmmm_case_0_VCVT_between_double_precision_and_single_precision_instance_;
   }
 
   if ((inst.Bits() & 0x000F0000)  ==
           0x00080000 /* opc2(19:16)=1000 */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_instance_;
+    return VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x000E0000)  ==
@@ -2522,28 +2522,28 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_other_floating_point_dat
           0x00000040 /* opc3(7:6)=x1 */ &&
       (inst.Bits() & 0x00000100)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx */) {
-    return CondVfpOp_VCVTB_VCVTT_instance_;
+    return VCVTB_VCVTT_cccc11101d11001odddd1010t1m0mmmm_case_0_VCVTB_VCVTT_instance_;
   }
 
   if ((inst.Bits() & 0x000E0000)  ==
           0x000C0000 /* opc2(19:16)=110x */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return CondVfpOp_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_instance_;
+    return VCVT_VCVTR_between_floating_point_and_integer_Floating_point_cccc11101d111ooodddd101sp1m0mmmm_case_0_VCVT_VCVTR_between_floating_point_and_integer_Floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x000A0000)  ==
           0x000A0000 /* opc2(19:16)=1x1x */ &&
       (inst.Bits() & 0x00000040)  ==
           0x00000040 /* opc3(7:6)=x1 */) {
-    return VcvtPtAndFixedPoint_FloatingPoint_VCVT_between_floating_point_and_fixed_point_Floating_point_instance_;
+    return VCVT_between_floating_point_and_fixed_point_Floating_point_cccc11101d111o1udddd101fx1i0iiii_case_0_VCVT_between_floating_point_and_fixed_point_Floating_point_instance_;
   }
 
   if ((inst.Bits() & 0x00000040)  ==
           0x00000000 /* opc3(7:6)=x0 */ &&
       (inst.Bits() & 0x000000A0)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx */) {
-    return CondVfpOp_VMOV_immediate_instance_;
+    return VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0_VMOV_immediate_instance_;
   }
 
   // Catch any attempt to fall through...

@@ -2549,7 +2549,7 @@ class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv3,
-//    baseline: CondVfpOp,
+//    baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -2563,7 +2563,6 @@ class VMOV_immediate_A1_1111001m1d000mmmddddcccc0qp1mmmm_case_0
 //      Vd(15:12),
 //      sz(8),
 //      imm4L(3:0)],
-//    generated_baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
 //    imm32: VFPExpandImm(imm4H:imm4L, 32),
 //    imm4H: imm4H(19:16),
 //    imm4L: imm4L(3:0),
@@ -2598,7 +2597,7 @@ class VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -2607,7 +2606,6 @@ class VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0
 //    defs: {},
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
-//    generated_baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
 //    m: Vm:D
 //         if sz(8)=0
 //         else M:Vm,
@@ -3410,7 +3408,7 @@ class VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -3420,7 +3418,6 @@ class VNEG_111100111d11ss01dddd0f111qm0mmmm_case_1
 //    dp_operation: sz(8)=1,
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
-//    generated_baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
 //    m: Vm:D
 //         if sz(8)=0
 //         else M:Vm,
@@ -7006,7 +7003,7 @@ class VSLI_111100111diiiiiidddd0101lqm1mmmm_case_0
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -7016,7 +7013,6 @@ class VSLI_111100111diiiiiidddd0101lqm1mmmm_case_0
 //    dp_operation: sz(8)=1,
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
-//    generated_baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
 //    m: Vm:D
 //         if sz(8)=0
 //         else M:Vm,

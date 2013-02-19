@@ -4477,7 +4477,7 @@ uses(Instruction inst) const {
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv3,
-//    baseline: CondVfpOp,
+//    baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -4491,7 +4491,6 @@ uses(Instruction inst) const {
 //      Vd(15:12),
 //      sz(8),
 //      imm4L(3:0)],
-//    generated_baseline: VMOV_immediate_cccc11101d11iiiidddd101s0000iiii_case_0,
 //    imm32: VFPExpandImm(imm4H:imm4L, 32),
 //    imm4H: imm4H(19:16),
 //    imm4L: imm4L(3:0),
@@ -4539,7 +4538,7 @@ uses(Instruction inst) const {
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -4548,7 +4547,6 @@ uses(Instruction inst) const {
 //    defs: {},
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
-//    generated_baseline: VMOV_register_cccc11101d110000dddd101s01m0mmmm_case_0,
 //    m: Vm:D
 //         if sz(8)=0
 //         else M:Vm,
@@ -5720,7 +5718,7 @@ uses(Instruction inst) const {
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -5730,7 +5728,6 @@ uses(Instruction inst) const {
 //    dp_operation: sz(8)=1,
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
-//    generated_baseline: VNEG_cccc11101d110001dddd101s01m0mmmm_case_0,
 //    m: Vm:D
 //         if sz(8)=0
 //         else M:Vm,
@@ -10824,7 +10821,7 @@ uses(Instruction inst) const {
 //    actual: Actual_VABS_cccc11101d110000dddd101s11m0mmmm_case_1,
 //    advsimd: false,
 //    arch: VFPv2,
-//    baseline: CondVfpOp,
+//    baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
 //    cond: cond(31:28),
 //    constraints: ,
 //    d: Vd:D
@@ -10834,7 +10831,6 @@ uses(Instruction inst) const {
 //    dp_operation: sz(8)=1,
 //    false: false,
 //    fields: [cond(31:28), D(22), Vd(15:12), sz(8), M(5), Vm(3:0)],
-//    generated_baseline: VSQRT_cccc11101d110001dddd101s11m0mmmm_case_0,
 //    m: Vm:D
 //         if sz(8)=0
 //         else M:Vm,

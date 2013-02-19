@@ -134,6 +134,7 @@ BASELINE_TEST_TABLES = [
 # baseline decoders. This list is used to allow us to incrementally change over
 # testing, as baselines pass the appropriate tests.
 BASELINE_GEN_TABLES = [
+    "ARMv7",
     "data_processing_and_miscellaneous_instructions",
     "data_processing_register",
     "data_processing_register_shifted_register",
@@ -154,6 +155,7 @@ BASELINE_GEN_TABLES = [
     "branch_branch_with_link_and_block_data_transfer",
     "coprocessor_instructions_and_supervisor_call",
     "floating_point_data_processing_instructions",
+    "other_floating_point_data_processing_instructions",
     ]
 
 # Verify that BASELINE_TEST_TABLES and BASELINE_GEN_TABLES don't intersect.
