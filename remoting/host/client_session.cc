@@ -84,8 +84,8 @@ void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
   if (resolution.has_dips_width() && resolution.has_dips_height()) {
     VLOG(1) << "Received ClientResolution (dips_width="
-            << resolution.width() << ", dips_height="
-            << resolution.height() << ")";
+            << resolution.dips_width() << ", dips_height="
+            << resolution.dips_height() << ")";
     event_handler_->OnClientResolutionChanged(
         this,
         SkISize::Make(resolution.dips_width(), resolution.dips_height()),
