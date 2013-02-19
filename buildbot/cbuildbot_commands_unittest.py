@@ -187,14 +187,15 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
       tarball_path = os.path.join(tarball_dir, tarball)
       osutils.Touch(tarball_path)
       tarball_arg = '%s:%s' % (tarball_base, tarball_path)
-      tarball_args.extend(['--toolchain-tarball', tarball_arg])
+      tarball_args.append(['--toolchain-tarball', tarball_arg])
 
     with mock.patch.object(commands, '_GenerateSdkVersion',
                            return_value=version):
       self.testUploadPrebuilts(builder_type=constants.CHROOT_BUILDER_TYPE)
     self.assertCommandContains(['--toolchain-upload-path',
                                 '1994/04/%%(target)s-%(version)s.tar.xz'])
-    self.assertCommandContains(tarball_args)
+    for args in tarball_args:
+      self.assertCommandContains(args)
     self.assertCommandContains(['--set-version', version])
     self.assertCommandContains(['--prepackaged-tarball',
                                 os.path.join(self._buildroot,
