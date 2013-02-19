@@ -4,9 +4,8 @@
 
 #include <string>
 
-#include "base/threading/thread.h"
-#include "media/audio/cras/audio_manager_cras.h"
-#include "media/audio/cras/cras_output.h"
+#include "media/audio/linux/audio_manager_linux.h"
+#include "media/audio/linux/cras_output.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +27,7 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
   MOCK_METHOD2(OnError, void(AudioOutputStream* stream, int code));
 };
 
-class MockAudioManagerCras : public AudioManagerCras {
+class MockAudioManagerLinux : public AudioManagerLinux {
  public:
   MOCK_METHOD0(Init, void());
   MOCK_METHOD0(HasAudioOutputDevices, bool());
@@ -61,7 +60,7 @@ class MockAudioManagerCras : public AudioManagerCras {
 class CrasOutputStreamTest : public testing::Test {
  protected:
   CrasOutputStreamTest() {
-    mock_manager_.reset(new StrictMock<MockAudioManagerCras>());
+    mock_manager_.reset(new StrictMock<MockAudioManagerLinux>());
   }
 
   virtual ~CrasOutputStreamTest() {
@@ -79,7 +78,7 @@ class CrasOutputStreamTest : public testing::Test {
                                 mock_manager_.get());
   }
 
-  MockAudioManagerCras& mock_manager() {
+  MockAudioManagerLinux& mock_manager() {
     return *(mock_manager_.get());
   }
 
@@ -94,7 +93,7 @@ class CrasOutputStreamTest : public testing::Test {
   static struct cras_stream_params* const kFakeStreamParams;
   static struct cras_client* const kFakeClient;
 
-  scoped_ptr<StrictMock<MockAudioManagerCras> > mock_manager_;
+  scoped_ptr<StrictMock<MockAudioManagerLinux> > mock_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrasOutputStreamTest);
