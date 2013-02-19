@@ -1467,7 +1467,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
     "http://aaa.com/empty.html",
     "http://bbb.com/empty.html",
     "http://sub.bbb.com/empty.html",
-    "http://bbb.com/policy/device_management",
+    "http://bbb.com/policy/blank.html",
   };
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,

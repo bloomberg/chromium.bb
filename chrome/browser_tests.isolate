@@ -158,8 +158,6 @@
     }, {
       'variables': {
         'isolate_dependency_tracked': [
-          '../net/tools/testserver/asn1der.py',
-          '../net/tools/testserver/device_management.py',
           '../third_party/WebKit/Tools/Scripts/new-run-webkit-websocketserver',
           '../third_party/safe_browsing/testing/external_test_pb2.py',
           '../third_party/safe_browsing/testing/safebrowsing_test_server.py',
@@ -201,6 +199,8 @@
           '<(PRODUCT_DIR)/test_case.html',
           '<(PRODUCT_DIR)/test_case.html.mock-http-headers',
           '<(PRODUCT_DIR)/test_page.css',
+          'browser/policy/test/asn1der.py',
+          'browser/policy/test/policy_testserver.py',
           'browser/safe_browsing/safe_browsing_testserver.py',
           'common/extensions/docs/examples/apps/calculator/app/controller.js',
           'common/extensions/docs/examples/apps/calculator/app/view.js',

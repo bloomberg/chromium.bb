@@ -189,13 +189,6 @@ bool LocalTestServer::SetPythonPath() const {
   }
   AppendToPythonPath(pyproto_dir);
 
-  // TODO(cloud_policy): Move this out of net/, since net/ should not have to
-  // depend on chrome/. See http://crbug.com/119403.
-  AppendToPythonPath(pyproto_dir.AppendASCII("chrome")
-                                .AppendASCII("browser")
-                                .AppendASCII("policy")
-                                .AppendASCII("proto"));
-
   return true;
 }
 

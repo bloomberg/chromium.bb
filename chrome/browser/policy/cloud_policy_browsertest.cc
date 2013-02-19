@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/chrome_settings.pb.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
+#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/policy/test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,7 +32,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
-#include "net/test/test_server.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -169,20 +169,13 @@ class CloudPolicyTest : public InProcessBrowserTest {
   virtual ~CloudPolicyTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    // The TestServer wants the docroot as a path relative to the source dir.
-    base::FilePath source;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &source));
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDirUnderPath(source));
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_NO_FATAL_FAILURE(SetServerPolicy(GetEmptyPolicy()));
 
-    test_server_.reset(
-        new net::TestServer(
-            net::TestServer::TYPE_HTTP,
-            net::TestServer::kLocalhost,
-            testserver_relative_docroot()));
+    test_server_.reset(new LocalPolicyTestServer(policy_file_path()));
     ASSERT_TRUE(test_server_->Start());
 
-    std::string url = test_server_->GetURL("device_management").spec();
+    std::string url = test_server_->GetServiceURL().spec();
 
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
@@ -249,36 +242,29 @@ class CloudPolicyTest : public InProcessBrowserTest {
     policy_manager->core()->client()->RemoveObserver(&observer);
   }
 
-  base::FilePath testserver_relative_docroot() {
-    return temp_dir_.path().BaseName().AppendASCII("testserver");
-  }
-
-  base::FilePath testserver_device_management_file() {
-    return temp_dir_.path().AppendASCII("testserver")
-                           .AppendASCII("device_management");
-  }
-
 #if defined(OS_CHROMEOS)
   base::FilePath user_policy_key_dir() {
     return temp_dir_.path().AppendASCII("user_policy");
   }
 
   base::FilePath user_policy_key_file() {
-      return user_policy_key_dir().AppendASCII(kSanitizedUsername)
-                                  .AppendASCII("policy.pub");
+    return user_policy_key_dir().AppendASCII(kSanitizedUsername)
+                                .AppendASCII("policy.pub");
   }
 #endif
 
   void SetServerPolicy(const std::string& policy) {
-    ASSERT_TRUE(file_util::CreateDirectory(
-        testserver_device_management_file().DirName()));
-    int result = file_util::WriteFile(
-        testserver_device_management_file(), policy.data(), policy.size());
+    int result = file_util::WriteFile(policy_file_path(), policy.data(),
+                                      policy.size());
     ASSERT_EQ(static_cast<int>(policy.size()), result);
   }
 
+  base::FilePath policy_file_path() const {
+    return temp_dir_.path().AppendASCII("policy.json");
+  }
+
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<net::TestServer> test_server_;
+  scoped_ptr<LocalPolicyTestServer> test_server_;
 
 #if defined(OS_CHROMEOS)
   std::string session_manager_user_policy_;

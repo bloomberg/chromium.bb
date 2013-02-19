@@ -151,6 +151,8 @@
         'browser/policy/mock_configuration_policy_provider.h',
         'browser/policy/policy_builder.cc',
         'browser/policy/policy_builder.h',
+        'browser/policy/test/local_policy_test_server.cc',
+        'browser/policy/test/local_policy_test_server.h',
         'browser/prefs/pref_service_mock_builder.cc',
         'browser/prefs/pref_service_mock_builder.h',
         'browser/search_engines/template_url_service_test_util.cc',

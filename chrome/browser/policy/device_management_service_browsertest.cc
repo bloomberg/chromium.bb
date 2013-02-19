@@ -9,11 +9,12 @@
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/policy/test_request_interceptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
-#include "net/test/test_server.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -95,7 +96,7 @@ class DeviceManagementServiceIntegrationTest
 
   std::string InitTestServer() {
     StartTestServer();
-    return test_server_->GetURL("device_management").spec();
+    return test_server_->GetServiceURL().spec();
   }
 
  protected:
@@ -137,10 +138,7 @@ class DeviceManagementServiceIntegrationTest
 
   void StartTestServer() {
     test_server_.reset(
-        new net::TestServer(
-            net::TestServer::TYPE_HTTP,
-            net::TestServer::kLocalhost,
-            base::FilePath(FILE_PATH_LITERAL("chrome/test/data/policy"))));
+        new LocalPolicyTestServer("device_management_service_browsertest"));
     ASSERT_TRUE(test_server_->Start());
   }
 
@@ -151,7 +149,7 @@ class DeviceManagementServiceIntegrationTest
 
   std::string token_;
   scoped_ptr<DeviceManagementService> service_;
-  scoped_ptr<net::TestServer> test_server_;
+  scoped_ptr<LocalPolicyTestServer> test_server_;
   scoped_ptr<TestRequestInterceptor> interceptor_;
 };
 

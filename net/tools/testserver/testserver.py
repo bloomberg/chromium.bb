@@ -272,7 +272,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
     post_handlers = [
       self.EchoTitleHandler,
       self.EchoHandler,
-      self.DeviceManagementHandler,
       self.PostOnlyFileHandler] + get_handlers
     put_handlers = [
       self.EchoTitleHandler,
@@ -1601,31 +1600,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.wfile.write(contents)
     return True
 
-  def DeviceManagementHandler(self):
-    """Delegates to the device management service used for cloud policy."""
-
-    if not self._ShouldHandleRequest("/device_management"):
-      return False
-
-    raw_request = self.ReadRequestBody()
-
-    if not self.server._device_management_handler:
-      import device_management
-      policy_path = os.path.join(self.server.data_dir, 'device_management')
-      self.server._device_management_handler = (
-          device_management.TestServer(policy_path, self.server.policy_keys))
-
-    http_response, raw_reply = (
-        self.server._device_management_handler.HandleRequest(self.path,
-                                                             self.headers,
-                                                             raw_request))
-    self.send_response(http_response)
-    if (http_response == 200):
-      self.send_header('Content-Type', 'application/x-protobuffer')
-    self.end_headers()
-    self.wfile.write(raw_reply)
-    return True
-
   # called by the redirect handling function when there is no parameter
   def sendRedirectHelp(self, redirect_name):
     self.send_response(200)
@@ -1901,8 +1875,6 @@ class ServerRunner(testserver_base.TestServerRunner):
       server.data_dir = self.__make_data_dir()
       server.file_root_url = self.options.file_root_url
       server_data['port'] = server.server_port
-      server._device_management_handler = None
-      server.policy_keys = self.options.policy_keys
     elif self.options.server_type == SERVER_WEBSOCKET:
       # Launch pywebsocket via WebSocketServer.
       logger = logging.getLogger()
@@ -2055,17 +2027,6 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   'multiple algorithms should be enabled.');
     self.option_parser.add_option('--file-root-url', default='/files/',
                                   help='Specify a root URL for files served.')
-    self.option_parser.add_option('--policy-key', action='append',
-                                  dest='policy_keys',
-                                  help='Specify a path to a PEM-encoded '
-                                  'private key to use for policy signing. May '
-                                  'be specified multiple times in order to '
-                                  'load multipe keys into the server. If the '
-                                  'server has multiple keys, it will rotate '
-                                  'through them in at each request a '
-                                  'round-robin fashion. The server will '
-                                  'generate a random key if none is specified '
-                                  'on the command line.')
 
 
 if __name__ == '__main__':

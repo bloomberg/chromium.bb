@@ -51,6 +51,7 @@ Example:
 
 """
 
+import BaseHTTPServer
 import cgi
 import hashlib
 import logging
@@ -73,6 +74,8 @@ except ImportError:
     json = None
 
 import asn1der
+import testserver_base
+
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
 import chrome_device_policy_pb2 as dp
@@ -91,7 +94,8 @@ BAD_MACHINE_IDS = [ '123490EN400015' ];
 # for the register request.
 KIOSK_MACHINE_IDS = [ 'KIOSK' ];
 
-class RequestHandler(object):
+
+class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Decodes and handles device management requests from clients.
 
   The handler implements all the request parsing and protobuf message decoding
@@ -99,20 +103,16 @@ class RequestHandler(object):
   unregister clients.
   """
 
-  def __init__(self, server, path, headers, request):
+  def __init__(self, request, client_address, server):
     """Initialize the handler.
 
     Args:
-      server: The TestServer object to use for (un)registering clients.
-      path: A string containing the request path and query parameters.
-      headers: A rfc822.Message-like object containing HTTP headers.
       request: The request data received from the client as a string.
+      client_address: The client address.
+      server: The TestServer object to use for (un)registering clients.
     """
-    self._server = server
-    self._path = path
-    self._headers = headers
-    self._request = request
-    self._params = None
+    BaseHTTPServer.BaseHTTPRequestHandler.__init__(self, request,
+                                                   client_address, server)
 
   def GetUniqueParam(self, name):
     """Extracts a unique query parameter from the request.
@@ -123,13 +123,21 @@ class RequestHandler(object):
       The parameter value or None if the parameter doesn't exist or is not
       unique.
     """
-    if not self._params:
-      self._params = cgi.parse_qs(self._path[self._path.find('?') + 1:])
+    if not hasattr(self, '_params'):
+      self._params = cgi.parse_qs(self.path[self.path.find('?') + 1:])
 
     param_list = self._params.get(name, [])
     if len(param_list) == 1:
       return param_list[0]
     return None;
+
+  def do_POST(self):
+    http_response, raw_reply = self.HandleRequest();
+    self.send_response(http_response)
+    if (http_response == 200):
+      self.send_header('Content-Type', 'application/x-protobuffer')
+    self.end_headers()
+    self.wfile.write(raw_reply)
 
   def HandleRequest(self):
     """Handles a request.
@@ -141,10 +149,11 @@ class RequestHandler(object):
       A tuple of HTTP status code and response data to send to the client.
     """
     rmsg = dm.DeviceManagementRequest()
-    rmsg.ParseFromString(self._request)
+    length = int(self.headers.getheader('content-length'))
+    rmsg.ParseFromString(self.rfile.read(length))
 
     logging.debug('gaia auth token -> ' +
-                  self._headers.getheader('Authorization', ''))
+                  self.headers.getheader('Authorization', ''))
     logging.debug('oauth token -> ' + str(self.GetUniqueParam('oauth_token')))
     logging.debug('deviceid -> ' + str(self.GetUniqueParam('deviceid')))
     self.DumpMessage('Request', rmsg)
@@ -180,7 +189,7 @@ class RequestHandler(object):
       return oauth_token
 
     match = re.match('GoogleLogin auth=(\\w+)',
-                     self._headers.getheader('Authorization', ''))
+                     self.headers.getheader('Authorization', ''))
     if match:
       return match.group(1)
 
@@ -203,7 +212,7 @@ class RequestHandler(object):
     if not auth:
       return (403, 'No authorization')
 
-    policy = self._server.GetPolicies()
+    policy = self.server.GetPolicies()
     if ('*' not in policy['managed_users'] and
         auth not in policy['managed_users']):
       return (403, 'Unmanaged')
@@ -212,7 +221,7 @@ class RequestHandler(object):
     if not device_id:
       return (400, 'Missing device identifier')
 
-    token_info = self._server.RegisterDevice(device_id,
+    token_info = self.server.RegisterDevice(device_id,
                                              msg.machine_id,
                                              msg.type)
 
@@ -245,7 +254,7 @@ class RequestHandler(object):
       return response
 
     # Unregister the device.
-    self._server.UnregisterDevice(token['device_token']);
+    self.server.UnregisterDevice(token['device_token']);
 
     # Prepare and send the response.
     response = dm.DeviceManagementResponse()
@@ -436,12 +445,12 @@ class RequestHandler(object):
       return error
 
     if msg.machine_id:
-      self._server.UpdateMachineId(token_info['device_token'], msg.machine_id)
+      self.server.UpdateMachineId(token_info['device_token'], msg.machine_id)
 
     # Response is only given if the scope is specified in the config file.
     # Normally 'google/chromeos/device', 'google/chromeos/user' and
     # 'google/chromeos/publicaccount' should be accepted.
-    policy = self._server.GetPolicies()
+    policy = self.server.GetPolicies()
     policy_value = ''
     policy_key = msg.policy_type
     if msg.settings_entity_id:
@@ -460,13 +469,13 @@ class RequestHandler(object):
     signing_key = None
     req_key = None
     current_key_index = policy.get('current_key_index', 0)
-    nkeys = len(self._server.keys)
+    nkeys = len(self.server.keys)
     if (msg.signature_type == dm.PolicyFetchRequest.SHA1_RSA and
         current_key_index in range(nkeys)):
-      signing_key = self._server.keys[current_key_index]
+      signing_key = self.server.keys[current_key_index]
       if msg.public_key_version in range(1, nkeys + 1):
         # requested key exists, use for signing and rotate.
-        req_key = self._server.keys[msg.public_key_version - 1]['private_key']
+        req_key = self.server.keys[msg.public_key_version - 1]['private_key']
 
     # Fill the policy data protobuf.
     policy_data = dm.PolicyData()
@@ -524,13 +533,13 @@ class RequestHandler(object):
     dmtoken = None
     request_device_id = self.GetUniqueParam('deviceid')
     match = re.match('GoogleDMToken token=(\\w+)',
-                     self._headers.getheader('Authorization', ''))
+                     self.headers.getheader('Authorization', ''))
     if match:
       dmtoken = match.group(1)
     if not dmtoken:
       error = 401
     else:
-      token_info = self._server.LookupToken(dmtoken)
+      token_info = self.server.LookupToken(dmtoken)
       if (not token_info or
           not request_device_id or
           token_info['device_id'] != request_device_id):
@@ -546,16 +555,22 @@ class RequestHandler(object):
     """Helper for logging an ASCII dump of a protobuf message."""
     logging.debug('%s\n%s' % (label, str(msg)))
 
-class TestServer(object):
+
+class PolicyTestServer(testserver_base.ClientRestrictingServerMixIn,
+                       testserver_base.BrokenPipeHandlerMixIn,
+                       testserver_base.StoppableHTTPServer):
   """Handles requests and keeps global service state."""
 
-  def __init__(self, policy_path, private_key_paths):
+  def __init__(self, server_address, policy_path, private_key_paths):
     """Initializes the server.
 
     Args:
+      server_address: Server host and port.
       policy_path: Names the file to read JSON-formatted policy from.
       private_key_paths: List of paths to read private keys from.
     """
+    testserver_base.StoppableHTTPServer.__init__(self, server_address,
+                                                 PolicyRequestHandler)
     self._registered_tokens = {}
     self.policy_path = policy_path
 
@@ -603,19 +618,6 @@ class TestServer(object):
       except IOError:
         print 'Failed to load policy from %s' % self.policy_path
     return policy
-
-  def HandleRequest(self, path, headers, request):
-    """Handles a request.
-
-    Args:
-      path: The request path and query parameters received from the client.
-      headers: A rfc822.Message-like object containing HTTP headers.
-      request: The request data received from the client as a string.
-    Returns:
-      A pair of HTTP status code and response data to send to the client.
-    """
-    handler = RequestHandler(self, path, headers, request)
-    return handler.HandleRequest()
 
   def RegisterDevice(self, device_id, machine_id, type):
     """Registers a device or user and generates a DM token for it.
@@ -684,3 +686,53 @@ class TestServer(object):
     """
     if dmtoken in self._registered_tokens.keys():
       del self._registered_tokens[dmtoken]
+
+
+class PolicyServerRunner(testserver_base.TestServerRunner):
+
+  def __init__(self):
+    super(PolicyServerRunner, self).__init__()
+
+  def create_server(self, server_data):
+    config_file = (
+        self.options.config_file or
+        os.path.join(self.options.data_dir or '', 'device_management'))
+    server = PolicyTestServer((self.options.host, self.options.port),
+                              config_file, self.options.policy_keys)
+    server_data['port'] = server.server_port
+    return server
+
+  def add_options(self):
+    testserver_base.TestServerRunner.add_options(self)
+    self.option_parser.add_option('--policy-key', action='append',
+                                  dest='policy_keys',
+                                  help='Specify a path to a PEM-encoded '
+                                  'private key to use for policy signing. May '
+                                  'be specified multiple times in order to '
+                                  'load multipe keys into the server. If the '
+                                  'server has multiple keys, it will rotate '
+                                  'through them in at each request in a '
+                                  'round-robin fashion. The server will '
+                                  'generate a random key if none is specified '
+                                  'on the command line.')
+    self.option_parser.add_option('--log-level', dest='log_level',
+                                  default='WARN',
+                                  help='Log level threshold to use.')
+    self.option_parser.add_option('--config-file', dest='config_file',
+                                  help='Specify a configuration file to use '
+                                  'instead of the default '
+                                  '<data_dir>/device_management')
+
+  def run_server(self):
+    logger = logging.getLogger()
+    logger.setLevel(getattr(logging, str(self.options.log_level).upper()))
+    if (self.options.log_to_console):
+      logger.addHandler(logging.StreamHandler())
+    if (self.options.log_file):
+      logger.addHandler(logging.FileHandler(self.options.log_file))
+
+    testserver_base.TestServerRunner.run_server(self);
+
+
+if __name__ == '__main__':
+  sys.exit(PolicyServerRunner().main())
