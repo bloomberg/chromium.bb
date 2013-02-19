@@ -6,11 +6,11 @@
 
 #include "ash/shell.h"
 #include "ash/system/power/power_status_view.h"
+#include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
@@ -30,7 +30,7 @@ namespace internal {
 
 namespace tray {
 
-class SettingsDefaultView : public ash::internal::ActionableView {
+class SettingsDefaultView : public ActionableView {
  public:
   explicit SettingsDefaultView(user::LoginStatus status)
       : login_status_(status),

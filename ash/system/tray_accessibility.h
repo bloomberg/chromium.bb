@@ -36,6 +36,9 @@ class ASH_EXPORT AccessibilityObserver {
 };
 
 namespace internal {
+
+class HoverHighlightView;
+
 namespace tray {
 
 class AccessibilityPopupView;

@@ -26,6 +26,7 @@
 #include "ui/message_center/message_popup_bubble.h"
 #include "ui/message_center/quiet_mode_bubble.h"
 #include "ui/views/bubble/tray_bubble_view.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget_observer.h"
 
 #if defined(OS_CHROMEOS)

@@ -5,6 +5,7 @@
 #include "ash/system/bluetooth/tray_bluetooth.h"
 
 #include "ash/shell.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"

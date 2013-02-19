@@ -28,6 +28,7 @@ class BubbleDelegateView;
 namespace ash {
 namespace internal {
 
+class HoverHighlightView;
 class TrayNetwork;
 
 namespace tray {

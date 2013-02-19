@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -14,11 +15,10 @@
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
-#include "ash/system/tray/tray_views.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "base/stl_util.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"

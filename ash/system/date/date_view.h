@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_DATE_DATE_VIEW_H_
 
 #include "ash/system/date/tray_date.h"
-#include "ash/system/tray/tray_views.h"
+#include "ash/system/tray/actionable_view.h"
 #include "base/i18n/time_formatting.h"
 #include "base/timer.h"
 #include "ui/views/view.h"

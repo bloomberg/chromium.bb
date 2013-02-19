@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/enterprise/tray_enterprise.h"
 
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"

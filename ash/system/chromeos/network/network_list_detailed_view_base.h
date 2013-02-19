@@ -19,6 +19,9 @@ namespace ash {
 struct NetworkIconInfo;
 
 namespace internal {
+
+class HoverHighlightView;
+
 namespace tray {
 
 // Base class for the NetworkListDetailedView and VpnListDetailedView.

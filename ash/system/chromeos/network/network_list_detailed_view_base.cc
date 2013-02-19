@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"

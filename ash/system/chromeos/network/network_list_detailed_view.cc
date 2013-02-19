@@ -5,6 +5,7 @@
 #include "ash/system/chromeos/network/network_list_detailed_view.h"
 
 #include "ash/shell.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "grit/ash_resources.h"

@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_views.h"
 #include "base/i18n/time_formatting.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
