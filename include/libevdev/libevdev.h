@@ -80,4 +80,7 @@ int EvdevIsSinglePressureDevice(EvdevPtr device);
 int EvdevWriteInfoToFile(FILE* file, const EvdevInfoPtr info);
 int EvdevWriteEventToFile(FILE* file, const struct input_event* event);
 
+int EvdevReadInfoFromFile(FILE* file, EvdevInfoPtr info);
+int EvdevReadEventFromFile(FILE* file, struct input_event* event);
+
 #endif

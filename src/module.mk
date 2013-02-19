@@ -10,7 +10,9 @@ CC_LIBRARY(src/libevdev.so.0): src/libevdev.o \
 	src/libevdev_mt.o \
 	src/libevdev_event.o
 
-CC_LIBRARY(src/libevdev_hollow.so.0): src/libevdev_mt.o \
+CC_LIBRARY(src/libevdev_hollow.so.0): CFLAGS += -DEVDEV_HOLLOW
+CC_LIBRARY(src/libevdev_hollow.so.0): src/libevdev.o \
+	src/libevdev_mt.o \
 	src/libevdev_event.o
 
 install-lib: CC_LIBRARY(src/libevdev.so.0) CC_LIBRARY(src/libevdev_hollow.so.0)

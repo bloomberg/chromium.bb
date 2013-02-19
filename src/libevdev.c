@@ -34,6 +34,9 @@ static EvdevClass EvdevProbeClass(EvdevInfoPtr info);
 static const char* EvdevClassToString(EvdevClass cls);
 static int EvdevWriteBitmask(FILE* fp, const char* name,
                               unsigned long* bitmask, size_t num_bytes);
+static int EvdevReadBitmask(FILE* fp, const char* expected_name,
+                              unsigned long* bitmask, size_t num_bytes);
+#ifndef EVDEV_HOLLOW
 
 int EvdevOpen(EvdevPtr evdev, const char* device) {
   evdev->fd = open(device, O_RDWR | O_NONBLOCK, 0);
@@ -227,16 +230,6 @@ int EvdevProbeAbsinfo(EvdevPtr device, size_t key) {
   }
 }
 
-/*
- * Check if the device is a single-pressure one which reports ABS_PRESSURE only.
- */
-int EvdevIsSinglePressureDevice(EvdevPtr device) {
-    EvdevInfoPtr info = &device->info;
-
-    return (!TestBit(ABS_MT_PRESSURE, info->abs_bitmask) &&
-            TestBit(ABS_PRESSURE, info->abs_bitmask));
-}
-
 int EvdevProbeMTSlot(EvdevPtr device, MTSlotInfoPtr req) {
   if (ioctl(device->fd, EVIOCGMTSLOTS((sizeof(*req))), req) < 0) {
       LOG_ERROR(device, "ioctl EVIOCGMTSLOTS(req.code=%d) failed: %s\n",
@@ -264,23 +257,24 @@ int EvdevEnableMonotonic(EvdevPtr device) {
   return (ioctl(device->fd, EVIOCSCLOCKID, &clk) == 0) ? Success : !Success;
 }
 
+#endif // #ifndef EVDEV_HOLLOW
+
+/*
+ * Check if the device is a single-pressure one which reports ABS_PRESSURE only.
+ */
+int EvdevIsSinglePressureDevice(EvdevPtr device) {
+    EvdevInfoPtr info = &device->info;
+
+    return (!TestBit(ABS_MT_PRESSURE, info->abs_bitmask) &&
+            TestBit(ABS_PRESSURE, info->abs_bitmask));
+}
+
 int EvdevWriteInfoToFile(FILE* fp, const EvdevInfoPtr info) {
   int ret;
 
   ret = fprintf(fp, "# device: %s\n", info->name);
   if (ret <= 0)
     return ret;
-
-  for (int i = ABS_X; i <= ABS_MAX; i++) {
-    if (TestBit(i, info->abs_bitmask)) {
-      struct input_absinfo* abs = &info->absinfo[i];
-      ret = fprintf(fp, "# absinfo: %d %d %d %d %d %d\n",
-                    i, abs->minimum, abs->maximum,
-                    abs->fuzz, abs->flat, abs->resolution);
-      if (ret <= 0)
-        return ret;
-    }
-  }
 
   ret = EvdevWriteBitmask(fp, "bit", info->bitmask, sizeof(info->bitmask));
   if (ret <= 0)
@@ -311,6 +305,20 @@ int EvdevWriteInfoToFile(FILE* fp, const EvdevInfoPtr info) {
   if (ret <= 0)
     return ret;
 
+  // when reading the log we need to know which absinfos
+  // exist which is stored in the abs bitmask.
+  // so we have to write absinfo after the bitmasks.
+  for (int i = ABS_X; i <= ABS_MAX; i++) {
+    if (TestBit(i, info->abs_bitmask)) {
+      struct input_absinfo* abs = &info->absinfo[i];
+      ret = fprintf(fp, "# absinfo: %d %d %d %d %d %d\n",
+                    i, abs->minimum, abs->maximum,
+                    abs->fuzz, abs->flat, abs->resolution);
+      if (ret <= 0)
+        return ret;
+    }
+  }
+
   return 1;
 }
 
@@ -318,6 +326,94 @@ int EvdevWriteEventToFile(FILE* fp, const struct input_event* ev) {
   return fprintf(fp, "E: %lu.%06u %04x %04x %d\n",
                  ev->time.tv_sec, (unsigned)ev->time.tv_usec,
                  ev->type, ev->code, ev->value);
+}
+
+int EvdevReadInfoFromFile(FILE* fp, EvdevInfoPtr info) {
+  int ret;
+
+  ret = fscanf(fp, "# device: %1024s\n", info->name);
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevReadBitmask(fp, "bit", info->bitmask, sizeof(info->bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevReadBitmask(fp, "key", info->key_bitmask,
+                         sizeof(info->key_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevReadBitmask(fp, "rel", info->rel_bitmask,
+                         sizeof(info->rel_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevReadBitmask(fp, "abs", info->abs_bitmask,
+                         sizeof(info->abs_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevReadBitmask(fp, "led", info->led_bitmask,
+                         sizeof(info->led_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  ret = EvdevReadBitmask(fp, "prp", info->prop_bitmask,
+                         sizeof(info->prop_bitmask));
+  if (ret <= 0)
+    return ret;
+
+  for (int i = ABS_X; i <= ABS_MAX; i++) {
+      if (TestBit(i, info->abs_bitmask)) {
+          struct input_absinfo abs;
+          int abs_index;
+          ret = fscanf(fp, "# absinfo: %d %d %d %d %d %d\n",
+                       &abs_index, &abs.minimum, &abs.maximum,
+                       &abs.fuzz, &abs.flat, &abs.resolution);
+          if (ret <= 0 || abs_index != i)
+            return -1;
+          info->absinfo[i] = abs;
+      }
+  }
+  return 1;
+}
+
+int EvdevReadEventFromFile(FILE* fp, struct input_event* ev) {
+  unsigned long sec;
+  unsigned usec, type, code;
+  int value;
+  int ret = fscanf(fp, "E: %lu.%06u %04x %04x %d\n",
+       &sec, &usec, &type, &code, &value);
+  if (ret <= 0)
+    return ret;
+
+  ev->time.tv_sec = sec;
+  ev->time.tv_usec = usec;
+  ev->type = type;
+  ev->code = code;
+  ev->value = value;
+  return ret;
+}
+
+static int EvdevReadBitmask(FILE* fp, const char* expected_name,
+                              unsigned long* bitmask, size_t num_bytes) {
+  unsigned char* bytes = (unsigned char*)bitmask;
+  int ret;
+  char name[64];
+
+  ret = fscanf(fp, "# %64s:", name);
+  if (ret <= 0 || strcmp(name, expected_name) == 0)
+    return ret;
+  for (int i = 0; i < num_bytes; ++i) {
+    unsigned int tmp;
+    ret = fscanf(fp, " %02X", &tmp);
+    if (ret <= 0)
+      return ret;
+    bytes[i] = (unsigned char)tmp;
+  }
+  ret = fscanf(fp, "\n");
+  return 1;
 }
 
 static int EvdevWriteBitmask(FILE* fp, const char* name,
