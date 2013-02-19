@@ -11,6 +11,16 @@ SpdyFrameWithNameValueBlockIR::SpdyFrameWithNameValueBlockIR(
 
 SpdyFrameWithNameValueBlockIR::~SpdyFrameWithNameValueBlockIR() {}
 
+SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, const base::StringPiece& data)
+    : SpdyFrameWithFinIR(stream_id) {
+  SetDataDeep(data);
+}
+
+SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id)
+    : SpdyFrameWithFinIR(stream_id) {}
+
+SpdyDataIR::~SpdyDataIR() {}
+
 SpdySettingsIR::SpdySettingsIR() : clear_settings_(false) {}
 
 SpdySettingsIR::~SpdySettingsIR() {}

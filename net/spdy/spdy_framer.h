@@ -444,6 +444,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyDataFrame* CreateDataFrame(SpdyStreamId stream_id, const char* data,
                                  uint32 len, SpdyDataFlags flags) const;
   SpdySerializedFrame* SerializeData(const SpdyDataIR& data) const;
+  // Serializes just the data frame header, excluding actual data payload.
+  SpdySerializedFrame* SerializeDataFrameHeader(const SpdyDataIR& data) const;
 
   // NOTES about frame compression.
   // We want spdy to compress headers across the entire session.  As long as
@@ -477,8 +479,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     display_protocol_ = protocol;
   }
 
-  // Returns the (minimum) size of control frames (sans variable-length
-  // portions).
+  // Returns the (minimum) size of frames (sans variable-length portions).
+  size_t GetDataFrameMinimumSize() const;
   size_t GetControlFrameMinimumSize() const;
   size_t GetSynStreamMinimumSize() const;
   size_t GetSynReplyMinimumSize() const;

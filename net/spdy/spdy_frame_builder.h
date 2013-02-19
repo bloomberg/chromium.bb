@@ -94,6 +94,13 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // with the correct version for the frame being written.
   bool RewriteLength(const SpdyFramer& framer);
 
+  // Update (in-place) the length field in the frame being built to reflect the
+  // given length.
+  // The framer parameter is used to determine version-specific location and
+  // size information of the length field to be written, and must be initialized
+  // with the correct version for the frame being written.
+  bool OverwriteLength(const SpdyFramer& framer, size_t length);
+
  protected:
   const char* end_of_payload() const { return buffer_.get() + length_; }
 

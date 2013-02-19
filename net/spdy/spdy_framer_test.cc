@@ -1525,9 +1525,20 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       'o'
     };
     const char bytes[] = "hello";
+
     scoped_ptr<SpdyFrame> frame(framer.CreateDataFrame(
         1, bytes, strlen(bytes), DATA_FLAG_NONE));
     CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+
+    SpdyDataIR data_ir(1);
+    data_ir.SetDataShallow(base::StringPiece(bytes, strlen(bytes)));
+    frame.reset(framer.SerializeDataFrameHeader(data_ir));
+    CompareCharArraysWithHexError(
+        kDescription,
+        reinterpret_cast<const unsigned char*>(frame->data()),
+        framer.GetDataFrameMinimumSize(),
+        kFrameData,
+        framer.GetDataFrameMinimumSize());
   }
 
   {

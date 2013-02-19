@@ -153,6 +153,13 @@ void SpdyFramer::Reset() {
   settings_scratch_.Reset();
 }
 
+size_t SpdyFramer::GetDataFrameMinimumSize() const {
+  // Size, in bytes, of the data frame header. Future versions of SPDY
+  // will likely vary this, so we allow for the flexibility of a function call
+  // for this value as opposed to a constant.
+  return 8;
+}
+
 size_t SpdyFramer::GetControlFrameMinimumSize() const {
   // Size, in bytes, of the control frame header. Future versions of SPDY
   // will likely vary this, so we allow for the flexibility of a function call
@@ -1720,18 +1727,31 @@ SpdyDataFrame* SpdyFramer::CreateDataFrame(
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeData(const SpdyDataIR& data) const {
-  // Size, in bytes, of this DATA frame. Calculated as:
-  // 4 (stream id) + 1 (flags) + 3 (length) + payload length
-  const size_t size = 8 + data.data().length();
+  const size_t kSize = GetDataFrameMinimumSize() + data.data().length();
 
   SpdyDataFlags flags = DATA_FLAG_NONE;
   if (data.fin()) {
     flags = DATA_FLAG_FIN;
   }
 
-  SpdyFrameBuilder builder(data.stream_id(), flags, size);
+  SpdyFrameBuilder builder(data.stream_id(), flags, kSize);
   builder.WriteBytes(data.data().data(), data.data().length());
-  DCHECK_EQ(size, builder.length());
+  DCHECK_EQ(kSize, builder.length());
+  return builder.take();
+}
+
+SpdySerializedFrame* SpdyFramer::SerializeDataFrameHeader(
+    const SpdyDataIR& data) const {
+  const size_t kSize = GetDataFrameMinimumSize();
+
+  SpdyDataFlags flags = DATA_FLAG_NONE;
+  if (data.fin()) {
+    flags = DATA_FLAG_FIN;
+  }
+
+  SpdyFrameBuilder builder(data.stream_id(), flags, kSize);
+  builder.OverwriteLength(*this, data.data().length());
+  DCHECK_EQ(kSize, builder.length());
   return builder.take();
 }
 

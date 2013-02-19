@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/sys_byteorder.h"
 #include "net/base/net_export.h"
@@ -574,17 +575,35 @@ class NET_EXPORT_PRIVATE SpdyFrameWithNameValueBlockIR
   DISALLOW_COPY_AND_ASSIGN(SpdyFrameWithNameValueBlockIR);
 };
 
-class SpdyDataIR : public SpdyFrameWithFinIR {
+class NET_EXPORT_PRIVATE SpdyDataIR
+    : public NON_EXPORTED_BASE(SpdyFrameWithFinIR) {
  public:
-  SpdyDataIR(SpdyStreamId stream_id, const base::StringPiece& data)
-      : SpdyFrameWithFinIR(stream_id) {
-    set_data(data);
-  }
+  // Performs deep copy on data.
+  SpdyDataIR(SpdyStreamId stream_id, const base::StringPiece& data);
+
+  // Use in conjunction with SetDataShallow() for shallow-copy on data.
+  explicit SpdyDataIR(SpdyStreamId stream_id);
+
+  virtual ~SpdyDataIR();
+
   base::StringPiece data() const { return data_; }
-  void set_data(const base::StringPiece& data) { data.CopyToString(&data_); }
+
+  // Deep-copy of data (keep private copy).
+  void SetDataDeep(const base::StringPiece& data) {
+    data_store_.reset(new std::string(data.data(), data.length()));
+    data_ = *(data_store_.get());
+  }
+
+  // Shallow-copy of data (do not keep private copy).
+  void SetDataShallow(const base::StringPiece& data) {
+    data_store_.reset();
+    data_ = data;
+  }
 
  private:
-  std::string data_;
+  // Used to store data that this SpdyDataIR should own.
+  scoped_ptr<std::string> data_store_;
+  base::StringPiece data_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyDataIR);
 };

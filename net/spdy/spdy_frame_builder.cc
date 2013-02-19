@@ -114,9 +114,14 @@ bool SpdyFrameBuilder::WriteBytes(const void* data, uint32 data_len) {
 }
 
 bool SpdyFrameBuilder::RewriteLength(const SpdyFramer& framer) {
+  return OverwriteLength(framer, length_ - framer.GetControlFrameMinimumSize());
+}
+
+bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
+                                       size_t length) {
   FlagsAndLength flags_length = CreateFlagsAndLength(
       0,  // We're not writing over the flags value anyway.
-      length_ - framer.GetControlFrameMinimumSize());
+      length);
 
   // Write into the correct location by temporarily faking the offset.
   const size_t old_length = length_;
