@@ -546,7 +546,7 @@ deps_os = {
     # For Linux and Chromium OS.
     "src/third_party/cros_system_api":
       Var("chromiumos_git") + "/platform/system_api.git" +
-      "@9cce4639444d712c83dff649bf1c0f5cf3601ee7",
+      "@08f3bd35fad8441eed73aae86fea5102f3739187",
   },
   "android": {
     "src/third_party/android_tools":
