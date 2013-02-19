@@ -33,7 +33,6 @@ from chromite.lib import commandline
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import remote_access as remote
-from chromite.lib import sudo
 
 
 _USAGE = "deploy_chrome [--]\n\n %s" % __doc__
@@ -50,23 +49,10 @@ MOUNT_RW_COMMAND = 'mount -o remount,rw /'
 DebugRunCommand = functools.partial(
     cros_build_lib.RunCommand, debug_level=logging.DEBUG)
 
-DebugRunCommandCaptureOutput = functools.partial(
-    cros_build_lib.RunCommandCaptureOutput, debug_level=logging.DEBUG)
-
-DebugSudoRunCommand = functools.partial(
-    cros_build_lib.SudoRunCommand, debug_level=logging.DEBUG)
-
 
 def _UrlBaseName(url):
   """Return the last component of the URL."""
   return url.rstrip('/').rpartition('/')[-1]
-
-
-def _ExtractChrome(src, dest):
-  osutils.SafeMakedirs(dest)
-  # Preserve permissions (-p).  This is default when running tar with 'sudo'.
-  DebugSudoRunCommand(['tar', '--checkpoint', '-xf', src],
-                        cwd=dest)
 
 
 class DeployChrome(object):
@@ -128,7 +114,14 @@ class DeployChrome(object):
     # status output is in the format:
     # <job_name> <status> ['process' <pid>].
     # <status> is in the format <goal>/<state>.
-    result = self.host.RemoteSh('status ui')
+    try:
+      result = self.host.RemoteSh('status ui')
+    except cros_build_lib.RunCommandError as e:
+      if 'Unknown job' in e.result.error:
+        return False
+      else:
+        raise e
+
     return result.output.split()[1].split('/')[0] == 'start'
 
   def _KillProcsIfNeeded(self):
@@ -174,7 +167,7 @@ class DeployChrome(object):
     logging.info('Copying Chrome to device.')
     # Show the output (status) for this command.
     self.host.Rsync('%s/' % os.path.abspath(self.staging_dir), '/',
-                    inplace=True, debug_level=logging.INFO, sudo=True)
+                    inplace=True, debug_level=logging.INFO)
     if self.options.startui:
       self.host.RemoteSh('start ui')
 
@@ -367,7 +360,8 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
 
     assert pkg_path
     logging.info('Extracting %s.', pkg_path)
-    _ExtractChrome(pkg_path, staging_dir)
+    osutils.SafeMakedirs(staging_dir)
+    DebugRunCommand(['tar', '-xpf', pkg_path], cwd=staging_dir)
 
 
 def main(argv):
@@ -380,15 +374,14 @@ def main(argv):
   else:
     logging.getLogger().setLevel(logging.WARNING)
 
-  with sudo.SudoKeepAlive(ttyless_sudo=False):
-    with osutils.TempDirContextManager(sudo_rm=True) as tempdir:
-      staging_dir = options.staging_dir
-      if not staging_dir:
-        staging_dir = os.path.join(tempdir, 'chrome')
-      _PrepareStagingDir(options, tempdir, staging_dir)
+  with osutils.TempDirContextManager() as tempdir:
+    staging_dir = options.staging_dir
+    if not staging_dir:
+      staging_dir = os.path.join(tempdir, 'chrome')
+    _PrepareStagingDir(options, tempdir, staging_dir)
 
-      if options.staging_only:
-        return 0
+    if options.staging_only:
+      return 0
 
-      deploy = DeployChrome(options, tempdir, staging_dir)
-      deploy.Perform()
+    deploy = DeployChrome(options, tempdir, staging_dir)
+    deploy.Perform()

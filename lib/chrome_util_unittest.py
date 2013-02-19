@@ -23,6 +23,7 @@ class CopyTest(cros_test_lib.TempDirTestCase):
     self.dest_base = os.path.join(self.tempdir, 'dest_base')
     os.mkdir(self.src_base)
     os.mkdir(self.dest_base)
+    self.copier = chrome_util.Copier()
 
   def _CopyAndVerify(self, path, src_struct, dest_struct, error=None):
     cros_test_lib.CreateOnDiskHierarchy(self.src_base, src_struct)
@@ -30,7 +31,7 @@ class CopyTest(cros_test_lib.TempDirTestCase):
       self.assertRaises(error, path.Copy, self.src_base, self.dest_base, None)
       return
 
-    path.Copy(self.src_base, self.dest_base, None)
+    path.Copy(self.src_base, self.dest_base, self.copier)
     cros_test_lib.VerifyOnDiskHierarchy(self.dest_base, dest_struct)
 
 

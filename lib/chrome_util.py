@@ -77,7 +77,7 @@ class Conditions(object):
 
   @classmethod
   def _StagingFlagSet(cls, flag, _gyp_defines, staging_flags):
-    return bool(staging_flags.get(flag))
+    return flag in staging_flags
 
   @classmethod
   def GypSet(cls, flag, value=None):
@@ -103,39 +103,33 @@ class MissingPathError(Exception):
   """An expected path is non-existant."""
 
 
-class Path(object):
-  """Represents an artifact to be copied from build dir to staging dir."""
+class Copier(object):
+  """Single file/directory copier.
 
-  def __init__(self, src, strip=False, cond=None, dest=None, optional=False):
-    """Initializes the object.
+  Provides destination stripping and permission setting functionality.
+  """
+
+  def __init__(self, strip_bin=None, exe_opts=None):
+    """Initialization.
 
     Arguments:
-      src: The relative path of the artifact.  Can be a file or a directory.
-           Can be a glob pattern.
-      strip: Whether to perform symbol stripping on the surce files.  We
-             currently only support stripping of specified files and glob
-             patterns that return files.  If |src| is a directory or contains
-             directories, the content of the directory will not be stripped.
-      cond: A condition (see Conditions class) to test for in deciding whether
-            to process this artifact.
-      dest: Name to give to the target file/directory.  Defaults to keeping the
-            same name as the source.
-      optional: Whether to enforce the existence of the artifact.  If unset, the
-                script errors out if the artifact does not exist.
+      strip_bin: Path to the program used to strip binaries.  If set to None,
+                 binaries will not be stripped.
+      exe_opts: Permissions to set on executables.
     """
-    self.src = src
-    self.strip = strip
-    self.cond = cond
-    self.optional = optional
-    self.dest = dest
+    self.strip_bin = strip_bin
+    self.exe_opts = exe_opts
 
-  def ShouldProcess(self, gyp_defines, staging_flags):
-    """Tests whether this artifact should be copied."""
-    if self.cond:
-      return self.cond(gyp_defines, staging_flags)
-    return True
+  def Copy(self, src, dest, exe):
+    """Perform the copy.
 
-  def _Copy(self, src, dest, strip_bin):
+    Arguments:
+      src: The path of the file/directory to copy.
+      dest: The exact path of the destination.  Should not already exist.
+      exe: If |src| is a file, whether the file is an executable.  If |src| is a
+           directory, whether to treat the contents of the directory as
+           executables.
+    """
     def Log(directory):
       sep = ' [d] -> ' if directory else ' -> '
       logging.debug('%s %s %s', src, sep, dest)
@@ -148,18 +142,57 @@ class Path(object):
       if os.path.isdir(dest):
         dest = os.path.join(dest, os.path.basename(src))
       shutil.copytree(src, dest)
-    elif self.strip:
-      cros_build_lib.RunCommand([strip_bin, '--strip-unneeded', '-o', dest,
-                                 src])
+    elif exe:
+      if self.strip_bin:
+        cros_build_lib.RunCommand([self.strip_bin, '--strip-unneeded',
+                                   '-o', dest, src])
+      if self.exe_opts is not None:
+        os.chmod(dest, self.exe_opts)
     else:
       shutil.copy(src, dest)
 
-  def Copy(self, src_base, dest_base, strip_bin, ignore_missing=False):
+
+class Path(object):
+  """Represents an artifact to be copied from build dir to staging dir."""
+
+  def __init__(self, src, exe=False, cond=None, dest=None, optional=False):
+    """Initializes the object.
+
+    Arguments:
+      src: The relative path of the artifact.  Can be a file or a directory.
+           Can be a glob pattern.
+      exe: Identifes the path as either being an executable or containing
+           executables.  Executables may be stripped during copy, and have
+           special permissions set.  We currently only support stripping of
+           specified files and glob patterns that return files.  If |src| is a
+           directory or contains directories, the content of the directory will
+           not be stripped.
+      cond: A condition (see Conditions class) to test for in deciding whether
+            to process this artifact.
+      dest: Name to give to the target file/directory.  Defaults to keeping the
+            same name as the source.
+      optional: Whether to enforce the existence of the artifact.  If unset, the
+                script errors out if the artifact does not exist.
+    """
+    self.src = src
+    self.exe = exe
+    self.cond = cond
+    self.optional = optional
+    self.dest = dest
+
+  def ShouldProcess(self, gyp_defines, staging_flags):
+    """Tests whether this artifact should be copied."""
+    if self.cond:
+      return self.cond(gyp_defines, staging_flags)
+    return True
+
+  def Copy(self, src_base, dest_base, copier, ignore_missing=False):
     """Copy artifact(s) from source directory to destination.
 
     Arguments:
       src_base: The directory to apply the src glob pattern match in.
       dest_base: The directory to copy matched files to.  |Path.dest|.
+      copier: A Copier instance that performs the actual file/directory copying.
     """
     src = os.path.join(src_base, self.src)
     paths = glob.glob(src)
@@ -179,7 +212,7 @@ class Path(object):
       dest = os.path.join(
           dest_base,
           os.path.relpath(p, src_base) if self.dest is None else self.dest)
-      self._Copy(p, dest, strip_bin)
+      copier.Copy(p, dest, self.exe)
 
 
 _DISABLE_NACL = 'disable_nacl'
@@ -187,7 +220,9 @@ _USE_DRM = 'use_drm'
 _USE_PDF = 'use_pdf'
 
 _HIGHDPI_FLAG = 'highdpi'
-STAGING_FLAGS = (_HIGHDPI_FLAG,)
+_CONTENT_SHELL_FLAG = 'content_shell'
+_WIDEVINE_FLAG = 'widevine'
+STAGING_FLAGS = (_HIGHDPI_FLAG, _CONTENT_SHELL_FLAG, _WIDEVINE_FLAG)
 
 _CHROME_DIR = 'opt/google/chrome'
 _CHROME_SANDBOX_DEST = 'chrome-sandbox'
@@ -195,42 +230,71 @@ C = Conditions
 
 
 _COPY_PATHS = (
-  Path('chrome', strip=True),
-  Path('chrome_sandbox', dest=_CHROME_SANDBOX_DEST),
+  Path('ash_shell',
+       cond=C.GypSet(_USE_DRM)),
+  Path('aura_demo',
+       cond=C.GypSet(_USE_DRM)),
+  Path('chrome',
+       exe=True),
+  Path('chrome_sandbox',
+       dest=_CHROME_SANDBOX_DEST),
   Path('chrome-wrapper'),
   Path('chrome.pak'),
   Path('chrome_100_percent.pak'),
-  Path('extensions', optional=True),
-  Path('libffmpegsumo.so', strip=True),
-  Path('libosmesa.so', strip=True),
+  Path('chrome_200_percent.pak',
+       cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
+  Path('content_shell',
+       cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
+  Path('content_shell.pak',
+       cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
+  Path('extensions',
+       optional=True),
+  Path('lib.target/*.so',
+       exe=True,
+       cond=C.GypSet('component', value='shared_library')),
+  Path('libffmpegsumo.so',
+       exe=True),
+  Path('libpdf.so',
+       exe=True,
+       cond=C.GypSet(_USE_PDF)),
+  Path('libppGoogleNaClPluginChrome.so',
+       exe=True,
+       cond=C.GypNotSet(_DISABLE_NACL)),
+  Path('libosmesa.so',
+       exe=True),
+  Path('libwidevinecdmadapter.so',
+       exe=True,
+       cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
+  Path('libwidevinecdm.so',
+       exe=True,
+       cond=C.StagingFlagSet(_WIDEVINE_FLAG)),
   Path('locales'),
+  Path('nacl_helper_bootstrap',
+       cond=C.GypNotSet(_DISABLE_NACL)),
+  Path('nacl_irt_*.nexe',
+       exe=True,
+       cond=C.GypNotSet(_DISABLE_NACL)),
+  Path('nacl_helper',
+       exe=True, optional=True,
+       cond=C.GypNotSet(_DISABLE_NACL)),
   Path('resources'),
   Path('resources.pak'),
   Path('xdg-settings'),
   Path('*.png'),
-  Path('lib.target/*.so', strip=True,
-       cond=C.GypSet('component', value='shared_library')),
-  Path('libppGoogleNaClPluginChrome.so', strip=True,
-       cond=C.GypNotSet(_DISABLE_NACL)),
-  Path('nacl_helper_bootstrap', cond=C.GypNotSet(_DISABLE_NACL)),
-  Path('nacl_irt_*.nexe', strip=True, cond=C.GypNotSet(_DISABLE_NACL)),
-  Path('nacl_helper.exe', strip=True, optional=True,
-       cond=C.GypNotSet(_DISABLE_NACL)),
-  Path('ash_shell', cond=C.GypSet(_USE_DRM)),
-  Path('aura_demo', cond=C.GypSet(_USE_DRM)),
-  Path('libpdf.so', strip=True, cond=C.GypSet(_USE_PDF)),
-  Path('chrome_200_percent.pak', cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
 )
 
 
-def _SetPermissions(staging_dir, dest_base):
-  # Set the ownership of all files in staging dir to root:root.
-  cros_build_lib.SudoRunCommand(['chown', 'root:root', '-R', staging_dir])
-
-  # Setuid the sandbox after running chown, since chown clears the setuid bit.
+def _FixPermissions(dest_base):
+  """Last minute permission fixes."""
+  # Set the suid bit for the chrome sandbox.
+  # TODO(rcui): Implement this through a permission mask attribute in the Path
+  # class.
+  cros_build_lib.RunCommand(['chmod', '-R', 'a+r', dest_base])
+  cros_build_lib.RunCommand(['find', dest_base, '-perm', '/110', '-exec',
+                             'chmod', 'a+x', '{}', '+'])
   target = os.path.join(dest_base, _CHROME_SANDBOX_DEST)
   if os.path.exists(target):
-    cros_build_lib.SudoRunCommand(['chmod', '4755', target])
+    cros_build_lib.RunCommand(['chmod', '4755', target])
 
 
 class StagingError(Exception):
@@ -262,15 +326,17 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
     raise StagingError('Staging directory %s must be empty.' % staging_dir)
 
   dest_base = os.path.join(staging_dir, _CHROME_DIR)
-  os.makedirs(os.path.join(dest_base, 'plugins'))
+  osutils.SafeMakedirs(os.path.join(dest_base, 'plugins'))
+  cros_build_lib.RunCommand(['chmod', '-R', '0755', staging_dir])
 
   if gyp_defines is None:
     gyp_defines = {}
   if staging_flags is None:
     staging_flags = []
 
+  copier = Copier(strip_bin=strip_bin, exe_opts=0755)
   for p in _COPY_PATHS:
     if not strict or p.ShouldProcess(gyp_defines, staging_flags):
-      p.Copy(build_dir, dest_base, strip_bin, ignore_missing=(not strict))
+      p.Copy(build_dir, dest_base, copier, ignore_missing=(not strict))
 
-  _SetPermissions(staging_dir, dest_base)
+  _FixPermissions(dest_base)

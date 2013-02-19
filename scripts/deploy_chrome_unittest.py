@@ -190,17 +190,22 @@ class TestCheckRootfs(DeployTest):
 class TestUiJobStarted(DeployTest):
   """Test detection of a running 'ui' job."""
 
-  def MockStatusUiCmd(self, output):
-    self.deploy_mock.rsh_mock.AddCmdResult('status ui', output=output)
+  def MockStatusUiCmd(self, **kwargs):
+    self.deploy_mock.rsh_mock.AddCmdResult('status ui', **kwargs)
 
   def testUiJobStartedFalse(self):
     """Correct results with a stopped job."""
-    self.MockStatusUiCmd('ui stop/waiting')
+    self.MockStatusUiCmd(output='ui stop/waiting')
+    self.assertFalse(self.deploy._CheckUiJobStarted())
+
+  def testNoUiJob(self):
+    """Correct results when the job doesn't exist."""
+    self.MockStatusUiCmd(error='start: Unknown job: ui', returncode=1)
     self.assertFalse(self.deploy._CheckUiJobStarted())
 
   def testCheckRootfsWriteableTrue(self):
     """Correct results with a running job."""
-    self.MockStatusUiCmd('ui start/running, process 297')
+    self.MockStatusUiCmd(output='ui start/running, process 297')
     self.assertTrue(self.deploy._CheckUiJobStarted())
 
 
@@ -208,7 +213,6 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
   """Test user-mode and ebuild-mode staging functionality."""
 
   def setUp(self):
-    self.sudo_cleanup = True
     self.staging_dir = os.path.join(self.tempdir, 'staging')
     self.build_dir = os.path.join(self.tempdir, 'build_dir')
     self.common_flags = ['--build-dir', self.build_dir,
