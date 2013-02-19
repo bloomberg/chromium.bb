@@ -80,16 +80,16 @@
    bug_51988_a
    Heapcheck:Leak
    ...
-   fun:mozilla_security_manager::::nsPKCS12Blob_ImportHelper
+   fun:*nsPKCS12Blob_ImportHelper
    fun:mozilla_security_manager::nsPKCS12Blob_Import
-   fun:net::CertDatabase::ImportFromPKCS12
+   fun:net::NSSCertDatabase::ImportFromPKCS12
 }
 {
    bug_51988_b
    Heapcheck:Leak
    ...
    fun:mozilla_security_manager::nsPKCS12Blob_Export
-   fun:net::CertDatabase::ExportToPKCS12
+   fun:net::NSSCertDatabase::ExportToPKCS12
 }
 {
    bug_51988_c
@@ -101,7 +101,7 @@
    bug_51988_d
    Heapcheck:Leak
    ...
-   fun:base::DefaultLazyInstanceTraits::New
+   fun:*New
    ...
    fun:crypto::EnsureNSSInit
 }
@@ -142,8 +142,6 @@
    Heapcheck:Leak
    fun:sqlite3MemMalloc
    fun:chromeos::*::ListCertsInSlot
-   ...
-   fun:chromeos::*::TearDown
 }
 {
    bug_66941_a
@@ -414,7 +412,7 @@
    bug_34994_a
    Heapcheck:Leak
    ...
-   fun:v8::internal::Invoke
+   fun:*Invoke
    fun:v8::internal::Execution::Call
    fun:v8::Script::Run
 }
@@ -422,7 +420,7 @@
    bug_34994_b
    Heapcheck:Leak
    ...
-   fun:v8::internal::Invoke
+   fun:*Invoke
    fun:v8::internal::Execution::Call
    fun:v8::Function::Call
 }
@@ -480,7 +478,7 @@
 {
    bug_46715
    Heapcheck:Leak
-   fun:WebCore::makeExternalString
+   fun:*makeExternalString
    fun:WebCore::*v8ExternalStringSlow
 }
 {
@@ -628,13 +626,13 @@
    bug_67378_a
    Heapcheck:Leak
    ...
-   fun:net::::ProxyResolverV8WithMockBindings::SetPacScriptFromDisk
+   fun:*SetPacScriptFromDisk
 }
 {
    bug_67378_b
    Heapcheck:Leak
    ...
-   fun:net::::LoadScriptData
+   fun:*LoadScriptData
 }
 {
    bug_67378_c
@@ -646,7 +644,7 @@
 {
    bug_67378_d
    Heapcheck:Leak
-   fun:net::::ScriptDataToV8String
+   fun:*ScriptDataToV8String
    fun:net::ProxyResolverV8::Context::InitV8
    fun:net::ProxyResolverV8::SetPacScript
 }
@@ -786,7 +784,7 @@
    bug_82974b
    Heapcheck:Leak
    ...
-   fun:net::::PKIXVerifyCert
+   fun:*PKIXVerifyCert
 }
 {
    bug_82974c
@@ -805,9 +803,16 @@
 {
    bug_82974e
    Heapcheck:Leak
-   fun:sqlite3MemMalloc
+   ...
    fun:net::NSSCertDatabase::DeleteCertAndKey
    fun:*::CleanupSlotContents
+}
+{
+   bug_82974f
+   Heapcheck:Leak
+   ...
+   fun:net::NSSCertDatabase::DeleteCertAndKey
+   fun:*ParseServerOrCaCertificate
 }
 {
    bug_83195
@@ -888,7 +893,7 @@
    bug_90013_c
    Heapcheck:Leak
    fun:??
-   fun:::FindBestMatchFontFamilyName
+   fun:*FindBestMatchFontFamilyName
    fun:PlatformFontPango
 }
 {
@@ -1241,6 +1246,7 @@
 {
    bug_114978
    Heapcheck:Leak
+   ...
    fun:mozilla_security_manager::GenKeyAndSignChallenge
    fun:net::KeygenHandler::GenKeyAndSignChallenge
 }
@@ -1357,9 +1363,10 @@
   bug_132431
   Heapcheck:Leak
   ...
-  fun:gfx::::LoadDefaults
+  fun:*LoadDefaults
+  fun:gfx::GetDefaultWebKitFontRenderParams
   ...
-  fun:::ChromeToMobileServiceTest_RequirementsToEnable_Test::TestBody
+  fun:*TestBody
 }
 {
    bug_134527
@@ -1473,7 +1480,7 @@
    fun:WebKit::WebString::assign
    fun:*WebString*
    fun:webkit_glue::CppBoundClass::BindToJavascript
-   fun:::TestWebFrameClient::didClearWindowObject
+   fun:*didClearWindowObject
    fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
    fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
 }
@@ -1508,7 +1515,7 @@
    bug_155530_b
    Heapcheck:Leak
    ...
-   fun:::CreateLocaleDefaultValue
+   fun:*CreateLocaleDefaultValue
    ...
    fun:GeolocationInfoBarQueueControllerTests::SetUp
 }
@@ -1645,7 +1652,7 @@
    fun:v8::internal::JSFunction::CompileLazy
    fun:v8::internal::CallIC_Miss
    ...
-   fun:v8::internal::Invoke
+   fun:*Invoke
 }
 {
    bug_169185_c
@@ -1664,7 +1671,7 @@
    fun:v8::internal::CallICBase::LoadFunction
    fun:v8::internal::CallIC_Miss
    ...
-   fun:v8::internal::Invoke
+   fun:*Invoke
    fun:v8::internal::Execution::New
 }
 {
@@ -1757,7 +1764,8 @@
    bug_175100
    Heapcheck:Leak
    ...
-   fun:::StartSync
+   fun:*StartSync
+   ...
    fun:OneClickSigninHelper::DidStopLoading
    fun:OneClickSigninHelperTest_SigninFromWebstoreWithConfigSyncfirst_Test::TestBody
 }
