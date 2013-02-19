@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@d5e4081f93f86880d7d60b349ac657907b5fa8d0'
+         '@ff75d4357cacf243dd7ea1f1b8074d95dfc4285d'
 }
 
 deps = {
