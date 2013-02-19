@@ -52,7 +52,7 @@ NativeAppWindowViews::NativeAppWindowViews(
       is_fullscreen_(false),
       frameless_(create_params.frame == ShellWindow::FRAME_NONE),
       transparent_background_(create_params.transparent_background) {
-  Observe(shell_window_->web_contents());
+  Observe(web_contents());
   minimum_size_ = create_params.minimum_size;
   maximum_size_ = create_params.maximum_size;
 

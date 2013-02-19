@@ -170,8 +170,13 @@ void ShellWindow::Init(const GURL& url,
       GetBaseWindow()->Show();
   }
 
-  shell_window_contents_->LoadContents(params.creator_process_id);
-
+  // When the render view host is changed, the native window needs to know
+  // about it in case it has any setup to do to make the renderer appear
+  // properly. In particular, on Windows, the view's clickthrough region needs
+  // to be set.
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+                 content::Source<content::NavigationController>(
+                    &web_contents->GetController()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
   // Close when the browser is exiting.
@@ -179,6 +184,8 @@ void ShellWindow::Init(const GURL& url,
   // apps are no longer tied to the browser process).
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+
+  shell_window_contents_->LoadContents(params.creator_process_id);
 
   // Prevent the browser process from shutting down while this window is open.
   chrome::StartKeepAlive();
