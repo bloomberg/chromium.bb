@@ -32,7 +32,6 @@ const char kObfuscatedGaiaIdFetcherToken[] = "ObfuscatedGaiaIdFetcher";
 const char kOAuth2MintTokenFlowToken[] = "OAuth2MintTokenFlow";
 const char* kTokenPrefsArray[] = {
   GaiaConstants::kSyncService,
-  GaiaConstants::kDeviceManagementService,
   GaiaConstants::kLSOService,
   GaiaConstants::kGaiaOAuth2LoginRefreshToken,
   GaiaConstants::kGaiaOAuth2LoginAccessToken,

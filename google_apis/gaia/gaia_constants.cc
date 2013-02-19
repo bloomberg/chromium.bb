@@ -26,7 +26,6 @@ const char kRemotingService[] = "chromoting";
 const char kCloudPrintService[] = "cloudprint";
 
 // Service/scope names for device management (cloud-based policy) server.
-const char kDeviceManagementService[] = "mobilesync";
 const char kDeviceManagementServiceOAuth[] =
     "https://www.googleapis.com/auth/chromeosdevicemanagement";
 

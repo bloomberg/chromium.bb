@@ -246,7 +246,7 @@ class TokenService : public GaiaAuthConsumer,
   // number of entries in this array must match the number of entries in the
   // kServices array declared in the cc file.  If not, a compile time error
   // will occur.
-  scoped_ptr<GaiaAuthFetcher> fetchers_[3];
+  scoped_ptr<GaiaAuthFetcher> fetchers_[2];
 
   // Map from service to token.
   std::map<std::string, std::string> token_map_;
