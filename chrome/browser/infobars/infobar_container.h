@@ -169,6 +169,9 @@ class InfoBarContainer : public content::NotificationObserver,
   InfoBarService* infobar_service_;
   InfoBars infobars_;
 
+  // Tracks whether infobars in the container are shown or hidden.
+  bool infobars_shown_;
+
   // Tracks the most recent time infobars were re-shown after being hidden due
   // to Instant Extended's ModeChanged.
   base::TimeTicks infobars_shown_time_;
