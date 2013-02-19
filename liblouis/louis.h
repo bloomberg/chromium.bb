@@ -558,7 +558,9 @@ extern "C"
 
   char * getLastTableList();
   void debugHook ();
-/* Can be inserted in code to be ulsed as a breakpoint in gdb */
+/* Can be inserted in code to be used as a breakpoint in gdb */
+void outOfMemory ();
+/* Priknts an out-of-memory message and exits*/
 
 #ifdef __cplusplus
 }

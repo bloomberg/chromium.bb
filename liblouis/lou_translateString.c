@@ -68,7 +68,8 @@ trace_translate (const char *tableList, const widechar * inbufx,
 		 int *inlen, widechar * outbuf, int *outlen,
 		 char *typeform, char *spacing, int *outputPos,
 		 int *inputPos, int *cursorPos,
-		 const TranslationTableRule ** rules, int *rulesLen, int modex)
+		 const TranslationTableRule ** rules, int *rulesLen,
+		 int modex)
 {
   int k;
   int goodTrans = 1;
@@ -261,10 +262,10 @@ trace_translate (const char *tableList, const widechar * inbufx,
     }
   if (cursorPos != NULL)
     {
-    if (outputPos != NULL) 
-    *cursorPos = outputPos[*cursorPos];
-    else
-    *cursorPos = cursorPosition;
+      if (outputPos != NULL)
+	*cursorPos = outputPos[*cursorPos];
+      else
+	*cursorPos = cursorPosition;
     }
   if (rulesLen != NULL)
     *rulesLen = appliedRulesCount;
@@ -288,7 +289,8 @@ lou_translatePrehyphenated (const char *tableList,
 	return 0;
       if (inputPos == NULL)
 	{
-	  alloc_inputPos = malloc (*outlen * sizeof (int));
+	  if ((alloc_inputPos = malloc (*outlen * sizeof (int))) == NULL)
+	    outOfMemory ();
 	  inputPos = alloc_inputPos;
 	}
     }
@@ -707,7 +709,7 @@ checkMultCaps (void)
 {
   int k;
   for (k = 0; k < table->lenBeginCaps; k++)
-    if (k >= srcmax - src || 
+    if (k >= srcmax - src ||
 	!checkAttr (currentInput[src + k], CTC_UpperCase, 0))
       return 0;
   return 1;

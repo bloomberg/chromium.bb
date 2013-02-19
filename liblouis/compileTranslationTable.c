@@ -50,18 +50,11 @@ Library
 
 #include <shlobj.h>
 
-static void
-noMemory (void)
-{
-  printf ("Insufficient memory: %s", strerror (errno), "\n");
-  exit (3);
-}
-
 static void *
 reallocWrapper (void *address, size_t size)
 {
   if (!(address = realloc (address, size)) && size)
-    noMemory ();
+    outOfMemory ();
   return address;
 }
 
@@ -70,12 +63,12 @@ strdupWrapper (const char *string)
 {
   char *address = strdup (string);
   if (!address)
-    noMemory ();
+    outOfMemory ();
   return address;
 }
 
 char *EXPORT_CALL
-lou_getProgramPath (void)
+lou_getProgramPath ()
 {
   char *path = NULL;
   HMODULE handle;
@@ -133,6 +126,14 @@ lou_getProgramPath (void)
 #define DIR_SEP '/'
 #endif
 /* End of MS contribution */
+
+void
+outOfMemory ()
+{
+  fprintf (stderr,
+	   "liblouis: Insufficient memory\n");
+  exit (3);
+}
 
 /* The folowing variables and functions make it possible to specify the 
 * path on which all tables for liblouis and all files for liblouisutdml, 
@@ -192,7 +193,7 @@ lou_logPrint (char *format, ...)
   if (logFile == NULL && initialLogFileName[0] != 0)
     logFile = fopen (initialLogFileName, "wb");
   if (logFile == NULL)
-  logFile = stderr;
+    logFile = stderr;
   va_start (argp, format);
   vfprintf (logFile, format, argp);
   fprintf (logFile, "\n");
@@ -201,7 +202,7 @@ lou_logPrint (char *format, ...)
 }
 
 void EXPORT_CALL
-lou_logEnd (void)
+lou_logEnd ()
 {
   if (logFile != NULL)
     fclose (logFile);
@@ -685,9 +686,9 @@ compileError (FileInfo * nested, char *format, ...)
   va_list arguments;
   va_start (arguments, format);
 #ifdef _WIN32
-  (void) _vsnprintf (buffer, sizeof (buffer), format, arguments);
+  _vsnprintf (buffer, sizeof (buffer), format, arguments);
 #else
-  (void) vsnprintf (buffer, sizeof (buffer), format, arguments);
+  vsnprintf (buffer, sizeof (buffer), format, arguments);
 #endif
   va_end (arguments);
   if (nested)
@@ -707,9 +708,9 @@ compileWarning (FileInfo * nested, char *format, ...)
   va_list arguments;
   va_start (arguments, format);
 #ifdef _WIN32
-  (void) _vsnprintf (buffer, sizeof (buffer), format, arguments);
+  _vsnprintf (buffer, sizeof (buffer), format, arguments);
 #else
-  (void) vsnprintf (buffer, sizeof (buffer), format, arguments);
+  vsnprintf (buffer, sizeof (buffer), format, arguments);
 #endif
   va_end (arguments);
   if (nested)
@@ -737,7 +738,7 @@ allocateSpaceInTable (FileInfo * nested, TranslationTableOffset * offset,
       if (!newTable)
 	{
 	  compileError (nested, "Not enough memory for translation table.");
-	  return 0;
+	  outOfMemory ();
 	}
       memset (((unsigned char *) newTable) + tableSize, 0, size - tableSize);
       table = (TranslationTableHeader *) newTable;
@@ -772,7 +773,7 @@ allocateHeader (FileInfo * nested)
       if (table != NULL)
 	free (table);
       table = NULL;
-      return 0;
+      outOfMemory ();
     }
   memset (table, 0, startSize);
   tableSize = startSize;
@@ -1109,7 +1110,7 @@ add_0_single (FileInfo * nested)
 }
 
 static void
-add_0_multiple (void)
+add_0_multiple ()
 {
 /*direction = 0 newRule->charslen > 1*/
   TranslationTableRule *currentRule = NULL;
@@ -1166,7 +1167,7 @@ add_1_single (FileInfo * nested)
 }
 
 static void
-add_1_multiple (void)
+add_1_multiple ()
 {
 /*direction = 1, newRule->dotslen > 1*/
   TranslationTableRule *currentRule = NULL;
@@ -1326,7 +1327,9 @@ addCharacterClass (FileInfo * nested, const widechar * name, int length)
   struct CharacterClass *class;
   if (characterClassAttribute)
     {
-      if ((class = malloc (sizeof (*class) + CHARSIZE * (length - 1))))
+      if (!(class = malloc (sizeof (*class) + CHARSIZE * (length - 1))))
+	outOfMemory ();
+      else
 	{
 	  memset (class, 0, sizeof (*class));
 	  memcpy (class->name, name, CHARSIZE * (class->length = length));
@@ -1342,7 +1345,7 @@ addCharacterClass (FileInfo * nested, const widechar * name, int length)
 }
 
 static void
-deallocateCharacterClasses (void)
+deallocateCharacterClasses ()
 {
   while (characterClasses)
     {
@@ -1354,7 +1357,7 @@ deallocateCharacterClasses (void)
 }
 
 static int
-allocateCharacterClasses (void)
+allocateCharacterClasses ()
 {
 /*Allocate memory for predifined character classes */
   int k = 0;
@@ -1856,7 +1859,7 @@ addRuleName (FileInfo * nested, CharsString * name)
 			   (name->length - 1))))
     {
       compileError (nested, "not enough memory");
-      return 0;
+      outOfMemory ();
     }
   memset (nameRule, 0, sizeof (*nameRule));
   for (k = 0; k < name->length; k++)
@@ -1879,7 +1882,7 @@ addRuleName (FileInfo * nested, CharsString * name)
 }
 
 static void
-deallocateRuleNames (void)
+deallocateRuleNames ()
 {
   while (ruleNames)
     {
@@ -2242,8 +2245,7 @@ passAddName (CharsString * name, int var)
       (curname =
        malloc (sizeof (*curname) + CHARSIZE * (augmentedName.length - 1))))
     {
-      compileError (passNested, "not enough memory");
-      return 0;
+      outOfMemory ();
     }
   memset (curname, 0, sizeof (*curname));
   for (k = 0; k < augmentedName.length; k++)
@@ -3518,10 +3520,11 @@ hyphenStringHash (const CharsString * s)
 }
 
 static HyphenHashTab *
-hyphenHashNew (void)
+hyphenHashNew ()
 {
   HyphenHashTab *hashTab;
-  hashTab = malloc (sizeof (HyphenHashTab));
+  if (!(hashTab = malloc (sizeof (HyphenHashTab))))
+    outOfMemory ();
   memset (hashTab, 0, sizeof (HyphenHashTab));
   return hashTab;
 }
@@ -3548,9 +3551,12 @@ hyphenHashInsert (HyphenHashTab * hashTab, const CharsString * key, int val)
   int i, j;
   HyphenHashEntry *e;
   i = hyphenStringHash (key) % HYPHENHASHSIZE;
-  e = malloc (sizeof (HyphenHashEntry));
+  if (!(e = malloc (sizeof (HyphenHashEntry))))
+    outOfMemory ();
   e->next = hashTab->entries[i];
   e->key = malloc ((key->length + 1) * CHARSIZE);
+  if (!e->key)
+    outOfMemory ();
   e->key->length = key->length;
   for (j = 0; j < key->length; j++)
     e->key->chars[j] = key->chars[j];
@@ -3587,9 +3593,10 @@ hyphenGetNewState (HyphenDict * dict, HyphenHashTab * hashTab, const
   hyphenHashInsert (hashTab, string, dict->numStates);
   /* predicate is true if dict->numStates is a power of two */
   if (!(dict->numStates & (dict->numStates - 1)))
-    dict->states = realloc (dict->states,
-			    (dict->numStates << 1) *
+    dict->states = realloc (dict->states, (dict->numStates << 1) *
 			    sizeof (HyphenationState));
+  if (!dict->states)
+    outOfMemory ();
   dict->states[dict->numStates].hyphenPattern = 0;
   dict->states[dict->numStates].fallbackState = DEFAULTSTATE;
   dict->states[dict->numStates].numTrans = 0;
@@ -3636,6 +3643,8 @@ compileHyphenation (FileInfo * nested, CharsString * encoding)
   hashTab = hyphenHashNew ();
   dict.numStates = 1;
   dict.states = malloc (sizeof (HyphenationState));
+  if (!dict.states)
+    outOfMemory ();
   dict.states[0].hyphenPattern = 0;
   dict.states[0].fallbackState = DEFAULTSTATE;
   dict.states[0].numTrans = 0;
@@ -4638,7 +4647,7 @@ makeDoubleRule (TranslationTableOpcode opcode, TranslationTableOffset
 }
 
 static int
-setDefaults (void)
+setDefaults ()
 {
   if (!table->lenBeginCaps)
     table->lenBeginCaps = 2;
@@ -4868,6 +4877,8 @@ getTable (const char *tableList)
       /*Add a new entry to the table chain. */
       int entrySize = sizeof (ChainEntry) + tableListLen;
       ChainEntry *newEntry = malloc (entrySize);
+      if (!newEntry)
+	outOfMemory ();
       if (tableChain == NULL)
 	tableChain = newEntry;
       else
@@ -4959,14 +4970,14 @@ lou_getTable (const char *tableList)
       /* See if table in current directory or on a path in 
        * the table name*/
       if (errorCount > 0 && (!(errorCount == 1 && fileCount == 1)))
-        return NULL;
+	return NULL;
       table = getTable (tableList);
     }
   if (!table)
     {
 /* See if table on dataPath. */
       if (errorCount > 0 && (!(errorCount == 1 && fileCount == 1)))
-        return NULL;
+	return NULL;
       pathList = lou_getDataPath ();
       if (pathList)
 	{
@@ -4985,7 +4996,7 @@ lou_getTable (const char *tableList)
     {
       /* See if table on installed or program path. */
       if (errorCount > 0 && (!(errorCount == 1 && fileCount == 1)))
-        return NULL;
+	return NULL;
 #ifdef _WIN32
       strcpy (trialPath, lou_getProgramPath ());
       strcat (trialPath, "\\share\\liblouss\\tables\\");
@@ -5028,6 +5039,8 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 	  if (typebuf != NULL)
 	    free (typebuf);
 	  typebuf = malloc ((destmax + 4) * sizeof (unsigned short));
+	  if (!typebuf)
+	    outOfMemory ();
 	  sizeTypebuf = destmax;
 	}
       return typebuf;
@@ -5037,6 +5050,8 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 	  if (destSpacing != NULL)
 	    free (destSpacing);
 	  destSpacing = malloc (destmax + 4);
+	  if (!destSpacing)
+	    outOfMemory ();
 	  sizeDestSpacing = destmax;
 	}
       return destSpacing;
@@ -5046,6 +5061,8 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 	  if (passbuf1 != NULL)
 	    free (passbuf1);
 	  passbuf1 = malloc ((destmax + 4) * CHARSIZE);
+	  if (!passbuf1)
+	    outOfMemory ();
 	  sizePassbuf1 = destmax;
 	}
       return passbuf1;
@@ -5055,6 +5072,8 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 	  if (passbuf2 != NULL)
 	    free (passbuf2);
 	  passbuf2 = malloc ((destmax + 4) * CHARSIZE);
+	  if (!passbuf2)
+	    outOfMemory ();
 	  sizePassbuf2 = destmax;
 	}
       return passbuf2;
@@ -5070,6 +5089,8 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 	    if (srcMapping != NULL)
 	      free (srcMapping);
 	    srcMapping = malloc ((mapSize + 4) * sizeof (int));
+	    if (!srcMapping)
+	      outOfMemory ();
 	    sizeSrcMapping = mapSize;
 	  }
       }
@@ -5086,6 +5107,8 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 	    if (prevSrcMapping != NULL)
 	      free (prevSrcMapping);
 	    prevSrcMapping = malloc ((mapSize + 4) * sizeof (int));
+	    if (!prevSrcMapping)
+	      outOfMemory ();
 	    sizePrevSrcMapping = mapSize;
 	  }
       }
@@ -5096,7 +5119,7 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 }
 
 void EXPORT_CALL
-lou_free (void)
+lou_free ()
 {
   ChainEntry *currentEntry;
   ChainEntry *previousEntry;
@@ -5150,7 +5173,7 @@ lou_version ()
 }
 
 int EXPORT_CALL
-lou_charSize (void)
+lou_charSize ()
 {
   return CHARSIZE;
 }
@@ -5203,7 +5226,8 @@ lou_getTablePaths ()
 }
 */
 
-void debugHook ()
+void
+debugHook ()
 {
   char *hook = "debug hook";
   printf ("%s\n", hook);

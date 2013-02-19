@@ -80,7 +80,7 @@ static int *outputPositions;
 static int *inputPositions;
 static int cursorPosition;
 static int cursorStatus;
-static const TranslationTableRule** appliedRules;
+static const TranslationTableRule **appliedRules;
 static int maxAppliedRules;
 static int appliedRulesCount;
 
@@ -248,8 +248,8 @@ makeCorrections (void)
 	  currentOutput[dest++] = currentInput[src++];
 	  break;
 	case CTO_Correct:
-          if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
-            appliedRules[appliedRulesCount++] = transRule;
+	  if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	    appliedRules[appliedRulesCount++] = transRule;
 	  if (!passDoAction ())
 	    goto failure;
 	  if (endReplace == src)
@@ -260,15 +260,17 @@ makeCorrections (void)
 	  break;
 	}
     }
-    
-    { // We have to transform typebuf accordingly
-      unsigned short* typebuf_temp = malloc (dest * sizeof (unsigned short));
-      int pos;
-      for (pos = 0; pos < dest; pos++)
-        typebuf_temp[pos] = typebuf[srcMapping[pos]];
-      memcpy (typebuf, typebuf_temp, dest * sizeof (unsigned short));
-      free(typebuf_temp);
-    }
+
+  {				// We have to transform typebuf accordingly
+    int pos;
+    unsigned short *typebuf_temp;
+    if ((typebuf_temp = malloc (dest * sizeof (unsigned short))) == NULL)
+      outOfMemory ();
+    for (pos = 0; pos < dest; pos++)
+      typebuf_temp[pos] = typebuf[srcMapping[pos]];
+    memcpy (typebuf, typebuf_temp, dest * sizeof (unsigned short));
+    free (typebuf_temp);
+  }
 
 failure:
   realInlen = src;
@@ -1061,8 +1063,8 @@ translatePass (void)
 	case CTO_Pass2:
 	case CTO_Pass3:
 	case CTO_Pass4:
-          if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
-            appliedRules[appliedRulesCount++] = transRule;
+	  if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+	    appliedRules[appliedRulesCount++] = transRule;
 	  if (!passDoAction ())
 	    goto failure;
 	  if (endReplace == src)
