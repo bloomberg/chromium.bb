@@ -208,6 +208,11 @@ void RenderWidgetHostViewGuest::ImeCancelComposition() {
   platform_view_->ImeCancelComposition();
 }
 
+void RenderWidgetHostViewGuest::ImeCompositionRangeChanged(
+    const ui::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+}
+
 void RenderWidgetHostViewGuest::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
@@ -218,6 +223,9 @@ void RenderWidgetHostViewGuest::DidUpdateBackingStore(
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
   platform_view_->SelectionBoundsChanged(params);
+}
+
+void RenderWidgetHostViewGuest::ScrollOffsetChanged() {
 }
 
 BackingStore* RenderWidgetHostViewGuest::AllocBackingStore(
@@ -247,6 +255,9 @@ bool RenderWidgetHostViewGuest::CanCopyToVideoFrame() const {
 
 void RenderWidgetHostViewGuest::AcceleratedSurfaceSuspend() {
   NOTREACHED();
+}
+
+void RenderWidgetHostViewGuest::AcceleratedSurfaceRelease() {
 }
 
 bool RenderWidgetHostViewGuest::HasAcceleratedSurface(
@@ -282,6 +293,14 @@ bool RenderWidgetHostViewGuest::LockMouse() {
 
 void RenderWidgetHostViewGuest::UnlockMouse() {
   return platform_view_->UnlockMouse();
+}
+
+void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
+  platform_view_->GetScreenInfo(results);
+}
+
+void RenderWidgetHostViewGuest::OnAccessibilityNotifications(
+    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
 }
 
 #if defined(OS_MACOSX)
@@ -420,9 +439,5 @@ void RenderWidgetHostViewGuest::DestroyPluginContainer(
 void RenderWidgetHostViewGuest::WillWmDestroy() {
 }
 #endif
-
-void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
-  platform_view_->GetScreenInfo(results);
-}
 
 }  // namespace content

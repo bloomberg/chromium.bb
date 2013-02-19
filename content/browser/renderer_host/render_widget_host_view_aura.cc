@@ -898,6 +898,16 @@ void RenderWidgetHostViewAura::SelectionBoundsChanged(
     GetInputMethod()->OnCaretBoundsChanged(this);
 }
 
+void RenderWidgetHostViewAura::ScrollOffsetChanged() {
+  aura::RootWindow* root = window_->GetRootWindow();
+  if (!root)
+    return;
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root);
+  if (cursor_client && !cursor_client->IsCursorVisible())
+    cursor_client->DisableMouseEvents();
+}
+
 BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
     const gfx::Size& size) {
   return new BackingStoreAura(host_, size);
@@ -1216,14 +1226,6 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
 void RenderWidgetHostViewAura::AcceleratedSurfaceSuspend() {
 }
 
-bool RenderWidgetHostViewAura::HasAcceleratedSurface(
-      const gfx::Size& desired_size) {
-  // Aura doesn't use GetBackingStore for accelerated pages, so it doesn't
-  // matter what is returned here as GetBackingStore is the only caller of this
-  // method. TODO(jbates) implement this if other Aura code needs it.
-  return false;
-}
-
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease() {
   // This really tells us to release the frontbuffer.
   if (current_surface_) {
@@ -1246,6 +1248,14 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease() {
   }
 }
 
+bool RenderWidgetHostViewAura::HasAcceleratedSurface(
+      const gfx::Size& desired_size) {
+  // Aura doesn't use GetBackingStore for accelerated pages, so it doesn't
+  // matter what is returned here as GetBackingStore is the only caller of this
+  // method. TODO(jbates) implement this if other Aura code needs it.
+  return false;
+}
+
 void RenderWidgetHostViewAura::SetSurfaceNotInUseByCompositor(
     scoped_refptr<ui::Texture>) {
 }
@@ -1266,16 +1276,6 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
   RenderWidgetHostViewBase::SetBackground(background);
   host_->SetBackground(background);
   window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
-}
-
-void RenderWidgetHostViewAura::ScrollOffsetChanged() {
-  aura::RootWindow* root = window_->GetRootWindow();
-  if (!root)
-    return;
-  aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root);
-  if (cursor_client && !cursor_client->IsCursorVisible())
-    cursor_client->DisableMouseEvents();
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
@@ -1313,6 +1313,10 @@ void RenderWidgetHostViewAura::SetHasHorizontalScrollbar(
 void RenderWidgetHostViewAura::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   // Not needed. Mac-only.
+}
+
+void RenderWidgetHostViewAura::OnAccessibilityNotifications(
+    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {

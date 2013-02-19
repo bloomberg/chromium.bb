@@ -706,12 +706,6 @@ void RenderWidgetHostViewMac::TextInputStateChanged(
   }
 }
 
-void RenderWidgetHostViewMac::SelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
-  if (params.anchor_rect == params.focus_rect)
-    caret_rect_ = params.anchor_rect;
-}
-
 void RenderWidgetHostViewMac::ImeCancelComposition() {
   [cocoa_view_ cancelComposition];
 }
@@ -889,6 +883,15 @@ void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
   }
 
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
+}
+
+void RenderWidgetHostViewMac::SelectionBoundsChanged(
+    const ViewHostMsg_SelectionBounds_Params& params) {
+  if (params.anchor_rect == params.focus_rect)
+    caret_rect_ = params.anchor_rect;
+}
+
+void RenderWidgetHostViewMac::ScrollOffsetChanged() {
 }
 
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
@@ -1401,6 +1404,10 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
     compositing_iosurface_->UnrefIOSurface();
 }
 
+void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
+  compositing_iosurface_.reset();
+}
+
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
   return last_frame_was_accelerated_ &&
@@ -1408,10 +1415,6 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
          compositing_iosurface_->HasIOSurface() &&
          (desired_size.IsEmpty() ||
           compositing_iosurface_->io_surface_size() == desired_size);
-}
-
-void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
-  compositing_iosurface_.reset();
 }
 
 void RenderWidgetHostViewMac::AboutToWaitForBackingStoreMsg() {

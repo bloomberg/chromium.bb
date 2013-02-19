@@ -291,6 +291,11 @@ void RenderWidgetHostViewAndroid::ImeCancelComposition() {
   ime_adapter_android_.CancelComposition();
 }
 
+void RenderWidgetHostViewAndroid::ImeCompositionRangeChanged(
+    const ui::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+}
+
 void RenderWidgetHostViewAndroid::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
@@ -346,6 +351,9 @@ void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
   if (content_view_core_) {
     content_view_core_->OnSelectionBoundsChanged(params);
   }
+}
+
+void RenderWidgetHostViewAndroid::ScrollOffsetChanged() {
 }
 
 BackingStore* RenderWidgetHostViewAndroid::AllocBackingStore(
@@ -474,15 +482,6 @@ void RenderWidgetHostViewAndroid::StartContentIntent(
     content_view_core_->StartContentIntent(content_url);
 }
 
-gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
-  if (surface_texture_transport_.get()) {
-    return surface_texture_transport_->GetCompositingSurface(
-        host_->surface_id());
-  } else {
-    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
-  }
-}
-
 void RenderWidgetHostViewAndroid::GetScreenInfo(WebKit::WebScreenInfo* result) {
   // ScreenInfo isn't tied to the widget on Android. Always return the default.
   RenderWidgetHostViewBase::GetDefaultScreenInfo(result);
@@ -494,9 +493,13 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
   return GetViewBounds();
 }
 
-void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
-    const WebKit::WebMouseWheelEvent& event) {
-  // intentionally empty, like RenderWidgetHostViewViews
+gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
+  if (surface_texture_transport_.get()) {
+    return surface_texture_transport_->GetCompositingSurface(
+        host_->surface_id());
+  } else {
+    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
+  }
 }
 
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
@@ -513,6 +516,15 @@ void RenderWidgetHostViewAndroid::SetHasHorizontalScrollbar(
 void RenderWidgetHostViewAndroid::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   // intentionally empty, like RenderWidgetHostViewViews
+}
+
+void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
+    const WebKit::WebMouseWheelEvent& event) {
+  // intentionally empty, like RenderWidgetHostViewViews
+}
+
+void RenderWidgetHostViewAndroid::OnAccessibilityNotifications(
+    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
 }
 
 bool RenderWidgetHostViewAndroid::LockMouse() {

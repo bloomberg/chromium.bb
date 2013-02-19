@@ -59,6 +59,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   static RenderWidgetHostViewPort* CreateViewForWidget(
       RenderWidgetHost* widget);
 
+  static void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
+
   // Perform all the initialization steps necessary for this object to represent
   // a popup (such as a <select> dropdown), then shows the popup at |pos|.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -102,7 +104,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // Updates the range of the marked text in an IME composition.
   virtual void ImeCompositionRangeChanged(
       const ui::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) {}
+      const std::vector<gfx::Rect>& character_bounds) = 0;
 
   // Informs the view that a portion of the widget's backing store was scrolled
   // and/or painted.  The view should ensure this gets copied to the screen.
@@ -148,10 +150,10 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // coordinate system of the render view. |start_direction| and |end_direction|
   // indicates the direction at which the selection was made on touch devices.
   virtual void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params) {}
+      const ViewHostMsg_SelectionBounds_Params& params) = 0;
 
   // Notifies the view that the scroll offset has changed.
-  virtual void ScrollOffsetChanged() {}
+  virtual void ScrollOffsetChanged() = 0;
 
   // Allocate a backing store for this view.
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
@@ -208,10 +210,48 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // next swap buffers or post sub buffer.
   virtual void AcceleratedSurfaceSuspend() = 0;
 
+  virtual void AcceleratedSurfaceRelease() = 0;
+
   // Return true if the view has an accelerated surface that contains the last
   // presented frame for the view. If |desired_size| is non-empty, true is
   // returned only if the accelerated surface size matches.
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
+
+  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
+
+  // Gets the bounds of the window, in screen coordinates.
+  virtual gfx::Rect GetBoundsInRootWindow() = 0;
+
+  virtual gfx::GLSurfaceHandle GetCompositingSurface() = 0;
+
+  // Because the associated remote WebKit instance can asynchronously
+  // prevent-default on a dispatched touch event, the touch events are queued in
+  // the GestureRecognizer until invocation of ProcessAckedTouchEvent releases
+  // it to be consumed (when |ack_result| is NOT_CONSUMED OR NO_CONSUMER_EXISTS)
+  // or ignored (when |ack_result| is CONSUMED).
+  virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
+                                      InputEventAckState ack_result) = 0;
+
+  // Asks the view to create a smooth scroll gesture that will be used to
+  // simulate a user-initiated scroll.
+  virtual SmoothScrollGesture* CreateSmoothScrollGesture(
+      bool scroll_down, int pixels_to_scroll, int mouse_event_x,
+      int mouse_event_y) = 0;
+
+  virtual void SetHasHorizontalScrollbar(bool has_horizontal_scrollbar) = 0;
+  virtual void SetScrollOffsetPinning(
+      bool is_pinned_to_left, bool is_pinned_to_right) = 0;
+
+  // Called when a mousewheel event was not processed by the renderer.
+  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
+
+  virtual void SetPopupType(WebKit::WebPopupType popup_type) = 0;
+  virtual WebKit::WebPopupType GetPopupType() = 0;
+
+  virtual BrowserAccessibilityManager*
+      GetBrowserAccessibilityManager() const = 0;
+  virtual void OnAccessibilityNotifications(
+      const std::vector<AccessibilityHostMsg_NotificationParams>& params) = 0;
 
 #if defined(OS_MACOSX)
   // Called just before GetBackingStore blocks for an updated frame.
@@ -262,8 +302,6 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void HasTouchEventHandlers(bool need_touch_events) = 0;
 #endif
 
-  virtual void AcceleratedSurfaceRelease() {}
-
 #if defined(TOOLKIT_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;
@@ -272,45 +310,6 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
 #if defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() = 0;
 #endif
-
-  static void GetDefaultScreenInfo(
-      WebKit::WebScreenInfo* results);
-  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
-
-  // Gets the bounds of the window, in screen coordinates.
-  virtual gfx::Rect GetBoundsInRootWindow() = 0;
-
-  virtual gfx::GLSurfaceHandle GetCompositingSurface() = 0;
-
-  // Because the associated remote WebKit instance can asynchronously
-  // prevent-default on a dispatched touch event, the touch events are queued in
-  // the GestureRecognizer until invocation of ProcessAckedTouchEvent releases
-  // it to be consumed (when |ack_result| is NOT_CONSUMED OR NO_CONSUMER_EXISTS)
-  // or ignored (when |ack_result| is CONSUMED).
-  virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
-                                      InputEventAckState ack_result) = 0;
-
-  // Asks the view to create a smooth scroll gesture that will be used to
-  // simulate a user-initiated scroll.
-  virtual SmoothScrollGesture* CreateSmoothScrollGesture(
-      bool scroll_down, int pixels_to_scroll, int mouse_event_x,
-      int mouse_event_y) = 0;
-
-  virtual void SetHasHorizontalScrollbar(bool has_horizontal_scrollbar) = 0;
-  virtual void SetScrollOffsetPinning(
-      bool is_pinned_to_left, bool is_pinned_to_right) = 0;
-
-  // Called when a mousewheel event was not processed by the renderer.
-  virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) = 0;
-
-  virtual void SetPopupType(WebKit::WebPopupType popup_type) = 0;
-  virtual WebKit::WebPopupType GetPopupType() = 0;
-
-  virtual BrowserAccessibilityManager*
-      GetBrowserAccessibilityManager() const = 0;
-  virtual void OnAccessibilityNotifications(
-      const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
-  }
 };
 
 }  // namespace content

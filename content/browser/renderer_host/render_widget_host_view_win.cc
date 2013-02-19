@@ -678,6 +678,9 @@ void RenderWidgetHostViewWin::SelectionBoundsChanged(
   }
 }
 
+void RenderWidgetHostViewWin::ScrollOffsetChanged() {
+}
+
 void RenderWidgetHostViewWin::ImeCancelComposition() {
   ime_input_.CancelIME(m_hWnd);
 }
@@ -2532,6 +2535,9 @@ void RenderWidgetHostViewWin::AcceleratedSurfaceSuspend() {
       return;
 
     accelerated_surface_->Suspend();
+}
+
+void RenderWidgetHostViewWin::AcceleratedSurfaceRelease() {
 }
 
 bool RenderWidgetHostViewWin::HasAcceleratedSurface(

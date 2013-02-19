@@ -830,6 +830,11 @@ void RenderWidgetHostViewGtk::ImeCancelComposition() {
   im_context_->CancelComposition();
 }
 
+void RenderWidgetHostViewGtk::ImeCompositionRangeChanged(
+    const ui::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+}
+
 void RenderWidgetHostViewGtk::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
@@ -957,6 +962,9 @@ void RenderWidgetHostViewGtk::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
   im_context_->UpdateCaretBounds(
       gfx::UnionRects(params.anchor_rect, params.focus_rect));
+}
+
+void RenderWidgetHostViewGtk::ScrollOffsetChanged() {
 }
 
 GdkEventButton* RenderWidgetHostViewGtk::GetLastMouseDown() {
@@ -1100,6 +1108,9 @@ void RenderWidgetHostViewGtk::AcceleratedSurfacePostSubBuffer(
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {
+}
+
+void RenderWidgetHostViewGtk::AcceleratedSurfaceRelease() {
 }
 
 bool RenderWidgetHostViewGtk::HasAcceleratedSurface(
