@@ -39,7 +39,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/render_text.h"
+#include "ui/gfx/selection_model.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/ime/input_method.h"
@@ -53,33 +53,30 @@
 #include "ui/compositor/layer.h"
 #endif
 
-using content::WebContents;
-
 namespace {
 
 // Stores omnibox state for each tab.
-struct ViewState {
-  explicit ViewState(const gfx::SelectionModel& selection_model)
-      : selection_model(selection_model) {
-  }
+struct OmniboxState : public base::SupportsUserData::Data {
+  static const char kKey[];
 
-  // SelectionModel of selected text.
-  gfx::SelectionModel selection_model;
-};
-
-const char kAutocompleteEditStateKey[] = "AutocompleteEditState";
-
-struct AutocompleteEditState : public base::SupportsUserData::Data {
-  AutocompleteEditState(const OmniboxEditModel::State& model_state,
-                        const ViewState& view_state)
-      : model_state(model_state),
-        view_state(view_state) {
-  }
-  virtual ~AutocompleteEditState() {}
+  OmniboxState(const OmniboxEditModel::State& model_state,
+               const gfx::SelectionModel& selection_model);
+  virtual ~OmniboxState();
 
   const OmniboxEditModel::State model_state;
-  const ViewState view_state;
+  const gfx::SelectionModel selection_model;
 };
+
+// static
+const char OmniboxState::kKey[] = "OmniboxState";
+
+OmniboxState::OmniboxState(const OmniboxEditModel::State& model_state,
+                           const gfx::SelectionModel& selection_model)
+    : model_state(model_state),
+      selection_model(selection_model) {
+}
+
+OmniboxState::~OmniboxState() {}
 
 // The following const value is the same as in browser_defaults.
 const int kAutocompleteEditFontPixelSize = 15;
@@ -362,7 +359,7 @@ void OmniboxViewViews::OnBlur() {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, OmniboxView implementation:
 
-void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
+void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
   DCHECK(tab);
 
   // We don't want to keep the IME status, so force quit the current
@@ -374,15 +371,13 @@ void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
   }
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
-  OmniboxEditModel::State model_state = model()->GetStateForTabSwitch();
+  OmniboxEditModel::State state = model()->GetStateForTabSwitch();
   gfx::SelectionModel selection;
   GetSelectionModel(&selection);
-  tab->SetUserData(
-      kAutocompleteEditStateKey,
-      new AutocompleteEditState(model_state, ViewState(selection)));
+  tab->SetUserData(OmniboxState::kKey, new OmniboxState(state, selection));
 }
 
-void OmniboxViewViews::Update(const WebContents* contents) {
+void OmniboxViewViews::Update(const content::WebContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
       model()->UpdatePermanentText(toolbar_model()->GetText(true));
@@ -391,21 +386,16 @@ void OmniboxViewViews::Update(const WebContents* contents) {
   bool changed_security_level = (security_level != security_level_);
   security_level_ = security_level;
 
-  // TODO(oshima): Copied from gtk implementation which is
-  // slightly different from WIN impl. Find out the correct implementation
-  // for views-implementation.
+  // TODO(msw|oshima): Copied from GTK, determine correct Win/CrOS behavior.
   if (contents) {
     RevertAll();
-    const AutocompleteEditState* state = static_cast<AutocompleteEditState*>(
-        contents->GetUserData(&kAutocompleteEditStateKey));
+    const OmniboxState* state = static_cast<OmniboxState*>(
+        contents->GetUserData(&OmniboxState::kKey));
     if (state) {
+      // Restore the saved state and selection.
       model()->RestoreState(state->model_state);
-
-      // Move the marks for the cursor and the other end of the selection to
-      // the previously-saved offsets (but preserve PRIMARY).
-      SelectSelectionModel(state->view_state.selection_model);
-      // We do not carry over the current edit history to another tab.
-      // TODO(oshima): consider saving/restoring edit history.
+      SelectSelectionModel(state->selection_model);
+      // TODO(oshima): Consider saving/restoring edit history.
       ClearEditHistory();
     }
   } else if (visibly_changed_permanent_text) {
