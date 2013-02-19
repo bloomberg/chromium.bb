@@ -1383,12 +1383,20 @@
    fun:ui::InputMethodIBus::Init
 }
 {
-   bug_136936
+   bug_136936_a
    Heapcheck:Leak
    ...
    fun:std::basic_string::_Rep::_S_create
    ...
    fun:base::PlatformThread::SetName
+}
+{
+   bug_136936_b
+   Heapcheck:Leak
+   ...
+   fun:std::basic_string::_Rep::_S_create
+   ...
+   fun:base::PlatformThread::CurrentId
 }
 {
    bug_143565
