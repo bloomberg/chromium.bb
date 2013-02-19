@@ -42,7 +42,7 @@ bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
     unit->id = base::Int64ToString(display->id());
     unit->name = display_manager->GetDisplayNameFor(*display);
     unit->is_primary = (display->id() == primary_id);
-    unit->is_internal = display_manager->IsInternalDisplayId(display->id());
+    unit->is_internal = display->IsInternal();
     unit->is_enabled = true;
     unit->dpi_x = dpi;
     unit->dpi_y = dpi;

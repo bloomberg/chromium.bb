@@ -137,6 +137,9 @@ void AshTestBase::TearDown() {
   metro_viewer_host_.reset();
 #endif
   event_generator_.reset();
+  // Some tests set an internal display id,
+  // reset it here, so other tests will continue in a clean environment.
+  gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
 }
 
 aura::test::EventGenerator& AshTestBase::GetEventGenerator() {
