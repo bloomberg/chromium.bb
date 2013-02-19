@@ -248,8 +248,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
 
 void AutocompleteHistoryManager::CancelPendingQuery() {
   if (pending_query_handle_) {
-    SendSuggestions(NULL);
-    if (autofill_data_.get())
+    if (autofill_data_)
       autofill_data_->CancelRequest(pending_query_handle_);
     pending_query_handle_ = 0;
   }
