@@ -46,14 +46,16 @@ WebKitTestResultPrinter::~WebKitTestResultPrinter() {
 }
 
 void WebKitTestResultPrinter::PrintTextHeader() {
-  DCHECK_EQ(state_, DURING_TEST);
+  if (state_ != DURING_TEST)
+    return;
   if (!capture_text_only_)
     *output_ << "Content-Type: text/plain\n";
   state_ = IN_TEXT_BLOCK;
 }
 
 void WebKitTestResultPrinter::PrintTextBlock(const std::string& block) {
-  DCHECK_EQ(state_, IN_TEXT_BLOCK);
+  if (state_ != IN_TEXT_BLOCK)
+    return;
   *output_ << block;
 }
 
