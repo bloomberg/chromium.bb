@@ -32,7 +32,11 @@ class ManagedModeResourceThrottle : public content::ResourceThrottle {
   // details on the preview map.
   static void AddTemporaryException(int render_process_host_id,
                                     int render_view_id,
-                                    const GURL& url);
+                                    const GURL& url,
+                                    bool new_navigation);
+  static void UpdateExceptionNavigationStatus(int render_process_host_id,
+                                              int render_view_id,
+                                              bool new_navigation);
   static void RemoveTemporaryException(int render_process_host_id,
                                        int render_view_id);
 

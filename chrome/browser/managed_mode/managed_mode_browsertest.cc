@@ -135,10 +135,14 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
 
       switch (infobar_action) {
         case INFOBAR_ACCEPT:
-          confirm_info_bar_delegate->Accept();
+          confirm_info_bar_delegate->InfoBarDismissed();
+          ASSERT_TRUE(confirm_info_bar_delegate->Accept());
+          infobar_service->RemoveInfoBar(confirm_info_bar_delegate);
           break;
         case INFOBAR_CANCEL:
-          confirm_info_bar_delegate->Cancel();
+          confirm_info_bar_delegate->InfoBarDismissed();
+          ASSERT_TRUE(confirm_info_bar_delegate->Cancel());
+          infobar_service->RemoveInfoBar(confirm_info_bar_delegate);
           break;
         case INFOBAR_ALREADY_ADDED:
           confirm_info_bar_delegate->InfoBarDismissed();
@@ -176,7 +180,8 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(switches::kHostResolverRules,
         "MAP *.example.com " + host_port + "," +
         "MAP *.new-example.com " + host_port + "," +
-        "MAP *.a.com " + host_port);
+        "MAP *.a.com " + host_port + "," +
+        "MAP *.b.com " + host_port);
   }
 
   ManagedUserService* managed_user_service_;
@@ -216,6 +221,65 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, RedirectedURLsNotInAnyLists) {
   EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
             managed_user_service_->GetManualBehaviorForURL(
                 GURL("http://www.a.com/server-redirect")));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
+    ClientServerRedirectedURLsNotInAnyLists) {
+  GURL test_url("http://www.a.com/client-redirect?"
+                "http://www.example.com/server-redirect?"
+                "http://www.example.com/files/simple.html");
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  CheckShownPageIsInterstitial(tab);
+  ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
+
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForURL(
+                GURL("http://www.a.com/client-redirect?"
+                     "http://www.example.com/server-redirect?"
+                     "http://www.example.com/files/simple.html")));
+  EXPECT_EQ(ManagedUserService::MANUAL_NONE,
+            managed_user_service_->GetManualBehaviorForURL(
+                GURL("http://www.c.com/client-redirect?"
+                     "http://www.example.com/server-redirect?"
+                     "http://www.example.com/files/simple.html")));
+  // The example.com ones should not be added as they are on the same domain as
+  // the final host.
+  EXPECT_EQ(ManagedUserService::MANUAL_NONE,
+            managed_user_service_->GetManualBehaviorForURL(
+                GURL("http://www.example.com/server-redirect?"
+                     "http://www.example.com/files/simple.html")));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
+    ClientServerRedirectedURLsDifferentDomainsNotInAnyLists) {
+  GURL test_url("http://www.a.com/client-redirect?"
+                "http://www.b.com/server-redirect?"
+                "http://www.example.com/files/simple.html");
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  CheckShownPageIsInterstitial(tab);
+  ActOnInterstitialAndInfobar(tab, INTERSTITIAL_PROCEED, INFOBAR_ACCEPT);
+
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForURL(
+                GURL("http://www.a.com/client-redirect?"
+                     "http://www.b.com/server-redirect?"
+                     "http://www.example.com/files/simple.html")));
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForURL(
+                GURL("http://www.b.com/server-redirect?"
+                     "http://www.example.com/files/simple.html")));
   EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
             managed_user_service_->GetManualBehaviorForHost("www.example.com"));
 }
@@ -459,7 +523,11 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
       content::NotificationService::AllSources());
 
   // Finally accept the infobar and see that it is gone.
-  confirm_info_bar_delegate->Accept();
+  confirm_info_bar_delegate->InfoBarDismissed();
+  ASSERT_TRUE(confirm_info_bar_delegate->Accept());
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(tab);
+  infobar_service->RemoveInfoBar(confirm_info_bar_delegate);
   infobar_removed.Wait();
 
   CheckNumberOfInfobars(0);
