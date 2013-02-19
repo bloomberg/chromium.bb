@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
+#include "base/safe_numerics.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -321,7 +322,8 @@ int DiffImages(const base::FilePath& file1, const base::FilePath& file2,
                         diff_image.w() * 4, false,
                         std::vector<gfx::PNGCodec::Comment>(), &png_encoding);
   if (file_util::WriteFile(out_file,
-      reinterpret_cast<char*>(&png_encoding.front()), png_encoding.size()) < 0)
+          reinterpret_cast<char*>(&png_encoding.front()),
+          base::checked_numeric_cast<int>(png_encoding.size())) < 0)
     return kStatusError;
 
   return kStatusDifferent;
