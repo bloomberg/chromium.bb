@@ -273,7 +273,7 @@ void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
 
 void AddInstallExtensionCommandWorkItem(const InstallerState& installer_state,
                                         const InstallationState& machine_state,
-                                        const FilePath& setup_path,
+                                        const base::FilePath& setup_path,
                                         const Version& new_version,
                                         const Product& product,
                                         WorkItemList* work_item_list) {

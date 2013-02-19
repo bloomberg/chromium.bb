@@ -466,7 +466,7 @@ bool ApplyAlternateVersion(const base::FilePath& work_dir,
 // relative path "..\..\third_party\lzma_sdk\Executable" is applied to the host
 // executable's directory.  This can be overridden with the --7za_path
 // command-line switch.
-FilePath Get7zaPath() {
+base::FilePath Get7zaPath() {
   base::FilePath l7za_path =
       CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           &kSwitch7zaPath[0]);

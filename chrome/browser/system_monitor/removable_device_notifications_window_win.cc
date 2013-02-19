@@ -126,7 +126,7 @@ bool RemovableDeviceNotificationsWindowWin::GetDeviceInfoForPath(
 }
 
 uint64 RemovableDeviceNotificationsWindowWin::GetStorageSize(
-    const FilePath::StringType& location) const {
+    const base::FilePath::StringType& location) const {
   return volume_mount_watcher_->GetStorageSize(location);
 }
 

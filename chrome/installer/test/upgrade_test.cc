@@ -38,7 +38,7 @@ class UpgradeTest : public testing::Test {
   static base::FilePath next_mini_installer_path_;
 };  // class UpgradeTest
 
-FilePath UpgradeTest::next_mini_installer_path_;
+base::FilePath UpgradeTest::next_mini_installer_path_;
 
 TEST_F(UpgradeTest, DoNothing) {
 }

@@ -87,7 +87,7 @@ ConsoleLogHelper::~ConsoleLogHelper() {
 // Returns the path to the log file to create.  The file should be empty at
 // process exit since we redirect log messages to stderr.
 // static
-FilePath ConsoleLogHelper::GetLogFilePath() {
+base::FilePath ConsoleLogHelper::GetLogFilePath() {
   base::FilePath log_path;
 
   if (PathService::Get(base::DIR_TEMP, &log_path))

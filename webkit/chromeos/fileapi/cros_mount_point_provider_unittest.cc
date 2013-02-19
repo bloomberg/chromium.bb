@@ -131,7 +131,7 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
           kPermission));
 
   provider.GrantFileAccessToExtension(extension,
-                                      FilePath(FPL("removable/foo")));
+                                      base::FilePath(FPL("removable/foo")));
   EXPECT_EQ(
       fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
       provider.GetPermissionPolicy(
@@ -151,7 +151,8 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
                               system_mount_points.get()),
           kPermission));
 
-  provider.GrantFileAccessToExtension(extension, FilePath(FPL("system/foo")));
+  provider.GrantFileAccessToExtension(extension,
+                                      base::FilePath(FPL("system/foo")));
   EXPECT_EQ(
       fileapi::FILE_PERMISSION_USE_FILE_PERMISSION,
       provider.GetPermissionPolicy(
@@ -202,7 +203,7 @@ TEST(CrosMountPointProviderTest, AccessPermissions) {
   ASSERT_TRUE(mount_points->RegisterFileSystem(
       "test",
       fileapi::kFileSystemTypeNativeLocal,
-      FilePath(FPL("/foo/test"))));
+      base::FilePath(FPL("/foo/test"))));
   EXPECT_EQ(
       fileapi::FILE_PERMISSION_ALWAYS_DENY,
       provider.GetPermissionPolicy(

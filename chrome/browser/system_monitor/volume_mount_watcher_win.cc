@@ -312,7 +312,7 @@ bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
 }
 
 uint64 VolumeMountWatcherWin::GetStorageSize(
-    const FilePath::StringType& mount_point) const {
+    const base::FilePath::StringType& mount_point) const {
   MountPointDeviceMetadataMap::const_iterator iter =
       device_metadata_.find(mount_point);
   if (iter != device_metadata_.end())

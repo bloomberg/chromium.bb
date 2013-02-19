@@ -50,7 +50,7 @@ TEST_F(SetRegValueWorkItemTest, WriteNewNonOverwrite) {
   RegKey key;
 
   std::wstring parent_key(kTestRoot);
-  parent_key.append(&FilePath::kSeparators[0], 1);
+  parent_key.append(&base::FilePath::kSeparators[0], 1);
   parent_key.append(L"WriteNewNonOverwrite");
   ASSERT_EQ(ERROR_SUCCESS,
       key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ));
@@ -89,7 +89,7 @@ TEST_F(SetRegValueWorkItemTest, WriteNewOverwrite) {
   RegKey key;
 
   std::wstring parent_key(kTestRoot);
-  parent_key.append(&FilePath::kSeparators[0], 1);
+  parent_key.append(&base::FilePath::kSeparators[0], 1);
   parent_key.append(L"WriteNewOverwrite");
   ASSERT_EQ(ERROR_SUCCESS,
       key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ));
@@ -129,7 +129,7 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingNonOverwrite) {
   RegKey key;
 
   std::wstring parent_key(kTestRoot);
-  parent_key.append(&FilePath::kSeparators[0], 1);
+  parent_key.append(&base::FilePath::kSeparators[0], 1);
   parent_key.append(L"WriteExistingNonOverwrite");
   ASSERT_EQ(ERROR_SUCCESS,
       key.Create(HKEY_CURRENT_USER, parent_key.c_str(),
@@ -179,7 +179,7 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   RegKey key;
 
   std::wstring parent_key(kTestRoot);
-  parent_key.append(&FilePath::kSeparators[0], 1);
+  parent_key.append(&base::FilePath::kSeparators[0], 1);
   parent_key.append(L"WriteExistingOverwrite");
   ASSERT_EQ(ERROR_SUCCESS,
       key.Create(HKEY_CURRENT_USER, parent_key.c_str(),
@@ -250,7 +250,7 @@ TEST_F(SetRegValueWorkItemTest, WriteNonExistingKey) {
   RegKey key;
 
   std::wstring parent_key(kTestRoot);
-  parent_key.append(&FilePath::kSeparators[0], 1);
+  parent_key.append(&base::FilePath::kSeparators[0], 1);
   parent_key.append(L"WriteNonExistingKey");
 
   std::wstring name(L"name");

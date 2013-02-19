@@ -402,13 +402,9 @@ class BASE_EXPORT FilePath {
 
 }  // namespace base
 
-// Temporarily have non-Linux platforms use a "using" so we can convert those
-// over one-at-a-time.
-//
 // http://crosbug.com/39008 MTPD has a circular dependency on base and uses the
 // old non-namespaced FilePath.
-#if defined(MTPD_DEVICE_MANAGER_H_) || defined(OS_CHROMEOS) || \
-    (!defined(OS_LINUX) && !defined(OS_MAXOSX))
+#if defined(MTPD_DEVICE_MANAGER_H_)
 using base::FilePath;
 #endif
 

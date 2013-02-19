@@ -422,7 +422,7 @@ void GetLocalStateFolders(const Product& product,
 }
 
 // Creates a copy of the local state file and returns a path to the copy.
-FilePath BackupLocalStateFile(
+base::FilePath BackupLocalStateFile(
     const std::vector<base::FilePath>& local_state_folders) {
   base::FilePath backup;
 

@@ -9,6 +9,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+
 // Tests whether or not a function pointer retrieved via ScopedNativeLibrary
 // is available only in a scope.
 TEST(ScopedNativeLibrary, Basic) {
@@ -22,8 +24,8 @@ TEST(ScopedNativeLibrary, Basic) {
   // installed on all versions of Windows.
   FARPROC test_function;
   {
-    FilePath path(base::GetNativeLibraryName(L"ddraw"));
-    base::ScopedNativeLibrary library(path);
+    FilePath path(GetNativeLibraryName(L"ddraw"));
+    ScopedNativeLibrary library(path);
     test_function = reinterpret_cast<FARPROC>(
         library.GetFunctionPointer("DirectDrawCreate"));
     EXPECT_EQ(0, IsBadCodePtr(test_function));
@@ -31,3 +33,5 @@ TEST(ScopedNativeLibrary, Basic) {
   EXPECT_NE(0, IsBadCodePtr(test_function));
 #endif
 }
+
+}  // namespace base
