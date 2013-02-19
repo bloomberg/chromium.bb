@@ -474,8 +474,9 @@ void BrowserPolicyConnector::SetTimezoneIfPolicyAvailable() {
     return;
 
   std::string timezone;
-  if (chromeos::CrosSettings::Get()->GetString(
-          chromeos::kSystemTimezonePolicy, &timezone)) {
+  if (chromeos::CrosSettings::Get()->GetString(chromeos::kSystemTimezonePolicy,
+                                               &timezone) &&
+      !timezone.empty()) {
     chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
         UTF8ToUTF16(timezone));
   }

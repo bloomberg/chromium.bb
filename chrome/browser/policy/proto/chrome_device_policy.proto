@@ -211,12 +211,12 @@ message SystemTimezoneProto {
   // all users. Valid values are listed in "timezone_settings.cc". Additionally,
   // timezones from the "IANA Time Zone Database" (e.g. listed on wikipedia)
   // that are equivalent to one of the timezones in "timezone_settings.cc" are
-  // valid. In case of an invalid value (e.g. the empty string), the setting is
-  // still activated with a fallback timezone (currently "GMT").
-  // Only if no value is provided, the timezone device setting is inactive. In
-  // that case, the currently active timezone will remain in use however users
-  // can change the timezone and the change is persistent. Thus a change by one
-  // user affects the login-screen and all other users.
+  // valid. In case of an invalid value, the setting is still activated with a
+  // fallback timezone (currently "GMT"). In case of an empty string or if no
+  // value is provided, the timezone device setting is inactive. In that case,
+  // the currently active timezone will remain in use however users can change
+  // the timezone and the change is persistent. Thus a change by one user
+  // affects the login-screen and all other users.
   optional string timezone = 1;
 }
 
