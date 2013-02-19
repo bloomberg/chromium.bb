@@ -66,6 +66,11 @@
           'includes': [
             '../../build/shim_headers.gypi',
           ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '/usr/include/jsoncpp',
+            ],
+          },
           'link_settings': {
             'libraries': [
               '-ljsoncpp',
