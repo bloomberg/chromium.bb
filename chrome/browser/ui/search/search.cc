@@ -33,7 +33,7 @@ const int kEmbeddedPageVersionDefault = 2;
 
 const char kInstantExtendedActivationName[] = "instant";
 const chrome::search::InstantExtendedDefault kInstantExtendedActivationDefault =
-    chrome::search::INSTANT_USE_EXISTING;
+    chrome::search::INSTANT_DEFAULT_ON;
 
 // Constants for the field trial name and group prefix.
 const char kInstantExtendedFieldTrialName[] = "InstantExtended";
@@ -134,7 +134,7 @@ InstantExtendedDefault GetInstantExtendedDefaultSetting() {
     return InstantExtendedDefaultFromInt64(trial_default);
   }
 
-  return INSTANT_USE_EXISTING;
+  return kInstantExtendedActivationDefault;
 }
 
 bool IsInstantExtendedAPIEnabled(const Profile* profile) {
