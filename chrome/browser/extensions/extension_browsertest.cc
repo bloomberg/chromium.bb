@@ -205,15 +205,17 @@ const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
                                 kFlagEnableFileAccess | kFlagEnableIncognito);
 }
 
-const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
-    const base::FilePath& path) {
+const Extension* ExtensionBrowserTest::LoadExtensionAsComponentWithManifest(
+    const base::FilePath& path,
+    const base::FilePath::CharType* manifest_relative_path) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
 
   std::string manifest;
-  if (!file_util::ReadFileToString(path.Append(Extension::kManifestFilename),
-                                   &manifest))
+  if (!file_util::ReadFileToString(path.Append(manifest_relative_path),
+                                   &manifest)) {
     return NULL;
+  }
 
   std::string extension_id = service->component_loader()->Add(manifest, path);
   const Extension* extension = service->extensions()->GetByID(extension_id);
@@ -221,6 +223,12 @@ const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
     return NULL;
   last_loaded_extension_id_ = extension->id();
   return extension;
+}
+
+const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
+    const base::FilePath& path) {
+  return LoadExtensionAsComponentWithManifest(path,
+                                              Extension::kManifestFilename);
 }
 
 base::FilePath ExtensionBrowserTest::PackExtension(
