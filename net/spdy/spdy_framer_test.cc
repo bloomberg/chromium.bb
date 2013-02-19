@@ -45,7 +45,9 @@ class MockVisitor : public SpdyFramerVisitorInterface {
                                               size_t len));
   MOCK_METHOD2(OnCredentialFrameData, bool(const char* credential_data,
                                            size_t len));
-  MOCK_METHOD1(OnDataFrameHeader, void(const SpdyDataFrame* frame));
+  MOCK_METHOD3(OnDataFrameHeader, void(SpdyStreamId stream_id,
+                                       size_t length,
+                                       bool fin));
   MOCK_METHOD4(OnStreamFrameData, void(SpdyStreamId stream_id,
                                        const char* data,
                                        size_t len,
@@ -188,7 +190,9 @@ class SpdyFramerTestUtil {
     }
 
     virtual void OnError(SpdyFramer* framer) OVERRIDE { LOG(FATAL); }
-    virtual void OnDataFrameHeader(const SpdyDataFrame* frame) OVERRIDE {
+    virtual void OnDataFrameHeader(SpdyStreamId stream_id,
+                                   size_t length,
+                                   bool fin) OVERRIDE {
       LOG(FATAL) << "Unexpected data frame header";
     }
     virtual void OnStreamFrameData(SpdyStreamId stream_id,
@@ -356,9 +360,11 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     error_count_++;
   }
 
-  virtual void OnDataFrameHeader(const SpdyDataFrame* frame) OVERRIDE {
+  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
+                                 size_t length,
+                                 bool fin) OVERRIDE {
     data_frame_count_++;
-    header_stream_id_ = frame->stream_id();
+    header_stream_id_ = stream_id;
   }
 
   virtual void OnStreamFrameData(SpdyStreamId stream_id,
@@ -3183,7 +3189,7 @@ TEST_P(SpdyFramerTest, DataFrameFlags) {
     if (flags & ~DATA_FLAG_FIN) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
-      EXPECT_CALL(visitor, OnDataFrameHeader(_));
+      EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, flags & DATA_FLAG_FIN));
       EXPECT_CALL(visitor, OnStreamFrameData(_, _, 5, SpdyDataFlags()));
       if (flags & DATA_FLAG_FIN) {
         EXPECT_CALL(visitor, OnStreamFrameData(_, _, 0, DATA_FLAG_FIN));

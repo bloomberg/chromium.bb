@@ -503,8 +503,9 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
       if (data_frame.flags() & ~DATA_FLAG_FIN) {
         set_error(SPDY_INVALID_DATA_FRAME_FLAGS);
       } else {
-        visitor_->OnDataFrameHeader(&data_frame);
-
+        visitor_->OnDataFrameHeader(data_frame.stream_id(),
+                                    data_frame.length(),
+                                    data_frame.flags() & DATA_FLAG_FIN);
         if (current_frame.length() > 0) {
           CHANGE_STATE(SPDY_FORWARD_STREAM_FRAME);
         } else {

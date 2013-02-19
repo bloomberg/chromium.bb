@@ -131,7 +131,9 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                         SpdyGoAwayStatus status) OVERRIDE;
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               int delta_window_size) OVERRIDE;
-  virtual void OnDataFrameHeader(const SpdyDataFrame* frame) OVERRIDE;
+  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
+                                 size_t length,
+                                 bool fin) OVERRIDE;
 
   // Called after a syn stream control frame has been compressed to
   // allow the visitor to record compression statistics.

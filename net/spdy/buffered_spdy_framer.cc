@@ -144,9 +144,11 @@ bool BufferedSpdyFramer::OnControlFrameHeaderData(SpdyStreamId stream_id,
   return true;
 }
 
-void BufferedSpdyFramer::OnDataFrameHeader(const SpdyDataFrame* frame) {
+void BufferedSpdyFramer::OnDataFrameHeader(SpdyStreamId stream_id,
+                                           size_t length,
+                                           bool fin) {
   frames_received_++;
-  header_stream_id_ = frame->stream_id();
+  header_stream_id_ = stream_id;
 }
 
 void BufferedSpdyFramer::OnStreamFrameData(SpdyStreamId stream_id,

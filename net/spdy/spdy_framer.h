@@ -181,7 +181,9 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Called when a data frame header is received. The frame's data
   // payload will be provided via subsequent calls to
   // OnStreamFrameData().
-  virtual void OnDataFrameHeader(const SpdyDataFrame* frame) = 0;
+  virtual void OnDataFrameHeader(SpdyStreamId stream_id,
+                                 size_t length,
+                                 bool fin) = 0;
 
   // Called when data is received.
   // |stream_id| The stream receiving data.
