@@ -105,6 +105,11 @@ class Operand(object):
     if self.arg_type == def_format.OperandType.SEGMENT_REGISTER_IN_REG:
       return 'segreg'
 
+    if self.arg_type in [def_format.OperandType.MMX_REGISTER_IN_REG,
+                         def_format.OperandType.MMX_REGISTER_IN_RM]:
+      assert self.size == 'q'
+      return 'mmx'
+
     if self.size == 'b':
       return '8bit'
     if self.size == 'w':
@@ -563,7 +568,7 @@ class InstructionPrinter(object):
 
     assert instruction.GetOpcodeInModRM() is None
 
-    assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'
+    assert not instruction.HasOpcodeInsteadOfImmediate(), 'should not happen'
 
     self._PrintOpcode(instruction)
     self._out.write('\n')
@@ -643,15 +648,14 @@ class InstructionPrinter(object):
     self._PrintLegacyPrefixes(instruction)
     self._PrintRexPrefix(instruction)
 
-    assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'
-
     self._PrintOpcode(instruction)
     self._out.write('\n')
 
     opcode_in_modrm = instruction.GetOpcodeInModRM()
     if opcode_in_modrm is None:
-      self._PrintSignature(instruction)
-      self._PrintImplicitOperandSources(instruction)
+      if not instruction.HasOpcodeInsteadOfImmediate():
+        self._PrintSignature(instruction)
+        self._PrintImplicitOperandSources(instruction)
 
       if instruction.FindOperand(
           def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None:
@@ -659,7 +663,14 @@ class InstructionPrinter(object):
       else:
         self._out.write('(modrm_registers & opcode_s)\n')
       self._PrintModRMOperandSources(instruction)
+
+      if instruction.HasOpcodeInsteadOfImmediate():
+        assert instruction.opcodes[-2] == '/'
+        self._out.write('%s\n' % instruction.opcodes[-1])
+        self._PrintSignature(instruction)
+        self._PrintImplicitOperandSources(instruction)
     else:
+      assert not instruction.HasOpcodeInsteadOfImmediate()
       assert instruction.FindOperand(
           def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None
       self._out.write('(modrm_registers & opcode_%d)\n' % opcode_in_modrm)
@@ -706,15 +717,14 @@ class InstructionPrinter(object):
     self._PrintLegacyPrefixes(instruction)
     self._PrintRexPrefix(instruction)
 
-    assert not instruction.HasOpcodeInsteadOfImmediate(), 'not supported yet'
-
     self._PrintOpcode(instruction)
     self._out.write('\n')
 
     opcode_in_modrm = instruction.GetOpcodeInModRM()
     if opcode_in_modrm is None:
-      self._PrintSignature(instruction)
-      self._PrintImplicitOperandSources(instruction)
+      if not instruction.HasOpcodeInsteadOfImmediate():
+        self._PrintSignature(instruction)
+        self._PrintImplicitOperandSources(instruction)
 
       # Here we print something like
       # (any @operand0_from_modrm_reg @operand1_rm any* &
@@ -734,11 +744,19 @@ class InstructionPrinter(object):
       self._out.write('  any* &\n')
 
       self._out.write('%s)\n' % address_mode.mode)
+
+      if instruction.HasOpcodeInsteadOfImmediate():
+        assert instruction.opcodes[-2] == '/'
+        self._out.write('%s\n' % instruction.opcodes[-1])
+
+        self._PrintSignature(instruction)
+        self._PrintImplicitOperandSources(instruction)
     else:
       # Here we print something like
       # (opcode_2 @operand1_rm any* &
       #  operand_sib_base_index)
       # Note that we postpone printing signature until we read opcode in modrm.
+      assert not instruction.HasOpcodeInsteadOfImmediate()
       assert instruction.FindOperand(
           def_format.OperandType.SEGMENT_REGISTER_IN_REG) is None
       self._out.write('(opcode_%d\n' % opcode_in_modrm)

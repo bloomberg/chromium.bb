@@ -381,6 +381,52 @@ class TestInstructionPrinter(unittest.TestCase):
         @CPUFeature_MMX
         """.split())
 
+  def test_opcode_instead_of_immediate(self):
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'pavgusb Nq Pq, 0x0f 0x0f / 0xbf, CPUFeature_3DNOW')
+
+    printer.PrintInstructionWithModRMReg(instr)
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        0x0f 0x0f
+        modrm_registers
+        @operand0_from_modrm_rm_norex
+        @operand1_from_modrm_reg_norex
+        0xbf
+        @instruction_pavgusb
+        @operands_count_is_2
+        @operand0_mmx
+        @operand1_mmx
+        @CPUFeature_3DNOW
+        """.split())
+
+    printer = gen_dfa.InstructionPrinter(gen_dfa.DECODER, 32)
+    instr = gen_dfa.Instruction.Parse(
+        'pavgusb Mq Pq, 0x0f 0x0f / 0xbf, CPUFeature_3DNOW')
+
+    printer.PrintInstructionWithModRMMemory(
+        instr,
+        gen_dfa.AddressMode('single_register_memory',
+                            x_matters=False,
+                            b_matters=True))
+
+    self.assertEquals(
+        printer.GetContent().split(),
+        """
+        0x0f 0x0f
+        (any @operand0_rm @operand1_from_modrm_reg_norex any* &
+         single_register_memory)
+        0xbf
+        @instruction_pavgusb
+        @operands_count_is_2
+        @operand0_64bit
+        @operand1_mmx
+        @CPUFeature_3DNOW
+        """.split())
+
 
 class TestSplit(unittest.TestCase):
 
