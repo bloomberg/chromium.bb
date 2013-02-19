@@ -57,6 +57,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+#if defined(OS_WIN) && !defined(USE_AURA)
+  virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;
+#endif
 
   // RenderWidgetHostViewPort implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,

@@ -188,7 +188,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #endif  // defined(TOOLKIT_GTK)
 
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
-
+#if defined(OS_WIN) && !defined(USE_AURA)
+  virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;
+#endif
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 

@@ -273,6 +273,11 @@ void RenderWidgetHostViewGuest::SetBackground(const SkBitmap& background) {
   platform_view_->SetBackground(background);
 }
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+void RenderWidgetHostViewGuest::SetClickthroughRegion(SkRegion* region) {
+}
+#endif
+
 void RenderWidgetHostViewGuest::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
   platform_view_->SetHasHorizontalScrollbar(has_horizontal_scrollbar);

@@ -157,7 +157,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // The region specified will be transparent to mouse clicks.
-  virtual void SetClickthroughRegion(SkRegion* region) {}
+  virtual void SetClickthroughRegion(SkRegion* region) = 0;
 #endif
 
   // Return value indicates whether the mouse is locked successfully or not.
