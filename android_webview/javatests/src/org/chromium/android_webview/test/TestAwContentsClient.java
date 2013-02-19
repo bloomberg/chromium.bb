@@ -5,7 +5,6 @@
 package org.chromium.android_webview.test;
 
 import android.webkit.ConsoleMessage;
-import android.webkit.ValueCallback;
 
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
@@ -75,11 +74,8 @@ class TestAwContentsClient extends NullContentsClient {
 
     @Override
     public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-        mAddMessageToConsoleHelper.setLevel(consoleMessage.messageLevel().ordinal());
-        mAddMessageToConsoleHelper.setMessage(consoleMessage.message());
-        mAddMessageToConsoleHelper.setLineNumber(consoleMessage.lineNumber());
-        mAddMessageToConsoleHelper.setSourceId(consoleMessage.sourceId());
-        mAddMessageToConsoleHelper.notifyCalled();
+        mAddMessageToConsoleHelper.notifyCalled(consoleMessage.messageLevel().ordinal(),
+                consoleMessage.message(), consoleMessage.lineNumber(), consoleMessage.sourceId());
         return false;
     }
 
@@ -88,22 +84,6 @@ class TestAwContentsClient extends NullContentsClient {
         private String mMessage;
         private int mLineNumber;
         private String mSourceId;
-
-        void setLevel(int level) {
-            mLevel = level;
-        }
-
-        void setMessage(String message) {
-            mMessage = message;
-        }
-
-        void setLineNumber(int lineNumber) {
-            mLineNumber = lineNumber;
-        }
-
-        void setSourceId(String sourceId) {
-            mSourceId = sourceId;
-        }
 
         public int getLevel() {
             assert getCallCount() > 0;
@@ -124,54 +104,13 @@ class TestAwContentsClient extends NullContentsClient {
             assert getCallCount() > 0;
             return mSourceId;
         }
-    }
 
-    ValueCallback<String[]> mGetVisitedHistoryCallback;
-    boolean mSaveGetVisitedHistoryCallback = false;
-
-    @Override
-    public void getVisitedHistory(ValueCallback<String[]> callback) {
-        if (mSaveGetVisitedHistoryCallback) {
-            mGetVisitedHistoryCallback = callback;
+        void notifyCalled(int level, String message, int lineNumer, String sourceId) {
+            mLevel = level;
+            mMessage = message;
+            mLineNumber = lineNumer;
+            mSourceId = sourceId;
+            notifyCalled();
         }
-    }
-
-    String mLastVisitedUrl;
-    boolean mLastVisitIsReload;
-
-    @Override
-    public void doUpdateVisitedHistory(String url, boolean isReload) {
-        mLastVisitedUrl = url;
-        mLastVisitIsReload = isReload;
-    }
-
-    String mLastDownloadUrl;
-    String mLastDownloadUserAgent;
-    String mLastDownloadContentDisposition;
-    String mLastDownloadMimeType;
-    long mLastDownloadContentLength;
-
-    @Override
-    public void onDownloadStart(String url,
-                                String userAgent,
-                                String contentDisposition,
-                                String mimeType,
-                                long contentLength) {
-        mLastDownloadUrl = url;
-        mLastDownloadUserAgent = userAgent;
-        mLastDownloadContentDisposition = contentDisposition;
-        mLastDownloadMimeType = mimeType;
-        mLastDownloadContentLength = contentLength;
-    }
-
-    String mLastAutoLoginRealm;
-    String mLastAutoLoginAccount;
-    String mLastAutoLoginArgs;
-
-    @Override
-    public void onReceivedLoginRequest(String realm, String account, String args) {
-        mLastAutoLoginRealm = realm;
-        mLastAutoLoginAccount = account;
-        mLastAutoLoginArgs = args;
     }
 }
