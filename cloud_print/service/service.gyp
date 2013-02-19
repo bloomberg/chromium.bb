@@ -35,6 +35,8 @@
           'dependencies': [
             '<(DEPTH)/chrome/chrome.gyp:launcher_support',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         }],
       ],
     },
@@ -59,6 +61,8 @@
           'dependencies': [
             '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         }],
       ],
       'msvs_settings': {
