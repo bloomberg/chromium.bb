@@ -1077,6 +1077,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
         ).AndReturn(False)
 
     gclient_scm.scm.os.path.isdir(self.base_path).AndReturn(True)
+    gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
 
     self.mox.ReplayAll()
 
@@ -1118,6 +1119,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
                                 cwd=self.base_path).AndRaise(error)
     gclient_scm.scm.GIT.Capture(['svn', 'fetch'], cwd=self.base_path)
+    gclient_scm.scm.GIT.Capture(['fetch', 'origin'], cwd=self.base_path)
 
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
     gclient_scm.scm.GIT.IsGitSvn(cwd=self.base_path).MultipleTimes(
@@ -1127,7 +1129,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=self.fake_hash_1
         ).AndReturn(True)
     gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=too_big
-        ).AndReturn(False)
+        ).MultipleTimes(2).AndReturn(False)
 
     gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
     gclient_scm.os.path.isdir(self.base_path).MultipleTimes().AndReturn(True)

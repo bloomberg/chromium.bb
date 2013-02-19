@@ -33,8 +33,8 @@ class DiffFiltererWrapper(object):
   def SetCurrentFile(self, current_file):
     self._current_file = current_file
 
-  @property 
-  def _replacement_file(self): 
+  @property
+  def _replacement_file(self):
     return posixpath.join(self._relpath, self._current_file)
 
   def _Replace(self, line):
@@ -567,15 +567,18 @@ class GitWrapper(SCMWrapper):
     If SCM is git-svn and the head revision is less than |rev|, git svn fetch
     will be called on the source."""
     sha1 = None
-    # Handles an SVN rev.  As an optimization, only verify an SVN revision as
-    # [0-9]{1,6} for now to avoid making a network request.
-    if rev.isdigit() and len(rev) < 7:
-      # If the content of the safesync_url appears to be an SVN rev and the
-      # URL of the source appears to be git, we can only attempt to find out
-      # if a revision is useful after we've cloned the original URL, so just
-      # ignore for now.
-      if (os.path.isdir(self.checkout_path) and
-          scm.GIT.IsGitSvn(cwd=self.checkout_path)):
+    if not os.path.isdir(self.checkout_path):
+      raise gclient_utils.Error(
+          ( 'We could not find a valid hash for safesync_url response "%s".\n'
+            'Safesync URLs with a git checkout currently require the repo to\n'
+            'be cloned without a safesync_url before adding the safesync_url.\n'
+            'For more info, see: '
+            'http://code.google.com/p/chromium/wiki/UsingNewGit'
+            '#Initial_checkout' ) % rev)
+    elif rev.isdigit() and len(rev) < 7:
+      # Handles an SVN rev.  As an optimization, only verify an SVN revision as
+      # [0-9]{1,6} for now to avoid making a network request.
+      if scm.GIT.IsGitSvn(cwd=self.checkout_path):
         local_head = scm.GIT.GetGitSvnHeadRev(cwd=self.checkout_path)
         if not local_head or local_head < int(rev):
           try:
@@ -604,8 +607,15 @@ class GitWrapper(SCMWrapper):
                 'configured or the revision in your safesync_url is\n'
                 'higher than git-svn remote\'s HEAD as we couldn\'t find a\n'
                 'corresponding git hash for SVN rev %s.' ) % rev)
-    elif scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=rev):
-      sha1 = rev
+    else:
+      if scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=rev):
+        sha1 = rev
+      else:
+        # May exist in origin, but we don't have it yet, so fetch and look
+        # again.
+        scm.GIT.Capture(['fetch', 'origin'], cwd=self.checkout_path)
+        if scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=rev):
+          sha1 = rev
 
     if not sha1:
       raise gclient_utils.Error(
