@@ -417,7 +417,7 @@
  "linux-release/startup/times/t": {"improve": -15, "regress": 15, "sha1": "c8f06f81"},
  "mac-release-10.6/dhtml/times/t": {"reva": 182110, "revb": 182834, "improve": 3.6944444455, "regress": 106.633333338, "sha1": "fad8160c"},
  "mac-release-10.6/dom_perf/Total/score": {"reva": 169426, "revb": 169978, "improve": 223, "regress": 134, "sha1": "7b808d4d"},
- "mac-release-10.6/intl1/times/t": {"reva": 173672, "revb": 173992, "improve": 244.044444436, "regress": 834.400000004, "sha1": "96384d97"},
+ "mac-release-10.6/intl1/times/t": {"reva": 182931, "revb": 183271, "improve": 281.094444446, "regress": 1613.03333334, "sha1": "a9de6d0b"},
  "mac-release-10.6/intl2/times/t": {"reva": 165939, "revb": 166315, "improve": -4756, "regress": -2807, "sha1": "a82df4d4"},
  "mac-release-10.6/morejs/times/t": {"reva": 67956, "revb": 69048, "improve": -2546, "regress": 2597, "sha1": "f8cbaca1"},
  "mac-release-10.6/moz/times/t": {"reva": 68096, "revb": 69048, "improve": -3314, "regress": 2668, "sha1": "fe58113c"},
@@ -795,7 +795,7 @@
  "xp-release-single-core/startup/times/t": {"improve": -9, "regress": 9, "sha1": "b1bf03da"},
  "xp-release/sizes/chrome.dll/chrome.dll": {"reva": 172272, "revb": 172301, "type": "absolute", "improve": 49887616, "regress": 55142708, "sha1": "1ed51bc2"},
  "xp-release/sizes/chrome.exe/chrome.exe": {"reva": 166155, "revb": 166515, "type": "absolute", "improve": 1176601, "regress": 1304218, "sha1": "a5245848"},
- "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 162300, "revb": 162341, "type": "absolute", "better": "lower", "improve": 25245619, "regress": 28227226, "sha1": "f46cb296"},
+ "xp-release/sizes/mini_installer.exe/mini_installer.exe": {"reva": 181127, "revb": 183249, "type": "absolute", "better": "lower", "improve": 26597811, "regress": 29650253, "sha1": "1dec7ece"},
  "xp-release/sizes/setup.exe/setup.exe": {"reva": 129392, "revb": 164056, "type": "absolute", "improve": 1428556, "regress": 1668711, "sha1": "6ac28f4d"},
  "load": true
 }
