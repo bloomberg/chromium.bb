@@ -367,6 +367,8 @@ class ValgrindTool(BaseTool):
       proc += ["--trace-children-skip='*dbus-launch*'"]
       proc += ["--trace-children-skip='*perl*'"]
       proc += ["--trace-children-skip='*python*'"]
+      # This is really Python, but for some reason Valgrind follows it.
+      proc += ["--trace-children-skip='*lsb_release*'"]
 
     proc += self.ToolSpecificFlags()
     proc += self._tool_flags
