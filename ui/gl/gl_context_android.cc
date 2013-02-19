@@ -56,8 +56,8 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
   size_t dalvik_limit = 0;
   if (!dalvik_limit) {
     size_t heap_size   = static_cast<size_t>(base::SysInfo::DalvikHeapSizeMB());
-    // TODO(epenner): Use real heap-growth-limit when it is available.
-    size_t heap_growth = (heap_size / 2);
+    size_t heap_growth = static_cast<size_t>(
+                             base::SysInfo::DalvikHeapGrowthLimitMB());
     size_t limit = 0;
     if (heap_size >= 350)
         limit = heap_size / 2;
