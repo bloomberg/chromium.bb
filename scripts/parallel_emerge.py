@@ -70,6 +70,8 @@ from _emerge.stdout_spinner import stdout_spinner
 from portage._global_updates import _global_updates
 import portage
 import portage.debug
+from portage.versions import vercmp
+
 
 def Usage():
   """Print usage."""
@@ -557,7 +559,10 @@ class DepGraphGenerator(object):
         emerge_pkg = self.package_db.get(pkg)
         if emerge_pkg and emerge_pkg.type_name == "binary":
           this_pkg["binary"] = True
-          defined_phases = emerge_pkg.metadata.defined_phases
+          if 0 <= vercmp(portage.VERSION, "2.1.11.50"):
+            defined_phases = emerge_pkg.defined_phases
+          else:
+            defined_phases = emerge_pkg.metadata.defined_phases
           defined_binpkg_phases = binpkg_phases.intersection(defined_phases)
           if not defined_binpkg_phases:
             this_pkg["nodeps"] = True
