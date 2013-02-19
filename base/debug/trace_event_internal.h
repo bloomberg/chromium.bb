@@ -660,7 +660,7 @@
         trace_event_internal::AddTraceEventWithThreadIdAndTimestamp( \
             phase, INTERNAL_TRACE_EVENT_UID(catstatic), \
             name, trace_event_trace_id.data(), \
-            thread_id, TimeTicks::FromInternalValue(timestamp), \
+            thread_id, base::TimeTicks::FromInternalValue(timestamp), \
             trace_event_flags, ##__VA_ARGS__); \
       } \
     } while (0)
