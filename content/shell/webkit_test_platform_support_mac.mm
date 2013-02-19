@@ -10,7 +10,38 @@
 
 namespace content {
 
+namespace {
+
+void SetDefaultsToLayoutTestValues(void) {
+  // So we can match the WebKit layout tests, we want to force a bunch of
+  // preferences that control appearance to match.
+  // (We want to do this as early as possible in application startup so
+  // the settings are in before any higher layers could cache values.)
+
+  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+  const NSInteger kMinFontSizeCGSmoothes = 4;
+  const NSInteger kNoFontSmoothing = 0;
+  const NSInteger kBlueTintedAppearance = 1;
+  [defaults setInteger:kMinFontSizeCGSmoothes
+                forKey:@"AppleAntiAliasingThreshold"];
+  [defaults setInteger:kNoFontSmoothing
+                forKey:@"AppleFontSmoothing"];
+  [defaults setInteger:kBlueTintedAppearance
+                forKey:@"AppleAquaColorVariant"];
+  [defaults setObject:@"0.709800 0.835300 1.000000"
+               forKey:@"AppleHighlightColor"];
+  [defaults setObject:@"0.500000 0.500000 0.500000"
+               forKey:@"AppleOtherHighlightColor"];
+  [defaults setObject:[NSArray arrayWithObject:@"en"]
+               forKey:@"AppleLanguages"];
+}
+
+}  // namespace
+
 bool WebKitTestPlatformInitialize() {
+
+  SetDefaultsToLayoutTestValues();
 
   // Load font files in the resource folder.
   static const char* const fontFileNames[] = {
