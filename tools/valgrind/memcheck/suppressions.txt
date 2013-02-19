@@ -716,23 +716,6 @@
    ...
    fun:_mesa_glsl_link_shader
 }
-{
-   bug_146955
-   Memcheck:Unaddressable
-   ...
-   fun:FcConfigParseAndLoad
-   fun:FcInitLoadConfig
-   fun:FcInitLoadConfigAndFonts
-   fun:FcInit
-   fun:FcConfigGetCurrent
-   fun:FcConfigSubstituteWithPat
-   fun:_ZN12_GLOBAL__N_127FindBestMatchFontFamilyNameERKSt6vectorISsSaISsEE
-   fun:_ZN3gfx17PlatformFontPangoC1EP21_PangoFontDescription
-   fun:_ZN3gfx12PlatformFont20CreateFromNativeFontEP21_PangoFontDescription
-   fun:_ZN3gfx4FontC1EP21_PangoFontDescription
-   fun:_ZN3gfx17PlatformFontPangoC1Ev
-   fun:_ZN3gfx12PlatformFont13CreateDefaultEv
-}
 # leak in OSMesa used to run compositor_unittests in bots.
 {
    bug_148477
@@ -780,6 +763,25 @@
    fun:malloc
    obj:/bin/grep
    obj:/bin/grep
+}
+{
+   Ubuntu_Precise_Fontconfig_Optimized_Code
+   Memcheck:Unaddressable
+   fun:FcConfigFileExists
+}
+{
+   Ubuntu_Precise_Itoa_Optimized_Code
+   Memcheck:Uninitialized
+   fun:_itoa_word
+   fun:vfprintf
+   fun:__vsnprintf_chk
+   fun:__snprintf_chk
+}
+{
+   Ubuntu_Precise_Wcscmp_Optimized_Code_In_Tests
+   Memcheck:Uninitialized
+   fun:wcscmp
+   fun:_ZN7testing8internal6String17WideCStringEqualsEPKwS3_
 }
 
 #-----------------------------------------------------------------------
@@ -3847,14 +3849,10 @@
    bug_101470
    Memcheck:Param
    write(buf)
-   obj:/lib/libc-2.11.1.so
-   fun:_IO_file_write@@GLIBC_2.2.5
-   ...
-   fun:f*
+   obj:/lib/x86_64-linux-gnu/libc-2.15.so
+   fun:new_do_write
    ...
    fun:_ZNK13safe_browsing9PrefixSet9WriteFileE*
-   fun:_ZN12_GLOBAL__N_113PrefixSetTest16GetPrefixSetFileE*
-   fun:_ZN12_GLOBAL__N_1*PrefixSetTest_*_Test8TestBodyEv
 }
 {
    bug_101750
@@ -6536,7 +6534,7 @@
    fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
    fun:_ZN22MetricsNetworkObserver25ProbeWifiPHYLayerProtocolEv
    fun:_ZN22MetricsNetworkObserverC1Ev
-   fun:_ZN10MetricsLogC2ERKSsi
+   fun:_ZN10MetricsLogC*
    fun:_ZN12_GLOBAL__N_114TestMetricsLogC1ERKSsi
 }
 {
@@ -6606,4 +6604,50 @@
    fun:_ZN5media8AudioBus15FromInterleavedEPKvii
    fun:_ZN5media17AudioRendererImpl6RenderEPNS_8AudioBusEi
    fun:_ZN5media13NullAudioSink14FillBufferTaskEv
+}
+{
+   bug_176888
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:p11_kit_registered_module_to_name
+   fun:gnutls_pkcs11_init
+   fun:gnutls_global_init
+   fun:_ZN12_GLOBAL__N_117GcryptInitializer4InitEv
+   fun:_ZN12_GLOBAL__N_117GcryptInitializerC1Ev
+   fun:_ZN4base25DefaultLazyInstanceTraitsIN12_GLOBAL__N_117GcryptInitializerEE3NewEPv
+}
+{
+   bug_176889
+   Memcheck:Uninitialized
+   fun:inflateReset2
+   fun:inflateInit2_
+   fun:png_create_read_struct_2
+   obj:/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so
+   obj:/usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0.2600.1
+   fun:gdk_pixbuf_loader_close
+}
+{
+   bug_176891a
+   Memcheck:Leak
+   fun:calloc
+   fun:nss_ZAlloc
+   fun:nssCryptokiObject_Create
+   fun:create_objects_from_handles
+   fun:find_objects
+   fun:find_objects_by_template
+   fun:nssToken_FindCertificateByEncodedCertificate
+   fun:PK11_FindCertFromDERCertItem
+   fun:_ZN24mozilla_security_manager12_GLOBAL__N_125nsPKCS12Blob_ImportHelper*
+}
+{
+   bug_176891b
+   Memcheck:Leak
+   ...
+   fun:nssPKIObject_Create
+   fun:nssTrustDomain_FindTrustForCertificate
+   fun:STAN_DeleteCertTrustMatchingSlot
+   fun:SEC_DeletePermCertificate
+   ...
+   fun:_ZN3net15NSSCertDatabase16DeleteCertAndKeyEPKNS_15X509CertificateE
 }
