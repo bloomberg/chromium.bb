@@ -148,12 +148,16 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
-  // Verify that the cache file exists.
-  base::FilePath path = cache_->GetCacheFilePath(resource_id,
-                                           md5,
-                                           DriveCache::CACHE_TYPE_TMP,
-                                           DriveCache::CACHED_FILE_FROM_SERVER);
-  EXPECT_TRUE(file_util::PathExists(path));
+  // Verify that the cache entry exists.
+  bool success = false;
+  DriveCacheEntry cache_entry;
+  cache_->GetCacheEntry(
+      resource_id, md5,
+      base::Bind(&test_util::CopyResultsFromGetCacheEntryCallback,
+                 &success,
+                 &cache_entry));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_TRUE(success);
 
   base::FilePath unused;
   scoped_ptr<DriveEntryProto> entry_proto;
@@ -165,14 +169,6 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
                  &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
-
-  file_system_->GetEntryInfoByPath(
-      path,
-      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
-                 &error,
-                 &entry_proto));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry_proto.get());
 
   // Load a root feed again to kick the StaleCacheFilesRemover.
@@ -181,12 +177,14 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   // Wait for StaleCacheFilesRemover to finish cleaning up the stale file.
   google_apis::test_util::RunBlockingPoolTask();
 
-  // Verify that the cache file is deleted.
-  path = cache_->GetCacheFilePath(resource_id,
-                                  md5,
-                                  DriveCache::CACHE_TYPE_TMP,
-                                  DriveCache::CACHED_FILE_FROM_SERVER);
-  EXPECT_FALSE(file_util::PathExists(path));
+  // Verify that the cache entry is deleted.
+  cache_->GetCacheEntry(
+      resource_id, md5,
+      base::Bind(&test_util::CopyResultsFromGetCacheEntryCallback,
+                 &success,
+                 &cache_entry));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_FALSE(success);
 }
 
 }   // namespace drive
