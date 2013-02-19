@@ -3603,14 +3603,17 @@ GLuint GLES2DecoderImpl::GetBackbufferServiceId() const {
 }
 
 void GLES2DecoderImpl::RestoreState() const {
-  state_.RestoreState();
-
   // TODO: Restore multisample bindings
   GLuint service_id = state_.bound_draw_framebuffer ?
       state_.bound_draw_framebuffer->service_id() :
       GetBackbufferServiceId();
   glBindFramebufferEXT(GL_FRAMEBUFFER, service_id);
   OnFboChanged();
+
+  // Restore gl states after bind framebuffer, to ensure the gl states
+  // applied to right FBO
+  // gman: There is no framebuffer state so this is a bug in the driver
+  state_.RestoreState();
 }
 
 void GLES2DecoderImpl::OnFboChanged() const {
