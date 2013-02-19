@@ -246,16 +246,16 @@
    bug_156433_a
    Heapcheck:Leak
    fun:sqlite3MemMalloc
-   fun:crypto::::NSSInitSingleton::OpenUserDB
-   fun:crypto::::NSSInitSingleton::OpenTestNSSDB
+   fun:*OpenUserDB
+   fun:*OpenTestNSSDB
    fun:*ScopedTestNSSDB
 }
 {
    bug_156433_b
    Heapcheck:Leak
    fun:PORT_Alloc_Util
-   fun:crypto::::NSSInitSingleton::OpenUserDB
-   fun:crypto::::NSSInitSingleton::OpenTestNSSDB
+   fun:*OpenUserDB
+   fun:*OpenTestNSSDB
    fun:*ScopedTestNSSDB
 }
 {
@@ -639,7 +639,7 @@
 {
    bug_67378_c
    Heapcheck:Leak
-   fun:net::::ASCIILiteralToV8String
+   fun:*ASCIILiteralToV8String
    fun:net::ProxyResolverV8::Context::InitV8
    fun:net::ProxyResolverV8::SetPacScript
 }
@@ -800,15 +800,14 @@
    bug_82974d
    Heapcheck:Leak
    fun:sqlite3MemMalloc
-   fun:net::CertDatabase::ListCerts
+   fun:net::NSSCertDatabase::ListCerts
 }
 {
    bug_82974e
    Heapcheck:Leak
    fun:sqlite3MemMalloc
-   fun:net::CertDatabase::DeleteCertAndKey
-   fun:net::*::CleanupSlotContents
-   fun:net::CertDatabaseNSSTest::TearDown
+   fun:net::NSSCertDatabase::DeleteCertAndKey
+   fun:*::CleanupSlotContents
 }
 {
    bug_83195
@@ -1801,4 +1800,11 @@
    fun:disk_cache::*
    fun:disk_cache::EntryImpl::*
    fun:disk_cache::*
+}
+{
+   bug_176888
+   Heapcheck:Leak
+   fun:__GI___strdup
+   fun:Init
+   fun:GcryptInitializer
 }
