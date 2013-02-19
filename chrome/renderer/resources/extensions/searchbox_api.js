@@ -178,7 +178,8 @@ if (!chrome.embeddedSearch) {
         numDedupeAttempts = 1;
       }
 
-      var autocompleteResults = GetAutocompleteResults();
+      var autocompleteResults = DedupeAutocompleteResults(
+          GetAutocompleteResults());
       var nativeUrls = {};
       for (var i = 0, result; result = autocompleteResults[i]; ++i) {
         var nativeUrl = CanonicalizeUrl(result.destination_url);
