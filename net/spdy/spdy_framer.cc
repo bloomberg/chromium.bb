@@ -483,13 +483,18 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     remaining_data_ = current_frame.length();
 
     // This is just a sanity check for help debugging early frame errors.
+    if (remaining_data_ > 1000000u) {
       // The strncmp for 5 is safe because we only hit this point if we
       // have SpdyFrame::kHeaderSize (8) bytes
-    if (remaining_data_ > 1000000u &&
-        !syn_frame_processed_ &&
+      if (!syn_frame_processed_ &&
           strncmp(current_frame_buffer_.get(), "HTTP/", 5) == 0) {
-        LOG(WARNING) << "Unexpected HTTP response to spdy request";
+        LOG(WARNING) << "Unexpected HTTP response to " << display_protocol_
+                     << " request";
         probable_http_response_ = true;
+      } else {
+        LOG(WARNING) << "Unexpectedly large frame.  " << display_protocol_
+                     << " session is likely corrupt.";
+      }
     }
 
     // if we're here, then we have the common header all received.
