@@ -101,6 +101,19 @@
   fun:StartsWithASCII
 }
 
+{
+  Benign race in get_nprocs, uses barriers
+  ThreadSanitizer:Race
+  fun:get_nprocs
+}
+
+{
+  False positives, glibc just uses internal atomics
+  ThreadSanitizer:Race
+  ...
+  fun:getaddrinfo
+}
+
 ############################
 # 1.2 Benign races in ICU
 {
@@ -266,6 +279,13 @@
   fun:qsort_r
   fun:qsort
   fun:_cairo_bentley_ottmann_tessellate_polygon
+}
+
+{
+  bug_177061
+  ThreadSanitizer:Race
+  ...
+  fun:*cairo*
 }
 
 # 2. intentional unit test errors, or stuff that is somehow a false positive
