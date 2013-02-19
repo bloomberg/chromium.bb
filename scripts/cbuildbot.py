@@ -607,8 +607,11 @@ def _RunBuildStagesWrapper(options, build_config):
     options.chrome_version = gclient.GetTipOfTrunkSvnRevision(svn_url)
     options.chrome_rev = constants.CHROME_REV_SPEC
 
+  # If it's likely we'll need to build Chrome, fetch the source.
   options.managed_chrome = (chrome_rev != constants.CHROME_REV_LOCAL and
-      (not build_config['usepkg_build_packages'] or chrome_rev))
+      (not build_config['usepkg_build_packages'] or chrome_rev or
+       build_config['useflags'] or build_config['profile'] or
+       options.rietveld_patches))
 
   if options.managed_chrome:
     # Tell Chrome to fetch the source locally.
@@ -617,7 +620,7 @@ def _RunBuildStagesWrapper(options, build_config):
     options.chrome_root = os.path.join(options.cache_dir, 'distfiles', 'target',
                                        chrome_src)
   elif options.rietveld_patches:
-    cros_build_lib.Die('This builder does not support rietveld patches.')
+    cros_build_lib.Die('This builder does not support Rietveld patches.')
 
   target = DistributedBuilder if IsDistributedBuilder() else SimpleBuilder
   buildbot = target(options, build_config)
