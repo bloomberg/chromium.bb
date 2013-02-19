@@ -569,6 +569,7 @@
     { "name": "my.alfresco.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "webmail.gigahost.dk", "include_subdomains": true, "mode": "force-https" },
     { "name": "paymill.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "paymill.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "gocardless.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "espra.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "zoo24.de", "include_subdomains": true, "mode": "force-https" },
