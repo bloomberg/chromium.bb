@@ -39,6 +39,7 @@ FocusController::FocusController(FocusRules* rules)
     : active_window_(NULL),
       focused_window_(NULL),
       updating_focus_(false),
+      updating_activation_(false),
       rules_(rules),
       ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
   DCHECK(rules);
@@ -105,9 +106,6 @@ void FocusController::RemoveObserver(
 }
 
 void FocusController::FocusWindow(aura::Window* window) {
-  if (updating_focus_)
-    return;
-
   if (window &&
       (window->Contains(focused_window_) || window->Contains(active_window_))) {
     return;
@@ -125,10 +123,19 @@ void FocusController::FocusWindow(aura::Window* window) {
   if (window && (!focusable || !activatable))
     return;
   DCHECK((focusable && activatable) || !window);
-  SetActiveWindow(activatable);
-  if (active_window_)
-    DCHECK(active_window_->Contains(focusable));
-  SetFocusedWindow(focusable);
+
+  // Activation change observers may change the focused window. If this happens
+  // we must not adjust the focus below since this will clobber that change.
+  aura::Window* last_focused_window = focused_window_;
+  if (!updating_activation_)
+    SetActiveWindow(activatable);
+
+  bool activation_changed_focus = last_focused_window != focused_window_;
+  if (!updating_focus_ && !activation_changed_focus) {
+    if (active_window_)
+      DCHECK(active_window_->Contains(focusable));
+    SetFocusedWindow(focusable);
+  }
 }
 
 void FocusController::ResetFocusWithinActiveWindow(aura::Window* window) {
@@ -250,14 +257,14 @@ void FocusController::SetFocusedWindow(aura::Window* window) {
 }
 
 void FocusController::SetActiveWindow(aura::Window* window) {
-  if (updating_focus_ || window == active_window_)
+  if (updating_activation_ || window == active_window_)
     return;
 
   DCHECK(rules_->CanActivateWindow(window));
   if (window)
     DCHECK_EQ(window, rules_->GetActivatableWindow(window));
 
-  base::AutoReset<bool> updating_focus(&updating_focus_, true);
+  base::AutoReset<bool> updating_activation(&updating_activation_, true);
   aura::Window* lost_activation = active_window_;
   if (active_window_ && observer_manager_.IsObserving(active_window_) &&
       focused_window_ != active_window_) {

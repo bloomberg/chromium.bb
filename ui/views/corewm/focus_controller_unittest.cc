@@ -73,55 +73,6 @@ class ScopedFocusNotificationObserver : public FocusNotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedFocusNotificationObserver);
 };
 
-// Focus/Activation change observer that attempts to shift focus/activation
-// while processing an update to focus/activation.
-class RecurseFocusObserver : public aura::client::ActivationChangeObserver,
-                             public aura::client::FocusChangeObserver {
- public:
-  explicit RecurseFocusObserver(aura::Window* other) : other_(other) {}
-  virtual ~RecurseFocusObserver() {}
-
- private:
-  // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE {
-    DCHECK_NE(gained_active, other_);
-    aura::client::GetActivationClient(other_->GetRootWindow())->ActivateWindow(
-        other_);
-  }
-
-  // Overridden from aura::client::FocusChangeObserver:
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) OVERRIDE {
-    DCHECK_NE(gained_focus, other_);
-    aura::client::GetFocusClient(other_)->FocusWindow(other_);
-  }
-
-  aura::Window* other_;
-
-  DISALLOW_COPY_AND_ASSIGN(RecurseFocusObserver);
-};
-
-class ScopedRecurseFocusObserver : public RecurseFocusObserver {
- public:
-  ScopedRecurseFocusObserver(aura::RootWindow* root_window,
-                             aura::Window* other)
-      : RecurseFocusObserver(other),
-        root_window_(root_window) {
-    aura::client::GetActivationClient(root_window_)->AddObserver(this);
-    aura::client::GetFocusClient(root_window_)->AddObserver(this);
-  }
-  virtual ~ScopedRecurseFocusObserver() {
-    aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
-    aura::client::GetFocusClient(root_window_)->RemoveObserver(this);
-  }
-
- private:
-  aura::RootWindow* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedRecurseFocusObserver);
-};
-
 class ScopedTargetFocusNotificationObserver : public FocusNotificationObserver {
  public:
   ScopedTargetFocusNotificationObserver(aura::RootWindow* root_window, int id)
@@ -293,8 +244,8 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void ShiftFocusToParentOfFocusedWindow() {}
   virtual void FocusRulesOverride() = 0;
   virtual void ActivationRulesOverride() = 0;
-  virtual void NoRecurseFocus() {}
-  virtual void NoRecurseActivation() {}
+  virtual void ShiftFocusOnActivation() {}
+  virtual void NoShiftActiveOnActivation() {}
 
  private:
   scoped_ptr<FocusController> focus_controller_;
@@ -475,21 +426,14 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     EXPECT_EQ(2, GetActiveWindowId());
     EXPECT_EQ(2, GetFocusedWindowId());
   }
-  virtual void NoRecurseFocus() OVERRIDE {
-    aura::Window* w2 = root_window()->GetChildById(2);
-    ScopedRecurseFocusObserver observer(root_window(), w2);
-    FocusWindowById(1);
-    // |observer| will try to set active to w2, but the focus system should
-    // prevent recursive updating.
-    EXPECT_EQ(1, GetFocusedWindowId());
+  virtual void ShiftFocusOnActivation() OVERRIDE {
+    // When a window is activated, by default that window is also focused.
+    // An ActivationChangeObserver may shift focus to another window within the
+    // same activatable window.
   }
-  virtual void NoRecurseActivation() OVERRIDE {
-    aura::Window* w2 = root_window()->GetChildById(2);
-    ScopedRecurseFocusObserver observer(root_window(), w2);
-    ActivateWindowById(1);
-    // |observer| will try to set active to w2, but the focus system should
-    // prevent recursive updating.
-    EXPECT_EQ(1, GetActiveWindowId());
+  virtual void NoShiftActiveOnActivation() OVERRIDE {
+    // When a window is activated, we need to prevent any change to activation
+    // from being made in response to an activation change notification.
   }
 
  private:
@@ -876,8 +820,8 @@ TARGET_FOCUS_TESTS(ActivationRulesOverride);
 
 // - Verifies that attempts to change focus or activation from a focus or
 //   activation change observer are ignored.
-DIRECT_FOCUS_CHANGE_TESTS(NoRecurseFocus);
-DIRECT_FOCUS_CHANGE_TESTS(NoRecurseActivation);
+DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusOnActivation);
+DIRECT_FOCUS_CHANGE_TESTS(NoShiftActiveOnActivation);
 
 }  // namespace corewm
 }  // namespace views

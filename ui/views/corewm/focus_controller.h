@@ -105,6 +105,7 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   aura::Window* focused_window_;
 
   bool updating_focus_;
+  bool updating_activation_;
 
   scoped_ptr<FocusRules> rules_;
 
