@@ -12,6 +12,14 @@ namespace pp {
 
 namespace {
 
+// Use 2MB default stack size for Native Client, otherwise use system default.
+#if defined(__native_client__)
+const size_t kDefaultStackSize = 2 * 1024 * 1024;
+#else
+const size_t kDefaultStackSize = 0;
+#endif
+
+
 struct ThreadData {
   MessageLoop message_loop;
 
@@ -41,6 +49,15 @@ void* RunThread(void* void_data) {
 SimpleThread::SimpleThread(const InstanceHandle& instance)
     : instance_(instance),
       message_loop_(instance),
+      stacksize_(kDefaultStackSize),
+      thread_(0) {
+}
+
+SimpleThread::SimpleThread(const InstanceHandle& instance,
+                           size_t stacksize)
+    : instance_(instance),
+      message_loop_(instance),
+      stacksize_(stacksize),
       thread_(0) {
 }
 
@@ -82,10 +99,15 @@ bool SimpleThread::StartWithFunction(ThreadFunc func, void* user_data) {
   data->user_data = user_data;
 
 #ifdef WIN32
-  thread_ = CreateThread(NULL, 0, &RunThread, data, 0, NULL);
+  thread_ = CreateThread(NULL, stacksize_, &RunThread, data, 0, NULL);
   if (!thread_) {
 #else
-  if (pthread_create(&thread_, NULL, &RunThread, data) != 0) {
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  int setval = 0;
+  if (stacksize_ > 0)
+    setval = pthread_attr_setstacksize(&attr, stacksize_);
+  if (setval != 0 || pthread_create(&thread_, &attr, &RunThread, data) != 0) {
 #endif
     delete data;
     return false;

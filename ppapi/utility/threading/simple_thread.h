@@ -29,6 +29,7 @@ class SimpleThread {
   typedef void (*ThreadFunc)(MessageLoop&, void* user_data);
 
   explicit SimpleThread(const InstanceHandle& instance);
+  explicit SimpleThread(const InstanceHandle& instance, size_t stacksize);
   ~SimpleThread();
 
   // Starts a thread and runs a message loop in it. If you need control over
@@ -52,11 +53,12 @@ class SimpleThread {
  private:
   InstanceHandle instance_;
   MessageLoop message_loop_;
-
+  const size_t stacksize_;
   ThreadHandle thread_;
 
   // Disallow (not implemented).
   SimpleThread(const SimpleThread&);
+  SimpleThread(const SimpleThread&, size_t stacksize);
   SimpleThread& operator=(const SimpleThread&);
 };
 
