@@ -231,6 +231,7 @@
         # SkGraphics::Init().
         'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
 
+        'SK_DISABLE_BLUR_ROUNDING',
 
         # Disable this check because it is too strict for some Chromium-specific
         # subclasses of SkPixelRef. See bug: crbug.com/171776.
