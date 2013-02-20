@@ -1738,7 +1738,7 @@ SafetyLevel VectorBinary3RegisterImmOp::safety(Instruction i) const {
 SafetyLevel Vector1RegisterImmediate_MOV::safety(Instruction i) const {
   if (!op.IsDefined(i) &&
       ((cmode.value(i) & 0x1) == 1) &&
-      ((cmode.value(i) & 0x6) != 6))
+      ((cmode.value(i) & 0xC) != 0xC))
     return DECODER_ERROR;
   if (op.IsDefined(i) && (cmode.value(i) !=  14)) return DECODER_ERROR;
   SafetyLevel level = Vector1RegisterImmediate::safety(i);
