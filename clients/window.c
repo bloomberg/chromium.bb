@@ -4529,6 +4529,7 @@ display_acquire_window_surface(struct display *display,
 	if (surface->buffer_type != WINDOW_BUFFER_TYPE_EGL_WINDOW)
 		return -1;
 
+	widget_get_cairo_surface(window->main_surface->widget);
 	return surface->toysurface->acquire(surface->toysurface, ctx);
 }
 
