@@ -249,8 +249,9 @@ void EventExecutorMac::Core::InjectMouseEvent(const MouseEvent& event) {
     base::mac::ScopedCFTypeRef<CGEventRef> event(
         CGEventCreateScrollWheelEvent(
             NULL, kCGScrollEventUnitPixel, 2, delta_y, delta_x));
-    if (event)
-      CGEventPost(kCGHIDEventTap, event);
+    if (event) {
+      CGEventPost(kCGSessionEventTap, event);
+    }
   }
 }
 
