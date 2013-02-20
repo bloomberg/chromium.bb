@@ -494,7 +494,9 @@ void ExistingUserController::LoginAsGuest() {
 }
 
 void ExistingUserController::MigrateUserData(const std::string& old_password) {
-  RecoverEncryptedData(old_password);
+  // LoginPerformer instance has state of the user so it should exist.
+  if (login_performer_.get())
+    login_performer_->RecoverEncryptedData(old_password);
 }
 
 void ExistingUserController::LoginAsPublicAccount(
@@ -793,24 +795,12 @@ void ExistingUserController::OnPasswordChangeDetected() {
   bool show_invalid_old_password_error =
       login_performer_->password_changed_callback_count() > 1;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNewPasswordChangedDialog)) {
-    // Passing 'false' here enables "full sync" mode in the dialog,
-    // which disables the requirement for the old owner password,
-    // allowing us to recover from a lost owner password/homedir.
-    // TODO(gspencer): We shouldn't have to erase stateful data when
-    // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
-    PasswordChangedView* view = new PasswordChangedView(
-        this,
-        false,  // Allow removal of existing cryptohome, perform full migration.
-        show_invalid_old_password_error);
-    views::Widget* window = views::Widget::CreateWindowWithParent(
-        view, GetNativeWindow());
-    window->SetAlwaysOnTop(true);
-    window->Show();
-  } else {
-    login_display_->ShowPasswordChangedDialog(show_invalid_old_password_error);
-  }
+  // Note: We allow owner using "full sync" mode which will recreate
+  // cryptohome and deal with owner private key being lost. This also allows
+  // us to recover from a lost owner password/homedir.
+  // TODO(gspencer): We shouldn't have to erase stateful data when
+  // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
+  login_display_->ShowPasswordChangedDialog(show_invalid_old_password_error);
 
   if (login_status_consumer_)
     login_status_consumer_->OnPasswordChangeDetected();
@@ -849,23 +839,6 @@ void ExistingUserController::OnOnlineChecked(const std::string& username,
     if (offline_failed_ && !is_login_in_progress_)
       ShowGaiaPasswordChanged(username);
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ExistingUserController, PasswordChangedView::Delegate implementation:
-//
-
-void ExistingUserController::RecoverEncryptedData(
-    const std::string& old_password) {
-  // LoginPerformer instance has state of the user so it should exist.
-  if (login_performer_.get())
-    login_performer_->RecoverEncryptedData(old_password);
-}
-
-void ExistingUserController::ResyncEncryptedData() {
-  // LoginPerformer instance has state of the user so it should exist.
-  if (login_performer_.get())
-    login_performer_->ResyncEncryptedData();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

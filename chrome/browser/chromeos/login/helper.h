@@ -19,19 +19,12 @@ class Rect;
 class Size;
 }  // namespace gfx
 
-namespace views {
-class Textfield;
-}  // namespace views
-
 namespace chromeos {
 
 // Returns bounds of the screen to use for login wizard.
 // The rect is centered within the default monitor and sized accordingly if
 // |size| is not empty. Otherwise the whole monitor is occupied.
 gfx::Rect CalculateScreenBounds(const gfx::Size& size);
-
-// Corrects font size for Textfield control.
-void CorrectTextfieldFontSize(views::Textfield* textfield);
 
 // Returns name of the currently connected network.
 // If there are no connected networks, returns name of the network

@@ -1005,13 +1005,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableNewOobe),
   },
   {
-      "disable-new-password-changed-dialog",
-      IDS_FLAGS_DISABLE_NEW_PASSWORD_CHANGED_DIALOG,
-      IDS_FLAGS_DISABLE_NEW_PASSWORD_CHANGED_DIALOG_DESCRIPTION,
-      kOsCrOS,
-      SINGLE_VALUE_TYPE(switches::kDisableNewPasswordChangedDialog),
-  },
-  {
     "disable-boot-animation",
     IDS_FLAGS_DISABLE_BOOT_ANIMATION,
     IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION,

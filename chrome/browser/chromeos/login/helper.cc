@@ -13,16 +13,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/controls/textfield/textfield.h"
 
 namespace chromeos {
-
-namespace {
-
-// Font size correction in pixels for login/oobe controls.
-const int kFontSizeCorrectionDelta = 2;
-
-}  // namespace
 
 gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
   gfx::Rect bounds(ash::Shell::GetScreen()->GetPrimaryDisplay().bounds());
@@ -32,11 +24,6 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
     bounds.Inset(horizontal_diff / 2, vertical_diff / 2);
   }
   return bounds;
-}
-
-void CorrectTextfieldFontSize(views::Textfield* textfield) {
-  if (textfield)
-    textfield->SetFont(textfield->font().DeriveFont(kFontSizeCorrectionDelta));
 }
 
 string16 GetCurrentNetworkName() {

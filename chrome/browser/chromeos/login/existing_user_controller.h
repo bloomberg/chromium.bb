@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -41,8 +40,7 @@ class LoginDisplayHost;
 class ExistingUserController : public LoginDisplay::Delegate,
                                public content::NotificationObserver,
                                public LoginPerformer::Delegate,
-                               public LoginUtils::Delegate,
-                               public PasswordChangedView::Delegate {
+                               public LoginUtils::Delegate {
  public:
   // All UI initialization is deferred till Init() call.
   explicit ExistingUserController(LoginDisplayHost* host);
@@ -127,10 +125,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // LoginUtils::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
-
-  // PasswordChangedView::Delegate:
-  virtual void RecoverEncryptedData(const std::string& old_password) OVERRIDE;
-  virtual void ResyncEncryptedData() OVERRIDE;
 
   // Starts WizardController with the specified screen.
   void ActivateWizard(const std::string& screen_name);
