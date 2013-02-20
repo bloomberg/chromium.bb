@@ -49,6 +49,17 @@ namespace path_parser {
 base::FilePath::StringType ExpandPathVariables(
     const base::FilePath::StringType& untranslated_string);
 
+// A helper function used to read the UserDataDir path policy without relying on
+// any policy infrastructure. This is required because this policy is needed
+// much earlier before the PrefService is initialized.
+// The function will fill |user_data_dir| if the policy "UserDataDir" is set and
+// leave it intact if the policy is missing. If the policy is set it should
+// override any manual changes to the profile path the user might have made so
+// this function should be used to verify no policy is specified whenever the
+// profile path is not read from the PathService which already takes this into
+// account.
+void CheckUserDataDirPolicy(base::FilePath* user_data_dir);
+
 }  // namespace path_parser
 
 }  // namespace policy
