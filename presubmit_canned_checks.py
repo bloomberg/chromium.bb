@@ -677,7 +677,7 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   env = input_api.environ.copy()
   import sys
   env['PYTHONPATH'] = input_api.os_path.pathsep.join(
-      extra_paths_list + sys.path)
+      extra_paths_list + sys.path).encode('utf8')
 
   def run_lint(files):
     # We can't import pylint directly due to licensing issues, so we run
