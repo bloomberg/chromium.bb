@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
 class InstantExtendedTest : public InstantTestBase {
@@ -409,4 +410,52 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ProcessIsolation) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
   EXPECT_FALSE(instant_service->IsInstantProcess(
       active_tab->GetRenderProcessHost()->GetID()));
+}
+
+// Verification of fix for BUG=176365.  Ensure that each Instant WebContents in
+// a tab uses a new BrowsingInstance, to avoid conflicts in the
+// NavigationController.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, UnrelatedSiteInstance) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant());
+  FocusOmniboxAndWaitForInstantSupport();
+
+  // Check that the uncommited ntp page and uncommited preview have unrelated
+  // site instances.
+  // TODO(sreeram): |ntp_| is going away, so this check can be removed in the
+  // future.
+  content::WebContents* preview = instant()->GetPreviewContents();
+  content::WebContents* ntp_contents = instant()->ntp_->contents();
+  EXPECT_FALSE(preview->GetSiteInstance()->IsRelatedSiteInstance(
+      ntp_contents->GetSiteInstance()));
+
+  // Type a query and hit enter to get a results page.  The preview becomes the
+  // active tab.
+  SetOmniboxTextAndWaitForInstantToShow("hello");
+  EXPECT_EQ("hello", GetOmniboxText());
+  browser()->window()->GetLocationBar()->AcceptInput();
+  content::WebContents* first_active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(first_active_tab, preview);
+  scoped_refptr<content::SiteInstance> first_site_instance =
+      first_active_tab->GetSiteInstance();
+  EXPECT_FALSE(first_site_instance->IsRelatedSiteInstance(
+      ntp_contents->GetSiteInstance()));
+
+  // Navigating elsewhere gets us off of the commited page.  The next
+  // query will give us a new |preview| which we will then commit.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
+
+  // Show and commit the new preview.
+  SetOmniboxTextAndWaitForInstantToShow("hello again");
+  EXPECT_EQ("hello again", GetOmniboxText());
+  browser()->window()->GetLocationBar()->AcceptInput();
+  content::WebContents* second_active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(first_active_tab, second_active_tab);
+  scoped_refptr<content::SiteInstance> second_site_instance =
+      second_active_tab->GetSiteInstance();
+  EXPECT_NE(first_site_instance, second_site_instance);
+  EXPECT_FALSE(first_site_instance->IsRelatedSiteInstance(
+      second_site_instance));
 }

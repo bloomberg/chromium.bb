@@ -46,14 +46,8 @@ void InstantLoader::Init(const GURL& instant_url,
                          const content::WebContents* active_tab,
                          const base::Closure& on_stale_callback) {
   content::WebContents::CreateParams create_params(profile);
-  if (active_tab) {
-    create_params.initial_size = active_tab->GetView()->GetContainerSize();
-    create_params.site_instance = active_tab->GetSiteInstance()->
-        GetRelatedSiteInstance(instant_url);
-  } else {
-    create_params.site_instance = content::SiteInstance::CreateForURL(
-        profile, instant_url);
-  }
+  create_params.site_instance = content::SiteInstance::CreateForURL(
+      profile, instant_url);
   SetContents(scoped_ptr<content::WebContents>(
       content::WebContents::Create(create_params)));
   instant_url_ = instant_url;

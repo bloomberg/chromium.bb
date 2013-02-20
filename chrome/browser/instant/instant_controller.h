@@ -193,6 +193,7 @@ class InstantController : public InstantPage::Delegate {
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInNewTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInSameTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
 
   // Overridden from InstantPage::Delegate:
   // TODO(shishir): We assume that the WebContent's current RenderViewHost is
