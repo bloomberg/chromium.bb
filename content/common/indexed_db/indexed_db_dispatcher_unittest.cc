@@ -12,36 +12,55 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 
+using WebKit::WebData;
+using WebKit::WebIDBCallbacks;
+using WebKit::WebIDBDatabaseError;
 using WebKit::WebVector;
-using WebKit::WebString;
 
 namespace content {
+namespace {
 
-// TODO(alecflett): Reenable this test when IDB code in webkit
-// enforces size limits. See http://crbug.com/160577
-TEST(IndexedDBDispatcherTest, DISABLED_ValueSizeTest) {
-  string16 data;
-  data.resize(kMaxIDBValueSizeInBytes / sizeof(char16) + 1, 'x');
-  const WebKit::WebData value;
+class MockCallbacks : public WebIDBCallbacks {
+ public:
+  MockCallbacks()
+      : error_seen_(false) {
+  }
+
+  virtual void onError(const WebIDBDatabaseError&) OVERRIDE {
+    error_seen_ = true;
+  }
+
+  bool error_seen() const { return error_seen_; }
+
+ private:
+  bool error_seen_;
+};
+
+}
+
+TEST(IndexedDBDispatcherTest, ValueSizeTest) {
+  const std::vector<char> data(kMaxIDBValueSizeInBytes + 1);
+  const WebData value(&data.front(), data.size());
   const int32 ipc_dummy_id = -1;
   const int64 transaction_id = 1;
   const int64 object_store_id = 2;
 
-  {
-    IndexedDBDispatcher dispatcher;
-    IndexedDBKey key;
-    key.SetNumber(0);
-    dispatcher.RequestIDBDatabasePut(
-        ipc_dummy_id,
-        transaction_id,
-        object_store_id,
-        value,
-        key,
-        WebKit::WebIDBDatabase::AddOrUpdate,
-        static_cast<WebKit::WebIDBCallbacks*>(NULL),
-        WebVector<long long>(),
-        WebVector<WebVector<WebKit::WebIDBKey> >());
-  }
+  MockCallbacks callbacks;
+  IndexedDBDispatcher dispatcher;
+  IndexedDBKey key;
+  key.SetNumber(0);
+  dispatcher.RequestIDBDatabasePut(
+      ipc_dummy_id,
+      transaction_id,
+      object_store_id,
+      value,
+      key,
+      WebKit::WebIDBDatabase::AddOrUpdate,
+      &callbacks,
+      WebVector<long long>(),
+      WebVector<WebVector<WebKit::WebIDBKey> >());
+
+  EXPECT_TRUE(callbacks.error_seen());
 }
 
 }  // namespace content

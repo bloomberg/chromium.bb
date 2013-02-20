@@ -4,10 +4,9 @@
 
 function test()
 {
-  indexedDBTest(prepareDatabase, function() {
-    setTimeout(testUnderLimit, 0);
-  });
+  indexedDBTest(prepareDatabase, testUnderLimit);
 }
+
 function prepareDatabase()
 {
   db = event.target.result;
@@ -31,6 +30,7 @@ var value;
 
 function testUnderLimit()
 {
+  debug("");
   debug('Creating test value under limit');
   var underLimit;
   setTimeout(
@@ -50,20 +50,26 @@ function testUnderLimit()
     request.onerror = unexpectedErrorCallback;
     request.onsuccess = function () {
       debug("store.add succeeded");
+      storeAddSucceeded = true;
+
       debug("store.put underLimit");
       request = store.put(underLimit, key++);
       request.onerror = unexpectedErrorCallback;
       request.onsuccess = function () {
         debug("store.put succeeded");
+        storePutSucceeded = true;
+
+        debug("cursor.update underLimit");
         request = store.openCursor();
         request.onerror = unexpectedErrorCallback;
         request.onsuccess = function () {
           var cursor = request.result;
-          debug("cursor.update underLimit");
           request = cursor.update(underLimit);
           request.onerror = unexpectedErrorCallback;
           request.onsuccess = function () {
             debug("cursor.update succeeded");
+            cursorUpdateSucceeded = true;
+
             transaction.abort();
           };
         };
@@ -71,12 +77,18 @@ function testUnderLimit()
     };
 
     transaction.oncomplete = unexpectedCompleteCallback;
-    transaction.onabort = testOverLimit;
+    transaction.onabort = function() {
+      shouldBeTrue("storeAddSucceeded");
+      shouldBeTrue("storePutSucceeded");
+      shouldBeTrue("cursorUpdateSucceeded");
+      testOverLimit();
+    };
   }
 }
 
 function testOverLimit()
 {
+  debug("");
   debug('Creating test value over limit');
   var overLimit;
   setTimeout(
@@ -89,50 +101,44 @@ function testOverLimit()
     var transaction = db.transaction("store", 'readwrite');
     var store = transaction.objectStore("store");
     var request;
-    try {
-      debug("store.add overLimit");
-      request = store.add(overLimit, key++);
-      request.onsuccess = unexpectedSuccessCallback;
-      fail('store.add - Expected exception, but none was raised');
-    } catch (e) {
-      debug('Exception (expected)');
-      ex = e;
-      shouldBe("ex.code", "0");
-      shouldBe("ex.name", "'DataError'");
-    }
 
-    try {
+    debug("store.add overLimit");
+    request = store.add(overLimit, key++);
+    request.onsuccess = unexpectedSuccessCallback;
+    request.onerror = function (e) {
+      debug("store.add failed: " + e.target.webkitErrorMessage);
+      storeAddFailed = true;
+      e.preventDefault();
+
       debug("store.put overLimit");
       request = store.put(overLimit, key++);
       request.onsuccess = unexpectedSuccessCallback;
-      fail('store.add - Expected exception, but none was raised');
-    } catch (e) {
-      debug('Exception (expected)');
-      ex = e;
-      shouldBe("ex.code", "0");
-      shouldBe("ex.name", "'DataError'");
-    }
+      request.onerror = function (e) {
+        debug("store.put failed: " + e.target.webkitErrorMessage);
+        storePutFailed = true;
+        e.preventDefault();
 
-    request = store.openCursor();
-    request.onerror = unexpectedErrorCallback;
-    request.onsuccess = function () {
-      var cursor = request.result;
-      try {
         debug("cursor.update overLimit");
-        request = cursor.update(overLimit);
-        request.onerror = unexpectedSuccessCallback;
-        fail('cursor.update - Expected exception, but none was raised');
-      } catch (e) {
-        debug('Exception (expected)');
-        ex = e;
-        shouldBe("ex.code", "0");
-        shouldBe("ex.name", "'DataError'");
-
-        transaction.abort();
-      }
+        request = store.openCursor();
+        request.onerror = unexpectedErrorCallback;
+        request.onsuccess = function () {
+          var cursor = request.result;
+          request = cursor.update(overLimit);
+          request.onsuccess = unexpectedSuccessCallback;
+          request.onerror = function (e) {
+            debug("cursor.update failed: " + e.target.webkitErrorMessage);
+            cursorUpdateFailed = true;
+          };
+        };
+      };
     };
 
     transaction.oncomplete = unexpectedCompleteCallback;
-    transaction.onabort = function() { done(); };
+    transaction.onabort = function() {
+      shouldBeTrue("storeAddFailed");
+      shouldBeTrue("storePutFailed");
+      shouldBeTrue("cursorUpdateFailed");
+      done();
+    };
   }
 }

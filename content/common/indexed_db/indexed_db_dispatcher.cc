@@ -4,7 +4,9 @@
 
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 
+#include "base/format_macros.h"
 #include "base/lazy_instance.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread_local.h"
 #include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
@@ -29,6 +31,7 @@ using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBMetadata;
 using WebKit::WebSerializedScriptValue;
+using WebKit::WebString;
 using WebKit::WebVector;
 using base::ThreadLocalPointer;
 using webkit_glue::WorkerTaskRunner;
@@ -399,6 +402,18 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
     const WebVector<long long>& index_ids,
     const WebVector<WebKit::WebVector<
       WebIDBKey> >& index_keys) {
+
+  if (value.size() > kMaxIDBValueSizeInBytes) {
+    callbacks->onError(WebIDBDatabaseError(
+        WebKit::WebIDBDatabaseExceptionUnknownError,
+        WebString::fromUTF8(
+            base::StringPrintf(
+                "The serialized value is too large"
+                " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",
+                value.size(), kMaxIDBValueSizeInBytes).c_str())));
+    return;
+  }
+
   ResetCursorPrefetchCaches();
   IndexedDBHostMsg_DatabasePut_Params params;
   init_params(params, callbacks);
