@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_APP_ICON_LOADER_H_
-#define CHROME_BROWSER_UI_ASH_APP_ICON_LOADER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_APP_ICON_LOADER_H_
+#define CHROME_BROWSER_EXTENSIONS_APP_ICON_LOADER_H_
 
 #include <string>
 
-#include "base/compiler_specific.h"
+#include "base/basictypes.h"
 
 namespace gfx {
 class ImageSkia;
 }
 
-namespace ash {
+namespace extensions {
 
 // Interface used to load app icons. This is in its own class so that it can
 // be mocked.
@@ -47,6 +47,6 @@ class AppIconLoader {
   DISALLOW_COPY_AND_ASSIGN(AppIconLoader);
 };
 
-}  // namespace ash
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_UI_ASH_APP_ICON_LOADER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_APP_ICON_LOADER_H_

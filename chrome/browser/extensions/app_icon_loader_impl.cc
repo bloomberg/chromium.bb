@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/app_icon_loader_impl.h"
+#include "chrome/browser/extensions/app_icon_loader_impl.h"
 
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -26,7 +26,7 @@ const extensions::Extension* GetExtensionByID(Profile* profile,
 
 }  // namespace
 
-namespace ash {
+namespace extensions {
 
 AppIconLoaderImpl::AppIconLoaderImpl(
     Profile* profile,
@@ -114,4 +114,4 @@ void AppIconLoaderImpl::BuildImage(const std::string& id,
   delegate_->SetAppImage(id, image);
 }
 
-}  // namespace ash
+}  // namespace extensions

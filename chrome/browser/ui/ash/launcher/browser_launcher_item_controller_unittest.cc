@@ -80,7 +80,7 @@ class AppTabHelperImpl : public ChromeLauncherController::AppTabHelper {
 };
 
 // Test implementation of AppIconLoader.
-class AppIconLoaderImpl : public ash::AppIconLoader {
+class AppIconLoaderImpl : public extensions::AppIconLoader {
  public:
   AppIconLoaderImpl() : fetch_count_(0) {}
   virtual ~AppIconLoaderImpl() {}

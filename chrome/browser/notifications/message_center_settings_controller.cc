@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -49,6 +50,8 @@ void MessageCenterSettingsController::GetNotifierList(
 
   ExtensionService* extension_service = profile->GetExtensionService();
   const ExtensionSet* extension_set = extension_service->extensions();
+  app_icon_loader_.reset(new extensions::AppIconLoaderImpl(
+      profile, message_center::kSettingsIconSize, this));
   for (ExtensionSet::const_iterator iter = extension_set->begin();
        iter != extension_set->end(); ++iter) {
     const extensions::Extension* extension = *iter;
@@ -63,7 +66,7 @@ void MessageCenterSettingsController::GetNotifierList(
         extension->id(),
         UTF8ToUTF16(extension->name()),
         notification_service->IsExtensionEnabled(extension->id())));
-    // TODO(mukai): add icon loader here.
+    app_icon_loader_->FetchImage(extension->id());
   }
 
   ContentSettingsForOneType settings;
@@ -152,4 +155,12 @@ void MessageCenterSettingsController::OnFaviconLoaded(
   if (!settings_view_)
     return;
   settings_view_->UpdateFavicon(url, favicon_result.image.AsImageSkia());
+}
+
+
+void MessageCenterSettingsController::SetAppImage(const std::string& id,
+                                                  const gfx::ImageSkia& image) {
+  if (!settings_view_)
+    return;
+  settings_view_->UpdateIconImage(id, image);
 }

@@ -2,22 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_APP_ICON_LOADER_IMPL_H_
-#define CHROME_BROWSER_UI_ASH_APP_ICON_LOADER_IMPL_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_APP_ICON_LOADER_IMPL_H_
+#define CHROME_BROWSER_EXTENSIONS_APP_ICON_LOADER_IMPL_H_
 
 #include <map>
 #include <string>
 
+#include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
-#include "chrome/browser/ui/ash/app_icon_loader.h"
 
 class Profile;
 
 namespace extensions {
 class Extension;
-}
-
-namespace ash {
 
 // Default implementation of ash::AppIconLoader that interacts with the
 // ExtensionService and ImageLoader to load images.
@@ -56,6 +53,6 @@ class AppIconLoaderImpl : public AppIconLoader,
   DISALLOW_COPY_AND_ASSIGN(AppIconLoaderImpl);
 };
 
-}  // namespace ash
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_UI_ASH_APP_ICON_LOADER_IMPL_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_APP_ICON_LOADER_IMPL_H_

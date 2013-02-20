@@ -11,8 +11,8 @@
 #include "ash/launcher/launcher_types.h"
 #include "ash/shelf_types.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/ui/ash/app_icon_loader.h"
 
 class BrowserLauncherItemControllerTest;
 class LauncherItemController;
@@ -48,7 +48,7 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 // * Shortcuts have no LauncherItemController.
 class ChromeLauncherController
     : public ash::LauncherDelegate,
-      public ash::AppIconLoader::Delegate {
+      public extensions::AppIconLoader::Delegate {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -269,7 +269,7 @@ class ChromeLauncherController
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE = 0;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE = 0;
 
-  // ash::AppIconLoader overrides:
+  // extensions::AppIconLoader overrides:
   virtual void SetAppImage(const std::string& app_id,
                            const gfx::ImageSkia& image) OVERRIDE = 0;
 
@@ -290,7 +290,7 @@ class ChromeLauncherController
   // Sets the AppTabHelper/AppIconLoader, taking ownership of the helper class.
   // These are intended for testing.
   virtual void SetAppTabHelperForTest(AppTabHelper* helper) = 0;
-  virtual void SetAppIconLoaderForTest(ash::AppIconLoader* loader) = 0;
+  virtual void SetAppIconLoaderForTest(extensions::AppIconLoader* loader) = 0;
   virtual const std::string& GetAppIdFromLauncherIdForTest(
       ash::LauncherID id) = 0;
 
