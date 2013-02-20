@@ -162,6 +162,10 @@ def main(argv):
                     help='Binary to use for stripping the native libraries.')
   parser.add_option('--ant-args', action='append',
                     help='extra args for ant')
+  parser.add_option('--stamp-file',
+                    help='Path to file to touch on success.')
+  parser.add_option('--no-compile', action='store_true',
+                    help='Use this flag to disable ant compilation.')
 
   options, _ = parser.parse_args(argv)
 
@@ -179,22 +183,19 @@ def main(argv):
     if not options.strip_binary:
       raise Exception('No tool for stripping the libraries has been supplied')
 
-  # Remove all quotes from the jars string and pass the list to ant as
-  # INPUT_JARS_PATHS.
-  # TODO(cjhopman): Remove this when all targets pass the list of jars as an
-  # ant-arg directly.
-  jar_list = []
-  if options.jars:
-    jar_list = options.jars.replace('"', '').split()
-    options.ant_args.append('-DINPUT_JARS_PATHS=' + " ".join(jar_list))
-
-
   ntag = NativeTestApkGenerator(native_library=options.native_library,
                                 strip_binary=options.strip_binary,
                                 output_directory=options.output,
                                 target_abi=options.app_abi)
+
   ntag.CreateBundle()
-  ntag.Compile(options.ant_args)
+  if not options.no_compile:
+    ntag.Compile(options.ant_args)
+
+  if options.stamp_file:
+    with file(options.stamp_file, 'a'):
+      os.utime(options.stamp_file, None)
+
   logging.info('COMPLETE.')
 
 if __name__ == '__main__':
