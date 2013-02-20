@@ -576,6 +576,7 @@
     { "name": "mega.co.nz", "mode": "force-https" },
     { "name": "api.mega.co.nz", "include_subdomains": true, "mode": "force-https" },
     { "name": "lockify.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "writeapp.me", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
