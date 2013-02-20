@@ -4583,6 +4583,7 @@ void RenderViewImpl::EvaluateScript(const string16& frame_xpath,
                                     const string16& jscript,
                                     int id,
                                     bool notify_result) {
+  v8::HandleScope handle_scope;
   v8::Handle<v8::Value> result;
   WebFrame* web_frame = GetChildFrame(frame_xpath);
   if (web_frame)
@@ -4590,7 +4591,6 @@ void RenderViewImpl::EvaluateScript(const string16& frame_xpath,
   if (notify_result) {
     base::ListValue list;
     if (!result.IsEmpty() && web_frame) {
-      v8::HandleScope handle_scope;
       v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
       v8::Context::Scope context_scope(context);
       V8ValueConverterImpl converter;
