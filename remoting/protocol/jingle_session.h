@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -91,13 +92,21 @@ class JingleSession : public Session,
 
   // Sends |message| to the peer. The session is closed if the send fails or no
   // response is received within a reasonable time. All other responses are
-  // ignored. No timeout is set if |timeout| is zero.
-  void SendMessage(const JingleMessage& message, base::TimeDelta timeout);
+  // ignored.
+  void SendMessage(const JingleMessage& message);
 
+  // Iq response handler.
   void OnMessageResponse(JingleMessage::ActionType request_type,
                          IqRequest* request,
                          const buzz::XmlElement* response);
-  void CleanupPendingRequests(IqRequest* request);
+
+  // Sends transport-info message with candidates from |pending_candidates_|.
+  void SendTransportInfo();
+
+  // Response handler for transport-info responses. Transport-info timeouts are
+  // ignored and don't terminate connection.
+  void OnTransportInfoResponse(IqRequest* request,
+                               const buzz::XmlElement* response);
 
   // Called by JingleSessionManager on incoming |message|. Must call
   // |reply_callback| to send reply message before sending any other
@@ -118,8 +127,6 @@ class JingleSession : public Session,
   bool InitializeConfigFromDescription(const ContentDescription* description);
 
   void ProcessAuthenticationStep();
-
-  void SendTransportInfo();
 
   // Terminates the session and sends session-terminate if it is
   // necessary. |error| specifies the error code in case when the
@@ -142,6 +149,12 @@ class JingleSession : public Session,
   bool config_is_set_;
 
   scoped_ptr<Authenticator> authenticator_;
+
+  // Pending Iq requests. Used for all messages except transport-info.
+  std::set<IqRequest*> pending_requests_;
+
+  // Pending transport-info requests.
+  std::list<IqRequest*> transport_info_requests_;
 
   ChannelsMap channels_;
   scoped_ptr<ChannelMultiplexer> channel_multiplexer_;

@@ -38,6 +38,9 @@ const int kTransportInfoSendDelayMs = 2;
 // for all requests except |transport-info|.
 const int kDefaultMessageTimeout = 10;
 
+// Timeout for the transport-info messages.
+const int kTransportInfoTimeout = 10 * 60;
+
 // Name of the multiplexed channel.
 const char kMuxChannelName[] = "mux";
 
@@ -65,6 +68,10 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 
 JingleSession::~JingleSession() {
   channel_multiplexer_.reset();
+  STLDeleteContainerPointers(pending_requests_.begin(),
+                             pending_requests_.end());
+  STLDeleteContainerPointers(transport_info_requests_.begin(),
+                             transport_info_requests_.end());
   STLDeleteContainerPairSecondPointers(channels_.begin(), channels_.end());
   session_manager_->SessionDestroyed(this);
 }
@@ -105,7 +112,7 @@ void JingleSession::StartConnection(
   message.description.reset(
       new ContentDescription(candidate_config_->Clone(),
                              authenticator_->GetNextMessage()));
-  SendMessage(message, base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
+  SendMessage(message);
 
   SetState(CONNECTING);
 }
@@ -158,7 +165,7 @@ void JingleSession::AcceptIncomingConnection(
   message.description.reset(
       new ContentDescription(CandidateSessionConfig::CreateFrom(config_),
                              auth_message.Pass()));
-  SendMessage(message, base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
+  SendMessage(message);
 
   // Update state.
   SetState(CONNECTED);
@@ -279,15 +286,14 @@ void JingleSession::OnTransportDeleted(Transport* transport) {
   channels_.erase(it);
 }
 
-void JingleSession::SendMessage(const JingleMessage& message,
-                                base::TimeDelta timeout) {
+void JingleSession::SendMessage(const JingleMessage& message) {
   scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
       message.ToXml(),
       base::Bind(&JingleSession::OnMessageResponse,
                  base::Unretained(this), message.action));
-  if (request.get()) {
-    if (timeout > base::TimeDelta())
-      request->SetTimeout(timeout);
+  if (request) {
+    request->SetTimeout(base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
+    pending_requests_.insert(request.release());
   } else {
     LOG(ERROR) << "Failed to send a "
                << JingleMessage::GetActionName(message.action) << " message";
@@ -300,10 +306,15 @@ void JingleSession::OnMessageResponse(
     const buzz::XmlElement* response) {
   std::string type_str = JingleMessage::GetActionName(request_type);
 
+  // Delete the request from the list of pending requests.
+  pending_requests_.erase(request);
+  delete request;
+
   // |response| will be NULL if the request timed out.
   if (!response) {
     LOG(ERROR) << type_str << " request timed out.";
     CloseInternal(SIGNALING_TIMEOUT);
+    return;
   } else {
     const std::string& type = response->Attr(buzz::QName("", "type"));
     if (type != "result") {
@@ -324,6 +335,52 @@ void JingleSession::OnMessageResponse(
           CloseInternal(PEER_IS_OFFLINE);
       }
     }
+  }
+}
+
+void JingleSession::SendTransportInfo() {
+  JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
+  message.candidates.swap(pending_candidates_);
+
+  scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
+      message.ToXml(),
+      base::Bind(&JingleSession::OnTransportInfoResponse,
+                 base::Unretained(this)));
+  if (request) {
+    request->SetTimeout(base::TimeDelta::FromSeconds(kTransportInfoTimeout));
+    transport_info_requests_.push_back(request.release());
+  } else {
+    LOG(ERROR) << "Failed to send a transport-info message";
+  }
+}
+
+void JingleSession::OnTransportInfoResponse(IqRequest* request,
+                                            const buzz::XmlElement* response) {
+  DCHECK(!transport_info_requests_.empty());
+
+  // Consider transport-info requests sent before this one lost and delete
+  // corresponding IqRequest objects.
+  while (transport_info_requests_.front() != request) {
+    delete transport_info_requests_.front();
+    transport_info_requests_.pop_front();
+  }
+
+  // Delete the |request| itself.
+  DCHECK_EQ(request, transport_info_requests_.front());
+  delete request;
+  transport_info_requests_.pop_front();
+
+  // Ignore transport-info timeouts.
+  if (!response) {
+    LOG(ERROR) << "transport-info request has timed out.";
+    return;
+  }
+
+  const std::string& type = response->Attr(buzz::QName("", "type"));
+  if (type != "result") {
+    LOG(ERROR) << "Received error in response to transport-info message: \""
+               << response->Str() << "\". Terminating the session.";
+    CloseInternal(PEER_IS_OFFLINE);
   }
 }
 
@@ -499,7 +556,7 @@ void JingleSession::ProcessAuthenticationStep() {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_INFO, session_id_);
     message.info = authenticator_->GetNextMessage();
     DCHECK(message.info.get());
-    SendMessage(message, base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
+    SendMessage(message);
   }
   DCHECK_NE(authenticator_->state(), Authenticator::MESSAGE_READY);
 
@@ -509,12 +566,6 @@ void JingleSession::ProcessAuthenticationStep() {
     CloseInternal(AuthRejectionReasonToErrorCode(
         authenticator_->rejection_reason()));
   }
-}
-
-void JingleSession::SendTransportInfo() {
-  JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
-  message.candidates.swap(pending_candidates_);
-  SendMessage(message, base::TimeDelta());
 }
 
 void JingleSession::CloseInternal(ErrorCode error) {
@@ -544,7 +595,7 @@ void JingleSession::CloseInternal(ErrorCode error) {
     JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
                           session_id_);
     message.reason = reason;
-    SendMessage(message, base::TimeDelta::FromSeconds(kDefaultMessageTimeout));
+    SendMessage(message);
   }
 
   error_ = error;
