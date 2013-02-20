@@ -104,6 +104,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Tells the View whether the context menu is showing.
   virtual void SetShowingContextMenu(bool showing) = 0;
 
+  // Returns the currently selected text.
+  virtual string16 GetSelectedText() const = 0;
+
 #if defined(OS_MACOSX)
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;

@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
@@ -91,14 +92,17 @@ void ActionBoxButtonController::ExecuteCommand(int command_id) {
   if (it != extension_command_ids_.end()) {
     WebContents* web_contents =
         browser_->tab_strip_model()->GetActiveWebContents();
-    // TODO(rfevang): Send page title and selected text.
+
+    std::string page_title = UTF16ToUTF8(web_contents->GetTitle());
+    std::string selected_text =
+        UTF16ToUTF8(web_contents->GetRenderWidgetHostView()->GetSelectedText());
     extensions::PageLauncherAPI::DispatchOnClickedEvent(
         browser_->profile(),
         it->second,
         web_contents->GetURL(),
         web_contents->GetContentsMimeType(),
-        NULL,
-        NULL);
+        page_title.empty() ? NULL : &page_title,
+        selected_text.empty() ? NULL : &selected_text);
     return;
   }
 

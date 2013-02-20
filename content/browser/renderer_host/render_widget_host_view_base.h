@@ -52,6 +52,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual const SkBitmap& GetBackground() OVERRIDE;
   virtual bool IsShowingContextMenu() const OVERRIDE;
   virtual void SetShowingContextMenu(bool showing_menu) OVERRIDE;
+  virtual string16 GetSelectedText() const OVERRIDE;
   virtual bool IsMouseLocked() OVERRIDE;
   virtual void UnhandledWheelEvent(
       const WebKit::WebMouseWheelEvent& event) OVERRIDE;

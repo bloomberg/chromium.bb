@@ -379,6 +379,14 @@ void RenderWidgetHostViewBase::SetShowingContextMenu(bool showing) {
   showing_context_menu_ = showing;
 }
 
+string16 RenderWidgetHostViewBase::GetSelectedText() const {
+  if (!selection_range_.IsValid())
+    return string16();
+  return selection_text_.substr(
+      selection_range_.GetMin() - selection_text_offset_,
+      selection_range_.length());
+}
+
 bool RenderWidgetHostViewBase::IsMouseLocked() {
   return mouse_locked_;
 }
