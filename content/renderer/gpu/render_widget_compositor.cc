@@ -139,6 +139,9 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.canUseLCDText = false;
   settings.maxPartialTextureUpdates = 0;
   settings.useLinearFadeScrollbarAnimator = true;
+  settings.solidColorScrollbars = true;
+  settings.solidColorScrollbarColor = SkColorSetARGB(128, 128, 128, 128);
+  settings.solidColorScrollbarThicknessDIP = 3;
 #endif
 
   if (!comp->initialize(settings))

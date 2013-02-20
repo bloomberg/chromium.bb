@@ -5,8 +5,10 @@
 #include "cc/scrollbar_layer_impl.h"
 
 #include "cc/layer_tree_impl.h"
+#include "cc/layer_tree_settings.h"
 #include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
+#include "cc/solid_color_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -150,6 +152,21 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
     m_geometry->splitTrack(&m_scrollbar, m_geometry->trackRect(&m_scrollbar), backTrackRect, thumbRect, foreTrackRect);
     if (!m_geometry->hasThumb(&m_scrollbar))
         thumbRect = WebRect();
+
+    if (layerTreeImpl()->settings().solidColorScrollbars) {
+        int thicknessOverride = layerTreeImpl()->settings().solidColorScrollbarThicknessDIP;
+        if (thicknessOverride != -1) {
+            if (m_scrollbar.orientation() == WebScrollbar::Vertical)
+                thumbRect.width = thicknessOverride;
+            else
+                thumbRect.height = thicknessOverride;
+        }
+        gfx::Rect quadRect(scrollbarLayerRectToContentRect(thumbRect));
+        scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
+        quad->SetNew(sharedQuadState, quadRect, layerTreeImpl()->settings().solidColorScrollbarColor);
+        quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+        return;
+    }
 
     if (m_thumbResourceId && !thumbRect.isEmpty()) {
         gfx::Rect quadRect(scrollbarLayerRectToContentRect(thumbRect));

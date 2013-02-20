@@ -4,17 +4,26 @@
 
 #include "cc/scrollbar_layer.h"
 
+#include "cc/append_quads_data.h"
+#include "cc/prioritized_resource_manager.h"
+#include "cc/priority_calculator.h"
+#include "cc/resource_update_queue.h"
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/scrollbar_layer_impl.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/solid_color_draw_quad.h"
 #include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_scrollbar_theme_painter.h"
 #include "cc/test/fake_web_scrollbar.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
+#include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
+#include "cc/test/mock_quad_culler.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/tree_synchronizer.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
@@ -138,6 +147,48 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     EXPECT_EQ(300, ccScrollbarLayer->maximum());
 }
 
+TEST(ScrollbarLayerTest, solidColorThicknessOverride)
+{
+    LayerTreeSettings layerTreeSettings;
+    layerTreeSettings.solidColorScrollbars = true;
+    layerTreeSettings.solidColorScrollbarThicknessDIP = 3;
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(layerTreeSettings, &proxy);
+
+    scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
+    static_cast<FakeWebScrollbar*>(scrollbar.get())->setOverlay(true);
+    scoped_ptr<LayerImpl> layerImplTreeRoot = layerImplForScrollAreaAndScrollbar(&hostImpl, scrollbar.Pass(), false);
+    ScrollbarLayerImpl* scrollbarLayerImpl = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
+    scrollbarLayerImpl->setThumbSize(gfx::Size(4, 4));
+
+    // Thickness should be overridden to 3.
+    {
+        MockQuadCuller quadCuller;
+        AppendQuadsData data;
+        scrollbarLayerImpl->appendQuads(quadCuller, data);
+
+        const QuadList& quads = quadCuller.quadList();
+        ASSERT_EQ(1, quads.size());
+        EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
+        EXPECT_RECT_EQ(gfx::Rect(1, 0, 4, 3), quads[0]->rect);
+    }
+
+    // Contents scale should scale the draw quad.
+    scrollbarLayerImpl->drawProperties().contents_scale_x = 2;
+    scrollbarLayerImpl->drawProperties().contents_scale_y = 2;
+    {
+        MockQuadCuller quadCuller;
+        AppendQuadsData data;
+        scrollbarLayerImpl->appendQuads(quadCuller, data);
+
+        const QuadList& quads = quadCuller.quadList();
+        ASSERT_EQ(1, quads.size());
+        EXPECT_EQ(DrawQuad::SOLID_COLOR, quads[0]->material);
+        EXPECT_RECT_EQ(gfx::Rect(2, 0, 8, 6), quads[0]->rect);
+    }
+
+}
+
 class ScrollbarLayerTestMaxTextureSize : public ThreadedTest {
 public:
     ScrollbarLayerTestMaxTextureSize() {}
@@ -192,6 +243,84 @@ TEST_F(ScrollbarLayerTestMaxTextureSize, runTest) {
     context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
     setScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
     runTest(true);
+}
+
+class MockLayerTreeHost : public LayerTreeHost {
+public:
+    MockLayerTreeHost(const LayerTreeSettings& settings)
+        : LayerTreeHost(&m_fakeClient, settings)
+    {
+        initialize(scoped_ptr<Thread>(NULL));
+    }
+
+private:
+    FakeLayerImplTreeHostClient m_fakeClient;
+};
+
+
+class ScrollbarLayerTestResourceCreation : public testing::Test {
+public:
+    ScrollbarLayerTestResourceCreation()
+    {
+    }
+
+    void testResourceUpload(int expectedResources)
+    {
+        m_layerTreeHost.reset(new MockLayerTreeHost(m_layerTreeSettings));
+
+        scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
+        scoped_refptr<Layer> layerTreeRoot = Layer::create();
+        scoped_refptr<Layer> contentLayer = Layer::create();
+        scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(true), layerTreeRoot->id());
+        layerTreeRoot->addChild(contentLayer);
+        layerTreeRoot->addChild(scrollbarLayer);
+
+        m_layerTreeHost->initializeRendererIfNeeded();
+        m_layerTreeHost->contentsTextureManager()->setMaxMemoryLimitBytes(1024 * 1024);
+        m_layerTreeHost->setRootLayer(layerTreeRoot);
+
+        scrollbarLayer->setIsDrawable(true);
+        scrollbarLayer->setBounds(gfx::Size(100, 100));
+        layerTreeRoot->setScrollOffset(gfx::Vector2d(10, 20));
+        layerTreeRoot->setMaxScrollOffset(gfx::Vector2d(30, 50));
+        layerTreeRoot->setBounds(gfx::Size(100, 200));
+        contentLayer->setBounds(gfx::Size(100, 200));
+        scrollbarLayer->drawProperties().content_bounds = gfx::Size(100, 200);
+        scrollbarLayer->drawProperties().visible_content_rect = gfx::Rect(0, 0, 100, 200);
+        scrollbarLayer->createRenderSurface();
+        scrollbarLayer->drawProperties().render_target = scrollbarLayer;
+
+        testing::Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
+        EXPECT_EQ(scrollbarLayer->layerTreeHost(), m_layerTreeHost.get());
+
+        PriorityCalculator calculator;
+        ResourceUpdateQueue queue;
+        OcclusionTracker occlusionTracker(gfx::Rect(), false);
+
+        scrollbarLayer->setTexturePriorities(calculator);
+        m_layerTreeHost->contentsTextureManager()->prioritizeTextures();
+        scrollbarLayer->update(queue, &occlusionTracker, NULL);
+        EXPECT_EQ(0, queue.fullUploadSize());
+        EXPECT_EQ(expectedResources, queue.partialUploadSize());
+
+        testing::Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
+    }
+
+protected:
+    scoped_ptr<MockLayerTreeHost> m_layerTreeHost;
+    LayerTreeSettings m_layerTreeSettings;
+};
+
+TEST_F(ScrollbarLayerTestResourceCreation, resourceUpload)
+{
+    m_layerTreeSettings.solidColorScrollbars = false;
+    testResourceUpload(2);
+}
+
+TEST_F(ScrollbarLayerTestResourceCreation, solidColorNoResourceUpload)
+{
+    m_layerTreeSettings.solidColorScrollbars = true;
+    testResourceUpload(0);
 }
 
 }  // namespace

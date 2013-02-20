@@ -70,6 +70,9 @@ int ScrollbarLayer::maxTextureSize() {
 }
 
 float ScrollbarLayer::clampScaleToMaxTextureSize(float scale) {
+    if (layerTreeHost()->settings().solidColorScrollbars)
+        return scale;
+
     // If the scaled contentBounds() is bigger than the max texture size of the
     // device, we need to clamp it by rescaling, since contentBounds() is used
     // below to set the texture size.
@@ -229,6 +232,9 @@ void ScrollbarLayer::setLayerTreeHost(LayerTreeHost* host)
 
 void ScrollbarLayer::createUpdaterIfNeeded()
 {
+    if (layerTreeHost()->settings().solidColorScrollbars)
+        return;
+
     m_textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
 
     if (!m_backTrackUpdater)
@@ -252,6 +258,9 @@ void ScrollbarLayer::createUpdaterIfNeeded()
 
 void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, LayerUpdater::Resource* resource, const gfx::Rect& rect, ResourceUpdateQueue& queue, RenderingStats* stats)
 {
+    if (layerTreeHost()->settings().solidColorScrollbars)
+        return;
+
     // Skip painting and uploading if there are no invalidations and
     // we already have valid texture data.
     if (resource->texture()->haveBackingTexture() &&
@@ -290,6 +299,9 @@ gfx::Rect ScrollbarLayer::scrollbarLayerRectToContentRect(const gfx::Rect& layer
 
 void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
 {
+    if (layerTreeHost()->settings().solidColorScrollbars)
+        return;
+
     if (contentBounds().IsEmpty())
         return;
     DCHECK_LE(contentBounds().width(), maxTextureSize());
