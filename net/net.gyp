@@ -15,9 +15,12 @@
       }, {  # chromeos == 0
         'use_kerberos%': 1,
       }],
-      ['OS=="android"', {
+      ['OS=="android" and target_arch != "ia32"', {
         # The way the cache uses mmap() is inefficient on some Android devices.
         # If this flag is set, we hackily avoid using mmap() in the disk cache.
+        # We are pretty confident that mmap-ing the index would not hurt any
+        # existing x86 android devices, but we cannot be so sure about the
+        # variety of ARM devices. So enable it for x86 only for now.
         'posix_avoid_mmap%': 1,
       }, {
         'posix_avoid_mmap%': 0,
