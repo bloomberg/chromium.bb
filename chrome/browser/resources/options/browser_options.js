@@ -163,6 +163,9 @@ cr.define('options', function() {
         // We don't want to see the confirm dialog for instant extended.
         $('instant-enabled-control').removeAttribute('dialog-pref');
         $('instant-enabled-indicator').removeAttribute('dialog-pref');
+        // And we want to upload a different metric name.
+        $('instant-enabled-control').setAttribute(
+            'metric', 'Options_InstantExtendedEnabled');
       }
 
       // Users section.
