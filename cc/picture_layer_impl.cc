@@ -435,6 +435,8 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
 void PictureLayerImpl::SyncTiling(
     const PictureLayerTiling* tiling,
     const Region& pending_layer_invalidation) {
+  if (!drawsContent())
+    return;
   tilings_->Clone(tiling, pending_layer_invalidation);
 }
 
