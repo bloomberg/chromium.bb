@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 
 class SkBitmap;
@@ -128,6 +129,8 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnGoToOffset(int offset);
   void OnReload();
   void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);
+  void OnSetClientWindowRect(const gfx::Rect& rect);
+  void OnSetFocus(bool focus);
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);

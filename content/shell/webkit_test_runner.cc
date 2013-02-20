@@ -48,6 +48,7 @@
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestInterfaces.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h"
+#include "ui/gfx/rect.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
@@ -264,8 +265,8 @@ std::string WebKitTestRunner::makeURLErrorDescription(
 }
 
 void WebKitTestRunner::setClientWindowRect(const WebRect& rect) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setClientWindowRect"));
+  Send(new ShellViewHostMsg_SetClientWindowRect(
+      routing_id(), gfx::Rect(rect)));
 }
 
 void WebKitTestRunner::showDevTools() {
@@ -297,8 +298,7 @@ void WebKitTestRunner::setDeviceScaleFactor(float factor) {
 }
 
 void WebKitTestRunner::setFocus(bool focus) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setFocus"));
+  Send(new ShellViewHostMsg_SetFocus(routing_id(), focus));
 }
 
 void WebKitTestRunner::setAcceptAllCookies(bool accept) {

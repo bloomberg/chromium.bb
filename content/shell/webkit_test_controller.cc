@@ -30,6 +30,7 @@ namespace content {
 
 namespace {
 const int kTestTimeoutMilliseconds = 30 * 1000;
+const int kVirtualWindowBorder = 3;
 }  // namespace
 
 // WebKitTestResultPrinter ----------------------------------------------------
@@ -284,6 +285,9 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_GoToOffset, OnGoToOffset)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_LoadURLForFrame, OnLoadURLForFrame)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetClientWindowRect,
+                        OnSetClientWindowRect)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_NotImplemented, OnNotImplemented)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -456,6 +460,21 @@ void WebKitTestController::OnReload() {
 void WebKitTestController::OnLoadURLForFrame(const GURL& url,
                                              const std::string& frame_name) {
   main_window_->LoadURLForFrame(url, frame_name);
+}
+
+void WebKitTestController::OnSetClientWindowRect(const gfx::Rect& rect) {
+#if (defined(OS_WIN) && !defined(USE_AURA)) || defined(TOOLKIT_GTK)
+  main_window_->SizeTo(rect.width() - 2 * kVirtualWindowBorder,
+                       rect.height() - 2 * kVirtualWindowBorder);
+  main_window_->web_contents()->GetRenderViewHost()->WasResized();
+#endif
+}
+
+void WebKitTestController::OnSetFocus(bool focus) {
+  if (focus)
+    main_window_->web_contents()->GetRenderViewHost()->Focus();
+  else
+    main_window_->web_contents()->GetRenderViewHost()->Blur();
 }
 
 void WebKitTestController::OnNotImplemented(
