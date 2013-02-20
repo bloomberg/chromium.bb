@@ -41,14 +41,18 @@ cr.define('bmm', function() {
     var p = new Promise;
     if (!(id in loadingPromises)) {
       loadingPromises[id] = new Promise;
+      loadingPromises[id].addListener(function(n) {
+        p.value = n;
+      });
       chrome.bookmarkManagerPrivate.getSubtree(id, false, function(nodes) {
         loadingPromises[id].value = nodes && nodes[0];
         delete loadingPromises[id];
       });
+    } else {
+      loadingPromises[id].addListener(function(n) {
+        p.value = n;
+      });
     }
-    loadingPromises[id].addListener(function(n) {
-      p.value = n;
-    });
     return p;
   }
 
