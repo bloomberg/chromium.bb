@@ -91,6 +91,20 @@ abstract class InsertionHandleController implements CursorController {
         setHandlePosition((int)point.x, (int)point.y);
     }
 
+    /**
+     * If the handle is not visible, sets its visibility to View.VISIBLE and begins fading it in.
+     */
+    void beginHandleFadeIn() {
+        mHandle.beginFadeIn();
+    }
+
+    /**
+     * Sets the handle to the given visibility.
+     */
+    void setHandleVisibility(int visibility) {
+        mHandle.setVisibility(visibility);
+    }
+
     int getHandleX() {
         return mHandle.getAdjustedPositionX();
     }
@@ -162,6 +176,7 @@ abstract class InsertionHandleController implements CursorController {
         if (!mIsShowing) {
             mIsShowing = true;
             mHandle.show();
+            setHandleVisibility(HandleView.VISIBLE);
         }
     }
 

@@ -28,6 +28,8 @@ import android.widget.TextView;
  * View that displays a selection or insertion handle for text editing.
  */
 class HandleView extends View {
+    private static final float FADE_DURATION = 200.f;
+
     private Drawable mDrawable;
     private final PopupWindow mContainer;
     private int mPositionX;
@@ -45,6 +47,8 @@ class HandleView extends View {
     private int mContainerPositionX, mContainerPositionY;
     private long mTouchTimer;
     private boolean mIsInsertionHandle = false;
+    private float mAlpha;
+    private long mFadeStartTime;
 
     private View mParent;
     private InsertionHandleController.PastePopupMenu mPastePopupWindow;
@@ -95,6 +99,8 @@ class HandleView extends View {
         // Convert line offset dips to pixels.
         mLineOffsetY = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 LINE_OFFSET_Y_DIP, context.getResources().getDisplayMetrics());
+
+        mAlpha = 1.f;
     }
 
     void setOrientation(int pos) {
@@ -253,6 +259,7 @@ class HandleView extends View {
 
     @Override
     protected void onDraw(Canvas c) {
+        updateAlpha();
         mDrawable.setBounds(0, 0, getRight() - getLeft(), getBottom() - getTop());
         mDrawable.draw(c);
     }
@@ -351,6 +358,23 @@ class HandleView extends View {
 
     Drawable getDrawable() {
         return mDrawable;
+    }
+
+    private void updateAlpha() {
+        if (mAlpha == 1.f) return;
+        mAlpha = Math.min(1.f, (System.currentTimeMillis() - mFadeStartTime) / FADE_DURATION);
+        mDrawable.setAlpha((int) (255 * mAlpha));
+        invalidate();
+    }
+
+    /**
+     * If the handle is not visible, sets its visibility to View.VISIBLE and begins fading it in.
+     */
+    void beginFadeIn() {
+        if (getVisibility() == VISIBLE) return;
+        mAlpha = 0.f;
+        mFadeStartTime = System.currentTimeMillis();
+        setVisibility(VISIBLE);
     }
 
     void showPastePopupWindow() {

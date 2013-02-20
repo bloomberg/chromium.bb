@@ -554,6 +554,22 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     /**
+     * @return Whether native is tracking a scroll (i.e. between sending GESTURE_SCROLL_START and
+     *         GESTURE_SCROLL_END, or during a fling before sending GESTURE_FLING_CANCEL).
+     */
+    boolean isNativeScrolling() {
+        return mNativeScrolling;
+    }
+
+    /**
+     * @return Whether native is tracking a pinch (i.e. between sending GESTURE_PINCH_BEGIN and
+     *         GESTURE_PINCH_END).
+     */
+    boolean isNativePinching() {
+        return mPinchInProgress;
+    }
+
+    /**
      * Starts a pinch gesture.
      * @param timeMs The time in ms for the event initiating this gesture.
      * @param x The x coordinate for the event initiating this gesture.

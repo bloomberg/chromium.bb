@@ -77,6 +77,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private static final int IS_LONG_PRESS = 1;
     private static final int IS_LONG_TAP = 2;
 
+    // Length of the delay (in ms) before fading in handles after the last page movement.
+    private static final int TEXT_HANDLE_FADE_IN_DELAY = 300;
+
     // Personality of the ContentView.
     private final int mPersonality;
 
@@ -217,6 +220,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     private SelectionHandleController mSelectionHandleController;
     private InsertionHandleController mInsertionHandleController;
+
+    private Runnable mDeferredHandleFadeInRunnable;
 
     /**
      * Handles conversion of a point from window (physical pixel) to document (absolute CSS) space
@@ -1030,6 +1035,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     @Override
     public boolean sendGesture(int type, long timeMs, int x, int y, Bundle b) {
         if (mNativeContentViewCore == 0) return false;
+        updateTextHandlesForGesture(type);
         switch (type) {
             case ContentViewGestureHandler.GESTURE_SHOW_PRESSED_STATE:
                 nativeShowPressState(mNativeContentViewCore, timeMs, x, y);
@@ -1317,12 +1323,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
 
         if (mNeedUpdateOrientationChanged) {
-            // TODO(cjhopman): Once selection bounds are received from the renderer as absolute
-            // positions, we will no longer need to unselect before rotation (though we may decide
-            // it is the correct behavior).
-            // http://crbug.com/174665
-            mImeAdapter.unselect();
-
             sendOrientationChangeEvent();
             mNeedUpdateOrientationChanged = false;
         }
@@ -1738,12 +1738,12 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         mStartHandlePoint.updateWindowFromDocument();
         mEndHandlePoint.updateWindowFromDocument();
         mInsertionHandlePoint.updateWindowFromDocument();
-        if (mSelectionHandleController != null && mSelectionHandleController.isShowing()) {
+        if (isSelectionHandleShowing()) {
             mSelectionHandleController.setStartHandlePosition(mStartHandlePoint.screen);
             mSelectionHandleController.setEndHandlePosition(mEndHandlePoint.screen);
         }
 
-        if (mInsertionHandleController != null && mInsertionHandleController.isShowing()) {
+        if (isInsertionHandleShowing()) {
             mInsertionHandleController.setHandlePosition(mInsertionHandlePoint.screen);
         }
     }
@@ -1864,6 +1864,67 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
     }
 
+    private boolean isSelectionHandleShowing() {
+        return mSelectionHandleController != null && mSelectionHandleController.isShowing();
+    }
+
+    private boolean isInsertionHandleShowing() {
+        return mInsertionHandleController != null && mInsertionHandleController.isShowing();
+    }
+
+    private void updateTextHandlesForGesture(int type) {
+        switch(type) {
+            case ContentViewGestureHandler.GESTURE_DOUBLE_TAP:
+            case ContentViewGestureHandler.GESTURE_SCROLL_START:
+            case ContentViewGestureHandler.GESTURE_FLING_START:
+            case ContentViewGestureHandler.GESTURE_PINCH_BEGIN:
+                temporarilyHideTextHandles();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    // Makes the insertion/selection handles invisible. They will fade back in shortly after the
+    // last call to scheduleTextHandleFadeIn (or temporarilyHideTextHandles).
+    private void temporarilyHideTextHandles() {
+        if (isSelectionHandleShowing()) {
+            mSelectionHandleController.setHandleVisibility(HandleView.INVISIBLE);
+        }
+        if (isInsertionHandleShowing()) {
+            mInsertionHandleController.setHandleVisibility(HandleView.INVISIBLE);
+        }
+        scheduleTextHandleFadeIn();
+    }
+
+    // Cancels any pending fade in and schedules a new one.
+    private void scheduleTextHandleFadeIn() {
+        if (!isInsertionHandleShowing() && !isSelectionHandleShowing()) return;
+
+        if (mDeferredHandleFadeInRunnable == null) {
+            mDeferredHandleFadeInRunnable = new Runnable() {
+                public void run() {
+                    if (mContentViewGestureHandler.isNativeScrolling() ||
+                            mContentViewGestureHandler.isNativePinching()) {
+                        // Delay fade in until no longer scrolling or pinching.
+                        scheduleTextHandleFadeIn();
+                    } else {
+                        if (isSelectionHandleShowing()) {
+                            mSelectionHandleController.beginHandleFadeIn();
+                        }
+                        if (isInsertionHandleShowing()) {
+                            mInsertionHandleController.beginHandleFadeIn();
+                        }
+                    }
+                }
+            };
+        }
+
+        mContainerView.removeCallbacks(mDeferredHandleFadeInRunnable);
+        mContainerView.postDelayed(mDeferredHandleFadeInRunnable, TEXT_HANDLE_FADE_IN_DELAY);
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private void updateScrollOffsetAndPageScaleFactor(int x, int y, float scale) {
@@ -1884,9 +1945,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         mNativePageScaleFactor = scale;
 
         mPopupZoomer.hide(true);
-        updateHandleScreenPositions();
-
         mZoomManager.updateZoomControls();
+
+        temporarilyHideTextHandles();
     }
 
     @SuppressWarnings("unused")

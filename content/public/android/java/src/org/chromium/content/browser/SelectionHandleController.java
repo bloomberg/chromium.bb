@@ -139,6 +139,23 @@ abstract class SelectionHandleController implements CursorController {
     }
 
     /**
+     * If the handles are not visible, sets their visibility to View.VISIBLE and begins fading them
+     * in.
+     */
+    void beginHandleFadeIn() {
+        mStartHandle.beginFadeIn();
+        mEndHandle.beginFadeIn();
+    }
+
+    /**
+     * Sets the start and end handles to the given visibility.
+     */
+    void setHandleVisibility(int visibility) {
+        mStartHandle.setVisibility(visibility);
+        mEndHandle.setVisibility(visibility);
+    }
+
+    /**
      * Shows the handles if allowed.
      *
      * @param startDir Direction (left/right) of start handle.
@@ -179,6 +196,7 @@ abstract class SelectionHandleController implements CursorController {
             mIsShowing = true;
             mStartHandle.show();
             mEndHandle.show();
+            setHandleVisibility(HandleView.VISIBLE);
         }
     }
 }
