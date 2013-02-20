@@ -176,7 +176,8 @@ bool WebRtcAudioCapturer::Initialize(media::ChannelLayout channel_layout,
 WebRtcAudioCapturer::WebRtcAudioCapturer()
     : source_(NULL),
       running_(false),
-      buffering_(false) {
+      buffering_(false),
+      agc_is_enabled_(false) {
   DVLOG(1) << "WebRtcAudioCapturer::WebRtcAudioCapturer()";
 }
 
@@ -338,10 +339,14 @@ void WebRtcAudioCapturer::Start() {
   if (running_)
     return;
 
-  // What Start() does is supposed to be very light, for example, posting a
-  // task to another thread, so it is safe to call Start() under the lock.
-  if (source_)
+  // What Start() and SetAutomaticGainControl() does is supposed to be very
+  // light, for example, posting a task to another thread, so it is safe to
+  // call Start() and SetAutomaticGainControl() under the lock.
+  if (source_) {
+    // We need to set the AGC control before starting the stream.
+    source_->SetAutomaticGainControl(agc_is_enabled_);
     source_->Start();
+  }
 
   running_ = true;
 }
@@ -386,6 +391,10 @@ void WebRtcAudioCapturer::SetDevice(int session_id) {
 
 void WebRtcAudioCapturer::SetAutomaticGainControl(bool enable) {
   base::AutoLock auto_lock(lock_);
+  // Store the setting since SetAutomaticGainControl() can be called before
+  // Initialize(), in this case stored setting will be applied in Start().
+  agc_is_enabled_ = enable;
+
   if (source_)
     source_->SetAutomaticGainControl(enable);
 }

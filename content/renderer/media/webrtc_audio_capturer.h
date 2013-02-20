@@ -176,7 +176,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   base::ThreadChecker thread_checker_;
 
   // Protects |source_|, |sinks_|, |running_|, |on_device_stopped_cb_|,
-  // |loopback_fifo_|, |params_| and |buffering_|.
+  // |loopback_fifo_|, |params_|, |buffering_| and |agc_is_enabled_|.
   mutable base::Lock lock_;
 
   // A list of sinks that the audio data is fed to.
@@ -202,6 +202,9 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // True when FIFO is utilized, false otherwise.
   bool buffering_;
+
+  // True when automatic gain control is enabled, false otherwise.
+  bool agc_is_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioCapturer);
 };
