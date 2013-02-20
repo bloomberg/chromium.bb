@@ -1174,6 +1174,8 @@
           'sources': [
             'tools/demuxer_bench/demuxer_bench.cc',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         },
       ],
     }],
@@ -1221,6 +1223,8 @@
               ],
             }],
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         },
       ],
     }],
@@ -1442,6 +1446,8 @@
           'sources': [
             'test/ffmpeg_tests/ffmpeg_tests.cc',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         },
         {
           'target_name': 'media_bench',
@@ -1454,6 +1460,8 @@
           'sources': [
             'tools/media_bench/media_bench.cc',
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
         },
       ],
     }],

@@ -25,7 +25,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
       break;
     case WM_PAINT: {
       Window* window =
-          reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWL_USERDATA));
+          reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
       if (window != NULL)
         window->OnPaint();
       ::ValidateRect(hwnd, NULL);
@@ -88,7 +88,7 @@ void Window::Start(int limit, const base::Closure& callback,
   callback_ = callback;
   painter_ = painter;
 
-  SetWindowLongPtr(window_handle_, GWL_USERDATA,
+  SetWindowLongPtr(window_handle_, GWLP_USERDATA,
                    reinterpret_cast<LONG_PTR>(this));
 
   ShowWindow(window_handle_, SW_SHOWNORMAL);
