@@ -174,6 +174,7 @@ class OneClickSigninHelper
                                   int route_id);
 
   void RedirectToNTP();
+  void RedirectToSignin();
 
   // Clear all data member of the helper, except for the error.
   void CleanTransientState();

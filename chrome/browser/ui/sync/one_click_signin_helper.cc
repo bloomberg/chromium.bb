@@ -891,6 +891,23 @@ void OneClickSigninHelper::RedirectToNTP() {
   error_message_.clear();
 }
 
+void OneClickSigninHelper::RedirectToSignin() {
+  VLOG(1) << "OneClickSigninHelper::RedirectToSignin";
+
+  // Extract the existing sounce=X value.  Default to "2" if missing.
+  SyncPromoUI::Source source =
+      SyncPromoUI::GetSourceForSyncPromoURL(continue_url_);
+  if (source == SyncPromoUI::SOURCE_UNKNOWN)
+    source = SyncPromoUI::SOURCE_MENU;
+  GURL page = SyncPromoUI::GetSyncPromoURL(GURL(), source, false);
+
+  content::WebContents* contents = web_contents();
+  contents->GetController().LoadURL(page,
+                                    content::Referrer(),
+                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                    std::string());
+}
+
 void OneClickSigninHelper::CleanTransientState() {
   VLOG(1) << "OneClickSigninHelper::CleanTransientState";
   email_.clear();
@@ -950,9 +967,23 @@ void OneClickSigninHelper::DidStopLoading(
     return;
   }
 
+  // When Gaia finally redirects to the continue URL, Gaia will add some
+  // extra query parameters.  So ignore the parameters when checking to see
+  // if the user has continued.
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+  const bool continue_url_match_accept = (
+      auto_accept_ == AUTO_ACCEPT_EXPLICIT &&
+      continue_url_.is_valid() &&
+      url.ReplaceComponents(replacements) ==
+        continue_url_.ReplaceComponents(replacements));
+
   // If there is no valid email or password yet, there is nothing to do.
-  if (email_.empty() || password_.empty())
+  if (email_.empty() || password_.empty()) {
+    if (continue_url_match_accept)
+      RedirectToSignin();
     return;
+  }
 
   // When the user uses the first-run, ntp, or hotdog menu to sign in, then have
   // the option of checking the the box "Let me choose what to sync".  When the
@@ -979,15 +1010,7 @@ void OneClickSigninHelper::DidStopLoading(
     // the continue URL go by.
     if (auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
       DCHECK(source_ != SyncPromoUI::SOURCE_UNKNOWN);
-
-     // When Gaia finally redirects to the continue URL, Gaia will add some
-     // extra query parameters.  So ignore the parameters when checking to see
-     // if the user has continued.
-      GURL::Replacements replacements;
-      replacements.ClearQuery();
-      const bool continue_url_match = (url.ReplaceComponents(replacements) ==
-          continue_url_.ReplaceComponents(replacements));
-      if (!continue_url_match) {
+      if (!continue_url_match_accept) {
         VLOG(1) << "OneClickSigninHelper::DidStopLoading: invalid url='"
                 << url.spec()
                 << "' expected continue url=" << continue_url_;
