@@ -459,6 +459,22 @@ size_t GetFileNameMaxLengthOnBlockingPool(const std::string& path) {
   return stat.f_namemax;
 }
 
+// Sets last modified date.
+bool SetLastModifiedOnBlockingPool(const base::FilePath& local_path,
+                                   time_t timestamp) {
+  if (local_path.empty())
+    return false;
+
+  struct stat stat_buffer;
+  if (stat(local_path.value().c_str(), &stat_buffer) != 0)
+    return false;
+
+  struct utimbuf times;
+  times.actime = stat_buffer.st_atime;
+  times.modtime = timestamp;
+  return utime(local_path.value().c_str(), &times) == 0;
+}
+
 }  // namespace
 
 class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
@@ -1688,42 +1704,15 @@ bool SetLastModifiedFunction::RunImpl() {
   base::FilePath local_path = GetLocalPathFromURL(file_system_context,
                                             GURL(file_url));
 
-  BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(
-            &SetLastModifiedFunction::RunOperationOnFileThread,
-            this,
-            local_path,
-            strtoul(timestamp.c_str(), NULL, 0)));
-
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&SetLastModifiedOnBlockingPool,
+                 local_path,
+                 strtoul(timestamp.c_str(), NULL, 0)),
+      base::Bind(&SetLastModifiedFunction::SendResponse,
+                 this));
   return true;
-}
-
-void SetLastModifiedFunction::RunOperationOnFileThread(
-    const base::FilePath& local_path,
-    time_t timestamp) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  bool succeeded = false;
-
-  if (!local_path.empty()) {
-    struct stat sb;
-    if (stat(local_path.value().c_str(), &sb) == 0) {
-      struct utimbuf times;
-      times.actime = sb.st_atime;
-      times.modtime = timestamp;
-
-      if (utime(local_path.value().c_str(), &times) == 0)
-        succeeded = true;
-    }
-  }
-
-  BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &SetLastModifiedFunction::SendResponse,
-            this,
-            succeeded));
 }
 
 GetSizeStatsFunction::GetSizeStatsFunction() {
