@@ -74,10 +74,10 @@ const ExperimentDateRange* GetExperimentDateRange() {
   switch (chrome::VersionInfo::GetChannel()) {
     case chrome::VersionInfo::CHANNEL_BETA:
     case chrome::VersionInfo::CHANNEL_DEV: {
-      // Experiment date range for M25 Beta/Dev
+      // Experiment date range for M26 Beta/Dev
       static const ExperimentDateRange kBetaAndDevRange = {
-        { 2013, 1, 0, 17, 0, 0, 0, 0 },   // Jan 17, 2013
-        { 2013, 2, 0, 18, 0, 0, 0, 0 },   // Feb 17, 2013
+        { 2013, 3, 0, 1, 0, 0, 0, 0 },   // Mar 1, 2013
+        { 2013, 4, 0, 1, 0, 0, 0, 0 },   // Apr 1, 2013
       };
       return &kBetaAndDevRange;
     }
@@ -90,10 +90,10 @@ const ExperimentDateRange* GetExperimentDateRange() {
       return &kCanaryRange;
     }
     case chrome::VersionInfo::CHANNEL_STABLE: {
-      // TODO(yosin) We'll update stable date range once release date is fixed.
+      // Experiment date range for M25 Stable.
       static const ExperimentDateRange kStableRange = {
-        { 2013, 1, 0, 17, 0, 0, 0, 0 },  // Jan 17, 2013
-        { 2013, 2, 0, 18, 0, 0, 0, 0 },  // Feb 17, 2013
+        { 2013, 2, 0, 25, 0, 0, 0, 0 },  // Feb 25, 2013
+        { 2013, 3, 0, 28, 0, 0, 0, 0 },  // Mar 28, 2013
       };
       return &kStableRange;
     }
