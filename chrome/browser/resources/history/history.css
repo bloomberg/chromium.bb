@@ -202,26 +202,7 @@ html[dir='rtl'] .number-visits {
 
 .drop-down {
   -webkit-margin-end: 5px;
-  background: white -webkit-canvas(drop-down-arrow) no-repeat center 4px;
-  border: 1px solid rgb(192, 195, 198);
-  border-radius: 2px;
-  height: 12px;
-  padding: 0;
-  position: relative;
-  top: 2px;
-  width: 12px;
-}
-
-.drop-down:hover {
-  background-image: -webkit-canvas(drop-down-arrow-hover);
-  border-color: rgb(48, 57, 66);
-}
-
-.drop-down[menu-shown],
-.drop-down:focus {
-  background-color: rgb(48, 57, 66);
-  background-image: -webkit-canvas(drop-down-arrow-active);
-  border-color: rgb(48, 57, 66);
+  margin-top: 1px;
 }
 
 html[dir='rtl'] .entry .title,
