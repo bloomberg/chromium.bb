@@ -16,7 +16,8 @@ URLFetcherFileWriter::URLFetcherFileWriter(
     : error_code_(base::PLATFORM_FILE_OK),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       file_task_runner_(file_task_runner),
-      file_handle_(base::kInvalidPlatformFileValue) {
+      file_handle_(base::kInvalidPlatformFileValue),
+      total_bytes_written_(0) {
   DCHECK(file_task_runner_.get());
 }
 
