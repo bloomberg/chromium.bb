@@ -20,18 +20,15 @@ static struct NaClMutex gNaClTlsMu;
 static int gNaClThreadIdxInUse[NACL_THREAD_MAX];  /* bool */
 static size_t const kNumThreads = NACL_ARRAY_SIZE_UNSAFE(gNaClThreadIdxInUse);
 
-/*
- * This holds the index of the current thread.
- * This is also used directly in nacl_syscall.S (NaClSyscallSeg).
- */
-__thread uint32_t gNaClThreadIdx = NACL_TLS_INDEX_INVALID;
+/* May be NULL if the current thread does not host a NaClAppThread. */
+static THREAD struct NaClThreadContext *nacl_current_thread;
 
-uint32_t NaClTlsGetIdx(void) {
-  return gNaClThreadIdx;
+void NaClTlsSetCurrentThread(struct NaClAppThread *natp) {
+  nacl_current_thread = &natp->user;
 }
 
-void NaClTlsSetIdx(uint32_t tls_idx) {
-  gNaClThreadIdx = tls_idx;
+struct NaClAppThread *NaClTlsGetCurrentThread(void) {
+  return NaClAppThreadFromThreadContext(nacl_current_thread);
 }
 
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
@@ -84,8 +81,9 @@ static int NaClThreadIdxAllocate(void) {
 
 
 /*
- * Allocation does not mean we can set gNaClThreadIdx, since we are not
- * that thread.  Setting it must wait until the thread actually launches.
+ * Allocation does not mean we can set nacl_current_thread, since we
+ * are not that thread.  Setting it must wait until the thread
+ * actually launches.
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
   UNREFERENCED_PARAMETER(natp);

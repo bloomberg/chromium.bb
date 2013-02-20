@@ -41,13 +41,13 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 /*
- * This macro gets the thread index from the nacl_thread_index TLS variable
- * in Windows or Linux, or the corresponding pthread_getspecific(...) TSD
- * data in OSX and puts it in %eax.
+ * This macro gets the NaClThreadContext from the nacl_current_thread
+ * TLS variable in Windows or Linux, or the corresponding
+ * pthread_getspecific(...) TSD data in OSX and puts it in %rdx.
  *
- * May clobber two registers %rcx and %rdx (windows only).
+ * May clobber two registers, %rax and %rcx.
  *
- * If %rax contains 0, then this is an invalid thread.
+ * If %rdx contains 0, then this is an invalid thread.
  */
 MACRO(get_tls)
         /*
@@ -67,25 +67,25 @@ MACRO(get_tls)
          * Linux uses TLS.
          * We use "@GOTTPOFF" rather than "@TPOFF" in order to be PIC-friendly.
          */
-        movq    nacl_thread_index@GOTTPOFF(%rip), %rax
-        movl    %fs:(%rax), %eax
+        movq    nacl_current_thread@GOTTPOFF(%rip), %rax
+        movq    %fs:(%rax), %rdx
 #elif NACL_OSX
         /*
          * This assumes a particular implementation of OS X's
          * pthread_getspecific(), which we check for in NaClTlsInit().
          */
-        movl    _nacl_thread_index_tls_offset(%rip), %eax
-        movl    %gs:(%rax), %eax
+        movl    _nacl_current_thread_tls_offset(%rip), %eax
+        movq    %gs:(%rax), %rdx
 #elif NACL_WINDOWS
         /*
          * NOTE: This code should match the code in platform/win/test_tls.S!
          * If you change this code, please update that file as well.
          *
          * The following two lines generate this instruction:
-         *   ba XX XX XX XX    movl $nacl_thread_index@SECREL, %edx
+         *   ba XX XX XX XX    movl $nacl_current_thread@SECREL, %edx
          *
          * SECREL is a relocation type which gives the offset of
-         * nacl_thread_index within the TLS template section.  GNU
+         * nacl_current_thread within the TLS template section.  GNU
          * binutils' assembler does not have a syntax for generating
          * this relocation as part of an instruction.  It only has the
          * .secrel32 syntax for generating the relocated value as a
@@ -99,14 +99,14 @@ MACRO(get_tls)
          * scratch registers via macro arguments.
          */
         .byte 0xba
-        .secrel32 nacl_thread_index
+        .secrel32 nacl_current_thread
 
         mov _tls_index(%rip), %ecx
         movq %gs:0x58, %rax
         /* Get the address of this module (executable/DLL)'s TLS area. */
         movq (%rax,%rcx,8), %rax
-        /* Get the value of nacl_thread_index from the TLS area. */
-        movl (%rdx,%rax), %eax
+        /* Get the value of nacl_current_thread from the TLS area. */
+        movq (%rdx,%rax), %rdx
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
@@ -137,9 +137,6 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         /* rax, rdi, rsi, rdx, rcx, r8, r9 are usable for scratch */
 
         get_tls
-
-        leaq    IDENTIFIER(nacl_user)(%rip), %rdx
-        movq    (%rdx,%rax,8), %rdx
         /*
          * Code below will segfault if %rdx is the NULL pointer, since
          * the zero page is unmapped.
@@ -230,8 +227,6 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSegRegsSaved):
 MACRO(tls_syscall)
 MACROENTRY
         get_tls
-        leaq    IDENTIFIER(nacl_user)(%rip), %rdx
-        movq    (%rdx,%rax,8), %rdx
         movl    MACROARG2(%rdx), %eax
         /* sandbox the return, straight off the untrusted stack */
         movq    0x8(%rsp), %rcx

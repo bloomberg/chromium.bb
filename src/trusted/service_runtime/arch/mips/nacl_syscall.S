@@ -88,22 +88,13 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   sw    $t5, -8($sp)
 
   /* Load the __thread variable's offset into a3. */
-  lui   $a3, %tprel_hi(gNaClThreadIdx)
-  addiu $a3, $a3, %tprel_lo(gNaClThreadIdx)
+  lui   $a3, %tprel_hi(nacl_current_thread)
+  addiu $a3, $a3, %tprel_lo(nacl_current_thread)
 
-  /* Fetch the thread-local variable holding the thread index. */
+  /* Fetch the thread-local variable: set a0 = nacl_current_thread */
   rdhwr $v1, $29
   addu  $a3, $v1, $a3
-  lw    $a1, 0($a3)
-
-  /*
-   * Load the nacl_user entry of this thread.
-   * a0 = nacl_user[a1*4]
-   */
-  lw    $a0,%got(nacl_user)($28)
-  sll   $a1, $a1, 2
-  addu  $a0, $a0, $a1
-  lw    $a0, 0($a0)
+  lw    $a0, 0($a3)
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
   sw $s0, NACL_THREAD_CONTEXT_OFFSET_S0($a0)

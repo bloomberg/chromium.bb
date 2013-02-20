@@ -143,8 +143,8 @@ uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
 
 #if NACL_OSX
 
-pthread_key_t nacl_thread_info_key;
-uint32_t nacl_thread_index_tls_offset;
+static pthread_key_t nacl_thread_info_key;
+uint32_t nacl_current_thread_tls_offset;
 
 int NaClTlsInit(void) {
   int errnum;
@@ -197,7 +197,8 @@ int NaClTlsInit(void) {
             errnum);
     return 0;
   }
-  nacl_thread_index_tls_offset = pthread_tsd_offset + 8 * nacl_thread_info_key;
+  nacl_current_thread_tls_offset =
+      pthread_tsd_offset + 8 * nacl_thread_info_key;
 
   return 1;
 }
@@ -213,8 +214,8 @@ void NaClTlsFini(void) {
   return;
 }
 
-void NaClTlsSetIdx(uint32_t tls_idx) {
-  uint32_t tls_idx_check;
+void NaClTlsSetCurrentThread(struct NaClAppThread *natp) {
+  struct NaClThreadContext *ntcp_check;
 
 #if 1  /* PARANOIA */
   if (NULL != pthread_getspecific(nacl_thread_info_key)) {
@@ -222,18 +223,21 @@ void NaClTlsSetIdx(uint32_t tls_idx) {
             "NaClSetThreadInfo invoked twice for the same thread\n");
   }
 #endif
-  pthread_setspecific(nacl_thread_info_key, (void *) (uintptr_t) tls_idx);
+  if (pthread_setspecific(nacl_thread_info_key, &natp->user) != 0) {
+    NaClLog(LOG_FATAL, "NaClTlsSetCurrentThread: "
+            "pthread_setspecific() failed\n");
+  }
 
   /*
    * Sanity check:  Make sure that reading back the value using our
    * knowledge of Mac OS X's TLS internals gives us the correct value.
    * This checks that we inferred _PTHREAD_TSD_OFFSET correctly earlier.
    */
-  __asm__("movl %%gs:(%1), %0"
-          : "=r"(tls_idx_check)
-          : "r"(nacl_thread_index_tls_offset));
-  if (tls_idx_check != tls_idx) {
-    NaClLog(LOG_FATAL, "NaClTlsSetIdx: Sanity check failed: "
+  __asm__("movq %%gs:(%1), %0"
+          : "=r"(ntcp_check)
+          : "r"(nacl_current_thread_tls_offset));
+  if (ntcp_check != &natp->user) {
+    NaClLog(LOG_FATAL, "NaClTlsSetCurrentThread: Sanity check failed: "
             "TLS offset must be wrong\n");
   }
 }
@@ -247,17 +251,17 @@ void NaClTlsSetIdx(uint32_t tls_idx) {
  * this for x86-32 on OSX, since that's handled by NaCl "Classic"
  * where %gs gets swapped, and we use %gs >> 3 in the asm code.)
  */
-uint32_t NaClTlsGetIdx(void) {
-  return (intptr_t) pthread_getspecific(nacl_thread_info_key);
+struct NaClAppThread *NaClTlsGetCurrentThread(void) {
+  struct NaClThreadContext *ntcp = pthread_getspecific(nacl_thread_info_key);
+  return NaClAppThreadFromThreadContext(ntcp);
 }
 
 #elif NACL_LINUX || NACL_WINDOWS
 
-THREAD uint32_t nacl_thread_index;
-/* encoded index; 0 is used to indicate error */
+/* May be NULL if the current thread does not host a NaClAppThread. */
+THREAD struct NaClThreadContext *nacl_current_thread;
 
 int NaClTlsInit(void) {
-
   NaClThreadStartupCheck();
 
   if (!NaClThreadIdxInit()) {
@@ -281,12 +285,12 @@ void NaClTlsFini(void) {
  * so, and on context switch we must access the TLS variable in order
  * to determine where to save the user register context.
  */
-void NaClTlsSetIdx(uint32_t tls_idx) {
-  nacl_thread_index = tls_idx;
+void NaClTlsSetCurrentThread(struct NaClAppThread *natp) {
+  nacl_current_thread = &natp->user;
 }
 
-uint32_t NaClTlsGetIdx(void) {
-  return nacl_thread_index;
+struct NaClAppThread *NaClTlsGetCurrentThread(void) {
+  return NaClAppThreadFromThreadContext(nacl_current_thread);
 }
 
 #else

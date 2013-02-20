@@ -19,7 +19,7 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
 
   NaClCopyDropLock(natp->nap);
 
-  NaClTlsSetIdx(0);
+  NaClTlsSetCurrentThread(NULL);
 
   return 0;
 }

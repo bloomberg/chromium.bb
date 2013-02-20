@@ -67,7 +67,7 @@ ssize_t NaClSignalErrorMessage(const char *msg) {
  *
  * Note that this should only be called from the thread in which the
  * signal occurred, because on x86-64 it reads a thread-local variable
- * (nacl_thread_index).
+ * (nacl_current_thread).
  */
 void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
                                        int *is_untrusted,
@@ -89,18 +89,16 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
 #elif (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) || \
       NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
       NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
-  uint32_t current_thread_index = NaClTlsGetIdx();
-  if (NACL_TLS_INDEX_INVALID == current_thread_index) {
+  struct NaClAppThread *natp = NaClTlsGetCurrentThread();
+  if (natp == NULL) {
     *is_untrusted = 0;
     *result_thread = NULL;
   } else {
-    struct NaClAppThread *thread =
-        NaClAppThreadGetFromIndex(current_thread_index);
     /*
      * Get the address of an arbitrary local, stack-allocated variable,
      * just for the purpose of doing a sanity check.
      */
-    void *pointer_into_stack = &thread;
+    void *pointer_into_stack = &natp;
     /*
      * Sanity check: Make sure the stack we are running on is not
      * allocated in untrusted memory.  This checks that the alternate
@@ -116,10 +114,10 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sig_ctx,
      * insecure there.
      */
     if (!NACL_WINDOWS) {
-      DCHECK(!NaClIsUserAddr(thread->nap, (uintptr_t) pointer_into_stack));
+      DCHECK(!NaClIsUserAddr(natp->nap, (uintptr_t) pointer_into_stack));
     }
-    *is_untrusted = NaClIsUserAddr(thread->nap, sig_ctx->prog_ctr);
-    *result_thread = thread;
+    *is_untrusted = NaClIsUserAddr(natp->nap, sig_ctx->prog_ctr);
+    *result_thread = natp;
   }
 #else
 # error Unsupported architecture

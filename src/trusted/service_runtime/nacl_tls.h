@@ -52,19 +52,13 @@ void NaClTlsFree(struct NaClAppThread *natp);
 /*
  * Called in thread bootup code, to set TLS/TSD when the thread ID is not
  * saved in a reserved register (e.g., %gs in NaCl x86-32).
- *
- * No-op for x86-32 NaCl classic.
  */
-void NaClTlsSetIdx(uint32_t tls_idx);
+void NaClTlsSetCurrentThread(struct NaClAppThread *natp);
 
 /*
- * Gets the current thread's index value as set by NaClTlsSetIdx().
- * Only implemented for x86-64 and ARM, since these are the only sandboxes
- * where we use the host OS's TLS facility.
- * Returns NACL_TLS_INDEX_INVALID if NaClTlsSetIdx() has not been
- * called on this thread.
+ * Get the current thread as set by NaClTlsSetCurrentThread().
  */
-uint32_t NaClTlsGetIdx(void);
+struct NaClAppThread *NaClTlsGetCurrentThread(void);
 
 void NaClTlsSetTlsValue1(struct NaClAppThread *natp, uint32_t value);
 void NaClTlsSetTlsValue2(struct NaClAppThread *natp, uint32_t value);
@@ -77,16 +71,6 @@ uint32_t NaClTlsGetTlsValue2(struct NaClAppThread *natp);
  * number of internal structures, e.g. nacl_user[], nacl_thread_ids[]
  */
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp);
-
-
-#if NACL_OSX
-/*
- * OSX does not have TLS and we emulate it on the trusted side using TSD.
- */
-extern pthread_key_t nacl_thread_info_key;
-extern uint32_t nacl_thread_index_tls_offset;
-
-#endif
 
 
 #endif /* SERVICE_RUNTIME_NACL_THREAD_H__ */

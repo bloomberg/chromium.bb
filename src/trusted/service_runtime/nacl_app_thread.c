@@ -39,7 +39,7 @@ void WINAPI NaClAppThreadLauncher(void *state) {
   thread_idx = NaClGetThreadIdx(natp);
   CHECK(0 < thread_idx);
   CHECK(thread_idx < NACL_THREAD_MAX);
-  NaClTlsSetIdx(thread_idx);
+  NaClTlsSetCurrentThread(natp);
   nacl_user[thread_idx] = &natp->user;
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = GetCurrentThreadId();
@@ -123,6 +123,7 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
 #if NACL_WINDOWS
   nacl_thread_ids[thread_idx] = 0;
 #endif
+  NaClTlsSetCurrentThread(NULL);
 
   NaClLog(3, " removing thread from thread table\n");
   /* Deallocate the ID natp->thread_num. */

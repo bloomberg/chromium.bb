@@ -70,7 +70,7 @@ uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
 #if NACL_LINUX
 
 /*
- * This TLS variable mirrors nacl_thread_index in the x86-64 sandbox,
+ * This TLS variable mirrors nacl_current_thread in the x86-64 sandbox,
  * except that, on x86-32, we only use it for getting the identity of
  * the interrupted thread in a signal handler in the Linux
  * implementation of thread suspension.
@@ -79,14 +79,14 @@ uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
  * not work inside dynamically-loaded DLLs -- such as chrome.dll -- on
  * Windows XP.
  */
-THREAD uint32_t nacl_thread_index;
+static THREAD struct NaClThreadContext *nacl_current_thread;
 
-void NaClTlsSetIdx(uint32_t tls_idx) {
-  nacl_thread_index = tls_idx;
+void NaClTlsSetCurrentThread(struct NaClAppThread *natp) {
+  nacl_current_thread = &natp->user;
 }
 
-uint32_t NaClTlsGetIdx(void) {
-  return nacl_thread_index;
+struct NaClAppThread *NaClTlsGetCurrentThread(void) {
+  return NaClAppThreadFromThreadContext(nacl_current_thread);
 }
 
 #else
@@ -97,8 +97,8 @@ uint32_t NaClTlsGetIdx(void) {
  * to the per-thread data, and the segment selector itself tells us
  * the thread's identity.
  */
-void NaClTlsSetIdx(uint32_t tls_idx) {
-  UNREFERENCED_PARAMETER(tls_idx);
+void NaClTlsSetCurrentThread(struct NaClAppThread *natp) {
+  UNREFERENCED_PARAMETER(natp);
 }
 
 #endif
