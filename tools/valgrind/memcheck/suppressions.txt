@@ -6528,17 +6528,6 @@
     fun:_ZN6WebKit20WebLayerTreeViewImpl*
 }
 {
-   bug_176048
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN22MetricsNetworkObserver25ProbeWifiPHYLayerProtocolEv
-   fun:_ZN22MetricsNetworkObserverC1Ev
-   fun:_ZN10MetricsLogC*
-   fun:_ZN12_GLOBAL__N_114TestMetricsLogC1ERKSsi
-}
-{
    bug_176270
    Memcheck:Uninitialized
    fun:_ZNK2cc19LayerTreeDebugState20recordRenderingStatsEv

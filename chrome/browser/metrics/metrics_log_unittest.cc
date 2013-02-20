@@ -11,6 +11,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/google/google_util.h"
@@ -21,6 +22,8 @@
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
@@ -146,6 +149,14 @@ class MetricsLogTest : public testing::Test {
     // TODO(isherman): Verify other data written into the protobuf as a result
     // of this call.
   }
+
+  virtual void TearDown() OVERRIDE {
+    // Drain the blocking pool from PostTaskAndReply executed by
+    // MetrticsLog.network_observer_.
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    content::RunAllPendingInMessageLoop();
+  }
+
  private:
   // This is necessary because eventually some tests call base::RepeatingTimer
   // functions and a message loop is required for that.
