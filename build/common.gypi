@@ -733,9 +733,6 @@
             ],
           }],
         ],
-        'msvs_system_include_dirs': [
-          '<(DEPTH)/third_party/platformsdk_win7/files/Include',
-        ],
         'msvs_cygwin_dirs': ['../third_party/cygwin'],
         # TODO(bsy) remove 4355 once cross-repo
         # NACL_ALLOW_THIS_IN_INITIALIZER_LIST changes go in.
@@ -760,8 +757,6 @@
           },
           'VCLibrarianTool': {
             'AdditionalOptions': ['/ignore:4221'],
-            'AdditionalLibraryDirectories':
-              ['<(DEPTH)/third_party/platformsdk_win7/files/Lib'],
           },
           'VCLinkerTool': {
             'AdditionalOptions': [
@@ -780,8 +775,6 @@
               'psapi.lib',
               'dbghelp.lib',
             ],
-            'AdditionalLibraryDirectories':
-              ['<(DEPTH)/third_party/platformsdk_win7/files/Lib'],
             'DelayLoadDLLs': [
               'dbghelp.dll',
               'dwmapi.dll',
