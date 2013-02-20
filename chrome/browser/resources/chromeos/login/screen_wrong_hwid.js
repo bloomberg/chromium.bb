@@ -35,6 +35,13 @@ cr.define('oobe', function() {
     },
 
     /**
+     * Updates state of login header so that necessary buttons are displayed.
+     **/
+    onBeforeShow: function(data) {
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.WRONG_HWID_WARNING;
+    },
+
+    /**
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {

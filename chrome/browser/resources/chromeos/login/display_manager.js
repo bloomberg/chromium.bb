@@ -34,6 +34,7 @@
   GAIA_SIGNIN: 1,
   ACCOUNT_PICKER: 2,
   MANAGED_USER_CREATION: 3,
+  WRONG_HWID_WARNING: 4,
 };
 
 cr.define('cr.ui.login', function() {

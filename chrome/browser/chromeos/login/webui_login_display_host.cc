@@ -92,7 +92,7 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
       new_oobe_ui && !zero_delay_enabled && !waiting_for_wallpaper_load_;
 
   initialize_webui_hidden_ = kHiddenWebUIInitializationDefault &&
-      (waiting_for_user_pods_ || waiting_for_wallpaper_load_);
+      new_oobe_ui && !zero_delay_enabled;
 
   is_boot_animation2_enabled_ = waiting_for_wallpaper_load_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -329,6 +329,8 @@ void WebUILoginDisplayHost::ShowWebUI() {
   login_view_->GetWebContents()->Focus();
   login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
   login_view_->OnPostponedShow();
+  // We should reset this flag to allow changing of status area visibility.
+  initialize_webui_hidden_ = false;
 }
 
 void WebUILoginDisplayHost::StartPostponedWebUI() {

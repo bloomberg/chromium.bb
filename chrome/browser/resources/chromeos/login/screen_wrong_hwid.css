@@ -24,13 +24,11 @@
 }
 
 #skip-hwid-warning {
-  bottom: 20px;
-  position: absolute;
-  width: 100%;
+  -webkit-box-pack: center;
 }
 
 #skip-hwid-warning-link {
-  color: #606060;
+  color: #8c8c8c;
   font-size: 18px;
   text-decoration: none;
 }

@@ -160,13 +160,17 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
       var managedUserCreationIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.MANAGED_USER_CREATION);
+      var wrongHWIDWarningIsActive =
+          (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
 
       $('add-user-button').hidden = !accountPickerIsActive;
       $('cancel-add-user-button').hidden = accountPickerIsActive ||
-          !this.allowCancel_;
+          !this.allowCancel_ ||
+          wrongHWIDWarningIsActive;
       $('guest-user-header-bar-item').hidden = gaiaIsActive ||
           managedUserCreationIsActive ||
-          !this.showGuest_;
+          !this.showGuest_ ||
+          wrongHWIDWarningIsActive;
       $('add-user-header-bar-item').hidden =
           $('add-user-button').hidden && $('cancel-add-user-button').hidden;
     },
