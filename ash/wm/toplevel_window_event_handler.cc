@@ -172,6 +172,8 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
+      if (in_gesture_drag_)
+        return;
       int component =
           target->delegate()->GetNonClientComponent(event->location());
       if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0) {
@@ -188,6 +190,10 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       if (!in_gesture_drag_)
         return;
+      if (window_resizer_.get() &&
+          window_resizer_->resizer()->GetTarget() != target) {
+        return;
+      }
       HandleDrag(target, event);
       break;
     }
@@ -195,6 +201,10 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_SCROLL_FLING_START: {
       if (!in_gesture_drag_)
         return;
+      if (window_resizer_.get() &&
+          window_resizer_->resizer()->GetTarget() != target) {
+        return;
+      }
 
       CompleteDrag(DRAG_COMPLETE, event->flags());
       if (in_move_loop_) {

@@ -93,7 +93,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
 
   if (event.type() == ui::ET_GESTURE_BEGIN &&
       event.details().touch_points() == 2) {
-    if (wm::IsWindowNormal(target) &&
+    if (!window_resizer_.get() && wm::IsWindowNormal(target) &&
       target->type() == aura::client::WINDOW_TYPE_NORMAL) {
       if (WindowComponentsAllowMoving(first_finger_hittest_,
           target->delegate()->GetNonClientComponent(event.location()))) {
@@ -114,6 +114,9 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
            wm::IsWindowNormal(target);
   }
 
+  if (target != window_resizer_->GetTarget())
+    return false;
+
   switch (event.type()) {
     case ui::ET_GESTURE_BEGIN:
       if (event.details().touch_points() > 2)
@@ -128,7 +131,6 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
     case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
       // For a swipe, the window either maximizes, minimizes, or snaps. In this
       // case, cancel the drag, and do the appropriate action.
-      aura::Window* target = window_resizer_->GetTarget();
       Reset();
 
       if (event.details().swipe_up()) {

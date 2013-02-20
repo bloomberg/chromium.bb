@@ -586,6 +586,44 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   }
 }
 
+// Tests that dragging multiple windows at the same time is not allowed.
+TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
+  scoped_ptr<aura::Window> target(
+      CreateTestWindowInShellWithDelegate(
+          new TestWindowDelegate(HTCAPTION),
+          0,
+          gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> notmoved(
+      CreateTestWindowInShellWithDelegate(
+          new TestWindowDelegate(HTCAPTION),
+          1, gfx::Rect(100, 0, 100, 100)));
+
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       target.get());
+  gfx::Rect old_bounds = target->bounds();
+  gfx::Point location(5, 5);
+  target->SetProperty(aura::client::kCanMaximizeKey, true);
+
+  // Send some touch events to start dragging |target|.
+  generator.MoveTouch(location);
+  generator.PressTouch();
+  location.Offset(40, 5);
+  generator.MoveTouch(location);
+
+  // Try to drag |notmoved| window. This should not move the window.
+  {
+    gfx::Rect bounds = notmoved->bounds();
+    aura::test::EventGenerator gen(Shell::GetPrimaryRootWindow(),
+                                   notmoved.get());
+    gfx::Point start = notmoved->bounds().origin() + gfx::Vector2d(10, 10);
+    gfx::Point end = start + gfx::Vector2d(100, 10);
+    gen.GestureScrollSequence(start, end,
+        base::TimeDelta::FromMilliseconds(10),
+        10);
+    EXPECT_EQ(bounds.ToString(), notmoved->bounds().ToString());
+  }
+}
+
 // Verifies pressing escape resets the bounds to the original bounds.
 // Disabled crbug.com/166219.
 #if defined(OS_MACOSX) || defined(OS_WIN)

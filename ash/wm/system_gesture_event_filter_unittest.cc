@@ -26,6 +26,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
+#include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/screen.h"
@@ -698,6 +699,39 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
   gfx::Rect current_bounds = toplevel->GetWindowBoundsInScreen();
   EXPECT_NE(current_bounds.ToString(), left_tile_bounds.ToString());
   EXPECT_EQ(current_bounds.ToString(), right_tile_bounds.ToString());
+}
+
+TEST_F(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  ui::GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(0);
+  views::Widget* first = views::Widget::CreateWindowWithContextAndBounds(
+      new ResizableWidgetDelegate, root_window, gfx::Rect(0, 0, 50, 100));
+  first->Show();
+  views::Widget* second = views::Widget::CreateWindowWithContextAndBounds(
+      new ResizableWidgetDelegate, root_window, gfx::Rect(100, 0, 100, 100));
+  second->Show();
+
+  // Start a two-finger drag on |first|, and then try to use another two-finger
+  // drag to move |second|. The attempt to move |second| should fail.
+  const gfx::Rect& first_bounds = first->GetWindowBoundsInScreen();
+  const gfx::Rect& second_bounds = second->GetWindowBoundsInScreen();
+  const int kSteps = 15;
+  const int kTouchPoints = 4;
+  gfx::Point points[kTouchPoints] = {
+    first_bounds.origin() + gfx::Vector2d(5, 5),
+    first_bounds.origin() + gfx::Vector2d(30, 10),
+    second_bounds.origin() + gfx::Vector2d(5, 5),
+    second_bounds.origin() + gfx::Vector2d(40, 20)
+  };
+
+  aura::test::EventGenerator generator(root_window);
+  generator.GestureMultiFingerScroll(kTouchPoints, points,
+      15, kSteps, 0, 150);
+
+  EXPECT_NE(first_bounds.ToString(),
+            first->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(second_bounds.ToString(),
+            second->GetWindowBoundsInScreen().ToString());
 }
 
 TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
