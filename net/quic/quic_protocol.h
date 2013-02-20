@@ -481,7 +481,8 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
   }
 
   base::StringPiece AssociatedData() const {
-    return base::StringPiece(data() + kStartOfHashData, kStartOfEncryptedData);
+    return base::StringPiece(data() + kStartOfHashData,
+                             kStartOfEncryptedData - kStartOfHashData);
   }
 
   base::StringPiece Plaintext() const {
@@ -521,7 +522,8 @@ class NET_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
       std::ostream& os, const QuicEncryptedPacket& s);
 
   base::StringPiece AssociatedData() const {
-    return base::StringPiece(data() + kStartOfHashData, kStartOfEncryptedData);
+    return base::StringPiece(data() + kStartOfHashData,
+                             kStartOfEncryptedData - kStartOfHashData);
   }
 
  private:
