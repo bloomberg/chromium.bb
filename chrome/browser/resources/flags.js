@@ -49,6 +49,8 @@ function renderTemplate(flagsExperimentsData) {
   for (var i = 0; i < elements.length; ++i) {
     elements[i].onclick = restartBrowser;
   }
+
+  $('experiment-reset-all').onclick = resetAllFlags;
 }
 
 /**
@@ -65,6 +67,15 @@ function requestFlagsExperimentsData() {
  */
 function restartBrowser() {
   chrome.send('restartBrowser');
+}
+
+/**
+ * Reset all flags to their default values and refresh the UI.
+ */
+function resetAllFlags() {
+  // Asks the C++ FlagsDOMHandler to reset all flags to default values.
+  chrome.send('resetAllFlags');
+  requestFlagsExperimentsData();
 }
 
 /**

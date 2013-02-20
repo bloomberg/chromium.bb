@@ -63,12 +63,10 @@ div.content {
 }
 
 .section-header {
-  -webkit-padding-start: 5px;
   background: rgb(235, 239, 249);
   border-top: 1px solid rgb(181, 199, 222);
   font-size: 99%;
-  padding-bottom: 2px;
-  padding-top: 3px;
+  padding: 2px 5px 3px;
   width: 100%;
 }
 
@@ -82,6 +80,15 @@ div.content {
 
 .section-header-title {
   font-weight: bold;
+  line-height: 200%;
+}
+
+#experiment-reset-all {
+  float: right;
+}
+
+html[dir=rtl] #experiment-reset-all {
+  float: left;
 }
 
 .vbox-container {

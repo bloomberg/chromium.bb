@@ -6126,6 +6126,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Restart Now
         </message>
       </if>
+      <message name="IDS_FLAGS_RESET_ALL_BUTTON" desc="Text on a button that resets all experiments to their default state when clicked.">
+        Reset all to default
+      </message>
       <message name="IDS_FLAGS_DISABLE" desc="The link for disabling a labs experiment.">
         Disable
       </message>

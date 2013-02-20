@@ -1309,6 +1309,7 @@ class FlagsState {
       PrefService* prefs, const std::string& internal_name, bool enable);
   void RemoveFlagsSwitches(
       std::map<std::string, CommandLine::StringType>* switch_list);
+  void ResetAllFlags(PrefService* prefs);
   void reset();
 
   // Returns the singleton instance of this class
@@ -1530,6 +1531,10 @@ void RemoveFlagsSwitches(
   FlagsState::GetInstance()->RemoveFlagsSwitches(switch_list);
 }
 
+void ResetAllFlags(PrefService* prefs) {
+  FlagsState::GetInstance()->ResetAllFlags(prefs);
+}
+
 int GetCurrentPlatform() {
 #if defined(OS_MACOSX)
   return kOsMac;
@@ -1693,6 +1698,13 @@ void FlagsState::RemoveFlagsSwitches(
            it = flags_switches_.begin(); it != flags_switches_.end(); ++it) {
     switch_list->erase(it->first);
   }
+}
+
+void FlagsState::ResetAllFlags(PrefService* prefs) {
+  needs_restart_ = true;
+
+  std::set<std::string> no_experiments;
+  SetEnabledFlags(prefs, no_experiments);
 }
 
 void FlagsState::reset() {

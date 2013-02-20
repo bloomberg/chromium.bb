@@ -54,6 +54,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
   source->AddLocalizedString("flagsNotSupported", IDS_FLAGS_NOT_AVAILABLE);
   source->AddLocalizedString("flagsRestartNotice", IDS_FLAGS_RELAUNCH_NOTICE);
   source->AddLocalizedString("flagsRestartButton", IDS_FLAGS_RELAUNCH_BUTTON);
+  source->AddLocalizedString("resetAllButton", IDS_FLAGS_RESET_ALL_BUTTON);
   source->AddLocalizedString("disable", IDS_FLAGS_DISABLE);
   source->AddLocalizedString("enable", IDS_FLAGS_ENABLE);
 #if defined(OS_CHROMEOS)
@@ -101,6 +102,9 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   // Callback for the "restartBrowser" message. Restores all tabs on restart.
   void HandleRestartBrowser(const ListValue* args);
 
+  // Callback for the "resetAllFlags" message.
+  void HandleResetAllFlags(const ListValue* args);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
 };
@@ -114,6 +118,9 @@ void FlagsDOMHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("restartBrowser",
       base::Bind(&FlagsDOMHandler::HandleRestartBrowser,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("resetAllFlags",
+      base::Bind(&FlagsDOMHandler::HandleResetAllFlags,
                  base::Unretained(this)));
 }
 
@@ -147,6 +154,10 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
 
 void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
   chrome::AttemptRestart();
+}
+
+void FlagsDOMHandler::HandleResetAllFlags(const ListValue* args) {
+  about_flags::ResetAllFlags(g_browser_process->local_state());
 }
 
 }  // namespace

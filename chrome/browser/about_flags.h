@@ -104,6 +104,9 @@ void SetExperimentEnabled(
 void RemoveFlagsSwitches(
     std::map<std::string, CommandLine::StringType>* switch_list);
 
+// Reset all flags to the default state by clearing all flags.
+void ResetAllFlags(PrefService* prefs);
+
 // Returns the value for the current platform. This is one of the values defined
 // by the OS enum above.
 // This is exposed only for testing.
