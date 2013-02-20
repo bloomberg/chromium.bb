@@ -22,8 +22,6 @@ function WallpaperManager(dialogDom) {
   this.customWallpaperData_ = null;
   this.currentWallpaper_ = null;
   this.wallpaperRequest_ = null;
-  this.checkmark_ = cr.doc.createElement('div');
-  this.checkmark_.classList.add('check');
   this.fetchManifest_();
 }
 
@@ -327,7 +325,7 @@ function WallpaperManager(dialogDom) {
                                                   function() {
         if (chrome.runtime.lastError == undefined) {
           self.currentWallpaper_ = wallpaperURL;
-          self.setActiveThumb(selectedGridItem);
+          self.wallpaperGrid_.activeItem = selectedItem;
           return;
         }
 
@@ -347,7 +345,7 @@ function WallpaperManager(dialogDom) {
                 image,
                 selectedItem.layout,
                 wallpaperURL,
-                self.onFinished_.bind(self, selectedGridItem));
+                self.onFinished_.bind(self, selectedGridItem, selectedItem));
             self.currentWallpaper_ = wallpaperURL;
           } else {
             self.progressManager_.hideProgressBar(selectedGridItem);
@@ -501,15 +499,21 @@ function WallpaperManager(dialogDom) {
    * Sets wallpaper finished. Displays error message in butter bar if any.
    * @param {WallpaperThumbnailsGridItem=} opt_selectedGridItem The wallpaper
    *     thumbnail grid item. It extends from cr.ui.ListItem.
+   * @param {{baseURL: string, dynamicURL: string, layout: string,
+   *          author: string, authorWebsite: string,
+   *          availableOffline: boolean}=}
+   *     opt_selectedItem the selected item in WallpaperThumbnailsGrid's data
+   *     model.
    */
-  WallpaperManager.prototype.onFinished_ = function(opt_selectedGridItem) {
+  WallpaperManager.prototype.onFinished_ = function(opt_selectedGridItem,
+                                                    opt_selectedItem) {
     if (opt_selectedGridItem)
       this.progressManager_.hideProgressBar(opt_selectedGridItem);
 
     if (chrome.runtime.lastError != undefined) {
       this.showError_(chrome.runtime.lastError.message);
-    } else if (opt_selectedGridItem) {
-      this.setActiveThumb(opt_selectedGridItem);
+    } else if (opt_selectedItem) {
+      this.wallpaperGrid_.activeItem = opt_selectedItem;
     }
   };
 
@@ -593,24 +597,8 @@ function WallpaperManager(dialogDom) {
       }
       this.wallpaperGrid_.dataModel = wallpapersDataModel;
       this.wallpaperGrid_.selectedItem = selectedItem;
-      this.setActiveThumb(this.wallpaperGrid_.getListItem(selectedItem));
+      this.wallpaperGrid_.activeItem = selectedItem;
     }
-  };
-
-  /**
-   * Shows a checkmark on the active thumbnail and clears previous active one if
-   * any. Note if wallpaper was not set successfully, checkmark should not show
-   * on that thumbnail.
-   * @param {WallpaperThumbnailsGridItem} selectedGridItem The wallpaper
-   *     thumbnail grid item. It extends from cr.ui.ListItem.
-   */
-  WallpaperManager.prototype.setActiveThumb = function(selectedGridItem) {
-    if (!selectedGridItem)
-      return;
-    // Clears previous checkmark.
-    if (this.checkmark_.parentNode)
-      this.checkmark_.parentNode.removeChild(this.checkmark_);
-    selectedGridItem.appendChild(this.checkmark_);
   };
 
 })();
