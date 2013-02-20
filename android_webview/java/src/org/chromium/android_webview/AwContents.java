@@ -227,16 +227,6 @@ public class AwContents {
         }
     }
 
-    // TODO(kristianm): Delete this when nativeWindow parameter is removed in Android
-    public AwContents(ViewGroup containerView,
-            InternalAccessDelegate internalAccessAdapter,
-            AwContentsClient contentsClient,
-            NativeWindow nativeWindow,
-            boolean isAccessFromFileURLsGrantedByDefault) {
-        this(containerView, internalAccessAdapter, contentsClient,
-                isAccessFromFileURLsGrantedByDefault);
-    }
-
     /**
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param internalAccessAdapter to access private methods on containerView.

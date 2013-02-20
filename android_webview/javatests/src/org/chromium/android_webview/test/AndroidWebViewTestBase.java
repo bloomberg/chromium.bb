@@ -207,7 +207,7 @@ public class AndroidWebViewTestBase
             final AwContentsClient awContentsClient) {
         testContainerView.initialize(new AwContents(testContainerView,
                 testContainerView.getInternalAccessDelegate(),
-                awContentsClient, new ActivityNativeWindow(getActivity()), false));
+                awContentsClient, false));
         getActivity().addView(testContainerView);
         testContainerView.requestFocus();
         return testContainerView;
