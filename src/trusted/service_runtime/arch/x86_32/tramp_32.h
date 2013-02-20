@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -20,7 +20,6 @@
 extern char   NaCl_tramp_patch;
 extern char   NaCl_trampoline_seg_code, NaCl_trampoline_seg_end;
 extern char   NaCl_tramp_cseg_patch;
-extern char   NaCl_text_prot, NaCl_text_prot_end;
 
 extern char   NaClPcrelThunk, NaClPcrelThunk_end;
 extern char   NaClPcrelThunk_globals_patch;

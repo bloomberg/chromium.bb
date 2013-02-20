@@ -24,15 +24,11 @@
         NACL_RODATA
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
-
         lcall   $0xcafe, $0xdeadbeef  /* orig-cs, thunk */
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_tramp_cseg_patch):
         hlt
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_end):
 
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_text_prot):
-        hlt
-DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_text_prot_end):
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClPcrelThunk):
         movl    $0xdeadbeef, %eax  /* known okay ds */
