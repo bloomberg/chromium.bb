@@ -200,6 +200,9 @@ class AppListController : public ProfileInfoCacheObserver {
   // Create or recreate, and initialize |current_view_| from |profile|.
   void PopulateViewFromProfile(Profile* profile);
 
+  // Save |profile_file_path| as the app list profile in local state.
+  void SaveProfilePathToLocalState(const base::FilePath& profile_file_path);
+
   // Utility methods for showing the app list.
   void SnapArrowLocationToTaskbarEdge(
       const gfx::Display& display,
@@ -361,9 +364,6 @@ void AppListController::OnProfileWillBeRemoved(
 
 void AppListController::SetProfilePath(
     const base::FilePath& profile_file_path) {
-  g_browser_process->local_state()->SetString(
-      prefs::kAppListProfile,
-      profile_file_path.BaseName().MaybeAsASCII());
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = profile_manager->GetProfileByPath(profile_file_path);
 
@@ -439,6 +439,8 @@ void AppListController::ShowAppList(Profile* profile) {
     return;
   }
 
+  SaveProfilePathToLocalState(profile->GetPath());
+
   DismissAppList();
   PopulateViewFromProfile(profile);
 
@@ -496,6 +498,13 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
   ::SetWindowText(hwnd, app_name.c_str());
   string16 icon_path = GetAppListIconPath();
   ui::win::SetAppIconForWindow(icon_path, hwnd);
+}
+
+void AppListController::SaveProfilePathToLocalState(
+    const base::FilePath& profile_file_path) {
+  g_browser_process->local_state()->SetString(
+      prefs::kAppListProfile,
+      profile_file_path.BaseName().MaybeAsASCII());
 }
 
 void AppListController::DismissAppList() {
