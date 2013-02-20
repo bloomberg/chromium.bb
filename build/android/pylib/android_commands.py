@@ -641,11 +641,13 @@ class AndroidCommands(object):
 
   def ClearApplicationState(self, package):
     """Closes and clears all state for the given |package|."""
-    self.CloseApplication(package)
-    self.RunShellCommand('su -c rm -r /data/data/%s/app_*' % package)
-    self.RunShellCommand('su -c rm -r /data/data/%s/cache/*' % package)
-    self.RunShellCommand('su -c rm -r /data/data/%s/files/*' % package)
-    self.RunShellCommand('su -c rm -r /data/data/%s/shared_prefs/*' % package)
+    # Check that the package exists before clearing it. Necessary because
+    # calling pm clear on a package that doesn't exist may never return.
+    pm_path_output  = self.RunShellCommand('pm path ' + package)
+    # The path output only contains anything if and only if the package exists.
+    if pm_path_output:
+      self.CloseApplication(package)
+      self.RunShellCommand('pm clear ' + package)
 
   def SendKeyEvent(self, keycode):
     """Sends keycode to the device.
