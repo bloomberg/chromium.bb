@@ -327,8 +327,10 @@ void AutofillDialogViews::SuggestionView::SetSuggestionIcon(
 }
 
 void AutofillDialogViews::SuggestionView::ShowTextfield(
-    const string16& placeholder_text) {
+    const string16& placeholder_text,
+    const gfx::ImageSkia& icon) {
   decorated_->textfield()->set_placeholder_text(placeholder_text);
+  decorated_->textfield()->SetIcon(icon);
   decorated_->SetVisible(true);
 }
 
@@ -799,7 +801,9 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
 
   if (section == SECTION_CC) {
     // TODO(estade): don't hardcode this string.
-    suggested_info->ShowTextfield(ASCIIToUTF16("CVC"));
+    suggested_info->ShowTextfield(
+        ASCIIToUTF16("CVC"),
+        controller_->IconForType(CREDIT_CARD_VERIFICATION_CODE).AsImageSkia());
   }
 
   // TODO(estade): Fix the appearance of this button.
@@ -874,6 +878,10 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
           input.autofilled_value,
           l10n_util::GetStringUTF16(input.placeholder_text_rid),
           this);
+
+      gfx::Image icon = controller_->IconForType(input.type);
+      field->textfield()->SetIcon(icon.AsImageSkia());
+
       textfields->insert(std::make_pair(&input, field));
       layout->AddView(field);
     }

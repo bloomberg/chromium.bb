@@ -176,6 +176,7 @@
       <structure type="chrome_scaled_image" name="IDR_CONTROLLED_SETTING_RECOMMENDED_LARGE" file="controlled_setting_recommended_large.png" />
       <structure type="chrome_scaled_image" name="IDR_COOKIE_ICON" file="cookie.png" />
       <structure type="chrome_scaled_image" name="IDR_COOKIE_STORAGE_ICON" file="cookie_storage.png" />
+      <structure type="chrome_scaled_image" name="IDR_CREDIT_CARD_CVC_HINT" file="credit_card_cvc_hint.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_CRITICAL_ERROR" file="cros/critical_error.png" />
       </if>

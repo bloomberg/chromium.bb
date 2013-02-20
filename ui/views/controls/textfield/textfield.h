@@ -24,12 +24,18 @@
 #include "base/logging.h"
 #endif
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace ui {
 class Range;
 class TextInputClient;
 }  // namespace ui
 
 namespace views {
+
+class ImageView;
 
 class TextfieldController;
 
@@ -164,6 +170,10 @@ class VIEWS_EXPORT Textfield : public View {
   void set_placeholder_text_color(SkColor color) {
     placeholder_text_color_ = color;
   }
+
+  // Adds an icon which displays inside the border on the right side of the view
+  // (left in RTL).
+  void SetIcon(const gfx::ImageSkia& icon);
 
   // Getter for the horizontal margins that were set. Returns false if
   // horizontal margins weren't set.
@@ -319,6 +329,9 @@ class VIEWS_EXPORT Textfield : public View {
 
   // Placeholder text color.
   SkColor placeholder_text_color_;
+
+  // When non-NULL, an icon to display inside the border of the textfield.
+  views::ImageView* icon_view_;
 
   // The accessible name of the text field.
   string16 accessible_name_;

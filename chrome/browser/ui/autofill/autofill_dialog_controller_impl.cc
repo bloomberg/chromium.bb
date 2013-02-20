@@ -33,6 +33,7 @@
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -520,6 +521,15 @@ void AutofillDialogControllerImpl::EditClickedForSection(
 
   section_editing_state_[section] = true;
   view_->UpdateSection(section);
+}
+
+gfx::Image AutofillDialogControllerImpl::IconForType(AutofillFieldType type)
+    const {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (type == CREDIT_CARD_VERIFICATION_CODE)
+    return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT);
+
+  return gfx::Image();
 }
 
 bool AutofillDialogControllerImpl::InputIsValid(AutofillFieldType type,

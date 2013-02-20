@@ -15,9 +15,11 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
@@ -72,6 +74,7 @@ Textfield::Textfield()
       horizontal_margins_were_set_(false),
       vertical_margins_were_set_(false),
       placeholder_text_color_(kDefaultPlaceholderTextColor),
+      icon_view_(NULL),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT) {
   set_focusable(true);
 }
@@ -93,6 +96,7 @@ Textfield::Textfield(StyleFlags style)
       horizontal_margins_were_set_(false),
       vertical_margins_were_set_(false),
       placeholder_text_color_(kDefaultPlaceholderTextColor),
+      icon_view_(NULL),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT) {
   set_focusable(true);
   if (IsObscured())
@@ -295,11 +299,42 @@ void Textfield::UseDefaultBorderColor() {
   native_wrapper_->UpdateBorderColor();
 }
 
+void Textfield::SetIcon(const gfx::ImageSkia& icon) {
+  if (icon.isNull()) {
+    if (icon_view_) {
+      RemoveChildView(icon_view_);
+      delete icon_view_;
+      icon_view_ = NULL;
+    }
+
+    return;
+  }
+
+  if (!icon_view_) {
+    icon_view_ = new ImageView();
+    AddChildView(icon_view_);
+  }
+
+  icon_view_->SetImage(icon);
+  PreferredSizeChanged();
+}
+
 bool Textfield::GetHorizontalMargins(int* left, int* right) {
   if (!horizontal_margins_were_set_)
     return false;
+
+  // Add the width of the icon as well as a margin for the icon.
+  int icon_width = 0;
+  if (icon_view_)
+    icon_width = icon_view_->GetPreferredSize().width() + margins_.right();
+
   *left = margins_.left();
   *right = margins_.right();
+  if (base::i18n::IsRTL())
+    *left += icon_width;
+  else
+    *right += icon_width;
+
   return true;
 }
 
@@ -409,6 +444,18 @@ void Textfield::Layout() {
   if (native_wrapper_) {
     native_wrapper_->GetView()->SetBoundsRect(GetLocalBounds());
     native_wrapper_->GetView()->Layout();
+  }
+  if (icon_view_) {
+    gfx::Rect bounds = GetLocalBounds();
+    bounds.Inset(margins_);
+
+    // Flush right, vertically centered.
+    gfx::Size pref_size = icon_view_->GetPreferredSize();
+    gfx::Rect icon_bounds(
+        gfx::Point(bounds.right() - pref_size.width(),
+                   bounds.y() + (bounds.height() - pref_size.height()) / 2),
+        pref_size);
+    icon_view_->SetBoundsRect(icon_bounds);
   }
 }
 
@@ -529,7 +576,7 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     // The native wrapper's lifetime will be managed by the view hierarchy after
     // we call AddChildView.
     native_wrapper_ = NativeTextfieldWrapper::CreateWrapper(this);
-    AddChildView(native_wrapper_->GetView());
+    AddChildViewAt(native_wrapper_->GetView(), 0);
     // TODO(beng): Move this initialization to NativeTextfieldWin once it
     //             subclasses NativeControlWin.
     UpdateAllProperties();

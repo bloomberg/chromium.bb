@@ -116,8 +116,8 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
-  // A class which holds a textfield and draws extra stuff on top, like credit
-  // card icons or invalid content indications.
+  // A class which holds a textfield and draws extra stuff on top, like
+  // invalid content indications.
   class DecoratedTextfield : public views::View {
    public:
     DecoratedTextfield(const string16& default_value,
@@ -221,7 +221,8 @@ class AutofillDialogViews : public AutofillDialogView,
 
     // Shows an auxiliary textfield to the right of the suggestion icon and
     // text. This is currently only used to show a CVC field for the CC section.
-    void ShowTextfield(const string16& placeholder_text);
+    void ShowTextfield(const string16& placeholder_text,
+                       const gfx::ImageSkia& icon);
 
     DecoratedTextfield* decorated_textfield() { return decorated_; }
 
