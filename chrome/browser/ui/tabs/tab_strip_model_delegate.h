@@ -39,6 +39,12 @@ class TabStripModelDelegate {
     TAB_TEAROFF_ACTION = 2
   };
 
+  enum RestoreTabType {
+    RESTORE_NONE,
+    RESTORE_TAB,
+    RESTORE_WINDOW
+  };
+
   virtual ~TabStripModelDelegate() {}
 
   // Adds what the delegate considers to be a blank tab to the model. An |index|
@@ -98,10 +104,10 @@ class TabStripModelDelegate {
   virtual bool RunUnloadListenerBeforeClosing(
       content::WebContents* contents) = 0;
 
-  // Returns true if a tab can be restored.
-  virtual bool CanRestoreTab() = 0;
+  // Returns the current tab restore type.
+  virtual RestoreTabType GetRestoreTabType() = 0;
 
-  // Restores the last closed tab if CanRestoreTab would return true.
+  // Restores the last closed tab unless tab restore type is none.
   virtual void RestoreTab() = 0;
 
   // Returns true if we should allow "bookmark all tabs" in this window; this is

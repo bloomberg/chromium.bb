@@ -9,6 +9,7 @@
 
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -77,7 +78,8 @@ void CloseWindow(Browser* browser);
 void NewTab(Browser* browser);
 void CloseTab(Browser* browser);
 void RestoreTab(Browser* browser);
-bool CanRestoreTab(const Browser* browser);
+TabStripModelDelegate::RestoreTabType GetRestoreTabType(
+    const Browser* browser);
 void SelectNextTab(Browser* browser);
 void SelectPreviousTab(Browser* browser);
 void OpenTabpose(Browser* browser);  // Mac-only

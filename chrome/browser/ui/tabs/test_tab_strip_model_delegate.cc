@@ -55,8 +55,9 @@ bool TestTabStripModelDelegate::RunUnloadListenerBeforeClosing(
   return true;
 }
 
-bool TestTabStripModelDelegate::CanRestoreTab() {
-  return false;
+TabStripModelDelegate::RestoreTabType
+TestTabStripModelDelegate::GetRestoreTabType() {
+  return TabStripModelDelegate::RESTORE_NONE;
 }
 
 void TestTabStripModelDelegate::RestoreTab() {

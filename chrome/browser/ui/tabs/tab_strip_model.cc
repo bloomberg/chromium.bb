@@ -713,7 +713,8 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     }
 
     case CommandRestoreTab:
-      return delegate_->CanRestoreTab();
+      return delegate_->GetRestoreTabType() !=
+          TabStripModelDelegate::RESTORE_NONE;
 
     case CommandTogglePinned: {
       std::vector<int> indices = GetIndicesForCommand(context_index);

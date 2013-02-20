@@ -276,7 +276,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_DontLoadRestoredTab) {
   ASSERT_EQ(browser()->tab_strip_model()->count(), starting_tab_count + 2);
 
   // Make sure that there's nothing else to restore.
-  ASSERT_FALSE(chrome::CanRestoreTab(browser()));
+  ASSERT_EQ(chrome::GetRestoreTabType(browser()),
+            TabStripModelDelegate::RESTORE_NONE);
 }
 
 // Open a window with multiple tabs, close a tab, then close the window.

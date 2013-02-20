@@ -773,8 +773,9 @@ void BrowserCommandController::TabBlockedStateChanged(
 
 void BrowserCommandController::TabRestoreServiceChanged(
     TabRestoreService* service) {
-  command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB,
-                                        CanRestoreTab(browser_));
+  command_updater_.UpdateCommandEnabled(
+      IDC_RESTORE_TAB,
+      GetRestoreTabType(browser_) != TabStripModelDelegate::RESTORE_NONE);
 }
 
 void BrowserCommandController::TabRestoreServiceDestroyed(

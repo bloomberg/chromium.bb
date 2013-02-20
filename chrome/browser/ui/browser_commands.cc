@@ -501,10 +501,15 @@ void RestoreTab(Browser* browser) {
                                     browser->host_desktop_type());
 }
 
-bool CanRestoreTab(const Browser* browser) {
+TabStripModelDelegate::RestoreTabType GetRestoreTabType(
+    const Browser* browser) {
   TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser->profile());
-  return service && !service->entries().empty();
+  if (!service || service->entries().empty())
+    return TabStripModelDelegate::RESTORE_NONE;
+  if (service->entries().front()->type == TabRestoreService::WINDOW)
+    return TabStripModelDelegate::RESTORE_WINDOW;
+  return TabStripModelDelegate::RESTORE_TAB;
 }
 
 void SelectNextTab(Browser* browser) {

@@ -34,7 +34,7 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
       content::WebContents* contents) OVERRIDE;
   virtual bool CanBookmarkAllTabs() const OVERRIDE;
   virtual void BookmarkAllTabs() OVERRIDE;
-  virtual bool CanRestoreTab() OVERRIDE;
+  virtual RestoreTabType GetRestoreTabType() OVERRIDE;
   virtual void RestoreTab() OVERRIDE;
 
   void CloseFrame();

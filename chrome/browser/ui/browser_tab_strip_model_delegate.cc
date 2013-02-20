@@ -145,8 +145,9 @@ void BrowserTabStripModelDelegate::BookmarkAllTabs() {
   chrome::BookmarkAllTabs(browser_);
 }
 
-bool BrowserTabStripModelDelegate::CanRestoreTab() {
-  return chrome::CanRestoreTab(browser_);
+TabStripModelDelegate::RestoreTabType
+BrowserTabStripModelDelegate::GetRestoreTabType() {
+  return chrome::GetRestoreTabType(browser_);
 }
 
 void BrowserTabStripModelDelegate::RestoreTab() {
