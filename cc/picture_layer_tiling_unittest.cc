@@ -179,5 +179,180 @@ TEST_F(PictureLayerTilingIteratorTest, NonContainedDestRect) {
   VerifyTilesCoverNonContainedRect(0.5f, gfx::Rect(-1000, 100, 2000, 100));
 }
 
+TEST(PictureLayerTilingTest, ExpandRectEqual) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(-1000, -1000, 10000, 10000);
+  int64 target_area = 100 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(in.ToString(), out.ToString());
+}
+
+TEST(PictureLayerTilingTest, ExpandRectSmaller) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(-1000, -1000, 10000, 10000);
+  int64 target_area = 100 * 100;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(out.bottom() - in.bottom(), in.y() - out.y());
+  EXPECT_EQ(out.right() - in.right(), in.x() - out.x());
+  EXPECT_EQ(out.width() - in.width(), out.height() - in.height());
+  EXPECT_NEAR(100 * 100, out.width() * out.height(), 50);
+  EXPECT_TRUE(bounds.Contains(out));
+}
+
+TEST(PictureLayerTilingTest, ExpandRectUnbounded) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(-1000, -1000, 10000, 10000);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(out.bottom() - in.bottom(), in.y() - out.y());
+  EXPECT_EQ(out.right() - in.right(), in.x() - out.x());
+  EXPECT_EQ(out.width() - in.width(), out.height() - in.height());
+  EXPECT_NEAR(200 * 200, out.width() * out.height(), 100);
+  EXPECT_TRUE(bounds.Contains(out));
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedSmaller) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(50, 60, 40, 30);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(bounds.ToString(), out.ToString());
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedEqual) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds = in;
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(bounds.ToString(), out.ToString());
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedSmallerStretchVertical) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(45, 0, 90, 300);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(bounds.ToString(), out.ToString());
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedEqualStretchVertical) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(40, 0, 100, 300);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(bounds.ToString(), out.ToString());
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedSmallerStretchHorizontal) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(0, 55, 180, 190);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(bounds.ToString(), out.ToString());
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedEqualStretchHorizontal) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(0, 50, 180, 200);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(bounds.ToString(), out.ToString());
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedLeft) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(20, -1000, 10000, 10000);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(out.bottom() - in.bottom(), in.y() - out.y());
+  EXPECT_EQ(out.bottom() - in.bottom(), out.right() - in.right());
+  EXPECT_LE(out.width() * out.height(), target_area);
+  EXPECT_GT(out.width() * out.height(),
+            target_area - out.width() - out.height() * 2);
+  EXPECT_TRUE(bounds.Contains(out));
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedRight) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(-1000, -1000, 1000+120, 10000);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(out.bottom() - in.bottom(), in.y() - out.y());
+  EXPECT_EQ(out.bottom() - in.bottom(), in.x() - out.x());
+  EXPECT_LE(out.width() * out.height(), target_area);
+  EXPECT_GT(out.width() * out.height(),
+            target_area - out.width() - out.height() * 2);
+  EXPECT_TRUE(bounds.Contains(out));
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedTop) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(-1000, 30, 10000, 10000);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(out.right() - in.right(), in.x() - out.x());
+  EXPECT_EQ(out.right() - in.right(), out.bottom() - in.bottom());
+  EXPECT_LE(out.width() * out.height(), target_area);
+  EXPECT_GT(out.width() * out.height(),
+            target_area - out.width() * 2 - out.height());
+  EXPECT_TRUE(bounds.Contains(out));
+}
+
+TEST(PictureLayerTilingTest, ExpandRectBoundedBottom) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(-1000, -1000, 10000, 1000 + 220);
+  int64 target_area = 200 * 200;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(out.right() - in.right(), in.x() - out.x());
+  EXPECT_EQ(out.right() - in.right(), in.y() - out.y());
+  EXPECT_LE(out.width() * out.height(), target_area);
+  EXPECT_GT(out.width() * out.height(),
+            target_area - out.width() * 2 - out.height());
+  EXPECT_TRUE(bounds.Contains(out));
+}
+
+TEST(PictureLayerTilingTest, ExpandRectSquishedHorizontally) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(0, -4000, 100+40+20, 100000);
+  int64 target_area = 400 * 400;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(20, out.right() - in.right());
+  EXPECT_EQ(40, in.x() - out.x());
+  EXPECT_EQ(out.bottom() - in.bottom(), in.y() - out.y());
+  EXPECT_LE(out.width() * out.height(), target_area);
+  EXPECT_GT(out.width() * out.height(),
+            target_area - out.width() * 2);
+  EXPECT_TRUE(bounds.Contains(out));
+}
+
+TEST(PictureLayerTilingTest, ExpandRectSquishedVertically) {
+  gfx::Rect in(40, 50, 100, 200);
+  gfx::Rect bounds(-4000, 0, 100000, 200+50+30);
+  int64 target_area = 400 * 400;
+  gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
+      in, target_area, bounds);
+  EXPECT_EQ(30, out.bottom() - in.bottom());
+  EXPECT_EQ(50, in.y() - out.y());
+  EXPECT_EQ(out.right() - in.right(), in.x() - out.x());
+  EXPECT_LE(out.width() * out.height(), target_area);
+  EXPECT_GT(out.width() * out.height(),
+            target_area - out.height() * 2);
+  EXPECT_TRUE(bounds.Contains(out));
+}
+
 }  // namespace
 }  // namespace cc

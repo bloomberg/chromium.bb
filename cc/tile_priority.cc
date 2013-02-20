@@ -56,6 +56,10 @@ namespace cc {
 
 const float TilePriority::kMaxDistanceInContentSpace = 4096.0f;
 
+// At 256x256 tiles, 80 tiles cover an area of ~1280x4906 pixels.
+const int64 TilePriority::
+    kNumTilesToCoverWithInflatedViewportRectForPrioritization = 80;
+
 scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree) {
   switch (tree) {
   case ACTIVE_TREE:

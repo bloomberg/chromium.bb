@@ -71,6 +71,11 @@ class CC_EXPORT PictureLayerTiling {
     LayerNotAlignedToDevice,
   };
 
+  static gfx::Rect ExpandRectEquallyToAreaBoundedBy(
+      gfx::Rect starting_rect,
+      int64 target_area,
+      gfx::Rect bounding_rect);
+
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
   // The union of all geometry_rect calls for each element iterated over should
