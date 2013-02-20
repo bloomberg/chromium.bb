@@ -20,7 +20,8 @@ const int kReadBufferSize = 65536;
 // from sendto() calls.
 bool IsTransientError(int error) {
   return error == net::ERR_ADDRESS_UNREACHABLE ||
-      error == net::ERR_ADDRESS_INVALID;
+         error == net::ERR_ADDRESS_INVALID ||
+         error == net::ERR_ACCESS_DENIED;
 }
 
 }  // namespace
