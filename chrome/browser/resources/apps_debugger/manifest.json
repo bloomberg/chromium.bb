@@ -21,5 +21,6 @@
   "icons": {
     "16": "images/dev-icon-16.png",
     "128": "images/dev-icon-128.png"
-  }
+  },
+  "web_accessible_resources": ["images/trash.png"]
 }

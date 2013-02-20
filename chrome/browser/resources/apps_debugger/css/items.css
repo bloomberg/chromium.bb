@@ -154,6 +154,12 @@ html[dir='rtl'] .extension-list-item {
 
 /* Trash */
 
+.enable-controls > .trash > .lid,
+.enable-controls > .trash > .can {
+  background: url(../../../../../ui/webui/resources/images/trash.png)
+      0 0 no-repeat;
+}
+
 #extension-settings .trash {
   -webkit-transition: opacity 200ms;
   height: 22px;
