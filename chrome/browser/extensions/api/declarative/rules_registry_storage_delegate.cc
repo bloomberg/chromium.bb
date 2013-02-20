@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry_storage_delegate.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
+#include "base/time.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -117,6 +119,13 @@ class RulesRegistryStorageDelegate::Inner
   // True when we have finished reading from storage for all extensions that
   // are loaded on startup.
   bool ready_;
+
+  // We measure the time spent on loading rules on init. The result is logged
+  // with UMA once per the delegate instance, unless in Incognito.
+  base::Time storage_init_time_;
+  bool log_storage_init_delay_;
+  // TODO(vabr): Could |ready_| be used instead of |log_storage_init_delay_|?
+  // http://crbug.com/176926
 };
 
 RulesRegistryStorageDelegate::RulesRegistryStorageDelegate() {
@@ -171,13 +180,15 @@ RulesRegistryStorageDelegate::Inner::Inner(
       storage_key_(storage_key),
       rules_registry_thread_(rules_registry->GetOwnerThread()),
       rules_registry_(rules_registry),
-      ready_(false) {
+      ready_(false),
+      log_storage_init_delay_(true) {
   if (!profile_->IsOffTheRecord()) {
     registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                     content::Source<Profile>(profile));
     registrar_->Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                     content::Source<Profile>(profile));
   } else {
+    log_storage_init_delay_ = false;
     registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                     content::Source<Profile>(profile->GetOriginalProfile()));
     InitForOTRProfile();
@@ -234,6 +245,9 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorage(
   if (!profile_)
     return;
 
+  if (storage_init_time_.is_null())
+    storage_init_time_ = base::Time::Now();
+
   extensions::StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
   if (store) {
     waiting_for_extensions_.insert(extension_id);
@@ -263,6 +277,11 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorageCallback(
 
   waiting_for_extensions_.erase(extension_id);
   CheckIfReady();
+  if (log_storage_init_delay_ && waiting_for_extensions_.empty()) {
+    UMA_HISTOGRAM_TIMES("Extensions.DeclarativeRulesStorageInitialization",
+                        base::Time::Now() - storage_init_time_);
+    log_storage_init_delay_ = false;
+  }
 }
 
 void RulesRegistryStorageDelegate::Inner::WriteToStorage(
