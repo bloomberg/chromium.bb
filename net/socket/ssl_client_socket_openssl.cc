@@ -646,8 +646,6 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
 
   DVLOG(3) << "Encoded connection status: cipher suite = "
       << SSLConnectionStatusToCipherSuite(ssl_info->connection_status)
-      << " compression = "
-      << SSLConnectionStatusToCompression(ssl_info->connection_status)
       << " version = "
       << SSLConnectionStatusToVersion(ssl_info->connection_status);
   return true;

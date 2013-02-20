@@ -338,18 +338,6 @@ void SSLCipherSuiteToStrings(const char** key_exchange_str,
   *mac_str = kMacNames[mac].name;
 }
 
-void SSLCompressionToString(const char** name, uint8 compresssion) {
-  if (compresssion == 0) {
-    *name = "NONE";
-  } else if (compresssion == 1) {
-    *name = "DEFLATE";
-  } else if (compresssion == 64) {
-    *name = "LZS";
-  } else {
-    *name = "???";
-  }
-}
-
 void SSLVersionToString(const char** name, int ssl_version) {
   switch (ssl_version) {
     case SSL_CONNECTION_VERSION_SSL2:

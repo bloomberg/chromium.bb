@@ -23,12 +23,6 @@ NET_EXPORT void SSLCipherSuiteToStrings(const char** key_exchange_str,
                                         const char** mac_str,
                                         uint16 cipher_suite);
 
-// SSLCompressionToString returns the name of the compression algorithm
-// specified by |compression_method|, which is the TLS compression id.
-// If the algorithm is unknown, |name| is set to "???".
-NET_EXPORT void SSLCompressionToString(const char** name,
-                                       uint8 compression_method);
-
 // SSLVersionToString returns the name of the SSL protocol version
 // specified by |ssl_version|, which is defined in
 // net/base/ssl_connection_status_flags.h.

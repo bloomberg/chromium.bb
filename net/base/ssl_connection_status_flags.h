@@ -53,11 +53,6 @@ inline int SSLConnectionStatusToCipherSuite(int connection_status) {
          SSL_CONNECTION_CIPHERSUITE_MASK;
 }
 
-inline int SSLConnectionStatusToCompression(int connection_status) {
-  return (connection_status >> SSL_CONNECTION_COMPRESSION_SHIFT) &
-         SSL_CONNECTION_COMPRESSION_MASK;
-}
-
 inline int SSLConnectionStatusToVersion(int connection_status) {
   return (connection_status >> SSL_CONNECTION_VERSION_SHIFT) &
          SSL_CONNECTION_VERSION_MASK;
