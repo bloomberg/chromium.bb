@@ -6693,3 +6693,9 @@
    fun:_ZN11cloud_print20CloudPrintURLFetcher18StartRequestHelperERK4GURLN3net10URLFetcher11RequestTypeEPNS0_8DelegateEiRKSsSA_SA_
    fun:_ZN11cloud_print20CloudPrintURLFetcher15StartGetRequestERK4GURLPNS0_8DelegateEiRKSs
 }
+{
+   bug_177213
+   Memcheck:Leak
+   ...
+   fun:_ZN10extensionsL9SerializeERKSt6vectorINS_10UserScriptESaIS1_EE
+}
