@@ -15,6 +15,7 @@
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/ssl_tab_helper.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -79,6 +80,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   SSLTabHelper::CreateForWebContents(contents);
   TabContentsSyncedTabDelegate::CreateForWebContents(contents);
   TabSpecificContentSettings::CreateForWebContents(contents);
+  TranslateTabHelper::CreateForWebContents(contents);
   WindowAndroidHelper::CreateForWebContents(contents);
 }
 

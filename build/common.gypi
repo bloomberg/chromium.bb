@@ -481,7 +481,7 @@
           'enable_automation%': 0,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
-          'enable_language_detection%': 0,
+          'enable_language_detection%': 1,
           'enable_printing%': 0,
           'enable_themes%': 0,
           'proprietary_codecs%': 1,
