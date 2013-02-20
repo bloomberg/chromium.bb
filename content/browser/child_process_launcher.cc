@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -112,7 +113,9 @@ class ChildProcessLauncher::Context
       // |this_object| is NOT thread safe. Only use it to post a task back.
       scoped_refptr<Context> this_object,
       BrowserThread::ID client_thread_id,
+      const base::TimeTicks begin_launch_time,
       base::ProcessHandle handle) {
+    RecordHistograms(begin_launch_time);
     if (BrowserThread::CurrentlyOn(client_thread_id)) {
       // This is always invoked on the UI thread which is commonly the
       // |client_thread_id| so we can shortcut one PostTask.
@@ -147,6 +150,30 @@ class ChildProcessLauncher::Context
     Terminate();
   }
 
+  static void RecordHistograms(const base::TimeTicks begin_launch_time) {
+    base::TimeDelta launch_time = base::TimeTicks::Now() - begin_launch_time;
+    if (BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER)) {
+      RecordLaunchHistograms(launch_time);
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+          base::Bind(&ChildProcessLauncher::Context::RecordLaunchHistograms,
+                     launch_time));
+    }
+  }
+
+  static void RecordLaunchHistograms(const base::TimeDelta launch_time) {
+    // Log the launch time, separating out the first one (which will likely be
+    // slower due to the rest of the browser initializing at the same time).
+    static bool done_first_launch = false;
+    if (done_first_launch) {
+      UMA_HISTOGRAM_TIMES("MPArch.ChildProcessLaunchSubsequent", launch_time);
+    } else {
+      UMA_HISTOGRAM_TIMES("MPArch.ChildProcessLaunchFirst", launch_time);
+      done_first_launch = true;
+    }
+  }
+
   static void LaunchInternal(
       // |this_object| is NOT thread safe. Only use it to post a task back.
       scoped_refptr<Context> this_object,
@@ -163,6 +190,7 @@ class ChildProcessLauncher::Context
 #endif
       CommandLine* cmd_line) {
     scoped_ptr<CommandLine> cmd_line_deleter(cmd_line);
+    base::TimeTicks begin_launch_time = base::TimeTicks::Now();
 
 #if defined(OS_WIN)
     base::ProcessHandle handle = StartProcessWithAccess(cmd_line, exposed_dir);
@@ -184,7 +212,7 @@ class ChildProcessLauncher::Context
 
     StartSandboxedProcess(cmd_line->argv(), files_to_register,
         base::Bind(&ChildProcessLauncher::Context::OnSandboxedProcessStarted,
-                   this_object, client_thread_id));
+                   this_object, client_thread_id, begin_launch_time));
 
 #elif defined(OS_POSIX)
     base::ProcessHandle handle = base::kNullProcessHandle;
@@ -267,6 +295,8 @@ class ChildProcessLauncher::Context
     }
 #endif  // else defined(OS_POSIX)
 #if !defined(OS_ANDROID)
+  if (handle)
+    RecordHistograms(begin_launch_time);
   BrowserThread::PostTask(
       client_thread_id, FROM_HERE,
       base::Bind(
