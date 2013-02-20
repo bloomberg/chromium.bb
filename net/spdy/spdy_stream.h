@@ -178,8 +178,9 @@ class NET_EXPORT_PRIVATE SpdyStream
   // writes.
   bool WasEverUsed() const;
 
-  // Increases |recv_window_size_| by the given number of bytes, also sends
-  // a WINDOW_UPDATE frame.
+  // Increases |recv_window_size_| by the given number of bytes, and
+  // may also send a WINDOW_UPDATE frame. |delta_window_size| must
+  // not overflow |recv_window_size_|.
   void IncreaseRecvWindowSize(int32 delta_window_size);
 
   // Decreases |recv_window_size_| by the given number of bytes, called

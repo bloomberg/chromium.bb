@@ -462,6 +462,78 @@ TEST_F(SpdyStreamSpdy3Test, StreamError) {
   EXPECT_EQ(static_cast<int>(stream_id), stream_id2);
 }
 
+// Call IncreaseSendWindowSize on a stream with a large enough delta
+// to overflow an int32. The SpdyStream should handle that case
+// gracefully.
+TEST_F(SpdyStreamSpdy3Test, IncreaseSendWindowSizeOverflow) {
+  SpdySessionDependencies session_deps;
+
+  session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps);
+  SpdySessionPoolPeer pool_peer_(session_->spdy_session_pool());
+
+  MockRead reads[] = {
+    MockRead(ASYNC, 0, 1),  // EOF
+  };
+
+  // Triggered by the overflowing call to IncreaseSendWindowSize
+  // below.
+  scoped_ptr<SpdyFrame> rst(
+      ConstructSpdyRstStream(0, RST_STREAM_FLOW_CONTROL_ERROR));
+  MockWrite writes[] = {
+    CreateMockWrite(*rst),
+  };
+  writes[0].sequence_number = 0;
+
+  CapturingBoundNetLog log;
+
+  OrderedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+
+  session_deps.socket_factory->AddSocketDataProvider(&data);
+
+  scoped_refptr<SpdySession> session(CreateSpdySession());
+  const char kStreamUrl[] = "http://www.google.com/";
+  GURL url(kStreamUrl);
+
+  HostPortPair host_port_pair("www.google.com", 80);
+  scoped_refptr<TransportSocketParams> transport_params(
+      new TransportSocketParams(host_port_pair, LOWEST, false, false,
+                                OnHostResolutionCallback()));
+
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  EXPECT_EQ(OK, connection->Init(host_port_pair.ToString(), transport_params,
+                                 LOWEST, CompletionCallback(),
+                                 session_->GetTransportSocketPool(
+                                     HttpNetworkSession::NORMAL_SOCKET_POOL),
+                                 log.bound()));
+  session->InitializeWithSocket(connection.release(), false, OK);
+
+  scoped_refptr<SpdyStream> stream;
+  ASSERT_EQ(
+      OK,
+      session->CreateStream(url, LOWEST, &stream, log.bound(),
+                            CompletionCallback()));
+  TestCompletionCallback callback;
+
+  scoped_ptr<TestSpdyStreamDelegate> delegate(
+      new TestSpdyStreamDelegate(
+          stream.get(), NULL, new IOBufferWithSize(8), callback.callback()));
+  stream->SetDelegate(delegate.get());
+
+  EXPECT_FALSE(stream->HasUrl());
+  EXPECT_EQ(0u, stream->stream_id());
+  EXPECT_FALSE(stream->closed());
+
+  int32 old_send_window_size = stream->send_window_size();
+  ASSERT_GT(old_send_window_size, 0);
+  int32 delta_window_size = kint32max - old_send_window_size + 1;
+  stream->IncreaseSendWindowSize(delta_window_size);
+  EXPECT_EQ(old_send_window_size, stream->send_window_size());
+
+  EXPECT_EQ(OK, callback.WaitForResult());
+}
+
 }  // namespace test
 
 }  // namespace net
