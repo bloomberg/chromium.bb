@@ -1634,10 +1634,8 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
         std::make_pair(rules_registries_[cross_profile].get(), true));
   }
 
-  // TODO(mpcomplete): Eventually we'll want to turn this on, but for now,
-  // we won't block startup for declarative webrequest. I want to measure
-  // its effect first.
-#if defined(BLOCK_STARTUP_ON_DECLARATIVE_RULES)
+  // The following block is experimentally enabled and its impact on load time
+  // logged with UMA Extensions.NetworkDelayRegistryLoad. crbug.com/175961
   for (RelevantRegistries::iterator i = relevant_registries.begin();
        i != relevant_registries.end(); ++i) {
     extensions::WebRequestRulesRegistry* rules_registry = i->first;
@@ -1659,7 +1657,6 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
       return true;
     }
   }
-#endif
 
   base::Time start = base::Time::Now();
 
@@ -1701,6 +1698,10 @@ void ExtensionWebRequestEventRouter::OnRulesRegistryReady(
     return;
 
   BlockedRequest& blocked_request = blocked_requests_[request_id];
+  base::TimeDelta block_time =
+      base::Time::Now() - blocked_request.blocking_time;
+  UMA_HISTOGRAM_TIMES("Extensions.NetworkDelayRegistryLoad", block_time);
+
   ProcessDeclarativeRules(profile, blocked_request.extension_info_map,
                           event_name, blocked_request.request, request_stage,
                           blocked_request.original_response_headers);
