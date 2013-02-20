@@ -1808,6 +1808,10 @@
                   'http/http_network_layer_unittest.cc',
                   'http/http_network_transaction_spdy2_unittest.cc',
                   'http/http_network_transaction_spdy3_unittest.cc',
+
+                  # These tests crash when run with coverage turned on:
+                  # http://crbug.com/177203
+                  'proxy/proxy_service_unittest.cc',
                 ],
               }],
             ],
