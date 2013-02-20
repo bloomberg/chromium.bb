@@ -29,6 +29,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_EXTENSION_APITEST_JS" file="extensions\apitest.js" type="BINDATA" />
       <include name="IDR_GREASEMONKEY_API_JS" file="extensions\greasemonkey_api.js" type="BINDATA" />
       <include name="IDR_SEARCHBOX_API" file="extensions\searchbox_api.js" type="BINDATA" />
+      <include name="IDR_JSON_JS" file="extensions\json.js" type="BINDATA" />
       <include name="IDR_JSON_SCHEMA_JS" file="extensions\json_schema.js" type="BINDATA" />
       <include name="IDR_MISCELLANEOUS_BINDINGS_JS" file="extensions\miscellaneous_bindings.js" type="BINDATA" />
       <include name="IDR_NET_ERROR_HTML" file="neterror.html" flattenhtml="true" type="BINDATA" />

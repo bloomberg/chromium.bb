@@ -9,6 +9,7 @@
 
   require('json_schema');
   require('event_bindings');
+  var json = require('json');
   var lastError = require('lastError');
   var miscNatives = requireNative('miscellaneous_bindings');
   var CloseChannel = miscNatives.CloseChannel;
@@ -52,10 +53,10 @@
   // Sends a message asynchronously to the context on the other end of this
   // port.
   PortImpl.prototype.postMessage = function(msg) {
-    // JSON.stringify doesn't support a root object which is undefined.
+    // json.stringify doesn't support a root object which is undefined.
     if (msg === undefined)
       msg = null;
-    PostMessage(this.portId_, chromeHidden.JSON.stringify(msg));
+    PostMessage(this.portId_, json.stringify(msg));
   };
 
   // Disconnects the port from the other end.
@@ -197,7 +198,7 @@
     var isExternal = sourceExtensionId != extensionId;
 
     if (tab)
-      tab = chromeHidden.JSON.parse(tab);
+      tab = json.parse(tab);
     var sender = {tab: tab, id: sourceExtensionId};
 
     // Special case for sendRequest/onRequest and sendMessage/onMessage.
@@ -249,7 +250,7 @@
     var port = ports[portId];
     if (port) {
       if (msg) {
-        msg = chromeHidden.JSON.parse(msg);
+        msg = json.parse(msg);
       }
       port.onMessage.dispatch(msg, port);
     }

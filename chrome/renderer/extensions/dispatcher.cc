@@ -626,6 +626,7 @@ void Dispatcher::PopulateSourceMap() {
       IDR_MISCELLANEOUS_BINDINGS_JS);
   source_map_.RegisterSource("schema_generated_bindings",
       IDR_SCHEMA_GENERATED_BINDINGS_JS);
+  source_map_.RegisterSource("json", IDR_JSON_JS);
   source_map_.RegisterSource("json_schema", IDR_JSON_SCHEMA_JS);
   source_map_.RegisterSource("apitest", IDR_EXTENSION_APITEST_JS);
 
@@ -803,6 +804,7 @@ void Dispatcher::DidCreateScriptContext(
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT: {
+      module_system->Require("json");  // see paranoid comment in json.js
       module_system->Require("miscellaneous_bindings");
       module_system->Require("schema_generated_bindings");
       module_system->Require("apitest");

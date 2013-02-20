@@ -1590,6 +1590,7 @@
         'renderer/content_settings_observer_unittest.cc',
         'renderer/extensions/chrome_v8_context_set_unittest.cc',
         'renderer/extensions/event_unittest.cc',
+        'renderer/extensions/json_js_unittest.cc',
         'renderer/extensions/json_schema_unittest.cc',
         'renderer/extensions/module_system_unittest.cc',
         'renderer/net/predictor_queue_unittest.cc',

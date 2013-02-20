@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+var json = require('json');
 var lastError = require('lastError');
 var natives = requireNative('sendRequest');
 var validate = require('schemaUtils').validate;
@@ -93,7 +94,7 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
   if (optArgs.customCallback) {
     request.customCallback = optArgs.customCallback;
   }
-  // JSON.stringify doesn't support a root object which is undefined.
+  // json.stringify doesn't support a root object which is undefined.
   if (request.args === undefined)
     request.args = null;
 
@@ -102,8 +103,7 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
   var doStringify = false;
   if (optArgs.nativeFunction && !optArgs.noStringify)
     doStringify = true;
-  var requestArgs = doStringify ?
-      chromeHidden.JSON.stringify(request.args) : request.args;
+  var requestArgs = doStringify ? json.stringify(request.args) : request.args;
   var nativeFunction = optArgs.nativeFunction || natives.StartRequest;
 
   var requestId = natives.GetNextRequestId();
