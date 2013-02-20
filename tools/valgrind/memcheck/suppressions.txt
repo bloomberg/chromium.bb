@@ -1006,14 +1006,6 @@
    fun:_ZN3net18CertVerifierWorker3RunEv
 }
 {
-   # The InvalidRead error in rc4_wordconv is intentional.
-   # https://bugzilla.mozilla.org/show_bug.cgi?id=341127
-   bug_43113 (Intentional)
-   Memcheck:Unaddressable
-   fun:rc4_wordconv
-   fun:RC4_Encrypt
-}
-{
    # Intentionally leaking NSS to prevent shutdown crashes
    bug_61585a (Intentional)
    Memcheck:Leak
