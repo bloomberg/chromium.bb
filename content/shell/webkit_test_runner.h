@@ -68,35 +68,12 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void setAcceptAllCookies(bool accept);
   virtual std::string pathToLocalResource(const std::string& resource);
   virtual void setLocale(const std::string& locale);
-  virtual void setDeviceOrientation(WebKit::WebDeviceOrientation& orientation);
-  virtual void didAcquirePointerLock();
-  virtual void didNotAcquirePointerLock();
-  virtual void didLosePointerLock();
-  virtual void setPointerLockWillRespondAsynchronously();
-  virtual void setPointerLockWillFailSynchronously();
-  virtual int numberOfPendingGeolocationPermissionRequests();
-  virtual void setGeolocationPermission(bool allowed);
-  virtual void setMockGeolocationPosition(double latitude,
-                                          double longitude,
-                                          double precision);
-  virtual void setMockGeolocationPositionUnavailableError(
-      const std::string& message);
-  virtual void addMockSpeechInputResult(const std::string& result,
-                                        double confidence,
-                                        const std::string& language);
-  virtual void setMockSpeechInputDumpRect(bool dump_rect);
-  virtual void addMockSpeechRecognitionResult(const std::string& transcript,
-                                              double confidence);
-  virtual void setMockSpeechRecognitionError(const std::string& error,
-                                             const std::string& message);
-  virtual bool wasMockSpeechRecognitionAborted();
   virtual void testFinished();
   virtual void testTimedOut();
   virtual bool isBeingDebugged();
   virtual int layoutTestTimeout();
   virtual void closeRemainingWindows();
   virtual int navigationEntryCount();
-  virtual int windowCount();
   virtual void goToOffset(int offset);
   virtual void reload();
   virtual void loadURLForFrame(const WebKit::WebURL& url,
@@ -118,8 +95,6 @@ class WebKitTestRunner : public RenderViewObserver,
       const ShellViewMsg_SetTestConfiguration_Params& params);
 
   void CaptureDump();
-
-  static int window_count_;
 
   base::FilePath current_working_directory_;
   base::FilePath temp_path_;

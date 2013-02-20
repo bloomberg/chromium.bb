@@ -108,18 +108,13 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 
 }  // namespace
 
-// static
-int WebKitTestRunner::window_count_ = 0;
-
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<WebKitTestRunner>(render_view),
       is_main_window_(false) {
-  ++window_count_;
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
-  --window_count_;
 }
 
 // WebTestDelegate  -----------------------------------------------------------
@@ -328,98 +323,6 @@ void WebKitTestRunner::setLocale(const std::string& locale) {
   setlocale(LC_ALL, locale.c_str());
 }
 
-void WebKitTestRunner::setDeviceOrientation(WebDeviceOrientation& orientation) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setDeviceOrientation"));
-}
-
-void WebKitTestRunner::didAcquirePointerLock() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "didAcquirePointerLock"));
-}
-
-void WebKitTestRunner::didNotAcquirePointerLock() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "didNotAcquirePointerLock"));
-}
-
-void WebKitTestRunner::didLosePointerLock() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "didLosePointerLock"));
-}
-
-void WebKitTestRunner::setPointerLockWillRespondAsynchronously() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(),
-      "WebKitTestRunner",
-      "setPointerLockWillRespondAsynchronously"));
-}
-
-void WebKitTestRunner::setPointerLockWillFailSynchronously() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setPointerLockWillFailSynchronously"));
-}
-
-int WebKitTestRunner::numberOfPendingGeolocationPermissionRequests() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(),
-      "WebKitTestRunner",
-      "numberOfPendingGeolocationPermissionRequests"));
-  return 0;
-}
-
-void WebKitTestRunner::setGeolocationPermission(bool allowed) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setGeolocationPermission"));
-}
-
-void WebKitTestRunner::setMockGeolocationPosition(double latitude,
-                                                  double longitude,
-                                                  double precision) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setMockGeolocationPosition"));
-}
-
-void WebKitTestRunner::setMockGeolocationPositionUnavailableError(
-    const std::string& message) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(),
-      "WebKitTestRunner",
-      "setMockGeolocationPositionUnavailableError"));
-}
-
-void WebKitTestRunner::addMockSpeechInputResult(const std::string& result,
-                                                double confidence,
-                                                const std::string& language) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "addMockSpeechInputResult"));
-}
-
-void WebKitTestRunner::setMockSpeechInputDumpRect(bool dump_rect) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setMockSpeechInputDumpRect"));
-}
-
-void WebKitTestRunner::addMockSpeechRecognitionResult(
-    const std::string& transcript,
-    double confidence) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "addMockSpeechRecognitionResult"));
-}
-
-void WebKitTestRunner::setMockSpeechRecognitionError(
-    const std::string& error,
-    const std::string& message) {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "setMockSpeechRecognitionError"));
-}
-
-bool WebKitTestRunner::wasMockSpeechRecognitionAborted() {
-  Send(new ShellViewHostMsg_NotImplemented(
-      routing_id(), "WebKitTestRunner", "wasMockSpeechRecognitionAborted"));
-  return false;
-}
-
 void WebKitTestRunner::testFinished() {
   if (!is_main_window_)
     return;
@@ -455,10 +358,6 @@ void WebKitTestRunner::closeRemainingWindows() {
 int WebKitTestRunner::navigationEntryCount() {
   // TODO(jochen): implement this.
   return 0;
-}
-
-int WebKitTestRunner::windowCount() {
-  return window_count_;
 }
 
 void WebKitTestRunner::goToOffset(int offset) {
