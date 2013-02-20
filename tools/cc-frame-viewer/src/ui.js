@@ -172,11 +172,19 @@ base.exportTo('ui', function() {
     return spanEl;
   };
 
+  function createLabel(text, child) {
+    var labelEl = document.createElement('label');
+    labelEl.textContent = text;
+    labelEl.appendChild(child);
+    return labelEl;
+  };
+
   return {
     decorate: decorate,
     define: define,
     limitInputWidth: limitInputWidth,
     toCssPx: toCssPx,
-    createSpan: createSpan
+    createSpan: createSpan,
+    createLabel: createLabel
   };
 });

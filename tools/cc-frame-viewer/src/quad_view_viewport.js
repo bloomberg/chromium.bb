@@ -131,6 +131,10 @@ base.exportTo('ccfv', function() {
                     transform[3], transform[4], transform[5]);
     },
 
+    forceRedrawAll: function() {
+      this.didChange_();
+    },
+
     didChange_: function() {
       base.dispatchSimpleEvent(this, 'change', false, false);
     }

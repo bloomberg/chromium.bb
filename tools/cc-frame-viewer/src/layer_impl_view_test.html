@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+<!--
+Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+<script src="base.js"></script>
+<script>
+  base.require('base.unittest');
+  base.require('layer_impl_view');
+  base.require('model');
+</script>
+</head>
+<body>
+<script src="../unittest_data/one_frame_with_layers.js"></script>
+<script>
+    'use strict';
+
+    function testInstantiateLTIV() {
+       var model = new ccfv.Model();
+       model.initFromFrameData(gOneFrameWithLayers);
+       var lthiHistory = base.dictionaryValues(model.lthiHistories)[0];
+       var lthi = lthiHistory.lthiSnapshots[0];
+
+       var layerImplView = new ccfv.LayerImplView();
+       this.addHTMLOutput('LTIView', layerImplView);
+       layerImplView.layerImpl = lthi.activeTree.allLayers[0];
+    }
+</script>
+</body>
+</html>

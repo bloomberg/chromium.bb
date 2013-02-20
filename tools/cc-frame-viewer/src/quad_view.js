@@ -206,6 +206,7 @@ base.exportTo('ccfv', function() {
       var e = new base.Event('selection-changed');
       e.selection = selection;
       this.dispatchEvent(e);
+      this.viewport_.forceRedrawAll();
     },
 
     findQuadsAtCanvasClientPoint: function(clientX, clientY) {

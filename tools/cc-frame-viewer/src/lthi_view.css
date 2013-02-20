@@ -10,9 +10,11 @@ x-lthi-view {
 x-lthi-view > x-lthi-view-options {
     display: inline-span;
     margins: 0 auto 0 auto;
+    border-bottom: 1px solid rgba(0,0,0,.25);
 }
 
-x-lthi-view > x-lthi-view-options > span:not(:nth-child(1)) {
+x-lthi-view > x-lthi-view-options > span:not(:nth-child(1)),
+x-lthi-view > x-lthi-view-options > label:not(:nth-child(1)) {
     margin-left: 16px;
 }
 
@@ -21,11 +23,11 @@ x-lthi-view > x-lthi-view-options > span {
 }
 
 
-x-lthi-view > x-trees {
+x-lthi-view > x-quad-views {
     display: -webkit-flex;
     -webkit-flex-direction: row;
 }
 
-x-lthi-view > x-trees > *:not(:first-child) {
+x-lthi-view > x-quad-views > *:not(:first-child) {
     margin-left: 16px;
 }

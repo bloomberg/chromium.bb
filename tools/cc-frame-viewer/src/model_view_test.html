@@ -14,17 +14,27 @@ found in the LICENSE file.
 </head>
 <body>
 <script src="../unittest_data/full_trace_but_with_only_two_frames.js"></script>
+<script src="../unittest_data/one_frame_with_layers.js"></script>
 <script>
     'use strict';
 
     var Model = ccfv.Model;
     var ModelView = ccfv.ModelView;
 
-    function testInstantiate() {
+    function testTwoFramesAndTiles() {
        var model = new Model();
        model.initFromTraceEvents(gFullTraceButWithOnlyTwoFrames);
        var modelView = new ModelView();
-       this.addHTMLOutput('Model View', modelView);
+       this.addHTMLOutput('Model Tiles', modelView);
+       modelView.model = model;
+       modelView.style.height = '600px';
+    }
+
+    function testLayers() {
+       var model = new Model();
+       model.initFromFrameData(gOneFrameWithLayers);
+       var modelView = new ModelView();
+       this.addHTMLOutput('Model with Layers', modelView);
        modelView.model = model;
        modelView.style.height = '600px';
     }

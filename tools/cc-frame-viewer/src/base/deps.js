@@ -32,11 +32,17 @@ base.addModuleDependency(
     'model.tile',
     'model.constants');
 base.addModuleDependency(
+    'model.layer_impl',
+    'model.constants');
+base.addModuleDependency(
     'model.layer_tree_impl',
     'base.bbox2');
 base.addModuleDependency(
     'model.layer_tree_impl',
     'model.constants');
+base.addModuleDependency(
+    'model.layer_tree_impl',
+    'model.layer_impl');
 base.addModuleDependency(
     'model.layer_tree_host_impl',
     'base.bbox2');
@@ -122,6 +128,24 @@ base.addModuleDependency(
     'tree_quad_view',
     'quad_view');
 base.addModuleDependency(
+    'layer_impl_view',
+    'ui');
+base.addModuleStylesheet(
+    'layer_impl_view',
+    'layer_impl_view');
+base.addModuleDependency(
+    'layer_tree_impl_view',
+    'ui');
+base.addModuleDependency(
+    'layer_tree_impl_view',
+    'ui.list_and_associated_view');
+base.addModuleDependency(
+    'layer_tree_impl_view',
+    'layer_impl_view');
+base.addModuleStylesheet(
+    'layer_tree_impl_view',
+    'layer_tree_impl_view');
+base.addModuleDependency(
     'lthi_view',
     'ui');
 base.addModuleDependency(
@@ -133,6 +157,9 @@ base.addModuleDependency(
 base.addModuleDependency(
     'lthi_view',
     'tree_quad_view');
+base.addModuleDependency(
+    'lthi_view',
+    'layer_tree_impl_view');
 base.addModuleStylesheet(
     'lthi_view',
     'lthi_view');

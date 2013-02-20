@@ -8,6 +8,8 @@ base.require('model.layer_tree_host_impl');
 
 base.exportTo('ccfv', function() {
 
+  var constants = ccfv.model.constants;
+
   function unquoteIfNeeded(val) {
     if (typeof val !== 'string')
       return val;
@@ -34,32 +36,39 @@ base.exportTo('ccfv', function() {
     },
 
     initFromTraceEvents: function(trace) {
-      var importer = new TraceImporter();
-      importer.importTraceIntoModel(this, trace);
+      var importer = new TraceImporter(this);
+      importer.importTrace(trace);
+    },
+
+    initFromFrameData: function(frameData) {
+      var importer = new TraceImporter(this);
+      importer.importFrameData(frameData);
     }
   };
 
-  function TraceImporter() {
+  function TraceImporter(model) {
+    this.model = model;
   };
 
   TraceImporter.prototype = {
     addWarning: function(msg) {},
 
-    importTraceIntoModel: function(model, trace) {
-      this.model = model;
-
+    importTrace: function(trace) {
       var events = trace.traceEvents;
       for (var i = 0; i < events.length; i++) {
         var event = events[i];
-        if (event.name == 'Frame')
-          this.handleFrameEvent(event);
+        if (event.name == 'Frame') {
+          if (event.args.frame === 'undefined') {
+            throw new Error(
+                'Expected Frame to have args.frame of type string.');
+          }
+          var frameData = unquoteIfNeeded(event.args.frame);
+          this.importFrameData(frameData);
+        }
       }
     },
 
-    handleFrameEvent: function(event) {
-      if (event.args.frame === 'undefined')
-        throw new Error('Expected Frame to have args.frame of type string.');
-      var frameData = unquoteIfNeeded(event.args.frame);
+    importFrameData: function(frameData) {
 
       var lthiID;
       if (frameData.lthi_id === undefined) {
@@ -86,6 +95,12 @@ base.exportTo('ccfv', function() {
       frameData.tiles.forEach(function(tile) {
         this.handleFrameTile(lthi, tile);
       }, this);
+
+      // Layers
+      var activeTreeLayers = frameData.active_tree || [];
+      activeTreeLayers.forEach(function(layerImpl) {
+        this.handleLayerImpl(lthi, constants.ACTIVE_TREE, layerImpl);
+      }, this);
     },
 
     handleFrameTile: function(lthi, tileData) {
@@ -100,12 +115,24 @@ base.exportTo('ccfv', function() {
       }
       var tile = lthi.getOrCreateTile(tileID);
 
+      tile.history.layerID = tileData.layer_id;
       tile.history.picturePile = tileData.picture_pile;
       tile.history.contentsScale = tileData.contents_scale;
 
       tile.priority[0] = tileData.priority[0];
       tile.priority[1] = tileData.priority[1];
       tile.managedState = tileData.managed_state;
+    },
+
+    handleLayerImpl: function(lthi, whichTree, layerImplData) {
+      var layerID;
+      if (!layerImplData.id)
+        throw new Error('LayerImpls must have id');
+      layerID = layerImplData.id;
+
+      var layerImpl = lthi.getTree(whichTree).getOrCreateLayerImpl(layerID);
+      for (var k in layerImplData)
+        layerImpl.args[k] = layerImplData[k];
     }
   };
 

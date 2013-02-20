@@ -14,6 +14,7 @@ found in the LICENSE file.
 </head>
 <body>
 <script src="../unittest_data/full_trace_but_with_only_one_frame.js"></script>
+<script src="../unittest_data/one_frame_with_layers.js"></script>
 <script>
     'use strict';
 
@@ -26,6 +27,17 @@ found in the LICENSE file.
        assertEquals(1, base.dictionaryValues(model.lthiHistories).length)
        var lthiHistory = base.dictionaryValues(model.lthiHistories)[0];
        assertEquals(1, lthiHistory.lthiSnapshots.length);
+    }
+
+    function testLayer() {
+      var model = new Model();
+      model.initFromFrameData(gOneFrameWithLayers);
+      assertEquals(1, base.dictionaryValues(model.lthiHistories).length)
+      var lthiHistory = base.dictionaryValues(model.lthiHistories)[0];
+      assertEquals(1, lthiHistory.lthiSnapshots.length);
+
+      var lthi = lthiHistory.lthiSnapshots[0];
+      assertTrue(lthi.activeTree.allLayers.length > 0);
     }
 
 </script>

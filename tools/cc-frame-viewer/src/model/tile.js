@@ -16,6 +16,7 @@ base.exportTo('ccfv.model', function() {
   function TileHistory(id) {
     this.id = id;
     this.tilesBySnapshotNumber = {};
+    this.layerID = undefined;
     this.picturePile = undefined;
     this.contentsScale = undefined;
 
@@ -35,6 +36,7 @@ base.exportTo('ccfv.model', function() {
 
     dumpToSimpleObject: function(obj) {
       obj.id = this.id;
+      obj.layerID = this.layerID;
       obj.picturePile = this.picturePile;
       obj.contentsScale = this.contentsScale;
     }

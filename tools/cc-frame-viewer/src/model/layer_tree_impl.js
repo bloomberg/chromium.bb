@@ -6,6 +6,7 @@
 
 base.require('base.bbox2');
 base.require('model.constants');
+base.require('model.layer_impl');
 
 base.exportTo('ccfv.model', function() {
 
@@ -14,16 +15,31 @@ base.exportTo('ccfv.model', function() {
    *
    * @constructor
    */
-  function LayerTreeImpl(which_tree) {
+  function LayerTreeImpl(lthi, which_tree) {
+    this.lthi = lthi;
     this.which_tree = which_tree;
-    this.tiles = [];
+    this.tiles_ = [];
+    this.allLayers = [];
     this.tileBBox_ = undefined;
   };
 
   LayerTreeImpl.prototype = {
-    resetTiles: function() {
-      this.tilse = [];
+    setTilesDirty: function() {
+      this.tiles_ = undefined;
       this.tileBBox_ = undefined;
+    },
+
+    get tiles() {
+      if (!this.tiles_)
+        this.tiles_ = this.lthi.getTilesForTree(this.which_tree);
+      return this.tiles_;
+    },
+
+    getOrCreateLayerImpl: function(layerID) {
+      var layerHistory = this.lthi.history.getOrCreateLayerImplHistory(layerID);
+      var layer = layerHistory.getOrCreateLayerImplForLTHI(this);
+      this.allLayers.push(layer);
+      return layer;
     },
 
     get tileBBox() {

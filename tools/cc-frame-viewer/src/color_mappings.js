@@ -30,8 +30,8 @@ base.exportTo('ccfv', function() {
   ];
 
   // time_to_visible_in_seconds.
-  var colorRedLo = new Color(255, 0, 0, 0.5);
-  var colorRedHi = new Color(0, 0, 255, 0.5);
+  var colorRedLo = new Color(255, 0, 0, 1);
+  var colorRedHi = new Color(0, 0, 255, 1);
   allTileColorMaps.push({
     title: 'time_to_visible_in_seconds',
     getValueForTile: function(tile, priority) {
@@ -48,8 +48,8 @@ base.exportTo('ccfv', function() {
   });
 
   // Distance.
-  var colorGreenLo = new Color(0, 0, 255, 0.4);
-  var colorGreenHi = new Color(0, 255, 0, 0.4);
+  var colorGreenLo = new Color(0, 0, 255, 1);
+  var colorGreenHi = new Color(0, 255, 0, 1);
   allTileColorMaps.push({
     title: 'distance_to_visible_in_pixels',
     getValueForTile: function(tile, priority) {
@@ -89,10 +89,11 @@ base.exportTo('ccfv', function() {
 
   // bins of various types
   var binToColorAsString = {
-    'NOW_BIN': new Color(0, 0, 255, 0.5).toString(),
-    'SOON_BIN': new Color(255, 255, 0, 0.5).toString(),
-    'EVENTUALLY_BIN': new Color(0, 255, 255, 0.5).toString(),
-    'NEVER_BIN': new Color(128, 128, 128, 0.25).toString()
+    'NOW_BIN': new Color(0, 0, 255, 1).toString(),
+    'SOON_BIN': new Color(255, 255, 0, 1).toString(),
+    'EVENTUALLY_BIN': new Color(0, 255, 255, 1).toString(),
+    'NEVER_BIN': new Color(128, 128, 128, 1).toString(),
+    '<unknown TileManagerBin value>': new Color(255, 0, 0, 1).toString()
   };
 
   allTileColorMaps.push({

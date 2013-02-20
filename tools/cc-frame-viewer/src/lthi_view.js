@@ -8,6 +8,7 @@ base.require('ui');
 base.require('ui.list_view');
 base.require('quad_view_viewport');
 base.require('tree_quad_view');
+base.require('layer_tree_impl_view');
 base.requireStylesheet('lthi_view');
 
 base.exportTo('ccfv', function() {
@@ -21,11 +22,11 @@ base.exportTo('ccfv', function() {
 
     decorate: function() {
       this.lthi_ = undefined;
-      this.trees_ = document.createElement('x-trees');
+      this.quadViews_ = document.createElement('x-quad-views');
 
       this.viewport_ = undefined;
 
-      var optionsEl = document.createElement('x-frame-view-options');
+      var optionsEl = document.createElement('x-lthi-view-options');
 
       this.colorMapSelector_ = document.createElement('select');
       this.colorMapSelector_.addEventListener(
@@ -52,28 +53,32 @@ base.exportTo('ccfv', function() {
       optionsEl.appendChild(ui.createSpan('Scale:'));
       optionsEl.appendChild(this.scaleSelector_);
 
+      this.treePerContentScale_ = document.createElement('input');
+      this.treePerContentScale_.type = 'checkbox';
+      this.treePerContentScale_.textContent = 'bar';
+      this.treePerContentScale_.addEventListener(
+          'change', this.onTreePerContentScaleChanged_.bind(this));
+      optionsEl.appendChild(
+          ui.createLabel('Split apart scale:', this.treePerContentScale_));
+
       this.headerTextEl_ = document.createElement('span');
       optionsEl.appendChild(ui.createSpan('Details:'));
       optionsEl.appendChild(this.headerTextEl_);
 
-
-      this.activeTreeQuadView_ = new TreeQuadView();
-      this.pendingTreeQuadView_ = new TreeQuadView();
       this.inactiveTileView_ = new InactiveTileView();
 
       this.onSelectionChanged_ = this.onSelectionChanged_.bind(this);
-      this.activeTreeQuadView_.addEventListener('selection-changed',
-                                                this.onSelectionChanged_);
-      this.pendingTreeQuadView_.addEventListener('selection-changed',
-                                                 this.onSelectionChanged_);
+
       this.inactiveTileView_.addEventListener('selection-changed',
                                               this.onSelectionChanged_);
 
-      this.trees_.appendChild(this.activeTreeQuadView_);
-      this.trees_.appendChild(this.pendingTreeQuadView_);
+      this.activeLayerTreeImplView_ = new ccfv.LayerTreeImplView();
+      this.activeLayerTreeImplView_.header = 'Active layers';
+
       this.appendChild(optionsEl);
-      this.appendChild(this.trees_);
+      this.appendChild(this.quadViews_);
       this.appendChild(this.inactiveTileView_);
+      this.appendChild(this.activeLayerTreeImplView_);
     },
 
     get lthi() {
@@ -86,10 +91,10 @@ base.exportTo('ccfv', function() {
     },
 
     onColorMapChanged_: function() {
-      this.activeTreeQuadView_.colorMap =
-        this.colorMapSelector_.selectedOptions[0].colorMap;
-      this.pendingTreeQuadView_.colorMap =
-        this.colorMapSelector_.selectedOptions[0].colorMap;
+      for (var i = 0; i < this.quadViews_.children.length; i++) {
+        this.quadViews_.children[i].colorMap =
+          this.colorMapSelector_.selectedOptions[0].colorMap;
+      }
     },
 
     onScaleChanged_: function() {
@@ -97,45 +102,93 @@ base.exportTo('ccfv', function() {
         this.viewport_.scale = this.scaleSelector_.selectedOptions[0].scale;
     },
 
+    onTreePerContentScaleChanged_: function() {
+      this.updateChildren_();
+    },
+
     updateChildren_: function() {
       var lthi = this.lthi_;
       if (!lthi) {
-        this.activeTreeQuadView_.tree = undefined;
-        this.pendingTreeQuadView_.tree = undefined;
+        for (var i = 0; i < this.quadViews_.children.length; i++) {
+          this.quadViews_.children[i].tree = undefined;
+          this.quadViews_.children[i].removeEventListener('selection-changed',
+                                                      this.onSelectionChanged_);
+        }
+        this.quadViews_.textContent = '';
         this.viewport_ = undefined;
+        this.activeLayerTreeImplView_.layerTreeImpl = undefined;
         return;
       }
 
+      this.quadViews_.textContent = '';
+
       var bbox = lthi.history.allTilesBBox;
-      if (!this.viewport_) {
-        if (!bbox.isEmpty) {
-          this.viewport_ = new ccfv.QuadViewViewport(
-            bbox);
-          this.viewport_.scale = this.scaleSelector_.selectedOptions[0].scale;
-          this.activeTreeQuadView_.viewport = this.viewport_;
-          this.pendingTreeQuadView_.viewport = this.viewport_;
-        } else {
-          return;
-        }
+      if (bbox.isEmpty)
+        return;
+
+      this.viewport_ = new ccfv.QuadViewViewport(
+        bbox);
+      this.viewport_.scale = this.scaleSelector_.selectedOptions[0].scale;
+
+
+      // Make the trees.
+      var quadViews;
+      function makeForTree(tree, treePrefix) {
+        var tilesByContentsScale = {};
+        tree.tiles.forEach(function(tile) {
+          var cs = tile.history.contentsScale;
+          if (tilesByContentsScale[cs] === undefined)
+            tilesByContentsScale[cs] = [];
+          tilesByContentsScale[cs].push(tile);
+        }, this);
+        base.dictionaryKeys(tilesByContentsScale).forEach(function(cs) {
+          var qv = new TreeQuadView();
+          var csRounded = Math.floor(cs * 10) / 10;
+          qv.headerPrefix = treePrefix + ' @ cs=' + csRounded;
+          qv.which_tree = tree.which_tree;
+          qv.tiles = tilesByContentsScale[cs];
+          quadViews.push(qv);
+        }, this);
       }
 
-      this.activeTreeQuadView_.which_tree = lthi.activeTree.which_tree;
-      this.activeTreeQuadView_.tiles = lthi.activeTree.tiles;
-      this.activeTreeQuadView_.headerText =
-        'Active Tree: ' + lthi.activeTree.tiles.length + ' live tiles';
-      this.activeTreeQuadView_.deviceViewportSizeForFrame =
-        lthi.deviceViewportSize;
+      if (this.treePerContentScale_.checked) {
 
-      this.pendingTreeQuadView_.which_tree = lthi.pendingTree.which_tree;
-      this.pendingTreeQuadView_.tiles = lthi.pendingTree.tiles;
-      this.pendingTreeQuadView_.headerText =
-        'Pending Tree: ' + lthi.pendingTree.tiles.length + ' live tiles';
-      this.pendingTreeQuadView_.deviceViewportSizeForFrame =
-        lthi.deviceViewportSize;
+        quadViews = [];
+        makeForTree(lthi.activeTree, 'Active Tree Tiles');
+        makeForTree(lthi.pendingTree, 'Pending Tree Tiles');
+      } else {
+        var aQuadView = new TreeQuadView();
+        aQuadView.headerPrefix = 'Active Tree Tiles';
+        aQuadView.which_tree = lthi.activeTree.which_tree;
+        aQuadView.tiles = lthi.activeTree.tiles;
+
+        var pQuadView = new TreeQuadView();
+        pQuadView.headerPrefix = 'Pending Tree Tiles';
+        pQuadView.which_tree = lthi.pendingTree.which_tree;
+        pQuadView.tiles = lthi.pendingTree.tiles;
+
+        quadViews = [aQuadView, pQuadView];
+      }
+
+      quadViews.forEach(function(qv) {
+        qv.viewport = this.viewport_;
+        qv.addEventListener('selection-changed',
+                              this.onSelectionChanged_);
+        this.quadViews_.appendChild(qv);
+        qv.deviceViewportSizeForFrame = lthi.deviceViewportSize;
+        qv.headerText =
+          qv.headerPrefix + ': ' + qv.tiles.length + ' tiles';
+        qv.colorMap = this.colorMapSelector_.selectedOptions[0].colorMap;
+      }, this);
+
+
 
       this.headerTextEl_.textContent = lthi.inactiveTiles.length +
         ' inactive tiles';
       this.inactiveTileView_.tiles = lthi.inactiveTiles;
+
+
+      this.activeLayerTreeImplView_.layerTreeImpl = this.lthi_.activeTree;
     },
 
     onSelectionChanged_: function(e) {

@@ -5,6 +5,7 @@
 x-model-view {
     display: -webkit-flex;
     -webkit-flex-direction: column;
+    min-width: 0;
 }
 
 x-model-view {

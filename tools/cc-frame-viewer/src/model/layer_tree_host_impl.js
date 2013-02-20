@@ -24,6 +24,8 @@ base.exportTo('ccfv.model', function() {
 
     this.allTileHistories_ = {};
     this.allTilesBBox_ = undefined;
+
+    this.allLayerImplHistories_ = {};
   };
 
   LayerTreeHostImplHistory.prototype = {
@@ -32,6 +34,7 @@ base.exportTo('ccfv.model', function() {
       var lthi = new LayerTreeHostImpl(this, snapshotNumber);
       this.lthiSnapshots.push(lthi);
       this.allTilesBBox_ = undefined;
+      this.allContentsScales_ = undefined;
       return lthi;
     },
 
@@ -39,6 +42,26 @@ base.exportTo('ccfv.model', function() {
       if (!this.allTileHistories_[tileID])
         this.allTileHistories_[tileID] = new ccfv.model.TileHistory(tileID);
       return this.allTileHistories_[tileID];
+    },
+
+    getOrCreateLayerImplHistory: function(layerID) {
+      if (!this.allLayerImplHistories_[layerID])
+        this.allLayerImplHistories_[layerID] =
+            new ccfv.model.LayerImplHistory(layerID);
+      return this.allLayerImplHistories_[layerID];
+    },
+
+    get allContentsScales() {
+      if (this.allContentsScales_ !== undefined)
+        return this.allContentsScales_;
+
+      var scales = {};
+      for (var tileID in this.allTileHistories_) {
+        var tileHistory = this.allTileHistories_[tileID];
+        scales[tileHistory.contentsScale] = true;
+      }
+      this.allContentsScales_ = base.dictionaryKeys(scales);
+      return this.allContentsScales_;
     },
 
     get allTilesBBox() {
@@ -72,11 +95,13 @@ base.exportTo('ccfv.model', function() {
 
     this.allTiles = [];
 
-    this.rebuildNeeded_ = false;
-
     // These fields are affected by the rebuildIfNeeded_() flow.
-    this.pendingTree_ = new ccfv.model.LayerTreeImpl(constants.PENDING_TREE);
-    this.activeTree_ = new ccfv.model.LayerTreeImpl(constants.ACTIVE_TREE);
+    this.pendingTree = new ccfv.model.LayerTreeImpl(
+        this, constants.PENDING_TREE);
+    this.activeTree = new ccfv.model.LayerTreeImpl(
+        this, constants.ACTIVE_TREE);
+
+    this.tilesForTree_ = undefined;
     this.inactiveTiles_ = [];
   }
 
@@ -85,44 +110,52 @@ base.exportTo('ccfv.model', function() {
       return this.history.id;
     },
 
-    getOrCreateTile: function(tile_id) {
-      var tileHistory = this.history.getOrCreateTileHistory(tile_id);
+    getTree: function(whichTree) {
+      if (whichTree === constants.ACTIVE_TREE)
+        return this.activeTree;
+      else if (whichTree === constants.PENDING_TREE)
+        return this.pendingTree;
+      else
+        throw new Error('Active or pending only.');
+    },
+
+    getOrCreateTile: function(tileID) {
+      var tileHistory = this.history.getOrCreateTileHistory(tileID);
       var tile = tileHistory.getOrCreateTileForLTHI(this);
       this.allTiles.push(tile);
-      this.rebuildNeeded_ = true;
+
+      this.activeTree.setTilesDirty();
+      this.pendingTree.setTilesDirty();
+      this.tilesForTree_ = undefined;
+      this.inactiveTiles_ = undefined;
+
       return tile;
     },
 
-    get activeTree() {
-      this.rebuildIfNeeded_();
-      return this.activeTree_;
-    },
-
-    get pendingTree() {
-      this.rebuildIfNeeded_();
-      return this.pendingTree_;
-    },
-
     get inactiveTiles() {
-      this.rebuildIfNeeded_();
+      if (this.inactiveTiles_ === undefined)
+        this.rebuildTiles_();
       return this.inactiveTiles_;
     },
 
-    rebuildIfNeeded_: function()  {
-      if (!this.rebuildNeeded_)
-        return;
-      this.activeTree_.resetTiles();
-      this.pendingTree_.resetTiles();
+    getTilesForTree: function(which_tree) {
+      if (this.tilesForTree_ === undefined)
+        this.rebuildTiles_();
+      return this.tilesForTree_[which_tree];
+    },
+
+    rebuildTiles_: function()  {
+      this.tilesForTree_ = [[], []];
+      this.inactiveTiles_ = [];
       this.allTiles.forEach(function(tile) {
         if (tile.priority[constants.ACTIVE_TREE].is_live)
-          this.activeTree_.tiles.push(tile);
+          this.tilesForTree_[constants.ACTIVE_TREE].push(tile);
         if (tile.priority[constants.PENDING_TREE].is_live)
-          this.pendingTree_.tiles.push(tile);
+          this.tilesForTree_[constants.PENDING_TREE].push(tile);
         if (tile.priority[constants.PENDING_TREE].is_live == false &&
             tile.priority[constants.ACTIVE_TREE].is_live == false)
           this.inactiveTiles_.push(tile);
       }, this);
-      this.rebuildNeeded_ = false;
     },
   };
 
