@@ -2390,7 +2390,6 @@
           'target_name': 'net_java',
           'type': 'none',
           'variables': {
-            'package_name': 'net',
             'java_in_dir': '../net/android/java',
           },
           'dependencies': [
@@ -2406,7 +2405,6 @@
           'target_name': 'net_java_test_support',
           'type': 'none',
           'variables': {
-            'package_name': 'net_java_test_support',
             'java_in_dir': '../net/test/android/javatests',
           },
           'includes': [ '../build/java.gypi' ],
@@ -2415,7 +2413,6 @@
           'target_name': 'net_javatests',
           'type': 'none',
           'variables': {
-            'package_name': 'net_javatests',
             'java_in_dir': '../net/android/javatests',
           },
           'dependencies': [

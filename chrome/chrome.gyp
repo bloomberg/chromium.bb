@@ -1087,7 +1087,6 @@
             '../ui/ui.gyp:ui_java',
           ],
           'variables': {
-            'package_name': 'chrome',
             'java_in_dir': '../chrome/android/java',
             'has_java_resources': 1,
             'R_package': 'org.chromium.chrome',

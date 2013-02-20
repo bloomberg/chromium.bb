@@ -3063,7 +3063,6 @@
             '../tools/android/forwarder/forwarder.gyp:forwarder',
           ],
           'variables': {
-            'package_name': 'chromium_testshell_test',
             'apk_name': 'ChromiumTestShellTest',
             'java_in_dir': './android/testshell/javatests',
             'resource_dir': '../res',

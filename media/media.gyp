@@ -1385,7 +1385,6 @@
             '../base/base.gyp:base',
           ],
           'variables': {
-            'package_name': 'media',
             'java_in_dir': 'base/android/java',
           },
           'includes': [ '../build/java.gypi' ],

@@ -8,7 +8,6 @@
       'target_name': 'guava_javalib',
       'type': 'none',
       'variables': {
-        'package_name': '<(_target_name)',
         'java_in_dir': 'src/guava',
       },
       'dependencies': [

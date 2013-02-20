@@ -8,7 +8,6 @@
          'target_name': 'findbugs_plugin_test',
          'type': 'none',
          'variables': {
-           'package_name': 'findbugs_plugin',
            'java_in_dir': 'test/java/',
          },
          'includes': [ '../../../build/java.gypi' ],

@@ -568,7 +568,6 @@
           'target_name': 'sync_javatests',
           'type': 'none',
           'variables': {
-            'package_name': 'sync_javatests',
             'java_in_dir': '../sync/android/javatests',
           },
           'dependencies': [

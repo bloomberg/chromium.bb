@@ -65,7 +65,7 @@ include $(BUILD_STATIC_JAVA_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE := webviewchromium_pak
 LOCAL_MODULE_STEM := webviewchromium
-LOCAL_BUILT_MODULE_STEM := android_webview/assets/webviewchromium.pak
+LOCAL_BUILT_MODULE_STEM := android_webview_apk/assets/webviewchromium.pak
 include $(LOCAL_PATH)/webview_pak.mk
 
 include $(CLEAR_VARS)

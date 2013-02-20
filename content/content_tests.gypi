@@ -991,7 +991,6 @@
             'content_shell_java',
           ],
           'variables': {
-            'package_name': 'content_browsertests_apk',
             'apk_name': 'content_browsertests',
             'java_in_dir': 'shell/android/browsertests_apk',
             'resource_dir': 'res',
@@ -1015,7 +1014,6 @@
             'content_java',
           ],
           'variables': {
-            'package_name': 'content_java_test_support',
             'java_in_dir': '../content/public/test/android/javatests',
           },
           'includes': [ '../build/java.gypi' ],
@@ -1036,7 +1034,6 @@
             '../tools/android/forwarder2/forwarder.gyp:forwarder2',
           ],
           'variables': {
-            'package_name': 'content_shell_test',
             'apk_name': 'ContentShellTest',
             'java_in_dir': '../content/shell/android/javatests',
             'additional_src_dirs': ['../content/public/android/javatests/',],

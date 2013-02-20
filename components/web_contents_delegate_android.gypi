@@ -42,7 +42,6 @@
             '../content/content.gyp:content_java',
           ],
           'variables': {
-            'package_name': 'web_contents_delegate_android',
             'java_in_dir': 'web_contents_delegate_android/android/java',
           },
           'includes': [ '../build/java.gypi' ],

@@ -12,7 +12,6 @@
             'eyesfree_aidl',
           ],
           'variables': {
-            'package_name': 'eyesfree',
             'java_in_dir': 'src/android/java',
           },
           'includes': [ '../../build/java.gypi' ],
@@ -21,7 +20,6 @@
           'target_name': 'eyesfree_aidl',
           'type': 'none',
           'variables': {
-            'package_name': 'eyesfree',
             'aidl_interface_file': '<(android_sdk)/framework.aidl',
             'aidl_import_include': 'src/android/java/src',
           },

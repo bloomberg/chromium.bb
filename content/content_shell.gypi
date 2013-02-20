@@ -607,7 +607,6 @@
             'content_java',
           ],
           'variables': {
-            'package_name': 'content_shell',
             'java_in_dir': '../content/shell/android/java',
             'has_java_resources': 1,
             'R_package': 'org.chromium.content_shell',
@@ -658,7 +657,6 @@
             '../ui/ui.gyp:ui_java',
           ],
           'variables': {
-            'package_name': 'content_shell_apk',
             'apk_name': 'ContentShell',
             'manifest_package_name': 'org.chromium.content_shell_apk',
             'java_in_dir': 'shell/android/shell_apk',

@@ -1113,7 +1113,6 @@
           'target_name': 'base_java',
           'type': 'none',
           'variables': {
-            'package_name': 'base',
             'java_in_dir': '../base/android/java',
           },
           'includes': [ '../build/java.gypi' ],
@@ -1125,7 +1124,6 @@
             'base_java',
           ],
           'variables': {
-            'package_name': 'base_javatests',
             'java_in_dir': '../base/test/android/javatests',
           },
           'includes': [ '../build/java.gypi' ],

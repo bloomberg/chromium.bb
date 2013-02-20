@@ -872,7 +872,6 @@
            'target_name': 'ui_java',
            'type': 'none',
            'variables': {
-             'package_name': 'ui',
              'java_in_dir': '../ui/android/java',
              'has_java_resources': 1,
              'R_package': 'org.chromium.ui',

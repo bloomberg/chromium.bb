@@ -45,7 +45,6 @@
     'script': '<(DEPTH)/build/protoc_java.py',
 
     # The rest of the variables here are for the java.gypi include.
-    'package_name': '<(_target_name)',
     'java_in_dir': '<(DEPTH)/build/android/empty',
     'generated_src_dirs': ['<(java_out_dir)'],
     # Adding the |stamp_file| to |additional_input_paths| makes the actions in

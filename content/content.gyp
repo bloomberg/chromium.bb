@@ -293,7 +293,6 @@
           'target_name': 'common_aidl',
           'type': 'none',
           'variables': {
-            'package_name': 'content',
             'aidl_interface_file': 'public/android/java/src/org/chromium/content/common/common.aidl',
           },
           'sources': [
@@ -315,7 +314,6 @@
             'page_transition_types_java',
           ],
           'variables': {
-            'package_name': 'content',
             'java_in_dir': '../content/public/android/java',
             'has_java_resources': 1,
             'R_package': 'org.chromium.content',

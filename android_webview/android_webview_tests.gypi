@@ -14,15 +14,18 @@
         'libwebviewchromium',
       ],
       'variables': {
-        'package_name': 'android_webview_test',
         'apk_name': 'AndroidWebViewTest',
         'java_in_dir': '../android_webview/javatests',
         'resource_dir': 'res',
         'is_test_apk': 1,
+        'additional_input_paths': [
+          '<(PRODUCT_DIR)/android_webview_test_apk/assets/asset_file.html',
+          '<(PRODUCT_DIR)/android_webview_test_apk/assets/asset_icon.png',
+        ],
       },
       'copies': [
         {
-          'destination': '<(PRODUCT_DIR)/android_webview_test/assets',
+          'destination': '<(PRODUCT_DIR)/android_webview_test_apk/assets',
           'files': [
             '<(java_in_dir)/assets/asset_file.html',
             '<(java_in_dir)/assets/asset_icon.png',
@@ -64,7 +67,6 @@
         'android_webview_java',
       ],
       'variables': {
-        'package_name': 'android_webview_unittest_java',
         'java_in_dir': '../android_webview/unittestjava',
       },
       'includes': [ '../build/java.gypi' ],

@@ -20,11 +20,7 @@
   </description>
   <import file="common.xml"/>
 
-  <property-location
-      name="out.dir"
-      location="${PRODUCT_DIR}/${PACKAGE_NAME}"
-      check-exists="false"
-  />
+  <property-location name="out.dir" location="${OUT_DIR}" check-exists="false" />
 
   <path id="javac.srcdirs.additional">
     <filelist files="${ADDITIONAL_SRC_DIRS}"/>

@@ -8,7 +8,6 @@
       'target_name': 'jsr_305_javalib',
       'type': 'none',
       'variables': {
-        'package_name': '<(_target_name)',
         # The sources are not located in a folder that is called src/, so we
         # need to set it in additional_src_dirs parameter instead.
         'java_in_dir': '../../build/android/empty',

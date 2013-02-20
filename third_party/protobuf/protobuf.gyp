@@ -83,7 +83,6 @@
                 # Variables needed by java.gypi below.
                 'java_out_dir': '<(PRODUCT_DIR)/java_proto/protobuf_lite_java_descriptor_proto',
                 'generated_src_dirs': ['<(java_out_dir)'],
-                'package_name': '<(_target_name)',
                 'java_in_dir': 'java',
                 'maven_pom': '<(java_in_dir)/pom.xml',
                 'javac_includes': ['<!@(<(script_pom) <(maven_pom))'],

@@ -64,11 +64,11 @@
             '<@(pak_inputs)',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/android_webview/assets/webviewchromium.pak',
+            '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
           ],
           'action': ['python', '<(repack_path)', '<@(_outputs)',
                      '<@(pak_inputs)'],
-      },
+        }
       ],
     },
     {
@@ -180,7 +180,6 @@
         '../ui/ui.gyp:ui_java',
       ],
       'variables': {
-        'package_name': 'android_webview_java',
         'java_in_dir': '../android_webview/java',
       },
       'includes': [ '../build/java.gypi' ],
@@ -199,11 +198,13 @@
         'libwebviewchromium',
       ],
       'variables': {
-        'package_name': 'android_webview',
         'apk_name': 'AndroidWebView',
         'manifest_package_name': 'org.chromium.android_webview',
         'java_in_dir': '../android_webview/java',
         'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebviewchromium.so'],
+        'additional_input_paths': [
+          '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
+        ],
       },
       'includes': [ '../build/java_apk.gypi' ],
     },

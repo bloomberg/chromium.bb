@@ -10,7 +10,6 @@
           'target_name': 'sync_java',
           'type': 'none',
           'variables': {
-            'package_name': 'sync',
             'java_in_dir': '../sync/android/java',
           },
           'dependencies': [

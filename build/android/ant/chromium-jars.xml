@@ -5,11 +5,7 @@
 -->
 <project name="chromium-jars" default="dist">
   <!--
-    Common ant build file for for chromium_*.jars.
-    For creating a new chromium_*.jar :
-    1. Use build/java.gypi action.
-    The jar will be created as chromium_${PACKAGE_NAME} in
-    ${PRODUCT_DIR}/lib.java.
+    Common ant build file for Java libraries. For building new libraries, see build/java.gypi.
   -->
   <description>
     Building ${PROJECT_NAME}/ java source code with ant.
@@ -32,31 +28,27 @@
     value="src:${toString:javac.srcdirs.additional}"
   />
 
-  <property-location
-    name="dest.dir"
-    location="${PRODUCT_DIR}/java/${PACKAGE_NAME}"
-    check-exists="false"
-  />
+  <property-location name="out.dir" location="${OUT_DIR}" check-exists="false" />
 
-    <condition property="javac_includes_message"
-               value=""
-               else="Include filter: ${JAVAC_INCLUDES}">
-        <equals arg1="${JAVAC_INCLUDES}" arg2=""/>
-    </condition>
+  <condition property="javac_includes_message"
+             value=""
+             else="Include filter: ${JAVAC_INCLUDES}">
+    <equals arg1="${JAVAC_INCLUDES}" arg2=""/>
+  </condition>
 
   <target name="init">
     <!-- Create the time stamp -->
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${dest.dir}"/>
+    <mkdir dir="${out.dir}"/>
 
-    <!-- Remove all .class files from dest.dir. This prevents inclusion of
+    <!-- Remove all .class files from out.dir. This prevents inclusion of
          incorrect .class files in the final .jar. For example, if a .java file
          was deleted, the .jar should not contain the .class files for that
          .java from previous builds.
     -->
     <delete>
-      <fileset dir="${dest.dir}" includes="**/*.class"/>
+      <fileset dir="${out.dir}" includes="**/*.class"/>
     </delete>
   </target>
 
@@ -70,7 +62,7 @@
 
     <javac
         srcdir="${javac.srcdir}"
-        destdir="${dest.dir}"
+        destdir="${out.dir}"
         classpathref="javac.custom.classpath"
         debug="true"
         includeantruntime="false"
@@ -80,25 +72,25 @@
   </target>
 
   <target name="dist" depends="compile"
-      description="Generate chromium_${PACKAGE_NAME}.jar.">
+      description="Generate ${JAR_NAME}.">
     <!-- Create the distribution directory.  We exclude R.class and R$*.class
          files since new versions of these files with the correct resource -> ID
          mapping will be provided when we build each individual apk. -->
     <jar
-      jarfile="${lib.java.dir}/chromium_${PACKAGE_NAME}.jar"
+      jarfile="${lib.java.dir}/${JAR_NAME}"
       excludes="**/R.class **/R$*.class"
-      basedir="${dest.dir}"
+      basedir="${out.dir}"
     />
 
     <!-- If Gyp thinks this output is stale but Ant doesn't, the modification
          time should still be updated. Otherwise, this target will continue to
          be rebuilt in future builds.
     -->
-    <touch file="${lib.java.dir}/chromium_${PACKAGE_NAME}.jar"/>
+    <touch file="${lib.java.dir}/${JAR_NAME}"/>
   </target>
 
   <target name="clean" description="clean up">
     <!-- Delete the appropriate directory trees -->
-    <delete dir="${dest.dir}"/>
+    <delete dir="${out.dir}"/>
   </target>
 </project>

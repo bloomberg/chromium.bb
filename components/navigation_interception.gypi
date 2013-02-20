@@ -56,7 +56,6 @@
                 '../base/base.gyp:base',
               ],
               'variables': {
-                'package_name': 'navigation_interception',
                 'java_in_dir': 'navigation_interception/android/java',
               },
               'includes': [ '../build/java.gypi' ],
