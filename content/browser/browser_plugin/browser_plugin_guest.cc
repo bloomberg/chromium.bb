@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
@@ -64,7 +65,8 @@ BrowserPluginGuest::BrowserPluginGuest(
       name_(params.name),
       auto_size_enabled_(params.auto_size_params.enable),
       max_auto_size_(params.auto_size_params.max_size),
-      min_auto_size_(params.auto_size_params.min_size) {
+      min_auto_size_(params.auto_size_params.min_size),
+      destroy_called_(false) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
 
@@ -87,6 +89,13 @@ BrowserPluginGuest::BrowserPluginGuest(
   renderer_prefs->browser_handles_all_top_level_requests = false;
 }
 
+void BrowserPluginGuest::Destroy() {
+  if (destroy_called_)
+    return;
+  destroy_called_ = true;
+  MessageLoop::current()->DeleteSoon(FROM_HERE, web_contents());
+}
+
 bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     const IPC::Message& message) {
   bool handled = true;
@@ -99,6 +108,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
                         OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest, OnNavigateGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed, OnPluginDestroyed)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetSize)
@@ -114,21 +124,24 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
 }
 
 void BrowserPluginGuest::Initialize(
-    const BrowserPluginHostMsg_CreateGuest_Params& params,
-    content::RenderViewHost* render_view_host) {
+    const BrowserPluginHostMsg_CreateGuest_Params& params) {
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
-  new BrowserPluginGuestHelper(this, render_view_host);
+  new BrowserPluginGuestHelper(this, web_contents()->GetRenderViewHost());
 
   notification_registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      content::Source<content::WebContents>(web_contents()));
+      Source<WebContents>(web_contents()));
 
   // Listen to embedder visibility changes so that the guest is in a 'shown'
   // state if both the embedder is visible and the BrowserPlugin is marked as
   // visible.
   notification_registrar_.Add(
       this, content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
-      content::Source<content::WebContents>(embedder_web_contents_));
+      Source<WebContents>(embedder_web_contents_));
+
+  notification_registrar_.Add(
+      this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
+      Source<RenderViewHost>(embedder_web_contents_->GetRenderViewHost()));
 
   OnSetSize(instance_id_, params.auto_size_params, params.resize_guest_params);
 
@@ -142,6 +155,9 @@ void BrowserPluginGuest::Initialize(
 
   if (!params.src.empty())
     OnNavigateGuest(instance_id_, params.src);
+
+  embedder_web_contents_->GetBrowserPluginEmbedder()->AddGuest(instance_id_,
+                                                               web_contents());
 
   GetContentClient()->browser()->GuestWebContentsCreated(
       web_contents(), embedder_web_contents_);
@@ -190,6 +206,10 @@ void BrowserPluginGuest::Observe(int type,
       DCHECK_EQ(Source<WebContents>(source).ptr(), embedder_web_contents_);
       embedder_visible_ = *Details<bool>(details).ptr();
       UpdateVisibility();
+      break;
+    }
+    case NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
+      Destroy();
       break;
     }
     default:
@@ -517,6 +537,11 @@ void BrowserPluginGuest::OnNavigateGuest(
                                             PAGE_TRANSITION_AUTO_TOPLEVEL,
                                             std::string());
   }
+}
+
+void BrowserPluginGuest::OnPluginDestroyed(int instance_id) {
+  embedder_web_contents_->GetBrowserPluginEmbedder()->RemoveGuest(instance_id);
+  Destroy();
 }
 
 void BrowserPluginGuest::OnReload(int instance_id) {

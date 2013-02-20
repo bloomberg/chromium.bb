@@ -52,7 +52,6 @@ void BrowserPluginEmbedder::CreateGuest(
     int routing_id,
     BrowserPluginGuest* guest_opener,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
-  WebContentsImpl* guest_web_contents = NULL;
   SiteInstance* guest_site_instance = NULL;
   BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
   CHECK(!guest);
@@ -124,7 +123,7 @@ void BrowserPluginEmbedder::CreateGuest(
 
   WebContentsImpl* opener_web_contents = static_cast<WebContentsImpl*>(
       guest_opener ? guest_opener->GetWebContents() : NULL);
-  guest_web_contents = WebContentsImpl::CreateGuest(
+  WebContentsImpl::CreateGuest(
       web_contents()->GetBrowserContext(),
       guest_site_instance,
       routing_id,
@@ -132,11 +131,6 @@ void BrowserPluginEmbedder::CreateGuest(
       opener_web_contents,
       instance_id,
       params);
-
-  guest = guest_web_contents->GetBrowserPluginGuest();
-  AddGuest(instance_id, guest_web_contents);
-
-  guest->Initialize(params, guest_web_contents->GetRenderViewHost());
 }
 
 BrowserPluginGuest* BrowserPluginEmbedder::GetGuestByInstanceID(
@@ -146,17 +140,6 @@ BrowserPluginGuest* BrowserPluginEmbedder::GetGuestByInstanceID(
   if (it != guest_web_contents_by_instance_id_.end())
     return static_cast<WebContentsImpl*>(it->second)->GetBrowserPluginGuest();
   return NULL;
-}
-
-void BrowserPluginEmbedder::DestroyGuestByInstanceID(int instance_id) {
-  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
-  if (guest) {
-    WebContents* guest_web_contents = guest->GetWebContents();
-
-    // Destroy the guest's web_contents.
-    delete guest_web_contents;
-    guest_web_contents_by_instance_id_.erase(instance_id);
-  }
 }
 
 void BrowserPluginEmbedder::GetRenderViewHostAtPosition(
@@ -199,8 +182,6 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
                         OnCreateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginAtPositionResponse,
                         OnPluginAtPositionResponse)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed,
-                        OnPluginDestroyed)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_BuffersSwappedACK,
                         OnUnhandledSwapBuffersACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -215,13 +196,13 @@ void BrowserPluginEmbedder::AddGuest(int instance_id,
   guest_web_contents_by_instance_id_[instance_id] = guest_web_contents;
 }
 
-void BrowserPluginEmbedder::CleanUp() {
-  // Destroy guests that are managed by the current embedder.
-  STLDeleteContainerPairSecondPointers(
-      guest_web_contents_by_instance_id_.begin(),
-      guest_web_contents_by_instance_id_.end());
-  guest_web_contents_by_instance_id_.clear();
+void BrowserPluginEmbedder::RemoveGuest(int instance_id) {
+  DCHECK(guest_web_contents_by_instance_id_.find(instance_id) !=
+         guest_web_contents_by_instance_id_.end());
+  guest_web_contents_by_instance_id_.erase(instance_id);
+}
 
+void BrowserPluginEmbedder::CleanUp() {
   // CleanUp gets called when BrowserPluginEmbedder's WebContents goes away
   // or the associated RenderViewHost is destroyed or swapped out. Therefore we
   // don't need to care about the pending callbacks anymore.
@@ -237,6 +218,7 @@ bool BrowserPluginEmbedder::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_Go::ID:
     case BrowserPluginHostMsg_HandleInputEvent::ID:
     case BrowserPluginHostMsg_NavigateGuest::ID:
+    case BrowserPluginHostMsg_PluginDestroyed::ID:
     case BrowserPluginHostMsg_Reload::ID:
     case BrowserPluginHostMsg_ResizeGuest::ID:
     case BrowserPluginHostMsg_SetAutoSize::ID:
@@ -281,10 +263,6 @@ void BrowserPluginEmbedder::OnPluginAtPositionResponse(
 
   callback_iter->second.Run(render_view_host, position.x(), position.y());
   pending_get_render_view_callbacks_.erase(callback_iter);
-}
-
-void BrowserPluginEmbedder::OnPluginDestroyed(int instance_id) {
-  DestroyGuestByInstanceID(instance_id);
 }
 
 // We only get here during teardown if we have one last buffer pending,

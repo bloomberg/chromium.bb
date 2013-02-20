@@ -84,8 +84,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
 
-  void Initialize(const BrowserPluginHostMsg_CreateGuest_Params& params,
-                  content::RenderViewHost* render_view_host);
+  void Initialize(const BrowserPluginHostMsg_CreateGuest_Params& params);
 
   void set_guest_hang_timeout_for_testing(const base::TimeDelta& timeout) {
     guest_hang_timeout_ = timeout;
@@ -186,6 +185,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                      WebContentsImpl* web_contents,
                      const BrowserPluginHostMsg_CreateGuest_Params& params);
 
+  // Schedules this BrowserPluginGuest for deletion if it hasn't already been
+  // scheduled.
+  void Destroy();
+
   base::SharedMemory* damage_buffer() const { return damage_buffer_.get(); }
   const gfx::Size& damage_view_size() const { return damage_view_size_; }
   float damage_buffer_scale_factor() const {
@@ -222,6 +225,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                                   const gfx::Rect& guest_window_rect,
                                   const WebKit::WebInputEvent* event);
   void OnNavigateGuest(int instance_id, const std::string& src);
+  void OnPluginDestroyed(int instance_id);
   // Reload the guest. Overriden in tests.
   virtual void OnReload(int instance_id);
   // Grab the new damage buffer from the embedder, and resize the guest's
@@ -319,6 +323,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   bool auto_size_enabled_;
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;
+  bool destroy_called_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

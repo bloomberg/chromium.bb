@@ -85,7 +85,7 @@ class CONTENT_EXPORT WebContentsImpl
   WebContentsImpl* opener() const { return opener_; }
 
   // Creates a WebContents to be used as a browser plugin guest.
-  static WebContentsImpl* CreateGuest(
+  static void CreateGuest(
       BrowserContext* browser_context,
       content::SiteInstance* site_instance,
       int routing_id,

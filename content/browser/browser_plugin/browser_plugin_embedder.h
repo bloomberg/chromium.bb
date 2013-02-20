@@ -68,9 +68,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // in BrowserPlugin.
   BrowserPluginGuest* GetGuestByInstanceID(int instance_id) const;
 
-  // Destroys the guest with the provided |instance_id|. Removes references to
-  // the guest in this BrowserPluginEmbedder.
-  void DestroyGuestByInstanceID(int instance_id);
+  // Adds a new guest web_contents to the embedder (overridable in test).
+  virtual void AddGuest(int instance_id, WebContents* guest_web_contents);
+  void RemoveGuest(int instance_id);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
@@ -97,8 +97,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   BrowserPluginEmbedder(WebContentsImpl* web_contents,
                         RenderViewHost* render_view_host);
 
-  // Adds a new guest web_contents to the embedder (overridable in test).
-  virtual void AddGuest(int instance_id, WebContents* guest_web_contents);
   void CleanUp();
 
   static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
@@ -111,7 +109,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void OnPluginAtPositionResponse(int instance_id,
                                   int request_id,
                                   const gfx::Point& position);
-  void OnPluginDestroyed(int instance_id);
   void OnUnhandledSwapBuffersACK(int instance_id,
                                  int route_id,
                                  int gpu_host_id,

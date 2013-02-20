@@ -378,7 +378,8 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
   return new_contents;
 }
 
-WebContentsImpl* WebContentsImpl::CreateGuest(
+// static
+void WebContentsImpl::CreateGuest(
     BrowserContext* browser_context,
     SiteInstance* site_instance,
     int routing_id,
@@ -408,7 +409,7 @@ WebContentsImpl* WebContentsImpl::CreateGuest(
   static_cast<RenderViewHostImpl*>(
       new_contents->GetRenderViewHost())->set_is_subframe(true);
 
-  return new_contents;
+  new_contents->browser_plugin_guest_->Initialize(params);
 }
 
 WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
