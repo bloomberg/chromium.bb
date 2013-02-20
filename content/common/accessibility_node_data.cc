@@ -67,8 +67,9 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
     case ROLE_COLUMN: result += " COLUMN"; break;
     case ROLE_COLUMN_HEADER: result += " COLUMN_HEADER"; break;
     case ROLE_COMBO_BOX: result += " COMBO_BOX"; break;
-    case ROLE_DEFINITION_LIST_DEFINITION: result += " DL_DEFINITION"; break;
-    case ROLE_DEFINITION_LIST_TERM: result += " DL_TERM"; break;
+    case ROLE_DEFINITION: result += " DEFINITION"; break;
+    case ROLE_DESCRIPTION_LIST_DETAIL: result += " DD"; break;
+    case ROLE_DESCRIPTION_LIST_TERM: result += " DT"; break;
     case ROLE_DIALOG: result += " DIALOG"; break;
     case ROLE_DIRECTORY: result += " DIRECTORY"; break;
     case ROLE_DISCLOSURE_TRIANGLE: result += " DISCLOSURE_TRIANGLE"; break;

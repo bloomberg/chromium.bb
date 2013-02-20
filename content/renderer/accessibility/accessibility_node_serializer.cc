@@ -89,6 +89,12 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_COLUMN_HEADER;
     case WebKit::WebAccessibilityRoleComboBox:
       return AccessibilityNodeData::ROLE_COMBO_BOX;
+    case WebKit::WebAccessibilityRoleDefinition:
+      return AccessibilityNodeData::ROLE_DEFINITION;
+    case WebKit::WebAccessibilityRoleDescriptionListTerm:
+      return AccessibilityNodeData::ROLE_DESCRIPTION_LIST_TERM;
+    case WebKit::WebAccessibilityRoleDescriptionListDetail:
+      return AccessibilityNodeData::ROLE_DESCRIPTION_LIST_DETAIL;
     case WebKit::WebAccessibilityRoleDirectory:
       return AccessibilityNodeData::ROLE_DIRECTORY;
     case WebKit::WebAccessibilityRoleDisclosureTriangle:

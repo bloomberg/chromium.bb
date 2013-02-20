@@ -76,9 +76,10 @@ RoleMap BuildRoleMap() {
     { AccessibilityNodeData::ROLE_COMBO_BOX, NSAccessibilityComboBoxRole },
     { AccessibilityNodeData::ROLE_COLUMN, NSAccessibilityColumnRole },
     { AccessibilityNodeData::ROLE_COLUMN_HEADER, @"AXCell" },
-    { AccessibilityNodeData::ROLE_DEFINITION_LIST_DEFINITION,
+    { AccessibilityNodeData::ROLE_DEFINITION, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_DESCRIPTION_LIST_DETAIL,
         NSAccessibilityGroupRole },
-    { AccessibilityNodeData::ROLE_DEFINITION_LIST_TERM,
+    { AccessibilityNodeData::ROLE_DESCRIPTION_LIST_TERM,
         NSAccessibilityGroupRole },
     { AccessibilityNodeData::ROLE_DIALOG, NSAccessibilityGroupRole },
     { AccessibilityNodeData::ROLE_DIRECTORY, NSAccessibilityListRole },
@@ -211,8 +212,9 @@ RoleMap BuildSubroleMap() {
     { AccessibilityNodeData::ROLE_ALERT, @"AXApplicationAlert" },
     { AccessibilityNodeData::ROLE_ALERT_DIALOG, @"AXApplicationAlertDialog" },
     { AccessibilityNodeData::ROLE_ARTICLE, @"AXDocumentArticle" },
-    { AccessibilityNodeData::ROLE_DEFINITION_LIST_DEFINITION, @"AXDefinition" },
-    { AccessibilityNodeData::ROLE_DEFINITION_LIST_TERM, @"AXTerm" },
+    { AccessibilityNodeData::ROLE_DEFINITION, @"AXDefinition" },
+    { AccessibilityNodeData::ROLE_DESCRIPTION_LIST_DETAIL, @"AXDescription" },
+    { AccessibilityNodeData::ROLE_DESCRIPTION_LIST_TERM, @"AXTerm" },
     { AccessibilityNodeData::ROLE_DIALOG, @"AXApplicationDialog" },
     { AccessibilityNodeData::ROLE_DOCUMENT, @"AXDocument" },
     { AccessibilityNodeData::ROLE_FOOTER, @"AXLandmarkContentInfo" },
@@ -705,7 +707,7 @@ NSDictionary* attributeToMethodNameMap = nil;
         [htmlTag isEqualToString:@"ol"]) {
       return @"AXContentList";
     } else if ([htmlTag isEqualToString:@"dl"]) {
-      return @"AXDefinitionList";
+      return @"AXDescriptionList";
     }
   }
 

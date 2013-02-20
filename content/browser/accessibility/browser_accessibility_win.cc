@@ -3152,12 +3152,17 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       role_name_ = L"div";
       ia2_role_ = IA2_ROLE_SECTION;
       break;
-    case AccessibilityNodeData::ROLE_DEFINITION_LIST_DEFINITION:
+    case AccessibilityNodeData::ROLE_DEFINITION:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case AccessibilityNodeData::ROLE_DEFINITION_LIST_TERM:
+    case AccessibilityNodeData::ROLE_DESCRIPTION_LIST_DETAIL:
+      role_name_ = html_tag;
+      ia2_role_ = IA2_ROLE_PARAGRAPH;
+      ia_state_ |= STATE_SYSTEM_READONLY;
+      break;
+    case AccessibilityNodeData::ROLE_DESCRIPTION_LIST_TERM:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
